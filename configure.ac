@@ -102,10 +102,13 @@ case $host in
   *-*-darwin*)
     echo "++++ building for DARWIN ++++"
     AC_DEFINE(OS_DARWIN, 1, [darwin])
+    unix_build=yes
     ;;
   *)
+    unix_build=yes
     ;;
 esac
+AM_CONDITIONAL(UNIX_BUILD, test x$unix_build = "xyes")
 AM_CONDITIONAL(MINGW_BUILD, test x$mingw_build = "xyes")
 AM_CONDITIONAL(CYGWIN_BUILD, test x$cygwin_build = "xyes")
 
