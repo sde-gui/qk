@@ -2,7 +2,7 @@
 #   tests/Makefile.am
 #
 
-EXTRA_PROGRAMS = medit mterm markup editor
+EXTRA_PROGRAMS = medit mterm markup editor termbuffer
 noinst_PROGRAMS =
 
 EXTRA_DIST = pyapp.py.in
@@ -15,7 +15,7 @@ if BUILD_MOOEDIT
 noinst_PROGRAMS += medit
 endif
 if BUILD_MOOTERM
-noinst_PROGRAMS += mterm
+noinst_PROGRAMS += mterm termbuffer
 endif
 if BUILD_MOOUTILS
 noinst_PROGRAMS += markup
@@ -74,14 +74,17 @@ medit_SOURCES = medit.cpp
 ##
 mterm_LDFLAGS =
 mterm_LDADD = $(MOO_LIBS) ../moo/libmoo.la
+termbuffer_LDADD = $(mterm_LDADD)
 
 
 if MINGW_BUILD
 mterm_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-mterm_SOURCES = \
-    mterm.cpp
+termbuffer_LDFLAGS = $(mterm_LDFLAGS)
+
+mterm_SOURCES = mterm.cpp
+termbuffer_SOURCES = termbuffer.cpp
 
 
 ##############################################################################

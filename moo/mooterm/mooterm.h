@@ -56,6 +56,11 @@ MooTermBuffer   *moo_term_get_buffer        (MooTerm        *term);
 void             moo_term_set_adjustment    (MooTerm        *term,
                                              GtkAdjustment  *vadj);
 
+gboolean         moo_term_fork_command      (MooTerm        *term,
+                                             const char     *cmd,
+                                             const char     *working_dir,
+                                             char          **envp);
+
 
 G_END_DECLS
 

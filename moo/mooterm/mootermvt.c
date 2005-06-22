@@ -12,6 +12,8 @@
  */
 
 #include "mooterm/mootermvt.h"
+#include "mooutils/moomarshals.h"
+#include "mooutils/moocompat.h"
 
 
 struct _MooTermVtPrivate {
@@ -34,6 +36,7 @@ static void     moo_term_vt_finalize        (GObject        *object);
 G_DEFINE_TYPE (MooTermVt, moo_term_vt, G_TYPE_OBJECT)
 
 enum {
+    CHILD_DIED,
     LAST_SIGNAL
 };
 
@@ -42,7 +45,7 @@ enum {
     PROP_BUFFER
 };
 
-// static guint signals[LAST_SIGNAL];
+static guint signals[LAST_SIGNAL];
 
 
 static void moo_term_vt_class_init (MooTermVtClass *klass)
@@ -52,6 +55,21 @@ static void moo_term_vt_class_init (MooTermVtClass *klass)
     gobject_class->set_property = moo_term_vt_set_property;
     gobject_class->get_property = moo_term_vt_get_property;
     gobject_class->finalize = moo_term_vt_finalize;
+
+    klass->set_size = NULL;
+    klass->fork_command = NULL;
+    klass->feed_child = NULL;
+    klass->kill_child = NULL;
+    klass->child_died = NULL;
+
+    signals[CHILD_DIED] =
+            g_signal_new ("child-died",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermVtClass, child_died),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,
@@ -143,13 +161,44 @@ MooTermBuffer  *moo_term_vt_get_buffer      (MooTermVt      *vt)
 
 MooTermVt      *moo_term_vt_new         (void)
 {
-    return MOO_TERM_VT (g_object_new (MOO_TYPE_TERM_VT, NULL));
+#ifdef __WIN32__
+    return g_object_new (MOO_TYPE_TERM_VT_WIN, NULL);
+#else /* !__WIN32__ */
+    return g_object_new (MOO_TYPE_TERM_VT_UNIX, NULL);
+#endif /* !__WIN32__ */
 }
 
 
-void            moo_term_vt_set_size    (G_GNUC_UNUSED MooTermVt  *vt,
-                                         G_GNUC_UNUSED gulong      width,
-                                         G_GNUC_UNUSED gulong      height)
+void            moo_term_vt_set_size        (MooTermVt      *vt,
+                                             gulong          width,
+                                             gulong          height)
 {
-//     g_message ("%s: implement me", G_STRLOC);
+    g_return_if_fail (MOO_IS_TERM_VT (vt));
+    MOO_TERM_VT_GET_CLASS(vt)->set_size (vt, width, height);
+}
+
+
+gboolean        moo_term_vt_fork_command    (MooTermVt      *vt,
+                                             const char     *cmd,
+                                             const char     *working_dir,
+                                             char          **envp)
+{
+    g_return_val_if_fail (MOO_IS_TERM_VT (vt), FALSE);
+    return MOO_TERM_VT_GET_CLASS(vt)->fork_command (vt, cmd, working_dir, envp);
+}
+
+
+void            moo_term_vt_kill_child      (MooTermVt      *vt)
+{
+    g_return_if_fail (MOO_IS_TERM_VT (vt));
+    MOO_TERM_VT_GET_CLASS(vt)->kill_child (vt);
+}
+
+
+void            moo_term_vt_feed_child      (MooTermVt      *vt,
+                                             const char     *data,
+                                             gssize          len)
+{
+    g_return_if_fail (MOO_IS_TERM_VT (vt));
+    MOO_TERM_VT_GET_CLASS(vt)->feed_child (vt, data, len);
 }

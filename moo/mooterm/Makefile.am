@@ -20,6 +20,14 @@ widget_sources =            \
     mootermvt.c             \
     mootermvt.h
 
+widget_unix_sources =       \
+    mootermvt-unix.c        \
+    pty.c                   \
+    pty.h
+
+widget_win32_sources =      \
+    mootermvt-win32.c
+
 AM_INCLUDES =
 common_cflags =                         \
     -I$(top_builddir)                   \
@@ -29,9 +37,55 @@ common_cflags =                         \
     $(PYGTK_CFLAGS)                     \
     $(GTK_CFLAGS)                       \
     -DG_LOG_DOMAIN=\"Moo\"
+
 AM_CFLAGS = $(common_cflags) $(M_CFLAGS) $(CFLAGS)
 AM_CXXFLAGS = $(common_cflags) $(M_CXXFLAGS) $(CXXFLAGS)
 
+EXTRA_DIST =                \
+    $(widget_sources)       \
+    $(widget_unix_sources)  \
+    $(widget_win32_sources)
+
+
+############################################################################
+#   UNIX
+#
+if UNIX_BUILD
+
 noinst_LTLIBRARIES = libmooterm.la
 
-libmooterm_la_SOURCES = $(widget_sources)
+libmooterm_la_SOURCES = $(widget_sources) $(widget_unix_sources)
+
+endif UNIX_BUILD
+
+
+############################################################################
+#   MINGW
+#
+if MINGW_BUILD
+
+noinst_LTLIBRARIES = libmooterm.la
+
+libmooterm_la_SOURCES = $(widget_sources) $(widget_win32_sources)
+
+endif MINGW_BUILD
+
+
+############################################################################
+#   CYGWIN
+#
+if CYGWIN_BUILD
+
+noinst_PROGRAMS = termhelper
+
+termhelper_CFLAGS = \
+    $(AM_CFLAGS)    \
+    $(CYGWIN_CFLAGS)
+
+termhelper_SOURCES = $(termhelper_sources)
+termhelper_LDADD = $(CYGWIN_LDFLAGS) termhelper_res.res
+
+termhelper_res.res: termhelper_res.rc
+	$(WINDRES) -i termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
+
+endif CYGWIN_BUILD

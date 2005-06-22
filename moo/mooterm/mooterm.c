@@ -649,3 +649,15 @@ void        moo_term_size_changed       (MooTerm        *term)
     moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
     moo_term_vt_set_size (term->priv->vt, width, height);
 }
+
+
+gboolean         moo_term_fork_command      (MooTerm        *term,
+                                             const char     *cmd,
+                                             const char     *working_dir,
+                                             char          **envp)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+
+    return moo_term_vt_fork_command (term->priv->vt,
+                                     cmd, working_dir, envp);
+}
