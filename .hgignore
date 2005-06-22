@@ -1,0 +1,7 @@
+(^|/)\.svn($|/)
+(^|/)\.hg($|/)
+(^|/)\.hgtags($|/)
+^berlios-hg.log$
+^berlios-hg.state$
+^berlios-hg.state.old$
+^berlios-hg.state.journal$
