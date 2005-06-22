@@ -1,0 +1,148 @@
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include "mooutils/moowin.h"
+#include "mooutils/moodialogs.h"
+#include "mooutils/mooprefs.h"
+#include "mooutils/mooprefsdialog.h"
+
+static PyTypeObject *_PyGdkColor_Type;
+#define PyGdkColor_Type (*_PyGdkColor_Type)
+
+static void
+prefs_set (const char *key, PyObject *val, gboolean ignore_change)
+{
+    if (val == Py_None)
+    {
+        if (ignore_change)
+            moo_prefs_set_ignore_change (key, NULL);
+        else
+            moo_prefs_set (key, NULL);
+    }
+    else if (PyObject_TypeCheck (val, &PyGEnum_Type))
+    {
+        int ival;
+        pyg_enum_get_value (pyg_type_from_object (val), val, &ival);
+
+        if (ignore_change)
+            moo_prefs_set_int_ignore_change (key, ival);
+        else
+            moo_prefs_set_int (key, ival);
+    }
+    else if (PyBool_Check (val))
+    {
+        gboolean bool_val = (Py_True == val);
+        if (ignore_change)
+            moo_prefs_set_bool_ignore_change (key, bool_val);
+        else
+            moo_prefs_set_bool (key, bool_val);
+    }
+    else if (PyFloat_Check (val))
+    {
+        if (ignore_change)
+            moo_prefs_set_double_ignore_change (key, PyFloat_AS_DOUBLE (val));
+        else
+            moo_prefs_set_double (key, PyFloat_AS_DOUBLE (val));
+    }
+    else if (PyLong_Check (val))
+    {
+        if (ignore_change)
+            moo_prefs_set_double_ignore_change (key, PyLong_AsDouble (val));
+        else
+            moo_prefs_set_double (key, PyLong_AsDouble (val));
+    }
+    else if (PyInt_Check (val))
+    {
+        if (ignore_change)
+            moo_prefs_set_double_ignore_change (key, PyInt_AS_LONG (val));
+        else
+            moo_prefs_set_double (key, PyInt_AS_LONG (val));
+    }
+    else if (PyString_Check (val))
+    {
+        if (ignore_change)
+            moo_prefs_set_ignore_change (key, PyString_AS_STRING (val));
+        else
+            moo_prefs_set (key, PyString_AS_STRING (val));
+    }
+    else if (PyObject_TypeCheck (val, &PyGdkColor_Type))
+    {
+        GdkColor *color = ((PyGBoxed*)val)->boxed;
+        if (ignore_change)
+            moo_prefs_set_color_ignore_change (key, color);
+        else
+            moo_prefs_set_color (key, color);
+    }
+    else
+    {
+        PyErr_SetString (PyExc_TypeError, "could not set prefs value");
+        return;
+    }
+}
+
+%%
+modulename moo
+%%
+import gtk.Window as PyGtkWindow_Type
+import gtk.Widget as PyGtkWidget_Type
+import gtk.ToggleButton as PyGtkToggleButton_Type
+import gtk.Button as PyGtkButton_Type
+import gtk.Dialog as PyGtkDialog_Type
+import gtk.VBox as PyGtkVBox_Type
+import gtk.gdk.Color as PyGdkColor_Type
+%%
+ignore-glob
+  *_get_type
+%%
+override moo_prefs_set kwargs
+static PyObject *
+_wrap_moo_prefs_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "key", "val", "ignore_change", NULL };
+    char *key;
+    PyObject *val;
+    int ignore_change = FALSE;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i:prefs_set", kwlist, &key, &val, &ignore_change))
+        return NULL;
+
+    prefs_set (key, val, ignore_change);
+
+    if (!PyErr_Occurred ())
+    {
+        Py_INCREF (Py_None);
+        return Py_None;
+    }
+}
+%%
+override moo_prefs_set_if_not_set kwargs
+static PyObject *
+_wrap_moo_prefs_set_if_not_set(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "key", "val", "ignore_change", NULL };
+    char *key;
+    PyObject *val;
+    int ignore_change = FALSE;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i:prefs_set", kwlist, &key, &val, &ignore_change))
+        return NULL;
+
+    if (!moo_prefs_get (key))
+        prefs_set (key, val, ignore_change);
+
+    if (!PyErr_Occurred ())
+    {
+        Py_INCREF (Py_None);
+        return Py_None;
+    }
+}
+%%
+override moo_g_object_new kwargs
+static PyObject *
+_wrap_moo_g_object_new (PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyErr_SetString (PyExc_NotImplementedError, "not implemented");
+    return NULL;
+}

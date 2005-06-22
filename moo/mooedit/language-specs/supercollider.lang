@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language _name="SuperCollider" version="1.0" _section="Sources"
+          mimetypes="text/x-supercollider"
+          extensions="*.sc3;*.sc">
+
+    <escape-char>\</escape-char>
+
+    <line-comment _name = "Comment" style= "Comment">
+        <start-regex>//</start-regex>
+    </line-comment>
+
+    <string _name = "String" style = "String" end-at-line-end = "TRUE">
+        <start-regex>&quot;</start-regex>
+        <end-regex>&quot;</end-regex>
+    </string>
+
+    <pattern-item name="Function" style="Function">
+        <regex>\b[_\w][_\w\d]*(?=[\s]*[(])</regex>
+    </pattern-item>
+
+    <pattern-item name="Object" style="Object">
+        <regex>\b[_\w][_\w\d]*(?=\.)</regex>
+    </pattern-item>
+
+    <pattern-item _name = "Decimal" style = "Decimal">
+        <regex>\b([1-9][0-9]*|0)([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</regex>
+    </pattern-item>
+
+    <pattern-item _name = "Floating Point Number" style = "Floating Point">
+        <regex>\b([0-9]+[Ee][-]?[0-9]+|([0-9]*\.[0-9]+|[0-9]+\.)([Ee][-]?[0-9]+)?)[fFlL]?</regex>
+    </pattern-item>
+
+    <pattern-item _name = "Octal Number" style = "BaseN">
+        <regex>\b0[0-7]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</regex>
+    </pattern-item>
+
+    <pattern-item _name = "Hex Number" style = "BaseN">
+        <regex>\b0[xX][0-9a-fA-F]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b</regex>
+    </pattern-item>
+
+    <styles>
+        <style name="Function"     default_style="Function" bold="0"/>
+        <style name="Decimal"      default_style="Decimal"/>
+        <style name="Octal"        default_style="BaseN"/>
+        <style name="Hex"          default_style="BaseN"/>
+        <style name="String Char"  default_style="Char"/>
+        <style name="Symbol"       default_style="Normal"/>
+        <style name="Preprocessor" default_style="Others"/>
+        <style name="Floating Point" default_style="Float"/>
+        <style name="Common Macro" default_style="Keyword" foreground="#0095ff" bold="1" italic="0"/>
+    </styles>
+
+</language>

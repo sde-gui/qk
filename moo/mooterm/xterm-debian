@@ -1,0 +1,489 @@
+csr - no
+
+==============================================================================
+
+am
+    auto_right_margin
+    terminal has automatic margins
+
+bce
+    back_color_erase
+    screen erased with background color
+
+km
+    has_meta_key
+    Has a meta key (i.e., sets 8th-bit)
+
+mc5i
+    prtr_silent
+    printer will not echo on screen
+
+mir
+    move_insert_mode
+    safe to move while in insert mode
+
+msgr
+    move_standout_mode
+    safe to move while in standout mode
+
+npc
+    no_pad_char
+    pad character does not exist
+
+xenl
+    eat_newline_glitch
+    newline ignored after 80 cols (concept)
+
+==============================================================================
+
+colors#8
+    max_colors
+    maximum number of colors on screen
+
+cols#80
+    columns
+    number of columns in a line
+
+it#8
+    init_tabs
+    tabs initially every # spaces
+
+lines#24
+    lines
+    number of lines on screen or page
+
+pairs#64
+    max_pairs
+    maximum number of color-pairs on the screen
+
+==============================================================================
+
+acsc=``aaffggiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~
+    acs_chars
+    graphics charset pairs, based on vt100
+
+bel=^G
+    bell
+    audible signal (bell) (P)
+
+blink=\E[5m
+    enter_blink_mode
+    turn on blinking
+
+bold=\E[1m
+    enter_bold_mode
+    turn on bold (extra bright) mode
+
+cbt=\E[Z
+    back_tab
+    back tab (P)
+
+civis=\E[?25l
+    cursor_invisible
+    make cursor invisible
+
+clear=\E[H\E[2J
+    clear_screen
+    clear screen and home cursor (P*)
+
+cnorm=\E[?25h
+    cursor_normal
+    make cursor appear normal (undo civis/cvvis)
+
+cr=^M
+    carriage_return
+    carriage return (P*)
+
+csr=\E[%i%p1%d;%p2%dr
+    change_scroll_region
+    change region to line #1 to line #2 (P)
+
+cub=\E[%p1%dD
+    parm_left_cursor
+    move #1 characters to the left (P)
+cub1=^H
+    cursor_left
+    move left one space
+
+cud=\E[%p1%dB
+    parm_down_cursor
+    down #1 lines (P*)
+cud1=^J
+    cursor_down
+    down one line
+
+cuf=\E[%p1%dC
+    parm_right_cursor
+    move #1 characters to the right (P*)
+cuf1=\E[C
+    cursor_right
+    non-destructive space (move right one space)
+
+cup=\E[%i%p1%d;%p2%dH
+    cursor_address
+    move to row #1 columns #2
+vpa=\E[%i%p1%dd
+    row_address
+    vertical position #1 absolute (P)
+hpa=\E[%i%p1%dG
+    column_address
+    horizontal position #1, absolute (P)
+
+cuu=\E[%p1%dA
+    parm_up_cursor
+    up #1 lines (P*)
+cuu1=\E[A
+    cursor_up
+    up one line
+
+dch=\E[%p1%dP
+    parm_dch
+    delete #1 characters (P*)
+dch1=\E[P
+    delete_character
+    delete character (P*)
+
+dl=\E[%p1%dM
+    parm_delete_line
+    delete #1 lines (P*)
+dl1=\E[M
+    delete_line
+    delete line (P*)
+
+ech=\E[%p1%dX
+    erase_chars
+    erase #1 characters (P)
+
+ed=\E[J
+    clr_eos
+    clear to end of screen (P*)
+
+el=\E[K
+    clr_eol
+    clear to end of line (P)
+
+el1=\E[1K
+    clr_bol
+    Clear to beginning of line
+
+enacs=\E(B\E)0
+    ena_acs
+    enable alternate char set
+
+flash=\E[?5h$<100/>\E[?5l
+    flash_screen
+    visible bell (may not move cursor)
+
+home=\E[H
+    cursor_home
+    home cursor (if no cup)
+
+ht=^I
+    tab
+    tab to next 8-space hardware tab stop
+
+hts=\EH
+    set_tab
+    set a tab in every row, current columns
+
+ich=\E[%p1%d@
+    parm_ich
+    insert #1 characters (P*)
+
+il=\E[%p1%dL
+    parm_insert_line
+    insert #1 lines (P*)
+
+il1=\E[L
+    insert_line
+    insert line (P*)
+
+ind=^J
+    scroll_forward
+    scroll text up (P)
+
+invis=\E[8m
+    enter_secure_mode
+    turn on blank mode (characters invisible)
+
+is2=\E[!p\E[?3;4l\E[4l\E>
+    init_2string
+    initialization string
+
+kDC=\E[3;5~
+    key_sdc
+    shifted delete-character key
+
+kEND=\EO5F
+    key_send
+    shifted end key
+
+kHOM=\EO5H
+    key_shome
+    shifted home key
+
+kIC=\E[2;5~
+    key_sic
+    shifted insert-character key
+
+kLFT=\EO5D
+    key_sleft
+    shifted left-arrow key
+
+kNXT=\E[6;5~
+    key_snext
+    shifted next key
+
+kPRV=\E[5;5~
+    key_sprevious
+    shifted previous key
+
+kRIT=\EO5C
+    key_sright
+    shifted right-arrow key
+
+kb2=\EOE
+    key_b2
+    center of keypad
+
+kbs=\177
+    key_backspace
+    backspace key
+
+kcbt=\E[Z
+    key_btab
+    back-tab key
+
+kcub1=\EOD
+    key_left
+    left-arrow key
+
+kcud1=\EOB
+    key_down
+    down-arrow key
+
+kcuf1=\EOC
+    key_right
+    right-arrow key
+
+kcuu1=\EOA
+    key_up
+    up-arrow key
+
+kdch1=\E[3~
+    key_dc
+    delete-character key
+
+kend=\EOF
+    key_end
+    end key
+
+kent=\EOM
+    key_enter
+    enter/send key
+
+kf1=\EOP
+kf10=\E[21~
+kf11=\E[23~
+kf12=\E[24~
+kf13=\EO2P
+kf14=\EO2Q
+kf15=\EO2R
+kf16=\EO2S
+kf17=\E[15;2~
+kf18=\E[17;2~
+kf19=\E[18;2~
+kf2=\EOQ
+kf20=\E[19;2~
+kf21=\E[20;2~
+kf22=\E[21;2~
+kf23=\E[23;2~, kf24=\E[24;2~, kf25=\EO5P, kf26=\EO5Q,
+kf27=\EO5R, kf28=\EO5S, kf29=\E[15;5~, kf3=\EOR,
+kf30=\E[17;5~, kf31=\E[18;5~, kf32=\E[19;5~,
+kf33=\E[20;5~, kf34=\E[21;5~, kf35=\E[23;5~,
+kf36=\E[24;5~, kf37=\EO6P, kf38=\EO6Q, kf39=\EO6R,
+kf4=\EOS, kf40=\EO6S, kf41=\E[15;6~, kf42=\E[17;6~,
+kf43=\E[18;6~, kf44=\E[19;6~, kf45=\E[20;6~,
+kf46=\E[21;6~, kf47=\E[23;6~, kf48=\E[24;6~, kf5=\E[15~,
+kf6=\E[17~, kf7=\E[18~, kf8=\E[19~, kf9=\E[20~
+    function keys
+
+khome=\EOH,
+kich1=\E[2~,
+kmous=\E[M,
+knp=\E[6~,
+kpp=\E[5~,
+
+mc0=\E[i
+    print_screen
+    print contents of screen
+mc4=\E[4i
+    prtr_off
+    turn off printer
+mc5=\E[5i
+    prtr_on
+    turn on printer
+
+meml=\El
+    ??????????
+memu=\Em
+    ??????????
+
+op=\E[39;49m
+    orig_pair
+    Set default pair to its original value
+
+rc=\E8
+    restore_cursor
+    restore cursor to position of last save_cursor
+sc=\E7
+    save_cursor
+    save current cursor position (P)
+
+rev=\E[7m
+    enter_reverse_mode
+    turn on reverse video mode
+
+ri=\EM
+    scroll_reverse
+    scroll text down (P)
+
+smacs=^N
+    enter_alt_charset_mode
+    start alternate character set (P)
+rmacs=^O
+    exit_alt_charset_mode
+    end alternate character set (P)
+
+smam=\E[?7h
+    enter_am_mode
+    turn on automatic margins
+rmam=\E[?7l
+    exit_am_mode
+    turn off automatic margins
+
+smcup=\E[?1049h
+    enter_ca_mode
+    string to start programs using cup
+rmcup=\E[?1049l
+    exit_ca_mode
+    strings to end programs using cup
+
+rmkx=\E[?1l\E>
+    keypad_local
+    leave 'keyboard_transmit' mode
+smkx=\E[?1h\E=
+    keypad_xmit
+    enter 'keyboard_transmit' mode
+
+rmso=\E[27m
+    exit_standout_mode
+    exit standout mode
+smso=\E[7m
+    enter_standout_mode
+    begin standout mode
+
+smul=\E[4m
+    enter_underline_mode
+    begin underline mode
+rmul=\E[24m
+    exit_underline_mode
+    exit underline mode
+
+rs1=\Ec
+    reset_1string
+rs2=\E[!p\E[?3;4l\E[4l\E>
+    reset_2string
+    reset string
+
+setab=\E[4%p1%dm
+    set_a_background
+    Set background color to #1, using ANSI escape
+setaf=\E[3%p1%dm
+    set_a_foreground
+    Set foreground color to #1, using ANSI escape
+
+setb=\E[4%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m
+    set_background
+    Set background color #1
+
+setf=\E[3%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m
+    set_foreground
+    Set foreground color #1
+
+sgr=\E[0%?%p6%t;1%;%?%p2%t;4%;%?%p1%p3%|%t;7%;%?%p4%t;5%;%?%p7%t;8%;m%?%p9%t\016%e\017%;
+    set_attributes
+    define video attributes #1-#9 (PG9)
+
+sgr0=\E[m\017
+    exit_attribute_mode
+    turn off all attributes
+
+smir=\E[4h
+    enter_insert_mode
+    enter insert mode
+rmir=\E[4l
+    exit_insert_mode
+    exit insert mode
+
+tbc=\E[3g
+    clear_all_tabs
+    clear all tab stops (P)
+
+u6=\E[%i%d;%dR
+    user6
+u7=\E[6n
+    user7
+u8=\E[?1;2c
+    user8
+u9=\E[c
+    user9
+    User string #
+
+
+##########################################################################
+#	Reconstructed via infocmp from file: /etc/terminfo/x/xterm-debian
+xterm-debian|Debian xterm (VT220-conformant backspace), 
+	am, bce, km, mc5i, mir, msgr, npc, xenl, 
+	colors#8, cols#80, it#8, lines#24, pairs#64, 
+	acsc=``aaffggiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~, 
+	bel=^G, blink=\E[5m, bold=\E[1m, cbt=\E[Z, civis=\E[?25l, 
+	clear=\E[H\E[2J, cnorm=\E[?25h, cr=^M, 
+	csr=\E[%i%p1%d;%p2%dr, cub=\E[%p1%dD, cub1=^H, 
+	cud=\E[%p1%dB, cud1=^J, cuf=\E[%p1%dC, cuf1=\E[C, 
+	cup=\E[%i%p1%d;%p2%dH, cuu=\E[%p1%dA, cuu1=\E[A, 
+	dch=\E[%p1%dP, dch1=\E[P, dl=\E[%p1%dM, dl1=\E[M, 
+	ech=\E[%p1%dX, ed=\E[J, el=\E[K, el1=\E[1K, enacs=\E(B\E)0, 
+	flash=\E[?5h$<100/>\E[?5l, home=\E[H, hpa=\E[%i%p1%dG, 
+	ht=^I, hts=\EH, ich=\E[%p1%d@, il=\E[%p1%dL, il1=\E[L, 
+	ind=^J, invis=\E[8m, is2=\E[!p\E[?3;4l\E[4l\E>, 
+	kDC=\E[3;5~, kEND=\EO5F, kHOM=\EO5H, kIC=\E[2;5~, 
+	kLFT=\EO5D, kNXT=\E[6;5~, kPRV=\E[5;5~, kRIT=\EO5C, 
+	kb2=\EOE, kbs=\177, kcbt=\E[Z, kcub1=\EOD, kcud1=\EOB, 
+	kcuf1=\EOC, kcuu1=\EOA, kdch1=\E[3~, kend=\EOF, kent=\EOM, 
+	kf1=\EOP, kf10=\E[21~, kf11=\E[23~, kf12=\E[24~, 
+	kf13=\EO2P, kf14=\EO2Q, kf15=\EO2R, kf16=\EO2S, 
+	kf17=\E[15;2~, kf18=\E[17;2~, kf19=\E[18;2~, kf2=\EOQ, 
+	kf20=\E[19;2~, kf21=\E[20;2~, kf22=\E[21;2~, 
+	kf23=\E[23;2~, kf24=\E[24;2~, kf25=\EO5P, kf26=\EO5Q, 
+	kf27=\EO5R, kf28=\EO5S, kf29=\E[15;5~, kf3=\EOR, 
+	kf30=\E[17;5~, kf31=\E[18;5~, kf32=\E[19;5~, 
+	kf33=\E[20;5~, kf34=\E[21;5~, kf35=\E[23;5~, 
+	kf36=\E[24;5~, kf37=\EO6P, kf38=\EO6Q, kf39=\EO6R, 
+	kf4=\EOS, kf40=\EO6S, kf41=\E[15;6~, kf42=\E[17;6~, 
+	kf43=\E[18;6~, kf44=\E[19;6~, kf45=\E[20;6~, 
+	kf46=\E[21;6~, kf47=\E[23;6~, kf48=\E[24;6~, kf5=\E[15~, 
+	kf6=\E[17~, kf7=\E[18~, kf8=\E[19~, kf9=\E[20~, khome=\EOH, 
+	kich1=\E[2~, kmous=\E[M, knp=\E[6~, kpp=\E[5~, mc0=\E[i, 
+	mc4=\E[4i, mc5=\E[5i, meml=\El, memu=\Em, op=\E[39;49m, 
+	rc=\E8, rev=\E[7m, ri=\EM, rmacs=^O, rmam=\E[?7l, 
+	rmcup=\E[?1049l, rmir=\E[4l, rmkx=\E[?1l\E>, rmso=\E[27m, 
+	rmul=\E[24m, rs1=\Ec, rs2=\E[!p\E[?3;4l\E[4l\E>, sc=\E7, 
+	setab=\E[4%p1%dm, setaf=\E[3%p1%dm, 
+	setb=\E[4%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m, 
+	setf=\E[3%?%p1%{1}%=%t4%e%p1%{3}%=%t6%e%p1%{4}%=%t1%e%p1%{6}%=%t3%e%p1%d%;m, 
+	sgr=\E[0%?%p6%t;1%;%?%p2%t;4%;%?%p1%p3%|%t;7%;%?%p4%t;5%;%?%p7%t;8%;m%?%p9%t\016%e\017%;, 
+	sgr0=\E[m\017, smacs=^N, smam=\E[?7h, smcup=\E[?1049h, 
+	smir=\E[4h, smkx=\E[?1h\E=, smso=\E[7m, smul=\E[4m, 
+	tbc=\E[3g, u6=\E[%i%d;%dR, u7=\E[6n, u8=\E[?1;2c, u9=\E[c, 
+	vpa=\E[%i%p1%dd, 

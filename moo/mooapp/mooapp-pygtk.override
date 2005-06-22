@@ -1,0 +1,17 @@
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include "mooapp/mooapp.h"
+%%
+modulename moo
+%%
+import gtk.Window as PyGtkWindow_Type
+import gtk.Widget as PyGtkWidget_Type
+import gobject.GObject as PyGObject_Type
+import moo.UIXML as PyMooUIXML_Type
+%%
+ignore-glob
+  *_get_type
+%%

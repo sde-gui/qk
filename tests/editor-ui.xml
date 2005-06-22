@@ -1,0 +1,192 @@
+<ui>
+
+<object name="EditorWindow">
+
+    <menubar name="Menubar">
+
+        <menu name="File" label="_File">
+            <separator/>
+            <item name="NewWindow" action="NewWindow"/>
+            <item name="NewTab" action="NewTab"/>
+            <separator/>
+            <item name="Open" action="Open"/>
+            <item name="Save" action="Save"/>
+            <item name="SaveAs" action="SaveAs"/>
+            <separator/>
+            <item name="Reload" action="Reload"/>
+            <separator/>
+            <item name="CloseTab" action="CloseTab"/>
+            <separator/>
+            <item name="Quit" action="Quit"/>
+            <separator/>
+        </menu>
+
+        <menu name="Edit" label="_Edit">
+            <separator/>
+            <item name="Undo" action="Undo"/>
+            <item name="Redo" action="Redo"/>
+            <separator/>
+            <item name="Cut" action="Cut"/>
+            <item name="Copy" action="Copy"/>
+            <item name="Paste" action="Paste"/>
+            <item name="Delete" action="Delete"/>
+            <separator/>
+            <item name="SelectAll" action="SelectAll"/>
+            <separator/>
+        </menu>
+
+        <menu name="Search" label="_Search">
+            <separator/>
+            <item name="Find" action="Find"/>
+            <item name="FindNext" action="FindNext"/>
+            <item name="FindPrevious" action="FindPrevious"/>
+            <item name="Replace" action="Replace"/>
+            <separator/>
+            <item name="GoToLine" action="GoToLine"/>
+            <separator/>
+        </menu>
+
+        <menu name="View" label="_View">
+            <separator/>
+            <item name="PreviousTab" action="PreviousTab"/>
+            <item name="NextTab" action="NextTab"/>
+            <separator/>
+            <item name="SyntaxMenu" action="SyntaxMenu"/>
+            <separator/>
+        </menu>
+
+        <menu name="Python" action="PythonMenu">
+            <separator/>
+            <item name="ExecuteScript" action="ExecuteScript"/>
+            <item name="ShowConsole" action="ShowConsole"/>
+            <separator/>
+        </menu>
+        
+        <menu name="Settings" label="_Settings">
+            <separator/>
+            <item name="ShowToolbar" action="ShowToolbar"/>
+            <item name="ToolbarStyle" action="ToolbarStyle"/>
+            <separator/>
+            <item name="ConfigureShortcuts" action="ConfigureShortcuts"/>
+            <separator/>
+            <item name="Preferences" action="Preferences"/>
+            <separator/>
+        </menu>
+
+        <menu name="Help" label="_Help">
+            <separator/>
+            <item name="About" action="About"/>
+            <separator/>
+        </menu>
+
+    </menubar> <!-- Menubar -->
+
+    <toolbar name="Toolbar">
+        <separator/>
+        <item name="NewWindow" action="NewWindow"/>
+        <separator/>
+        <item name="Open" action="Open"/>
+        <item name="Save" action="Save"/>
+        <separator/>
+        <item name="Undo" action="Undo"/>
+        <item name="Redo" action="Redo"/>
+        <separator/>
+        <item name="Cut" action="Cut"/>
+        <item name="Copy" action="Copy"/>
+        <item name="Paste" action="Paste"/>
+        <separator/>
+
+        <item name="Find" action="Find"/>
+        <item name="Replace" action="Replace"/>
+
+        <separator/>
+    </toolbar> <!-- Toolbar -->
+
+</object> <!-- EditorWindow -->
+
+<object name="TerminalWindow">
+
+    <menubar name="Menubar">
+
+        <menu name="File" label="_File">
+            <separator/>
+            <item name="Editor" action="NewEditor"/>
+            <item name="Open" action="OpenInEditor"/>
+            <separator/>
+            <item name="Save" action="SaveSelection"/>
+            <separator/>
+            <item name="Quit" action="Quit"/>
+            <separator/>
+        </menu>
+
+        <menu name="Edit" label="E_dit">
+            <separator/>
+            <item name="CopyLastOutput" action="CopyLastOutput"/>
+            <item name="Copy" action="Copy"/>
+            <item name="Paste" action="Paste"/>
+            <separator/>
+            <item name="SelectAll" action="SelectAll"/>
+            <separator/>
+        </menu>
+
+        <menu name="GAP" label="_GAP">
+            <separator/>
+            <item name="Read" action="GAPRead"/>
+            <separator/>
+            <item name="Restart" action="Restart"/>
+            <separator/>
+        </menu>
+
+        <menu name="Python" action="PythonMenu">
+            <separator/>
+            <item name="Execute" action="ExecuteScript"/>
+            <item name="ShowConsole" action="ShowConsole"/>
+            <separator/>
+        </menu>
+
+        <menu name="Settings" label="_Settings">
+            <separator/>
+            <item name="ShowToolbar" action="ShowToolbar"/>
+            <item name="ToolbarStyle" action="ToolbarStyle"/>
+            <separator/>
+            <item name="ConfigureShortcuts" action="ConfigureShortcuts"/>
+            <separator/>
+            <item name="Preferences" action="Preferences"/>
+            <separator/>
+        </menu>
+
+        <menu name="Help" label="_Help">
+            <separator/>
+            <item name="About" action="About"/>
+            <separator/>
+        </menu>
+
+    </menubar> <!-- Menubar -->
+
+    <toolbar name="Toolbar">
+        <separator/>
+        <item name="Editor" action="NewEditor"/>
+        <item name="Open" action="OpenInEditor"/>
+        <separator/>
+        <item name="Copy" action="Copy"/>
+        <item name="Paste" action="Paste"/>
+        <separator/>
+        <item name="Restart" action="Restart"/>
+        <separator/>
+        <item name="Preferences" action="Preferences"/>
+        <separator/>
+    </toolbar> <!-- Toolbar -->
+
+    <menu name="Popup">
+        <separator/>
+        <item name="Copy" action="Copy"/>
+        <item name="Paste" action="Paste"/>
+        <separator/>
+        <item name="SelectAll" action="SelectAll"/>
+        <separator/>
+    </menu>
+
+</object> <!-- TerminalWindow -->
+
+</ui>
+

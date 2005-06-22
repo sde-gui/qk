@@ -1,0 +1,72 @@
+#!/bin/bash
+
+dir=`pwd`
+builddir=/home/muntyan/Projects/ggap/build
+TERMHELPER=$builddir/cygwin/src/mooterm/termhelper.exe
+GGAP_WIN=/usr/local/win/ggap
+GGAP_ISCC=Z:/home/muntyan/Projects/ggap/wininstaller/ggap.iss
+GGAP_ISCC_NOCYGWIN=Z:/home/muntyan/Projects/ggap/wininstaller/ggap-nocygwin.iss
+
+if [ x$1 = x2.4 ]; then
+    MINGW=$builddir/mingw-gtk-2.4
+    RAR=$dir/ggap-2.4.rar
+    GGAP=ggapsetup-2.4.exe
+    GGAP_NOCYGWIN=ggapsetup-nocygwin-2.4.exe
+else
+    MINGW=$builddir/mingw
+    RAR=$dir/ggap.rar
+    GGAP=ggapsetup.exe
+    GGAP_NOCYGWIN=ggapsetup-nocygwin.exe
+fi
+
+
+function do_cmd () {
+    echo "*** " $*
+    $*
+    return $?
+}
+
+function build () {
+    do_cmd cd $MINGW && \
+    do_cmd make install-strip DESTDIR=$dir/ggap_root && \
+    do_cmd cd $dir && \
+    do_cmd mkdir ggap && \
+    do_cmd cp $dir/ggap_root/usr/local/bin/ggap.exe ggap/ && \
+    do_cmd cp -r $dir/ggap_root/usr/local/share/ggap/pkg ggap/ && \
+    do_cmd cd $builddir/cygwin && \
+    do_cmd make && \
+    do_cmd i686-pc-cygwin-strip $TERMHELPER && \
+    do_cmd cd $dir && \
+    do_cmd cp $TERMHELPER ggap/ && \
+    do_cmd rar a -m5 -r $RAR ggap && \
+    do_cmd rm -rf $GGAP_WIN && \
+    do_cmd cp -r ggap $GGAP_WIN && \
+    do_cmd cp cygwin1.dll $GGAP_WIN && \
+    do_cmd touch $GGAP_WIN/ggap.log && \
+    do_cmd rm -r ggap/ ggap_root/ && \
+    echo "*** " wine /usr/local/win/Program\ Files/Inno\ Setup\ 4/ISCC.exe $GGAP_ISCC && \
+    wine /usr/local/win/Program\ Files/Inno\ Setup\ 4/ISCC.exe $GGAP_ISCC && \
+    do_cmd mv $builddir/../wininstaller/Output/setup.exe $GGAP && \
+    do_cmd rm -r $builddir/../wininstaller/Output/ && \
+    do_cmd rm -rf $GGAP_WIN
+
+    #do_cmd cp cygwin1.dll ggap/
+#    do_cmd cp $builddir/../wininstaller/*.txt $GGAP_WIN
+
+#    echo "*** " wine /usr/local/win/Program\ Files/Inno\ Setup\ 4/ISCC.exe $GGAP_ISCC_NOCYGWIN && 
+#    wine /usr/local/win/Program\ Files/Inno\ Setup\ 4/ISCC.exe $GGAP_ISCC_NOCYGWIN && 
+#    do_cmd mv $builddir/../wininstaller/Output/setup.exe $GGAP_NOCYGWIN && 
+}
+
+function upload () {
+    build && \
+    do_cmd scp ggapsetup.exe ggapsetupnocygwin.exe hilbert.math.tamu.edu:/u/muntyan/public_html/
+}
+
+if [ -z $1 ]; then
+    build
+elif [ $1 == "upload" ]; then
+    upload
+else
+    build
+fi

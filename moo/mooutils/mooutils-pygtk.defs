@@ -1,0 +1,469 @@
+;;
+;;  mooutils/mooutils-pygtk.defs
+;;
+; object definitions ...
+(define-object PrefsDialog
+  (in-module "Moo")
+  (parent "GtkDialog")
+  (c-name "MooPrefsDialog")
+  (gtype-id "MOO_TYPE_PREFS_DIALOG")
+  (fields
+    '("GtkNotebook*" "notebook")
+    '("GtkTreeView*" "pages_list")
+    '("gboolean" "hide_on_delete")
+  )
+)
+
+(define-object PrefsDialogPage
+  (in-module "Moo")
+  (parent "GtkVBox")
+  (c-name "MooPrefsDialogPage")
+  (gtype-id "MOO_TYPE_PREFS_DIALOG_PAGE")
+  (fields
+    '("char*" "label")
+    '("GdkPixbuf*" "icon")
+    '("char*" "icon_stock_id")
+  )
+)
+
+;; Enumerations and flags ...
+
+(define-enum FileDialogType
+  (in-module "Moo")
+  (c-name "MooFileDialogType")
+  (gtype-id "MOO_TYPE_FILE_DIALOG_TYPE")
+  (values
+    '("file-open-existing" "MOO_DIALOG_FILE_OPEN_EXISTING")
+    '("file-open-any" "MOO_DIALOG_FILE_OPEN_ANY")
+    '("file-save" "MOO_DIALOG_FILE_SAVE")
+    '("dir-open" "MOO_DIALOG_DIR_OPEN")
+  )
+)
+
+(define-flags PrefsMatchType
+  (in-module "Moo")
+  (c-name "MooPrefsMatchType")
+  (gtype-id "MOO_TYPE_PREFS_MATCH_TYPE")
+  (values
+    '("match-key" "MOO_PREFS_MATCH_KEY")
+    '("match-prefix" "MOO_PREFS_MATCH_PREFIX")
+    '("match-regex" "MOO_PREFS_MATCH_REGEX")
+  )
+)
+
+
+
+;; From nowhere
+
+(define-function g_object_new
+  (c-name "moo_g_object_new")
+  (return-type "GObject*")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+
+
+;; From moodialogs.h
+
+(define-function file_dialog
+  (c-name "moo_file_dialog")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type")
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "start_dir" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function file_dialogp
+  (c-name "moo_file_dialogp")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type")
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "prefs_key")
+    '("const-char*" "alternate_prefs_key" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function font_dialog
+  (c-name "moo_font_dialog")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "start_font" (null-ok) (default "NULL"))
+    '("gboolean" "fixed_width" (null-ok) (default "FALSE"))
+  )
+)
+
+(define-function error_dialog
+  (c-name "moo_error_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function info_dialog
+  (c-name "moo_info_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function warning_dialog
+  (c-name "moo_warning_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
+  )
+)
+
+
+
+;; From moofileutils.h
+
+(define-function get_file_mtime
+  (c-name "moo_get_file_mtime")
+  (return-type "GTime")
+  (parameters
+    '("const-char*" "filename")
+  )
+)
+
+(define-function save_file_utf8
+  (c-name "moo_save_file_utf8")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "text")
+    '("gssize" "len" (null-ok) (default "-1"))
+    '("GError**" "error" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function open_url
+  (c-name "moo_open_url")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "url")
+  )
+)
+
+(define-function open_email
+  (c-name "moo_open_email")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "address")
+    '("const-char*" "subject" (null-ok) (default "NULL"))
+    '("const-char*" "body" (null-ok) (default "NULL"))
+  )
+)
+
+
+
+;; From moolog.h
+
+(define-function log_window_show
+  (c-name "moo_log_window_show")
+  (return-type "none")
+)
+
+(define-function log_window_hide
+  (c-name "moo_log_window_hide")
+  (return-type "none")
+)
+
+;; (define-function log_window_write
+;;   (c-name "moo_log_window_write")
+;;   (return-type "none")
+;;   (parameters
+;;     '("const-gchar*" "log_domain" (null-ok) (default "NULL"))
+;;     '("GLogLevelFlags" "flags")
+;;     '("const-gchar*" "message")
+;;   )
+;; )
+
+(define-function set_log_func_window
+  (c-name "moo_set_log_func_window")
+  (return-type "none")
+  (parameters
+    '("gboolean" "show")
+  )
+)
+
+(define-function set_log_func_file
+  (c-name "moo_set_log_func_file")
+  (return-type "none")
+  (parameters
+    '("const-char*" "log_file")
+  )
+)
+
+(define-function set_log_func
+  (c-name "moo_set_log_func")
+  (return-type "none")
+  (parameters
+    '("gboolean" "show_log")
+  )
+)
+
+
+
+;; From mooprefs.h
+
+(define-function prefs_load
+  (c-name "moo_prefs_load")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "file")
+  )
+)
+
+(define-function prefs_save
+  (c-name "moo_prefs_save")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "file")
+  )
+)
+
+(define-function prefs_notify_connect
+  (c-name "moo_prefs_notify_connect")
+  (return-type "guint")
+  (parameters
+    '("const-char*" "pattern")
+    '("MooPrefsMatchType" "match_type")
+    '("MooPrefsNotify" "callback")
+    '("gpointer" "data")
+  )
+)
+
+(define-function prefs_notify_block
+  (c-name "moo_prefs_notify_block")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-function prefs_notify_unblock
+  (c-name "moo_prefs_notify_unblock")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-function prefs_notify_disconnect
+  (c-name "moo_prefs_notify_disconnect")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-function prefs_get
+  (c-name "moo_prefs_get")
+  (return-type "const-gchar*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_set
+  (c-name "moo_prefs_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val" (null-ok))
+    '("gboolean" "ignore_change" (null-ok) (default="FALSE"))
+  )
+)
+
+(define-function prefs_set_if_not_set
+  (c-name "moo_prefs_set_if_not_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val")
+    '("gboolean" "ignore_change" (null-ok) (default="FALSE"))
+  )
+)
+
+(define-function prefs_get_bool
+  (c-name "moo_prefs_get_bool")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_double
+  (c-name "moo_prefs_get_double")
+  (return-type "gdouble")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_double
+  (c-name "moo_prefs_get_int")
+  (return-type "int")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_color
+  (c-name "moo_prefs_get_color")
+  (return-type "const-GdkColor*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_enum
+  (c-name "moo_prefs_get_enum")
+  (return-type "int")
+  (parameters
+    '("const-char*" "key")
+    '("GType" "type")
+  )
+)
+
+
+
+;; From mooprefsdialog.h
+
+(define-function moo_prefs_dialog_page_get_type
+  (c-name "moo_prefs_dialog_page_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_prefs_dialog_page_new
+  (c-name "moo_prefs_dialog_page_new")
+  (is-constructor-of "MooPrefsDialogPage")
+  (return-type "GtkWidget*")
+  (parameters
+    '("const-char*" "label")
+    '("const-char*" "stock_icon_id" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method bind_setting
+  (of-object "MooPrefsDialogPage")
+  (c-name "moo_prefs_dialog_page_bind_setting")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("const-char*" "setting")
+    '("GtkToggleButton*" "set_or_not" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method bind_radio_setting
+  (of-object "MooPrefsDialogPage")
+  (c-name "moo_prefs_dialog_page_bind_radio_setting")
+  (return-type "none")
+  (parameters
+    '("const-char*" "setting")
+    '("GtkToggleButton**" "btns")
+    '("const-char**" "cvals")
+  )
+)
+
+(define-method bind_radio
+  (of-object "MooPrefsDialogPage")
+  (c-name "moo_prefs_dialog_page_bind_radio")
+  (return-type "none")
+  (parameters
+    '("const-char*" "setting")
+    '("GtkToggleButton*" "btn")
+    '("const-char*" "cval")
+  )
+)
+
+(define-function moo_prefs_dialog_get_type
+  (c-name "moo_prefs_dialog_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_prefs_dialog_new
+  (c-name "moo_prefs_dialog_new")
+  (is-constructor-of "MooPrefsDialog")
+  (return-type "GtkWidget*")
+  (parameters
+    '("const-char*" "title" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method run
+  (of-object "MooPrefsDialog")
+  (c-name "moo_prefs_dialog_run")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method append_page
+  (of-object "MooPrefsDialog")
+  (c-name "moo_prefs_dialog_append_page")
+  (return-type "int")
+  (parameters
+    '("MooPrefsDialogPage*" "page")
+  )
+)
+
+
+
+;; From moostock.h
+
+(define-function create_stock_items
+  (c-name "moo_create_stock_items")
+  (return-type "none")
+)
+
+
+
+;; From moowin.h
+
+(define-function window_is_hidden
+  (c-name "moo_window_is_hidden")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWindow*" "window")
+  )
+)
+
+(define-function get_top_window
+  (c-name "moo_get_top_window")
+  (return-type "GtkWindow*")
+  (parameters
+    '("GSList*" "windows")
+  )
+)
+
+(define-function window_set_icon_from_stock
+  (c-name "moo_window_set_icon_from_stock")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWindow*" "window")
+    '("const-char*" "stock_id")
+  )
+)
+
+

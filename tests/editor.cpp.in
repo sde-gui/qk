@@ -1,0 +1,54 @@
+/*
+ *   tests/editor.cpp.in
+ *
+ *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   See COPYING file that comes with this distribution.
+ */
+
+#line 14 "@srcdir@/editor.cpp.in"
+#include "mooapp/mooapp.h"
+#include "mooui/moouiobject.h"
+
+
+int main (int argc, char *argv[])
+{
+    gtk_init (&argc, &argv);
+
+    MooApp *app = MOO_APP (g_object_new (MOO_TYPE_APP,
+                                         "argv", argv,
+                                         "short-name", "medit",
+                                         "full-name", "MEdit",
+                                         "window-policy",
+                                         MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
+                                                 MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
+                                         NULL));
+
+    const char *file = "@srcdir@/editor-ui.xml";
+    if (!g_file_test (file, G_FILE_TEST_EXISTS))
+    {
+        file = "editor-ui.xml";
+        if (!g_file_test (file, G_FILE_TEST_EXISTS))
+            g_error ("could not find editor-ui.xml");
+    }
+
+    MooUIXML *xml = moo_app_get_ui_xml (app);
+
+    if (!moo_ui_xml_add_ui_from_file (xml, file, NULL))
+        g_error ("%s", G_STRLOC);
+
+    moo_app_init (app);
+
+    MooEditor *editor = moo_app_get_editor (app);
+    MooEditWindow *win = moo_editor_new_window (editor);
+
+    if (argc > 1)
+        moo_edit_window_open (MOO_EDIT_WINDOW (win), argv[1], NULL);
+
+    return moo_app_run (app);
+}

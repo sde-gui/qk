@@ -1,0 +1,109 @@
+#
+#   mooedit/Makefile.am
+#
+
+DIST_SUBDIRS = glade xdgmime gtksourceview language-specs
+
+if BUILD_XDGMIME
+    xdgmime = xdgmime
+    xdgmime_lib = xdgmime/libxdgmime.la
+endif BUILD_XDGMIME
+
+SUBDIRS = glade $(xdgmime) gtksourceview language-specs .
+
+
+DEFAULT_INCLUDES =
+AM_CFLAGS =                             \
+    -DXDG_PREFIX=_moo_edit_xdg          \
+    -I$(top_builddir)                   \
+    -I$(top_builddir)/$(MOO_SRC_PREFIX) \
+    $(PYTHON_INCLUDES)                  \
+    $(PYGTK_CFLAGS)                     \
+    $(MOO_CFLAGS)                       \
+    $(M_CFLAGS)                         \
+    $(CFLAGS)                           \
+    -DG_LOG_DOMAIN=\"Moo\"
+
+noinst_LTLIBRARIES   = libmooedit.la
+
+libmooedit_la_LIBADD = gtksourceview/libgtksourceview.la $(xdgmime_lib)
+
+libmooedit_la_SOURCES =     \
+    mooedit.c               \
+    mooedit.h               \
+    mooedit-private.h       \
+    mooeditcursor.c         \
+    mooeditdialogs.c        \
+    mooeditdialogs.h        \
+    mooeditfileops.c        \
+    mooeditfind.c           \
+    mooeditfind-glade.c     \
+    mooeditgotoline-glade.c \
+    mooeditkeys.c           \
+    mooeditlang.c           \
+    mooeditlang.h           \
+    mooeditlang-private.h   \
+    mooeditlangmgr.c        \
+    mooeditlangmgr.h        \
+    mooeditor.c             \
+    mooeditor.h             \
+    mooeditprefs.c          \
+    mooeditprefs.h          \
+    mooeditprefs-glade.c    \
+    mooeditprefspage.c      \
+    mooeditsearch.c         \
+    mooeditsearch.h         \
+    mooeditwindow.c         \
+    mootextiter.h
+
+if USE_XML
+    libmooedit_la_SOURCES += mooeditlang-xml.c
+endif USE_XML
+
+EXTRA_DIST =                \
+    mooeditlang-xml.c
+
+BUILT_SOURCES =             \
+    mooeditgotoline-glade.c \
+    mooeditfind-glade.c     \
+    mooeditprefs-glade.c
+
+GLADE = $(srcdir)/glade
+TOOLBAR = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/toolbar.sh
+SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
+
+mooeditfind-glade.c: $(GLADE)/mooeditfind.c $(GLADE)/mooeditfind.sed $(TOOLBAR) $(SUPPORT)
+	cat $(GLADE)/mooeditfind.c | sh $(SUPPORT) | sed -f $(GLADE)/mooeditfind.sed \
+		> mooeditfind-glade.c
+
+mooeditgotoline-glade.c: $(GLADE)/mooeditgotoline.c $(GLADE)/mooeditgotoline.sed $(TOOLBAR) $(SUPPORT)
+	cat $(GLADE)/mooeditgotoline.c | sh $(SUPPORT) | sed -f $(GLADE)/mooeditgotoline.sed \
+		> mooeditgotoline-glade.c
+
+mooeditprefs-glade.c: $(GLADE)/mooeditprefs.c $(GLADE)/mooeditprefs.sed $(TOOLBAR) $(SUPPORT)
+	cat  $(GLADE)/mooeditprefs.c | sh $(SUPPORT) | \
+	sed -f $(GLADE)/mooeditprefs.sed > mooeditprefs-glade.c
+
+
+##############################################################################
+# Pygtk stuff
+#
+
+EXTRA_DIST += mooedit-mod.c mooedit-pygtk.defs mooedit-pygtk.override
+
+if USE_PYGTK
+libmooedit_la_SOURCES += mooedit-mod.c
+
+nodist_libmooedit_la_SOURCES = mooedit-pygtk.c
+BUILT_SOURCES += mooedit-pygtk.c
+CLEANFILES = mooedit-pygtk.c
+
+mooedit-pygtk.c: $(srcdir)/mooedit-pygtk.defs $(srcdir)/mooedit-pygtk.override
+	pygtk-codegen-2.0 --prefix moo_edit \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/../mooui/mooui-pygtk.defs \
+	--override $(srcdir)/mooedit-pygtk.override \
+	$(srcdir)/mooedit-pygtk.defs > mooedit-pygtk.c
+
+endif USE_PYGTK

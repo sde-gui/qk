@@ -1,0 +1,78 @@
+#!/bin/sh
+
+if [ -z $GTK_PREFIX ]; then
+    GTK_PREFIX=/usr/local/win/gtk-2.6
+fi
+
+############################################################################
+
+if [ x`basename $0` = xfake-pkg-config ]; then
+    if [ $1 -a $1 = "--atleast-pkgconfig-version" ]; then
+        /usr/bin/pkg-config --atleast-pkgconfig-version $2
+        status=$?
+    else
+        /usr/bin/pkg-config --define-variable=prefix=$GTK_PREFIX $*
+        status=$?
+    fi
+
+    exit $status
+fi
+
+############################################################################
+
+if [ x$CONFIGURE = x ]; then
+    CONFIGURE="configure"
+    if [ ! -e $CONFIGURE ]; then
+        CONFIGURE=`dirname $0`/configure
+    fi
+    if [ ! -e $CONFIGURE ]; then
+        echo "Can't find configure script"
+        exit 1
+    fi
+fi
+
+export ADDR2LINE="/usr/bin/i586-mingw32msvc-addr2line"
+export AR="/usr/bin/i586-mingw32msvc-ar"
+export AS="/usr/bin/i586-mingw32msvc-as"
+export CC="/usr/bin/i586-mingw32msvc-gcc"
+export CPP="/usr/bin/i586-mingw32msvc-cpp"
+export CPPFILT="/usr/bin/i586-mingw32msvc-c++filt"
+export CXX="/usr/bin/i586-mingw32msvc-g++"
+export DLLTOOL="/usr/bin/i586-mingw32msvc-dlltool"
+export DLLWRAP="/usr/bin/i586-mingw32msvc-dllwrap"
+export GCOV="/usr/bin/i586-mingw32msvc-gcov"
+export LD="/usr/bin/i586-mingw32msvc-ld"
+export NM="/usr/bin/i586-mingw32msvc-nm"
+export OBJCOPY="/usr/bin/i586-mingw32msvc-objcopy"
+export OBJDUMP="/usr/bin/i586-mingw32msvc-objdump"
+export RANLIB="/usr/bin/i586-mingw32msvc-ranlib"
+export READELF="/usr/bin/i586-mingw32msvc-readelf"
+export SIZE="/usr/bin/i586-mingw32msvc-size"
+export STRINGS="/usr/bin/i586-mingw32msvc-strings"
+export STRIP="/usr/bin/i586-mingw32msvc-strip"
+export WINDRES="/usr/bin/i586-mingw32msvc-windres"
+
+if [ ! $CFLAGS ]; then
+    export CFLAGS="-O3 -g0 -mms-bitfields -march=i686 -I$GTK_PREFIX/include"
+fi
+if [ ! $CXXFLAGS ]; then
+    export CXXFLAGS="-O3 -g0 -mms-bitfields -march=i686 -I$GTK_PREFIX/include"
+fi
+if [ ! $LDFLAGS ]; then
+    export LDFLAGS="-L$GTK_PREFIX/lib"
+fi
+
+export PATH=$MINGW_BIN:/usr/i586-mingw32msvc/bin:$PATH
+
+if [ -L fake-pkg-config ]; then
+    rm fake-pkg-config
+fi
+ln -s $0 fake-pkg-config
+export PKG_CONFIG_PATH=$GTK_PREFIX/lib/pkgconfig
+export PKG_CONFIG_LIBDIR=
+export PKG_CONFIG="./fake-pkg-config"
+
+TARGET=i586-mingw32msvc
+
+sh $CONFIGURE --target=$TARGET --host=$TARGET $*
+exit $?

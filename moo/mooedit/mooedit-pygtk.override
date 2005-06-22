@@ -1,0 +1,26 @@
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include <gtksourceview/gtksourceview.h>
+#include <gtksourceview/gtksourceiter.h>
+#include <gtksourceview/gtksourceundomanager.h>
+#include <gtksourceview/gtksourceview-typebuiltins.h>
+#include "mooedit/mooeditor.h"
+#include "mooedit/mooeditsearch.h"
+%%
+modulename moo
+%%
+import gtk.Widget as PyGtkWidget_Type
+import gtk.TextView as PyGtkTextView_Type
+import gtk.TextBuffer as PyGtkTextBuffer_Type
+import gtk.TextTagTable as PyGtkTextTagTable_Type
+import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
+import gobject.GObject as PyGObject_Type
+import moo.Window as PyMooWindow_Type
+import moo.UIXML as PyMooUIXML_Type
+%%
+ignore-glob
+  *_get_type
+%%

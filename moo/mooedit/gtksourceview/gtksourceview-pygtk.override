@@ -1,0 +1,18 @@
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include "gtksourceview/gtksourceview.h"
+%%
+modulename moo_gtksourceview
+%%
+import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
+import gtk.TextView as PyGtkTextView_Type
+import gtk.TextBuffer as PyGtkTextBuffer_Type
+;;import gobject.GObject as PyGObject_Type
+;;import gtk.Widget as PyGtkWidget_Type
+%%
+ignore-glob
+  *_get_type
+%%
