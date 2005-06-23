@@ -34,10 +34,11 @@
 #endif
 
 
-#define TERM_EMULATION  "xterm"
-#define READ_BUFSIZE    4096
-#define POLL_TIME       5
-#define POLL_NUM        1
+#define READ_CHILD_OUT_PRIORITY G_PRIORITY_HIGH_IDLE
+#define TERM_EMULATION          "xterm"
+#define READ_BUFSIZE            2048
+#define POLL_TIME               5
+#define POLL_NUM                1
 
 
 #define MOO_TERM_VT_UNIX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_VT_UNIX, MooTermVtUnix))
@@ -60,6 +61,7 @@ struct _MooTermVtUnix {
     int         width;
     int         height;
 
+    gboolean    non_block;
     GIOChannel *io;
     guint       io_watch_id;
 };
@@ -119,6 +121,7 @@ static void     moo_term_vt_unix_init            (MooTermVtUnix      *vt)
     vt->width = 80;
     vt->height = 24;
 
+    vt->non_block = FALSE;
     vt->io = NULL;
     vt->io_watch_id = 0;
 }
@@ -163,6 +166,7 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
     GError *err = NULL;
     int status, flags;
     int i;
+    GSource *src;
 
     g_return_val_if_fail (cmd != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_VT_UNIX (vt_gen), FALSE);
@@ -227,6 +231,8 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
         g_critical ("%s: F_GETFL on master", G_STRLOC);
     else if (-1 == fcntl (vt->master, F_SETFL, O_NONBLOCK | flags))
         g_critical ("%s: F_SETFL on master", G_STRLOC);
+    else
+        vt->non_block = TRUE;
 
     vt->io =  g_io_channel_unix_new (vt->master);
     g_return_val_if_fail (vt->io != NULL, FALSE);
@@ -239,11 +245,12 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
                                       (GIOFunc) read_child_out,
                                       vt);
 
-#if 0
-//     GSource *src = g_main_context_find_source_by_id (NULL, helper_out_watch_id);
-//     if (src) g_source_set_priority (src, READ_HELPER_OUT_PRIORITY);
-//     else g_warning ("%s: could not find helper_io_watch source", G_STRLOC);
-#endif
+    src = g_main_context_find_source_by_id (NULL, vt->io_watch_id);
+
+    if (src)
+        g_source_set_priority (src, READ_CHILD_OUT_PRIORITY);
+    else
+        g_warning ("%s: could not find io_watch_id source", G_STRLOC);
 
     vt->child_alive = TRUE;
 
@@ -274,6 +281,8 @@ static void     kill_child      (MooTermVt      *vt_gen)
         _vte_pty_close (vt->master);
         vt->master = -1;
     }
+
+    vt->non_block = FALSE;
 
     vt->child_pid = (GPid)-1;
 
@@ -310,6 +319,28 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
     }
 
     g_assert (condition & (G_IO_IN | G_IO_PRI));
+
+    if (vt->non_block)
+    {
+        int r = read (vt->master, buf, READ_BUFSIZE);
+
+        switch (r)
+        {
+            case -1:
+                error_occured = TRUE;
+                error_no = errno;
+                goto error;
+
+            case 0:
+                break;
+
+            default:
+                feed_parent (vt, buf, r);
+                break;
+        }
+    
+        return TRUE;
+    }
 
     while (again && !error_occured && current < READ_BUFSIZE)
     {

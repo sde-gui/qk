@@ -11,14 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooterm/mootermvt.h"
+#define MOOTERM_COMPILATION
+#include "mooterm/mooterm-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
-
-
-struct _MooTermVtPrivate {
-    MooTermBuffer   *buffer;
-};
 
 
 static void     moo_term_vt_set_property    (GObject        *object,
@@ -93,6 +89,10 @@ static void     moo_term_vt_finalize        (GObject            *object)
 
     if (vt->priv->buffer)
         g_object_unref (vt->priv->buffer);
+
+    vt_discard (&vt->priv->incoming);
+    vt_discard (&vt->priv->outgoing);
+
     g_free (vt->priv);
 
     G_OBJECT_CLASS (moo_term_vt_parent_class)->finalize (object);

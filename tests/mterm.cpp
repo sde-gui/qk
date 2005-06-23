@@ -13,7 +13,7 @@
 
 #include <gtk/gtk.h>
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm-private.h"
+#include "mooterm/mooterm.h"
 #include <string.h>
 #include <stdlib.h>
 

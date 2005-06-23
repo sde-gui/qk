@@ -72,8 +72,10 @@ struct _MooTermBufferPrivate {
     gulong          saved_cursor_col;
 
     glong           max_height;
-    BufRegion      *changed;
     MooTermParser  *parser;
+
+    BufRegion      *changed;
+    gboolean        changed_all;
 
     gboolean        freeze_changed_notify;
     gboolean        freeze_cursor_notify;
@@ -127,22 +129,39 @@ inline static gulong buf_cursor_col (MooTermBuffer *buf)
     return buf->priv->cursor_col;
 }
 
+inline static BufRegion *buf_get_changed (MooTermBuffer *buf)
+{
+    return buf->priv->changed;
+}
+
 inline static void buf_changed_add_rectangle (MooTermBuffer *buf,
                                               BufRectangle  *rect)
 {
-    if (!buf->priv->changed)
-        buf->priv->changed = buf_region_rectangle (rect);
-    else
-        buf_region_union_with_rect (buf->priv->changed, rect);
+    if (!buf->priv->changed_all)
+    {
+        if (!buf->priv->changed)
+            buf->priv->changed = buf_region_rectangle (rect);
+        else
+            buf_region_union_with_rect (buf->priv->changed, rect);
+    }
 }
 
 inline static void buf_changed_set_all (MooTermBuffer *buf)
 {
-    BufRectangle changed = {
-        0, 0, buf->priv->screen_width,
-        buf->priv->screen_height
-    };
-    buf_changed_add_rectangle (buf, &changed);
+    if (!buf->priv->changed_all)
+    {
+        BufRectangle changed = {
+            0, 0, buf->priv->screen_width,
+            buf->priv->screen_height
+        };
+
+        buf->priv->changed_all = TRUE;
+
+        if (buf->priv->changed)
+            buf_region_destroy (buf->priv->changed);
+
+        buf->priv->changed = buf_region_rectangle (&changed);
+    }
 }
 
 inline static void buf_changed_add_range (MooTermBuffer *buf,
@@ -161,6 +180,8 @@ inline static void buf_changed_clear (MooTermBuffer *buf)
         buf_region_destroy (buf->priv->changed);
         buf->priv->changed = NULL;
     }
+
+    buf->priv->changed_all = FALSE;
 }
 
 inline static char *buf_screen_get_text (MooTermBuffer *buf)
@@ -442,8 +463,10 @@ inline static void buf_line_feed                (MooTermBuffer  *buf)
         term_line_init (&new_line, width);
         g_array_append_val (buf->priv->lines, new_line);
         buf->priv->screen_offset++;
+
         buf_changed_set_all (buf);
         buf_cursor_move_to (buf, -1, 0);
+
         moo_term_buffer_changed (buf);
         moo_term_buffer_scrollback_changed (buf);
     }

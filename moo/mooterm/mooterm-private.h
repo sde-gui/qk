@@ -279,6 +279,45 @@ inline static gboolean term_selected           (TermSelection   *sel,
 }
 
 
+struct _MooTermVtPrivate {
+    MooTermBuffer   *buffer;
+
+    GSList          *incoming;  /* list->data is GByteArray* */
+    GSList          *outgoing;  /* list->data is GByteArray* */
+};
+
+
+#ifndef __cplusplus
+
+inline static void vt_discard (GSList **list)
+{
+    GSList *l;
+
+    for (l = *list; l != NULL; ++l)
+        g_byte_array_free (l->data, TRUE);
+
+    g_slist_free (*list);
+    *list = NULL;
+}
+
+inline static void vt_add_data (GSList **list, const char *data, gssize len)
+{
+    if (data && len && (len > 0 || data[0]))
+    {
+        GByteArray *ar;
+
+        if (len < 0)
+            len = strlen (data);
+
+        ar = g_byte_array_sized_new ((guint) len);
+        *list = g_slist_append (*list,
+                                 g_byte_array_append (ar, data, len));
+    }
+}
+
+
+#endif /* __cplusplus */
+
 G_END_DECLS
 
 #endif /* MOOTERM_MOOTERM_PRIVATE_H */

@@ -977,7 +977,7 @@ void        moo_term_setup_palette      (MooTerm        *term)
 void        moo_term_buf_content_changed(MooTerm        *term)
 {
     MooTermBuffer *buf = term->priv->buffer;
-    BufRegion *changed = buf->priv->changed;
+    BufRegion *changed = buf_get_changed (buf);
 
     if (changed && !buf_region_empty (changed))
     {

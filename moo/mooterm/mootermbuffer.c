@@ -186,6 +186,7 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
 
     buf->priv->lines = g_array_new (FALSE, FALSE, sizeof(MooTermLine));
     buf->priv->changed = NULL;
+    buf->priv->changed_all = FALSE;
     buf->priv->parser = moo_term_parser_new (buf);
 }
 
