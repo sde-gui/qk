@@ -29,12 +29,6 @@ AM_CFLAGS =                     \
     $(M_CFLAGS)                 \
     $(CFLAGS)                   \
     $(GTK_CFLAGS)
-AM_CXXFLAGS =                   \
-    -I$(top_builddir)           \
-    $(MOO_CFLAGS)               \
-    $(M_CXXFlAGS)               \
-    $(CXXFLAGS)                 \
-    $(GTK_CFLAGS)
 
 
 ##############################################################################
@@ -52,7 +46,7 @@ if MINGW_BUILD
 editor_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-editor_SOURCES = editor.cpp
+editor_SOURCES = editor.c
 
 
 ##############################################################################
@@ -66,7 +60,7 @@ if MINGW_BUILD
 medit_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-medit_SOURCES = medit.cpp
+medit_SOURCES = medit.c
 
 
 ##############################################################################
@@ -83,8 +77,8 @@ endif MINGW_BUILD
 
 termbuffer_LDFLAGS = $(mterm_LDFLAGS)
 
-mterm_SOURCES = mterm.cpp
-termbuffer_SOURCES = termbuffer.cpp
+mterm_SOURCES = mterm.c
+termbuffer_SOURCES = termbuffer.c
 
 
 ##############################################################################
@@ -98,6 +92,4 @@ if MINGW_BUILD
 markup_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-markup_SOURCES = \
-    markup.cpp
-
+markup_SOURCES = markup.c

@@ -32,7 +32,6 @@ AC_SUBST(TERMHELPER_VERSION_MINOR)
 AC_SUBST(TERMHELPER_VERSION_MICRO)
 
 AC_PROG_CC
-AC_PROG_CXX
 AC_PROG_CC_STDC
 AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
@@ -399,8 +398,8 @@ moo/mooutils/pcre/Makefile
 moo/mooutils/pixmaps/Makefile
 moo/mooutils/unrtf/Makefile
 tests/Makefile
-tests/medit.cpp
-tests/editor.cpp
+tests/medit.c
+tests/editor.c
 tests/pyapp.py
 ])
 

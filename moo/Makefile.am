@@ -13,7 +13,7 @@ subdirs =
 
 noinst_LTLIBRARIES = libmoo.la
 libmoo_la_LIBADD =
-libmoo_la_SOURCES = dummy.cpp
+libmoo_la_SOURCES = dummy.c
 
 if BUILD_MOOUTILS
 subdirs += mooutils
@@ -75,7 +75,7 @@ if BUILD_PYMOO
 
 pyexec_LTLIBRARIES = moo.la
 
-moo_la_SOURCES = dummy.cpp moo-pygtk.c
+moo_la_SOURCES = dummy.c moo-pygtk.c
 
 if MINGW_BUILD
 mingw_flags = -no-undefined

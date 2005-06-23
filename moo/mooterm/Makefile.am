@@ -39,7 +39,6 @@ common_cflags =                         \
     -DG_LOG_DOMAIN=\"Moo\"
 
 AM_CFLAGS = $(common_cflags) $(M_CFLAGS) $(CFLAGS)
-AM_CXXFLAGS = $(common_cflags) $(M_CXXFLAGS) $(CXXFLAGS)
 
 EXTRA_DIST =                \
     $(widget_sources)       \

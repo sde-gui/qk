@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOTERM_MOOTERM_PRIVATE_H
 #define MOOTERM_MOOTERM_PRIVATE_H
@@ -287,8 +287,6 @@ struct _MooTermVtPrivate {
 };
 
 
-#ifndef __cplusplus
-
 inline static void vt_discard (GSList **list)
 {
     GSList *l;
@@ -315,8 +313,6 @@ inline static void vt_add_data (GSList **list, const char *data, gssize len)
     }
 }
 
-
-#endif /* __cplusplus */
 
 G_END_DECLS
 
