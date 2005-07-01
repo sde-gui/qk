@@ -20,7 +20,7 @@
 
 int main (int argc, char *argv[])
 {
-    char *cmd = NULL;
+    const char *cmd = NULL;
     GtkWidget *win, *swin, *term;
     MooTermBuffer *buf;
 
@@ -28,14 +28,13 @@ int main (int argc, char *argv[])
 
     if (argc > 1)
     {
-        cmd = g_strdup (argv[1]);
+        cmd = argv[1];
     }
     else
     {
-        const char *dir = g_getenv ("HOME");
-        if (!dir)
-            dir = "/";
-        cmd = g_strdup_printf ("ls -R %s", dir);
+        cmd = g_getenv ("SHELL");
+        if (!cmd)
+            cmd = "sh";
     }
 
     win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -59,7 +58,6 @@ int main (int argc, char *argv[])
                   NULL);
 
     moo_term_fork_command (MOO_TERM (term), cmd, NULL, NULL);
-    g_free (cmd);
 
     g_signal_connect (G_OBJECT (win), "destroy", gtk_main_quit, NULL);
     gtk_main ();

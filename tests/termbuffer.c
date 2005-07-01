@@ -38,7 +38,7 @@ G_GNUC_UNUSED static gboolean print (MooTermBuffer *buf)
     guint i;
 
     for (i = 0; i < 1000; ++i)
-        moo_term_buffer_feed (buf, "kjhr jerhgjh erkjg hekrjghkerg ", -1);
+        moo_term_buffer_write (buf, "kjhr jerhgjh erkjg hekrjghkerg ", -1);
 
     return FALSE;
 }
@@ -62,7 +62,7 @@ G_GNUC_UNUSED static gboolean print_random_hard (MooTerm *term)
         col = 1 + (int) (((double)width) * rand() / (RAND_MAX+1.0));
 
         s = g_strdup_printf (ADDRESS "%c", row, col, r);
-        moo_term_buffer_feed (buf, s, -1);
+        moo_term_buffer_write (buf, s, -1);
         g_free (s);
 
         moo_term_force_update (term);
@@ -91,7 +91,7 @@ G_GNUC_UNUSED static gboolean print_random_soft (MooTerm *term)
     col = 1 + (int) (((double)width) * rand() / (RAND_MAX+1.0));
 
     s = g_strdup_printf (ADDRESS "%c", row, col, r);
-    moo_term_buffer_feed (buf, s, -1);
+    moo_term_buffer_write (buf, s, -1);
     g_free (s);
 
     return TRUE;

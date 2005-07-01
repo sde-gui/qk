@@ -50,7 +50,7 @@ struct _MooTermVtClass {
                                  const char *cmd,
                                  const char *working_dir,
                                  char      **envp);
-    void        (*feed_child)   (MooTermVt  *vt,
+    void        (*write)        (MooTermVt  *vt,
                                  const char *data,
                                  gssize      len);
     void        (*kill_child)   (MooTermVt  *vt);
@@ -81,7 +81,7 @@ gboolean        moo_term_vt_fork_command    (MooTermVt      *vt,
                                              char          **envp);
 void            moo_term_vt_kill_child      (MooTermVt      *vt);
 
-void            moo_term_vt_feed_child      (MooTermVt      *vt,
+void            moo_term_vt_write           (MooTermVt      *vt,
                                              const char     *data,
                                              gssize          len);
 

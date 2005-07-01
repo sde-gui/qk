@@ -6,7 +6,25 @@
     <version>$VERSION$</version>
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
-    <ignoreparts/>
+    <ignoreparts>
+      <part>kdevabbrev</part>
+      <part>kdevclassview</part>
+      <part>kdevsnippet</part>
+      <part>kdevctags2</part>
+      <part>kdevdocumentation</part>
+      <part>kdevdoxygen</part>
+      <part>kdevfilegroups</part>
+      <part>kdevfilelist</part>
+      <part>kdevfileview</part>
+      <part>kdevdistpart</part>
+      <part>kdevopenwith</part>
+      <part>kdevpartexplorer</part>
+      <part>kdevregexptest</part>
+      <part>kdevrbdebugger</part>
+      <part>kdevscripting</part>
+      <part>kdevtexttools</part>
+      <part>kdevvisualboyadvance</part>
+    </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
     <description/>
@@ -261,7 +279,7 @@
     <tree>
       <showvcsfields>false</showvcsfields>
       <hidenonprojectfiles>true</hidenonprojectfiles>
-      <hidepatterns>*.o,*.lo,CVS</hidepatterns>
+      <hidepatterns/>
     </tree>
   </kdevfileview>
   <kdevcvsservice>

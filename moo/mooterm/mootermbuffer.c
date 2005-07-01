@@ -515,7 +515,7 @@ void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
 }
 
 
-void    moo_term_buffer_feed            (MooTermBuffer  *buf,
+void    moo_term_buffer_write           (MooTermBuffer  *buf,
                                          const char     *data,
                                          gssize          len)
 {

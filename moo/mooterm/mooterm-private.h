@@ -25,8 +25,11 @@ G_BEGIN_DECLS
 #define ADJUSTMENT_VALUE_PRIORITY   G_PRIORITY_DEFAULT_IDLE
 #define EXPOSE_PRIORITY             G_PRIORITY_DEFAULT_IDLE
 
+#define VT_WRITER_PRIORITY          G_PRIORITY_DEFAULT_IDLE
+#define VT_READER_PRIORITY          G_PRIORITY_HIGH_IDLE
+
 #define MAX_TERMINAL_WIDTH          4096
-#define DEFAULT_MONOSPACE_FONT      "Courier New 11"
+#define DEFAULT_MONOSPACE_FONT      "Courier New 9"
 #define DEFAULT_MONOSPACE_FONT2     "Monospace"
 
 
@@ -91,6 +94,8 @@ struct _MooTermPrivate {
     GdkCursor       *cursor[CURSORS_NUM];
     GtkIMContext    *im;
 
+    gboolean         scroll_on_keystroke;
+
     GtkAdjustment   *adjustment;
     guint            pending_adjustment_changed;
     guint            pending_adjustment_value_changed;
@@ -132,6 +137,15 @@ void        moo_term_setup_palette      (MooTerm        *term);
 void        moo_term_im_commit          (GtkIMContext   *imcontext,
                                          gchar          *arg,
                                          MooTerm        *term);
+
+gboolean    moo_term_button_press       (GtkWidget      *widget,
+                                         GdkEventButton *event);
+gboolean    moo_term_button_release     (GtkWidget      *widget,
+                                         GdkEventButton *event);
+gboolean    moo_term_key_press          (GtkWidget      *widget,
+                                         GdkEventKey    *event);
+gboolean    moo_term_key_release        (GtkWidget      *widget,
+                                         GdkEventKey    *event);
 
 void        moo_term_force_update       (MooTerm        *term);
 gboolean    moo_term_expose_event       (GtkWidget      *widget,
@@ -193,6 +207,10 @@ void             term_font_info_set_font    (TermFontInfo           *info,
 TermFontInfo    *term_font_info_new         (PangoContext           *ctx);
 void             term_font_info_free        (TermFontInfo           *info);
 
+
+/*************************************************************************/
+/* TermSelection
+ */
 
 enum {
     NOT_SELECTED    = 0,
@@ -279,11 +297,22 @@ inline static gboolean term_selected           (TermSelection   *sel,
 }
 
 
+/*************************************************************************/
+/* MooTermVtPrivate
+ */
+
+enum {
+    VT_NONE = 0,
+    VT_READ,
+    VT_WRITE
+};
+
+
 struct _MooTermVtPrivate {
     MooTermBuffer   *buffer;
 
-    GSList          *incoming;  /* list->data is GByteArray* */
-    GSList          *outgoing;  /* list->data is GByteArray* */
+    GQueue          *pending_write;  /* list->data is GByteArray* */
+    guint            pending_write_id;
 };
 
 
@@ -296,6 +325,17 @@ inline static void vt_discard (GSList **list)
 
     g_slist_free (*list);
     *list = NULL;
+}
+
+inline static void vt_flush_pending_write (MooTermVt *vt)
+{
+    GList *l;
+
+    for (l = vt->priv->pending_write->head; l != NULL; l = l->next)
+        g_byte_array_free (l->data, TRUE);
+
+    while (!g_queue_is_empty (vt->priv->pending_write))
+        g_queue_pop_head (vt->priv->pending_write);
 }
 
 inline static void vt_add_data (GSList **list, const char *data, gssize len)

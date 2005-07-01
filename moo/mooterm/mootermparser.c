@@ -17,6 +17,9 @@
 
 typedef enum {
     SET_ATTRS,
+    SET_WINDOW_TITLE,
+    SET_ICON_NAME,
+    SET_WINDOW_ICON_NAME,
     BACK_TAB,
     CURSOR_NORMAL,
     CURSOR_INVISIBLE,
@@ -104,21 +107,27 @@ typedef enum {
 } CommandCode;
 
 #ifdef DEBUG
-#define DEBUG_PRINT(msg, str, len)                      \
-{                                                       \
-    char *piece = g_strndup (str, len);                 \
-    g_warning ("%s: " msg ", got %s", G_STRLOC, piece); \
-    g_free (piece);                                     \
+#define DEBUG_PRINT(msg, str, len)                          \
+{                                                           \
+    if (str)                                                \
+    {                                                       \
+        char *piece = g_strndup (str, len);                 \
+        g_warning ("%s: " msg ", got %s", G_STRLOC, piece); \
+        g_free (piece);                                     \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        g_warning (msg);                                    \
+    }                                                       \
 }
 #else
 #define DEBUG_PRINT(msg, str, len)
 #endif
 
-#define MAX_ESC_SEQ_LEN 1024
+#define MAX_ESC_SEQ_LEN 4096
 #define MAX_ARG_LEN     4
 #define MAX_ARG_NUM     64
 
-#define CTR_G   '\007'
 #define CTR_H   '\010'
 #define CTR_I   '\011'
 #define CTR_J   '\012'
@@ -126,6 +135,7 @@ typedef enum {
 #define CTR_N   '\016'
 #define CTR_O   '\017'
 #define ESCAPE  '\033'
+#define BEL     '\007'
 
 #define ENA_ACS_STRING          "\033(B\033)0"
 #define ENA_ACS_STRING_LEN      6
@@ -143,6 +153,8 @@ typedef enum {
 typedef enum {
     CLEAN = 0,
     ESC,
+    ESC_RIGHT_BR,
+    ESC_RIGHT_BR_NUM,
     ESC_BR,
     ESC_BR_NUMS,
     ESC_BR_H,
@@ -182,6 +194,8 @@ struct _MooTermParser {
     guint           nums_len;
     char           *this_num;
     guint           this_num_len;
+    char            title[MAX_ESC_SEQ_LEN];
+    guint           title_len;
 };
 
 
@@ -198,7 +212,7 @@ static ParseCharResult parse_char (MooTermParser *p, const char *c)
     {
         switch (*c)
         {
-            case CTR_G:
+            case BEL:
                 p->command = BELL;
                 return COMMAND;
             case CTR_N:
@@ -294,6 +308,11 @@ static ParseCharResult parse_char (MooTermParser *p, const char *c)
                 p->buffer[p->buffer_len++] = *c;
                 return WAITING;
 
+            case ']':
+                p->state = ESC_RIGHT_BR;
+                p->buffer[p->buffer_len++] = *c;
+                return WAITING;
+
             default:
                 p->state = CLEAN;
                 p->buffer[p->buffer_len++] = *c;
@@ -327,6 +346,8 @@ static ParseCharResult parse_char (MooTermParser *p, const char *c)
                 p->this_num_len = 1;
                 return WAITING;
 
+            case 'm':
+                return parse_nums_finish_m (p, *c);
             case 'Z':
                 p->command = BACK_TAB;
                 p->state = CLEAN;
@@ -412,6 +433,62 @@ static ParseCharResult parse_char (MooTermParser *p, const char *c)
                 DEBUG_PRINT ("invalid escape sequence",
                              p->buffer, p->buffer_len);
                 return CHARS;
+        }
+    }
+
+    else if (p->state == ESC_RIGHT_BR)
+    {
+        switch (*c)
+        {
+            case '0':
+            case '1':
+            case '2':
+                p->state = ESC_RIGHT_BR_NUM;
+                p->buffer[p->buffer_len++] = *c;
+                return WAITING;
+
+            default:
+                p->state = CLEAN;
+                p->buffer[p->buffer_len++] = *c;
+                DEBUG_PRINT ("invalid escape sequence",
+                             p->buffer, p->buffer_len);
+                return CHARS;
+        }
+    }
+
+    else if (p->state == ESC_RIGHT_BR_NUM)
+    {
+        switch (*c)
+        {
+            case BEL:
+                p->state = CLEAN;
+                p->title_len = p->buffer_len - 3;
+
+                if (p->title_len)
+                    memcpy (p->title, p->buffer + 3, p->title_len);
+                else
+                    DEBUG_PRINT ("got \E]^G", NULL, 0);
+
+                switch (p->buffer[2])
+                {
+                    case '0':
+                        p->command = SET_WINDOW_ICON_NAME;
+                        break;
+                    case '1':
+                        p->command = SET_ICON_NAME;
+                        break;
+                    case '2':
+                        p->command = SET_WINDOW_TITLE;
+                        break;
+                    default:
+                        g_assert_not_reached ();
+                }
+
+                return COMMAND;
+                
+            default:
+                p->buffer[p->buffer_len++] = *c;
+                return WAITING;
         }
     }
 
@@ -1063,7 +1140,16 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
     p = string;
     while ((len > 0 && p < string + len) || (len < 0 && *p != 0))
     {
-        ParseCharResult res = parse_char (parser, p);
+        ParseCharResult res;
+
+        if (!*p)
+        {
+            g_message ("%s: got 0", G_STRLOC);
+            ++p;
+            continue;
+        }
+
+        res = parse_char (parser, p);
 
         if (res == ONE_CHAR)
         {
@@ -1419,5 +1505,32 @@ static void exec_command    (MooTermParser  *parser)
         case SAVE_CURSOR:
             buf_save_cursor (parser->parent);
             break;
+
+        case SET_WINDOW_TITLE:
+        case SET_ICON_NAME:
+        case SET_WINDOW_ICON_NAME:
+        {
+            gboolean set_title = FALSE, set_icon = FALSE;
+            char *title;
+
+            if (parser->command == SET_WINDOW_TITLE)
+                set_title = TRUE;
+            else if (parser->command == SET_ICON_NAME)
+                set_icon = TRUE;
+            else
+            {
+                set_title = TRUE;
+                set_icon = TRUE;
+            }
+
+            title = g_strndup (parser->title, parser->title_len);
+
+            if (set_title)
+                buf_set_window_title (parser->parent, title);
+            if (set_icon)
+                buf_set_icon_name (parser->parent, title);
+
+            g_free (title);
+        }
     }
 }

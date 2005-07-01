@@ -123,7 +123,7 @@ void    moo_term_buffer_set_insert_mode (MooTermBuffer  *buf,
 void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
                                          const char     *chars,
                                          gssize          len);
-void    moo_term_buffer_feed            (MooTermBuffer  *buf,
+void    moo_term_buffer_write           (MooTermBuffer  *buf,
                                          const char     *data,
                                          gssize          len);
 

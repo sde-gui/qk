@@ -54,7 +54,7 @@ static void moo_term_vt_class_init (MooTermVtClass *klass)
 
     klass->set_size = NULL;
     klass->fork_command = NULL;
-    klass->feed_child = NULL;
+    klass->write = NULL;
     klass->kill_child = NULL;
     klass->child_died = NULL;
 
@@ -80,6 +80,7 @@ static void moo_term_vt_class_init (MooTermVtClass *klass)
 static void     moo_term_vt_init            (MooTermVt      *vt)
 {
     vt->priv = g_new0 (MooTermVtPrivate, 1);
+    vt->priv->pending_write = g_queue_new ();
 }
 
 
@@ -90,8 +91,8 @@ static void     moo_term_vt_finalize        (GObject            *object)
     if (vt->priv->buffer)
         g_object_unref (vt->priv->buffer);
 
-    vt_discard (&vt->priv->incoming);
-    vt_discard (&vt->priv->outgoing);
+    vt_flush_pending_write (vt);
+    g_queue_free (vt->priv->pending_write);
 
     g_free (vt->priv);
 
@@ -195,10 +196,10 @@ void            moo_term_vt_kill_child      (MooTermVt      *vt)
 }
 
 
-void            moo_term_vt_feed_child      (MooTermVt      *vt,
+void            moo_term_vt_write           (MooTermVt      *vt,
                                              const char     *data,
                                              gssize          len)
 {
     g_return_if_fail (MOO_IS_TERM_VT (vt));
-    MOO_TERM_VT_GET_CLASS(vt)->feed_child (vt, data, len);
+    MOO_TERM_VT_GET_CLASS(vt)->write (vt, data, len);
 }

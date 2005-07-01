@@ -34,14 +34,6 @@ static void moo_term_realize                (GtkWidget          *widget);
 static void moo_term_size_allocate          (GtkWidget          *widget,
                                              GtkAllocation      *allocation);
 
-// static gboolean moo_term_button_press       (GtkWidget          *widget,
-//                                              GdkEventButton     *event);
-// static gboolean moo_term_button_release     (GtkWidget          *widget,
-//                                              GdkEventButton     *event);
-// static gboolean moo_term_key_press          (GtkWidget          *widget,
-//                                              GdkEventKey        *event);
-// static gboolean moo_term_key_release        (GtkWidget          *widget,
-//                                              GdkEventKey        *event);
 // static gboolean moo_term_popup_menu         (GtkWidget          *widget);
 // static gboolean moo_term_scroll             (GtkWidget          *widget,
 //                                              GdkEventScroll     *event);
@@ -101,8 +93,8 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->expose_event = moo_term_expose_event;
 //     widget_class->button_press_event = moo_term_button_press;
 //     widget_class->button_release_event = moo_term_button_release;
-//     widget_class->key_press_event = moo_term_key_press;
-//     widget_class->key_release_event = moo_term_key_release;
+    widget_class->key_press_event = moo_term_key_press;
+    widget_class->key_release_event = moo_term_key_release;
 //     widget_class->popup_menu = moo_term_popup_menu;
 //     widget_class->scroll_event = moo_term_scroll;
 //     widget_class->motion_notify_event = moo_term_motion_notify;
@@ -291,7 +283,7 @@ static void moo_term_realize                (GtkWidget          *widget)
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL |
             GDK_WA_COLORMAP | GDK_WA_CURSOR;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED | GTK_CAN_FOCUS | GTK_CAN_DEFAULT);
     widget->window = gdk_window_new (gtk_widget_get_parent_window (widget),
                                      &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
@@ -660,4 +652,57 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
 
     return moo_term_vt_fork_command (term->priv->vt,
                                      cmd, working_dir, envp);
+}
+
+
+void             moo_term_feed_child        (MooTerm        *term,
+                                             const char     *string,
+                                             gssize          len)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    moo_term_vt_write (term->priv->vt, string, len);
+}
+
+
+void             moo_term_copy_clipboard    (MooTerm        *term)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_paste_clipboard   (MooTerm        *term)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_ctrl_c            (MooTerm        *term)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_scroll_to_top     (MooTerm        *term)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_scroll_to_bottom  (MooTerm        *term)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_scroll_lines      (MooTerm        *term,
+                                             int             lines)
+{
+    g_warning ("%s: implement me", G_STRLOC);
+}
+
+
+void             moo_term_scroll_pages      (MooTerm        *term,
+                                             int             pages)
+{
+    g_warning ("%s: implement me", G_STRLOC);
 }

@@ -60,6 +60,21 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp);
+void             moo_term_feed_child        (MooTerm        *term,
+                                             const char     *string,
+                                             gssize          len);
+
+void             moo_term_scroll_to_top     (MooTerm        *term);
+void             moo_term_scroll_to_bottom  (MooTerm        *term);
+void             moo_term_scroll_lines      (MooTerm        *term,
+                                             int             lines);
+void             moo_term_scroll_pages      (MooTerm        *term,
+                                             int             pages);
+
+void             moo_term_copy_clipboard    (MooTerm        *term);
+void             moo_term_paste_clipboard   (MooTerm        *term);
+
+void             moo_term_ctrl_c            (MooTerm        *term);
 
 
 G_END_DECLS
