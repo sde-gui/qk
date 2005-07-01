@@ -57,6 +57,9 @@ int main (int argc, char *argv[])
                   "cursor-visible", TRUE,
                   NULL);
 
+    g_signal_connect_swapped (buf, "set-window-title",
+                              G_CALLBACK (gtk_window_set_title), win);
+
     moo_term_fork_command (MOO_TERM (term), cmd, NULL, NULL);
 
     g_signal_connect (G_OBJECT (win), "destroy", gtk_main_quit, NULL);

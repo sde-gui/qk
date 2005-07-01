@@ -34,7 +34,6 @@
 #include <sys/poll.h>
 #endif
 
-
 #define TERM_EMULATION          "xterm"
 #define READ_BUFSIZE            4096
 #define POLL_TIME               5
@@ -341,18 +340,6 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 break;
 
             default:
-                {
-                    int i;
-                    g_print ("got >>>");
-                    for (i = 0; i < r; ++i)
-                    {
-                        if (32 <= buf[i] && buf[i] <= 126)
-                            g_print ("%c", buf[i]);
-                        else
-                            g_print ("<%d>", buf[i]);
-                    }
-                    g_print ("<<<\n");
-                }
                 feed_buffer (vt, buf, r);
                 break;
         }

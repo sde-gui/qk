@@ -225,6 +225,12 @@ inline static void buf_thaw_cursor_notify       (MooTermBuffer *buf)
 }
 
 
+void moo_term_buffer_set_window_title   (MooTermBuffer  *buf,
+                                         const char     *title);
+void moo_term_buffer_set_icon_name      (MooTermBuffer  *buf,
+                                         const char     *icon);
+
+
 /***************************************************************************/
 
 typedef enum {
@@ -822,18 +828,6 @@ inline static void buf_esc_l                    (G_GNUC_UNUSED MooTermBuffer  *b
 }
 
 inline static void buf_esc_m                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_set_window_title         (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 G_GNUC_UNUSED const char     *title)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_set_icon_name            (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 G_GNUC_UNUSED const char     *name)
 {
     g_warning ("%s: implement me", G_STRLOC);
 }

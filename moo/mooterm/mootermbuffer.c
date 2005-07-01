@@ -43,6 +43,8 @@ enum {
     BELL,
     FLASH_SCREEN,
     SCREEN_SIZE_CHANGED,
+    SET_WINDOW_TITLE,
+    SET_ICON_NAME,
     LAST_SIGNAL
 };
 
@@ -121,6 +123,26 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           _moo_marshal_VOID__ULONG_ULONG,
                           G_TYPE_NONE, 2,
                           G_TYPE_ULONG, G_TYPE_ULONG);
+
+    signals[SET_WINDOW_TITLE] =
+            g_signal_new ("set-window-title",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermBufferClass, set_window_title),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[SET_ICON_NAME] =
+            g_signal_new ("set-icon-name",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermBufferClass, set_icon_name),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,
@@ -608,4 +630,17 @@ MooTermBuffer  *moo_term_buffer_new         (gulong width,
                                           "screen-width", width,
                                           "screen-height", height,
                                           NULL));
+}
+
+
+void moo_term_buffer_set_window_title   (MooTermBuffer  *buf,
+                                         const char     *title)
+{
+    g_signal_emit (buf, signals[SET_WINDOW_TITLE], 0, title);
+}
+
+void moo_term_buffer_set_icon_name      (MooTermBuffer  *buf,
+                                         const char     *icon)
+{
+    g_signal_emit (buf, signals[SET_ICON_NAME], 0, icon);
 }

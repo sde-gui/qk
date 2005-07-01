@@ -462,10 +462,10 @@ static ParseCharResult parse_char (MooTermParser *p, const char *c)
         {
             case BEL:
                 p->state = CLEAN;
-                p->title_len = p->buffer_len - 3;
+                p->title_len = p->buffer_len > 3 ? p->buffer_len - 4 : 0;
 
                 if (p->title_len)
-                    memcpy (p->title, p->buffer + 3, p->title_len);
+                    memcpy (p->title, p->buffer + 4, p->title_len);
                 else
                     DEBUG_PRINT ("got \E]^G", NULL, 0);
 
@@ -1526,9 +1526,9 @@ static void exec_command    (MooTermParser  *parser)
             title = g_strndup (parser->title, parser->title_len);
 
             if (set_title)
-                buf_set_window_title (parser->parent, title);
+                moo_term_buffer_set_window_title (parser->parent, title);
             if (set_icon)
-                buf_set_icon_name (parser->parent, title);
+                moo_term_buffer_set_icon_name (parser->parent, title);
 
             g_free (title);
         }

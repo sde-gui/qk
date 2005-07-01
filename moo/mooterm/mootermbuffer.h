@@ -83,6 +83,10 @@ struct _MooTermBufferClass {
 
     void (*bell)                (MooTermBuffer *buf);
     void (*flash_screen)        (MooTermBuffer *buf);
+    void (*set_window_title)    (MooTermBuffer *buf,
+                                 const char    *title);
+    void (*set_icon_name)       (MooTermBuffer *buf,
+                                 const char    *icon);
 };
 
 
