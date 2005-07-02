@@ -16,6 +16,7 @@ widget_sources =            \
     mootermline.h           \
     mootermparser.c         \
     mootermparser.h         \
+    mootermparser-yacc.y    \
     mootermselection.c      \
     mootermvt.c             \
     mootermvt.h
@@ -39,6 +40,7 @@ common_cflags =                         \
     -DG_LOG_DOMAIN=\"Moo\"
 
 AM_CFLAGS = $(common_cflags) $(M_CFLAGS) $(CFLAGS)
+AM_YFLAGS = -d
 
 EXTRA_DIST =                \
     $(widget_sources)       \
