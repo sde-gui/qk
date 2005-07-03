@@ -57,12 +57,18 @@ inline static AttrList *attr_list_new (gulong start,
 
 inline static MooTermTextAttr *attr_list_get_attr (AttrList *list, gulong i)
 {
-    if (!list)
+    if (!list || i >= list->len)
+    {
         return NULL;
-    else if (i >= list->len)
-        return NULL;
+    }
     else
-        return &g_array_index (list, MooTermTextAttr, i);
+    {
+        MooTermTextAttr *attr = &g_array_index (list, MooTermTextAttr, i);
+        if (attr->mask)
+            return attr;
+        else
+            return NULL;
+    }
 }
 
 inline static AttrList *attr_list_set_range (AttrList   *list,
