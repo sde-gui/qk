@@ -36,6 +36,7 @@
 
 #define TERM_EMULATION          "xterm"
 #define READ_BUFSIZE            4096
+#define CHUNK_SIZE              4096
 #define POLL_TIME               5
 #define POLL_NUM                1
 
@@ -264,9 +265,6 @@ static void     kill_child      (MooTermVt      *vt_gen)
 {
     MooTermVtUnix *vt = MOO_TERM_VT_UNIX (vt_gen);
 
-    stop_writer (vt_gen);
-    vt_flush_pending_write (vt_gen);
-
     if (vt->io_watch_id)
     {
         g_source_remove (vt->io_watch_id);
@@ -280,6 +278,9 @@ static void     kill_child      (MooTermVt      *vt_gen)
         g_io_channel_unref (vt->io);
         vt->io = NULL;
     }
+
+    stop_writer (vt_gen);
+    vt_flush_pending_write (vt_gen);
 
     if (vt->master != -1)
     {
@@ -459,39 +460,40 @@ static void     feed_buffer     (MooTermVtUnix  *vt,
 static gboolean do_write        (MooTermVt      *vt_gen,
                                  const char    **string,
                                  gsize          *plen,
-                                 GError        **err)
+                                 int            *err)
 {
-    GIOStatus status;
-    gsize written = 0;
+    gssize written;
 
     MooTermVtUnix *vt = MOO_TERM_VT_UNIX (vt_gen);
 
     g_return_val_if_fail (vt->io != NULL, FALSE);
 
-    *err = NULL;
+    written = write (vt->master, *string, *plen > CHUNK_SIZE ? CHUNK_SIZE : *plen);
 
-    status = g_io_channel_write_chars (vt->io, *string, *plen,
-                                       &written, err);
-
-    if (written == *plen)
+    if (written == -1)
     {
-        *string = NULL;
-        *plen = 0;
+        *err = errno;
+
+        switch (errno)
+        {
+            case EAGAIN:
+            case EINTR:
+                g_warning ("%s", G_STRLOC);
+                return TRUE;
+
+            default:
+                return FALSE;
+        }
     }
     else
     {
         *string += written;
         *plen -= written;
-    }
 
-    switch (status)
-    {
-        case G_IO_STATUS_NORMAL:
-        case G_IO_STATUS_AGAIN:
-            return TRUE;
-
-        default:
-            return FALSE;
+        if (!*plen)
+            *string = NULL;
+    
+        return TRUE;
     }
 }
 
@@ -539,7 +541,7 @@ static void     vt_write        (MooTermVt      *vt,
 
     while (data || !g_queue_is_empty (vt->priv->pending_write))
     {
-        GError *err = NULL;
+        int err = 0;
         const char *string;
         gsize len;
         GByteArray *freeme = NULL;
@@ -589,11 +591,7 @@ static void     vt_write        (MooTermVt      *vt,
         {
             g_message ("%s: stopping writing to child", G_STRLOC);
             if (err)
-            {
-                g_message ("%s: %s", G_STRLOC, err->message);
-                g_error_free (err);
-            }
-            stop_writer (vt);
+                g_message ("%s: %s", G_STRLOC, g_strerror (err));
             kill_child (vt);
         }
     }

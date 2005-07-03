@@ -672,7 +672,19 @@ void             moo_term_copy_clipboard    (MooTerm        *term)
 
 void             moo_term_paste_clipboard   (MooTerm        *term)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    GtkClipboard *cb;
+    char *text;
+
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    cb = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+    text = gtk_clipboard_wait_for_text (cb);
+
+    if (text)
+    {
+        moo_term_vt_write (term->priv->vt, text, -1);
+        g_free (text);
+    }
 }
 
 
