@@ -305,22 +305,7 @@ static void queue_expose                    (MooTerm        *term,
 }
 
 
-/* cares about attributes */
-inline static void draw_cell (MooTerm *term, gulong abs_row, gulong col);
-inline static void draw_cell_attr (MooTerm *term, gulong abs_row, gulong col);
-
-
 /* interval [first, last) */
-inline static void draw_range_attr (G_GNUC_UNUSED MooTerm *term,
-                                    G_GNUC_UNUSED gulong abs_row,
-                                    G_GNUC_UNUSED gulong first,
-                                    G_GNUC_UNUSED gulong last)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-
-/* interval [first, last), doesn't care about text attributes */
 inline static void draw_range_simple (MooTerm *term,
                                       gulong abs_row,
                                       gulong first,
@@ -380,11 +365,10 @@ inline static void draw_range_simple (MooTerm *term,
 }
 
 
-/* interval [first, last), cares about attributes */
+/* interval [first, last) */
 inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulong last)
 {
     gulong screen_width = term_width (term);
-    MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     TermSelection *sel = term->priv->selection;
     int selected;
 
@@ -393,9 +377,6 @@ inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulo
     g_return_if_fail (first != last || first == 0);
 
     g_assert (last <= screen_width);
-
-    if (line->attrs)
-        return draw_range_attr (term, abs_row, first, last);
 
     selected = term_selection_row_selected (sel, abs_row);
 
@@ -498,7 +479,6 @@ inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulo
 }
 
 
-/* cares about attributes */
 inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
 {
     gulong screen_width = term_width (term);
@@ -507,7 +487,6 @@ inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
     char c;
     int screen_row = abs_row - term_top_line (term);
     PangoLayout *l;
-    MooTermTextAttr *attr = NULL;
     GdkGC **fg = term->priv->fg;
     GdkGC **bg = term->priv->bg;
     gulong char_width = term->priv->font_info->width;
@@ -523,78 +502,6 @@ inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
     c = term_line_get_char (line, col);
     l = term->priv->pango_lines->line;
     pango_layout_set_text (l, &c, 1);
-
-    if (line->attrs)
-        attr = term_line_get_attr (line, col);
-
-    if (attr)
-    {
-        PangoAttrList *pango_attrs = pango_attr_list_new ();
-
-        if (attr->mask & MOO_TERM_TEXT_REVERSE)
-        {
-            bg = term->priv->fg;
-            fg = term->priv->bg;
-
-            if ((attr->mask & MOO_TERM_TEXT_FOREGROUND) &&
-                 attr->foreground < MOO_TERM_COLOR_NONE)
-            {
-                GdkColor *color = term->priv->color[attr->foreground];
-                pango_attr_list_insert (pango_attrs,
-                                        pango_attr_background_new (color->red,
-                                                color->green,
-                                                color->blue));
-            }
-
-            if ((attr->mask & MOO_TERM_TEXT_BACKGROUND) &&
-                 attr->background < MOO_TERM_COLOR_NONE)
-            {
-                GdkColor *color = term->priv->color[attr->background];
-                pango_attr_list_insert (pango_attrs,
-                                        pango_attr_foreground_new (color->red,
-                                                color->green,
-                                                color->blue));
-            }
-        }
-        else
-        {
-            if ((attr->mask & MOO_TERM_TEXT_FOREGROUND) &&
-                 attr->foreground < MOO_TERM_COLOR_NONE)
-            {
-                GdkColor *color = term->priv->color[attr->foreground];
-                pango_attr_list_insert (pango_attrs,
-                                        pango_attr_foreground_new (color->red,
-                                                color->green,
-                                                color->blue));
-            }
-
-            if ((attr->mask & MOO_TERM_TEXT_BACKGROUND) &&
-                 attr->background < MOO_TERM_COLOR_NONE)
-            {
-                GdkColor *color = term->priv->color[attr->background];
-                pango_attr_list_insert (pango_attrs,
-                                        pango_attr_background_new (color->red,
-                                                color->green,
-                                                color->blue));
-            }
-        }
-
-        if (attr->mask & MOO_TERM_TEXT_ITALIC)
-            pango_attr_list_insert (pango_attrs,
-                                    pango_attr_style_new (PANGO_STYLE_ITALIC));
-        if (attr->mask & MOO_TERM_TEXT_BOLD)
-            pango_attr_list_insert (pango_attrs,
-                                    pango_attr_weight_new (PANGO_WEIGHT_BOLD));
-        if (attr->mask & MOO_TERM_TEXT_UNDERLINE)
-            pango_attr_list_insert (pango_attrs,
-                                    pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
-        if (attr->mask & MOO_TERM_TEXT_STRIKETHROUGH)
-            pango_attr_list_insert (pango_attrs,
-                                    pango_attr_strikethrough_new (TRUE));
-
-        pango_layout_set_attributes (l, pango_attrs);
-        pango_attr_list_unref (pango_attrs);
-    }
 
     switch (term->priv->caret_shape)
     {
@@ -672,16 +579,12 @@ inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
 }
 
 
-/* cares about attributes */
 inline static void draw_line (MooTerm *term, gulong abs_row)
 {
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     TermSelection *sel = term->priv->selection;
     GtkWidget *widget = GTK_WIDGET (term);
     int selected;
-
-    if (line->attrs)
-        return draw_range_attr (term, abs_row, 0, term_width (term));
 
     selected = term_selection_row_selected (sel, abs_row);
 
