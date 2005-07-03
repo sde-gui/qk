@@ -53,7 +53,7 @@ int main (int argc, char *argv[])
     buf = moo_term_get_buffer (MOO_TERM (term));
     g_object_set (buf,
                   "am-mode", TRUE,
-                  "insert-mode", TRUE,
+                  "insert-mode", FALSE,
                   "cursor-visible", TRUE,
                   NULL);
 
