@@ -17,22 +17,37 @@
 
 #define MANY_CHARS 1024
 
-
 enum {
-    KEY_BACKSPACE = 0,
-    KEY_TAB,
+    /* these and functional keys are taken from 'infocmp xterm' */
+    KEY_SHIFTED_DELETE_CHARACTER = 0,
+    KEY_SHIFTED_END,
+    KEY_SHIFTED_HOME,
+    KEY_SHIFTED_INSERT_CHARACTER,
+    KEY_SHIFTED_LEFT_ARROW,
+    KEY_SHIFTED_NEXT,
+    KEY_SHIFTED_PREVIOUS,
+    KEY_SHIFTED_RIGHT_ARROW,
+    KEY_CENTER_OF_KEYPAD,
+    KEY_BACKSPACE,
     KEY_BACK_TAB,
-    KEY_LINEFEED,
+    KEY_LEFT_ARROW,
+    KEY_DOWN_ARROW,
+    KEY_RIGHT_ARROW,
+    KEY_UP_ARROW,
+    KEY_DELETE_CHARACTER,
+    KEY_END,
+    KEY_ENTER_SEND,
+    KEY_HOME,
+    KEY_INSERT_CHARACTER,
+    KEY_MOUSE_EVENT_OCCURRED,
+    KEY_NEXT_PAGE,
+    KEY_PREVIOUS_PAGE,
+
+    /* 'normal' keys */
+    KEY_TAB,
     KEY_RETURN,
     KEY_ESCAPE,
-    KEY_DELETE,
-    KEY_HOME,
-    KEY_LEFT,
-    KEY_UP,
-    KEY_RIGHT,
-    KEY_DOWN,
-    KEY_END,
-    KEY_BEGIN,
+
     KEY_F1,
     KEY_F2,
     KEY_F3,
@@ -78,21 +93,35 @@ typedef struct {
 
 static KeyString xterm_keys[KEY_MAX] =
 {
-    { "\177" /* KEY_BACKSPACE = 0, */, 1},
-    { "\t" /* KEY_TAB, */, 1},
-    { "\033[Z" /* KEY_BACK_TAB, */, 3},
-    { "\n" /* KEY_LINEFEED, */, 1},
-    { "\n" /* KEY_RETURN, */, 1},
-    { "\033" /* KEY_ESCAPE, */, 1},
-    { "\033[P" /* KEY_DELETE, */, 3},
-    { "\033OH" /* KEY_HOME, */, 3},
-    { "\010" /* KEY_LEFT, */, 1},
-    { "\033[A" /* KEY_UP, */, 3},
-    { "\033[C" /* KEY_RIGHT, */, 3},
-    { "\n" /* KEY_DOWN, */, 1},
-    { "\033OF" /* KEY_END, */, 3},
-    { "\033OH" /* KEY_BEGIN, */, 3},
-        /* F# keys */
+    { "\033[3;5~",  6 /* kDC=\E[3;5~     shifted delete-character key */ },
+    { "\033O5F",    4 /* kEND=\EO5F      shifted end key */ },
+    { "\033O5H",    4 /* kHOM=\EO5H      shifted home key */ },
+    { "\033[2;5~",  6 /* kIC=\E[2;5~     shifted insert-character key */ },
+    { "\033O5D",    4 /* kLFT=\EO5D      shifted left-arrow key */ },
+    { "\033[6;5~",  6 /* kNXT=\E[6;5~    shifted next key */ },
+    { "\033[5;5~",  6 /* kPRV=\E[5;5~    shifted previous key */ },
+    { "\033O5C",    4 /* kRIT=\EO5C      shifted right-arrow key */ },
+    { "\033OE",     3 /* kb2=\EOE        center of keypad */ },
+    { "\177",       1 /* kbs=\177        backspace key */ },
+    { "\033[Z",     3 /* kcbt=\E[Z       back-tab key */ },
+    { "\033OD",     3 /* kcub1=\EOD      left-arrow key */ },
+    { "\033OB",     3 /* kcud1=\EOB      down-arrow key */ },
+    { "\033OC",     3 /* kcuf1=\EOC      right-arrow key */ },
+    { "\033OA",     3 /* kcuu1=\EOA      up-arrow key */ },
+    { "\033[3~",    4 /* kdch1=\E[3~     delete-character key */ },
+    { "\033OF",     3 /* kend=\EOF       end key */ },
+    { "\033OM",     3 /* kent=\EOM       enter/send key */ },
+    { "\033OH",     3 /* khome=\EOH      home key */ },
+    { "\033[2~",    4 /* kich1=\E[2~     insert-character key */ },
+    { "\033[M",     3 /* kmous=\E[M      Mouse event has occurred */ },
+    { "\033[6~",    4 /* knp=\E[6~       next-page key */ },
+    { "\033[5~",    4 /* kpp=\E[5~       previous-page key */ },
+
+    { "\t",         1 /* KEY_TAB */ },
+    { "\n",         1 /* KEY_RETURN */ },
+    { "\033",       1 /* KEY_ESCAPE */ },
+
+    /* F# keys */
     { "\033OP", 3},
     { "\033OQ", 3},
     { "\033OR", 3},
@@ -148,28 +177,24 @@ static void get_xterm_key   (guint          key,
             assign (KEY_BACKSPACE); break;
         case GDK_Tab:
             assign (KEY_TAB); break;
-        case GDK_Linefeed:
-            assign (KEY_LINEFEED); break;
         case GDK_Return:
             assign (KEY_RETURN); break;
         case GDK_Escape:
             assign (KEY_ESCAPE); break;
         case GDK_Delete:
-            assign (KEY_DELETE); break;
+            assign (KEY_DELETE_CHARACTER); break;
         case GDK_Home:
             assign (KEY_HOME); break;
         case GDK_Left:
-            assign (KEY_LEFT); break;
+            assign (KEY_LEFT_ARROW); break;
         case GDK_Up:
-            assign (KEY_UP); break;
+            assign (KEY_UP_ARROW); break;
         case GDK_Right:
-            assign (KEY_RIGHT); break;
+            assign (KEY_RIGHT_ARROW); break;
         case GDK_Down:
-            assign (KEY_DOWN); break;
+            assign (KEY_DOWN_ARROW); break;
         case GDK_End:
             assign (KEY_END); break;
-        case GDK_Begin:
-            assign (KEY_BEGIN); break;
         case GDK_F1:
             assign (KEY_F1); break;
         case GDK_F2:
@@ -264,6 +289,14 @@ void        moo_term_im_commit          (G_GNUC_UNUSED GtkIMContext   *imcontext
 }
 
 
+#define SET_XTERM_KEY(num)                                  \
+    string = xterm_keys[num].str;                           \
+    len = xterm_keys[KEY_SHIFTED_INSERT_CHARACTER].len;     \
+    handled = TRUE;                                         \
+    scroll = TRUE;                                          \
+    clear_selection = TRUE;
+
+
 gboolean    moo_term_key_press          (GtkWidget      *widget,
                                          GdkEventKey    *event)
 {
@@ -300,11 +333,38 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     {
         switch (key)
         {
-            case GDK_Begin:
-            case GDK_Home:
-                moo_term_scroll_to_top (term);
-                handled = TRUE;
+            case GDK_Delete:
+                SET_XTERM_KEY (KEY_SHIFTED_DELETE_CHARACTER);
                 break;
+
+            case GDK_End:
+                SET_XTERM_KEY (KEY_SHIFTED_END);
+                break;
+
+            case GDK_Home:
+                SET_XTERM_KEY (KEY_SHIFTED_HOME);
+                break;
+
+            case GDK_Insert:
+                SET_XTERM_KEY (KEY_SHIFTED_INSERT_CHARACTER);
+                break;
+
+            case GDK_Left:
+                SET_XTERM_KEY (KEY_SHIFTED_LEFT_ARROW);
+                break;
+
+            case GDK_Page_Down:
+                SET_XTERM_KEY (KEY_SHIFTED_NEXT);
+                break;
+
+            case GDK_Page_Up:
+                SET_XTERM_KEY (KEY_SHIFTED_PREVIOUS);
+                break;
+
+            case GDK_Right:
+                SET_XTERM_KEY (KEY_SHIFTED_RIGHT_ARROW);
+                break;
+
             case GDK_Up:
                 moo_term_scroll_lines (term, -1);
                 handled = TRUE;
@@ -313,22 +373,16 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
                 moo_term_scroll_lines (term, 1);
                 handled = TRUE;
                 break;
-            case GDK_Page_Up:
-                moo_term_scroll_pages (term, -1);
-                handled = TRUE;
-                break;
-            case GDK_Page_Down:
-                moo_term_scroll_pages (term, 1);
-                handled = TRUE;
-                break;
-            case GDK_End:
-                moo_term_scroll_to_bottom (term);
-                handled = TRUE;
-                break;
-            case GDK_Insert:
-                moo_term_paste_clipboard (term);
-                handled = TRUE;
-                break;
+
+            default:    /* ignore Shift key */
+                get_xterm_key (key, &string, &len);
+
+                if (string)
+                {
+                    handled = TRUE;
+                    scroll = TRUE;
+                    clear_selection = TRUE;
+                }
         }
     }
     else if (mods == GDK_CONTROL_MASK)
