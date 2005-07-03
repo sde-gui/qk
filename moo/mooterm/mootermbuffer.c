@@ -471,9 +471,6 @@ void    moo_term_buffer_set_screen_size (MooTermBuffer  *buf,
     {
         height = buf_screen_height (buf);
 
-        for (i = 0; i < height; ++i)
-            term_line_set_len (buf_screen_line (buf, i), width);
-
         buf->priv->screen_width = width;
 
         if (buf->priv->cursor_col >= width)
