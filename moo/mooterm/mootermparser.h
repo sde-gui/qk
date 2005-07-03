@@ -25,6 +25,7 @@ G_BEGIN_DECLS
 
 typedef enum {
     CMD_NONE = 0,
+    CMD_ERROR,
 
     CMD_SET_ATTRS,
 

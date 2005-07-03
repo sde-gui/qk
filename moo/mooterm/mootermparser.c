@@ -221,6 +221,8 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
                         g_free (esc_seq);
                         chars_add_cmd (parser);
                     }
+
+                    parser->cmd = CMD_ERROR;
                 }
                 else
                 {
@@ -274,8 +276,11 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
 
         if (parser->cmd)
         {
-            chars_flush (parser);
-            exec_command (parser);
+            if (parser->cmd != CMD_ERROR)
+            {
+                chars_flush (parser);
+                exec_command (parser);
+            }
         }
         else
         {
@@ -792,6 +797,7 @@ static void     exec_command            (MooTermParser  *parser)
         break;
 
         case CMD_NONE:
+        case CMD_ERROR:
             g_assert_not_reached ();
             break;
     }
