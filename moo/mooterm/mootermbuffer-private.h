@@ -49,21 +49,90 @@ G_BEGIN_DECLS
 #define buf_region_xor              gdk_region_xor
 
 
+enum {
+    KAM         = 1 << 0,   /* Keyboard Action Mode - ignored */
+    IRM         = 1 << 1,   /* Insertion-Replacement Mode.
+                               Set selects insert mode and turns INSERT on.
+                               New display characters move old display
+                               characters to the right. Characters moved
+                               past the right margin are lost.
+                               Reset selects replace mode and turns INSERT off.
+                               New display characters replace old display
+                               characters at cursor position. The old character
+                               is erased.
+                               aka insert mode */
+    LNM         = 1 << 2,   /* Linefeed/New Line Mode.
+                               Set causes a received linefeed, form feed, or
+                               vertical tab to move cursor to first column of
+                               next line. RETURN transmits both a carriage
+                               return and linefeed.
+                               Reset causes a received linefeed, form feed, or
+                               vertical tab to move cursor to next line in
+                               current column. RETURN transmits a carriage
+                               return. */
+    DECCKM      = 1 << 3,   /* Cursor Key Mode.
+                               Set selects cursor keys to generate control
+                               (application) functions.
+                               Reset selects cursor keys to generate ANSI
+                               cursor control sequences.*/
+    DECANM      = 1 << 4,   /* ANSI/VT52 mode - ignored */
+    DECCOLM     = 1 << 5,   /* Column Mode - ignored */
+    DECSCLM     = 1 << 6,   /* Scroll Mode - ignored */
+    DECSCNM     = 1 << 7,   /* Screen Mode.
+                               Set selects reverse screen.
+                               Reset selects normal screen*/
+    DECOM       = 1 << 8,   /* Origin Mode.
+                               Set selects home position in scrolling region.
+                               Line numbers start at top margin of scrolling
+                               region. The cursor cannot move out of scrolling
+                               region.
+                               Reset selects home position in upper-left corner
+                               of screen. Line numbers are independent of the
+                               scrolling region (absolute). */
+    DECAWM      = 1 << 9,   /* Auto Wrap Mode.
+                               Set selects auto wrap. Any display characters
+                               received when cursor is at right margin appear
+                               on next line. The display scrolls up if cursor
+                               is at end of scrolling region.
+                               Reset turns auto wrap off. Display characters
+                               received when cursor is at right margin replace
+                               previously displayed character.
+                               aka am mode */
+    DECARM      = 1 << 10,  /* Auto Repeat Mode - ignored */
+    DECPFF      = 1 << 11,  /* Printer Form Feed Mode - ignored */
+    DECPEX      = 1 << 12,  /* Printer Extent Mode - ignored */
+
+    MOUSE_TRACKING          = 1 << 13,
+    HILITE_MOUSE_TRACKING   = 1 << 14,
+
+    KEYPAD_NUMERIC          = 1 << 15
+};
+
+#define ANSI_MODES  (KAM | IRM | LNM)
+#define DEC_MODES   (DECCKM | DECANM | DECCOLM | DECSCLM | DECSCNM | DECOM | DECAWM | DECARM | DECPFF | DECPEX)
+
+
+/* LNM mode affects also data sent by RETURN */
 struct _MooTermBufferPrivate {
     gboolean        constructed;
 
     GArray         *lines; /* array of MooTermLine */
 
+    int             modes;
+    int             saved_modes;
     MooTermTextAttr current_attr;
     gboolean        cursor_visible;
-    gboolean        secure;
-    gboolean        insert_mode;
-    gboolean        am_mode;
 
     gulong          screen_offset;
     gulong          screen_width;
     gulong          screen_height;
 
+    /* scrolling region - top and bottom rows */
+    gulong          top_margin;
+    gulong          bottom_margin;
+    gboolean        scrolling_region_set;
+
+    /* always absolute */
     gulong          cursor_row;
     gulong          cursor_col;
 
@@ -225,10 +294,59 @@ inline static void buf_thaw_cursor_notify       (MooTermBuffer *buf)
 }
 
 
-void moo_term_buffer_set_window_title   (MooTermBuffer  *buf,
+inline static void _buf_add_lines               (MooTermBuffer *buf,
+                                                 guint          num)
+{
+    guint i;
+
+    for (i = 0; i < num; ++i)
+    {
+        MooTermLine new_line;
+        term_line_init (&new_line, 1);
+        g_array_append_val (buf->priv->lines, new_line);
+        buf->priv->screen_offset++;
+    }
+}
+
+inline static void _buf_delete_lines            (MooTermBuffer *buf,
+                                                 guint          num)
+{
+    guint i;
+
+    for (i = 0; i < num; ++i)
+    {
+        term_line_destroy (buf_line (buf, buf->priv->lines->len - 1));
+        g_array_set_size (buf->priv->lines, buf->priv->lines->len - 1);
+        buf->priv->screen_offset--;
+    }
+}
+
+
+void    moo_term_buffer_bell            (MooTermBuffer  *buf);
+void    moo_term_buffer_feed_child      (MooTermBuffer  *buf,
+                                         const char     *string,
+                                         int             len);
+void    moo_term_buffer_full_reset      (MooTermBuffer  *buf);
+void    moo_term_buffer_set_window_title(MooTermBuffer  *buf,
                                          const char     *title);
-void moo_term_buffer_set_icon_name      (MooTermBuffer  *buf,
+void    moo_term_buffer_set_icon_name   (MooTermBuffer  *buf,
                                          const char     *icon);
+void    moo_term_buffer_set_font        (MooTermBuffer  *buf,
+                                         const char     *font);
+
+void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
+                                         long            rows,
+                                         long            cols);
+void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
+                                         long            row,
+                                         long            col);
+
+void    moo_term_buffer_set_keypad_numeric  (MooTermBuffer  *buf,
+                                             gboolean        setting);
+
+void    moo_term_buffer_index           (MooTermBuffer  *buf);
+void    moo_term_buffer_new_line        (MooTermBuffer  *buf);
+void    moo_term_buffer_erase_display   (MooTermBuffer  *buf);
 
 
 /***************************************************************************/
@@ -261,140 +379,6 @@ typedef enum {
 } AnsiTextAttr;
 
 
-#define buf_bell            moo_term_buffer_bell
-#define buf_flash_screen    moo_term_buffer_flash_screen
-#define buf_plain_chars     moo_term_buffer_print_chars
-#define buf_cursor_move_to  moo_term_buffer_cursor_move_to
-
-
-inline static void buf_set_attrs_mask   (MooTermBuffer      *buf,
-                                         MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask = mask;
-}
-
-inline static void buf_add_attrs_mask   (MooTermBuffer      *buf,
-                                         MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask =
-            (MooTermTextAttrMask)(buf->priv->current_attr.mask | mask);
-}
-
-inline static void buf_remove_attrs_mask(MooTermBuffer      *buf,
-                                         MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask =
-            (MooTermTextAttrMask)(buf->priv->current_attr.mask & ~mask);
-}
-
-inline static void buf_set_secure_mode  (MooTermBuffer      *buf,
-                                         gboolean            secure)
-{
-    buf->priv->secure = secure;
-}
-
-inline static void buf_set_ansi_foreground  (MooTermBuffer      *buf,
-                                             MooTermBufferColor  color)
-{
-    if (color < 8)
-    {
-        buf_add_attrs_mask (buf, MOO_TERM_TEXT_FOREGROUND);
-        buf->priv->current_attr.foreground = color;
-    }
-    else
-    {
-        buf_remove_attrs_mask(buf, MOO_TERM_TEXT_FOREGROUND);
-    }
-}
-
-inline static void buf_set_ansi_background  (MooTermBuffer      *buf,
-                                             MooTermBufferColor  color)
-{
-    if (color < 8)
-    {
-        buf_add_attrs_mask (buf, MOO_TERM_TEXT_BACKGROUND);
-        buf->priv->current_attr.background = color;
-    }
-    else
-    {
-        buf_remove_attrs_mask(buf, MOO_TERM_TEXT_BACKGROUND);
-    }
-}
-
-inline static void buf_enter_reverse_mode       (MooTermBuffer  *buf)
-{
-    buf_add_attrs_mask (buf, MOO_TERM_TEXT_REVERSE);
-}
-
-inline static void buf_exit_reverse_mode        (MooTermBuffer  *buf)
-{
-    buf_remove_attrs_mask (buf, MOO_TERM_TEXT_REVERSE);
-}
-
-inline static void buf_cursor_invisible         (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_cursor_visible (buf, FALSE);
-}
-
-inline static void buf_cursor_normal            (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_cursor_visible (buf, TRUE);
-}
-
-inline static void buf_ena_acs                  (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-}
-
-inline static void buf_enter_alt_charset_mode   (MooTermBuffer  *buf)
-{
-    buf_add_attrs_mask (buf, MOO_TERM_TEXT_ALTERNATE);
-}
-
-inline static void buf_exit_alt_charset_mode    (MooTermBuffer  *buf)
-{
-    buf_remove_attrs_mask (buf, MOO_TERM_TEXT_ALTERNATE);
-}
-
-inline static void buf_enter_secure_mode        (MooTermBuffer  *buf)
-{
-    buf_set_secure_mode (buf, TRUE);
-}
-
-inline static void buf_orig_pair                (MooTermBuffer  *buf)
-{
-    buf_set_ansi_foreground (buf, MOO_TERM_COLOR_NONE);
-    buf_set_ansi_background (buf, MOO_TERM_COLOR_NONE);
-}
-
-inline static void buf_enter_underline_mode     (MooTermBuffer  *buf)
-{
-    buf_add_attrs_mask (buf, MOO_TERM_TEXT_UNDERLINE);
-}
-
-inline static void buf_exit_underline_mode      (MooTermBuffer  *buf)
-{
-    buf_remove_attrs_mask (buf, MOO_TERM_TEXT_UNDERLINE);
-}
-
-inline static void buf_set_background           (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    g_assert (40 <= d && d <= 47);
-    buf_set_ansi_background (buf, (MooTermBufferColor)(d - 40));
-}
-
-inline static void buf_set_foreground           (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    g_assert (30 <= d && d <= 37);
-    buf_set_ansi_foreground (buf, (MooTermBufferColor)(d - 30));
-}
-
-inline static void buf_set_tab                  (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
 inline static gulong buf_compute_next_tab_stop  (G_GNUC_UNUSED MooTermBuffer  *buf,
                                                  gulong          col)
 {
@@ -410,426 +394,6 @@ inline static gulong buf_compute_prev_tab_stop  (G_GNUC_UNUSED MooTermBuffer  *b
         return (col >> 3) << 3;
     else
         return col - 8;
-}
-
-inline static void buf_tab                      (MooTermBuffer  *buf)
-{
-    buf_cursor_move_to (buf, -1,
-                        buf_compute_next_tab_stop (buf, buf_cursor_col (buf)));
-}
-
-inline static void buf_back_tab                 (MooTermBuffer  *buf)
-{
-    buf_cursor_move_to (buf, -1,
-                        buf_compute_prev_tab_stop (buf, buf_cursor_col (buf)));
-}
-
-inline static void buf_carriage_return          (MooTermBuffer  *buf)
-{
-    buf_cursor_move_to (buf, -1, 0);
-}
-
-inline static void buf_cursor_home              (MooTermBuffer  *buf)
-{
-    buf_cursor_move_to (buf, 0, 0);
-}
-
-inline static void buf_cursor_move              (MooTermBuffer  *buf,
-                                                 long            rows,
-                                                 long            cols)
-{
-    long width = buf_screen_width (buf);
-    long height = buf_screen_height (buf);
-    long cursor_row = buf_cursor_row (buf);
-    long cursor_col = buf_cursor_col (buf);
-
-    if (rows && cursor_row + rows >= 0 && cursor_row + rows < height)
-        cursor_row += rows;
-    if (cols && cursor_col + cols >= 0 && cursor_col + cols < width)
-        cursor_col += cols;
-
-    buf_cursor_move_to (buf, cursor_row, cursor_col);
-}
-
-
-inline static void buf_line_feed                (MooTermBuffer  *buf)
-{
-    gulong cursor_row = buf_cursor_row (buf);
-    gulong height = buf_screen_height (buf);
-    gulong width = buf_screen_width (buf);
-
-    if (cursor_row < height - 1)
-    {
-        buf_cursor_move_to (buf, cursor_row + 1, 0);
-    }
-    else
-    {
-        MooTermLine new_line;
-
-        term_line_init (&new_line, width);
-        g_array_append_val (buf->priv->lines, new_line);
-        buf->priv->screen_offset++;
-
-        buf_changed_set_all (buf);
-        buf_cursor_move_to (buf, -1, 0);
-
-        moo_term_buffer_changed (buf);
-        moo_term_buffer_scrollback_changed (buf);
-    }
-}
-
-
-inline static void buf_clear_screen             (MooTermBuffer  *buf)
-{
-    gulong i;
-    gulong height = buf_screen_height (buf);
-
-    for (i = 0; i < height; ++i)
-        term_line_erase (buf_screen_line (buf, i));
-    buf_cursor_home (buf);
-    buf_changed_set_all (buf);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_clr_eos                  (MooTermBuffer  *buf)
-{
-    gulong i;
-    BufRectangle changed = {
-        0, buf_cursor_row (buf), buf_screen_width (buf),
-        buf_screen_height (buf) - buf_cursor_row (buf)
-    };
-
-    for (i = (gulong)changed.y; i < (gulong)changed.height; ++i)
-        term_line_erase (buf_screen_line (buf, i));
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_clr_bol                  (MooTermBuffer  *buf)
-{
-    BufRectangle changed = {0, buf_cursor_row (buf), buf_cursor_col (buf) + 1, 1};
-    term_line_erase_range (buf_screen_line (buf, changed.y),
-                           0, changed.width,
-                           &buf->priv->current_attr);
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_clr_eol                  (MooTermBuffer  *buf)
-{
-    BufRectangle changed = {
-        buf_cursor_col (buf), buf_cursor_row (buf),
-        buf_screen_width (buf) - buf_cursor_col (buf), 1
-    };
-
-    term_line_erase_range (buf_screen_line (buf, changed.y),
-                           changed.x, changed.width,
-                           &buf->priv->current_attr);
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_parm_dch                 (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    BufRectangle changed = {
-        buf_cursor_col (buf), buf_cursor_row (buf),
-        buf_screen_width (buf) - buf_cursor_col (buf), 1
-    };
-
-    term_line_delete_range (buf_screen_line (buf, changed.y),
-                           changed.x, d);
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_delete_character         (MooTermBuffer  *buf)
-{
-    buf_parm_dch (buf, 1);
-}
-
-inline static void buf_parm_delete_line         (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    gulong row = buf_cursor_row (buf);
-    gulong height = buf_screen_height (buf);
-
-    if (row < height - 1)
-    {
-        if (d > height - 1 - row)
-            d = height - 1 - row;
-    }
-    else
-    {
-        d = 0;
-    }
-
-    if (d)
-    {
-        BufRectangle changed = {
-            0, row + 1,
-            buf_screen_width (buf), height - row - 1
-        };
-        guint i;
-
-        for (i = row + 1; i < row + d; ++i)
-            term_line_destroy (buf_screen_line (buf, i));
-
-        g_array_remove_range (buf->priv->lines,
-                              row + 1 + buf->priv->screen_offset,
-                              d);
-
-        for (i = 0; i < d; ++i)
-        {
-            MooTermLine new_line;
-            term_line_init (&new_line, buf->priv->screen_width);
-            g_array_append_val (buf->priv->lines, new_line);
-        }
-
-        buf_changed_add_rectangle (buf, &changed);
-        moo_term_buffer_changed (buf);
-    }
-}
-
-inline static void buf_delete_line              (MooTermBuffer  *buf)
-{
-    buf_parm_delete_line (buf, 1);
-}
-
-inline static void buf_erase_chars              (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    BufRectangle changed = {
-        buf_cursor_col (buf),
-        buf_cursor_row (buf), d, 1
-    };
-
-    if (d > buf_screen_width (buf) - changed.x)
-    {
-        d = buf_screen_width (buf) - changed.x;
-        changed.width = d;
-    }
-
-    term_line_erase_range (buf_screen_line (buf, changed.y),
-                           changed.x, changed.width,
-                           &buf->priv->current_attr);
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_parm_ich                 (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    BufRectangle changed = {
-        buf_cursor_col (buf), buf_cursor_row (buf),
-        buf_screen_width (buf) - buf_cursor_col (buf), 1
-    };
-
-    term_line_insert_chars (buf_screen_line (buf, changed.y),
-                            changed.x,
-                            EMPTY_CHAR,
-                            d,
-                            buf_screen_width (buf),
-                            &buf->priv->current_attr);
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_insert_lines             (MooTermBuffer  *buf,
-                                                 guint           pos,
-                                                 guint           num)
-{
-    gulong height = buf_screen_height (buf);
-    gulong total_height = buf_total_height (buf);
-    guint i;
-
-    BufRectangle changed = {
-        0, pos,
-        buf_screen_width (buf), height - pos
-    };
-
-    if (pos < height)
-    {
-        if (num > height - pos)
-            num = height - pos;
-    }
-    else
-    {
-        return;
-    }
-
-    for (i = 0; i < num; ++i)
-    {
-        MooTermLine new_line;
-        term_line_init (&new_line, buf->priv->screen_width);
-        g_array_insert_val (buf->priv->lines,
-                            pos, new_line);
-    }
-
-    for (i = total_height; i < total_height + num; ++i)
-        term_line_destroy (buf_line (buf, i));
-
-    g_array_remove_range (buf->priv->lines,
-                          total_height, num);
-
-    buf_changed_add_rectangle (buf, &changed);
-    moo_term_buffer_changed (buf);
-}
-
-inline static void buf_parm_insert_line         (MooTermBuffer  *buf,
-                                                 guint           d)
-{
-    buf_insert_lines (buf, buf_cursor_row (buf) + 1, d);
-}
-
-inline static void buf_insert_line              (MooTermBuffer  *buf)
-{
-    buf_insert_lines (buf, buf_cursor_row (buf) + 1, 1);
-}
-
-inline static void buf_scroll_forward           (MooTermBuffer  *buf)
-{
-    buf_line_feed (buf);
-}
-
-/* apparently it's not just 'cursor down' */
-inline static void buf_parm_down_cursor         (MooTermBuffer  *buf,
-                                                 guint           num)
-{
-    guint i;
-    for (i = 0; i < num; ++i)
-        buf_line_feed (buf);
-}
-
-inline static void buf_cursor_down              (MooTermBuffer  *buf)
-{
-    buf_line_feed (buf);
-}
-
-inline static void buf_scroll_reverse           (MooTermBuffer  *buf)
-{
-    buf_insert_lines (buf, 0, 1);
-}
-
-inline static void buf_print_screen             (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_prtr_off                 (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_prtr_on                  (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-
-inline static void buf_restore_cursor           (MooTermBuffer  *buf)
-{
-    buf_cursor_move_to (buf,
-                        buf->priv->saved_cursor_row,
-                        buf->priv->saved_cursor_col);
-}
-
-inline static void buf_save_cursor              (MooTermBuffer  *buf)
-{
-    buf->priv->saved_cursor_row = buf_cursor_row (buf);
-    buf->priv->saved_cursor_col = buf_cursor_col (buf);
-}
-
-inline static void buf_enter_am_mode            (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_am_mode (buf, TRUE);
-}
-
-inline static void buf_exit_am_mode             (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_am_mode (buf, FALSE);
-}
-
-inline static void buf_enter_ca_mode            (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-}
-inline static void buf_exit_ca_mode             (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-}
-
-inline static void buf_keypad_local             (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-inline static void buf_keypad_xmit              (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_enter_insert_mode        (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_insert_mode (buf, TRUE);
-}
-
-inline static void buf_exit_insert_mode         (MooTermBuffer  *buf)
-{
-    moo_term_buffer_set_insert_mode (buf, FALSE);
-}
-
-inline static void buf_clear_all_tabs           (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_change_scroll_region     (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 G_GNUC_UNUSED gulong          row1,
-                                                 G_GNUC_UNUSED gulong          row2)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_user6                    (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 G_GNUC_UNUSED gulong          row,
-                                                 G_GNUC_UNUSED gulong          col)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-inline static void buf_user7                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-inline static void buf_user8                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-inline static void buf_user9                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_init_2string             (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_reset_2string            (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_reset_1string            (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_esc_l                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-inline static void buf_esc_m                    (G_GNUC_UNUSED MooTermBuffer  *buf)
-{
-    g_warning ("%s: implement me", G_STRLOC);
 }
 
 

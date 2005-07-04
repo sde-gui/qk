@@ -73,20 +73,24 @@ struct _MooTermBuffer {
 struct _MooTermBufferClass {
     GObjectClass  parent_class;
 
-    void (*changed)             (MooTermBuffer *buf);
-    void (*screen_size_changed) (MooTermBuffer *buf,
-                                 gulong         width,
-                                 gulong         height);
-    void (*cursor_moved)        (MooTermBuffer *buf,
-                                 gulong         old_row,
-                                 gulong         old_col);
+    void (*changed)             (MooTermBuffer  *buf);
+    void (*screen_size_changed) (MooTermBuffer  *buf,
+                                 gulong          width,
+                                 gulong          height);
+    void (*cursor_moved)        (MooTermBuffer  *buf,
+                                 gulong          old_row,
+                                 gulong          old_col);
 
-    void (*bell)                (MooTermBuffer *buf);
-    void (*flash_screen)        (MooTermBuffer *buf);
-    void (*set_window_title)    (MooTermBuffer *buf,
-                                 const char    *title);
-    void (*set_icon_name)       (MooTermBuffer *buf,
-                                 const char    *icon);
+    void (*bell)                (MooTermBuffer  *buf);
+    void (*set_window_title)    (MooTermBuffer  *buf,
+                                 const char     *title);
+    void (*set_icon_name)       (MooTermBuffer  *buf,
+                                 const char     *icon);
+
+    void (*full_reset)          (MooTermBuffer  *buf);
+    void (*feed_child)          (MooTermBuffer  *buf,
+                                 const char     *string,
+                                 int             len);
 };
 
 
@@ -103,26 +107,11 @@ void    moo_term_buffer_set_screen_size         (MooTermBuffer  *buf,
 void    moo_term_buffer_set_max_scrollback      (MooTermBuffer  *buf,
                                                  glong           lines);
 
-void    moo_term_buffer_bell            (MooTermBuffer  *buf);
-void    moo_term_buffer_flash_screen    (MooTermBuffer  *buf);
-
-void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
-                                         long            rows,
-                                         long            cols);
-void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
-                                         long            row,
-                                         long            col);
-
 void    moo_term_buffer_set_cursor_visible  (MooTermBuffer  *buf,
                                              gboolean        visible);
 
 void    moo_term_buffer_changed             (MooTermBuffer  *buf);
 void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf);
-
-void    moo_term_buffer_set_am_mode     (MooTermBuffer  *buf,
-                                         gboolean        auto_margins);
-void    moo_term_buffer_set_insert_mode (MooTermBuffer  *buf,
-                                         gboolean        insert_mode);
 
 void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
                                          const char     *chars,

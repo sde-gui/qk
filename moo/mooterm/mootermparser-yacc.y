@@ -2,25 +2,102 @@
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermparser.h"
 
-#define add_number(num)                         \
-{                                               \
-    if (!parser->nums_len)                      \
-    {                                           \
-        parser->nums[0] = num;                  \
-        parser->nums_len = 1;                   \
-    }                                           \
-    else                                        \
-    {                                           \
-        if (parser->nums_len >= MAX_NUMS_LEN)   \
-            YYABORT;                            \
-        parser->nums[parser->nums_len++] = num; \
-    }                                           \
+#define add_number(num)                             \
+{                                                   \
+    if (!parser->nums_len)                          \
+    {                                               \
+        parser->nums[0] = num;                      \
+        parser->nums_len = 1;                       \
+    }                                               \
+    else                                            \
+    {                                               \
+        if (parser->nums_len >= MAX_NUMS_LEN)       \
+        {                                           \
+            g_warning ("%s: too big number of "     \
+                       "arguments, discarding",     \
+                       G_STRLOC);                   \
+            YYABORT;                                \
+        }                                           \
+        parser->nums[parser->nums_len++] = num;     \
+    }                                               \
 }
 
-#define set_cmd(cmd_code)                       \
-{                                               \
-    parser->cmd = cmd_code;                     \
-    YYACCEPT;                                   \
+#define add_char(c)                                 \
+{                                                   \
+    if (!parser->string_len)                        \
+    {                                               \
+        parser->string[0] = c;                      \
+        parser->string_len = 1;                     \
+    }                                               \
+    else                                            \
+    {                                               \
+        if (parser->string_len >= MAX_ESC_SEQ_LEN)  \
+        {                                           \
+            g_warning ("%s: string too long, "      \
+                       "discarding", G_STRLOC);     \
+            YYABORT;                                \
+        }                                           \
+        parser->string[parser->string_len++] = c;   \
+    }                                               \
+}
+
+#define set_cmd(cmd_code)                           \
+{                                                   \
+    parser->cmd = cmd_code;                         \
+    YYACCEPT;                                       \
+}
+
+#define check_nums_len(cmd, n)                      \
+{                                                   \
+    if (parser->nums_len != n)                      \
+    {                                               \
+        g_warning ("%s: invalid number of "         \
+                   "arguments for " #cmd            \
+                   " command", G_STRLOC);           \
+        YYABORT;                                    \
+    }                                               \
+}
+
+#define check_one(cmd, num, num1)                   \
+{                                                   \
+    if (num != num1)                                \
+    {                                               \
+        g_warning ("%s: invalid argument %d"        \
+                   " for " #cmd " command",         \
+                   G_STRLOC, num);                  \
+        YYABORT;                                    \
+    }                                               \
+}
+
+#define check_range(cmd, num, num1, num2)           \
+{                                                   \
+    if (num < num1 || num > num2)                   \
+    {                                               \
+        g_warning ("%s: invalid argument %d"        \
+                   " for " #cmd " command",         \
+                   G_STRLOC, num);                  \
+        YYABORT;                                    \
+    }                                               \
+}
+
+#define check_nums_2(cmd, num1, num2)               \
+{                                                   \
+    if (parser->nums_len != 2 ||                    \
+        parser->nums[0] != num1 ||                  \
+        parser->nums[1] != num2)                    \
+    {                                               \
+        g_warning ("%s: invalid arguments"          \
+                   " for " #cmd " command",         \
+                   G_STRLOC);                       \
+        YYABORT;                                    \
+    }                                               \
+}
+
+#define push_one_back()                             \
+{                                                   \
+    g_assert (!iter_is_start (&parser->current));   \
+    iter_backward (&parser->current);               \
+    iter_backward (&parser->cmd_string.end);        \
 }
 
 %}
@@ -30,158 +107,395 @@
 %lex-param      {MooTermParser *parser}
 %parse-param    {MooTermParser *parser}
 
+%token  DIGIT
+
 %%
 
-command:            terminfo_sequence
-                |   xterm_sequence
+command:            vt100
+                |   vt102
+                |   vt220
+                |   Edward_Moy
+                |   Skip_Montanaro
+                |   terminfo
 ;
 
-terminfo_sequence:  cbt
-                |   civis
-                |   clear
-                |   cnorm
-                |   csr
-                |   cub
-                |   cud
-                |   cuf
-                |   cuf1
-                |   cup
-                |   cuu
-                |   cuu1
-                |   dch
-                |   dch1
-                |   dl
-                |   dl1
+/* Xterm Control Sequences by Edward Moy */
+Edward_Moy:         G2_charset
+                |   G3_charset
+                |   DCS
+                |   init_hilite_mouse_tracking
+                |   restore_DECSET
+                |   save_DECSET
+                |   set_text
+                |   PM
+                |   APC
+                |   memory_lock
+                |   memory_unlock
+                |   LS2
+                |   LS3
+                |   LS3R
+                |   LS1R
+;
+
+/* From: Skip Montanaro
+   To: xpert@expo.lcs.mit.edu
+   Subject: XTerm Escape Sequences (X11 Version)
+ */
+Skip_Montanaro:     BELL
+                |   BACKSPACE
+                |   TAB
+                |   LINEFEED
+                |   VERT_TAB
+                |   FORM_FEED
+                |   CARRIAGE_RETURN
+                |   ALT_CHARSET
+                |   NORM_CHARSET
+                |   track_mouse
+;
+
+terminfo:           cbt
                 |   ech
-                |   ed
-                |   el
-                |   el1
-                |   enacs
-                |   flash
-                |   home
                 |   hpa
-                |   hts
-                |   ich
-                |   il
-                |   il1
-                |   mc0
-                |   mc4
-                |   mc5
-                |   meml
-                |   memu
-                |   rc
-                |   ri
-                |   rmam
-                |   rmcup
-                |   rmir
-                |   rmkx
-                |   rs1
                 |   rs2
-                |   sc
-                |   smam
-                |   smcup
-                |   smir
-                |   smkx
-                |   tbc
                 |   u6
-                |   u7
                 |   u8
-                |   u9
                 |   vpa
-                |   set_attrs
 ;
 
-xterm_sequence:     set_title
-                |   set_icon
-                |   set_title_icon
+vt100:              CUB
+                |   CUD
+                |   CUF
+                |   CUP
+                |   CUU
+                |   DA
+                |   DECALN_or_line_size
+                |   DECID
+                |   DECKPAM
+                |   DECKPNM
+                |   DECLL
+                |   DECSC_DECRC
+                |   DECREQTPARM
+                |   DECSTBM
+                |   DECTST
+                |   DSR
+                |   ED
+                |   EL
+                |   HTS
+                |   HVP
+                |   IND
+                |   NEL
+                |   RI
+                |   RIS
+                |   RM
+                |   SCS
+                |   SGR
+                |   SM
+                |   TBC
 ;
 
+vt102:              MC              /* Media Copy - printer stuff - ignored */
+                |   SS2
+                |   SS3
+;
+
+vt220:              ICH
+                |   DCH
+                |   IL
+                |   DL
+;
+
+/****************************************************************************/
+/* vt100
+ */
+
+DECALN_or_line_size:    '#' number          {   push_one_back ();
+                                                add_number ($2);
+                                                switch ($2)
+                                                {
+                                                    case 3:
+                                                    case 4:
+                                                        set_cmd (CMD_DECDHL);
+                                                    case 6:
+                                                        set_cmd (CMD_DECDWL);
+                                                    case 5:
+                                                        set_cmd (CMD_DECSWL);
+                                                    case 8:
+                                                        set_cmd (CMD_DECALN);
+                                                    default:
+                                                        g_warning ("%s: invalid argument %d",
+                                                                   G_STRLOC, $2);
+                                                        YYABORT;
+                                                }
+                                            }
+;
+DECLL:          '[' number 'q'              {   add_number ($2); set_cmd (CMD_DECLL); }
+;
+SCS:            G0_charset
+            |   G1_charset
+;
+DECTST:         '[' numbers 'y'             {   check_nums_len (DECTST, 2); set_cmd (CMD_DECTST); }
+;
+
+SM:             '[' numbers 'h'             {   set_cmd (CMD_SM); }
+            |   '[' '?' numbers 'h'         {   set_cmd (CMD_DECSET); }
+;
+RM:             '[' numbers 'l'             {   set_cmd (CMD_RM); }
+            |   '[' '?' numbers 'l'         {   set_cmd (CMD_DECRST); }
+;
+G0_charset:     '(' number                  {   push_one_back ();
+                                                check_range (G0_charset, $2, 0, 2);
+                                                add_number (0);
+                                                set_cmd (CMD_G0_CHARSET); }
+            |   '(' 'A'                     {   add_number (3);
+                                                set_cmd (CMD_G0_CHARSET); }
+            |   '(' 'B'                     {   add_number (4);
+                                                set_cmd (CMD_G0_CHARSET); }
+;
+G1_charset:     ')' number                  {   push_one_back ();
+                                                check_range (G1_charset, $2, 0, 2);
+                                                add_number (0);
+                                                set_cmd (CMD_G1_CHARSET); }
+            |   ')' 'A'                     {   add_number (3);
+                                                set_cmd (CMD_G1_CHARSET); }
+            |   ')' 'B'                     {   add_number (4);
+                                                set_cmd (CMD_G1_CHARSET); }
+;
+DECSC_DECRC:    number                      {   push_one_back ();
+                                                check_range (DECSC_DECRC, $1, 7, 8);
+                                                if ($1 == 7)
+                                                {
+                                                    set_cmd (CMD_DECSC);
+                                                }
+                                                else
+                                                {
+                                                    set_cmd (CMD_DECRC);
+                                                }
+                                            }
+;
+DECKPAM:        '='                         {   set_cmd (CMD_DECKPAM); }
+;
+DECKPNM:        '>'                         {   set_cmd (CMD_DECKPNM); }
+;
+IND:            'D'                         {   set_cmd (CMD_IND); }
+;
+NEL:            'E'                         {   set_cmd (CMD_NEL); }
+;
+HTS:            'H'                         {   set_cmd (CMD_HTS); }
+;
+RI:             'M'                         {   set_cmd (CMD_RI); }
+;
+DECID:          'Z'                         {   set_cmd (CMD_DA); }
+;
+CUU:            '[' number 'A'              {   add_number ($2); set_cmd (CMD_CUU); }
+            |   '[' 'A'                     {   add_number (1); set_cmd (CMD_CUU); }
+;
+CUD:            '[' number 'B'              {   add_number ($2); set_cmd (CMD_CUD); }
+            |   '[' 'B'                     {   add_number (1); set_cmd (CMD_CUD); }
+;
+CUF:            '[' number 'C'              {   add_number ($2); set_cmd (CMD_CUF); }
+            |   '[' 'C'                     {   add_number (1); set_cmd (CMD_CUF); }
+;
+CUB:            '[' number 'D'              {   add_number ($2); set_cmd (CMD_CUB); }
+            |   '[' 'D'                     {   add_number (1); set_cmd (CMD_CUB); }
+;
+CUP:            '[' numbers 'H'             {   check_nums_len (CUP, 2); set_cmd (CMD_CUP); }
+            |   '[' 'H'                     {   add_number (1); add_number (1); set_cmd (CMD_CUP); }
+;
+ED:             '[' number 'J'              {   add_number ($2); set_cmd (CMD_ED); }
+            |   '[' 'J'                     {   add_number (0); set_cmd (CMD_ED); }
+;
+EL:             '[' number 'K'              {   add_number ($2); set_cmd (CMD_EL); }
+            |   '[' 'K'                     {   add_number (0); set_cmd (CMD_EL); }
+;
+DA:             '[' number 'c'              {   check_one (DA, $2, 0); set_cmd (CMD_DA); }
+            |   '[' 'c'                     {   set_cmd (CMD_DA); }
+;
+HVP:            '[' numbers 'f'             {   check_nums_len (HVP, 2); set_cmd (CMD_HVP); }
+            |   '[' 'f'                     {   add_number (1); add_number (1); set_cmd (CMD_HVP); }
+;
+TBC:            '[' number 'g'              {   add_number ($2); set_cmd (CMD_TBC); }
+            |   '[' 'g'                     {   add_number (0); set_cmd (CMD_TBC); }
+;
+SGR:            '[' numbers 'm'             {   set_cmd (CMD_SGR); }
+            |   '[' 'm'                     {   add_number (0); set_cmd (CMD_SGR); }
+;
+DSR:            '[' numbers 'n'             {   set_cmd (CMD_DSR); }
+;
+DECSTBM:        '[' numbers 'r'             {   check_nums_len (DECSTBM, 2); set_cmd (CMD_DECSTBM); }
+            |   '[' 'r'                     {   add_number (0); add_number (1000000); set_cmd (CMD_DECSTBM); }
+;
+DECREQTPARM:    '[' number 'x'              {   add_number ($2); set_cmd (CMD_DECREQTPARM); }
+;
+RIS:            'c'                         {   set_cmd (CMD_RIS); }
+;
+
+/****************************************************************************/
+/* vt102
+ */
+
+MC:             '[' '?' number 'i'          {   set_cmd (CMD_MC); }
+            |   '[' number 'i'              {   set_cmd (CMD_MC); }
+            |   '[' 'i'                     {   set_cmd (CMD_MC); }
+;
+SS2:            'N'                         {   set_cmd (CMD_SS2); }
+;
+SS3:            'O'                         {   set_cmd (CMD_SS3); }
+;
+
+/****************************************************************************/
+/* vt220
+ */
+
+ICH:            '[' number '@'              {   add_number ($2); set_cmd (CMD_ICH); }
+            |   '[' '@'                     {   add_number (1); set_cmd (CMD_ICH); }
+;
+DCH:            '[' number 'P'              {   add_number ($2); set_cmd (CMD_DCH); }
+            |   '[' 'P'                     {   add_number (1); set_cmd (CMD_DCH); }
+;
+IL:             '[' number 'L'              {   add_number ($2); set_cmd (CMD_IL); }
+            |   '[' 'L'                     {   add_number (1); set_cmd (CMD_IL); }
+;
+DL:             '[' number 'M'              {   add_number ($2); set_cmd (CMD_DL); }
+            |   '[' 'M'                     {   add_number (1); set_cmd (CMD_DL); }
+;
 
 /****************************************************************************/
 /* numbers
  */
 
-digit:          '0'                 { $$ = 0; }
-            |   '1'                 { $$ = 1; }
-            |   '2'                 { $$ = 2; }
-            |   '3'                 { $$ = 3; }
-            |   '4'                 { $$ = 4; }
-            |   '5'                 { $$ = 5; }
-            |   '6'                 { $$ = 6; }
-            |   '7'                 { $$ = 7; }
-            |   '8'                 { $$ = 8; }
-            |   '9'                 { $$ = 9; }
+number:         DIGIT               { $$ = $1; }
+            |   number DIGIT        { $$ = $1 * 10 + $2; }
 ;
 
-number:         digit
-            |   number digit        { $$ = $1 * 10 + $2; }
+numbers:        number              { add_number ($1); }
+            |   numbers ';' number  { add_number ($3); }
+;
+
+
+/****************************************************************************/
+/* Skip_Montanaro
+ */
+
+BELL:           '\007'                      {   set_cmd (CMD_BELL); }
+            |   '#' '\007'                  {   set_cmd (CMD_BELL); }
+            |   '(' '\007'                  {   set_cmd (CMD_BELL); }
+            |   '[' '\007'                  {   set_cmd (CMD_BELL); }
+            |   '[' '?' '\007'              {   set_cmd (CMD_BELL); }
+;
+BACKSPACE:      '\010'                      {   set_cmd (CMD_BACKSPACE); }
+            |   '#' '\010'                  {   set_cmd (CMD_BACKSPACE); }
+            |   '(' '\010'                  {   set_cmd (CMD_BACKSPACE); }
+            |   '[' '\010'                  {   set_cmd (CMD_BACKSPACE); }
+            |   '[' '?' '\010'              {   set_cmd (CMD_BACKSPACE); }
+;
+TAB:            '\011'                      {   set_cmd (CMD_TAB); }
+            |   '#' '\011'                  {   set_cmd (CMD_TAB); }
+            |   '(' '\011'                  {   set_cmd (CMD_TAB); }
+            |   '[' '\011'                  {   set_cmd (CMD_TAB); }
+            |   '[' '?' '\011'              {   set_cmd (CMD_TAB); }
+;
+LINEFEED:       '\012'                      {   set_cmd (CMD_LINEFEED); }
+            |   '#' '\012'                  {   set_cmd (CMD_LINEFEED); }
+            |   '(' '\012'                  {   set_cmd (CMD_LINEFEED); }
+            |   '[' '\012'                  {   set_cmd (CMD_LINEFEED); }
+            |   '[' '?' '\012'              {   set_cmd (CMD_LINEFEED); }
+;
+VERT_TAB:       '\013'                      {   set_cmd (CMD_VERT_TAB); }
+            |   '#' '\013'                  {   set_cmd (CMD_VERT_TAB); }
+            |   '(' '\013'                  {   set_cmd (CMD_VERT_TAB); }
+            |   '[' '\013'                  {   set_cmd (CMD_VERT_TAB); }
+            |   '[' '?' '\013'              {   set_cmd (CMD_VERT_TAB); }
+;
+FORM_FEED:      '\014'                      {   set_cmd (CMD_FORM_FEED); }
+            |   '#' '\014'                  {   set_cmd (CMD_FORM_FEED); }
+            |   '(' '\014'                  {   set_cmd (CMD_FORM_FEED); }
+            |   '[' '\014'                  {   set_cmd (CMD_FORM_FEED); }
+            |   '[' '?' '\014'              {   set_cmd (CMD_FORM_FEED); }
+;
+CARRIAGE_RETURN:'\015'                      {   set_cmd (CMD_CARRIAGE_RETURN); }
+            |   '#' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
+            |   '(' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
+            |   '[' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
+            |   '[' '?' '\015'              {   set_cmd (CMD_CARRIAGE_RETURN); }
+;
+ALT_CHARSET:    '\016'                      {   set_cmd (CMD_ALT_CHARSET); }
+            |   '#' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
+            |   '(' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
+            |   '[' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
+            |   '[' '?' '\016'              {   set_cmd (CMD_ALT_CHARSET); }
+;
+NORM_CHARSET:   '\017'                      {   set_cmd (CMD_NORM_CHARSET); }
+            |   '#' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
+            |   '(' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
+            |   '[' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
+            |   '[' '?' '\017'              {   set_cmd (CMD_NORM_CHARSET); }
+;
+track_mouse:    '[' 'T'                     {   set_cmd (CMD_TRACK_MOUSE); }
+;
+
+
+/****************************************************************************/
+/* Edward_Moy
+ */
+
+G2_charset:     '*' DIGIT                   {   check_range (G2_charset, $2, 0, 2);
+                                                add_number (0);
+                                                set_cmd (CMD_G2_CHARSET); }
+            |   '*' 'A'                     {   add_number (3);
+                                                set_cmd (CMD_G2_CHARSET); }
+            |   '*' 'B'                     {   add_number (4);
+                                                set_cmd (CMD_G2_CHARSET); }
+;
+G3_charset:     '+' DIGIT                   {   check_range (G3_charset, $2, 0, 2);
+                                                add_number (0);
+                                                set_cmd (CMD_G3_CHARSET); }
+            |   '+' 'A'                     {   add_number (3);
+                                                set_cmd (CMD_G3_CHARSET); }
+            |   '+' 'B'                     {   add_number (4);
+                                                set_cmd (CMD_G3_CHARSET); }
+;
+DCS:            'P' no_escape_string '\033' '\\'
+                                            {   set_cmd (CMD_DCS); }
+            |   'P' '\033' '\\'             {   set_cmd (CMD_DCS); }
+;
+init_hilite_mouse_tracking: '[' numbers 'T' {   check_nums_len (init_hilite_mouse_tracking, 5);
+                                                set_cmd (CMD_INIT_HILITE_MOUSE_TRACKING); }
+;
+restore_DECSET: '[' '?' numbers 'r'         {   set_cmd (CMD_RESTORE_DECSET); }
+;
+save_DECSET:    '[' '?' numbers 's'         {   set_cmd (CMD_SAVE_DECSET); }
+;
+set_text:       ']' number ';' printable_string non_printable_char
+                                            {   add_number ($2); set_cmd (CMD_SET_TEXT); }
+            |   ']' number ';' non_printable_char
+                                            {   add_number ($2); set_cmd (CMD_SET_TEXT); }
+;
+PM:             '^' no_escape_string '\033' '\\'
+                                            {   set_cmd (CMD_PM); }
+            |   '^' '\033' '\\'             {   set_cmd (CMD_PM); }
+;
+APC:            '_' no_escape_string '\033' '\\'
+                                            {   set_cmd (CMD_APC); }
+            |   '_' '\033' '\\'             {   set_cmd (CMD_APC); }
+;
+memory_lock:    'l'                         {   set_cmd (CMD_MEMORY_LOCK); }
+;
+memory_unlock:  'm'                         {   set_cmd (CMD_MEMORY_UNLOCK); }
+;
+LS2:            'n'                         {   set_cmd (CMD_LS2); }
+;
+LS3:            'o'                         {   set_cmd (CMD_LS3); }
+;
+LS3R:           '|'                         {   set_cmd (CMD_LS3R); }
+;
+LS1R:           '~'                         {   set_cmd (CMD_LS1R); }
 ;
 
 /****************************************************************************/
 /* terminfo escape sequences
  */
 
-/*  making this like "'[' numbers 'm'" produces conflicts, and "[10;23m" is
-    not parsed */
-set_attrs:  '[' 'm'                     {   set_cmd (CMD_SET_ATTRS); }
-        |   '[' number 'm'              {   add_number ($2);
-                                            set_cmd (CMD_SET_ATTRS); }
-        |   '[' number ';' number 'm'   {   add_number ($2);
-                                            add_number ($4);
-                                            set_cmd (CMD_SET_ATTRS); }
-        |   '[' number ';' number ';' number 'm'
-                                        {   add_number ($2);
-                                            add_number ($4);
-                                            add_number ($6);
-                                            set_cmd (CMD_SET_ATTRS); }
-        |   '[' number ';' number ';' number ';' number 'm'
-                                        {   add_number ($2);
-                                            add_number ($4);
-                                            add_number ($6);
-                                            add_number ($8);
-                                            set_cmd (CMD_SET_ATTRS); }
-        |   '[' number ';' number ';' number ';' number ';' number 'm'
-                                        {   add_number ($2);
-                                            add_number ($4);
-                                            add_number ($6);
-                                            add_number ($8);
-                                            add_number ($10);
-                                            set_cmd (CMD_SET_ATTRS); }
-        |   '[' number ';' number ';' number ';' number ';' number ';' number 'm'
-                                        {   add_number ($2);
-                                            add_number ($4);
-                                            add_number ($6);
-                                            add_number ($8);
-                                            add_number ($10);
-                                            add_number ($12);
-                                            set_cmd (CMD_SET_ATTRS); }
-;
-        cbt:        '[' 'Z'                     { set_cmd (CMD_BACK_TAB); }
-;
-civis:      '[' '?' '2' '5' 'l'         { set_cmd (CMD_CURSOR_INVISIBLE); }
-;
-cnorm:      '[' '?' '2' '5' 'h'         { set_cmd (CMD_CURSOR_NORMAL); }
-;
-clear:      '[' 'H' '\033' '[' '2' 'J'  { set_cmd (CMD_CLEAR_SCREEN); }
-;
-csr:        '[' number ';' number 'r'   { add_number ($2);
-                                          add_number ($4);
-                                          set_cmd (CMD_CHANGE_SCROLL_REGION); }
-;
-cub:        '[' number 'D'              { add_number ($2);
-                                          set_cmd (CMD_PARM_LEFT_CURSOR); }
-;
-cud:        '[' number 'B'              { add_number ($2);
-                                          set_cmd (CMD_PARM_DOWN_CURSOR); }
-;
-cuf:        '[' number 'C'              { add_number ($2);
-                                          set_cmd (CMD_PARM_RIGHT_CURSOR); }
-;
-cuf1:       '[' 'C'                     { set_cmd (CMD_CURSOR_RIGHT); }
-;
-cup:        '[' number ';' number 'H'   { add_number ($2);
-                                          add_number ($4);
-                                          set_cmd (CMD_CURSOR_ADDRESS); }
+cbt:        '[' 'Z'                     { set_cmd (CMD_BACK_TAB); }
 ;
 hpa:        '[' number 'G'              { add_number ($2);
                                           set_cmd (CMD_COLUMN_ADDRESS); }
@@ -189,104 +503,55 @@ hpa:        '[' number 'G'              { add_number ($2);
 vpa:        '[' number 'd'              { add_number ($2);
                                           set_cmd (CMD_ROW_ADDRESS); }
                                           ;
-cuu:        '[' number 'A'              { add_number ($2);
-                                          set_cmd (CMD_PARM_UP_CURSOR); }
-;
-cuu1:       '[' 'A'                     { set_cmd (CMD_CURSOR_UP); }
-;
-dch:        '[' number 'P'              { add_number ($2);
-                                          set_cmd (CMD_PARM_DCH); }
-;
-dch1:       '[' 'P'                     { set_cmd (CMD_DELETE_CHARACTER); }
-;
-dl:         '[' number 'M'              { add_number ($2);
-                                          set_cmd (CMD_PARM_DELETE_LINE); }
-;
-dl1:        '[' 'M'                     { set_cmd (CMD_DELETE_LINE); }
-;
-
 ech:        '[' number 'X'              { add_number ($2);
                                           set_cmd (CMD_BACK_TAB); }
 ;
-ed:         '[' 'J'                     { set_cmd (CMD_CLR_EOS); }
+rs2:        '[' '!' 'p' '\033' '[' '?' DIGIT ';' DIGIT 'l' '\033' '[' DIGIT 'l' '\033' '>'
+                                        { check_one (rs2, $7, 3);
+                                          check_one (rs2, $9, 4);
+                                          check_one (rs2, $13, 4);
+                                          set_cmd (CMD_RESET_2STRING); }
 ;
-el:         '[' 'K'                     { set_cmd (CMD_CLR_EOL); }
+u6:         '[' numbers 'R'             { set_cmd (CMD_USER6); }
 ;
-el1:        '[' '1' 'K'                 { set_cmd (CMD_CLR_BOL); }
-;
-enacs:      '(' 'B' '\033' ')' '0'      { set_cmd (CMD_ENA_ACS); }
-;
-flash:      '[' '?' '5' 'h' '\033' '[' '?' '5' 'l'  { set_cmd (CMD_FLASH_SCREEN); }
-;
-home:       '[' 'H'                     { set_cmd (CMD_CURSOR_HOME); }
-;
-hts:        'H'                         { set_cmd (CMD_SET_TAB); }
-;
-ich:        '[' number '@'              { add_number ($2);
-                                          set_cmd (CMD_PARM_ICH); }
-;
-il:         '[' number 'L'              { add_number ($2);
-                                          set_cmd (CMD_PARM_INSERT_LINE); }
-;
-il1:        '[' 'L'                     { set_cmd (CMD_INSERT_LINE); }
-;
-mc0:        '[' 'i'                     { set_cmd (CMD_PRINT_SCREEN); }
-;
-mc4:        '[' '4' 'i'                 { set_cmd (CMD_PRTR_OFF); }
-;
-mc5:        '[' '5' 'i'                 { set_cmd (CMD_PRTR_ON); }
-;
-meml:       'l'                         { set_cmd (CMD_ESC_l); }
-;
-memu:       'm'                         { set_cmd (CMD_ESC_m); }
-;
-sc:         '7'                         { set_cmd (CMD_SAVE_CURSOR); }
-;
-rc:         '8'                         { set_cmd (CMD_RESTORE_CURSOR); }
-;
-ri:         'M'                         { set_cmd (CMD_SCROLL_REVERSE); }
-;
-smam:       '[' '?' '7' 'h'             { set_cmd (CMD_ENTER_AM_MODE); }
-;
-rmam:       '[' '?' '7' 'l'             { set_cmd (CMD_EXIT_AM_MODE); }
-;
-smcup:      '[' '?' '1' '0' '4' '9' 'h' { set_cmd (CMD_ENTER_CA_MODE); }
-;
-rmcup:      '[' '?' '1' '0' '4' '9' 'l' { set_cmd (CMD_EXIT_CA_MODE); }
-;
-smir:       '[' '4' 'h'                 { set_cmd (CMD_ENTER_INSERT_MODE); }
-;
-rmir:       '[' '4' 'l'                 { set_cmd (CMD_EXIT_INSERT_MODE); }
-;
-rmkx:       '[' '?' '1' 'l' '\033' '>'  { set_cmd (CMD_KEYPAD_LOCAL); }
-;
-rs1:        'c'                         { set_cmd (CMD_RESET_1STRING); }
-;
-rs2:        '[' '!' 'p' '\033' '[' '?' '3' ';' '4' 'l' '\033' '[' '4' 'l' '\033' '>' { set_cmd (CMD_RESET_2STRING); }
-;
-smkx:       '[' '?' '1' 'h' '\033' '='  { set_cmd (CMD_KEYPAD_XMIT); }
-;
-tbc:        '[' '3' 'g'                 { set_cmd (CMD_CLEAR_ALL_TABS); }
-;
-u6:         '[' number ';' number 'R'   { add_number ($2);
-                                          add_number ($4);
-                                          set_cmd (CMD_USER6); }
-;
-u7:         '[' '6' 'n'                 { set_cmd (CMD_USER7); }
-;
-u8:         '[' '?' '1' ';' '2' 'c'     { set_cmd (CMD_USER8); }
-;
-u9:         '[' 'c'                     { set_cmd (CMD_USER9); }
+u8:         '[' '?' numbers 'c'         { check_nums_2 (u8, 1, 2);
+                                          set_cmd (CMD_USER8); }
 ;
 
 
 /****************************************************************************/
-/* xterm commands
+/* strings and characters
  */
 
-set_title:      ']' '0' ';'   { set_cmd (CMD_SET_WINDOW_TITLE); }
+printable_char:     ' ' | '!' | '"' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+'
+                |   ',' | '-' | '.' | '/' | ':'| ';' | '<' | '=' | '>' | '?' | '@'
+                |   'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' |'H' | 'I' | 'J' | 'K' | 'L'
+                |   'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X'
+                |   'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b'| 'c' | 'd'
+                |   'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' |'p'
+                |   'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|'
+                |   '}' | '~'
+                |   DIGIT   { $$ = $1 + 48; }
 ;
-set_icon:       ']' '1' ';'   { set_cmd (CMD_SET_ICON_NAME); }
+
+non_printable_non_escape_char: '\001' | '\002' | '\003' | '\004' | '\005' | '\006' | '\007'
+                |   '\010' | '\011' | '\012' | '\013' | '\014' | '\015' | '\016' | '\017'
+                |   '\020' | '\021' | '\022' | '\023' | '\024' | '\025' | '\026' | '\027'
+                |   '\030' | '\031' | '\032' | '\034' | '\035' | '\036' | '\037' | '\177'
 ;
-set_title_icon: ']' '2' ';'   { set_cmd (CMD_SET_WINDOW_ICON_NAME); }
+
+non_printable_char: non_printable_non_escape_char
+                |   '\033'
+;
+
+non_escape_char:    printable_char
+                |   non_printable_non_escape_char
+;
+
+no_escape_string:   non_escape_char                     { add_char ($1); }
+                |   no_escape_string non_escape_char    { add_char ($1); }
+;
+
+printable_string:   printable_char                      { add_char ($1); }
+                |   printable_string printable_char     { add_char ($1); }
 ;

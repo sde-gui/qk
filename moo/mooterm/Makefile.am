@@ -11,6 +11,7 @@ widget_sources =            \
     mootermbuffer.c         \
     mootermbuffer.h         \
     mootermbuffer-private.h \
+    mootermbuffer-vt.h      \
     mooterminput.c          \
     mootermdraw.c           \
     mootermline.h           \

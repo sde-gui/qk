@@ -99,11 +99,12 @@ struct _MooTermPrivate {
     GtkAdjustment   *adjustment;
     guint            pending_adjustment_changed;
     guint            pending_adjustment_value_changed;
-    guint            scrollback_changed_id;
-    guint            width_changed_id;
-    guint            height_changed_id;
+    guint            buf_scrollback_changed_id;
+    guint            buf_width_changed_id;
+    guint            buf_height_changed_id;
     guint            buf_content_changed_id;
-    guint            cursor_moved_id;
+    guint            buf_cursor_moved_id;
+    guint            buf_feed_child_id;
 };
 
 

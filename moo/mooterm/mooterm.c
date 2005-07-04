@@ -176,15 +176,17 @@ static void moo_term_finalize               (GObject        *object)
     guint i, j;
 
     g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->scrollback_changed_id);
+                                 term->priv->buf_scrollback_changed_id);
     g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->width_changed_id);
+                                 term->priv->buf_width_changed_id);
     g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->height_changed_id);
+                                 term->priv->buf_height_changed_id);
     g_signal_handler_disconnect (term->priv->buffer,
                                  term->priv->buf_content_changed_id);
     g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->cursor_moved_id);
+                                 term->priv->buf_cursor_moved_id);
+    g_signal_handler_disconnect (term->priv->buffer,
+                                 term->priv->buf_feed_child_id);
     g_object_unref (term->priv->buffer);
 
     g_object_unref (term->priv->vt);
@@ -547,15 +549,17 @@ void             moo_term_set_buffer        (MooTerm        *term,
     if (term->priv->buffer)
     {
         g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->scrollback_changed_id);
+                                     term->priv->buf_scrollback_changed_id);
         g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->width_changed_id);
+                                     term->priv->buf_width_changed_id);
         g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->height_changed_id);
+                                     term->priv->buf_height_changed_id);
         g_signal_handler_disconnect (term->priv->buffer,
                                      term->priv->buf_content_changed_id);
         g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->cursor_moved_id);
+                                     term->priv->buf_cursor_moved_id);
+        g_signal_handler_disconnect (term->priv->buffer,
+                                     term->priv->buf_feed_child_id);
         g_object_unref (term->priv->buffer);
     }
 
@@ -571,19 +575,19 @@ void             moo_term_set_buffer        (MooTerm        *term,
 
     moo_term_vt_set_buffer (term->priv->vt, term->priv->buffer);
 
-    term->priv->scrollback_changed_id =
+    term->priv->buf_scrollback_changed_id =
             g_signal_connect_swapped (term->priv->buffer,
                                       "notify::scrollback",
                                       G_CALLBACK (scrollback_changed),
                                       term);
 
-    term->priv->width_changed_id =
+    term->priv->buf_width_changed_id =
             g_signal_connect_swapped (term->priv->buffer,
                                       "notify::screen-width",
                                       G_CALLBACK (width_changed),
                                       term);
 
-    term->priv->height_changed_id =
+    term->priv->buf_height_changed_id =
             g_signal_connect_swapped (term->priv->buffer,
                                       "notify::screen-height",
                                       G_CALLBACK (height_changed),
@@ -595,10 +599,16 @@ void             moo_term_set_buffer        (MooTerm        *term,
                                       G_CALLBACK (moo_term_buf_content_changed),
                                       term);
 
-    term->priv->cursor_moved_id =
+    term->priv->buf_cursor_moved_id =
             g_signal_connect_swapped (term->priv->buffer,
                                       "cursor-moved",
                                       G_CALLBACK (moo_term_cursor_moved),
+                                      term);
+
+    term->priv->buf_feed_child_id =
+            g_signal_connect_swapped (term->priv->buffer,
+                                      "feed-child",
+                                      G_CALLBACK (moo_term_feed_child),
                                       term);
 
     if (GTK_WIDGET_REALIZED (term))
@@ -657,7 +667,7 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
 
 void             moo_term_feed_child        (MooTerm        *term,
                                              const char     *string,
-                                             gssize          len)
+                                             int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term));
     moo_term_vt_write (term->priv->vt, string, len);

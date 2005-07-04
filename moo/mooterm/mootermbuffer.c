@@ -39,12 +39,13 @@ G_DEFINE_TYPE (MooTermBuffer, moo_term_buffer, G_TYPE_OBJECT)
 
 enum {
     CHANGED,
+    SCREEN_SIZE_CHANGED,
     CURSOR_MOVED,
     BELL,
-    FLASH_SCREEN,
-    SCREEN_SIZE_CHANGED,
     SET_WINDOW_TITLE,
     SET_ICON_NAME,
+    FEED_CHILD,
+    FULL_RESET,
     LAST_SIGNAL
 };
 
@@ -55,8 +56,16 @@ enum {
     PROP_SCROLLBACK,
     PROP_MAX_SCROLLBACK,
     PROP_CURSOR_VISIBLE,
-    PROP_AM_MODE,
-    PROP_INSERT_MODE
+    PROP_MODE_IRM,
+    PROP_MODE_LNM,
+    PROP_MODE_DECCKM,
+    PROP_MODE_DECSCNM,
+    PROP_MODE_DECOM,
+    PROP_MODE_DECAWM,
+    PROP_MODE_MOUSE_TRACKING,
+    PROP_MODE_HILITE_MOUSE_TRACKING,
+    PROP_MODE_KEYPAD_NUMERIC,
+    PROP_SCROLLING_REGION_SET
 };
 
 static guint signals[LAST_SIGNAL];
@@ -72,10 +81,6 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
     gobject_class->finalize = moo_term_buffer_finalize;
 
     klass->changed = buf_changed_clear;
-    klass->screen_size_changed = NULL;
-    klass->cursor_moved = NULL;
-    klass->bell = NULL;
-    klass->flash_screen = NULL;
 
     signals[CHANGED] =
             g_signal_new ("changed",
@@ -101,15 +106,6 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           G_OBJECT_CLASS_TYPE (gobject_class),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTermBufferClass, bell),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[FLASH_SCREEN] =
-            g_signal_new ("flash-screen",
-                          G_OBJECT_CLASS_TYPE (gobject_class),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTermBufferClass, flash_screen),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -143,6 +139,26 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           _moo_marshal_VOID__STRING,
                           G_TYPE_NONE, 1,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[FEED_CHILD] =
+            g_signal_new ("feed-child",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermBufferClass, feed_child),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING_INT,
+                          G_TYPE_NONE, 2,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          G_TYPE_INT);
+
+    signals[FULL_RESET] =
+            g_signal_new ("full-reset",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermBufferClass, full_reset),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,
@@ -185,20 +201,84 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_AM_MODE,
-                                     g_param_spec_boolean ("am-mode",
-                                             "am-mode",
-                                             "am-mode",
+                                     PROP_MODE_IRM,
+                                     g_param_spec_boolean ("mode-IRM",
+                                             "mode-IRM",
+                                             "Insertion-Replacement Mode",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_LNM,
+                                     g_param_spec_boolean ("mode-LNM",
+                                             "mode-LNM",
+                                             "Linefeed/New Line Mode",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_DECCKM,
+                                     g_param_spec_boolean ("mode-DECCKM",
+                                             "mode-DECCKM",
+                                             "Cursor Key Mode",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_DECSCNM,
+                                     g_param_spec_boolean ("mode-DECSCNM",
+                                             "mode-DECSCNM",
+                                             "Screen Mode",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_DECOM,
+                                     g_param_spec_boolean ("mode-DECOM",
+                                             "mode-DECOM",
+                                             "Origin Mode",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_DECAWM,
+                                     g_param_spec_boolean ("mode-DECAWM",
+                                             "mode-DECAWM",
+                                             "Auto Wrap Mode",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_INSERT_MODE,
-                                     g_param_spec_boolean ("insert-mode",
-                                             "insert-mode",
-                                             "insert-mode",
+                                     PROP_MODE_MOUSE_TRACKING,
+                                     g_param_spec_boolean ("mode-MOUSE-TRACKING",
+                                             "mode-MOUSE_TRACKING",
+                                             "Send mouse X & Y on button press and release",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_HILITE_MOUSE_TRACKING,
+                                     g_param_spec_boolean ("mode-HILITE-MOUSE-TRACKING",
+                                             "mode-HILITE_MOUSE_TRACKING",
+                                             "Use Hilite Mouse Tracking",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MODE_KEYPAD_NUMERIC,
+                                     g_param_spec_boolean ("mode-KEYPAD-NUMERIC",
+                                             "mode-KEYPAD-NUMERIC",
+                                             "mode-KEYPAD-NUMERIC",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SCROLLING_REGION_SET,
+                                     g_param_spec_boolean ("scrolling-region-set",
+                                             "scrolling-region-set",
+                                             "scrolling-region-set",
+                                             FALSE,
+                                             G_PARAM_READABLE));
 }
 
 
@@ -228,6 +308,15 @@ static void     moo_term_buffer_finalize        (GObject            *object)
     g_free (buf->priv);
 
     G_OBJECT_CLASS (moo_term_buffer_parent_class)->finalize (object);
+}
+
+
+#define set_mode(modes, m, val) \
+{                               \
+    if (val)                    \
+        modes |= m;             \
+    else                        \
+        modes &= ~m;            \
 }
 
 
@@ -264,12 +353,49 @@ static void     moo_term_buffer_set_property    (GObject        *object,
             moo_term_buffer_set_cursor_visible (buf, g_value_get_boolean (value));
             break;
 
-        case PROP_AM_MODE:
-            moo_term_buffer_set_am_mode (buf, g_value_get_boolean (value));
+        case PROP_MODE_IRM:
+            set_mode (buf->priv->modes, IRM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-IRM");
             break;
 
-        case PROP_INSERT_MODE:
-            moo_term_buffer_set_insert_mode (buf, g_value_get_boolean (value));
+        case PROP_MODE_LNM:
+            set_mode (buf->priv->modes, LNM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-LNM");
+            break;
+
+        case PROP_MODE_DECCKM:
+            set_mode (buf->priv->modes, DECCKM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-DECCKM");
+            break;
+
+        case PROP_MODE_DECSCNM:
+            set_mode (buf->priv->modes, DECSCNM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-DECSCNM");
+            break;
+
+        case PROP_MODE_DECOM:
+            set_mode (buf->priv->modes, DECOM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-DECOM");
+            break;
+
+        case PROP_MODE_DECAWM:
+            set_mode (buf->priv->modes, DECAWM, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-DECAWM");
+            break;
+
+        case PROP_MODE_MOUSE_TRACKING:
+            set_mode (buf->priv->modes, MOUSE_TRACKING, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-MOUSE-TRACKING");
+            break;
+
+        case PROP_MODE_HILITE_MOUSE_TRACKING:
+            set_mode (buf->priv->modes, HILITE_MOUSE_TRACKING, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
+            break;
+            
+        case PROP_MODE_KEYPAD_NUMERIC:
+            set_mode (buf->priv->modes, KEYPAD_NUMERIC, g_value_get_boolean (value));
+            g_object_notify (G_OBJECT (buf), "mode-KEYPAD-NUMERIC");
             break;
 
         default:
@@ -307,12 +433,44 @@ static void     moo_term_buffer_get_property    (GObject        *object,
             g_value_set_boolean (value, buf->priv->cursor_visible);
             break;
 
-        case PROP_AM_MODE:
-            g_value_set_boolean (value, buf->priv->am_mode);
+        case PROP_MODE_IRM:
+            g_value_set_boolean (value, buf->priv->modes & IRM);
             break;
 
-        case PROP_INSERT_MODE:
-            g_value_set_boolean (value, buf->priv->insert_mode);
+        case PROP_MODE_LNM:
+            g_value_set_boolean (value, buf->priv->modes & LNM);
+            break;
+
+        case PROP_MODE_DECCKM:
+            g_value_set_boolean (value, buf->priv->modes & DECCKM);
+            break;
+
+        case PROP_MODE_DECSCNM:
+            g_value_set_boolean (value, buf->priv->modes & DECSCNM);
+            break;
+
+        case PROP_MODE_DECOM:
+            g_value_set_boolean (value, buf->priv->modes & DECOM);
+            break;
+
+        case PROP_MODE_DECAWM:
+            g_value_set_boolean (value, buf->priv->modes & DECAWM);
+            break;
+
+        case PROP_MODE_MOUSE_TRACKING:
+            g_value_set_boolean (value, buf->priv->modes & MOUSE_TRACKING);
+            break;
+
+        case PROP_MODE_HILITE_MOUSE_TRACKING:
+            g_value_set_boolean (value, buf->priv->modes & HILITE_MOUSE_TRACKING);
+            break;
+
+        case PROP_MODE_KEYPAD_NUMERIC:
+            g_value_set_boolean (value, buf->priv->modes & KEYPAD_NUMERIC);
+            break;
+
+        case PROP_SCROLLING_REGION_SET:
+            g_value_set_boolean (value, buf->priv->scrolling_region_set);
             break;
 
         default:
@@ -346,6 +504,10 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
         buf->priv->screen_height = MIN_HEIGHT;
     buf->priv->screen_offset = 0;
 
+    buf->priv->top_margin = 0;
+    buf->priv->bottom_margin = buf->priv->screen_height - 1;
+    buf->priv->scrolling_region_set = FALSE;
+
     for (i = 0; i < buf->priv->screen_height; ++i)
     {
         MooTermLine line;
@@ -371,12 +533,6 @@ void    moo_term_buffer_bell            (MooTermBuffer  *buf)
 }
 
 
-void    moo_term_buffer_flash_screen    (MooTermBuffer  *buf)
-{
-    g_signal_emit (buf, signals[FLASH_SCREEN], 0);
-}
-
-
 void    moo_term_buffer_changed         (MooTermBuffer  *buf)
 {
     if (!buf->priv->freeze_changed_notify)
@@ -389,19 +545,100 @@ void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf)
 }
 
 
-void    moo_term_buffer_set_am_mode     (MooTermBuffer  *buf,
-                                         gboolean        auto_margins)
+static void buf_set_screen_width    (MooTermBuffer  *buf,
+                                     gulong          width)
 {
-    buf->priv->am_mode = auto_margins;
-    g_object_notify (G_OBJECT (buf), "am-mode");
+    buf->priv->screen_width = width;
+
+    if (buf->priv->cursor_col >= width)
+        moo_term_buffer_cursor_move_to (buf, -1, width - 1);
+
+    g_object_notify (G_OBJECT (buf), "screen-width");
+    g_signal_emit (buf, signals[SCREEN_SIZE_CHANGED], 0,
+                   width,
+                   buf_screen_height (buf));
+
+    buf_changed_set_all (buf);
+    moo_term_buffer_changed (buf);
 }
 
 
-void    moo_term_buffer_set_insert_mode (MooTermBuffer  *buf,
-                                         gboolean        insert_mode)
+static void buf_set_screen_height   (MooTermBuffer  *buf,
+                                     gulong          height)
 {
-    buf->priv->insert_mode = insert_mode;
-    g_object_notify (G_OBJECT (buf), "insert-mode");
+    gulong old_height = buf_screen_height (buf);
+    gulong width = buf_screen_width (buf);
+
+    buf->priv->screen_height = height;
+
+    if (height > old_height)
+    {
+        if (buf->priv->screen_offset < height - old_height)
+        {
+            guint add = height - old_height - buf->priv->screen_offset;
+            guint i;
+
+            for (i = 0; i < add; ++i)
+            {
+                MooTermLine new_line;
+                term_line_init (&new_line, width);
+                g_array_append_val (buf->priv->lines, new_line);
+            }
+
+            if (buf->priv->screen_offset)
+            {
+                gulong cursor_row =
+                        buf->priv->screen_offset + buf->priv->cursor_row;
+
+                buf->priv->screen_offset = 0;
+
+                moo_term_buffer_cursor_move_to (buf, cursor_row, -1);
+                moo_term_buffer_scrollback_changed (buf);
+            }
+        }
+        else
+        {
+            buf->priv->screen_offset -= (height - old_height);
+            moo_term_buffer_cursor_move_to (buf,
+                                            buf->priv->cursor_row + height - old_height, -1);
+            moo_term_buffer_scrollback_changed (buf);
+        }
+    }
+    else
+    {
+        buf->priv->screen_offset += (old_height - height);
+
+        if (buf->priv->cursor_row > old_height - height)
+            moo_term_buffer_cursor_move_to (buf,
+                                            buf->priv->cursor_row + height - old_height, -1);
+        else
+            moo_term_buffer_cursor_move_to (buf, 0, -1);
+
+        moo_term_buffer_scrollback_changed (buf);
+    }
+
+    g_object_notify (G_OBJECT (buf), "screen-height");
+    g_signal_emit (buf, signals[SCREEN_SIZE_CHANGED], 0,
+                   buf_screen_width (buf),
+                   height);
+
+    if (buf->priv->scrolling_region_set)
+    {
+        if (buf->priv->top_margin >= height)
+        {
+            buf->priv->top_margin = 0;
+            buf->priv->bottom_margin = height - 1;
+            buf->priv->scrolling_region_set = FALSE;
+            g_object_notify (G_OBJECT (buf), "scrolling-region-set");
+        }
+        else if (buf->priv->bottom_margin >= height)
+        {
+            buf->priv->bottom_margin = height - 1;
+        }
+    }
+
+    buf_changed_set_all (buf);
+    moo_term_buffer_changed (buf);
 }
 
 
@@ -409,81 +646,11 @@ void    moo_term_buffer_set_screen_size (MooTermBuffer  *buf,
                                          gulong          width,
                                          gulong          height)
 {
-    gulong old_width = buf_screen_width (buf);
-    gulong old_height = buf_screen_height (buf);
-    guint i;
+    if (height >= MIN_HEIGHT && height != buf_screen_height (buf))
+        buf_set_screen_height (buf, height);
 
-    if (height >= MIN_HEIGHT && height != old_height)
-    {
-        buf->priv->screen_height = height;
-
-        if (height > old_height)
-        {
-            if (buf->priv->screen_offset < height - old_height)
-            {
-                guint add = height - old_height - buf->priv->screen_offset;
-
-                for (i = 0; i < add; ++i)
-                {
-                    MooTermLine new_line;
-                    term_line_init (&new_line, old_width);
-                    g_array_append_val (buf->priv->lines, new_line);
-                }
-
-                if (buf->priv->screen_offset)
-                {
-                    gulong cursor_row =
-                            buf->priv->screen_offset + buf->priv->cursor_row;
-
-                    buf->priv->screen_offset = 0;
-
-                    buf_cursor_move_to (buf, cursor_row, -1);
-                    moo_term_buffer_scrollback_changed (buf);
-                }
-            }
-            else
-            {
-                buf->priv->screen_offset -= (height - old_height);
-                buf_cursor_move_to (buf,
-                                    buf->priv->cursor_row + height - old_height,
-                                    -1);
-                moo_term_buffer_scrollback_changed (buf);
-            }
-        }
-        else
-        {
-            buf->priv->screen_offset += (old_height - height);
-
-            if (buf->priv->cursor_row > old_height - height)
-                buf_cursor_move_to (buf,
-                                    buf->priv->cursor_row + height - old_height,
-                                    -1);
-            else
-                buf_cursor_move_to (buf, 0, -1);
-
-            moo_term_buffer_scrollback_changed (buf);
-        }
-
-        g_object_notify (G_OBJECT (buf), "screen-height");
-    }
-
-    if (width >= MIN_WIDTH && width != old_width)
-    {
-        height = buf_screen_height (buf);
-
-        buf->priv->screen_width = width;
-
-        if (buf->priv->cursor_col >= width)
-            buf_cursor_move_to (buf, -1, width - 1);
-
-        g_object_notify (G_OBJECT (buf), "screen-width");
-    }
-
-    g_signal_emit (buf, signals[SCREEN_SIZE_CHANGED], 0,
-                   buf_screen_width (buf),
-                   buf_screen_height (buf));
-    buf_changed_set_all (buf);
-    moo_term_buffer_changed (buf);
+    if (width >= MIN_WIDTH && width != buf_screen_width (buf))
+        buf_set_screen_width (buf, width);
 }
 
 
@@ -498,7 +665,17 @@ void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
                                          long            rows,
                                          long            cols)
 {
-    buf_cursor_move (buf, rows, cols);
+    long width = buf_screen_width (buf);
+    long height = buf_screen_height (buf);
+    long cursor_row = buf_cursor_row (buf);
+    long cursor_col = buf_cursor_col (buf);
+
+    if (rows && cursor_row + rows >= 0 && cursor_row + rows < height)
+        cursor_row += rows;
+    if (cols && cursor_col + cols >= 0 && cursor_col + cols < width)
+        cursor_col += cols;
+
+    moo_term_buffer_cursor_move_to (buf, cursor_row, cursor_col);
 }
 
 
@@ -563,7 +740,7 @@ static void buf_print_char (MooTermBuffer   *buf,
     MooTermTextAttr *attr =
             buf->priv->current_attr.mask ? &buf->priv->current_attr : NULL;
 
-    if (buf->priv->insert_mode)
+    if (buf->priv->modes & IRM)
     {
         term_line_insert_char (buf_screen_line (buf, cursor_row),
                                buf->priv->cursor_col++,
@@ -583,13 +760,9 @@ static void buf_print_char (MooTermBuffer   *buf,
 
     if (buf->priv->cursor_col == width)
     {
-        if (buf->priv->am_mode)
-        {
-            buf->priv->cursor_col = 0;
-            buf_line_feed (buf);
-        }
-        else
-            buf->priv->cursor_col--;
+        buf->priv->cursor_col--;
+        if (buf->priv->modes & DECAWM)
+            moo_term_buffer_new_line (buf);
     }
 }
 
@@ -640,4 +813,93 @@ void moo_term_buffer_set_icon_name      (MooTermBuffer  *buf,
                                          const char     *icon)
 {
     g_signal_emit (buf, signals[SET_ICON_NAME], 0, icon);
+}
+
+
+void    moo_term_buffer_index           (MooTermBuffer  *buf)
+{
+    guint cursor_row = buf_cursor_row (buf);
+    guint screen_height = buf_screen_height (buf);
+
+    g_assert (cursor_row < screen_height);
+
+    if (cursor_row == screen_height - 1)
+    {
+        _buf_add_lines (buf, 1);
+
+        buf_changed_set_all (buf);
+
+        moo_term_buffer_changed (buf);
+        moo_term_buffer_scrollback_changed (buf);
+    }
+    else
+    {
+        moo_term_buffer_cursor_move (buf, 1, 0);
+    }
+}
+
+
+void    moo_term_buffer_new_line        (MooTermBuffer  *buf)
+{
+    moo_term_buffer_index (buf);
+    moo_term_buffer_cursor_move_to (buf, -1, 0);
+}
+
+
+void    moo_term_buffer_full_reset      (MooTermBuffer  *buf)
+{
+    g_signal_emit (buf, signals[FULL_RESET], 0);
+
+    buf->priv->top_margin = 0;
+    buf->priv->bottom_margin = buf->priv->screen_height - 1;
+    buf->priv->scrolling_region_set = FALSE;
+    g_object_notify (G_OBJECT (buf), "scrolling-region-set");
+
+    moo_term_buffer_erase_display (buf);
+    moo_term_buffer_cursor_move_to (buf, 0, 0);
+
+    g_object_set (buf,
+                  "mode-IRM", FALSE,
+                  "mode-LNM", FALSE,
+                  "mode-DECCKM", FALSE,
+                  "mode-DECSCNM", FALSE,
+                  "mode-DECOM", FALSE,
+                  "mode-DECAWM", TRUE,
+                  "mode-MOUSE-TRACKING", FALSE,
+                  "mode-HILITE-MOUSE-TRACKING", FALSE,
+                  "mode-KEYPAD-NUMERIC", TRUE,
+                  NULL);
+}
+
+
+void    moo_term_buffer_feed_child      (MooTermBuffer  *buf,
+                                         const char     *string,
+                                         int             len)
+{
+    g_signal_emit (buf, signals[FEED_CHILD], 0, string, len);
+}
+
+
+void    moo_term_buffer_erase_display   (MooTermBuffer  *buf)
+{
+    guint screen_height = buf_screen_height (buf);
+    guint i;
+
+    for (i = 0; i < screen_height; ++i)
+        term_line_erase (buf_screen_line (buf, i));
+
+    buf_changed_set_all (buf);
+    moo_term_buffer_changed (buf);
+}
+
+
+void    moo_term_buffer_set_keypad_numeric  (MooTermBuffer  *buf,
+                                             gboolean        setting)
+{
+    if (setting)
+        buf->priv->modes |= KEYPAD_NUMERIC;
+    else
+        buf->priv->modes &= ~KEYPAD_NUMERIC;
+
+    g_object_notify (G_OBJECT (buf), "mode-KEYPAD-NUMERIC");
 }

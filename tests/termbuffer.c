@@ -124,8 +124,8 @@ int main (int argc, char *argv[])
 
     buf = moo_term_get_buffer (MOO_TERM (term));
     g_object_set (buf,
-                  "am-mode", FALSE,
-                  "insert-mode", FALSE,
+                  "mode-DECAWM", FALSE,
+                  "mode-IRM", FALSE,
                   "cursor-visible", TRUE,
                   NULL);
 

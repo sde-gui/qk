@@ -38,7 +38,7 @@ int main (int argc, char *argv[])
     }
 
     win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size (GTK_WINDOW (win), 400, 400);
+    gtk_window_set_default_size (GTK_WINDOW (win), 700, 500);
     swin = gtk_scrolled_window_new (NULL, NULL);
     gtk_container_add (GTK_CONTAINER (win), swin);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
@@ -51,11 +51,6 @@ int main (int argc, char *argv[])
     gtk_widget_show_all (win);
 
     buf = moo_term_get_buffer (MOO_TERM (term));
-    g_object_set (buf,
-                  "am-mode", TRUE,
-                  "insert-mode", FALSE,
-                  "cursor-visible", TRUE,
-                  NULL);
 
     g_signal_connect_swapped (buf, "set-window-title",
                               G_CALLBACK (gtk_window_set_title), win);

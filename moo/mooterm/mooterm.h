@@ -62,7 +62,7 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
                                              char          **envp);
 void             moo_term_feed_child        (MooTerm        *term,
                                              const char     *string,
-                                             gssize          len);
+                                             int             len);
 
 void             moo_term_scroll_to_top     (MooTerm        *term);
 void             moo_term_scroll_to_bottom  (MooTerm        *term);

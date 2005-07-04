@@ -45,7 +45,7 @@ enum {
 
     /* 'normal' keys */
     KEY_TAB,
-    KEY_RETURN,
+//     KEY_RETURN,
     KEY_ESCAPE,
 
     KEY_F1,
@@ -118,7 +118,7 @@ static KeyString xterm_keys[KEY_MAX] =
     { "\033[5~",    4 /* kpp=\E[5~       previous-page key */ },
 
     { "\t",         1 /* KEY_TAB */ },
-    { "\n",         1 /* KEY_RETURN */ },
+//     { "\n",         1 /* KEY_RETURN */ },
     { "\033",       1 /* KEY_ESCAPE */ },
 
     /* F# keys */
@@ -177,8 +177,8 @@ static void get_xterm_key   (guint          key,
             assign (KEY_BACKSPACE); break;
         case GDK_Tab:
             assign (KEY_TAB); break;
-        case GDK_Return:
-            assign (KEY_RETURN); break;
+//         case GDK_Return:
+//             assign (KEY_RETURN); break;
         case GDK_Escape:
             assign (KEY_ESCAPE); break;
         case GDK_Delete:
@@ -320,7 +320,23 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
 
     if (!mods)
     {
-        get_xterm_key (key, &string, &len);
+        if (key == GDK_Return)
+        {
+            if (term->priv->buffer->priv->modes & LNM)
+            {
+                string = "\r\f";
+                len = 2;
+            }
+            else
+            {
+                string = "\r";
+                len = 1;
+            }
+        }
+        else
+        {
+            get_xterm_key (key, &string, &len);
+        }
 
         if (string)
         {

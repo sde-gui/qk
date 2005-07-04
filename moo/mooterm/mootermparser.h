@@ -26,99 +26,91 @@ G_BEGIN_DECLS
 typedef enum {
     CMD_NONE = 0,
     CMD_ERROR,
+    CMD_IGNORE,
 
-    CMD_SET_ATTRS,
+    CMD_DECALN,
+    CMD_DECSET,     /* see skip */
+    CMD_DECRST,     /* see skip */
+    CMD_G0_CHARSET, /* see skip */
+    CMD_G1_CHARSET, /* see skip */
+    CMD_G2_CHARSET, /* see skip */
+    CMD_G3_CHARSET, /* see skip */
+    CMD_DECSC,
+    CMD_DECRC,
+    CMD_IND,
+    CMD_NEL,
+    CMD_HTS,
+    CMD_RI,
+    CMD_SS2,
+    CMD_SS3,
+    CMD_DA,
+    CMD_ICH,
+    CMD_CUU,
+    CMD_CUD,
+    CMD_CUF,
+    CMD_CUB,
+    CMD_CUP,
+    CMD_ED,
+    CMD_EL,
+    CMD_IL,
+    CMD_DL,
+    CMD_DCH,
+    CMD_INIT_HILITE_MOUSE_TRACKING,
+    CMD_TBC,
+    CMD_SM,
+    CMD_RM,
+    CMD_SGR,
+    CMD_DSR,
+    CMD_DECSTBM,
+    CMD_DECREQTPARM,
+    CMD_RESTORE_DECSET,
+    CMD_SAVE_DECSET,
+    CMD_SET_TEXT,
+    CMD_RIS,
+    CMD_LS2,
+    CMD_LS3,
+    CMD_DECKPAM,
+    CMD_DECKPNM,
 
-    CMD_CURSOR_NORMAL,
-    CMD_CURSOR_INVISIBLE,
-    CMD_BACK_TAB,
-    CMD_CLEAR_SCREEN,
-    CMD_CHANGE_SCROLL_REGION,
-
-    CMD_SET_WINDOW_TITLE,
-    CMD_SET_ICON_NAME,
-    CMD_SET_WINDOW_ICON_NAME,
-
-    CMD_PARM_LEFT_CURSOR,
-    CMD_PARM_RIGHT_CURSOR,
-    CMD_PARM_DOWN_CURSOR,
-    CMD_PARM_UP_CURSOR,
-    CMD_CURSOR_RIGHT,
-    CMD_CURSOR_LEFT,
-    CMD_CURSOR_DOWN,
-    CMD_CURSOR_UP,
-    CMD_CURSOR_HOME,
-    CMD_CURSOR_ADDRESS,
-    CMD_ROW_ADDRESS,
-    CMD_COLUMN_ADDRESS,
-    CMD_CARRIAGE_RETURN,
-
-    CMD_PARM_DCH,
-    CMD_PARM_DELETE_LINE,
-    CMD_DELETE_CHARACTER,
-    CMD_DELETE_LINE,
-    CMD_ERASE_CHARS,
-    
-    CMD_CLR_EOS,
-    CMD_CLR_EOL,
-    CMD_CLR_BOL,
-    
-    CMD_ENA_ACS,
-    CMD_FLASH_SCREEN,
-    
-    CMD_PARM_ICH,
-    CMD_PARM_INSERT_LINE,
-    CMD_INSERT_LINE,
-    
-    CMD_ENTER_SECURE_MODE,
-    CMD_INIT_2STRING,
-    CMD_RESET_2STRING,
-    CMD_RESET_1STRING,
-    CMD_PRINT_SCREEN,
-    CMD_PRTR_OFF,
-    CMD_PRTR_ON,
-    
-    CMD_ORIG_PAIR,
-    CMD_ENTER_REVERSE_MODE,
-    CMD_ENTER_AM_MODE,
-    CMD_EXIT_AM_MODE,
-    CMD_ENTER_CA_MODE,
-    CMD_EXIT_CA_MODE,
-    CMD_ENTER_INSERT_MODE,
-    CMD_EXIT_INSERT_MODE,
-    CMD_ENTER_STANDOUT_MODE,
-    CMD_EXIT_STANDOUT_MODE,
-    CMD_ENTER_UNDERLINE_MODE,
-    CMD_EXIT_UNDERLINE_MODE,
-    
-    CMD_KEYPAD_LOCAL,
-    CMD_KEYPAD_XMIT,
-    
-    CMD_SET_BACKGROUND,
-    CMD_SET_FOREGROUND,
-    
-    CMD_CLEAR_ALL_TABS,
-    
-    CMD_USER6,
-    CMD_USER7,
-    CMD_USER8,
-    CMD_USER9,
-    
     CMD_BELL,
-    CMD_ENTER_ALT_CHARSET_MODE,
-    CMD_EXIT_ALT_CHARSET_MODE,
-    
+    CMD_BACKSPACE,
     CMD_TAB,
-    CMD_SCROLL_FORWARD,
-    CMD_SCROLL_REVERSE,
-    CMD_SET_TAB,
-    CMD_ESC_l,
-    CMD_ESC_m,
+    CMD_LINEFEED,
+    CMD_VERT_TAB,
+    CMD_FORM_FEED,
+    CMD_CARRIAGE_RETURN,
+    CMD_ALT_CHARSET,
+    CMD_NORM_CHARSET,
 
-    CMD_RESTORE_CURSOR,
-    CMD_SAVE_CURSOR
+    CMD_COLUMN_ADDRESS,
+    CMD_ROW_ADDRESS,
+    CMD_BACK_TAB,
+    CMD_RESET_2STRING
 } CmdCode;
-    
+
+#define CMD_HVP     CMD_CUP
+
+#define CMD_MC              CMD_IGNORE
+#define CMD_DECDHL          CMD_IGNORE
+#define CMD_DECDWL          CMD_IGNORE
+#define CMD_DECSWL          CMD_IGNORE
+#define CMD_DECTST          CMD_IGNORE
+#define CMD_DECLL           CMD_IGNORE
+#define CMD_DCS             CMD_IGNORE
+#define CMD_PM              CMD_IGNORE
+#define CMD_APC             CMD_IGNORE
+#define CMD_MEMORY_LOCK     CMD_IGNORE
+#define CMD_MEMORY_UNLOCK   CMD_IGNORE
+#define CMD_LS3R            CMD_IGNORE
+#define CMD_LS2R            CMD_IGNORE
+#define CMD_LS1R            CMD_IGNORE
+#define CMD_TRACK_MOUSE     CMD_IGNORE
+#define CMD_PRINT_SCREEN    CMD_IGNORE
+#define CMD_PRTR_OFF        CMD_IGNORE
+#define CMD_PRTR_ON         CMD_IGNORE
+#define CMD_USER6           CMD_IGNORE
+#define CMD_USER8           CMD_IGNORE
+
 
 #define MAX_NUMS_LEN        128
 #define MAX_ESC_SEQ_LEN     1024
@@ -156,6 +148,8 @@ struct _MooTermParser {
 
     guint       nums[MAX_NUMS_LEN];
     guint       nums_len;
+    char        string[MAX_ESC_SEQ_LEN];
+    guint       string_len;
 };
 
 
@@ -173,8 +167,38 @@ void            _moo_term_yyerror       (MooTermParser  *parser,
 /* defined in generated mootermparser-yacc.c */
 int             _moo_term_yyparse       (MooTermParser  *parser);
 
-void            _moo_term_print_bytes   (const char     *string,
+char           *_moo_term_nice_bytes    (const char     *string,
                                          int             len);
+
+
+inline static gboolean  iter_is_start   (Iter           *iter)
+{
+    if (iter->parser->old_data_len)
+    {
+        return iter->old && !iter->offset;
+    }
+    else
+    {
+        g_assert (!iter->old);
+        return !iter->offset;
+    }
+}
+
+
+inline static void      iter_backward   (Iter           *iter)
+{
+    g_assert (!iter_is_start (iter));
+
+    if (iter->offset)
+    {
+        --iter->offset;
+    }
+    else
+    {
+        g_assert (!iter->old && iter->parser->old_data_len);
+        iter->offset = iter->parser->old_data_len - 1;
+    }
+}
 
 
 G_END_DECLS

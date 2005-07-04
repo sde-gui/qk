@@ -341,10 +341,15 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 break;
 
             default:
+#if 0
+                g_print ("got '");
+                _moo_term_print_bytes (buf, r);
+                g_print ("'\n");
+#endif
                 feed_buffer (vt, buf, r);
                 break;
         }
-    
+
         return TRUE;
     }
 
@@ -393,7 +398,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                             g_assert_not_reached();
                     }
                 }
-    
+
                 break;
 
             case -1:
@@ -492,7 +497,7 @@ static gboolean do_write        (MooTermVt      *vt_gen,
 
         if (!*plen)
             *string = NULL;
-    
+
         return TRUE;
     }
 }
