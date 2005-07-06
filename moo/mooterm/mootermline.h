@@ -19,320 +19,215 @@
 #endif
 
 #include <string.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
-#define EMPTY_CHAR ' '
+
+typedef struct _MooTermCell MooTermCell;
+typedef struct _MooTermLine MooTermLine;
+
+#define EMPTY_CHAR  ' '
 
 static MooTermTextAttr ZERO_ATTR;
 
-typedef GArray AttrList;
+#define TERM_LINE(ar)           ((MooTermLine*) (ar))
+#define TERM_LINE_ARRAY(line)   ((GArray*) (line))
 
-inline static AttrList *attr_list_free (AttrList *attrs)
+struct _MooTermCell {
+    gunichar        ch;
+    MooTermTextAttr attr;
+};
+
+struct _MooTermLine {
+    MooTermCell *data;
+    guint        len;
+};
+
+
+inline static MooTermLine *term_line_new (guint len)
 {
-    if (attrs)
-        g_array_free (attrs, TRUE);
-    return NULL;
+    return TERM_LINE (g_array_sized_new (FALSE, FALSE,
+                                         sizeof (MooTermCell),
+                                         len));
 }
 
-inline static AttrList *attr_list_new (gulong start,
-                                       gulong len,
-                                       MooTermTextAttr *attr)
-{
-    AttrList *a;
-    guint i;
-
-    if (!len || !attr || !attr->mask)
-        return NULL;
-
-    a = g_array_sized_new (FALSE, FALSE,
-                           sizeof (MooTermTextAttr), start + len);
-    for (i = 0; i < start; ++i)
-        g_array_append_val (a, ZERO_ATTR);
-    for (i = start; i < start + len; ++i)
-        g_array_append_val (a, *attr);
-
-    return a;
-}
-
-inline static MooTermTextAttr *attr_list_get_attr (AttrList *list, gulong i)
-{
-    if (!list || i >= list->len)
-    {
-        return NULL;
-    }
-    else
-    {
-        MooTermTextAttr *attr = &g_array_index (list, MooTermTextAttr, i);
-        if (attr->mask)
-            return attr;
-        else
-            return NULL;
-    }
-}
-
-inline static AttrList *attr_list_set_range (AttrList   *list,
-                                             gulong      start,
-                                             gulong      len,
-                                             MooTermTextAttr *attr)
-{
-    guint i;
-    guint old_len;
-
-    if (!len)
-        return list;
-
-    if (!list)
-        return attr_list_new (start, len, attr);
-
-    if (!attr)
-        attr = &ZERO_ATTR;
-
-    old_len = list->len;
-
-    if (start >= old_len)
-    {
-        for (i = 0; i < start - old_len; ++i)
-            g_array_append_val (list, ZERO_ATTR);
-        for (i = 0; i < len; ++i)
-            g_array_append_val (list, *attr);
-    }
-    else
-    {
-        for (i = start; i < MIN (old_len, start + len); ++i)
-            g_array_index (list, MooTermTextAttr, i) = *attr;
-        if (start + len > old_len)
-            for (i = 0; i < start + len - old_len; ++i)
-                g_array_append_val (list, *attr);
-    }
-
-    return list;
-}
-
-
-/* deletes specified range and shifts back segments following deleted range */
-inline static AttrList *attr_list_delete_range  (AttrList   *attrs,
-                                                 gulong      start,
-                                                 gulong      len)
-{
-    if (!attrs || !len)
-        return attrs;
-
-    if (start > attrs->len)
-        return attrs;
-
-    if (start + len >= attrs->len)
-    {
-        if (!start)
-        {
-            g_array_free (attrs, TRUE);
-            return NULL;
-        }
-        else
-        {
-            return g_array_set_size (attrs, start);
-        }
-    }
-
-    return g_array_remove_range (attrs, start, len);
-}
-
-
-inline static AttrList *attr_list_insert_range  (AttrList   *list,
-                                                 gulong      pos,
-                                                 gulong      len,
-                                                 gulong      line_len,
-                                                 MooTermTextAttr *attr)
-{
-    guint i;
-
-    if (!len)
-        return list;
-
-    if (!list)
-        return attr_list_new (pos, len, attr);
-
-    if (pos >= list->len)
-        return attr_list_set_range (list, pos, len, attr);
-
-    if (!attr)
-        attr = &ZERO_ATTR;
-
-    for (i = 0; i < len; ++i)
-        g_array_insert_val (list, i, *attr);
-
-    if (list->len > line_len)
-        g_array_set_size (list, line_len);
-
-    return list;
-}
-
-static AttrList *attr_list_set_line_len (AttrList *attr,
-                                         gulong    len)
-{
-    if (!attr || !len || attr->len <= len)
-        return attr;
-    else
-        return g_array_set_size (attr, len);
-}
-
-
-typedef struct {
-    GByteArray  *text;
-    AttrList    *attrs;
-} MooTermLine;
-
-
-inline static MooTermLine *term_line_init (MooTermLine *line, gulong len)
-{
-    line->text = g_byte_array_sized_new (len);
-    line->attrs = NULL;
-    return line;
-}
-
-inline static void term_line_destroy (MooTermLine *line)
+inline static void term_line_free (MooTermLine *line)
 {
     if (line)
-    {
-        g_byte_array_free (line->text, TRUE);
-        attr_list_free (line->attrs);
-    }
+        g_array_free (TERM_LINE_ARRAY (line), TRUE);
 }
 
-inline static char *term_line_chars (MooTermLine *line)
+
+inline static guint term_line_len (MooTermLine *line)
 {
-    return (char*)line->text->data;
+    return line->len;
 }
 
-inline static char term_line_get_char (MooTermLine *line, gulong i)
+
+inline static void term_line_set_len (MooTermLine *line, guint len)
 {
-    if (i >= line->text->len)
-        return EMPTY_CHAR;
-    else
-        return line->text->data[i];
+    if (line->len > len)
+        g_array_set_size (TERM_LINE_ARRAY (line), len);
 }
 
-inline static gulong term_line_len (MooTermLine *line)
-{
-    return line->text->len;
-}
 
-inline static void term_line_set_len (MooTermLine *line, gulong len)
+inline static void term_line_erase (MooTermLine *line)
 {
-    if (line->text->len > len)
-        g_byte_array_set_size (line->text, len);
-    line->attrs = attr_list_set_line_len (line->attrs, len);
-}
-
-inline static MooTermTextAttr *term_line_get_attr (MooTermLine *line, gulong i)
-{
-    return attr_list_get_attr (line->attrs, i);
-}
-
-inline static void term_line_erase (MooTermLine   *line)
-{
-    g_byte_array_set_size (line->text, 0);
-    line->attrs = attr_list_free (line->attrs);
+    term_line_set_len (line, 0);
 }
 
 
 inline static void term_line_erase_range    (MooTermLine   *line,
-                                             gulong         start,
-                                             gulong         len,
-                                             MooTermTextAttr *attr)
+                                             guint          pos,
+                                             guint          len)
 {
-    if (start >= line->text->len)
+    guint i;
+
+    if (!len)
         return;
 
-    if (start + len > line->text->len)
-        len = line->text->len - start;
+    if (pos + len >= line->len)
+        return term_line_set_len (line, pos);
 
-    memset (line->text->data + start, EMPTY_CHAR, len);
-    line->attrs = attr_list_set_range (line->attrs, start, len, attr);
+    for (i = pos; i < pos + len; ++i)
+    {
+        line->data[pos].ch = EMPTY_CHAR;
+        line->data[pos].attr.mask = 0;
+    }
 }
 
 
 inline static void term_line_delete_range   (MooTermLine   *line,
-                                             gulong         start,
-                                             gulong         len)
+                                             guint          pos,
+                                             guint          len)
 {
-    if (start >= line->text->len)
+    if (pos >= line->len)
         return;
-
-    if (start + len > line->text->len)
-        len = line->text->len - start;
-
-    g_byte_array_remove_range (line->text, start, len);
-    line->attrs = attr_list_delete_range (line->attrs, start, len);
+    else if (pos + len >= line->len)
+        return term_line_set_len (line, pos);
+    else
+        g_array_remove_range (TERM_LINE_ARRAY (line), pos, len);
 }
 
 
-inline static void term_line_insert_chars   (MooTermLine   *line,
-                                             gulong         pos,
-                                             char           c,
-                                             gulong         num,
-                                             gulong         line_len,
-                                             MooTermTextAttr *attr)
+inline static void term_line_set_unichar    (MooTermLine   *line,
+                                             guint          pos,
+                                             gunichar       c,
+                                             guint          num,
+                                             MooTermTextAttr *attr,
+                                             guint          width)
 {
-    guint old_len = line->text->len;
+    guint i;
 
-    if (pos >= line_len)
-        return;
-    if (pos + num > line_len)
-        num = line_len - pos;
+    if (pos >= width)
+        return term_line_set_len (line, width);
 
-    if (pos >= old_len)
+    if (pos + num >= width)
+        num = width - pos;
+
+    if (!attr || !attr->mask)
+        attr = &ZERO_ATTR;
+
+    if (!c)
+        c = EMPTY_CHAR;
+
+    term_line_set_len (line, width);
+
+    if (pos >= line->len)
     {
-        g_byte_array_set_size (line->text, pos + num);
-        memset (line->text->data + old_len, EMPTY_CHAR, pos - old_len);
-        memset (line->text->data + pos, c, num);
+        MooTermCell cell = {EMPTY_CHAR, ZERO_ATTR};
+
+        for (i = 0; i < pos - line->len; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+
+        cell.ch = c;
+        cell.attr = *attr;
+
+        for (i = 0; i < num; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+    }
+    else if (pos + num > line->len)
+    {
+        MooTermCell cell = {c, *attr};
+
+        for (i = pos; i < line->len; ++i)
+            g_array_index (TERM_LINE_ARRAY (line), MooTermCell, i) = cell;
+        for (i = 0; i < pos + num - line->len; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
     }
     else
     {
-        g_byte_array_set_size (line->text, old_len + num);
-        memmove (line->text->data + (pos + num),
-                 line->text->data + pos,
-                 old_len - pos);
-        memset (line->text->data + pos, c, num);
-        if (old_len + num > line_len)
-            g_byte_array_set_size (line->text, line_len);
+        MooTermCell cell = {c, *attr};
+
+        for (i = pos; i < pos + num; ++i)
+            g_array_index (TERM_LINE_ARRAY (line), MooTermCell, i) = cell;
     }
-
-    line->attrs = attr_list_insert_range (line->attrs, pos,
-                                          num, line_len, attr);
 }
 
 
-inline static void term_line_insert_char (MooTermLine   *line,
-                                          gulong         pos,
-                                          char           c,
-                                          MooTermTextAttr *attr,
-                                          gulong         line_len)
+inline static void term_line_insert_unichar (MooTermLine   *line,
+                                             guint          pos,
+                                             gunichar       c,
+                                             guint          num,
+                                             MooTermTextAttr *attr,
+                                             guint          width)
 {
-    term_line_insert_chars (line, pos, c, 1, line_len, attr);
-}
+    guint i;
 
-inline static void term_line_set_char (MooTermLine   *line,
-                                       gulong         pos,
-                                       char           c,
-                                       MooTermTextAttr *attr,
-                                       gulong         line_len)
-{
-    if (pos >= line->text->len)
+    if (pos >= width)
+        return term_line_set_len (line, width);
+
+    if (pos + num >= width)
+        return term_line_set_unichar (line, pos, c, num,
+                                      attr, width);
+
+    if (!attr || !attr->mask)
+        attr = &ZERO_ATTR;
+
+    if (!c)
+        c = EMPTY_CHAR;
+
+    term_line_set_len (line, width);
+
+    for (i = 0; i < num; ++i)
     {
-        term_line_insert_char (line, pos, c, attr, line_len);
-    }
-    else
-    {
-        line->text->data[pos] = c;
-        line->attrs = attr_list_set_range (line->attrs, pos, 1, attr);
+        MooTermCell cell = {c, *attr};
+        g_array_insert_val (TERM_LINE_ARRAY (line), pos, cell);
     }
 }
 
 
-inline static char *term_line_get_text (MooTermLine   *line)
+inline static gunichar term_line_get_unichar (MooTermLine   *line,
+                                              guint          col)
 {
-    return g_strndup ((char*)line->text->data, line->text->len);
+    return g_array_index (TERM_LINE_ARRAY (line), MooTermCell, col).ch;
+}
+
+
+inline static guint term_line_get_chars (MooTermLine    *line,
+                                         char           *buf,
+                                         guint           first,
+                                         int             len)
+{
+    guint i;
+    guint res = 0;
+
+    if (!len || first >= line->len)
+        return 0;
+
+    if (len < 0 || first + len > line->len)
+        len = line->len - first;
+
+    for (i = first; i < first + len; ++i)
+    {
+        gunichar c = term_line_get_unichar (line, i);
+        guint l = g_unichar_to_utf8 (c, buf);
+        buf += l;
+        res += l;
+    }
+
+    return res;
 }
 
 

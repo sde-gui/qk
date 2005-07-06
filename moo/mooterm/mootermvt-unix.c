@@ -75,8 +75,8 @@ struct _MooTermVtUnixClass {
 static void     moo_term_vt_unix_finalize       (GObject        *object);
 
 static void     set_size        (MooTermVt      *vt,
-                                 gulong          width,
-                                 gulong          height);
+                                 guint           width,
+                                 guint           height);
 static gboolean fork_command    (MooTermVt      *vt,
                                  const char     *cmd,
                                  const char     *working_dir,
@@ -91,7 +91,7 @@ static gboolean read_child_out  (GIOChannel     *source,
                                  MooTermVtUnix  *vt);
 static void     feed_buffer     (MooTermVtUnix  *vt,
                                  const char     *string,
-                                 gssize          len);
+                                 int             len);
 
 static void     start_writer    (MooTermVt      *vt);
 static void     stop_writer     (MooTermVt      *vt);
@@ -139,8 +139,8 @@ static void     moo_term_vt_unix_finalize        (GObject            *object)
 
 
 static void     set_size        (MooTermVt      *vt,
-                                 gulong          width,
-                                 gulong          height)
+                                 guint           width,
+                                 guint           height)
 {
     MooTermVtUnix *vtu;
 
@@ -452,7 +452,7 @@ error:
 
 static void     feed_buffer     (MooTermVtUnix  *vt,
                                  const char     *string,
-                                 gssize          len)
+                                 int             len)
 {
     moo_term_buffer_write (moo_term_vt_get_buffer (MOO_TERM_VT (vt)),
                            string, len);
@@ -464,10 +464,10 @@ static void     feed_buffer     (MooTermVtUnix  *vt,
    to string, length of it to len, and fills err in case of error */
 static gboolean do_write        (MooTermVt      *vt_gen,
                                  const char    **string,
-                                 gsize          *plen,
+                                 guint          *plen,
                                  int            *err)
 {
-    gssize written;
+    int written;
 
     MooTermVtUnix *vt = MOO_TERM_VT_UNIX (vt_gen);
 
@@ -540,7 +540,7 @@ static void     stop_writer     (MooTermVt      *vt)
 
 static void     vt_write        (MooTermVt      *vt,
                                  const char     *data,
-                                 gssize          data_len)
+                                 int             data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
 
@@ -548,7 +548,7 @@ static void     vt_write        (MooTermVt      *vt,
     {
         int err = 0;
         const char *string;
-        gsize len;
+        guint len;
         GByteArray *freeme = NULL;
 
         if (!g_queue_is_empty (vt->priv->pending_write))
@@ -566,7 +566,7 @@ static void     vt_write        (MooTermVt      *vt,
         else
         {
             string = data;
-            len = data_len > 0 ? (gsize)data_len : strlen (data);
+            len = data_len > 0 ? (guint)data_len : strlen (data);
             data = NULL;
         }
 

@@ -68,7 +68,7 @@ G_GNUC_UNUSED static gboolean print_random_hard (MooTerm *term)
         moo_term_force_update (term);
     }
 
-    g_print ("buffer: %ldx%ld\nterm: %ldx%ld\n",
+    g_print ("buffer: %dx%d\nterm: %dx%d\n",
              buf_total_height (buf), buf_screen_width (buf),
              term_height (term), term_width (term));
 

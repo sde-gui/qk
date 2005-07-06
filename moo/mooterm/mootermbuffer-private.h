@@ -108,39 +108,38 @@ enum {
     KEYPAD_NUMERIC          = 1 << 15
 };
 
-#define ANSI_MODES  (KAM | IRM | LNM)
-#define DEC_MODES   (DECCKM | DECANM | DECCOLM | DECSCLM | DECSCNM | DECOM | DECAWM | DECARM | DECPFF | DECPEX)
-
 
 /* LNM mode affects also data sent by RETURN */
 struct _MooTermBufferPrivate {
     gboolean        constructed;
 
-    GArray         *lines; /* array of MooTermLine */
+    GPtrArray      *lines; /* array of MooTermLine* */
 
     int             modes;
     int             saved_modes;
     MooTermTextAttr current_attr;
     gboolean        cursor_visible;
 
-    gulong          screen_offset;
-    gulong          screen_width;
-    gulong          screen_height;
+    guint           screen_offset;
+    guint           screen_width;
+    guint           screen_height;
 
     /* scrolling region - top and bottom rows */
-    gulong          top_margin;
-    gulong          bottom_margin;
+    guint           top_margin;
+    guint           bottom_margin;
     gboolean        scrolling_region_set;
 
     /* always absolute */
-    gulong          cursor_row;
-    gulong          cursor_col;
+    guint           cursor_row;
+    guint           cursor_col;
 
     /* used for save_cursor/restore_cursor */
-    gulong          saved_cursor_row;
-    gulong          saved_cursor_col;
+    guint           saved_cursor_row;
+    guint           saved_cursor_col;
 
-    glong           max_height;
+    GList          *tab_stops;
+
+    int             max_height;
     MooTermParser  *parser;
 
     BufRegion      *changed;
@@ -151,49 +150,55 @@ struct _MooTermBufferPrivate {
 };
 
 
-inline static gulong buf_screen_width (MooTermBuffer *buf)
+inline static guint buf_screen_width (MooTermBuffer *buf)
 {
     return buf->priv->screen_width;
 }
 
-inline static gulong buf_screen_height (MooTermBuffer *buf)
+inline static guint buf_screen_height (MooTermBuffer *buf)
 {
     return buf->priv->screen_height;
 }
 
-inline static gulong buf_screen_offset (MooTermBuffer *buf)
+inline static guint buf_screen_offset (MooTermBuffer *buf)
 {
     return buf->priv->screen_offset;
 }
 
-inline static gulong buf_total_height (MooTermBuffer *buf)
+inline static guint buf_total_height (MooTermBuffer *buf)
 {
     return buf->priv->screen_height + buf->priv->screen_offset;
 }
 
-inline static MooTermLine *buf_line (MooTermBuffer *buf, gulong i)
+inline static MooTermLine *buf_line (MooTermBuffer *buf, guint i)
 {
-    return &g_array_index (buf->priv->lines, MooTermLine, i);
+    g_assert (buf->priv->lines->len ==
+            buf->priv->screen_height + buf->priv->screen_offset);
+    g_assert (i < buf->priv->screen_height +
+            buf->priv->screen_offset);
+
+    return g_ptr_array_index (buf->priv->lines, i);
 }
 
-inline static MooTermLine *buf_screen_line (MooTermBuffer *buf, gulong line)
+inline static MooTermLine *buf_screen_line (MooTermBuffer *buf, guint i)
 {
-    g_assert (line < buf->priv->screen_height);
-    return &g_array_index (buf->priv->lines, MooTermLine,
-                           line + buf->priv->screen_offset);
+    g_assert (i < buf->priv->screen_height);
+
+    return g_ptr_array_index (buf->priv->lines,
+                              i + buf->priv->screen_offset);
 }
 
-inline static gulong buf_cursor_row_abs (MooTermBuffer *buf)
+inline static guint buf_cursor_row_abs (MooTermBuffer *buf)
 {
     return buf->priv->screen_offset + buf->priv->cursor_row;
 }
 
-inline static gulong buf_cursor_row (MooTermBuffer *buf)
+inline static guint buf_cursor_row (MooTermBuffer *buf)
 {
     return buf->priv->cursor_row;
 }
 
-inline static gulong buf_cursor_col (MooTermBuffer *buf)
+inline static guint buf_cursor_col (MooTermBuffer *buf)
 {
     return buf->priv->cursor_col;
 }
@@ -234,9 +239,9 @@ inline static void buf_changed_set_all (MooTermBuffer *buf)
 }
 
 inline static void buf_changed_add_range (MooTermBuffer *buf,
-                                          gulong         row,
-                                          gulong         start,
-                                          gulong         len)
+                                          guint          row,
+                                          guint          start,
+                                          guint          len)
 {
     BufRectangle rec = {start, row, len, 1};
     buf_changed_add_rectangle (buf, &rec);
@@ -251,21 +256,6 @@ inline static void buf_changed_clear (MooTermBuffer *buf)
     }
 
     buf->priv->changed_all = FALSE;
-}
-
-inline static char *buf_screen_get_text (MooTermBuffer *buf)
-{
-    guint i;
-    GString *s = g_string_new ("");
-
-    for (i = 0; i < buf_screen_height (buf); ++i)
-    {
-        g_string_append_len (s, term_line_chars (buf_screen_line (buf, i)),
-                             term_line_len (buf_screen_line (buf, i)));
-        g_string_append_c (s, '\n');
-    }
-
-    return g_string_free (s, FALSE);
 }
 
 inline static gboolean buf_cursor_visible (MooTermBuffer *buf)
@@ -301,9 +291,8 @@ inline static void _buf_add_lines               (MooTermBuffer *buf,
 
     for (i = 0; i < num; ++i)
     {
-        MooTermLine new_line;
-        term_line_init (&new_line, 1);
-        g_array_append_val (buf->priv->lines, new_line);
+        g_ptr_array_add (buf->priv->lines,
+                         term_line_new (buf->priv->screen_width));
         buf->priv->screen_offset++;
     }
 }
@@ -313,12 +302,14 @@ inline static void _buf_delete_lines            (MooTermBuffer *buf,
 {
     guint i;
 
+    g_return_if_fail (num != 0 && num < buf->priv->screen_offset);
+
     for (i = 0; i < num; ++i)
-    {
-        term_line_destroy (buf_line (buf, buf->priv->lines->len - 1));
-        g_array_set_size (buf->priv->lines, buf->priv->lines->len - 1);
-        buf->priv->screen_offset--;
-    }
+        term_line_free (buf_line (buf, buf->priv->lines->len - i - 1));
+
+    buf->priv->screen_offset -= num;
+
+    g_ptr_array_set_size (buf->priv->lines, buf->priv->lines->len - num);
 }
 
 
@@ -335,11 +326,11 @@ void    moo_term_buffer_set_font        (MooTermBuffer  *buf,
                                          const char     *font);
 
 void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
-                                         long            rows,
-                                         long            cols);
+                                         int             rows,
+                                         int             cols);
 void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
-                                         long            row,
-                                         long            col);
+                                         int             row,
+                                         int             col);
 
 void    moo_term_buffer_set_keypad_numeric  (MooTermBuffer  *buf,
                                              gboolean        setting);
@@ -347,6 +338,14 @@ void    moo_term_buffer_set_keypad_numeric  (MooTermBuffer  *buf,
 void    moo_term_buffer_index           (MooTermBuffer  *buf);
 void    moo_term_buffer_new_line        (MooTermBuffer  *buf);
 void    moo_term_buffer_erase_display   (MooTermBuffer  *buf);
+
+void    moo_term_buffer_reset_tab_stops     (MooTermBuffer  *buf);
+void    moo_term_buffer_clear_tab_stop      (MooTermBuffer  *buf);
+void    moo_term_buffer_set_tab_stop        (MooTermBuffer  *buf);
+guint   moo_term_buffer_next_tab_stop       (MooTermBuffer  *buf,
+                                             guint           current);
+guint   moo_term_buffer_prev_tab_stop       (MooTermBuffer  *buf,
+                                             guint           current);
 
 
 /***************************************************************************/
@@ -377,24 +376,6 @@ typedef enum {
     ANSI_BACK_CYAN     = 46,
     ANSI_BACK_WHITE    = 47
 } AnsiTextAttr;
-
-
-inline static gulong buf_compute_next_tab_stop  (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 gulong          col)
-{
-    return ((col >> 3) << 3) + 8;
-}
-
-inline static gulong buf_compute_prev_tab_stop  (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 gulong          col)
-{
-    if (!col)
-        return col;
-    else if (col & 7)
-        return (col >> 3) << 3;
-    else
-        return col - 8;
-}
 
 
 G_END_DECLS

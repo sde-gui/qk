@@ -144,7 +144,7 @@ void        term_pango_lines_free           (TermPangoLines *lines)
 
 
 void        term_pango_lines_resize         (MooTerm        *term,
-                                             gulong          size)
+                                             guint           size)
 {
     guint i;
     TermPangoLines *lines = term->priv->pango_lines;
@@ -189,7 +189,7 @@ void        term_pango_lines_set_font       (TermPangoLines *lines,
 
 
 gboolean    term_pango_lines_valid          (TermPangoLines *lines,
-                                             gulong          i)
+                                             guint           i)
 {
     g_assert (i < lines->size);
     return lines->valid->data[i];
@@ -197,7 +197,7 @@ gboolean    term_pango_lines_valid          (TermPangoLines *lines,
 
 
 void        term_pango_lines_invalidate     (MooTerm    *term,
-                                             gulong          i)
+                                             guint       i)
 {
     TermPangoLines *lines = term->priv->pango_lines;
     g_assert (i < lines->size);
@@ -215,7 +215,7 @@ void        term_pango_lines_invalidate_all (MooTerm    *term)
 
 
 void        term_pango_lines_set_text       (TermPangoLines *lines,
-                                             gulong          i,
+                                             guint           i,
                                              const char     *text,
                                              int             len)
 {
@@ -306,17 +306,16 @@ static void queue_expose                    (MooTerm        *term,
 
 
 /* interval [first, last) */
-inline static void draw_range_simple (MooTerm *term,
-                                      gulong abs_row,
-                                      gulong first,
-                                      gulong last,
-                                      gboolean selected)
+inline static void draw_range_simple (MooTerm   *term,
+                                      guint      abs_row,
+                                      guint      first,
+                                      guint      last,
+                                      gboolean   selected)
 {
     MooTermLine *line;
     int screen_row = abs_row - term_top_line (term);
-    char *text = NULL;
     int size;
-    static char b[MAX_TERMINAL_WIDTH];
+    static char text[8 * MAX_TERMINAL_WIDTH];
     PangoLayout *l;
     GtkWidget *widget = GTK_WIDGET (term);
 
@@ -332,23 +331,23 @@ inline static void draw_range_simple (MooTerm *term,
     {
         if ((int)first < size)
         {
-            memcpy (b, term_line_chars (line) + first, size - first);
-            memset (b + size - first, EMPTY_CHAR, last - size);
+            guint chars_len = term_line_get_chars (line, text, first, size - first);
+            memset (text + chars_len, EMPTY_CHAR, last - size);
+            size = chars_len + last - size;
         }
         else
         {
-            memset (b, EMPTY_CHAR, last - first);
+            memset (text, EMPTY_CHAR, last - first);
+            size = last - first;
         }
-
-        text = b;
     }
     else
     {
-        text = term_line_chars (line) + first;
+        size = term_line_get_chars (line, text, first, size - first);
     }
 
     l = term->priv->pango_lines->line;
-    pango_layout_set_text (l, text, last - first);
+    pango_layout_set_text (l, text, size);
 
     gdk_draw_rectangle (widget->window,
                         term->priv->bg[selected ? SELECTED : NORMAL],
@@ -366,9 +365,9 @@ inline static void draw_range_simple (MooTerm *term,
 
 
 /* interval [first, last) */
-inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulong last)
+inline static void draw_range (MooTerm *term, guint abs_row, guint first, guint last)
 {
-    gulong screen_width = term_width (term);
+    guint screen_width = term_width (term);
     TermSelection *sel = term->priv->selection;
     int selected;
 
@@ -389,10 +388,10 @@ inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulo
 
         case PART_SELECTED:
         {
-            gulong l_row = sel->l_row;
-            gulong l_col = sel->l_col;
-            gulong r_row = sel->r_row;
-            gulong r_col = sel->r_col;
+            guint l_row = sel->l_row;
+            guint l_col = sel->l_col;
+            guint r_row = sel->r_row;
+            guint r_col = sel->r_col;
 
             if (l_row == r_row)
             {
@@ -479,18 +478,19 @@ inline static void draw_range (MooTerm *term, gulong abs_row, gulong first, gulo
 }
 
 
-inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
+inline static void draw_caret (MooTerm *term, guint abs_row, guint col)
 {
-    gulong screen_width = term_width (term);
+    guint screen_width = term_width (term);
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     TermSelection *sel = term->priv->selection;
-    char c;
+    char ch[6];
+    guint ch_len;
     int screen_row = abs_row - term_top_line (term);
     PangoLayout *l;
     GdkGC **fg = term->priv->fg;
     GdkGC **bg = term->priv->bg;
-    gulong char_width = term->priv->font_info->width;
-    gulong char_height = term->priv->font_info->height;
+    guint char_width = term->priv->font_info->width;
+    guint char_height = term->priv->font_info->height;
     GtkWidget *widget = GTK_WIDGET (term);
 
     g_assert (col < screen_width);
@@ -499,9 +499,18 @@ inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
         return;
     /* return draw_range (term, abs_row, col, col + 1); */
 
-    c = term_line_get_char (line, col);
+    if (col < term_line_len (line))
+    {
+        ch_len = g_unichar_to_utf8 (term_line_get_unichar (line, col), ch);
+    }
+    else
+    {
+        ch[0] = EMPTY_CHAR;
+        ch_len = 1;
+    }
+
     l = term->priv->pango_lines->line;
-    pango_layout_set_text (l, &c, 1);
+    pango_layout_set_text (l, ch, ch_len);
 
     switch (term->priv->caret_shape)
     {
@@ -579,7 +588,7 @@ inline static void draw_caret (MooTerm *term, gulong abs_row, gulong col)
 }
 
 
-inline static void draw_line (MooTerm *term, gulong abs_row)
+inline static void draw_line (MooTerm *term, guint abs_row)
 {
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     TermSelection *sel = term->priv->selection;
@@ -597,16 +606,16 @@ inline static void draw_line (MooTerm *term, gulong abs_row)
             guint char_height = term->priv->font_info->height;
 
             g_assert (0 <= screen_row);
-            g_assert ((gulong)screen_row < term_height (term));
+            g_assert (screen_row < (int) term_height (term));
 
             if (!term_pango_lines_valid (term->priv->pango_lines,
                                          screen_row))
             {
-                const char *text = term_line_chars (line);
-                int len = MIN (term_width (term), term_line_len (line));
+                char buf[8 * MAX_TERMINAL_WIDTH];
+                guint buf_len = term_line_get_chars (line, buf, 0, -1);
                 term_pango_lines_set_text (term->priv->pango_lines,
                                            screen_row,
-                                           text, len);
+                                           buf, buf_len);
             }
 
             gdk_draw_rectangle (widget->window,
@@ -628,10 +637,10 @@ inline static void draw_line (MooTerm *term, gulong abs_row)
 
         case PART_SELECTED:
         {
-            gulong l_row = sel->l_row;
-            gulong l_col = sel->l_col;
-            gulong r_row = sel->r_row;
-            gulong r_col = sel->r_col;
+            guint l_row = sel->l_row;
+            guint l_col = sel->l_col;
+            guint r_row = sel->r_row;
+            guint r_col = sel->r_col;
 
             if (l_row == r_row)
             {
@@ -753,7 +762,8 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
             int cursor_col = buf_cursor_col (term->priv->buffer);
 
             GdkRectangle cursor = {
-                cursor_col, cursor_row_abs - top_line,
+                cursor_col * char_width,
+                (cursor_row_abs - top_line) * char_height,
                 char_width, char_height
             };
 
@@ -945,25 +955,22 @@ void        moo_term_buf_content_changed(MooTerm        *term)
 
 
 void        moo_term_cursor_moved       (MooTerm        *term,
-                                         gulong          old_row,
-                                         gulong          old_col)
+                                         guint           old_row,
+                                         guint           old_col)
 {
     MooTermBuffer *buf = term->priv->buffer;
 
     if (buf_cursor_visible (buf))
     {
-        long screen_offset = buf_screen_offset (buf);
-        long top_line = term_top_line (term);
+        int screen_offset = buf_screen_offset (buf);
+        int top_line = term_top_line (term);
 
-        long new_row = buf_cursor_row (buf);
-        long new_col = buf_cursor_col (buf);
+        int new_row = buf_cursor_row (buf);
+        int new_col = buf_cursor_col (buf);
         guint char_width = term->priv->font_info->width;
         guint char_height = term->priv->font_info->height;
 
         GdkRectangle rect = {0, 0, char_width, char_height};
-
-        if (new_row == (long)old_row && new_col == (long)old_col)
-            return;
 
         rect.x = old_col * char_width;
         rect.y = (old_row + screen_offset - top_line) * char_height;
@@ -973,10 +980,13 @@ void        moo_term_cursor_moved       (MooTerm        *term,
         else
             term->priv->dirty = gdk_region_rectangle (&rect);
 
-        rect.x = new_col * char_width;
-        rect.y = (new_row + screen_offset - top_line) * char_height;
+        if (new_row != (int) old_row || new_col != (int) old_col)
+        {
+            rect.x = new_col * char_width;
+            rect.y = (new_row + screen_offset - top_line) * char_height;
 
-        gdk_region_union_with_rect (term->priv->dirty, &rect);
+            gdk_region_union_with_rect (term->priv->dirty, &rect);
+        }
 
         queue_expose (term, NULL);
     }

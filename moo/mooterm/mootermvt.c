@@ -171,8 +171,8 @@ MooTermVt      *moo_term_vt_new         (void)
 
 
 void            moo_term_vt_set_size        (MooTermVt      *vt,
-                                             gulong          width,
-                                             gulong          height)
+                                             guint           width,
+                                             guint           height)
 {
     g_return_if_fail (MOO_IS_TERM_VT (vt));
     MOO_TERM_VT_GET_CLASS(vt)->set_size (vt, width, height);

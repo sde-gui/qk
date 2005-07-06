@@ -124,12 +124,12 @@ inline static void buf_vt_ich               (MooTermBuffer  *buf,
     if (num > screen_width - cursor_col)
         num = screen_width - cursor_col;
 
-    term_line_insert_chars (buf_screen_line (buf, cursor_row),
-                            cursor_col,
-                            EMPTY_CHAR,
-                            num,
-                            screen_width,
-                            &buf->priv->current_attr);
+    term_line_insert_unichar (buf_screen_line (buf, cursor_row),
+                              cursor_col,
+                              EMPTY_CHAR,
+                              num,
+                              &buf->priv->current_attr,
+                              screen_width);
 
     buf_changed_add_rectangle (buf, &changed);
     moo_term_buffer_changed (buf);
@@ -239,8 +239,7 @@ inline static void buf_vt_erase_from_cursor (MooTermBuffer  *buf)
 
     term_line_erase_range (buf_screen_line (buf, cursor_row),
                            cursor_col,
-                           screen_width,
-                           &ZERO_ATTR);
+                           screen_width);
 
     for (i = cursor_row + 1; i < screen_height; ++i)
         term_line_erase (buf_screen_line (buf, i));
@@ -274,8 +273,7 @@ inline static void buf_vt_erase_to_cursor   (MooTermBuffer  *buf)
 
     term_line_erase_range (buf_screen_line (buf, cursor_row),
                            0,
-                           cursor_col + 1,
-                           &ZERO_ATTR);
+                           cursor_col + 1);
 
     buf_changed_add_rectangle (buf, &changed);
 
@@ -308,8 +306,7 @@ inline static void buf_vt_erase_line_from_cursor    (MooTermBuffer  *buf)
 
     term_line_erase_range (buf_screen_line (buf, cursor_row),
                            cursor_col,
-                           screen_width,
-                           &ZERO_ATTR);
+                           screen_width);
 
     buf_changed_add_rectangle (buf, &changed);
     moo_term_buffer_changed (buf);
@@ -325,8 +322,7 @@ inline static void buf_vt_erase_line_to_cursor      (MooTermBuffer  *buf)
 
     term_line_erase_range (buf_screen_line (buf, cursor_row),
                            0,
-                           cursor_col + 1,
-                           &ZERO_ATTR);
+                           cursor_col + 1);
 
     buf_changed_add_rectangle (buf, &changed);
     moo_term_buffer_changed (buf);
@@ -453,24 +449,24 @@ inline static void buf_vt_init_hilite_mouse_tracking    (G_GNUC_UNUSED MooTermBu
 
 inline static void buf_vt_clear_tab_stop    (G_GNUC_UNUSED MooTermBuffer  *buf)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_clear_tab_stop (buf);
 }
 
 inline static void buf_vt_clear_all_tab_stops   (G_GNUC_UNUSED MooTermBuffer  *buf)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_reset_tab_stops (buf);
 }
 
 inline static void buf_vt_tab               (MooTermBuffer  *buf)
 {
     moo_term_buffer_cursor_move_to (buf, -1,
-                                    buf_compute_next_tab_stop (buf,
-                                                               buf_cursor_col (buf)));
+                                    moo_term_buffer_next_tab_stop (buf,
+                                            buf_cursor_col (buf)));
 }
 
 inline static void buf_vt_set_tab_stop      (G_GNUC_UNUSED MooTermBuffer  *buf)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_set_tab_stop (buf);
 }
 
 
@@ -531,18 +527,20 @@ inline static void buf_vt_il                (MooTermBuffer  *buf,
     {
         guint i;
 
-        gpointer dest = &g_array_index (buf->priv->lines, MooTermLine,
-                                        screen_offset + cursor_row + num + 1);
-        gpointer src = &g_array_index (buf->priv->lines, MooTermLine,
-                                       screen_offset + cursor_row + 1);
+        gpointer dest = &g_ptr_array_index (buf->priv->lines,
+                                            screen_offset + cursor_row + num + 1);
+        gpointer src = &g_ptr_array_index (buf->priv->lines,
+                                           screen_offset + cursor_row + 1);
 
         for (i = 0; i < num; ++i)
-            term_line_destroy (buf_screen_line (buf, bottom - i));
+            term_line_free (buf_screen_line (buf, bottom - i));
 
-        memmove (dest, src, sizeof (MooTermLine) * (bottom - cursor_row - 1));
+        memmove (dest, src, sizeof (MooTermLine*) * (bottom - cursor_row - 1));
 
         for (i = 0; i < num; ++i)
-            term_line_init (buf_screen_line (buf, cursor_row + 1 + i), width);
+            g_ptr_array_index (buf->priv->lines,
+                               screen_offset + cursor_row + 1 + i) =
+                    term_line_new (width);
     }
 
     buf_changed_add_rectangle (buf, &changed);
@@ -576,24 +574,25 @@ inline static void buf_vt_dl                (MooTermBuffer  *buf,
     {
         guint i;
         for (i = 0; i < bottom - cursor_row + 1; ++i)
-            term_line_erase (buf_screen_line (buf, cursor_row + i));
+            term_line_free (buf_screen_line (buf, cursor_row + i));
     }
     else
     {
         guint i;
 
-        gpointer dest = &g_array_index (buf->priv->lines, MooTermLine,
-                                        screen_offset + cursor_row);
-        gpointer src = &g_array_index (buf->priv->lines, MooTermLine,
-                                       screen_offset + cursor_row + num);
+        gpointer dest = &g_ptr_array_index (buf->priv->lines,
+                                            screen_offset + cursor_row);
+        gpointer src = &g_ptr_array_index (buf->priv->lines,
+                                           screen_offset + cursor_row + num);
 
         for (i = 0; i < num; ++i)
-            term_line_destroy (buf_screen_line (buf, cursor_row + i));
+            term_line_free (buf_screen_line (buf, cursor_row + i));
 
-        memmove (dest, src, sizeof (MooTermLine) * (bottom - cursor_row + 1 - num));
+        memmove (dest, src, sizeof (MooTermLine*) * (bottom - cursor_row + 1 - num));
 
         for (i = 0; i < num; ++i)
-            term_line_init (buf_screen_line (buf, bottom - i), width);
+            g_ptr_array_index (buf->priv->lines, screen_offset + bottom - i) =
+                    term_line_new (width);
     }
 
     buf_changed_add_rectangle (buf, &changed);
@@ -608,9 +607,10 @@ inline static void buf_vt_decaln            (MooTermBuffer  *buf)
     guint width = buf_screen_width (buf);
 
     for (i = 0; i < height; ++i)
-        term_line_insert_chars (buf_screen_line (buf, i),
-                                0, 'S', width, width,
-                                &buf->priv->current_attr);
+        term_line_set_unichar (buf_screen_line (buf, i), 0,
+                               'S', width,
+                               &buf->priv->current_attr,
+                               width);
 }
 
 

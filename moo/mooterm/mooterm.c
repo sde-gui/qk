@@ -52,7 +52,7 @@ static void     queue_adjustment_value_changed  (MooTerm        *term);
 static gboolean emit_adjustment_changed         (MooTerm        *term);
 static gboolean emit_adjustment_value_changed   (MooTerm        *term);
 static void     scroll_abs                      (MooTerm        *term,
-                                                 gulong          line,
+                                                 guint           line,
                                                  gboolean        update_adj);
 static void     scroll_to_bottom                (MooTerm        *term,
                                                  gboolean        update_adj);
@@ -350,7 +350,7 @@ void             moo_term_set_adjustment    (MooTerm        *term,
 
 static void     scrollback_changed              (MooTerm        *term)
 {
-    gulong scrollback = buf_screen_offset (term->priv->buffer);
+    guint scrollback = buf_screen_offset (term->priv->buffer);
 
     if (term->priv->scrolled && term->priv->_top_line > scrollback)
         scroll_to_bottom (term, TRUE);
@@ -412,12 +412,12 @@ static void     update_adjustment               (MooTerm        *term)
 
 static void     update_adjustment_value         (MooTerm        *term)
 {
-    gulong value = term_top_line (term);
+    guint value = term_top_line (term);
 
     if (!term->priv->adjustment)
         return;
 
-    if ((gulong)term->priv->adjustment->value != value)
+    if (term->priv->adjustment->value != value)
     {
         term->priv->adjustment->value = value;
         queue_adjustment_value_changed (term);
@@ -427,7 +427,7 @@ static void     update_adjustment_value         (MooTerm        *term)
 
 static void     adjustment_value_changed        (MooTerm        *term)
 {
-    gulong val, real_val;
+    guint val, real_val;
 
     g_assert (term->priv->adjustment != NULL);
 
@@ -493,7 +493,7 @@ static gboolean emit_adjustment_value_changed   (MooTerm        *term)
 
 
 static void     scroll_abs                      (MooTerm        *term,
-                                                 gulong          line,
+                                                 guint           line,
                                                  gboolean        update_adj)
 {
     if (term_top_line (term) == line)
@@ -615,8 +615,8 @@ void             moo_term_set_buffer        (MooTerm        *term,
     {
         GtkWidget *widget = GTK_WIDGET (term);
         TermFontInfo *font_info = term->priv->font_info;
-        gulong width = widget->allocation.width / font_info->width;
-        gulong height = widget->allocation.height / font_info->height;
+        guint width = widget->allocation.width / font_info->width;
+        guint height = widget->allocation.height / font_info->height;
 
         term_pango_lines_invalidate_all (term);
         term->priv->scrolled = FALSE;
@@ -637,8 +637,8 @@ void        moo_term_size_changed       (MooTerm        *term)
 {
     GtkWidget *widget = GTK_WIDGET (term);
     TermFontInfo *font_info = term->priv->font_info;
-    gulong width, height;
-    gulong old_width, old_height;
+    guint width, height;
+    guint old_width, old_height;
 
     width = widget->allocation.width / font_info->width;
     height = widget->allocation.height / font_info->height;

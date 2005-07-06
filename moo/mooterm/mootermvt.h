@@ -44,8 +44,8 @@ struct _MooTermVtClass {
 
     /* virtual methods */
     void        (*set_size)     (MooTermVt  *vt,
-                                 gulong      width,
-                                 gulong      height);
+                                 guint       width,
+                                 guint       height);
     gboolean    (*fork_command) (MooTermVt  *vt,
                                  const char *cmd,
                                  const char *working_dir,
@@ -72,8 +72,8 @@ void            moo_term_vt_set_buffer      (MooTermVt      *vt,
 MooTermBuffer  *moo_term_vt_get_buffer      (MooTermVt      *vt);
 
 void            moo_term_vt_set_size        (MooTermVt      *vt,
-                                             gulong          width,
-                                             gulong          height);
+                                             guint           width,
+                                             guint           height);
 
 gboolean        moo_term_vt_fork_command    (MooTermVt      *vt,
                                              const char     *cmd,

@@ -67,10 +67,10 @@ struct _MooTermPrivate {
     MooTermVt       *vt;
 
     gboolean         scrolled;
-    gulong           _top_line;
-//     gulong           old_scrollback;
-//     gulong           old_width;
-//     gulong           old_height;
+    guint            _top_line;
+//     guint            old_scrollback;
+//     guint            old_width;
+//     guint            old_height;
     guint            char_width;
     guint            char_height;
 
@@ -108,7 +108,7 @@ struct _MooTermPrivate {
 };
 
 
-inline static gulong term_top_line (MooTerm *term)
+inline static guint term_top_line (MooTerm *term)
 {
     if (term->priv->scrolled)
         return term->priv->_top_line;
@@ -116,12 +116,12 @@ inline static gulong term_top_line (MooTerm *term)
         return buf_screen_offset (term->priv->buffer);
 }
 
-inline static gulong term_width (MooTerm *term)
+inline static guint term_width (MooTerm *term)
 {
     return buf_screen_width (term->priv->buffer);
 }
 
-inline static gulong term_height (MooTerm *term)
+inline static guint term_height (MooTerm *term)
 {
     return buf_screen_height (term->priv->buffer);
 }
@@ -129,8 +129,8 @@ inline static gulong term_height (MooTerm *term)
 
 void        moo_term_buf_content_changed(MooTerm        *term);
 void        moo_term_cursor_moved       (MooTerm        *term,
-                                         gulong          old_row,
-                                         gulong          old_col);
+                                         guint           old_row,
+                                         guint           old_col);
 
 void        moo_term_size_changed       (MooTerm        *term);
 void        moo_term_init_font_stuff    (MooTerm        *term);
@@ -163,7 +163,7 @@ inline static void moo_term_invalidate_all  (MooTerm        *term)
 
 struct _TermPangoLines
 {
-    gulong           size;
+    guint            size;
     GPtrArray       *screen;
     GByteArray      *valid;
     PangoLayout     *line;
@@ -171,7 +171,7 @@ struct _TermPangoLines
 };
 
 inline static PangoLayout *term_pango_line  (MooTerm        *term,
-                                             gulong          i)
+                                             guint           i)
 {
     g_assert (i < term->priv->pango_lines->size);
     return (PangoLayout*) term->priv->pango_lines->screen->pdata[i];
@@ -181,17 +181,17 @@ TermPangoLines *term_pango_lines_new        (PangoContext   *ctx);
 
 void        term_pango_lines_free           (TermPangoLines *lines);
 void        term_pango_lines_resize         (MooTerm        *term,
-                                             gulong          size);
+                                             guint           size);
 void        term_pango_lines_set_font       (TermPangoLines *lines,
                                              PangoFontDescription *font);
 gboolean    term_pango_lines_valid          (TermPangoLines *lines,
-                                             gulong          row);
+                                             guint           row);
 void        term_pango_lines_set_text       (TermPangoLines *lines,
-                                             gulong          row,
+                                             guint           row,
                                              const char     *text,
                                              int             len);
 void        term_pango_lines_invalidate     (MooTerm        *term,
-                                             gulong          row);
+                                             guint           row);
 void        term_pango_lines_invalidate_all (MooTerm        *term);
 
 
@@ -224,26 +224,26 @@ enum {
 #define SELECT_SCROLL_DOWN  (1)
 
 struct _TermSelection {
-    gulong      screen_width;
+    guint       screen_width;
 
     // absolute coordinates in the buffer
     // selected range is [(l_row, l_col), (r_row, r_col))
     // l_row, l_col and r_row are valid
     // r_col may be equal to _width
-    gulong      l_row;
-    gulong      l_col;
-    gulong      r_row;
-    gulong      r_col;
+    guint       l_row;
+    guint       l_col;
+    guint       r_row;
+    guint       r_col;
     gboolean    empty;
 
     gboolean    button_pressed;
     int         click;
     gboolean    drag;
     // buffer coordinates
-    gulong      drag_begin_row;
-    gulong      drag_begin_col;
-    gulong      drag_end_row;
-    gulong      drag_end_col;
+    guint       drag_begin_row;
+    guint       drag_begin_col;
+    guint       drag_end_row;
+    guint       drag_end_col;
 
     int scroll;
     guint st_id;
@@ -257,21 +257,21 @@ inline static void term_selection_free      (TermSelection *sel)
 }
 
 void             term_set_selection         (MooTerm       *term,
-                                             gulong         row1,
-                                             gulong         col1,
-                                             gulong         row2,
-                                             gulong         col2);
+                                             guint          row1,
+                                             guint          col1,
+                                             guint          row2,
+                                             guint          col2);
 void             term_selection_clear       (MooTerm       *term);
 
 inline static void term_selection_set_width (MooTerm       *term,
-                                             gulong         width)
+                                             guint          width)
 {
     term->priv->selection->screen_width = width;
     term_selection_clear (term);
 }
 
 inline static int term_selection_row_selected (TermSelection *sel,
-                                               gulong         row)
+                                               guint          row)
 {
     if (sel->empty || sel->r_row < row || row < sel->l_row)
         return NOT_SELECTED;
@@ -282,8 +282,8 @@ inline static int term_selection_row_selected (TermSelection *sel,
 }
 
 inline static gboolean term_selected           (TermSelection   *sel,
-                                                gulong           row,
-                                                gulong           col)
+                                                guint            row,
+                                                guint            col)
 {
     if (sel->empty || sel->r_row < row || row < sel->l_row)
         return FALSE;

@@ -18,6 +18,10 @@
 #include <string.h>
 
 
+#define INVALID_CHAR        "?"
+#define INVALID_CHAR_LEN    1
+
+
 static void     exec_command            (MooTermParser  *parser);
 static void     parser_init             (MooTermParser  *parser,
                                          const char     *string,
@@ -142,6 +146,32 @@ inline static void      chars_add_cmd       (MooTermParser  *parser)
         parser->chars.end = parser->cmd_string.end;
 }
 
+
+inline static void _flush (MooTermBuffer *buf, const char *string, guint len)
+{
+    const char *p = string;
+    const char *end = string + len;
+    const char *s;
+
+    g_assert (len != 0);
+
+    while (p != end)
+    {
+        for (s = p; s != end && *s && !(*s & 0x80); ++s) ;
+
+        if (s > p)
+        {
+            moo_term_buffer_print_chars (buf, p, s - p);
+            p = s;
+        }
+        else
+        {
+            if (*p++ & 0x80)
+                moo_term_buffer_print_chars (buf, INVALID_CHAR, INVALID_CHAR_LEN);
+        }
+    }
+}
+
 inline static void      chars_flush         (MooTermParser  *parser)
 {
     if (!block_is_empty (&parser->chars))
@@ -161,18 +191,18 @@ inline static void      chars_flush         (MooTermParser  *parser)
             {
                 g_assert (parser->chars.start.offset < parser->chars.end.offset);
 
-                moo_term_buffer_print_chars (parser->term_buffer,
-                                             parser->old_data + parser->chars.start.offset,
-                                             parser->chars.end.offset - parser->chars.start.offset);
+                _flush (parser->term_buffer,
+                        parser->old_data + parser->chars.start.offset,
+                        parser->chars.end.offset - parser->chars.start.offset);
             }
             else
             {
-                moo_term_buffer_print_chars (parser->term_buffer,
-                                             parser->old_data + parser->chars.start.offset,
-                                             parser->old_data_len - parser->chars.start.offset);
-                moo_term_buffer_print_chars (parser->term_buffer,
-                                             parser->data,
-                                             parser->chars.end.offset);
+                _flush (parser->term_buffer,
+                        parser->old_data + parser->chars.start.offset,
+                        parser->old_data_len - parser->chars.start.offset);
+                _flush (parser->term_buffer,
+                        parser->data,
+                        parser->chars.end.offset);
             }
         }
         else
@@ -180,9 +210,9 @@ inline static void      chars_flush         (MooTermParser  *parser)
             g_assert (!parser->chars.end.old);
             g_assert (parser->chars.start.offset < parser->chars.end.offset);
 
-            moo_term_buffer_print_chars (parser->term_buffer,
-                                         parser->data + parser->chars.start.offset,
-                                         parser->chars.end.offset - parser->chars.start.offset);
+            _flush (parser->term_buffer,
+                    parser->data + parser->chars.start.offset,
+                    parser->chars.end.offset - parser->chars.start.offset);
         }
 
         block_set_empty (&parser->chars);
@@ -572,7 +602,7 @@ static void     exec_decset             (MooTermBuffer  *buf,
                 buf->priv->modes |= MOUSE_TRACKING;
                 g_object_notify (G_OBJECT (buf), "mode-MOUSE-TRACKING");
                 break;
-            
+
             case 1001:
                 buf->priv->modes |= HILITE_MOUSE_TRACKING;
                 g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
@@ -634,12 +664,12 @@ static void     exec_decrst             (MooTermBuffer  *buf,
 
             case 1049:
                 break;
-                
+
             case 1000:
                 buf->priv->modes &= ~MOUSE_TRACKING;
                 g_object_notify (G_OBJECT (buf), "mode-MOUSE-TRACKING");
                 break;
-            
+
             case 1001:
                 buf->priv->modes &= ~HILITE_MOUSE_TRACKING;
                 g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
@@ -932,7 +962,7 @@ static void     exec_restore_decset     (MooTermBuffer  *buf,
                     buf->priv->modes &= ~MOUSE_TRACKING;
                 g_object_notify (G_OBJECT (buf), "mode-MOUSE_TRACKING");
                 break;
-            
+
             case 1001:
                 if (buf->priv->saved_modes & HILITE_MOUSE_TRACKING)
                     buf->priv->modes |= HILITE_MOUSE_TRACKING;
@@ -956,7 +986,7 @@ static void     exec_save_decset        (MooTermBuffer  *buf,
     if (!num_params)
     {
         g_warning ("%s: ???", G_STRLOC);
-        buf->priv->saved_modes = buf->priv->modes & DEC_MODES;
+        buf->priv->saved_modes = buf->priv->modes;
         return;
     }
 
@@ -1009,7 +1039,7 @@ static void     exec_save_decset        (MooTermBuffer  *buf,
                 else
                     buf->priv->saved_modes &= ~MOUSE_TRACKING;
                 break;
-            
+
             case 1001:
                 if (buf->priv->modes & HILITE_MOUSE_TRACKING)
                     buf->priv->saved_modes |= HILITE_MOUSE_TRACKING;

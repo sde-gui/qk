@@ -75,11 +75,11 @@ struct _MooTermBufferClass {
 
     void (*changed)             (MooTermBuffer  *buf);
     void (*screen_size_changed) (MooTermBuffer  *buf,
-                                 gulong          width,
-                                 gulong          height);
+                                 guint           width,
+                                 guint           height);
     void (*cursor_moved)        (MooTermBuffer  *buf,
-                                 gulong          old_row,
-                                 gulong          old_col);
+                                 guint           old_row,
+                                 guint           old_col);
 
     void (*bell)                (MooTermBuffer  *buf);
     void (*set_window_title)    (MooTermBuffer  *buf,
@@ -98,14 +98,14 @@ GType   moo_term_text_attr_mask_get_type    (void) G_GNUC_CONST;
 GType   moo_term_text_attr_get_type         (void) G_GNUC_CONST;
 GType   moo_term_buffer_get_type            (void) G_GNUC_CONST;
 
-MooTermBuffer  *moo_term_buffer_new         (gulong width,
-                                             gulong height);
+MooTermBuffer  *moo_term_buffer_new         (guint width,
+                                             guint height);
 
 void    moo_term_buffer_set_screen_size         (MooTermBuffer  *buf,
-                                                 gulong          width,
-                                                 gulong          height);
+                                                 guint           width,
+                                                 guint           height);
 void    moo_term_buffer_set_max_scrollback      (MooTermBuffer  *buf,
-                                                 glong           lines);
+                                                 int             lines);
 
 void    moo_term_buffer_set_cursor_visible  (MooTermBuffer  *buf,
                                              gboolean        visible);
@@ -115,10 +115,10 @@ void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf);
 
 void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
                                          const char     *chars,
-                                         gssize          len);
+                                         int             len);
 void    moo_term_buffer_write           (MooTermBuffer  *buf,
                                          const char     *data,
-                                         gssize          len);
+                                         int             len);
 
 
 G_END_DECLS

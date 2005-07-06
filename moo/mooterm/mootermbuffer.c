@@ -17,8 +17,8 @@
 #include "mooutils/moomarshals.h"
 
 
-#define MIN_WIDTH   (10L)
-#define MIN_HEIGHT  (10L)
+#define MIN_WIDTH   (10)
+#define MIN_HEIGHT  (10)
 
 static void     moo_term_buffer_set_property    (GObject        *object,
                                                  guint           prop_id,
@@ -97,9 +97,9 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTermBufferClass, cursor_moved),
                           NULL, NULL,
-                          _moo_marshal_VOID__ULONG_ULONG,
+                          _moo_marshal_VOID__UINT_UINT,
                           G_TYPE_NONE, 2,
-                          G_TYPE_ULONG, G_TYPE_ULONG);
+                          G_TYPE_UINT, G_TYPE_UINT);
 
     signals[BELL] =
             g_signal_new ("bell",
@@ -116,9 +116,9 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTermBufferClass, screen_size_changed),
                           NULL, NULL,
-                          _moo_marshal_VOID__ULONG_ULONG,
+                          _moo_marshal_VOID__UINT_UINT,
                           G_TYPE_NONE, 2,
-                          G_TYPE_ULONG, G_TYPE_ULONG);
+                          G_TYPE_UINT, G_TYPE_UINT);
 
     signals[SET_WINDOW_TITLE] =
             g_signal_new ("set-window-title",
@@ -162,7 +162,7 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,
-                                     g_param_spec_ulong ("screen-width",
+                                     g_param_spec_uint ("screen-width",
                                              "screen-width",
                                              "screen-width",
                                              0, 1000000, 80,
@@ -170,7 +170,7 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_HEIGHT,
-                                     g_param_spec_ulong ("screen-height",
+                                     g_param_spec_uint ("screen-height",
                                              "screen-height",
                                              "screen-height",
                                              0, 1000000, 24,
@@ -178,7 +178,7 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_MAX_SCROLLBACK,
-                                     g_param_spec_long ("max-scrollback",
+                                     g_param_spec_int ("max-scrollback",
                                              "max-scrollback",
                                              "max-scrollback",
                                              -1, 1000000, -1,
@@ -186,7 +186,7 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCROLLBACK,
-                                     g_param_spec_ulong ("scrollback",
+                                     g_param_spec_uint ("scrollback",
                                              "scrollback",
                                              "scrollback",
                                              0, 1000000, 0,
@@ -286,7 +286,7 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
 {
     buf->priv = g_new0 (MooTermBufferPrivate, 1);
 
-    buf->priv->lines = g_array_new (FALSE, FALSE, sizeof(MooTermLine));
+    buf->priv->lines = g_ptr_array_new ();
     buf->priv->changed = NULL;
     buf->priv->changed_all = FALSE;
     buf->priv->parser = moo_term_parser_new (buf);
@@ -299,10 +299,14 @@ static void     moo_term_buffer_finalize        (GObject            *object)
     MooTermBuffer *buf = MOO_TERM_BUFFER (object);
 
     for (i = 0; i < buf->priv->lines->len; ++i)
-        term_line_destroy (buf_line (buf, i));
-    g_array_free (buf->priv->lines, TRUE);
+        term_line_free (buf_line (buf, i));
+    g_ptr_array_free (buf->priv->lines, TRUE);
+
+    g_list_free (buf->priv->tab_stops);
+
     if (buf->priv->changed)
         buf_region_destroy (buf->priv->changed);
+
     moo_term_parser_free (buf->priv->parser);
 
     g_free (buf->priv);
@@ -330,23 +334,23 @@ static void     moo_term_buffer_set_property    (GObject        *object,
     switch (prop_id) {
         case PROP_SCREEN_WIDTH:
             if (buf->priv->constructed)
-                moo_term_buffer_set_screen_size (buf, g_value_get_ulong (value), 0);
+                moo_term_buffer_set_screen_size (buf, g_value_get_uint (value), 0);
             else
-                buf->priv->screen_width = g_value_get_ulong (value);
+                buf->priv->screen_width = g_value_get_uint (value);
             break;
 
         case PROP_SCREEN_HEIGHT:
             if (buf->priv->constructed)
-                moo_term_buffer_set_screen_size (buf, 0, g_value_get_ulong (value));
+                moo_term_buffer_set_screen_size (buf, 0, g_value_get_uint (value));
             else
-                buf->priv->screen_height = g_value_get_ulong (value);
+                buf->priv->screen_height = g_value_get_uint (value);
             break;
 
         case PROP_MAX_SCROLLBACK:
             if (buf->priv->constructed)
-                moo_term_buffer_set_max_scrollback (buf, g_value_get_long (value));
+                moo_term_buffer_set_max_scrollback (buf, g_value_get_int (value));
             else
-                buf->priv->max_height = g_value_get_long (value);
+                buf->priv->max_height = g_value_get_int (value);
             break;
 
         case PROP_CURSOR_VISIBLE:
@@ -392,7 +396,7 @@ static void     moo_term_buffer_set_property    (GObject        *object,
             set_mode (buf->priv->modes, HILITE_MOUSE_TRACKING, g_value_get_boolean (value));
             g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
             break;
-            
+
         case PROP_MODE_KEYPAD_NUMERIC:
             set_mode (buf->priv->modes, KEYPAD_NUMERIC, g_value_get_boolean (value));
             g_object_notify (G_OBJECT (buf), "mode-KEYPAD-NUMERIC");
@@ -414,19 +418,19 @@ static void     moo_term_buffer_get_property    (GObject        *object,
 
     switch (prop_id) {
         case PROP_SCREEN_WIDTH:
-            g_value_set_ulong (value, buf->priv->screen_width);
+            g_value_set_uint (value, buf->priv->screen_width);
             break;
 
         case PROP_SCREEN_HEIGHT:
-            g_value_set_ulong (value, buf->priv->screen_height);
+            g_value_set_uint (value, buf->priv->screen_height);
             break;
 
         case PROP_SCROLLBACK:
-            g_value_set_ulong (value, buf_screen_offset (buf));
+            g_value_set_uint (value, buf_screen_offset (buf));
             break;
 
         case PROP_MAX_SCROLLBACK:
-            g_value_set_long (value, buf->priv->max_height);
+            g_value_set_int (value, buf->priv->max_height);
             break;
 
         case PROP_CURSOR_VISIBLE:
@@ -510,9 +514,8 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
 
     for (i = 0; i < buf->priv->screen_height; ++i)
     {
-        MooTermLine line;
-        term_line_init (&line, buf->priv->screen_width);
-        g_array_append_val (buf->priv->lines, line);
+        g_ptr_array_add (buf->priv->lines,
+                         term_line_new (buf->priv->screen_width));
     }
 
     return object;
@@ -546,7 +549,7 @@ void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf)
 
 
 static void buf_set_screen_width    (MooTermBuffer  *buf,
-                                     gulong          width)
+                                     guint           width)
 {
     buf->priv->screen_width = width;
 
@@ -558,16 +561,18 @@ static void buf_set_screen_width    (MooTermBuffer  *buf,
                    width,
                    buf_screen_height (buf));
 
+    moo_term_buffer_reset_tab_stops (buf);
+
     buf_changed_set_all (buf);
     moo_term_buffer_changed (buf);
 }
 
 
 static void buf_set_screen_height   (MooTermBuffer  *buf,
-                                     gulong          height)
+                                     guint           height)
 {
-    gulong old_height = buf_screen_height (buf);
-    gulong width = buf_screen_width (buf);
+    guint old_height = buf_screen_height (buf);
+    guint width = buf_screen_width (buf);
 
     buf->priv->screen_height = height;
 
@@ -579,15 +584,12 @@ static void buf_set_screen_height   (MooTermBuffer  *buf,
             guint i;
 
             for (i = 0; i < add; ++i)
-            {
-                MooTermLine new_line;
-                term_line_init (&new_line, width);
-                g_array_append_val (buf->priv->lines, new_line);
-            }
+                g_ptr_array_add (buf->priv->lines,
+                                 term_line_new (width));
 
             if (buf->priv->screen_offset)
             {
-                gulong cursor_row =
+                guint cursor_row =
                         buf->priv->screen_offset + buf->priv->cursor_row;
 
                 buf->priv->screen_offset = 0;
@@ -643,8 +645,8 @@ static void buf_set_screen_height   (MooTermBuffer  *buf,
 
 
 void    moo_term_buffer_set_screen_size (MooTermBuffer  *buf,
-                                         gulong          width,
-                                         gulong          height)
+                                         guint           width,
+                                         guint           height)
 {
     if (height >= MIN_HEIGHT && height != buf_screen_height (buf))
         buf_set_screen_height (buf, height);
@@ -655,20 +657,20 @@ void    moo_term_buffer_set_screen_size (MooTermBuffer  *buf,
 
 
 void    moo_term_buffer_set_max_scrollback      (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                                 G_GNUC_UNUSED glong           lines)
+                                                 G_GNUC_UNUSED int             lines)
 {
     g_warning ("%s: implement me", G_STRLOC);
 }
 
 
 void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
-                                         long            rows,
-                                         long            cols)
+                                         int             rows,
+                                         int             cols)
 {
-    long width = buf_screen_width (buf);
-    long height = buf_screen_height (buf);
-    long cursor_row = buf_cursor_row (buf);
-    long cursor_col = buf_cursor_col (buf);
+    int width = buf_screen_width (buf);
+    int height = buf_screen_height (buf);
+    int cursor_row = buf_cursor_row (buf);
+    int cursor_col = buf_cursor_col (buf);
 
     if (rows && cursor_row + rows >= 0 && cursor_row + rows < height)
         cursor_row += rows;
@@ -680,8 +682,8 @@ void    moo_term_buffer_cursor_move     (MooTermBuffer  *buf,
 
 
 static void moo_term_buffer_cursor_moved (MooTermBuffer  *buf,
-                                          gulong          old_row,
-                                          gulong          old_col)
+                                          guint           old_row,
+                                          guint           old_col)
 {
     if (!buf->priv->freeze_cursor_notify)
         g_signal_emit (buf, signals[CURSOR_MOVED], 0,
@@ -690,14 +692,14 @@ static void moo_term_buffer_cursor_moved (MooTermBuffer  *buf,
 
 
 void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
-                                         long            row,
-                                         long            col)
+                                         int             row,
+                                         int             col)
 {
-    gulong old_row = buf_cursor_row (buf);
-    gulong old_col = buf_cursor_col (buf);
+    guint old_row = buf_cursor_row (buf);
+    guint old_col = buf_cursor_col (buf);
 
-    g_return_if_fail (row < (long)buf_screen_height (buf));
-    g_return_if_fail (col < (long)buf_screen_width (buf));
+    g_return_if_fail (row < (int) buf_screen_height (buf));
+    g_return_if_fail (col < (int) buf_screen_width (buf));
 
     if (row < 0)
         row = old_row;
@@ -713,10 +715,10 @@ void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
 
 void    moo_term_buffer_write           (MooTermBuffer  *buf,
                                          const char     *data,
-                                         gssize          len)
+                                         int             len)
 {
-    gulong old_cursor_row = buf_cursor_row (buf);
-    gulong old_cursor_col = buf_cursor_col (buf);
+    guint old_cursor_row = buf_cursor_row (buf);
+    guint old_cursor_col = buf_cursor_col (buf);
 
     buf_freeze_changed_notify (buf);
     buf_freeze_cursor_notify (buf);
@@ -731,70 +733,95 @@ void    moo_term_buffer_write           (MooTermBuffer  *buf,
 }
 
 
-static void buf_print_char (MooTermBuffer   *buf,
-                            char            c)
+/* chars must be valid unicode string */
+static void buf_print_chars_real (MooTermBuffer *buf,
+                                  const char    *chars,
+                                  guint          len)
 {
-    gulong width = buf_screen_width (buf);
-    gulong cursor_row = buf_cursor_row (buf);
+    guint width = buf_screen_width (buf);
+    guint cursor_row = buf_cursor_row (buf);
 
     MooTermTextAttr *attr =
             buf->priv->current_attr.mask ? &buf->priv->current_attr : NULL;
 
-    if (buf->priv->modes & IRM)
+    const char *p = chars;
+    const char *end = chars + len;
+
+    g_assert (p < end);
+
+    for (p = chars; p < end; p = g_utf8_next_char (p))
     {
-        term_line_insert_char (buf_screen_line (buf, cursor_row),
-                               buf->priv->cursor_col++,
-                               c, attr, width);
-        buf_changed_add_range (buf, cursor_row,
-                               buf->priv->cursor_col - 1,
-                               width - buf->priv->cursor_col + 1);
-    }
-    else
-    {
-        term_line_set_char (buf_screen_line (buf, cursor_row),
-                            buf->priv->cursor_col++,
-                            c, attr, width);
-        buf_changed_add_range (buf, cursor_row,
-                               buf->priv->cursor_col - 1, 1);
-    }
+        gunichar c = g_utf8_get_char (p);
 
-    if (buf->priv->cursor_col == width)
-    {
-        buf->priv->cursor_col--;
-        if (buf->priv->modes & DECAWM)
-            moo_term_buffer_new_line (buf);
-    }
-}
-
-
-void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
-                                         const char     *chars,
-                                         gssize          len)
-{
-    gsize i;
-
-    if (!len)
-        return;
-
-    for (i = 0; (len < 0 && chars[i]) || (len > 0 && i < (gsize)len); ++i)
-    {
-        char c = chars[i];
-
-        if (c & '\200' || (' ' <= c && c <= '~'))
-            buf_print_char (buf, c);
-        else if (c == '\127')
-            buf_print_char (buf, '~');
+        if (buf->priv->modes & IRM)
+        {
+            term_line_insert_unichar (buf_screen_line (buf, cursor_row),
+                                      buf->priv->cursor_col++,
+                                      c, 1, attr, width);
+            buf_changed_add_range (buf, cursor_row,
+                                   buf->priv->cursor_col - 1,
+                                   width - buf->priv->cursor_col + 1);
+        }
         else
         {
-            buf_print_char (buf, '^');
-            buf_print_char (buf, c + 0100);
+            term_line_set_unichar (buf_screen_line (buf, cursor_row),
+                                   buf->priv->cursor_col++,
+                                   c, 1, attr, width);
+            buf_changed_add_range (buf, cursor_row,
+                                   buf->priv->cursor_col - 1, 1);
+        }
+
+        if (buf->priv->cursor_col == width)
+        {
+            buf->priv->cursor_col--;
+            if (buf->priv->modes & DECAWM)
+                moo_term_buffer_new_line (buf);
         }
     }
 }
 
 
-MooTermBuffer  *moo_term_buffer_new         (gulong width,
-                                             gulong height)
+/* chars must be valid unicode string */
+void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
+                                         const char     *chars,
+                                         int             len)
+{
+    const char *p = chars;
+    const char *s;
+
+    g_return_if_fail (len != 0 && chars != NULL);
+
+    while ((len > 0 && p != chars + len) || (len < 0 && *p != 0))
+    {
+        for (s = p; ((len > 0 && s != chars + len) || (len < 0 && *s != 0))
+             && *s && (*s & 0x80 || (' ' <= *s && *s <= '~')); ++s) ;
+
+        if (s != p)
+        {
+            buf_print_chars_real (buf, p, s - p);
+            p = s;
+        }
+        else if (!*s)
+        {
+            ++p;
+        }
+        else if (*s == 0x7F)
+        {
+            buf_print_chars_real (buf, "~", -1);
+            ++p;
+        }
+        else
+        {
+            static char ar[2] = {'^'};
+            ar[1] = *s + 0x40;
+            buf_print_chars_real (buf, ar, 2);
+        }
+    }
+}
+
+
+MooTermBuffer  *moo_term_buffer_new         (guint width,
+                                             guint height)
 {
     return MOO_TERM_BUFFER (g_object_new (MOO_TYPE_TERM_BUFFER,
                                           "screen-width", width,
@@ -902,4 +929,76 @@ void    moo_term_buffer_set_keypad_numeric  (MooTermBuffer  *buf,
         buf->priv->modes &= ~KEYPAD_NUMERIC;
 
     g_object_notify (G_OBJECT (buf), "mode-KEYPAD-NUMERIC");
+}
+
+
+void    moo_term_buffer_reset_tab_stops     (MooTermBuffer  *buf)
+{
+    guint i;
+    guint width = buf_screen_width (buf);
+
+    g_list_free (buf->priv->tab_stops);
+    buf->priv->tab_stops = NULL;
+
+    for (i = 0; i < (width + 7) / 8; ++i)
+        buf->priv->tab_stops = g_list_append (buf->priv->tab_stops,
+                                              GUINT_TO_POINTER (8 * i));
+}
+
+guint   moo_term_buffer_next_tab_stop       (MooTermBuffer  *buf,
+                                             guint           current)
+{
+    GList *l;
+
+    for (l = buf->priv->tab_stops;
+         l != NULL && GPOINTER_TO_UINT (l->data) <= current;
+         l = l->next) ;
+
+    if (l && GPOINTER_TO_UINT (l->data) > current)
+        return GPOINTER_TO_UINT (l->data);
+    else
+        return buf_screen_width (buf) - 1;
+}
+
+guint   moo_term_buffer_prev_tab_stop       (MooTermBuffer  *buf,
+                                             guint           current)
+{
+    GList *l;
+
+    for (l = buf->priv->tab_stops;
+         l != NULL && GPOINTER_TO_UINT (l->data) < current;
+         l = l->next) ;
+
+    if (l && l->prev && GPOINTER_TO_UINT (l->prev->data) < current)
+        return GPOINTER_TO_UINT (l->prev->data);
+    else
+        return 0;
+}
+
+void    moo_term_buffer_clear_tab_stop      (MooTermBuffer  *buf)
+{
+    buf->priv->tab_stops =
+            g_list_remove (buf->priv->tab_stops,
+                           GUINT_TO_POINTER (buf_cursor_col (buf)));
+}
+
+static int cmp_guints (gconstpointer a, gconstpointer b)
+{
+    if (GPOINTER_TO_UINT (a) < GPOINTER_TO_UINT (b))
+        return -1;
+    else if (a == b)
+        return 0;
+    else
+        return 1;
+}
+
+void    moo_term_buffer_set_tab_stop        (MooTermBuffer  *buf)
+{
+    guint cursor = buf_cursor_col (buf);
+
+    if (!g_list_find (buf->priv->tab_stops, GUINT_TO_POINTER (cursor)))
+        buf->priv->tab_stops =
+                g_list_insert_sorted (buf->priv->tab_stops,
+                                      GUINT_TO_POINTER (cursor),
+                                      cmp_guints);
 }

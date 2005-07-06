@@ -3,26 +3,44 @@
   <general>
     <author>Yevgen Muntyan</author>
     <email>muntyan@math.tamu.edu</email>
-    <version>0.5.92</version>
+    <version>$VERSION$</version>
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
-    <ignoreparts/>
+    <ignoreparts>
+      <part>kdevabbrev</part>
+      <part>kdevclassview</part>
+      <part>kdevsnippet</part>
+      <part>kdevctags2</part>
+      <part>kdevdocumentation</part>
+      <part>kdevdoxygen</part>
+      <part>kdevfilegroups</part>
+      <part>kdevfilelist</part>
+      <part>kdevfileview</part>
+      <part>kdevdistpart</part>
+      <part>kdevopenwith</part>
+      <part>kdevpartexplorer</part>
+      <part>kdevregexptest</part>
+      <part>kdevrbdebugger</part>
+      <part>kdevscripting</part>
+      <part>kdevtexttools</part>
+      <part>kdevvisualboyadvance</part>
+    </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
     <description/>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
-    <versioncontrol/>
+    <versioncontrol>kdevsubversion</versioncontrol>
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/mooedit/libmooedit.la</activetarget>
-      <useconfiguration>medit</useconfiguration>
+      <activetarget>moo/mooedit/libmooedit.la</activetarget>
+      <useconfiguration>debug-mooedit</useconfiguration>
     </general>
     <run>
       <mainprogram>tests/editor</mainprogram>
-      <directoryradio>build</directoryradio>
+      <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs/>
       <terminal>false</terminal>
@@ -31,8 +49,8 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module</configargs>
-        <builddir>build/debug</builddir>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooapp --without-python</configargs>
+        <builddir>build/debug-mooedit</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -48,8 +66,8 @@
         <f77flags/>
       </debug>
       <optimized>
-        <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooui</configargs>
-        <builddir>build/optimized</builddir>
+        <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooapp --without-python</configargs>
+        <builddir>build/optimized-mooedit</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -88,8 +106,8 @@
           <envvar value="/usr/bin/i586-mingw32msvc-strip" name="STRIP" />
           <envvar value="/usr/bin/i586-mingw32msvc-windres" name="WINDRES" />
         </envvars>
-        <configargs>--target=i586-mingw32msvc --host=i586-mingw32msvc --enable-all-gcc-warnings=fatal --without-mooterm --without-mooui</configargs>
-        <builddir>build/mingw</builddir>
+        <configargs>--target=i586-mingw32msvc --host=i586-mingw32msvc --enable-all-gcc-warnings=fatal --without-mooterm --without-mooapp --without-python</configargs>
+        <builddir>build/mingw-mooedit</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -103,83 +121,10 @@
         <cxxflags>-O3 -g0 -march=i686 -mms-bitfields</cxxflags>
         <f77flags/>
       </mingw>
-      <cygwin>
-        <envvars>
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-ar" name="AR" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-gcc" name="CC" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-cpp" name="CPP" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-g++" name="CXX" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-dlltool" name="DLLTOOL" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-dllwrap" name="DLLWRAP" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-gcov" name="GCOV" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-ld" name="LD" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-nm" name="NM" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-objcopy" name="OBJCOPY" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-objdump" name="OBJDUMP" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-ranlib" name="RANLIB" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-readelf" name="READELF" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-size" name="SIZE" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-strings" name="STRINGS" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-strip" name="STRIP" />
-          <envvar value="/usr/lib/cygwin/bin//i686-pc-cygwin-windres" name="WINDRES" />
-        </envvars>
-        <configargs>--enable-all-gcc-warnings=fatal</configargs>
-        <builddir>build/cygwin</builddir>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompiler>kdevgccoptions</ccompiler>
-        <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
-        <ccompilerbinary>i686-pc-cygwin-gcc</ccompilerbinary>
-        <cxxcompilerbinary>i686-pc-cygwin-g++</cxxcompilerbinary>
-        <f77compilerbinary/>
-        <cflags>-O3 -g0 -march=i686 -mms-bitfields</cflags>
-        <cxxflags>-O3 -g0 -march=i686 -mms-bitfields</cxxflags>
-        <f77flags/>
-      </cygwin>
-      <medit>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooapp</configargs>
-        <builddir>build/medit</builddir>
-        <ccompiler>kdevgccoptions</ccompiler>
-        <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
-        <cflags>-O0 -g3 -pg</cflags>
-        <cxxflags>-O0 -g3 -pg</cxxflags>
-        <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
-      </medit>
-      <gcc-4>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooui --without-native-gtksourceview</configargs>
-        <builddir>build/gcc-4</builddir>
-        <ccompiler>kdevgccoptions</ccompiler>
-        <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
-        <cflags>-O0 -g3 -pg</cflags>
-        <cxxflags>-O0 -g3 -pg</cxxflags>
-        <envvars>
-          <envvar value="gcc-4.0" name="CC" />
-          <envvar value="g++-4.0" name="CXX" />
-          <envvar value="cpp-4.0" name="CPP" />
-        </envvars>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary>gcc-4.0</ccompilerbinary>
-        <cxxcompilerbinary>g++-4.0</cxxcompilerbinary>
-        <f77compilerbinary/>
-        <f77flags/>
-      </gcc-4>
       <gtk-2.2>
         <envvars/>
-        <configargs>--enable-debug --enable-all-gcc-warnings=fatal --with-path=/usr/local/lib/gtk-2.2/bin:$PATH --with-pkg-config-path=/usr/local/lib/gtk-2.2/lib/pkgconfig:$PKG_CONFIG_PATH --without-mooterm --without-mooui</configargs>
-        <builddir>build/gtk-2.2</builddir>
+        <configargs>--enable-debug --enable-all-gcc-warnings=fatal --with-path=/usr/local/lib/gtk-2.2:$PATH --with-pkg-config-path=/usr/local/lib/gtk-2.2/lib/pkgconfig:$PKG_CONFIG_PATH --without-mooterm --without-mooapp --without-python</configargs>
+        <builddir>build/gtk-2.2-mooedit</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -206,7 +151,7 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
-      <programargs>--g-fatal-warnings</programargs>
+      <programargs>--g-fatal-warnings bash</programargs>
       <gdbpath/>
       <configGdbScript/>
       <runShellScript/>
@@ -275,9 +220,6 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source_py" ext="py" create="template" name="Python" >
-        <descr>A new empty Python source file.</descr>
-      </type>
       <type icon="source" ext="g" create="template" name="GAP source" >
         <descr>A new empty GAP source file</descr>
       </type>
@@ -337,7 +279,7 @@
     <tree>
       <showvcsfields>false</showvcsfields>
       <hidenonprojectfiles>true</hidenonprojectfiles>
-      <hidepatterns>*</hidepatterns>
+      <hidepatterns/>
     </tree>
   </kdevfileview>
   <kdevcvsservice>
@@ -349,15 +291,6 @@
   </kdevcvsservice>
   <ctagspart>
     <customArguments/>
-    <customTagfilePath>/home/muntyan/projects/moo/moo.tags</customTagfilePath>
+    <customTagfilePath/>
   </ctagspart>
-  <kdevvisualadvance>
-    <emulator>VisualBoyAdvance</emulator>
-    <binary/>
-    <addOptions/>
-    <terminal>false</terminal>
-    <fullscreen>false</fullscreen>
-    <graphicFilter>-f0</graphicFilter>
-    <scaling>-1</scaling>
-  </kdevvisualadvance>
 </kdevelop>
