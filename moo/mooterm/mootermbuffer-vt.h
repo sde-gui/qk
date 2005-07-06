@@ -470,23 +470,23 @@ inline static void buf_vt_set_tab_stop      (G_GNUC_UNUSED MooTermBuffer  *buf)
 }
 
 
-inline static void buf_vt_select_charset    (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                             G_GNUC_UNUSED guint           set_num,
-                                             G_GNUC_UNUSED guint           charset)
+inline static void buf_vt_select_charset    (MooTermBuffer  *buf,
+                                             guint           set_num,
+                                             guint           charset)
 {
-//     g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_select_charset (buf, set_num, charset);
 }
 
-inline static void buf_vt_invoke_charset    (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                             G_GNUC_UNUSED guint           charset)
+inline static void buf_vt_invoke_charset    (MooTermBuffer  *buf,
+                                             guint           set)
 {
-//     g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_shift (buf, set);
 }
 
-inline static void buf_vt_single_shift      (G_GNUC_UNUSED MooTermBuffer  *buf,
-                                             G_GNUC_UNUSED guint           charset)
+inline static void buf_vt_single_shift      (MooTermBuffer  *buf,
+                                             guint           set)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    moo_term_buffer_single_shift (buf, set);
 }
 
 

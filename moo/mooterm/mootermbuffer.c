@@ -17,6 +17,113 @@
 #include "mooutils/moomarshals.h"
 
 
+#define ACS_STERLING    "\302\243"      /* U+00A3 POUND SIGN */
+#define ACS_DARROW      "\342\206\223"  /* U+2193 DOWNWARDS ARROW */
+#define ACS_LARROW      "\342\206\220"  /* U+2190 LEFTWARDS ARROW */
+#define ACS_RARROW      "\342\206\222"  /* U+2192 RIGHTWARDS ARROW */
+#define ACS_UARROW      "\342\206\221"  /* U+2191 UPWARDS ARROW */
+#define ACS_BOARD       "#"             /* ??? */
+#define ACS_BULLET      "\342\200\242"  /* U+2022 BULLET */
+#define ACS_CKBOARD     "\342\226\223"  /* U+2593 DARK SHADE */
+#define ACS_DEGREE      "\302\260"      /* U+00B0 DEGREE SIGN */
+#define ACS_DIAMOND     "\342\227\206"  /* U+25C6 BLACK DIAMOND */
+#define ACS_GEQUAL      "\342\211\245"  /* U+2265 GREATER-THAN OR EQUAL TO */
+#define ACS_PI          "\317\200"      /* U+03C0 GREEK SMALL LETTER PI */
+#define ACS_HLINE       "\342\224\200"  /* U+2500 BOX DRAWINGS LIGHT HORIZONTAL */
+#define ACS_LANTERN     "\347\201\257"  /* U+706F CJK UNIFIED IDEOGRAPH-706F ??? */
+#define ACS_PLUS        "\342\224\274"  /* U+253C BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL */
+#define ACS_LEQUAL      "\342\211\244"  /* U+2264 LESS-THAN OR EQUAL TO */
+#define ACS_LLCORNER    "\342\224\224"  /* U+2514 BOX DRAWINGS LIGHT UP AND RIGHT */
+#define ACS_LRCORNER    "\342\224\230"  /* U+2518 BOX DRAWINGS LIGHT UP AND LEFT */
+#define ACS_NEQUAL      "\342\211\240"  /* U+2260 NOT EQUAL TO */
+#define ACS_PLMINUS     "\302\261"      /* U+00B1 PLUS-MINUS SIGN */
+#define ACS_S1          "\342\216\272"  /* U+23BA HORIZONTAL SCAN LINE-1 */
+#define ACS_S3          "\342\216\273"  /* U+23BB HORIZONTAL SCAN LINE-3 */
+#define ACS_S7          "\342\216\274"  /* U+23BC HORIZONTAL SCAN LINE-7 */
+#define ACS_S9          "\342\216\275"  /* U+23BD HORIZONTAL SCAN LINE-9 */
+#define ACS_BLOCK       "\342\226\210"  /* U+2588 FULL BLOCK */
+#define ACS_TTEE        "\342\224\254"  /* U+252C BOX DRAWINGS LIGHT DOWN AND HORIZONTAL */
+#define ACS_RTEE        "\342\224\244"  /* U+2524 BOX DRAWINGS LIGHT VERTICAL AND LEFT */
+#define ACS_LTEE        "\342\224\234"  /* U+251C BOX DRAWINGS LIGHT VERTICAL AND RIGHT */
+#define ACS_BTEE        "\342\224\264"  /* U+2534 BOX DRAWINGS LIGHT UP AND HORIZONTAL */
+#define ACS_ULCORNER    "\342\224\214"  /* U+250C BOX DRAWINGS LIGHT DOWN AND RIGHT */
+#define ACS_URCORNER    "\342\224\220"  /* U+2510 BOX DRAWINGS LIGHT DOWN AND LEFT */
+#define ACS_VLINE       "\342\224\202"  /* U+2502 BOX DRAWINGS LIGHT VERTICAL */
+
+
+/*
+blank                                        " "                              " "                             _
+diamond                                      ACS_DIAMOND                      "+"                            `
+checker board (stipple)                      ACS_CKBOARD                      ":"                            a
+horizontal tab                               "\t"                             "\t"                           b
+form feed                                    "\014"                           "\014"                         c
+carriage return                              "\r"                             "\r"                           d
+line feed                                    "\n"                             "\n"                           e
+degree symbol                                ACS_DEGREE                       "\"                            f
+plus/minus                                   ACS_PLMINUS                      "#"                            g
+board of squares                             ACS_BOARD                        "#"                            h
+lantern symbol                               ACS_LANTERN                      "#"                            i
+lower right corner                           ACS_LRCORNER                     "+"                            j
+upper right corner                           ACS_URCORNER                     "+"                            k
+upper left corner                            ACS_ULCORNER                     "+"                            l
+lower left corner                            ACS_LLCORNER                     "+"                            m
+large plus or crossover                      ACS_PLUS                         "+"                            n
+scan line 1                                  ACS_S1                           "~"                            o
+scan line 3                                  ACS_S3                           "-"                            p
+horizontal line                              ACS_HLINE                        "-"                            q
+scan line 7                                  ACS_S7                           "-"                            r
+scan line 9                                  ACS_S9                           "_"                            s
+tee pointing right                           ACS_LTEE                         "+"                            t
+tee pointing left                            ACS_RTEE                         "+"                            u
+tee pointing up                              ACS_BTEE                         "+"                            v
+tee pointing down                            ACS_TTEE                         "+"                            w
+vertical line                                ACS_VLINE                        "|"                            x
+less-than-or-equal-to                        ACS_LEQUAL                       "<"                            y
+greater-than-or-equal-to                     ACS_GEQUAL                       ">"                            z
+greek pi                                     ACS_PI                           "*"                            {
+not-equal                                    ACS_NEQUAL                       "!"                            |
+UK pound sign                                ACS_STERLING                     "f"                            }
+bullet                                       ACS_BULLET                       "o"                            ~
+*/
+
+
+/* drawing chars are _`a-z{|}~ -- 0x5F - 0x7E */
+#define MAX_GRAPH 126
+
+static const char *DRAWING_SET_STRINGS[MAX_GRAPH + 1] = {
+    /* 95 nulls */
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+
+    /* do we need control characters here? */
+    " ", ACS_DIAMOND, ACS_CKBOARD, "?", "?", "?", "?", ACS_DEGREE, ACS_PLMINUS, ACS_BOARD,
+    ACS_LANTERN, ACS_LRCORNER, ACS_URCORNER, ACS_ULCORNER, ACS_LLCORNER, ACS_PLUS, ACS_S1, ACS_S3,
+    ACS_HLINE, ACS_S7, ACS_S9, ACS_LTEE, ACS_RTEE, ACS_BTEE, ACS_TTEE, ACS_VLINE, ACS_LEQUAL,
+    ACS_GEQUAL, ACS_PI, ACS_NEQUAL, ACS_STERLING, ACS_BULLET
+};
+
+static gunichar ASCII_DRAWING_SET[MAX_GRAPH + 1] = {
+    /* 95 zeros */
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+
+    ' ', '+', ':', '?', '?', '?', '?', '\\', '#', '#', '#', '+', '+', '+', '+', '+', '~', '-',
+    '-', '-', '_', '+', '+', '+', '+', '|', '<', '>', '*', '!', 'f', 'o'
+};
+
+static gunichar DRAWING_SET[MAX_GRAPH + 1];
+
+static void init_drawing_sets (void);
+
+
 #define MIN_WIDTH   (10)
 #define MIN_HEIGHT  (10)
 
@@ -74,6 +181,8 @@ static guint signals[LAST_SIGNAL];
 static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 {
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
+
+    init_drawing_sets ();
 
     gobject_class->set_property = moo_term_buffer_set_property;
     gobject_class->get_property = moo_term_buffer_get_property;
@@ -290,6 +399,11 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
     buf->priv->changed = NULL;
     buf->priv->changed_all = FALSE;
     buf->priv->parser = moo_term_parser_new (buf);
+
+    buf->priv->single_shift = -1;
+    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
+            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
+    buf->priv->current_graph_set = NULL;
 }
 
 
@@ -753,6 +867,30 @@ static void buf_print_chars_real (MooTermBuffer *buf,
     {
         gunichar c = g_utf8_get_char (p);
 
+        if (c <= MAX_GRAPH)
+        {
+            if (buf->priv->single_shift >= 0)
+            {
+                if (buf->priv->graph_sets[buf->priv->single_shift])
+                {
+                    if (buf->priv->graph_sets[buf->priv->single_shift][c])
+                        c = buf->priv->graph_sets[buf->priv->single_shift][c];
+                    else
+                        g_warning ("%s: using regular character while in "
+                                   "graphics mode", G_STRLOC);
+                }
+                buf->priv->single_shift = -1;
+            }
+            else if (buf->priv->current_graph_set)
+            {
+                if (buf->priv->current_graph_set[c])
+                    c = buf->priv->current_graph_set[c];
+                else
+                    g_warning ("%s: using regular character while in "
+                               "graphics mode", G_STRLOC);
+            }
+        }
+
         if (buf->priv->modes & IRM)
         {
             term_line_insert_unichar (buf_screen_line (buf, cursor_row),
@@ -1001,4 +1139,75 @@ void    moo_term_buffer_set_tab_stop        (MooTermBuffer  *buf)
                 g_list_insert_sorted (buf->priv->tab_stops,
                                       GUINT_TO_POINTER (cursor),
                                       cmp_guints);
+}
+
+
+static void init_drawing_sets (void)
+{
+    guint i;
+
+    for (i = 0; i <= MAX_GRAPH; ++i)
+    {
+        if (DRAWING_SET_STRINGS[i])
+            DRAWING_SET[i] = g_utf8_get_char (DRAWING_SET_STRINGS[i]);
+    }
+}
+
+
+void    moo_term_buffer_select_charset  (MooTermBuffer  *buf,
+                                         guint           set_num,
+                                         guint           charset)
+{
+    g_return_if_fail (set_num < 4 && charset < 5);
+
+    switch (charset)
+    {
+        case 0:
+            if (buf->priv->use_ascii_graphics)
+                buf->priv->graph_sets[set_num] = ASCII_DRAWING_SET;
+            else
+                buf->priv->graph_sets[set_num] = DRAWING_SET;
+            break;
+
+        case 2:
+            g_warning ("%s: choosing graphics instead of"
+                       "Alternate Character ROM Special Set", G_STRLOC);
+            if (buf->priv->use_ascii_graphics)
+                buf->priv->graph_sets[set_num] = ASCII_DRAWING_SET;
+            else
+                buf->priv->graph_sets[set_num] = DRAWING_SET;
+            break;
+
+        case 1:
+            g_warning ("%s: choosing regular charset instead of"
+                    "Alternate Character ROM Standard Set", G_STRLOC);
+            buf->priv->graph_sets[set_num] = NULL;
+            break;
+
+        case 3:
+            g_warning ("%s: choosing regular charset instead of"
+                       "United Kingdom", G_STRLOC);
+            buf->priv->graph_sets[set_num] = NULL;
+            break;
+
+        case 4:
+            buf->priv->graph_sets[set_num] = NULL;
+            break;
+    }
+}
+
+
+void    moo_term_buffer_shift           (MooTermBuffer  *buf,
+                                         guint           set)
+{
+    g_return_if_fail (set < 4);
+    buf->priv->current_graph_set = buf->priv->graph_sets[set];
+}
+
+
+void    moo_term_buffer_single_shift    (MooTermBuffer  *buf,
+                                         guint           set)
+{
+    g_return_if_fail (set < 4);
+    buf->priv->single_shift = set;
 }

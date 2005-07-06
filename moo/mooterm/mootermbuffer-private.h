@@ -120,6 +120,11 @@ struct _MooTermBufferPrivate {
     MooTermTextAttr current_attr;
     gboolean        cursor_visible;
 
+    int             single_shift;
+    gunichar       *graph_sets[4];
+    gunichar       *current_graph_set;
+    gboolean        use_ascii_graphics;
+
     guint           screen_offset;
     guint           screen_width;
     guint           screen_height;
@@ -346,6 +351,14 @@ guint   moo_term_buffer_next_tab_stop       (MooTermBuffer  *buf,
                                              guint           current);
 guint   moo_term_buffer_prev_tab_stop       (MooTermBuffer  *buf,
                                              guint           current);
+
+void    moo_term_buffer_select_charset  (MooTermBuffer  *buf,
+                                         guint           set_num,
+                                         guint           charset);
+void    moo_term_buffer_shift           (MooTermBuffer  *buf,
+                                         guint           charset);
+void    moo_term_buffer_single_shift    (MooTermBuffer  *buf,
+                                         guint           charset);
 
 
 /***************************************************************************/
