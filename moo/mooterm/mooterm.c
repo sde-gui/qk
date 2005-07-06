@@ -207,12 +207,22 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->dirty)
         gdk_region_destroy (term->priv->dirty);
 
+    if (term->priv->changed_content)
+        gdk_region_destroy (term->priv->changed_content);
+    if (term->priv->back_pixmap)
+        g_object_unref (term->priv->back_pixmap);
+    if (term->priv->clip)
+        g_object_unref (term->priv->clip);
+    if (term->priv->layout)
+        g_object_unref (term->priv->layout);
+
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
         g_free (term->priv->color[i]);
 
     for (i = 0; i <= MOO_TERM_COLOR_MAX; ++i)
         for (j = 0; j <= MOO_TERM_COLOR_MAX; ++j)
-            g_object_unref (term->priv->pair[i][j]);
+            if (i != MOO_TERM_COLOR_MAX || j != MOO_TERM_COLOR_MAX)
+                g_object_unref (term->priv->pair[i][j]);
 
     g_free (term->priv);
     G_OBJECT_CLASS (moo_term_parent_class)->finalize (object);
@@ -297,6 +307,7 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     moo_term_setup_palette (term);
     moo_term_init_font_stuff (term);
+    moo_term_init_back_pixmap (term);
     moo_term_size_changed (term);
 
     gdk_window_set_background (widget->window, &(widget->style->white));
@@ -650,6 +661,9 @@ void        moo_term_size_changed       (MooTerm        *term)
 
     moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
     moo_term_vt_set_size (term->priv->vt, width, height);
+
+    if (GTK_WIDGET_REALIZED (term))
+        moo_term_resize_back_pixmap (term);
 }
 
 

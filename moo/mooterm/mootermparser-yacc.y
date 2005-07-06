@@ -549,9 +549,9 @@ non_escape_char:    printable_char
 ;
 
 no_escape_string:   non_escape_char                     { add_char ($1); }
-                |   no_escape_string non_escape_char    { add_char ($1); }
+                |   no_escape_string non_escape_char    { add_char ($2); }
 ;
 
 printable_string:   printable_char                      { add_char ($1); }
-                |   printable_string printable_char     { add_char ($1); }
+                |   printable_string printable_char     { add_char ($2); }
 ;

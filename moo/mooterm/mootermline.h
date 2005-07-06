@@ -31,6 +31,16 @@ typedef struct _MooTermLine MooTermLine;
 
 static MooTermTextAttr ZERO_ATTR;
 
+
+/* FALSE if equal */
+inline static gboolean attr_cmp (MooTermTextAttr *a1, MooTermTextAttr *a2)
+{
+    return a1->mask != a2->mask ||
+            ((a1->mask & MOO_TERM_TEXT_FOREGROUND) && (a1->foreground != a2->foreground)) ||
+            ((a1->mask & MOO_TERM_TEXT_BACKGROUND) && (a1->background != a2->background));
+}
+
+
 #define TERM_LINE(ar)           ((MooTermLine*) (ar))
 #define TERM_LINE_ARRAY(line)   ((GArray*) (line))
 

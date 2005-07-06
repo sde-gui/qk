@@ -352,6 +352,7 @@ int             _moo_term_yylex         (MooTermParser  *parser)
             }
             else
             {
+                _moo_term_yylval = c;
                 return c;
             }
         }
@@ -609,7 +610,7 @@ static void     exec_decset             (MooTermBuffer  *buf,
                 break;
 
             default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
+                g_warning ("%s: unknown mode %d", G_STRLOC, params[i]);
         }
     }
 }
@@ -972,7 +973,7 @@ static void     exec_restore_decset     (MooTermBuffer  *buf,
                 break;
 
             default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
+                g_warning ("%s: unknown mode %d", G_STRLOC, params[i]);
         }
     }
 }

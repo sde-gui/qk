@@ -68,9 +68,6 @@ struct _MooTermPrivate {
 
     gboolean         scrolled;
     guint            _top_line;
-//     guint            old_scrollback;
-//     guint            old_width;
-//     guint            old_height;
     guint            char_width;
     guint            char_height;
 
@@ -79,11 +76,18 @@ struct _MooTermPrivate {
     TermPangoLines  *pango_lines;
     TermFontInfo    *font_info;
 
+    GdkPixmap       *back_pixmap;
+    GdkRegion       *changed_content; /* buffer coordinates, relative to top_line */
+    GdkGC           *clip;
+    gboolean         font_changed;
+    PangoLayout     *layout;
+
     GdkGC           *fg[3];
     GdkGC           *bg[3];
     /* thing[MOO_TERM_COLOR_MAX] == NULL */
     GdkColor        *color[MOO_TERM_COLOR_MAX + 1];
     GdkGC           *pair[MOO_TERM_COLOR_MAX + 1][MOO_TERM_COLOR_MAX + 1];
+    GdkGC           *selected_pair[MOO_TERM_COLOR_MAX + 1][MOO_TERM_COLOR_MAX + 1];
 
     TermCaretShape   caret_shape;
     guint            caret_height;
@@ -147,6 +151,13 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
                                          GdkEventKey    *event);
 gboolean    moo_term_key_release        (GtkWidget      *widget,
                                          GdkEventKey    *event);
+
+void        moo_term_init_back_pixmap       (MooTerm        *term);
+void        moo_term_resize_back_pixmap     (MooTerm        *term);
+void        moo_term_update_back_pixmap     (MooTerm        *term);
+void        moo_term_invalidate_content_all (MooTerm        *term);
+void        moo_term_invalidate_content_rect(MooTerm        *term,
+                                             GdkRectangle   *rect);
 
 void        moo_term_force_update       (MooTerm        *term);
 gboolean    moo_term_expose_event       (GtkWidget      *widget,
