@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermvt.c
+ *   mooterm/mootermpt.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -17,19 +17,19 @@
 #include "mooutils/moocompat.h"
 
 
-static void     moo_term_vt_set_property    (GObject        *object,
+static void     moo_term_pt_set_property    (GObject        *object,
                                              guint           prop_id,
                                              const GValue   *value,
                                              GParamSpec     *pspec);
-static void     moo_term_vt_get_property    (GObject        *object,
+static void     moo_term_pt_get_property    (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
-static void     moo_term_vt_finalize        (GObject        *object);
+static void     moo_term_pt_finalize        (GObject        *object);
 
 
-/* MOO_TYPE_TERM_VT */
-G_DEFINE_TYPE (MooTermVt, moo_term_vt, G_TYPE_OBJECT)
+/* MOO_TYPE_TERM_PT */
+G_DEFINE_TYPE (MooTermPt, moo_term_pt, G_TYPE_OBJECT)
 
 enum {
     CHILD_DIED,
@@ -44,13 +44,13 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-static void moo_term_vt_class_init (MooTermVtClass *klass)
+static void moo_term_pt_class_init (MooTermPtClass *klass)
 {
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->set_property = moo_term_vt_set_property;
-    gobject_class->get_property = moo_term_vt_get_property;
-    gobject_class->finalize = moo_term_vt_finalize;
+    gobject_class->set_property = moo_term_pt_set_property;
+    gobject_class->get_property = moo_term_pt_get_property;
+    gobject_class->finalize = moo_term_pt_finalize;
 
     klass->set_size = NULL;
     klass->fork_command = NULL;
@@ -62,7 +62,7 @@ static void moo_term_vt_class_init (MooTermVtClass *klass)
             g_signal_new ("child-died",
                           G_OBJECT_CLASS_TYPE (gobject_class),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTermVtClass, child_died),
+                          G_STRUCT_OFFSET (MooTermPtClass, child_died),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -77,39 +77,39 @@ static void moo_term_vt_class_init (MooTermVtClass *klass)
 }
 
 
-static void     moo_term_vt_init            (MooTermVt      *vt)
+static void     moo_term_pt_init            (MooTermPt      *pt)
 {
-    vt->priv = g_new0 (MooTermVtPrivate, 1);
-    vt->priv->pending_write = g_queue_new ();
+    pt->priv = g_new0 (MooTermPtPrivate, 1);
+    pt->priv->pending_write = g_queue_new ();
 }
 
 
-static void     moo_term_vt_finalize        (GObject            *object)
+static void     moo_term_pt_finalize        (GObject            *object)
 {
-    MooTermVt *vt = MOO_TERM_VT (object);
+    MooTermPt *pt = MOO_TERM_PT (object);
 
-    if (vt->priv->buffer)
-        g_object_unref (vt->priv->buffer);
+    if (pt->priv->buffer)
+        g_object_unref (pt->priv->buffer);
 
-    vt_flush_pending_write (vt);
-    g_queue_free (vt->priv->pending_write);
+    pt_flush_pending_write (pt);
+    g_queue_free (pt->priv->pending_write);
 
-    g_free (vt->priv);
+    g_free (pt->priv);
 
-    G_OBJECT_CLASS (moo_term_vt_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_term_pt_parent_class)->finalize (object);
 }
 
 
-static void     moo_term_vt_set_property    (GObject        *object,
+static void     moo_term_pt_set_property    (GObject        *object,
                                              guint           prop_id,
                                              const GValue   *value,
                                              GParamSpec     *pspec)
 {
-    MooTermVt *vt = MOO_TERM_VT (object);
+    MooTermPt *pt = MOO_TERM_PT (object);
 
     switch (prop_id) {
         case PROP_BUFFER:
-            moo_term_vt_set_buffer (vt, g_value_get_object (value));
+            moo_term_pt_set_buffer (pt, g_value_get_object (value));
             break;
 
         default:
@@ -119,16 +119,16 @@ static void     moo_term_vt_set_property    (GObject        *object,
 }
 
 
-static void     moo_term_vt_get_property    (GObject        *object,
+static void     moo_term_pt_get_property    (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec)
 {
-    MooTermVt *vt = MOO_TERM_VT (object);
+    MooTermPt *pt = MOO_TERM_PT (object);
 
     switch (prop_id) {
         case PROP_BUFFER:
-            g_value_set_object (value, vt->priv->buffer);
+            g_value_set_object (value, pt->priv->buffer);
             break;
 
         default:
@@ -138,68 +138,68 @@ static void     moo_term_vt_get_property    (GObject        *object,
 }
 
 
-void            moo_term_vt_set_buffer      (MooTermVt      *vt,
+void            moo_term_pt_set_buffer      (MooTermPt      *pt,
                                              MooTermBuffer  *buffer)
 {
-    if (vt->priv->buffer == buffer)
+    if (pt->priv->buffer == buffer)
         return;
 
-    if (vt->priv->buffer)
-        g_object_unref (vt->priv->buffer);
-    vt->priv->buffer = buffer;
-    if (vt->priv->buffer)
-        g_object_ref (vt->priv->buffer);
+    if (pt->priv->buffer)
+        g_object_unref (pt->priv->buffer);
+    pt->priv->buffer = buffer;
+    if (pt->priv->buffer)
+        g_object_ref (pt->priv->buffer);
 
-    g_object_notify (G_OBJECT (vt), "buffer");
+    g_object_notify (G_OBJECT (pt), "buffer");
 }
 
 
-MooTermBuffer  *moo_term_vt_get_buffer      (MooTermVt      *vt)
+MooTermBuffer  *moo_term_pt_get_buffer      (MooTermPt      *pt)
 {
-    return vt->priv->buffer;
+    return pt->priv->buffer;
 }
 
 
-MooTermVt      *moo_term_vt_new         (void)
+MooTermPt      *moo_term_pt_new         (void)
 {
 #ifdef __WIN32__
-    return g_object_new (MOO_TYPE_TERM_VT_WIN, NULL);
+    return g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
 #else /* !__WIN32__ */
-    return g_object_new (MOO_TYPE_TERM_VT_UNIX, NULL);
+    return g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
 #endif /* !__WIN32__ */
 }
 
 
-void            moo_term_vt_set_size        (MooTermVt      *vt,
+void            moo_term_pt_set_size        (MooTermPt      *pt,
                                              guint           width,
                                              guint           height)
 {
-    g_return_if_fail (MOO_IS_TERM_VT (vt));
-    MOO_TERM_VT_GET_CLASS(vt)->set_size (vt, width, height);
+    g_return_if_fail (MOO_IS_TERM_PT (pt));
+    MOO_TERM_PT_GET_CLASS(pt)->set_size (pt, width, height);
 }
 
 
-gboolean        moo_term_vt_fork_command    (MooTermVt      *vt,
+gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp)
 {
-    g_return_val_if_fail (MOO_IS_TERM_VT (vt), FALSE);
-    return MOO_TERM_VT_GET_CLASS(vt)->fork_command (vt, cmd, working_dir, envp);
+    g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
+    return MOO_TERM_PT_GET_CLASS(pt)->fork_command (pt, cmd, working_dir, envp);
 }
 
 
-void            moo_term_vt_kill_child      (MooTermVt      *vt)
+void            moo_term_pt_kill_child      (MooTermPt      *pt)
 {
-    g_return_if_fail (MOO_IS_TERM_VT (vt));
-    MOO_TERM_VT_GET_CLASS(vt)->kill_child (vt);
+    g_return_if_fail (MOO_IS_TERM_PT (pt));
+    MOO_TERM_PT_GET_CLASS(pt)->kill_child (pt);
 }
 
 
-void            moo_term_vt_write           (MooTermVt      *vt,
+void            moo_term_pt_write           (MooTermPt      *pt,
                                              const char     *data,
                                              gssize          len)
 {
-    g_return_if_fail (MOO_IS_TERM_VT (vt));
-    MOO_TERM_VT_GET_CLASS(vt)->write (vt, data, len);
+    g_return_if_fail (MOO_IS_TERM_PT (pt));
+    MOO_TERM_PT_GET_CLASS(pt)->write (pt, data, len);
 }

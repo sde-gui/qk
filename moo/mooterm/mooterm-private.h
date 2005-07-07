@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-priavte.h
+ *   mooterm/mooterm-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -16,7 +16,7 @@
 
 #include "mooterm/mooterm.h"
 #include "mooterm/mootermbuffer-private.h"
-#include "mooterm/mootermvt.h"
+#include "mooterm/mootermpt.h"
 
 G_BEGIN_DECLS
 
@@ -25,8 +25,8 @@ G_BEGIN_DECLS
 #define ADJUSTMENT_VALUE_PRIORITY   G_PRIORITY_DEFAULT_IDLE
 #define EXPOSE_PRIORITY             G_PRIORITY_DEFAULT_IDLE
 
-#define VT_WRITER_PRIORITY          G_PRIORITY_DEFAULT_IDLE
-#define VT_READER_PRIORITY          G_PRIORITY_HIGH_IDLE
+#define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT_IDLE
+#define PT_READER_PRIORITY          G_PRIORITY_HIGH_IDLE
 
 #define MAX_TERMINAL_WIDTH          4096
 #define DEFAULT_MONOSPACE_FONT      "Courier New 9"
@@ -59,7 +59,7 @@ typedef struct _TermSelection    TermSelection;
 
 struct _MooTermPrivate {
     MooTermBuffer   *buffer;
-    MooTermVt       *vt;
+    MooTermPt       *pt;
 
     gboolean         scrolled;
     guint            _top_line;
@@ -266,17 +266,17 @@ inline static gboolean term_selected           (TermSelection   *sel,
 
 
 /*************************************************************************/
-/* MooTermVtPrivate
+/* MooTermPtPrivate
  */
 
 enum {
-    VT_NONE = 0,
-    VT_READ,
-    VT_WRITE
+    PT_NONE = 0,
+    PT_READ,
+    PT_WRITE
 };
 
 
-struct _MooTermVtPrivate {
+struct _MooTermPtPrivate {
     MooTermBuffer   *buffer;
 
     GQueue          *pending_write;  /* list->data is GByteArray* */
@@ -284,7 +284,7 @@ struct _MooTermVtPrivate {
 };
 
 
-inline static void vt_discard (GSList **list)
+inline static void pt_discard (GSList **list)
 {
     GSList *l;
 
@@ -295,18 +295,18 @@ inline static void vt_discard (GSList **list)
     *list = NULL;
 }
 
-inline static void vt_flush_pending_write (MooTermVt *vt)
+inline static void pt_flush_pending_write (MooTermPt *pt)
 {
     GList *l;
 
-    for (l = vt->priv->pending_write->head; l != NULL; l = l->next)
+    for (l = pt->priv->pending_write->head; l != NULL; l = l->next)
         g_byte_array_free (l->data, TRUE);
 
-    while (!g_queue_is_empty (vt->priv->pending_write))
-        g_queue_pop_head (vt->priv->pending_write);
+    while (!g_queue_is_empty (pt->priv->pending_write))
+        g_queue_pop_head (pt->priv->pending_write);
 }
 
-inline static void vt_add_data (GSList **list, const char *data, gssize len)
+inline static void pt_add_data (GSList **list, const char *data, gssize len)
 {
     if (data && len && (len > 0 || data[0]))
     {

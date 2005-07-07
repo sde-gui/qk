@@ -164,7 +164,7 @@ static void moo_term_get_property           (GObject        *object,
 static void moo_term_init                   (MooTerm        *term)
 {
     term->priv = g_new0 (MooTermPrivate, 1);
-    term->priv->vt = moo_term_vt_new ();
+    term->priv->pt = moo_term_pt_new ();
     term->priv->selection = term_selection_new ();
     moo_term_set_buffer (term, NULL);
 }
@@ -174,13 +174,6 @@ static void moo_term_finalize               (GObject        *object)
 {
     MooTerm *term = MOO_TERM (object);
     guint i, j;
-
-    g_print ("width: %d\ntotal number of lines: %d\n",
-             term_width (term),
-             buf_total_height (term->priv->buffer));
-    guint line_size = sizeof (MooTermLine) + sizeof (MooTermCell) * term_width (term);
-    g_print ("size of one line: %d\ntotal memory for buffer: %d\n",
-             line_size, buf_total_height (term->priv->buffer) * line_size);
 
     g_signal_handler_disconnect (term->priv->buffer,
                                  term->priv->buf_scrollback_changed_id);
@@ -196,7 +189,7 @@ static void moo_term_finalize               (GObject        *object)
                                  term->priv->buf_feed_child_id);
     g_object_unref (term->priv->buffer);
 
-    g_object_unref (term->priv->vt);
+    g_object_unref (term->priv->pt);
     term_selection_free (term->priv->selection);
 
     for (i = 0; i < CURSORS_NUM; ++i)
@@ -590,7 +583,7 @@ void             moo_term_set_buffer        (MooTerm        *term,
         term->priv->buffer = moo_term_buffer_new (0, 0);
     }
 
-    moo_term_vt_set_buffer (term->priv->vt, term->priv->buffer);
+    moo_term_pt_set_buffer (term->priv->pt, term->priv->buffer);
 
     term->priv->buf_scrollback_changed_id =
             g_signal_connect_swapped (term->priv->buffer,
@@ -637,7 +630,7 @@ void             moo_term_set_buffer        (MooTerm        *term,
 
         term->priv->scrolled = FALSE;
         moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
-        moo_term_vt_set_size (term->priv->vt, width, height);
+        moo_term_pt_set_size (term->priv->pt, width, height);
     }
 }
 
@@ -665,7 +658,7 @@ void        moo_term_size_changed       (MooTerm        *term)
         return;
 
     moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
-    moo_term_vt_set_size (term->priv->vt, width, height);
+    moo_term_pt_set_size (term->priv->pt, width, height);
 
     if (GTK_WIDGET_REALIZED (term))
         moo_term_resize_back_pixmap (term);
@@ -679,7 +672,7 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
 {
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
 
-    return moo_term_vt_fork_command (term->priv->vt,
+    return moo_term_pt_fork_command (term->priv->pt,
                                      cmd, working_dir, envp);
 }
 
@@ -689,7 +682,7 @@ void             moo_term_feed_child        (MooTerm        *term,
                                              int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term));
-    moo_term_vt_write (term->priv->vt, string, len);
+    moo_term_pt_write (term->priv->pt, string, len);
 }
 
 
@@ -711,7 +704,7 @@ void             moo_term_paste_clipboard   (MooTerm        *term)
 
     if (text)
     {
-        moo_term_vt_write (term->priv->vt, text, -1);
+        moo_term_pt_write (term->priv->pt, text, -1);
         g_free (text);
     }
 }

@@ -19,16 +19,16 @@ widget_sources =            \
     mootermparser.h         \
     mootermparser-yacc.y    \
     mootermselection.c      \
-    mootermvt.c             \
-    mootermvt.h
+    mootermpt.c             \
+    mootermpt.h
 
 widget_unix_sources =       \
-    mootermvt-unix.c        \
+    mootermpt-unix.c        \
     pty.c                   \
     pty.h
 
 widget_win32_sources =      \
-    mootermvt-win32.c
+    mootermpt-win32.c
 
 AM_INCLUDES =
 common_cflags =                         \

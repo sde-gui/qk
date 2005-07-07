@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermvt-unix.c
+ *   mooterm/mootermpt-unix.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -41,18 +41,18 @@
 #define POLL_NUM                1
 
 
-#define MOO_TERM_VT_UNIX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_VT_UNIX, MooTermVtUnix))
-#define MOO_TERM_VT_UNIX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_VT_UNIX, MooTermVtUnixClass))
-#define MOO_IS_TERM_VT_UNIX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TERM_VT_UNIX))
-#define MOO_IS_TERM_VT_UNIX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOO_TYPE_TERM_VT_UNIX))
-#define MOO_TERM_VT_UNIX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_VT_UNIX, MooTermVtUnixClass))
+#define MOO_TERM_PT_UNIX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_PT_UNIX, MooTermPtUnix))
+#define MOO_TERM_PT_UNIX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_PT_UNIX, MooTermPtUnixClass))
+#define MOO_IS_TERM_PT_UNIX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TERM_PT_UNIX))
+#define MOO_IS_TERM_PT_UNIX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOO_TYPE_TERM_PT_UNIX))
+#define MOO_TERM_PT_UNIX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_PT_UNIX, MooTermPtUnixClass))
 
-typedef struct _MooTermVtUnix           MooTermVtUnix;
-typedef struct _MooTermVtUnixClass      MooTermVtUnixClass;
+typedef struct _MooTermPtUnix           MooTermPtUnix;
+typedef struct _MooTermPtUnixClass      MooTermPtUnixClass;
 
 
-struct _MooTermVtUnix {
-    MooTermVt   parent;
+struct _MooTermPtUnix {
+    MooTermPt   parent;
 
     gboolean    child_alive;
     GPid        child_pid;
@@ -67,101 +67,101 @@ struct _MooTermVtUnix {
 };
 
 
-struct _MooTermVtUnixClass {
-    MooTermVtClass  parent_class;
+struct _MooTermPtUnixClass {
+    MooTermPtClass  parent_class;
 };
 
 
-static void     moo_term_vt_unix_finalize       (GObject        *object);
+static void     moo_term_pt_unix_finalize       (GObject        *object);
 
-static void     set_size        (MooTermVt      *vt,
+static void     set_size        (MooTermPt      *pt,
                                  guint           width,
                                  guint           height);
-static gboolean fork_command    (MooTermVt      *vt,
+static gboolean fork_command    (MooTermPt      *pt,
                                  const char     *cmd,
                                  const char     *working_dir,
                                  char          **envp);
-static void     vt_write        (MooTermVt      *vt,
+static void     pt_write        (MooTermPt      *pt,
                                  const char     *string,
                                  gssize          len);
-static void     kill_child      (MooTermVt      *vt);
+static void     kill_child      (MooTermPt      *pt);
 
 static gboolean read_child_out  (GIOChannel     *source,
                                  GIOCondition    condition,
-                                 MooTermVtUnix  *vt);
-static void     feed_buffer     (MooTermVtUnix  *vt,
+                                 MooTermPtUnix  *pt);
+static void     feed_buffer     (MooTermPtUnix  *pt,
                                  const char     *string,
                                  int             len);
 
-static void     start_writer    (MooTermVt      *vt);
-static void     stop_writer     (MooTermVt      *vt);
+static void     start_writer    (MooTermPt      *pt);
+static void     stop_writer     (MooTermPt      *pt);
 
 
-/* MOO_TYPE_TERM_VT_UNIX */
-G_DEFINE_TYPE (MooTermVtUnix, moo_term_vt_unix, MOO_TYPE_TERM_VT)
+/* MOO_TYPE_TERM_PT_UNIX */
+G_DEFINE_TYPE (MooTermPtUnix, moo_term_pt_unix, MOO_TYPE_TERM_PT)
 
 
-static void moo_term_vt_unix_class_init (MooTermVtUnixClass *klass)
+static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    MooTermVtClass *vt_class = MOO_TERM_VT_CLASS (klass);
+    MooTermPtClass *pt_class = MOO_TERM_PT_CLASS (klass);
 
-    gobject_class->finalize = moo_term_vt_unix_finalize;
+    gobject_class->finalize = moo_term_pt_unix_finalize;
 
-    vt_class->set_size = set_size;
-    vt_class->fork_command = fork_command;
-    vt_class->write = vt_write;
-    vt_class->kill_child = kill_child;
+    pt_class->set_size = set_size;
+    pt_class->fork_command = fork_command;
+    pt_class->write = pt_write;
+    pt_class->kill_child = kill_child;
 }
 
 
-static void     moo_term_vt_unix_init            (MooTermVtUnix      *vt)
+static void     moo_term_pt_unix_init            (MooTermPtUnix      *pt)
 {
-    vt->child_alive = FALSE;
-    vt->child_pid = (GPid)-1;
+    pt->child_alive = FALSE;
+    pt->child_pid = (GPid)-1;
 
-    vt->master = -1;
-    vt->width = 80;
-    vt->height = 24;
+    pt->master = -1;
+    pt->width = 80;
+    pt->height = 24;
 
-    vt->non_block = FALSE;
-    vt->io = NULL;
-    vt->io_watch_id = 0;
+    pt->non_block = FALSE;
+    pt->io = NULL;
+    pt->io_watch_id = 0;
 }
 
 
-static void     moo_term_vt_unix_finalize        (GObject            *object)
+static void     moo_term_pt_unix_finalize        (GObject            *object)
 {
-    MooTermVtUnix *vt = MOO_TERM_VT_UNIX (object);
-    kill_child (MOO_TERM_VT (vt));
-    G_OBJECT_CLASS (moo_term_vt_unix_parent_class)->finalize (object);
+    MooTermPtUnix *pt = MOO_TERM_PT_UNIX (object);
+    kill_child (MOO_TERM_PT (pt));
+    G_OBJECT_CLASS (moo_term_pt_unix_parent_class)->finalize (object);
 }
 
 
-static void     set_size        (MooTermVt      *vt,
+static void     set_size        (MooTermPt      *pt,
                                  guint           width,
                                  guint           height)
 {
-    MooTermVtUnix *vtu;
+    MooTermPtUnix *ptu;
 
-    g_return_if_fail (MOO_IS_TERM_VT_UNIX (vt));
+    g_return_if_fail (MOO_IS_TERM_PT_UNIX (pt));
 
-    vtu = MOO_TERM_VT_UNIX (vt);
+    ptu = MOO_TERM_PT_UNIX (pt);
 
-    if (vtu->child_alive)
-        _vte_pty_set_size (vtu->master, width, height);
+    if (ptu->child_alive)
+        _vte_pty_set_size (ptu->master, width, height);
 
-    vtu->width = width;
-    vtu->height = height;
+    ptu->width = width;
+    ptu->height = height;
 }
 
 
-static gboolean fork_command    (MooTermVt      *vt_gen,
+static gboolean fork_command    (MooTermPt      *pt_gen,
                                  const char     *cmd,
                                  const char     *working_dir,
                                  char          **envp)
 {
-    MooTermVtUnix *vt;
+    MooTermPtUnix *pt;
     int argv_len;
     char **argv = NULL;
     int env_len = 0;
@@ -172,11 +172,11 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
     GSource *src;
 
     g_return_val_if_fail (cmd != NULL, FALSE);
-    g_return_val_if_fail (MOO_IS_TERM_VT_UNIX (vt_gen), FALSE);
+    g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
 
-    vt = MOO_TERM_VT_UNIX (vt_gen);
+    pt = MOO_TERM_PT_UNIX (pt_gen);
 
-    g_return_val_if_fail (!vt->child_alive, FALSE);
+    g_return_val_if_fail (!pt->child_alive, FALSE);
 
     if (!g_shell_parse_argv (cmd, &argv_len, &argv, &err))
     {
@@ -209,101 +209,101 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
     new_env[env_len] = g_strdup ("TERM=" TERM_EMULATION);
     new_env[env_len + 1] = NULL;
 
-    vt->master = _vte_pty_open (&vt->child_pid, new_env,
+    pt->master = _vte_pty_open (&pt->child_pid, new_env,
                                  argv[0],
                                  argv,
                                  working_dir,
-                                 vt->width, vt->height,
+                                 pt->width, pt->height,
                                  FALSE, FALSE, FALSE);
     g_strfreev (new_env);
     g_strfreev (argv);
 
-    if (vt->master == -1)
+    if (pt->master == -1)
     {
         g_critical ("%s: could not fork child", G_STRLOC);
         return FALSE;
     }
     else
     {
-        g_message ("%s: forked child pid %d", G_STRLOC, vt->child_pid);
+        g_message ("%s: forked child pid %d", G_STRLOC, pt->child_pid);
     }
 
     if (waitpid (-1, &status, WNOHANG) == -1)
         g_critical ("%s: error in waitpid", G_STRLOC);
 
-    if ((flags = fcntl (vt->master, F_GETFL)) < 0)
+    if ((flags = fcntl (pt->master, F_GETFL)) < 0)
         g_critical ("%s: F_GETFL on master", G_STRLOC);
-    else if (-1 == fcntl (vt->master, F_SETFL, O_NONBLOCK | flags))
+    else if (-1 == fcntl (pt->master, F_SETFL, O_NONBLOCK | flags))
         g_critical ("%s: F_SETFL on master", G_STRLOC);
     else
-        vt->non_block = TRUE;
+        pt->non_block = TRUE;
 
-    vt->io =  g_io_channel_unix_new (vt->master);
-    g_return_val_if_fail (vt->io != NULL, FALSE);
+    pt->io =  g_io_channel_unix_new (pt->master);
+    g_return_val_if_fail (pt->io != NULL, FALSE);
 
-    g_io_channel_set_encoding (vt->io, NULL, NULL);
-    g_io_channel_set_buffered (vt->io, FALSE);
+    g_io_channel_set_encoding (pt->io, NULL, NULL);
+    g_io_channel_set_buffered (pt->io, FALSE);
 
-    vt->io_watch_id = g_io_add_watch (vt->io,
+    pt->io_watch_id = g_io_add_watch (pt->io,
                                       G_IO_IN | G_IO_PRI | G_IO_HUP,
                                       (GIOFunc) read_child_out,
-                                      vt);
+                                      pt);
 
-    src = g_main_context_find_source_by_id (NULL, vt->io_watch_id);
+    src = g_main_context_find_source_by_id (NULL, pt->io_watch_id);
 
     if (src)
-        g_source_set_priority (src, VT_READER_PRIORITY);
+        g_source_set_priority (src, PT_READER_PRIORITY);
     else
         g_warning ("%s: could not find io_watch_id source", G_STRLOC);
 
-    vt->child_alive = TRUE;
+    pt->child_alive = TRUE;
 
     return TRUE;
 }
 
 
-static void     kill_child      (MooTermVt      *vt_gen)
+static void     kill_child      (MooTermPt      *pt_gen)
 {
-    MooTermVtUnix *vt = MOO_TERM_VT_UNIX (vt_gen);
+    MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
 
-    if (vt->io_watch_id)
+    if (pt->io_watch_id)
     {
-        g_source_remove (vt->io_watch_id);
-        vt->io_watch_id = 0;
+        g_source_remove (pt->io_watch_id);
+        pt->io_watch_id = 0;
     }
 
-    if (vt->io)
+    if (pt->io)
     {
-        vt_write (MOO_TERM_VT (vt), "\4", 1);
-        g_io_channel_shutdown (vt->io, TRUE, NULL);
-        g_io_channel_unref (vt->io);
-        vt->io = NULL;
+        pt_write (MOO_TERM_PT (pt), "\4", 1);
+        g_io_channel_shutdown (pt->io, TRUE, NULL);
+        g_io_channel_unref (pt->io);
+        pt->io = NULL;
     }
 
-    stop_writer (vt_gen);
-    vt_flush_pending_write (vt_gen);
+    stop_writer (pt_gen);
+    pt_flush_pending_write (pt_gen);
 
-    if (vt->master != -1)
+    if (pt->master != -1)
     {
-        _vte_pty_close (vt->master);
-        vt->master = -1;
+        _vte_pty_close (pt->master);
+        pt->master = -1;
     }
 
-    vt->non_block = FALSE;
+    pt->non_block = FALSE;
 
-    vt->child_pid = (GPid)-1;
+    pt->child_pid = (GPid)-1;
 
-    if (vt->child_alive)
+    if (pt->child_alive)
     {
-        vt->child_alive = FALSE;
-        g_signal_emit_by_name (vt, "child-died");
+        pt->child_alive = FALSE;
+        g_signal_emit_by_name (pt, "child-died");
     }
 }
 
 
 static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                                  GIOCondition    condition,
-                                 MooTermVtUnix  *vt)
+                                 MooTermPtUnix  *pt)
 {
     gboolean error_occured = FALSE;
     int error_no = 0;
@@ -327,9 +327,9 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
 
     g_assert (condition & (G_IO_IN | G_IO_PRI));
 
-    if (vt->non_block)
+    if (pt->non_block)
     {
-        int r = read (vt->master, buf, READ_BUFSIZE);
+        int r = read (pt->master, buf, READ_BUFSIZE);
 
         switch (r)
         {
@@ -347,7 +347,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 _moo_term_print_bytes (buf, r);
                 g_print ("'\n");
 #endif
-                feed_buffer (vt, buf, r);
+                feed_buffer (pt, buf, r);
                 break;
         }
 
@@ -356,7 +356,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
 
     while (again && !error_occured && current < READ_BUFSIZE)
     {
-        struct pollfd fd = {vt->master, POLLIN | POLLPRI, 0};
+        struct pollfd fd = {pt->master, POLLIN | POLLPRI, 0};
 
         int res = poll (&fd, 1, POLL_TIME);
 
@@ -378,7 +378,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 }
                 else if (fd.revents & (POLLIN | POLLPRI))
                 {
-                    int r = read (vt->master, buf + current, 1);
+                    int r = read (pt->master, buf + current, 1);
 
                     switch (r)
                     {
@@ -419,7 +419,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
     }
 
     if (current > 0)
-        feed_buffer (vt, buf, current);
+        feed_buffer (pt, buf, current);
 
     if (error_occured)
         goto error;
@@ -433,29 +433,29 @@ error:
     if (error_no)
         g_message ("%s: %s", G_STRLOC, g_strerror (error_no));
 
-    if (vt->io)
+    if (pt->io)
     {
-        _vte_pty_close (vt->master);
-        vt->master = -1;
+        _vte_pty_close (pt->master);
+        pt->master = -1;
 
-        g_io_channel_shutdown (vt->io, TRUE, NULL);
-        g_io_channel_unref (vt->io);
-        vt->io = NULL;
+        g_io_channel_shutdown (pt->io, TRUE, NULL);
+        g_io_channel_unref (pt->io);
+        pt->io = NULL;
 
-        vt->io_watch_id = 0;
+        pt->io_watch_id = 0;
     }
 
-    kill_child (MOO_TERM_VT (vt));
+    kill_child (MOO_TERM_PT (pt));
 
     return FALSE;
 }
 
 
-static void     feed_buffer     (MooTermVtUnix  *vt,
+static void     feed_buffer     (MooTermPtUnix  *pt,
                                  const char     *string,
                                  int             len)
 {
-    moo_term_buffer_write (moo_term_vt_get_buffer (MOO_TERM_VT (vt)),
+    moo_term_buffer_write (moo_term_pt_get_buffer (MOO_TERM_PT (pt)),
                            string, len);
 }
 
@@ -463,18 +463,18 @@ static void     feed_buffer     (MooTermVtUnix  *vt,
 /* writes given data to file, returns TRUE on successful write,
    FALSE when could not write al teh data, puts start of leftover
    to string, length of it to len, and fills err in case of error */
-static gboolean do_write        (MooTermVt      *vt_gen,
+static gboolean do_write        (MooTermPt      *pt_gen,
                                  const char    **string,
                                  guint          *plen,
                                  int            *err)
 {
     int written;
 
-    MooTermVtUnix *vt = MOO_TERM_VT_UNIX (vt_gen);
+    MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
 
-    g_return_val_if_fail (vt->io != NULL, FALSE);
+    g_return_val_if_fail (pt->io != NULL, FALSE);
 
-    written = write (vt->master, *string, *plen > CHUNK_SIZE ? CHUNK_SIZE : *plen);
+    written = write (pt->master, *string, *plen > CHUNK_SIZE ? CHUNK_SIZE : *plen);
 
     if (written == -1)
     {
@@ -504,63 +504,63 @@ static gboolean do_write        (MooTermVt      *vt_gen,
 }
 
 
-static void     append                  (MooTermVt      *vt,
+static void     append                  (MooTermPt      *pt,
                                          const char     *data,
                                          guint           len)
 {
     GByteArray *ar = g_byte_array_sized_new (len);
     g_byte_array_append (ar, (const guint8*)data, len);
-    g_queue_push_tail (vt->priv->pending_write, ar);
+    g_queue_push_tail (pt->priv->pending_write, ar);
 }
 
 
-static gboolean write_cb        (MooTermVt      *vt)
+static gboolean write_cb        (MooTermPt      *pt)
 {
-    vt_write (vt, NULL, 0);
+    pt_write (pt, NULL, 0);
     return TRUE;
 }
 
-static void     start_writer    (MooTermVt      *vt)
+static void     start_writer    (MooTermPt      *pt)
 {
-    if (!vt->priv->pending_write_id)
-        vt->priv->pending_write_id =
-                g_idle_add_full (VT_WRITER_PRIORITY,
+    if (!pt->priv->pending_write_id)
+        pt->priv->pending_write_id =
+                g_idle_add_full (PT_WRITER_PRIORITY,
                                  (GSourceFunc) write_cb,
-                                 vt, NULL);
+                                 pt, NULL);
 }
 
-static void     stop_writer     (MooTermVt      *vt)
+static void     stop_writer     (MooTermPt      *pt)
 {
-    if (vt->priv->pending_write_id)
+    if (pt->priv->pending_write_id)
     {
-        g_source_remove (vt->priv->pending_write_id);
-        vt->priv->pending_write_id = 0;
+        g_source_remove (pt->priv->pending_write_id);
+        pt->priv->pending_write_id = 0;
     }
 }
 
 
-static void     vt_write        (MooTermVt      *vt,
+static void     pt_write        (MooTermPt      *pt,
                                  const char     *data,
                                  int             data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
 
-    while (data || !g_queue_is_empty (vt->priv->pending_write))
+    while (data || !g_queue_is_empty (pt->priv->pending_write))
     {
         int err = 0;
         const char *string;
         guint len;
         GByteArray *freeme = NULL;
 
-        if (!g_queue_is_empty (vt->priv->pending_write))
+        if (!g_queue_is_empty (pt->priv->pending_write))
         {
             if (data)
             {
-                append (vt, data, data_len > 0 ? (guint)data_len : strlen (data));
+                append (pt, data, data_len > 0 ? (guint)data_len : strlen (data));
                 data = NULL;
             }
 
-            freeme = g_queue_peek_head (vt->priv->pending_write);
+            freeme = g_queue_peek_head (pt->priv->pending_write);
             string = freeme->data;
             len = freeme->len;
         }
@@ -571,7 +571,7 @@ static void     vt_write        (MooTermVt      *vt,
             data = NULL;
         }
 
-        if (do_write (vt, &string, &len, &err))
+        if (do_write (pt, &string, &len, &err))
         {
             if (len)
             {
@@ -582,7 +582,7 @@ static void     vt_write        (MooTermVt      *vt,
                 }
                 else
                 {
-                    append (vt, string, len);
+                    append (pt, string, len);
                 }
 
                 break;
@@ -590,7 +590,7 @@ static void     vt_write        (MooTermVt      *vt,
             else if (freeme)
             {
                 g_byte_array_free (freeme, TRUE);
-                g_queue_pop_head (vt->priv->pending_write);
+                g_queue_pop_head (pt->priv->pending_write);
             }
         }
         else
@@ -598,12 +598,12 @@ static void     vt_write        (MooTermVt      *vt,
             g_message ("%s: stopping writing to child", G_STRLOC);
             if (err)
                 g_message ("%s: %s", G_STRLOC, g_strerror (err));
-            kill_child (vt);
+            kill_child (pt);
         }
     }
 
-    if (!g_queue_is_empty (vt->priv->pending_write))
-        start_writer (vt);
+    if (!g_queue_is_empty (pt->priv->pending_write))
+        start_writer (pt);
     else
-        stop_writer (vt);
+        stop_writer (pt);
 }

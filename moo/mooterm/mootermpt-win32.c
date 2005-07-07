@@ -11,6 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooterm/mootermvt.h"
+#include "mooterm/mootermpt.h"
 
 
