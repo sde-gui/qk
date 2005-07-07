@@ -294,7 +294,7 @@ _vte_pty_run_on_pty(int fd, int ready_reader, int ready_writer,
 		    const char *directory)
 {
 	int i;
-	char c;
+	char c = 'a'; /* to make valgrind happy */
 	char **args, *arg;
 
 	if (fd != STDIN_FILENO) {

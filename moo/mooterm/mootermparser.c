@@ -778,7 +778,7 @@ inline static void buf_remove_attrs_mask    (MooTermBuffer      *buf,
 inline static void buf_set_ansi_foreground  (MooTermBuffer      *buf,
                                              MooTermBufferColor  color)
 {
-    if (color < MOO_TERM_COLOR_NONE)
+    if (color < MOO_TERM_COLOR_MAX)
     {
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;
         buf->priv->current_attr.foreground = color;
@@ -792,7 +792,7 @@ inline static void buf_set_ansi_foreground  (MooTermBuffer      *buf,
 inline static void buf_set_ansi_background  (MooTermBuffer      *buf,
                                              MooTermBufferColor  color)
 {
-    if (color < MOO_TERM_COLOR_NONE)
+    if (color < MOO_TERM_COLOR_MAX)
     {
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;
         buf->priv->current_attr.background = color;

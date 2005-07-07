@@ -41,11 +41,6 @@ typedef enum {
 } TermCursorType;
 
 enum {
-    FOREGROUND = 0,
-    BACKGROUND = 1
-};
-
-enum {
     NORMAL      = 0,
     SELECTED    = 1,
     CURSOR      = 2
@@ -73,7 +68,6 @@ struct _MooTermPrivate {
 
     TermSelection   *selection;
 
-    TermPangoLines  *pango_lines;
     TermFontInfo    *font_info;
 
     GdkPixmap       *back_pixmap;
@@ -82,12 +76,8 @@ struct _MooTermPrivate {
     gboolean         font_changed;
     PangoLayout     *layout;
 
-    GdkGC           *fg[3];
-    GdkGC           *bg[3];
-    /* thing[MOO_TERM_COLOR_MAX] == NULL */
-    GdkColor        *color[MOO_TERM_COLOR_MAX + 1];
-    GdkGC           *pair[MOO_TERM_COLOR_MAX + 1][MOO_TERM_COLOR_MAX + 1];
-    GdkGC           *selected_pair[MOO_TERM_COLOR_MAX + 1][MOO_TERM_COLOR_MAX + 1];
+    GdkGC           *fg[MOO_TERM_COLOR_MAX + 1][3];
+    GdkGC           *bg[MOO_TERM_COLOR_MAX + 1][3];
 
     TermCaretShape   caret_shape;
     guint            caret_height;
@@ -170,40 +160,6 @@ inline static void moo_term_invalidate_all  (MooTerm        *term)
     BufRectangle rec = {0, 0, term_width (term), term_height (term)};
     moo_term_invalidate_rect (term, &rec);
 }
-
-
-struct _TermPangoLines
-{
-    guint            size;
-    GPtrArray       *screen;
-    GByteArray      *valid;
-    PangoLayout     *line;
-    PangoContext    *ctx;
-};
-
-inline static PangoLayout *term_pango_line  (MooTerm        *term,
-                                             guint           i)
-{
-    g_assert (i < term->priv->pango_lines->size);
-    return (PangoLayout*) term->priv->pango_lines->screen->pdata[i];
-}
-
-TermPangoLines *term_pango_lines_new        (PangoContext   *ctx);
-
-void        term_pango_lines_free           (TermPangoLines *lines);
-void        term_pango_lines_resize         (MooTerm        *term,
-                                             guint           size);
-void        term_pango_lines_set_font       (TermPangoLines *lines,
-                                             PangoFontDescription *font);
-gboolean    term_pango_lines_valid          (TermPangoLines *lines,
-                                             guint           row);
-void        term_pango_lines_set_text       (TermPangoLines *lines,
-                                             guint           row,
-                                             const char     *text,
-                                             int             len);
-void        term_pango_lines_invalidate     (MooTerm        *term,
-                                             guint           row);
-void        term_pango_lines_invalidate_all (MooTerm        *term);
 
 
 struct _TermFontInfo {

@@ -216,6 +216,7 @@ static gboolean fork_command    (MooTermVt      *vt_gen,
                                  vt->width, vt->height,
                                  FALSE, FALSE, FALSE);
     g_strfreev (new_env);
+    g_strfreev (argv);
 
     if (vt->master == -1)
     {

@@ -57,6 +57,7 @@ if UNIX_BUILD
 noinst_LTLIBRARIES = libmooterm.la
 
 libmooterm_la_SOURCES = $(widget_sources) $(widget_unix_sources)
+BUILT_SOURCES = mootermparser-yacc.c mootermparser-yacc.h
 
 endif UNIX_BUILD
 
@@ -69,6 +70,7 @@ if MINGW_BUILD
 noinst_LTLIBRARIES = libmooterm.la
 
 libmooterm_la_SOURCES = $(widget_sources) $(widget_win32_sources)
+BUILT_SOURCES = mootermparser-yacc.c mootermparser-yacc.h
 
 endif MINGW_BUILD
 

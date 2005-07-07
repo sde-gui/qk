@@ -175,6 +175,13 @@ static void moo_term_finalize               (GObject        *object)
     MooTerm *term = MOO_TERM (object);
     guint i, j;
 
+    g_print ("width: %d\ntotal number of lines: %d\n",
+             term_width (term),
+             buf_total_height (term->priv->buffer));
+    guint line_size = sizeof (MooTermLine) + sizeof (MooTermCell) * term_width (term);
+    g_print ("size of one line: %d\ntotal memory for buffer: %d\n",
+             line_size, buf_total_height (term->priv->buffer) * line_size);
+
     g_signal_handler_disconnect (term->priv->buffer,
                                  term->priv->buf_scrollback_changed_id);
     g_signal_handler_disconnect (term->priv->buffer,
@@ -202,7 +209,6 @@ static void moo_term_finalize               (GObject        *object)
         g_object_unref (term->priv->adjustment);
 
     term_font_info_free (term->priv->font_info);
-    term_pango_lines_free (term->priv->pango_lines);
 
     if (term->priv->dirty)
         gdk_region_destroy (term->priv->dirty);
@@ -216,13 +222,17 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->layout)
         g_object_unref (term->priv->layout);
 
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-        g_free (term->priv->color[i]);
-
-    for (i = 0; i <= MOO_TERM_COLOR_MAX; ++i)
+    /* TODO TODO TODO */
+    for (i = 0; i < 1; ++i)
         for (j = 0; j <= MOO_TERM_COLOR_MAX; ++j)
-            if (i != MOO_TERM_COLOR_MAX || j != MOO_TERM_COLOR_MAX)
-                g_object_unref (term->priv->pair[i][j]);
+    {
+        g_object_unref (term->priv->fg[i][j]);
+        g_object_unref (term->priv->bg[i][j]);
+    }
+    g_object_unref (term->priv->fg[1][MOO_TERM_COLOR_MAX]);
+    g_object_unref (term->priv->bg[1][MOO_TERM_COLOR_MAX]);
+    g_object_unref (term->priv->fg[2][MOO_TERM_COLOR_MAX]);
+    g_object_unref (term->priv->bg[2][MOO_TERM_COLOR_MAX]);
 
     g_free (term->priv);
     G_OBJECT_CLASS (moo_term_parent_class)->finalize (object);
@@ -374,7 +384,6 @@ static void     width_changed                   (MooTerm        *term)
 {
     term_selection_set_width (term, term_width (term));
     term_selection_clear (term);
-    term_pango_lines_invalidate_all (term);
 }
 
 
@@ -384,9 +393,6 @@ static void     height_changed                  (MooTerm        *term)
         scroll_to_bottom (term, TRUE);
     else
         update_adjustment (term);
-
-    term_pango_lines_resize (term,
-                             buf_screen_height (term->priv->buffer));
 
     term_selection_clear (term);
     moo_term_invalidate_all (term);
@@ -520,7 +526,7 @@ static void     scroll_abs                      (MooTerm        *term,
     term->priv->_top_line = line;
     term->priv->scrolled = TRUE;
 
-    term_pango_lines_invalidate_all (term);
+    moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
     if (update_adj)
@@ -540,7 +546,7 @@ static void     scroll_to_bottom                (MooTerm        *term,
 
     term->priv->scrolled = FALSE;
 
-    term_pango_lines_invalidate_all (term);
+    moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
     if (update_adj)
@@ -629,7 +635,6 @@ void             moo_term_set_buffer        (MooTerm        *term,
         guint width = widget->allocation.width / font_info->width;
         guint height = widget->allocation.height / font_info->height;
 
-        term_pango_lines_invalidate_all (term);
         term->priv->scrolled = FALSE;
         moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
         moo_term_vt_set_size (term->priv->vt, width, height);

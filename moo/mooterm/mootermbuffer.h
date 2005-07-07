@@ -54,14 +54,14 @@ typedef enum {
     MOO_TERM_MAGENTA    = 5,
     MOO_TERM_CYAN       = 6,
     MOO_TERM_WHITE      = 7,
-    MOO_TERM_COLOR_NONE = 8,
-    MOO_TERM_COLOR_MAX  = MOO_TERM_COLOR_NONE
 } MooTermBufferColor;
 
+#define MOO_TERM_COLOR_MAX 8
+
 struct _MooTermTextAttr {
-    MooTermTextAttrMask mask;
-    MooTermBufferColor  foreground;
-    MooTermBufferColor  background;
+    MooTermTextAttrMask mask        : 8;
+    MooTermBufferColor  foreground  : 3;
+    MooTermBufferColor  background  : 3;
 };
 
 struct _MooTermBuffer {

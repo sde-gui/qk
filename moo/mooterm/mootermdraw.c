@@ -27,8 +27,6 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
     PangoContext *ctx;
     PangoFontDescription *font;
 
-    if (term->priv->pango_lines)
-        term_pango_lines_free (term->priv->pango_lines);
     if (term->priv->font_info)
         term_font_info_free (term->priv->font_info);
 
@@ -47,7 +45,6 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
     }
 
     term->priv->font_info = term_font_info_new (ctx);
-    term->priv->pango_lines = term_pango_lines_new (ctx);
 
     term->priv->layout = pango_layout_new (ctx);
 
@@ -110,120 +107,6 @@ void             term_font_info_free        (TermFontInfo           *info)
         g_object_unref (info->ctx);
         g_free (info);
     }
-}
-
-
-TermPangoLines *term_pango_lines_new        (PangoContext   *ctx)
-{
-    TermPangoLines *l = g_new0 (TermPangoLines, 1);
-
-    l->size = 0;
-    l->screen = g_ptr_array_new ();
-    l->valid = g_byte_array_new ();
-    l->line = pango_layout_new (ctx);
-    l->ctx = g_object_ref (ctx);
-
-    return l;
-}
-
-
-void        term_pango_lines_free           (TermPangoLines *lines)
-{
-    if (lines)
-    {
-        g_ptr_array_foreach (lines->screen,
-                             (GFunc) g_object_unref,
-                             NULL);
-
-        g_ptr_array_free (lines->screen, TRUE);
-        g_byte_array_free (lines->valid, TRUE);
-        g_object_unref (lines->ctx);
-        g_object_unref (lines->line);
-
-        g_free (lines);
-    }
-}
-
-
-void        term_pango_lines_resize         (MooTerm        *term,
-                                             guint           size)
-{
-    guint i;
-    TermPangoLines *lines = term->priv->pango_lines;
-
-    if (size == lines->size)
-        return;
-
-    if (size > lines->size)
-    {
-        g_ptr_array_set_size (lines->screen, size);
-
-        for (i = lines->size; i < size; ++i)
-        {
-            lines->screen->pdata[i] = pango_layout_new (lines->ctx);
-            g_assert (lines->screen->pdata[i] != NULL);
-        }
-    }
-    else
-    {
-        for (i = size; i < lines->size; ++i)
-            g_object_unref (lines->screen->pdata[i]);
-
-        g_ptr_array_set_size (lines->screen, size);
-    }
-
-    lines->size = size;
-    g_byte_array_set_size (lines->valid, size);
-    term_pango_lines_invalidate_all (term);
-}
-
-
-void        term_pango_lines_set_font       (TermPangoLines *lines,
-                                             PangoFontDescription *font)
-{
-    guint i;
-
-    for (i = 0; i < lines->size; ++i)
-        pango_layout_set_font_description (lines->screen->pdata[i], font);
-
-    pango_layout_set_font_description (lines->line, font);
-}
-
-
-gboolean    term_pango_lines_valid          (TermPangoLines *lines,
-                                             guint           i)
-{
-    g_assert (i < lines->size);
-    return lines->valid->data[i];
-}
-
-
-void        term_pango_lines_invalidate     (MooTerm    *term,
-                                             guint       i)
-{
-    TermPangoLines *lines = term->priv->pango_lines;
-    g_assert (i < lines->size);
-    lines->valid->data[i] = FALSE;
-}
-
-
-void        term_pango_lines_invalidate_all (MooTerm    *term)
-{
-    guint i;
-    TermPangoLines *lines = term->priv->pango_lines;
-    for (i = 0; i < lines->size; ++i)
-        lines->valid->data[i] = FALSE;
-}
-
-
-void        term_pango_lines_set_text       (TermPangoLines *lines,
-                                             guint           i,
-                                             const char     *text,
-                                             int             len)
-{
-    g_assert (i < lines->size);
-    pango_layout_set_text (lines->screen->pdata[i], text, len);
-    lines->valid->data[i] = TRUE;
 }
 
 
@@ -806,84 +689,79 @@ void        moo_term_invalidate_rect    (MooTerm        *term,
 
 void        moo_term_setup_palette      (MooTerm        *term)
 {
-    int i, j;
+    int i;
     GtkWidget *widget = GTK_WIDGET (term);
     GdkColormap *colormap;
     GdkGCValues vals;
+    GdkColor colors[MOO_TERM_COLOR_MAX];
 
     g_assert (GTK_WIDGET_REALIZED (widget));
 
     for (i = 0; i < 3; ++i)
     {
-        term->priv->fg[i] = gdk_gc_new (widget->window);
-        term->priv->bg[i] = gdk_gc_new (widget->window);
+        term->priv->fg[i][MOO_TERM_COLOR_MAX] =
+                gdk_gc_new_with_values (widget->window, &vals, 0);
+        term->priv->bg[i][MOO_TERM_COLOR_MAX] =
+                gdk_gc_new_with_values  (widget->window, &vals, 0);
     }
 
-    gdk_gc_set_foreground (term->priv->fg[NORMAL],   &(widget->style->black));
-    gdk_gc_set_background (term->priv->fg[NORMAL],   &(widget->style->white));
-    gdk_gc_set_foreground (term->priv->fg[SELECTED], &(widget->style->white));
-    gdk_gc_set_background (term->priv->fg[SELECTED], &(widget->style->black));
-    gdk_gc_set_foreground (term->priv->fg[CURSOR],   &(widget->style->white));
-    gdk_gc_set_background (term->priv->fg[CURSOR],   &(widget->style->black));
-    gdk_gc_set_foreground (term->priv->bg[NORMAL],   &(widget->style->white));
-    gdk_gc_set_background (term->priv->bg[NORMAL],   &(widget->style->black));
-    gdk_gc_set_foreground (term->priv->bg[SELECTED], &(widget->style->black));
-    gdk_gc_set_background (term->priv->bg[SELECTED], &(widget->style->white));
-    gdk_gc_set_foreground (term->priv->bg[CURSOR],   &(widget->style->black));
-    gdk_gc_set_background (term->priv->bg[CURSOR],   &(widget->style->white));
+    gdk_gc_set_foreground (term->priv->fg[NORMAL][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_background (term->priv->fg[NORMAL][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
+    gdk_gc_set_foreground (term->priv->fg[SELECTED][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
+    gdk_gc_set_background (term->priv->fg[SELECTED][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_foreground (term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
+    gdk_gc_set_background (term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_foreground (term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
+    gdk_gc_set_background (term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_foreground (term->priv->bg[SELECTED][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_background (term->priv->bg[SELECTED][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
+    gdk_gc_set_foreground (term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                           &(widget->style->black));
+    gdk_gc_set_background (term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                           &(widget->style->white));
 
     gdk_window_set_background (widget->window, &(widget->style->white));
 
     colormap = gdk_colormap_get_system ();
     g_return_if_fail (colormap != NULL);
 
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-        term->priv->color[i] = g_new (GdkColor, 1);
-    term->priv->color[MOO_TERM_COLOR_MAX] = NULL;
-
-    gdk_color_parse ("black", term->priv->color[MOO_TERM_BLACK]);
-    gdk_color_parse ("red", term->priv->color[MOO_TERM_RED]);
-    gdk_color_parse ("green", term->priv->color[MOO_TERM_GREEN]);
-    gdk_color_parse ("yellow", term->priv->color[MOO_TERM_YELLOW]);
-    gdk_color_parse ("blue", term->priv->color[MOO_TERM_BLUE]);
-    gdk_color_parse ("magenta", term->priv->color[MOO_TERM_MAGENTA]);
-    gdk_color_parse ("cyan", term->priv->color[MOO_TERM_CYAN]);
-    gdk_color_parse ("white", term->priv->color[MOO_TERM_WHITE]);
+    gdk_color_parse ("black", &colors[MOO_TERM_BLACK]);
+    gdk_color_parse ("red", &colors[MOO_TERM_RED]);
+    gdk_color_parse ("green", &colors[MOO_TERM_GREEN]);
+    gdk_color_parse ("yellow", &colors[MOO_TERM_YELLOW]);
+    gdk_color_parse ("blue", &colors[MOO_TERM_BLUE]);
+    gdk_color_parse ("magenta", &colors[MOO_TERM_MAGENTA]);
+    gdk_color_parse ("cyan", &colors[MOO_TERM_CYAN]);
+    gdk_color_parse ("white", &colors[MOO_TERM_WHITE]);
 
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-        gdk_colormap_alloc_color (colormap,
-                                  term->priv->color[i],
-                                  TRUE, TRUE);
+        gdk_colormap_alloc_color (colormap, &colors[i], TRUE, TRUE);
 
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-        for (j = 0; j < MOO_TERM_COLOR_MAX; ++j)
     {
-        vals.foreground = *term->priv->color[i];
-        vals.background = *term->priv->color[j];
+        vals.foreground = colors[i];
+        vals.background = colors[i];
 
-        term->priv->pair[i][j] =
+        term->priv->fg[NORMAL][i] =
+                gdk_gc_new_with_values (widget->window,
+                                        &vals,
+                                        GDK_GC_FOREGROUND | GDK_GC_BACKGROUND);
+
+        term->priv->bg[NORMAL][i] =
                 gdk_gc_new_with_values (widget->window,
                                         &vals,
                                         GDK_GC_FOREGROUND | GDK_GC_BACKGROUND);
     }
-
-    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-    {
-        vals.foreground = *term->priv->color[i];
-        vals.background = *term->priv->color[i];
-
-        term->priv->pair[i][MOO_TERM_COLOR_MAX] =
-                gdk_gc_new_with_values (widget->window,
-                                        &vals,
-                                        GDK_GC_FOREGROUND);
-
-        term->priv->pair[MOO_TERM_COLOR_MAX][i] =
-                gdk_gc_new_with_values (widget->window,
-                                        &vals,
-                                        GDK_GC_BACKGROUND);
-    }
-
-    term->priv->pair[MOO_TERM_COLOR_MAX][MOO_TERM_COLOR_MAX] = NULL;
 }
 
 
@@ -971,9 +849,14 @@ void        moo_term_cursor_moved       (MooTerm        *term,
         guint char_height = term->priv->font_info->height;
 
         GdkRectangle rect = {0, 0, char_width, char_height};
+        GdkRectangle small_rect = {0, 0, 1, 1};
 
         rect.x = old_col * char_width;
         rect.y = (old_row + screen_offset - top_line) * char_height;
+
+        small_rect.x = old_col;
+        small_rect.y = old_row + screen_offset - top_line;
+        moo_term_invalidate_content_rect (term, &small_rect);
 
         if (term->priv->dirty)
             gdk_region_union_with_rect (term->priv->dirty, &rect);
@@ -986,6 +869,10 @@ void        moo_term_cursor_moved       (MooTerm        *term,
             rect.y = (new_row + screen_offset - top_line) * char_height;
 
             gdk_region_union_with_rect (term->priv->dirty, &rect);
+
+            small_rect.x = new_col;
+            small_rect.y = new_row + screen_offset - top_line;
+            moo_term_invalidate_content_rect (term, &small_rect);
         }
 
         queue_expose (term, NULL);
@@ -1013,9 +900,6 @@ void        moo_term_init_back_pixmap       (MooTerm        *term)
 
 void        moo_term_resize_back_pixmap     (MooTerm        *term)
 {
-    GdkRectangle rec;
-    int i, j;
-
     if (term->priv->font_changed)
     {
         GdkPixmap *pix;
@@ -1046,15 +930,15 @@ void        moo_term_resize_back_pixmap     (MooTerm        *term)
         pix = gdk_pixmap_new (term->priv->back_pixmap,
                               width, height, -1);
 
+        gdk_drawable_get_size (term->priv->back_pixmap,
+                               &old_width, &old_height);
+
         gdk_gc_set_clip_rectangle (term->priv->clip, &rec);
         gdk_draw_drawable (pix, term->priv->clip,
                            term->priv->back_pixmap,
                            0, 0, 0, 0,
                            MIN (width, old_width),
                            MIN (height, old_height));
-
-        gdk_drawable_get_size (term->priv->back_pixmap,
-                               &old_width, &old_height);
 
         if (width > old_width)
         {
@@ -1086,23 +970,6 @@ void        moo_term_resize_back_pixmap     (MooTerm        *term)
 
         g_object_unref (term->priv->back_pixmap);
         term->priv->back_pixmap = pix;
-    }
-
-    rec.x = rec.y = 0;
-    gdk_drawable_get_size (term->priv->back_pixmap, &rec.width, &rec.height);
-
-    for (i = 0; i < 3; ++i)
-    {
-        gdk_gc_set_clip_rectangle (term->priv->fg[i], &rec);
-        gdk_gc_set_clip_rectangle (term->priv->bg[i], &rec);
-    }
-
-    for (i = 0; i <= MOO_TERM_COLOR_MAX; ++i)
-        for (j = 0; j <= MOO_TERM_COLOR_MAX; ++j)
-            if (i != MOO_TERM_COLOR_MAX || j != MOO_TERM_COLOR_MAX)
-    {
-        gdk_gc_set_clip_rectangle (term->priv->pair[i][j], &rec);
-//         gdk_gc_set_clip_rectangle (term->priv->seslected_pair[i][j], &rec);
     }
 }
 
@@ -1169,13 +1036,11 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
     GdkRegion *text_reg;
 
     MooTerm *term = MOO_TERM (widget);
-    MooTermBuffer *buf = term->priv->buffer;
 
     guint char_width = term->priv->font_info->width;
     guint char_height = term->priv->font_info->height;
-    guint top_line = term_top_line (term);
 
-    g_assert (top_line <= buf_screen_offset (buf));
+    g_assert (term_top_line (term) <= buf_screen_offset (term->priv->buffer));
 
     text_rec.width = term_width (term) * char_width;
     text_rec.height = term_height (term) * char_height;
@@ -1183,7 +1048,7 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
     if (event->area.x + event->area.width >= text_rec.width)
     {
         gdk_draw_rectangle (widget->window,
-                            term->priv->bg[NORMAL], TRUE,
+                            term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX], TRUE,
                             text_rec.width, 0,
                             char_width,
                             widget->allocation.height);
@@ -1192,7 +1057,7 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
     if (event->area.y + event->area.height >= text_rec.height)
     {
         gdk_draw_rectangle (widget->window,
-                            term->priv->bg[NORMAL], TRUE,
+                            term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX], TRUE,
                             0, text_rec.height,
                             widget->allocation.width,
                             char_height);
@@ -1250,7 +1115,8 @@ static void term_draw_range                 (MooTerm        *term,
     g_assert (start + len <= term_width (term));
     g_assert (abs_row < buf_total_height (term->priv->buffer));
 
-    if (buf_cursor_row_abs (term->priv->buffer) == abs_row)
+    if (buf_cursor_visible (term->priv->buffer) &&
+        buf_cursor_row_abs (term->priv->buffer) == abs_row)
     {
         guint cursor = buf_cursor_col (term->priv->buffer);
 
@@ -1387,24 +1253,24 @@ static void term_draw_range_simple          (MooTerm        *term,
     if (start >= line->len)
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
-                            term->priv->bg[selected],
+                            term->priv->bg[selected][MOO_TERM_COLOR_MAX],
                             TRUE,
                             start * char_width,
                             y,
-                            len * char_width - 1,
-                            char_height - 1);
+                            len * char_width,
+                            char_height);
 
         return;
     }
     else if (start + len > line->len)
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
-                            term->priv->bg[selected],
+                            term->priv->bg[selected][MOO_TERM_COLOR_MAX],
                             TRUE,
                             line->len * char_width,
                             y,
-                            (start + len - line->len) * char_width - 1,
-                            char_height - 1);
+                            (start + len - line->len) * char_width,
+                            char_height);
 
         len = line->len - start;
     }
@@ -1451,27 +1317,27 @@ static void term_draw_cells                 (MooTerm        *term,
     if (attr->mask & MOO_TERM_TEXT_FOREGROUND)
     {
         g_assert (attr->foreground < MOO_TERM_COLOR_MAX);
-        fg = term->priv->pair[attr->foreground][MOO_TERM_COLOR_MAX];
+        fg = term->priv->fg[selected][attr->foreground];
     }
 
     if (attr->mask & MOO_TERM_TEXT_BACKGROUND)
     {
         g_assert (attr->background < MOO_TERM_COLOR_MAX);
-        bg = term->priv->pair[attr->background][MOO_TERM_COLOR_MAX];
+        bg = term->priv->bg[selected][attr->background];
     }
 
     if (!fg)
-        fg = term->priv->fg[selected];
+        fg = term->priv->fg[selected][MOO_TERM_COLOR_MAX];
     if (!bg)
-        bg = term->priv->bg[selected];
+        bg = term->priv->bg[selected][MOO_TERM_COLOR_MAX];
 
     gdk_draw_rectangle (term->priv->back_pixmap,
                         bg,
                         TRUE,
                         start * term->priv->font_info->width,
                         (abs_row - term_top_line (term)) * term->priv->font_info->height,
-                        len * term->priv->font_info->width - 1,
-                        term->priv->font_info->height - 1);
+                        len * term->priv->font_info->width,
+                        term->priv->font_info->height);
 
     gdk_draw_layout (term->priv->back_pixmap,
                      fg,
@@ -1483,6 +1349,119 @@ static void term_draw_cells                 (MooTerm        *term,
 
 static void term_draw_caret                 (MooTerm        *term)
 {
+    guint screen_width = term_width (term);
+    guint abs_row = buf_cursor_row_abs (term->priv->buffer);
+    guint col = buf_cursor_col (term->priv->buffer);
+    MooTermLine *line = buf_line (term->priv->buffer, abs_row);
+    TermSelection *sel = term->priv->selection;
+    char ch[6];
+    guint ch_len;
+    int screen_row = abs_row - term_top_line (term);
+    guint char_width = term->priv->font_info->width;
+    guint char_height = term->priv->font_info->height;
+
+    g_assert (col < screen_width);
+
+    if (col < term_line_len (line))
+    {
+        ch_len = g_unichar_to_utf8 (line->data[col].ch, ch);
+    }
+    else
+    {
+        ch[0] = EMPTY_CHAR;
+        ch_len = 1;
+    }
+
+    pango_layout_set_text (term->priv->layout, ch, ch_len);
+
+    switch (term->priv->caret_shape)
+    {
+        case CARET_BLOCK:
+            if (!term_selected (sel, abs_row, col))
+            {
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    TRUE,
+                                    col * char_width,
+                                    screen_row * char_height,
+                                    char_width,
+                                    char_height);
+                gdk_draw_layout (term->priv->back_pixmap,
+                                 term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                                 col * char_width,
+                                 screen_row * char_height,
+                                 term->priv->layout);
+            }
+            else
+            {
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    FALSE,
+                                    col * char_width,
+                                    screen_row * char_height,
+                                    char_width,
+                                    char_height);
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    TRUE,
+                                    col * char_width,
+                                    screen_row * char_height,
+                                    char_width,
+                                    char_height);
+                gdk_draw_layout (term->priv->back_pixmap,
+                                 term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                                 col * char_width,
+                                 screen_row * char_height,
+                                 term->priv->layout);
+            }
+            break;
+
+        case CARET_UNDERLINE:
+            if (!term_selected (sel, abs_row, col))
+            {
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX],
+                                    TRUE,
+                                    col * char_width,
+                                    screen_row * char_height,
+                                    char_width,
+                                    char_height);
+                gdk_draw_layout (term->priv->back_pixmap,
+                                 term->priv->fg[NORMAL][MOO_TERM_COLOR_MAX],
+                                 col * char_width,
+                                 screen_row * char_height,
+                                 term->priv->layout);
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    TRUE,
+                                    col * char_width,
+                                    (screen_row + 1) * char_height - term->priv->caret_height,
+                                    char_width,
+                                    term->priv->caret_height);
+            }
+            else
+            {
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->bg[SELECTED][MOO_TERM_COLOR_MAX], TRUE,
+                                    col * char_width,
+                                    screen_row * char_height,
+                                    char_width,
+                                    char_height);
+                gdk_draw_layout (term->priv->back_pixmap,
+                                 term->priv->fg[SELECTED][MOO_TERM_COLOR_MAX],
+                                 col * char_width,
+                                 screen_row * char_height,
+                                 term->priv->layout);
+                gdk_draw_rectangle (term->priv->back_pixmap,
+                                    term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    TRUE,
+                                    col * char_width,
+                                    (screen_row + 1) * char_height - term->priv->caret_height,
+                                    char_width,
+                                    term->priv->caret_height);
+            }
+            break;
+    }
 }
 
 
