@@ -38,11 +38,8 @@ typedef enum {
     MOO_TERM_TEXT_REVERSE       = 1 << 0,
     MOO_TERM_TEXT_FOREGROUND    = 1 << 1,
     MOO_TERM_TEXT_BACKGROUND    = 1 << 2,
-    MOO_TERM_TEXT_ITALIC        = 1 << 3,
-    MOO_TERM_TEXT_BOLD          = 1 << 4,
-    MOO_TERM_TEXT_UNDERLINE     = 1 << 5,
-    MOO_TERM_TEXT_STRIKETHROUGH = 1 << 6,
-    MOO_TERM_TEXT_ALTERNATE     = 1 << 7
+    MOO_TERM_TEXT_BOLD          = 1 << 3,
+    MOO_TERM_TEXT_UNDERLINE     = 1 << 4
 } MooTermTextAttrMask;
 
 typedef enum {

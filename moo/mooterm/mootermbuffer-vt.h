@@ -35,6 +35,8 @@ inline static void buf_vt_save_cursor       (MooTermBuffer  *buf)
 {
     buf->priv->saved_cursor_row = buf_cursor_row (buf);
     buf->priv->saved_cursor_col = buf_cursor_col (buf);
+    /* TODO: This sequence causes the cursor position, graphic
+             rendition, and character set to be saved. (See DECRC). */
 }
 
 inline static void buf_vt_restore_cursor    (MooTermBuffer  *buf)
@@ -42,6 +44,8 @@ inline static void buf_vt_restore_cursor    (MooTermBuffer  *buf)
     moo_term_buffer_cursor_move_to (buf,
                                     buf->priv->saved_cursor_row,
                                     buf->priv->saved_cursor_col);
+    /* TODO: This sequence causes the previously saved cursor position,
+             graphic rendition, and character set to be restored. */
 }
 
 
