@@ -35,11 +35,11 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>moo/mooedit/libmooedit.la</activetarget>
-      <useconfiguration>debug-mooedit</useconfiguration>
+      <activetarget>moo/libmoo.la</activetarget>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram>tests/editor</mainprogram>
+      <mainprogram>tests/medit</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
       <programargs/>
@@ -50,7 +50,7 @@
     <configurations>
       <debug>
         <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooapp --without-python</configargs>
-        <builddir>build/debug-mooedit</builddir>
+        <builddir>build/mooedit-debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -67,7 +67,7 @@
       </debug>
       <optimized>
         <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-mooapp --without-python</configargs>
-        <builddir>build/optimized-mooedit</builddir>
+        <builddir>build/mooedit-optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -107,7 +107,7 @@
           <envvar value="/usr/bin/i586-mingw32msvc-windres" name="WINDRES" />
         </envvars>
         <configargs>--target=i586-mingw32msvc --host=i586-mingw32msvc --enable-all-gcc-warnings=fatal --without-mooterm --without-mooapp --without-python</configargs>
-        <builddir>build/mingw-mooedit</builddir>
+        <builddir>build/mooedit-mingw</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -124,7 +124,7 @@
       <gtk-2.2>
         <envvars/>
         <configargs>--enable-debug --enable-all-gcc-warnings=fatal --with-path=/usr/local/lib/gtk-2.2:$PATH --with-pkg-config-path=/usr/local/lib/gtk-2.2/lib/pkgconfig:$PKG_CONFIG_PATH --without-mooterm --without-mooapp --without-python</configargs>
-        <builddir>build/gtk-2.2-mooedit</builddir>
+        <builddir>build/mooedit-gtk-2.2</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -220,16 +220,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" create="template" name="GAP source" >
+      <type icon="source" ext="g" name="GAP source" create="template" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
+      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
+      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" create="template" name="C Source" >
+      <type icon="source_c" ext="c" name="C Source" create="template" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>

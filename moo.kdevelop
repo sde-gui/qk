@@ -6,18 +6,36 @@
     <version>$VERSION$</version>
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
-    <ignoreparts/>
+    <ignoreparts>
+      <part>kdevabbrev</part>
+      <part>kdevclassview</part>
+      <part>kdevsnippet</part>
+      <part>kdevctags2</part>
+      <part>kdevdocumentation</part>
+      <part>kdevdoxygen</part>
+      <part>kdevfilegroups</part>
+      <part>kdevfilelist</part>
+      <part>kdevfileview</part>
+      <part>kdevdistpart</part>
+      <part>kdevopenwith</part>
+      <part>kdevpartexplorer</part>
+      <part>kdevregexptest</part>
+      <part>kdevrbdebugger</part>
+      <part>kdevscripting</part>
+      <part>kdevtexttools</part>
+      <part>kdevvisualboyadvance</part>
+    </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
     <description/>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
-    <versioncontrol/>
+    <versioncontrol>kdevsubversion</versioncontrol>
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/mooedit/libmooedit.la</activetarget>
+      <activetarget>moo/libmoo.la</activetarget>
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
@@ -103,40 +121,6 @@
         <cxxflags>-O3 -g0 -march=i686 -mms-bitfields</cxxflags>
         <f77flags/>
       </mingw>
-      <medit>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm</configargs>
-        <builddir>build/medit</builddir>
-        <ccompiler>kdevgccoptions</ccompiler>
-        <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
-        <cflags>-O0 -g3 -pg</cflags>
-        <cxxflags>-O0 -g3 -pg</cxxflags>
-        <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
-      </medit>
-      <mterm>
-        <configargs>--enable-debug=full  --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooui</configargs>
-        <builddir>build/mterm</builddir>
-        <ccompiler>kdevgccoptions</ccompiler>
-        <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
-        <cflags>-O0 -g3 -pg</cflags>
-        <cxxflags>-O0 -g3 -pg</cxxflags>
-        <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
-      </mterm>
       <gtk-2.2>
         <envvars/>
         <configargs>--enable-debug --enable-all-gcc-warnings=fatal --with-path=/usr/local/lib/gtk-2.2:$PATH --with-pkg-config-path=/usr/local/lib/gtk-2.2/lib/pkgconfig:$PKG_CONFIG_PATH</configargs>
@@ -167,7 +151,7 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
-      <programargs>--g-fatal-warnings</programargs>
+      <programargs>--g-fatal-warnings bash</programargs>
       <gdbpath/>
       <configGdbScript/>
       <runShellScript/>
@@ -236,16 +220,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" name="GAP source" create="template" >
+      <type icon="source" ext="g" create="template" name="GAP source" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
+      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
+      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" name="C Source" create="template" >
+      <type icon="source_c" ext="c" create="template" name="C Source" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>
@@ -295,7 +279,7 @@
     <tree>
       <showvcsfields>false</showvcsfields>
       <hidenonprojectfiles>true</hidenonprojectfiles>
-      <hidepatterns>*.o,*.lo,CVS</hidepatterns>
+      <hidepatterns/>
     </tree>
   </kdevfileview>
   <kdevcvsservice>

@@ -35,7 +35,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/mooterm/libmooterm.la</activetarget>
+      <activetarget>moo/libmoo.la</activetarget>
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
@@ -50,7 +50,7 @@
     <configurations>
       <debug>
         <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
-        <builddir>build/debug</builddir>
+        <builddir>build/mooterm-debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -67,7 +67,7 @@
       </debug>
       <optimized>
         <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
-        <builddir>build/optimized</builddir>
+        <builddir>build/mooterm-optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
@@ -107,7 +107,7 @@
           <envvar value="/usr/bin/i586-mingw32msvc-windres" name="WINDRES" />
         </envvars>
         <configargs>--target=i586-mingw32msvc --host=i586-mingw32msvc --enable-all-gcc-warnings=fatal --without-mooedit --without-mooapp --without-python</configargs>
-        <builddir>build/mingw</builddir>
+        <builddir>build/mooterm-mingw</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -124,7 +124,7 @@
       <gtk-2.2>
         <envvars/>
         <configargs>--enable-debug --enable-all-gcc-warnings=fatal --with-path=/usr/local/lib/gtk-2.2:$PATH --with-pkg-config-path=/usr/local/lib/gtk-2.2/lib/pkgconfig:$PKG_CONFIG_PATH --without-mooedit --without-mooapp --without-python</configargs>
-        <builddir>build/gtk-2.2</builddir>
+        <builddir>build/mooterm-gtk-2.2</builddir>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -293,13 +293,4 @@
     <customArguments/>
     <customTagfilePath/>
   </ctagspart>
-  <kdevvisualadvance>
-    <emulator>VisualBoyAdvance</emulator>
-    <binary/>
-    <addOptions/>
-    <terminal>false</terminal>
-    <fullscreen>false</fullscreen>
-    <graphicFilter>-f0</graphicFilter>
-    <scaling>-1</scaling>
-  </kdevvisualadvance>
 </kdevelop>
