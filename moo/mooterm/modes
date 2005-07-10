@@ -1,0 +1,288 @@
+ANSI Modes for DECRQM, DECRPM, SM, and RM
+
+Guarded area transfer       GATM*       1
+Keyboard action             KAM         2
+Control representation      CRM†        3
+Insert/replace              IRM         4
+Status reporting transfer   SRTM*       5
+Vertical editing            VEM*        7
+Horizontal editing          HEM*        10
+Positioning unit            PUM*        11
+Send/receive                SRM         12
+Format effector action      FEAM*       13
+Format effector transfer    FETM*       14
+Multiple area transfer      MATM*       15
+Transfer termination        TTM*        16
+Selected area transfer      SATM*       17
+Tabulation stop             TSM*        18
+Editing boundary            EBM*        19
+Line feed/new line          LNM         20
+---------------------------------------------------------------------
+*This control function is permanently reset.
+†The host cannot change the setting of CRM. You can only
+change CRM from Set-Up. If CRM is set, then the terminal
+ignores DECRQM and most other control functions.
+
+=====================================================================
+
+DEC Modes for DECRQM, DECRPM, SM, and RM
+
+Cursor keys                 DECCKM      1
+ANSI                        DECANM      2
+Column                      DECCOLM     3
+Scrolling                   DECSCLM     4
+Screen                      DECSCNM     5
+Origin                      DECOM       6
+Autowrap                    DECAWM      7
+Autorepeat                  DECARM      8
+Print form feed             DECPFF      18
+Printer extent              DECPEX      19
+Text cursor enable          DECTCEM     25
+Cursor direction,
+right to left               DECRLM      34
+Hebrew keyboard mapping     DECHEBM     35
+Hebrew encoding mode        DECHEM      36
+National replacement
+character set               DECNRCM     42
+Greek keyboard mapping      DECNAKB     57
+Horizontal cursor coupling  DECHCCM*    60
+Vertical cursor coupling    DECVCCM     61      ?
+Page cursor coupling        DECPCCM     64      ?
+Numeric keypad              DECNKM      66
+Backarrow key               DECBKM      67
+Keyboard usage              DECKBUM     68
+Vertical split screen       DECVSSM /
+                            DECLRMM     69
+Transmit rate limiting      DECXRLM     73
+Key position                DECKPM      81
+No clearing screen on
+column change               DECNCSM     95
+Cursor right to left        DECRLCM     96
+CRT save                    DECCRTSM    97
+Auto resize                 DECARSM     98
+Modem control               DECMCM      99
+Auto answerback             DECAAM      100
+Conceal answerback message  DECCANSM    101
+Ignoring null               DECNULM     102
+Half-duplex                 DECHDPXM    103
+Secondary keyboard language DECESKM     104
+Overscan                    DECOSCNM    106
+---------------------------------------------------------------------
+*This control function is permanently reset.
+
+=====================================================================
+=====================================================================
+
+IRM—Insert/Replace Mode
+
+This control function selects how the terminal adds characters to page
+memory. The terminal always adds new characters at the cursor position.
+
+Default: Replace.
+Set: insert mode.
+Reset: replace mode.
+
+Description
+If IRM mode is set, then new characters move characters in page memory to
+the right. Characters moved past the page's right border are lost.
+If IRM mode is reset, then new characters replace the character at the cursor
+position.
+
+---------------------------------------------------------------------
+
+SRM—Local Echo: Send/Receive Mode
+
+This control function turns local echo on or off. When local echo is on,
+the terminal sends keyboard characters to the screen. The host does not
+have to send (echo) the characters back to the terminal display. When
+local echo is off, the terminal only sends characters to the host. It
+is up to the host to echo characters back to the screen.
+
+Default: No local echo
+Set: local echo off.
+Reset: local echo on.
+
+Description
+When the SRM function is set, the terminal sends keyboard characters to
+the host only. The host can echo the characters back to the screen.
+When the SRM function is reset, the terminal sends keyboard characters
+to the host and to the screen. The host does have to echo characters back
+to the terminal.
+
+---------------------------------------------------------------------
+
+LNM—Line Feed/New Line Mode
+
+This control function selects the characters sent to the host when you
+press the Return key. LNM also controls how the terminal interprets line
+feed (LF), form feed (FF), and vertical tab (VT) characters.
+Note
+For compatibility with Digital's software, you should keep LNM reset (line feed).
+
+Default: Line feed
+Set: new line.
+Reset: line feed.
+
+Description
+If LNM is set, then the cursor moves to the first column on the next line
+when the terminal receives an LF, FF, or VT character. When you press Return,
+the terminal sends both a carriage return (CR) and line feed (LF).
+If LNM is reset, then the cursor moves to the current column on the next line
+when the terminal receives an LF, FF, or VT character. When you press Return,
+the terminal sends only a carriage return (CR) character.
+
+Note on LNM
+When the auxiliary keypad is in keypad numeric mode (DECKPNM), the Enter key
+sends the same characters as the Return key.
+
+---------------------------------------------------------------------
+
+DECCKM—Cursor Keys Mode
+
+This control function selects the sequences the arrow keys send. You can use
+the four arrow keys to move the cursor through the current page or to send
+special application commands.
+
+Default: Cursor
+Set: application sequences.
+Reset: cursor sequences.
+
+Description
+If the DECCKM function is set, then the arrow keys send application sequences
+to the host.
+If the DECCKM function is reset, then the arrow keys send ANSI cursor sequences
+to the host.
+
+---------------------------------------------------------------------
+
+DECANM—ANSI Mode
+
+DECANM changes the terminal to the VT52 mode of operation. In VT52 mode,
+the terminal acts like a VT52 terminal. This mode lets you use applications
+designed for the VT52 terminal.
+
+---------------------------------------------------------------------
+
+DECSCNM—Screen Mode: Light or Dark Screen
+
+This control function selects a dark or light background on the screen.
+
+Default: Dark background.
+Set: reverse video.
+Reset: normal display.
+
+Description
+When DECSCNM is set, the screen displays dark characters on a light background.
+When DECSCNM is reset, the screen displays light characters on a dark background.
+
+Note on DECSCNM
+Screen mode only effects how the data appears on the screen. DECSCNM does not
+change the data in page memory.
+
+---------------------------------------------------------------------
+
+DECOM—Origin Mode
+
+This control function sets the origin for the cursor. DECOM determines if the
+cursor position is restricted to inside the page margins. When you power up or
+reset the terminal, you reset origin mode.
+
+Default: Origin is at the upper-left of the screen, independent of margins.
+Set: within margins.
+Reset: upper-left corner.
+
+Description
+When DECOM is set, the home cursor position is at the upper-left corner of the
+screen, within the margins. The starting point for line numbers depends on the
+current top margin setting. The cursor cannot move outside of the margins.
+When DECOM is reset, the home cursor position is at the upper-left corner of the
+screen. The starting point for line numbers is independent of the margins. The
+cursor can move outside of the margins.
+
+---------------------------------------------------------------------
+
+DECAWM—Autowrap Mode
+
+This control function determines whether or not received characters automatically
+wrap to the next line when the cursor reaches the right border of a page in page
+memory.
+
+Default: No autowrap
+Set: autowrap.
+Reset: no autowrap.
+
+Description
+If the DECAWM function is set, then graphic characters received when the cursor
+is at the right border of the page appear at the beginning of the next line. Any
+text on the page scrolls up if the cursor is at the end of the scrolling region.
+If the DECAWM function is reset, then graphic characters received when the cursor
+is at the right border of the page replace characters already on the page.
+
+---------------------------------------------------------------------
+
+DECTCEM—Text Cursor Enable Mode
+
+This control function makes the cursor visible or invisible.
+
+Default: Visible
+Set: makes the cursor visible.
+Reset: makes the cursor invisible.
+
+---------------------------------------------------------------------
+
+DECNKM—Numeric Keypad Mode
+
+This control function works like the DECKPAM and DECKPNM functions. DECNKM is
+provided mainly for use with the request and report mode (DECRQM/DECRPM) control
+functions.
+
+Available in: VT Level 4 mode only
+
+Default: Numeric
+Set: application sequences.
+Reset: keypad characters.
+
+---------------------------------------------------------------------
+
+DECBKM—Backarrow Key Mode
+
+This control function determines whether the  key works as a backspace key or
+delete key.
+Note
+To be compatible with some software, DECBKM should be reset (delete key setting).
+
+Default: Delete key
+Set: backspace key.
+Reset: delete key.
+
+Description
+If DECBKM is set,  works as a backspace key. When you press , the terminal sends
+a BS character to the host.
+If DECBKM is reset,  works as a delete key. When you press , the terminal sends
+a DEL character to the host.
+
+---------------------------------------------------------------------
+
+DECKPM—Key Position Mode
+
+This control function selects whether the keyboard sends character codes or key
+position reports to the host. DECKPM lets new applications take full control of
+the keyboard including single shifts, locking shifts, and compose character processing.
+Default: Send character codes
+
+Format
+Set: send key position reports.
+Reset: send character codes.
+
+Description
+If the DECKPM function is set, then all keyboard keys send extended reports that
+include the key position and the state of modifier keys when pressed. A modifier
+key is pressed in combination with another key to modify the code sent by that key.
+The Ctrl key is a modifier key.
+If the DECKPM function is reset, then the keyboard keys send character codes.
+Note on DECKPM
+DECKPM only affects keyboard input; it does not affect how the terminal interprets data
+from the host.
+
+---------------------------------------------------------------------
+
