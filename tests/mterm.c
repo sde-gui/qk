@@ -13,7 +13,8 @@
 
 #include <gtk/gtk.h>
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm.h"
+#include "mooterm/mooterm-private.h"
+#include "mooterm/mootermbuffer-private.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -22,19 +23,34 @@ int main (int argc, char *argv[])
 {
     const char *cmd = NULL;
     GtkWidget *win, *swin, *term;
-    MooTermBuffer *buf;
+    gboolean debug = FALSE;
 
     gtk_init (&argc, &argv);
 
     if (argc > 1)
     {
-        cmd = argv[1];
+        if (!strcmp (argv[1], "--debug"))
+        {
+            debug = TRUE;
+            if (argc > 2)
+                cmd = argv[2];
+        }
+        else
+        {
+            cmd = argv[1];
+        }
     }
-    else
+
+    if (!cmd)
     {
         cmd = g_getenv ("SHELL");
         if (!cmd)
             cmd = "sh";
+    }
+
+    if (debug)
+    {
+        gdk_window_set_debug_updates (TRUE);
     }
 
     win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -43,17 +59,19 @@ int main (int argc, char *argv[])
     gtk_container_add (GTK_CONTAINER (win), swin);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
                                     GTK_POLICY_NEVER,
-                                    GTK_POLICY_AUTOMATIC);
+//                                     GTK_POLICY_NEVER);
+//                                     GTK_POLICY_AUTOMATIC);
+                                    GTK_POLICY_ALWAYS);
 
     term = GTK_WIDGET (g_object_new (MOO_TYPE_TERM, NULL));
     gtk_container_add (GTK_CONTAINER (swin), term);
 
     gtk_widget_show_all (win);
 
-    buf = moo_term_get_buffer (MOO_TERM (term));
-
-    g_signal_connect_swapped (buf, "set-window-title",
+    g_signal_connect_swapped (term, "set-window-title",
                               G_CALLBACK (gtk_window_set_title), win);
+    g_signal_connect_swapped (term, "set-icon-name",
+                              G_CALLBACK (gdk_window_set_icon_name), win->window);
 
     moo_term_fork_command (MOO_TERM (term), cmd, NULL, NULL);
 

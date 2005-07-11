@@ -16,7 +16,9 @@
 #endif
 
 #define MOOTERM_COMPILATION
+#include "mooterm/mootermpt-private.h"
 #include "mooterm/mooterm-private.h"
+#include "mooterm/mootermparser.h"
 #include "mooterm/pty.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
@@ -35,8 +37,8 @@
 #endif
 
 #define TERM_EMULATION          "xterm"
-#define READ_BUFSIZE            4096
-#define CHUNK_SIZE              4096
+#define READ_CHUNK_SIZE         1024
+#define WRITE_CHUNK_SIZE        4096
 #define POLL_TIME               5
 #define POLL_NUM                1
 
@@ -308,7 +310,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
     gboolean error_occured = FALSE;
     int error_no = 0;
 
-    char buf[READ_BUFSIZE];
+    char buf[READ_CHUNK_SIZE];
     int current = 0;
     guint again = POLL_NUM;
 
@@ -329,7 +331,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
 
     if (pt->non_block)
     {
-        int r = read (pt->master, buf, READ_BUFSIZE);
+        int r = read (pt->master, buf, READ_CHUNK_SIZE);
 
         switch (r)
         {
@@ -342,10 +344,12 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 break;
 
             default:
-#if 0
-                g_print ("got '");
-                _moo_term_print_bytes (buf, r);
-                g_print ("'\n");
+#if 1
+            {
+                char *s = _moo_term_nice_bytes (buf, r);
+                g_print ("got '%s'\n", s);
+                g_free (s);
+            }
 #endif
                 feed_buffer (pt, buf, r);
                 break;
@@ -354,7 +358,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
         return TRUE;
     }
 
-    while (again && !error_occured && current < READ_BUFSIZE)
+    while (again && !error_occured && current < READ_CHUNK_SIZE)
     {
         struct pollfd fd = {pt->master, POLLIN | POLLPRI, 0};
 
@@ -455,8 +459,8 @@ static void     feed_buffer     (MooTermPtUnix  *pt,
                                  const char     *string,
                                  int             len)
 {
-    moo_term_buffer_write (moo_term_pt_get_buffer (MOO_TERM_PT (pt)),
-                           string, len);
+    moo_term_feed (MOO_TERM_PT(pt)->priv->term,
+                   string, len);
 }
 
 
@@ -474,7 +478,8 @@ static gboolean do_write        (MooTermPt      *pt_gen,
 
     g_return_val_if_fail (pt->io != NULL, FALSE);
 
-    written = write (pt->master, *string, *plen > CHUNK_SIZE ? CHUNK_SIZE : *plen);
+    written = write (pt->master, *string,
+                     *plen > WRITE_CHUNK_SIZE ? WRITE_CHUNK_SIZE : *plen);
 
     if (written == -1)
     {

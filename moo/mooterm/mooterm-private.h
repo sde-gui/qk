@@ -15,20 +15,23 @@
 #define MOOTERM_MOOTERM_PRIVATE_H
 
 #include "mooterm/mooterm.h"
-#include "mooterm/mootermbuffer-private.h"
-#include "mooterm/mootermpt.h"
+#include "mooterm/mooterm-vt.h"
 
 G_BEGIN_DECLS
 
 
-#define ADJUSTMENT_PRIORITY         G_PRIORITY_DEFAULT_IDLE
-#define ADJUSTMENT_VALUE_PRIORITY   G_PRIORITY_DEFAULT_IDLE
-#define EXPOSE_PRIORITY             G_PRIORITY_DEFAULT_IDLE
+#define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
+#define ADJUSTMENT_DELTA            30.0
+#define EXPOSE_PRIORITY             G_PRIORITY_DEFAULT
+#define EXPOSE_TIMEOUT              2
 
-#define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT_IDLE
-#define PT_READER_PRIORITY          G_PRIORITY_HIGH_IDLE
+#define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
+#define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
 
+#define MIN_TERMINAL_WIDTH          10
+#define MIN_TERMINAL_HEIGHT         10
 #define MAX_TERMINAL_WIDTH          4096
+
 #define DEFAULT_MONOSPACE_FONT      "Courier New 9"
 #define DEFAULT_MONOSPACE_FONT2     "Monospace"
 
@@ -52,95 +55,87 @@ typedef enum {
 } TermCaretShape;
 
 
-typedef struct _TermPangoLines  TermPangoLines;
 typedef struct _TermFontInfo    TermFontInfo;
-typedef struct _TermSelection    TermSelection;
+typedef struct _TermSelection   TermSelection;
 
 
 struct _MooTermPrivate {
-    MooTermBuffer   *buffer;
-    MooTermPt       *pt;
+    struct _MooTermPt       *pt;
+    struct _MooTermParser   *parser;
 
-    gboolean         scrolled;
-    guint            _top_line;
-    guint            char_width;
-    guint            char_height;
+    struct _MooTermBuffer   *buffer;
+    struct _MooTermBuffer   *primary_buffer;
+    struct _MooTermBuffer   *alternate_buffer;
 
-    TermSelection   *selection;
+    guint8          modes[MODE_MAX];
+    guint8          saved_modes[MODE_MAX];
 
-    TermFontInfo    *font_info;
+    gboolean        _scrolled;
+    guint           _top_line;
+    guint           width;
+    guint           height;
 
-    GdkPixmap       *back_pixmap;
-    GdkRegion       *changed_content; /* buffer coordinates, relative to top_line */
-    GdkGC           *clip;
-    gboolean         font_changed;
-    PangoLayout     *layout;
+    guint           cursor_row;
+    guint           cursor_col;
 
-    GdkGC           *fg[MOO_TERM_COLOR_MAX + 1][3];
-    GdkGC           *bg[MOO_TERM_COLOR_MAX + 1][3];
+    TermSelection  *selection;
 
-    TermCaretShape   caret_shape;
-    guint            caret_height;
+    TermFontInfo   *font_info;
 
-    guint            pending_expose;
-    GdkRegion       *dirty; /* pixel coordinates */
+    GdkPixmap      *back_pixmap;
+    GdkRegion      *changed_content; /* buffer coordinates, relative to top_line */
+    GdkGC          *clip;
+    gboolean        font_changed;
+    PangoLayout    *layout;
+    gboolean        cursor_visible;
+    guint           pending_expose;
 
-    GdkCursor       *cursor[CURSORS_NUM];
-    GtkIMContext    *im;
+    GdkGC          *fg[MOO_TERM_COLOR_MAX + 1][3];
+    GdkGC          *bg[MOO_TERM_COLOR_MAX + 1][3];
 
-    gboolean         scroll_on_keystroke;
+    TermCaretShape  caret_shape;
+    guint           caret_height;
 
-    GtkAdjustment   *adjustment;
-    guint            pending_adjustment_changed;
-    guint            pending_adjustment_value_changed;
-    guint            buf_scrollback_changed_id;
-    guint            buf_width_changed_id;
-    guint            buf_height_changed_id;
-    guint            buf_content_changed_id;
-    guint            buf_cursor_moved_id;
-    guint            buf_feed_child_id;
+    GdkCursor      *cursor[CURSORS_NUM];
+    GtkIMContext   *im;
+
+    gboolean        scroll_on_keystroke;
+
+    GtkAdjustment  *adjustment;
+    guint           pending_adjustment_changed;
+    guint           pending_adjustment_value_changed;
 };
 
+void        moo_term_set_window_title       (MooTerm        *term,
+                                             const char     *title);
+void        moo_term_set_icon_name          (MooTerm        *term,
+                                             const char     *title);
 
-inline static guint term_top_line (MooTerm *term)
-{
-    if (term->priv->scrolled)
-        return term->priv->_top_line;
-    else
-        return buf_screen_offset (term->priv->buffer);
-}
+void        moo_term_set_alternate_buffer   (MooTerm        *term,
+                                             gboolean        alternate);
 
-inline static guint term_width (MooTerm *term)
-{
-    return buf_screen_width (term->priv->buffer);
-}
+void        moo_term_buf_content_changed    (MooTerm        *term,
+                                             MooTermBuffer  *buf);
+void        moo_term_cursor_moved           (MooTerm        *term,
+                                             MooTermBuffer  *buf);
 
-inline static guint term_height (MooTerm *term)
-{
-    return buf_screen_height (term->priv->buffer);
-}
+void        moo_term_size_changed           (MooTerm        *term);
+void        moo_term_buf_size_changed       (MooTerm        *term);
 
+void        moo_term_init_font_stuff        (MooTerm        *term);
+void        moo_term_setup_palette          (MooTerm        *term);
+void        moo_term_im_commit              (GtkIMContext   *imcontext,
+                                             gchar          *arg,
+                                             MooTerm        *term);
 
-void        moo_term_buf_content_changed(MooTerm        *term);
-void        moo_term_cursor_moved       (MooTerm        *term,
-                                         guint           old_row,
-                                         guint           old_col);
-
-void        moo_term_size_changed       (MooTerm        *term);
-void        moo_term_init_font_stuff    (MooTerm        *term);
-void        moo_term_setup_palette      (MooTerm        *term);
-void        moo_term_im_commit          (GtkIMContext   *imcontext,
-                                         gchar          *arg,
-                                         MooTerm        *term);
-
-gboolean    moo_term_button_press       (GtkWidget      *widget,
-                                         GdkEventButton *event);
-gboolean    moo_term_button_release     (GtkWidget      *widget,
-                                         GdkEventButton *event);
-gboolean    moo_term_key_press          (GtkWidget      *widget,
-                                         GdkEventKey    *event);
-gboolean    moo_term_key_release        (GtkWidget      *widget,
-                                         GdkEventKey    *event);
+gboolean    moo_term_button_press           (GtkWidget      *widget,
+                                             GdkEventButton *event);
+gboolean    moo_term_button_release         (GtkWidget      *widget,
+                                             GdkEventButton *event);
+gboolean    moo_term_key_press              (GtkWidget      *widget,
+                                             GdkEventKey    *event);
+gboolean    moo_term_key_release            (GtkWidget      *widget,
+                                             GdkEventKey    *event);
 
 void        moo_term_init_back_pixmap       (MooTerm        *term);
 void        moo_term_resize_back_pixmap     (MooTerm        *term);
@@ -149,18 +144,30 @@ void        moo_term_invalidate_content_all (MooTerm        *term);
 void        moo_term_invalidate_content_rect(MooTerm        *term,
                                              GdkRectangle   *rect);
 
-void        moo_term_force_update       (MooTerm        *term);
-gboolean    moo_term_expose_event       (GtkWidget      *widget,
-                                         GdkEventExpose *event);
-void        moo_term_invalidate_rect    (MooTerm        *term,
-                                         BufRectangle   *rect);
+gboolean    moo_term_expose_event           (GtkWidget      *widget,
+                                             GdkEventExpose *event);
+void        moo_term_invalidate_rect        (MooTerm        *term,
+                                             GdkRectangle   *rect);
+void        moo_term_force_update           (MooTerm        *term);
 
 inline static void moo_term_invalidate_all  (MooTerm        *term)
 {
-    BufRectangle rec = {0, 0, term_width (term), term_height (term)};
+    GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
     moo_term_invalidate_rect (term, &rec);
 }
 
+
+/*************************************************************************/
+/* vt commands
+ */
+
+void        moo_term_bell                   (MooTerm    *term);
+void        moo_term_decid                  (MooTerm    *term);
+
+
+/*************************************************************************/
+/* font info
+ */
 
 struct _TermFontInfo {
     PangoContext   *ctx;
@@ -174,6 +181,12 @@ void             term_font_info_set_font    (TermFontInfo           *info,
                                              PangoFontDescription   *font_desc);
 TermFontInfo    *term_font_info_new         (PangoContext           *ctx);
 void             term_font_info_free        (TermFontInfo           *info);
+
+
+#define term_top_line(term)                     \
+    ((term)->priv->_scrolled ?                  \
+        (term)->priv->_top_line :               \
+        buf_scrollback ((term)->priv->buffer))
 
 
 /*************************************************************************/
@@ -262,63 +275,6 @@ inline static gboolean term_selected           (TermSelection   *sel,
         return sel->l_col <= col;
     else
         return col < sel->r_row;
-}
-
-
-/*************************************************************************/
-/* MooTermPtPrivate
- */
-
-enum {
-    PT_NONE = 0,
-    PT_READ,
-    PT_WRITE
-};
-
-
-struct _MooTermPtPrivate {
-    MooTermBuffer   *buffer;
-
-    GQueue          *pending_write;  /* list->data is GByteArray* */
-    guint            pending_write_id;
-};
-
-
-inline static void pt_discard (GSList **list)
-{
-    GSList *l;
-
-    for (l = *list; l != NULL; ++l)
-        g_byte_array_free (l->data, TRUE);
-
-    g_slist_free (*list);
-    *list = NULL;
-}
-
-inline static void pt_flush_pending_write (MooTermPt *pt)
-{
-    GList *l;
-
-    for (l = pt->priv->pending_write->head; l != NULL; l = l->next)
-        g_byte_array_free (l->data, TRUE);
-
-    while (!g_queue_is_empty (pt->priv->pending_write))
-        g_queue_pop_head (pt->priv->pending_write);
-}
-
-inline static void pt_add_data (GSList **list, const char *data, gssize len)
-{
-    if (data && len && (len > 0 || data[0]))
-    {
-        GByteArray *ar;
-
-        if (len < 0)
-            len = strlen (data);
-
-        ar = g_byte_array_sized_new ((guint) len);
-        *list = g_slist_append (*list,
-                                 g_byte_array_append (ar, data, len));
-    }
 }
 
 

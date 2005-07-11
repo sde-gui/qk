@@ -13,22 +13,14 @@
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mooterm-private.h"
+#include "mooterm/mootermparser.h"
+#include "mooterm/mootermpt.h"
+#include "mooterm/mootermbuffer-private.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 
 
-// static GObject  *moo_term_constructor       (GType                  type,
-//                                              guint                  n_construct_properties,
-//                                              GObjectConstructParam *construct_properties);
 static void moo_term_finalize               (GObject        *object);
-static void moo_term_set_property           (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void moo_term_get_property           (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
 
 static void moo_term_realize                (GtkWidget          *widget);
 static void moo_term_size_allocate          (GtkWidget          *widget,
@@ -47,8 +39,10 @@ static void     moo_term_set_scroll_adjustments (GtkWidget      *widget,
 static void     update_adjustment               (MooTerm        *term);
 static void     update_adjustment_value         (MooTerm        *term);
 static void     adjustment_value_changed        (MooTerm        *term);
-static void     queue_adjustment_changed        (MooTerm        *term);
-static void     queue_adjustment_value_changed  (MooTerm        *term);
+static void     queue_adjustment_changed        (MooTerm        *term,
+                                                 gboolean        now);
+static void     queue_adjustment_value_changed  (MooTerm        *term,
+                                                 gboolean        now);
 static gboolean emit_adjustment_changed         (MooTerm        *term);
 static gboolean emit_adjustment_value_changed   (MooTerm        *term);
 static void     scroll_abs                      (MooTerm        *term,
@@ -56,19 +50,26 @@ static void     scroll_abs                      (MooTerm        *term,
                                                  gboolean        update_adj);
 static void     scroll_to_bottom                (MooTerm        *term,
                                                  gboolean        update_adj);
-static void     scrollback_changed              (MooTerm        *term);
-static void     width_changed                   (MooTerm        *term);
-static void     height_changed                  (MooTerm        *term);
+
+static void     scrollback_changed              (MooTerm        *term,
+                                                 GParamSpec     *pspec,
+                                                 MooTermBuffer  *buf);
+static void     width_changed                   (MooTerm        *term,
+                                                 GParamSpec     *pspec);
+static void     height_changed                  (MooTerm        *term,
+                                                 GParamSpec     *pspec);
 
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
+    SET_WINDOW_TITLE,
+    SET_ICON_NAME,
+    BELL,
     LAST_SIGNAL
 };
 
 enum {
     PROP_0 = 0,
-    PROP_BUFFER,
     LAST_PROP
 };
 
@@ -83,9 +84,6 @@ static void moo_term_class_init (MooTermClass *klass)
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-//     gobject_class->constructor = moo_term_constructor;
-    gobject_class->set_property = moo_term_set_property;
-    gobject_class->get_property = moo_term_get_property;
     gobject_class->finalize = moo_term_finalize;
 
     widget_class->realize = moo_term_realize;
@@ -113,107 +111,138 @@ static void moo_term_class_init (MooTermClass *klass)
                           GTK_TYPE_ADJUSTMENT);
     widget_class->set_scroll_adjustments_signal = signals[SET_SCROLL_ADJUSTMENTS];
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_BUFFER,
-                                     g_param_spec_object ("buffer",
-                                             "buffer",
-                                             "buffer",
-                                             MOO_TYPE_TERM_BUFFER,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
-}
+    signals[SET_WINDOW_TITLE] =
+            g_signal_new ("set-window-title",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, set_window_title),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
+    signals[SET_ICON_NAME] =
+            g_signal_new ("set-icon-name",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, set_icon_name),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
-static void moo_term_set_property           (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
-{
-    MooTerm *term = MOO_TERM (object);
-
-    switch (prop_id)
-    {
-        case PROP_BUFFER:
-            moo_term_set_buffer (term, g_value_get_object (value));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-static void moo_term_get_property           (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec)
-{
-    MooTerm *term = MOO_TERM (object);
-
-    switch (prop_id)
-    {
-        case PROP_BUFFER:
-            g_value_set_object (value, moo_term_get_buffer (term));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
+    signals[BELL] =
+            g_signal_new ("bell",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, bell),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
 static void moo_term_init                   (MooTerm        *term)
 {
     term->priv = g_new0 (MooTermPrivate, 1);
-    term->priv->pt = moo_term_pt_new ();
+
+    term->priv->pt = moo_term_pt_new (term);
+    term->priv->parser = moo_term_parser_new (term);
+
+    term->priv->primary_buffer = moo_term_buffer_new (80, 24);
+    term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
+    term->priv->buffer = term->priv->primary_buffer;
+
+    term->priv->width = 80;
+    term->priv->height = 24;
+
     term->priv->selection = term_selection_new ();
-    moo_term_set_buffer (term, NULL);
+
+    term->priv->cursor_visible = TRUE;
+    term->priv->scroll_on_keystroke = TRUE;
+
+    set_default_modes (term->priv->modes);
+
+    g_signal_connect_swapped (term->priv->primary_buffer,
+                              "notify::scrollback",
+                              G_CALLBACK (scrollback_changed),
+                              term);
+    g_signal_connect_swapped (term->priv->alternate_buffer,
+                              "notify::scrollback",
+                              G_CALLBACK (scrollback_changed),
+                              term);
+
+    g_signal_connect_swapped (term->priv->buffer,
+                              "notify::screen-width",
+                              G_CALLBACK (width_changed),
+                              term);
+    g_signal_connect_swapped (term->priv->buffer,
+                              "notify::screen-height",
+                              G_CALLBACK (height_changed),
+                              term);
+
+    g_signal_connect_swapped (term->priv->primary_buffer,
+                              "changed",
+                              G_CALLBACK (moo_term_buf_content_changed),
+                              term);
+    g_signal_connect_swapped (term->priv->alternate_buffer,
+                              "changed",
+                              G_CALLBACK (moo_term_buf_content_changed),
+                              term);
+
+    g_signal_connect_swapped (term->priv->primary_buffer,
+                              "cursor-moved",
+                              G_CALLBACK (moo_term_cursor_moved),
+                              term);
+    g_signal_connect_swapped (term->priv->alternate_buffer,
+                              "cursor-moved",
+                              G_CALLBACK (moo_term_cursor_moved),
+                              term);
+
+    g_signal_connect_swapped (term->priv->primary_buffer,
+                              "feed-child",
+                              G_CALLBACK (moo_term_feed_child),
+                              term);
+    g_signal_connect_swapped (term->priv->alternate_buffer,
+                              "feed-child",
+                              G_CALLBACK (moo_term_feed_child),
+                              term);
 }
 
 
 static void moo_term_finalize               (GObject        *object)
 {
-    MooTerm *term = MOO_TERM (object);
     guint i, j;
-
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_scrollback_changed_id);
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_width_changed_id);
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_height_changed_id);
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_content_changed_id);
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_cursor_moved_id);
-    g_signal_handler_disconnect (term->priv->buffer,
-                                 term->priv->buf_feed_child_id);
-    g_object_unref (term->priv->buffer);
+    MooTerm *term = MOO_TERM (object);
 
     g_object_unref (term->priv->pt);
+    moo_term_parser_free (term->priv->parser);
+
+    g_object_unref (term->priv->primary_buffer);
+    g_object_unref (term->priv->alternate_buffer);
+
     term_selection_free (term->priv->selection);
+    term_font_info_free (term->priv->font_info);
+
+    g_object_unref (term->priv->back_pixmap);
+
+    if (term->priv->changed_content)
+        gdk_region_destroy (term->priv->changed_content);
+
+    if (term->priv->pending_expose)
+        g_source_remove (term->priv->pending_expose);
+
+    g_object_unref (term->priv->clip);
+    g_object_unref (term->priv->layout);
+
+    g_object_unref (term->priv->im);
+
+    if (term->priv->adjustment)
+        g_object_unref (term->priv->adjustment);
 
     for (i = 0; i < CURSORS_NUM; ++i)
         if (term->priv->cursor[i])
             gdk_cursor_unref (term->priv->cursor[i]);
-
-    if (term->priv->im)
-        g_object_unref (term->priv->im);
-    if (term->priv->adjustment)
-        g_object_unref (term->priv->adjustment);
-
-    term_font_info_free (term->priv->font_info);
-
-    if (term->priv->dirty)
-        gdk_region_destroy (term->priv->dirty);
-
-    if (term->priv->changed_content)
-        gdk_region_destroy (term->priv->changed_content);
-    if (term->priv->back_pixmap)
-        g_object_unref (term->priv->back_pixmap);
-    if (term->priv->clip)
-        g_object_unref (term->priv->clip);
-    if (term->priv->layout)
-        g_object_unref (term->priv->layout);
 
     /* TODO TODO TODO */
     for (i = 0; i < 1; ++i)
@@ -305,8 +334,7 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     widget->style = gtk_style_attach (widget->style, widget->window);
 
-//     gdk_window_set_back_pixmap (widget->window, NULL, FALSE);
-//     gtk_widget_set_double_buffered (widget, FALSE);
+    gtk_widget_set_double_buffered (widget, FALSE);
 
     moo_term_setup_palette (term);
     moo_term_init_font_stuff (term);
@@ -362,75 +390,118 @@ void             moo_term_set_adjustment    (MooTerm        *term,
 }
 
 
-static void     scrollback_changed              (MooTerm        *term)
+static void     scrollback_changed              (MooTerm        *term,
+                                                 G_GNUC_UNUSED GParamSpec *pspec,
+                                                 MooTermBuffer  *buf)
 {
-    guint scrollback = buf_screen_offset (term->priv->buffer);
+    g_assert (!strcmp (pspec->name, "scrollback"));
 
-    if (term->priv->scrolled && term->priv->_top_line > scrollback)
-        scroll_to_bottom (term, TRUE);
-    else
-        update_adjustment (term);
+    if (buf == term->priv->buffer)
+    {
+        guint scrollback = buf_scrollback (term->priv->buffer);
+
+        if (term->priv->_scrolled && term->priv->_top_line > scrollback)
+            scroll_to_bottom (term, TRUE);
+        else
+            update_adjustment (term);
+    }
 }
 
 
-static void     width_changed                   (MooTerm        *term)
+static void     width_changed                   (MooTerm        *term,
+                                                 G_GNUC_UNUSED GParamSpec *pspec)
 {
-    term_selection_set_width (term, term_width (term));
+    g_assert (!strcmp (pspec->name, "screen-width"));
+
+    term->priv->width = buf_screen_width (term->priv->buffer);
+
+    if (GTK_WIDGET_REALIZED (term))
+        moo_term_resize_back_pixmap (term);
+
+    term_selection_set_width (term, term->priv->width);
     term_selection_clear (term);
 }
 
 
-static void     height_changed                  (MooTerm        *term)
+static void     height_changed                  (MooTerm        *term,
+                                                 G_GNUC_UNUSED GParamSpec *pspec)
 {
-    if (term_top_line (term) > buf_screen_offset (term->priv->buffer))
+    guint scrollback = buf_scrollback (term->priv->buffer);
+
+    g_assert (!strcmp (pspec->name, "screen-height"));
+
+    term->priv->height = buf_screen_height (term->priv->buffer);
+
+    if (!term->priv->_scrolled || term->priv->_top_line > scrollback)
         scroll_to_bottom (term, TRUE);
     else
         update_adjustment (term);
+
+    if (GTK_WIDGET_REALIZED (term))
+        moo_term_resize_back_pixmap (term);
 
     term_selection_clear (term);
     moo_term_invalidate_all (term);
 }
 
 
+#define equal(a, b) (ABS((a)-(b)) < 0.4)
+
 static void     update_adjustment               (MooTerm        *term)
 {
     double upper, value, page_size;
     GtkAdjustment *adj = term->priv->adjustment;
+    gboolean now = FALSE;
 
     if (!adj)
         return;
 
     upper = buf_total_height (term->priv->buffer);
     value = term_top_line (term);
-    page_size = term_height (term);
+    page_size = term->priv->height;
 
-    if (adj->lower != 0 || adj->upper != upper ||
-        adj->value != value || adj->page_size != page_size ||
-        adj->page_increment != page_size || adj->step_increment != 1)
+    if ((ABS (upper - term->priv->adjustment->upper) >
+         ADJUSTMENT_DELTA * page_size) ||
+         (ABS (value - term->priv->adjustment->value) >
+         ADJUSTMENT_DELTA * page_size))
     {
-        adj->lower = 0;
+        now = TRUE;
+    }
+
+    if (!equal (adj->lower, 0.0) || !equal (adj->upper, upper) ||
+         !equal (adj->value, value) || !equal (adj->page_size, page_size) ||
+         !equal (adj->page_increment, page_size) || !equal (adj->step_increment, 1.0))
+    {
+        adj->lower = 0.0;
         adj->upper = upper;
         adj->value = value;
         adj->page_size = page_size;
         adj->page_increment = page_size;
-        adj->step_increment = 1;
+        adj->step_increment = 1.0;
 
-        queue_adjustment_changed (term);
+        queue_adjustment_changed (term, now);
     }
 }
 
 
 static void     update_adjustment_value         (MooTerm        *term)
 {
-    guint value = term_top_line (term);
+    double value = term_top_line (term);
+    gboolean now = FALSE;
 
     if (!term->priv->adjustment)
         return;
 
-    if (term->priv->adjustment->value != value)
+    if (ABS (value - term->priv->adjustment->value) >
+         ADJUSTMENT_DELTA * term->priv->height)
+    {
+        now = TRUE;
+    }
+
+    if (!equal (term->priv->adjustment->value, value))
     {
         term->priv->adjustment->value = value;
-        queue_adjustment_value_changed (term);
+        queue_adjustment_value_changed (term, now);
     }
 }
 
@@ -447,15 +518,23 @@ static void     adjustment_value_changed        (MooTerm        *term)
     if (val == real_val)
         return;
 
-    g_return_if_fail (val <= buf_screen_offset (term->priv->buffer));
+    g_return_if_fail (val <= buf_scrollback (term->priv->buffer));
 
     scroll_abs (term, val, FALSE);
 }
 
 
-static void     queue_adjustment_changed        (MooTerm        *term)
+static void     queue_adjustment_changed        (MooTerm        *term,
+                                                 gboolean        now)
 {
-    if (!term->priv->pending_adjustment_changed)
+    if (now)
+    {
+        if (term->priv->pending_adjustment_changed)
+            g_source_remove (term->priv->pending_adjustment_changed);
+        term->priv->pending_adjustment_changed = 0;
+        emit_adjustment_changed (term);
+    }
+    else if (!term->priv->pending_adjustment_changed)
     {
         term->priv->pending_adjustment_changed =
                 g_idle_add_full (ADJUSTMENT_PRIORITY,
@@ -466,11 +545,20 @@ static void     queue_adjustment_changed        (MooTerm        *term)
 }
 
 
-static void     queue_adjustment_value_changed  (MooTerm        *term)
+static void     queue_adjustment_value_changed  (MooTerm        *term,
+                                                 gboolean        now)
 {
-    if (!term->priv->pending_adjustment_value_changed) {
+    if (now)
+    {
+        if (term->priv->pending_adjustment_value_changed)
+            g_source_remove (term->priv->pending_adjustment_value_changed);
+        term->priv->pending_adjustment_value_changed = 0;
+        emit_adjustment_value_changed (term);
+    }
+    else if (!term->priv->pending_adjustment_value_changed)
+    {
         term->priv->pending_adjustment_value_changed =
-                g_idle_add_full(ADJUSTMENT_VALUE_PRIORITY,
+                g_idle_add_full(ADJUSTMENT_PRIORITY,
                                 (GSourceFunc) emit_adjustment_value_changed,
                                 term,
                                 NULL);
@@ -480,24 +568,16 @@ static void     queue_adjustment_value_changed  (MooTerm        *term)
 
 static gboolean emit_adjustment_changed         (MooTerm        *term)
 {
-    if (term->priv->pending_adjustment_changed)
-    {
-        term->priv->pending_adjustment_changed = 0;
-        gtk_adjustment_changed (term->priv->adjustment);
-    }
-
+    term->priv->pending_adjustment_changed = 0;
+    gtk_adjustment_changed (term->priv->adjustment);
     return FALSE;
 }
 
 
 static gboolean emit_adjustment_value_changed   (MooTerm        *term)
 {
-    if (term->priv->pending_adjustment_value_changed)
-    {
-        term->priv->pending_adjustment_value_changed = 0;
-        gtk_adjustment_value_changed (term->priv->adjustment);
-    }
-
+    term->priv->pending_adjustment_value_changed = 0;
+    gtk_adjustment_value_changed (term->priv->adjustment);
     return FALSE;
 }
 
@@ -510,14 +590,15 @@ static void     scroll_abs                      (MooTerm        *term,
     {
         if (update_adj)
             update_adjustment_value (term);
+
         return;
     }
 
-    if (line >= buf_screen_offset (term->priv->buffer))
+    if (line >= buf_scrollback (term->priv->buffer))
         return scroll_to_bottom (term, update_adj);
 
     term->priv->_top_line = line;
-    term->priv->scrolled = TRUE;
+    term->priv->_scrolled = TRUE;
 
     moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
@@ -530,115 +611,20 @@ static void     scroll_abs                      (MooTerm        *term,
 static void     scroll_to_bottom                (MooTerm        *term,
                                                  gboolean        update_adj)
 {
-    if (!term->priv->scrolled)
+    if (!term->priv->_scrolled)
     {
         if (update_adj)
             update_adjustment_value (term);
         return;
     }
 
-    term->priv->scrolled = FALSE;
+    term->priv->_scrolled = FALSE;
 
     moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
     if (update_adj)
         update_adjustment_value (term);
-}
-
-
-void             moo_term_set_buffer        (MooTerm        *term,
-                                             MooTermBuffer  *buffer)
-{
-    g_return_if_fail (MOO_IS_TERM (term));
-    g_return_if_fail (!buffer || MOO_IS_TERM_BUFFER (buffer));
-
-    if (buffer && term->priv->buffer == buffer)
-        return;
-
-    if (term->priv->buffer)
-    {
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_scrollback_changed_id);
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_width_changed_id);
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_height_changed_id);
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_content_changed_id);
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_cursor_moved_id);
-        g_signal_handler_disconnect (term->priv->buffer,
-                                     term->priv->buf_feed_child_id);
-        g_object_unref (term->priv->buffer);
-    }
-
-    if (buffer)
-    {
-        term->priv->buffer = buffer;
-        g_object_ref (term->priv->buffer);
-    }
-    else
-    {
-        term->priv->buffer = moo_term_buffer_new (0, 0);
-    }
-
-    moo_term_pt_set_buffer (term->priv->pt, term->priv->buffer);
-
-    term->priv->buf_scrollback_changed_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "notify::scrollback",
-                                      G_CALLBACK (scrollback_changed),
-                                      term);
-
-    term->priv->buf_width_changed_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "notify::screen-width",
-                                      G_CALLBACK (width_changed),
-                                      term);
-
-    term->priv->buf_height_changed_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "notify::screen-height",
-                                      G_CALLBACK (height_changed),
-                                      term);
-
-    term->priv->buf_content_changed_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "changed",
-                                      G_CALLBACK (moo_term_buf_content_changed),
-                                      term);
-
-    term->priv->buf_cursor_moved_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "cursor-moved",
-                                      G_CALLBACK (moo_term_cursor_moved),
-                                      term);
-
-    term->priv->buf_feed_child_id =
-            g_signal_connect_swapped (term->priv->buffer,
-                                      "feed-child",
-                                      G_CALLBACK (moo_term_feed_child),
-                                      term);
-
-    if (GTK_WIDGET_REALIZED (term))
-    {
-        GtkWidget *widget = GTK_WIDGET (term);
-        TermFontInfo *font_info = term->priv->font_info;
-        guint width = widget->allocation.width / font_info->width;
-        guint height = widget->allocation.height / font_info->height;
-
-        term->priv->scrolled = FALSE;
-        moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
-        moo_term_pt_set_size (term->priv->pt, width, height);
-    }
-}
-
-
-MooTermBuffer   *moo_term_get_buffer        (MooTerm        *term)
-{
-    g_return_val_if_fail (MOO_IS_TERM (term), NULL);
-    return term->priv->buffer;
 }
 
 
@@ -651,17 +637,17 @@ void        moo_term_size_changed       (MooTerm        *term)
 
     width = widget->allocation.width / font_info->width;
     height = widget->allocation.height / font_info->height;
-    old_width = term_width (term);
-    old_height = term_height (term);
+    old_width = term->priv->width;
+    old_height = term->priv->height;
 
     if (width == old_width && height == old_height)
         return;
 
-    moo_term_buffer_set_screen_size (term->priv->buffer, width, height);
+    moo_term_buffer_set_screen_size (term->priv->primary_buffer,
+                                     width, height);
+    moo_term_buffer_set_screen_size (term->priv->alternate_buffer,
+                                     width, height);
     moo_term_pt_set_size (term->priv->pt, width, height);
-
-    if (GTK_WIDGET_REALIZED (term))
-        moo_term_resize_back_pixmap (term);
 }
 
 
@@ -688,7 +674,12 @@ void             moo_term_feed_child        (MooTerm        *term,
 
 void             moo_term_copy_clipboard    (MooTerm        *term)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    g_message ("%s: implement me", G_STRFUNC);
+}
+
+void             moo_term_ctrl_c            (MooTerm        *term)
+{
+    g_message ("%s: implement me", G_STRFUNC);
 }
 
 
@@ -710,33 +701,81 @@ void             moo_term_paste_clipboard   (MooTerm        *term)
 }
 
 
-void             moo_term_ctrl_c            (MooTerm        *term)
+void            moo_term_feed               (MooTerm        *term,
+                                             const char     *data,
+                                             int             len)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    if (!len)
+        return;
+
+    g_return_if_fail (data != NULL);
+
+    if (len < 0)
+        len = strlen (data);
+
+    moo_term_parser_parse (term->priv->parser, data, len);
 }
 
 
 void             moo_term_scroll_to_top     (MooTerm        *term)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    scroll_abs (term, 0, TRUE);
 }
-
 
 void             moo_term_scroll_to_bottom  (MooTerm        *term)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    scroll_to_bottom (term, TRUE);
 }
-
 
 void             moo_term_scroll_lines      (MooTerm        *term,
                                              int             lines)
 {
-    g_warning ("%s: implement me", G_STRLOC);
-}
+    int top = term_top_line (term);
 
+    top += lines;
+
+    if (top < 0)
+        top = 0;
+
+    scroll_abs (term, top, TRUE);
+}
 
 void             moo_term_scroll_pages      (MooTerm        *term,
                                              int             pages)
 {
-    g_warning ("%s: implement me", G_STRLOC);
+    int top = term_top_line (term);
+
+    top += pages * term->priv->height;
+
+    if (top < 0)
+        top = 0;
+
+    scroll_abs (term, top, TRUE);
+}
+
+
+void        moo_term_set_window_title       (MooTerm        *term,
+                                             const char     *title)
+{
+    g_signal_emit (term, signals[SET_WINDOW_TITLE], 0, title);
+}
+
+
+void        moo_term_set_icon_name          (MooTerm        *term,
+                                             const char     *title)
+{
+    g_signal_emit (term, signals[SET_ICON_NAME], 0, title);
+}
+
+
+void        moo_term_bell                   (MooTerm    *term)
+{
+    g_signal_emit (term, signals[BELL], 0);
+    g_message ("BELL");
+}
+
+
+void        moo_term_decid                  (MooTerm    *term)
+{
+    moo_term_feed_child (term, TERM_VT_DECID_STRING, -1);
 }

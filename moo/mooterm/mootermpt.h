@@ -32,7 +32,7 @@ G_BEGIN_DECLS
 typedef struct _MooTermPt           MooTermPt;
 typedef struct _MooTermPtPrivate    MooTermPtPrivate;
 typedef struct _MooTermPtClass      MooTermPtClass;
-
+struct _MooTerm;
 
 struct _MooTermPt {
     GObject           parent;
@@ -65,11 +65,7 @@ GType           moo_term_pt_unix_get_type   (void) G_GNUC_CONST;
 GType           moo_term_pt_win_get_type    (void) G_GNUC_CONST;
 
 /* creates MooTermPtWin or MooTermPtUnix instance, depending on platform */
-MooTermPt      *moo_term_pt_new             (void);
-
-void            moo_term_pt_set_buffer      (MooTermPt      *pt,
-                                             MooTermBuffer  *buffer);
-MooTermBuffer  *moo_term_pt_get_buffer      (MooTermPt      *pt);
+MooTermPt      *moo_term_pt_new             (struct _MooTerm *term);
 
 void            moo_term_pt_set_size        (MooTermPt      *pt,
                                              guint           width,

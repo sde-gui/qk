@@ -14,6 +14,7 @@
 #include <gtk/gtk.h>
 #define MOOTERM_COMPILATION
 #include "mooterm/mooterm-private.h"
+#include "mooterm/mootermbuffer-private.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -33,12 +34,12 @@
 #define NORMAL      "\033[0m"
 
 
-G_GNUC_UNUSED static gboolean print (MooTermBuffer *buf)
+G_GNUC_UNUSED static gboolean print (MooTerm *term)
 {
     guint i;
 
     for (i = 0; i < 1000; ++i)
-        moo_term_buffer_write (buf, "kjhr jerhgjh erkjg hekrjghkerg ", -1);
+        moo_term_feed (term, "kjhr jerhgjh erkjg hekrjghkerg ", -1);
 
     return FALSE;
 }
@@ -62,7 +63,7 @@ G_GNUC_UNUSED static gboolean print_random_hard (MooTerm *term)
         col = 1 + (int) (((double)width) * rand() / (RAND_MAX+1.0));
 
         s = g_strdup_printf (ADDRESS "%c", row, col, r);
-        moo_term_buffer_write (buf, s, -1);
+        moo_term_feed (term, s, -1);
         g_free (s);
 
         moo_term_force_update (term);
@@ -70,7 +71,7 @@ G_GNUC_UNUSED static gboolean print_random_hard (MooTerm *term)
 
     g_print ("buffer: %dx%d\nterm: %dx%d\n",
              buf_total_height (buf), buf_screen_width (buf),
-             term_height (term), term_width (term));
+             term->priv->height, term->priv->width);
 
     gtk_main_quit ();
     return FALSE;
@@ -91,7 +92,7 @@ G_GNUC_UNUSED static gboolean print_random_soft (MooTerm *term)
     col = 1 + (int) (((double)width) * rand() / (RAND_MAX+1.0));
 
     s = g_strdup_printf (ADDRESS "%c", row, col, r);
-    moo_term_buffer_write (buf, s, -1);
+    moo_term_feed (term, s, -1);
     g_free (s);
 
     return TRUE;
@@ -122,12 +123,7 @@ int main (int argc, char *argv[])
 
     gtk_widget_show_all (win);
 
-    buf = moo_term_get_buffer (MOO_TERM (term));
-    g_object_set (buf,
-                  "mode-DECAWM", FALSE,
-                  "mode-IRM", FALSE,
-                  "cursor-visible", TRUE,
-                  NULL);
+    buf = MOO_TERM(term)->priv->buffer;
 
     g_idle_add ((GSourceFunc) print_random_hard, term);
 

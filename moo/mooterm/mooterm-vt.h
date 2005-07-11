@@ -1,0 +1,198 @@
+/*
+ *   mooterm/mooterm-vt.h
+ *
+ *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   See COPYING file that comes with this distribution.
+*/
+
+#ifndef MOOTERM_MOOTERM_VT_H
+#define MOOTERM_MOOTERM_VT_H
+
+enum {
+    MODE_IRM,       /*  Insert/Replace Mode
+                        This control function selects how the terminal adds characters to page
+                        memory. The terminal always adds new characters at the cursor position.
+                        If IRM mode is set, then new characters move characters in page memory to
+                        the right. Characters moved past the page's right border are lost.
+                        If IRM mode is reset, then new characters replace the character at the cursor
+                        position.   */
+    MODE_SRM,       /*  Local Echo: Send/Receive Mode
+                        This control function turns local echo on or off. When local echo is on,
+                        the terminal sends keyboard characters to the screen. The host does not
+                        have to send (echo) the characters back to the terminal display. When
+                        local echo is off, the terminal only sends characters to the host. It
+                        is up to the host to echo characters back to the screen.
+                        When the SRM function is set, the terminal sends keyboard characters to
+                        the host only. The host can echo the characters back to the screen.
+                        When the SRM function is reset, the terminal sends keyboard characters
+                        to the host and to the screen. The host does have to echo characters back
+                        to the terminal.    */
+    MODE_LNM,       /*  Line Feed/New Line Mode
+                        This control function selects the characters sent to the host when you
+                        press the Return key. LNM also controls how the terminal interprets line
+                        feed (LF), form feed (FF), and vertical tab (VT) characters.
+                        If LNM is set, then the cursor moves to the first column on the next line
+                        when the terminal receives an LF, FF, or VT character. When you press Return,
+                        the terminal sends both a carriage return (CR) and line feed (LF).
+                        If LNM is reset, then the cursor moves to the current column on the next line
+                        when the terminal receives an LF, FF, or VT character. When you press Return,
+                        the terminal sends only a carriage return (CR) character.
+                        When the auxiliary keypad is in keypad numeric mode (DECKPNM), the Enter key
+                        sends the same characters as the Return key.    */
+    MODE_DECCKM,    /*  Cursor Keys Mode
+                        This control function selects the sequences the arrow keys send. You can use
+                        the four arrow keys to move the cursor through the current page or to send
+                        special application commands.
+                        If the DECCKM function is set, then the arrow keys send application sequences
+                        to the host.
+                        If the DECCKM function is reset, then the arrow keys send ANSI cursor sequences
+                        to the host.    */
+    MODE_DECANM,    /*  ANSI Mode
+                        DECANM changes the terminal to the VT52 mode of operation. In VT52 mode,
+                        the terminal acts like a VT52 terminal. This mode lets you use applications
+                        designed for the VT52 terminal. */
+    MODE_DECSCNM,   /*  Screen Mode: Light or Dark Screen
+                        This control function selects a dark or light background on the screen.
+                        When DECSCNM is set, the screen displays dark characters on a light background.
+                        When DECSCNM is reset, the screen displays light characters on a dark background.   */
+    MODE_DECOM,     /*  Origin Mode
+                        This control function sets the origin for the cursor. DECOM determines if the
+                        cursor position is restricted to inside the page margins. When you power up or
+                        reset the terminal, you reset origin mode.
+                        When DECOM is set, the home cursor position is at the upper-left corner of the
+                        screen, within the margins. The starting point for line numbers depends on the
+                        current top margin setting. The cursor cannot move outside of the margins.
+                        When DECOM is reset, the home cursor position is at the upper-left corner of the
+                        screen. The starting point for line numbers is independent of the margins. The
+                        cursor can move outside of the margins. */
+    MODE_DECAWM,    /*  Autowrap Mode
+                        This control function determines whether or not received characters automatically
+                        wrap to the next line when the cursor reaches the right border of a page in page
+                        memory.
+                        If the DECAWM function is set, then graphic characters received when the cursor
+                        is at the right border of the page appear at the beginning of the next line. Any
+                        text on the page scrolls up if the cursor is at the end of the scrolling region.
+                        If the DECAWM function is reset, then graphic characters received when the cursor
+                        is at the right border of the page replace characters already on the page.  */
+    MODE_DECTCEM,   /*  Text Cursor Enable Mode
+                        This control function makes the cursor visible or invisible.
+                        Set: makes the cursor visible.
+                        Reset: makes the cursor invisible.  */
+    MODE_DECNKM,    /*  Numeric Keypad Mode
+                        This control function works like the DECKPAM and DECKPNM functions. DECNKM is
+                        provided mainly for use with the request and report mode (DECRQM/DECRPM) control
+                        functions.
+                        Set: application sequences.
+                        Reset: keypad characters.   */
+    MODE_DECBKM,    /*  Backarrow Key Mode
+                        This control function determines whether the  key works as a backspace key or
+                        delete key.
+                        If DECBKM is set,  works as a backspace key. When you press , the terminal sends
+                        a BS character to the host.
+                        If DECBKM is reset,  works as a delete key. When you press , the terminal sends
+                        a DEL character to the host.    */
+    MODE_DECKPM,    /*  Key Position Mode
+                        This control function selects whether the keyboard sends character codes or key
+                        position reports to the host. DECKPM lets new applications take full control of
+                        the keyboard including single shifts, locking shifts, and compose character processing.
+                        If the DECKPM function is set, then all keyboard keys send extended reports that
+                        include the key position and the state of modifier keys when pressed. A modifier
+                        key is pressed in combination with another key to modify the code sent by that key.
+                        The Ctrl key is a modifier key.
+                        If the DECKPM function is reset, then the keyboard keys send character codes.
+                        DECKPM only affects keyboard input; it does not affect how the terminal interprets data
+                        from the host.  */
+
+    MODE_CA,
+
+    MODE_MOUSE_TRACKING,
+    MODE_HILITE_MOUSE_TRACKING,
+
+    MODE_MAX
+};
+
+
+#define DEFAULT_MODE_IRM                    TRUE
+#define DEFAULT_MODE_SRM                    FALSE
+#define DEFAULT_MODE_LNM                    FALSE
+#define DEFAULT_MODE_DECCKM                 FALSE
+#define DEFAULT_MODE_DECANM                 FALSE
+#define DEFAULT_MODE_DECSCNM                FALSE
+#define DEFAULT_MODE_DECOM                  FALSE
+#define DEFAULT_MODE_DECAWM                 TRUE
+#define DEFAULT_MODE_DECTCEM                TRUE
+#define DEFAULT_MODE_DECNKM                 FALSE
+#define DEFAULT_MODE_DECBKM                 FALSE
+#define DEFAULT_MODE_DECKPM                 FALSE
+#define DEFAULT_MODE_CA                     FALSE
+#define DEFAULT_MODE_MOUSE_TRACKING         FALSE
+#define DEFAULT_MODE_HILITE_MOUSE_TRACKING  FALSE
+
+#define set_default_modes(ar)                                               \
+{                                                                           \
+    ar[MODE_IRM] = DEFAULT_MODE_IRM;                                        \
+    ar[MODE_SRM] = DEFAULT_MODE_SRM;                                        \
+    ar[MODE_LNM] = DEFAULT_MODE_LNM;                                        \
+    ar[MODE_DECCKM] = DEFAULT_MODE_DECCKM;                                  \
+    ar[MODE_DECANM] = DEFAULT_MODE_DECANM;                                  \
+    ar[MODE_DECSCNM] = DEFAULT_MODE_DECSCNM;                                \
+    ar[MODE_DECOM] = DEFAULT_MODE_DECOM;                                    \
+    ar[MODE_DECAWM] = DEFAULT_MODE_DECAWM;                                  \
+    ar[MODE_DECTCEM] = DEFAULT_MODE_DECTCEM;                                \
+    ar[MODE_DECNKM] = DEFAULT_MODE_DECNKM;                                  \
+    ar[MODE_DECBKM] = DEFAULT_MODE_DECBKM;                                  \
+    ar[MODE_DECKPM] = DEFAULT_MODE_DECKPM;                                  \
+    ar[MODE_CA] = DEFAULT_MODE_CA;                                          \
+    ar[MODE_MOUSE_TRACKING] = DEFAULT_MODE_MOUSE_TRACKING;                  \
+    ar[MODE_HILITE_MOUSE_TRACKING] = DEFAULT_MODE_HILITE_MOUSE_TRACKING;    \
+}
+
+#define buf_get_mode(mode)  (buf->priv->modes[mode])
+#define term_get_mode(mode) (term->priv->modes[mode])
+
+
+#define TERM_VT_DECID_STRING    "\033[?1;2c"
+
+
+typedef enum {
+    ANSI_ALL_ATTRIBUTES_OFF = 0,
+    ANSI_BOLD               = 1,
+    ANSI_UNDERLINE          = 4,
+    ANSI_BLINKING           = 5,
+    ANSI_NEGATIVE           = 7,
+    ANSI_INVISIBLE          = 8,
+
+    /* TODO: why 22, why not 21? */
+    ANSI_BOLD_OFF           = 22,
+    ANSI_UNDERLINE_OFF      = 24,
+    ANSI_BLINKING_OFF       = 25,
+    ANSI_NEGATIVE_OFF       = 27,
+    ANSI_INVISIBLE_OFF      = 28,
+
+    ANSI_FORE_BLACK         = 30,
+    ANSI_FORE_RED           = 31,
+    ANSI_FORE_GREEN         = 32,
+    ANSI_FORE_YELLOW        = 33,
+    ANSI_FORE_BLUE          = 34,
+    ANSI_FORE_MAGENTA       = 35,
+    ANSI_FORE_CYAN          = 36,
+    ANSI_FORE_WHITE         = 37,
+
+    ANSI_BACK_BLACK         = 40,
+    ANSI_BACK_RED           = 41,
+    ANSI_BACK_GREEN         = 42,
+    ANSI_BACK_YELLOW        = 43,
+    ANSI_BACK_BLUE          = 44,
+    ANSI_BACK_MAGENTA       = 45,
+    ANSI_BACK_CYAN          = 46,
+    ANSI_BACK_WHITE         = 47
+} AnsiTextAttr;
+
+
+#endif /* MOOTERM_MOOTERM_VT_H */

@@ -36,10 +36,11 @@ typedef struct _MooTermBufferClass      MooTermBufferClass;
 
 typedef enum {
     MOO_TERM_TEXT_REVERSE       = 1 << 0,
-    MOO_TERM_TEXT_FOREGROUND    = 1 << 1,
-    MOO_TERM_TEXT_BACKGROUND    = 1 << 2,
-    MOO_TERM_TEXT_BOLD          = 1 << 3,
-    MOO_TERM_TEXT_UNDERLINE     = 1 << 4
+    MOO_TERM_TEXT_BLINK         = 1 << 1,
+    MOO_TERM_TEXT_FOREGROUND    = 1 << 2,
+    MOO_TERM_TEXT_BACKGROUND    = 1 << 3,
+    MOO_TERM_TEXT_BOLD          = 1 << 4,
+    MOO_TERM_TEXT_UNDERLINE     = 1 << 5
 } MooTermTextAttrMask;
 
 typedef enum {
@@ -50,13 +51,13 @@ typedef enum {
     MOO_TERM_BLUE       = 4,
     MOO_TERM_MAGENTA    = 5,
     MOO_TERM_CYAN       = 6,
-    MOO_TERM_WHITE      = 7,
+    MOO_TERM_WHITE      = 7
 } MooTermBufferColor;
 
 #define MOO_TERM_COLOR_MAX 8
 
 struct _MooTermTextAttr {
-    MooTermTextAttrMask mask        : 8;
+    MooTermTextAttrMask mask        : 6;
     MooTermBufferColor  foreground  : 3;
     MooTermBufferColor  background  : 3;
 };
@@ -74,9 +75,7 @@ struct _MooTermBufferClass {
     void (*screen_size_changed) (MooTermBuffer  *buf,
                                  guint           width,
                                  guint           height);
-    void (*cursor_moved)        (MooTermBuffer  *buf,
-                                 guint           old_row,
-                                 guint           old_col);
+    void (*cursor_moved)        (MooTermBuffer  *buf);
 
     void (*bell)                (MooTermBuffer  *buf);
     void (*set_window_title)    (MooTermBuffer  *buf,
@@ -98,24 +97,12 @@ GType   moo_term_buffer_get_type            (void) G_GNUC_CONST;
 MooTermBuffer  *moo_term_buffer_new         (guint width,
                                              guint height);
 
-void    moo_term_buffer_set_screen_size         (MooTermBuffer  *buf,
-                                                 guint           width,
-                                                 guint           height);
-void    moo_term_buffer_set_max_scrollback      (MooTermBuffer  *buf,
-                                                 int             lines);
-
-void    moo_term_buffer_set_cursor_visible  (MooTermBuffer  *buf,
-                                             gboolean        visible);
-
-void    moo_term_buffer_changed             (MooTermBuffer  *buf);
-void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf);
-
-void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
-                                         const char     *chars,
-                                         int             len);
-void    moo_term_buffer_write           (MooTermBuffer  *buf,
-                                         const char     *data,
-                                         int             len);
+/* chars must be valid utf8 */
+void    moo_term_buffer_print_chars         (MooTermBuffer  *buf,
+                                             const char     *chars,
+                                             int             len);
+void    moo_term_buffer_print_unichar       (MooTermBuffer  *buf,
+                                             gunichar        c);
 
 
 G_END_DECLS

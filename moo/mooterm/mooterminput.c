@@ -322,7 +322,7 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     {
         if (key == GDK_Return)
         {
-            if (term->priv->buffer->priv->modes & LNM)
+            if (term->priv->modes[MODE_LNM])
             {
                 string = "\r\f";
                 len = 2;
@@ -423,8 +423,12 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
 
     if (clear_selection)
         term_selection_clear (term);
+
     if (string)
+    {
         moo_term_feed_child (term, string, len);
+    }
+
     if (handled && term->priv->scroll_on_keystroke && scroll)
         moo_term_scroll_to_bottom (term);
 

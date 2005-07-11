@@ -12,9 +12,10 @@
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mootermbuffer-vt.h"
 #include "mooterm/mootermparser-yacc.h"
 #include "mooterm/mootermparser.h"
+#include "mooterm/mooterm-vt.h"
+#include "mooterm/mooterm-ctlfuncs.h"
 #include <string.h>
 
 
@@ -22,380 +23,341 @@
 #define INVALID_CHAR_LEN    1
 
 
-static void     exec_command            (MooTermParser  *parser);
-static void     parser_init             (MooTermParser  *parser,
-                                         const char     *string,
-                                         guint           len);
-static void     parser_deinit           (MooTermParser  *parser);
-static gboolean parser_init_yyparse     (MooTermParser  *parser);
+#define iter_eof(iter)                                      \
+    (!(iter).old &&                                         \
+        (iter).offset == parser->input.data_len)
 
-
-inline static gboolean  iter_equal      (Iter *iter1, Iter *iter2)
-{
-    return iter1->old == iter2->old && iter1->offset == iter2->offset;
+#define iter_forward(iter)                                  \
+{                                                           \
+    g_assert (!iter_eof (iter));                            \
+                                                            \
+    ++(iter).offset;                                        \
+                                                            \
+    if ((iter).old)                                         \
+    {                                                       \
+        if ((iter).offset ==                                \
+                parser->input.old_data->len)                \
+        {                                                   \
+            (iter).offset = 0;                              \
+            (iter).old = FALSE;                             \
+        }                                                   \
+    }                                                       \
 }
 
-inline static gboolean  iter_eof        (Iter *iter)
-{
-    return !iter->old && iter->offset == iter->parser->data_len;
+#define iter_backward(iter)                                 \
+{                                                           \
+    g_assert ((iter).offset ||                              \
+            (!(iter).old &&                                 \
+            parser->input.old_data->len));                  \
+                                                            \
+    if ((iter).offset)                                      \
+    {                                                       \
+        --(iter).offset;                                    \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        (iter).offset =                                     \
+                parser->input.old_data->len - 1;            \
+        (iter).old = TRUE;                                  \
+    }                                                       \
 }
 
-inline static void      iter_set_eof    (Iter *iter)
-{
-    iter->old = FALSE;
-    iter->offset = iter->parser->data_len;
+#define iter_set_eof(iter)                                  \
+{                                                           \
+    (iter).old = FALSE;                                     \
+    (iter).offset = parser->input.data_len;                 \
 }
 
-inline static char      iter_get_char   (Iter *iter)
-{
-    g_assert (!iter_eof (iter));
-
-    if (iter->old)
-        return iter->parser->old_data[iter->offset];
-    else
-        return iter->parser->data[iter->offset];
-}
-
-inline static void      iter_forward    (Iter *iter)
-{
-    g_assert (!iter_eof (iter));
-
-    ++iter->offset;
-
-    if (iter->old)
-    {
-        if (iter->offset == iter->parser->old_data_len)
-        {
-            iter->offset = 0;
-            iter->old = FALSE;
-        }
-    }
-}
-
-inline static char     *iter_get_range  (Iter *start,
-                                         Iter *end)
-{
-    GString *str;
-
-    g_assert (!iter_eof (start));
-
-    if (start->old)
-    {
-        if (end->old)
-        {
-            g_assert (start->offset <= end->offset);
-
-            if (start->offset == end->offset)
-                return g_strdup ("");
-            else
-                return g_strndup (start->parser->old_data + start->offset,
-                                  end->offset - start->offset);
-        }
-        else
-        {
-            str = g_string_new_len (start->parser->old_data,
-                                    start->parser->old_data_len - start->offset);
-            g_string_append_len (str, end->parser->data, end->offset);
-            return g_string_free (str, FALSE);
-        }
-    }
-    else
-    {
-        g_assert (!end->old);
-        g_assert (start->offset <= end->offset);
-
-        if (start->offset == end->offset)
-            return g_strdup ("");
-        else
-            return g_strndup (start->parser->data + start->offset,
-                              end->offset - start->offset);
-    }
-}
-
-inline static char     *block_get_string    (Block *block)
-{
-    return iter_get_range (&block->start, &block->end);
-}
-
-inline static gboolean  block_is_empty      (Block *block)
-{
-    return iter_eof (&block->start) ||
-            iter_equal (&block->start, &block->end);
-}
-
-inline static void      block_set_empty     (Block *block)
-{
-    iter_set_eof (&block->start);
-    iter_set_eof (&block->end);
+#define iter_get_char(iter, c)                              \
+{                                                           \
+    g_assert (!iter_eof (iter));                            \
+                                                            \
+    if ((iter).old)                                         \
+        c = parser->input.old_data->str[(iter).offset];     \
+    else                                                    \
+        c = parser->input.data[(iter).offset];              \
 }
 
 
-inline static void      chars_add_one       (MooTermParser  *parser)
-{
-    if (block_is_empty (&parser->chars))
-        parser->chars.start = parser->chars.end = parser->current;
-
-    iter_forward (&parser->chars.end);
+#define save_cmd()                                          \
+{                                                           \
+    GString *old = parser->input.old_data;                  \
+    guint offset = parser->cmd_start.offset;                \
+                                                            \
+    g_assert (!iter_eof (parser->cmd_start));               \
+                                                            \
+    if (parser->cmd_start.old)                              \
+    {                                                       \
+        g_assert (offset < old->len);                       \
+        memmove (old->str, old->str + offset,               \
+                 old->len - offset);                        \
+        g_string_truncate (old, old->len - offset);         \
+                                                            \
+        g_string_append_len (old,                           \
+                             parser->input.data,            \
+                             parser->input.data_len);       \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        const char *data = parser->input.data;              \
+        guint data_len = parser->input.data_len;            \
+                                                            \
+        g_assert (offset < parser->input.data_len);         \
+                                                            \
+        g_string_truncate (old, 0);                         \
+        g_string_append_len (old,                           \
+                             data + offset,                 \
+                             data_len - offset);            \
+    }                                                       \
+                                                            \
+    parser->save = TRUE;                                    \
 }
 
-inline static void      chars_add_cmd       (MooTermParser  *parser)
-{
-    if (block_is_empty (&parser->chars))
-        parser->chars = parser->cmd_string;
-    else
-        parser->chars.end = parser->cmd_string.end;
+#define save_char(c)                                        \
+{                                                           \
+    g_string_truncate (parser->input.old_data, 0);          \
+    g_string_append_c (parser->input.old_data, c);          \
+    parser->save = TRUE;                                    \
 }
 
-
-inline static void _flush (MooTermBuffer *buf, const char *string, guint len)
-{
-    const char *p = string;
-    const char *end = string + len;
-    const char *s;
-
-    g_assert (len != 0);
-
-    while (p != end)
-    {
-        for (s = p; s != end && *s && !(*s & 0x80); ++s) ;
-
-        if (s > p)
-        {
-            moo_term_buffer_print_chars (buf, p, s - p);
-            p = s;
-        }
-        else
-        {
-            if (*p++ & 0x80)
-                moo_term_buffer_print_chars (buf, INVALID_CHAR, INVALID_CHAR_LEN);
-        }
-    }
-}
-
-inline static void      chars_flush         (MooTermParser  *parser)
-{
-    if (!block_is_empty (&parser->chars))
-    {
-#if 0
-        char *bytes, *nice_bytes;
-        bytes = block_get_string (&parser->chars);
-        nice_bytes = _moo_term_nice_bytes (bytes, -1);
-        g_print ("chars '%s'\n", nice_bytes);
-        g_free (nice_bytes);
-        g_free (bytes);
-#endif
-
-        if (parser->chars.start.old)
-        {
-            if (parser->chars.end.old)
-            {
-                g_assert (parser->chars.start.offset < parser->chars.end.offset);
-
-                _flush (parser->term_buffer,
-                        parser->old_data + parser->chars.start.offset,
-                        parser->chars.end.offset - parser->chars.start.offset);
-            }
-            else
-            {
-                _flush (parser->term_buffer,
-                        parser->old_data + parser->chars.start.offset,
-                        parser->old_data_len - parser->chars.start.offset);
-                _flush (parser->term_buffer,
-                        parser->data,
-                        parser->chars.end.offset);
-            }
-        }
-        else
-        {
-            g_assert (!parser->chars.end.old);
-            g_assert (parser->chars.start.offset < parser->chars.end.offset);
-
-            _flush (parser->term_buffer,
-                    parser->data + parser->chars.start.offset,
-                    parser->chars.end.offset - parser->chars.start.offset);
-        }
-
-        block_set_empty (&parser->chars);
-    }
+#define save_character()                                    \
+{                                                           \
+    g_string_truncate (parser->input.old_data, 0);          \
+    g_string_append_len (parser->input.old_data,            \
+                         parser->character->str,            \
+                         parser->character->len);           \
+    parser->save = TRUE;                                    \
 }
 
 
-#define set_one_char_cmd(num)                   \
-{                                               \
-    parser->cmd = num;                          \
-    parser->cmd_string.start = parser->current; \
-    iter_forward (&parser->current);            \
-    parser->cmd_string.end = parser->current;   \
+#define goto_initial()                                      \
+{                                                           \
+    parser->state = INITIAL;                                \
+    iter_set_eof (parser->cmd_start);                       \
+    goto STATE_INITIAL;                                     \
 }
 
-void            moo_term_parser_parse   (MooTermParser  *parser,
-                                         const char     *string,
-                                         gssize          len)
-{
-    guint length;
+#define goto_cmd_state(st)                                  \
+{                                                           \
+    flush_chars ();                                         \
+                                                            \
+    parser->cmd_start = parser->current;                    \
+    iter_backward (parser->cmd_start);                      \
+    if (parser->escape_two_bytes)                           \
+    {                                                       \
+        iter_backward (parser->cmd_start);                  \
+    }                                                       \
+                                                            \
+    g_string_truncate (parser->intermediate, 0);            \
+    g_string_truncate (parser->parameters, 0);              \
+    g_string_truncate (parser->data, 0);                    \
+    parser->final = 0;                                      \
+                                                            \
+    parser->state = st;                                     \
+                                                            \
+    goto STATE_##st;                                        \
+}
 
-    g_return_if_fail (parser && (string || !len));
+#define one_char_cmd(c)                                     \
+{                                                           \
+    flush_chars ();                                         \
+                                                            \
+    parser->cmd_start = parser->current;                    \
+    if (parser->escape_two_bytes)                           \
+    {                                                       \
+        iter_backward (parser->cmd_start);                  \
+    }                                                       \
+                                                            \
+    exec_cmd (parser, c);                                   \
+}
 
-    if (!string || !len)
-        return;
-
-    length = len > 0 ? (guint)len : strlen (string);
-
-    if (!length)
-        return;
-
-    parser_init (parser, string, length);
-
-    while (!iter_eof (&parser->current))
-    {
-        parser->cmd = 0;
-
-        switch (iter_get_char (&parser->current))
-        {
-            case '\033':
-                if (!parser_init_yyparse (parser) || _moo_term_yyparse (parser))
-                {
-                    if (parser->eof_error)
-                    {
-                        parser->tosave = parser->cmd_string.start;
-                    }
-                    else
-                    {
-                        char *esc_seq = block_get_string (&parser->cmd_string);
-                        char *nice = _moo_term_nice_bytes (esc_seq, -1);
-                        g_warning ("%s: invalid escape sequence '%s'", G_STRLOC, nice);
-                        g_free (esc_seq);
-                        g_free (nice);
-                    }
-
-                    parser->cmd = CMD_ERROR;
-                }
-                else
-                {
-                    /* no errors */
-                    g_assert (parser->cmd);
-                }
-
-                break;
-
-            case '\007':
-                set_one_char_cmd (CMD_BELL);
-                break;
-            case '\010':
-                set_one_char_cmd (CMD_BACKSPACE);
-                break;
-            case '\011':
-                set_one_char_cmd (CMD_TAB);
-                break;
-            case '\012':
-                set_one_char_cmd (CMD_LINEFEED);
-                break;
-            case '\013':
-                set_one_char_cmd (CMD_VERT_TAB);
-                break;
-            case '\014':
-                set_one_char_cmd (CMD_FORM_FEED);
-                break;
-            case '\015':
-                set_one_char_cmd (CMD_CARRIAGE_RETURN);
-                break;
-            case '\016':
-                set_one_char_cmd (CMD_ALT_CHARSET);
-                break;
-            case '\017':
-                set_one_char_cmd (CMD_NORM_CHARSET);
-                break;
-
-            case 0:
-                chars_flush (parser);
-
-            default:
-                chars_add_one (parser);
-        }
-
-        if (parser->cmd)
-        {
-            chars_flush (parser);
-            if (parser->cmd != CMD_ERROR)
-            {
-                exec_command (parser);
-            }
-        }
-        else
-        {
-            /* exec_command() or yylex() should call iter_next() */
-            iter_forward (&parser->current);
-        }
-    }
-
-    chars_flush (parser);
-    parser_deinit (parser);
+#define check_cancel(c)                                     \
+{                                                           \
+    switch (c)                                              \
+    {                                                       \
+        /* ESC - start new sequence */                      \
+        case 0x1B:                                          \
+            goto_cmd_state (ESCAPE);                        \
+                                                            \
+        /* CAN - cancel sequence in progress */             \
+        case 0x18:                                          \
+            goto_initial ();                                \
+                                                            \
+        /* SUB - cancel sequence in progress and            \
+                 print error */                             \
+        case 0x1A:                                          \
+            vt_print_char (ERROR_CHAR);                     \
+            goto_initial ();                                \
+                                                            \
+        case 0x9B:                                          \
+            goto_cmd_state (CSI);                           \
+        case 0x9D:                                          \
+            goto_cmd_state (OSC);                           \
+        case 0x90:                                          \
+            goto_cmd_state (DCS);                           \
+        case 0x9E:                                          \
+            goto_cmd_state (PM);                            \
+        case 0x9F:                                          \
+            goto_cmd_state (APC);                           \
+    }                                                       \
 }
 
 
-int             _moo_term_yylex         (MooTermParser  *parser)
-{
-    while (!iter_eof (&parser->current))
-    {
-        char c = iter_get_char (&parser->current);
-
-        iter_forward (&parser->current);
-        iter_forward (&parser->cmd_string.end);
-
-        /* skip NUL chars*/
-        if (c)
-        {
-            if ('0' <= c && c <= '9')
-            {
-                _moo_term_yylval = c - '0';
-                return DIGIT;
-            }
-            else
-            {
-                _moo_term_yylval = c;
-                return c;
-            }
-        }
-    }
-
-    parser->eof_error = TRUE;
-    return 0;
+#define append_char(ar, c)                                  \
+{                                                           \
+    g_string_append_c (parser->ar, c);                      \
 }
 
 
-static gboolean parser_init_yyparse     (MooTermParser  *parser)
-{
-    g_assert (iter_get_char (&parser->current) == '\033');
-
-    parser->cmd_string.start = parser->cmd_string.end = parser->current;
-    iter_forward (&parser->cmd_string.end);
-
-    parser->nums_len = 0;
-    parser->string_len = 0;
-    parser->eof_error = FALSE;
-
-    iter_forward (&parser->current);
-
-    if (iter_eof (&parser->current))
-    {
-        parser->eof_error = TRUE;
-        return FALSE;
-    }
-    else
-    {
-        return TRUE;
-    }
+/* get_char ();
+   Does not return on end of input;
+   compresses ESC [ to CSI,
+              ESC P to DCS,
+              ESC ] to OSC,
+              ESC ^ to PM,
+              ESC \ to ST,
+              ESC _ to APC */
+#define get_char(c)                                         \
+{                                                           \
+    c = 0;                                                  \
+                                                            \
+    while (!iter_eof (parser->current))                     \
+    {                                                       \
+        iter_get_char (parser->current, c);                 \
+                                                            \
+        if (c)                                              \
+        {                                                   \
+            break;                                          \
+        }                                                   \
+        else                                                \
+        {                                                   \
+            iter_forward (parser->current);                 \
+        }                                                   \
+    }                                                       \
+                                                            \
+    if (!c)                                                 \
+    {                                                       \
+        if (!iter_eof (parser->cmd_start))                  \
+        {                                                   \
+            save_cmd ();                                    \
+        }                                                   \
+        else if (parser->character->len)                    \
+        {                                                   \
+            save_character ();                              \
+        }                                                   \
+                                                            \
+        parser_finish (parser);                             \
+        return;                                             \
+    }                                                       \
+                                                            \
+    iter_forward (parser->current);                         \
+                                                            \
+    if (c == 0x1B)                                          \
+    {                                                       \
+        if (iter_eof (parser->current))                     \
+        {                                                   \
+            flush_chars ();                                 \
+                                                            \
+            if (!iter_eof (parser->cmd_start))              \
+            {                                               \
+                save_cmd ();                                \
+            }                                               \
+            else                                            \
+            {                                               \
+                save_char (c);                              \
+            }                                               \
+                                                            \
+            parser_finish (parser);                         \
+            return;                                         \
+        }                                                   \
+        else                                                \
+        {                                                   \
+            guchar c2;                                      \
+                                                            \
+            iter_get_char (parser->current, c2);            \
+                                                            \
+            if (c2 == 0x50 ||                               \
+                (0x5B <= c2 && c2 <= 0x5F))                 \
+            {                                               \
+                c = c2 + 0x40;                              \
+                iter_forward (parser->current);             \
+                parser->escape_two_bytes = TRUE;            \
+            }                                               \
+            else                                            \
+            {                                               \
+                parser->escape_two_bytes = FALSE;           \
+            }                                               \
+        }                                                   \
+    }                                                       \
 }
 
 
-static void     parser_init             (MooTermParser  *parser,
-                                         const char     *string,
-                                         guint           len)
-{
-    parser->data = string;
-    parser->data_len = len;
+#define flush_chars()                                       \
+{                                                           \
+    if (parser->character->len)                             \
+    {                                                       \
+        g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,       \
+                   parser->character->str);                 \
+        vt_print_char (ERROR_CHAR);                         \
+        g_string_truncate (parser->character, 0);           \
+    }                                                       \
+}
 
-    if (parser->old_data_len)
+
+#define check_character(c)                                  \
+{                                                           \
+    gunichar uc;                                            \
+                                                            \
+    g_string_append_c (parser->character, c);               \
+                                                            \
+    uc = g_utf8_get_char_validated (parser->character->str, \
+                                    -1);                    \
+                                                            \
+    switch (uc)                                             \
+    {                                                       \
+        case -2:                                            \
+            break;                                          \
+                                                            \
+        case -1:                                            \
+            g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,   \
+                       parser->character->str);             \
+            vt_print_char (ERROR_CHAR);                     \
+            g_string_truncate (parser->character, 0);       \
+            break;                                          \
+                                                            \
+        default:                                            \
+            vt_print_char (uc);                             \
+            g_string_truncate (parser->character, 0);       \
+            break;                                          \
+    }                                                       \
+}
+
+
+#define process_char(c)                                     \
+{                                                           \
+    if (parser->character->len)                             \
+    {                                                       \
+        check_character (c);                                \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        if (c < 128)                                        \
+        {                                                   \
+            vt_print_char (c);                              \
+        }                                                   \
+        else                                                \
+        {                                                   \
+            check_character (c);                            \
+        }                                                   \
+    }                                                       \
+}
+
+
+static void parser_init (MooTermParser  *parser)
+{
+    parser->save = FALSE;
+
+    if (parser->input.old_data->len)
     {
         parser->current.old = TRUE;
         parser->current.offset = 0;
@@ -406,82 +368,53 @@ static void     parser_init             (MooTermParser  *parser,
         parser->current.offset = 0;
     }
 
-    iter_set_eof (&parser->tosave);
-    block_set_empty (&parser->chars);
-    block_set_empty (&parser->cmd_string);
+    iter_set_eof (parser->cmd_start);
+    parser->escape_two_bytes = FALSE;
 
-    parser->cmd = 0;
-    parser->nums_len = 0;
+    parser->state = INITIAL;
+
+    g_string_truncate (parser->character, 0);
+    g_string_truncate (parser->intermediate, 0);
+    g_string_truncate (parser->parameters, 0);
+    g_string_truncate (parser->data, 0);
+    parser->final = 0;
 }
 
 
-static void     parser_deinit           (MooTermParser  *parser)
+static void parser_finish (MooTermParser  *parser)
 {
-    if (!iter_eof (&parser->tosave))
-    {
-        guint len;
-
-        if (parser->tosave.old)
-            len = parser->data_len + parser->old_data_len - parser->tosave.offset;
-        else
-            len = parser->data_len - parser->tosave.offset;
-
-        g_assert (len != 0);
-
-        if (len > MAX_ESC_SEQ_LEN)
-        {
-            g_warning ("%s: too much data, discarding", G_STRLOC);
-            parser->old_data_len = 0;
-            return;
-        }
-
-        if (parser->tosave.old)
-        {
-            guint l1 = parser->old_data_len - parser->tosave.offset;
-
-            if (len < l1)
-                l1 = len;
-
-            memmove (parser->old_data,
-                     parser->old_data + parser->tosave.offset, l1);
-
-            if (len > l1)
-                memcpy (parser->old_data + l1, parser->data, len - l1);
-        }
-        else
-        {
-            memcpy (parser->old_data, parser->data + parser->tosave.offset, len);
-        }
-
-        parser->old_data_len = len;
-    }
-    else
-    {
-        parser->old_data_len = 0;
-    }
+    if (!parser->save)
+        g_string_truncate (parser->input.old_data, 0);
 }
 
 
-void            _moo_term_yyerror       (G_GNUC_UNUSED MooTermParser  *parser,
-                                         G_GNUC_UNUSED const char     *string)
-{
-}
-
-
-MooTermParser  *moo_term_parser_new     (MooTermBuffer  *buf)
+MooTermParser  *moo_term_parser_new     (MooTerm        *term)
 {
     MooTermParser *p = g_new0 (MooTermParser, 1);
 
-    p->term_buffer = buf;
+    p->term = term;
 
-    p->tosave.parser = p;
-    p->current.parser = p;
-    p->chars.start.parser = p;
-    p->chars.end.parser = p;
-    p->cmd_string.start.parser = p;
-    p->cmd_string.end.parser = p;
+    p->character = g_string_new ("");
+    p->intermediate = g_string_new ("");
+    p->parameters = g_string_new ("");
+    p->data = g_string_new ("");
+    p->input.old_data = g_string_new ("");
+
+    p->numbers = g_array_sized_new (FALSE, FALSE,
+                                    sizeof(int),
+                                    MAX_PARAMS_NUM);
 
     return p;
+}
+
+
+void            moo_term_parser_reset   (MooTermParser  *parser)
+{
+    g_string_truncate (parser->character, 0);
+    g_string_truncate (parser->intermediate, 0);
+    g_string_truncate (parser->parameters, 0);
+    g_string_truncate (parser->data, 0);
+    g_string_truncate (parser->input.old_data, 0);
 }
 
 
@@ -489,12 +422,704 @@ void            moo_term_parser_free    (MooTermParser  *parser)
 {
     if (parser)
     {
-        parser->term_buffer = NULL;
+        g_string_free (parser->character, TRUE);
+        g_string_free (parser->intermediate, TRUE);
+        g_string_free (parser->parameters, TRUE);
+        g_string_free (parser->data, TRUE);
+        g_string_free (parser->input.old_data, TRUE);
+        g_array_free (parser->numbers, TRUE);
         g_free (parser);
     }
 }
 
 
+static void exec_escape_sequence   (MooTermParser  *parser);
+static void exec_cmd               (MooTermParser  *parser,
+                                    guchar          cmd);
+static void exec_apc               (MooTermParser  *parser);
+static void exec_pm                (MooTermParser  *parser);
+static void exec_osc               (MooTermParser  *parser);
+static void exec_csi               (MooTermParser  *parser);
+static void exec_dcs               (MooTermParser  *parser);
+
+
+void            moo_term_parser_parse   (MooTermParser  *parser,
+                                         const char     *string,
+                                         guint           len)
+{
+    guchar c;
+
+    if (!len)
+        return;
+
+    parser->input.data = string;
+    parser->input.data_len = len;
+    parser_init (parser);
+
+    goto STATE_INITIAL;
+
+    /* INITIAL - everything starts here. checks input for command sequence start */
+STATE_INITIAL:
+{
+    get_char (c);
+
+    switch (c)
+    {
+        case 0x05:
+        case 0x07:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x11:
+        case 0x13:
+        case 0x84:
+        case 0x85:
+        case 0x88:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x9A:
+            one_char_cmd (c);
+            goto_initial ();
+
+        case 0x18:
+        case 0x1A:
+        case 0x7F:
+        case 0x98:
+            flush_chars ();
+            break;
+
+        case 0x1B:
+            goto_cmd_state (ESCAPE);
+
+        case 0x9C:
+            /* ST out of context */
+            g_warning ("%s: got ST out of context", G_STRLOC);
+            flush_chars ();
+            break;
+
+        case 0x90:
+            goto_cmd_state (DCS);
+
+        case 0x9B:
+            goto_cmd_state (CSI);
+
+        case 0x9D:
+            goto_cmd_state (OSC);
+
+        case 0x9E:
+            goto_cmd_state (PM);
+
+        case 0x9F:
+            goto_cmd_state (APC);
+
+        default:
+            process_char (c);
+    }
+
+    goto STATE_INITIAL;
+}
+g_assert_not_reached ();
+
+
+    /* ESCAPE - got escape char */
+STATE_ESCAPE:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    /* 0x20-0x2F - intermediate character */
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_ESCAPE_INTERMEDIATE;
+    }
+    /* 0x30-0x7E - final character */
+    else if (0x30 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_escape_sequence (parser);
+        goto_initial ();
+    }
+    /* DEL - ignored */
+    else if (c == 0x7F)
+    {
+        goto STATE_ESCAPE;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+STATE_ESCAPE_INTERMEDIATE:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    /* 0x20-0x2F - intermediate character */
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_ESCAPE_INTERMEDIATE;
+    }
+    /* 0x30-0x7E - final character */
+    else if (0x30 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_escape_sequence (parser);
+        goto_initial ();
+    }
+    /* DEL - ignored */
+    else if (c == 0x7F)
+    {
+        goto STATE_ESCAPE;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+    /* APC - Application program command - ignore everything until ??? */
+STATE_APC:
+{
+    get_char (c);
+
+    switch (c)
+    {
+        case 0x1A:
+        case 0x84:
+        case 0x85:
+        case 0x88:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x90:
+        case 0x98:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+            exec_apc (parser);
+            goto_initial ();
+
+        default:
+            append_char (data, c);
+            goto STATE_APC;
+    }
+}
+g_assert_not_reached ();
+
+
+    /* PM - Privacy message - ignore everything until ??? */
+STATE_PM:
+{
+    get_char (c);
+
+    switch (c)
+    {
+        case 0x1A:
+        case 0x84:
+        case 0x85:
+        case 0x88:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x90:
+        case 0x98:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+            exec_pm (parser);
+            goto_initial ();
+
+        default:
+            append_char (data, c);
+            goto STATE_PM;
+    }
+}
+g_assert_not_reached ();
+
+
+    /* OSC - Operating system command - ignore everything until ??? */
+STATE_OSC:
+{
+    get_char (c);
+
+    switch (c)
+    {
+        case 0x05:
+        case 0x07:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x11:
+        case 0x13:
+        case 0x18:
+        case 0x1A:
+        case 0x1B:
+        case 0x7F:
+        case 0x84:
+        case 0x85:
+        case 0x88:
+        case 0x8D:
+        case 0x8E:
+        case 0x8F:
+        case 0x90:
+        case 0x98:
+        case 0x9A:
+        case 0x9B:
+        case 0x9C:
+        case 0x9D:
+        case 0x9E:
+        case 0x9F:
+            exec_osc (parser);
+            goto_initial ();
+
+        default:
+            append_char (data, c);
+            goto STATE_OSC;
+    }
+}
+g_assert_not_reached ();
+
+
+    /* CSI - control sequence introducer */
+STATE_CSI:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    if (0x30 <= c && c <= 0x3F)
+    {
+        append_char (parameters, c);
+        goto STATE_CSI;
+    }
+    else if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_CSI_INTERMEDIATE;
+    }
+    else if (0x40 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_csi (parser);
+        goto_initial ();
+    }
+    else
+    {
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+    /* STATE_CSI_INTERMEDIATE - CSI, gathering intermediate characters */
+STATE_CSI_INTERMEDIATE:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_CSI_INTERMEDIATE;
+    }
+    else if (0x40 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_csi (parser);
+        goto_initial ();
+    }
+    else
+    {
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+    /* DCS - Device control string */
+STATE_DCS:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    if (0x30 <= c && c <= 0x3F)
+    {
+        append_char (parameters, c);
+        goto STATE_DCS;
+    }
+    else if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_DCS_INTERMEDIATE;
+    }
+    else if (0x40 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        goto STATE_DCS_DATA;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after DCS", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+    /* DCS - Device control string */
+STATE_DCS_INTERMEDIATE:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_DCS_INTERMEDIATE;
+    }
+    else if (0x40 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        goto STATE_DCS_DATA;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after DCS", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+    /* DCS - Device control string */
+STATE_DCS_DATA:
+{
+    get_char (c);
+
+    check_cancel (c);
+
+    if (c != 0x9C)
+    {
+        append_char (data, c);
+        goto STATE_DCS_DATA;
+    }
+    else
+    {
+        exec_dcs (parser);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+}
+
+
+/***************************************************************************/
+/* Parsing and executing received command sequence
+ */
+
+static void exec_cmd               (MooTermParser  *parser,
+                                    guchar          cmd)
+{
+    switch (cmd)
+    {
+        case 0x07:
+            vt_BEL ();
+//             g_print ("BEL\n");
+            break;
+        case 0x08:
+            vt_BS ();
+//             g_print ("BS\n");
+            break;
+        case 0x09:
+            vt_TAB ();
+//             g_print ("TAB\n");
+            break;
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+            vt_LF ();
+//             g_print ("LF\n");
+            break;
+        case 0x0D:
+            vt_CR ();
+//             g_print ("CR\n");
+            break;
+        case 0x0E:
+            vt_SO ();
+//             g_print ("SO\n");
+            break;
+        case 0x0F:
+            vt_SI ();
+//             g_print ("SI\n");
+            break;
+        case 0x11:
+            vt_XON ();
+//             g_print ("XON\n");
+            break;
+        case 0x13:
+            vt_XOFF ();
+//             g_print ("XOFF\n");
+            break;
+
+        case 0x84:
+            vt_IND ();
+//             g_print ("IND\n");
+            break;
+        case 0x85:
+            vt_NEL ();
+//             g_print ("NEL\n");
+            break;
+        case 0x88:
+            vt_HTS ();
+//             g_print ("HTS\n");
+            break;
+        case 0x8D:
+            vt_RI ();
+//             g_print ("RI\n");
+            break;
+        case 0x8E:
+            vt_SS2 ();
+//             g_print ("SS2\n");
+            break;
+        case 0x8F:
+            vt_SS3 ();
+//             g_print ("SS3\n");
+            break;
+        case 0x9A:
+            vt_DECID ();
+//             g_print ("DECID\n");
+            break;
+
+        case 0x05:
+            break;
+
+        default:
+            g_assert_not_reached ();
+    }
+}
+
+
+static void init_lex    (MooTermParser  *parser,
+                         LexType         lex_type)
+{
+    parser->lex.lex = lex_type;
+    parser->lex.part = PART_START;
+    parser->lex.offset = 0;
+    g_array_set_size (parser->numbers, 0);
+}
+
+
+int     _moo_term_yylex (MooTermParser  *parser)
+{
+    guint offset = parser->lex.offset;
+
+    switch (parser->lex.lex)
+    {
+        case LEX_ESCAPE:
+            switch (parser->lex.part)
+            {
+                case PART_START:
+                    if (!parser->intermediate->len)
+                        parser->lex.part = PART_FINAL;
+                    else
+                        parser->lex.part = PART_INTERMEDIATE;
+                    return 0x1B;
+
+                case PART_INTERMEDIATE:
+                    if (offset + 1 == parser->intermediate->len)
+                        parser->lex.part = PART_FINAL;
+                    else
+                        parser->lex.offset++;
+                    return parser->intermediate->str[offset];
+
+                case PART_FINAL:
+                    parser->lex.part = PART_DONE;
+                    return parser->final;
+
+                case PART_DONE:
+                    return 0;
+
+                case PART_PARAMETERS:
+                    g_assert_not_reached ();
+            }
+
+        case LEX_CONTROL:
+            switch (parser->lex.part)
+            {
+                case PART_START:
+                    if (!parser->parameters->len)
+                    {
+                        if (!parser->intermediate->len)
+                            parser->lex.part = PART_FINAL;
+                        else
+                            parser->lex.part = PART_INTERMEDIATE;
+                    }
+                    else
+                    {
+                        parser->lex.part = PART_PARAMETERS;
+                    }
+                    return 0x9B;
+
+                case PART_PARAMETERS:
+                    if (offset + 1 == parser->parameters->len)
+                    {
+                        parser->lex.offset = 0;
+
+                        if (!parser->intermediate->len)
+                            parser->lex.part = PART_FINAL;
+                        else
+                            parser->lex.part = PART_INTERMEDIATE;
+                    }
+                    else
+                    {
+                        parser->lex.offset++;
+                    }
+                    return parser->parameters->str[offset];
+
+                case PART_INTERMEDIATE:
+                    if (offset + 1 == parser->intermediate->len)
+                        parser->lex.part = PART_FINAL;
+                    else
+                        parser->lex.offset++;
+                    return parser->intermediate->str[offset];
+
+                case PART_FINAL:
+                    parser->lex.part = PART_DONE;
+                    return parser->final;
+
+                case PART_DONE:
+                    return 0;
+            }
+
+        default:
+            g_assert_not_reached ();
+    }
+}
+
+
+static char *get_ctl_string (MooTermParser  *parser)
+{
+    GString *s;
+    char *nice;
+
+    if (parser->lex.lex == LEX_ESCAPE)
+    {
+        s = g_string_new ("\033");
+        g_string_append_len (s, parser->intermediate->str,
+                             parser->intermediate->len);
+        g_string_append_c (s, parser->final);
+    }
+    else
+    {
+        s = g_string_new ("CSI ");
+        g_string_append_len (s, parser->parameters->str,
+                             parser->parameters->len);
+        g_string_append_len (s, parser->intermediate->str,
+                             parser->intermediate->len);
+        g_string_append_c (s, parser->final);
+    }
+
+    nice = _moo_term_nice_bytes (s->str, s->len);
+    g_string_free (s, TRUE);
+    return nice;
+}
+
+
+static void exec_escape_sequence   (MooTermParser  *parser)
+{
+    init_lex (parser, LEX_ESCAPE);
+
+//     {
+//         char *s;
+//         s = get_ctl_string (parser);
+//         g_print ("escape sequence: '%s'\n", s);
+//         g_free (s);
+//     }
+
+    _moo_term_yyparse (parser);
+}
+
+
+static void exec_csi               (MooTermParser  *parser)
+{
+    init_lex (parser, LEX_CONTROL);
+
+//     {
+//     char *s;
+//     s = get_ctl_string (parser);
+//     g_print ("csi: '%s'\n", s);
+//     g_free (s);
+//     }
+
+    _moo_term_yyparse (parser);
+}
+
+
+void            _moo_term_yyerror       (MooTermParser  *parser,
+                                         const char     *string)
+{
+    char *nice = get_ctl_string (parser);
+    g_warning ("parse error: '%s'\n", nice);
+    g_free (nice);
+}
+
+
+static void exec_dcs               (MooTermParser  *parser)
+{
+    g_print ("dcs\n");
+}
+
+
+static void exec_apc               (MooTermParser  *parser)
+{
+    g_print ("apc\n");
+}
+
+
+static void exec_pm                (MooTermParser  *parser)
+{
+    g_print ("pm\n");
+}
+
+
+static void exec_osc               (MooTermParser  *parser)
+{
+    g_print ("osc\n");
+}
+
+
+#if 0
 /*****************************************************************************/
 /* exec_command
  */
@@ -753,53 +1378,6 @@ static void     exec_reset_mode         (MooTermBuffer  *buf,
             default:
                 g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
         }
-    }
-}
-
-
-inline static void buf_set_attrs_mask       (MooTermBuffer  *buf,
-                                             MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask = mask;
-}
-
-inline static void buf_add_attrs_mask       (MooTermBuffer  *buf,
-                                             MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask |= mask;
-}
-
-inline static void buf_remove_attrs_mask    (MooTermBuffer      *buf,
-                                             MooTermTextAttrMask mask)
-{
-    buf->priv->current_attr.mask &= ~mask;
-}
-
-inline static void buf_set_ansi_foreground  (MooTermBuffer      *buf,
-                                             MooTermBufferColor  color)
-{
-    if (color < MOO_TERM_COLOR_MAX)
-    {
-        buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;
-        buf->priv->current_attr.foreground = color;
-    }
-    else
-    {
-        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_FOREGROUND;
-    }
-}
-
-inline static void buf_set_ansi_background  (MooTermBuffer      *buf,
-                                             MooTermBufferColor  color)
-{
-    if (color < MOO_TERM_COLOR_MAX)
-    {
-        buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;
-        buf->priv->current_attr.background = color;
-    }
-    else
-    {
-        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_BACKGROUND;
     }
 }
 
@@ -1349,6 +1927,7 @@ static void     exec_command            (MooTermParser  *parser)
             g_assert_not_reached ();
     }
 }
+#endif
 
 
 char           *_moo_term_nice_bytes    (const char     *string,

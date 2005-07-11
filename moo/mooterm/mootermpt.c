@@ -12,19 +12,12 @@
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm-private.h"
+#include "mooterm/mootermpt-private.h"
+#include "mooterm/mooterm.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 
 
-static void     moo_term_pt_set_property    (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void     moo_term_pt_get_property    (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
 static void     moo_term_pt_finalize        (GObject        *object);
 
 
@@ -37,8 +30,7 @@ enum {
 };
 
 enum {
-    PROP_0,
-    PROP_BUFFER
+    PROP_0
 };
 
 static guint signals[LAST_SIGNAL];
@@ -48,8 +40,6 @@ static void moo_term_pt_class_init (MooTermPtClass *klass)
 {
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->set_property = moo_term_pt_set_property;
-    gobject_class->get_property = moo_term_pt_get_property;
     gobject_class->finalize = moo_term_pt_finalize;
 
     klass->set_size = NULL;
@@ -66,14 +56,6 @@ static void moo_term_pt_class_init (MooTermPtClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_BUFFER,
-                                     g_param_spec_object ("buffer",
-                                             "buffer",
-                                             "buffer",
-                                             MOO_TYPE_TERM_BUFFER,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 
@@ -88,9 +70,6 @@ static void     moo_term_pt_finalize        (GObject            *object)
 {
     MooTermPt *pt = MOO_TERM_PT (object);
 
-    if (pt->priv->buffer)
-        g_object_unref (pt->priv->buffer);
-
     pt_flush_pending_write (pt);
     g_queue_free (pt->priv->pending_write);
 
@@ -100,73 +79,16 @@ static void     moo_term_pt_finalize        (GObject            *object)
 }
 
 
-static void     moo_term_pt_set_property    (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
+MooTermPt      *moo_term_pt_new             (MooTerm    *term)
 {
-    MooTermPt *pt = MOO_TERM_PT (object);
-
-    switch (prop_id) {
-        case PROP_BUFFER:
-            moo_term_pt_set_buffer (pt, g_value_get_object (value));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-            break;
-    }
-}
-
-
-static void     moo_term_pt_get_property    (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec)
-{
-    MooTermPt *pt = MOO_TERM_PT (object);
-
-    switch (prop_id) {
-        case PROP_BUFFER:
-            g_value_set_object (value, pt->priv->buffer);
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-            break;
-    }
-}
-
-
-void            moo_term_pt_set_buffer      (MooTermPt      *pt,
-                                             MooTermBuffer  *buffer)
-{
-    if (pt->priv->buffer == buffer)
-        return;
-
-    if (pt->priv->buffer)
-        g_object_unref (pt->priv->buffer);
-    pt->priv->buffer = buffer;
-    if (pt->priv->buffer)
-        g_object_ref (pt->priv->buffer);
-
-    g_object_notify (G_OBJECT (pt), "buffer");
-}
-
-
-MooTermBuffer  *moo_term_pt_get_buffer      (MooTermPt      *pt)
-{
-    return pt->priv->buffer;
-}
-
-
-MooTermPt      *moo_term_pt_new         (void)
-{
+    MooTermPt *pt;
 #ifdef __WIN32__
-    return g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
+    pt = g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
 #else /* !__WIN32__ */
-    return g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
+    pt = g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
 #endif /* !__WIN32__ */
+    pt->priv->term = term;
+    return pt;
 }
 
 

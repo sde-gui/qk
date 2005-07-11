@@ -1,105 +1,21 @@
 %{
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermparser.h"
+#include "mooterm/mooterm-ctlfuncs.h"
 
-#define add_number(num)                             \
-{                                                   \
-    if (!parser->nums_len)                          \
-    {                                               \
-        parser->nums[0] = num;                      \
-        parser->nums_len = 1;                       \
-    }                                               \
-    else                                            \
-    {                                               \
-        if (parser->nums_len >= MAX_NUMS_LEN)       \
-        {                                           \
-            g_warning ("%s: too big number of "     \
-                       "arguments, discarding",     \
-                       G_STRLOC);                   \
-            YYABORT;                                \
-        }                                           \
-        parser->nums[parser->nums_len++] = num;     \
-    }                                               \
+#define add_number(n)                                   \
+{                                                       \
+    if (parser->numbers->len >= MAX_PARAMS_NUM)         \
+    {                                                   \
+        g_warning ("%s: too many parameters passed",    \
+                   G_STRLOC);                           \
+        YYABORT;                                        \
+    }                                                   \
+    else                                                \
+    {                                                   \
+        g_array_append_val (parser->numbers, n);        \
+    }                                                   \
 }
-
-#define add_char(c)                                 \
-{                                                   \
-    if (!parser->string_len)                        \
-    {                                               \
-        parser->string[0] = c;                      \
-        parser->string_len = 1;                     \
-    }                                               \
-    else                                            \
-    {                                               \
-        if (parser->string_len >= MAX_ESC_SEQ_LEN)  \
-        {                                           \
-            g_warning ("%s: string too long, "      \
-                       "discarding", G_STRLOC);     \
-            YYABORT;                                \
-        }                                           \
-        parser->string[parser->string_len++] = c;   \
-    }                                               \
-}
-
-#define set_cmd(cmd_code)                           \
-{                                                   \
-    parser->cmd = cmd_code;                         \
-    YYACCEPT;                                       \
-}
-
-#define check_nums_len(cmd, n)                      \
-{                                                   \
-    if (parser->nums_len != n)                      \
-    {                                               \
-        g_warning ("%s: invalid number of "         \
-                   "arguments for " #cmd            \
-                   " command", G_STRLOC);           \
-        YYABORT;                                    \
-    }                                               \
-}
-
-#define check_one(cmd, num, num1)                   \
-{                                                   \
-    if (num != num1)                                \
-    {                                               \
-        g_warning ("%s: invalid argument %d"        \
-                   " for " #cmd " command",         \
-                   G_STRLOC, num);                  \
-        YYABORT;                                    \
-    }                                               \
-}
-
-#define check_range(cmd, num, num1, num2)           \
-{                                                   \
-    if (num < num1 || num > num2)                   \
-    {                                               \
-        g_warning ("%s: invalid argument %d"        \
-                   " for " #cmd " command",         \
-                   G_STRLOC, num);                  \
-        YYABORT;                                    \
-    }                                               \
-}
-
-#define check_nums_2(cmd, num1, num2)               \
-{                                                   \
-    if (parser->nums_len != 2 ||                    \
-        parser->nums[0] != num1 ||                  \
-        parser->nums[1] != num2)                    \
-    {                                               \
-        g_warning ("%s: invalid arguments"          \
-                   " for " #cmd " command",         \
-                   G_STRLOC);                       \
-        YYABORT;                                    \
-    }                                               \
-}
-
-#define push_one_back()                             \
-{                                                   \
-    g_assert (!iter_is_start (&parser->current));   \
-    iter_backward (&parser->current);               \
-    iter_backward (&parser->cmd_string.end);        \
-}
-
 %}
 
 %name-prefix="_moo_term_yy"
@@ -107,451 +23,326 @@
 %lex-param      {MooTermParser *parser}
 %parse-param    {MooTermParser *parser}
 
-%token  DIGIT
-
 %%
 
-command:            vt100
-                |   vt102
-                |   vt220
-                |   Edward_Moy
-                |   Skip_Montanaro
-                |   terminfo
+control_function:   escape_sequence
+                |   control_sequence
 ;
 
-/* Xterm Control Sequences by Edward Moy */
-Edward_Moy:         G2_charset
-                |   G3_charset
-                |   DCS
-                |   init_hilite_mouse_tracking
-                |   restore_DECSET
-                |   save_DECSET
-                |   set_text
-                |   PM
-                |   APC
-                |   memory_lock
-                |   memory_unlock
-                |   LS2
-                |   LS3
-                |   LS3R
-                |   LS1R
-;
 
-/* From: Skip Montanaro
-   To: xpert@expo.lcs.mit.edu
-   Subject: XTerm Escape Sequences (X11 Version)
+/****************************************************************************/
+/* Escape sequences
  */
-Skip_Montanaro:     BELL
-                |   BACKSPACE
-                |   TAB
-                |   LINEFEED
-                |   VERT_TAB
-                |   FORM_FEED
-                |   CARRIAGE_RETURN
-                |   ALT_CHARSET
-                |   NORM_CHARSET
-                |   track_mouse
-;
 
-terminfo:           cbt
-                |   ech
-                |   hpa
-                |   rs2
-                |   u6
-                |   u8
-                |   vpa
-;
-
-vt100:              CUB
-                |   CUD
-                |   CUF
-                |   CUP
-                |   CUU
-                |   DA
-                |   DECALN_or_line_size
-                |   DECID
-                |   DECKPAM
-                |   DECKPNM
-                |   DECLL
-                |   DECSC_DECRC
-                |   DECREQTPARM
-                |   DECSTBM
-                |   DECTST
-                |   DSR
-                |   ED
-                |   EL
+escape_sequence:    NEL
+                |   DECRC
+                |   DECSC
                 |   HTS
-                |   HVP
+                |   DECBI
+                |   DECFI
                 |   IND
-                |   NEL
-                |   RI
-                |   RIS
-                |   RM
-                |   SCS
-                |   SGR
-                |   SM
-                |   TBC
-;
-
-vt102:              MC              /* Media Copy - printer stuff - ignored */
                 |   SS2
                 |   SS3
+                |   DECID
+                |   RIS
+                |   DECANM  /* exit ANSI mode */
+                |   DECKPAM
+                |   DECKPNM
+                |   LS1R
+                |   LS2
+                |   LS2R
+                |   LS3
+                |   LS3R
+                |   DECDHLT
+                |   DECDHLB
+                |   DECSWL
+                |   DECDWL
+                |   SCS
+                |   S7C1T
+                |   S8C1T
 ;
 
-vt220:              ICH
+
+NEL:        '\033' 'E';
+DECRC:      '\033' '8';
+DECSC:      '\033' '7';
+HTS:        '\033' 'H';
+DECBI:      '\033' '6';
+DECFI:      '\033' '9';
+IND:        '\033' 'D';
+SS2:        '\033' 'N';
+SS3:        '\033' 'O';
+DECID:      '\033' 'Z';
+RIS:        '\033' 'c';
+DECANM:     '\033' '<';
+DECKPAM:    '\033' '=';
+DECKPNM:    '\033' '>';
+LS1R:       '\033' '~';
+LS2:        '\033' 'n';
+LS2R:       '\033' '}';
+LS3:        '\033' 'o';
+LS3R:       '\033' '|';
+DECDHLT:    '\033' '#' '3';
+DECDHLB:    '\033' '#' '4';
+DECSWL:     '\033' '#' '5';
+DECDWL:     '\033' '#' '6';
+S7C1T:      '\033' ' ' 'F';
+S8C1T:      '\033' ' ' 'G';
+
+SCS:            '\033' SCS_set_num SCS_set;
+SCS_set_num:    '('
+            |   ')'
+            |   '*'
+            |   '+';
+SCS_set:        '0'
+            |   '1'
+            |   '2'
+            |   'A'
+            |   'B';
+
+
+/****************************************************************************/
+/* Control sequences
+ */
+
+control_sequence:   DECSR
+                |   SGR
+                |   DECSET
+                |   DECRST
+                |   DEC_save
+                |   DEC_restore
+                |   SM
+                |   RM
+                |   CUB
+                |   CBT
+                |   CUD
+                |   CUF
+                |   CHA
+                |   CHT
+                |   CNL
+                |   CPL
+                |   CUP
+                |   CUU
+                |   HPA
+                |   HPR
+                |   VPA
+                |   VPR
+                |   DSR
+                |   DECSCUSR
+                |   DECST8C
+                |   TBC
+                |   DECSLRM
+                |   DECSSCLS
+                |   DECSTBM
+                |   DECSCPP
+                |   DECSLPP
+                |   NP
+                |   PP
+                |   PPA
+                |   PPB
+                |   PPR
+                |   DECRQDE
+                |   DECSNLS
+                |   SD
+                |   SU
+                |   DECRQUPSS
                 |   DCH
-                |   IL
+                |   DECDC
                 |   DL
+                |   ECH
+                |   ED
+                |   EL
+                |   ICH
+                |   DECIC
+                |   IL
+                |   DECSCA
+                |   DECSED
+                |   DECSEL
+                |   DECCARA
+                |   DECCRA
+                |   DECERA
+                |   DECFRA
+                |   DECRARA
+                |   DECSACE
+                |   DECSERA
+                |   DECRQCRA
+                |   DA1
+                |   DA2
+                |   DA3
+                |   DECTST
+                |   DECSTR
+                |   DECSASD
+                |   DECSSDT
 ;
 
-/****************************************************************************/
-/* vt100
- */
 
-DECALN_or_line_size:    '#' number          {   push_one_back ();
-                                                add_number ($2);
-                                                switch ($2)
-                                                {
-                                                    case 3:
-                                                    case 4:
-                                                        set_cmd (CMD_DECDHL);
-                                                    case 6:
-                                                        set_cmd (CMD_DECDWL);
-                                                    case 5:
-                                                        set_cmd (CMD_DECSWL);
-                                                    case 8:
-                                                        set_cmd (CMD_DECALN);
-                                                    default:
-                                                        g_warning ("%s: invalid argument %d",
-                                                                   G_STRLOC, $2);
-                                                        YYABORT;
-                                                }
-                                            }
-;
-DECLL:          '[' number 'q'              {   add_number ($2); set_cmd (CMD_DECLL); }
-;
-SCS:            G0_charset
-            |   G1_charset
-;
-DECTST:         '[' numbers 'y'             {   check_nums_len (DECTST, 2); set_cmd (CMD_DECTST); }
-;
+DECSR:          '\233' number '+' 'p';
 
-SM:             '[' numbers 'h'             {   set_cmd (CMD_SM); }
-            |   '[' '?' numbers 'h'         {   set_cmd (CMD_DECSET); }
-;
-RM:             '[' numbers 'l'             {   set_cmd (CMD_RM); }
-            |   '[' '?' numbers 'l'         {   set_cmd (CMD_DECRST); }
-;
-G0_charset:     '(' number                  {   push_one_back ();
-                                                check_range (G0_charset, $2, 0, 2);
-                                                add_number (0);
-                                                set_cmd (CMD_G0_CHARSET); }
-            |   '(' 'A'                     {   add_number (3);
-                                                set_cmd (CMD_G0_CHARSET); }
-            |   '(' 'B'                     {   add_number (4);
-                                                set_cmd (CMD_G0_CHARSET); }
-;
-G1_charset:     ')' number                  {   push_one_back ();
-                                                check_range (G1_charset, $2, 0, 2);
-                                                add_number (0);
-                                                set_cmd (CMD_G1_CHARSET); }
-            |   ')' 'A'                     {   add_number (3);
-                                                set_cmd (CMD_G1_CHARSET); }
-            |   ')' 'B'                     {   add_number (4);
-                                                set_cmd (CMD_G1_CHARSET); }
-;
-DECSC_DECRC:    number                      {   push_one_back ();
-                                                check_range (DECSC_DECRC, $1, 7, 8);
-                                                if ($1 == 7)
-                                                {
-                                                    set_cmd (CMD_DECSC);
-                                                }
-                                                else
-                                                {
-                                                    set_cmd (CMD_DECRC);
-                                                }
-                                            }
-;
-DECKPAM:        '='                         {   set_cmd (CMD_DECKPAM); }
-;
-DECKPNM:        '>'                         {   set_cmd (CMD_DECKPNM); }
-;
-IND:            'D'                         {   set_cmd (CMD_IND); }
-;
-NEL:            'E'                         {   set_cmd (CMD_NEL); }
-;
-HTS:            'H'                         {   set_cmd (CMD_HTS); }
-;
-RI:             'M'                         {   set_cmd (CMD_RI); }
-;
-DECID:          'Z'                         {   set_cmd (CMD_DA); }
-;
-CUU:            '[' number 'A'              {   add_number ($2); set_cmd (CMD_CUU); }
-            |   '[' 'A'                     {   add_number (1); set_cmd (CMD_CUU); }
-;
-CUD:            '[' number 'B'              {   add_number ($2); set_cmd (CMD_CUD); }
-            |   '[' 'B'                     {   add_number (1); set_cmd (CMD_CUD); }
-;
-CUF:            '[' number 'C'              {   add_number ($2); set_cmd (CMD_CUF); }
-            |   '[' 'C'                     {   add_number (1); set_cmd (CMD_CUF); }
-;
-CUB:            '[' number 'D'              {   add_number ($2); set_cmd (CMD_CUB); }
-            |   '[' 'D'                     {   add_number (1); set_cmd (CMD_CUB); }
-;
-CUP:            '[' numbers 'H'             {   check_nums_len (CUP, 2); set_cmd (CMD_CUP); }
-            |   '[' 'H'                     {   add_number (1); add_number (1); set_cmd (CMD_CUP); }
-;
-ED:             '[' number 'J'              {   add_number ($2); set_cmd (CMD_ED); }
-            |   '[' 'J'                     {   add_number (0); set_cmd (CMD_ED); }
-;
-EL:             '[' number 'K'              {   add_number ($2); set_cmd (CMD_EL); }
-            |   '[' 'K'                     {   add_number (0); set_cmd (CMD_EL); }
-;
-DA:             '[' number 'c'              {   check_one (DA, $2, 0); set_cmd (CMD_DA); }
-            |   '[' 'c'                     {   set_cmd (CMD_DA); }
-;
-HVP:            '[' numbers 'f'             {   check_nums_len (HVP, 2); set_cmd (CMD_HVP); }
-            |   '[' 'f'                     {   add_number (1); add_number (1); set_cmd (CMD_HVP); }
-;
-TBC:            '[' number 'g'              {   add_number ($2); set_cmd (CMD_TBC); }
-            |   '[' 'g'                     {   add_number (0); set_cmd (CMD_TBC); }
-;
-SGR:            '[' numbers 'm'             {   set_cmd (CMD_SGR); }
-            |   '[' 'm'                     {   add_number (0); set_cmd (CMD_SGR); }
-;
-DSR:            '[' numbers 'n'             {   set_cmd (CMD_DSR); }
-;
-DECSTBM:        '[' numbers 'r'             {   check_nums_len (DECSTBM, 2); set_cmd (CMD_DECSTBM); }
-            |   '[' 'r'                     {   add_number (0); add_number (1000000); set_cmd (CMD_DECSTBM); }
-;
-DECREQTPARM:    '[' number 'x'              {   add_number ($2); set_cmd (CMD_DECREQTPARM); }
-;
-RIS:            'c'                         {   set_cmd (CMD_RIS); }
-;
+/* default parameter - 1 */
+CUU:            '\233' number 'A'           {   vt_CUU ($2); }
+            |   '\233' 'A'                  {   vt_CUU (1);  };
+CUD:            '\233' number 'B'           {   vt_CUD ($2); }
+            |   '\233' 'B'                  {   vt_CUD (1);  };
+CUF:            '\233' number 'C'           {   vt_CUF ($2); }
+            |   '\233' 'C'                  {   vt_CUF (1);  };
+CUB:            '\233' number 'D'           {   vt_CUB ($2); }
+            |   '\233' 'D'                  {   vt_CUB (1);  };
+CBT:            '\233' number 'Z'
+            |   '\233' 'Z';
+CHA:            '\233' number 'G'
+            |   '\233' 'G';
+CHT:            '\233' number 'I'
+            |   '\233' 'I';
+CNL:            '\233' number 'E'
+            |   '\233' 'E';
+CPL:            '\233' number 'F'
+            |   '\233' 'F';
+HPA:            '\233' number '`'
+            |   '\233' '`';
+HPR:            '\233' number 'a'
+            |   '\233' 'a';
+VPA:            '\233' number 'd'
+            |   '\233' 'd';
+VPR:            '\233' number 'e'
+            |   '\233' 'e';
 
-/****************************************************************************/
-/* vt102
- */
+CUP:            '\233' numbers 'H'
+            |   '\233' 'H'
+            |   '\233' numbers 'f'  /* HVP */
+            |   '\233' 'f';
 
-MC:             '[' '?' number 'i'          {   set_cmd (CMD_MC); }
-            |   '[' number 'i'              {   set_cmd (CMD_MC); }
-            |   '[' 'i'                     {   set_cmd (CMD_MC); }
-;
-SS2:            'N'                         {   set_cmd (CMD_SS2); }
-;
-SS3:            'O'                         {   set_cmd (CMD_SS3); }
-;
+DECSCUSR:       '\233' number ' ' 'q'
+            |   '\233' ' ' 'q';
 
-/****************************************************************************/
-/* vt220
- */
+DECST8C:        '\233' '?' number 'W';
+TBC:            '\233' number 'g'
+            |   '\233' 'g';
 
-ICH:            '[' number '@'              {   add_number ($2); set_cmd (CMD_ICH); }
-            |   '[' '@'                     {   add_number (1); set_cmd (CMD_ICH); }
+DECSLRM:        '\233' numbers 's'
+            |   '\233' 's';
+
+DECSSCLS:       '\233' number ' ' 'p'
+            |   '\233' ' ' 'p';
+
+DECSTBM:        '\233' numbers 'r'
+            |   '\233' 'r';
+
+DECSLPP:        '\233' number 't'
+            |   '\233' 't';
+
+NP:             '\233' number 'U'
+            |   '\233' 'U';
+PP:             '\233' number 'V'
+            |   '\233' 'V';
+
+PPA:            '\233' number ' ' 'P'
+            |   '\233' ' ' 'P';
+PPB:            '\233' number ' ' 'R'
+            |   '\233' ' ' 'R';
+PPR:            '\233' number ' ' 'Q'
+            |   '\233' ' ' 'Q';
+
+DECRQDE:        '\233' '"' 'v';
+
+SD:             '\233' number 'S';
+SU:             '\233' number 'T';
+
+DECRQUPSS:      '\233' '&' 'u';
+
+
+DECDC:          '\233' number '\'' '~'
+            |   '\233'  '\'' '~';
+DECIC:          '\233' number '\'' '}'
+            |   '\233'  '\'' '}';
+DCH:            '\233' number 'P'           {   vt_DCH ($2 ? $2 : 1);   }
+            |   '\233' 'P'                  {   vt_DCH (1);             };
+DL:             '\233' number 'M'           {   vt_DL ($2 ? $2 : 1);    }
+            |   '\233' 'M'                  {   vt_DL (1);              };
+ECH:            '\233' number 'X'           {   vt_ECH ($2 ? $2 : 1);   }
+            |   '\233' 'X'                  {   vt_ECH (1);             };
+ED:             '\233' number 'J'           {   vt_ED ($2);             }
+            |   '\233' 'J'                  {   vt_ED (0);              };
+EL:             '\233' number 'K'           {   vt_EL ($2);             }
+            |   '\233' 'K'                  {   vt_EL (0);              };
+ICH:            '\233' number '@'           {   vt_ICH ($2 ? $2 : 1);   }
+            |   '\233' '@'                  {   vt_ICH (1);             };
+IL:             '\233' number 'L'           {   vt_IL ($2 ? $2 : 1);    }
+            |   '\233' 'L'                  {   vt_IL (1);              };
+
+DECSCA:         '\233' number '"' 'q';
+DECSED:         '\233' '?' number 'J'
+            |   '\233' '?' 'J';
+DECSEL:         '\233' '?' number 'K'
+            |   '\233' '?' 'K';
+
+DECSCPP:        '\233' numbers '$' '|'
+            |   '\233' '$' '|';
+DECCARA:        '\233' numbers '$' 'r';
+DECCRA:         '\233' numbers '$' 'v';
+DECERA:         '\233' numbers '$' 'z';
+DECFRA:         '\233' numbers '$' 'x';
+DECRARA:        '\233' numbers '$' 't';
+DECSERA:        '\233' numbers '$' '{';
+DECSASD:        '\233' numbers '$' '}';
+DECSSDT:        '\233' numbers '$' '~';
+
+DECSACE:        '\233' numbers '*' 'x';
+DECSNLS:        '\233' numbers '*' '|';
+DECRQCRA:       '\233' numbers '*' 'y';
+
+DSR:            '\233' '?' numbers 'n'
+            |   '\233' numbers 'n';
+
+DA1:            '\233' 'c'
+            |   '\233' number 'c';
+DA2:            '\233' '>' 'c'
+            |   '\233' '>' number 'c';
+DA3:            '\233' '=' 'c'
+            |   '\233' '=' number 'c';
+
+DECTST:         '\233' numbers 'y';
+
+DECSTR:         '\233' '!' 'p';
+
+
+SGR:            '\233' numbers 'm'          {   vt_SGR ();  }
+            |   '\233' 'm'                  {   vt_SGR ();  }
 ;
-DCH:            '[' number 'P'              {   add_number ($2); set_cmd (CMD_DCH); }
-            |   '[' 'P'                     {   add_number (1); set_cmd (CMD_DCH); }
-;
-IL:             '[' number 'L'              {   add_number ($2); set_cmd (CMD_IL); }
-            |   '[' 'L'                     {   add_number (1); set_cmd (CMD_IL); }
-;
-DL:             '[' number 'M'              {   add_number ($2); set_cmd (CMD_DL); }
-            |   '[' 'M'                     {   add_number (1); set_cmd (CMD_DL); }
-;
+DECSET:         '\233' '?' numbers 'h'
+            |   '\233' '?' 'h';
+DECRST:         '\233' '?' numbers 'l'
+            |   '\233' '?' 'l';
+SM:             '\233' numbers 'h'
+            |   '\233' 'h';
+RM:             '\233' numbers 'l'
+            |   '\233' 'l';
+
+DEC_save:       '\233' '?' numbers 's'
+            |   '\233' '?' 's';
+DEC_restore:    '\233' '?' numbers 'r'
+            |   '\233' '?' 'r';
+
 
 /****************************************************************************/
 /* numbers
  */
 
-number:         DIGIT               { $$ = $1; }
-            |   number DIGIT        { $$ = $1 * 10 + $2; }
-;
+number:         digit           {   $$ = $1;   }
+            |   number digit    {   $$ = $1 * 10 + $2;  }
+            ;
 
-numbers:        number              { add_number ($1); }
-            |   numbers ';' number  { add_number ($3); }
-;
+digit:          '0'             {   $$ = 0;    }
+            |   '1'             {   $$ = 1;    }
+            |   '2'             {   $$ = 2;    }
+            |   '3'             {   $$ = 3;    }
+            |   '4'             {   $$ = 4;    }
+            |   '5'             {   $$ = 5;    }
+            |   '6'             {   $$ = 6;    }
+            |   '7'             {   $$ = 7;    }
+            |   '8'             {   $$ = 8;    }
+            |   '9'             {   $$ = 9;    }
+            ;
 
-
-/****************************************************************************/
-/* Skip_Montanaro
- */
-
-BELL:           '\007'                      {   set_cmd (CMD_BELL); }
-            |   '#' '\007'                  {   set_cmd (CMD_BELL); }
-            |   '(' '\007'                  {   set_cmd (CMD_BELL); }
-            |   '[' '\007'                  {   set_cmd (CMD_BELL); }
-            |   '[' '?' '\007'              {   set_cmd (CMD_BELL); }
-;
-BACKSPACE:      '\010'                      {   set_cmd (CMD_BACKSPACE); }
-            |   '#' '\010'                  {   set_cmd (CMD_BACKSPACE); }
-            |   '(' '\010'                  {   set_cmd (CMD_BACKSPACE); }
-            |   '[' '\010'                  {   set_cmd (CMD_BACKSPACE); }
-            |   '[' '?' '\010'              {   set_cmd (CMD_BACKSPACE); }
-;
-TAB:            '\011'                      {   set_cmd (CMD_TAB); }
-            |   '#' '\011'                  {   set_cmd (CMD_TAB); }
-            |   '(' '\011'                  {   set_cmd (CMD_TAB); }
-            |   '[' '\011'                  {   set_cmd (CMD_TAB); }
-            |   '[' '?' '\011'              {   set_cmd (CMD_TAB); }
-;
-LINEFEED:       '\012'                      {   set_cmd (CMD_LINEFEED); }
-            |   '#' '\012'                  {   set_cmd (CMD_LINEFEED); }
-            |   '(' '\012'                  {   set_cmd (CMD_LINEFEED); }
-            |   '[' '\012'                  {   set_cmd (CMD_LINEFEED); }
-            |   '[' '?' '\012'              {   set_cmd (CMD_LINEFEED); }
-;
-VERT_TAB:       '\013'                      {   set_cmd (CMD_VERT_TAB); }
-            |   '#' '\013'                  {   set_cmd (CMD_VERT_TAB); }
-            |   '(' '\013'                  {   set_cmd (CMD_VERT_TAB); }
-            |   '[' '\013'                  {   set_cmd (CMD_VERT_TAB); }
-            |   '[' '?' '\013'              {   set_cmd (CMD_VERT_TAB); }
-;
-FORM_FEED:      '\014'                      {   set_cmd (CMD_FORM_FEED); }
-            |   '#' '\014'                  {   set_cmd (CMD_FORM_FEED); }
-            |   '(' '\014'                  {   set_cmd (CMD_FORM_FEED); }
-            |   '[' '\014'                  {   set_cmd (CMD_FORM_FEED); }
-            |   '[' '?' '\014'              {   set_cmd (CMD_FORM_FEED); }
-;
-CARRIAGE_RETURN:'\015'                      {   set_cmd (CMD_CARRIAGE_RETURN); }
-            |   '#' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
-            |   '(' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
-            |   '[' '\015'                  {   set_cmd (CMD_CARRIAGE_RETURN); }
-            |   '[' '?' '\015'              {   set_cmd (CMD_CARRIAGE_RETURN); }
-;
-ALT_CHARSET:    '\016'                      {   set_cmd (CMD_ALT_CHARSET); }
-            |   '#' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
-            |   '(' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
-            |   '[' '\016'                  {   set_cmd (CMD_ALT_CHARSET); }
-            |   '[' '?' '\016'              {   set_cmd (CMD_ALT_CHARSET); }
-;
-NORM_CHARSET:   '\017'                      {   set_cmd (CMD_NORM_CHARSET); }
-            |   '#' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
-            |   '(' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
-            |   '[' '\017'                  {   set_cmd (CMD_NORM_CHARSET); }
-            |   '[' '?' '\017'              {   set_cmd (CMD_NORM_CHARSET); }
-;
-track_mouse:    '[' 'T'                     {   set_cmd (CMD_TRACK_MOUSE); }
-;
-
-
-/****************************************************************************/
-/* Edward_Moy
- */
-
-G2_charset:     '*' DIGIT                   {   check_range (G2_charset, $2, 0, 2);
-                                                add_number (0);
-                                                set_cmd (CMD_G2_CHARSET); }
-            |   '*' 'A'                     {   add_number (3);
-                                                set_cmd (CMD_G2_CHARSET); }
-            |   '*' 'B'                     {   add_number (4);
-                                                set_cmd (CMD_G2_CHARSET); }
-;
-G3_charset:     '+' DIGIT                   {   check_range (G3_charset, $2, 0, 2);
-                                                add_number (0);
-                                                set_cmd (CMD_G3_CHARSET); }
-            |   '+' 'A'                     {   add_number (3);
-                                                set_cmd (CMD_G3_CHARSET); }
-            |   '+' 'B'                     {   add_number (4);
-                                                set_cmd (CMD_G3_CHARSET); }
-;
-DCS:            'P' no_escape_string '\033' '\\'
-                                            {   set_cmd (CMD_DCS); }
-            |   'P' '\033' '\\'             {   set_cmd (CMD_DCS); }
-;
-init_hilite_mouse_tracking: '[' numbers 'T' {   check_nums_len (init_hilite_mouse_tracking, 5);
-                                                set_cmd (CMD_INIT_HILITE_MOUSE_TRACKING); }
-;
-restore_DECSET: '[' '?' numbers 'r'         {   set_cmd (CMD_RESTORE_DECSET); }
-;
-save_DECSET:    '[' '?' numbers 's'         {   set_cmd (CMD_SAVE_DECSET); }
-;
-set_text:       ']' number ';' printable_string non_printable_char
-                                            {   add_number ($2); set_cmd (CMD_SET_TEXT); }
-            |   ']' number ';' non_printable_char
-                                            {   add_number ($2); set_cmd (CMD_SET_TEXT); }
-;
-PM:             '^' no_escape_string '\033' '\\'
-                                            {   set_cmd (CMD_PM); }
-            |   '^' '\033' '\\'             {   set_cmd (CMD_PM); }
-;
-APC:            '_' no_escape_string '\033' '\\'
-                                            {   set_cmd (CMD_APC); }
-            |   '_' '\033' '\\'             {   set_cmd (CMD_APC); }
-;
-memory_lock:    'l'                         {   set_cmd (CMD_MEMORY_LOCK); }
-;
-memory_unlock:  'm'                         {   set_cmd (CMD_MEMORY_UNLOCK); }
-;
-LS2:            'n'                         {   set_cmd (CMD_LS2); }
-;
-LS3:            'o'                         {   set_cmd (CMD_LS3); }
-;
-LS3R:           '|'                         {   set_cmd (CMD_LS3R); }
-;
-LS1R:           '~'                         {   set_cmd (CMD_LS1R); }
-;
-
-/****************************************************************************/
-/* terminfo escape sequences
- */
-
-cbt:        '[' 'Z'                     { set_cmd (CMD_BACK_TAB); }
-;
-hpa:        '[' number 'G'              { add_number ($2);
-                                          set_cmd (CMD_COLUMN_ADDRESS); }
-                                          ;
-vpa:        '[' number 'd'              { add_number ($2);
-                                          set_cmd (CMD_ROW_ADDRESS); }
-                                          ;
-ech:        '[' number 'X'              { add_number ($2);
-                                          set_cmd (CMD_BACK_TAB); }
-;
-rs2:        '[' '!' 'p' '\033' '[' '?' DIGIT ';' DIGIT 'l' '\033' '[' DIGIT 'l' '\033' '>'
-                                        { check_one (rs2, $7, 3);
-                                          check_one (rs2, $9, 4);
-                                          check_one (rs2, $13, 4);
-                                          set_cmd (CMD_RESET_2STRING); }
-;
-u6:         '[' numbers 'R'             { set_cmd (CMD_USER6); }
-;
-u8:         '[' '?' numbers 'c'         { check_nums_2 (u8, 1, 2);
-                                          set_cmd (CMD_USER8); }
-;
-
-
-/****************************************************************************/
-/* strings and characters
- */
-
-printable_char:     ' ' | '!' | '"' | '#' | '$' | '%' | '&' | '\'' | '(' | ')' | '*' | '+'
-                |   ',' | '-' | '.' | '/' | ':'| ';' | '<' | '=' | '>' | '?' | '@'
-                |   'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' |'H' | 'I' | 'J' | 'K' | 'L'
-                |   'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X'
-                |   'Y' | 'Z' | '[' | '\\' | ']' | '^' | '_' | '`' | 'a' | 'b'| 'c' | 'd'
-                |   'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' |'p'
-                |   'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|'
-                |   '}' | '~'
-                |   DIGIT   { $$ = $1 + 48; }
-;
-
-non_printable_non_escape_char: '\001' | '\002' | '\003' | '\004' | '\005' | '\006' | '\007'
-                |   '\010' | '\011' | '\012' | '\013' | '\014' | '\015' | '\016' | '\017'
-                |   '\020' | '\021' | '\022' | '\023' | '\024' | '\025' | '\026' | '\027'
-                |   '\030' | '\031' | '\032' | '\034' | '\035' | '\036' | '\037' | '\177'
-;
-
-non_printable_char: non_printable_non_escape_char
-                |   '\033'
-;
-
-non_escape_char:    printable_char
-                |   non_printable_non_escape_char
-;
-
-no_escape_string:   non_escape_char                     { add_char ($1); }
-                |   no_escape_string non_escape_char    { add_char ($2); }
-;
-
-printable_string:   printable_char                      { add_char ($1); }
-                |   printable_string printable_char     { add_char ($2); }
+numbers:        number              {   add_number ($1);    }
+            |   numbers ';' number  {   add_number ($3);    }
 ;

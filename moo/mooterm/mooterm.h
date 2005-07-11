@@ -45,6 +45,12 @@ struct _MooTermClass
     void (* set_scroll_adjustments) (GtkWidget      *widget,
                                      GtkAdjustment  *hadjustment,
                                      GtkAdjustment  *vadjustment);
+
+    void (*bell)                    (MooTerm        *term);
+    void (*set_window_title)        (MooTerm        *term,
+                                     const char     *title);
+    void (*set_icon_name)           (MooTerm        *term,
+                                     const char     *icon);
 };
 
 
@@ -60,6 +66,10 @@ gboolean         moo_term_fork_command      (MooTerm        *term,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp);
+
+void             moo_term_feed              (MooTerm        *term,
+                                             const char     *data,
+                                             int             len);
 void             moo_term_feed_child        (MooTerm        *term,
                                              const char     *string,
                                              int             len);
