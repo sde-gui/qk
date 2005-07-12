@@ -896,20 +896,23 @@ void        moo_term_buf_content_changed(MooTerm        *term,
                                          MooTermBuffer  *buf)
 {
     GdkRectangle *rect = NULL;
-    GdkRegion *dirty;
+    GdkRegion *dirty, *changed;
     int n_rect, i;
     guint top_line, scrollback;
     int height;
 
-    GdkRegion *changed = buf_get_changed (buf);
+    changed = buf_get_changed (buf);
 
     if (buf != term->priv->buffer || !changed || gdk_region_empty (changed))
         return;
 
+    /* TODO TODO TODO*/
+    buf->priv->changed = NULL;
+    buf->priv->changed_all = FALSE;
+
     top_line = term_top_line (term);
     scrollback = buf_scrollback (buf);
     height = term->priv->height;
-    changed = gdk_region_copy (changed);
 
     g_assert (top_line <= scrollback);
 
@@ -975,4 +978,18 @@ void        moo_term_force_update           (MooTerm        *term)
         gtk_main_do_event (event);
         gdk_event_free (event);
     }
+}
+
+
+void        moo_term_invert_colors          (MooTerm    *term,
+                                             gboolean    invert)
+{
+    term_implement_me ();
+}
+
+
+void        moo_term_set_caret_visible      (MooTerm    *term,
+                                             gboolean    visible)
+{
+    term_implement_me ();
 }

@@ -14,22 +14,15 @@
 #ifndef MOOTERM_MOOTERM_CTLFUNCS_H
 #define MOOTERM_MOOTERM_CTLFUNCS_H
 
-#include "mooterm/mooterm-private.h"
 #include "mooterm/mootermbuffer-private.h"
 
 
-#if 0
-#define vt_warning g_warning
-#else
-#define vt_warning g_message
-#endif
-
 #if 1
-#define vt_not_implemented()                    \
-{                                               \
-    char *s = _moo_term_current_ctl (parser);   \
-    vt_warning ("'%s': implement me", s);       \
-    g_free (s);                                 \
+#define vt_not_implemented()                                \
+{                                                           \
+    char *s = _moo_term_current_ctl (parser);               \
+    term_implement_me_warning ("'%s': implement me", s);    \
+    g_free (s);                                             \
 }
 #else
 #define vt_not_implemented()
@@ -49,8 +42,8 @@
 #define vt_TAB()        moo_term_buffer_tab (parser->term->priv->buffer)
 #define vt_LF()         moo_term_buffer_linefeed (parser->term->priv->buffer)
 #define vt_CR()         moo_term_buffer_carriage_return (parser->term->priv->buffer)
-#define vt_SO()         moo_term_buffer_shift (parser->term->priv->buffer, 0)
-#define vt_SI()         moo_term_buffer_shift (parser->term->priv->buffer, 1)
+#define vt_SO()         moo_term_buffer_shift (parser->term->priv->buffer, 1)
+#define vt_SI()         moo_term_buffer_shift (parser->term->priv->buffer, 0)
 #define vt_IND()        moo_term_buffer_index (parser->term->priv->buffer)
 #define vt_NEL()        moo_term_buffer_new_line (parser->term->priv->buffer)
 #define vt_HTS()        moo_term_buffer_set_tab_stop (parser->term->priv->buffer)
@@ -58,9 +51,9 @@
 #define vt_SS2()        moo_term_buffer_single_shift (parser->term->priv->buffer, 2)
 #define vt_SS3()        moo_term_buffer_single_shift (parser->term->priv->buffer, 3)
 #define vt_DECID()      moo_term_decid (parser->term)
-#define vt_SGR()        moo_term_buffer_sgr (parser->term->priv->buffer,        \
-                                             (int*) parser->numbers->data,      \
-                                             parser->numbers->len);
+#define vt_SGR()        moo_term_buffer_sgr (parser->term->priv->buffer,    \
+                                             (int*) parser->numbers->data,  \
+                                             parser->numbers->len)
 #define vt_CUU(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, -n, 0)
 #define vt_CUD(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, n, 0)
 #define vt_CUF(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, n)
@@ -74,6 +67,36 @@
 #define vt_IL(n)        moo_term_buffer_insert_line (parser->term->priv->buffer, n)
 #define vt_CUP(r,c)     moo_term_buffer_cup (parser->term->priv->buffer, (r)-1, (c)-1)
 #define vt_DECSTBM(t,b) moo_term_buffer_set_scrolling_region (parser->term->priv->buffer, (t)-1, (b)-1);
+#define vt_DECSC()      moo_term_buffer_decsc (parser->term->priv->buffer)
+#define vt_DECRC()      moo_term_buffer_decrc (parser->term->priv->buffer)
+#define vt_DECSET()     moo_term_set_dec_modes  (parser->term,                  \
+                                                 (int*) parser->numbers->data,  \
+                                                 parser->numbers->len,          \
+                                                 TRUE)
+#define vt_DECRST()     moo_term_set_dec_modes  (parser->term,                  \
+                                                 (int*) parser->numbers->data,  \
+                                                 parser->numbers->len,          \
+                                                 FALSE)
+#define vt_SM()         moo_term_set_ansi_modes (parser->term,                  \
+                                                 (int*) parser->numbers->data,  \
+                                                 parser->numbers->len,          \
+                                                 TRUE)
+#define vt_RM()         moo_term_set_ansi_modes (parser->term,                  \
+                                                 (int*) parser->numbers->data,  \
+                                                 parser->numbers->len,          \
+                                                 FALSE)
+#define vt_SCS(n,s)     moo_term_buffer_select_charset (parser->term->priv->buffer, n, s)
+#define vt_DECKPAM()    moo_term_set_mode (parser->term, MODE_DECNKM, TRUE)
+#define vt_DECKPNM()    moo_term_set_mode (parser->term, MODE_DECNKM, FALSE)
+#define vt_DECSAVE()    moo_term_save_dec_modes     (parser->term,                  \
+                                                     (int*) parser->numbers->data,  \
+                                                     parser->numbers->len)
+#define vt_DECRESTORE() moo_term_restore_dec_modes  (parser->term,                  \
+                                                     (int*) parser->numbers->data,  \
+                                                     parser->numbers->len)
+#define vt_DA1()        moo_term_da1 (parser->term)
+#define vt_DA2()        moo_term_da2 (parser->term)
+#define vt_DA3()        moo_term_da3 (parser->term)
 
 
 #endif /* MOOTERM_MOOTERM_CTLFUNCS_H */

@@ -112,6 +112,8 @@ void            _moo_term_yyerror       (MooTermParser  *parser,
 /* defined in generated mootermparser-yacc.c */
 int             _moo_term_yyparse       (MooTermParser  *parser);
 
+char           *_moo_term_current_ctl   (MooTermParser  *parser);
+char           *_moo_term_nice_char     (guchar          c);
 char           *_moo_term_nice_bytes    (const char     *string,
                                          int             len);
 

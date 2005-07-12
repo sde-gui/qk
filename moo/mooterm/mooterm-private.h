@@ -19,6 +19,14 @@
 
 G_BEGIN_DECLS
 
+#if 0
+#define term_implement_me_warning g_warning
+#else
+#define term_implement_me_warning g_message
+#endif
+
+#define term_implement_me() term_implement_me_warning ("%s: implement me", G_STRFUNC)
+
 
 #define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
 #define ADJUSTMENT_DELTA            30.0
@@ -163,6 +171,37 @@ inline static void moo_term_invalidate_all  (MooTerm        *term)
 
 void        moo_term_bell                   (MooTerm    *term);
 void        moo_term_decid                  (MooTerm    *term);
+void        moo_term_set_dec_modes          (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes,
+                                             gboolean    set);
+void        moo_term_save_dec_modes         (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes);
+void        moo_term_restore_dec_modes      (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes);
+void        moo_term_set_ansi_modes         (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes,
+                                             gboolean    set);
+void        moo_term_set_mode               (MooTerm    *term,
+                                             int         mode,
+                                             gboolean    set);
+void        moo_term_set_ca_mode            (MooTerm    *term,
+                                             gboolean    set);
+/* these two are in mootermdraw.c */
+void        moo_term_invert_colors          (MooTerm    *term,
+                                             gboolean    invert);
+void        moo_term_set_caret_visible      (MooTerm    *term,
+                                             gboolean    visible);
+/* this one is in mooterminput.c, tracking_type == -1 means turn it off */
+void        moo_term_set_mouse_tracking     (MooTerm    *term,
+                                             int         tracking_type);
+
+void        moo_term_da1                    (MooTerm    *term);
+void        moo_term_da2                    (MooTerm    *term);
+void        moo_term_da3                    (MooTerm    *term);
 
 
 /*************************************************************************/

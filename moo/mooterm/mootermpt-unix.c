@@ -18,7 +18,6 @@
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermpt-private.h"
 #include "mooterm/mooterm-private.h"
-#include "mooterm/mootermparser.h"
 #include "mooterm/pty.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
@@ -344,7 +343,7 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 break;
 
             default:
-#if 1
+#if 0
             {
                 char *s = _moo_term_nice_bytes (buf, r);
                 g_print ("got '%s'\n", s);

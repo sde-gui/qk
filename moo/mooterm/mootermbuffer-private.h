@@ -51,9 +51,21 @@ struct _MooTermBufferPrivate {
     guint           bottom_margin;
     gboolean        scrolling_region_set;
 
-    /* always absolute */
+    /* independent of screen region */
     guint           cursor_row;
     guint           cursor_col;
+
+    /* TODO: is it per-terminal or per-buffer? */
+    struct {
+        guint           cursor_row, cursor_col;
+        MooTermTextAttr attr;
+        gunichar       *GL, *GR;
+        gboolean        autowrap;
+        gboolean        decom;
+        guint           top_margin, bottom_margin;
+        /* TODO: Selective erase attribute ??? */
+        int             single_shift;
+    }   saved;
 
     GList          *tab_stops;
 
@@ -80,7 +92,7 @@ void    moo_term_buffer_thaw_changed_notify     (MooTermBuffer  *buf);
 void    moo_term_buffer_thaw_cursor_notify      (MooTermBuffer  *buf);
 
 void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
-                                                 int             mode,
+                                                 guint           mode,
                                                  gboolean        val);
 
 void    moo_term_buffer_set_screen_width        (MooTermBuffer  *buf,
@@ -117,6 +129,8 @@ void    moo_term_buffer_single_shift            (MooTermBuffer  *buf,
 void    moo_term_buffer_set_scrolling_region    (MooTermBuffer  *buf,
                                                  guint           top_margin,
                                                  guint           bottom_margin);
+void    moo_term_buffer_set_ca_mode             (MooTermBuffer  *buf,
+                                                 gboolean        set);
 
 
 inline static guint buf_scrollback      (MooTermBuffer  *buf)
@@ -265,8 +279,8 @@ void    moo_term_buffer_sgr                     (MooTermBuffer  *buf,
                                                  guint           args_len);
 void    moo_term_buffer_delete_char             (MooTermBuffer  *buf,
                                                  guint           n);
-// void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
-//                                                  guint           n);
+void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
+                                                 guint           n);
 void    moo_term_buffer_erase_char              (MooTermBuffer  *buf,
                                                  guint           n);
 void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
@@ -275,13 +289,21 @@ void    moo_term_buffer_erase_in_line           (MooTermBuffer  *buf,
                                                  guint           what);
 void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
                                                  guint           n);
-// void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
-//                                                  guint           n);
+void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
+                                                 guint           n);
 
 void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
                                                  guint           row,
                                                  guint           col,
                                                  guint           len);
+
+void    moo_term_buffer_cup                     (MooTermBuffer  *buf,
+                                                 guint           row,
+                                                 guint           col);
+
+void    moo_term_buffer_clear_saved             (MooTermBuffer  *buf);
+void    moo_term_buffer_decsc                   (MooTermBuffer  *buf);
+void    moo_term_buffer_decrc                   (MooTermBuffer  *buf);
 
 
 G_END_DECLS

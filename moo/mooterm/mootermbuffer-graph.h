@@ -105,7 +105,7 @@ static const char *DRAWING_SET_STRINGS[MAX_GRAPH + 1] = {
 };
 
 static gunichar ASCII_DRAWING_SET[MAX_GRAPH + 1] = {
-    /* 95 zeros */
+    /* 95 0s */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -113,8 +113,9 @@ static gunichar ASCII_DRAWING_SET[MAX_GRAPH + 1] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
-    ' ', '+', ':', '?', '?', '?', '?', '\\', '#', '#', '#', '+', '+', '+', '+', '+', '~', '-',
-    '-', '-', '_', '+', '+', '+', '+', '|', '<', '>', '*', '!', 'f', 'o'
+    ' ', '+', ':', '?', '?', '?', '?', '\\', '#', '#', '#',
+    '+', '+', '+', '+', '+', '~', '-', '-', '-', '_',
+    '+', '+', '+', '+', '|', '<', '>', '*', '!', 'f', 'o'
 };
 
 static gunichar DRAWING_SET[MAX_GRAPH + 1];
@@ -127,6 +128,11 @@ static void init_drawing_sets (void)
     {
         if (DRAWING_SET_STRINGS[i])
             DRAWING_SET[i] = g_utf8_get_char (DRAWING_SET_STRINGS[i]);
+        else if ('\040' <= i && i <= '\176')
+            DRAWING_SET[i] = i;
+
+        if (!ASCII_DRAWING_SET[i] && '\040' <= i && i <= '\176')
+            ASCII_DRAWING_SET[i] = i;
     }
 }
 

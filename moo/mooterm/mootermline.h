@@ -200,6 +200,13 @@ inline static void term_line_insert_unichar (MooTermLine   *line,
 
     term_line_set_len (line, width);
 
+    if (pos > line->len)
+        for (i = line->len; i < pos; ++i)
+    {
+        MooTermCell cell = {EMPTY_CHAR, ZERO_ATTR};
+        g_array_append_val (TERM_LINE_ARRAY (line), cell);
+    }
+
     for (i = 0; i < num; ++i)
     {
         MooTermCell cell = {c, *attr};

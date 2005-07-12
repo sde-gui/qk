@@ -66,8 +66,6 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
     gobject_class->constructor = moo_term_buffer_constructor;
     gobject_class->finalize = moo_term_buffer_finalize;
 
-    klass->changed = moo_term_buffer_changed_clear;
-
     signals[CHANGED] =
             g_signal_new ("changed",
                           G_OBJECT_CLASS_TYPE (gobject_class),
@@ -154,6 +152,7 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
     buf->priv->current_graph_set = NULL;
 
     set_default_modes (buf->priv->modes);
+    moo_term_buffer_clear_saved (buf);
 }
 
 
@@ -545,7 +544,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
                 c = buf->priv->current_graph_set[c];
             else
                 g_warning ("%s: using regular character while in "
-                        "graphics mode", G_STRLOC);
+                           "graphics mode", G_STRLOC);
         }
     }
 
@@ -917,7 +916,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
 
             memmove (&buf->priv->lines->pdata[top],
                      &buf->priv->lines->pdata[top+1],
-                     bottom - top);
+                     (bottom - top) * sizeof(gpointer));
 
             /* TODO: attributes */
             buf->priv->lines->pdata[bottom] = term_line_new (width);
@@ -972,7 +971,7 @@ void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf)
 
         memmove (&buf->priv->lines->pdata[top+1],
                  &buf->priv->lines->pdata[top],
-                 bottom - top);
+                 (bottom - top) * sizeof(gpointer));
 
         /* TODO: attributes */
         buf->priv->lines->pdata[top] = term_line_new (width);
@@ -1227,4 +1226,192 @@ void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
     buf_changed_add_range(cursor_row, cursor_col,
                           buf_screen_width (buf) - cursor_col);
     notify_changed ();
+}
+
+
+void    moo_term_buffer_cup                     (MooTermBuffer  *buf,
+                                                 guint           row,
+                                                 guint           col)
+{
+    if (col >= buf_screen_width (buf))
+        col = buf_screen_width (buf) - 1;
+
+    if (buf_get_mode (MODE_DECOM))
+        moo_term_buffer_cursor_move_to (buf, row + buf->priv->top_margin, col);
+    else
+        moo_term_buffer_cursor_move_to (buf, row, col);
+}
+
+
+void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
+                                                 guint           n)
+{
+    guint cursor = buf->priv->cursor_row + buf->priv->_screen_offset;
+    guint top = buf->priv->top_margin + buf->priv->_screen_offset;
+    guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
+    guint i;
+
+    GdkRectangle changed = {
+        0, buf->priv->cursor_row,
+        buf->priv->screen_width,
+        bottom - cursor + 1
+    };
+
+    g_return_if_fail (n != 0);
+    g_return_if_fail (top <= cursor && cursor <= bottom);
+
+    /* TODO: scroll the window */
+
+    if (n > bottom - cursor + 1)
+        n = bottom - cursor + 1;
+
+    for (i = cursor; i < cursor + n; ++i)
+        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+
+    if (n < bottom - cursor + 1)
+        memmove (&g_ptr_array_index (buf->priv->lines, cursor),
+                  &g_ptr_array_index (buf->priv->lines, cursor + n),
+                  (bottom - cursor + 1 - n) * sizeof(gpointer));
+
+    for (i = bottom + 1 - n; i <= bottom; ++i)
+        g_ptr_array_index (buf->priv->lines, i) =
+                term_line_new (buf->priv->screen_width);
+
+    buf_changed_add_rect (changed);
+    moo_term_buffer_changed (buf);
+}
+
+
+void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
+                                                 guint           n)
+{
+    guint cursor = buf->priv->cursor_row + buf->priv->_screen_offset;
+    guint top = buf->priv->top_margin + buf->priv->_screen_offset;
+    guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
+    guint i;
+
+    GdkRectangle changed = {
+        0, buf->priv->cursor_row,
+        buf->priv->screen_width,
+        buf->priv->bottom_margin - buf->priv->cursor_row + 1
+    };
+
+    g_return_if_fail (n != 0);
+    g_return_if_fail (top <= cursor && cursor <= bottom);
+
+    /* TODO: scroll the window */
+
+    if (n > bottom - cursor + 1)
+        n = bottom - cursor + 1;
+
+    for (i = bottom - n + 1; i <= bottom; ++i)
+        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+
+    if (n < bottom - cursor + 1)
+        memmove (&g_ptr_array_index (buf->priv->lines, cursor + n),
+                 &g_ptr_array_index (buf->priv->lines, cursor),
+                 (bottom - cursor + 1 - n) * sizeof(gpointer));
+
+    for (i = cursor; i < cursor + n; ++i)
+        g_ptr_array_index (buf->priv->lines, i) =
+                term_line_new (buf->priv->screen_width);
+
+    buf_changed_add_rect (changed);
+    moo_term_buffer_changed (buf);
+}
+
+
+void    moo_term_buffer_decsc                   (MooTermBuffer  *buf)
+{
+    buf->priv->saved.cursor_row = buf->priv->cursor_row;
+    buf->priv->saved.cursor_col = buf->priv->cursor_col;
+    buf->priv->saved.attr = buf->priv->current_attr;
+    buf->priv->saved.GL = buf->priv->graph_sets[0];
+    buf->priv->saved.GR = buf->priv->graph_sets[1];
+    buf->priv->saved.autowrap = buf_get_mode (MODE_DECAWM);
+    buf->priv->saved.decom = buf_get_mode (MODE_DECOM);
+    buf->priv->saved.top_margin = buf->priv->top_margin;
+    buf->priv->saved.bottom_margin = buf->priv->bottom_margin;
+    buf->priv->saved.single_shift = buf->priv->single_shift;
+}
+
+
+void    moo_term_buffer_decrc                   (MooTermBuffer  *buf)
+{
+    buf->priv->cursor_row = buf->priv->saved.cursor_row;
+    buf->priv->cursor_col = buf->priv->saved.cursor_col;
+    buf->priv->current_attr = buf->priv->saved.attr;
+    buf->priv->graph_sets[0] = buf->priv->saved.GL;
+    buf->priv->graph_sets[1] = buf->priv->saved.GR;
+    moo_term_buffer_set_mode (buf, MODE_DECAWM, buf->priv->saved.autowrap);
+    moo_term_buffer_set_mode (buf, MODE_DECOM, buf->priv->saved.decom);
+    moo_term_buffer_set_scrolling_region (buf, buf->priv->top_margin,
+                                          buf->priv->bottom_margin);
+    buf->priv->single_shift = buf->priv->saved.single_shift;
+}
+
+
+void    moo_term_buffer_clear_saved             (MooTermBuffer  *buf)
+{
+    buf->priv->saved.cursor_row = 0;
+    buf->priv->saved.cursor_col = 0;
+    buf->priv->saved.attr.mask = 0;
+    buf->priv->saved.autowrap = DEFAULT_MODE_DECAWM;
+    buf->priv->saved.decom = DEFAULT_MODE_DECOM;
+    buf->priv->saved.top_margin = 0;
+    buf->priv->saved.bottom_margin = buf_screen_height (buf) - 1;
+    buf->priv->saved.single_shift = -1;
+    buf->priv->saved.GL = NULL;
+
+    if (buf->priv->use_ascii_graphics)
+        buf->priv->saved.GR = ASCII_DRAWING_SET;
+    else
+        buf->priv->saved.GR = DRAWING_SET;
+}
+
+
+void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
+                                                 guint           mode,
+                                                 gboolean        set)
+{
+    switch (mode)
+    {
+        case MODE_CA:
+            moo_term_buffer_set_ca_mode (buf, set);
+            break;
+
+        /* these do not require anything special, just record the value */
+        case MODE_IRM:
+        case MODE_LNM:
+        case MODE_DECANM:
+        case MODE_DECOM:
+        case MODE_DECAWM:
+            buf->priv->modes[mode] = set;
+            break;
+
+        /* these are ignored in the buffer */
+        case MODE_SRM:
+        case MODE_DECCKM:
+        case MODE_DECSCNM:
+        case MODE_DECTCEM:
+        case MODE_DECNKM:
+        case MODE_DECBKM:
+        case MODE_DECKPM:
+        case MODE_PRESS_TRACKING:
+        case MODE_PRESS_AND_RELEASE_TRACKING:
+        case MODE_HILITE_MOUSE_TRACKING:
+            buf->priv->modes[mode] = set;
+            break;
+
+        default:
+            g_warning ("%s: unknown mode %d", G_STRFUNC, mode);
+    }
+}
+
+
+void    moo_term_buffer_set_ca_mode             (MooTermBuffer  *buf,
+                                                 gboolean        set)
+{
+    buf->priv->modes[MODE_CA] = set;
+    moo_term_buffer_scrollback_changed (buf);
 }

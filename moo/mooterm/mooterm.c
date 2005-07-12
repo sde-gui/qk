@@ -162,6 +162,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->scroll_on_keystroke = TRUE;
 
     set_default_modes (term->priv->modes);
+    set_default_modes (term->priv->saved_modes);
 
     g_signal_connect_swapped (term->priv->primary_buffer,
                               "notify::scrollback",
@@ -611,11 +612,20 @@ static void     scroll_abs                      (MooTerm        *term,
 static void     scroll_to_bottom                (MooTerm        *term,
                                                  gboolean        update_adj)
 {
-    if (!term->priv->_scrolled)
+    guint scrollback = buf_scrollback (term->priv->buffer);
+    gboolean update_full = FALSE;
+
+    if (!term->priv->_scrolled && term->priv->_top_line <= scrollback)
     {
         if (update_adj)
             update_adjustment_value (term);
         return;
+    }
+
+    if (term->priv->_top_line > scrollback)
+    {
+        term->priv->_top_line = scrollback;
+        update_full = TRUE;
     }
 
     term->priv->_scrolled = FALSE;
@@ -623,7 +633,9 @@ static void     scroll_to_bottom                (MooTerm        *term,
     moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
-    if (update_adj)
+    if (update_full)
+        update_adjustment (term);
+    else if (update_adj)
         update_adjustment_value (term);
 }
 
@@ -674,12 +686,12 @@ void             moo_term_feed_child        (MooTerm        *term,
 
 void             moo_term_copy_clipboard    (MooTerm        *term)
 {
-    g_message ("%s: implement me", G_STRFUNC);
+    term_implement_me ();
 }
 
 void             moo_term_ctrl_c            (MooTerm        *term)
 {
-    g_message ("%s: implement me", G_STRFUNC);
+    term_implement_me ();
 }
 
 
@@ -778,4 +790,208 @@ void        moo_term_bell                   (MooTerm    *term)
 void        moo_term_decid                  (MooTerm    *term)
 {
     moo_term_feed_child (term, TERM_VT_DECID_STRING, -1);
+}
+
+
+void        moo_term_set_dec_modes          (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes,
+                                             gboolean    set)
+{
+    guint i;
+
+    g_return_if_fail (n_modes != 0); /* ??? */
+
+    for (i = 0; i < n_modes; ++i)
+    {
+        int mode = -1;
+
+        switch (modes[i])
+        {
+            case 47:
+                moo_term_set_alternate_buffer (term, set);
+                break;
+
+            default:
+                GET_DEC_MODE (modes[i], mode);
+
+                if (mode >= 0)
+                    moo_term_set_mode (term, mode, set);
+        }
+    }
+}
+
+
+void        moo_term_save_dec_modes         (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes)
+{
+    guint i;
+
+    g_return_if_fail (n_modes != 0); /* ??? */
+
+    for (i = 0; i < n_modes; ++i)
+    {
+        int mode = -1;
+
+        GET_DEC_MODE (modes[i], mode);
+
+        if (mode >= 0)
+            term->priv->saved_modes[mode] = term->priv->modes[mode];
+    }
+}
+
+
+void        moo_term_restore_dec_modes      (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes)
+{
+    guint i;
+
+    g_return_if_fail (n_modes != 0); /* ??? */
+
+    for (i = 0; i < n_modes; ++i)
+    {
+        int mode = -1;
+
+        GET_DEC_MODE (modes[i], mode);
+
+        if (mode >= 0)
+            moo_term_set_mode (term, mode, term->priv->saved_modes[mode]);
+    }
+}
+
+
+void        moo_term_set_ansi_modes         (MooTerm    *term,
+                                             int        *modes,
+                                             guint       n_modes,
+                                             gboolean    set)
+{
+    guint i;
+
+    g_return_if_fail (n_modes != 0); /* ??? */
+
+    for (i = 0; i < n_modes; ++i)
+    {
+        int mode = -1;
+
+        GET_ANSI_MODE (modes[i], mode);
+
+        if (mode >= 0)
+            moo_term_set_mode (term, mode, set);
+    }
+}
+
+
+void        moo_term_set_mode               (MooTerm    *term,
+                                             int         mode,
+                                             gboolean    set)
+{
+    switch (mode)
+    {
+        case MODE_DECSCNM:
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            moo_term_invert_colors (term, set);
+            break;
+
+        case MODE_DECTCEM:
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            moo_term_set_caret_visible (term, set);
+            break;
+
+        case MODE_CA:
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            moo_term_set_ca_mode (term, set);
+            break;
+
+        case MODE_PRESS_TRACKING:
+        case MODE_PRESS_AND_RELEASE_TRACKING:
+        case MODE_HILITE_MOUSE_TRACKING:
+            if (set)
+                moo_term_set_mouse_tracking (term, mode);
+            else
+                moo_term_set_mouse_tracking (term, -1);
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            break;
+
+        /* these do not require anything special, just record the value */
+        case MODE_SRM:
+        case MODE_LNM:
+        case MODE_DECNKM:
+        case MODE_DECCKM:
+        case MODE_DECANM:
+        case MODE_DECBKM:
+        case MODE_DECKPM:
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            break;
+
+        /* these are ignored */
+        case MODE_IRM:
+        case MODE_DECOM:
+        case MODE_DECAWM:
+            term->priv->modes[mode] = set;
+            moo_term_buffer_set_mode (term->priv->buffer, mode, set);
+            break;
+
+        default:
+            g_warning ("%s: unknown mode %d", G_STRFUNC, mode);
+    }
+}
+
+
+void        moo_term_set_ca_mode            (MooTerm    *term,
+                                             gboolean    set)
+{
+    term_implement_me ();
+}
+
+
+void        moo_term_set_alternate_buffer   (MooTerm        *term,
+                                             gboolean        alternate)
+{
+    term_implement_me ();
+}
+
+
+void        moo_term_da1                    (MooTerm    *term)
+{
+    moo_term_feed_child (term, "\233?64;1;c", -1);
+
+    /*
+    1   132 columns
+    2   Printer port
+    4   Sixel
+    6   Selective erase
+    7   Soft character set (DRCS)       TODO
+    8   User-defined keys (UDKs)        TODO
+    9   National replacement character sets (NRCS)
+        (International terminal only)   TODO
+    12  Yugoslavian (SCS)
+    15  Technical character set         TODO
+    18  Windowing capability            TODO
+    21  Horizontal scrolling            TODO
+    23  Greek
+    24  Turkish
+    42  ISO Latin-2 character set
+    44  PCTerm                          TODO
+    45  Soft key map                    TODO
+    46  ASCII emulation                 TODO
+    */
+}
+
+void        moo_term_da2                    (MooTerm    *term)
+{
+    /* TODO */
+    moo_term_feed_child (term, "\233>61;20;1;c", -1);
+}
+
+void        moo_term_da3                    (MooTerm    *term)
+{
+    /* TODO */
+    moo_term_feed_child (term, "\220!|FFFFFFFF\234", -1);
 }

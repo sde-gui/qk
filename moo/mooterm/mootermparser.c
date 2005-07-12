@@ -15,7 +15,7 @@
 #include "mooterm/mootermparser-yacc.h"
 #include "mooterm/mootermparser.h"
 #include "mooterm/mooterm-vt.h"
-#include "mooterm/mooterm-ctlfuncs.h"
+#include "mooterm/mooterm-vtctls.h"
 #include <string.h>
 
 
@@ -436,9 +436,12 @@ void            moo_term_parser_free    (MooTermParser  *parser)
 static void exec_escape_sequence   (MooTermParser  *parser);
 static void exec_cmd               (MooTermParser  *parser,
                                     guchar          cmd);
-static void exec_apc               (MooTermParser  *parser);
-static void exec_pm                (MooTermParser  *parser);
-static void exec_osc               (MooTermParser  *parser);
+static void exec_apc               (MooTermParser  *parser,
+                                    guchar          final);
+static void exec_pm                (MooTermParser  *parser,
+                                    guchar          final);
+static void exec_osc               (MooTermParser  *parser,
+                                    guchar          final);
 static void exec_csi               (MooTermParser  *parser);
 static void exec_dcs               (MooTermParser  *parser);
 
@@ -616,7 +619,7 @@ STATE_APC:
         case 0x9D:
         case 0x9E:
         case 0x9F:
-            exec_apc (parser);
+            exec_apc (parser, c);
             goto_initial ();
 
         default:
@@ -649,7 +652,7 @@ STATE_PM:
         case 0x9D:
         case 0x9E:
         case 0x9F:
-            exec_pm (parser);
+            exec_pm (parser, c);
             goto_initial ();
 
         default:
@@ -697,7 +700,7 @@ STATE_OSC:
         case 0x9D:
         case 0x9E:
         case 0x9F:
-            exec_osc (parser);
+            exec_osc (parser, c);
             goto_initial ();
 
         default:
@@ -930,12 +933,13 @@ static void exec_cmd               (MooTermParser  *parser,
 }
 
 
-static void init_lex    (MooTermParser  *parser,
-                         LexType         lex_type)
+static void init_yyparse    (MooTermParser  *parser,
+                             LexType         lex_type)
 {
     parser->lex.lex = lex_type;
     parser->lex.part = PART_START;
     parser->lex.offset = 0;
+
     g_array_set_size (parser->numbers, 0);
 }
 
@@ -1028,26 +1032,34 @@ int     _moo_term_yylex (MooTermParser  *parser)
 }
 
 
-static char *get_ctl_string (MooTermParser  *parser)
+char           *_moo_term_current_ctl   (MooTermParser  *parser)
 {
     GString *s;
     char *nice;
 
-    if (parser->lex.lex == LEX_ESCAPE)
+    s = g_string_new ("");
+
+    switch (parser->lex.lex)
     {
-        s = g_string_new ("\033");
-        g_string_append_len (s, parser->intermediate->str,
-                             parser->intermediate->len);
-        g_string_append_c (s, parser->final);
-    }
-    else
-    {
-        s = g_string_new ("CSI ");
-        g_string_append_len (s, parser->parameters->str,
-                             parser->parameters->len);
-        g_string_append_len (s, parser->intermediate->str,
-                             parser->intermediate->len);
-        g_string_append_c (s, parser->final);
+        case LEX_ESCAPE:
+            g_string_append_c (s, '\033');
+            g_string_append_len (s, parser->intermediate->str,
+                                 parser->intermediate->len);
+            g_string_append_c (s, parser->final);
+            break;
+
+        case LEX_CONTROL:
+            g_string_append_c (s, '\233');
+            g_string_append_len (s, parser->parameters->str,
+                                 parser->parameters->len);
+            g_string_append_len (s, parser->intermediate->str,
+                                 parser->intermediate->len);
+            g_string_append_c (s, parser->final);
+            break;
+
+        default:
+            g_string_append (s, "<UNKNOWN STRING>");
+            break;
     }
 
     nice = _moo_term_nice_bytes (s->str, s->len);
@@ -1058,40 +1070,24 @@ static char *get_ctl_string (MooTermParser  *parser)
 
 static void exec_escape_sequence   (MooTermParser  *parser)
 {
-    init_lex (parser, LEX_ESCAPE);
-
-//     {
-//         char *s;
-//         s = get_ctl_string (parser);
-//         g_print ("escape sequence: '%s'\n", s);
-//         g_free (s);
-//     }
-
+    init_yyparse (parser, LEX_ESCAPE);
     _moo_term_yyparse (parser);
 }
 
 
 static void exec_csi               (MooTermParser  *parser)
 {
-    init_lex (parser, LEX_CONTROL);
-
-//     {
-//     char *s;
-//     s = get_ctl_string (parser);
-//     g_print ("csi: '%s'\n", s);
-//     g_free (s);
-//     }
-
+    init_yyparse (parser, LEX_CONTROL);
     _moo_term_yyparse (parser);
 }
 
 
 void            _moo_term_yyerror       (MooTermParser  *parser,
-                                         const char     *string)
+                                         G_GNUC_UNUSED const char     *string)
 {
-    char *nice = get_ctl_string (parser);
-    g_warning ("parse error: '%s'\n", nice);
-    g_free (nice);
+    char *s = _moo_term_current_ctl (parser);
+    g_warning ("parse error: '%s'\n", s);
+    g_free (s);
 }
 
 
@@ -1101,21 +1097,61 @@ static void exec_dcs               (MooTermParser  *parser)
 }
 
 
-static void exec_apc               (MooTermParser  *parser)
+static void exec_apc               (MooTermParser  *parser,
+                                    guchar          final)
 {
-    g_print ("apc\n");
+    char *s = g_strdup_printf ("\237%s%c", parser->data->str, final);
+    char *nice = _moo_term_nice_bytes (s, -1);
+    g_print ("%s\n", nice);
+    g_free (nice);
+    g_free (s);
 }
 
 
-static void exec_pm                (MooTermParser  *parser)
+static void exec_pm                (MooTermParser  *parser,
+                                    guchar          final)
 {
-    g_print ("pm\n");
+    char *s = g_strdup_printf ("\236%s%c", parser->data->str, final);
+    char *nice = _moo_term_nice_bytes (s, -1);
+    g_print ("%s\n", nice);
+    g_free (nice);
+    g_free (s);
 }
 
 
-static void exec_osc               (MooTermParser  *parser)
+static void exec_osc               (MooTermParser  *parser,
+                                    guchar          final)
 {
-    g_print ("osc\n");
+    if (parser->data->len >= 2 &&
+        parser->data->str[0] >= '0' &&
+        parser->data->str[0] <= '2' &&
+        parser->data->str[1] == ';')
+    {
+        char *title = parser->data->str + 2;
+        char cmd = parser->data->str[0];
+
+        switch (cmd)
+        {
+            case '0':
+                vt_SET_ICON_NAME (title);
+                vt_SET_WINDOW_TITLE (title);
+                break;
+            case '1':
+                vt_SET_ICON_NAME (title);
+                break;
+            case '2':
+                vt_SET_WINDOW_TITLE (title);
+                break;
+        }
+    }
+    else
+    {
+        char *s = g_strdup_printf ("\235%s%c", parser->data->str, final);
+        char *nice = _moo_term_nice_bytes (s, -1);
+        g_print ("%s\n", nice);
+        g_free (nice);
+        g_free (s);
+    }
 }
 
 
@@ -1930,6 +1966,70 @@ static void     exec_command            (MooTermParser  *parser)
 #endif
 
 
+char           *_moo_term_nice_char     (guchar          c)
+{
+    if (' ' <= c && c <= '~')
+    {
+        return g_strndup (&c, 1);
+    }
+    else
+    {
+        switch (c)
+        {
+            case 0x1B:
+                return g_strdup ("<ESC>");
+            case 0x84:
+                return g_strdup ("<IND>");
+                break;
+            case 0x85:
+                return g_strdup ("<NEL>");
+                break;
+            case 0x88:
+                return g_strdup ("<HTS>");
+                break;
+            case 0x8D:
+                return g_strdup ("<RI>");
+                break;
+            case 0x8E:
+                return g_strdup ("<SS2>");
+                break;
+            case 0x8F:
+                return g_strdup ("<SS3>");
+                break;
+            case 0x90:
+                return g_strdup ("<DCS>");
+                break;
+            case 0x98:
+                return g_strdup ("<SOS>");
+                break;
+            case 0x9A:
+                return g_strdup ("<DECID>");
+                break;
+            case 0x9B:
+                return g_strdup ("<CSI>");
+                break;
+            case 0x9C:
+                return g_strdup ("<ST>");
+                break;
+            case 0x9D:
+                return g_strdup ("<OSC>");
+                break;
+            case 0x9E:
+                return g_strdup ("<PM>");
+                break;
+            case 0x9F:
+                return g_strdup ("<APC>");
+                break;
+            default:
+                if ('A' - 64 <= c && c <= ']' - 64)
+                    return g_strdup_printf ("^%c", c + 64);
+                else
+                    return g_strdup_printf ("<%d>", c);
+        }
+    }
+}
+
+
 char           *_moo_term_nice_bytes    (const char     *string,
                                          int             len)
 {
@@ -1943,12 +2043,9 @@ char           *_moo_term_nice_bytes    (const char     *string,
 
     for (i = 0; i < len; ++i)
     {
-        if (' ' <= string[i] && string[i] <= '~')
-            g_string_append_printf (str, "%c", string[i]);
-        else if ('A' - 64 <= string[i] && string[i] <= 'Z' - 64)
-            g_string_append_printf (str, "^%c", string[i] + 64);
-        else
-            g_string_append_printf (str, "<%d>", string[i]);
+        char *s = _moo_term_nice_char (string[i]);
+        g_string_append (str, s);
+        g_free (s);
     }
 
     return g_string_free (str, FALSE);

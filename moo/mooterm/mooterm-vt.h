@@ -91,12 +91,12 @@ enum {
                         Set: application sequences.
                         Reset: keypad characters.   */
     MODE_DECBKM,    /*  Backarrow Key Mode
-                        This control function determines whether the  key works as a backspace key or
-                        delete key.
-                        If DECBKM is set,  works as a backspace key. When you press , the terminal sends
-                        a BS character to the host.
-                        If DECBKM is reset,  works as a delete key. When you press , the terminal sends
-                        a DEL character to the host.    */
+                        This control function determines whether the Backspace key works as a
+                        backspace key or delete key.
+                        If DECBKM is set, Backspace works as a backspace key. When you press Backspace,
+                        the terminal sends a BS character to the host.
+                        If DECBKM is reset, Backspace works as a delete key. When you press Backspace,
+                        the terminal sends a DEL character to the host.    */
     MODE_DECKPM,    /*  Key Position Mode
                         This control function selects whether the keyboard sends character codes or key
                         position reports to the host. DECKPM lets new applications take full control of
@@ -111,50 +111,171 @@ enum {
 
     MODE_CA,
 
-    MODE_MOUSE_TRACKING,
+    MODE_PRESS_TRACKING,
+    MODE_PRESS_AND_RELEASE_TRACKING,
     MODE_HILITE_MOUSE_TRACKING,
 
     MODE_MAX
 };
 
 
-#define DEFAULT_MODE_IRM                    TRUE
-#define DEFAULT_MODE_SRM                    FALSE
-#define DEFAULT_MODE_LNM                    FALSE
-#define DEFAULT_MODE_DECCKM                 FALSE
-#define DEFAULT_MODE_DECANM                 FALSE
-#define DEFAULT_MODE_DECSCNM                FALSE
-#define DEFAULT_MODE_DECOM                  FALSE
-#define DEFAULT_MODE_DECAWM                 TRUE
-#define DEFAULT_MODE_DECTCEM                TRUE
-#define DEFAULT_MODE_DECNKM                 FALSE
-#define DEFAULT_MODE_DECBKM                 FALSE
-#define DEFAULT_MODE_DECKPM                 FALSE
-#define DEFAULT_MODE_CA                     FALSE
-#define DEFAULT_MODE_MOUSE_TRACKING         FALSE
-#define DEFAULT_MODE_HILITE_MOUSE_TRACKING  FALSE
+#define DEFAULT_MODE_IRM                        FALSE
+#define DEFAULT_MODE_SRM                        FALSE
+#define DEFAULT_MODE_LNM                        FALSE
+#define DEFAULT_MODE_DECCKM                     FALSE
+#define DEFAULT_MODE_DECANM                     FALSE
+#define DEFAULT_MODE_DECSCNM                    FALSE
+#define DEFAULT_MODE_DECOM                      FALSE
+#define DEFAULT_MODE_DECAWM                     TRUE
+#define DEFAULT_MODE_DECTCEM                    TRUE
+#define DEFAULT_MODE_DECNKM                     FALSE
+#define DEFAULT_MODE_DECBKM                     FALSE
+#define DEFAULT_MODE_DECKPM                     FALSE
+#define DEFAULT_MODE_CA                         FALSE
+#define DEFAULT_MODE_PRESS_TRACKING             FALSE
+#define DEFAULT_MODE_PRESS_AND_RELEASE_TRACKING FALSE
+#define DEFAULT_MODE_HILITE_MOUSE_TRACKING      FALSE
 
-#define set_default_modes(ar)                                               \
-{                                                                           \
-    ar[MODE_IRM] = DEFAULT_MODE_IRM;                                        \
-    ar[MODE_SRM] = DEFAULT_MODE_SRM;                                        \
-    ar[MODE_LNM] = DEFAULT_MODE_LNM;                                        \
-    ar[MODE_DECCKM] = DEFAULT_MODE_DECCKM;                                  \
-    ar[MODE_DECANM] = DEFAULT_MODE_DECANM;                                  \
-    ar[MODE_DECSCNM] = DEFAULT_MODE_DECSCNM;                                \
-    ar[MODE_DECOM] = DEFAULT_MODE_DECOM;                                    \
-    ar[MODE_DECAWM] = DEFAULT_MODE_DECAWM;                                  \
-    ar[MODE_DECTCEM] = DEFAULT_MODE_DECTCEM;                                \
-    ar[MODE_DECNKM] = DEFAULT_MODE_DECNKM;                                  \
-    ar[MODE_DECBKM] = DEFAULT_MODE_DECBKM;                                  \
-    ar[MODE_DECKPM] = DEFAULT_MODE_DECKPM;                                  \
-    ar[MODE_CA] = DEFAULT_MODE_CA;                                          \
-    ar[MODE_MOUSE_TRACKING] = DEFAULT_MODE_MOUSE_TRACKING;                  \
-    ar[MODE_HILITE_MOUSE_TRACKING] = DEFAULT_MODE_HILITE_MOUSE_TRACKING;    \
+
+#define set_default_modes(ar)                                                       \
+{                                                                                   \
+    ar[MODE_IRM] = DEFAULT_MODE_IRM;                                                \
+    ar[MODE_SRM] = DEFAULT_MODE_SRM;                                                \
+    ar[MODE_LNM] = DEFAULT_MODE_LNM;                                                \
+    ar[MODE_DECCKM] = DEFAULT_MODE_DECCKM;                                          \
+    ar[MODE_DECANM] = DEFAULT_MODE_DECANM;                                          \
+    ar[MODE_DECSCNM] = DEFAULT_MODE_DECSCNM;                                        \
+    ar[MODE_DECOM] = DEFAULT_MODE_DECOM;                                            \
+    ar[MODE_DECAWM] = DEFAULT_MODE_DECAWM;                                          \
+    ar[MODE_DECTCEM] = DEFAULT_MODE_DECTCEM;                                        \
+    ar[MODE_DECNKM] = DEFAULT_MODE_DECNKM;                                          \
+    ar[MODE_DECBKM] = DEFAULT_MODE_DECBKM;                                          \
+    ar[MODE_DECKPM] = DEFAULT_MODE_DECKPM;                                          \
+    ar[MODE_CA] = DEFAULT_MODE_CA;                                                  \
+    ar[MODE_PRESS_TRACKING] = DEFAULT_MODE_PRESS_TRACKING;                          \
+    ar[MODE_PRESS_AND_RELEASE_TRACKING] = DEFAULT_MODE_PRESS_AND_RELEASE_TRACKING;  \
+    ar[MODE_HILITE_MOUSE_TRACKING] = MODE_HILITE_MOUSE_TRACKING;                    \
 }
 
 #define buf_get_mode(mode)  (buf->priv->modes[mode])
 #define term_get_mode(mode) (term->priv->modes[mode])
+
+
+#define GET_DEC_MODE(code, mode)                    \
+    switch (code)                                   \
+    {                                               \
+        case 1:                                     \
+            mode = MODE_DECCKM;                     \
+            break;                                  \
+        case 2:                                     \
+            mode = MODE_DECANM;                     \
+            break;                                  \
+        case 5:                                     \
+            mode = MODE_DECSCNM;                    \
+            break;                                  \
+        case 6:                                     \
+            mode = MODE_DECOM;                      \
+            break;                                  \
+        case 7:                                     \
+            mode = MODE_DECAWM;                     \
+            break;                                  \
+        case 25:                                    \
+            mode = MODE_DECTCEM;                    \
+            break;                                  \
+        case 66:                                    \
+            mode = MODE_DECNKM;                     \
+            break;                                  \
+        case 67:                                    \
+            mode = MODE_DECBKM;                     \
+            break;                                  \
+        case 81:                                    \
+            mode = MODE_DECKPM;                     \
+            break;                                  \
+                                                    \
+        case 9:                                     \
+            mode = MODE_PRESS_TRACKING;             \
+            break;                                  \
+        case 1000:                                  \
+            mode = MODE_PRESS_AND_RELEASE_TRACKING; \
+            break;                                  \
+        case 1001:                                  \
+            mode = MODE_HILITE_MOUSE_TRACKING;      \
+            break;                                  \
+        case 1049:                                  \
+            mode = MODE_CA;                         \
+            break;                                  \
+                                                    \
+        case 3:                                     \
+        case 4:                                     \
+        case 8:                                     \
+        case 18:                                    \
+        case 19:                                    \
+        case 34:                                    \
+        case 35:                                    \
+        case 36:                                    \
+        case 42:                                    \
+        case 57:                                    \
+        case 60:                                    \
+        case 61:                                    \
+        case 64:                                    \
+        case 68:                                    \
+        case 69:                                    \
+        case 73:                                    \
+        case 95:                                    \
+        case 96:                                    \
+        case 97:                                    \
+        case 98:                                    \
+        case 99:                                    \
+        case 100:                                   \
+        case 101:                                   \
+        case 102:                                   \
+        case 103:                                   \
+        case 104:                                   \
+        case 106:                                   \
+            g_warning ("%s: ignoring mode %d",      \
+                       G_STRFUNC, code);            \
+            break;                                  \
+                                                    \
+        default:                                    \
+            g_warning ("%s: unknown mode %d",       \
+                       G_STRFUNC, code);            \
+    }
+
+#define GET_ANSI_MODE(code, mode)                   \
+    switch (code)                                   \
+    {                                               \
+        case 4:                                     \
+            mode = MODE_IRM;                        \
+            break;                                  \
+        case 12:                                    \
+            mode = MODE_SRM;                        \
+            break;                                  \
+        case 20:                                    \
+            mode = MODE_LNM;                        \
+            break;                                  \
+                                                    \
+        case 1:                                     \
+        case 2:                                     \
+        case 3:                                     \
+        case 5:                                     \
+        case 7:                                     \
+        case 10:                                    \
+        case 11:                                    \
+        case 13:                                    \
+        case 14:                                    \
+        case 15:                                    \
+        case 16:                                    \
+        case 17:                                    \
+        case 18:                                    \
+        case 19:                                    \
+            g_warning ("%s: ignoring mode %d",      \
+                    G_STRFUNC, code);               \
+            break;                                  \
+                                                    \
+        default:                                    \
+            g_warning ("%s: unknown mode %d",       \
+                    G_STRFUNC, code);               \
+    }
 
 
 #define TERM_VT_DECID_STRING    "\033[?1;2c"

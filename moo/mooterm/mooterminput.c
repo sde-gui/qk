@@ -450,3 +450,10 @@ gboolean    moo_term_key_release        (GtkWidget      *widget,
     else
         return TRUE;
 }
+
+
+void        moo_term_set_mouse_tracking     (MooTerm    *term,
+                                             int         tracking_type)
+{
+    term_implement_me ();
+}
