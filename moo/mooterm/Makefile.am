@@ -5,25 +5,26 @@
 SUBDIRS = glade
 
 widget_sources =                \
+    mooterm.c                   \
+    mooterm.h                   \
+    mooterm-ctlfuncs.h          \
+    mooterm-input.c             \
+    mooterm-keymap.h            \
+    mooterm-private.h           \
+    mooterm-vt.h                \
+    mootermdraw.c               \
     mootermbuffer.c             \
     mootermbuffer-graph.h       \
     mootermbuffer.h             \
     mootermbuffer-private.h     \
-    mooterm.c                   \
-    mooterm-ctlfuncs.h          \
-    mootermdraw.c               \
-    mooterm.h                   \
-    mooterminput.c              \
     mootermline.h               \
     mootermparser.c             \
     mootermparser.h             \
     mootermparser-yacc.y        \
-    mooterm-private.h           \
     mootermpt.c                 \
     mootermpt.h                 \
     mootermpt-private.h         \
-    mootermselection.c          \
-    mooterm-vt.h
+    mootermselection.c
 
 widget_unix_sources =       \
     mootermpt-unix.c        \
