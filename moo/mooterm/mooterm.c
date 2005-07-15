@@ -26,11 +26,9 @@ static void moo_term_realize                (GtkWidget          *widget);
 static void moo_term_size_allocate          (GtkWidget          *widget,
                                              GtkAllocation      *allocation);
 
-// static gboolean moo_term_popup_menu         (GtkWidget          *widget);
-// static gboolean moo_term_scroll             (GtkWidget          *widget,
-//                                              GdkEventScroll     *event);
-// static gboolean moo_term_motion_notify      (GtkWidget          *widget,
-//                                              GdkEventMotion     *event);
+static gboolean moo_term_popup_menu         (GtkWidget          *widget);
+static gboolean moo_term_scroll             (GtkWidget          *widget,
+                                             GdkEventScroll     *event);
 
 static void     moo_term_set_scroll_adjustments (GtkWidget      *widget,
                                                  GtkAdjustment  *hadj,
@@ -62,6 +60,8 @@ static void     height_changed                  (MooTerm        *term,
 static void     im_preedit_start                (MooTerm        *term);
 static void     im_preedit_end                  (MooTerm        *term);
 
+static void     child_died                      (MooTerm        *term);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
@@ -69,6 +69,7 @@ enum {
     SET_ICON_NAME,
     BELL,
     CHILD_DIED,
+    POPULATE_POPUP,
     LAST_SIGNAL
 };
 
@@ -93,13 +94,13 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->realize = moo_term_realize;
     widget_class->size_allocate = moo_term_size_allocate;
     widget_class->expose_event = moo_term_expose_event;
-//     widget_class->button_press_event = moo_term_button_press;
-//     widget_class->button_release_event = moo_term_button_release;
     widget_class->key_press_event = moo_term_key_press;
     widget_class->key_release_event = moo_term_key_release;
-//     widget_class->popup_menu = moo_term_popup_menu;
-//     widget_class->scroll_event = moo_term_scroll;
-//     widget_class->motion_notify_event = moo_term_motion_notify;
+    widget_class->popup_menu = moo_term_popup_menu;
+    widget_class->scroll_event = moo_term_scroll;
+    widget_class->button_press_event = moo_term_button_press;
+    widget_class->button_release_event = moo_term_button_release;
+    widget_class->motion_notify_event = moo_term_motion_notify;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
 
@@ -152,6 +153,16 @@ static void moo_term_class_init (MooTermClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    signals[POPULATE_POPUP] =
+            g_signal_new ("populate-popup",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, populate_popup),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          GTK_TYPE_MENU);
 }
 
 
@@ -160,6 +171,9 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv = g_new0 (MooTermPrivate, 1);
 
     term->priv->pt = moo_term_pt_new (term);
+    g_signal_connect_swapped (term->priv->pt, "child-died",
+                              G_CALLBACK (child_died), term);
+
     term->priv->parser = moo_term_parser_new (term);
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
@@ -386,6 +400,12 @@ static void     im_preedit_start    (MooTerm        *term)
 static void     im_preedit_end      (MooTerm        *term)
 {
     term->priv->im_preedit_active = FALSE;
+}
+
+
+static void     child_died                      (MooTerm        *term)
+{
+    g_signal_emit (term, signals[CHILD_DIED], 0);
 }
 
 
@@ -722,12 +742,23 @@ void             moo_term_feed_child        (MooTerm        *term,
 
 void             moo_term_copy_clipboard    (MooTerm        *term)
 {
-    term_implement_me ();
+    char *text = term_selection_get_text (term);
+
+    if (text && *text)
+        gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
+                                text, -1);
+
+    if (text)
+    {
+        g_assert (*text);
+        g_free (text);
+    }
 }
+
 
 void             moo_term_ctrl_c            (MooTerm        *term)
 {
-    term_implement_me ();
+    moo_term_pt_send_intr (term->priv->pt);
 }
 
 
@@ -928,9 +959,11 @@ void        moo_term_set_mode               (MooTerm    *term,
         case MODE_DECSCNM:
             g_message ("set MODE_DECSCNM %s", set ? "TRUE" : "FALSE");
             break;
+#if 0
         case MODE_DECTCEM:
             g_message ("set MODE_DECTCEM %s", set ? "TRUE" : "FALSE");
             break;
+#endif
         case MODE_CA:
             g_message ("set MODE_CA %s", set ? "TRUE" : "FALSE");
             break;
@@ -1228,6 +1261,25 @@ void        moo_term_dsr                    (MooTerm    *term,
 }
 
 
+void        moo_term_update_pointer         (MooTerm        *term)
+{
+    if (term->priv->pointer_visible)
+    {
+        if (term->priv->tracking_mouse)
+            gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                                   term->priv->pointer[POINTER_NORMAL]);
+        else
+            gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                                   term->priv->pointer[POINTER_TEXT]);
+    }
+    else
+    {
+        gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                               term->priv->pointer[POINTER_NONE]);
+    }
+}
+
+
 void        moo_term_set_pointer_visible    (MooTerm        *term,
                                              gboolean        visible)
 {
@@ -1235,21 +1287,91 @@ void        moo_term_set_pointer_visible    (MooTerm        *term,
 
     if (visible != term->priv->pointer_visible)
     {
-        if (visible)
-        {
-            if (term->priv->tracking_mouse)
-                gdk_window_set_cursor (GTK_WIDGET(term)->window,
-                                       term->priv->pointer[POINTER_NORMAL]);
-            else
-                gdk_window_set_cursor (GTK_WIDGET(term)->window,
-                                       term->priv->pointer[POINTER_TEXT]);
-        }
-        else
-        {
-            gdk_window_set_cursor (GTK_WIDGET(term)->window,
-                                   term->priv->pointer[POINTER_NONE]);
-        }
-
         term->priv->pointer_visible = visible;
+        moo_term_update_pointer (term);
+    }
+}
+
+
+static gboolean moo_term_popup_menu         (GtkWidget      *widget)
+{
+    moo_term_do_popup_menu (MOO_TERM (widget), NULL);
+    return TRUE;
+}
+
+
+static void menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
+                                gint        *px,
+                                gint        *py,
+                                gboolean    *push_in,
+                                MooTerm     *term)
+{
+    guint cursor_row, cursor_col;
+    GdkWindow *window;
+
+    window = GTK_WIDGET(term)->window;
+    gdk_window_get_origin (window, px, py);
+
+    cursor_col = buf_cursor_col (term->priv->buffer);
+    cursor_row = buf_cursor_row (term->priv->buffer);
+    cursor_row += buf_scrollback (term->priv->buffer);
+
+    if (cursor_row >= term_top_line (term))
+    {
+        cursor_row -= term_top_line (term);
+        *px += (cursor_col + 1) * term_char_width (term);
+        *py += (cursor_row + 1) * term_char_height (term);
+    }
+    else
+    {
+        int x, y, width, height;
+        GdkModifierType mask;
+        gdk_window_get_pointer (window, &x, &y, &mask);
+        gdk_drawable_get_size (GDK_DRAWABLE (window), &width, &height);
+        *px += CLAMP (x, 2, width - 2);
+        *py += CLAMP (x, 2, height - 2);
+    }
+
+    *push_in = TRUE;
+}
+
+
+void        moo_term_do_popup_menu          (MooTerm        *term,
+                                             GdkEventButton *event)
+{
+    GtkWidget *menu;
+
+    menu = gtk_menu_new ();
+    g_signal_connect (menu, "deactivate",
+                      G_CALLBACK (gtk_widget_destroy), NULL);
+
+    /* TODO: add copy/paste */
+    g_signal_emit (term, signals[POPULATE_POPUP], 0, menu);
+
+    if (event)
+        gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL,
+                        event->button, event->time);
+    else
+        gtk_menu_popup (GTK_MENU (menu), NULL, NULL,
+                        (GtkMenuPositionFunc) menu_position_func,
+                        term, 0, gtk_get_current_event_time ());
+}
+
+
+static gboolean moo_term_scroll             (GtkWidget      *widget,
+                                             GdkEventScroll *event)
+{
+    switch (event->direction)
+    {
+        case GDK_SCROLL_UP:
+            moo_term_scroll_lines (MOO_TERM (widget), -SCROLL_GRANULARITY);
+            return TRUE;
+
+        case GDK_SCROLL_DOWN:
+            moo_term_scroll_lines (MOO_TERM (widget), SCROLL_GRANULARITY);
+            return TRUE;
+
+        default:
+            return FALSE;
     }
 }

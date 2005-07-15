@@ -43,6 +43,8 @@ G_BEGIN_DECLS
 #define DEFAULT_MONOSPACE_FONT      "Courier New 9"
 #define DEFAULT_MONOSPACE_FONT2     "Monospace"
 
+#define SCROLL_GRANULARITY          3
+
 
 typedef enum {
     POINTER_NONE     = 0,
@@ -144,11 +146,16 @@ void        moo_term_buf_size_changed       (MooTerm        *term);
 void        moo_term_init_font_stuff        (MooTerm        *term);
 void        moo_term_setup_palette          (MooTerm        *term);
 
+void        moo_term_update_pointer         (MooTerm        *term);
 void        moo_term_set_pointer_visible    (MooTerm        *term,
                                              gboolean        visible);
 gboolean    moo_term_button_press           (GtkWidget      *widget,
                                              GdkEventButton *event);
 gboolean    moo_term_button_release         (GtkWidget      *widget,
+                                             GdkEventButton *event);
+gboolean    moo_term_motion_notify          (GtkWidget      *widget,
+                                             GdkEventMotion *event);
+void        moo_term_do_popup_menu          (MooTerm        *term,
                                              GdkEventButton *event);
 
 gboolean    moo_term_key_press              (GtkWidget      *widget,
@@ -247,6 +254,16 @@ void             term_font_info_set_font    (TermFontInfo           *info,
 TermFontInfo    *term_font_info_new         (PangoContext           *ctx);
 void             term_font_info_free        (TermFontInfo           *info);
 
+inline static guint term_char_width         (MooTerm                *term)
+{
+    return term->priv->font_info->width;
+}
+
+inline static guint term_char_height        (MooTerm                *term)
+{
+    return term->priv->font_info->height;
+}
+
 
 #define term_top_line(term)                     \
     ((term)->priv->_scrolled ?                  \
@@ -307,6 +324,7 @@ void             term_set_selection         (MooTerm       *term,
                                              guint          row2,
                                              guint          col2);
 void             term_selection_clear       (MooTerm       *term);
+char            *term_selection_get_text    (MooTerm       *term);
 
 inline static void term_selection_set_width (MooTerm       *term,
                                              guint          width)
