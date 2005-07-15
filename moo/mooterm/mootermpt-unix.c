@@ -28,6 +28,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <termios.h>
 
 #ifdef HAVE_POLL_H
 #include <poll.h>
@@ -55,7 +56,6 @@ typedef struct _MooTermPtUnixClass      MooTermPtUnixClass;
 struct _MooTermPtUnix {
     MooTermPt   parent;
 
-    gboolean    child_alive;
     GPid        child_pid;
 
     int         master;
@@ -118,7 +118,8 @@ static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 
 static void     moo_term_pt_unix_init            (MooTermPtUnix      *pt)
 {
-    pt->child_alive = FALSE;
+    MOO_TERM_PT(pt)->priv->child_alive = FALSE;
+
     pt->child_pid = (GPid)-1;
 
     pt->master = -1;
@@ -149,7 +150,7 @@ static void     set_size        (MooTermPt      *pt,
 
     ptu = MOO_TERM_PT_UNIX (pt);
 
-    if (ptu->child_alive)
+    if (pt->priv->child_alive)
         _vte_pty_set_size (ptu->master, width, height);
 
     ptu->width = width;
@@ -177,7 +178,7 @@ static gboolean fork_command    (MooTermPt      *pt_gen,
 
     pt = MOO_TERM_PT_UNIX (pt_gen);
 
-    g_return_val_if_fail (!pt->child_alive, FALSE);
+    g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
 
     if (!g_shell_parse_argv (cmd, &argv_len, &argv, &err))
     {
@@ -257,7 +258,7 @@ static gboolean fork_command    (MooTermPt      *pt_gen,
     else
         g_warning ("%s: could not find io_watch_id source", G_STRLOC);
 
-    pt->child_alive = TRUE;
+    pt_gen->priv->child_alive = TRUE;
 
     return TRUE;
 }
@@ -294,9 +295,9 @@ static void     kill_child      (MooTermPt      *pt_gen)
 
     pt->child_pid = (GPid)-1;
 
-    if (pt->child_alive)
+    if (pt_gen->priv->child_alive)
     {
-        pt->child_alive = FALSE;
+        pt_gen->priv->child_alive = FALSE;
         g_signal_emit_by_name (pt, "child-died");
     }
 }
@@ -548,6 +549,7 @@ static void     pt_write        (MooTermPt      *pt,
                                  int             data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
+    g_return_if_fail (pt->priv->child_alive);
 
     while (data || !g_queue_is_empty (pt->priv->pending_write))
     {
@@ -610,4 +612,24 @@ static void     pt_write        (MooTermPt      *pt,
         start_writer (pt);
     else
         stop_writer (pt);
+}
+
+
+char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
+{
+    MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
+    struct termios tio;
+
+    g_return_val_if_fail (pt->master != -1, 0);
+
+    if (!tcgetattr (pt->master, &tio))
+    {
+        return tio.c_cc[VERASE];
+    }
+    else
+    {
+        g_warning ("%s: %s", G_STRLOC,
+                   g_strerror (errno));
+        return 0;
+    }
 }
