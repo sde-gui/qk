@@ -18,6 +18,8 @@
     }                                                   \
 }
 
+#define nums_len() (parser->numbers->len)
+
 #define check_nums_len(n)                               \
 {                                                       \
     if (parser->numbers->len != n)                      \
@@ -39,6 +41,7 @@
 
 control_function:   escape_sequence
                 |   control_sequence
+                |   device_control_sequence
 ;
 
 
@@ -73,13 +76,14 @@ escape_sequence:    NEL
                 |   SCS
                 |   S7C1T
                 |   S8C1T
+                |   DECALN
 ;
 
 
-NEL:        '\033' 'E'          {   vt_not_implemented();   };
+NEL:        '\033' 'E'          {   vt_NEL ();   };
 DECRC:      '\033' '8'          {   vt_DECRC ();    };
 DECSC:      '\033' '7'          {   vt_DECSC ();            };
-HTS:        '\033' 'H'          {   vt_not_implemented();   };
+HTS:        '\033' 'H'          {   vt_HTS ();      };
 DECBI:      '\033' '6'          {   vt_not_implemented();   };
 DECFI:      '\033' '9'          {   vt_not_implemented();   };
 IND:        '\033' 'D'          {   vt_IND ();      };
@@ -87,7 +91,7 @@ RI:         '\033' 'M'          {   vt_RI ();       };
 SS2:        '\033' 'N'          {   vt_not_implemented();   };
 SS3:        '\033' 'O'          {   vt_not_implemented();   };
 DECID:      '\033' 'Z'          {   vt_not_implemented();   };
-RIS:        '\033' 'c'          {   vt_not_implemented();   };
+RIS:        '\033' 'c'          {   vt_RIS ();   };
 DECANM:     '\033' '<'          {   vt_not_implemented();   };
 DECKPAM:    '\033' '='          {   vt_DECKPAM ();  };
 DECKPNM:    '\033' '>'          {   vt_DECKPNM ();  };
@@ -100,8 +104,9 @@ DECDHLT:    '\033' '#' '3'      {   vt_not_implemented();   };
 DECDHLB:    '\033' '#' '4'      {   vt_not_implemented();   };
 DECSWL:     '\033' '#' '5'      {   vt_not_implemented();   };
 DECDWL:     '\033' '#' '6'      {   vt_not_implemented();   };
-S7C1T:      '\033' ' ' 'F'      {   vt_not_implemented();   };
-S8C1T:      '\033' ' ' 'G'      {   vt_not_implemented();   };
+DECALN:     '\033' '#' '8'      {   vt_not_implemented();   };
+S7C1T:      '\033' ' ' 'F'      {   vt_ignored ();  };
+S8C1T:      '\033' ' ' 'G'      {   vt_ignored ();  };
 
 SCS:            '\033' SCS_set_num SCS_set  {   vt_SCS (get_num(0), get_num(1));    };
 SCS_set_num:    '('                         {   add_number (0);                     }
@@ -193,46 +198,48 @@ control_sequence:   DECSR
 DECSR:          '\233' number '+' 'p'       {   vt_not_implemented();   };
 
 /* default parameter - 1 */
-CUU:            '\233' number 'A'           {   vt_CUU ($2); }
-            |   '\233' 'A'                  {   vt_CUU (1);  };
-CUD:            '\233' number 'B'           {   vt_CUD ($2); }
-            |   '\233' 'B'                  {   vt_CUD (1);  };
-CUF:            '\233' number 'C'           {   vt_CUF ($2); }
-            |   '\233' 'C'                  {   vt_CUF (1);  };
-CUB:            '\233' number 'D'           {   vt_CUB ($2); }
-            |   '\233' 'D'                  {   vt_CUB (1);  };
-CBT:            '\233' number 'Z'           {   vt_not_implemented();   }
-            |   '\233' 'Z'                  {   vt_not_implemented();   };
-CHA:            '\233' number 'G'
-            |   '\233' 'G'                  {   vt_not_implemented();   };
-CHT:            '\233' number 'I'           {   vt_not_implemented();   }
-            |   '\233' 'I'                  {   vt_not_implemented();   };
-CNL:            '\233' number 'E'           {   vt_not_implemented();   }
-            |   '\233' 'E'                  {   vt_not_implemented();   };
-CPL:            '\233' number 'F'           {   vt_not_implemented();   }
-            |   '\233' 'F'                  {   vt_not_implemented();   };
-HPA:            '\233' number '`'           {   vt_not_implemented();   }
-            |   '\233' '`'                  {   vt_not_implemented();   };
-HPR:            '\233' number 'a'           {   vt_not_implemented();   }
-            |   '\233' 'a'                  {   vt_not_implemented();   };
-VPA:            '\233' number 'd'           {   vt_not_implemented();   }
-            |   '\233' 'd'                  {   vt_not_implemented();   };
-VPR:            '\233' number 'e'           {   vt_not_implemented();   }
-            |   '\233' 'e'                  {   vt_not_implemented();   };
+CUU:            '\233' number 'A'           {   vt_CUU ($2);            }
+            |   '\233' 'A'                  {   vt_CUU (1);             };
+CUD:            '\233' number 'B'           {   vt_CUD ($2);            }
+            |   '\233' 'B'                  {   vt_CUD (1);             };
+CUF:            '\233' number 'C'           {   vt_CUF ($2);            }
+            |   '\233' 'C'                  {   vt_CUF (1);             };
+CUB:            '\233' number 'D'           {   vt_CUB ($2);            }
+            |   '\233' 'D'                  {   vt_CUB (1);             };
+CBT:            '\233' number 'Z'           {   vt_CBT ($2 ? $2 : 1);   }
+            |   '\233' 'Z'                  {   vt_CBT (1);             };
+CHA:            '\233' number 'G'           {   vt_CHA ($2 ? $2 : 1);   }
+            |   '\233' 'G'                  {   vt_CHA (1);             };
+CHT:            '\233' number 'I'           {   vt_CHT ($2 ? $2 : 1);   }
+            |   '\233' 'I'                  {   vt_CHT (1);             };
+CNL:            '\233' number 'E'           {   vt_CNL ($2 ? $2 : 1);   }
+            |   '\233' 'E'                  {   vt_CNL (1);             };
+CPL:            '\233' number 'F'           {   vt_CPL ($2 ? $2 : 1);   }
+            |   '\233' 'F'                  {   vt_CPL (1);             };
+HPA:            '\233' number '`'           {   vt_HPA ($2 ? $2 : 1);   }
+            |   '\233' '`'                  {   vt_HPA (1);             };
+HPR:            '\233' number 'a'           {   vt_HPR ($2 ? $2 : 1);   }
+            |   '\233' 'a'                  {   vt_HPR (1);             };
+VPA:            '\233' number 'd'           {   vt_VPA ($2 ? $2 : 1);   }
+            |   '\233' 'd'                  {   vt_VPA (1);             };
+VPR:            '\233' number 'e'           {   vt_VPR ($2 ? $2 : 1);   }
+            |   '\233' 'e'                  {   vt_VPR (1);             };
 
 CUP:            '\233' numbers 'H'          {   check_nums_len (2);
                                                 vt_CUP (get_num (0) ? get_num (0) : 1,
                                                         get_num (1) ? get_num (1) : 1);   }
             |   '\233' 'H'                  {   vt_CUP (1, 1);   }
-            |   '\233' numbers 'f'          {   vt_not_implemented();   }  /* HVP */
-            |   '\233' 'f'                  {   vt_not_implemented();   };
+            |   '\233' numbers 'f'          {   check_nums_len (2);
+                                                vt_CUP (get_num (0) ? get_num (0) : 1,
+                                                        get_num (1) ? get_num (1) : 1);   }  /* HVP */
+            |   '\233' 'f'                  {   vt_CUP (1, 1);   };
 
 DECSCUSR:       '\233' number ' ' 'q'       {   vt_not_implemented();   }
             |   '\233' ' ' 'q'              {   vt_not_implemented();   };
 
 DECST8C:        '\233' '?' number 'W'       {   vt_not_implemented();   };
-TBC:            '\233' number 'g'           {   vt_not_implemented();   }
-            |   '\233' 'g'                  {   vt_not_implemented();   };
+TBC:            '\233' number 'g'           {   vt_TBC (get_num (0));   }
+            |   '\233' 'g'                  {   vt_TBC (0);             };
 
 DECSLRM:        '\233' numbers 's'          {   vt_not_implemented();   }
             |   '\233' 's'                  {   vt_not_implemented();   };
@@ -308,8 +315,24 @@ DECSACE:        '\233' numbers '*' 'x'      {   vt_not_implemented();   };
 DECSNLS:        '\233' numbers '*' '|'      {   vt_not_implemented();   };
 DECRQCRA:       '\233' numbers '*' 'y'      {   vt_not_implemented();   };
 
-DSR:            '\233' '?' numbers 'n'      {   vt_not_implemented();   }
-            |   '\233' numbers 'n'          {   vt_not_implemented();   };
+DSR:            '\233' '?' numbers 'n'      {   if (nums_len() == 2)
+                                                {
+                                                    vt_DSR (get_num (0), get_num (1), TRUE);
+                                                }
+                                                else
+                                                {
+                                                    vt_DSR (get_num (0), -1, TRUE);
+                                                }
+                                            }
+            |   '\233' numbers 'n'          {   if (nums_len() == 2)
+                                                {
+                                                    vt_DSR (get_num (0), get_num (1), FALSE);
+                                                }
+                                                else
+                                                {
+                                                    vt_DSR (get_num (0), -1, FALSE);
+                                                }
+                                            };
 
 DA1:            '\233' 'c'                  {   vt_DA1 ();   }
             |   '\233' number 'c'           {   vt_DA1 ();   };
@@ -318,9 +341,9 @@ DA2:            '\233' '>' 'c'              {   vt_DA2 ();   }
 DA3:            '\233' '=' 'c'              {   vt_DA3 ();   }
             |   '\233' '=' number 'c'       {   vt_DA3 ();   };
 
-DECTST:         '\233' numbers 'y'          {   vt_not_implemented();   };
+DECTST:         '\233' numbers 'y'          {   vt_ignored ();      };
 
-DECSTR:         '\233' '!' 'p'              {   vt_not_implemented();   };
+DECSTR:         '\233' '!' 'p'              {   vt_DECSTR ();       };
 
 
 SGR:            '\233' numbers 'm'          {   vt_SGR ();          }
@@ -340,6 +363,24 @@ DECRESTORE:     '\233' '?' numbers 'r'      {   vt_DECRESTORE ();   }
 
 
 /****************************************************************************/
+/* Device control sequences
+ */
+
+device_control_sequence:    DECRQSS;
+
+
+DECRQSS:    '\220' '$' 'q' DECRQSS_param '\234'     {   vt_DECRQSS (get_num (0));  }
+
+DECRQSS_param:  '$' 'g'         {   add_number (CODE_DECSASD);  }
+            |   '"' 'p'         {   add_number (CODE_DECSCL);   }
+            |   '$' '|'         {   add_number (CODE_DECSCPP);  }
+            |   't'             {   add_number (CODE_DECSLPP);  }
+            |   '*' '|'         {   add_number (CODE_DECSNLS);  }
+            |   'r'             {   add_number (CODE_DECSTBM);  }
+;
+
+
+ /****************************************************************************/
 /* numbers
  */
 
