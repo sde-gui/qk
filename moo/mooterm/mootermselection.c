@@ -47,3 +47,9 @@ void             term_selection_clear       (MooTerm       *term)
         moo_term_invalidate_all (term);
     }
 }
+
+
+char            *term_selection_get_text    (MooTerm       *term)
+{
+    return NULL;
+}

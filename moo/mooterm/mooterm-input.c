@@ -18,8 +18,6 @@
 #include "mooterm/mooterm-keymap.h"
 #include "mooterm/mootermpt.h"
 
-/* must be enough to fit '^' + one unicode character + 0 byte */
-#define MANY_CHARS  16
 #define META_MASK   GDK_MOD1_MASK
 
 
@@ -306,8 +304,64 @@ gboolean    moo_term_key_release        (GtkWidget      *widget,
 }
 
 
+/****************************************************************************/
+/*  Mouse handling
+ */
+
 void        moo_term_set_mouse_tracking     (MooTerm    *term,
                                              int         tracking_type)
 {
-    term_implement_me ();
+    switch (tracking_type)
+    {
+        case MODE_PRESS_TRACKING:
+        case MODE_PRESS_AND_RELEASE_TRACKING:
+        case MODE_HILITE_MOUSE_TRACKING:
+            term->priv->tracking_mouse = TRUE;
+            moo_term_update_pointer (term);
+            break;
+
+        default:
+            term->priv->tracking_mouse = FALSE;
+            moo_term_update_pointer (term);
+            break;
+    }
+}
+
+
+gboolean    moo_term_button_press           (GtkWidget      *widget,
+                                             GdkEventButton *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
+}
+
+
+gboolean    moo_term_button_release         (GtkWidget      *widget,
+                                             GdkEventButton *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
+}
+
+
+gboolean    moo_term_motion_notify          (GtkWidget      *widget,
+                                             GdkEventMotion *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
 }
