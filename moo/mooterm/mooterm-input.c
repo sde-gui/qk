@@ -316,6 +316,8 @@ static gboolean button_press            (MooTerm        *term,
                                          GdkEventButton *event);
 static gboolean button_press_or_release (MooTerm        *term,
                                          GdkEventButton *event);
+static gboolean scroll_event            (MooTerm        *term,
+                                         GdkEventScroll *event);
 
 
 void        moo_term_set_mouse_tracking (MooTerm        *term,
@@ -354,9 +356,11 @@ static void stop_mouse_tracking         (MooTerm    *term)
         g_signal_handler_disconnect (term, term->priv->track_press_id);
     if (term->priv->track_release_id)
         g_signal_handler_disconnect (term, term->priv->track_release_id);
-
+    if (term->priv->track_scroll_id)
+        g_signal_handler_disconnect (term, term->priv->track_scroll_id);
     term->priv->track_press_id = 0;
     term->priv->track_release_id = 0;
+    term->priv->track_scroll_id = 0;
 }
 
 
@@ -376,6 +380,9 @@ static void start_button_tracking       (MooTerm    *term)
     term->priv->track_release_id =
             g_signal_connect (term, "button-release-event",
                               G_CALLBACK (button_press_or_release), NULL);
+    term->priv->track_scroll_id =
+            g_signal_connect (term, "scroll-event",
+                              G_CALLBACK (scroll_event), NULL);
 }
 
 
@@ -426,7 +433,7 @@ static gboolean button_press_or_release (MooTerm        *term,
     char *string;
 
     if ((event->type != GDK_BUTTON_PRESS && event->type != GDK_BUTTON_RELEASE) ||
-        event->button < 1 || event->button > 3)
+        event->button < 1 || event->button > 5)
     {
         return TRUE;
     }
@@ -434,9 +441,9 @@ static gboolean button_press_or_release (MooTerm        *term,
     get_mouse_coordinates (term, event, &x, &y);
 
     if (event->type == GDK_BUTTON_PRESS)
-        button = event->button - 1;
+        button = 040 + event->button - 1;
     else
-        button = 3;
+        button = 043;
 
     if (event->state & GDK_SHIFT_MASK)
         button |= 4;
@@ -447,6 +454,44 @@ static gboolean button_press_or_release (MooTerm        *term,
 
     string = g_strdup_printf ("\033[M%c%c%c",
                               (guchar) (button + 040),
+                              (guchar) (x + 1 + 040),
+                              (guchar) (y + 1 + 040));
+
+    moo_term_feed_child (term, string, 6);
+
+    g_free (string);
+    return TRUE;
+}
+
+
+static gboolean scroll_event            (MooTerm        *term,
+                                         GdkEventScroll *event)
+{
+    int x, y;
+    guchar button;
+    char *string;
+
+    if (event->direction != GDK_SCROLL_UP &&
+        event->direction != GDK_SCROLL_DOWN)
+    {
+        return TRUE;
+    }
+
+    get_mouse_coordinates (term, (GdkEventButton*)event, &x, &y);
+
+    if (event->direction == GDK_SCROLL_UP)
+        button = 0140;
+    else
+        button = 0141;
+
+    if (event->state & GDK_SHIFT_MASK)
+        button |= 4;
+    if (event->state & META_MASK)
+        button |= 8;
+    if (event->state & GDK_CONTROL_MASK)
+        button |= 16;
+
+    string = g_strdup_printf ("\033[M%c%c%c", button,
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 

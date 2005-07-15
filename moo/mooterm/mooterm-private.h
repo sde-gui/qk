@@ -111,6 +111,7 @@ struct _MooTermPrivate {
     int             tracking_mouse;
     gulong          track_press_id;
     gulong          track_release_id;
+    gulong          track_scroll_id;
 
     GtkIMContext   *im;
     gboolean        im_preedit_active;
