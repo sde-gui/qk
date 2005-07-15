@@ -62,8 +62,8 @@
 #define vt_SGR()        moo_term_buffer_sgr (parser->term->priv->buffer,    \
                                              (int*) parser->numbers->data,  \
                                              parser->numbers->len)
-#define vt_CUU(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, -n, 0)
-#define vt_CUD(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, n, 0)
+#define vt_CUU(n)       moo_term_buffer_cuu (parser->term->priv->buffer, n)
+#define vt_CUD(n)       moo_term_buffer_cud (parser->term->priv->buffer, n)
 #define vt_CUF(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, n)
 #define vt_CUB(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, -n)
 #define vt_DCH(n)       moo_term_buffer_delete_char (parser->term->priv->buffer, n)
@@ -119,6 +119,7 @@
 #define vt_HPR(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, n)
 #define vt_VPA(n)       moo_term_buffer_cursor_move_to (parser->term->priv->buffer, n, -1)
 #define vt_VPR(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, n, 0)
+#define vt_DECALN()     moo_term_buffer_decaln (parser->term->priv->buffer)
 
 
 #endif /* MOOTERM_MOOTERM_CTLFUNCS_H */
