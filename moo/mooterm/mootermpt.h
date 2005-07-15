@@ -72,6 +72,7 @@ void            moo_term_pt_set_size        (MooTermPt      *pt,
                                              guint           height);
 
 char            moo_term_pt_get_erase_char  (MooTermPt      *pt);
+void            moo_term_pt_send_intr       (MooTermPt      *pt);
 
 gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
                                              const char     *cmd,
