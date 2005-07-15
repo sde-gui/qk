@@ -513,7 +513,7 @@ static void term_draw_cells                 (MooTerm        *term,
                                              guint           len,
                                              MooTermTextAttr *attr,
                                              int             selected);
-static void term_draw_caret                 (MooTerm        *term);
+static void term_draw_cursor                (MooTerm        *term);
 
 static void term_draw_range                 (MooTerm        *term,
                                              guint           abs_row,
@@ -540,7 +540,7 @@ static void term_draw_range                 (MooTerm        *term,
                 term_draw_range (term, abs_row,
                                  start, cursor - start);
 
-            term_draw_caret (term);
+            term_draw_cursor (term);
 
             if (cursor < start + len - 1)
                 term_draw_range (term, abs_row,
@@ -776,7 +776,7 @@ static void term_draw_cells                 (MooTerm        *term,
 }
 
 
-static void term_draw_caret                 (MooTerm        *term)
+static void term_draw_cursor                (MooTerm        *term)
 {
     guint screen_width = term->priv->width;
     guint abs_row = buf_cursor_row_abs (term->priv->buffer);
@@ -803,9 +803,9 @@ static void term_draw_caret                 (MooTerm        *term)
 
     pango_layout_set_text (term->priv->layout, ch, ch_len);
 
-    switch (term->priv->caret_shape)
+    switch (term->priv->cursor_shape)
     {
-        case CARET_BLOCK:
+        case CURSOR_BLOCK:
             if (!term_selected (sel, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
@@ -845,7 +845,7 @@ static void term_draw_caret                 (MooTerm        *term)
             }
             break;
 
-        case CARET_UNDERLINE:
+        case CURSOR_UNDERLINE:
             if (!term_selected (sel, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
@@ -864,9 +864,9 @@ static void term_draw_caret                 (MooTerm        *term)
                                     term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
                                     TRUE,
                                     col * char_width,
-                                    (screen_row + 1) * char_height - term->priv->caret_height,
+                                    (screen_row + 1) * char_height - term->priv->cursor_height,
                                     char_width,
-                                    term->priv->caret_height);
+                                    term->priv->cursor_height);
             }
             else
             {
@@ -885,9 +885,9 @@ static void term_draw_caret                 (MooTerm        *term)
                                     term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
                                     TRUE,
                                     col * char_width,
-                                    (screen_row + 1) * char_height - term->priv->caret_height,
+                                    (screen_row + 1) * char_height - term->priv->cursor_height,
                                     char_width,
-                                    term->priv->caret_height);
+                                    term->priv->cursor_height);
             }
             break;
     }
@@ -990,7 +990,7 @@ void        moo_term_invert_colors          (MooTerm    *term,
 }
 
 
-void        moo_term_set_caret_visible      (MooTerm    *term,
+void        moo_term_set_cursor_visible     (MooTerm    *term,
                                              gboolean    visible)
 {
     if (term->priv->cursor_visible != visible)

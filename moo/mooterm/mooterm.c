@@ -187,7 +187,7 @@ static void moo_term_init                   (MooTerm        *term)
 
     term->priv->cursor_visible = TRUE;
 
-    term->priv->settings.hide_cursor_on_keypress = TRUE;
+    term->priv->settings.hide_pointer_on_keypress = TRUE;
     term->priv->settings.meta_sends_escape = TRUE;
     term->priv->settings.scroll_on_keystroke = TRUE;
     term->priv->settings.backspace_binding = MOO_TERM_ERASE_AUTO;
@@ -1023,7 +1023,7 @@ void        moo_term_set_mode               (MooTerm    *term,
         case MODE_DECTCEM:
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
-            moo_term_set_caret_visible (term, set);
+            moo_term_set_cursor_visible (term, set);
             break;
 
         case MODE_CA:

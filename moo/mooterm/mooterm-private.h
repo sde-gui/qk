@@ -51,7 +51,7 @@ typedef enum {
     POINTER_TEXT     = 1,
     POINTER_NORMAL   = 2,
     POINTERS_NUM     = 3
-} TermCursorType;
+} TermPointerType;
 
 enum {
     NORMAL      = 0,
@@ -60,9 +60,9 @@ enum {
 };
 
 typedef enum {
-    CARET_BLOCK,
-    CARET_UNDERLINE
-} TermCaretShape;
+    CURSOR_BLOCK,
+    CURSOR_UNDERLINE
+} TermCursorShape;
 
 
 typedef struct _TermFontInfo    TermFontInfo;
@@ -103,8 +103,8 @@ struct _MooTermPrivate {
     GdkGC          *fg[MOO_TERM_COLOR_MAX + 1][3];
     GdkGC          *bg[MOO_TERM_COLOR_MAX + 1][3];
 
-    TermCaretShape  caret_shape;
-    guint           caret_height;
+    TermCursorShape cursor_shape;
+    guint           cursor_height;
 
     GdkCursor      *pointer[POINTERS_NUM];
     guint           tracking_mouse;
@@ -119,7 +119,7 @@ struct _MooTermPrivate {
     guint           pending_adjustment_value_changed;
 
     struct {
-        gboolean            hide_cursor_on_keypress;    /* = TRUE */
+        gboolean            hide_pointer_on_keypress;   /* = TRUE */
         gboolean            meta_sends_escape;          /* = TRUE */
         gboolean            scroll_on_keystroke;        /* = TRUE */
         MooTermEraseBinding backspace_binding;
@@ -219,7 +219,7 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
 /* these two are in mootermdraw.c */
 void        moo_term_invert_colors          (MooTerm    *term,
                                              gboolean    invert);
-void        moo_term_set_caret_visible      (MooTerm    *term,
+void        moo_term_set_cursor_visible      (MooTerm    *term,
                                              gboolean    visible);
 /* this one is in mooterminput.c, tracking_type == -1 means turn it off */
 void        moo_term_set_mouse_tracking     (MooTerm    *term,

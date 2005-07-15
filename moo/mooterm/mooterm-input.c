@@ -78,7 +78,7 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
 
     /* Unless it's a modifier key, hide the pointer. */
     if (!is_modifier &&
-         term->priv->settings.hide_cursor_on_keypress &&
+         term->priv->settings.hide_pointer_on_keypress &&
          moo_term_pt_child_alive (term->priv->pt))
     {
         moo_term_set_pointer_visible (term, FALSE);
