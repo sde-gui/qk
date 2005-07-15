@@ -104,7 +104,7 @@ DECDHLT:    '\033' '#' '3'      {   vt_not_implemented();   };
 DECDHLB:    '\033' '#' '4'      {   vt_not_implemented();   };
 DECSWL:     '\033' '#' '5'      {   vt_not_implemented();   };
 DECDWL:     '\033' '#' '6'      {   vt_not_implemented();   };
-DECALN:     '\033' '#' '8'      {   vt_not_implemented();   };
+DECALN:     '\033' '#' '8'      {   vt_DECALN ();   };
 S7C1T:      '\033' ' ' 'F'      {   vt_ignored ();  };
 S8C1T:      '\033' ' ' 'G'      {   vt_ignored ();  };
 
@@ -238,7 +238,7 @@ DECSCUSR:       '\233' number ' ' 'q'       {   vt_not_implemented();   }
             |   '\233' ' ' 'q'              {   vt_not_implemented();   };
 
 DECST8C:        '\233' '?' number 'W'       {   vt_not_implemented();   };
-TBC:            '\233' number 'g'           {   vt_TBC (get_num (0));   }
+TBC:            '\233' number 'g'           {   vt_TBC ($2);            }
             |   '\233' 'g'                  {   vt_TBC (0);             };
 
 DECSLRM:        '\233' numbers 's'          {   vt_not_implemented();   }
@@ -386,7 +386,7 @@ DECRQSS_param:  '$' 'g'         {   add_number (CODE_DECSASD);  }
 
 number:         digit           {   $$ = $1;   }
             |   number digit    {   $$ = $1 * 10 + $2;  }
-            ;
+;
 
 digit:          '0'             {   $$ = 0;    }
             |   '1'             {   $$ = 1;    }
@@ -398,8 +398,13 @@ digit:          '0'             {   $$ = 0;    }
             |   '7'             {   $$ = 7;    }
             |   '8'             {   $$ = 8;    }
             |   '9'             {   $$ = 9;    }
-            ;
+;
 
-numbers:        number              {   add_number ($1);    }
-            |   numbers ';' number  {   add_number ($3);    }
+semicolons:     ';'
+            |   semicolons ';'              {   add_number (-1);                    }
+;
+
+numbers:        number                      {   add_number ($1);                    }
+            |   semicolons number           {   add_number (-1); add_number ($2);   }
+            |   numbers semicolons number   {   add_number ($3);                    }
 ;
