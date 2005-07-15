@@ -110,6 +110,7 @@ enum {
                         from the host.  */
 
     MODE_CA,
+    MODE_REVERSE_WRAPAROUND,
 
     MODE_PRESS_TRACKING,
     MODE_PRESS_AND_RELEASE_TRACKING,
@@ -129,9 +130,10 @@ enum {
 #define DEFAULT_MODE_DECAWM                     TRUE
 #define DEFAULT_MODE_DECTCEM                    TRUE
 #define DEFAULT_MODE_DECNKM                     FALSE
-#define DEFAULT_MODE_DECBKM                     FALSE
+#define DEFAULT_MODE_DECBKM                     TRUE    /* Backspace key send BS */
 #define DEFAULT_MODE_DECKPM                     FALSE
 #define DEFAULT_MODE_CA                         FALSE
+#define DEFAULT_MODE_REVERSE_WRAPAROUND         FALSE
 #define DEFAULT_MODE_PRESS_TRACKING             FALSE
 #define DEFAULT_MODE_PRESS_AND_RELEASE_TRACKING FALSE
 #define DEFAULT_MODE_HILITE_MOUSE_TRACKING      FALSE
@@ -152,6 +154,7 @@ enum {
     ar[MODE_DECBKM] = DEFAULT_MODE_DECBKM;                                          \
     ar[MODE_DECKPM] = DEFAULT_MODE_DECKPM;                                          \
     ar[MODE_CA] = DEFAULT_MODE_CA;                                                  \
+    ar[MODE_REVERSE_WRAPAROUND] = DEFAULT_MODE_REVERSE_WRAPAROUND;                  \
     ar[MODE_PRESS_TRACKING] = DEFAULT_MODE_PRESS_TRACKING;                          \
     ar[MODE_PRESS_AND_RELEASE_TRACKING] = DEFAULT_MODE_PRESS_AND_RELEASE_TRACKING;  \
     ar[MODE_HILITE_MOUSE_TRACKING] = MODE_HILITE_MOUSE_TRACKING;                    \
@@ -195,6 +198,9 @@ enum {
         case 9:                                     \
             mode = MODE_PRESS_TRACKING;             \
             break;                                  \
+        case 45:                                    \
+            mode = MODE_REVERSE_WRAPAROUND;         \
+            break;                                  \
         case 1000:                                  \
             mode = MODE_PRESS_AND_RELEASE_TRACKING; \
             break;                                  \
@@ -213,6 +219,7 @@ enum {
         case 34:                                    \
         case 35:                                    \
         case 36:                                    \
+        case 40:                                    \
         case 42:                                    \
         case 57:                                    \
         case 60:                                    \
@@ -314,6 +321,24 @@ typedef enum {
     ANSI_BACK_CYAN          = 46,
     ANSI_BACK_WHITE         = 47
 } AnsiTextAttr;
+
+
+/* DECRQSS parameters */
+typedef enum {
+    CODE_DECSASD,       /* Select Active Status Display*/
+    CODE_DECSCL,        /* Set Conformance Level */
+    CODE_DECSCPP,       /* Set Columns Per Page */
+    CODE_DECSLPP,       /* Set Lines Per Page */
+    CODE_DECSNLS,       /* Set Number of Lines per Screen */
+    CODE_DECSTBM,       /* Set Top and Bottom Margins */
+} DECRQSSCode;
+
+#define FINAL_DECSASD   "$g"
+#define FINAL_DECSCL    "\"p"
+#define FINAL_DECSCPP   "$|"
+#define FINAL_DECSLPP   "t"
+#define FINAL_DECSNLS   "*|"
+#define FINAL_DECSTBM   "r"
 
 
 #endif /* MOOTERM_MOOTERM_VT_H */

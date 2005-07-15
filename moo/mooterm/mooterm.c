@@ -59,12 +59,16 @@ static void     width_changed                   (MooTerm        *term,
 static void     height_changed                  (MooTerm        *term,
                                                  GParamSpec     *pspec);
 
+static void     im_preedit_start                (MooTerm        *term);
+static void     im_preedit_end                  (MooTerm        *term);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
     SET_WINDOW_TITLE,
     SET_ICON_NAME,
     BELL,
+    CHILD_DIED,
     LAST_SIGNAL
 };
 
@@ -139,6 +143,15 @@ static void moo_term_class_init (MooTermClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    signals[CHILD_DIED] =
+            g_signal_new ("child-died",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, child_died),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -159,7 +172,14 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->selection = term_selection_new ();
 
     term->priv->cursor_visible = TRUE;
-    term->priv->scroll_on_keystroke = TRUE;
+
+    term->priv->settings.hide_cursor_on_keypress = TRUE;
+    term->priv->settings.meta_sends_escape = TRUE;
+    term->priv->settings.scroll_on_keystroke = TRUE;
+    term->priv->settings.backspace_binding = MOO_TERM_ERASE_AUTO;
+    term->priv->settings.delete_binding = MOO_TERM_ERASE_AUTO;
+
+    term->priv->pointer_visible = TRUE;
 
     set_default_modes (term->priv->modes);
     set_default_modes (term->priv->saved_modes);
@@ -241,9 +261,9 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->adjustment)
         g_object_unref (term->priv->adjustment);
 
-    for (i = 0; i < CURSORS_NUM; ++i)
-        if (term->priv->cursor[i])
-            gdk_cursor_unref (term->priv->cursor[i]);
+    for (i = 0; i < POINTERS_NUM; ++i)
+        if (term->priv->pointer[i])
+            gdk_cursor_unref (term->priv->pointer[i]);
 
     /* TODO TODO TODO */
     for (i = 0; i < 1; ++i)
@@ -297,16 +317,16 @@ static void moo_term_realize                (GtkWidget          *widget)
     term = MOO_TERM (widget);
 
     empty_bitmap = gdk_bitmap_create_from_data (NULL, invisible_cursor_bits, 1, 1);
-    term->priv->cursor[CURSOR_NONE] =
+    term->priv->pointer[POINTER_NONE] =
             gdk_cursor_new_from_pixmap (empty_bitmap,
                                         empty_bitmap,
                                         &useless,
                                         &useless, 0, 0);
 
     display = gtk_widget_get_display (widget);
-    term->priv->cursor[CURSOR_TEXT] =
+    term->priv->pointer[POINTER_TEXT] =
             gdk_cursor_new_for_display (display, GDK_XTERM);
-    term->priv->cursor[CURSOR_POINTER] = NULL;
+    term->priv->pointer[POINTER_NORMAL] = NULL;
 
     attributes.window_type = GDK_WINDOW_CHILD;
     attributes.x = widget->allocation.x;
@@ -316,7 +336,7 @@ static void moo_term_realize                (GtkWidget          *widget)
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual (widget);
     attributes.colormap = gtk_widget_get_colormap (widget);
-    attributes.cursor = term->priv->cursor[CURSOR_TEXT];
+    attributes.cursor = term->priv->pointer[POINTER_TEXT];
     attributes.event_mask = gtk_widget_get_events (widget) |
             GDK_EXPOSURE_MASK |
             GDK_BUTTON_PRESS_MASK |
@@ -349,7 +369,23 @@ static void moo_term_realize                (GtkWidget          *widget)
     gtk_im_context_set_use_preedit (term->priv->im, FALSE);
     g_signal_connect (term->priv->im, "commit",
                       G_CALLBACK (moo_term_im_commit), term);
+    g_signal_connect_swapped (term->priv->im, "preedit-start",
+                              G_CALLBACK (im_preedit_start), term);
+    g_signal_connect_swapped (term->priv->im, "preedit-end",
+                              G_CALLBACK (im_preedit_end), term);
     gtk_im_context_focus_in (term->priv->im);
+}
+
+
+static void     im_preedit_start    (MooTerm        *term)
+{
+    term->priv->im_preedit_active = TRUE;
+}
+
+
+static void     im_preedit_end      (MooTerm        *term)
+{
+    term->priv->im_preedit_active = FALSE;
 }
 
 
@@ -679,7 +715,7 @@ void             moo_term_feed_child        (MooTerm        *term,
                                              const char     *string,
                                              int             len)
 {
-    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
     moo_term_pt_write (term->priv->pt, string, len);
 }
 
@@ -783,7 +819,6 @@ void        moo_term_set_icon_name          (MooTerm        *term,
 void        moo_term_bell                   (MooTerm    *term)
 {
     g_signal_emit (term, signals[BELL], 0);
-    g_message ("BELL");
 }
 
 
@@ -887,6 +922,63 @@ void        moo_term_set_mode               (MooTerm    *term,
                                              int         mode,
                                              gboolean    set)
 {
+#if 1
+    switch (mode)
+    {
+        case MODE_DECSCNM:
+            g_message ("set MODE_DECSCNM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECTCEM:
+            g_message ("set MODE_DECTCEM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_CA:
+            g_message ("set MODE_CA %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_REVERSE_WRAPAROUND:
+            g_message ("set MODE_REVERSE_WRAPAROUND %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_PRESS_TRACKING:
+            g_message ("set MODE_PRESS_TRACKING %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_PRESS_AND_RELEASE_TRACKING:
+            g_message ("set MODE_PRESS_AND_RELEASE_TRACKING %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_HILITE_MOUSE_TRACKING:
+            g_message ("set MODE_HILITE_MOUSE_TRACKING %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_SRM:
+            g_message ("set MODE_SRM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_LNM:
+            g_message ("set MODE_LNM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECNKM:
+            g_message ("set MODE_DECNKM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECCKM:
+            g_message ("set MODE_DECCKM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECANM:
+            g_message ("set MODE_DECANM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECBKM:
+            g_message ("set MODE_DECBKM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECKPM:
+            g_message ("set MODE_DECKPM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_IRM:
+            g_message ("set MODE_IRM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECOM:
+            g_message ("set MODE_DECOM %s", set ? "TRUE" : "FALSE");
+            break;
+        case MODE_DECAWM:
+            g_message ("set MODE_DECAWM %s", set ? "TRUE" : "FALSE");
+            break;
+    }
+#endif
+
     switch (mode)
     {
         case MODE_DECSCNM:
@@ -926,6 +1018,7 @@ void        moo_term_set_mode               (MooTerm    *term,
         case MODE_DECANM:
         case MODE_DECBKM:
         case MODE_DECKPM:
+        case MODE_REVERSE_WRAPAROUND:
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
             break;
@@ -994,4 +1087,169 @@ void        moo_term_da3                    (MooTerm    *term)
 {
     /* TODO */
     moo_term_feed_child (term, "\220!|FFFFFFFF\234", -1);
+}
+
+
+#define make_DECRQSS(c)                                  \
+    answer = g_strdup_printf ("\220%s$r" FINAL_##c "\234", ps)
+
+void        moo_term_setting_request        (MooTerm    *term,
+                                             int         setting)
+{
+    DECRQSSCode code = setting;
+    char *ps = NULL, *answer = NULL;
+
+    switch (code)
+    {
+        case CODE_DECSASD:       /* Select Active Status Display*/
+            ps = g_strdup ("0");
+            make_DECRQSS (DECSASD);
+            break;
+        case CODE_DECSCL:        /* Set Conformance Level */
+            ps = g_strdup ("61");
+            make_DECRQSS (DECSCL);
+            break;
+        case CODE_DECSCPP:       /* Set Columns Per Page */
+            ps = g_strdup_printf ("%d", term->priv->width);
+            make_DECRQSS (DECSCPP);
+            break;
+        case CODE_DECSLPP:       /* Set Lines Per Page */
+            ps = g_strdup_printf ("%d", term->priv->height);
+            make_DECRQSS (DECSLPP);
+            break;
+        case CODE_DECSNLS:       /* Set Number of Lines per Screen */
+            ps = g_strdup_printf ("%d", term->priv->height);
+            make_DECRQSS (DECSNLS);
+            break;
+        case CODE_DECSTBM:       /* Set Top and Bottom Margins */
+            ps = g_strdup_printf ("%d;%d",
+                                  term->priv->buffer->priv->top_margin + 1,
+                                  term->priv->buffer->priv->bottom_margin + 1);
+            make_DECRQSS (DECSTBM);
+            break;
+    }
+
+    moo_term_feed_child (term, answer, -1);
+    g_free (answer);
+    g_free (ps);
+}
+
+
+void        moo_term_reset                  (MooTerm    *term)
+{
+    moo_term_buffer_freeze_changed_notify (term->priv->primary_buffer);
+    moo_term_buffer_freeze_cursor_notify (term->priv->primary_buffer);
+
+    term->priv->buffer = term->priv->primary_buffer;
+    moo_term_buffer_reset (term->priv->primary_buffer);
+    moo_term_buffer_reset (term->priv->alternate_buffer);
+    set_default_modes (term->priv->modes);
+    set_default_modes (term->priv->saved_modes);
+
+    moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
+    moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
+    moo_term_buffer_changed (term->priv->primary_buffer);
+    moo_term_buffer_cursor_moved (term->priv->primary_buffer);
+}
+
+
+void        moo_term_soft_reset             (MooTerm    *term)
+{
+    moo_term_buffer_freeze_changed_notify (term->priv->buffer);
+    moo_term_buffer_freeze_cursor_notify (term->priv->buffer);
+
+    moo_term_buffer_soft_reset (term->priv->buffer);
+    set_default_modes (term->priv->modes);
+    set_default_modes (term->priv->saved_modes);
+
+    moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
+    moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
+    moo_term_buffer_changed (term->priv->primary_buffer);
+    moo_term_buffer_cursor_moved (term->priv->primary_buffer);
+}
+
+
+void        moo_term_dsr                    (MooTerm    *term,
+                                             int         type,
+                                             int         arg,
+                                             gboolean    extended)
+{
+    char *answer = NULL;
+    MooTermBuffer *buf = term->priv->buffer;
+
+    switch (type)
+    {
+        case 6:
+            if (extended)
+                answer = g_strdup_printf ("\233%d;%d;0R",
+                                          buf_cursor_row (buf) + 1,
+                                          buf_cursor_col (buf) + 1);
+            else
+                answer = g_strdup_printf ("\233%d;%dR",
+                                          buf_cursor_row (buf) + 1,
+                                          buf_cursor_col (buf) + 1);
+            break;
+
+            break;
+        case 75:
+            answer = g_strdup ("\233?70n");
+            break;
+        case 26:
+            answer = g_strdup ("\233?27;1;0;5n");
+            break;
+        case 62:
+            answer = g_strdup ("\2330*{");
+            break;
+        case 63:
+            if (arg > 0)
+                answer = g_strdup_printf ("\220%d!~30303030\234", arg);
+            else
+                answer = g_strdup ("\220!~30303030\234");
+            break;
+        case 5:
+            answer = g_strdup ("\2330n");
+            break;
+        case 15:
+            answer = g_strdup ("\233?13n");
+            break;
+        case 25:
+            answer = g_strdup ("\233?21n");
+            break;
+
+        default:
+            g_warning ("%s: unknown request", G_STRFUNC);
+    }
+
+    if (answer)
+    {
+        moo_term_feed_child (term, answer, -1);
+        g_free (answer);
+    }
+}
+
+
+void        moo_term_set_pointer_visible    (MooTerm        *term,
+                                             gboolean        visible)
+{
+    g_return_if_fail (GTK_WIDGET_REALIZED (term));
+
+    if (visible != term->priv->pointer_visible)
+    {
+        if (visible)
+        {
+            if (term->priv->tracking_mouse)
+                gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                                       term->priv->pointer[POINTER_NORMAL]);
+            else
+                gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                                       term->priv->pointer[POINTER_TEXT]);
+        }
+        else
+        {
+            gdk_window_set_cursor (GTK_WIDGET(term)->window,
+                                   term->priv->pointer[POINTER_NONE]);
+        }
+
+        term->priv->pointer_visible = visible;
+    }
 }

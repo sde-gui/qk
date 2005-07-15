@@ -32,6 +32,8 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
                                                  GObjectConstructParam *construct_param);
 static void     moo_term_buffer_finalize        (GObject        *object);
 
+static void     set_defaults                    (MooTermBuffer  *buf);
+
 
 /* MOO_TYPE_TERM_BUFFER */
 G_DEFINE_TYPE (MooTermBuffer, moo_term_buffer, G_TYPE_OBJECT)
@@ -146,12 +148,7 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
     buf->priv->changed = NULL;
     buf->priv->changed_all = FALSE;
 
-    buf->priv->single_shift = -1;
-    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
-            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
-    buf->priv->current_graph_set = NULL;
-
-    set_default_modes (buf->priv->modes);
+    set_defaults (buf);
     moo_term_buffer_clear_saved (buf);
 }
 
@@ -308,7 +305,7 @@ void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
                 width - old_width
             };
 
-            buf_changed_add_rect (changed);
+            buf_changed_add_rect (buf, changed);
             moo_term_buffer_changed (buf);
         }
         else
@@ -348,7 +345,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
                 g_ptr_array_add (buf->priv->lines,
                                  term_line_new (width));
 
-            buf_changed_add_rect (changed);
+            buf_changed_add_rect (buf, changed);
             content_changed = TRUE;
         }
         else /* height < old_height */
@@ -385,7 +382,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
                 g_ptr_array_add (buf->priv->lines,
                                  term_line_new (width));
 
-            buf_changed_add_rect (changed);
+            buf_changed_add_rect (buf, changed);
             content_changed = TRUE;
         }
         else /* height < old_height */
@@ -418,7 +415,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
                 }
 
                 buf->priv->_screen_offset += remove;
-                buf_changed_set_all ();
+                buf_changed_set_all (buf);
                 scrollback_changed = TRUE;
                 content_changed = TRUE;
             }
@@ -494,9 +491,6 @@ void    moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
     guint old_row = buf_cursor_row (buf);
     guint old_col = buf_cursor_col (buf);
 
-    g_return_if_fail (row < (int) buf_screen_height (buf));
-    g_return_if_fail (col < (int) buf_screen_width (buf));
-
     if (row < 0)
         row = old_row;
     else if (row >= height)
@@ -551,19 +545,19 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
     if (buf_get_mode (MODE_IRM))
     {
         term_line_insert_unichar (buf_screen_line (buf, cursor_row),
-                                    buf->priv->cursor_col++,
-                                    c, 1, attr, width);
-        buf_changed_add_range (cursor_row,
-                                buf->priv->cursor_col - 1,
-                                width - buf->priv->cursor_col + 1);
+                                  buf->priv->cursor_col++,
+                                  c, 1, attr, width);
+        buf_changed_add_range (buf, cursor_row,
+                               buf->priv->cursor_col - 1,
+                               width - buf->priv->cursor_col + 1);
     }
     else
     {
         term_line_set_unichar (buf_screen_line (buf, cursor_row),
-                                buf->priv->cursor_col++,
-                                c, 1, attr, width);
-        buf_changed_add_range (cursor_row,
-                                buf->priv->cursor_col - 1, 1);
+                               buf->priv->cursor_col++,
+                               c, 1, attr, width);
+        buf_changed_add_range (buf, cursor_row,
+                               buf->priv->cursor_col - 1, 1);
     }
 
     if (buf->priv->cursor_col == width)
@@ -691,11 +685,20 @@ guint   moo_term_buffer_prev_tab_stop       (MooTermBuffer  *buf,
         return 0;
 }
 
-void    moo_term_buffer_clear_tab_stop      (MooTermBuffer  *buf)
+void    moo_term_buffer_clear_tab_stop      (MooTermBuffer  *buf,
+                                             int             what)
 {
-    buf->priv->tab_stops =
-            g_list_remove (buf->priv->tab_stops,
-                           GUINT_TO_POINTER (buf_cursor_col (buf)));
+    g_return_if_fail (what == 0 || what == 3);
+
+    if (what == 0)
+        buf->priv->tab_stops =
+                g_list_remove (buf->priv->tab_stops,
+                            GUINT_TO_POINTER (buf_cursor_col (buf)));
+    else
+    {
+        g_list_free (buf->priv->tab_stops);
+        buf->priv->tab_stops = NULL;
+    }
 }
 
 static int cmp_guints (gconstpointer a, gconstpointer b)
@@ -921,7 +924,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
             /* TODO: attributes */
             buf->priv->lines->pdata[bottom] = term_line_new (width);
 
-            buf_changed_add_rect (changed);
+            buf_changed_add_rect (buf, changed);
         }
         else
         {
@@ -940,7 +943,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
             buf->priv->_screen_offset += 1;
             moo_term_buffer_scrollback_changed (buf);
 
-            buf_changed_set_all ();
+            buf_changed_set_all (buf);
         }
         else
         {
@@ -976,7 +979,7 @@ void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf)
         /* TODO: attributes */
         buf->priv->lines->pdata[top] = term_line_new (width);
 
-        buf_changed_add_rect (changed);
+        buf_changed_add_rect (buf, changed);
     }
     else
     {
@@ -993,10 +996,26 @@ void    moo_term_buffer_backspace               (MooTermBuffer  *buf)
 }
 
 
-void    moo_term_buffer_tab                     (MooTermBuffer  *buf)
+void    moo_term_buffer_tab                     (MooTermBuffer  *buf,
+                                                 guint           n)
 {
-    moo_term_buffer_cursor_move_to (buf, -1,
-        moo_term_buffer_next_tab_stop (buf, buf->priv->cursor_col));
+    guint i;
+    for (i = 0; i < n; ++i)
+    {
+        moo_term_buffer_cursor_move_to (buf, -1,
+            moo_term_buffer_next_tab_stop (buf, buf->priv->cursor_col));
+    }
+}
+
+void    moo_term_buffer_back_tab                (MooTermBuffer  *buf,
+                                                 guint           n)
+{
+    guint i;
+    for (i = 0; i < n; ++i)
+    {
+        moo_term_buffer_cursor_move_to (buf, -1,
+            moo_term_buffer_prev_tab_stop (buf, buf->priv->cursor_col));
+    }
 }
 
 
@@ -1100,7 +1119,7 @@ void    moo_term_buffer_delete_char             (MooTermBuffer  *buf,
 
     term_line_delete_range (buf_screen_line (buf, cursor_row),
                             cursor_col, n);
-    buf_changed_add_range(cursor_row, cursor_col,
+    buf_changed_add_range(buf, cursor_row, cursor_col,
                           buf_screen_width (buf) - cursor_col);
     notify_changed ();
 }
@@ -1120,7 +1139,7 @@ void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
 
     term_line_erase_range (buf_screen_line (buf, row),
                            col, len);
-    buf_changed_add_range(row, col, len);
+    buf_changed_add_range (buf, row, col, len);
     notify_changed ();
 }
 
@@ -1223,8 +1242,8 @@ void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
     term_line_insert_unichar (buf_screen_line (buf, cursor_row),
                               cursor_col, EMPTY_CHAR, n,
                               &ZERO_ATTR, buf_screen_width (buf));
-    buf_changed_add_range(cursor_row, cursor_col,
-                          buf_screen_width (buf) - cursor_col);
+    buf_changed_add_range (buf, cursor_row, cursor_col,
+                           buf_screen_width (buf) - cursor_col);
     notify_changed ();
 }
 
@@ -1277,7 +1296,7 @@ void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
         g_ptr_array_index (buf->priv->lines, i) =
                 term_line_new (buf->priv->screen_width);
 
-    buf_changed_add_rect (changed);
+    buf_changed_add_rect (buf, changed);
     moo_term_buffer_changed (buf);
 }
 
@@ -1316,7 +1335,7 @@ void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
         g_ptr_array_index (buf->priv->lines, i) =
                 term_line_new (buf->priv->screen_width);
 
-    buf_changed_add_rect (changed);
+    buf_changed_add_rect (buf, changed);
     moo_term_buffer_changed (buf);
 }
 
@@ -1386,6 +1405,7 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
         case MODE_DECANM:
         case MODE_DECOM:
         case MODE_DECAWM:
+        case MODE_REVERSE_WRAPAROUND:   /* TODO*/
             buf->priv->modes[mode] = set;
             break;
 
@@ -1414,4 +1434,105 @@ void    moo_term_buffer_set_ca_mode             (MooTermBuffer  *buf,
 {
     buf->priv->modes[MODE_CA] = set;
     moo_term_buffer_scrollback_changed (buf);
+}
+
+
+static void     set_defaults                    (MooTermBuffer  *buf)
+{
+    buf->priv->cursor_col = buf->priv->cursor_row = 0;
+
+    buf->priv->top_margin = 0;
+    buf->priv->bottom_margin = buf->priv->screen_height - 1;
+    buf->priv->scrolling_region_set = FALSE;
+
+    set_default_modes (buf->priv->modes);
+    buf->priv->current_attr.mask = 0;
+    buf->priv->single_shift = -1;
+    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
+            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
+    buf->priv->current_graph_set = NULL;
+
+    moo_term_buffer_clear_saved (buf);
+}
+
+
+void    moo_term_buffer_reset                   (MooTermBuffer  *buf)
+{
+    guint i;
+
+    freeze_notify ();
+
+    for (i = 0; i < buf->priv->lines->len; ++i)
+        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+    g_ptr_array_free (buf->priv->lines, TRUE);
+
+    buf->priv->_screen_offset = 0;
+    buf->priv->lines = g_ptr_array_sized_new (buf->priv->screen_height);
+    for (i = 0; i < buf->priv->screen_height; ++i)
+        g_ptr_array_add (buf->priv->lines,
+                         term_line_new (buf->priv->screen_width));
+
+    set_defaults (buf);
+
+    buf_changed_set_all (buf);
+    thaw_and_notify ();
+}
+
+
+void    moo_term_buffer_soft_reset              (MooTermBuffer  *buf)
+{
+    set_default_modes (buf->priv->modes);
+
+    buf->priv->top_margin = 0;
+    buf->priv->bottom_margin = buf->priv->screen_height - 1;
+    buf->priv->scrolling_region_set = FALSE;
+
+    buf->priv->current_attr.mask = 0;
+    buf->priv->single_shift = -1;
+    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
+            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
+    buf->priv->current_graph_set = NULL;
+
+    buf_changed_set_all (buf);
+    moo_term_buffer_changed (buf);
+}
+
+
+void    moo_term_buffer_cursor_next_line        (MooTermBuffer  *buf,
+                                                 guint           n)
+{
+    guint i;
+
+    moo_term_buffer_freeze_cursor_notify (buf);
+
+    for (i = 0; i < n ; ++i)
+    {
+        if (buf->priv->cursor_row + 1 < buf->priv->screen_height)
+            moo_term_buffer_cursor_move_to (buf, buf->priv->cursor_row + 1, 0);
+        else
+            break;
+    }
+
+    moo_term_buffer_thaw_cursor_notify (buf);
+    moo_term_buffer_cursor_moved (buf);
+}
+
+
+void    moo_term_buffer_cursor_prev_line        (MooTermBuffer  *buf,
+                                                 guint           n)
+{
+    guint i;
+
+    moo_term_buffer_freeze_cursor_notify (buf);
+
+    for (i = 0; i < n ; ++i)
+    {
+        if (buf->priv->cursor_row > 0)
+            moo_term_buffer_cursor_move_to (buf, buf->priv->cursor_row - 1, 0);
+        else
+            break;
+    }
+
+    moo_term_buffer_thaw_cursor_notify (buf);
+    moo_term_buffer_cursor_moved (buf);
 }

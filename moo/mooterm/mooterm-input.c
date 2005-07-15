@@ -9,15 +9,18 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
+ *
+ *   moo_term_key_press() code is taken from libvte vte.c,
+ *   Copyright (C) 2001-2004 Red Hat, Inc.
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm-private.h"
 #include "mooterm/mooterm-keymap.h"
 #include "mooterm/mootermpt.h"
 
 /* must be enough to fit '^' + one unicode character + 0 byte */
-#define MANY_CHARS 16
+#define MANY_CHARS  16
+#define META_MASK   GDK_MOD1_MASK
 
 
 static GtkWidgetClass *widget_class (void)
@@ -38,136 +41,257 @@ void        moo_term_im_commit          (G_GNUC_UNUSED GtkIMContext   *imcontext
 }
 
 
+/* shamelessly taken from vte.c */
 gboolean    moo_term_key_press          (GtkWidget      *widget,
                                          GdkEventKey    *event)
 {
-    MooTerm *term = MOO_TERM (widget);
-    gboolean handled = FALSE;
-    gboolean scroll = FALSE;
-    gboolean clear_selection = FALSE;
-    char buffer[MANY_CHARS];
-    const char *string = NULL;
-    char *freeme = NULL;
-    guint len = 0;
-    guint key = event->keyval;
-    GdkModifierType mods = event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK);
+    MooTerm *term;
+    char *string = NULL;
+    gssize string_length = 0;
+    int i;
+    gboolean scrolled = FALSE;
+    gboolean steal = FALSE;
+    gboolean is_modifier = FALSE;
+    gboolean handled;
+    gboolean suppress_meta_esc = FALSE;
+    guint keyval = 0;
+    gunichar keychar = 0;
+    char keybuf[6];  /* 6 bytes for UTF-8 character */
+    GdkModifierType modifiers;
 
-    if (gtk_im_context_filter_keypress (term->priv->im, event))
+    term = MOO_TERM (widget);
+
+    /* First, check if GtkWidget's behavior already does something with
+     * this key. */
+    if (widget_class()->key_press_event (widget, event))
     {
-        handled = TRUE;
-        scroll = TRUE;
-        clear_selection = TRUE;
+        return TRUE;
     }
-    else if (ignore (key))
+
+    keyval = event->keyval;
+
+    /* If it's a keypress, record that we got the event, in case the
+     * input method takes the event from us. */
+    term->priv->modifiers = modifiers = event->state;
+    modifiers &= (GDK_SHIFT_MASK | GDK_CONTROL_MASK | META_MASK);
+
+    /* Determine if this is just a modifier key. */
+    is_modifier = key_is_modifier (keyval);
+
+    /* Unless it's a modifier key, hide the pointer. */
+    if (!is_modifier &&
+         term->priv->settings.hide_cursor_on_keypress &&
+         moo_term_pt_child_alive (term->priv->pt))
     {
-        handled = TRUE;
+        moo_term_set_pointer_visible (term, FALSE);
     }
-    else if (!mods)
+
+    /* We steal many keypad keys here. */
+    if (!term->priv->im_preedit_active)
     {
-        if (get_vt_key (term, event->keyval, &string, &len))
+        switch (keyval)
         {
-            handled = TRUE;
-            scroll = TRUE;
-            clear_selection = TRUE;
+            CASE_GDK_KP_SOMETHING
+                steal = TRUE;
+        }
+
+        if (modifiers & META_MASK)
+        {
+            steal = TRUE;
         }
     }
-    else if (mods == GDK_SHIFT_MASK)
-    {
-        switch (key)
-        {
-            case GDK_Up:
-                moo_term_scroll_lines (term, -1);
-                handled = TRUE;
-                break;
-            case GDK_Down:
-                moo_term_scroll_lines (term, 1);
-                handled = TRUE;
-                break;
 
-            case GDK_Insert:
+    /* Let the input method at this one first. */
+    if (!steal)
+    {
+        if (gtk_im_context_filter_keypress(term->priv->im, event))
+            return TRUE;
+    }
+
+    if (is_modifier)
+        return FALSE;
+
+    /* Now figure out what to send to the child. */
+    handled = FALSE;
+
+    switch (keyval)
+    {
+        case GDK_BackSpace:
+            get_backspace_key (term, &string,
+                               &string_length,
+                               &suppress_meta_esc);
+            handled = TRUE;
+            break;
+
+        case GDK_Delete:
+            get_delete_key (term, &string,
+                            &string_length,
+                            &suppress_meta_esc);
+            handled = TRUE;
+            suppress_meta_esc = TRUE;
+            break;
+
+        case GDK_Insert:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
                 moo_term_paste_clipboard (term);
                 handled = TRUE;
-                scroll = TRUE;
-                clear_selection = TRUE;
-                break;
-
-            default:
-                /* ignore Shift key*/
-                if (get_vt_key (term, event->keyval, &string, &len))
-                {
-                    handled = TRUE;
-                    scroll = TRUE;
-                    clear_selection = TRUE;
-                }
-        }
-    }
-    else if (mods == GDK_CONTROL_MASK)
-    {
-        if (get_vt_ctl_key (term, event->keyval, &string, &len))
-        {
-            handled = TRUE;
-            scroll = TRUE;
-            clear_selection = TRUE;
-        }
-        else
-        {
-            switch (key)
+                suppress_meta_esc = TRUE;
+            }
+            else if (modifiers & GDK_CONTROL_MASK)
             {
-                case GDK_Insert:
-                    moo_term_copy_clipboard (term);
-                    handled = TRUE;
-                    break;
+                moo_term_copy_clipboard (term);
+                handled = TRUE;
+                suppress_meta_esc = TRUE;
+            }
+            break;
 
-                case GDK_Break:
-                    get_vt_ctl_key (term, GDK_C, &string, &len);
-                    handled = TRUE;
-                    scroll = TRUE;
-                    clear_selection = TRUE;
-                    break;
+        case GDK_Page_Up:
+        case GDK_KP_Page_Up:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_pages (term, -1);
+                scrolled = TRUE;
+                handled = TRUE;
+                suppress_meta_esc = TRUE;
+            }
+            break;
+
+        case GDK_Page_Down:
+        case GDK_KP_Page_Down:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_pages (term, 1);
+                scrolled = TRUE;
+                handled = TRUE;
+                suppress_meta_esc = TRUE;
+            }
+            break;
+
+        case GDK_Home:
+        case GDK_KP_Home:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_to_top (term);
+                scrolled = TRUE;
+                handled = TRUE;
+            }
+            break;
+        case GDK_End:
+        case GDK_KP_End:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_to_bottom (term);
+                scrolled = TRUE;
+                handled = TRUE;
+            }
+            break;
+        case GDK_Up:
+        case GDK_KP_Up:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_lines (term, -1);
+                scrolled = TRUE;
+                handled = TRUE;
+            }
+            break;
+        case GDK_Down:
+        case GDK_KP_Down:
+            if (modifiers & GDK_SHIFT_MASK)
+            {
+                moo_term_scroll_lines (term, 1);
+                scrolled = TRUE;
+                handled = TRUE;
+            }
+            break;
+
+        case GDK_Break:
+            moo_term_ctrl_c (term);
+            handled = TRUE;
+            break;
+    }
+
+    /* If the above switch statement didn't do the job, try mapping
+     * it to a literal or capability name. */
+    if (!handled)
+    {
+        if (!(modifiers & GDK_CONTROL_MASK))
+            get_vt_key (term, keyval, &string, &string_length);
+        else
+            get_vt_ctl_key (term, keyval, &string, &string_length);
+
+        /* If we found something this way, suppress
+            * escape-on-meta. */
+        if (string != NULL && string_length > 0)
+            suppress_meta_esc = TRUE;
+    }
+
+    /* If we didn't manage to do anything, try to salvage a
+        * printable string. */
+    if (!handled && !string)
+    {
+        /* Convert the keyval to a gunichar. */
+        keychar = gdk_keyval_to_unicode(keyval);
+        string_length = 0;
+
+        if (keychar != 0)
+        {
+            /* Convert the gunichar to a string. */
+            string_length = g_unichar_to_utf8(keychar, keybuf);
+
+            if (string_length)
+            {
+                string = g_malloc0 (string_length + 1);
+                memcpy (string, keybuf, string_length);
+            }
+            else
+            {
+                string = NULL;
+            }
+        }
+
+        if (string && (modifiers & GDK_CONTROL_MASK))
+        {
+            /* Replace characters which have "control"
+                * counterparts with those counterparts. */
+            for (i = 0; i < string_length; i++)
+            {
+                if ((((guint8)string[i]) >= 0x40) &&
+                       (((guint8)string[i]) <  0x80))
+                {
+                    string[i] &= (~(0x60));
+                }
             }
         }
     }
-    else if (mods == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+
+    /* If we got normal characters, send them to the child. */
+    if (string)
     {
-    }
-
-
-    if (!handled)
-    {
-        gunichar c = gdk_keyval_to_unicode (event->keyval);
-
-        if (c && g_unichar_isgraph (c))
+        if (moo_term_pt_child_alive (term->priv->pt))
         {
-            len = 0;
+            if (term->priv->settings.meta_sends_escape &&
+                !suppress_meta_esc &&
+                string_length > 0 &&
+                (modifiers & META_MASK))
+            {
+                moo_term_feed_child (term, "\033", 1);
+            }
 
-            if (mods & GDK_CONTROL_MASK)
-                buffer[len++] = '^';
-
-            len += g_unichar_to_utf8 (c, &buffer[len]);
-            buffer[len] = 0;
-            string = buffer;
-
-            handled = TRUE;
-            scroll = TRUE;
-            clear_selection = TRUE;
+            if (string_length > 0)
+            {
+                moo_term_feed_child (term, string, string_length);
+            }
         }
+
+        /* Keep the cursor on-screen. */
+        if (!scrolled && term->priv->settings.scroll_on_keystroke)
+            moo_term_scroll_to_bottom (term);
+
+        g_free(string);
     }
 
-    if (clear_selection)
-        term_selection_clear (term);
-
-    if (string && moo_term_pt_child_alive (term->priv->pt))
-        moo_term_feed_child (term, string, len);
-
-    if (handled && term->priv->scroll_on_keystroke && scroll)
-        moo_term_scroll_to_bottom (term);
-
-    g_free (freeme);
-
-    if (!handled)
-        return widget_class()->key_press_event (widget, event);
-    else
-        return TRUE;
+    return TRUE;
 }
 
 

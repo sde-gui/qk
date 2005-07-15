@@ -51,40 +51,50 @@ struct _MooTermClass
                                      const char     *title);
     void (*set_icon_name)           (MooTerm        *term,
                                      const char     *icon);
+    void (*child_died)              (MooTerm        *term);
 };
 
+typedef enum {
+    MOO_TERM_ERASE_AUTO,
+    MOO_TERM_ERASE_ASCII_BACKSPACE,
+    MOO_TERM_ERASE_ASCII_DELETE,
+    MOO_TERM_ERASE_DELETE_SEQUENCE
+} MooTermEraseBinding;
 
-GType            moo_term_get_type          (void) G_GNUC_CONST;
 
-void             moo_term_set_buffer        (MooTerm        *term,
-                                             MooTermBuffer  *buffer);
-MooTermBuffer   *moo_term_get_buffer        (MooTerm        *term);
-void             moo_term_set_adjustment    (MooTerm        *term,
+GType       moo_term_get_type                  (void) G_GNUC_CONST;
+GType       moo_term_erase_binding_get_type    (void) G_GNUC_CONST;
+
+
+void        moo_term_set_adjustment         (MooTerm        *term,
                                              GtkAdjustment  *vadj);
 
-gboolean         moo_term_fork_command      (MooTerm        *term,
+gboolean    moo_term_fork_command           (MooTerm        *term,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp);
 
-void             moo_term_feed              (MooTerm        *term,
+void        moo_term_feed                   (MooTerm        *term,
                                              const char     *data,
                                              int             len);
-void             moo_term_feed_child        (MooTerm        *term,
+void        moo_term_feed_child             (MooTerm        *term,
                                              const char     *string,
                                              int             len);
 
-void             moo_term_scroll_to_top     (MooTerm        *term);
-void             moo_term_scroll_to_bottom  (MooTerm        *term);
-void             moo_term_scroll_lines      (MooTerm        *term,
+void        moo_term_scroll_to_top          (MooTerm        *term);
+void        moo_term_scroll_to_bottom       (MooTerm        *term);
+void        moo_term_scroll_lines           (MooTerm        *term,
                                              int             lines);
-void             moo_term_scroll_pages      (MooTerm        *term,
+void        moo_term_scroll_pages           (MooTerm        *term,
                                              int             pages);
 
-void             moo_term_copy_clipboard    (MooTerm        *term);
-void             moo_term_paste_clipboard   (MooTerm        *term);
+void        moo_term_copy_clipboard         (MooTerm        *term);
+void        moo_term_paste_clipboard        (MooTerm        *term);
 
-void             moo_term_ctrl_c            (MooTerm        *term);
+void        moo_term_ctrl_c                 (MooTerm        *term);
+
+void        moo_term_set_pointer_visible    (MooTerm        *term,
+                                             gboolean        visible);
 
 
 G_END_DECLS

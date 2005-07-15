@@ -1,0 +1,107 @@
+Assign User-Preference
+Supp Set                    DCS Ps ! u Dscs ST      DECAUPSS
+    Ps
+    0   94-Character Set
+    1   96-Character Set
+
+    Dscs    Default 94-Character Set
+    % 5     DEC Supplemental
+    " ?     DEC Greek
+    " 4     DEC Hebrew
+    % 0     DEC Turkish
+    & 4     DEC Cyrillic
+    <       User-preferred supplemental
+
+    Dscs    Default 96-Character Set
+    A       ISO Latin-1 Supplemental
+    B       ISO Latin-2 Supplemental
+    F       ISO Greek Supplemental
+    H       ISO Hebrew Supplemental
+    L       ISO Latin-Cyrillic
+    M       ISO Latin-5 Supplemental
+    <       User-preferred supplemental
+
+
+Request Selection or
+Setting                                             DECRQSS
+Request (DECRQSS):          DCS $ q D...D ST
+Report (DECRPSS):           DCS Ps $ r D...D ST
+
+Setting Control Sequence    Final Characters        Mnemonic
+
+Select Active Status
+Display                     $ g                     DECSASD
+Select Attribute Change
+Extent                      * x                     DECSACE
+Set Character Attribute     " q                     DECSCA
+Set Conformance Level       " p                     DECSCL
+Set Columns Per Page        $ |                     DECSCPP
+Set Lines Per Page          t                       DECSLPP
+Set Number of Lines per
+Screen                      * |                     DECSNLS
+Set Status Line Type        $ ~                     DECSSDT
+Set Left and Right Margins  s                       DECSLRM
+Set Top and Bottom Margins  r                       DECSTBM
+Set Graphic Rendition       m                       SGR
+Select Set-Up Language      p                       DECSSL
+Select Printer Type         $ s                     DECSPRTT
+Select Refresh Rate         " t                     DECSRFR
+Select Digital Printed
+Data Type                   ) p                     DECSDPT
+Select ProPrinter Character
+Set                         * p                     DECSPPCS
+Select Communication Speed  * r                     DECSCS
+Select Communication Port   * u                     DECSCP
+Set Scroll Speed            SP p                    DECSSCLS
+Set Cursor Style            SP q                    DECSCUSR
+Set Key Click Volume        SP r                    DECSKCV
+Set Warning Bell Volume     SP t                    DECSWBV
+Set Margin Bell Volume      SP u                    DECSMBV
+Set Lock Key Style          SP v                    DECSLCK
+Select Flow Control Type    * s                     DECSFC
+Select Disconnect Delay
+Time                        $ q                     DECSDDT
+Set Transmit Rate Limit     " u                     DECSTRL
+Set Port Parameter          + w                     DECSPP
+
+
+
+Restore Presentation State  DCS Ps $ t D...D ST     DECRSPS
+
+    Ps  Data String Format
+    0   Error, restore ignored.
+    1   Selects the format of the cursor information report (DECCIR).
+    2   Selects the format of the tab stop report (DECTABSR).
+
+    D...D
+    Data string of tab stops or cursor position.
+
+
+Restore Terminal State      DCS Ps $ p D...D ST     DECRSTS
+
+    Ps  Data String Format
+    0   Error, restore ignored.
+    1   Selects the format of the terminal state report (DECTSR).
+
+    D...D   Data string of restored information.
+
+
+Tabulation Stop Report      DCS 2 $ u D...D ST      DECTABSR
+
+    D...D   Column numbers of tab stops.
+
+Report Terminal Unit ID     DCS ! | D...D ST        DECRPTUI
+
+Report Function Key
+Definition                  DCS " } D...D ST        DECRPFK
+
+Report Modifiers/Key State  DCS " ~ D...D ST        DECRPAK
+
+Load Answerback Message     DCS Ps v D...D ST       DECLANS
+
+    The answerback data string may consist of from 0 to 30, 7- or 8-bit characters,
+    which are hex pairs in the 3/0 through 3/9 (0 through 9) range, 4/1 through 4/6
+    (A through F) range, and 6/1 through 6/6 (A through F) range. Pressing Ctrl/Break
+    or receiving an ENQ code causes the VT510 to transmit the answerback message.
+
+Load Banner Message         DCS Ps r D...D ST       DECLBAN

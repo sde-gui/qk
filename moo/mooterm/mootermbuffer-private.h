@@ -33,7 +33,6 @@ struct _MooTermBufferPrivate {
 
     guint8          modes[MODE_MAX];
     MooTermTextAttr current_attr;
-    gboolean        cursor_visible;
 
     int             single_shift;
     gunichar       *graph_sets[4];
@@ -51,7 +50,7 @@ struct _MooTermBufferPrivate {
     guint           bottom_margin;
     gboolean        scrolling_region_set;
 
-    /* independent of screen region */
+    /* independent of scrolling region */
     guint           cursor_row;
     guint           cursor_col;
 
@@ -91,6 +90,9 @@ void    moo_term_buffer_freeze_cursor_notify    (MooTermBuffer  *buf);
 void    moo_term_buffer_thaw_changed_notify     (MooTermBuffer  *buf);
 void    moo_term_buffer_thaw_cursor_notify      (MooTermBuffer  *buf);
 
+void    moo_term_buffer_reset                   (MooTermBuffer  *buf);
+void    moo_term_buffer_soft_reset              (MooTermBuffer  *buf);
+
 void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
                                                  guint           mode,
                                                  gboolean        val);
@@ -115,7 +117,8 @@ guint   moo_term_buffer_next_tab_stop           (MooTermBuffer  *buf,
                                                  guint           current);
 guint   moo_term_buffer_prev_tab_stop           (MooTermBuffer  *buf,
                                                  guint           current);
-void    moo_term_buffer_clear_tab_stop          (MooTermBuffer  *buf);
+void    moo_term_buffer_clear_tab_stop          (MooTermBuffer  *buf,
+                                                 int             what);
 void    moo_term_buffer_set_tab_stop            (MooTermBuffer  *buf);
 
 void    moo_term_buffer_select_charset          (MooTermBuffer  *buf,
@@ -177,7 +180,7 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
 }
 
 
-#define buf_changed_add_rect(rect)                                  \
+#define buf_changed_add_rect(buf,rect)                              \
 {                                                                   \
     if (!buf->priv->changed_all)                                    \
     {                                                               \
@@ -188,23 +191,23 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
     }                                                               \
 }
 
-#define buf_changed_add_range(row, start, len)                      \
+#define buf_changed_add_range(buf, row, start, len)                 \
 {                                                                   \
     if (!buf->priv->changed_all)                                    \
     {                                                               \
         GdkRectangle rec = {start, row, len, 1};                    \
-        buf_changed_add_rect (rec);                                 \
+        buf_changed_add_rect (buf, rec);                            \
     }                                                               \
 }
 
-#define buf_changed_set_all()                                       \
+#define buf_changed_set_all(buf)                                    \
 {                                                                   \
     if (!buf->priv->changed_all)                                    \
     {                                                               \
         GdkRectangle rec = {                                        \
             0, 0, buf->priv->screen_width, buf->priv->screen_height \
         };                                                          \
-        buf_changed_add_rect (rec);                                 \
+        buf_changed_add_rect (buf, rec);                            \
         buf->priv->changed_all = TRUE;                              \
     }                                                               \
 }
@@ -270,7 +273,14 @@ inline static MooTermLine *buf_screen_line  (MooTermBuffer  *buf,
 void    moo_term_buffer_new_line                (MooTermBuffer  *buf);
 void    moo_term_buffer_index                   (MooTermBuffer  *buf);
 void    moo_term_buffer_backspace               (MooTermBuffer  *buf);
-void    moo_term_buffer_tab                     (MooTermBuffer  *buf);
+void    moo_term_buffer_tab                     (MooTermBuffer  *buf,
+                                                 guint           n);
+void    moo_term_buffer_back_tab                (MooTermBuffer  *buf,
+                                                 guint           n);
+void    moo_term_buffer_cursor_next_line        (MooTermBuffer  *buf,
+                                                 guint           n);
+void    moo_term_buffer_cursor_prev_line        (MooTermBuffer  *buf,
+                                                 guint           n);
 void    moo_term_buffer_linefeed                (MooTermBuffer  *buf);
 void    moo_term_buffer_carriage_return         (MooTermBuffer  *buf);
 void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf);

@@ -44,12 +44,15 @@ typedef enum {
     PART_INTERMEDIATE,
     PART_PARAMETERS,
     PART_FINAL,
+    PART_DATA,
+    PART_ST,
     PART_DONE
 } SequencePartType;
 
 typedef enum {
     LEX_ESCAPE,
-    LEX_CONTROL
+    LEX_CONTROL,
+    LEX_DCS
 } LexType;
 
 typedef struct {
@@ -60,15 +63,15 @@ typedef struct {
 
 
 typedef enum {
-    INITIAL = 0,
-    ESCAPE,
-    ESCAPE_INTERMEDIATE,
-    DCS,
-    CSI,
-    OSC,
-    PM,
-    APC,
-    ERROR
+    INITIAL_ = 0,
+    ESCAPE_,
+    ESCAPE_INTERMEDIATE_,
+    DCS_,
+    CSI_,
+    OSC_,
+    PM_,
+    APC_,
+    ERROR_
 } ParserState;
 
 
@@ -80,7 +83,6 @@ typedef struct _MooTermParser {
 
     InputIter   current;
     InputIter   cmd_start;
-    gboolean    escape_two_bytes;
 
     ParserState state;
 

@@ -71,11 +71,15 @@ void            moo_term_pt_set_size        (MooTermPt      *pt,
                                              guint           width,
                                              guint           height);
 
+char            moo_term_pt_get_erase_char  (MooTermPt      *pt);
+
 gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp);
 void            moo_term_pt_kill_child      (MooTermPt      *pt);
+
+gboolean        moo_term_pt_child_alive     (MooTermPt      *pt);
 
 void            moo_term_pt_write           (MooTermPt      *pt,
                                              const char     *data,

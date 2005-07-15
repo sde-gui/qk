@@ -45,10 +45,10 @@ G_BEGIN_DECLS
 
 
 typedef enum {
-    CURSOR_NONE     = 0,
-    CURSOR_TEXT     = 1,
-    CURSOR_POINTER  = 2,
-    CURSORS_NUM     = 3
+    POINTER_NONE     = 0,
+    POINTER_TEXT     = 1,
+    POINTER_NORMAL   = 2,
+    POINTERS_NUM     = 3
 } TermCursorType;
 
 enum {
@@ -104,14 +104,25 @@ struct _MooTermPrivate {
     TermCaretShape  caret_shape;
     guint           caret_height;
 
-    GdkCursor      *cursor[CURSORS_NUM];
-    GtkIMContext   *im;
+    GdkCursor      *pointer[POINTERS_NUM];
+    guint           tracking_mouse;
+    gboolean        pointer_visible;
 
-    gboolean        scroll_on_keystroke;
+    GtkIMContext   *im;
+    gboolean        im_preedit_active;
+    GdkModifierType modifiers;
 
     GtkAdjustment  *adjustment;
     guint           pending_adjustment_changed;
     guint           pending_adjustment_value_changed;
+
+    struct {
+        gboolean            hide_cursor_on_keypress;    /* = TRUE */
+        gboolean            meta_sends_escape;          /* = TRUE */
+        gboolean            scroll_on_keystroke;        /* = TRUE */
+        MooTermEraseBinding backspace_binding;
+        MooTermEraseBinding delete_binding;
+    } settings;
 };
 
 void        moo_term_set_window_title       (MooTerm        *term,
@@ -132,18 +143,23 @@ void        moo_term_buf_size_changed       (MooTerm        *term);
 
 void        moo_term_init_font_stuff        (MooTerm        *term);
 void        moo_term_setup_palette          (MooTerm        *term);
-void        moo_term_im_commit              (GtkIMContext   *imcontext,
-                                             gchar          *arg,
-                                             MooTerm        *term);
 
+void        moo_term_set_pointer_visible    (MooTerm        *term,
+                                             gboolean        visible);
 gboolean    moo_term_button_press           (GtkWidget      *widget,
                                              GdkEventButton *event);
 gboolean    moo_term_button_release         (GtkWidget      *widget,
                                              GdkEventButton *event);
+
 gboolean    moo_term_key_press              (GtkWidget      *widget,
                                              GdkEventKey    *event);
 gboolean    moo_term_key_release            (GtkWidget      *widget,
                                              GdkEventKey    *event);
+void        moo_term_im_commit              (GtkIMContext   *imcontext,
+                                             gchar          *arg,
+                                             MooTerm        *term);
+void        moo_term_im_preedit_start       (MooTerm        *term);
+void        moo_term_im_preedit_end         (MooTerm        *term);
 
 void        moo_term_init_back_pixmap       (MooTerm        *term);
 void        moo_term_resize_back_pixmap     (MooTerm        *term);
@@ -168,6 +184,9 @@ inline static void moo_term_invalidate_all  (MooTerm        *term)
 /*************************************************************************/
 /* vt commands
  */
+
+void        moo_term_reset                  (MooTerm    *term);
+void        moo_term_soft_reset             (MooTerm    *term);
 
 void        moo_term_bell                   (MooTerm    *term);
 void        moo_term_decid                  (MooTerm    *term);
@@ -202,6 +221,13 @@ void        moo_term_set_mouse_tracking     (MooTerm    *term,
 void        moo_term_da1                    (MooTerm    *term);
 void        moo_term_da2                    (MooTerm    *term);
 void        moo_term_da3                    (MooTerm    *term);
+
+void        moo_term_setting_request        (MooTerm    *term,
+                                             int         setting);
+void        moo_term_dsr                    (MooTerm    *term,
+                                             int         type,
+                                             int         arg,
+                                             gboolean    extended);
 
 
 /*************************************************************************/

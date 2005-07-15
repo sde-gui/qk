@@ -24,8 +24,15 @@
     term_implement_me_warning ("'%s': implement me", s);    \
     g_free (s);                                             \
 }
+#define vt_ignored()                                        \
+{                                                           \
+    char *s = _moo_term_current_ctl (parser);               \
+    g_warning ("'%s' ignored", s);                          \
+    g_free (s);                                             \
+}
 #else
 #define vt_not_implemented()
+#define vt_ignored()
 #endif
 
 
@@ -39,7 +46,7 @@
 
 #define vt_BEL()        moo_term_bell (parser->term)
 #define vt_BS()         moo_term_buffer_backspace (parser->term->priv->buffer)
-#define vt_TAB()        moo_term_buffer_tab (parser->term->priv->buffer)
+#define vt_TAB()        moo_term_buffer_tab (parser->term->priv->buffer, 1)
 #define vt_LF()         moo_term_buffer_linefeed (parser->term->priv->buffer)
 #define vt_CR()         moo_term_buffer_carriage_return (parser->term->priv->buffer)
 #define vt_SO()         moo_term_buffer_shift (parser->term->priv->buffer, 1)
@@ -47,6 +54,7 @@
 #define vt_IND()        moo_term_buffer_index (parser->term->priv->buffer)
 #define vt_NEL()        moo_term_buffer_new_line (parser->term->priv->buffer)
 #define vt_HTS()        moo_term_buffer_set_tab_stop (parser->term->priv->buffer)
+#define vt_TBC(w)       moo_term_buffer_clear_tab_stop (parser->term->priv->buffer, w)
 #define vt_RI()         moo_term_buffer_reverse_index (parser->term->priv->buffer)
 #define vt_SS2()        moo_term_buffer_single_shift (parser->term->priv->buffer, 2)
 #define vt_SS3()        moo_term_buffer_single_shift (parser->term->priv->buffer, 3)
@@ -97,6 +105,20 @@
 #define vt_DA1()        moo_term_da1 (parser->term)
 #define vt_DA2()        moo_term_da2 (parser->term)
 #define vt_DA3()        moo_term_da3 (parser->term)
+#define vt_DECRQSS(s)   moo_term_setting_request (parser->term, s)
+#define vt_DSR(t,a,e)   moo_term_dsr (parser->term, t, a, e)
+#define vt_DECSTR()     moo_term_soft_reset (parser->term)
+#define vt_RIS()        moo_term_reset (parser->term)
+
+#define vt_CBT(n)       moo_term_buffer_back_tab (parser->term->priv->buffer, n)
+#define vt_CHA(n)       moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, n)
+#define vt_CHT(n)       moo_term_buffer_tab (parser->term->priv->buffer, n)
+#define vt_CNL(n)       moo_term_buffer_cursor_next_line (parser->term->priv->buffer, n)
+#define vt_CPL(n)       moo_term_buffer_cursor_prev_line (parser->term->priv->buffer, n)
+#define vt_HPA(n)       moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, n)
+#define vt_HPR(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, n)
+#define vt_VPA(n)       moo_term_buffer_cursor_move_to (parser->term->priv->buffer, n, -1)
+#define vt_VPR(n)       moo_term_buffer_cursor_move (parser->term->priv->buffer, n, 0)
 
 
 #endif /* MOOTERM_MOOTERM_CTLFUNCS_H */

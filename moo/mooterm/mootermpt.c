@@ -125,3 +125,9 @@ void            moo_term_pt_write           (MooTermPt      *pt,
     g_return_if_fail (MOO_IS_TERM_PT (pt));
     MOO_TERM_PT_GET_CLASS(pt)->write (pt, data, len);
 }
+
+
+gboolean        moo_term_pt_child_alive     (MooTermPt      *pt)
+{
+    return pt->priv->child_alive;
+}
