@@ -277,6 +277,10 @@ void    moo_term_buffer_tab                     (MooTermBuffer  *buf,
                                                  guint           n);
 void    moo_term_buffer_back_tab                (MooTermBuffer  *buf,
                                                  guint           n);
+void    moo_term_buffer_cuu                     (MooTermBuffer  *buf,
+                                                 guint           n);
+void    moo_term_buffer_cud                     (MooTermBuffer  *buf,
+                                                 guint           n);
 void    moo_term_buffer_cursor_next_line        (MooTermBuffer  *buf,
                                                  guint           n);
 void    moo_term_buffer_cursor_prev_line        (MooTermBuffer  *buf,
@@ -314,6 +318,8 @@ void    moo_term_buffer_cup                     (MooTermBuffer  *buf,
 void    moo_term_buffer_clear_saved             (MooTermBuffer  *buf);
 void    moo_term_buffer_decsc                   (MooTermBuffer  *buf);
 void    moo_term_buffer_decrc                   (MooTermBuffer  *buf);
+
+void    moo_term_buffer_decaln                  (MooTermBuffer  *buf);
 
 
 G_END_DECLS
