@@ -75,6 +75,10 @@ int main (int argc, char *argv[])
 
     moo_term_fork_command (MOO_TERM (term), cmd, NULL, NULL);
 
-    g_signal_connect (G_OBJECT (win), "destroy", gtk_main_quit, NULL);
+    g_signal_connect (win, "destroy", gtk_main_quit, NULL);
+    g_signal_connect_swapped (term, "child-died",
+                              G_CALLBACK (gtk_widget_destroy), win);
+    g_signal_connect (term, "bell", G_CALLBACK (gdk_beep), NULL);
+
     gtk_main ();
 }
