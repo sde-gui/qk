@@ -406,15 +406,23 @@ static gboolean button_press            (MooTerm        *term,
                                          GdkEventButton *event)
 {
     int x, y;
+    guchar button;
     char *string;
 
-    if (event->type != GDK_BUTTON_PRESS)
+    if (event->type != GDK_BUTTON_PRESS  ||
+        event->button < 1 || event->button > 5)
+    {
         return TRUE;
+    }
+
+    if (event->button < 4)
+        button = 040 + event->button - 1;
+    else
+        button = 0140 + event->button - 4;
 
     get_mouse_coordinates (term, event, &x, &y);
 
-    string = g_strdup_printf ("\033[M%c%c%c",
-                              (guchar) (event->button - 1 + 040),
+    string = g_strdup_printf ("\033[M%c%c%c", button,
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 
@@ -441,9 +449,16 @@ static gboolean button_press_or_release (MooTerm        *term,
     get_mouse_coordinates (term, event, &x, &y);
 
     if (event->type == GDK_BUTTON_PRESS)
-        button = 040 + event->button - 1;
+    {
+        if (event->button < 4)
+            button = 040 + event->button - 1;
+        else
+            button = 0140 + event->button - 4;
+    }
     else
+    {
         button = 043;
+    }
 
     if (event->state & GDK_SHIFT_MASK)
         button |= 4;
@@ -452,8 +467,7 @@ static gboolean button_press_or_release (MooTerm        *term,
     if (event->state & GDK_CONTROL_MASK)
         button |= 16;
 
-    string = g_strdup_printf ("\033[M%c%c%c",
-                              (guchar) (button + 040),
+    string = g_strdup_printf ("\033[M%c%c%c", button,
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 
