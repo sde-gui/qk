@@ -23,6 +23,25 @@
 #define INVALID_CHAR_LEN    1
 
 
+#if 0
+#define debug_one_char(c)                                   \
+{                                                           \
+    char *s = _moo_term_nice_char (c);                      \
+    g_message ("got one-char '%s'", s);                     \
+    g_free (s);                                             \
+}
+#define debug_control()                                     \
+{                                                           \
+    char *s = _moo_term_current_ctl (parser);               \
+    g_message ("got sequence '%s'", s);                     \
+    g_free (s);                                             \
+}
+#else
+#define debug_one_char(c)
+#define debug_control()
+#endif
+
+
 #define iter_eof(iter)                                      \
     (!(iter).old &&                                         \
         (iter).offset == parser->input.data_len)
@@ -132,52 +151,42 @@
 
 #define goto_initial()                                      \
 {                                                           \
-    parser->state = INITIAL;                                \
+    parser->state = INITIAL_;                               \
     iter_set_eof (parser->cmd_start);                       \
-    goto STATE_INITIAL;                                     \
+    goto STATE_INITIAL_;                                    \
 }
 
-#define goto_cmd_state(st)                                  \
+#define goto_escape(st)                                     \
 {                                                           \
     flush_chars ();                                         \
                                                             \
     parser->cmd_start = parser->current;                    \
     iter_backward (parser->cmd_start);                      \
-    if (parser->escape_two_bytes)                           \
-    {                                                       \
-        iter_backward (parser->cmd_start);                  \
-    }                                                       \
                                                             \
     g_string_truncate (parser->intermediate, 0);            \
     g_string_truncate (parser->parameters, 0);              \
     g_string_truncate (parser->data, 0);                    \
     parser->final = 0;                                      \
                                                             \
-    parser->state = st;                                     \
+    parser->state = ESCAPE_;                                \
                                                             \
-    goto STATE_##st;                                        \
+    goto STATE_ESCAPE_;                                     \
 }
 
 #define one_char_cmd(c)                                     \
 {                                                           \
     flush_chars ();                                         \
-                                                            \
-    parser->cmd_start = parser->current;                    \
-    if (parser->escape_two_bytes)                           \
-    {                                                       \
-        iter_backward (parser->cmd_start);                  \
-    }                                                       \
-                                                            \
+    debug_one_char(c);                                      \
     exec_cmd (parser, c);                                   \
 }
 
-#define check_cancel(c)                                     \
+#define check_cancel(c, state)                              \
 {                                                           \
     switch (c)                                              \
     {                                                       \
         /* ESC - start new sequence */                      \
         case 0x1B:                                          \
-            goto_cmd_state (ESCAPE);                        \
+            goto_escape ();                                 \
                                                             \
         /* CAN - cancel sequence in progress */             \
         case 0x18:                                          \
@@ -189,16 +198,20 @@
             vt_print_char (ERROR_CHAR);                     \
             goto_initial ();                                \
                                                             \
-        case 0x9B:                                          \
-            goto_cmd_state (CSI);                           \
-        case 0x9D:                                          \
-            goto_cmd_state (OSC);                           \
-        case 0x90:                                          \
-            goto_cmd_state (DCS);                           \
-        case 0x9E:                                          \
-            goto_cmd_state (PM);                            \
-        case 0x9F:                                          \
-            goto_cmd_state (APC);                           \
+        case 0x05:                                          \
+        case 0x07:                                          \
+        case 0x08:                                          \
+        case 0x09:                                          \
+        case 0x0A:                                          \
+        case 0x0B:                                          \
+        case 0x0C:                                          \
+        case 0x0D:                                          \
+        case 0x0E:                                          \
+        case 0x0F:                                          \
+        case 0x11:                                          \
+        case 0x13:                                          \
+            one_char_cmd (c);                               \
+            goto state;                                     \
     }                                                       \
 }
 
@@ -251,44 +264,6 @@
     }                                                       \
                                                             \
     iter_forward (parser->current);                         \
-                                                            \
-    if (c == 0x1B)                                          \
-    {                                                       \
-        if (iter_eof (parser->current))                     \
-        {                                                   \
-            flush_chars ();                                 \
-                                                            \
-            if (!iter_eof (parser->cmd_start))              \
-            {                                               \
-                save_cmd ();                                \
-            }                                               \
-            else                                            \
-            {                                               \
-                save_char (c);                              \
-            }                                               \
-                                                            \
-            parser_finish (parser);                         \
-            return;                                         \
-        }                                                   \
-        else                                                \
-        {                                                   \
-            guchar c2;                                      \
-                                                            \
-            iter_get_char (parser->current, c2);            \
-                                                            \
-            if (c2 == 0x50 ||                               \
-                (0x5B <= c2 && c2 <= 0x5F))                 \
-            {                                               \
-                c = c2 + 0x40;                              \
-                iter_forward (parser->current);             \
-                parser->escape_two_bytes = TRUE;            \
-            }                                               \
-            else                                            \
-            {                                               \
-                parser->escape_two_bytes = FALSE;           \
-            }                                               \
-        }                                                   \
-    }                                                       \
 }
 
 
@@ -369,9 +344,8 @@ static void parser_init (MooTermParser  *parser)
     }
 
     iter_set_eof (parser->cmd_start);
-    parser->escape_two_bytes = FALSE;
 
-    parser->state = INITIAL;
+    parser->state = INITIAL_;
 
     g_string_truncate (parser->character, 0);
     g_string_truncate (parser->intermediate, 0);
@@ -459,15 +433,118 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
     parser->input.data_len = len;
     parser_init (parser);
 
-    goto STATE_INITIAL;
+    goto STATE_INITIAL_;
 
     /* INITIAL - everything starts here. checks input for command sequence start */
-STATE_INITIAL:
+STATE_INITIAL_:
+{
+    get_char (c);
+    check_cancel (c, STATE_INITIAL_);
+
+    process_char (c);
+
+    goto STATE_INITIAL_;
+}
+g_assert_not_reached ();
+
+
+/* ESCAPE - got escape char */
+STATE_ESCAPE_:
+{
+    get_char (c);
+    check_cancel (c, STATE_ESCAPE_);
+
+    switch (c)
+    {
+        case 0x5B:
+            goto STATE_CSI_;
+        case 0x5D:
+            goto STATE_OSC_;
+        case 0x5E:
+            goto STATE_PM_;
+        case 0x5F:
+            goto STATE_APC_;
+        case 0x50:
+            goto STATE_DCS_;
+    }
+
+    /* 0x20-0x2F - intermediate character */
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_ESCAPE_INTERMEDIATE_;
+    }
+    /* 0x30-0x7E - final character */
+    else if (0x30 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_escape_sequence (parser);
+        goto_initial ();
+    }
+    /* DEL - ignored */
+    else if (c == 0x7F)
+    {
+        goto STATE_ESCAPE_;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+STATE_ESCAPE_INTERMEDIATE_:
+{
+    get_char (c);
+    check_cancel (c, STATE_ESCAPE_INTERMEDIATE_);
+
+    /* 0x20-0x2F - intermediate character */
+    if (0x20 <= c && c <= 0x2F)
+    {
+        append_char (intermediate, c);
+        goto STATE_ESCAPE_INTERMEDIATE_;
+    }
+    /* 0x30-0x7E - final character */
+    else if (0x30 <= c && c <= 0x7E)
+    {
+        parser->final = c;
+        exec_escape_sequence (parser);
+        goto_initial ();
+    }
+    /* DEL - ignored */
+    else if (c == 0x7F)
+    {
+        goto STATE_ESCAPE_INTERMEDIATE_;
+    }
+    else
+    {
+        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
+        goto_initial ();
+    }
+}
+g_assert_not_reached ();
+
+
+/* APC - Application program command - ignore everything until ??? */
+STATE_APC_:
 {
     get_char (c);
 
     switch (c)
     {
+        /* CAN - cancel sequence in progress */
+        case 0x18:
+            goto_initial ();
+
+        /* SUB - cancel sequence in progress and
+            print error */
+        case 0x1A:
+            vt_print_char (ERROR_CHAR);
+            goto_initial ();
+
+        case 0x1B:
         case 0x05:
         case 0x07:
         case 0x08:
@@ -480,196 +557,35 @@ STATE_INITIAL:
         case 0x0F:
         case 0x11:
         case 0x13:
-        case 0x84:
-        case 0x85:
-        case 0x88:
-        case 0x8D:
-        case 0x8E:
-        case 0x8F:
-        case 0x9A:
-            one_char_cmd (c);
-            goto_initial ();
-
-        case 0x18:
-        case 0x1A:
-        case 0x7F:
-        case 0x98:
-            flush_chars ();
-            break;
-
-        case 0x1B:
-            goto_cmd_state (ESCAPE);
-
-        case 0x9C:
-            /* ST out of context */
-            g_warning ("%s: got ST out of context", G_STRLOC);
-            flush_chars ();
-            break;
-
-        case 0x90:
-            goto_cmd_state (DCS);
-
-        case 0x9B:
-            goto_cmd_state (CSI);
-
-        case 0x9D:
-            goto_cmd_state (OSC);
-
-        case 0x9E:
-            goto_cmd_state (PM);
-
-        case 0x9F:
-            goto_cmd_state (APC);
-
-        default:
-            process_char (c);
-    }
-
-    goto STATE_INITIAL;
-}
-g_assert_not_reached ();
-
-
-    /* ESCAPE - got escape char */
-STATE_ESCAPE:
-{
-    get_char (c);
-
-    check_cancel (c);
-
-    /* 0x20-0x2F - intermediate character */
-    if (0x20 <= c && c <= 0x2F)
-    {
-        append_char (intermediate, c);
-        goto STATE_ESCAPE_INTERMEDIATE;
-    }
-    /* 0x30-0x7E - final character */
-    else if (0x30 <= c && c <= 0x7E)
-    {
-        parser->final = c;
-        exec_escape_sequence (parser);
-        goto_initial ();
-    }
-    /* DEL - ignored */
-    else if (c == 0x7F)
-    {
-        goto STATE_ESCAPE;
-    }
-    else
-    {
-        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
-        goto_initial ();
-    }
-}
-g_assert_not_reached ();
-
-
-STATE_ESCAPE_INTERMEDIATE:
-{
-    get_char (c);
-
-    check_cancel (c);
-
-    /* 0x20-0x2F - intermediate character */
-    if (0x20 <= c && c <= 0x2F)
-    {
-        append_char (intermediate, c);
-        goto STATE_ESCAPE_INTERMEDIATE;
-    }
-    /* 0x30-0x7E - final character */
-    else if (0x30 <= c && c <= 0x7E)
-    {
-        parser->final = c;
-        exec_escape_sequence (parser);
-        goto_initial ();
-    }
-    /* DEL - ignored */
-    else if (c == 0x7F)
-    {
-        goto STATE_ESCAPE;
-    }
-    else
-    {
-        g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
-        goto_initial ();
-    }
-}
-g_assert_not_reached ();
-
-
-    /* APC - Application program command - ignore everything until ??? */
-STATE_APC:
-{
-    get_char (c);
-
-    switch (c)
-    {
-        case 0x1A:
-        case 0x84:
-        case 0x85:
-        case 0x88:
-        case 0x8D:
-        case 0x8E:
-        case 0x8F:
-        case 0x90:
-        case 0x98:
-        case 0x9A:
-        case 0x9B:
-        case 0x9C:
-        case 0x9D:
-        case 0x9E:
-        case 0x9F:
             exec_apc (parser, c);
             goto_initial ();
 
         default:
             append_char (data, c);
-            goto STATE_APC;
+            goto STATE_APC_;
     }
 }
 g_assert_not_reached ();
 
 
-    /* PM - Privacy message - ignore everything until ??? */
-STATE_PM:
+/* PM - Privacy message - ignore everything until ??? */
+STATE_PM_:
 {
     get_char (c);
 
     switch (c)
     {
-        case 0x1A:
-        case 0x84:
-        case 0x85:
-        case 0x88:
-        case 0x8D:
-        case 0x8E:
-        case 0x8F:
-        case 0x90:
-        case 0x98:
-        case 0x9A:
-        case 0x9B:
-        case 0x9C:
-        case 0x9D:
-        case 0x9E:
-        case 0x9F:
-            exec_pm (parser, c);
+        /* CAN - cancel sequence in progress */
+        case 0x18:
             goto_initial ();
 
-        default:
-            append_char (data, c);
-            goto STATE_PM;
-    }
-}
-g_assert_not_reached ();
+        /* SUB - cancel sequence in progress and
+            print error */
+        case 0x1A:
+            vt_print_char (ERROR_CHAR);
+            goto_initial ();
 
-
-    /* OSC - Operating system command - ignore everything until ??? */
-STATE_OSC:
-{
-    get_char (c);
-
-    switch (c)
-    {
+        case 0x1B:
         case 0x05:
         case 0x07:
         case 0x08:
@@ -682,51 +598,74 @@ STATE_OSC:
         case 0x0F:
         case 0x11:
         case 0x13:
+            exec_pm (parser, c);
+            goto_initial ();
+
+        default:
+            append_char (data, c);
+            goto STATE_PM_;
+    }
+}
+g_assert_not_reached ();
+
+
+/* OSC - Operating system command - ignore everything until ??? */
+STATE_OSC_:
+{
+    get_char (c);
+
+    switch (c)
+    {
+        /* CAN - cancel sequence in progress */
         case 0x18:
+            goto_initial ();
+
+        /* SUB - cancel sequence in progress and
+            print error */
         case 0x1A:
+            vt_print_char (ERROR_CHAR);
+            goto_initial ();
+
         case 0x1B:
-        case 0x7F:
-        case 0x84:
-        case 0x85:
-        case 0x88:
-        case 0x8D:
-        case 0x8E:
-        case 0x8F:
-        case 0x90:
-        case 0x98:
-        case 0x9A:
-        case 0x9B:
-        case 0x9C:
-        case 0x9D:
-        case 0x9E:
-        case 0x9F:
+        case 0x05:
+        case 0x07:
+        case 0x08:
+        case 0x09:
+        case 0x0A:
+        case 0x0B:
+        case 0x0C:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x11:
+        case 0x13:
             exec_osc (parser, c);
             goto_initial ();
 
         default:
             append_char (data, c);
-            goto STATE_OSC;
+            goto STATE_OSC_;
     }
 }
 g_assert_not_reached ();
 
 
-    /* CSI - control sequence introducer */
-STATE_CSI:
+/* CSI - control sequence introducer */
+STATE_CSI_:
 {
     get_char (c);
 
-    check_cancel (c);
+    check_cancel (c, STATE_CSI_);
 
     if (0x30 <= c && c <= 0x3F)
     {
         append_char (parameters, c);
-        goto STATE_CSI;
+        goto STATE_CSI_;
     }
     else if (0x20 <= c && c <= 0x2F)
     {
         append_char (intermediate, c);
-        goto STATE_CSI_INTERMEDIATE;
+        goto STATE_CSI_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
@@ -736,23 +675,26 @@ STATE_CSI:
     }
     else
     {
+        char *s = _moo_term_nice_char (c);
+        g_warning ("%s: got '%s' after CSI", G_STRLOC, s);
+        g_free (s);
         goto_initial ();
     }
 }
 g_assert_not_reached ();
 
 
-    /* STATE_CSI_INTERMEDIATE - CSI, gathering intermediate characters */
-STATE_CSI_INTERMEDIATE:
+/* STATE_CSI_INTERMEDIATE - CSI, gathering intermediate characters */
+STATE_CSI_INTERMEDIATE_:
 {
     get_char (c);
 
-    check_cancel (c);
+    check_cancel (c, STATE_CSI_INTERMEDIATE_);
 
     if (0x20 <= c && c <= 0x2F)
     {
         append_char (intermediate, c);
-        goto STATE_CSI_INTERMEDIATE;
+        goto STATE_CSI_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
@@ -762,80 +704,87 @@ STATE_CSI_INTERMEDIATE:
     }
     else
     {
+        char *s = _moo_term_nice_char (c);
+        g_warning ("%s: got '%s' after CSI", G_STRLOC, s);
+        g_free (s);
         goto_initial ();
     }
 }
 g_assert_not_reached ();
 
 
-    /* DCS - Device control string */
-STATE_DCS:
+/* DCS - Device control string */
+STATE_DCS_:
 {
     get_char (c);
 
-    check_cancel (c);
+    check_cancel (c, STATE_DCS_);
 
     if (0x30 <= c && c <= 0x3F)
     {
         append_char (parameters, c);
-        goto STATE_DCS;
+        goto STATE_DCS_;
     }
     else if (0x20 <= c && c <= 0x2F)
     {
         append_char (intermediate, c);
-        goto STATE_DCS_INTERMEDIATE;
+        goto STATE_DCS_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
         parser->final = c;
-        goto STATE_DCS_DATA;
+        goto STATE_DCS_DATA_;
     }
     else
     {
-        g_warning ("%s: got char '%c' after DCS", G_STRLOC, c);
+        char *s = _moo_term_nice_char (c);
+        g_warning ("%s: got '%s' after DCS", G_STRLOC, s);
+        g_free (s);
         goto_initial ();
     }
 }
 g_assert_not_reached ();
 
 
-    /* DCS - Device control string */
-STATE_DCS_INTERMEDIATE:
+/* DCS - Device control string */
+STATE_DCS_INTERMEDIATE_:
 {
     get_char (c);
 
-    check_cancel (c);
+    check_cancel (c, STATE_DCS_INTERMEDIATE_);
 
     if (0x20 <= c && c <= 0x2F)
     {
         append_char (intermediate, c);
-        goto STATE_DCS_INTERMEDIATE;
+        goto STATE_DCS_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
         parser->final = c;
-        goto STATE_DCS_DATA;
+        goto STATE_DCS_DATA_;
     }
     else
     {
-        g_warning ("%s: got char '%c' after DCS", G_STRLOC, c);
+        char *s = _moo_term_nice_char (c);
+        g_warning ("%s: got '%s' after DCS", G_STRLOC, s);
+        g_free (s);
         goto_initial ();
     }
 }
 g_assert_not_reached ();
 
 
-    /* DCS - Device control string */
-STATE_DCS_DATA:
+/* DCS - Device control string */
+STATE_DCS_DATA_:
 {
     get_char (c);
 
-    check_cancel (c);
+    check_cancel (c, STATE_DCS_DATA_);
 
     if (c != 0x9C)
     {
         append_char (data, c);
-        goto STATE_DCS_DATA;
+        goto STATE_DCS_DATA_;
     }
     else
     {
@@ -858,70 +807,54 @@ static void exec_cmd               (MooTermParser  *parser,
     {
         case 0x07:
             vt_BEL ();
-//             g_print ("BEL\n");
             break;
         case 0x08:
             vt_BS ();
-//             g_print ("BS\n");
             break;
         case 0x09:
             vt_TAB ();
-//             g_print ("TAB\n");
             break;
         case 0x0A:
         case 0x0B:
         case 0x0C:
             vt_LF ();
-//             g_print ("LF\n");
             break;
         case 0x0D:
             vt_CR ();
-//             g_print ("CR\n");
             break;
         case 0x0E:
             vt_SO ();
-//             g_print ("SO\n");
             break;
         case 0x0F:
             vt_SI ();
-//             g_print ("SI\n");
             break;
         case 0x11:
             vt_XON ();
-//             g_print ("XON\n");
             break;
         case 0x13:
             vt_XOFF ();
-//             g_print ("XOFF\n");
             break;
 
         case 0x84:
             vt_IND ();
-//             g_print ("IND\n");
             break;
         case 0x85:
             vt_NEL ();
-//             g_print ("NEL\n");
             break;
         case 0x88:
             vt_HTS ();
-//             g_print ("HTS\n");
             break;
         case 0x8D:
             vt_RI ();
-//             g_print ("RI\n");
             break;
         case 0x8E:
             vt_SS2 ();
-//             g_print ("SS2\n");
             break;
         case 0x8F:
             vt_SS3 ();
-//             g_print ("SS3\n");
             break;
         case 0x9A:
             vt_DECID ();
-//             g_print ("DECID\n");
             break;
 
         case 0x05:
@@ -975,6 +908,8 @@ int     _moo_term_yylex (MooTermParser  *parser)
                     return 0;
 
                 case PART_PARAMETERS:
+                case PART_DATA:
+                case PART_ST:
                     g_assert_not_reached ();
             }
 
@@ -1024,6 +959,77 @@ int     _moo_term_yylex (MooTermParser  *parser)
 
                 case PART_DONE:
                     return 0;
+
+                case PART_DATA:
+                case PART_ST:
+                    g_assert_not_reached ();
+            }
+
+        case LEX_DCS:
+            switch (parser->lex.part)
+            {
+                case PART_START:
+                    if (!parser->parameters->len)
+                    {
+                        if (!parser->intermediate->len)
+                            parser->lex.part = PART_FINAL;
+                        else
+                            parser->lex.part = PART_INTERMEDIATE;
+                    }
+                    else
+                    {
+                        parser->lex.part = PART_PARAMETERS;
+                    }
+                    return 0x90;
+
+                case PART_PARAMETERS:
+                    if (offset + 1 == parser->parameters->len)
+                    {
+                        parser->lex.offset = 0;
+
+                        if (!parser->intermediate->len)
+                            parser->lex.part = PART_FINAL;
+                        else
+                            parser->lex.part = PART_INTERMEDIATE;
+                    }
+                    else
+                    {
+                        parser->lex.offset++;
+                    }
+                    return parser->parameters->str[offset];
+
+                case PART_INTERMEDIATE:
+                    if (offset + 1 == parser->intermediate->len)
+                        parser->lex.part = PART_FINAL;
+                    else
+                        parser->lex.offset++;
+                    return parser->intermediate->str[offset];
+
+                case PART_FINAL:
+                    if (!parser->data->len)
+                    {
+                        parser->lex.part = PART_ST;
+                    }
+                    else
+                    {
+                        parser->lex.part = PART_DATA;
+                        parser->lex.offset = 0;
+                    }
+                    return parser->final;
+
+                case PART_DATA:
+                    if (offset + 1 == parser->data->len)
+                        parser->lex.part = PART_ST;
+                    else
+                        parser->lex.offset++;
+                    return parser->data->str[offset];
+
+                case PART_ST:
+                    parser->lex.part = PART_DONE;
+                    return 0x9C;
+
+                case PART_DONE:
+                    return 0;
             }
 
         default:
@@ -1057,9 +1063,18 @@ char           *_moo_term_current_ctl   (MooTermParser  *parser)
             g_string_append_c (s, parser->final);
             break;
 
-        default:
-            g_string_append (s, "<UNKNOWN STRING>");
+        case LEX_DCS:
+            g_string_append_c (s, '\220');
+            g_string_append_len (s, parser->parameters->str,
+                                 parser->parameters->len);
+            g_string_append_len (s, parser->intermediate->str,
+                                 parser->intermediate->len);
+            g_string_append_c (s, parser->final);
+            g_string_append_len (s, parser->data->str,
+                                 parser->data->len);
+            g_string_append_c (s, '\234');
             break;
+
     }
 
     nice = _moo_term_nice_bytes (s->str, s->len);
@@ -1071,6 +1086,7 @@ char           *_moo_term_current_ctl   (MooTermParser  *parser)
 static void exec_escape_sequence   (MooTermParser  *parser)
 {
     init_yyparse (parser, LEX_ESCAPE);
+    debug_control ();
     _moo_term_yyparse (parser);
 }
 
@@ -1078,6 +1094,15 @@ static void exec_escape_sequence   (MooTermParser  *parser)
 static void exec_csi               (MooTermParser  *parser)
 {
     init_yyparse (parser, LEX_CONTROL);
+    debug_control ();
+    _moo_term_yyparse (parser);
+}
+
+
+static void exec_dcs               (MooTermParser  *parser)
+{
+    init_yyparse (parser, LEX_DCS);
+    debug_control ();
     _moo_term_yyparse (parser);
 }
 
@@ -1088,12 +1113,6 @@ void            _moo_term_yyerror       (MooTermParser  *parser,
     char *s = _moo_term_current_ctl (parser);
     g_warning ("parse error: '%s'\n", s);
     g_free (s);
-}
-
-
-static void exec_dcs               (MooTermParser  *parser)
-{
-    g_print ("dcs\n");
 }
 
 
@@ -1153,817 +1172,6 @@ static void exec_osc               (MooTermParser  *parser,
         g_free (s);
     }
 }
-
-
-#if 0
-/*****************************************************************************/
-/* exec_command
- */
-
-#define warn_esc_sequence()                         \
-{                                                   \
-    char *bytes, *nice_bytes;                       \
-    bytes = block_get_string (&parser->cmd_string); \
-    nice_bytes = _moo_term_nice_bytes (bytes, -1);  \
-    g_warning ("%s: control sequence '%s'",         \
-               G_STRLOC, nice_bytes);               \
-    g_free (nice_bytes);                            \
-    g_free (bytes);                                 \
-}
-
-#define check_nums_len(cmd, n)                      \
-{                                                   \
-    if (parser->nums_len != n)                      \
-    {                                               \
-        g_warning ("%s: wrong number of arguments"  \
-                   "for " #cmd " command",          \
-                   G_STRLOC);                       \
-        warn_esc_sequence ();                       \
-        break;                                      \
-    }                                               \
-}
-
-#define exec_cmd_1(name)                            \
-{                                                   \
-    check_nums_len (name, 1);                       \
-    buf_vt_##name (parser->term_buffer,             \
-                   parser->nums[0]);                \
-}
-
-#define exec_cmd_2(name)                            \
-{                                                   \
-    check_nums_len (name, 2);                       \
-    buf_vt_##name (parser->term_buffer,             \
-                   parser->nums[0],                 \
-                   parser->nums[1]);                \
-}
-
-#define exec_cmd_5(name)                            \
-{                                                   \
-    check_nums_len (name, 5);                       \
-    buf_vt_##name (parser->term_buffer,             \
-                   parser->nums[0],                 \
-                   parser->nums[1],                 \
-                   parser->nums[2],                 \
-                   parser->nums[3],                 \
-                   parser->nums[4]);                \
-}
-
-
-static void     exec_decset             (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 1:
-                buf->priv->modes |= DECCKM;
-                g_object_notify (G_OBJECT (buf), "mode-DECCKM");
-                break;
-
-            case 2: /* DECANM */
-            case 3: /* DECCOLM */
-            case 4: /* DECSCLM */
-            case 8: /* DECARM */
-            case 18: /* DECPFF */
-            case 19: /* DECPEX */
-            case 40: /* disallow 80 <-> 132 mode */
-            case 45: /* no reverse wraparound mode */
-                g_message ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            case 5:
-                buf->priv->modes |= DECSCNM;
-                g_object_notify (G_OBJECT (buf), "mode-DECSCNM");
-                break;
-
-            case 6:
-                buf->priv->modes |= DECOM;
-                g_object_notify (G_OBJECT (buf), "mode-DECOM");
-                break;
-
-            case 7:
-                buf->priv->modes |= DECAWM;
-                g_object_notify (G_OBJECT (buf), "mode-DECAWM");
-                break;
-
-            case 1049: /* turn on ca mode */
-                break;
-
-            case 1000:
-                buf->priv->modes |= MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-MOUSE-TRACKING");
-                break;
-
-            case 1001:
-                buf->priv->modes |= HILITE_MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
-                break;
-
-            default:
-                g_warning ("%s: unknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_decrst             (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 1:
-                buf->priv->modes &= ~DECCKM;
-                g_object_notify (G_OBJECT (buf), "mode-DECCKM");
-                break;
-
-            case 2: /* DECANM */
-            case 3: /* DECCOLM */
-            case 4: /* DECSCLM */
-            case 8: /* DECARM */
-            case 18: /* DECPFF */
-            case 19: /* DECPEX */
-            case 40: /* disallow 80 <-> 132 mode */
-            case 45: /* no reverse wraparound mode */
-                g_message ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            case 5:
-                buf->priv->modes &= ~DECSCNM;
-                g_object_notify (G_OBJECT (buf), "mode-DECSCNM");
-                break;
-
-            case 6:
-                buf->priv->modes &= ~DECOM;
-                g_object_notify (G_OBJECT (buf), "mode-DECOM");
-                break;
-
-            case 7:
-                buf->priv->modes &= ~DECAWM;
-                g_object_notify (G_OBJECT (buf), "mode-DECAWM");
-                break;
-
-            case 1049:
-                break;
-
-            case 1000:
-                buf->priv->modes &= ~MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-MOUSE-TRACKING");
-                break;
-
-            case 1001:
-                buf->priv->modes &= ~HILITE_MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-HILITE-MOUSE-TRACKING");
-                break;
-
-            default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_set_mode           (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 4:
-                buf->priv->modes |= IRM;
-                g_object_notify (G_OBJECT (buf), "mode-IRM");
-                break;
-
-            case 20:
-                buf->priv->modes |= LNM;
-                g_object_notify (G_OBJECT (buf), "mode-LNM");
-                break;
-
-            case 2: /* KAM */
-                g_warning ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_reset_mode         (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 4:
-                buf->priv->modes &= ~IRM;
-                g_object_notify (G_OBJECT (buf), "mode-IRM");
-                break;
-
-            case 20:
-                buf->priv->modes &= ~LNM;
-                g_object_notify (G_OBJECT (buf), "mode-LNM");
-                break;
-
-            case 2: /* KAM */
-                g_warning ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_sgr                (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        buf_set_attrs_mask (buf, 0);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case ANSI_ALL_ATTRS_OFF:
-                buf_set_attrs_mask (buf, 0);
-                break;
-            case ANSI_BOLD:
-                buf_add_attrs_mask (buf, MOO_TERM_TEXT_BOLD);
-                break;
-            case ANSI_UNDERSCORE:
-                buf_add_attrs_mask (buf, MOO_TERM_TEXT_UNDERLINE);
-                break;
-            case ANSI_BLINK:
-                g_warning ("%s: ignoring blink", G_STRLOC);
-                break;
-            case ANSI_REVERSE:
-                buf_add_attrs_mask (buf, MOO_TERM_TEXT_REVERSE);
-                break;
-            case 20 + ANSI_BOLD:
-                buf_remove_attrs_mask (buf, MOO_TERM_TEXT_BOLD);
-                break;
-            case 20 + ANSI_UNDERSCORE:
-                buf_remove_attrs_mask (buf, MOO_TERM_TEXT_UNDERLINE);
-                break;
-            case 20 + ANSI_BLINK:
-                g_warning ("%s: ignoring blink", G_STRLOC);
-                break;
-            case 20 + ANSI_REVERSE:
-                buf_remove_attrs_mask (buf, MOO_TERM_TEXT_REVERSE);
-                break;
-
-            default:
-                if (30 <= params[i] && params[i] <= 37)
-                    buf_set_ansi_foreground (buf, params[i] - 30);
-                else if (40 <= params[i] && params[i] <= 47)
-                    buf_set_ansi_background (buf, params[i] - 40);
-                else if (39 == params[i])
-                    buf_set_ansi_foreground (buf, 8);
-                else if (49 == params[i])
-                    buf_set_ansi_background (buf, 8);
-                else
-                    g_warning ("%s: unknown text attribute %d",
-                               G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_dsr                (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        buf_vt_report_status (buf);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 5:
-                buf_vt_report_status (buf);
-                break;
-
-            case 6:
-                buf_vt_report_active_position (buf);
-                break;
-
-            default:
-                g_warning ("%s: invalid request %d",
-                           G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_restore_decset     (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 1:
-                if (buf->priv->saved_modes & DECCKM)
-                    buf->priv->modes |= DECCKM;
-                else
-                    buf->priv->modes &= ~DECCKM;
-                g_object_notify (G_OBJECT (buf), "mode-DECCKM");
-                break;
-
-            case 2: /* DECANM */
-            case 3: /* DECCOLM */
-            case 4: /* DECSCLM */
-            case 8: /* DECARM */
-            case 18: /* DECPFF */
-            case 19: /* DECPEX */
-            case 40: /* disallow 80 <-> 132 mode */
-            case 45: /* no reverse wraparound mode */
-                g_warning ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            case 5:
-                if (buf->priv->saved_modes & DECSCNM)
-                    buf->priv->modes |= DECSCNM;
-                else
-                    buf->priv->modes &= ~DECSCNM;
-                g_object_notify (G_OBJECT (buf), "mode-DECSCNM");
-                break;
-
-            case 6:
-                if (buf->priv->saved_modes & DECOM)
-                    buf->priv->modes |= DECOM;
-                else
-                    buf->priv->modes &= ~DECOM;
-                g_object_notify (G_OBJECT (buf), "mode-DECOM");
-                break;
-
-            case 7:
-                if (buf->priv->saved_modes & DECAWM)
-                    buf->priv->modes |= DECAWM;
-                else
-                    buf->priv->modes &= ~DECAWM;
-                g_object_notify (G_OBJECT (buf), "mode-DECAWM");
-                break;
-
-            case 1000:
-                if (buf->priv->saved_modes & MOUSE_TRACKING)
-                    buf->priv->modes |= MOUSE_TRACKING;
-                else
-                    buf->priv->modes &= ~MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-MOUSE_TRACKING");
-                break;
-
-            case 1001:
-                if (buf->priv->saved_modes & HILITE_MOUSE_TRACKING)
-                    buf->priv->modes |= HILITE_MOUSE_TRACKING;
-                else
-                    buf->priv->modes &= ~HILITE_MOUSE_TRACKING;
-                g_object_notify (G_OBJECT (buf), "mode-HILITE_MOUSE_TRACKING");
-                break;
-
-            default:
-                g_warning ("%s: unknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-static void     exec_save_decset        (MooTermBuffer  *buf,
-                                         guint          *params,
-                                         guint           num_params)
-{
-    guint i;
-
-    if (!num_params)
-    {
-        g_warning ("%s: ???", G_STRLOC);
-        buf->priv->saved_modes = buf->priv->modes;
-        return;
-    }
-
-    for (i = 0; i < num_params; ++i)
-    {
-        switch (params[i])
-        {
-            case 1:
-                if (buf->priv->modes & DECCKM)
-                    buf->priv->saved_modes |= DECCKM;
-                else
-                    buf->priv->saved_modes &= ~DECCKM;
-                break;
-
-            case 2: /* DECANM */
-            case 3: /* DECCOLM */
-            case 4: /* DECSCLM */
-            case 8: /* DECARM */
-            case 18: /* DECPFF */
-            case 19: /* DECPEX */
-            case 40: /* disallow 80 <-> 132 mode */
-            case 45: /* no reverse wraparound mode */
-                g_warning ("%s: ignoring mode %d", G_STRLOC, params[i]);
-                break;
-
-            case 5:
-                if (buf->priv->modes & DECSCNM)
-                    buf->priv->saved_modes |= DECSCNM;
-                else
-                    buf->priv->saved_modes &= ~DECSCNM;
-                break;
-
-            case 6:
-                if (buf->priv->modes & DECOM)
-                    buf->priv->saved_modes |= DECOM;
-                else
-                    buf->priv->saved_modes &= ~DECOM;
-                break;
-
-            case 7:
-                if (buf->priv->modes & DECAWM)
-                    buf->priv->saved_modes |= DECAWM;
-                else
-                    buf->priv->saved_modes &= ~DECAWM;
-                break;
-
-            case 1000:
-                if (buf->priv->modes & MOUSE_TRACKING)
-                    buf->priv->saved_modes |= MOUSE_TRACKING;
-                else
-                    buf->priv->saved_modes &= ~MOUSE_TRACKING;
-                break;
-
-            case 1001:
-                if (buf->priv->modes & HILITE_MOUSE_TRACKING)
-                    buf->priv->saved_modes |= HILITE_MOUSE_TRACKING;
-                else
-                    buf->priv->saved_modes &= ~HILITE_MOUSE_TRACKING;
-                break;
-
-            default:
-                g_warning ("%s: uknown mode %d", G_STRLOC, params[i]);
-        }
-    }
-}
-
-
-static void     exec_command            (MooTermParser  *parser)
-{
-#if 0
-    if (parser->cmd != CMD_IGNORE)
-    {
-        char *bytes, *nice_bytes;
-        bytes = block_get_string (&parser->cmd_string);
-        nice_bytes = _moo_term_nice_bytes (bytes, -1);
-        g_print ("command '%s'\n", nice_bytes);
-        g_free (nice_bytes);
-        g_free (bytes);
-    }
-#endif
-
-    switch (parser->cmd)
-    {
-        case CMD_IGNORE:
-        {
-            char *bytes, *nice_bytes;
-            bytes = block_get_string (&parser->cmd_string);
-            nice_bytes = _moo_term_nice_bytes (bytes, -1);
-            g_message ("%s: ignoring control sequence '%s'",
-                       G_STRLOC, nice_bytes);
-            g_free (nice_bytes);
-            g_free (bytes);
-        }
-        break;
-
-        case CMD_DECALN:
-            buf_vt_decaln (parser->term_buffer);
-            break;
-        case CMD_DECSET:     /* see skip */
-            exec_decset (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-
-        case CMD_DECRST:     /* see skip */
-            exec_decrst (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-
-        case CMD_G0_CHARSET:
-            buf_vt_select_charset (parser->term_buffer, 0, parser->nums[0]);
-            break;
-        case CMD_G1_CHARSET:
-            buf_vt_select_charset (parser->term_buffer, 1, parser->nums[0]);
-            break;
-        case CMD_G2_CHARSET:
-            buf_vt_select_charset (parser->term_buffer, 2, parser->nums[0]);
-            break;
-        case CMD_G3_CHARSET:
-            buf_vt_select_charset (parser->term_buffer, 3, parser->nums[0]);
-            break;
-
-        case CMD_DECSC:
-            buf_vt_save_cursor (parser->term_buffer);
-            break;
-        case CMD_DECRC:
-            buf_vt_restore_cursor (parser->term_buffer);
-            break;
-        case CMD_IND:
-            buf_vt_index (parser->term_buffer);
-            break;
-        case CMD_NEL:
-            buf_vt_next_line (parser->term_buffer);
-            break;
-        case CMD_HTS:
-            buf_vt_set_tab_stop (parser->term_buffer);
-            break;
-        case CMD_RI:
-            buf_vt_reverse_index (parser->term_buffer);
-            break;
-        case CMD_SS2:
-            buf_vt_single_shift (parser->term_buffer, 2);
-            break;
-        case CMD_SS3:
-            buf_vt_single_shift (parser->term_buffer, 3);
-            break;
-        case CMD_DA:
-            buf_vt_da (parser->term_buffer);
-            break;
-        case CMD_ICH:
-            exec_cmd_1 (ich);
-            break;
-        case CMD_DCH:
-            exec_cmd_1 (dch);
-            break;
-        case CMD_CUU:
-            exec_cmd_1 (cuu);
-            break;
-        case CMD_CUD:
-            exec_cmd_1 (cud);
-            break;
-        case CMD_CUF:
-            exec_cmd_1 (cuf);
-            break;
-        case CMD_CUB:
-            exec_cmd_1 (cub);
-            break;
-        case CMD_CUP:
-            exec_cmd_2 (cup);
-            break;
-        case CMD_ED:
-            check_nums_len (ED, 1);
-            switch (parser->nums[0])
-            {
-                case 0:
-                    buf_vt_erase_from_cursor (parser->term_buffer);
-                    break;
-                case 1:
-                    buf_vt_erase_to_cursor (parser->term_buffer);
-                    break;
-                case 2:
-                    buf_vt_erase_display (parser->term_buffer);
-                    break;
-                default:
-                    g_warning ("%s: wrong argument %d for ED command",
-                               G_STRLOC, parser->nums[0]);
-                    warn_esc_sequence ();
-                    break;
-            }
-
-        case CMD_EL:
-            check_nums_len (EL, 1);
-            switch (parser->nums[0])
-            {
-                case 0:
-                    buf_vt_erase_line_from_cursor (parser->term_buffer);
-                    break;
-                case 1:
-                    buf_vt_erase_line_to_cursor (parser->term_buffer);
-                    break;
-                case 2:
-                    buf_vt_erase_line (parser->term_buffer);
-                    break;
-                default:
-                    g_warning ("%s: wrong argument %d for EL command",
-                               G_STRLOC, parser->nums[0]);
-                    warn_esc_sequence ();
-                    break;
-            }
-
-        case CMD_IL:
-            exec_cmd_1 (il);
-            break;
-        case CMD_DL:
-            exec_cmd_1 (dl);
-            break;
-        case CMD_INIT_HILITE_MOUSE_TRACKING:
-            exec_cmd_5 (init_hilite_mouse_tracking);
-            break;
-        case CMD_TBC:
-            check_nums_len (TBC, 1);
-            switch (parser->nums[0])
-            {
-                case 0:
-                    buf_vt_clear_tab_stop (parser->term_buffer);
-                    break;
-                case 3:
-                    buf_vt_clear_all_tab_stops (parser->term_buffer);
-                    break;
-                default:
-                    g_warning ("%s: wrong argument %d for TBC command",
-                               G_STRLOC, parser->nums[0]);
-                    warn_esc_sequence ();
-                    break;
-            }
-        case CMD_SM:
-            exec_set_mode (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_RM:
-            exec_reset_mode (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_SGR:
-            exec_sgr (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_DSR:
-            exec_dsr (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_DECSTBM:
-            exec_cmd_2 (set_scrolling_region);
-            break;
-        case CMD_DECREQTPARM:
-            exec_cmd_1 (request_terminal_parameters);
-            break;
-        case CMD_RESTORE_DECSET:
-            exec_restore_decset (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_SAVE_DECSET:
-            exec_save_decset (parser->term_buffer, parser->nums, parser->nums_len);
-            break;
-        case CMD_SET_TEXT:
-            check_nums_len (SET_TEXT_PARAMETERS, 1);
-
-            {
-                char *s = g_strndup (parser->string,
-                                     parser->string_len);
-
-                switch (parser->nums[0])
-                {
-                    case 0:
-                        buf_vt_set_window_title (parser->term_buffer, s);
-                        buf_vt_set_icon_name (parser->term_buffer, s);
-                        g_free (s);
-                        break;
-                    case 1:
-                        buf_vt_set_icon_name (parser->term_buffer, s);
-                        g_free (s);
-                        break;
-                    case 2:
-                        buf_vt_set_window_title (parser->term_buffer, s);
-                        g_free (s);
-                        break;
-                    case 50:
-                        g_warning ("%s: ignoring SET_FONT command",
-                                   G_STRLOC);
-                        warn_esc_sequence ();
-                        g_free (s);
-                        break;
-                    case 46:
-                        g_warning ("%s: ignoring SET_LOG_FILE command",
-                                   G_STRLOC);
-                        warn_esc_sequence ();
-                        g_free (s);
-                        break;
-                    default:
-                        g_warning ("%s: wrong argument %d for SET_TEXT_PARAMETERS command",
-                                   G_STRLOC, parser->nums[0]);
-                        warn_esc_sequence ();
-                        g_free (s);
-                        break;
-                }
-            }
-            break;
-
-        case CMD_RIS:
-            buf_vt_full_reset (parser->term_buffer);
-            break;
-        case CMD_LS2:
-            buf_vt_invoke_charset (parser->term_buffer, 2);
-            break;
-        case CMD_LS3:
-            buf_vt_invoke_charset (parser->term_buffer, 3);
-            break;
-        case CMD_BELL:
-            buf_vt_bell (parser->term_buffer);
-            break;
-        case CMD_BACKSPACE:
-            buf_vt_backspace (parser->term_buffer);
-            break;
-        case CMD_TAB:
-            buf_vt_tab (parser->term_buffer);
-            break;
-        case CMD_LINEFEED:
-            buf_vt_linefeed (parser->term_buffer);
-            break;
-        case CMD_VERT_TAB:
-            buf_vt_vert_tab (parser->term_buffer);
-            break;
-        case CMD_FORM_FEED:
-            buf_vt_form_feed (parser->term_buffer);
-            break;
-        case CMD_CARRIAGE_RETURN:
-            buf_vt_carriage_return (parser->term_buffer);
-            break;
-        case CMD_ALT_CHARSET:
-            buf_vt_invoke_charset (parser->term_buffer, 1);
-            break;
-        case CMD_NORM_CHARSET:
-            buf_vt_invoke_charset (parser->term_buffer, 0);
-            break;
-        case CMD_COLUMN_ADDRESS:
-            exec_cmd_1 (column_address);
-            break;
-        case CMD_ROW_ADDRESS:
-            exec_cmd_1 (row_address);
-            break;
-        case CMD_BACK_TAB:
-            buf_vt_tab (parser->term_buffer);
-            break;
-        case CMD_RESET_2STRING:
-            buf_vt_reset_2 (parser->term_buffer);
-            break;
-
-        case CMD_DECKPAM:
-            moo_term_buffer_set_keypad_numeric (parser->term_buffer, FALSE);
-            break;
-        case CMD_DECKPNM:
-            moo_term_buffer_set_keypad_numeric (parser->term_buffer, TRUE);
-            break;
-
-        case CMD_NONE:
-        case CMD_ERROR:
-            g_assert_not_reached ();
-    }
-}
-#endif
 
 
 char           *_moo_term_nice_char     (guchar          c)
