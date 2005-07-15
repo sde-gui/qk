@@ -235,58 +235,60 @@ void        moo_term_setup_palette      (MooTerm        *term)
 }
 
 
-void        moo_term_cursor_moved       (MooTerm        *term,
-                                         MooTermBuffer  *buf)
+static void invalidate_screen_cell      (MooTerm        *term,
+                                         guint           row,
+                                         guint           column)
 {
-    int scrollback, top_line, new_row, new_col;
+    int scrollback, top_line;
     guint char_width, char_height;
-    GdkRegion *dirty;
     GdkRectangle rect = {0, 0, 0, 0};
     GdkRectangle small_rect = {0, 0, 1, 1};
 
-    if (buf != term->priv->buffer || !term->priv->cursor_visible)
-        return;
-
-    scrollback = buf_scrollback (buf);
+    scrollback = buf_scrollback (term->priv->buffer);
     top_line = term_top_line (term);
 
-    new_row = buf_cursor_row (buf);
-    new_col = buf_cursor_col (buf);
     char_width = term->priv->font_info->width;
     char_height = term->priv->font_info->height;
 
     rect.width = char_width;
     rect.height = char_height;
 
-    rect.x = term->priv->cursor_col * char_width;
-    rect.y = (term->priv->cursor_row + scrollback - top_line) * char_height;
+    small_rect.x = column;
+    small_rect.y = row + scrollback - top_line;
+    rect.x = small_rect.x * char_width;
+    rect.y = small_rect.y * char_height;
 
-    small_rect.x = term->priv->cursor_col;
-    small_rect.y = term->priv->cursor_row + scrollback - top_line;
     moo_term_invalidate_content_rect (term, &small_rect);
+    gdk_window_invalidate_rect (GTK_WIDGET(term)->window, &rect, FALSE);
 
-    dirty = gdk_region_rectangle (&rect);
+    add_update_timeout (term);
+}
+
+
+void        moo_term_cursor_moved       (MooTerm        *term,
+                                         MooTermBuffer  *buf)
+{
+    int new_row, new_col;
+
+    if (buf != term->priv->buffer || !term->priv->cursor_visible)
+        return;
+
+    new_row = buf_cursor_row (buf);
+    new_col = buf_cursor_col (buf);
+
+    invalidate_screen_cell (term,
+                            term->priv->cursor_row,
+                            term->priv->cursor_col);
 
     if (new_row != (int) term->priv->cursor_row ||
         new_col != (int) term->priv->cursor_col)
     {
-        rect.x = new_col * char_width;
-        rect.y = (new_row + scrollback - top_line) * char_height;
-
-        gdk_region_union_with_rect (dirty, &rect);
-
-        small_rect.x = new_col;
-        small_rect.y = new_row + scrollback - top_line;
-        moo_term_invalidate_content_rect (term, &small_rect);
+        term->priv->cursor_col = new_col;
+        term->priv->cursor_row = new_row;
+        invalidate_screen_cell (term,
+                                term->priv->cursor_row,
+                                term->priv->cursor_col);
     }
-
-    term->priv->cursor_col = new_col;
-    term->priv->cursor_row = new_row;
-
-    gdk_window_invalidate_region (GTK_WIDGET(term)->window,
-                                  dirty, FALSE);
-    add_update_timeout (term);
-    gdk_region_destroy (dirty);
 }
 
 
@@ -528,7 +530,7 @@ static void term_draw_range                 (MooTerm        *term,
     g_assert (abs_row < buf_total_height (term->priv->buffer));
 
     if (term->priv->cursor_visible &&
-        buf_cursor_row_abs (term->priv->buffer) == abs_row)
+        term->priv->cursor_row + buf_scrollback (term->priv->buffer) == abs_row)
     {
         guint cursor = buf_cursor_col (term->priv->buffer);
 
@@ -991,5 +993,18 @@ void        moo_term_invert_colors          (MooTerm    *term,
 void        moo_term_set_caret_visible      (MooTerm    *term,
                                              gboolean    visible)
 {
-    term_implement_me ();
+    if (term->priv->cursor_visible != visible)
+    {
+        term->priv->cursor_visible = visible;
+
+        if (visible)
+        {
+            term->priv->cursor_row = buf_cursor_row (term->priv->buffer);
+            term->priv->cursor_col = buf_cursor_col (term->priv->buffer);
+        }
+
+        invalidate_screen_cell (term,
+                                term->priv->cursor_row,
+                                term->priv->cursor_col);
+    }
 }
