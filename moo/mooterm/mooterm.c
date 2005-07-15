@@ -1073,14 +1073,14 @@ void        moo_term_set_mode               (MooTerm    *term,
 void        moo_term_set_ca_mode            (MooTerm    *term,
                                              gboolean    set)
 {
-    term_implement_me ();
+    TERM_IMPLEMENT_ME;
 }
 
 
 void        moo_term_set_alternate_buffer   (MooTerm        *term,
                                              gboolean        alternate)
 {
-    term_implement_me ();
+    TERM_IMPLEMENT_ME;
 }
 
 

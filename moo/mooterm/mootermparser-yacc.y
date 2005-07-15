@@ -3,8 +3,8 @@
 #include "mooterm/mootermparser.h"
 #include "mooterm/mooterm-vtctls.h"
 
-#define add_number(n)                                   \
-{                                                       \
+#define ADD_NUMBER(n)                                   \
+G_STMT_START {                                          \
     if (parser->numbers->len >= MAX_PARAMS_NUM)         \
     {                                                   \
         g_warning ("%s: too many parameters passed",    \
@@ -16,17 +16,17 @@
         int val = n;                                    \
         g_array_append_val (parser->numbers, val);      \
     }                                                   \
-}
+} G_STMT_END
 
-#define nums_len() (parser->numbers->len)
+#define NUMS_LEN (parser->numbers->len)
 
-#define check_nums_len(n)                               \
-{                                                       \
+#define CHECK_NUMS_LEN(n)                               \
+G_STMT_START {                                          \
     if (parser->numbers->len != n)                      \
         YYABORT;                                        \
-}
+} G_STMT_END
 
-#define get_num(n) (((int*)parser->numbers->data)[n])
+#define GET_NUM(n) (((int*)parser->numbers->data)[n])
 
 #define TERMINAL_HEIGHT (buf_screen_height (parser->term->priv->buffer))
 #define TERMINAL_WIDTH  (buf_screen_width (parser->term->priv->buffer))
@@ -80,44 +80,44 @@ escape_sequence:    NEL
 ;
 
 
-NEL:        '\033' 'E'          {   vt_NEL ();   };
-DECRC:      '\033' '8'          {   vt_DECRC ();    };
-DECSC:      '\033' '7'          {   vt_DECSC ();            };
-HTS:        '\033' 'H'          {   vt_HTS ();      };
-DECBI:      '\033' '6'          {   vt_not_implemented();   };
-DECFI:      '\033' '9'          {   vt_not_implemented();   };
-IND:        '\033' 'D'          {   vt_IND ();      };
-RI:         '\033' 'M'          {   vt_RI ();       };
-SS2:        '\033' 'N'          {   vt_not_implemented();   };
-SS3:        '\033' 'O'          {   vt_not_implemented();   };
-DECID:      '\033' 'Z'          {   vt_not_implemented();   };
-RIS:        '\033' 'c'          {   vt_RIS ();   };
-DECANM:     '\033' '<'          {   vt_not_implemented();   };
-DECKPAM:    '\033' '='          {   vt_DECKPAM ();  };
-DECKPNM:    '\033' '>'          {   vt_DECKPNM ();  };
-LS1R:       '\033' '~'          {   vt_not_implemented();   };
-LS2:        '\033' 'n'          {   vt_not_implemented();   };
-LS2R:       '\033' '}'          {   vt_not_implemented();   };
-LS3:        '\033' 'o'          {   vt_not_implemented();   };
-LS3R:       '\033' '|'          {   vt_not_implemented();   };
-DECDHLT:    '\033' '#' '3'      {   vt_not_implemented();   };
-DECDHLB:    '\033' '#' '4'      {   vt_not_implemented();   };
-DECSWL:     '\033' '#' '5'      {   vt_not_implemented();   };
-DECDWL:     '\033' '#' '6'      {   vt_not_implemented();   };
-DECALN:     '\033' '#' '8'      {   vt_DECALN ();   };
-S7C1T:      '\033' ' ' 'F'      {   vt_ignored ();  };
-S8C1T:      '\033' ' ' 'G'      {   vt_ignored ();  };
+NEL:        '\033' 'E'          {   VT_NEL;             };
+DECRC:      '\033' '8'          {   VT_DECRC;           };
+DECSC:      '\033' '7'          {   VT_DECSC;           };
+HTS:        '\033' 'H'          {   VT_HTS;             };
+DECBI:      '\033' '6'          {   VT_NOT_IMPLEMENTED; };
+DECFI:      '\033' '9'          {   VT_NOT_IMPLEMENTED; };
+IND:        '\033' 'D'          {   VT_IND;             };
+RI:         '\033' 'M'          {   VT_RI;              };
+SS2:        '\033' 'N'          {   VT_NOT_IMPLEMENTED; };
+SS3:        '\033' 'O'          {   VT_NOT_IMPLEMENTED; };
+DECID:      '\033' 'Z'          {   VT_NOT_IMPLEMENTED; };
+RIS:        '\033' 'c'          {   VT_RIS;             };
+DECANM:     '\033' '<'          {   VT_NOT_IMPLEMENTED; };
+DECKPAM:    '\033' '='          {   VT_DECKPAM;         };
+DECKPNM:    '\033' '>'          {   VT_DECKPNM;         };
+LS1R:       '\033' '~'          {   VT_NOT_IMPLEMENTED; };
+LS2:        '\033' 'n'          {   VT_NOT_IMPLEMENTED; };
+LS2R:       '\033' '}'          {   VT_NOT_IMPLEMENTED; };
+LS3:        '\033' 'o'          {   VT_NOT_IMPLEMENTED; };
+LS3R:       '\033' '|'          {   VT_NOT_IMPLEMENTED; };
+DECDHLT:    '\033' '#' '3'      {   VT_NOT_IMPLEMENTED; };
+DECDHLB:    '\033' '#' '4'      {   VT_NOT_IMPLEMENTED; };
+DECSWL:     '\033' '#' '5'      {   VT_NOT_IMPLEMENTED; };
+DECDWL:     '\033' '#' '6'      {   VT_NOT_IMPLEMENTED; };
+DECALN:     '\033' '#' '8'      {   VT_DECALN;          };
+S7C1T:      '\033' ' ' 'F'      {   VT_IGNORED;         };
+S8C1T:      '\033' ' ' 'G'      {   VT_IGNORED;         };
 
-SCS:            '\033' SCS_set_num SCS_set  {   vt_SCS (get_num(0), get_num(1));    };
-SCS_set_num:    '('                         {   add_number (0);                     }
-            |   ')'                         {   add_number (1);                     }
-            |   '*'                         {   add_number (2);                     }
-            |   '+'                         {   add_number (3);                     };
-SCS_set:        '0'                         {   add_number (0);                     }
-            |   '1'                         {   add_number (1);                     }
-            |   '2'                         {   add_number (2);                     }
-            |   'A'                         {   add_number (3);                     }
-            |   'B'                         {   add_number (4);                     };
+SCS:            '\033' SCS_set_num SCS_set  {   VT_SCS (GET_NUM(0), GET_NUM(1));    };
+SCS_set_num:    '('                         {   ADD_NUMBER (0);                     }
+            |   ')'                         {   ADD_NUMBER (1);                     }
+            |   '*'                         {   ADD_NUMBER (2);                     }
+            |   '+'                         {   ADD_NUMBER (3);                     };
+SCS_set:        '0'                         {   ADD_NUMBER (0);                     }
+            |   '1'                         {   ADD_NUMBER (1);                     }
+            |   '2'                         {   ADD_NUMBER (2);                     }
+            |   'A'                         {   ADD_NUMBER (3);                     }
+            |   'B'                         {   ADD_NUMBER (4);                     };
 
 
 /****************************************************************************/
@@ -195,171 +195,171 @@ control_sequence:   DECSR
 ;
 
 
-DECSR:          '\233' number '+' 'p'       {   vt_not_implemented();   };
+DECSR:          '\233' number '+' 'p'       {   VT_NOT_IMPLEMENTED;     };
 
 /* default parameter - 1 */
-CUU:            '\233' number 'A'           {   vt_CUU ($2);            }
-            |   '\233' 'A'                  {   vt_CUU (1);             };
-CUD:            '\233' number 'B'           {   vt_CUD ($2);            }
-            |   '\233' 'B'                  {   vt_CUD (1);             };
-CUF:            '\233' number 'C'           {   vt_CUF ($2);            }
-            |   '\233' 'C'                  {   vt_CUF (1);             };
-CUB:            '\233' number 'D'           {   vt_CUB ($2);            }
-            |   '\233' 'D'                  {   vt_CUB (1);             };
-CBT:            '\233' number 'Z'           {   vt_CBT ($2 ? $2 : 1);   }
-            |   '\233' 'Z'                  {   vt_CBT (1);             };
-CHA:            '\233' number 'G'           {   vt_CHA ($2 ? $2 : 1);   }
-            |   '\233' 'G'                  {   vt_CHA (1);             };
-CHT:            '\233' number 'I'           {   vt_CHT ($2 ? $2 : 1);   }
-            |   '\233' 'I'                  {   vt_CHT (1);             };
-CNL:            '\233' number 'E'           {   vt_CNL ($2 ? $2 : 1);   }
-            |   '\233' 'E'                  {   vt_CNL (1);             };
-CPL:            '\233' number 'F'           {   vt_CPL ($2 ? $2 : 1);   }
-            |   '\233' 'F'                  {   vt_CPL (1);             };
-HPA:            '\233' number '`'           {   vt_HPA ($2 ? $2 : 1);   }
-            |   '\233' '`'                  {   vt_HPA (1);             };
-HPR:            '\233' number 'a'           {   vt_HPR ($2 ? $2 : 1);   }
-            |   '\233' 'a'                  {   vt_HPR (1);             };
-VPA:            '\233' number 'd'           {   vt_VPA ($2 ? $2 : 1);   }
-            |   '\233' 'd'                  {   vt_VPA (1);             };
-VPR:            '\233' number 'e'           {   vt_VPR ($2 ? $2 : 1);   }
-            |   '\233' 'e'                  {   vt_VPR (1);             };
+CUU:            '\233' number 'A'           {   VT_CUU ($2);            }
+            |   '\233' 'A'                  {   VT_CUU (1);             };
+CUD:            '\233' number 'B'           {   VT_CUD ($2);            }
+            |   '\233' 'B'                  {   VT_CUD (1);             };
+CUF:            '\233' number 'C'           {   VT_CUF ($2);            }
+            |   '\233' 'C'                  {   VT_CUF (1);             };
+CUB:            '\233' number 'D'           {   VT_CUB ($2);            }
+            |   '\233' 'D'                  {   VT_CUB (1);             };
+CBT:            '\233' number 'Z'           {   VT_CBT ($2 ? $2 : 1);   }
+            |   '\233' 'Z'                  {   VT_CBT (1);             };
+CHA:            '\233' number 'G'           {   VT_CHA ($2 ? $2 : 1);   }
+            |   '\233' 'G'                  {   VT_CHA (1);             };
+CHT:            '\233' number 'I'           {   VT_CHT ($2 ? $2 : 1);   }
+            |   '\233' 'I'                  {   VT_CHT (1);             };
+CNL:            '\233' number 'E'           {   VT_CNL ($2 ? $2 : 1);   }
+            |   '\233' 'E'                  {   VT_CNL (1);             };
+CPL:            '\233' number 'F'           {   VT_CPL ($2 ? $2 : 1);   }
+            |   '\233' 'F'                  {   VT_CPL (1);             };
+HPA:            '\233' number '`'           {   VT_HPA ($2 ? $2 : 1);   }
+            |   '\233' '`'                  {   VT_HPA (1);             };
+HPR:            '\233' number 'a'           {   VT_HPR ($2 ? $2 : 1);   }
+            |   '\233' 'a'                  {   VT_HPR (1);             };
+VPA:            '\233' number 'd'           {   VT_VPA ($2 ? $2 : 1);   }
+            |   '\233' 'd'                  {   VT_VPA (1);             };
+VPR:            '\233' number 'e'           {   VT_VPR ($2 ? $2 : 1);   }
+            |   '\233' 'e'                  {   VT_VPR (1);             };
 
-CUP:            '\233' numbers 'H'          {   check_nums_len (2);
-                                                vt_CUP (get_num (0) ? get_num (0) : 1,
-                                                        get_num (1) ? get_num (1) : 1);   }
-            |   '\233' 'H'                  {   vt_CUP (1, 1);   }
-            |   '\233' numbers 'f'          {   check_nums_len (2);
-                                                vt_CUP (get_num (0) ? get_num (0) : 1,
-                                                        get_num (1) ? get_num (1) : 1);   }  /* HVP */
-            |   '\233' 'f'                  {   vt_CUP (1, 1);   };
+CUP:            '\233' numbers 'H'          {   CHECK_NUMS_LEN (2);
+                                                VT_CUP (GET_NUM (0) ? GET_NUM (0) : 1,
+                                                        GET_NUM (1) ? GET_NUM (1) : 1);   }
+            |   '\233' 'H'                  {   VT_CUP (1, 1);   }
+            |   '\233' numbers 'f'          {   CHECK_NUMS_LEN (2);
+                                                VT_CUP (GET_NUM (0) ? GET_NUM (0) : 1,
+                                                        GET_NUM (1) ? GET_NUM (1) : 1);   }  /* HVP */
+            |   '\233' 'f'                  {   VT_CUP (1, 1);   };
 
-DECSCUSR:       '\233' number ' ' 'q'       {   vt_not_implemented();   }
-            |   '\233' ' ' 'q'              {   vt_not_implemented();   };
+DECSCUSR:       '\233' number ' ' 'q'       {   VT_NOT_IMPLEMENTED; }
+            |   '\233' ' ' 'q'              {   VT_NOT_IMPLEMENTED; };
 
-DECST8C:        '\233' '?' number 'W'       {   vt_not_implemented();   };
-TBC:            '\233' number 'g'           {   vt_TBC ($2);            }
-            |   '\233' 'g'                  {   vt_TBC (0);             };
+DECST8C:        '\233' '?' number 'W'       {   VT_NOT_IMPLEMENTED; };
+TBC:            '\233' number 'g'           {   VT_TBC ($2);        }
+            |   '\233' 'g'                  {   VT_TBC (0);         };
 
-DECSLRM:        '\233' numbers 's'          {   vt_not_implemented();   }
-            |   '\233' 's'                  {   vt_not_implemented();   };
+DECSLRM:        '\233' numbers 's'          {   VT_NOT_IMPLEMENTED; }
+            |   '\233' 's'                  {   VT_NOT_IMPLEMENTED; };
 
-DECSSCLS:       '\233' number ' ' 'p'       {   vt_not_implemented();   }
-            |   '\233' ' ' 'p'              {   vt_not_implemented();   };
+DECSSCLS:       '\233' number ' ' 'p'       {   VT_NOT_IMPLEMENTED; }
+            |   '\233' ' ' 'p'              {   VT_NOT_IMPLEMENTED; };
 
-DECSTBM:        '\233' numbers 'r'          {   check_nums_len (2);
-                                                vt_DECSTBM (get_num (0) ? get_num (0) : 1,
-                                                            get_num (1) ? get_num (1) : 1); }
-            |   '\233' 'r'                  {   vt_DECSTBM (1, TERMINAL_HEIGHT);    };
+DECSTBM:        '\233' numbers 'r'          {   CHECK_NUMS_LEN (2);
+                                                VT_DECSTBM (GET_NUM (0) ? GET_NUM (0) : 1,
+                                                            GET_NUM (1) ? GET_NUM (1) : 1); }
+            |   '\233' 'r'                  {   VT_DECSTBM (1, TERMINAL_HEIGHT);    };
 
-DECSLPP:        '\233' number 't'           {   vt_not_implemented();   }
-            |   '\233' 't'                  {   vt_not_implemented();   };
+DECSLPP:        '\233' number 't'           {   VT_NOT_IMPLEMENTED; }
+            |   '\233' 't'                  {   VT_NOT_IMPLEMENTED; };
 
-NP:             '\233' number 'U'           {   vt_not_implemented();   }
-            |   '\233' 'U'                  {   vt_not_implemented();   };
-PP:             '\233' number 'V'           {   vt_not_implemented();   }
-            |   '\233' 'V'                  {   vt_not_implemented();   };
+NP:             '\233' number 'U'           {   VT_NOT_IMPLEMENTED; }
+            |   '\233' 'U'                  {   VT_NOT_IMPLEMENTED; };
+PP:             '\233' number 'V'           {   VT_NOT_IMPLEMENTED; }
+            |   '\233' 'V'                  {   VT_NOT_IMPLEMENTED; };
 
-PPA:            '\233' number ' ' 'P'       {   vt_not_implemented();   }
-            |   '\233' ' ' 'P'              {   vt_not_implemented();   };
-PPB:            '\233' number ' ' 'R'       {   vt_not_implemented();   }
-            |   '\233' ' ' 'R'              {   vt_not_implemented();   };
-PPR:            '\233' number ' ' 'Q'       {   vt_not_implemented();   }
-            |   '\233' ' ' 'Q'              {   vt_not_implemented();   };
+PPA:            '\233' number ' ' 'P'       {   VT_NOT_IMPLEMENTED; }
+            |   '\233' ' ' 'P'              {   VT_NOT_IMPLEMENTED; };
+PPB:            '\233' number ' ' 'R'       {   VT_NOT_IMPLEMENTED; }
+            |   '\233' ' ' 'R'              {   VT_NOT_IMPLEMENTED; };
+PPR:            '\233' number ' ' 'Q'       {   VT_NOT_IMPLEMENTED; }
+            |   '\233' ' ' 'Q'              {   VT_NOT_IMPLEMENTED; };
 
-DECRQDE:        '\233' '"' 'v'              {   vt_not_implemented();   };
+DECRQDE:        '\233' '"' 'v'              {   VT_NOT_IMPLEMENTED; };
 
-SD:             '\233' number 'S'           {   vt_not_implemented();   };
-SU:             '\233' number 'T'           {   vt_not_implemented();   };
+SD:             '\233' number 'S'           {   VT_NOT_IMPLEMENTED; };
+SU:             '\233' number 'T'           {   VT_NOT_IMPLEMENTED; };
 
-DECRQUPSS:      '\233' '&' 'u'              {   vt_not_implemented();   };
+DECRQUPSS:      '\233' '&' 'u'              {   VT_NOT_IMPLEMENTED; };
 
 
-DECDC:          '\233' number '\'' '~'      {   vt_not_implemented();   }
-            |   '\233'  '\'' '~'            {   vt_not_implemented();   };
-DECIC:          '\233' number '\'' '}'      {   vt_not_implemented();   }
-            |   '\233'  '\'' '}'            {   vt_not_implemented();   };
-DCH:            '\233' number 'P'           {   vt_DCH ($2 ? $2 : 1);   }
-            |   '\233' 'P'                  {   vt_DCH (1);             };
-DL:             '\233' number 'M'           {   vt_DL ($2 ? $2 : 1);    }
-            |   '\233' 'M'                  {   vt_DL (1);              };
-ECH:            '\233' number 'X'           {   vt_ECH ($2 ? $2 : 1);   }
-            |   '\233' 'X'                  {   vt_ECH (1);             };
-ED:             '\233' number 'J'           {   vt_ED ($2);             }
-            |   '\233' 'J'                  {   vt_ED (0);              };
-EL:             '\233' number 'K'           {   vt_EL ($2);             }
-            |   '\233' 'K'                  {   vt_EL (0);              };
-ICH:            '\233' number '@'           {   vt_ICH ($2 ? $2 : 1);   }
-            |   '\233' '@'                  {   vt_ICH (1);             };
-IL:             '\233' number 'L'           {   vt_IL ($2 ? $2 : 1);    }
-            |   '\233' 'L'                  {   vt_IL (1);              };
+DECDC:          '\233' number '\'' '~'      {   VT_NOT_IMPLEMENTED;     }
+            |   '\233'  '\'' '~'            {   VT_NOT_IMPLEMENTED;     };
+DECIC:          '\233' number '\'' '}'      {   VT_NOT_IMPLEMENTED;     }
+            |   '\233'  '\'' '}'            {   VT_NOT_IMPLEMENTED;     };
+DCH:            '\233' number 'P'           {   VT_DCH ($2 ? $2 : 1);   }
+            |   '\233' 'P'                  {   VT_DCH (1);             };
+DL:             '\233' number 'M'           {   VT_DL ($2 ? $2 : 1);    }
+            |   '\233' 'M'                  {   VT_DL (1);              };
+ECH:            '\233' number 'X'           {   VT_ECH ($2 ? $2 : 1);   }
+            |   '\233' 'X'                  {   VT_ECH (1);             };
+ED:             '\233' number 'J'           {   VT_ED ($2);             }
+            |   '\233' 'J'                  {   VT_ED (0);              };
+EL:             '\233' number 'K'           {   VT_EL ($2);             }
+            |   '\233' 'K'                  {   VT_EL (0);              };
+ICH:            '\233' number '@'           {   VT_ICH ($2 ? $2 : 1);   }
+            |   '\233' '@'                  {   VT_ICH (1);             };
+IL:             '\233' number 'L'           {   VT_IL ($2 ? $2 : 1);    }
+            |   '\233' 'L'                  {   VT_IL (1);              };
 
-DECSCA:         '\233' number '"' 'q'       {   vt_not_implemented();   };
-DECSED:         '\233' '?' number 'J'       {   vt_not_implemented();   }
-            |   '\233' '?' 'J'              {   vt_not_implemented();   };
-DECSEL:         '\233' '?' number 'K'       {   vt_not_implemented();   }
-            |   '\233' '?' 'K'              {   vt_not_implemented();   };
+DECSCA:         '\233' number '"' 'q'       {   VT_NOT_IMPLEMENTED;   };
+DECSED:         '\233' '?' number 'J'       {   VT_NOT_IMPLEMENTED;   }
+            |   '\233' '?' 'J'              {   VT_NOT_IMPLEMENTED;   };
+DECSEL:         '\233' '?' number 'K'       {   VT_NOT_IMPLEMENTED;   }
+            |   '\233' '?' 'K'              {   VT_NOT_IMPLEMENTED;   };
 
-DECSCPP:        '\233' numbers '$' '|'      {   vt_not_implemented();   }
-            |   '\233' '$' '|'              {   vt_not_implemented();   };
-DECCARA:        '\233' numbers '$' 'r'      {   vt_not_implemented();   };
-DECCRA:         '\233' numbers '$' 'v'      {   vt_not_implemented();   };
-DECERA:         '\233' numbers '$' 'z'      {   vt_not_implemented();   };
-DECFRA:         '\233' numbers '$' 'x'      {   vt_not_implemented();   };
-DECRARA:        '\233' numbers '$' 't'      {   vt_not_implemented();   };
-DECSERA:        '\233' numbers '$' '{'      {   vt_not_implemented();   };
-DECSASD:        '\233' numbers '$' '}'      {   vt_not_implemented();   };
-DECSSDT:        '\233' numbers '$' '~'      {   vt_not_implemented();   };
+DECSCPP:        '\233' numbers '$' '|'      {   VT_NOT_IMPLEMENTED;   }
+            |   '\233' '$' '|'              {   VT_NOT_IMPLEMENTED;   };
+DECCARA:        '\233' numbers '$' 'r'      {   VT_NOT_IMPLEMENTED;   };
+DECCRA:         '\233' numbers '$' 'v'      {   VT_NOT_IMPLEMENTED;   };
+DECERA:         '\233' numbers '$' 'z'      {   VT_NOT_IMPLEMENTED;   };
+DECFRA:         '\233' numbers '$' 'x'      {   VT_NOT_IMPLEMENTED;   };
+DECRARA:        '\233' numbers '$' 't'      {   VT_NOT_IMPLEMENTED;   };
+DECSERA:        '\233' numbers '$' '{'      {   VT_NOT_IMPLEMENTED;   };
+DECSASD:        '\233' numbers '$' '}'      {   VT_NOT_IMPLEMENTED;   };
+DECSSDT:        '\233' numbers '$' '~'      {   VT_NOT_IMPLEMENTED;   };
 
-DECSACE:        '\233' numbers '*' 'x'      {   vt_not_implemented();   };
-DECSNLS:        '\233' numbers '*' '|'      {   vt_not_implemented();   };
-DECRQCRA:       '\233' numbers '*' 'y'      {   vt_not_implemented();   };
+DECSACE:        '\233' numbers '*' 'x'      {   VT_NOT_IMPLEMENTED;   };
+DECSNLS:        '\233' numbers '*' '|'      {   VT_NOT_IMPLEMENTED;   };
+DECRQCRA:       '\233' numbers '*' 'y'      {   VT_NOT_IMPLEMENTED;   };
 
-DSR:            '\233' '?' numbers 'n'      {   if (nums_len() == 2)
+DSR:            '\233' '?' numbers 'n'      {   if (NUMS_LEN == 2)
                                                 {
-                                                    vt_DSR (get_num (0), get_num (1), TRUE);
+                                                    VT_DSR (GET_NUM (0), GET_NUM (1), TRUE);
                                                 }
                                                 else
                                                 {
-                                                    vt_DSR (get_num (0), -1, TRUE);
+                                                    VT_DSR (GET_NUM (0), -1, TRUE);
                                                 }
                                             }
-            |   '\233' numbers 'n'          {   if (nums_len() == 2)
+            |   '\233' numbers 'n'          {   if (NUMS_LEN == 2)
                                                 {
-                                                    vt_DSR (get_num (0), get_num (1), FALSE);
+                                                    VT_DSR (GET_NUM (0), GET_NUM (1), FALSE);
                                                 }
                                                 else
                                                 {
-                                                    vt_DSR (get_num (0), -1, FALSE);
+                                                    VT_DSR (GET_NUM (0), -1, FALSE);
                                                 }
                                             };
 
-DA1:            '\233' 'c'                  {   vt_DA1 ();   }
-            |   '\233' number 'c'           {   vt_DA1 ();   };
-DA2:            '\233' '>' 'c'              {   vt_DA2 ();   }
-            |   '\233' '>' number 'c'       {   vt_DA2 ();   };
-DA3:            '\233' '=' 'c'              {   vt_DA3 ();   }
-            |   '\233' '=' number 'c'       {   vt_DA3 ();   };
+DA1:            '\233' 'c'                  {   VT_DA1;             }
+            |   '\233' number 'c'           {   VT_DA1;             };
+DA2:            '\233' '>' 'c'              {   VT_DA2;             }
+            |   '\233' '>' number 'c'       {   VT_DA2;             };
+DA3:            '\233' '=' 'c'              {   VT_DA3;             }
+            |   '\233' '=' number 'c'       {   VT_DA3;             };
 
-DECTST:         '\233' numbers 'y'          {   vt_ignored ();      };
+DECTST:         '\233' numbers 'y'          {   VT_IGNORED;         };
 
-DECSTR:         '\233' '!' 'p'              {   vt_DECSTR ();       };
+DECSTR:         '\233' '!' 'p'              {   VT_DECSTR;          };
 
 
-SGR:            '\233' numbers 'm'          {   vt_SGR ();          }
-            |   '\233' 'm'                  {   vt_SGR ();          };
-DECSET:         '\233' '?' numbers 'h'      {   vt_DECSET ();       }
-            |   '\233' '?' 'h'              {   vt_DECSET ();       };
-DECRST:         '\233' '?' numbers 'l'      {   vt_DECRST ();       }
-            |   '\233' '?' 'l'              {   vt_DECRST ();       };
-SM:             '\233' numbers 'h'          {   vt_SM ();           }
-            |   '\233' 'h'                  {   vt_SM ();           };
-RM:             '\233' numbers 'l'          {   vt_RM ();           }
-            |   '\233' 'l'                  {   vt_RM ();           };
-DECSAVE:        '\233' '?' numbers 's'      {   vt_DECSAVE ();      }
-            |   '\233' '?' 's'              {   vt_DECSAVE ();      };
-DECRESTORE:     '\233' '?' numbers 'r'      {   vt_DECRESTORE ();   }
-            |   '\233' '?' 'r'              {   vt_DECRESTORE ();   };
+SGR:            '\233' numbers 'm'          {   VT_SGR;             }
+            |   '\233' 'm'                  {   VT_SGR;             };
+DECSET:         '\233' '?' numbers 'h'      {   VT_DECSET;          }
+            |   '\233' '?' 'h'              {   VT_DECSET;          };
+DECRST:         '\233' '?' numbers 'l'      {   VT_DECRST;          }
+            |   '\233' '?' 'l'              {   VT_DECRST;          };
+SM:             '\233' numbers 'h'          {   VT_SM;              }
+            |   '\233' 'h'                  {   VT_SM;              };
+RM:             '\233' numbers 'l'          {   VT_RM;              }
+            |   '\233' 'l'                  {   VT_RM;              };
+DECSAVE:        '\233' '?' numbers 's'      {   VT_DECSAVE;         }
+            |   '\233' '?' 's'              {   VT_DECSAVE;         };
+DECRESTORE:     '\233' '?' numbers 'r'      {   VT_DECRESTORE;      }
+            |   '\233' '?' 'r'              {   VT_DECRESTORE;      };
 
 
 /****************************************************************************/
@@ -369,14 +369,14 @@ DECRESTORE:     '\233' '?' numbers 'r'      {   vt_DECRESTORE ();   }
 device_control_sequence:    DECRQSS;
 
 
-DECRQSS:    '\220' '$' 'q' DECRQSS_param '\234'     {   vt_DECRQSS (get_num (0));  }
+DECRQSS:    '\220' '$' 'q' DECRQSS_param '\234'     {   VT_DECRQSS (GET_NUM (0));  }
 
-DECRQSS_param:  '$' 'g'         {   add_number (CODE_DECSASD);  }
-            |   '"' 'p'         {   add_number (CODE_DECSCL);   }
-            |   '$' '|'         {   add_number (CODE_DECSCPP);  }
-            |   't'             {   add_number (CODE_DECSLPP);  }
-            |   '*' '|'         {   add_number (CODE_DECSNLS);  }
-            |   'r'             {   add_number (CODE_DECSTBM);  }
+DECRQSS_param:  '$' 'g'         {   ADD_NUMBER (CODE_DECSASD);  }
+            |   '"' 'p'         {   ADD_NUMBER (CODE_DECSCL);   }
+            |   '$' '|'         {   ADD_NUMBER (CODE_DECSCPP);  }
+            |   't'             {   ADD_NUMBER (CODE_DECSLPP);  }
+            |   '*' '|'         {   ADD_NUMBER (CODE_DECSNLS);  }
+            |   'r'             {   ADD_NUMBER (CODE_DECSTBM);  }
 ;
 
 
@@ -401,10 +401,10 @@ digit:          '0'             {   $$ = 0;    }
 ;
 
 semicolons:     ';'
-            |   semicolons ';'              {   add_number (-1);                    }
+            |   semicolons ';'              {   ADD_NUMBER (-1);                    }
 ;
 
-numbers:        number                      {   add_number ($1);                    }
-            |   semicolons number           {   add_number (-1); add_number ($2);   }
-            |   numbers semicolons number   {   add_number ($3);                    }
+numbers:        number                      {   ADD_NUMBER ($1);                    }
+            |   semicolons number           {   ADD_NUMBER (-1); ADD_NUMBER ($2);   }
+            |   numbers semicolons number   {   ADD_NUMBER ($3);                    }
 ;

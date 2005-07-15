@@ -181,7 +181,7 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
 
 
 #define buf_changed_add_rect(buf,rect)                              \
-{                                                                   \
+G_STMT_START {                                                      \
     if (!buf->priv->changed_all)                                    \
     {                                                               \
         if (buf->priv->changed)                                     \
@@ -189,19 +189,19 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
         else                                                        \
             buf->priv->changed = gdk_region_rectangle (&rect);      \
     }                                                               \
-}
+} G_STMT_END
 
 #define buf_changed_add_range(buf, row, start, len)                 \
-{                                                                   \
+G_STMT_START {                                                      \
     if (!buf->priv->changed_all)                                    \
-    {                                                               \
+{                                                               \
         GdkRectangle rec = {start, row, len, 1};                    \
         buf_changed_add_rect (buf, rec);                            \
     }                                                               \
-}
+} G_STMT_END
 
 #define buf_changed_set_all(buf)                                    \
-{                                                                   \
+G_STMT_START {                                                      \
     if (!buf->priv->changed_all)                                    \
     {                                                               \
         GdkRectangle rec = {                                        \
@@ -210,7 +210,7 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
         buf_changed_add_rect (buf, rec);                            \
         buf->priv->changed_all = TRUE;                              \
     }                                                               \
-}
+} G_STMT_END
 
 
 #define buf_set_attrs_mask(mask_)       buf->priv->current_attr.mask = (mask_)
@@ -218,6 +218,7 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
 #define buf_remove_attrs_mask(mask_)    buf->priv->current_attr.mask &= ~(mask_)
 
 #define buf_set_ansi_foreground(color)                              \
+G_STMT_START {                                                      \
     if ((color) < MOO_TERM_COLOR_MAX)                               \
     {                                                               \
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;   \
@@ -226,9 +227,11 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
     else                                                            \
     {                                                               \
         buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_FOREGROUND;  \
-    }
+    }                                                               \
+} G_STMT_END
 
 #define buf_set_ansi_background(color)                              \
+G_STMT_START {                                                      \
     if ((color) < MOO_TERM_COLOR_MAX)                               \
     {                                                               \
         buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;   \
@@ -237,7 +240,8 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
     else                                                            \
     {                                                               \
         buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_BACKGROUND;  \
-    }
+    }                                                               \
+} G_STMT_END
 
 
 inline static MooTermLine *buf_line         (MooTermBuffer  *buf,

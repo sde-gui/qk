@@ -986,7 +986,7 @@ void        moo_term_force_update           (MooTerm        *term)
 void        moo_term_invert_colors          (MooTerm    *term,
                                              gboolean    invert)
 {
-    term_implement_me ();
+    TERM_IMPLEMENT_ME;
 }
 
 

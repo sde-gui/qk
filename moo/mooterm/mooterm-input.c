@@ -310,19 +310,12 @@ gboolean    moo_term_key_release        (GtkWidget      *widget,
 
 static void     start_press_tracking    (MooTerm        *term);
 static void     start_button_tracking   (MooTerm        *term);
-static void     start_hilite_tracking   (MooTerm        *term);
 static void     stop_mouse_tracking     (MooTerm        *term);
 
 static gboolean button_press            (MooTerm        *term,
                                          GdkEventButton *event);
 static gboolean button_press_or_release (MooTerm        *term,
                                          GdkEventButton *event);
-static gboolean hilite_button_press     (MooTerm        *term,
-                                         GdkEventButton *event);
-static gboolean hilite_button_release   (MooTerm        *term,
-                                         GdkEventButton *event);
-static gboolean hilite_motion_notify    (MooTerm        *term,
-                                         GdkEventMotion *event);
 
 
 void        moo_term_set_mouse_tracking (MooTerm        *term,
@@ -346,11 +339,6 @@ void        moo_term_set_mouse_tracking (MooTerm        *term,
                 start_button_tracking (term);
                 break;
 
-            case MODE_HILITE_MOUSE_TRACKING:
-                term->priv->tracking_mouse = TRUE;
-                start_hilite_tracking (term);
-                break;
-
             default:
                 term->priv->tracking_mouse = FALSE;
                 stop_mouse_tracking (term);
@@ -366,12 +354,9 @@ static void stop_mouse_tracking         (MooTerm    *term)
         g_signal_handler_disconnect (term, term->priv->track_press_id);
     if (term->priv->track_release_id)
         g_signal_handler_disconnect (term, term->priv->track_release_id);
-    if (term->priv->track_motion_id)
-        g_signal_handler_disconnect (term, term->priv->track_motion_id);
 
     term->priv->track_press_id = 0;
     term->priv->track_release_id = 0;
-    term->priv->track_motion_id = 0;
 }
 
 
@@ -392,21 +377,6 @@ static void start_button_tracking       (MooTerm    *term)
             g_signal_connect (term, "button-release-event",
                               G_CALLBACK (button_press_or_release), NULL);
 }
-
-
-static void start_hilite_tracking       (MooTerm    *term)
-{
-    term->priv->track_press_id =
-            g_signal_connect (term, "button-press-event",
-                              G_CALLBACK (hilite_button_press), NULL);
-    term->priv->track_release_id =
-            g_signal_connect (term, "button-release-event",
-                              G_CALLBACK (hilite_button_release), NULL);
-    term->priv->track_motion_id =
-            g_signal_connect (term, "motion-notify-event",
-                              G_CALLBACK (hilite_motion_notify), NULL);
-}
-
 
 
 static void     get_mouse_coordinates   (MooTerm        *term,
@@ -483,29 +453,5 @@ static gboolean button_press_or_release (MooTerm        *term,
     moo_term_feed_child (term, string, 6);
 
     g_free (string);
-    return TRUE;
-}
-
-
-static gboolean hilite_button_press     (MooTerm        *term,
-                                         GdkEventButton *event)
-{
-    term_implement_me ();
-    return TRUE;
-}
-
-
-static gboolean hilite_button_release   (MooTerm        *term,
-                                         GdkEventButton *event)
-{
-    term_implement_me ();
-    return TRUE;
-}
-
-
-static gboolean hilite_motion_notify    (MooTerm        *term,
-                                         GdkEventMotion *event)
-{
-    term_implement_me ();
     return TRUE;
 }

@@ -20,12 +20,12 @@
 G_BEGIN_DECLS
 
 #if 0
-#define term_implement_me_warning g_warning
+#define TERM_IMPLEMENT_ME_WARNING g_warning
 #else
-#define term_implement_me_warning g_message
+#define TERM_IMPLEMENT_ME_WARNING g_message
 #endif
 
-#define term_implement_me() term_implement_me_warning ("%s: implement me", G_STRFUNC)
+#define TERM_IMPLEMENT_ME TERM_IMPLEMENT_ME_WARNING ("%s: implement me", G_STRFUNC)
 
 
 #define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
@@ -111,7 +111,6 @@ struct _MooTermPrivate {
     int             tracking_mouse;
     gulong          track_press_id;
     gulong          track_release_id;
-    gulong          track_motion_id;
 
     GtkIMContext   *im;
     gboolean        im_preedit_active;
@@ -291,10 +290,10 @@ enum {
 struct _TermSelection {
     guint       screen_width;
 
-    // absolute coordinates in the buffer
-    // selected range is [(l_row, l_col), (r_row, r_col))
-    // l_row, l_col and r_row are valid
-    // r_col may be equal to _width
+    /* absolute coordinates in the buffer
+       selected range is [(l_row, l_col), (r_row, r_col))
+       l_row, l_col and r_row are valid
+       r_col may be equal to _width */
     guint       l_row;
     guint       l_col;
     guint       r_row;

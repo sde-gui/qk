@@ -852,38 +852,38 @@ void    moo_term_buffer_thaw_cursor_notify      (MooTermBuffer  *buf)
 }
 
 
-#define freeze_notify()                             \
-{                                                   \
+#define FREEZE_NOTIFY                               \
+G_STMT_START {                                      \
     moo_term_buffer_freeze_changed_notify (buf);    \
     moo_term_buffer_freeze_cursor_notify (buf);     \
-}
+} G_STMT_END
 
-#define notify()                                    \
-{                                                   \
+#define NOTIFY                                      \
+G_STMT_START {                                      \
     moo_term_buffer_changed (buf);                  \
     moo_term_buffer_cursor_moved (buf);             \
-}
+} G_STMT_END
 
-#define thaw_notify()                               \
-{                                                   \
+#define THAW_NOTIFY                                 \
+G_STMT_START {                                      \
     moo_term_buffer_thaw_changed_notify (buf);      \
     moo_term_buffer_thaw_cursor_notify (buf);       \
-}
+} G_STMT_END
 
-#define thaw_and_notify()                           \
-{                                                   \
-    thaw_notify ();                                 \
-    notify();                                       \
-}
+#define THAW_AND_NOTIFY                             \
+G_STMT_START {                                      \
+    THAW_NOTIFY;                                    \
+    NOTIFY;                                         \
+} G_STMT_END
 
-#define notify_changed()    moo_term_buffer_changed (buf)
-#define freeze_changed()    moo_term_buffer_freeze_changed_notify (buf);
+#define NOTIFY_CHANGED  moo_term_buffer_changed (buf)
+#define FREEZE_CHANGED  moo_term_buffer_freeze_changed_notify (buf)
 
-#define thaw_and_notify_changed()                   \
-{                                                   \
+#define THAW_AND_NOTIFY_CHANGED                     \
+G_STMT_START {                                      \
     moo_term_buffer_thaw_changed_notify (buf);      \
     moo_term_buffer_changed (buf);                  \
-}
+} G_STMT_END
 
 
 /*****************************************************************************/
@@ -930,10 +930,10 @@ void    moo_term_buffer_cud             (MooTermBuffer  *buf,
 
 void    moo_term_buffer_new_line        (MooTermBuffer  *buf)
 {
-    freeze_notify ();
+    FREEZE_NOTIFY;
     moo_term_buffer_index (buf);
     moo_term_buffer_cursor_move_to (buf, -1, 0);
-    thaw_and_notify ();
+    THAW_AND_NOTIFY;
 }
 
 
@@ -1001,7 +1001,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
         }
     }
 
-    notify ();
+    NOTIFY;
 }
 
 
@@ -1036,7 +1036,7 @@ void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf)
         buf->priv->cursor_row -= 1;
     }
 
-    notify ();
+    NOTIFY;
 }
 
 
@@ -1190,7 +1190,7 @@ void    moo_term_buffer_delete_char             (MooTermBuffer  *buf,
                             cursor_col, n);
     buf_changed_add_range(buf, cursor_row, cursor_col,
                           buf_screen_width (buf) - cursor_col);
-    notify_changed ();
+    NOTIFY_CHANGED;
 }
 
 
@@ -1209,7 +1209,7 @@ void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
     term_line_erase_range (buf_screen_line (buf, row),
                            col, len);
     buf_changed_add_range (buf, row, col, len);
-    notify_changed ();
+    NOTIFY_CHANGED;
 }
 
 
@@ -1237,7 +1237,7 @@ void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
 
     g_return_if_fail (what == 0 || what == 1 || what == 2);
 
-    freeze_changed ();
+    FREEZE_CHANGED;
 
     switch (what)
     {
@@ -1261,7 +1261,7 @@ void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
             break;
     }
 
-    thaw_and_notify_changed ();
+    THAW_AND_NOTIFY_CHANGED;
 }
 
 
@@ -1313,7 +1313,7 @@ void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
                               &ZERO_ATTR, buf_screen_width (buf));
     buf_changed_add_range (buf, cursor_row, cursor_col,
                            buf_screen_width (buf) - cursor_col);
-    notify_changed ();
+    NOTIFY_CHANGED;
 }
 
 
@@ -1536,7 +1536,7 @@ void    moo_term_buffer_reset                   (MooTermBuffer  *buf)
 {
     guint i;
 
-    freeze_notify ();
+    FREEZE_NOTIFY;
 
     for (i = 0; i < buf->priv->lines->len; ++i)
         term_line_free (g_ptr_array_index (buf->priv->lines, i));
@@ -1551,7 +1551,7 @@ void    moo_term_buffer_reset                   (MooTermBuffer  *buf)
     set_defaults (buf);
 
     buf_changed_set_all (buf);
-    thaw_and_notify ();
+    THAW_AND_NOTIFY;
     moo_term_buffer_scrollback_changed (buf);
 }
 
@@ -1621,7 +1621,7 @@ void    moo_term_buffer_decaln                  (MooTermBuffer  *buf)
     guint width = buf_screen_width (buf);
     guint height = buf_screen_height (buf);
 
-    freeze_changed ();
+    FREEZE_CHANGED;
 
     for (i = 0; i < height; ++i)
         term_line_set_unichar (buf_screen_line (buf, i),
@@ -1631,5 +1631,5 @@ void    moo_term_buffer_decaln                  (MooTermBuffer  *buf)
 
     buf_changed_set_all (buf);
 
-    thaw_and_notify_changed ();
+    THAW_AND_NOTIFY_CHANGED;
 }

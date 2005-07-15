@@ -195,7 +195,7 @@
         /* SUB - cancel sequence in progress and            \
                  print error */                             \
         case 0x1A:                                          \
-            vt_print_char (ERROR_CHAR);                     \
+            VT_PRINT_CHAR (ERROR_CHAR);                     \
             goto_initial ();                                \
                                                             \
         case 0x05:                                          \
@@ -230,7 +230,7 @@
         /* SUB - cancel sequence in progress and            \
             print error */                                  \
         case 0x1A:                                          \
-            vt_print_char (ERROR_CHAR);                     \
+            VT_PRINT_CHAR (ERROR_CHAR);                     \
             goto_initial ();                                \
                                                             \
         case 0x05:                                          \
@@ -307,7 +307,7 @@
     {                                                       \
         g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,       \
                    parser->character->str);                 \
-        vt_print_char (ERROR_CHAR);                         \
+        VT_PRINT_CHAR (ERROR_CHAR);                         \
         g_string_truncate (parser->character, 0);           \
     }                                                       \
 }
@@ -330,12 +330,12 @@
         case -1:                                            \
             g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,   \
                        parser->character->str);             \
-            vt_print_char (ERROR_CHAR);                     \
+            VT_PRINT_CHAR (ERROR_CHAR);                     \
             g_string_truncate (parser->character, 0);       \
             break;                                          \
                                                             \
         default:                                            \
-            vt_print_char (uc);                             \
+            VT_PRINT_CHAR (uc);                             \
             g_string_truncate (parser->character, 0);       \
             break;                                          \
     }                                                       \
@@ -352,7 +352,7 @@
     {                                                       \
         if (c < 128)                                        \
         {                                                   \
-            vt_print_char (c);                              \
+            VT_PRINT_CHAR (c);                              \
         }                                                   \
         else                                                \
         {                                                   \
@@ -575,7 +575,7 @@ STATE_APC_:
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
-            vt_print_char (ERROR_CHAR);
+            VT_PRINT_CHAR (ERROR_CHAR);
             goto_initial ();
 
         case 0x1B:
@@ -616,7 +616,7 @@ STATE_PM_:
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
-            vt_print_char (ERROR_CHAR);
+            VT_PRINT_CHAR (ERROR_CHAR);
             goto_initial ();
 
         case 0x1B:
@@ -657,7 +657,7 @@ STATE_OSC_:
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
-            vt_print_char (ERROR_CHAR);
+            VT_PRINT_CHAR (ERROR_CHAR);
             goto_initial ();
 
         case 0x1B:
@@ -847,55 +847,55 @@ static void exec_cmd               (MooTermParser  *parser,
     switch (cmd)
     {
         case 0x07:
-            vt_BEL ();
+            VT_BEL;
             break;
         case 0x08:
-            vt_BS ();
+            VT_BS;
             break;
         case 0x09:
-            vt_TAB ();
+            VT_TAB;
             break;
         case 0x0A:
         case 0x0B:
         case 0x0C:
-            vt_LF ();
+            VT_LF;
             break;
         case 0x0D:
-            vt_CR ();
+            VT_CR;
             break;
         case 0x0E:
-            vt_SO ();
+            VT_SO;
             break;
         case 0x0F:
-            vt_SI ();
+            VT_SI;
             break;
         case 0x11:
-            vt_XON ();
+            VT_XON;
             break;
         case 0x13:
-            vt_XOFF ();
+            VT_XOFF;
             break;
 
         case 0x84:
-            vt_IND ();
+            VT_IND;
             break;
         case 0x85:
-            vt_NEL ();
+            VT_NEL;
             break;
         case 0x88:
-            vt_HTS ();
+            VT_HTS;
             break;
         case 0x8D:
-            vt_RI ();
+            VT_RI;
             break;
         case 0x8E:
-            vt_SS2 ();
+            VT_SS2;
             break;
         case 0x8F:
-            vt_SS3 ();
+            VT_SS3;
             break;
         case 0x9A:
-            vt_DECID ();
+            VT_DECID;
             break;
 
         case 0x05:
