@@ -28,6 +28,7 @@ typedef struct _MooTermCell MooTermCell;
 typedef struct _MooTermLine MooTermLine;
 
 #define EMPTY_CHAR  ' '
+#define DECALN_CHAR 'S'
 
 static MooTermTextAttr ZERO_ATTR;
 
@@ -147,8 +148,9 @@ inline static void term_line_set_unichar    (MooTermLine   *line,
     if (pos >= line->len)
     {
         MooTermCell cell = {EMPTY_CHAR, ZERO_ATTR};
+        guint len = line->len;
 
-        for (i = 0; i < pos - line->len; ++i)
+        for (i = 0; i < pos - len; ++i)
             g_array_append_val (TERM_LINE_ARRAY (line), cell);
 
         cell.ch = c;
@@ -160,10 +162,11 @@ inline static void term_line_set_unichar    (MooTermLine   *line,
     else if (pos + num > line->len)
     {
         MooTermCell cell = {c, *attr};
+        guint len = line->len;
 
-        for (i = pos; i < line->len; ++i)
+        for (i = pos; i < len; ++i)
             g_array_index (TERM_LINE_ARRAY (line), MooTermCell, i) = cell;
-        for (i = 0; i < pos + num - line->len; ++i)
+        for (i = 0; i < pos + num - len; ++i)
             g_array_append_val (TERM_LINE_ARRAY (line), cell);
     }
     else
@@ -201,10 +204,14 @@ inline static void term_line_insert_unichar (MooTermLine   *line,
     term_line_set_len (line, width);
 
     if (pos > line->len)
-        for (i = line->len; i < pos; ++i)
     {
-        MooTermCell cell = {EMPTY_CHAR, ZERO_ATTR};
-        g_array_append_val (TERM_LINE_ARRAY (line), cell);
+        guint len = line->len;
+
+        for (i = len; i < pos; ++i)
+        {
+            MooTermCell cell = {EMPTY_CHAR, ZERO_ATTR};
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+        }
     }
 
     for (i = 0; i < num; ++i)
