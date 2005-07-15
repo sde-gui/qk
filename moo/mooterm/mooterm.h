@@ -52,6 +52,9 @@ struct _MooTermClass
     void (*set_icon_name)           (MooTerm        *term,
                                      const char     *icon);
     void (*child_died)              (MooTerm        *term);
+
+    void (*populate_popup)          (MooTerm        *term,
+                                     GtkMenu        *menu);
 };
 
 typedef enum {
