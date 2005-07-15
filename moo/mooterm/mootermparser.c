@@ -216,6 +216,40 @@
 }
 
 
+#define dcs_check_cancel(c)                                 \
+    switch (c)                                              \
+    {                                                       \
+        /* ESC - it might be beginning of ST sequence */    \
+        case 0x1B:                                          \
+            goto STATE_DCS_ESCAPE_;                         \
+                                                            \
+        /* CAN - cancel sequence in progress */             \
+        case 0x18:                                          \
+            goto_initial ();                                \
+                                                            \
+        /* SUB - cancel sequence in progress and            \
+            print error */                                  \
+        case 0x1A:                                          \
+            vt_print_char (ERROR_CHAR);                     \
+            goto_initial ();                                \
+                                                            \
+        case 0x05:                                          \
+        case 0x07:                                          \
+        case 0x08:                                          \
+        case 0x09:                                          \
+        case 0x0A:                                          \
+        case 0x0B:                                          \
+        case 0x0C:                                          \
+        case 0x0D:                                          \
+        case 0x0E:                                          \
+        case 0x0F:                                          \
+        case 0x11:                                          \
+        case 0x13:                                          \
+            one_char_cmd (c);                               \
+            goto STATE_DCS_DATA_;                           \
+    }
+
+
 #define append_char(ar, c)                                  \
 {                                                           \
     g_string_append_c (parser->ar, c);                      \
@@ -717,8 +751,7 @@ g_assert_not_reached ();
 STATE_DCS_:
 {
     get_char (c);
-
-    check_cancel (c, STATE_DCS_);
+    dcs_check_cancel (c);
 
     if (0x30 <= c && c <= 0x3F)
     {
@@ -750,8 +783,7 @@ g_assert_not_reached ();
 STATE_DCS_INTERMEDIATE_:
 {
     get_char (c);
-
-    check_cancel (c, STATE_DCS_INTERMEDIATE_);
+    dcs_check_cancel (c);
 
     if (0x20 <= c && c <= 0x2F)
     {
@@ -778,13 +810,22 @@ g_assert_not_reached ();
 STATE_DCS_DATA_:
 {
     get_char (c);
+    dcs_check_cancel (c);
+    append_char (data, c);
+    goto STATE_DCS_DATA_;
+}
+g_assert_not_reached ();
 
-    check_cancel (c, STATE_DCS_DATA_);
 
-    if (c != 0x9C)
+/* STATE_DCS_ESCAPE_ - got escape char in the DCS sequence */
+STATE_DCS_ESCAPE_:
+{
+    get_char (c);
+
+    if (c != 0x5c)
     {
-        append_char (data, c);
-        goto STATE_DCS_DATA_;
+        iter_backward (parser->current);
+        goto_escape ();
     }
     else
     {
