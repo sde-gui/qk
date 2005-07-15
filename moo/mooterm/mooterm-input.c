@@ -437,7 +437,7 @@ static gboolean button_press_or_release (MooTerm        *term,
                                          GdkEventButton *event)
 {
     int x, y;
-    guchar button;
+    guint button;
     char *string;
 
     if ((event->type != GDK_BUTTON_PRESS && event->type != GDK_BUTTON_RELEASE) ||
@@ -451,13 +451,13 @@ static gboolean button_press_or_release (MooTerm        *term,
     if (event->type == GDK_BUTTON_PRESS)
     {
         if (event->button < 4)
-            button = 040 + event->button - 1;
+            button = event->button - 1;
         else
-            button = 0140 + event->button - 4;
+            button = 0100 + event->button - 4;
     }
     else
     {
-        button = 043;
+        button = 3;
     }
 
     if (event->state & GDK_SHIFT_MASK)
@@ -467,7 +467,8 @@ static gboolean button_press_or_release (MooTerm        *term,
     if (event->state & GDK_CONTROL_MASK)
         button |= 16;
 
-    string = g_strdup_printf ("\033[M%c%c%c", button,
+    string = g_strdup_printf ("\033[M%c%c%c",
+                              (guchar) (button + 040),
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 
@@ -494,9 +495,9 @@ static gboolean scroll_event            (MooTerm        *term,
     get_mouse_coordinates (term, (GdkEventButton*)event, &x, &y);
 
     if (event->direction == GDK_SCROLL_UP)
-        button = 0140;
+        button = 0100;
     else
-        button = 0141;
+        button = 0101;
 
     if (event->state & GDK_SHIFT_MASK)
         button |= 4;
@@ -505,7 +506,8 @@ static gboolean scroll_event            (MooTerm        *term,
     if (event->state & GDK_CONTROL_MASK)
         button |= 16;
 
-    string = g_strdup_printf ("\033[M%c%c%c", button,
+    string = g_strdup_printf ("\033[M%c%c%c",
+                              (guchar) (button + 040),
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 
