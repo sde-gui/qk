@@ -53,3 +53,42 @@ char            *term_selection_get_text    (MooTerm       *term)
 {
     return NULL;
 }
+
+
+gboolean    moo_term_button_press           (GtkWidget      *widget,
+                                             GdkEventButton *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
+}
+
+
+gboolean    moo_term_button_release         (GtkWidget      *widget,
+                                             GdkEventButton *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
+}
+
+
+gboolean    moo_term_motion_notify          (GtkWidget      *widget,
+                                             GdkEventMotion *event)
+{
+    MooTerm *term;
+
+    term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    return FALSE;
+}
