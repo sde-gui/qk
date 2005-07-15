@@ -336,9 +336,13 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
         switch (r)
         {
             case -1:
-                error_occured = TRUE;
-                error_no = errno;
-                goto error;
+                if (errno != EAGAIN && errno != EINTR)
+                {
+                    error_occured = TRUE;
+                    error_no = errno;
+                    goto error;
+                }
+                break;
 
             case 0:
                 break;
@@ -632,4 +636,12 @@ char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
                    g_strerror (errno));
         return 0;
     }
+}
+
+
+void            moo_term_pt_send_intr       (MooTermPt      *pt)
+{
+    g_return_if_fail (pt->priv->child_alive);
+    pt_flush_pending_write (pt);
+    pt_write (pt, "\003", 1);
 }
