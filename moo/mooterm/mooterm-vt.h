@@ -236,12 +236,8 @@ enum {
         case 103:                                   \
         case 104:                                   \
         case 106:                                   \
-            g_warning ("%s: ignoring mode %d",      \
-                       G_STRFUNC, code);            \
-            break;                                  \
-                                                    \
         case 1001:                                  \
-            g_message ("%s: ignoring mode %d",      \
+            g_message ("%s: IGNORING mode %d",      \
                        G_STRFUNC, code);            \
             break;                                  \
                                                     \
@@ -279,6 +275,9 @@ enum {
         case 19:                                    \
             g_warning ("%s: ignoring mode %d",      \
                     G_STRFUNC, code);               \
+            break;                                  \
+                                                    \
+        case -1:                                    \
             break;                                  \
                                                     \
         default:                                    \
