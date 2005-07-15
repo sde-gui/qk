@@ -204,9 +204,6 @@ enum {
         case 1000:                                  \
             mode = MODE_PRESS_AND_RELEASE_TRACKING; \
             break;                                  \
-        case 1001:                                  \
-            mode = MODE_HILITE_MOUSE_TRACKING;      \
-            break;                                  \
         case 1049:                                  \
             mode = MODE_CA;                         \
             break;                                  \
@@ -240,6 +237,11 @@ enum {
         case 104:                                   \
         case 106:                                   \
             g_warning ("%s: ignoring mode %d",      \
+                       G_STRFUNC, code);            \
+            break;                                  \
+                                                    \
+        case 1001:                                  \
+            g_message ("%s: ignoring mode %d",      \
                        G_STRFUNC, code);            \
             break;                                  \
                                                     \

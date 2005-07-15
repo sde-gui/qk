@@ -308,60 +308,204 @@ gboolean    moo_term_key_release        (GtkWidget      *widget,
 /*  Mouse handling
  */
 
-void        moo_term_set_mouse_tracking     (MooTerm    *term,
-                                             int         tracking_type)
-{
-    switch (tracking_type)
-    {
-        case MODE_PRESS_TRACKING:
-        case MODE_PRESS_AND_RELEASE_TRACKING:
-        case MODE_HILITE_MOUSE_TRACKING:
-            term->priv->tracking_mouse = TRUE;
-            moo_term_update_pointer (term);
-            break;
+static void     start_press_tracking    (MooTerm        *term);
+static void     start_button_tracking   (MooTerm        *term);
+static void     start_hilite_tracking   (MooTerm        *term);
+static void     stop_mouse_tracking     (MooTerm        *term);
 
-        default:
-            term->priv->tracking_mouse = FALSE;
-            moo_term_update_pointer (term);
-            break;
+static gboolean button_press            (MooTerm        *term,
+                                         GdkEventButton *event);
+static gboolean button_press_or_release (MooTerm        *term,
+                                         GdkEventButton *event);
+static gboolean hilite_button_press     (MooTerm        *term,
+                                         GdkEventButton *event);
+static gboolean hilite_button_release   (MooTerm        *term,
+                                         GdkEventButton *event);
+static gboolean hilite_motion_notify    (MooTerm        *term,
+                                         GdkEventMotion *event);
+
+
+void        moo_term_set_mouse_tracking (MooTerm        *term,
+                                         int             tracking_type)
+{
+    if (tracking_type != term->priv->tracking_mouse)
+    {
+        term->priv->tracking_mouse = tracking_type;
+        moo_term_update_pointer (term);
+        stop_mouse_tracking (term);
+        term_selection_clear (term);
+
+        switch (tracking_type)
+        {
+            case MODE_PRESS_TRACKING:
+                start_press_tracking (term);
+                break;
+
+            case MODE_PRESS_AND_RELEASE_TRACKING:
+                term->priv->tracking_mouse = TRUE;
+                start_button_tracking (term);
+                break;
+
+            case MODE_HILITE_MOUSE_TRACKING:
+                term->priv->tracking_mouse = TRUE;
+                start_hilite_tracking (term);
+                break;
+
+            default:
+                term->priv->tracking_mouse = FALSE;
+                stop_mouse_tracking (term);
+                break;
+        }
     }
 }
 
 
-gboolean    moo_term_button_press           (GtkWidget      *widget,
-                                             GdkEventButton *event)
+static void stop_mouse_tracking         (MooTerm    *term)
 {
-    MooTerm *term;
+    if (term->priv->track_press_id)
+        g_signal_handler_disconnect (term, term->priv->track_press_id);
+    if (term->priv->track_release_id)
+        g_signal_handler_disconnect (term, term->priv->track_release_id);
+    if (term->priv->track_motion_id)
+        g_signal_handler_disconnect (term, term->priv->track_motion_id);
 
-    term = MOO_TERM (widget);
-
-    moo_term_set_pointer_visible (term, TRUE);
-
-    return FALSE;
+    term->priv->track_press_id = 0;
+    term->priv->track_release_id = 0;
+    term->priv->track_motion_id = 0;
 }
 
 
-gboolean    moo_term_button_release         (GtkWidget      *widget,
-                                             GdkEventButton *event)
+static void start_press_tracking        (MooTerm    *term)
 {
-    MooTerm *term;
-
-    term = MOO_TERM (widget);
-
-    moo_term_set_pointer_visible (term, TRUE);
-
-    return FALSE;
+    term->priv->track_press_id =
+            g_signal_connect (term, "button-press-event",
+                              G_CALLBACK (button_press), NULL);
 }
 
 
-gboolean    moo_term_motion_notify          (GtkWidget      *widget,
-                                             GdkEventMotion *event)
+static void start_button_tracking       (MooTerm    *term)
 {
-    MooTerm *term;
+    term->priv->track_press_id =
+            g_signal_connect (term, "button-press-event",
+                              G_CALLBACK (button_press_or_release), NULL);
+    term->priv->track_release_id =
+            g_signal_connect (term, "button-release-event",
+                              G_CALLBACK (button_press_or_release), NULL);
+}
 
-    term = MOO_TERM (widget);
 
-    moo_term_set_pointer_visible (term, TRUE);
+static void start_hilite_tracking       (MooTerm    *term)
+{
+    term->priv->track_press_id =
+            g_signal_connect (term, "button-press-event",
+                              G_CALLBACK (hilite_button_press), NULL);
+    term->priv->track_release_id =
+            g_signal_connect (term, "button-release-event",
+                              G_CALLBACK (hilite_button_release), NULL);
+    term->priv->track_motion_id =
+            g_signal_connect (term, "motion-notify-event",
+                              G_CALLBACK (hilite_motion_notify), NULL);
+}
 
-    return FALSE;
+
+
+static void     get_mouse_coordinates   (MooTerm        *term,
+                                         GdkEventButton *event,
+                                         int            *x,
+                                         int            *y)
+{
+    guint char_width = term_char_width (term);
+    guint char_height = term_char_height (term);
+
+    *x = event->x / char_width;
+    *x = CLAMP (*x, 0, (int)term->priv->width - 1);
+
+    *y = event->y / char_height;
+    *y = CLAMP (*y, 0, (int)term->priv->height - 1);
+}
+
+
+static gboolean button_press            (MooTerm        *term,
+                                         GdkEventButton *event)
+{
+    int x, y;
+    char *string;
+
+    if (event->type != GDK_BUTTON_PRESS)
+        return TRUE;
+
+    get_mouse_coordinates (term, event, &x, &y);
+
+    string = g_strdup_printf ("\033[M%c%c%c",
+                              (guchar) (event->button - 1 + 040),
+                              (guchar) (x + 1 + 040),
+                              (guchar) (y + 1 + 040));
+
+    moo_term_feed_child (term, string, 6);
+
+    g_free (string);
+    return TRUE;
+}
+
+
+static gboolean button_press_or_release (MooTerm        *term,
+                                         GdkEventButton *event)
+{
+    int x, y;
+    guchar button;
+    char *string;
+
+    if ((event->type != GDK_BUTTON_PRESS && event->type != GDK_BUTTON_RELEASE) ||
+        event->button < 1 || event->button > 3)
+    {
+        return TRUE;
+    }
+
+    get_mouse_coordinates (term, event, &x, &y);
+
+    if (event->type == GDK_BUTTON_PRESS)
+        button = event->button - 1;
+    else
+        button = 3;
+
+    if (event->state & GDK_SHIFT_MASK)
+        button |= 4;
+    if (event->state & META_MASK)
+        button |= 8;
+    if (event->state & GDK_CONTROL_MASK)
+        button |= 16;
+
+    string = g_strdup_printf ("\033[M%c%c%c",
+                              (guchar) (button + 040),
+                              (guchar) (x + 1 + 040),
+                              (guchar) (y + 1 + 040));
+
+    moo_term_feed_child (term, string, 6);
+
+    g_free (string);
+    return TRUE;
+}
+
+
+static gboolean hilite_button_press     (MooTerm        *term,
+                                         GdkEventButton *event)
+{
+    term_implement_me ();
+    return TRUE;
+}
+
+
+static gboolean hilite_button_release   (MooTerm        *term,
+                                         GdkEventButton *event)
+{
+    term_implement_me ();
+    return TRUE;
+}
+
+
+static gboolean hilite_motion_notify    (MooTerm        *term,
+                                         GdkEventMotion *event)
+{
+    term_implement_me ();
+    return TRUE;
 }

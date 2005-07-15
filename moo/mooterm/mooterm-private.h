@@ -107,8 +107,11 @@ struct _MooTermPrivate {
     guint           cursor_height;
 
     GdkCursor      *pointer[POINTERS_NUM];
-    guint           tracking_mouse;
     gboolean        pointer_visible;
+    int             tracking_mouse;
+    gulong          track_press_id;
+    gulong          track_release_id;
+    gulong          track_motion_id;
 
     GtkIMContext   *im;
     gboolean        im_preedit_active;
