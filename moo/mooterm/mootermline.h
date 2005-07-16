@@ -89,22 +89,27 @@ inline static void term_line_erase (MooTermLine *line)
 }
 
 
-inline static void term_line_erase_range    (MooTermLine   *line,
-                                             guint          pos,
-                                             guint          len)
+/* TODO: midnight commander wants erased chars to have current attributes
+   but VT510 manual says: "EL clears all character attributes from erased
+   character positions. EL works inside or outside the scrolling margins." */
+inline static void term_line_erase_range    (MooTermLine     *line,
+                                             guint            pos,
+                                             guint            len,
+                                             MooTermTextAttr *attr)
 {
     guint i;
 
-    if (!len)
+    if (!len || pos >= line->len)
         return;
 
-    if (pos + len >= line->len)
-        return term_line_set_len (line, pos);
-
-    for (i = pos; i < pos + len; ++i)
+    for (i = pos; i < pos + len && i < line->len; ++i)
     {
-        line->data[pos].ch = EMPTY_CHAR;
-        line->data[pos].attr.mask = 0;
+        line->data[i].ch = EMPTY_CHAR;
+
+        if (attr && attr->mask)
+            line->data[i].attr = *attr;
+        else
+            line->data[i].attr.mask = 0;
     }
 }
 
@@ -165,7 +170,7 @@ inline static void term_line_set_unichar    (MooTermLine   *line,
         guint len = line->len;
 
         for (i = pos; i < len; ++i)
-            g_array_index (TERM_LINE_ARRAY (line), MooTermCell, i) = cell;
+            line->data[i] = cell;
         for (i = 0; i < pos + num - len; ++i)
             g_array_append_val (TERM_LINE_ARRAY (line), cell);
     }
@@ -174,7 +179,7 @@ inline static void term_line_set_unichar    (MooTermLine   *line,
         MooTermCell cell = {c, *attr};
 
         for (i = pos; i < pos + num; ++i)
-            g_array_index (TERM_LINE_ARRAY (line), MooTermCell, i) = cell;
+            line->data[i] = cell;
     }
 }
 
