@@ -1207,7 +1207,7 @@ void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
     }
 
     term_line_erase_range (buf_screen_line (buf, row),
-                           col, len);
+                           col, len, &buf->priv->current_attr);
     buf_changed_add_range (buf, row, col, len);
     NOTIFY_CHANGED;
 }
@@ -1418,6 +1418,7 @@ void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
 
 void    moo_term_buffer_decsc                   (MooTermBuffer  *buf)
 {
+    g_message ("DECSC");
     buf->priv->saved.cursor_row = buf->priv->cursor_row;
     buf->priv->saved.cursor_col = buf->priv->cursor_col;
     buf->priv->saved.attr = buf->priv->current_attr;
@@ -1433,6 +1434,7 @@ void    moo_term_buffer_decsc                   (MooTermBuffer  *buf)
 
 void    moo_term_buffer_decrc                   (MooTermBuffer  *buf)
 {
+    g_message ("DECRC");
     buf->priv->cursor_row = buf->priv->saved.cursor_row;
     buf->priv->cursor_col = buf->priv->saved.cursor_col;
     buf->priv->current_attr = buf->priv->saved.attr;

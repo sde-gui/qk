@@ -180,6 +180,8 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
     term->priv->buffer = term->priv->primary_buffer;
 
+    term->priv->saved_cursor = g_array_new (FALSE, FALSE, sizeof(guint));
+
     term->priv->width = 80;
     term->priv->height = 24;
 
@@ -258,6 +260,8 @@ static void moo_term_finalize               (GObject        *object)
 
     term_selection_free (term->priv->selection);
     term_font_info_free (term->priv->font_info);
+
+    g_array_free (term->priv->saved_cursor, TRUE);
 
     g_object_unref (term->priv->back_pixmap);
 
@@ -985,12 +989,14 @@ void        moo_term_set_mode               (MooTerm    *term,
         case MODE_LNM:
             g_message ("set MODE_LNM %s", set ? "TRUE" : "FALSE");
             break;
+#if 0
         case MODE_DECNKM:
             g_message ("set MODE_DECNKM %s", set ? "TRUE" : "FALSE");
             break;
         case MODE_DECCKM:
             g_message ("set MODE_DECCKM %s", set ? "TRUE" : "FALSE");
             break;
+#endif
         case MODE_DECANM:
             g_message ("set MODE_DECANM %s", set ? "TRUE" : "FALSE");
             break;
@@ -1070,23 +1076,75 @@ void        moo_term_set_mode               (MooTerm    *term,
 }
 
 
+static void save_cursor     (MooTerm    *term)
+{
+    g_array_append_val (term->priv->saved_cursor,
+                        term->priv->cursor_row);
+    g_array_append_val (term->priv->saved_cursor,
+                        term->priv->cursor_col);
+}
+
+static void restore_cursor  (MooTerm    *term)
+{
+    guint row = 0;
+    guint col = 0;
+
+    if (term->priv->saved_cursor->len)
+    {
+        row = g_array_index (term->priv->saved_cursor, guint,
+                             term->priv->saved_cursor->len - 2);
+        col = g_array_index (term->priv->saved_cursor, guint,
+                             term->priv->saved_cursor->len - 1);
+        g_array_set_size (term->priv->saved_cursor,
+                          term->priv->saved_cursor->len - 2);
+    }
+
+    moo_term_buffer_cursor_move_to (term->priv->buffer, row, col);
+}
+
+
 void        moo_term_set_ca_mode            (MooTerm    *term,
                                              gboolean    set)
 {
-    TERM_IMPLEMENT_ME;
+    if (set)
+    {
+        save_cursor (term);
+        moo_term_set_alternate_buffer (term, TRUE);
+        moo_term_buffer_erase_in_display (term->priv->buffer, 2);
+        moo_term_buffer_set_ca_mode (term->priv->buffer, TRUE);
+    }
+    else
+    {
+        moo_term_set_alternate_buffer (term, FALSE);
+        moo_term_buffer_set_ca_mode (term->priv->buffer, FALSE);
+        restore_cursor (term);
+    }
 }
 
 
 void        moo_term_set_alternate_buffer   (MooTerm        *term,
                                              gboolean        alternate)
 {
-    TERM_IMPLEMENT_ME;
+    g_message ("set alternate buffer %s", alternate ? "TRUE" : "FALSE");
+
+    if ((alternate && term->priv->buffer == term->priv->alternate_buffer) ||
+         (!alternate && term->priv->buffer == term->priv->primary_buffer))
+        return;
+
+    if (alternate)
+        term->priv->buffer = term->priv->alternate_buffer;
+    else
+        term->priv->buffer = term->priv->primary_buffer;
+
+    moo_term_invalidate_content_all (term);
+    moo_term_invalidate_all (term);
+    moo_term_buffer_scrollback_changed (term->priv->buffer);
 }
 
 
 void        moo_term_da1                    (MooTerm    *term)
 {
-    moo_term_feed_child (term, "\233?64;1;c", -1);
+    moo_term_feed_child (term, "\033[?64;1;c", -1);
 
     /*
     1   132 columns
@@ -1113,18 +1171,18 @@ void        moo_term_da1                    (MooTerm    *term)
 void        moo_term_da2                    (MooTerm    *term)
 {
     /* TODO */
-    moo_term_feed_child (term, "\233>61;20;1;c", -1);
+    moo_term_feed_child (term, "\033[>61;20;1;c", -1);
 }
 
 void        moo_term_da3                    (MooTerm    *term)
 {
     /* TODO */
-    moo_term_feed_child (term, "\220!|FFFFFFFF\234", -1);
+    moo_term_feed_child (term, "\033P!|FFFFFFFF\033\\", -1);
 }
 
 
 #define make_DECRQSS(c)                                  \
-    answer = g_strdup_printf ("\220%s$r" FINAL_##c "\234", ps)
+    answer = g_strdup_printf ("\033P%s$r" FINAL_##c "\033\\", ps)
 
 void        moo_term_setting_request        (MooTerm    *term,
                                              int         setting)

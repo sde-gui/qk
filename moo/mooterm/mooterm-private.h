@@ -87,6 +87,7 @@ struct _MooTermPrivate {
 
     guint           cursor_row;
     guint           cursor_col;
+    GArray         *saved_cursor;
 
     TermSelection  *selection;
 
@@ -99,6 +100,7 @@ struct _MooTermPrivate {
     PangoLayout    *layout;
     gboolean        cursor_visible;
     guint           pending_expose;
+    gboolean        colors_inverted;
 
     GdkGC          *fg[MOO_TERM_COLOR_MAX + 1][3];
     GdkGC          *bg[MOO_TERM_COLOR_MAX + 1][3];
@@ -127,6 +129,7 @@ struct _MooTermPrivate {
         gboolean            scroll_on_keystroke;        /* = TRUE */
         MooTermEraseBinding backspace_binding;
         MooTermEraseBinding delete_binding;
+        gboolean            allow_bold;
     } settings;
 };
 
