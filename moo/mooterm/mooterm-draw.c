@@ -661,13 +661,24 @@ static void term_draw_range_simple          (MooTerm        *term,
     guint char_width = term->priv->font_info->width;
     guint char_height = term->priv->font_info->height;
     int y = (abs_row - term_top_line (term)) * char_height;
+    GdkGC *color;
 
     g_assert (selected == 0 || selected == 1);
 
+    if (!term->priv->colors_inverted)
+    {
+        color = term->priv->bg[selected][MOO_TERM_COLOR_MAX];
+    }
+    else
+    {
+        color = term->priv->fg[selected][MOO_TERM_COLOR_MAX];
+    }
+
     if (start >= line->len)
     {
+
         gdk_draw_rectangle (term->priv->back_pixmap,
-                            term->priv->bg[selected][MOO_TERM_COLOR_MAX],
+                            color,
                             TRUE,
                             start * char_width,
                             y,
@@ -679,7 +690,7 @@ static void term_draw_range_simple          (MooTerm        *term,
     else if (start + len > line->len)
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
-                            term->priv->bg[selected][MOO_TERM_COLOR_MAX],
+                            color,
                             TRUE,
                             line->len * char_width,
                             y,
@@ -745,6 +756,14 @@ static void term_draw_cells                 (MooTerm        *term,
     if (!bg)
         bg = term->priv->bg[selected][MOO_TERM_COLOR_MAX];
 
+    if (((attr->mask & MOO_TERM_TEXT_REVERSE) && !term->priv->colors_inverted) ||
+          (!(attr->mask & MOO_TERM_TEXT_REVERSE) && term->priv->colors_inverted))
+    {
+        GdkGC *tmp = fg;
+        fg = bg;
+        bg = tmp;
+    }
+
     gdk_draw_rectangle (term->priv->back_pixmap,
                         bg,
                         TRUE,
@@ -759,7 +778,7 @@ static void term_draw_cells                 (MooTerm        *term,
                      (abs_row - term_top_line (term)) * term->priv->font_info->height,
                      term->priv->layout);
 
-    if (attr->mask & MOO_TERM_TEXT_BOLD)
+    if (attr->mask & MOO_TERM_TEXT_BOLD && term->priv->settings.allow_bold)
         gdk_draw_layout (term->priv->back_pixmap,
                          fg,
                          start * term->priv->font_info->width + 1,
@@ -788,57 +807,76 @@ static void term_draw_cursor                (MooTerm        *term)
     int screen_row = abs_row - term_top_line (term);
     guint char_width = term->priv->font_info->width;
     guint char_height = term->priv->font_info->height;
+    gboolean invert = FALSE;
+    GdkGC *fg, *bg;
+    MooTermTextAttr *attr;
 
     g_assert (col < screen_width);
 
     if (col < term_line_len (line))
     {
         ch_len = g_unichar_to_utf8 (line->data[col].ch, ch);
+        attr = &line->data[col].attr;
     }
     else
     {
         ch[0] = EMPTY_CHAR;
         ch_len = 1;
+        attr = &ZERO_ATTR;
     }
 
     pango_layout_set_text (term->priv->layout, ch, ch_len);
 
+    if (((attr->mask & MOO_TERM_TEXT_REVERSE) && !term->priv->colors_inverted) ||
+          (!(attr->mask & MOO_TERM_TEXT_REVERSE) && term->priv->colors_inverted))
+    {
+        invert = TRUE;
+    }
+
     switch (term->priv->cursor_shape)
     {
         case CURSOR_BLOCK:
+            if (invert)
+            {
+                fg = term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX];
+                bg = term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX];
+            }
+            else
+            {
+                fg = term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX];
+                bg = term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX];
+            }
+
             if (!term_selected (sel, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
-                                    term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                                    bg,
                                     TRUE,
                                     col * char_width,
                                     screen_row * char_height,
                                     char_width,
                                     char_height);
                 gdk_draw_layout (term->priv->back_pixmap,
-                                 term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                                 fg,
                                  col * char_width,
                                  screen_row * char_height,
                                  term->priv->layout);
             }
             else
             {
-                gdk_draw_rectangle (term->priv->back_pixmap,
-                                    term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                gdk_draw_rectangle (term->priv->back_pixmap, bg,
                                     FALSE,
                                     col * char_width,
                                     screen_row * char_height,
                                     char_width,
                                     char_height);
-                gdk_draw_rectangle (term->priv->back_pixmap,
-                                    term->priv->fg[CURSOR][MOO_TERM_COLOR_MAX],
+                gdk_draw_rectangle (term->priv->back_pixmap, fg,
                                     TRUE,
                                     col * char_width,
                                     screen_row * char_height,
                                     char_width,
                                     char_height);
-                gdk_draw_layout (term->priv->back_pixmap,
-                                 term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX],
+                gdk_draw_layout (term->priv->back_pixmap, bg,
                                  col * char_width,
                                  screen_row * char_height,
                                  term->priv->layout);
@@ -986,7 +1024,12 @@ void        moo_term_force_update           (MooTerm        *term)
 void        moo_term_invert_colors          (MooTerm    *term,
                                              gboolean    invert)
 {
-    TERM_IMPLEMENT_ME;
+    if (invert != term->priv->colors_inverted)
+    {
+        moo_term_invalidate_content_all (term);
+        moo_term_invalidate_all (term);
+        term->priv->colors_inverted = invert;
+    }
 }
 
 
