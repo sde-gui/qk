@@ -432,30 +432,30 @@ AC_DEFUN([AC_PKG_ARG_ENV_VAR],[
     AC_ARG_WITH(pkg-config-path,
     AC_HELP_STRING([--with-pkg-config-path=PATH], [sets PKG_CONFIG_PATH environment variable (for using in kdevelop)]),
     [
-        export PKG_CONFIG_PATH=$with_pkg_config_path
+        PKG_CONFIG_PATH=$with_pkg_config_path; export PKG_CONFIG_PATH
     ])
 
     AC_ARG_WITH(path,
     AC_HELP_STRING([--with-path=PATH], [sets PATH environment variable (for using in kdevelop)]),
     [
-        export PATH=$with_path
+        PATH=$with_path; export PATH
     ])
 
     AC_ARG_WITH(ld-library-path,
     AC_HELP_STRING([--with-ld-library-path=PATH], [sets LD_LIBRARY_PATH environment variable (for using in kdevelop)]),
     [
-        export LD_LIBRARY_PATH=$with_ld_library_path
+        LD_LIBRARY_PATH=$with_ld_library_path; export LD_LIBRARY_PATH
     ])
 
     AC_ARG_WITH(cflags,
     AC_HELP_STRING([--with-cflags=CFLAGS], [sets CFLAGS environment variable (for using in kdevelop)]),
     [
-        export CFLAGS=$with_cflags
+        CFLAGS=$with_cflags; export CFLAGS
     ])
 
     AC_ARG_WITH(cxxflags,
     AC_HELP_STRING([--with-cxxflags=CXXFLAGS], [sets CXXFLAGS environment variable (for using in kdevelop)]),
     [
-        export CXXFLAGS=$with_cxxflags
+        CXXFLAGS=$with_cxxflags; export CXXFLAGS
     ])
 ])
