@@ -149,7 +149,6 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
     buf->priv->changed_all = FALSE;
 
     set_defaults (buf);
-    moo_term_buffer_clear_saved (buf);
 }
 
 
@@ -520,20 +519,23 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
     {
         if (buf->priv->single_shift >= 0)
         {
-            if (buf->priv->graph_sets[buf->priv->single_shift])
+            g_assert (buf->priv->single_shift < 4);
+
+            if (graph_sets[buf->priv->GL[buf->priv->single_shift]])
             {
-                if (buf->priv->graph_sets[buf->priv->single_shift][c])
-                    c = buf->priv->graph_sets[buf->priv->single_shift][c];
+                if (graph_sets[buf->priv->GL[buf->priv->single_shift]][c])
+                    c = graph_sets[buf->priv->GL[buf->priv->single_shift]][c];
                 else
                     g_warning ("%s: using regular character while in "
                             "graphics mode", G_STRLOC);
             }
+
             buf->priv->single_shift = -1;
         }
-        else if (buf->priv->current_graph_set)
+        else if (graph_sets[buf->priv->current_graph_set])
         {
-            if (buf->priv->current_graph_set[c])
-                c = buf->priv->current_graph_set[c];
+            if (graph_sets[buf->priv->current_graph_set][c])
+                c = graph_sets[buf->priv->current_graph_set][c];
             else
                 g_warning ("%s: using regular character while in "
                            "graphics mode", G_STRLOC);
@@ -729,42 +731,36 @@ void    moo_term_buffer_set_tab_stop        (MooTermBuffer  *buf)
 
 void    moo_term_buffer_select_charset  (MooTermBuffer  *buf,
                                          guint           set_num,
-                                         guint           charset)
+                                         CharsetType     charset)
 {
     g_return_if_fail (set_num < 4 && charset < 5);
 
     switch (charset)
     {
-        case 0:
-            if (buf->priv->use_ascii_graphics)
-                buf->priv->graph_sets[set_num] = ASCII_DRAWING_SET;
-            else
-                buf->priv->graph_sets[set_num] = DRAWING_SET;
+        case CHARSET_DRAWING:
+            buf->priv->GL[set_num] = CHARSET_DRAWING;
             break;
 
-        case 2:
+        case CHARSET_ACRSPS:
             g_warning ("%s: choosing graphics instead of"
                        "Alternate Character ROM Special Set", G_STRLOC);
-            if (buf->priv->use_ascii_graphics)
-                buf->priv->graph_sets[set_num] = ASCII_DRAWING_SET;
-            else
-                buf->priv->graph_sets[set_num] = DRAWING_SET;
+            buf->priv->GL[set_num] = CHARSET_DRAWING;
             break;
 
-        case 1:
+        case CHARSET_ACRSSS:
             g_warning ("%s: choosing regular charset instead of"
                     "Alternate Character ROM Standard Set", G_STRLOC);
-            buf->priv->graph_sets[set_num] = NULL;
+            buf->priv->GL[set_num] = CHARSET_ASCII;
             break;
 
-        case 3:
+        case CHARSET_UK:
             g_warning ("%s: choosing regular charset instead of"
                        "United Kingdom", G_STRLOC);
-            buf->priv->graph_sets[set_num] = NULL;
+            buf->priv->GL[set_num] = CHARSET_ASCII;
             break;
 
-        case 4:
-            buf->priv->graph_sets[set_num] = NULL;
+        case CHARSET_ASCII:
+            buf->priv->GL[set_num] = CHARSET_ASCII;
             break;
     }
 }
@@ -774,7 +770,7 @@ void    moo_term_buffer_shift           (MooTermBuffer  *buf,
                                          guint           set)
 {
     g_return_if_fail (set < 4);
-    buf->priv->current_graph_set = buf->priv->graph_sets[set];
+    buf->priv->current_graph_set = buf->priv->GL[set];
 }
 
 
@@ -1414,57 +1410,6 @@ void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
 }
 
 
-void    moo_term_buffer_decsc                   (MooTermBuffer  *buf)
-{
-    g_message ("DECSC");
-    buf->priv->saved.cursor_row = buf->priv->cursor_row;
-    buf->priv->saved.cursor_col = buf->priv->cursor_col;
-    buf->priv->saved.attr = buf->priv->current_attr;
-    buf->priv->saved.GL = buf->priv->graph_sets[0];
-    buf->priv->saved.GR = buf->priv->graph_sets[1];
-    buf->priv->saved.autowrap = buf_get_mode (MODE_DECAWM);
-    buf->priv->saved.decom = buf_get_mode (MODE_DECOM);
-    buf->priv->saved.top_margin = buf->priv->top_margin;
-    buf->priv->saved.bottom_margin = buf->priv->bottom_margin;
-    buf->priv->saved.single_shift = buf->priv->single_shift;
-}
-
-
-void    moo_term_buffer_decrc                   (MooTermBuffer  *buf)
-{
-    g_message ("DECRC");
-    buf->priv->cursor_row = buf->priv->saved.cursor_row;
-    buf->priv->cursor_col = buf->priv->saved.cursor_col;
-    buf->priv->current_attr = buf->priv->saved.attr;
-    buf->priv->graph_sets[0] = buf->priv->saved.GL;
-    buf->priv->graph_sets[1] = buf->priv->saved.GR;
-    moo_term_buffer_set_mode (buf, MODE_DECAWM, buf->priv->saved.autowrap);
-    moo_term_buffer_set_mode (buf, MODE_DECOM, buf->priv->saved.decom);
-    moo_term_buffer_set_scrolling_region (buf, buf->priv->top_margin,
-                                          buf->priv->bottom_margin);
-    buf->priv->single_shift = buf->priv->saved.single_shift;
-}
-
-
-void    moo_term_buffer_clear_saved             (MooTermBuffer  *buf)
-{
-    buf->priv->saved.cursor_row = 0;
-    buf->priv->saved.cursor_col = 0;
-    buf->priv->saved.attr.mask = 0;
-    buf->priv->saved.autowrap = DEFAULT_MODE_DECAWM;
-    buf->priv->saved.decom = DEFAULT_MODE_DECOM;
-    buf->priv->saved.top_margin = 0;
-    buf->priv->saved.bottom_margin = buf_screen_height (buf) - 1;
-    buf->priv->saved.single_shift = -1;
-    buf->priv->saved.GL = NULL;
-
-    if (buf->priv->use_ascii_graphics)
-        buf->priv->saved.GR = ASCII_DRAWING_SET;
-    else
-        buf->priv->saved.GR = DRAWING_SET;
-}
-
-
 void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
                                                  guint           mode,
                                                  gboolean        set)
@@ -1475,10 +1420,19 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
             moo_term_buffer_set_ca_mode (buf, set);
             break;
 
+        /* xterm does this */
+        case MODE_DECANM:
+            if (set)
+            {
+                buf->priv->GL[0] = buf->priv->GL[1] = CHARSET_ASCII;
+                buf->priv->GL[2] = buf->priv->GL[3] = CHARSET_ASCII;
+            }
+            buf->priv->modes[mode] = set;
+            break;
+
         /* these do not require anything special, just record the value */
         case MODE_IRM:
         case MODE_LNM:
-        case MODE_DECANM:
         case MODE_DECOM:
         case MODE_DECAWM:
         case MODE_REVERSE_WRAPAROUND:   /* TODO*/
@@ -1524,11 +1478,9 @@ static void     set_defaults                    (MooTermBuffer  *buf)
     set_default_modes (buf->priv->modes);
     buf->priv->current_attr.mask = 0;
     buf->priv->single_shift = -1;
-    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
-            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
-    buf->priv->current_graph_set = NULL;
-
-    moo_term_buffer_clear_saved (buf);
+    buf->priv->GL[0] = buf->priv->GL[2] = buf->priv->GL[3] = CHARSET_ASCII;
+    buf->priv->GL[1] = CHARSET_DRAWING;
+    buf->priv->current_graph_set = CHARSET_ASCII;
 }
 
 
@@ -1566,9 +1518,9 @@ void    moo_term_buffer_soft_reset              (MooTermBuffer  *buf)
 
     buf->priv->current_attr.mask = 0;
     buf->priv->single_shift = -1;
-    buf->priv->graph_sets[0] = buf->priv->graph_sets[1] =
-            buf->priv->graph_sets[2] = buf->priv->graph_sets[3] = NULL;
-    buf->priv->current_graph_set = NULL;
+    buf->priv->GL[0] = buf->priv->GL[2] = buf->priv->GL[3] = CHARSET_ASCII;
+    buf->priv->GL[1] = CHARSET_DRAWING;
+    buf->priv->current_graph_set = CHARSET_ASCII;
 
     buf_changed_set_all (buf);
     moo_term_buffer_changed (buf);

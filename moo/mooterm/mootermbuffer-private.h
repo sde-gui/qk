@@ -26,6 +26,15 @@
 G_BEGIN_DECLS
 
 
+typedef enum {
+    CHARSET_DRAWING = 0,
+    CHARSET_ACRSSS  = 1,
+    CHARSET_ACRSPS  = 2,
+    CHARSET_UK      = 3,
+    CHARSET_ASCII   = 4
+} CharsetType;
+
+
 struct _MooTermBufferPrivate {
     gboolean        constructed;
 
@@ -35,9 +44,8 @@ struct _MooTermBufferPrivate {
     MooTermTextAttr current_attr;
 
     int             single_shift;
-    gunichar       *graph_sets[4];
-    gunichar       *current_graph_set;
-    gboolean        use_ascii_graphics;
+    CharsetType     GL[4];
+    CharsetType     current_graph_set;
 
     /* these are real position and
        dimensions of the screen */
@@ -53,18 +61,6 @@ struct _MooTermBufferPrivate {
     /* independent of scrolling region */
     guint           cursor_row;
     guint           cursor_col;
-
-    /* TODO: is it per-terminal or per-buffer? */
-    struct {
-        guint           cursor_row, cursor_col;
-        MooTermTextAttr attr;
-        gunichar       *GL, *GR;
-        gboolean        autowrap;
-        gboolean        decom;
-        guint           top_margin, bottom_margin;
-        /* TODO: Selective erase attribute ??? */
-        int             single_shift;
-    }   saved;
 
     GList          *tab_stops;
 
@@ -318,10 +314,6 @@ void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
 void    moo_term_buffer_cup                     (MooTermBuffer  *buf,
                                                  guint           row,
                                                  guint           col);
-
-void    moo_term_buffer_clear_saved             (MooTermBuffer  *buf);
-void    moo_term_buffer_decsc                   (MooTermBuffer  *buf);
-void    moo_term_buffer_decrc                   (MooTermBuffer  *buf);
 
 void    moo_term_buffer_decaln                  (MooTermBuffer  *buf);
 

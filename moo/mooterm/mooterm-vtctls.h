@@ -75,8 +75,8 @@ G_STMT_START {                                              \
 #define VT_IL(n)        moo_term_buffer_insert_line (parser->term->priv->buffer, n)
 #define VT_CUP(r,c)     moo_term_buffer_cup (parser->term->priv->buffer, (r)-1, (c)-1)
 #define VT_DECSTBM(t,b) moo_term_buffer_set_scrolling_region (parser->term->priv->buffer, (t)-1, (b)-1);
-#define VT_DECSC        moo_term_buffer_decsc (parser->term->priv->buffer)
-#define VT_DECRC        moo_term_buffer_decrc (parser->term->priv->buffer)
+#define VT_DECSC        moo_term_decsc (parser->term)
+#define VT_DECRC        moo_term_decrc (parser->term)
 #define VT_DECSET       moo_term_set_dec_modes  (parser->term,                  \
                                                  (int*) parser->numbers->data,  \
                                                  parser->numbers->len,          \

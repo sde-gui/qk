@@ -62,6 +62,8 @@ static void     im_preedit_end                  (MooTerm        *term);
 
 static void     child_died                      (MooTerm        *term);
 
+static void     clear_saved_cursor              (MooTerm        *term);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
@@ -180,7 +182,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
     term->priv->buffer = term->priv->primary_buffer;
 
-    term->priv->saved_cursor = g_array_new (FALSE, FALSE, sizeof(guint));
+    clear_saved_cursor (term);
 
     term->priv->width = 80;
     term->priv->height = 24;
@@ -260,8 +262,6 @@ static void moo_term_finalize               (GObject        *object)
 
     term_selection_free (term->priv->selection);
     term_font_info_free (term->priv->font_info);
-
-    g_array_free (term->priv->saved_cursor, TRUE);
 
     g_object_unref (term->priv->back_pixmap);
 
@@ -1079,30 +1079,54 @@ void        moo_term_set_mode               (MooTerm    *term,
 }
 
 
-static void save_cursor     (MooTerm    *term)
+static void clear_saved_cursor              (MooTerm        *term)
 {
-    g_array_append_val (term->priv->saved_cursor,
-                        term->priv->cursor_row);
-    g_array_append_val (term->priv->saved_cursor,
-                        term->priv->cursor_col);
+    term->priv->saved_cursor.cursor_row = 0;
+    term->priv->saved_cursor.cursor_col = 0;
+    term->priv->saved_cursor.attr.mask = 0;
+    term->priv->saved_cursor.GL = 0;
+    term->priv->saved_cursor.GR = 4;
+    term->priv->saved_cursor.autowrap = DEFAULT_MODE_DECAWM;
+    term->priv->saved_cursor.decom = DEFAULT_MODE_DECOM;
+    term->priv->saved_cursor.top_margin = 0,
+    term->priv->saved_cursor.bottom_margin = 999;
+    term->priv->saved_cursor.single_shift = -1;
 }
 
-static void restore_cursor  (MooTerm    *term)
+
+void        moo_term_decsc                  (MooTerm    *term)
 {
-    guint row = 0;
-    guint col = 0;
+    MooTermBuffer *buf = term->priv->buffer;
 
-    if (term->priv->saved_cursor->len)
-    {
-        row = g_array_index (term->priv->saved_cursor, guint,
-                             term->priv->saved_cursor->len - 2);
-        col = g_array_index (term->priv->saved_cursor, guint,
-                             term->priv->saved_cursor->len - 1);
-        g_array_set_size (term->priv->saved_cursor,
-                          term->priv->saved_cursor->len - 2);
-    }
+    term->priv->saved_cursor.cursor_row = term->priv->cursor_row;
+    term->priv->saved_cursor.cursor_col = term->priv->cursor_col;
+    term->priv->saved_cursor.attr = buf->priv->current_attr;
+    term->priv->saved_cursor.GL = buf->priv->GL[0];
+    term->priv->saved_cursor.GR = buf->priv->GL[1];
+    term->priv->saved_cursor.autowrap = term_get_mode (MODE_DECAWM);
+    term->priv->saved_cursor.decom = term_get_mode (MODE_DECOM);
+    term->priv->saved_cursor.top_margin = buf->priv->top_margin;
+    term->priv->saved_cursor.bottom_margin = buf->priv->bottom_margin;
+    term->priv->saved_cursor.single_shift = buf->priv->single_shift;
+}
 
-    moo_term_buffer_cursor_move_to (term->priv->buffer, row, col);
+
+void        moo_term_decrc                  (MooTerm    *term)
+{
+    MooTermBuffer *buf = term->priv->buffer;
+
+    moo_term_buffer_cursor_move_to (term->priv->buffer,
+                                    term->priv->saved_cursor.cursor_row,
+                                    term->priv->saved_cursor.cursor_col);
+    buf->priv->current_attr = term->priv->saved_cursor.attr;
+    buf->priv->GL[0] = term->priv->saved_cursor.GL;
+    buf->priv->GL[1] = term->priv->saved_cursor.GR;
+    moo_term_set_mode (term, MODE_DECAWM, term->priv->saved_cursor.autowrap);
+    moo_term_set_mode (term, MODE_DECOM, term->priv->saved_cursor.decom);
+    moo_term_buffer_set_scrolling_region (buf,
+                                          term->priv->saved_cursor.top_margin,
+                                          term->priv->saved_cursor.bottom_margin);
+    buf->priv->single_shift = term->priv->saved_cursor.single_shift;
 }
 
 
@@ -1111,7 +1135,7 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
 {
     if (set)
     {
-        save_cursor (term);
+        moo_term_decsc (term);
         moo_term_set_alternate_buffer (term, TRUE);
         moo_term_buffer_erase_in_display (term->priv->buffer, 2);
         moo_term_buffer_set_ca_mode (term->priv->buffer, TRUE);
@@ -1120,7 +1144,7 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
     {
         moo_term_set_alternate_buffer (term, FALSE);
         moo_term_buffer_set_ca_mode (term->priv->buffer, FALSE);
-        restore_cursor (term);
+        moo_term_decrc (term);
     }
 }
 
@@ -1218,6 +1242,7 @@ void        moo_term_reset                  (MooTerm    *term)
     moo_term_buffer_reset (term->priv->alternate_buffer);
     set_default_modes (term->priv->modes);
     set_default_modes (term->priv->saved_modes);
+    clear_saved_cursor (term);
 
     moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
     moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);

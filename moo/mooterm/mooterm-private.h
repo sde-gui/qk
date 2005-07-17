@@ -59,6 +59,7 @@ enum {
     CURSOR      = 2
 };
 
+
 typedef enum {
     CURSOR_BLOCK,
     CURSOR_UNDERLINE
@@ -87,7 +88,17 @@ struct _MooTermPrivate {
 
     guint           cursor_row;
     guint           cursor_col;
-    GArray         *saved_cursor;
+
+    struct {
+        guint           cursor_row, cursor_col;
+        MooTermTextAttr attr;
+        int             GL, GR;
+        gboolean        autowrap;
+        gboolean        decom;
+        guint           top_margin, bottom_margin;
+        /* TODO: Selective erase attribute ??? */
+        int             single_shift;
+    } saved_cursor;
 
     TermSelection  *selection;
 
@@ -222,6 +233,9 @@ void        moo_term_set_mode               (MooTerm    *term,
                                              gboolean    set);
 void        moo_term_set_ca_mode            (MooTerm    *term,
                                              gboolean    set);
+void        moo_term_decsc                  (MooTerm    *term);
+void        moo_term_decrc                  (MooTerm    *term);
+
 /* these two are in mootermdraw.c */
 void        moo_term_invert_colors          (MooTerm    *term,
                                              gboolean    invert);

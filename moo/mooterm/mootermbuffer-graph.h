@@ -120,6 +120,8 @@ static gunichar ASCII_DRAWING_SET[MAX_GRAPH + 1] = {
 
 static gunichar DRAWING_SET[MAX_GRAPH + 1];
 
+static gunichar *graph_sets[5];
+
 static void init_drawing_sets (void)
 {
     guint i;
@@ -134,6 +136,9 @@ static void init_drawing_sets (void)
         if (!ASCII_DRAWING_SET[i] && '\040' <= i && i <= '\176')
             ASCII_DRAWING_SET[i] = i;
     }
+
+    graph_sets[0] = graph_sets[2] = DRAWING_SET;
+    graph_sets[1] = graph_sets[3] = graph_sets[4] = NULL;
 }
 
 
