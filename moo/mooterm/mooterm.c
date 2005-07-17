@@ -862,7 +862,7 @@ void        moo_term_bell                   (MooTerm    *term)
 
 void        moo_term_decid                  (MooTerm    *term)
 {
-    moo_term_feed_child (term, TERM_VT_DECID_STRING, -1);
+    moo_term_feed_child (term, VT_DECID_, -1);
 }
 
 
@@ -1147,45 +1147,24 @@ void        moo_term_set_alternate_buffer   (MooTerm        *term,
 
 void        moo_term_da1                    (MooTerm    *term)
 {
-    moo_term_feed_child (term, "\033[?64;1;c", -1);
-
-    /*
-    1   132 columns
-    2   Printer port
-    4   Sixel
-    6   Selective erase
-    7   Soft character set (DRCS)       TODO
-    8   User-defined keys (UDKs)        TODO
-    9   National replacement character sets (NRCS)
-        (International terminal only)   TODO
-    12  Yugoslavian (SCS)
-    15  Technical character set         TODO
-    18  Windowing capability            TODO
-    21  Horizontal scrolling            TODO
-    23  Greek
-    24  Turkish
-    42  ISO Latin-2 character set
-    44  PCTerm                          TODO
-    45  Soft key map                    TODO
-    46  ASCII emulation                 TODO
-    */
+    moo_term_feed_child (term, VT_DA1_, -1);
 }
 
 void        moo_term_da2                    (MooTerm    *term)
 {
     /* TODO */
-    moo_term_feed_child (term, "\033[>61;20;1;c", -1);
+    moo_term_feed_child (term, VT_DA2_, -1);
 }
 
 void        moo_term_da3                    (MooTerm    *term)
 {
     /* TODO */
-    moo_term_feed_child (term, "\033P!|FFFFFFFF\033\\", -1);
+    moo_term_feed_child (term, VT_DA3_, -1);
 }
 
 
 #define make_DECRQSS(c)                                  \
-    answer = g_strdup_printf ("\033P%s$r" FINAL_##c "\033\\", ps)
+    answer = g_strdup_printf (VT_DCS_ "%s$r" FINAL_##c VT_ST_, ps)
 
 void        moo_term_setting_request        (MooTerm    *term,
                                              int         setting)
@@ -1275,39 +1254,39 @@ void        moo_term_dsr                    (MooTerm    *term,
     {
         case 6:
             if (extended)
-                answer = g_strdup_printf ("\233%d;%d;0R",
+                answer = g_strdup_printf (VT_CSI_ "%d;%d;0R",
                                           buf_cursor_row (buf) + 1,
                                           buf_cursor_col (buf) + 1);
             else
-                answer = g_strdup_printf ("\233%d;%dR",
+                answer = g_strdup_printf (VT_CSI_ "%d;%dR",
                                           buf_cursor_row (buf) + 1,
                                           buf_cursor_col (buf) + 1);
             break;
 
             break;
         case 75:
-            answer = g_strdup ("\233?70n");
+            answer = g_strdup (VT_CSI_ "?70n");
             break;
         case 26:
-            answer = g_strdup ("\233?27;1;0;5n");
+            answer = g_strdup (VT_CSI_ "?27;1;0;5n");
             break;
         case 62:
-            answer = g_strdup ("\2330*{");
+            answer = g_strdup (VT_CSI_ "0*{");
             break;
         case 63:
             if (arg > 0)
-                answer = g_strdup_printf ("\220%d!~30303030\234", arg);
+                answer = g_strdup_printf (VT_DCS_ "%d!~30303030" VT_ST_, arg);
             else
-                answer = g_strdup ("\220!~30303030\234");
+                answer = g_strdup (VT_DCS_ "!~30303030" VT_ST_);
             break;
         case 5:
-            answer = g_strdup ("\2330n");
+            answer = g_strdup (VT_CSI_ "0n");
             break;
         case 15:
-            answer = g_strdup ("\233?13n");
+            answer = g_strdup (VT_CSI_ "?13n");
             break;
         case 25:
-            answer = g_strdup ("\233?21n");
+            answer = g_strdup (VT_CSI_ "?21n");
             break;
 
         default:

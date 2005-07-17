@@ -273,7 +273,7 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
                 string_length > 0 &&
                 (modifiers & META_MASK))
             {
-                moo_term_feed_child (term, "\033", 1);
+                moo_term_feed_child (term, VT_ESC_, 1);
             }
 
             if (string_length > 0)
@@ -422,7 +422,7 @@ static gboolean button_press            (MooTerm        *term,
 
     get_mouse_coordinates (term, event, &x, &y);
 
-    string = g_strdup_printf ("\033[M%c%c%c", button,
+    string = g_strdup_printf (VT_CSI_ "M%c%c%c", button,
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
 
@@ -467,7 +467,7 @@ static gboolean button_press_or_release (MooTerm        *term,
     if (event->state & GDK_CONTROL_MASK)
         button |= 16;
 
-    string = g_strdup_printf ("\033[M%c%c%c",
+    string = g_strdup_printf (VT_CSI_ "M%c%c%c",
                               (guchar) (button + 040),
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));
@@ -506,7 +506,7 @@ static gboolean scroll_event            (MooTerm        *term,
     if (event->state & GDK_CONTROL_MASK)
         button |= 16;
 
-    string = g_strdup_printf ("\033[M%c%c%c",
+    string = g_strdup_printf (VT_CSI_ "M%c%c%c",
                               (guchar) (button + 040),
                               (guchar) (x + 1 + 040),
                               (guchar) (y + 1 + 040));

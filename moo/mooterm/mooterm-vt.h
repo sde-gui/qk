@@ -286,7 +286,39 @@ enum {
     }
 
 
-#define TERM_VT_DECID_STRING    "\033[?1;2c"
+#define VT_ESC_             "\033"
+#define VT_CSI_             "\033["
+#define VT_DCS_             "\033P"
+#define VT_ST_              "\033\\"
+#define VT_DECID_           VT_CSI_ "?1;2c"
+
+/*
+DA1:
+1   132 columns
+2   Printer port
+4   Sixel
+6   Selective erase
+7   Soft character set (DRCS)       TODO
+8   User-defined keys (UDKs)        TODO
+9   National replacement character sets (NRCS)
+    (International terminal only)   TODO
+12  Yugoslavian (SCS)
+15  Technical character set         TODO
+18  Windowing capability            TODO
+21  Horizontal scrolling            TODO
+23  Greek
+24  Turkish
+42  ISO Latin-2 character set
+44  PCTerm                          TODO
+45  Soft key map                    TODO
+46  ASCII emulation                 TODO
+*/
+#define VT_DA1_             VT_CSI_ "?64;1;c"
+
+/* TODO */
+#define VT_DA2_             VT_CSI_ ">61;20;1;c"
+/* TODO */
+#define VT_DA3_             VT_DCS_ "!|FFFFFFFF" VT_ST_
 
 
 typedef enum {
