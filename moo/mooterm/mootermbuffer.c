@@ -328,8 +328,6 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
     if (old_height == height)
         return;
 
-    buf->priv->screen_height = height;
-
     if (buf_get_mode (MODE_CA))
     {
         /* in CA mode do not scroll or something, just resize the screeen */
@@ -389,30 +387,28 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
         {
             guint remove = old_height - height;
 
-            if (remove + buf->priv->cursor_row < height)
+            if (buf->priv->cursor_row < height)
             {
-                for (i = 1; i <= remove; ++i)
-                    term_line_free (g_ptr_array_index (buf->priv->lines,
-                                    buf->priv->lines->len - i));
+                for (i = height; i < old_height; ++i)
+                    term_line_free (buf_screen_line (buf, i));
                 g_ptr_array_remove_range (buf->priv->lines,
                                           buf->priv->lines->len - remove,
                                           remove);
             }
             else
             {
-                if (buf->priv->cursor_row < old_height - 1)
-                {
-                    guint del = old_height - 1 - buf->priv->cursor_row;
+                guint del = old_height - 1 - buf->priv->cursor_row;
 
-                    for (i = 1; i <= del; ++i)
-                        term_line_free (g_ptr_array_index (buf->priv->lines,
-                                                           buf->priv->lines->len - i));
+                if (del)
+                {
+                    for (i = buf->priv->cursor_row + 1; i < old_height; ++i)
+                        term_line_free (buf_screen_line (buf, i));
                     g_ptr_array_remove_range (buf->priv->lines,
                                               buf->priv->lines->len - del,
                                               del);
-
-                    remove -= del;
                 }
+
+                remove -= del;
 
                 buf->priv->_screen_offset += remove;
                 buf_changed_set_all (buf);
@@ -427,6 +423,8 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
             }
         }
     }
+
+    buf->priv->screen_height = height;
 
     moo_term_buffer_set_scrolling_region (buf, 0, height - 1);
 

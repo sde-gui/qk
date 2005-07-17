@@ -715,6 +715,9 @@ void        moo_term_size_changed       (MooTerm        *term)
     if (width == old_width && height == old_height)
         return;
 
+    width = CLAMP (width, MIN_TERMINAL_WIDTH, MAX_TERMINAL_WIDTH);
+    height = height < MIN_TERMINAL_HEIGHT ? MIN_TERMINAL_HEIGHT : height;
+
     moo_term_buffer_set_screen_size (term->priv->primary_buffer,
                                      width, height);
     moo_term_buffer_set_screen_size (term->priv->alternate_buffer,

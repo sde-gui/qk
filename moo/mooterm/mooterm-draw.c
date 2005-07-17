@@ -80,6 +80,10 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
     term->priv->layout = pango_layout_new (ctx);
 
     g_object_unref (ctx);
+
+    gtk_widget_set_size_request (GTK_WIDGET (term),
+                                 term->priv->font_info->width * MIN_TERMINAL_WIDTH,
+                                 term->priv->font_info->height * MIN_TERMINAL_HEIGHT);
 }
 
 

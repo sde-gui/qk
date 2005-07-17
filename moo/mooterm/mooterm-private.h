@@ -36,8 +36,8 @@ G_BEGIN_DECLS
 #define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
 #define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
 
-#define MIN_TERMINAL_WIDTH          10
-#define MIN_TERMINAL_HEIGHT         10
+#define MIN_TERMINAL_WIDTH          8
+#define MIN_TERMINAL_HEIGHT         4
 #define MAX_TERMINAL_WIDTH          4096
 
 #define DEFAULT_MONOSPACE_FONT      "Courier New 9"
