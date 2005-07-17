@@ -14,7 +14,6 @@
 #ifndef MOOTERM_MOOTERM_H
 #define MOOTERM_MOOTERM_H
 
-#include "mooterm/mootermbuffer.h"
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

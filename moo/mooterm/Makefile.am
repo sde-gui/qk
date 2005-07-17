@@ -12,6 +12,7 @@ widget_sources =                \
     mooterm-keymap.h            \
     mooterm-private.h           \
     mooterm-selection.c         \
+    mooterm-selection.h         \
     mooterm-vt.h                \
     mooterm-draw.c              \
     mootermbuffer.c             \

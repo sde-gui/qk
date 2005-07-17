@@ -16,7 +16,7 @@
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mooterm-keymap.h"
-#include "mooterm/mootermpt.h"
+#include "mooterm/mooterm-selection.h"
 
 #define META_MASK   GDK_MOD1_MASK
 

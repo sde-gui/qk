@@ -13,6 +13,7 @@
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mooterm-private.h"
+#include "mooterm/mooterm-selection.h"
 
 
 TermSelection   *term_selection_new         (void)
