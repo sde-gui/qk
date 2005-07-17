@@ -90,8 +90,10 @@ void        moo_term_scroll_lines           (MooTerm        *term,
 void        moo_term_scroll_pages           (MooTerm        *term,
                                              int             pages);
 
-void        moo_term_copy_clipboard         (MooTerm        *term);
-void        moo_term_paste_clipboard        (MooTerm        *term);
+void        moo_term_copy_clipboard         (MooTerm        *term,
+                                             GdkAtom         selection);
+void        moo_term_paste_clipboard        (MooTerm        *term,
+                                             GdkAtom         selection);
 
 void        moo_term_ctrl_c                 (MooTerm        *term);
 

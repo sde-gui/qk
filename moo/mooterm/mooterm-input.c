@@ -132,13 +132,15 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
         case GDK_Insert:
             if (modifiers & GDK_SHIFT_MASK)
             {
-                moo_term_paste_clipboard (term);
+                moo_term_paste_clipboard (term,
+                                          GDK_SELECTION_CLIPBOARD);
                 handled = TRUE;
                 suppress_meta_esc = TRUE;
             }
             else if (modifiers & GDK_CONTROL_MASK)
             {
-                moo_term_copy_clipboard (term);
+                moo_term_copy_clipboard (term,
+                                         GDK_SELECTION_CLIPBOARD);
                 handled = TRUE;
                 suppress_meta_esc = TRUE;
             }

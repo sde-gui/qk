@@ -56,6 +56,12 @@ char            *term_selection_get_text    (MooTerm       *term)
 }
 
 
+#define HOWMANY(x, y)               (((x) + (y) - 1) / y())
+#define CALC_ROW(y, char_height)    (HOWMANY (y + 1, char_height) - 1)
+#define CALC_COL(x, char_width)     (HOWMANY (x + 1, char_width) - 1)
+#define DIFF(x, y)                  (ABS ((x) - (y)))
+
+
 gboolean    moo_term_button_press           (GtkWidget      *widget,
                                              GdkEventButton *event)
 {
@@ -65,7 +71,26 @@ gboolean    moo_term_button_press           (GtkWidget      *widget,
 
     moo_term_set_pointer_visible (term, TRUE);
 
-    return FALSE;
+    if (event->button != 1)
+    {
+        if (event->type != GDK_BUTTON_PRESS)
+            return TRUE;
+
+        switch (event->button)
+        {
+            case 2:
+                moo_term_paste_clipboard (term, GDK_SELECTION_PRIMARY);
+                break;
+
+            case 3:
+                moo_term_do_popup_menu (term, event);
+                break;
+        }
+
+        return TRUE;
+    }
+
+    return TRUE;
 }
 
 
@@ -78,7 +103,7 @@ gboolean    moo_term_button_release         (GtkWidget      *widget,
 
     moo_term_set_pointer_visible (term, TRUE);
 
-    return FALSE;
+    return TRUE;
 }
 
 
@@ -91,5 +116,5 @@ gboolean    moo_term_motion_notify          (GtkWidget      *widget,
 
     moo_term_set_pointer_visible (term, TRUE);
 
-    return FALSE;
+    return TRUE;
 }

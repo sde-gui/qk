@@ -463,9 +463,14 @@ static void     scrollback_changed              (MooTerm        *term,
         guint scrollback = buf_scrollback (term->priv->buffer);
 
         if (term->priv->_scrolled && term->priv->_top_line > scrollback)
+        {
+            term_selection_clear (term);
             scroll_to_bottom (term, TRUE);
+        }
         else
+        {
             update_adjustment (term);
+        }
     }
 }
 
@@ -748,13 +753,19 @@ void             moo_term_feed_child        (MooTerm        *term,
 }
 
 
-void             moo_term_copy_clipboard    (MooTerm        *term)
+void             moo_term_copy_clipboard    (MooTerm        *term,
+                                             GdkAtom         selection)
 {
-    char *text = term_selection_get_text (term);
+    GtkClipboard *cb;
+    char *text;
+
+    text = term_selection_get_text (term);
 
     if (text && *text)
-        gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD),
-                                text, -1);
+    {
+        cb = gtk_clipboard_get (selection);
+        gtk_clipboard_set_text (cb, text, -1);
+    }
 
     if (text)
     {
@@ -770,14 +781,15 @@ void             moo_term_ctrl_c            (MooTerm        *term)
 }
 
 
-void             moo_term_paste_clipboard   (MooTerm        *term)
+void             moo_term_paste_clipboard   (MooTerm        *term,
+                                             GdkAtom         selection)
 {
     GtkClipboard *cb;
     char *text;
 
     g_return_if_fail (MOO_IS_TERM (term));
 
-    cb = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+    cb = gtk_clipboard_get (selection);
     text = gtk_clipboard_wait_for_text (cb);
 
     if (text)
