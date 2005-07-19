@@ -321,16 +321,6 @@ static void     right_button_click      (MooText        *obj,
 }
 
 
-static gboolean extend_selection        (MooText        *obj,
-                                         MooTextSelectionType type,
-                                         GtkTextIter    *insert,
-                                         GtkTextIter    *selection_bound)
-{
-    term_select_range (selection_bound, insert);
-    return iter_cmp (selection_bound, insert);
-}
-
-
 static void     window_to_buffer_coords (MooText        *obj,
                                          int             window_x,
                                          int             window_y,
@@ -520,6 +510,11 @@ int         moo_term_row_selected           (MooTerm    *term,
 }
 
 
+static gboolean extend_selection        (MooText        *obj,
+                                         MooTextSelectionType type,
+                                         GtkTextIter    *end,
+                                         GtkTextIter    *start);
+
 void        moo_term_text_iface_init        (gpointer        g_iface)
 {
     MooTextIface *iface = (MooTextIface*) g_iface;
@@ -547,4 +542,191 @@ void        moo_term_text_iface_init        (gpointer        g_iface)
 char       *moo_term_selection_get_text (MooTerm    *term)
 {
     return NULL;
+}
+
+
+static int      char_class              (MooTerm            *term,
+                                         const GtkTextIter  *iter);
+static gboolean iter_ends_line          (const GtkTextIter  *iter);
+static gboolean iter_starts_line        (const GtkTextIter  *iter);
+static void     iter_forward_char       (GtkTextIter        *iter);
+static void     iter_backward_char      (GtkTextIter        *iter);
+static void     iter_set_line_offset    (GtkTextIter        *iter,
+                                         guint               offset);
+static gboolean iter_forward_line       (GtkTextIter        *iter);
+static gboolean is_space                (const GtkTextIter  *iter);
+static gboolean is_word_char            (const GtkTextIter  *iter);
+static gunichar iter_get_char           (const GtkTextIter  *iter);
+
+
+static gboolean extend_selection        (MooText        *obj,
+                                         MooTextSelectionType type,
+                                         GtkTextIter    *end,
+                                         GtkTextIter    *start)
+{
+    MooTerm *term = MOO_TERM (obj);
+    int order = iter_cmp (start, end);
+
+    if (type == MOO_TEXT_SELECT_CHARS)
+    {
+        return order;
+    }
+
+    if (order > 0)
+    {
+        GtkTextIter *tmp = start;
+        start = end; end = tmp;
+    }
+
+    if (type == MOO_TEXT_SELECT_WORDS)
+    {
+        int ch_class;
+
+        ch_class = char_class (term, end);
+
+        while (!iter_ends_line (end) &&
+                char_class (term, end) == ch_class)
+        {
+            iter_forward_char (end);
+        }
+
+        ch_class = char_class (term, start);
+
+        while (!iter_starts_line (start) &&
+                char_class (term, start) == ch_class)
+        {
+            iter_backward_char (start);
+        }
+
+        if (char_class (term, start) != ch_class)
+            iter_forward_char (start);
+
+        return iter_cmp (start, end);
+    }
+
+    if (type == MOO_TEXT_SELECT_LINES)
+    {
+        iter_set_line_offset (start, 0);
+        iter_forward_line (end);
+        return iter_cmp (start, end);
+    }
+
+    g_assert_not_reached ();
+}
+
+
+static int      char_class              (MooTerm            *term,
+                                         const GtkTextIter  *iter)
+{
+    if (iter_ends_line (iter))
+        return -1;
+    else if (is_space (iter))
+        return 0;
+    else if (is_word_char (iter))
+        return 1;
+    else
+        return 2;
+}
+
+
+static gboolean iter_ends_line          (const GtkTextIter  *iter)
+{
+    return ITER_COL(iter) == (int)ITER_TERM(iter)->priv->width;
+}
+
+
+static gboolean iter_starts_line        (const GtkTextIter  *iter)
+{
+    return ITER_COL(iter) == 0;
+}
+
+
+static void     iter_forward_char       (GtkTextIter        *iter)
+{
+    MooTerm *term = ITER_TERM(iter);
+    int width = term->priv->width;
+    int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
+
+    g_return_if_fail (ITER_ROW(iter) < total_height || ITER_COL(iter) < width);
+
+    if (ITER_COL(iter) < width)
+    {
+        ITER_COL(iter)++;
+    }
+    else
+    {
+        ITER_COL(iter) = 0;
+        ITER_ROW(iter)++;
+    }
+}
+
+
+static void     iter_backward_char      (GtkTextIter        *iter)
+{
+    MooTerm *term = ITER_TERM(iter);
+    int width = term->priv->width;
+
+    g_return_if_fail (ITER_ROW(iter) > 0 || ITER_COL(iter) > 0);
+
+    if (ITER_COL(iter) > 0)
+    {
+        ITER_COL(iter)--;
+    }
+    else
+    {
+        ITER_ROW(iter)--;
+        ITER_COL(iter) = width;
+    }
+}
+
+
+static void     iter_set_line_offset    (GtkTextIter        *iter,
+                                         guint               offset)
+{
+    g_return_if_fail (offset <= ITER_TERM(iter)->priv->width);
+    ITER_COL(iter) = offset;
+}
+
+
+static gboolean iter_forward_line       (GtkTextIter        *iter)
+{
+    MooTerm *term = ITER_TERM(iter);
+    int width = term->priv->width;
+    int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
+
+    if (ITER_ROW(iter) == total_height)
+    {
+        ITER_COL(iter) = width;
+        return FALSE;
+    }
+    else
+    {
+        ITER_COL(iter) = 0;
+        ITER_ROW(iter)++;
+        return TRUE;
+    }
+}
+
+
+static gboolean is_space                (const GtkTextIter  *iter)
+{
+    gunichar c = iter_get_char (iter);
+    g_return_val_if_fail (c != 0, FALSE);
+    return g_unichar_isspace (c);
+}
+
+
+static gboolean is_word_char            (const GtkTextIter  *iter)
+{
+    gunichar c = iter_get_char (iter);
+    g_return_val_if_fail (c != 0, FALSE);
+    return g_unichar_isalnum (c) || c == '_';
+}
+
+
+static gunichar iter_get_char           (const GtkTextIter  *iter)
+{
+    MooTermLine *line = buf_line (ITER_TERM(iter)->priv->buffer,
+                                  ITER_ROW(iter));
+    return term_line_get_unichar (line, ITER_COL(iter));
 }

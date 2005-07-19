@@ -230,7 +230,10 @@ inline static void term_line_insert_unichar (MooTermLine   *line,
 inline static gunichar term_line_get_unichar (MooTermLine   *line,
                                               guint          col)
 {
-    return g_array_index (TERM_LINE_ARRAY (line), MooTermCell, col).ch;
+    if (col >= line->len)
+        return EMPTY_CHAR;
+    else
+        return line->data[col].ch;
 }
 
 
