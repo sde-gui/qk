@@ -478,7 +478,7 @@ static void     get_visible_rect        (MooText            *obj,
 }
 
 
-gboolean    moo_term_selected           (MooTerm    *term,
+gboolean    moo_term_cell_selected      (MooTerm    *term,
                                          guint       row,
                                          guint       col)
 {
@@ -488,7 +488,7 @@ gboolean    moo_term_selected           (MooTerm    *term,
     {
         iter_order (&start, &end);
         FILL_ITER (&iter, term, row, col);
-        return iter_in_range (&iter, &start, &end);
+        return iter_cmp (&start, &iter) <= 0 && iter_cmp (&iter, &end) < 0;
     }
     else
     {
@@ -497,7 +497,7 @@ gboolean    moo_term_selected           (MooTerm    *term,
 }
 
 
-int         moo_term_selection_row_selected (MooTerm    *term,
+int         moo_term_row_selected           (MooTerm    *term,
                                              guint       row)
 {
     GtkTextIter start, end;

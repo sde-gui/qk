@@ -33,9 +33,9 @@ gpointer    term_selection_new              (MooTerm    *term);
 
 void        moo_term_selection_clear        (MooTerm    *term);
 char       *moo_term_selection_get_text     (MooTerm    *term);
-int         moo_term_selection_row_selected (MooTerm    *term,
+int         moo_term_row_selected           (MooTerm    *term,
                                              guint       row);
-gboolean    moo_term_selected               (MooTerm    *term,
+gboolean    moo_term_cell_selected          (MooTerm    *term,
                                              guint       row,
                                              guint       col);
 gboolean    moo_term_get_selection_bounds   (MooTerm    *term,

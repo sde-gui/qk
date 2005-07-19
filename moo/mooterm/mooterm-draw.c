@@ -555,7 +555,7 @@ static void term_draw_range                 (MooTerm        *term,
         }
     }
 
-    selected = moo_term_selection_row_selected (term, abs_row);
+    selected = moo_term_row_selected (term, abs_row);
 
     switch (selected)
     {
@@ -851,7 +851,7 @@ static void term_draw_cursor                (MooTerm        *term)
                 bg = term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX];
             }
 
-            if (!moo_term_selected (term, abs_row, col))
+            if (!moo_term_cell_selected (term, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
                                     bg,
@@ -888,7 +888,7 @@ static void term_draw_cursor                (MooTerm        *term)
             break;
 
         case CURSOR_UNDERLINE:
-            if (!moo_term_selected (term, abs_row, col))
+            if (!moo_term_cell_selected (term, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
                                     term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX],
