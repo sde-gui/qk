@@ -158,6 +158,7 @@ void        moo_term_invalidate_rect    (MooTerm        *term,
 
     gdk_window_invalidate_rect (GTK_WIDGET(term)->window,
                                 &r, FALSE);
+    moo_term_invalidate_content_rect (term, rect);
     add_update_timeout (term);
 }
 
@@ -525,7 +526,6 @@ static void term_draw_range                 (MooTerm        *term,
                                              guint           start,
                                              guint           len)
 {
-    TermSelection *sel = term->priv->selection;
     int selected;
     guint first = start;
     guint last = start + len;
@@ -555,7 +555,7 @@ static void term_draw_range                 (MooTerm        *term,
         }
     }
 
-    selected = term_selection_row_selected (sel, abs_row);
+    selected = moo_term_selection_row_selected (term, abs_row);
 
     switch (selected)
     {
@@ -566,10 +566,10 @@ static void term_draw_range                 (MooTerm        *term,
 
         case PART_SELECTED:
         {
-            guint l_row = sel->l_row;
-            guint l_col = sel->l_col;
-            guint r_row = sel->r_row;
-            guint r_col = sel->r_col;
+            guint l_row, l_col, r_row, r_col;
+
+            moo_term_get_selection_bounds (term, &l_row, &l_col,
+                                           &r_row, &r_col);
 
             if (l_row == r_row)
             {
@@ -806,7 +806,6 @@ static void term_draw_cursor                (MooTerm        *term)
     guint abs_row = buf_cursor_row_abs (term->priv->buffer);
     guint col = buf_cursor_col (term->priv->buffer);
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
-    TermSelection *sel = term->priv->selection;
     char ch[6];
     guint ch_len;
     int screen_row = abs_row - term_top_line (term);
@@ -852,7 +851,7 @@ static void term_draw_cursor                (MooTerm        *term)
                 bg = term->priv->bg[CURSOR][MOO_TERM_COLOR_MAX];
             }
 
-            if (!term_selected (sel, abs_row, col))
+            if (!moo_term_selected (term, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
                                     bg,
@@ -889,7 +888,7 @@ static void term_draw_cursor                (MooTerm        *term)
             break;
 
         case CURSOR_UNDERLINE:
-            if (!term_selected (sel, abs_row, col))
+            if (!moo_term_selected (term, abs_row, col))
             {
                 gdk_draw_rectangle (term->priv->back_pixmap,
                                     term->priv->bg[NORMAL][MOO_TERM_COLOR_MAX],
@@ -1031,7 +1030,6 @@ void        moo_term_invert_colors          (MooTerm    *term,
 {
     if (invert != term->priv->colors_inverted)
     {
-        moo_term_invalidate_content_all (term);
         moo_term_invalidate_all (term);
         term->priv->colors_inverted = invert;
     }

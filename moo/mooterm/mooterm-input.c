@@ -330,7 +330,7 @@ void        moo_term_set_mouse_tracking (MooTerm        *term,
         term->priv->tracking_mouse = tracking_type;
         moo_term_update_pointer (term);
         stop_mouse_tracking (term);
-        term_selection_clear (term);
+        moo_term_selection_clear (term);
 
         switch (tracking_type)
         {

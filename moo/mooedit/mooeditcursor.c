@@ -313,12 +313,13 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
     if (event->type == GDK_BUTTON_PRESS)
     {
         if (event->button == 1) {
+            GtkTextIter sel_start, sel_end;
+
             edit->priv->drag_button = GDK_BUTTON_PRESS;
             edit->priv->drag_start_x = x;
             edit->priv->drag_start_y = y;
 
             /* if clicked in selected, start drag */
-            GtkTextIter sel_start, sel_end;
             if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
             {
                 gtk_text_iter_order (&sel_start, &sel_end);
@@ -349,25 +350,30 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
     {
-        if (gtk_text_buffer_get_selection_bounds (buffer, NULL, NULL)) {
+        GtkTextIter bound;
+
+        if (gtk_text_buffer_get_selection_bounds (buffer, NULL, NULL))
+        {
             /* it may happen sometimes, if you click fast enough */
             gtk_text_buffer_place_cursor (buffer, &iter);
         }
+
         edit->priv->drag_button = GDK_2BUTTON_PRESS;
         edit->priv->drag_start_x = x;
         edit->priv->drag_start_y = y;
         edit->priv->drag_type = MOO_EDIT_DRAG_SELECT;
-        GtkTextIter bound = iter;
+
+        bound = iter;
         if (extend_selection (edit, MOO_EDIT_SELECT_WORDS, &iter, &bound))
             gtk_text_buffer_select_range (buffer, &iter, &bound);
     }
     else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
     {
+        GtkTextIter bound = iter;
         edit->priv->drag_button = GDK_3BUTTON_PRESS;
         edit->priv->drag_start_x = x;
         edit->priv->drag_start_y = y;
         edit->priv->drag_type = MOO_EDIT_DRAG_SELECT;
-        GtkTextIter bound = iter;
         if (extend_selection (edit, MOO_EDIT_SELECT_LINES, &iter, &bound))
             gtk_text_buffer_select_range (buffer, &iter, &bound);
     }
@@ -380,6 +386,7 @@ int     _moo_edit_button_release_event  (GtkWidget          *widget,
 {
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
     MooEdit *edit = MOO_EDIT (widget);
+    GtkTextIter iter;
 
     switch (edit->priv->drag_type) {
         case MOO_EDIT_DRAG_NONE:
@@ -398,7 +405,6 @@ int     _moo_edit_button_release_event  (GtkWidget          *widget,
             /* if we were really dragging, drop it
              * otherwise, it was just a single click in selected text */
             g_assert (!edit->priv->drag_moved); /* parent should handle drag */
-            GtkTextIter iter;
             gtk_text_view_get_iter_at_location (text_view, &iter,
                                                 edit->priv->drag_start_x,
                                                 edit->priv->drag_start_y);

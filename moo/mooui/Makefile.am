@@ -28,6 +28,8 @@ libmooui_la_SOURCES =           \
     mooshortcutsprefs-glade.c   \
     mooshortcutsprefs.c         \
     mooshortcutsprefs.h         \
+    mootext.c                   \
+    mootext.h                   \
     mootoggleaction.c           \
     mootoggleaction.h           \
     moouiobject.c               \

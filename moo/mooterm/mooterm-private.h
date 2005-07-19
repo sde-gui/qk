@@ -68,7 +68,6 @@ typedef enum {
 
 
 typedef struct _TermFontInfo    TermFontInfo;
-typedef struct _TermSelection   TermSelection;
 
 
 struct _MooTermPrivate {
@@ -101,8 +100,7 @@ struct _MooTermPrivate {
         int             single_shift;
     } saved_cursor;
 
-    TermSelection  *selection;
-
+    gpointer        selection;
     TermFontInfo   *font_info;
 
     GdkPixmap      *back_pixmap;
@@ -150,6 +148,7 @@ struct _MooTermPrivate {
         (term)->priv->_top_line :               \
         buf_scrollback ((term)->priv->buffer))
 
+void        moo_term_text_iface_init        (gpointer        iface);
 
 void        moo_term_set_window_title       (MooTerm        *term,
                                              const char     *title);

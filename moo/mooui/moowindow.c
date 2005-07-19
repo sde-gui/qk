@@ -108,7 +108,7 @@ static guint signals[LAST_SIGNAL] = {0};
 
 /* MOO_TYPE_WINDOW */
 static gpointer moo_window_parent_class = NULL;
-GType moo_window_get_type ()
+GType moo_window_get_type (void)
 {
     static GType type = 0;
     if (!type)

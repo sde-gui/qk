@@ -17,10 +17,13 @@
 #include "mooterm/mootermparser.h"
 #include "mooterm/mootermpt.h"
 #include "mooterm/mootermbuffer-private.h"
+#include "mooui/mootext.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 
 
+static void moo_term_class_init             (MooTermClass   *klass);
+static void moo_term_init                   (MooTerm        *term);
 static void moo_term_finalize               (GObject        *object);
 
 static void moo_term_realize                (GtkWidget          *widget);
@@ -83,7 +86,44 @@ enum {
 
 
 /* MOO_TYPE_TERM */
-G_DEFINE_TYPE (MooTerm, moo_term, GTK_TYPE_WIDGET)
+static gpointer moo_term_parent_class = NULL;
+GType moo_term_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GTypeInfo info = {
+            sizeof (MooTermClass),
+            (GBaseInitFunc) NULL,
+            (GBaseFinalizeFunc) NULL,
+            (GClassInitFunc) moo_term_class_init,
+            (GClassFinalizeFunc) NULL,
+            NULL,   /* class_data */
+            sizeof (MooTerm),
+            0,      /* n_preallocs */
+            (GInstanceInitFunc) moo_term_init,
+            NULL    /* value_table */
+        };
+
+        static const GInterfaceInfo iface_info = {
+            (GInterfaceInitFunc) moo_term_text_iface_init,
+            NULL,
+            NULL
+        };
+
+        type = g_type_register_static (GTK_TYPE_WIDGET, "MooTerm",
+                                       &info, (GTypeFlags) 0);
+
+        g_type_add_interface_static (type,
+                                     MOO_TYPE_TEXT,
+                                     &iface_info);
+    }
+
+    return type;
+}
+
+
 static guint signals[LAST_SIGNAL];
 
 
@@ -91,6 +131,8 @@ static void moo_term_class_init (MooTermClass *klass)
 {
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+    moo_term_parent_class = g_type_class_peek_parent (klass);
 
     gobject_class->finalize = moo_term_finalize;
 
@@ -188,7 +230,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->width = 80;
     term->priv->height = 24;
 
-    term->priv->selection = term_selection_new ();
+    term->priv->selection = term_selection_new (term);
 
     term->priv->cursor_visible = TRUE;
 
@@ -261,7 +303,7 @@ static void moo_term_finalize               (GObject        *object)
     g_object_unref (term->priv->primary_buffer);
     g_object_unref (term->priv->alternate_buffer);
 
-    term_selection_free (term->priv->selection);
+    g_free (term->priv->selection);
     term_font_info_free (term->priv->font_info);
 
     g_object_unref (term->priv->back_pixmap);
@@ -464,7 +506,7 @@ static void     scrollback_changed              (MooTerm        *term,
 
         if (term->priv->_scrolled && term->priv->_top_line > scrollback)
         {
-            term_selection_clear (term);
+            moo_term_selection_clear (term);
             scroll_to_bottom (term, TRUE);
         }
         else
@@ -485,8 +527,7 @@ static void     width_changed                   (MooTerm        *term,
     if (GTK_WIDGET_REALIZED (term))
         moo_term_resize_back_pixmap (term);
 
-    term_selection_set_width (term, term->priv->width);
-    term_selection_clear (term);
+    moo_term_selection_clear (term);
 }
 
 
@@ -507,7 +548,7 @@ static void     height_changed                  (MooTerm        *term,
     if (GTK_WIDGET_REALIZED (term))
         moo_term_resize_back_pixmap (term);
 
-    term_selection_clear (term);
+    moo_term_selection_clear (term);
     moo_term_invalidate_all (term);
 }
 
@@ -667,7 +708,6 @@ static void     scroll_abs                      (MooTerm        *term,
     term->priv->_top_line = line;
     term->priv->_scrolled = TRUE;
 
-    moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
     if (update_adj)
@@ -696,7 +736,6 @@ static void     scroll_to_bottom                (MooTerm        *term,
 
     term->priv->_scrolled = FALSE;
 
-    moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
 
     if (update_full)
@@ -759,7 +798,7 @@ void             moo_term_copy_clipboard    (MooTerm        *term,
     GtkClipboard *cb;
     char *text;
 
-    text = term_selection_get_text (term);
+    text = moo_term_selection_get_text (term);
 
     if (text && *text)
     {
@@ -1176,7 +1215,6 @@ void        moo_term_set_alternate_buffer   (MooTerm        *term,
     else
         term->priv->buffer = term->priv->primary_buffer;
 
-    moo_term_invalidate_content_all (term);
     moo_term_invalidate_all (term);
     moo_term_buffer_scrollback_changed (term->priv->buffer);
 }
@@ -1414,16 +1452,44 @@ static void menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
 }
 
 
+static void menu_copy (MooTerm *term)
+{
+    moo_term_copy_clipboard (term, GDK_SELECTION_CLIPBOARD);
+}
+
+static void menu_paste (MooTerm *term)
+{
+    moo_term_paste_clipboard (term, GDK_SELECTION_CLIPBOARD);
+}
+
+static void destroy_menu (GtkWidget *menu)
+{
+    g_idle_add ((GSourceFunc)gtk_widget_destroy, menu);
+}
+
 void        moo_term_do_popup_menu          (MooTerm        *term,
                                              GdkEventButton *event)
 {
     GtkWidget *menu;
+    GtkWidget *item;
 
     menu = gtk_menu_new ();
+    /* TODO: wtf? */
     g_signal_connect (menu, "deactivate",
-                      G_CALLBACK (gtk_widget_destroy), NULL);
+                      G_CALLBACK (destroy_menu), NULL);
 
-    /* TODO: add copy/paste */
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
+    gtk_widget_show (item);
+    g_signal_connect_swapped (item, "activate",
+                              G_CALLBACK (menu_copy), term);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_PASTE, NULL);
+    gtk_widget_show (item);
+    g_signal_connect_swapped (item, "activate",
+                              G_CALLBACK (menu_paste), term);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
     g_signal_emit (term, signals[POPULATE_POPUP], 0, menu);
 
     if (event)
