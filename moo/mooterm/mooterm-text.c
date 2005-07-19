@@ -89,9 +89,12 @@ gpointer    term_selection_new  (MooTerm    *term)
 void        moo_term_selection_invalidate   (MooTerm    *term)
 {
     Segment *sel = term->priv->selection;
+
     invalidate_segment (sel, 1);
     FILL_ITER (&sel->start, term, 0, 0);
     FILL_ITER (&sel->end, term, 0, 0);
+
+    moo_term_release_selection (term);
 }
 
 
@@ -264,6 +267,7 @@ static void term_select_range (const GtkTextIter *start,
     Segment new_sel;
     Segment old_selection;
     gboolean inv = FALSE;
+    MooTerm *term = ITER_TERM (start);
 
     CHECK_ITER (start);
     CHECK_ITER (end);
@@ -312,6 +316,11 @@ static void term_select_range (const GtkTextIter *start,
                         segment_sym_diff (&new_sel,
                                            &old_selection,
                                            diff));
+
+    if (moo_term_selection_empty (term))
+        moo_term_release_selection (term);
+    else
+        moo_term_grab_selection (term);
 }
 
 

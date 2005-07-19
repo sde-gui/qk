@@ -297,6 +297,8 @@ static void moo_term_finalize               (GObject        *object)
     guint i, j;
     MooTerm *term = MOO_TERM (object);
 
+    moo_term_release_selection (term);
+
     g_object_unref (term->priv->pt);
     moo_term_parser_free (term->priv->parser);
 
@@ -1518,5 +1520,61 @@ static gboolean moo_term_scroll             (GtkWidget      *widget,
 
         default:
             return FALSE;
+    }
+}
+
+
+static const GtkTargetEntry target_table[] = {
+    { "UTF8_STRING", 0, 0 },
+    { "TEXT", 0, 0 },
+    { "text/plain", 0, 0 },
+    { "text/plain;charset=utf-8", 0, 0 }
+};
+
+
+static void clipboard_get   (GtkClipboard       *clipboard,
+                             G_GNUC_UNUSED GtkSelectionData *selection_data,
+                             G_GNUC_UNUSED guint info,
+                             MooTerm            *term)
+{
+    char *text = moo_term_selection_get_text (term);
+
+    if (text)
+    {
+        gtk_clipboard_set_text (clipboard, text, -1);
+        g_free (text);
+    }
+}
+
+static void clipboard_clear (G_GNUC_UNUSED GtkClipboard *clipboard,
+                             MooTerm            *term)
+{
+    term->priv->owns_selection = FALSE;
+}
+
+
+void        moo_term_grab_selection         (MooTerm        *term)
+{
+    if (!term->priv->owns_selection)
+    {
+        GtkClipboard *primary = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+        term->priv->owns_selection =
+                gtk_clipboard_set_with_owner (primary,
+                                              target_table,
+                                              G_N_ELEMENTS (target_table),
+                                              (GtkClipboardGetFunc) clipboard_get,
+                                              (GtkClipboardClearFunc) clipboard_clear,
+                                              G_OBJECT (term));
+    }
+}
+
+
+void        moo_term_release_selection      (MooTerm        *term)
+{
+    if (term->priv->owns_selection)
+    {
+        GtkClipboard *primary = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+        gtk_clipboard_clear (primary);
+        term->priv->owns_selection = FALSE;
     }
 }

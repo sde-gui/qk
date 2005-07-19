@@ -101,6 +101,8 @@ struct _MooTermPrivate {
     } saved_cursor;
 
     gpointer        selection;
+    gboolean        owns_selection;
+
     TermFontInfo   *font_info;
 
     GdkPixmap      *back_pixmap;
@@ -204,6 +206,9 @@ void        moo_term_invalidate_rect        (MooTerm        *term,
                                              GdkRectangle   *rect);
 void        moo_term_force_update           (MooTerm        *term);
 void        moo_term_invalidate_all         (MooTerm        *term);
+
+void        moo_term_release_selection      (MooTerm        *term);
+void        moo_term_grab_selection         (MooTerm        *term);
 
 
 /*************************************************************************/
