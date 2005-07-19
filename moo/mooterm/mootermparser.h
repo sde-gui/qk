@@ -27,6 +27,8 @@ G_BEGIN_DECLS
 #define MAX_PARAMS_NUM      16
 #define ERROR_CHAR          '?'
 
+struct _MooTermParser;
+
 typedef struct {
     GString         *old_data;
     const guchar    *data;
@@ -34,6 +36,7 @@ typedef struct {
 } Input;
 
 typedef struct {
+    struct _MooTermParser *parser;
     gboolean    old;
     guint       offset;
 } InputIter;
@@ -62,29 +65,14 @@ typedef struct {
 } Lexer;
 
 
-typedef enum {
-    INITIAL_ = 0,
-    ESCAPE_,
-    ESCAPE_INTERMEDIATE_,
-    DCS_,
-    CSI_,
-    OSC_,
-    PM_,
-    APC_,
-    ERROR_
-} ParserState;
-
-
 typedef struct _MooTermParser {
     MooTerm    *term;
 
     Input       input;
     gboolean    save;
 
-    InputIter   current;
-    InputIter   cmd_start;
-
-    ParserState state;
+    InputIter  *current;
+    InputIter  *cmd_start;
 
     Lexer       lex;
 

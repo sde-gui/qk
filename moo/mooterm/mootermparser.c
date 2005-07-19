@@ -24,143 +24,176 @@
 
 
 #if 0
-#define debug_one_char(c)                                   \
-{                                                           \
+#define DEBUG_ONE_CHAR(c)                                   \
+G_STMT_START {                                              \
     char *s = _moo_term_nice_char (c);                      \
     g_message ("got one-char '%s'", s);                     \
     g_free (s);                                             \
-}
-#define debug_control()                                     \
-{                                                           \
+} G_STMT_END
+#define DEBUG_CONTROL                                       \
+G_STMT_START {                                              \
     char *s = _moo_term_current_ctl (parser);               \
     g_message ("got sequence '%s'", s);                     \
     g_free (s);                                             \
-}
+} G_STMT_END
 #else
-#define debug_one_char(c)
-#define debug_control()
+#define DEBUG_ONE_CHAR(c)
+#define DEBUG_CONTROL
 #endif
 
 
-#define iter_eof(iter)                                      \
-    (!(iter).old &&                                         \
-        (iter).offset == parser->input.data_len)
+static void parser_finish       (MooTermParser  *parser);
+static void flush_chars         (MooTermParser  *parser);
 
-#define iter_forward(iter)                                  \
-{                                                           \
-    g_assert (!iter_eof (iter));                            \
-                                                            \
-    ++(iter).offset;                                        \
-                                                            \
-    if ((iter).old)                                         \
-    {                                                       \
-        if ((iter).offset ==                                \
-                parser->input.old_data->len)                \
-        {                                                   \
-            (iter).offset = 0;                              \
-            (iter).old = FALSE;                             \
-        }                                                   \
-    }                                                       \
-}
+static void exec_escape_sequence(MooTermParser  *parser);
+static void exec_cmd            (MooTermParser  *parser,
+                                 guchar          cmd);
+static void exec_apc            (MooTermParser  *parser,
+                                 guchar          final);
+static void exec_pm             (MooTermParser  *parser,
+                                 guchar          final);
+static void exec_osc            (MooTermParser  *parser,
+                                 guchar          final);
+static void exec_csi            (MooTermParser  *parser);
+static void exec_dcs            (MooTermParser  *parser);
 
-#define iter_backward(iter)                                 \
-{                                                           \
-    g_assert ((iter).offset ||                              \
-            (!(iter).old &&                                 \
-            parser->input.old_data->len));                  \
-                                                            \
-    if ((iter).offset)                                      \
-    {                                                       \
-        --(iter).offset;                                    \
-    }                                                       \
-    else                                                    \
-    {                                                       \
-        (iter).offset =                                     \
-                parser->input.old_data->len - 1;            \
-        (iter).old = TRUE;                                  \
-    }                                                       \
-}
 
-#define iter_set_eof(iter)                                  \
-{                                                           \
-    (iter).old = FALSE;                                     \
-    (iter).offset = parser->input.data_len;                 \
-}
+#define iter_free g_free
 
-#define iter_get_char(iter, c)                              \
-{                                                           \
-    g_assert (!iter_eof (iter));                            \
-                                                            \
-    if ((iter).old)                                         \
-        c = parser->input.old_data->str[(iter).offset];     \
-    else                                                    \
-        c = parser->input.data[(iter).offset];              \
+static InputIter *iter_new (MooTermParser *parser)
+{
+    InputIter *iter = g_new (InputIter, 1);
+
+    iter->parser = parser;
+    iter->old = FALSE;
+    iter->offset = parser->input.data_len;
+
+    return iter;
 }
 
 
-#define save_cmd()                                          \
-{                                                           \
-    GString *old = parser->input.old_data;                  \
-    guint offset = parser->cmd_start.offset;                \
-                                                            \
-    g_assert (!iter_eof (parser->cmd_start));               \
-                                                            \
-    if (parser->cmd_start.old)                              \
-    {                                                       \
-        g_assert (offset < old->len);                       \
-        memmove (old->str, old->str + offset,               \
-                 old->len - offset);                        \
-        g_string_truncate (old, old->len - offset);         \
-                                                            \
-        g_string_append_len (old,                           \
-                             parser->input.data,            \
-                             parser->input.data_len);       \
-    }                                                       \
-    else                                                    \
-    {                                                       \
-        const char *data = parser->input.data;              \
-        guint data_len = parser->input.data_len;            \
-                                                            \
-        g_assert (offset < parser->input.data_len);         \
-                                                            \
-        g_string_truncate (old, 0);                         \
-        g_string_append_len (old,                           \
-                             data + offset,                 \
-                             data_len - offset);            \
-    }                                                       \
-                                                            \
-    parser->save = TRUE;                                    \
-}
-
-#define save_char(c)                                        \
-{                                                           \
-    g_string_truncate (parser->input.old_data, 0);          \
-    g_string_append_c (parser->input.old_data, c);          \
-    parser->save = TRUE;                                    \
-}
-
-#define save_character()                                    \
-{                                                           \
-    g_string_truncate (parser->input.old_data, 0);          \
-    g_string_append_len (parser->input.old_data,            \
-                         parser->character->str,            \
-                         parser->character->len);           \
-    parser->save = TRUE;                                    \
+static gboolean iter_eof (InputIter *iter)
+{
+    return !iter->old && iter->offset ==
+            iter->parser->input.data_len;
 }
 
 
-#define goto_initial()                                      \
-{                                                           \
-    parser->state = INITIAL_;                               \
+static void iter_forward (InputIter *iter)
+{
+    g_assert (!iter_eof (iter));
+
+    ++iter->offset;
+
+    if (iter->old)
+    {
+        if (iter->offset ==
+                iter->parser->input.old_data->len)
+        {
+            iter->offset = 0;
+            iter->old = FALSE;
+        }
+    }
+}
+
+
+static void iter_backward (InputIter *iter)
+{
+    g_assert (iter->offset ||
+            (!iter->old && iter->parser->input.old_data->len));
+
+    if (iter->offset)
+    {
+        --iter->offset;
+    }
+    else
+    {
+        iter->offset =
+                iter->parser->input.old_data->len - 1;
+        iter->old = TRUE;
+    }
+}
+
+
+static void iter_set_eof (InputIter *iter)
+{
+    iter->old = FALSE;
+    iter->offset = iter->parser->input.data_len;
+}
+
+
+static guchar iter_get_char (InputIter *iter)
+{
+    g_assert (!iter_eof (iter));
+
+    if (iter->old)
+        return iter->parser->input.old_data->str[iter->offset];
+    else
+        return iter->parser->input.data[iter->offset];
+}
+
+
+static void save_cmd (MooTermParser *parser)
+{
+    GString *old = parser->input.old_data;
+    guint offset = parser->cmd_start->offset;
+
+    g_assert (!iter_eof (parser->cmd_start));
+
+    if (parser->cmd_start->old)
+    {
+        g_assert (offset < old->len);
+        memmove (old->str, old->str + offset,
+                 old->len - offset);
+        g_string_truncate (old, old->len - offset);
+
+        g_string_append_len (old,
+                             parser->input.data,
+                             parser->input.data_len);
+    }
+    else
+    {
+        const char *data = parser->input.data;
+        guint data_len = parser->input.data_len;
+
+        g_assert (offset < parser->input.data_len);
+
+        g_string_truncate (old, 0);
+        g_string_append_len (old,
+                             data + offset,
+                             data_len - offset);
+    }
+
+    parser->save = TRUE;
+}
+
+
+static void save_character (MooTermParser *parser)
+{
+    g_string_truncate (parser->input.old_data, 0);
+    g_string_append_len (parser->input.old_data,
+                         parser->character->str,
+                         parser->character->len);
+    parser->save = TRUE;
+}
+
+
+static void one_char_cmd (MooTermParser *parser, guchar c)
+{
+    flush_chars (parser);
+    DEBUG_ONE_CHAR(c);
+    exec_cmd (parser, c);
+}
+
+
+#define GOTO_INITIAL                                        \
     iter_set_eof (parser->cmd_start);                       \
-    goto STATE_INITIAL_;                                    \
-}
+    goto STATE_INITIAL_;
 
-#define goto_escape(st)                                     \
-{                                                           \
-    flush_chars ();                                         \
+#define GOTO_ESCAPE                                         \
+    flush_chars (parser);                                   \
                                                             \
-    parser->cmd_start = parser->current;                    \
+    *parser->cmd_start = *parser->current;                  \
     iter_backward (parser->cmd_start);                      \
                                                             \
     g_string_truncate (parser->intermediate, 0);            \
@@ -168,35 +201,25 @@
     g_string_truncate (parser->data, 0);                    \
     parser->final = 0;                                      \
                                                             \
-    parser->state = ESCAPE_;                                \
-                                                            \
-    goto STATE_ESCAPE_;                                     \
-}
+    goto STATE_ESCAPE_;
 
-#define one_char_cmd(c)                                     \
-{                                                           \
-    flush_chars ();                                         \
-    debug_one_char(c);                                      \
-    exec_cmd (parser, c);                                   \
-}
 
-#define check_cancel(c, state)                              \
-{                                                           \
+#define CHECK_CANCEL(c, state)                              \
     switch (c)                                              \
     {                                                       \
         /* ESC - start new sequence */                      \
         case 0x1B:                                          \
-            goto_escape ();                                 \
+            GOTO_ESCAPE                                     \
                                                             \
         /* CAN - cancel sequence in progress */             \
         case 0x18:                                          \
-            goto_initial ();                                \
+            GOTO_INITIAL                                    \
                                                             \
         /* SUB - cancel sequence in progress and            \
                  print error */                             \
         case 0x1A:                                          \
             VT_PRINT_CHAR (ERROR_CHAR);                     \
-            goto_initial ();                                \
+            GOTO_INITIAL                                    \
                                                             \
         case 0x05:                                          \
         case 0x07:                                          \
@@ -210,13 +233,12 @@
         case 0x0F:                                          \
         case 0x11:                                          \
         case 0x13:                                          \
-            one_char_cmd (c);                               \
+            one_char_cmd (parser, c);                       \
             goto state;                                     \
-    }                                                       \
-}
+    }
 
 
-#define dcs_check_cancel(c)                                 \
+#define DCS_CHECK_CANCEL(c)                                 \
     switch (c)                                              \
     {                                                       \
         /* ESC - it might be beginning of ST sequence */    \
@@ -225,13 +247,13 @@
                                                             \
         /* CAN - cancel sequence in progress */             \
         case 0x18:                                          \
-            goto_initial ();                                \
+            GOTO_INITIAL                                    \
                                                             \
         /* SUB - cancel sequence in progress and            \
             print error */                                  \
         case 0x1A:                                          \
             VT_PRINT_CHAR (ERROR_CHAR);                     \
-            goto_initial ();                                \
+            GOTO_INITIAL                                    \
                                                             \
         case 0x05:                                          \
         case 0x07:                                          \
@@ -245,120 +267,88 @@
         case 0x0F:                                          \
         case 0x11:                                          \
         case 0x13:                                          \
-            one_char_cmd (c);                               \
+            one_char_cmd (parser, c);                       \
             goto STATE_DCS_DATA_;                           \
     }
 
 
-#define append_char(ar, c)                                  \
-{                                                           \
-    g_string_append_c (parser->ar, c);                      \
+#define APPEND_CHAR(ar, c) g_string_append_c (parser->ar, c)
+
+
+/* returns 0 on end of input */
+static guchar get_char (MooTermParser *parser)
+{
+    guchar c = 0;
+
+    while (!c && !iter_eof (parser->current))
+    {
+        if (!(c = iter_get_char (parser->current)))
+            iter_forward (parser->current);
+    }
+
+    if (!c)
+    {
+        if (!iter_eof (parser->cmd_start))
+            save_cmd (parser);
+        else if (parser->character->len)
+            save_character (parser);
+
+        parser_finish (parser);
+
+        return 0;
+    }
+
+    iter_forward (parser->current);
+
+    return c;
 }
 
 
-/* get_char ();
-   Does not return on end of input;
-   compresses ESC [ to CSI,
-              ESC P to DCS,
-              ESC ] to OSC,
-              ESC ^ to PM,
-              ESC \ to ST,
-              ESC _ to APC */
-#define get_char(c)                                         \
-{                                                           \
-    c = 0;                                                  \
-                                                            \
-    while (!iter_eof (parser->current))                     \
-    {                                                       \
-        iter_get_char (parser->current, c);                 \
-                                                            \
-        if (c)                                              \
-        {                                                   \
-            break;                                          \
-        }                                                   \
-        else                                                \
-        {                                                   \
-            iter_forward (parser->current);                 \
-        }                                                   \
-    }                                                       \
-                                                            \
-    if (!c)                                                 \
-    {                                                       \
-        if (!iter_eof (parser->cmd_start))                  \
-        {                                                   \
-            save_cmd ();                                    \
-        }                                                   \
-        else if (parser->character->len)                    \
-        {                                                   \
-            save_character ();                              \
-        }                                                   \
-                                                            \
-        parser_finish (parser);                             \
-        return;                                             \
-    }                                                       \
-                                                            \
-    iter_forward (parser->current);                         \
+static void flush_chars (MooTermParser *parser)
+{
+    if (parser->character->len)
+    {
+        g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+                   parser->character->str);
+        VT_PRINT_CHAR (ERROR_CHAR);
+        g_string_truncate (parser->character, 0);
+    }
 }
 
 
-#define flush_chars()                                       \
-{                                                           \
-    if (parser->character->len)                             \
-    {                                                       \
-        g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,       \
-                   parser->character->str);                 \
-        VT_PRINT_CHAR (ERROR_CHAR);                         \
-        g_string_truncate (parser->character, 0);           \
-    }                                                       \
-}
+static void process_char (MooTermParser *parser, guchar c)
+{
+    if (parser->character->len || c >= 128)
+    {
+        gunichar uc;
 
+        g_string_append_c (parser->character, c);
 
-#define check_character(c)                                  \
-{                                                           \
-    gunichar uc;                                            \
-                                                            \
-    g_string_append_c (parser->character, c);               \
-                                                            \
-    uc = g_utf8_get_char_validated (parser->character->str, \
-                                    -1);                    \
-                                                            \
-    switch (uc)                                             \
-    {                                                       \
-        case -2:                                            \
-            break;                                          \
-                                                            \
-        case -1:                                            \
-            g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,   \
-                       parser->character->str);             \
-            VT_PRINT_CHAR (ERROR_CHAR);                     \
-            g_string_truncate (parser->character, 0);       \
-            break;                                          \
-                                                            \
-        default:                                            \
-            VT_PRINT_CHAR (uc);                             \
-            g_string_truncate (parser->character, 0);       \
-            break;                                          \
-    }                                                       \
-}
+        uc = g_utf8_get_char_validated (parser->character->str,
+                                        -1);
 
+        switch (uc)
+        {
+            case -2:
+                break;
 
-#define process_char(c)                                     \
-{                                                           \
-    if (parser->character->len)                             \
-    {                                                       \
-        check_character (c);                                \
-    }                                                       \
-    else                                                    \
-    {                                                       \
-        if (c < 128)                                        \
-        {                                                   \
-            VT_PRINT_CHAR (c);                              \
-        }                                                   \
-        else                                                \
-        {                                                   \
-            check_character (c);                            \
-        }                                                   \
-    }                                                       \
+            case -1:
+                g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+                           parser->character->str);
+                VT_PRINT_CHAR (ERROR_CHAR);
+                g_string_truncate (parser->character, 0);
+                break;
+
+            default:
+                VT_PRINT_CHAR (uc);
+                g_string_truncate (parser->character, 0);
+                break;
+        }
+    }
+    else
+    {
+        VT_PRINT_CHAR (c);
+    }
 }
 
 
@@ -368,18 +358,16 @@ static void parser_init (MooTermParser  *parser)
 
     if (parser->input.old_data->len)
     {
-        parser->current.old = TRUE;
-        parser->current.offset = 0;
+        parser->current->old = TRUE;
+        parser->current->offset = 0;
     }
     else
     {
-        parser->current.old = FALSE;
-        parser->current.offset = 0;
+        parser->current->old = FALSE;
+        parser->current->offset = 0;
     }
 
     iter_set_eof (parser->cmd_start);
-
-    parser->state = INITIAL_;
 
     g_string_truncate (parser->character, 0);
     g_string_truncate (parser->intermediate, 0);
@@ -407,6 +395,9 @@ MooTermParser  *moo_term_parser_new     (MooTerm        *term)
     p->parameters = g_string_new ("");
     p->data = g_string_new ("");
     p->input.old_data = g_string_new ("");
+
+    p->current = iter_new (p);
+    p->cmd_start = iter_new (p);
 
     p->numbers = g_array_sized_new (FALSE, FALSE,
                                     sizeof(int),
@@ -436,22 +427,11 @@ void            moo_term_parser_free    (MooTermParser  *parser)
         g_string_free (parser->data, TRUE);
         g_string_free (parser->input.old_data, TRUE);
         g_array_free (parser->numbers, TRUE);
+        iter_free (parser->current);
+        iter_free (parser->cmd_start);
         g_free (parser);
     }
 }
-
-
-static void exec_escape_sequence   (MooTermParser  *parser);
-static void exec_cmd               (MooTermParser  *parser,
-                                    guchar          cmd);
-static void exec_apc               (MooTermParser  *parser,
-                                    guchar          final);
-static void exec_pm                (MooTermParser  *parser,
-                                    guchar          final);
-static void exec_osc               (MooTermParser  *parser,
-                                    guchar          final);
-static void exec_csi               (MooTermParser  *parser);
-static void exec_dcs               (MooTermParser  *parser);
 
 
 void            moo_term_parser_parse   (MooTermParser  *parser,
@@ -469,43 +449,41 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
 
     goto STATE_INITIAL_;
 
-    /* INITIAL - everything starts here. checks input for command sequence start */
+/* INITIAL - everything starts here. checks input for command sequence start */
 STATE_INITIAL_:
-{
-    get_char (c);
-    check_cancel (c, STATE_INITIAL_);
+    if (!(c = get_char (parser)))
+        return;
 
-    process_char (c);
+    CHECK_CANCEL (c, STATE_INITIAL_);
+
+    process_char (parser, c);
 
     goto STATE_INITIAL_;
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* ESCAPE - got escape char */
 STATE_ESCAPE_:
-{
-    get_char (c);
-    check_cancel (c, STATE_ESCAPE_);
+    if (!(c = get_char (parser)))
+        return;
 
-    switch (c)
-    {
-        case 0x5B:
-            goto STATE_CSI_;
-        case 0x5D:
-            goto STATE_OSC_;
-        case 0x5E:
-            goto STATE_PM_;
-        case 0x5F:
-            goto STATE_APC_;
-        case 0x50:
-            goto STATE_DCS_;
-    }
+    CHECK_CANCEL (c, STATE_ESCAPE_);
+
+    if (c == 0x5B)
+        goto STATE_CSI_;
+    else if (c == 0x5D)
+        goto STATE_OSC_;
+    else if (c == 0x5E)
+        goto STATE_PM_;
+    else if (c == 0x5F)
+        goto STATE_APC_;
+    else if (c == 0x50)
+        goto STATE_DCS_;
 
     /* 0x20-0x2F - intermediate character */
     if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_ESCAPE_INTERMEDIATE_;
     }
     /* 0x30-0x7E - final character */
@@ -513,7 +491,7 @@ STATE_ESCAPE_:
     {
         parser->final = c;
         exec_escape_sequence (parser);
-        goto_initial ();
+        GOTO_INITIAL
     }
     /* DEL - ignored */
     else if (c == 0x7F)
@@ -523,21 +501,21 @@ STATE_ESCAPE_:
     else
     {
         g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 STATE_ESCAPE_INTERMEDIATE_:
-{
-    get_char (c);
-    check_cancel (c, STATE_ESCAPE_INTERMEDIATE_);
+    if (!(c = get_char (parser)))
+        return;
+
+    CHECK_CANCEL (c, STATE_ESCAPE_INTERMEDIATE_);
 
     /* 0x20-0x2F - intermediate character */
     if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_ESCAPE_INTERMEDIATE_;
     }
     /* 0x30-0x7E - final character */
@@ -545,7 +523,7 @@ STATE_ESCAPE_INTERMEDIATE_:
     {
         parser->final = c;
         exec_escape_sequence (parser);
-        goto_initial ();
+        GOTO_INITIAL
     }
     /* DEL - ignored */
     else if (c == 0x7F)
@@ -555,28 +533,27 @@ STATE_ESCAPE_INTERMEDIATE_:
     else
     {
         g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* APC - Application program command - ignore everything until ??? */
 STATE_APC_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
     switch (c)
     {
         /* CAN - cancel sequence in progress */
         case 0x18:
-            goto_initial ();
+            GOTO_INITIAL
 
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
             VT_PRINT_CHAR (ERROR_CHAR);
-            goto_initial ();
+            GOTO_INITIAL
 
         case 0x1B:
         case 0x05:
@@ -592,32 +569,31 @@ STATE_APC_:
         case 0x11:
         case 0x13:
             exec_apc (parser, c);
-            goto_initial ();
+            GOTO_INITIAL
 
         default:
-            append_char (data, c);
+            APPEND_CHAR (data, c);
             goto STATE_APC_;
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* PM - Privacy message - ignore everything until ??? */
 STATE_PM_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
     switch (c)
     {
         /* CAN - cancel sequence in progress */
         case 0x18:
-            goto_initial ();
+            GOTO_INITIAL
 
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
             VT_PRINT_CHAR (ERROR_CHAR);
-            goto_initial ();
+            GOTO_INITIAL
 
         case 0x1B:
         case 0x05:
@@ -633,32 +609,31 @@ STATE_PM_:
         case 0x11:
         case 0x13:
             exec_pm (parser, c);
-            goto_initial ();
+            GOTO_INITIAL
 
         default:
-            append_char (data, c);
+            APPEND_CHAR (data, c);
             goto STATE_PM_;
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* OSC - Operating system command - ignore everything until ??? */
 STATE_OSC_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
     switch (c)
     {
         /* CAN - cancel sequence in progress */
         case 0x18:
-            goto_initial ();
+            GOTO_INITIAL
 
         /* SUB - cancel sequence in progress and
             print error */
         case 0x1A:
             VT_PRINT_CHAR (ERROR_CHAR);
-            goto_initial ();
+            GOTO_INITIAL
 
         case 0x1B:
         case 0x05:
@@ -674,93 +649,91 @@ STATE_OSC_:
         case 0x11:
         case 0x13:
             exec_osc (parser, c);
-            goto_initial ();
+            GOTO_INITIAL
 
         default:
-            append_char (data, c);
+            APPEND_CHAR (data, c);
             goto STATE_OSC_;
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* CSI - control sequence introducer */
 STATE_CSI_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
-    check_cancel (c, STATE_CSI_);
+    CHECK_CANCEL (c, STATE_CSI_);
 
     if (0x30 <= c && c <= 0x3F)
     {
-        append_char (parameters, c);
+        APPEND_CHAR (parameters, c);
         goto STATE_CSI_;
     }
     else if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_CSI_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
         parser->final = c;
         exec_csi (parser);
-        goto_initial ();
+        GOTO_INITIAL
     }
     else
     {
         char *s = _moo_term_nice_char (c);
         g_warning ("%s: got '%s' after CSI", G_STRLOC, s);
         g_free (s);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* STATE_CSI_INTERMEDIATE - CSI, gathering intermediate characters */
 STATE_CSI_INTERMEDIATE_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
-    check_cancel (c, STATE_CSI_INTERMEDIATE_);
+    CHECK_CANCEL (c, STATE_CSI_INTERMEDIATE_);
 
     if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_CSI_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
     {
         parser->final = c;
         exec_csi (parser);
-        goto_initial ();
+        GOTO_INITIAL
     }
     else
     {
         char *s = _moo_term_nice_char (c);
         g_warning ("%s: got '%s' after CSI", G_STRLOC, s);
         g_free (s);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
 STATE_DCS_:
-{
-    get_char (c);
-    dcs_check_cancel (c);
+    if (!(c = get_char (parser)))
+        return;
+
+    DCS_CHECK_CANCEL (c);
 
     if (0x30 <= c && c <= 0x3F)
     {
-        append_char (parameters, c);
+        APPEND_CHAR (parameters, c);
         goto STATE_DCS_;
     }
     else if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_DCS_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
@@ -773,21 +746,21 @@ STATE_DCS_:
         char *s = _moo_term_nice_char (c);
         g_warning ("%s: got '%s' after DCS", G_STRLOC, s);
         g_free (s);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
 STATE_DCS_INTERMEDIATE_:
-{
-    get_char (c);
-    dcs_check_cancel (c);
+    if (!(c = get_char (parser)))
+        return;
+
+    DCS_CHECK_CANCEL (c);
 
     if (0x20 <= c && c <= 0x2F)
     {
-        append_char (intermediate, c);
+        APPEND_CHAR (intermediate, c);
         goto STATE_DCS_INTERMEDIATE_;
     }
     else if (0x40 <= c && c <= 0x7E)
@@ -800,40 +773,38 @@ STATE_DCS_INTERMEDIATE_:
         char *s = _moo_term_nice_char (c);
         g_warning ("%s: got '%s' after DCS", G_STRLOC, s);
         g_free (s);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
 STATE_DCS_DATA_:
-{
-    get_char (c);
-    dcs_check_cancel (c);
-    append_char (data, c);
+    if (!(c = get_char (parser)))
+        return;
+
+    DCS_CHECK_CANCEL (c);
+    APPEND_CHAR (data, c);
     goto STATE_DCS_DATA_;
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 
 
 /* STATE_DCS_ESCAPE_ - got escape char in the DCS sequence */
 STATE_DCS_ESCAPE_:
-{
-    get_char (c);
+    if (!(c = get_char (parser)))
+        return;
 
     if (c != 0x5c)
     {
         iter_backward (parser->current);
-        goto_escape ();
+        GOTO_ESCAPE
     }
     else
     {
         exec_dcs (parser);
-        goto_initial ();
+        GOTO_INITIAL
     }
-}
-g_assert_not_reached ();
+    g_assert_not_reached ();
 }
 
 
@@ -1127,7 +1098,7 @@ char           *_moo_term_current_ctl   (MooTermParser  *parser)
 static void exec_escape_sequence   (MooTermParser  *parser)
 {
     init_yyparse (parser, LEX_ESCAPE);
-    debug_control ();
+    DEBUG_CONTROL;
     _moo_term_yyparse (parser);
 }
 
@@ -1135,7 +1106,7 @@ static void exec_escape_sequence   (MooTermParser  *parser)
 static void exec_csi               (MooTermParser  *parser)
 {
     init_yyparse (parser, LEX_CONTROL);
-    debug_control ();
+    DEBUG_CONTROL;
     _moo_term_yyparse (parser);
 }
 
@@ -1143,7 +1114,7 @@ static void exec_csi               (MooTermParser  *parser)
 static void exec_dcs               (MooTermParser  *parser)
 {
     init_yyparse (parser, LEX_DCS);
-    debug_control ();
+    DEBUG_CONTROL;
     _moo_term_yyparse (parser);
 }
 

@@ -28,8 +28,8 @@ G_STMT_START {                                          \
 
 #define GET_NUM(n) (((int*)parser->numbers->data)[n])
 
-#define TERMINAL_HEIGHT (buf_screen_height (parser->term->priv->buffer))
-#define TERMINAL_WIDTH  (buf_screen_width (parser->term->priv->buffer))
+#define TERMINAL_HEIGHT (parser->term->priv->height)
+#define TERMINAL_WIDTH  (parser->term->priv->width)
 %}
 
 %name-prefix="_moo_term_yy"
