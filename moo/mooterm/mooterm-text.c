@@ -27,21 +27,52 @@ typedef struct {
 
 #define ITER_ROW(iter)              ((iter)->dummy3)
 #define ITER_COL(iter)              ((iter)->dummy4)
+#define ITER_WIDTH(iter)            ((iter)->dummy5)
 #define ITER_TERM(iter)             ((MooTerm*)(iter)->dummy1)
 #define ITER_SET_TERM(iter, term)   (iter)->dummy1 = term
+#define ITER_BUF(iter)              (ITER_TERM(iter)->priv->buffer)
+#define ITER_TOTAL_HEIGHT(iter)     ((int)(ITER_TERM(iter)->priv->height + \
+                                     buf_scrollback (ITER_BUF(iter))))
 
-#define FILL_ITER(iter, term, row, col) \
-    (iter)->dummy1 = term;              \
-    ITER_ROW(iter) = row;               \
-    ITER_COL(iter) = col;
+#define FILL_ITER(iter, term, row, col)     \
+    (iter)->dummy1 = term;                  \
+    ITER_ROW(iter) = row;                   \
+    ITER_COL(iter) = col;                   \
+    ITER_WIDTH(iter) = term->priv->width;   \
+    CHECK_ITER(iter);
 
 
-static int  iter_cmp        (const GtkTextIter  *first,
-                             const GtkTextIter  *second);
-static void iter_order      (GtkTextIter        *first,
-                             GtkTextIter        *second);
-static void iter_set_start  (GtkTextIter        *iter);
+#ifdef DEBUG
+static void CHECK_ITER (const GtkTextIter *iter)
+{
+    g_assert (ITER_TERM(iter) != NULL);
+    g_assert ((int)ITER_TERM(iter)->priv->width == ITER_WIDTH(iter));
+    g_assert (ITER_ROW(iter) >= 0);
+    g_assert (ITER_ROW(iter) < ITER_TOTAL_HEIGHT(iter));
+    g_assert (ITER_COL(iter) >= 0);
+    g_assert (ITER_COL(iter) <= ITER_WIDTH(iter));
+}
 
+static void CHECK_SEGMENT (const Segment *segment)
+{
+    CHECK_ITER (&segment->start);
+    CHECK_ITER (&segment->end);
+}
+#else
+#define CHECK_ITER(iter)
+#define CHECK_SEGMENT(segment)
+#endif
+
+
+static int      iter_cmp            (const GtkTextIter  *first,
+                                     const GtkTextIter  *second);
+static void     iter_order          (GtkTextIter        *first,
+                                     GtkTextIter        *second);
+static void     iter_set_start      (GtkTextIter        *iter);
+
+static char    *segment_get_text    (Segment            *segment);
+static void     invalidate_segment  (Segment            *segments,
+                                     guint               num);
 
 
 gpointer    term_selection_new  (MooTerm    *term)
@@ -55,8 +86,18 @@ gpointer    term_selection_new  (MooTerm    *term)
 }
 
 
+void        moo_term_selection_invalidate   (MooTerm    *term)
+{
+    Segment *sel = term->priv->selection;
+    invalidate_segment (sel, 1);
+    FILL_ITER (&sel->start, term, 0, 0);
+    FILL_ITER (&sel->end, term, 0, 0);
+}
+
+
 static gboolean segment_empty (Segment *s)
 {
+    CHECK_SEGMENT (s);
     return !iter_cmp (&s->start, &s->end);
 }
 
@@ -67,6 +108,9 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
     Segment *left = result;
     Segment *right = &result[1];
 
+    CHECK_SEGMENT (s1);
+    CHECK_SEGMENT (s2);
+
     if (segment_empty (s1))
     {
         if (segment_empty (s2))
@@ -76,12 +120,14 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
         else
         {
             *left = *s2;
+            CHECK_SEGMENT (left);
             return 1;
         }
     }
     else if (segment_empty (s2))
     {
         *left = *s1;
+        CHECK_SEGMENT (left);
         return 1;
     }
     else
@@ -104,11 +150,13 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
 
                     case 1:
                         left->start = right->end;
+                        CHECK_SEGMENT (left);
                         return 1;
 
                     case -1:
                         left->start = left->end;
                         left->end = right->end;
+                        CHECK_SEGMENT (left);
                         return 1;
                 }
 
@@ -123,15 +171,20 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
         {
             case 0:
                 left->end = right->end;
+                CHECK_SEGMENT (left);
                 return 1;
 
             case -1:
+                CHECK_SEGMENT (left);
+                CHECK_SEGMENT (right);
                 return 2;
 
             case 1:
                 itmp = left->end;
                 left->end = right->start;
                 right->start = itmp;
+                CHECK_SEGMENT (left);
+                CHECK_SEGMENT (right);
                 return 2;
         }
     }
@@ -208,28 +261,55 @@ static void term_select_range (const GtkTextIter *start,
                                const GtkTextIter *end)
 {
     Segment diff[2];
-    Segment new_selection;
+    Segment new_sel;
     Segment old_selection;
+    gboolean inv = FALSE;
+
+    CHECK_ITER (start);
+    CHECK_ITER (end);
 
     old_selection = *GET_SELECTION (ITER_TERM (start));
+    CHECK_SEGMENT (&old_selection);
 
-    ITER_SET_TERM (&new_selection.start, ITER_TERM (start));
-    ITER_SET_TERM (&new_selection.end, ITER_TERM (start));
+    new_sel.start = *start;
+    new_sel.end = *end;
 
-    new_selection.start = *start;
-    new_selection.end = *end;
-
-    if (!iter_cmp (start, end))
+    switch (iter_cmp (start, end))
     {
-        iter_set_start (&new_selection.start);
-        iter_set_start (&new_selection.end);
+        case 0:
+            iter_set_start (&new_sel.start);
+            iter_set_start (&new_sel.end);
+            break;
+
+        case 1:
+            inv = TRUE;
+            break;
     }
 
-    GET_SELECTION (ITER_TERM (start))->start = new_selection.start;
-    GET_SELECTION (ITER_TERM (start))->end = new_selection.end;
+    iter_order (&new_sel.start, &new_sel.end);
+
+    if (ITER_COL(&new_sel.start) == ITER_WIDTH(&new_sel.start))
+    {
+        g_assert (ITER_ROW(&new_sel.start) < ITER_TOTAL_HEIGHT(&new_sel.start));
+        ITER_ROW(&new_sel.start)++;
+        ITER_COL(&new_sel.start) = 0;
+    }
+
+    if (ITER_COL(&new_sel.end) == 0 && ITER_ROW(&new_sel.end) != 0)
+    {
+        ITER_ROW(&new_sel.end)--;
+        ITER_COL(&new_sel.end) = ITER_WIDTH(&new_sel.start);
+    }
+
+    if (inv)
+        iter_order (&new_sel.end, &new_sel.start);
+
+    CHECK_SEGMENT (&new_sel);
+
+    *GET_SELECTION (ITER_TERM (start)) = new_sel;
 
     invalidate_segment (diff,
-                        segment_sym_diff (&new_selection,
+                        segment_sym_diff (&new_sel,
                                            &old_selection,
                                            diff));
 }
@@ -266,11 +346,11 @@ gboolean    moo_term_selection_empty    (MooTerm    *term)
 }
 
 
-gboolean    moo_term_get_selection_bounds (MooTerm  *term,
-                                           guint      *left_row,
-                                           guint      *left_col,
-                                           guint      *right_row,
-                                           guint      *right_col)
+gboolean    moo_term_get_selection_bounds   (MooTerm    *term,
+                                             guint      *left_row,
+                                             guint      *left_col,
+                                             guint      *right_row,
+                                             guint      *right_col)
 {
     Segment *selection = GET_SELECTION (term);
 
@@ -280,20 +360,20 @@ gboolean    moo_term_get_selection_bounds (MooTerm  *term,
     }
     else
     {
-        if (iter_cmp (&selection->start, &selection->end) > 0)
-        {
-            *left_row = ITER_ROW (&selection->end);
-            *left_col = ITER_COL (&selection->end);
-            *right_row = ITER_ROW (&selection->start);
-            *right_col = ITER_COL (&selection->start);
-        }
-        else
-        {
-            *left_row = ITER_ROW (&selection->start);
-            *left_col = ITER_COL (&selection->start);
-            *right_row = ITER_ROW (&selection->end);
-            *right_col = ITER_COL (&selection->end);
-        }
+        GtkTextIter start = selection->start;
+        GtkTextIter end = selection->end;
+
+        iter_order (&start, &end);
+
+        if (left_row)
+            *left_row = ITER_ROW (&start);
+        if (left_col)
+            *left_col = ITER_COL (&start);
+        if (right_row)
+            *right_row = ITER_ROW (&end);
+        if (right_col)
+            *right_col = ITER_COL (&end);
+
         return TRUE;
     }
 }
@@ -397,6 +477,7 @@ static int      iter_cmp                (const GtkTextIter  *first,
 static void iter_set_start  (GtkTextIter        *iter)
 {
     ITER_ROW (iter) = ITER_COL (iter) = 0;
+    CHECK_ITER (iter);
 }
 
 
@@ -416,6 +497,9 @@ static gboolean iter_in_range           (const GtkTextIter  *iter,
                                          const GtkTextIter  *start,
                                          const GtkTextIter  *end)
 {
+    CHECK_ITER (iter);
+    CHECK_ITER (start);
+    CHECK_ITER (end);
     return iter_cmp (start, iter) <= 0 && iter_cmp (iter, end) <= 0;
 }
 
@@ -424,6 +508,8 @@ static void     select_range            (G_GNUC_UNUSED MooText *obj,
                                          const GtkTextIter  *start,
                                          const GtkTextIter  *end)
 {
+    CHECK_ITER (start);
+    CHECK_ITER (end);
     term_select_range (start, end);
 }
 
@@ -432,6 +518,7 @@ static void     place_selection_end     (MooText            *obj,
                                          const GtkTextIter  *where)
 {
     MooTerm *term = MOO_TERM (obj);
+    CHECK_ITER (where);
     term_select_range (&GET_SELECTION(term)->start, where);
 }
 
@@ -490,22 +577,21 @@ gboolean    moo_term_cell_selected      (MooTerm    *term,
 int         moo_term_row_selected           (MooTerm    *term,
                                              guint       row)
 {
-    GtkTextIter start, end;
+    guint l_row, l_col, r_row, r_col;
 
-    if (get_selection_bounds (MOO_TEXT (term), &start, &end))
+    if (moo_term_get_selection_bounds (term, &l_row, &l_col,
+                                        &r_row, &r_col))
     {
-        iter_order (&start, &end);
-
-        if (ITER_ROW (&end) < (int)row || (int)row < ITER_ROW (&start))
+        if (row < l_row || row > r_row)
             return NOT_SELECTED;
-        else if (ITER_ROW (&start) < (int)row && (int)row < ITER_ROW (&end))
+        else if (l_row < row && row < r_row)
             return FULL_SELECTED;
         else
             return PART_SELECTED;
     }
     else
     {
-        return FALSE;
+        return NOT_SELECTED;
     }
 }
 
@@ -541,7 +627,7 @@ void        moo_term_text_iface_init        (gpointer        g_iface)
 
 char       *moo_term_selection_get_text (MooTerm    *term)
 {
-    return NULL;
+    return segment_get_text (term->priv->selection);
 }
 
 
@@ -566,6 +652,9 @@ static gboolean extend_selection        (MooText        *obj,
 {
     MooTerm *term = MOO_TERM (obj);
     int order = iter_cmp (start, end);
+
+    CHECK_ITER (start);
+    CHECK_ITER (end);
 
     if (type == MOO_TEXT_SELECT_CHARS)
     {
@@ -728,5 +817,63 @@ static gunichar iter_get_char           (const GtkTextIter  *iter)
 {
     MooTermLine *line = buf_line (ITER_TERM(iter)->priv->buffer,
                                   ITER_ROW(iter));
-    return term_line_get_unichar (line, ITER_COL(iter));
+    return moo_term_line_get_unichar (line, ITER_COL(iter));
+}
+
+
+static char    *segment_get_text    (Segment            *segment)
+{
+    MooTerm *term = ITER_TERM (&segment->start);
+    MooTermBuffer *buf = term->priv->buffer;
+    GtkTextIter start = segment->start;
+    GtkTextIter end = segment->end;
+    GString *text;
+    MooTermLine *line;
+    int width = term->priv->width;
+    int i;
+
+    iter_order (&start, &end);
+
+    if (!iter_cmp (&start, &end))
+        return NULL;
+
+    text = g_string_new ("");
+
+    if (ITER_ROW(&start) == ITER_ROW(&end))
+    {
+        line = buf_line (buf, ITER_ROW(&start));
+        for (i = ITER_COL(&start); i < ITER_COL(&end); ++i)
+            g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+    }
+    else
+    {
+        if (ITER_COL(&start) < width)
+        {
+            line = buf_line (buf, ITER_ROW(&start));
+            for (i = ITER_COL(&start); i < width; ++i)
+                g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+            g_string_append_c (text, '\n');
+        }
+
+        if (ITER_ROW(&start) + 1 < ITER_ROW(&end))
+        {
+            for (i = ITER_ROW(&start) + 1; i < ITER_ROW(&end); ++i)
+            {
+                int j;
+                line = buf_line (buf, i);
+                for (j = 0; j < width; ++j)
+                    g_string_append_unichar (text, moo_term_line_get_unichar (line, j));
+                g_string_append_c (text, '\n');
+            }
+        }
+
+        if (ITER_COL(&end) > 0)
+        {
+            line = buf_line (buf, ITER_ROW(&end));
+            for (i = 0; i < ITER_COL(&start); ++i)
+                g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+        }
+    }
+
+    return g_string_free (text, FALSE);
 }

@@ -571,7 +571,7 @@ static void     pt_write        (MooTermPt      *pt,
             }
 
             freeme = g_queue_peek_head (pt->priv->pending_write);
-            string = freeme->data;
+            string = (const char *) freeme->data;
             len = freeme->len;
         }
         else

@@ -19,6 +19,9 @@
 #include "mooutils/moomarshals.h"
 
 
+MooTermTextAttr MOO_TERM_ZERO_ATTR;
+
+
 static void     moo_term_buffer_set_property    (GObject        *object,
                                                  guint           prop_id,
                                                  const GValue   *value,
@@ -62,6 +65,7 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
     GObjectClass   *gobject_class = G_OBJECT_CLASS (klass);
 
     init_drawing_sets ();
+    MOO_TERM_ZERO_ATTR.mask = 0;
 
     gobject_class->set_property = moo_term_buffer_set_property;
     gobject_class->get_property = moo_term_buffer_get_property;
@@ -158,7 +162,7 @@ static void     moo_term_buffer_finalize        (GObject            *object)
     MooTermBuffer *buf = MOO_TERM_BUFFER (object);
 
     for (i = 0; i < buf->priv->lines->len; ++i)
-        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+        moo_term_line_free (g_ptr_array_index (buf->priv->lines, i));
     g_ptr_array_free (buf->priv->lines, TRUE);
 
     g_list_free (buf->priv->tab_stops);
@@ -260,7 +264,7 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
     for (i = 0; i < buf->priv->screen_height; ++i)
     {
         g_ptr_array_add (buf->priv->lines,
-                         term_line_new (buf->priv->screen_width));
+                         moo_term_line_new (buf->priv->screen_width));
     }
 
     return object;
@@ -340,7 +344,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
 
             for (i = 0; i < height - old_height; ++i)
                 g_ptr_array_add (buf->priv->lines,
-                                 term_line_new (width));
+                                 moo_term_line_new (width));
 
             buf_changed_add_rect (buf, changed);
             content_changed = TRUE;
@@ -350,8 +354,8 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
             guint remove = old_height - height;
 
             for (i = 1; i <= remove; ++i)
-                term_line_free (g_ptr_array_index (buf->priv->lines,
-                                                   buf->priv->lines->len - i));
+                moo_term_line_free (g_ptr_array_index (buf->priv->lines,
+                                                       buf->priv->lines->len - i));
             g_ptr_array_remove_range (buf->priv->lines,
                                       buf->priv->lines->len - remove,
                                       remove);
@@ -377,7 +381,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
 
             for (i = 0; i < height - old_height; ++i)
                 g_ptr_array_add (buf->priv->lines,
-                                 term_line_new (width));
+                                 moo_term_line_new (width));
 
             buf_changed_add_rect (buf, changed);
             content_changed = TRUE;
@@ -389,7 +393,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
             if (buf->priv->cursor_row < height)
             {
                 for (i = height; i < old_height; ++i)
-                    term_line_free (buf_screen_line (buf, i));
+                    moo_term_line_free (buf_screen_line (buf, i));
                 g_ptr_array_remove_range (buf->priv->lines,
                                           buf->priv->lines->len - remove,
                                           remove);
@@ -401,7 +405,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
                 if (del)
                 {
                     for (i = buf->priv->cursor_row + 1; i < old_height; ++i)
-                        term_line_free (buf_screen_line (buf, i));
+                        moo_term_line_free (buf_screen_line (buf, i));
                     g_ptr_array_remove_range (buf->priv->lines,
                                               buf->priv->lines->len - del,
                                               del);
@@ -544,18 +548,18 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
 
     if (buf_get_mode (MODE_IRM))
     {
-        term_line_insert_unichar (buf_screen_line (buf, cursor_row),
-                                  buf->priv->cursor_col++,
-                                  c, 1, attr, width);
+        moo_term_line_insert_unichar (buf_screen_line (buf, cursor_row),
+                                      buf->priv->cursor_col++,
+                                      c, 1, attr, width);
         buf_changed_add_range (buf, cursor_row,
                                buf->priv->cursor_col - 1,
                                width - buf->priv->cursor_col + 1);
     }
     else
     {
-        term_line_set_unichar (buf_screen_line (buf, cursor_row),
-                               buf->priv->cursor_col++,
-                               c, 1, attr, width);
+        moo_term_line_set_unichar (buf_screen_line (buf, cursor_row),
+                                   buf->priv->cursor_col++,
+                                   c, 1, attr, width);
         buf_changed_add_range (buf, cursor_row,
                                buf->priv->cursor_col - 1, 1);
     }
@@ -959,14 +963,14 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
                 0, buf->priv->top_margin, width, bottom - top + 1
             };
 
-            term_line_free (g_ptr_array_index (buf->priv->lines, top));
+            moo_term_line_free (g_ptr_array_index (buf->priv->lines, top));
 
             memmove (&buf->priv->lines->pdata[top],
                      &buf->priv->lines->pdata[top+1],
                      (bottom - top) * sizeof(gpointer));
 
             /* TODO: attributes */
-            buf->priv->lines->pdata[bottom] = term_line_new (width);
+            buf->priv->lines->pdata[bottom] = moo_term_line_new (width);
 
             buf_changed_add_rect (buf, changed);
         }
@@ -982,7 +986,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
         if (cursor_row == screen_height - 1)
         {
             g_ptr_array_add (buf->priv->lines,
-                             term_line_new (width));
+                             moo_term_line_new (width));
 
             buf->priv->_screen_offset += 1;
             moo_term_buffer_scrollback_changed (buf);
@@ -1014,14 +1018,14 @@ void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf)
             0, buf->priv->top_margin, width, bottom - top + 1
         };
 
-        term_line_free (g_ptr_array_index (buf->priv->lines, bottom));
+        moo_term_line_free (g_ptr_array_index (buf->priv->lines, bottom));
 
         memmove (&buf->priv->lines->pdata[top+1],
                  &buf->priv->lines->pdata[top],
                  (bottom - top) * sizeof(gpointer));
 
         /* TODO: attributes */
-        buf->priv->lines->pdata[top] = term_line_new (width);
+        buf->priv->lines->pdata[top] = moo_term_line_new (width);
 
         buf_changed_add_rect (buf, changed);
     }
@@ -1092,6 +1096,35 @@ void    moo_term_buffer_carriage_return         (MooTermBuffer  *buf)
 }
 
 
+static void set_ansi_foreground (MooTermBuffer *buf,
+                                 guint          color)
+{
+    if ((color) < MOO_TERM_COLOR_MAX)
+    {
+        buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;
+        buf->priv->current_attr.foreground = color;
+    }
+    else
+    {
+        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_FOREGROUND;
+    }
+}
+
+static void set_ansi_background (MooTermBuffer *buf,
+                                 guint          color)
+{
+    if (color < MOO_TERM_COLOR_MAX)
+    {
+        buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;
+        buf->priv->current_attr.background = color;
+    }
+    else
+    {
+        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_BACKGROUND;
+    }
+}
+
+
 void    moo_term_buffer_sgr                     (MooTermBuffer  *buf,
                                                  int            *params,
                                                  guint           num_params)
@@ -1143,21 +1176,13 @@ void    moo_term_buffer_sgr                     (MooTermBuffer  *buf,
 
             default:
                 if (30 <= params[i] && params[i] <= 37)
-                {
-                    buf_set_ansi_foreground (params[i] - 30);
-                }
+                    set_ansi_foreground (buf, params[i] - 30);
                 else if (40 <= params[i] && params[i] <= 47)
-                {
-                    buf_set_ansi_background (params[i] - 40);
-                }
+                    set_ansi_background (buf, params[i] - 40);
                 else if (39 == params[i])
-                {
-                    buf_set_ansi_foreground (8);
-                }
+                    set_ansi_foreground (buf, 8);
                 else if (49 == params[i])
-                {
-                    buf_set_ansi_background (8);
-                }
+                    set_ansi_background (buf, 8);
                 else
                     g_warning ("%s: unknown text attribute %d",
                                G_STRLOC, params[i]);
@@ -1180,8 +1205,8 @@ void    moo_term_buffer_delete_char             (MooTermBuffer  *buf,
         return;
     }
 
-    term_line_delete_range (buf_screen_line (buf, cursor_row),
-                            cursor_col, n);
+    moo_term_line_delete_range (buf_screen_line (buf, cursor_row),
+                                cursor_col, n);
     buf_changed_add_range(buf, cursor_row, cursor_col,
                           buf_screen_width (buf) - cursor_col);
     NOTIFY_CHANGED;
@@ -1200,8 +1225,8 @@ void    moo_term_buffer_erase_range             (MooTermBuffer  *buf,
         return;
     }
 
-    term_line_erase_range (buf_screen_line (buf, row),
-                           col, len, &buf->priv->current_attr);
+    moo_term_line_erase_range (buf_screen_line (buf, row),
+                               col, len, &buf->priv->current_attr);
     buf_changed_add_range (buf, row, col, len);
     NOTIFY_CHANGED;
 }
@@ -1302,9 +1327,10 @@ void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
         return;
     }
 
-    term_line_insert_unichar (buf_screen_line (buf, cursor_row),
-                              cursor_col, EMPTY_CHAR, n,
-                              &ZERO_ATTR, buf_screen_width (buf));
+    moo_term_line_insert_unichar (buf_screen_line (buf, cursor_row),
+                                  cursor_col, EMPTY_CHAR, n,
+                                  &MOO_TERM_ZERO_ATTR,
+                                  buf_screen_width (buf));
     buf_changed_add_range (buf, cursor_row, cursor_col,
                            buf_screen_width (buf) - cursor_col);
     NOTIFY_CHANGED;
@@ -1355,7 +1381,7 @@ void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
         n = bottom - cursor + 1;
 
     for (i = cursor; i < cursor + n; ++i)
-        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+        moo_term_line_free (g_ptr_array_index (buf->priv->lines, i));
 
     if (n < bottom - cursor + 1)
         memmove (&g_ptr_array_index (buf->priv->lines, cursor),
@@ -1364,7 +1390,7 @@ void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
 
     for (i = bottom + 1 - n; i <= bottom; ++i)
         g_ptr_array_index (buf->priv->lines, i) =
-                term_line_new (buf->priv->screen_width);
+                moo_term_line_new (buf->priv->screen_width);
 
     buf_changed_add_rect (buf, changed);
     moo_term_buffer_changed (buf);
@@ -1394,7 +1420,7 @@ void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
         n = bottom - cursor + 1;
 
     for (i = bottom - n + 1; i <= bottom; ++i)
-        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+        moo_term_line_free (g_ptr_array_index (buf->priv->lines, i));
 
     if (n < bottom - cursor + 1)
         memmove (&g_ptr_array_index (buf->priv->lines, cursor + n),
@@ -1403,7 +1429,7 @@ void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
 
     for (i = cursor; i < cursor + n; ++i)
         g_ptr_array_index (buf->priv->lines, i) =
-                term_line_new (buf->priv->screen_width);
+                moo_term_line_new (buf->priv->screen_width);
 
     buf_changed_add_rect (buf, changed);
     moo_term_buffer_changed (buf);
@@ -1491,14 +1517,14 @@ void    moo_term_buffer_reset                   (MooTermBuffer  *buf)
     FREEZE_NOTIFY;
 
     for (i = 0; i < buf->priv->lines->len; ++i)
-        term_line_free (g_ptr_array_index (buf->priv->lines, i));
+        moo_term_line_free (g_ptr_array_index (buf->priv->lines, i));
     g_ptr_array_free (buf->priv->lines, TRUE);
 
     buf->priv->_screen_offset = 0;
     buf->priv->lines = g_ptr_array_sized_new (buf->priv->screen_height);
     for (i = 0; i < buf->priv->screen_height; ++i)
         g_ptr_array_add (buf->priv->lines,
-                         term_line_new (buf->priv->screen_width));
+                         moo_term_line_new (buf->priv->screen_width));
 
     set_defaults (buf);
 
@@ -1576,12 +1602,237 @@ void    moo_term_buffer_decaln                  (MooTermBuffer  *buf)
     FREEZE_CHANGED;
 
     for (i = 0; i < height; ++i)
-        term_line_set_unichar (buf_screen_line (buf, i),
-                               0, DECALN_CHAR, width,
-                               &buf->priv->current_attr,
-                               width);
+        moo_term_line_set_unichar (buf_screen_line (buf, i),
+                                   0, DECALN_CHAR, width,
+                                   &buf->priv->current_attr,
+                                   width);
 
     buf_changed_set_all (buf);
 
     THAW_AND_NOTIFY_CHANGED;
+}
+
+
+void moo_term_line_set_unichar  (MooTermLine   *line,
+                                 guint          pos,
+                                 gunichar       c,
+                                 guint          num,
+                                 MooTermTextAttr *attr,
+                                 guint          width)
+{
+    guint i;
+
+    if (pos >= width)
+        return moo_term_line_set_len (line, width);
+
+    if (pos + num >= width)
+        num = width - pos;
+
+    if (!attr || !attr->mask)
+        attr = &MOO_TERM_ZERO_ATTR;
+
+    if (!c)
+        c = EMPTY_CHAR;
+
+    moo_term_line_set_len (line, width);
+
+    if (pos >= line->len)
+    {
+        MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+        guint len = line->len;
+
+        for (i = 0; i < pos - len; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+
+        cell.ch = c;
+        cell.attr = *attr;
+
+        for (i = 0; i < num; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+    }
+    else if (pos + num > line->len)
+    {
+        MooTermCell cell = {c, *attr};
+        guint len = line->len;
+
+        for (i = pos; i < len; ++i)
+            line->data[i] = cell;
+        for (i = 0; i < pos + num - len; ++i)
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+    }
+    else
+    {
+        MooTermCell cell = {c, *attr};
+
+        for (i = pos; i < pos + num; ++i)
+            line->data[i] = cell;
+    }
+}
+
+
+guint moo_term_line_get_chars   (MooTermLine    *line,
+                                 char           *buf,
+                                 guint           first,
+                                 int             len)
+{
+    guint i;
+    guint res = 0;
+
+    if (!len || first >= line->len)
+        return 0;
+
+    if (len < 0 || first + len > line->len)
+        len = line->len - first;
+
+    for (i = first; i < first + len; ++i)
+    {
+        gunichar c = moo_term_line_get_unichar (line, i);
+        guint l = g_unichar_to_utf8 (c, buf);
+        buf += l;
+        res += l;
+    }
+
+    return res;
+}
+
+
+void moo_term_line_insert_unichar   (MooTermLine   *line,
+                                     guint          pos,
+                                     gunichar       c,
+                                     guint          num,
+                                     MooTermTextAttr *attr,
+                                     guint          width)
+{
+    guint i;
+
+    if (pos >= width)
+        return moo_term_line_set_len (line, width);
+
+    if (pos + num >= width)
+        return moo_term_line_set_unichar (line, pos, c, num,
+                                          attr, width);
+
+    if (!attr || !attr->mask)
+        attr = &MOO_TERM_ZERO_ATTR;
+
+    if (!c)
+        c = EMPTY_CHAR;
+
+    moo_term_line_set_len (line, width);
+
+    if (pos > line->len)
+    {
+        guint len = line->len;
+
+        for (i = len; i < pos; ++i)
+        {
+            MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+            g_array_append_val (TERM_LINE_ARRAY (line), cell);
+        }
+    }
+
+    for (i = 0; i < num; ++i)
+    {
+        MooTermCell cell = {c, *attr};
+        g_array_insert_val (TERM_LINE_ARRAY (line), pos, cell);
+    }
+}
+
+
+MooTermLine *moo_term_buffer_get_line   (MooTermBuffer  *buf,
+                                         guint           n)
+{
+    if (buf_get_mode (MODE_CA))
+    {
+        g_assert (n < buf->priv->screen_height);
+        return g_ptr_array_index (buf->priv->lines,
+                                  n + buf->priv->_screen_offset);
+    }
+    else
+    {
+        g_assert (n < buf->priv->_screen_offset + buf->priv->screen_height);
+        return g_ptr_array_index (buf->priv->lines, n);
+    }
+}
+
+
+/* TODO: midnight commander wants erased chars to have current attributes
+           but VT510 manual says: "EL clears all character attributes from erased
+           character positions. EL works inside or outside the scrolling margins." */
+void moo_term_line_erase_range  (MooTermLine     *line,
+                                 guint            pos,
+                                 guint            len,
+                                 MooTermTextAttr *attr)
+{
+    guint i;
+
+    if (!len || pos >= line->len)
+        return;
+
+    for (i = pos; i < pos + len && i < line->len; ++i)
+    {
+        line->data[i].ch = EMPTY_CHAR;
+
+        if (attr && attr->mask)
+            line->data[i].attr = *attr;
+        else
+            line->data[i].attr.mask = 0;
+    }
+}
+
+
+MooTermLine *moo_term_line_new (guint len)
+{
+    return TERM_LINE (g_array_sized_new (FALSE, FALSE,
+                      sizeof (MooTermCell),
+                      len));
+}
+
+
+void moo_term_line_free (MooTermLine *line)
+{
+    if (line)
+        g_array_free (TERM_LINE_ARRAY (line), TRUE);
+}
+
+
+guint moo_term_line_len (MooTermLine *line)
+{
+    return line->len;
+}
+
+
+void moo_term_line_set_len (MooTermLine *line, guint len)
+{
+    if (line->len > len)
+        g_array_set_size (TERM_LINE_ARRAY (line), len);
+}
+
+
+void moo_term_line_erase (MooTermLine *line)
+{
+    moo_term_line_set_len (line, 0);
+}
+
+
+void moo_term_line_delete_range (MooTermLine   *line,
+                                 guint          pos,
+                                 guint          len)
+{
+    if (pos >= line->len)
+        return;
+    else if (pos + len >= line->len)
+        return moo_term_line_set_len (line, pos);
+    else
+        g_array_remove_range (TERM_LINE_ARRAY (line), pos, len);
+}
+
+
+gunichar moo_term_line_get_unichar  (MooTermLine   *line,
+                                     guint          col)
+{
+    if (col >= line->len)
+        return EMPTY_CHAR;
+    else
+        return line->data[col].ch;
 }

@@ -148,12 +148,12 @@ static void save_cmd (MooTermParser *parser)
         g_string_truncate (old, old->len - offset);
 
         g_string_append_len (old,
-                             parser->input.data,
+                             (const char *) parser->input.data,
                              parser->input.data_len);
     }
     else
     {
-        const char *data = parser->input.data;
+        const char *data = (const char*) parser->input.data;
         guint data_len = parser->input.data_len;
 
         g_assert (offset < parser->input.data_len);
@@ -443,11 +443,12 @@ void            moo_term_parser_parse   (MooTermParser  *parser,
     if (!len)
         return;
 
-    parser->input.data = string;
+    parser->input.data = (const guchar *) string;
     parser->input.data_len = len;
     parser_init (parser);
 
     goto STATE_INITIAL_;
+
 
 /* INITIAL - everything starts here. checks input for command sequence start */
 STATE_INITIAL_:
@@ -459,7 +460,6 @@ STATE_INITIAL_:
     process_char (parser, c);
 
     goto STATE_INITIAL_;
-    g_assert_not_reached ();
 
 
 /* ESCAPE - got escape char */
@@ -503,7 +503,6 @@ STATE_ESCAPE_:
         g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 STATE_ESCAPE_INTERMEDIATE_:
@@ -535,7 +534,6 @@ STATE_ESCAPE_INTERMEDIATE_:
         g_warning ("%s: got char '%c' after ESC", G_STRLOC, c);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 /* APC - Application program command - ignore everything until ??? */
@@ -575,7 +573,6 @@ STATE_APC_:
             APPEND_CHAR (data, c);
             goto STATE_APC_;
     }
-    g_assert_not_reached ();
 
 
 /* PM - Privacy message - ignore everything until ??? */
@@ -615,7 +612,6 @@ STATE_PM_:
             APPEND_CHAR (data, c);
             goto STATE_PM_;
     }
-    g_assert_not_reached ();
 
 
 /* OSC - Operating system command - ignore everything until ??? */
@@ -655,7 +651,6 @@ STATE_OSC_:
             APPEND_CHAR (data, c);
             goto STATE_OSC_;
     }
-    g_assert_not_reached ();
 
 
 /* CSI - control sequence introducer */
@@ -688,7 +683,6 @@ STATE_CSI_:
         g_free (s);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 /* STATE_CSI_INTERMEDIATE - CSI, gathering intermediate characters */
@@ -716,7 +710,6 @@ STATE_CSI_INTERMEDIATE_:
         g_free (s);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
@@ -748,7 +741,6 @@ STATE_DCS_:
         g_free (s);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
@@ -775,7 +767,6 @@ STATE_DCS_INTERMEDIATE_:
         g_free (s);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 
 
 /* DCS - Device control string */
@@ -786,7 +777,6 @@ STATE_DCS_DATA_:
     DCS_CHECK_CANCEL (c);
     APPEND_CHAR (data, c);
     goto STATE_DCS_DATA_;
-    g_assert_not_reached ();
 
 
 /* STATE_DCS_ESCAPE_ - got escape char in the DCS sequence */
@@ -804,7 +794,6 @@ STATE_DCS_ESCAPE_:
         exec_dcs (parser);
         GOTO_INITIAL
     }
-    g_assert_not_reached ();
 }
 
 
@@ -1190,7 +1179,7 @@ char           *_moo_term_nice_char     (guchar          c)
 {
     if (' ' <= c && c <= '~')
     {
-        return g_strndup (&c, 1);
+        return g_strndup ((char*)&c, 1);
     }
     else
     {

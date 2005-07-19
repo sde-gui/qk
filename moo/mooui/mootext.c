@@ -96,7 +96,8 @@ gboolean    moo_text_button_press_event     (GtkWidget          *widget,
     obj = MOO_TEXT (widget);
     data = moo_text_get_data (obj);
 
-    gtk_widget_grab_focus (widget);
+    if (!GTK_WIDGET_HAS_FOCUS (widget))
+        gtk_widget_grab_focus (widget);
 
     get_impl(window_to_buffer_coords) (obj, event->x, event->y, &x, &y);
     get_impl(get_iter_at_location) (obj, &iter, x, y);

@@ -146,6 +146,13 @@ void             term_font_info_free        (TermFontInfo           *info)
 }
 
 
+void        moo_term_invalidate_all         (MooTerm        *term)
+{
+    GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
+    moo_term_invalidate_rect (term, &rec);
+}
+
+
 void        moo_term_invalidate_rect    (MooTerm        *term,
                                          GdkRectangle   *rect)
 {
@@ -246,26 +253,15 @@ static void invalidate_screen_cell      (MooTerm        *term,
                                          guint           column)
 {
     int scrollback, top_line;
-    guint char_width, char_height;
-    GdkRectangle rect = {0, 0, 0, 0};
     GdkRectangle small_rect = {0, 0, 1, 1};
 
     scrollback = buf_scrollback (term->priv->buffer);
     top_line = term_top_line (term);
 
-    char_width = term->priv->font_info->width;
-    char_height = term->priv->font_info->height;
-
-    rect.width = char_width;
-    rect.height = char_height;
-
     small_rect.x = column;
     small_rect.y = row + scrollback - top_line;
-    rect.x = small_rect.x * char_width;
-    rect.y = small_rect.y * char_height;
 
-    moo_term_invalidate_content_rect (term, &small_rect);
-    gdk_window_invalidate_rect (GTK_WIDGET(term)->window, &rect, FALSE);
+    moo_term_invalidate_rect (term, &small_rect);
 
     add_update_timeout (term);
 }
@@ -561,7 +557,7 @@ static void term_draw_range                 (MooTerm        *term,
     {
         case FULL_SELECTED:
         case NOT_SELECTED:
-            term_draw_range_simple (term, abs_row, first, last, selected);
+            term_draw_range_simple (term, abs_row, first, len, selected);
             break;
 
         case PART_SELECTED:
@@ -578,32 +574,32 @@ static void term_draw_range                 (MooTerm        *term,
                 if (r_col <= first || last <= l_col)
                 {
                     term_draw_range_simple (term, abs_row,
-                                            first, last, FALSE);
+                                            first, len, FALSE);
                 }
                 else if (l_col <= first && last <= r_col)
                 {
                     term_draw_range_simple (term, abs_row,
-                                            first, last, TRUE);
+                                            first, len, TRUE);
                 }
                 else if (first < l_col)
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, l_col, FALSE);
+                                       first, l_col - first, FALSE);
                     term_draw_range_simple (term, abs_row, l_col,
-                                       MIN (last, r_col), TRUE);
+                                       MIN (last, r_col) - l_col, TRUE);
 
                     if (r_col < last)
                         term_draw_range_simple (term, abs_row,
-                                           r_col, last, FALSE);
+                                           r_col, last - r_col, FALSE);
                 }
                 else
                 {
                     term_draw_range_simple (term, abs_row, first,
-                                       MIN (last, r_col), TRUE);
+                                       MIN (last, r_col) - first, TRUE);
 
                     if (r_col < last)
                         term_draw_range_simple (term, abs_row,
-                                           r_col, last, FALSE);
+                                           r_col, last - r_col, FALSE);
                 }
             }
             else if (l_row == abs_row)
@@ -611,19 +607,19 @@ static void term_draw_range                 (MooTerm        *term,
                 if (last <= l_col)
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, last, FALSE);
+                                       first, len, FALSE);
                 }
                 else if (l_col <= first)
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, last, TRUE);
+                                       first, len, TRUE);
                 }
                 else
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, l_col, FALSE);
+                                       first, l_col - first, FALSE);
                     term_draw_range_simple (term, abs_row,
-                                       l_col, last, TRUE);
+                                       l_col, last - l_col, TRUE);
                 }
             }
             else
@@ -633,18 +629,18 @@ static void term_draw_range                 (MooTerm        *term,
                 if (last <= r_col)
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, last, TRUE);
+                                       first, len, TRUE);
                 }
                 else if (r_col <= first)
                 {
                     term_draw_range_simple (term, abs_row,
-                                       first, last, FALSE);
+                                       first, len, FALSE);
                 }
                 else {
                     term_draw_range_simple (term, abs_row,
-                                       first, r_col, TRUE);
+                                       first, r_col - first, TRUE);
                     term_draw_range_simple (term, abs_row,
-                                       r_col, last, FALSE);
+                                       r_col, last - r_col, FALSE);
                 }
             }
             break;
@@ -712,7 +708,7 @@ static void term_draw_range_simple          (MooTerm        *term,
         guint i;
         MooTermTextAttr *attr = &line->data[start].attr;
 
-        for (i = 1; i < len && !attr_cmp (attr, &line->data[start + i].attr); ++i) ;
+        for (i = 1; i < len && !ATTR_CMP (attr, &line->data[start + i].attr); ++i) ;
 
         term_draw_cells (term, abs_row, start, i, attr, selected);
 
@@ -739,7 +735,7 @@ static void term_draw_cells                 (MooTerm        *term,
     g_assert (len != 0);
     g_assert (start + len <= line->len);
 
-    buf_len = term_line_get_chars (line, buf, start, len);
+    buf_len = moo_term_line_get_chars (line, buf, start, len);
     g_return_if_fail (buf_len != 0);
 
     pango_layout_set_text (term->priv->layout, buf, buf_len);
@@ -802,7 +798,6 @@ static void term_draw_cells                 (MooTerm        *term,
 
 static void term_draw_cursor                (MooTerm        *term)
 {
-    guint screen_width = term->priv->width;
     guint abs_row = buf_cursor_row_abs (term->priv->buffer);
     guint col = buf_cursor_col (term->priv->buffer);
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
@@ -815,9 +810,9 @@ static void term_draw_cursor                (MooTerm        *term)
     GdkGC *fg, *bg;
     MooTermTextAttr *attr;
 
-    g_assert (col < screen_width);
+    g_assert (col < term->priv->width);
 
-    if (col < term_line_len (line))
+    if (col < moo_term_line_len (line))
     {
         ch_len = g_unichar_to_utf8 (line->data[col].ch, ch);
         attr = &line->data[col].attr;
@@ -826,7 +821,7 @@ static void term_draw_cursor                (MooTerm        *term)
     {
         ch[0] = EMPTY_CHAR;
         ch_len = 1;
-        attr = &ZERO_ATTR;
+        attr = &MOO_TERM_ZERO_ATTR;
     }
 
     pango_layout_set_text (term->priv->layout, ch, ch_len);

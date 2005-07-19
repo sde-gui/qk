@@ -31,6 +31,7 @@ gboolean    moo_term_selection_empty        (MooTerm    *term);
 gpointer    term_selection_new              (MooTerm    *term);
 
 
+void        moo_term_selection_invalidate   (MooTerm    *term);
 void        moo_term_selection_clear        (MooTerm    *term);
 char       *moo_term_selection_get_text     (MooTerm    *term);
 int         moo_term_row_selected           (MooTerm    *term,

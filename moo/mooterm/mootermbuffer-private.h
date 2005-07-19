@@ -213,48 +213,11 @@ G_STMT_START {                                                      \
 #define buf_add_attrs_mask(mask_)       buf->priv->current_attr.mask |= (mask_)
 #define buf_remove_attrs_mask(mask_)    buf->priv->current_attr.mask &= ~(mask_)
 
-#define buf_set_ansi_foreground(color)                              \
-G_STMT_START {                                                      \
-    if ((color) < MOO_TERM_COLOR_MAX)                               \
-    {                                                               \
-        buf->priv->current_attr.mask |= MOO_TERM_TEXT_FOREGROUND;   \
-        buf->priv->current_attr.foreground = (color);               \
-    }                                                               \
-    else                                                            \
-    {                                                               \
-        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_FOREGROUND;  \
-    }                                                               \
-} G_STMT_END
 
-#define buf_set_ansi_background(color)                              \
-G_STMT_START {                                                      \
-    if ((color) < MOO_TERM_COLOR_MAX)                               \
-    {                                                               \
-        buf->priv->current_attr.mask |= MOO_TERM_TEXT_BACKGROUND;   \
-        buf->priv->current_attr.background = (color);               \
-    }                                                               \
-    else                                                            \
-    {                                                               \
-        buf->priv->current_attr.mask &= ~MOO_TERM_TEXT_BACKGROUND;  \
-    }                                                               \
-} G_STMT_END
+MooTermLine *moo_term_buffer_get_line   (MooTermBuffer  *buf,
+                                         guint           n);
+#define buf_line moo_term_buffer_get_line
 
-
-inline static MooTermLine *buf_line         (MooTermBuffer  *buf,
-                                             guint           n)
-{
-    if (buf_get_mode (MODE_CA))
-    {
-        g_assert (n < buf->priv->screen_height);
-        return g_ptr_array_index (buf->priv->lines,
-                                  n + buf->priv->_screen_offset);
-    }
-    else
-    {
-        g_assert (n < buf->priv->_screen_offset + buf->priv->screen_height);
-        return g_ptr_array_index (buf->priv->lines, n);
-    }
-}
 
 inline static MooTermLine *buf_screen_line  (MooTermBuffer  *buf,
                                              guint           n)

@@ -383,6 +383,7 @@ static void moo_term_realize                (GtkWidget          *widget)
                                         empty_bitmap,
                                         &useless,
                                         &useless, 0, 0);
+    g_object_unref (empty_bitmap);
 
     display = gtk_widget_get_display (widget);
     term->priv->pointer[POINTER_TEXT] =
@@ -506,7 +507,7 @@ static void     scrollback_changed              (MooTerm        *term,
 
         if (term->priv->_scrolled && term->priv->_top_line > scrollback)
         {
-            moo_term_selection_clear (term);
+            moo_term_selection_invalidate (term);
             scroll_to_bottom (term, TRUE);
         }
         else
@@ -527,7 +528,7 @@ static void     width_changed                   (MooTerm        *term,
     if (GTK_WIDGET_REALIZED (term))
         moo_term_resize_back_pixmap (term);
 
-    moo_term_selection_clear (term);
+    moo_term_selection_invalidate (term);
 }
 
 
@@ -548,7 +549,7 @@ static void     height_changed                  (MooTerm        *term,
     if (GTK_WIDGET_REALIZED (term))
         moo_term_resize_back_pixmap (term);
 
-    moo_term_selection_clear (term);
+    moo_term_selection_invalidate (term);
     moo_term_invalidate_all (term);
 }
 

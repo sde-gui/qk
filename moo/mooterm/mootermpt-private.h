@@ -61,7 +61,7 @@ inline static void pt_add_data (GSList **list, const char *data, gssize len)
 
         ar = g_byte_array_sized_new ((guint) len);
         *list = g_slist_append (*list,
-                                 g_byte_array_append (ar, data, len));
+                                 g_byte_array_append (ar, (const guint8 *)data, len));
     }
 }
 

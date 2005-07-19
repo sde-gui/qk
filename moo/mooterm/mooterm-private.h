@@ -203,12 +203,7 @@ gboolean    moo_term_expose_event           (GtkWidget      *widget,
 void        moo_term_invalidate_rect        (MooTerm        *term,
                                              GdkRectangle   *rect);
 void        moo_term_force_update           (MooTerm        *term);
-
-inline static void moo_term_invalidate_all  (MooTerm        *term)
-{
-    GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
-    moo_term_invalidate_rect (term, &rec);
-}
+void        moo_term_invalidate_all         (MooTerm        *term);
 
 
 /*************************************************************************/

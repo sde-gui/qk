@@ -61,7 +61,7 @@ static void get_vt_key  (MooTerm     *term,
 
 
 
-#define set_key(str)            \
+#define SET_KEY(str)            \
     *string = g_strdup (str);   \
     *len = strlen (str);
 
@@ -112,66 +112,66 @@ static void get_keypad_key  (MooTerm     *term,
                 get_vt_key (term, GDK_Return, string, len);
                 break;
             case GDK_KP_Subtract:
-                set_key ("-");
+                SET_KEY ("-");
                 break;
             case GDK_KP_0:
             case GDK_KP_Insert:
-                set_key ("0");
+                SET_KEY ("0");
                 break;
             case GDK_KP_1:
             case GDK_KP_End:
-                set_key ("1");
+                SET_KEY ("1");
                 break;
             case GDK_KP_2:
             case GDK_KP_Down:
-                set_key ("2");
+                SET_KEY ("2");
                 break;
             case GDK_KP_3:
             case GDK_KP_Page_Down:
-                set_key ("3");
+                SET_KEY ("3");
                 break;
             case GDK_KP_4:
             case GDK_KP_Left:
-                set_key ("4");
+                SET_KEY ("4");
                 break;
             case GDK_KP_5:
-                set_key ("5");
+                SET_KEY ("5");
                 break;
             case GDK_KP_6:
             case GDK_KP_Right:
-                set_key ("6");
+                SET_KEY ("6");
                 break;
             case GDK_KP_7:
             case GDK_KP_Home:
             case GDK_KP_Begin:
-                set_key ("7");
+                SET_KEY ("7");
                 break;
             case GDK_KP_8:
             case GDK_KP_Up:
-                set_key ("8");
+                SET_KEY ("8");
                 break;
             case GDK_KP_9:
             case GDK_KP_Page_Up:
-                set_key ("9");
+                SET_KEY ("9");
                 break;
             case GDK_KP_Decimal:
             case GDK_KP_Delete:
-                set_key (".");  /* TODO should it be period/comma depending on locale? */
+                SET_KEY (".");  /* TODO should it be period/comma depending on locale? */
                 break;
             case GDK_KP_Separator:
-                set_key (",");  /* TODO should it be period/comma depending on locale? */
+                SET_KEY (",");  /* TODO should it be period/comma depending on locale? */
                 break;
             case GDK_KP_F1:
-                set_key ("\033OP");
+                SET_KEY ("\033OP");
                 break;
             case GDK_KP_F2:
-                set_key ("\033OQ");
+                SET_KEY ("\033OQ");
                 break;
             case GDK_KP_F3:
-                set_key ("\033OR");
+                SET_KEY ("\033OR");
                 break;
             case GDK_KP_F4:
-                set_key ("\033OS");
+                SET_KEY ("\033OS");
                 break;
 
             default:
@@ -184,71 +184,71 @@ static void get_keypad_key  (MooTerm     *term,
         {
             case GDK_KP_0:
             case GDK_KP_Insert:
-                set_key ("\033Op");
+                SET_KEY ("\033Op");
                 break;
             case GDK_KP_1:
             case GDK_KP_End:
-                set_key ("\033Oq");
+                SET_KEY ("\033Oq");
                 break;
             case GDK_KP_2:
             case GDK_KP_Down:
-                set_key ("\033Or");
+                SET_KEY ("\033Or");
                 break;
             case GDK_KP_3:
             case GDK_KP_Page_Down:
-                set_key ("\033Os");
+                SET_KEY ("\033Os");
                 break;
             case GDK_KP_4:
             case GDK_KP_Left:
-                set_key ("\033Ot");
+                SET_KEY ("\033Ot");
                 break;
             case GDK_KP_5:
-                set_key ("\033Ou");
+                SET_KEY ("\033Ou");
                 break;
             case GDK_KP_6:
             case GDK_KP_Right:
-                set_key ("\033Ov");
+                SET_KEY ("\033Ov");
                 break;
             case GDK_KP_7:
             case GDK_KP_Home:
             case GDK_KP_Begin:
-                set_key ("\033Ow");
+                SET_KEY ("\033Ow");
                 break;
             case GDK_KP_8:
             case GDK_KP_Up:
-                set_key ("\033Ox");
+                SET_KEY ("\033Ox");
                 break;
             case GDK_KP_9:
             case GDK_KP_Page_Up:
-                set_key ("\033Oy");
+                SET_KEY ("\033Oy");
                 break;
 
             case GDK_KP_Subtract:
-                set_key ("\033Om");
+                SET_KEY ("\033Om");
                 break;
             case GDK_KP_Decimal:
             case GDK_KP_Delete:
-                set_key ("\033On");  /* TODO should it be period/comma depending on locale? */
+                SET_KEY ("\033On");  /* TODO should it be period/comma depending on locale? */
                 break;
             case GDK_KP_Separator:
-                set_key ("\033Ol");  /* TODO should it be period/comma depending on locale? */
+                SET_KEY ("\033Ol");  /* TODO should it be period/comma depending on locale? */
                 break;
 
             case GDK_KP_Enter:
-                set_key ("\033OM");
+                SET_KEY ("\033OM");
                 break;
 
             case GDK_KP_F1:
-                set_key ("\033OP");
+                SET_KEY ("\033OP");
                 break;
             case GDK_KP_F2:
-                set_key ("\033OQ");
+                SET_KEY ("\033OQ");
                 break;
             case GDK_KP_F3:
-                set_key ("\033OR");
+                SET_KEY ("\033OR");
                 break;
             case GDK_KP_F4:
-                set_key ("\033OS");
+                SET_KEY ("\033OS");
                 break;
 
             default:
@@ -269,16 +269,16 @@ static void get_arrow_key   (MooTerm    *term,
         switch (keyval)
         {
             case GDK_Left:
-                set_key ("\033OD");
+                SET_KEY ("\033OD");
                 break;
             case GDK_Up:
-                set_key ("\033OA");
+                SET_KEY ("\033OA");
                 break;
             case GDK_Right:
-                set_key ("\033OC");
+                SET_KEY ("\033OC");
                 break;
             case GDK_Down:
-                set_key ("\033OB");
+                SET_KEY ("\033OB");
                 break;
 
             default:
@@ -290,16 +290,16 @@ static void get_arrow_key   (MooTerm    *term,
         switch (keyval)
         {
             case GDK_Left:
-                set_key ("\033[D");
+                SET_KEY ("\033[D");
                 break;
             case GDK_Up:
-                set_key ("\033[A");
+                SET_KEY ("\033[A");
                 break;
             case GDK_Right:
-                set_key ("\033[C");
+                SET_KEY ("\033[C");
                 break;
             case GDK_Down:
-                set_key ("\033[B");
+                SET_KEY ("\033[B");
                 break;
 
             default:
@@ -321,107 +321,107 @@ static void get_vt_ctl_key  (G_GNUC_UNUSED MooTerm     *term,
     {
         case GDK_A:
         case GDK_a:
-            set_key ("\001");
+            SET_KEY ("\001");
             break;
         case GDK_B:
         case GDK_b:
-            set_key ("\002");
+            SET_KEY ("\002");
             break;
         case GDK_C:
         case GDK_c:
-            set_key ("\003");
+            SET_KEY ("\003");
             break;
         case GDK_D:
         case GDK_d:
-            set_key ("\004");
+            SET_KEY ("\004");
             break;
         case GDK_E:
         case GDK_e:
-            set_key ("\005");
+            SET_KEY ("\005");
             break;
         case GDK_F:
         case GDK_f:
-            set_key ("\006");
+            SET_KEY ("\006");
             break;
         case GDK_G:
         case GDK_g:
-            set_key ("\007");
+            SET_KEY ("\007");
             break;
         case GDK_H:
         case GDK_h:
-            set_key ("\010");
+            SET_KEY ("\010");
             break;
         case GDK_I:
         case GDK_i:
-            set_key ("\011");
+            SET_KEY ("\011");
             break;
         case GDK_J:
         case GDK_j:
-            set_key ("\012");
+            SET_KEY ("\012");
             break;
         case GDK_K:
         case GDK_k:
-            set_key ("\013");
+            SET_KEY ("\013");
             break;
         case GDK_L:
         case GDK_l:
-            set_key ("\014");
+            SET_KEY ("\014");
             break;
         case GDK_M:
         case GDK_m:
-            set_key ("\015");
+            SET_KEY ("\015");
             break;
         case GDK_N:
         case GDK_n:
-            set_key ("\016");
+            SET_KEY ("\016");
             break;
         case GDK_O:
         case GDK_o:
-            set_key ("\017");
+            SET_KEY ("\017");
             break;
         case GDK_P:
         case GDK_p:
-            set_key ("\020");
+            SET_KEY ("\020");
             break;
         case GDK_Q:
         case GDK_q:
-            set_key ("\021");
+            SET_KEY ("\021");
             break;
         case GDK_R:
         case GDK_r:
-            set_key ("\022");
+            SET_KEY ("\022");
             break;
         case GDK_S:
         case GDK_s:
-            set_key ("\023");
+            SET_KEY ("\023");
             break;
         case GDK_T:
         case GDK_t:
-            set_key ("\024");
+            SET_KEY ("\024");
             break;
         case GDK_U:
         case GDK_u:
-            set_key ("\025");
+            SET_KEY ("\025");
             break;
         case GDK_V:
         case GDK_v:
-            set_key ("\026");
+            SET_KEY ("\026");
             break;
         case GDK_W:
         case GDK_w:
-            set_key ("\027");
+            SET_KEY ("\027");
             break;
         case GDK_X:
         case GDK_x:
-            set_key ("\030");
+            SET_KEY ("\030");
             break;
         case GDK_Y:
         case GDK_y:
-            set_key ("\031");
+            SET_KEY ("\031");
             break;
         case GDK_Z:
         case GDK_z:
-            set_key ("\032");
+            SET_KEY ("\032");
             break;
 
         case GDK_space:
@@ -431,23 +431,23 @@ static void get_vt_ctl_key  (G_GNUC_UNUSED MooTerm     *term,
 
         case GDK_bracketleft:
         case GDK_braceleft:
-            set_key ("\033");
+            SET_KEY ("\033");
             break;
         case GDK_backslash:
         case GDK_bar:
-            set_key ("\034");
+            SET_KEY ("\034");
             break;
         case GDK_bracketright:
         case GDK_braceright:
-            set_key ("\035");
+            SET_KEY ("\035");
             break;
         case GDK_asciitilde:
         case GDK_quoteleft:
-            set_key ("\036");
+            SET_KEY ("\036");
             break;
         case GDK_question:
         case GDK_slash:
-            set_key ("\037");
+            SET_KEY ("\037");
             break;
     }
 }
@@ -549,145 +549,145 @@ static void get_vt_key  (MooTerm     *term,
 
         case GDK_Tab:
         case GDK_KP_Tab:
-            set_key ("\011");
+            SET_KEY ("\011");
             break;
         case GDK_Linefeed:
-            set_key ("\012");
+            SET_KEY ("\012");
             break;
         case GDK_Clear:
-            set_key ("\013");
+            SET_KEY ("\013");
             break;
         case GDK_Return:
-            set_key ("\015");
+            SET_KEY ("\015");
             break;
         case GDK_Pause:
-            set_key ("\023");
+            SET_KEY ("\023");
             break;
         case GDK_Escape:
-            set_key ("\033");
+            SET_KEY ("\033");
             break;
 
         /* keys below are from `infocmp xterm` */
 
         case GDK_Home:
-            set_key ("\033OH");
+            SET_KEY ("\033OH");
             break;
         case GDK_Page_Up:
-            set_key ("\033[5~");
+            SET_KEY ("\033[5~");
             break;
         case GDK_Page_Down:
-            set_key ("\033[6~");
+            SET_KEY ("\033[6~");
             break;
         case GDK_End:
-            set_key ("\033OF");
+            SET_KEY ("\033OF");
             break;
         case GDK_Insert:
-            set_key ("\033[2~");
+            SET_KEY ("\033[2~");
             break;
         case GDK_F1:
-            set_key ("\033OP");
+            SET_KEY ("\033OP");
             break;
         case GDK_F2:
-            set_key ("\033OQ");
+            SET_KEY ("\033OQ");
             break;
         case GDK_F3:
-            set_key ("\033OR");
+            SET_KEY ("\033OR");
             break;
         case GDK_F4:
-            set_key ("\033OS");
+            SET_KEY ("\033OS");
             break;
         case GDK_F5:
-            set_key ("\033[15~");
+            SET_KEY ("\033[15~");
             break;
         case GDK_F6:
-            set_key ("\033[17~");
+            SET_KEY ("\033[17~");
             break;
         case GDK_F7:
-            set_key ("\033[18~");
+            SET_KEY ("\033[18~");
             break;
         case GDK_F8:
-            set_key ("\033[19~");
+            SET_KEY ("\033[19~");
             break;
         case GDK_F9:
-            set_key ("\033[20~");
+            SET_KEY ("\033[20~");
             break;
         case GDK_F10:
-            set_key ("\033[21~");
+            SET_KEY ("\033[21~");
             break;
         case GDK_F11:
-            set_key ("\033[23~");
+            SET_KEY ("\033[23~");
             break;
         case GDK_F12:
-            set_key ("\033[24~");
+            SET_KEY ("\033[24~");
             break;
         case GDK_F13:
-            set_key ("\033O2P");
+            SET_KEY ("\033O2P");
             break;
         case GDK_F14:
-            set_key ("\033O2Q");
+            SET_KEY ("\033O2Q");
             break;
         case GDK_F15:
-            set_key ("\033O2R");
+            SET_KEY ("\033O2R");
             break;
         case GDK_F16:
-            set_key ("\033O2S");
+            SET_KEY ("\033O2S");
             break;
         case GDK_F17:
-            set_key ("\033[15;2~");
+            SET_KEY ("\033[15;2~");
             break;
         case GDK_F18:
-            set_key ("\033[17;2~");
+            SET_KEY ("\033[17;2~");
             break;
         case GDK_F19:
-            set_key ("\033[18;2~");
+            SET_KEY ("\033[18;2~");
             break;
         case GDK_F20:
-            set_key ("\033[19;2~");
+            SET_KEY ("\033[19;2~");
             break;
         case GDK_F21:
-            set_key ("\033[20;2~");
+            SET_KEY ("\033[20;2~");
             break;
         case GDK_F22:
-            set_key ("\033[21;2~");
+            SET_KEY ("\033[21;2~");
             break;
         case GDK_F23:
-            set_key ("\033[23;2~");
+            SET_KEY ("\033[23;2~");
             break;
         case GDK_F24:
-            set_key ("\033[24;2~");
+            SET_KEY ("\033[24;2~");
             break;
         case GDK_F25:
-            set_key ("\033O5P");
+            SET_KEY ("\033O5P");
             break;
         case GDK_F26:
-            set_key ("\033O5Q");
+            SET_KEY ("\033O5Q");
             break;
         case GDK_F27:
-            set_key ("\033O5R");
+            SET_KEY ("\033O5R");
             break;
         case GDK_F28:
-            set_key ("\033O5S");
+            SET_KEY ("\033O5S");
             break;
         case GDK_F29:
-            set_key ("\033[15;5~");
+            SET_KEY ("\033[15;5~");
             break;
         case GDK_F30:
-            set_key ("\033[17;5~");
+            SET_KEY ("\033[17;5~");
             break;
         case GDK_F31:
-            set_key ("\033[18;5~");
+            SET_KEY ("\033[18;5~");
             break;
         case GDK_F32:
-            set_key ("\033[19;5~");
+            SET_KEY ("\033[19;5~");
             break;
         case GDK_F33:
-            set_key ("\033[20;5~");
+            SET_KEY ("\033[20;5~");
             break;
         case GDK_F34:
-            set_key ("\033[21;5~");
+            SET_KEY ("\033[21;5~");
             break;
         case GDK_F35:
-            set_key ("\033[23;5~");
+            SET_KEY ("\033[23;5~");
             break;
     }
 }

@@ -45,8 +45,8 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
 {
     MooTerm *term;
     char *string = NULL;
-    gssize string_length = 0;
-    int i;
+    guint string_length = 0;
+    guint i;
     gboolean scrolled = FALSE;
     gboolean steal = FALSE;
     gboolean is_modifier = FALSE;
@@ -220,10 +220,13 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
         else
             get_vt_ctl_key (term, keyval, &string, &string_length);
 
+#if 0
+        /* TODO why? */
         /* If we found something this way, suppress
             * escape-on-meta. */
         if (string != NULL && string_length > 0)
             suppress_meta_esc = TRUE;
+#endif
     }
 
     /* If we didn't manage to do anything, try to salvage a
