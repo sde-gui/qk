@@ -28,7 +28,7 @@ enum {
 
 gboolean    moo_term_selection_empty        (MooTerm    *term);
 
-gpointer    term_selection_new              (MooTerm    *term);
+gpointer    moo_term_selection_new          (MooTerm    *term);
 
 
 void        moo_term_selection_invalidate   (MooTerm    *term);

@@ -249,7 +249,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->width = 80;
     term->priv->height = 24;
 
-    term->priv->selection = term_selection_new (term);
+    term->priv->selection = moo_term_selection_new (term);
 
     term->priv->_cursor_visible = TRUE;
     term->priv->_blink_cursor_visible = TRUE;
@@ -332,7 +332,7 @@ static void moo_term_finalize               (GObject        *object)
     g_object_unref (term->priv->alternate_buffer);
 
     g_free (term->priv->selection);
-    term_font_info_free (term->priv->font_info);
+    moo_term_font_info_free (term->priv->font_info);
 
     g_object_unref (term->priv->back_pixmap);
 
@@ -360,8 +360,9 @@ static void moo_term_finalize               (GObject        *object)
         if (term->priv->color[i][j])
             g_object_unref (term->priv->color[i][j]);
     }
-    if (term->priv->fg)
-        g_object_unref (term->priv->fg);
+    for (i = 0; i < 1; ++i)
+        if (term->priv->fg[i])
+            g_object_unref (term->priv->fg[i]);
     if (term->priv->bg)
         g_object_unref (term->priv->bg);
 
@@ -1646,16 +1647,4 @@ void        moo_term_release_selection      (MooTerm        *term)
         gtk_clipboard_clear (primary);
         term->priv->owns_selection = FALSE;
     }
-}
-
-
-void        moo_term_set_cursor_blinks      (MooTerm        *term,
-                                             gboolean        blinks)
-{
-    term->priv->_cursor_blinks = blinks;
-    if (blinks)
-        moo_term_start_cursor_blinking (term);
-    else
-        moo_term_stop_cursor_blinking (term);
-    g_object_notify (G_OBJECT (term), "cursor-blinks");
 }

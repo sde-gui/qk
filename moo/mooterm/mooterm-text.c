@@ -75,7 +75,7 @@ static void     invalidate_segment  (Segment            *segments,
                                      guint               num);
 
 
-gpointer    term_selection_new  (MooTerm    *term)
+gpointer    moo_term_selection_new  (MooTerm    *term)
 {
     Segment *sel = g_new0 (Segment, 1);
 

@@ -60,7 +60,7 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
     PangoFontDescription *font;
 
     if (term->priv->font_info)
-        term_font_info_free (term->priv->font_info);
+        moo_term_font_info_free (term->priv->font_info);
 
     ctx = gtk_widget_create_pango_context (GTK_WIDGET (term));
     g_return_if_fail (ctx != NULL);
@@ -76,7 +76,7 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
         pango_font_description_free (font);
     }
 
-    term->priv->font_info = term_font_info_new (ctx);
+    term->priv->font_info = moo_term_font_info_new (ctx);
 
     term->priv->layout = pango_layout_new (ctx);
 
@@ -88,7 +88,7 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
 }
 
 
-void             term_font_info_calculate   (TermFontInfo           *info)
+void    moo_term_font_info_calculate    (TermFontInfo           *info)
 {
     PangoRectangle logical;
     PangoLayout *layout;
@@ -112,31 +112,31 @@ void             term_font_info_calculate   (TermFontInfo           *info)
 }
 
 
-void             term_font_info_set_font    (TermFontInfo           *info,
-                                             PangoFontDescription   *font_desc)
+void    moo_term_font_info_set_font     (TermFontInfo           *info,
+                                         PangoFontDescription   *font_desc)
 {
     g_return_if_fail (font_desc != NULL);
 
     pango_context_set_font_description (info->ctx, font_desc);
 
-    term_font_info_calculate (info);
+    moo_term_font_info_calculate (info);
 }
 
 
-TermFontInfo    *term_font_info_new         (PangoContext           *ctx)
+TermFontInfo    *moo_term_font_info_new         (PangoContext           *ctx)
 {
     TermFontInfo *info = g_new0 (TermFontInfo, 1);
 
     info->ctx = ctx;
     g_object_ref (ctx);
 
-    term_font_info_calculate (info);
+    moo_term_font_info_calculate (info);
 
     return info;
 }
 
 
-void             term_font_info_free        (TermFontInfo           *info)
+void    moo_term_font_info_free     (TermFontInfo   *info)
 {
     if (info)
     {
@@ -183,12 +183,15 @@ void        moo_term_setup_palette      (MooTerm        *term)
 
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
 
-    term->priv->fg =
+    term->priv->fg[0] =
+            gdk_gc_new_with_values (widget->window, &vals, 0);
+    term->priv->fg[1] =
             gdk_gc_new_with_values (widget->window, &vals, 0);
     term->priv->bg =
-            gdk_gc_new_with_values  (widget->window, &vals, 0);
+            gdk_gc_new_with_values (widget->window, &vals, 0);
 
-    gdk_gc_set_foreground (term->priv->fg, &(widget->style->black));
+    gdk_gc_set_foreground (term->priv->fg[0], &(widget->style->black));
+    gdk_gc_set_foreground (term->priv->fg[0], &(widget->style->black));
     gdk_gc_set_foreground (term->priv->bg, &(widget->style->white));
 
     gdk_window_set_background (widget->window, &(widget->style->white));
@@ -644,7 +647,7 @@ static void term_draw_range_simple          (MooTerm        *term,
     if (!invert)
         bg = term->priv->bg;
     else
-        bg = term->priv->fg;
+        bg = term->priv->fg[NORMAL];
 
     if (start >= line->len)
     {
@@ -721,7 +724,7 @@ static void term_draw_cells                 (MooTerm        *term,
     }
     else
     {
-        fg = term->priv->fg;
+        fg = term->priv->fg[bold];
     }
 
     if (attr->mask & MOO_TERM_TEXT_BACKGROUND)
@@ -799,7 +802,7 @@ static void term_draw_cursor                (MooTerm        *term)
         invert %= 2;
 
         if (invert)
-            color = term->priv->fg;
+            color = term->priv->fg[NORMAL];
         else
             color = term->priv->bg;
 
@@ -935,7 +938,7 @@ static gboolean blink (MooTerm *term)
 }
 
 
-void        moo_term_start_cursor_blinking  (MooTerm        *term)
+static void start_cursor_blinking  (MooTerm        *term)
 {
     if (!term->priv->_cursor_blink_timeout_id && term->priv->_cursor_blinks)
         term->priv->_cursor_blink_timeout_id =
@@ -945,7 +948,7 @@ void        moo_term_start_cursor_blinking  (MooTerm        *term)
 }
 
 
-void        moo_term_stop_cursor_blinking   (MooTerm        *term)
+static void stop_cursor_blinking   (MooTerm        *term)
 {
     if (term->priv->_cursor_blink_timeout_id)
     {
@@ -956,4 +959,26 @@ void        moo_term_stop_cursor_blinking   (MooTerm        *term)
                                 term->priv->cursor_row,
                                 term->priv->cursor_col);
     }
+}
+
+
+void        moo_term_pause_cursor_blinking  (MooTerm        *term)
+{
+    if (term->priv->_cursor_blinks)
+    {
+        stop_cursor_blinking (term);
+        start_cursor_blinking (term);
+    }
+}
+
+
+void        moo_term_set_cursor_blinks      (MooTerm        *term,
+                                             gboolean        blinks)
+{
+    term->priv->_cursor_blinks = blinks;
+    if (blinks)
+        start_cursor_blinking (term);
+    else
+        stop_cursor_blinking (term);
+    g_object_notify (G_OBJECT (term), "cursor-blinks");
 }

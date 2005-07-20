@@ -111,7 +111,8 @@ struct _MooTermPrivate {
     guint           _cursor_blink_timeout_id;
 
     GdkGC          *color[2][MOO_TERM_COLOR_MAX];
-    GdkGC          *fg, *bg;
+    GdkGC          *fg[2];
+    GdkGC          *bg;
 
     GdkCursor      *pointer[POINTERS_NUM];
     gboolean        pointer_visible;
@@ -203,8 +204,8 @@ void        moo_term_invalidate_all         (MooTerm        *term);
 void        moo_term_release_selection      (MooTerm        *term);
 void        moo_term_grab_selection         (MooTerm        *term);
 
-void        moo_term_start_cursor_blinking  (MooTerm        *term);
-void        moo_term_stop_cursor_blinking   (MooTerm        *term);
+/* in mooterm-draw.c */
+void        moo_term_pause_cursor_blinking  (MooTerm        *term);
 void        moo_term_set_cursor_blinks      (MooTerm        *term,
                                              gboolean        blinks);
 
@@ -272,21 +273,14 @@ struct _TermFontInfo {
     guint           ascent;
 };
 
-void             term_font_info_calculate   (TermFontInfo           *info);
-void             term_font_info_set_font    (TermFontInfo           *info,
+void            moo_term_font_info_calculate(TermFontInfo           *info);
+void            moo_term_font_info_set_font (TermFontInfo           *info,
                                              PangoFontDescription   *font_desc);
-TermFontInfo    *term_font_info_new         (PangoContext           *ctx);
-void             term_font_info_free        (TermFontInfo           *info);
+TermFontInfo   *moo_term_font_info_new      (PangoContext           *ctx);
+void            moo_term_font_info_free     (TermFontInfo           *info);
 
-inline static guint term_char_width         (MooTerm                *term)
-{
-    return term->priv->font_info->width;
-}
-
-inline static guint term_char_height        (MooTerm                *term)
-{
-    return term->priv->font_info->height;
-}
+#define term_char_width(term)   ((term)->priv->font_info->width)
+#define term_char_height(term)  ((term)->priv->font_info->height)
 
 
 G_END_DECLS
