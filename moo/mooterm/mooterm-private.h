@@ -55,20 +55,11 @@ typedef enum {
 } TermPointerType;
 
 enum {
-    NORMAL      = 0,
-    SELECTED    = 1,
-    CURSOR      = 2
+    NORMAL  = 0,
+    BOLD    = 1
 };
 
-
-typedef enum {
-    CURSOR_BLOCK,
-    CURSOR_UNDERLINE
-} TermCursorShape;
-
-
 typedef struct _TermFontInfo    TermFontInfo;
-
 
 struct _MooTermPrivate {
     struct _MooTermPt       *pt;
@@ -119,11 +110,8 @@ struct _MooTermPrivate {
     guint           _cursor_blink_time;
     guint           _cursor_blink_timeout_id;
 
-    GdkGC          *fg[MOO_TERM_COLOR_MAX + 1][3];
-    GdkGC          *bg[MOO_TERM_COLOR_MAX + 1][3];
-
-    TermCursorShape cursor_shape;
-    guint           cursor_height;
+    GdkGC          *color[2][MOO_TERM_COLOR_MAX];
+    GdkGC          *fg, *bg;
 
     GdkCursor      *pointer[POINTERS_NUM];
     gboolean        pointer_visible;

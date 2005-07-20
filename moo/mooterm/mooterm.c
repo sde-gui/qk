@@ -354,17 +354,16 @@ static void moo_term_finalize               (GObject        *object)
         if (term->priv->pointer[i])
             gdk_cursor_unref (term->priv->pointer[i]);
 
-    /* TODO TODO TODO */
     for (i = 0; i < 1; ++i)
-        for (j = 0; j <= MOO_TERM_COLOR_MAX; ++j)
+        for (j = 0; j < MOO_TERM_COLOR_MAX; ++j)
     {
-        g_object_unref (term->priv->fg[i][j]);
-        g_object_unref (term->priv->bg[i][j]);
+        if (term->priv->color[i][j])
+            g_object_unref (term->priv->color[i][j]);
     }
-    g_object_unref (term->priv->fg[1][MOO_TERM_COLOR_MAX]);
-    g_object_unref (term->priv->bg[1][MOO_TERM_COLOR_MAX]);
-    g_object_unref (term->priv->fg[2][MOO_TERM_COLOR_MAX]);
-    g_object_unref (term->priv->bg[2][MOO_TERM_COLOR_MAX]);
+    if (term->priv->fg)
+        g_object_unref (term->priv->fg);
+    if (term->priv->bg)
+        g_object_unref (term->priv->bg);
 
     g_free (term->priv);
     G_OBJECT_CLASS (moo_term_parent_class)->finalize (object);

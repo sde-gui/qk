@@ -58,6 +58,8 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     GdkModifierType modifiers;
 
     term = MOO_TERM (widget);
+    moo_term_stop_cursor_blinking (term);
+    moo_term_start_cursor_blinking (term);
 
     /* First, check if GtkWidget's behavior already does something with
      * this key. */
