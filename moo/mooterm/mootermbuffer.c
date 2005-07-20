@@ -255,7 +255,7 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
         buf->priv->screen_width = MIN_TERMINAL_WIDTH;
     if (buf->priv->screen_height < MIN_TERMINAL_HEIGHT)
         buf->priv->screen_height = MIN_TERMINAL_HEIGHT;
-    buf->priv->_screen_offset = 0;
+    buf->priv->screen_offset = 0;
 
     buf->priv->top_margin = 0;
     buf->priv->bottom_margin = buf->priv->screen_height - 1;
@@ -413,7 +413,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
 
                 remove -= del;
 
-                buf->priv->_screen_offset += remove;
+                buf->priv->screen_offset += remove;
                 buf_changed_set_all (buf);
                 scrollback_changed = TRUE;
                 content_changed = TRUE;
@@ -945,16 +945,16 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
 
     if (buf_get_mode (MODE_CA) || buf->priv->scrolling_region_set)
     {
-        guint top = buf->priv->top_margin + buf->priv->_screen_offset;
-        guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
-        guint cursor = cursor_row + buf->priv->_screen_offset;
+        guint top = buf->priv->top_margin + buf->priv->screen_offset;
+        guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
+        guint cursor = cursor_row + buf->priv->screen_offset;
 
         if (cursor > bottom || cursor < top)
         {
             g_warning ("got IND outside of scrolling region");
             moo_term_buffer_cursor_move_to (buf, buf->priv->top_margin, 0);
             cursor_row = buf_cursor_row (buf);
-            cursor = cursor_row + buf->priv->_screen_offset;
+            cursor = cursor_row + buf->priv->screen_offset;
         }
 
         if (cursor == bottom)
@@ -988,7 +988,7 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
             g_ptr_array_add (buf->priv->lines,
                              moo_term_line_new (width));
 
-            buf->priv->_screen_offset += 1;
+            buf->priv->screen_offset += 1;
             moo_term_buffer_scrollback_changed (buf);
 
             buf_changed_set_all (buf);
@@ -1006,9 +1006,9 @@ void    moo_term_buffer_index           (MooTermBuffer  *buf)
 void    moo_term_buffer_reverse_index           (MooTermBuffer  *buf)
 {
     guint width = buf_screen_width (buf);
-    guint top = buf->priv->top_margin + buf->priv->_screen_offset;
-    guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
-    guint cursor = buf_cursor_row (buf) + buf->priv->_screen_offset;
+    guint top = buf->priv->top_margin + buf->priv->screen_offset;
+    guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
+    guint cursor = buf_cursor_row (buf) + buf->priv->screen_offset;
 
     g_assert (cursor <= bottom && cursor >= top);
 
@@ -1361,9 +1361,9 @@ void    moo_term_buffer_cup                     (MooTermBuffer  *buf,
 void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
                                                  guint           n)
 {
-    guint cursor = buf->priv->cursor_row + buf->priv->_screen_offset;
-    guint top = buf->priv->top_margin + buf->priv->_screen_offset;
-    guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
+    guint cursor = buf->priv->cursor_row + buf->priv->screen_offset;
+    guint top = buf->priv->top_margin + buf->priv->screen_offset;
+    guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
 
     GdkRectangle changed = {
@@ -1400,9 +1400,9 @@ void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
 void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,
                                                  guint           n)
 {
-    guint cursor = buf->priv->cursor_row + buf->priv->_screen_offset;
-    guint top = buf->priv->top_margin + buf->priv->_screen_offset;
-    guint bottom = buf->priv->bottom_margin + buf->priv->_screen_offset;
+    guint cursor = buf->priv->cursor_row + buf->priv->screen_offset;
+    guint top = buf->priv->top_margin + buf->priv->screen_offset;
+    guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
 
     GdkRectangle changed = {
@@ -1520,7 +1520,7 @@ void    moo_term_buffer_reset                   (MooTermBuffer  *buf)
         moo_term_line_free (g_ptr_array_index (buf->priv->lines, i));
     g_ptr_array_free (buf->priv->lines, TRUE);
 
-    buf->priv->_screen_offset = 0;
+    buf->priv->screen_offset = 0;
     buf->priv->lines = g_ptr_array_sized_new (buf->priv->screen_height);
     for (i = 0; i < buf->priv->screen_height; ++i)
         g_ptr_array_add (buf->priv->lines,
@@ -1746,11 +1746,11 @@ MooTermLine *moo_term_buffer_get_line   (MooTermBuffer  *buf,
     {
         g_assert (n < buf->priv->screen_height);
         return g_ptr_array_index (buf->priv->lines,
-                                  n + buf->priv->_screen_offset);
+                                  n + buf->priv->screen_offset);
     }
     else
     {
-        g_assert (n < buf->priv->_screen_offset + buf->priv->screen_height);
+        g_assert (n < buf->priv->screen_offset + buf->priv->screen_height);
         return g_ptr_array_index (buf->priv->lines, n);
     }
 }

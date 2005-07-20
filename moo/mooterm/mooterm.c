@@ -251,11 +251,11 @@ static void moo_term_init                   (MooTerm        *term)
 
     term->priv->selection = moo_term_selection_new (term);
 
-    term->priv->_cursor_visible = TRUE;
-    term->priv->_blink_cursor_visible = TRUE;
-    term->priv->_cursor_blinks = FALSE;
-    term->priv->_cursor_blink_timeout_id = 0;
-    term->priv->_cursor_blink_time = 530;
+    term->priv->cursor_visible = TRUE;
+    term->priv->blink_cursor_visible = TRUE;
+    term->priv->cursor_blinks = FALSE;
+    term->priv->cursor_blink_timeout_id = 0;
+    term->priv->cursor_blink_time = 530;
 
     term->priv->settings.hide_pointer_on_keypress = TRUE;
     term->priv->settings.meta_sends_escape = TRUE;
@@ -320,8 +320,8 @@ static void moo_term_finalize               (GObject        *object)
     guint i, j;
     MooTerm *term = MOO_TERM (object);
 
-    if (term->priv->_cursor_blink_timeout_id)
-        g_source_remove (term->priv->_cursor_blink_timeout_id);
+    if (term->priv->cursor_blink_timeout_id)
+        g_source_remove (term->priv->cursor_blink_timeout_id);
 
     moo_term_release_selection (term);
 
@@ -399,7 +399,7 @@ static void moo_term_get_property   (GObject        *object,
 
     switch (prop_id) {
         case PROP_CURSOR_BLINKS:
-            g_value_set_boolean (value, term->priv->_cursor_blinks);
+            g_value_set_boolean (value, term->priv->cursor_blinks);
             break;
 
         default:
@@ -577,7 +577,7 @@ static void     scrollback_changed              (MooTerm        *term,
     {
         guint scrollback = buf_scrollback (term->priv->buffer);
 
-        if (term->priv->_scrolled && term->priv->_top_line > scrollback)
+        if (term->priv->scrolled && term->priv->top_line > scrollback)
         {
             moo_term_selection_invalidate (term);
             scroll_to_bottom (term, TRUE);
@@ -613,7 +613,7 @@ static void     height_changed                  (MooTerm        *term,
 
     term->priv->height = buf_screen_height (term->priv->buffer);
 
-    if (!term->priv->_scrolled || term->priv->_top_line > scrollback)
+    if (!term->priv->scrolled || term->priv->top_line > scrollback)
         scroll_to_bottom (term, TRUE);
     else
         update_adjustment (term);
@@ -778,8 +778,8 @@ static void     scroll_abs                      (MooTerm        *term,
     if (line >= buf_scrollback (term->priv->buffer))
         return scroll_to_bottom (term, update_adj);
 
-    term->priv->_top_line = line;
-    term->priv->_scrolled = TRUE;
+    term->priv->top_line = line;
+    term->priv->scrolled = TRUE;
 
     moo_term_invalidate_all (term);
 
@@ -794,20 +794,20 @@ static void     scroll_to_bottom                (MooTerm        *term,
     guint scrollback = buf_scrollback (term->priv->buffer);
     gboolean update_full = FALSE;
 
-    if (!term->priv->_scrolled && term->priv->_top_line <= scrollback)
+    if (!term->priv->scrolled && term->priv->top_line <= scrollback)
     {
         if (update_adj)
             update_adjustment_value (term);
         return;
     }
 
-    if (term->priv->_top_line > scrollback)
+    if (term->priv->top_line > scrollback)
     {
-        term->priv->_top_line = scrollback;
+        term->priv->top_line = scrollback;
         update_full = TRUE;
     }
 
-    term->priv->_scrolled = FALSE;
+    term->priv->scrolled = FALSE;
 
     moo_term_invalidate_all (term);
 

@@ -72,8 +72,8 @@ struct _MooTermPrivate {
     guint8          modes[MODE_MAX];
     guint8          saved_modes[MODE_MAX];
 
-    gboolean        _scrolled;
-    guint           _top_line;
+    gboolean        scrolled;
+    guint           top_line;
     guint           width;
     guint           height;
 
@@ -103,12 +103,12 @@ struct _MooTermPrivate {
     PangoLayout    *layout;
     guint           pending_expose;
     gboolean        colors_inverted;
-    gboolean        _cursor_visible;
+    gboolean        cursor_visible;
 
-    gboolean        _blink_cursor_visible;
-    gboolean        _cursor_blinks;
-    guint           _cursor_blink_time;
-    guint           _cursor_blink_timeout_id;
+    gboolean        blink_cursor_visible;
+    gboolean        cursor_blinks;
+    guint           cursor_blink_time;
+    guint           cursor_blink_timeout_id;
 
     GdkGC          *color[2][MOO_TERM_COLOR_MAX];
     GdkGC          *fg[2];
@@ -140,8 +140,8 @@ struct _MooTermPrivate {
 };
 
 #define term_top_line(term)                     \
-    ((term)->priv->_scrolled ?                  \
-        (term)->priv->_top_line :               \
+    ((term)->priv->scrolled ?                   \
+        (term)->priv->top_line :                \
         buf_scrollback ((term)->priv->buffer))
 
 void        moo_term_text_iface_init        (gpointer        iface);

@@ -255,7 +255,7 @@ void        moo_term_cursor_moved       (MooTerm        *term,
     new_row = buf_cursor_row (buf);
     new_col = buf_cursor_col (buf);
 
-    if (term->priv->_cursor_visible && term->priv->_blink_cursor_visible)
+    if (term->priv->cursor_visible && term->priv->blink_cursor_visible)
     {
         invalidate_screen_cell (term,
                                 term->priv->cursor_row,
@@ -504,7 +504,7 @@ static void term_draw_range                 (MooTerm        *term,
     g_assert (start + len <= term->priv->width);
     g_assert (abs_row < buf_total_height (term->priv->buffer));
 
-    if (term->priv->_cursor_visible && term->priv->_blink_cursor_visible &&
+    if (term->priv->cursor_visible && term->priv->blink_cursor_visible &&
         term->priv->cursor_row + buf_scrollback (term->priv->buffer) == abs_row)
     {
         guint cursor = buf_cursor_col (term->priv->buffer);
@@ -920,7 +920,7 @@ void        moo_term_invert_colors          (MooTerm    *term,
 void        moo_term_set_cursor_visible     (MooTerm    *term,
                                              gboolean    visible)
 {
-    term->priv->_cursor_visible = visible;
+    term->priv->cursor_visible = visible;
     invalidate_screen_cell (term,
                             term->priv->cursor_row,
                             term->priv->cursor_col);
@@ -929,8 +929,8 @@ void        moo_term_set_cursor_visible     (MooTerm    *term,
 
 static gboolean blink (MooTerm *term)
 {
-    term->priv->_blink_cursor_visible =
-            !term->priv->_blink_cursor_visible;
+    term->priv->blink_cursor_visible =
+            !term->priv->blink_cursor_visible;
     invalidate_screen_cell (term,
                             term->priv->cursor_row,
                             term->priv->cursor_col);
@@ -940,9 +940,9 @@ static gboolean blink (MooTerm *term)
 
 static void start_cursor_blinking  (MooTerm        *term)
 {
-    if (!term->priv->_cursor_blink_timeout_id && term->priv->_cursor_blinks)
-        term->priv->_cursor_blink_timeout_id =
-                g_timeout_add (term->priv->_cursor_blink_time,
+    if (!term->priv->cursor_blink_timeout_id && term->priv->cursor_blinks)
+        term->priv->cursor_blink_timeout_id =
+                g_timeout_add (term->priv->cursor_blink_time,
                                (GSourceFunc) blink,
                                term);
 }
@@ -950,11 +950,11 @@ static void start_cursor_blinking  (MooTerm        *term)
 
 static void stop_cursor_blinking   (MooTerm        *term)
 {
-    if (term->priv->_cursor_blink_timeout_id)
+    if (term->priv->cursor_blink_timeout_id)
     {
-        g_source_remove (term->priv->_cursor_blink_timeout_id);
-        term->priv->_cursor_blink_timeout_id = 0;
-        term->priv->_blink_cursor_visible = TRUE;
+        g_source_remove (term->priv->cursor_blink_timeout_id);
+        term->priv->cursor_blink_timeout_id = 0;
+        term->priv->blink_cursor_visible = TRUE;
         invalidate_screen_cell (term,
                                 term->priv->cursor_row,
                                 term->priv->cursor_col);
@@ -964,7 +964,7 @@ static void stop_cursor_blinking   (MooTerm        *term)
 
 void        moo_term_pause_cursor_blinking  (MooTerm        *term)
 {
-    if (term->priv->_cursor_blinks)
+    if (term->priv->cursor_blinks)
     {
         stop_cursor_blinking (term);
         start_cursor_blinking (term);
@@ -975,7 +975,7 @@ void        moo_term_pause_cursor_blinking  (MooTerm        *term)
 void        moo_term_set_cursor_blinks      (MooTerm        *term,
                                              gboolean        blinks)
 {
-    term->priv->_cursor_blinks = blinks;
+    term->priv->cursor_blinks = blinks;
     if (blinks)
         start_cursor_blinking (term);
     else

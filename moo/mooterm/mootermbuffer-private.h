@@ -49,7 +49,7 @@ struct _MooTermBufferPrivate {
 
     /* these are real position and
        dimensions of the screen */
-    guint           _screen_offset;
+    guint           screen_offset;
     guint           screen_width;
     guint           screen_height;
 
@@ -137,7 +137,7 @@ inline static guint buf_scrollback      (MooTermBuffer  *buf)
     if (buf_get_mode (MODE_CA))
         return 0;
     else
-        return buf->priv->_screen_offset;
+        return buf->priv->screen_offset;
 }
 
 inline static guint buf_total_height    (MooTermBuffer  *buf)
@@ -225,7 +225,7 @@ inline static MooTermLine *buf_screen_line  (MooTermBuffer  *buf,
     g_assert (n < buf->priv->screen_height);
 
     return g_ptr_array_index (buf->priv->lines,
-                              n + buf->priv->_screen_offset);
+                              n + buf->priv->screen_offset);
 }
 
 
