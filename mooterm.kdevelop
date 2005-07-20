@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>gcc-4.0</useconfiguration>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
       <mainprogram>tests/mterm</mainprogram>

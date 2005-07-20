@@ -110,9 +110,14 @@ struct _MooTermPrivate {
     GdkGC          *clip;
     gboolean        font_changed;
     PangoLayout    *layout;
-    gboolean        cursor_visible;
     guint           pending_expose;
     gboolean        colors_inverted;
+    gboolean        _cursor_visible;
+
+    gboolean        _blink_cursor_visible;
+    gboolean        _cursor_blinks;
+    guint           _cursor_blink_time;
+    guint           _cursor_blink_timeout_id;
 
     GdkGC          *fg[MOO_TERM_COLOR_MAX + 1][3];
     GdkGC          *bg[MOO_TERM_COLOR_MAX + 1][3];
@@ -209,6 +214,11 @@ void        moo_term_invalidate_all         (MooTerm        *term);
 
 void        moo_term_release_selection      (MooTerm        *term);
 void        moo_term_grab_selection         (MooTerm        *term);
+
+void        moo_term_start_cursor_blinking  (MooTerm        *term);
+void        moo_term_stop_cursor_blinking   (MooTerm        *term);
+void        moo_term_set_cursor_blinks      (MooTerm        *term,
+                                             gboolean        blinks);
 
 
 /*************************************************************************/

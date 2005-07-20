@@ -63,7 +63,9 @@ int main (int argc, char *argv[])
 //                                     GTK_POLICY_AUTOMATIC);
                                     GTK_POLICY_ALWAYS);
 
-    term = GTK_WIDGET (g_object_new (MOO_TYPE_TERM, NULL));
+    term = GTK_WIDGET (g_object_new (MOO_TYPE_TERM,
+                                     "cursor-blinks", TRUE,
+                                     NULL));
     gtk_container_add (GTK_CONTAINER (swin), term);
 
     gtk_widget_show_all (win);

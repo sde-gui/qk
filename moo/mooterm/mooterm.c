@@ -22,17 +22,25 @@
 #include "mooutils/moomarshals.h"
 
 
-static void moo_term_class_init             (MooTermClass   *klass);
-static void moo_term_init                   (MooTerm        *term);
-static void moo_term_finalize               (GObject        *object);
+static void moo_term_class_init     (MooTermClass   *klass);
+static void moo_term_init           (MooTerm        *term);
+static void moo_term_finalize       (GObject        *object);
+static void moo_term_set_property   (GObject        *object,
+                                     guint           prop_id,
+                                     const GValue   *value,
+                                     GParamSpec     *pspec);
+static void moo_term_get_property   (GObject        *object,
+                                     guint           prop_id,
+                                     GValue         *value,
+                                     GParamSpec     *pspec);
 
-static void moo_term_realize                (GtkWidget          *widget);
-static void moo_term_size_allocate          (GtkWidget          *widget,
-                                             GtkAllocation      *allocation);
+static void moo_term_realize        (GtkWidget      *widget);
+static void moo_term_size_allocate  (GtkWidget      *widget,
+                                     GtkAllocation  *allocation);
 
-static gboolean moo_term_popup_menu         (GtkWidget          *widget);
-static gboolean moo_term_scroll             (GtkWidget          *widget,
-                                             GdkEventScroll     *event);
+static gboolean moo_term_popup_menu (GtkWidget      *widget);
+static gboolean moo_term_scroll     (GtkWidget      *widget,
+                                     GdkEventScroll *event);
 
 static void     moo_term_set_scroll_adjustments (GtkWidget      *widget,
                                                  GtkAdjustment  *hadj,
@@ -81,6 +89,7 @@ enum {
 
 enum {
     PROP_0 = 0,
+    PROP_CURSOR_BLINKS,
     LAST_PROP
 };
 
@@ -135,6 +144,8 @@ static void moo_term_class_init (MooTermClass *klass)
     moo_term_parent_class = g_type_class_peek_parent (klass);
 
     gobject_class->finalize = moo_term_finalize;
+    gobject_class->set_property = moo_term_set_property;
+    gobject_class->get_property = moo_term_get_property;
 
     widget_class->realize = moo_term_realize;
     widget_class->size_allocate = moo_term_size_allocate;
@@ -148,6 +159,14 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->motion_notify_event = moo_term_motion_notify;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CURSOR_BLINKS,
+                                     g_param_spec_boolean ("cursor-blinks",
+                                             "cursor-blinks",
+                                             "cursor-blinks",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[SET_SCROLL_ADJUSTMENTS] =
             g_signal_new ("set-scroll-adjustments",
@@ -232,7 +251,11 @@ static void moo_term_init                   (MooTerm        *term)
 
     term->priv->selection = term_selection_new (term);
 
-    term->priv->cursor_visible = TRUE;
+    term->priv->_cursor_visible = TRUE;
+    term->priv->_blink_cursor_visible = TRUE;
+    term->priv->_cursor_blinks = FALSE;
+    term->priv->_cursor_blink_timeout_id = 0;
+    term->priv->_cursor_blink_time = 530;
 
     term->priv->settings.hide_pointer_on_keypress = TRUE;
     term->priv->settings.meta_sends_escape = TRUE;
@@ -297,6 +320,9 @@ static void moo_term_finalize               (GObject        *object)
     guint i, j;
     MooTerm *term = MOO_TERM (object);
 
+    if (term->priv->_cursor_blink_timeout_id)
+        g_source_remove (term->priv->_cursor_blink_timeout_id);
+
     moo_term_release_selection (term);
 
     g_object_unref (term->priv->pt);
@@ -343,6 +369,50 @@ static void moo_term_finalize               (GObject        *object)
     g_free (term->priv);
     G_OBJECT_CLASS (moo_term_parent_class)->finalize (object);
 }
+
+
+static void moo_term_set_property   (GObject        *object,
+                                     guint           prop_id,
+                                     const GValue   *value,
+                                     GParamSpec     *pspec)
+{
+    MooTerm *term = MOO_TERM (object);
+
+    switch (prop_id) {
+        case PROP_CURSOR_BLINKS:
+            moo_term_set_cursor_blinks (term, g_value_get_boolean (value));
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void moo_term_get_property   (GObject        *object,
+                                     guint           prop_id,
+                                     GValue         *value,
+                                     GParamSpec     *pspec)
+{
+    MooTerm *term = MOO_TERM (object);
+
+    switch (prop_id) {
+        case PROP_CURSOR_BLINKS:
+            g_value_set_boolean (value, term->priv->_cursor_blinks);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void moo_term_get_property   (GObject        *object,
+                                     guint           prop_id,
+                                     GValue         *value,
+                                     GParamSpec     *pspec);
 
 
 static void moo_term_size_allocate          (GtkWidget          *widget,
@@ -1577,4 +1647,16 @@ void        moo_term_release_selection      (MooTerm        *term)
         gtk_clipboard_clear (primary);
         term->priv->owns_selection = FALSE;
     }
+}
+
+
+void        moo_term_set_cursor_blinks      (MooTerm        *term,
+                                             gboolean        blinks)
+{
+    term->priv->_cursor_blinks = blinks;
+    if (blinks)
+        moo_term_start_cursor_blinking (term);
+    else
+        moo_term_stop_cursor_blinking (term);
+    g_object_notify (G_OBJECT (term), "cursor-blinks");
 }
