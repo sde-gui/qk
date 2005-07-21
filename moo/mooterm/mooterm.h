@@ -99,6 +99,8 @@ void        moo_term_ctrl_c                 (MooTerm        *term);
 
 void        moo_term_set_pointer_visible    (MooTerm        *term,
                                              gboolean        visible);
+void        moo_term_set_font_from_string   (MooTerm        *term,
+                                             const char     *font);
 
 
 G_END_DECLS

@@ -41,9 +41,6 @@ G_BEGIN_DECLS
 #define MIN_TERMINAL_HEIGHT         4
 #define MAX_TERMINAL_WIDTH          4096
 
-#define DEFAULT_MONOSPACE_FONT      "Courier New 9"
-#define DEFAULT_MONOSPACE_FONT2     "Monospace"
-
 #define SCROLL_GRANULARITY          3
 
 
@@ -59,7 +56,7 @@ enum {
     BOLD    = 1
 };
 
-typedef struct _TermFontInfo    TermFontInfo;
+typedef struct _MooTermFont MooTermFont;
 
 struct _MooTermPrivate {
     struct _MooTermPt       *pt;
@@ -94,7 +91,7 @@ struct _MooTermPrivate {
     gpointer        selection;
     gboolean        owns_selection;
 
-    TermFontInfo   *font_info;
+    MooTermFont    *font;
 
     GdkPixmap      *back_pixmap;
     GdkRegion      *changed_content; /* buffer coordinates, relative to top_line */
@@ -266,21 +263,18 @@ void        moo_term_dsr                    (MooTerm    *term,
 /* font info
  */
 
-struct _TermFontInfo {
+struct _MooTermFont {
     PangoContext   *ctx;
+    char           *name;
     guint           width;
     guint           height;
     guint           ascent;
 };
 
-void            moo_term_font_info_calculate(TermFontInfo           *info);
-void            moo_term_font_info_set_font (TermFontInfo           *info,
-                                             PangoFontDescription   *font_desc);
-TermFontInfo   *moo_term_font_info_new      (PangoContext           *ctx);
-void            moo_term_font_info_free     (TermFontInfo           *info);
+void            moo_term_font_free          (MooTermFont            *info);
 
-#define term_char_width(term)   ((term)->priv->font_info->width)
-#define term_char_height(term)  ((term)->priv->font_info->height)
+#define term_char_width(term)   ((term)->priv->font->width)
+#define term_char_height(term)  ((term)->priv->font->height)
 
 
 G_END_DECLS

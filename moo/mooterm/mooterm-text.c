@@ -295,8 +295,11 @@ static void term_select_range (const GtkTextIter *start,
     if (ITER_COL(&new_sel.start) == ITER_WIDTH(&new_sel.start))
     {
         g_assert (ITER_ROW(&new_sel.start) < ITER_TOTAL_HEIGHT(&new_sel.start));
-        ITER_ROW(&new_sel.start)++;
-        ITER_COL(&new_sel.start) = 0;
+        if (ITER_ROW(&new_sel.start) + 1 < ITER_TOTAL_HEIGHT(&new_sel.start))
+        {
+            ITER_ROW(&new_sel.start)++;
+            ITER_COL(&new_sel.start) = 0;
+        }
     }
 
     if (ITER_COL(&new_sel.end) == 0 && ITER_ROW(&new_sel.end) != 0)
@@ -431,20 +434,28 @@ static void     get_iter_at_location    (MooText        *obj,
     int char_width = term_char_width (term);
     int char_height = term_char_height (term);
     int scrollback = buf_scrollback (term->priv->buffer);
-    guint row, col;
 
     g_return_if_fail (iter != NULL);
 
     y /= char_height;
-    y = CLAMP (y, 0, scrollback + (int)term->priv->height - 1);
-    row = y;
 
     x = CLAMP (x, 0, (int)term->priv->width * char_width - 1);
-    col = (x % char_width > char_width / 2) ?
+    x = (x % char_width > char_width / 2) ?
                             x / char_width + 1 :
                             x / char_width;
 
-    FILL_ITER (iter, term, row, col);
+    if (y < 0)
+    {
+        y = 0;
+        x = 0;
+    }
+    else if (y > scrollback + (int)term->priv->height - 1)
+    {
+        y = scrollback + (int)term->priv->height - 1;
+        x = term->priv->width;
+    }
+
+    FILL_ITER (iter, term, y, x);
 }
 
 
@@ -735,6 +746,7 @@ static gboolean iter_ends_line          (const GtkTextIter  *iter)
 
 static gboolean iter_starts_line        (const GtkTextIter  *iter)
 {
+    CHECK_ITER (iter);
     return ITER_COL(iter) == 0;
 }
 
@@ -756,6 +768,8 @@ static void     iter_forward_char       (GtkTextIter        *iter)
         ITER_COL(iter) = 0;
         ITER_ROW(iter)++;
     }
+
+    CHECK_ITER (iter);
 }
 
 
@@ -775,6 +789,8 @@ static void     iter_backward_char      (GtkTextIter        *iter)
         ITER_ROW(iter)--;
         ITER_COL(iter) = width;
     }
+
+    CHECK_ITER (iter);
 }
 
 
@@ -783,6 +799,7 @@ static void     iter_set_line_offset    (GtkTextIter        *iter,
 {
     g_return_if_fail (offset <= ITER_TERM(iter)->priv->width);
     ITER_COL(iter) = offset;
+    CHECK_ITER (iter);
 }
 
 
@@ -792,15 +809,17 @@ static gboolean iter_forward_line       (GtkTextIter        *iter)
     int width = term->priv->width;
     int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
 
-    if (ITER_ROW(iter) == total_height)
+    if (ITER_ROW(iter) == total_height - 1)
     {
         ITER_COL(iter) = width;
+        CHECK_ITER (iter);
         return FALSE;
     }
     else
     {
         ITER_COL(iter) = 0;
         ITER_ROW(iter)++;
+        CHECK_ITER (iter);
         return TRUE;
     }
 }

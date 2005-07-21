@@ -17,6 +17,8 @@
 #include "mooterm/mootermbuffer-graph.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moosignal.h"
+#include <string.h>
 
 
 MooTermTextAttr MOO_TERM_ZERO_ATTR;
@@ -46,6 +48,7 @@ enum {
     CURSOR_MOVED,
     FEED_CHILD,
     FULL_RESET,
+    TABS_CHANGED,
     LAST_SIGNAL
 };
 
@@ -73,28 +76,28 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
     gobject_class->finalize = moo_term_buffer_finalize;
 
     signals[CHANGED] =
-            g_signal_new ("changed",
-                          G_OBJECT_CLASS_TYPE (gobject_class),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTermBufferClass, changed),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+            moo_signal_new_cb ("changed",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL,
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
 
     signals[CURSOR_MOVED] =
-            g_signal_new ("cursor-moved",
-                          G_OBJECT_CLASS_TYPE (gobject_class),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTermBufferClass, cursor_moved),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+            moo_signal_new_cb ("cursor-moved",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL,
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
 
     signals[FEED_CHILD] =
-            g_signal_new ("feed-child",
+            moo_signal_new_cb ("feed-child",
                           G_OBJECT_CLASS_TYPE (gobject_class),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTermBufferClass, feed_child),
+                          NULL,
                           NULL, NULL,
                           _moo_marshal_VOID__STRING_INT,
                           G_TYPE_NONE, 2,
@@ -109,6 +112,15 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    signals[TABS_CHANGED] =
+            moo_signal_new_cb ("tabs-changed",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL,
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
 
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,
@@ -546,6 +558,9 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
         }
     }
 
+    if (c == '&')
+        g_print ("%d, %d\n", cursor_row, buf->priv->cursor_col);
+
     if (buf_get_mode (MODE_IRM))
     {
         moo_term_line_insert_unichar (buf_screen_line (buf, cursor_row),
@@ -568,7 +583,10 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
     {
         buf->priv->cursor_col--;
         if (buf_get_mode (MODE_DECAWM))
+        {
             moo_term_buffer_new_line (buf);
+            g_print ("moving to next line\n");
+        }
     }
 }
 
@@ -657,6 +675,7 @@ void    moo_term_buffer_reset_tab_stops     (MooTermBuffer  *buf)
     for (i = 7; i < width - 1; i += 8)
         buf->priv->tab_stops = g_list_append (buf->priv->tab_stops,
                                               GUINT_TO_POINTER (i));
+    g_signal_emit (buf, signals[TABS_CHANGED], 0);
 }
 
 guint   moo_term_buffer_next_tab_stop       (MooTermBuffer  *buf,
@@ -690,25 +709,21 @@ guint   moo_term_buffer_prev_tab_stop       (MooTermBuffer  *buf,
 }
 
 void    moo_term_buffer_clear_tab_stop      (MooTermBuffer  *buf,
-                                             int             what)
+                                             ClearTabType    what)
 {
-    if (what != 0 && what != 3)
+    switch (what)
     {
-        g_message ("%s: ERROR, param == %d", G_STRLOC, what);
-        return;
+        case CLEAR_TAB_AT_CURSOR:
+            buf->priv->tab_stops =
+                    g_list_remove (buf->priv->tab_stops,
+                                   GUINT_TO_POINTER (buf_cursor_col (buf)));
+
+        case CLEAR_ALL_TABS:
+            g_list_free (buf->priv->tab_stops);
+            buf->priv->tab_stops = NULL;
     }
 
-    if (what == 0)
-    {
-        buf->priv->tab_stops =
-                g_list_remove (buf->priv->tab_stops,
-                               GUINT_TO_POINTER (buf_cursor_col (buf)));
-    }
-    else
-    {
-        g_list_free (buf->priv->tab_stops);
-        buf->priv->tab_stops = NULL;
-    }
+    g_signal_emit (buf, signals[TABS_CHANGED], 0);
 }
 
 static int cmp_guints (gconstpointer a, gconstpointer b)
@@ -730,6 +745,8 @@ void    moo_term_buffer_set_tab_stop        (MooTermBuffer  *buf)
                 g_list_insert_sorted (buf->priv->tab_stops,
                                       GUINT_TO_POINTER (cursor),
                                       cmp_guints);
+
+    g_signal_emit (buf, signals[TABS_CHANGED], 0);
 }
 
 
@@ -1246,7 +1263,7 @@ void    moo_term_buffer_erase_char              (MooTermBuffer  *buf,
 
 
 void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
-                                                 guint           what)
+                                                 EraseType       what)
 {
     guint i;
     guint cursor_col = buf_cursor_col (buf);
@@ -1260,21 +1277,21 @@ void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
 
     switch (what)
     {
-        case 0:
+        case ERASE_FROM_CURSOR:
             moo_term_buffer_erase_range (buf, cursor_row,
                                          cursor_col, width);
             for (i = cursor_row + 1; i < height; ++i)
                 moo_term_buffer_erase_range (buf, i, 0, width);
             break;
 
-        case 1:
+        case ERASE_TO_CURSOR:
             for (i = 0; i < cursor_row; ++i)
                 moo_term_buffer_erase_range (buf, i, 0, width);
             moo_term_buffer_erase_range (buf, cursor_row,
                                          0, cursor_col + 1);
             break;
 
-        case 2:
+        case ERASE_ALL:
             for (i = 0; i < height; ++i)
                 moo_term_buffer_erase_range (buf, i, 0, width);
             break;
@@ -1285,7 +1302,7 @@ void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
 
 
 void    moo_term_buffer_erase_in_line           (MooTermBuffer  *buf,
-                                                 guint           what)
+                                                 EraseType       what)
 {
     guint cursor_col = buf_cursor_col (buf);
     guint cursor_row = buf_cursor_row (buf);
@@ -1295,17 +1312,17 @@ void    moo_term_buffer_erase_in_line           (MooTermBuffer  *buf,
 
     switch (what)
     {
-        case 0:
+        case ERASE_FROM_CURSOR:
             moo_term_buffer_erase_range (buf, cursor_row,
                                          cursor_col, width);
             break;
 
-        case 1:
+        case ERASE_TO_CURSOR:
             moo_term_buffer_erase_range (buf, cursor_row,
                                          0, cursor_col + 1);
             break;
 
-        case 2:
+        case ERASE_ALL:
             moo_term_buffer_erase_range (buf, cursor_row,
                                          0, width);
             break;
@@ -1613,132 +1630,6 @@ void    moo_term_buffer_decaln                  (MooTermBuffer  *buf)
 }
 
 
-void moo_term_line_set_unichar  (MooTermLine   *line,
-                                 guint          pos,
-                                 gunichar       c,
-                                 guint          num,
-                                 MooTermTextAttr *attr,
-                                 guint          width)
-{
-    guint i;
-
-    if (pos >= width)
-        return moo_term_line_set_len (line, width);
-
-    if (pos + num >= width)
-        num = width - pos;
-
-    if (!attr || !attr->mask)
-        attr = &MOO_TERM_ZERO_ATTR;
-
-    if (!c)
-        c = EMPTY_CHAR;
-
-    moo_term_line_set_len (line, width);
-
-    if (pos >= line->len)
-    {
-        MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
-        guint len = line->len;
-
-        for (i = 0; i < pos - len; ++i)
-            g_array_append_val (TERM_LINE_ARRAY (line), cell);
-
-        cell.ch = c;
-        cell.attr = *attr;
-
-        for (i = 0; i < num; ++i)
-            g_array_append_val (TERM_LINE_ARRAY (line), cell);
-    }
-    else if (pos + num > line->len)
-    {
-        MooTermCell cell = {c, *attr};
-        guint len = line->len;
-
-        for (i = pos; i < len; ++i)
-            line->data[i] = cell;
-        for (i = 0; i < pos + num - len; ++i)
-            g_array_append_val (TERM_LINE_ARRAY (line), cell);
-    }
-    else
-    {
-        MooTermCell cell = {c, *attr};
-
-        for (i = pos; i < pos + num; ++i)
-            line->data[i] = cell;
-    }
-}
-
-
-guint moo_term_line_get_chars   (MooTermLine    *line,
-                                 char           *buf,
-                                 guint           first,
-                                 int             len)
-{
-    guint i;
-    guint res = 0;
-
-    if (!len || first >= line->len)
-        return 0;
-
-    if (len < 0 || first + len > line->len)
-        len = line->len - first;
-
-    for (i = first; i < first + len; ++i)
-    {
-        gunichar c = moo_term_line_get_unichar (line, i);
-        guint l = g_unichar_to_utf8 (c, buf);
-        buf += l;
-        res += l;
-    }
-
-    return res;
-}
-
-
-void moo_term_line_insert_unichar   (MooTermLine   *line,
-                                     guint          pos,
-                                     gunichar       c,
-                                     guint          num,
-                                     MooTermTextAttr *attr,
-                                     guint          width)
-{
-    guint i;
-
-    if (pos >= width)
-        return moo_term_line_set_len (line, width);
-
-    if (pos + num >= width)
-        return moo_term_line_set_unichar (line, pos, c, num,
-                                          attr, width);
-
-    if (!attr || !attr->mask)
-        attr = &MOO_TERM_ZERO_ATTR;
-
-    if (!c)
-        c = EMPTY_CHAR;
-
-    moo_term_line_set_len (line, width);
-
-    if (pos > line->len)
-    {
-        guint len = line->len;
-
-        for (i = len; i < pos; ++i)
-        {
-            MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
-            g_array_append_val (TERM_LINE_ARRAY (line), cell);
-        }
-    }
-
-    for (i = 0; i < num; ++i)
-    {
-        MooTermCell cell = {c, *attr};
-        g_array_insert_val (TERM_LINE_ARRAY (line), pos, cell);
-    }
-}
-
-
 MooTermLine *moo_term_buffer_get_line   (MooTermBuffer  *buf,
                                          guint           n)
 {
@@ -1753,86 +1644,4 @@ MooTermLine *moo_term_buffer_get_line   (MooTermBuffer  *buf,
         g_assert (n < buf->priv->screen_offset + buf->priv->screen_height);
         return g_ptr_array_index (buf->priv->lines, n);
     }
-}
-
-
-/* TODO: midnight commander wants erased chars to have current attributes
-           but VT510 manual says: "EL clears all character attributes from erased
-           character positions. EL works inside or outside the scrolling margins." */
-void moo_term_line_erase_range  (MooTermLine     *line,
-                                 guint            pos,
-                                 guint            len,
-                                 MooTermTextAttr *attr)
-{
-    guint i;
-
-    if (!len || pos >= line->len)
-        return;
-
-    for (i = pos; i < pos + len && i < line->len; ++i)
-    {
-        line->data[i].ch = EMPTY_CHAR;
-
-        if (attr && attr->mask)
-            line->data[i].attr = *attr;
-        else
-            line->data[i].attr.mask = 0;
-    }
-}
-
-
-MooTermLine *moo_term_line_new (guint len)
-{
-    return TERM_LINE (g_array_sized_new (FALSE, FALSE,
-                      sizeof (MooTermCell),
-                      len));
-}
-
-
-void moo_term_line_free (MooTermLine *line)
-{
-    if (line)
-        g_array_free (TERM_LINE_ARRAY (line), TRUE);
-}
-
-
-guint moo_term_line_len (MooTermLine *line)
-{
-    return line->len;
-}
-
-
-void moo_term_line_set_len (MooTermLine *line, guint len)
-{
-    if (line->len > len)
-        g_array_set_size (TERM_LINE_ARRAY (line), len);
-}
-
-
-void moo_term_line_erase (MooTermLine *line)
-{
-    moo_term_line_set_len (line, 0);
-}
-
-
-void moo_term_line_delete_range (MooTermLine   *line,
-                                 guint          pos,
-                                 guint          len)
-{
-    if (pos >= line->len)
-        return;
-    else if (pos + len >= line->len)
-        return moo_term_line_set_len (line, pos);
-    else
-        g_array_remove_range (TERM_LINE_ARRAY (line), pos, len);
-}
-
-
-gunichar moo_term_line_get_unichar  (MooTermLine   *line,
-                                     guint          col)
-{
-    if (col >= line->len)
-        return EMPTY_CHAR;
-    else
-        return line->data[col].ch;
 }

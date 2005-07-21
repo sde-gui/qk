@@ -28,8 +28,10 @@ G_STMT_START {                                          \
 
 #define GET_NUM(n) (((int*)parser->numbers->data)[n])
 
-#define TERMINAL_HEIGHT (parser->term->priv->height)
-#define TERMINAL_WIDTH  (parser->term->priv->width)
+#define DEFLT_1(n)  (n ? n : 1)
+
+#define TERMINAL_HEIGHT ((int)parser->term->priv->height)
+#define TERMINAL_WIDTH  ((int)parser->term->priv->width)
 %}
 
 %name-prefix="_moo_term_yy"
@@ -198,40 +200,40 @@ control_sequence:   DECSR
 DECSR:          '\233' number '+' 'p'       {   VT_NOT_IMPLEMENTED;     };
 
 /* default parameter - 1 */
-CUU:            '\233' number 'A'           {   VT_CUU ($2);            }
+CUU:            '\233' number 'A'           {   VT_CUU (DEFLT_1($2));   }
             |   '\233' 'A'                  {   VT_CUU (1);             };
-CUD:            '\233' number 'B'           {   VT_CUD ($2);            }
+CUD:            '\233' number 'B'           {   VT_CUD (DEFLT_1($2));   }
             |   '\233' 'B'                  {   VT_CUD (1);             };
-CUF:            '\233' number 'C'           {   VT_CUF ($2);            }
+CUF:            '\233' number 'C'           {   VT_CUF (DEFLT_1($2));   }
             |   '\233' 'C'                  {   VT_CUF (1);             };
-CUB:            '\233' number 'D'           {   VT_CUB ($2);            }
+CUB:            '\233' number 'D'           {   VT_CUB (DEFLT_1($2));   }
             |   '\233' 'D'                  {   VT_CUB (1);             };
-CBT:            '\233' number 'Z'           {   VT_CBT ($2 ? $2 : 1);   }
+CBT:            '\233' number 'Z'           {   VT_CBT (DEFLT_1($2));   }
             |   '\233' 'Z'                  {   VT_CBT (1);             };
-CHA:            '\233' number 'G'           {   VT_CHA ($2 ? $2 : 1);   }
+CHA:            '\233' number 'G'           {   VT_CHA (DEFLT_1($2));   }
             |   '\233' 'G'                  {   VT_CHA (1);             };
-CHT:            '\233' number 'I'           {   VT_CHT ($2 ? $2 : 1);   }
+CHT:            '\233' number 'I'           {   VT_CHT (DEFLT_1($2));   }
             |   '\233' 'I'                  {   VT_CHT (1);             };
-CNL:            '\233' number 'E'           {   VT_CNL ($2 ? $2 : 1);   }
+CNL:            '\233' number 'E'           {   VT_CNL (DEFLT_1($2));   }
             |   '\233' 'E'                  {   VT_CNL (1);             };
-CPL:            '\233' number 'F'           {   VT_CPL ($2 ? $2 : 1);   }
+CPL:            '\233' number 'F'           {   VT_CPL (DEFLT_1($2));   }
             |   '\233' 'F'                  {   VT_CPL (1);             };
-HPA:            '\233' number '`'           {   VT_HPA ($2 ? $2 : 1);   }
+HPA:            '\233' number '`'           {   VT_HPA (DEFLT_1($2));   }
             |   '\233' '`'                  {   VT_HPA (1);             };
-HPR:            '\233' number 'a'           {   VT_HPR ($2 ? $2 : 1);   }
+HPR:            '\233' number 'a'           {   VT_HPR (DEFLT_1($2));   }
             |   '\233' 'a'                  {   VT_HPR (1);             };
-VPA:            '\233' number 'd'           {   VT_VPA ($2 ? $2 : 1);   }
+VPA:            '\233' number 'd'           {   VT_VPA (DEFLT_1($2));   }
             |   '\233' 'd'                  {   VT_VPA (1);             };
-VPR:            '\233' number 'e'           {   VT_VPR ($2 ? $2 : 1);   }
+VPR:            '\233' number 'e'           {   VT_VPR (DEFLT_1($2));   }
             |   '\233' 'e'                  {   VT_VPR (1);             };
 
 CUP:            '\233' numbers 'H'          {   CHECK_NUMS_LEN (2);
-                                                VT_CUP (GET_NUM (0) ? GET_NUM (0) : 1,
-                                                        GET_NUM (1) ? GET_NUM (1) : 1);   }
+                                                VT_CUP (DEFLT_1(GET_NUM(0)),
+                                                        DEFLT_1(GET_NUM(1)));   }
             |   '\233' 'H'                  {   VT_CUP (1, 1);   }
             |   '\233' numbers 'f'          {   CHECK_NUMS_LEN (2);
-                                                VT_CUP (GET_NUM (0) ? GET_NUM (0) : 1,
-                                                        GET_NUM (1) ? GET_NUM (1) : 1);   }  /* HVP */
+                                                VT_CUP (DEFLT_1(GET_NUM(0)),
+                                                        DEFLT_1(GET_NUM(1)));   }  /* HVP */
             |   '\233' 'f'                  {   VT_CUP (1, 1);   };
 
 DECSCUSR:       '\233' number ' ' 'q'       {   VT_NOT_IMPLEMENTED; }
@@ -248,8 +250,9 @@ DECSSCLS:       '\233' number ' ' 'p'       {   VT_NOT_IMPLEMENTED; }
             |   '\233' ' ' 'p'              {   VT_NOT_IMPLEMENTED; };
 
 DECSTBM:        '\233' numbers 'r'          {   CHECK_NUMS_LEN (2);
-                                                VT_DECSTBM (GET_NUM (0) ? GET_NUM (0) : 1,
-                                                            GET_NUM (1) ? GET_NUM (1) : 1); }
+                                                VT_DECSTBM (DEFLT_1(GET_NUM(0)),
+                                                        GET_NUM(1) ? GET_NUM(1) :
+                                                                TERMINAL_HEIGHT); }
             |   '\233' 'r'                  {   VT_DECSTBM (1, TERMINAL_HEIGHT);    };
 
 DECSLPP:        '\233' number 't'           {   VT_NOT_IMPLEMENTED; }
@@ -279,19 +282,19 @@ DECDC:          '\233' number '\'' '~'      {   VT_NOT_IMPLEMENTED;     }
             |   '\233'  '\'' '~'            {   VT_NOT_IMPLEMENTED;     };
 DECIC:          '\233' number '\'' '}'      {   VT_NOT_IMPLEMENTED;     }
             |   '\233'  '\'' '}'            {   VT_NOT_IMPLEMENTED;     };
-DCH:            '\233' number 'P'           {   VT_DCH ($2 ? $2 : 1);   }
+DCH:            '\233' number 'P'           {   VT_DCH (DEFLT_1($2));   }
             |   '\233' 'P'                  {   VT_DCH (1);             };
-DL:             '\233' number 'M'           {   VT_DL ($2 ? $2 : 1);    }
+DL:             '\233' number 'M'           {   VT_DL (DEFLT_1($2));    }
             |   '\233' 'M'                  {   VT_DL (1);              };
-ECH:            '\233' number 'X'           {   VT_ECH ($2 ? $2 : 1);   }
+ECH:            '\233' number 'X'           {   VT_ECH (DEFLT_1($2));   }
             |   '\233' 'X'                  {   VT_ECH (1);             };
 ED:             '\233' number 'J'           {   VT_ED ($2);             }
             |   '\233' 'J'                  {   VT_ED (0);              };
 EL:             '\233' number 'K'           {   VT_EL ($2);             }
             |   '\233' 'K'                  {   VT_EL (0);              };
-ICH:            '\233' number '@'           {   VT_ICH ($2 ? $2 : 1);   }
+ICH:            '\233' number '@'           {   VT_ICH (DEFLT_1($2));   }
             |   '\233' '@'                  {   VT_ICH (1);             };
-IL:             '\233' number 'L'           {   VT_IL ($2 ? $2 : 1);    }
+IL:             '\233' number 'L'           {   VT_IL (DEFLT_1($2));    }
             |   '\233' 'L'                  {   VT_IL (1);              };
 
 DECSCA:         '\233' number '"' 'q'       {   VT_NOT_IMPLEMENTED;   };

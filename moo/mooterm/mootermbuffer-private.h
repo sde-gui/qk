@@ -72,6 +72,12 @@ struct _MooTermBufferPrivate {
 };
 
 
+typedef enum {
+    CLEAR_TAB_AT_CURSOR = 0,
+    CLEAR_ALL_TABS      = 3
+} ClearTabType;
+
+
 void    moo_term_buffer_changed_clear           (MooTermBuffer  *buf);
 
 void    moo_term_buffer_changed                 (MooTermBuffer  *buf);
@@ -114,7 +120,7 @@ guint   moo_term_buffer_next_tab_stop           (MooTermBuffer  *buf,
 guint   moo_term_buffer_prev_tab_stop           (MooTermBuffer  *buf,
                                                  guint           current);
 void    moo_term_buffer_clear_tab_stop          (MooTermBuffer  *buf,
-                                                 int             what);
+                                                 ClearTabType    what);
 void    moo_term_buffer_set_tab_stop            (MooTermBuffer  *buf);
 
 void    moo_term_buffer_select_charset          (MooTermBuffer  *buf,
@@ -233,6 +239,13 @@ inline static MooTermLine *buf_screen_line  (MooTermBuffer  *buf,
 /* Terminal stuff
  */
 
+/* fixed values */
+typedef enum {
+    ERASE_FROM_CURSOR   = 0,
+    ERASE_TO_CURSOR     = 1,
+    ERASE_ALL           = 2
+} EraseType;
+
 void    moo_term_buffer_new_line                (MooTermBuffer  *buf);
 void    moo_term_buffer_index                   (MooTermBuffer  *buf);
 void    moo_term_buffer_backspace               (MooTermBuffer  *buf);
@@ -261,9 +274,9 @@ void    moo_term_buffer_delete_line             (MooTermBuffer  *buf,
 void    moo_term_buffer_erase_char              (MooTermBuffer  *buf,
                                                  guint           n);
 void    moo_term_buffer_erase_in_display        (MooTermBuffer  *buf,
-                                                 guint           what);
+                                                 EraseType       what);
 void    moo_term_buffer_erase_in_line           (MooTermBuffer  *buf,
-                                                 guint           what);
+                                                 EraseType       what);
 void    moo_term_buffer_insert_char             (MooTermBuffer  *buf,
                                                  guint           n);
 void    moo_term_buffer_insert_line             (MooTermBuffer  *buf,

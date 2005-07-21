@@ -17,12 +17,130 @@
 #include "mooterm/mootermbuffer-private.h"
 #include <string.h>
 
+#define CHAR_WIDTH(term)    ((term)->priv->font->width)
+#define CHAR_HEIGHT(term)   ((term)->priv->font->height)
+#define CHAR_ASCENT(term)   ((term)->priv->font->ascent)
+#define PIXEL_WIDTH(term)   (CHAR_WIDTH (term) * (term)->priv->width)
+#define PIXEL_HEIGHT(term)  (CHAR_HEIGHT (term) * (term)->priv->height)
+
 
 #define CHARS \
 "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\QWERTYUIOP"\
 "{}|asdfghjkl;'ASDFGHJKL:\"zxcvbnm,./ZXCVBNM<>?"
 
 #define HOW_MANY(x, y) (((x) + (y) - 1) / (y))
+
+
+static void font_calculate  (MooTermFont *font)
+{
+    PangoRectangle logical;
+    PangoLayout *layout;
+    PangoLayoutIter *iter;
+
+    g_assert (font->ctx != NULL);
+
+    layout = pango_layout_new (font->ctx);
+    pango_layout_set_text (layout, CHARS, strlen(CHARS));
+    pango_layout_get_extents (layout, NULL, &logical);
+
+    font->width = HOW_MANY (logical.width, strlen (CHARS));
+    font->width = PANGO_PIXELS (font->width);
+
+    iter = pango_layout_get_iter (layout);
+    font->height = PANGO_PIXELS (logical.height);
+    font->ascent = PANGO_PIXELS (pango_layout_iter_get_baseline (iter));
+
+    pango_layout_iter_free (iter);
+    g_object_unref (layout);
+}
+
+
+static MooTermFont  *moo_term_font_new  (PangoContext   *ctx)
+{
+    MooTermFont *font = g_new0 (MooTermFont, 1);
+
+    font->ctx = ctx;
+    g_object_ref (ctx);
+
+    font_calculate (font);
+
+    return font;
+}
+
+
+void        moo_term_set_font_from_string   (MooTerm        *term,
+                                             const char     *font)
+{
+    PangoFontDescription *font_desc;
+
+    if (font)
+    {
+        font_desc = pango_font_description_from_string (font);
+    }
+    else
+    {
+        GtkWidget *widget = GTK_WIDGET (term);
+        gtk_widget_ensure_style (widget);
+        font_desc =
+                pango_font_description_copy_static (widget->style->font_desc);
+    }
+
+    g_return_if_fail (font_desc != NULL);
+
+    if (!pango_font_description_get_size (font_desc))
+    {
+        g_warning ("%s: pango_font_description_get_size"
+                   "(font_desc) == 0", G_STRLOC);
+        pango_font_description_free (font_desc);
+        return;
+    }
+
+    g_free (term->priv->font->name);
+    term->priv->font->name = g_strdup (font);
+    pango_context_set_font_description (term->priv->font->ctx, font_desc);
+
+    font_calculate (term->priv->font);
+
+    if (GTK_WIDGET_REALIZED (term))
+        moo_term_size_changed (term);
+
+    pango_font_description_free (font_desc);
+}
+
+
+void        moo_term_init_font_stuff    (MooTerm        *term)
+{
+    PangoContext *ctx;
+
+    if (term->priv->font)
+        moo_term_font_free (term->priv->font);
+
+    gtk_widget_ensure_style (GTK_WIDGET (term));
+
+    ctx = gtk_widget_create_pango_context (GTK_WIDGET (term));
+    g_return_if_fail (ctx != NULL);
+
+    term->priv->font = moo_term_font_new (ctx);
+
+    term->priv->layout = pango_layout_new (ctx);
+
+    g_object_unref (ctx);
+
+    gtk_widget_set_size_request (GTK_WIDGET (term),
+                                 term->priv->font->width * MIN_TERMINAL_WIDTH,
+                                 term->priv->font->height * MIN_TERMINAL_HEIGHT);
+}
+
+
+void    moo_term_font_free  (MooTermFont    *font)
+{
+    if (font)
+    {
+        g_object_unref (font->ctx);
+        g_free (font->name);
+        g_free (font);
+    }
+}
 
 
 static gboolean process_updates     (MooTerm    *term)
@@ -54,98 +172,6 @@ static void     remove_update_timeout   (MooTerm    *term)
 }
 
 
-void        moo_term_init_font_stuff    (MooTerm        *term)
-{
-    PangoContext *ctx;
-    PangoFontDescription *font;
-
-    if (term->priv->font_info)
-        moo_term_font_info_free (term->priv->font_info);
-
-    ctx = gtk_widget_create_pango_context (GTK_WIDGET (term));
-    g_return_if_fail (ctx != NULL);
-
-    font = pango_font_description_from_string (DEFAULT_MONOSPACE_FONT);
-
-    if (!font)
-        font = pango_font_description_from_string (DEFAULT_MONOSPACE_FONT2);
-
-    if (font)
-    {
-        pango_context_set_font_description (ctx, font);
-        pango_font_description_free (font);
-    }
-
-    term->priv->font_info = moo_term_font_info_new (ctx);
-
-    term->priv->layout = pango_layout_new (ctx);
-
-    g_object_unref (ctx);
-
-    gtk_widget_set_size_request (GTK_WIDGET (term),
-                                 term->priv->font_info->width * MIN_TERMINAL_WIDTH,
-                                 term->priv->font_info->height * MIN_TERMINAL_HEIGHT);
-}
-
-
-void    moo_term_font_info_calculate    (TermFontInfo           *info)
-{
-    PangoRectangle logical;
-    PangoLayout *layout;
-    PangoLayoutIter *iter;
-
-    g_assert (info->ctx != NULL);
-
-    layout = pango_layout_new (info->ctx);
-    pango_layout_set_text (layout, CHARS, strlen(CHARS));
-    pango_layout_get_extents (layout, NULL, &logical);
-
-    info->width = HOW_MANY (logical.width, strlen (CHARS));
-    info->width = PANGO_PIXELS (info->width);
-
-    iter = pango_layout_get_iter (layout);
-    info->height = PANGO_PIXELS (logical.height);
-    info->ascent = PANGO_PIXELS (pango_layout_iter_get_baseline (iter));
-
-    pango_layout_iter_free (iter);
-    g_object_unref (layout);
-}
-
-
-void    moo_term_font_info_set_font     (TermFontInfo           *info,
-                                         PangoFontDescription   *font_desc)
-{
-    g_return_if_fail (font_desc != NULL);
-
-    pango_context_set_font_description (info->ctx, font_desc);
-
-    moo_term_font_info_calculate (info);
-}
-
-
-TermFontInfo    *moo_term_font_info_new         (PangoContext           *ctx)
-{
-    TermFontInfo *info = g_new0 (TermFontInfo, 1);
-
-    info->ctx = ctx;
-    g_object_ref (ctx);
-
-    moo_term_font_info_calculate (info);
-
-    return info;
-}
-
-
-void    moo_term_font_info_free     (TermFontInfo   *info)
-{
-    if (info)
-    {
-        g_object_unref (info->ctx);
-        g_free (info);
-    }
-}
-
-
 void        moo_term_invalidate_all         (MooTerm        *term)
 {
     GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
@@ -159,10 +185,10 @@ void        moo_term_invalidate_rect    (MooTerm        *term,
     if (GTK_WIDGET_REALIZED (term))
     {
         GdkRectangle r = {
-            rect->x * term->priv->font_info->width,
-            rect->y * term->priv->font_info->height,
-            rect->width * term->priv->font_info->width,
-            rect->height * term->priv->font_info->height
+            rect->x * CHAR_WIDTH(term),
+            rect->y * CHAR_HEIGHT(term),
+            rect->width * CHAR_WIDTH(term),
+            rect->height * CHAR_HEIGHT(term)
         };
 
         gdk_window_invalidate_rect (GTK_WIDGET(term)->window,
@@ -275,9 +301,7 @@ void        moo_term_init_back_pixmap       (MooTerm        *term)
 
     term->priv->back_pixmap =
             gdk_pixmap_new (GTK_WIDGET(term)->window,
-                            term->priv->font_info->width * term->priv->width,
-                            term->priv->font_info->height * term->priv->height,
-                            -1);
+                            PIXEL_WIDTH(term), PIXEL_HEIGHT(term), -1);
 
     term->priv->clip = gdk_gc_new (term->priv->back_pixmap);
     gdk_gc_set_clip_origin (term->priv->clip, 0, 0);
@@ -295,9 +319,7 @@ void        moo_term_resize_back_pixmap     (MooTerm        *term)
         term->priv->font_changed = FALSE;
 
         pix = gdk_pixmap_new (term->priv->back_pixmap,
-                              term->priv->font_info->width * term->priv->width,
-                              term->priv->font_info->height * term->priv->height,
-                              -1);
+                              PIXEL_WIDTH(term), PIXEL_HEIGHT(term), -1);
 
         g_object_unref (term->priv->back_pixmap);
         term->priv->back_pixmap = pix;
@@ -308,11 +330,9 @@ void        moo_term_resize_back_pixmap     (MooTerm        *term)
     {
         GdkPixmap *pix;
         GdkRegion *region;
-        guint char_width = term->priv->font_info->width;
-        guint char_height = term->priv->font_info->height;
         int old_width, old_height;
-        int width =  char_width * term->priv->width;
-        int height = char_height * term->priv->height;
+        int width = PIXEL_WIDTH(term);
+        int height = PIXEL_HEIGHT(term);
         GdkRectangle rec = {0, 0, width, height};
 
         pix = gdk_pixmap_new (term->priv->back_pixmap,
@@ -330,25 +350,25 @@ void        moo_term_resize_back_pixmap     (MooTerm        *term)
 
         if (width > old_width)
         {
-            rec.x = old_width / char_width;
-            rec.width = (width - old_width) / char_width;
+            rec.x = old_width / CHAR_WIDTH(term);
+            rec.width = (width - old_width) / CHAR_WIDTH(term);
             rec.y = 0;
-            rec.height = height / char_height;
+            rec.height = height / CHAR_HEIGHT(term);
             moo_term_invalidate_content_rect (term, &rec);
         }
 
         if (height > old_height)
         {
             rec.x = 0;
-            rec.width = width / char_width;
-            rec.y = old_height / char_height;
-            rec.height = (height - old_height) / char_height;
+            rec.width = width / CHAR_WIDTH(term);
+            rec.y = old_height / CHAR_HEIGHT(term);
+            rec.height = (height - old_height) / CHAR_HEIGHT(term);
             moo_term_invalidate_content_rect (term, &rec);
         }
 
         rec.x = rec.y = 0;
-        rec.width = width / char_width;
-        rec.height = height / char_height;
+        rec.width = width / CHAR_WIDTH(term);
+        rec.height = height / CHAR_HEIGHT(term);
         if (term->priv->changed_content)
         {
             region = gdk_region_rectangle (&rec);
@@ -425,22 +445,19 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
 
     MooTerm *term = MOO_TERM (widget);
 
-    guint char_width = term->priv->font_info->width;
-    guint char_height = term->priv->font_info->height;
-
     g_assert (term_top_line (term) <= buf_scrollback (term->priv->buffer));
 
     remove_update_timeout (term);
 
-    text_rec.width = term->priv->width * char_width;
-    text_rec.height = term->priv->height * char_height;
+    text_rec.width = PIXEL_WIDTH(term);
+    text_rec.height = PIXEL_HEIGHT(term);
 
     if (event->area.x + event->area.width >= text_rec.width)
     {
         gdk_draw_rectangle (widget->window,
                             term->priv->bg, TRUE,
                             text_rec.width, 0,
-                            char_width,
+                            CHAR_WIDTH(term),
                             widget->allocation.height);
     }
 
@@ -450,7 +467,7 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
                             term->priv->bg, TRUE,
                             0, text_rec.height,
                             widget->allocation.width,
-                            char_height);
+                            CHAR_HEIGHT(term));
     }
 
     text_reg = gdk_region_rectangle (&text_rec);
@@ -633,9 +650,7 @@ static void term_draw_range_simple          (MooTerm        *term,
                                              gboolean        selected)
 {
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
-    guint char_width = term->priv->font_info->width;
-    guint char_height = term->priv->font_info->height;
-    int y = (abs_row - term_top_line (term)) * char_height;
+    int y = (abs_row - term_top_line (term)) * CHAR_HEIGHT(term);
     GdkGC *bg;
     guint invert;
 
@@ -649,39 +664,39 @@ static void term_draw_range_simple          (MooTerm        *term,
     else
         bg = term->priv->fg[NORMAL];
 
-    if (start >= line->len)
+    if (start >= moo_term_line_len (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
                             TRUE,
-                            start * char_width,
+                            start * CHAR_WIDTH(term),
                             y,
-                            len * char_width,
-                            char_height);
+                            len * CHAR_WIDTH(term),
+                            CHAR_HEIGHT(term));
 
         return;
     }
-    else if (start + len > line->len)
+    else if (start + len > moo_term_line_len (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
                             TRUE,
-                            line->len * char_width,
+                            moo_term_line_len (line) * CHAR_WIDTH(term),
                             y,
-                            (start + len - line->len) * char_width,
-                            char_height);
+                            (start + len - moo_term_line_len (line)) * CHAR_WIDTH(term),
+                            CHAR_HEIGHT(term));
 
-        len = line->len - start;
+        len = moo_term_line_len (line) - start;
     }
 
-    g_assert (start + len <= line->len);
+    g_assert (start + len <= moo_term_line_len (line));
 
     while (len)
     {
         guint i;
-        MooTermTextAttr *attr = &line->data[start].attr;
+        MooTermTextAttr *attr = moo_term_line_attr (line, start);
 
-        for (i = 1; i < len && !ATTR_CMP (attr, &line->data[start + i].attr); ++i) ;
+        for (i = 1; i < len && !ATTR_CMP (attr, moo_term_line_attr (line, start + i)); ++i) ;
 
         term_draw_cells (term, abs_row, start, i, attr, selected);
 
@@ -708,7 +723,7 @@ static void term_draw_cells                 (MooTerm        *term,
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
     g_assert (len != 0);
-    g_assert (start + len <= line->len);
+    g_assert (start + len <= moo_term_line_len (line));
 
     buf_len = moo_term_line_get_chars (line, buf, start, len);
     g_return_if_fail (buf_len != 0);
@@ -751,31 +766,31 @@ static void term_draw_cells                 (MooTerm        *term,
     gdk_draw_rectangle (term->priv->back_pixmap,
                         bg,
                         TRUE,
-                        start * term->priv->font_info->width,
-                        (abs_row - term_top_line (term)) * term->priv->font_info->height,
-                        len * term->priv->font_info->width,
-                        term->priv->font_info->height);
+                        start * CHAR_WIDTH(term),
+                        (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
+                        len * CHAR_WIDTH(term),
+                        CHAR_HEIGHT(term));
 
     gdk_draw_layout (term->priv->back_pixmap,
                      fg,
-                     start * term->priv->font_info->width,
-                     (abs_row - term_top_line (term)) * term->priv->font_info->height,
+                     start * CHAR_WIDTH(term),
+                     (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
                      term->priv->layout);
 
     if ((attr->mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.allow_bold)
         gdk_draw_layout (term->priv->back_pixmap,
                          fg,
-                         start * term->priv->font_info->width + 1,
-                         (abs_row - term_top_line (term)) * term->priv->font_info->height,
+                         start * CHAR_WIDTH(term) + 1,
+                         (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
                          term->priv->layout);
 
     if (attr->mask & MOO_TERM_TEXT_UNDERLINE)
         gdk_draw_line (term->priv->back_pixmap,
                        fg,
-                       start * term->priv->font_info->width,
-                       (abs_row - term_top_line (term)) * term->priv->font_info->height + term->priv->font_info->ascent + 1,
-                       (start + len) * term->priv->font_info->width + 1,
-                       (abs_row - term_top_line (term)) * term->priv->font_info->height + term->priv->font_info->ascent + 1);
+                       start * CHAR_WIDTH(term),
+                       (abs_row - term_top_line (term)) * CHAR_HEIGHT(term) + CHAR_ASCENT(term) + 1,
+                       (start + len) * CHAR_WIDTH(term) + 1,
+                       (abs_row - term_top_line (term)) * CHAR_HEIGHT(term) + CHAR_ASCENT(term) + 1);
 }
 
 
@@ -786,10 +801,10 @@ static void term_draw_cursor                (MooTerm        *term)
     guint column = term->priv->cursor_col;
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
-    if (line->len > column)
+    if (moo_term_line_len (line) > column)
     {
         return term_draw_cells (term, abs_row, column, 1,
-                                &line->data[column].attr,
+                                moo_term_line_attr (line, column),
                                 !moo_term_cell_selected (term, abs_row, column));
     }
     else
@@ -809,10 +824,10 @@ static void term_draw_cursor                (MooTerm        *term)
         gdk_draw_rectangle (term->priv->back_pixmap,
                             color,
                             TRUE,
-                            column * term->priv->font_info->width,
-                            (abs_row - term_top_line (term)) * term->priv->font_info->height,
-                            term->priv->font_info->width,
-                            term->priv->font_info->height);
+                            column * CHAR_WIDTH(term),
+                            (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
+                            CHAR_WIDTH(term),
+                            CHAR_HEIGHT(term));
     }
 }
 
@@ -868,10 +883,10 @@ void        moo_term_buf_content_changed(MooTerm        *term,
     {
         moo_term_invalidate_content_rect (term, &rect[i]);
 
-        rect[i].x *= term->priv->font_info->width;
-        rect[i].y *= term->priv->font_info->height;
-        rect[i].width *= term->priv->font_info->width;
-        rect[i].height *= term->priv->font_info->height;
+        rect[i].x *= CHAR_WIDTH(term);
+        rect[i].y *= CHAR_HEIGHT(term);
+        rect[i].width *= CHAR_WIDTH(term);
+        rect[i].height *= CHAR_HEIGHT(term);
 
         gdk_region_union_with_rect (dirty, &rect[i]);
     }

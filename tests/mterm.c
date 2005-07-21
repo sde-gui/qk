@@ -19,6 +19,18 @@
 #include <stdlib.h>
 
 
+static void set_width (MooTerm *term, guint width, GtkWindow *window)
+{
+    guint height;
+    height = term_char_height (term) * 25;
+    width *= term_char_width (term);
+    gtk_widget_set_size_request (GTK_WIDGET (term), width, height);
+    gtk_window_resize (window, 10, 10);
+    gtk_container_check_resize (GTK_CONTAINER (window));
+    gdk_window_process_updates (GTK_WIDGET(window)->window, TRUE);
+}
+
+
 int main (int argc, char *argv[])
 {
     const char *cmd = NULL;
@@ -64,12 +76,20 @@ int main (int argc, char *argv[])
                                     GTK_POLICY_ALWAYS);
 
     term = GTK_WIDGET (g_object_new (MOO_TYPE_TERM,
-                                     "cursor-blinks", TRUE,
+                                     "cursor-blinks", FALSE,
+                                     "font-name", "Courier New 11",
                                      NULL));
+
     gtk_container_add (GTK_CONTAINER (swin), term);
 
     gtk_widget_show_all (win);
+    gtk_container_set_resize_mode (GTK_CONTAINER (win),
+                                   GTK_RESIZE_IMMEDIATE);
+    gtk_container_set_resize_mode (GTK_CONTAINER (swin),
+                                   GTK_RESIZE_IMMEDIATE);
 
+    g_signal_connect (term, "set-width",
+                      G_CALLBACK (set_width), win);
     g_signal_connect_swapped (term, "set-window-title",
                               G_CALLBACK (gtk_window_set_title), win);
     g_signal_connect_swapped (term, "set-icon-name",

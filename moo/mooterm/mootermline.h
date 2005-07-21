@@ -18,14 +18,14 @@
 #error "This file may not be included directly"
 #endif
 
-#include <string.h>
-#include <glib.h>
+#include "mooterm/mootermbuffer.h"
 
 G_BEGIN_DECLS
 
 
-typedef struct _MooTermCell MooTermCell;
-typedef struct _MooTermLine MooTermLine;
+typedef struct _MooTermCell         MooTermCell;
+typedef struct _MooTermCellArray    MooTermCellArray;
+typedef struct _MooTermLine         MooTermLine;
 
 #define EMPTY_CHAR  ' '
 #define DECALN_CHAR 'S'
@@ -42,25 +42,37 @@ extern MooTermTextAttr MOO_TERM_ZERO_ATTR;
             ((a1)->background != (a2)->background)))
 
 
-#define TERM_LINE(ar)           ((MooTermLine*) (ar))
-#define TERM_LINE_ARRAY(line)   ((GArray*) (line))
-
 struct _MooTermCell {
     gunichar        ch;
     MooTermTextAttr attr;
 };
 
-struct _MooTermLine {
+struct _MooTermCellArray {
     MooTermCell *data;
     guint        len;
+};
+
+struct _MooTermLine {
+    MooTermCellArray *cells;
+    guint             wrapped : 1;
 };
 
 
 MooTermLine *moo_term_line_new              (guint           len);
 void         moo_term_line_free             (MooTermLine    *line);
+
 guint        moo_term_line_len              (MooTermLine    *line);
+
+MooTermTextAttr *moo_term_line_attr         (MooTermLine    *line,
+                                             guint           index);
+MooTermCell *moo_term_line_cell             (MooTermLine    *line,
+                                             guint           index);
+gunichar     moo_term_line_get_unichar      (MooTermLine    *line,
+                                             guint           col);
+
 void         moo_term_line_set_len          (MooTermLine    *line,
                                              guint           len);
+
 void         moo_term_line_erase            (MooTermLine    *line);
 void         moo_term_line_erase_range      (MooTermLine    *line,
                                              guint           pos,
@@ -81,8 +93,6 @@ void         moo_term_line_insert_unichar   (MooTermLine    *line,
                                              guint           num,
                                              MooTermTextAttr *attr,
                                              guint           width);
-gunichar     moo_term_line_get_unichar      (MooTermLine    *line,
-                                             guint           col);
 guint        moo_term_line_get_chars        (MooTermLine    *line,
                                              char           *buf,
                                              guint           first,

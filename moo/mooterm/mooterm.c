@@ -20,6 +20,8 @@
 #include "mooui/mootext.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moosignal.h"
+#include <string.h>
 
 
 static void moo_term_class_init     (MooTermClass   *klass);
@@ -84,13 +86,14 @@ enum {
     BELL,
     CHILD_DIED,
     POPULATE_POPUP,
+    SET_WIDTH,
     LAST_SIGNAL
 };
 
 enum {
     PROP_0 = 0,
     PROP_CURSOR_BLINKS,
-    LAST_PROP
+    PROP_FONT_NAME
 };
 
 
@@ -168,6 +171,14 @@ static void moo_term_class_init (MooTermClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_FONT_NAME,
+                                     g_param_spec_string ("font-name",
+                                             "font-name",
+                                             "font-name",
+                                             NULL,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
     signals[SET_SCROLL_ADJUSTMENTS] =
             g_signal_new ("set-scroll-adjustments",
                           G_OBJECT_CLASS_TYPE (gobject_class),
@@ -227,6 +238,16 @@ static void moo_term_class_init (MooTermClass *klass)
                           _moo_marshal_VOID__OBJECT,
                           G_TYPE_NONE, 1,
                           GTK_TYPE_MENU);
+
+    signals[SET_WIDTH] =
+            moo_signal_new_cb ("set-width",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL, /* handler */
+                               NULL, NULL,
+                               _moo_marshal_VOID__UINT,
+                               G_TYPE_NONE, 1,
+                               GTK_TYPE_UINT);
 }
 
 
@@ -239,6 +260,8 @@ static void moo_term_init                   (MooTerm        *term)
                               G_CALLBACK (child_died), term);
 
     term->priv->parser = moo_term_parser_new (term);
+
+    moo_term_init_font_stuff (term);
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
@@ -332,7 +355,7 @@ static void moo_term_finalize               (GObject        *object)
     g_object_unref (term->priv->alternate_buffer);
 
     g_free (term->priv->selection);
-    moo_term_font_info_free (term->priv->font_info);
+    moo_term_font_free (term->priv->font);
 
     g_object_unref (term->priv->back_pixmap);
 
@@ -383,6 +406,10 @@ static void moo_term_set_property   (GObject        *object,
             moo_term_set_cursor_blinks (term, g_value_get_boolean (value));
             break;
 
+        case PROP_FONT_NAME:
+            moo_term_set_font_from_string (term, g_value_get_string (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -402,17 +429,15 @@ static void moo_term_get_property   (GObject        *object,
             g_value_set_boolean (value, term->priv->cursor_blinks);
             break;
 
+        case PROP_FONT_NAME:
+            g_value_set_string (value, term->priv->font->name);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
 }
-
-
-static void moo_term_get_property   (GObject        *object,
-                                     guint           prop_id,
-                                     GValue         *value,
-                                     GParamSpec     *pspec);
 
 
 static void moo_term_size_allocate          (GtkWidget          *widget,
@@ -492,7 +517,6 @@ static void moo_term_realize                (GtkWidget          *widget)
     gtk_widget_set_double_buffered (widget, FALSE);
 
     moo_term_setup_palette (term);
-    moo_term_init_font_stuff (term);
     moo_term_init_back_pixmap (term);
     moo_term_size_changed (term);
 
@@ -821,12 +845,12 @@ static void     scroll_to_bottom                (MooTerm        *term,
 void        moo_term_size_changed       (MooTerm        *term)
 {
     GtkWidget *widget = GTK_WIDGET (term);
-    TermFontInfo *font_info = term->priv->font_info;
+    MooTermFont *font = term->priv->font;
     guint width, height;
     guint old_width, old_height;
 
-    width = widget->allocation.width / font_info->width;
-    height = widget->allocation.height / font_info->height;
+    width = widget->allocation.width / font->width;
+    height = widget->allocation.height / font->height;
     old_width = term->priv->width;
     old_height = term->priv->height;
 
@@ -991,6 +1015,22 @@ void        moo_term_decid                  (MooTerm    *term)
 }
 
 
+static void set_deccolm (MooTerm    *term,
+                         gboolean    set)
+{
+    MooTermBuffer *buf;
+    guint width = set ? 132 : 80;
+
+    g_signal_emit (term, signals[SET_WIDTH], 0, width);
+
+    buf = term->priv->buffer;
+    moo_term_buffer_set_scrolling_region (buf, 0,
+                                          term->priv->height - 1);
+    moo_term_buffer_erase_in_display (buf, ERASE_ALL);
+    moo_term_buffer_cursor_move_to (buf, 0, 0);
+}
+
+
 void        moo_term_set_dec_modes          (MooTerm    *term,
                                              int        *modes,
                                              guint       n_modes,
@@ -1008,6 +1048,10 @@ void        moo_term_set_dec_modes          (MooTerm    *term,
         {
             case 47:
                 moo_term_set_alternate_buffer (term, set);
+                break;
+
+            case 3:
+                set_deccolm (term, set);
                 break;
 
             default:
@@ -1262,7 +1306,7 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
     {
         moo_term_decsc (term);
         moo_term_set_alternate_buffer (term, TRUE);
-        moo_term_buffer_erase_in_display (term->priv->buffer, 2);
+        moo_term_buffer_erase_in_display (term->priv->buffer, ERASE_ALL);
         moo_term_buffer_set_ca_mode (term->priv->buffer, TRUE);
     }
     else

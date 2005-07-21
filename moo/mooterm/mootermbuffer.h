@@ -71,22 +71,7 @@ struct _MooTermBuffer {
 struct _MooTermBufferClass {
     GObjectClass  parent_class;
 
-    void (*changed)             (MooTermBuffer  *buf);
-    void (*screen_size_changed) (MooTermBuffer  *buf,
-                                 guint           width,
-                                 guint           height);
-    void (*cursor_moved)        (MooTermBuffer  *buf);
-
-    void (*bell)                (MooTermBuffer  *buf);
-    void (*set_window_title)    (MooTermBuffer  *buf,
-                                 const char     *title);
-    void (*set_icon_name)       (MooTermBuffer  *buf,
-                                 const char     *icon);
-
     void (*full_reset)          (MooTermBuffer  *buf);
-    void (*feed_child)          (MooTermBuffer  *buf,
-                                 const char     *string,
-                                 int             len);
 };
 
 
