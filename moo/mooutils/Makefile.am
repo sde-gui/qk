@@ -63,6 +63,8 @@ libmooutils_la_SOURCES =        \
     mooprefsdialogpage.c        \
     mooprefsdialog-settings.c   \
     mooprefsdialog-settings.h   \
+    moosignal.c                 \
+    moosignal.h                 \
     moostock.c                  \
     moostock.h                  \
     mootypes.c                  \
