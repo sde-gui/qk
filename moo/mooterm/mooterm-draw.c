@@ -89,10 +89,8 @@ void        moo_term_set_font_from_string   (MooTerm        *term,
 
     if (!pango_font_description_get_size (font_desc))
     {
-        g_warning ("%s: pango_font_description_get_size"
-                   "(font_desc) == 0", G_STRLOC);
         pango_font_description_free (font_desc);
-        return;
+        g_return_if_reached ();
     }
 
     g_free (term->priv->font->name);
