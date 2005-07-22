@@ -19,19 +19,6 @@
 #include <stdlib.h>
 
 
-static void dump_trace_log_handler (const gchar   *log_domain,
-                                    GLogLevelFlags log_level,
-                                    const gchar   *message,
-                                    gpointer       user_data)
-{
-    g_log_default_handler (log_domain, log_level, message, user_data);
-
-    if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL))
-    {
-        g_on_error_stack_trace (NULL);
-    }
-}
-
 static void breakpoint_log_handler (const gchar   *log_domain,
                                     GLogLevelFlags log_level,
                                     const gchar   *message,
@@ -51,7 +38,6 @@ static void init (int *argc, char ***argv, const char **cmd)
 {
     int i;
     gboolean gdk_debug = FALSE;
-    gboolean dump_trace = FALSE;
     gboolean set_breakpoint = FALSE;
 
     gtk_init (argc, argv);
@@ -60,8 +46,6 @@ static void init (int *argc, char ***argv, const char **cmd)
     {
         if (!strcmp ((*argv)[i], "--gdk-debug"))
             gdk_debug = TRUE;
-        else if (!strcmp ((*argv)[i], "--dump-trace"))
-            dump_trace = TRUE;
         else if (!strcmp ((*argv)[i], "--set-breakpoint"))
             set_breakpoint = TRUE;
         else
@@ -69,13 +53,9 @@ static void init (int *argc, char ***argv, const char **cmd)
     }
 
     if (gdk_debug)
-    {
         gdk_window_set_debug_updates (TRUE);
-    }
 
-    if (dump_trace)
-        g_log_set_default_handler (dump_trace_log_handler, NULL);
-    else if (set_breakpoint)
+    if (set_breakpoint)
         g_log_set_default_handler (breakpoint_log_handler, NULL);
 }
 
