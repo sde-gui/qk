@@ -19,6 +19,67 @@
 #include <stdlib.h>
 
 
+static void dump_trace_log_handler (const gchar   *log_domain,
+                                    GLogLevelFlags log_level,
+                                    const gchar   *message,
+                                    gpointer       user_data)
+{
+    g_log_default_handler (log_domain, log_level, message, user_data);
+
+    if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL))
+    {
+        g_on_error_stack_trace (NULL);
+    }
+}
+
+static void breakpoint_log_handler (const gchar   *log_domain,
+                                    GLogLevelFlags log_level,
+                                    const gchar   *message,
+                                    gpointer       user_data)
+{
+    g_log_default_handler (log_domain, log_level, message, user_data);
+
+    if (log_level &
+        (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL))
+    {
+        G_BREAKPOINT ();
+    }
+}
+
+
+static void init (int *argc, char ***argv, const char **cmd)
+{
+    int i;
+    gboolean gdk_debug = FALSE;
+    gboolean dump_trace = FALSE;
+    gboolean set_breakpoint = FALSE;
+
+    gtk_init (argc, argv);
+
+    for (i = 1; i < *argc; ++i)
+    {
+        if (!strcmp ((*argv)[i], "--gdk-debug"))
+            gdk_debug = TRUE;
+        else if (!strcmp ((*argv)[i], "--dump-trace"))
+            dump_trace = TRUE;
+        else if (!strcmp ((*argv)[i], "--set-breakpoint"))
+            set_breakpoint = TRUE;
+        else
+            *cmd = (*argv)[i];
+    }
+
+    if (gdk_debug)
+    {
+        gdk_window_set_debug_updates (TRUE);
+    }
+
+    if (dump_trace)
+        g_log_set_default_handler (dump_trace_log_handler, NULL);
+    else if (set_breakpoint)
+        g_log_set_default_handler (breakpoint_log_handler, NULL);
+}
+
+
 static void set_width (MooTerm *term, guint width, GtkWindow *window)
 {
     guint height;
@@ -35,34 +96,14 @@ int main (int argc, char *argv[])
 {
     const char *cmd = NULL;
     GtkWidget *win, *swin, *term;
-    gboolean debug = FALSE;
 
-    gtk_init (&argc, &argv);
-
-    if (argc > 1)
-    {
-        if (!strcmp (argv[1], "--debug"))
-        {
-            debug = TRUE;
-            if (argc > 2)
-                cmd = argv[2];
-        }
-        else
-        {
-            cmd = argv[1];
-        }
-    }
+    init (&argc, &argv, &cmd);
 
     if (!cmd)
     {
         cmd = g_getenv ("SHELL");
         if (!cmd)
             cmd = "sh";
-    }
-
-    if (debug)
-    {
-        gdk_window_set_debug_updates (TRUE);
     }
 
     win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
