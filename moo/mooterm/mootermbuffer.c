@@ -558,9 +558,6 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
         }
     }
 
-    if (c == '&')
-        g_print ("%d, %d\n", cursor_row, buf->priv->cursor_col);
-
     if (buf_get_mode (MODE_IRM))
     {
         moo_term_line_insert_unichar (buf_screen_line (buf, cursor_row),
@@ -585,7 +582,6 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
         if (buf_get_mode (MODE_DECAWM))
         {
             moo_term_buffer_new_line (buf);
-            g_print ("moving to next line\n");
         }
     }
 }
