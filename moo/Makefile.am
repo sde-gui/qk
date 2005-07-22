@@ -14,24 +14,29 @@ subdirs =
 noinst_LTLIBRARIES = libmoo.la
 libmoo_la_LIBADD =
 libmoo_la_SOURCES = dummy.c
+moo_pygtk_flags =
 
 if BUILD_MOOUTILS
 subdirs += mooutils
 libmoo_la_LIBADD += mooutils/libmooutils.la
+moo_pygtk_flags += -DBUILD_MOOUTILS
 endif
 
 if BUILD_MOOUI
 subdirs += mooui
+moo_pygtk_flags += -DBUILD_MOOUI
 libmoo_la_LIBADD += mooui/libmooui.la
 endif
 
 if BUILD_MOOEDIT
 subdirs += mooedit
+moo_pygtk_flags += -DBUILD_MOOEDIT
 libmoo_la_LIBADD += mooedit/libmooedit.la
 endif
 
 if BUILD_MOOTERM
 subdirs += mooterm
+moo_pygtk_flags += -DBUILD_MOOTERM
 if !CYGWIN_BUILD
 libmoo_la_LIBADD += mooterm/libmooterm.la
 endif !CYGWIN_BUILD
@@ -39,6 +44,7 @@ endif
 
 if BUILD_MOOAPP
 subdirs += mooapp
+moo_pygtk_flags += -DBUILD_MOOAPP
 if !CYGWIN_BUILD
 libmoo_la_LIBADD += mooapp/libmooapp.la
 endif !CYGWIN_BUILD
@@ -57,7 +63,8 @@ AM_CFLAGS =                                 \
     -DMOO_VERSION=\"$(MOO_VERSION)\"        \
     -DMOO_VERSION_MAJOR=$(MOO_VERSION_MAJOR)\
     -DMOO_VERSION_MINOR=$(MOO_VERSION_MINOR)\
-    -DMOO_VERSION_MICRO=$(MOO_VERSION_MICRO)
+    -DMOO_VERSION_MICRO=$(MOO_VERSION_MICRO)\
+    $(moo_pygtk_flags)
 
 EXTRA_DIST = moo-pygtk.c
 
@@ -75,7 +82,7 @@ if BUILD_PYMOO
 
 pyexec_LTLIBRARIES = moo.la
 
-moo_la_SOURCES = dummy.c moo-pygtk.c
+moo_la_SOURCES = moo-pygtk.c
 
 if MINGW_BUILD
 mingw_flags = -no-undefined

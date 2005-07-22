@@ -1,1 +1,1 @@
-// empty file to make automake happy
+/* empty file to make automake happy */

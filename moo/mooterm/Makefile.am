@@ -54,31 +54,45 @@ EXTRA_DIST =                \
     $(widget_unix_sources)  \
     $(widget_win32_sources)
 
-
-############################################################################
-#   UNIX
-#
-if UNIX_BUILD
-
 noinst_LTLIBRARIES = libmooterm.la
+libmooterm_la_SOURCES =
+BUILT_SOURCES =
 
-libmooterm_la_SOURCES = $(widget_sources) $(widget_unix_sources)
-BUILT_SOURCES = mootermparser-yacc.c mootermparser-yacc.h
 
+if UNIX_BUILD
+libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources)
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h
 endif UNIX_BUILD
 
 
-############################################################################
-#   MINGW
-#
 if MINGW_BUILD
-
-noinst_LTLIBRARIES = libmooterm.la
-
-libmooterm_la_SOURCES = $(widget_sources) $(widget_win32_sources)
-BUILT_SOURCES = mootermparser-yacc.c mootermparser-yacc.h
-
+libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources)
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h
 endif MINGW_BUILD
+
+
+##############################################################################
+# Pygtk stuff
+#
+
+EXTRA_DIST += mooterm-mod.c mooterm-pygtk.defs mooterm-pygtk.override
+
+if USE_PYGTK
+libmooterm_la_SOURCES += mooterm-mod.c
+
+nodist_libmooterm_la_SOURCES = mooterm-pygtk.c
+BUILT_SOURCES += mooterm-pygtk.c
+CLEANFILES = mooterm-pygtk.c
+
+mooterm-pygtk.c: $(srcdir)/mooterm-pygtk.defs $(srcdir)/mooterm-pygtk.override
+	pygtk-codegen-2.0 --prefix moo_term \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/../mooui/mooui-pygtk.defs \
+	--override $(srcdir)/mooterm-pygtk.override \
+	$(srcdir)/mooterm-pygtk.defs > mooterm-pygtk.c
+
+endif USE_PYGTK
 
 
 ############################################################################

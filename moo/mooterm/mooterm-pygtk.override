@@ -1,0 +1,47 @@
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
+#include "mooterm/mooterm.h"
+%%
+modulename moo
+%%
+import gtk.Widget as PyGtkWidget_Type
+import gobject.GObject as PyGObject_Type
+%%
+ignore-glob
+  *_get_type
+%%
+override moo_term_new kwargs
+static int
+_wrap_moo_term_new (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {NULL};
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, ":Term", kwlist))
+        return -1;
+
+    self->obj = g_object_new (MOO_TYPE_TERM, NULL);
+    pygobject_register_wrapper (self);
+
+    return 0;
+}
+%%
+override moo_term_fork_command kwargs
+static PyObject *
+_wrap_moo_term_fork_command (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {"cmd", "working_dir", NULL};
+    const char *cmd = NULL;
+    const char *working_dir = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "s|s:Term.fork_command",
+                                      kwlist, &cmd, &working_dir))
+        return NULL;
+
+    moo_term_fork_command (MOO_TERM (self->obj), cmd, working_dir, NULL);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}

@@ -86,8 +86,19 @@ void        initmoo                     (void)
     PyModule_AddObject (moo_module, (char*)"version", moo_version());
     PyModule_AddObject (moo_module, (char*)"detailed_version", moo_detailed_version());
 
+#ifdef BUILD_MOOUTILS
     mod_init (moo_utils);
+#endif
+#ifdef BUILD_MOOUI
     mod_init (moo_ui);
+#endif
+#ifdef BUILD_MOOEDIT
     mod_init (moo_edit);
+#endif
+#ifdef BUILD_MOOTERM
+    mod_init (moo_term);
+#endif
+#ifdef BUILD_MOOAPP
     mod_init (moo_app);
+#endif
 }

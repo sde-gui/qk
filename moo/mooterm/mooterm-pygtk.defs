@@ -1,0 +1,55 @@
+;;
+;;  mooterm/mooterm-pygtk.defs
+;;
+
+; object definitions ...
+
+(define-object Term
+  (in-module "Moo")
+  (parent "GtkWidget")
+  (c-name "MooTerm")
+  (gtype-id "MOO_TYPE_TERM")
+)
+
+;; Enumerations and flags ...
+
+(define-function moo_term_new
+  (c-name "moo_term_new")
+  (is-constructor-of "MooTerm")
+  (return-type "MooTerm*")
+  (parameters
+    '("guint" "width")
+    '("guint" "height")
+  )
+)
+
+(define-method feed
+  (of-object "MooTerm")
+  (c-name "moo_term_feed")
+  (return-type "none")
+  (parameters
+    '("const-gchar*" "data")
+    '("int" "len" (default "-1"))
+  )
+)
+
+(define-method feed_child
+  (of-object "MooTerm")
+  (c-name "moo_term_feed_child")
+  (return-type "none")
+  (parameters
+    '("const-gchar*" "data")
+    '("int" "len" (default "-1"))
+  )
+)
+
+(define-method fork_command
+  (of-object "MooTerm")
+  (c-name "moo_term_fork_command")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "cmd")
+    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
+    '("char**" "envp" (null-ok) (default "NULL"))
+  )
+)

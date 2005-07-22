@@ -24,7 +24,7 @@
     </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
@@ -39,28 +39,28 @@
       <mainprogram>tests/mterm</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs/>
+      <programargs> --dump-trace</programargs>
       <terminal>false</terminal>
       <autocompile>true</autocompile>
       <envvars/>
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp</configargs>
         <builddir>build/mooterm-debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
-        <f77compiler>kdevpgf77options</f77compiler>
+        <f77compiler>kdevg77options</f77compiler>
         <cflags>-O0 -g3 -pg</cflags>
         <cxxflags>-O0 -g3 -pg</cxxflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
       </debug>
       <gcc-4.0>
         <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
@@ -167,11 +167,11 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
-      <programargs>--g-fatal-warnings --debug bash</programargs>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <programargs>--set-breakpoint bash</programargs>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>
@@ -272,7 +272,7 @@
     </codecompletion>
     <references/>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
