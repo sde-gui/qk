@@ -39,14 +39,14 @@
       <mainprogram>tests/mterm</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs> --dump-trace</programargs>
+      <programargs></programargs>
       <terminal>false</terminal>
       <autocompile>true</autocompile>
       <envvars/>
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
         <builddir>build/mooterm-debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

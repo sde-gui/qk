@@ -197,15 +197,49 @@ void        moo_term_invalidate_rect    (MooTerm        *term,
 }
 
 
-void        moo_term_setup_palette      (MooTerm        *term)
+void        moo_term_init_palette       (MooTerm        *term)
 {
     int i;
     GtkWidget *widget = GTK_WIDGET (term);
+
+    gtk_widget_ensure_style (widget);
+
+    term->priv->fg_color[0] = widget->style->text[GTK_STATE_NORMAL];
+    term->priv->fg_color[1] = widget->style->text[GTK_STATE_NORMAL];
+    term->priv->bg_color = widget->style->base[GTK_STATE_NORMAL];
+
+    for (i = 0; i < 2; ++i)
+    {
+        gdk_color_parse ("black", &term->priv->palette[8*i + MOO_TERM_BLACK]);
+        gdk_color_parse ("red", &term->priv->palette[8*i + MOO_TERM_RED]);
+        gdk_color_parse ("green", &term->priv->palette[8*i + MOO_TERM_GREEN]);
+        gdk_color_parse ("yellow", &term->priv->palette[8*i + MOO_TERM_YELLOW]);
+        gdk_color_parse ("blue", &term->priv->palette[8*i + MOO_TERM_BLUE]);
+        gdk_color_parse ("magenta", &term->priv->palette[8*i + MOO_TERM_MAGENTA]);
+        gdk_color_parse ("cyan", &term->priv->palette[8*i + MOO_TERM_CYAN]);
+        gdk_color_parse ("white", &term->priv->palette[8*i + MOO_TERM_WHITE]);
+    }
+}
+
+
+void        moo_term_setup_palette      (MooTerm        *term)
+{
+    int i, j;
+    GtkWidget *widget = GTK_WIDGET (term);
     GdkColormap *colormap;
     GdkGCValues vals;
-    GdkColor colors[MOO_TERM_COLOR_MAX];
 
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
+
+    colormap = gdk_colormap_get_system ();
+    g_return_if_fail (colormap != NULL);
+
+    gdk_colormap_alloc_color (colormap, &term->priv->fg_color[0],
+                              TRUE, TRUE);
+    gdk_colormap_alloc_color (colormap, &term->priv->fg_color[1],
+                              TRUE, TRUE);
+    gdk_colormap_alloc_color (colormap, &term->priv->bg_color,
+                              TRUE, TRUE);
 
     term->priv->fg[0] =
             gdk_gc_new_with_values (widget->window, &vals, 0);
@@ -214,36 +248,23 @@ void        moo_term_setup_palette      (MooTerm        *term)
     term->priv->bg =
             gdk_gc_new_with_values (widget->window, &vals, 0);
 
-    gdk_gc_set_foreground (term->priv->fg[0], &(widget->style->black));
-    gdk_gc_set_foreground (term->priv->fg[0], &(widget->style->black));
-    gdk_gc_set_foreground (term->priv->bg, &(widget->style->white));
+    gdk_gc_set_foreground (term->priv->fg[0], &term->priv->fg_color[0]);
+    gdk_gc_set_foreground (term->priv->fg[1], &term->priv->fg_color[1]);
+    gdk_gc_set_foreground (term->priv->bg, &term->priv->bg_color);
 
-    gdk_window_set_background (widget->window, &(widget->style->white));
-
-    colormap = gdk_colormap_get_system ();
-    g_return_if_fail (colormap != NULL);
-
-    gdk_color_parse ("black", &colors[MOO_TERM_BLACK]);
-    gdk_color_parse ("red", &colors[MOO_TERM_RED]);
-    gdk_color_parse ("green", &colors[MOO_TERM_GREEN]);
-    gdk_color_parse ("yellow", &colors[MOO_TERM_YELLOW]);
-    gdk_color_parse ("blue", &colors[MOO_TERM_BLUE]);
-    gdk_color_parse ("magenta", &colors[MOO_TERM_MAGENTA]);
-    gdk_color_parse ("cyan", &colors[MOO_TERM_CYAN]);
-    gdk_color_parse ("white", &colors[MOO_TERM_WHITE]);
+    gdk_window_set_background (widget->window, &term->priv->bg_color);
 
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
-        gdk_colormap_alloc_color (colormap, &colors[i], TRUE, TRUE);
+        for (j = 0; j < 2; ++j)
+            gdk_colormap_alloc_color (colormap,
+                                      &term->priv->palette[8*j + i],
+                                      TRUE, TRUE);
 
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
+        for (j = 0; j < 2; ++j)
     {
-        vals.foreground = colors[i];
-
-        term->priv->color[NORMAL][i] =
-                gdk_gc_new_with_values (widget->window,
-                                        &vals,
-                                        GDK_GC_FOREGROUND);
-        term->priv->color[BOLD][i] =
+        vals.foreground = term->priv->palette[8*j + i];
+        term->priv->color[8*j + i] =
                 gdk_gc_new_with_values (widget->window,
                                         &vals,
                                         GDK_GC_FOREGROUND);
@@ -660,7 +681,7 @@ static void term_draw_range_simple          (MooTerm        *term,
     if (!invert)
         bg = term->priv->bg;
     else
-        bg = term->priv->fg[NORMAL];
+        bg = term->priv->fg[COLOR_NORMAL];
 
     if (start >= moo_term_line_len (line))
     {
@@ -728,12 +749,12 @@ static void term_draw_cells                 (MooTerm        *term,
 
     pango_layout_set_text (term->priv->layout, buf, buf_len);
 
-    bold = attr->mask & MOO_TERM_TEXT_BOLD ? BOLD : NORMAL;
+    bold = (attr->mask & MOO_TERM_TEXT_BOLD) ? COLOR_BOLD : COLOR_NORMAL;
 
     if (attr->mask & MOO_TERM_TEXT_FOREGROUND)
     {
         g_return_if_fail (attr->foreground < MOO_TERM_COLOR_MAX);
-        fg = term->priv->color[bold][attr->foreground];
+        fg = term->priv->color[8*bold + attr->foreground];
     }
     else
     {
@@ -743,7 +764,7 @@ static void term_draw_cells                 (MooTerm        *term,
     if (attr->mask & MOO_TERM_TEXT_BACKGROUND)
     {
         g_return_if_fail (attr->foreground < MOO_TERM_COLOR_MAX);
-        bg = term->priv->color[bold][attr->background];
+        bg = term->priv->color[8*bold + attr->background];
     }
     else
     {
@@ -815,7 +836,7 @@ static void term_draw_cursor                (MooTerm        *term)
         invert %= 2;
 
         if (invert)
-            color = term->priv->fg[NORMAL];
+            color = term->priv->fg[COLOR_NORMAL];
         else
             color = term->priv->bg;
 

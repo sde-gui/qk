@@ -66,10 +66,8 @@ static void     scroll_to_bottom                (MooTerm        *term,
 static void     scrollback_changed              (MooTerm        *term,
                                                  GParamSpec     *pspec,
                                                  MooTermBuffer  *buf);
-static void     width_changed                   (MooTerm        *term,
-                                                 GParamSpec     *pspec);
-static void     height_changed                  (MooTerm        *term,
-                                                 GParamSpec     *pspec);
+static void     buf_size_changed                (MooTerm        *term,
+                                                 MooTermBuffer  *buf);
 
 static void     im_preedit_start                (MooTerm        *term);
 static void     im_preedit_end                  (MooTerm        *term);
@@ -262,6 +260,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->parser = moo_term_parser_new (term);
 
     moo_term_init_font_stuff (term);
+    moo_term_init_palette (term);
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
@@ -300,13 +299,13 @@ static void moo_term_init                   (MooTerm        *term)
                               G_CALLBACK (scrollback_changed),
                               term);
 
-    g_signal_connect_swapped (term->priv->buffer,
-                              "notify::screen-width",
-                              G_CALLBACK (width_changed),
+    g_signal_connect_swapped (term->priv->primary_buffer,
+                              "screen-size-changed",
+                              G_CALLBACK (buf_size_changed),
                               term);
-    g_signal_connect_swapped (term->priv->buffer,
-                              "notify::screen-height",
-                              G_CALLBACK (height_changed),
+    g_signal_connect_swapped (term->priv->alternate_buffer,
+                              "screen-size-changed",
+                              G_CALLBACK (buf_size_changed),
                               term);
 
     g_signal_connect_swapped (term->priv->primary_buffer,
@@ -377,15 +376,14 @@ static void moo_term_finalize               (GObject        *object)
         if (term->priv->pointer[i])
             gdk_cursor_unref (term->priv->pointer[i]);
 
-    for (i = 0; i < 1; ++i)
-        for (j = 0; j < MOO_TERM_COLOR_MAX; ++j)
-    {
-        if (term->priv->color[i][j])
-            g_object_unref (term->priv->color[i][j]);
-    }
+    for (j = 0; j < COLOR_MAX; ++j)
+        if (term->priv->color[j])
+            g_object_unref (term->priv->color[j]);
+
     for (i = 0; i < 1; ++i)
         if (term->priv->fg[i])
             g_object_unref (term->priv->fg[i]);
+
     if (term->priv->bg)
         g_object_unref (term->priv->bg);
 
@@ -456,8 +454,13 @@ static void moo_term_size_allocate          (GtkWidget          *widget,
                                 allocation->x, allocation->y,
                                 allocation->width, allocation->height);
 
-        if (old_width != allocation->width || old_height != allocation->height)
+        if (old_width / term_char_width(term) !=
+            allocation->width / term_char_width(term) ||
+            old_height / term_char_height(term) !=
+            allocation->height / term_char_height(term))
+        {
             moo_term_size_changed (term);
+        }
     }
 }
 
@@ -614,39 +617,26 @@ static void     scrollback_changed              (MooTerm        *term,
 }
 
 
-static void     width_changed                   (MooTerm        *term,
-                                                 G_GNUC_UNUSED GParamSpec *pspec)
+static void     buf_size_changed                (MooTerm        *term,
+                                                 MooTermBuffer  *buf)
 {
-    g_assert (!strcmp (pspec->name, "screen-width"));
+    if (buf == term->priv->buffer)
+    {
+        guint scrollback = buf_scrollback (buf);
 
-    term->priv->width = buf_screen_width (term->priv->buffer);
+        term->priv->width = buf_screen_width (buf);
+        term->priv->height = buf_screen_height (buf);
 
-    if (GTK_WIDGET_REALIZED (term))
-        moo_term_resize_back_pixmap (term);
+        if (GTK_WIDGET_REALIZED (term))
+            moo_term_resize_back_pixmap (term);
 
-    moo_term_selection_invalidate (term);
-}
+        if (!term->priv->scrolled || term->priv->top_line > scrollback)
+            scroll_to_bottom (term, TRUE);
+        else
+            update_adjustment (term);
 
-
-static void     height_changed                  (MooTerm        *term,
-                                                 G_GNUC_UNUSED GParamSpec *pspec)
-{
-    guint scrollback = buf_scrollback (term->priv->buffer);
-
-    g_assert (!strcmp (pspec->name, "screen-height"));
-
-    term->priv->height = buf_screen_height (term->priv->buffer);
-
-    if (!term->priv->scrolled || term->priv->top_line > scrollback)
-        scroll_to_bottom (term, TRUE);
-    else
-        update_adjustment (term);
-
-    if (GTK_WIDGET_REALIZED (term))
-        moo_term_resize_back_pixmap (term);
-
-    moo_term_selection_invalidate (term);
-    moo_term_invalidate_all (term);
+        moo_term_selection_invalidate (term);
+    }
 }
 
 
@@ -860,11 +850,11 @@ void        moo_term_size_changed       (MooTerm        *term)
     width = CLAMP (width, MIN_TERMINAL_WIDTH, MAX_TERMINAL_WIDTH);
     height = height < MIN_TERMINAL_HEIGHT ? MIN_TERMINAL_HEIGHT : height;
 
+    moo_term_pt_set_size (term->priv->pt, width, height);
     moo_term_buffer_set_screen_size (term->priv->primary_buffer,
                                      width, height);
     moo_term_buffer_set_screen_size (term->priv->alternate_buffer,
                                      width, height);
-    moo_term_pt_set_size (term->priv->pt, width, height);
 }
 
 
@@ -1129,7 +1119,7 @@ void        moo_term_set_mode               (MooTerm    *term,
                                              int         mode,
                                              gboolean    set)
 {
-#if 1
+#if 0
     switch (mode)
     {
         case MODE_DECSCNM:
@@ -1321,8 +1311,6 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
 void        moo_term_set_alternate_buffer   (MooTerm        *term,
                                              gboolean        alternate)
 {
-    g_message ("set alternate buffer %s", alternate ? "TRUE" : "FALSE");
-
     if ((alternate && term->priv->buffer == term->priv->alternate_buffer) ||
          (!alternate && term->priv->buffer == term->priv->primary_buffer))
         return;

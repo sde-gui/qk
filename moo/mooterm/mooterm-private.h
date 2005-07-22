@@ -52,8 +52,9 @@ typedef enum {
 } TermPointerType;
 
 enum {
-    NORMAL  = 0,
-    BOLD    = 1
+    COLOR_NORMAL    = 0,
+    COLOR_BOLD      = 1,
+    COLOR_MAX       = 16
 };
 
 typedef struct _MooTermFont MooTermFont;
@@ -107,9 +108,12 @@ struct _MooTermPrivate {
     guint           cursor_blink_time;
     guint           cursor_blink_timeout_id;
 
-    GdkGC          *color[2][MOO_TERM_COLOR_MAX];
+    GdkGC          *color[COLOR_MAX];
     GdkGC          *fg[2];
     GdkGC          *bg;
+    GdkColor        palette[COLOR_MAX];
+    GdkColor        fg_color[2];
+    GdkColor        bg_color;
 
     GdkCursor      *pointer[POINTERS_NUM];
     gboolean        pointer_visible;
@@ -157,9 +161,9 @@ void        moo_term_cursor_moved           (MooTerm        *term,
                                              MooTermBuffer  *buf);
 
 void        moo_term_size_changed           (MooTerm        *term);
-void        moo_term_buf_size_changed       (MooTerm        *term);
 
 void        moo_term_init_font_stuff        (MooTerm        *term);
+void        moo_term_init_palette           (MooTerm        *term);
 void        moo_term_setup_palette          (MooTerm        *term);
 
 void        moo_term_update_pointer         (MooTerm        *term);

@@ -49,6 +49,7 @@ enum {
     FEED_CHILD,
     FULL_RESET,
     TABS_CHANGED,
+    SCREEN_SIZE_CHANGED,
     LAST_SIGNAL
 };
 
@@ -115,6 +116,15 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 
     signals[TABS_CHANGED] =
             moo_signal_new_cb ("tabs-changed",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL,
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
+    signals[SCREEN_SIZE_CHANGED] =
+            moo_signal_new_cb ("screen-size-changed",
                                G_OBJECT_CLASS_TYPE (gobject_class),
                                G_SIGNAL_RUN_LAST,
                                NULL,
@@ -310,8 +320,6 @@ void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
         if (buf->priv->cursor_col >= width)
             moo_term_buffer_cursor_move_to (buf, -1, width - 1);
 
-        g_object_notify (G_OBJECT (buf), "screen-width");
-
         if (old_width < width)
         {
             GdkRectangle changed = {
@@ -327,6 +335,9 @@ void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
         {
             moo_term_buffer_reset_tab_stops (buf);
         }
+
+        g_object_notify (G_OBJECT (buf), "screen-width");
+        g_signal_emit (buf, signals[SCREEN_SIZE_CHANGED], 0);
     }
 }
 
@@ -446,6 +457,7 @@ void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
     if (scrollback_changed)
         moo_term_buffer_scrollback_changed (buf);
     g_object_notify (G_OBJECT (buf), "screen-height");
+    g_signal_emit (buf, signals[SCREEN_SIZE_CHANGED], 0);
     if (content_changed)
         moo_term_buffer_changed (buf);
     if (cursor_moved)
