@@ -43,6 +43,8 @@ G_BEGIN_DECLS
 
 #define SCROLL_GRANULARITY          3
 
+#define DEFAULT_MONOSPACE_FONT      "Monospace 12"
+
 
 typedef enum {
     POINTER_NONE     = 0,
@@ -152,9 +154,6 @@ void        moo_term_set_window_title       (MooTerm        *term,
 void        moo_term_set_icon_name          (MooTerm        *term,
                                              const char     *title);
 
-void        moo_term_set_alternate_buffer   (MooTerm        *term,
-                                             gboolean        alternate);
-
 void        moo_term_buf_content_changed    (MooTerm        *term,
                                              MooTermBuffer  *buf);
 void        moo_term_cursor_moved           (MooTerm        *term,
@@ -185,22 +184,17 @@ gboolean    moo_term_key_release            (GtkWidget      *widget,
 void        moo_term_im_commit              (GtkIMContext   *imcontext,
                                              gchar          *arg,
                                              MooTerm        *term);
-void        moo_term_im_preedit_start       (MooTerm        *term);
-void        moo_term_im_preedit_end         (MooTerm        *term);
 
 void        moo_term_init_back_pixmap       (MooTerm        *term);
 void        moo_term_resize_back_pixmap     (MooTerm        *term);
 void        moo_term_update_back_pixmap     (MooTerm        *term);
-void        moo_term_invalidate_content_all (MooTerm        *term);
-void        moo_term_invalidate_content_rect(MooTerm        *term,
-                                             GdkRectangle   *rect);
 
 gboolean    moo_term_expose_event           (GtkWidget      *widget,
                                              GdkEventExpose *event);
 void        moo_term_invalidate_rect        (MooTerm        *term,
                                              GdkRectangle   *rect);
-void        moo_term_force_update           (MooTerm        *term);
 void        moo_term_invalidate_all         (MooTerm        *term);
+void        moo_term_force_update           (MooTerm        *term);
 
 void        moo_term_release_selection      (MooTerm        *term);
 void        moo_term_grab_selection         (MooTerm        *term);

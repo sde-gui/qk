@@ -37,7 +37,13 @@ static GObject *moo_term_buffer_constructor     (GType                  type,
                                                  GObjectConstructParam *construct_param);
 static void     moo_term_buffer_finalize        (GObject        *object);
 
-static void     set_defaults                    (MooTermBuffer  *buf);
+static void     set_defaults        (MooTermBuffer  *buf);
+
+static void     set_screen_width    (MooTermBuffer  *buf,
+                                     guint           columns);
+static void     set_screen_height   (MooTermBuffer  *buf,
+                                     guint           rows);
+static void     reset_tab_stops     (MooTermBuffer  *buf);
 
 
 /* MOO_TYPE_TERM_BUFFER */
@@ -208,14 +214,14 @@ static void     moo_term_buffer_set_property    (GObject        *object,
     switch (prop_id) {
         case PROP_SCREEN_WIDTH:
             if (buf->priv->constructed)
-                moo_term_buffer_set_screen_width (buf, g_value_get_uint (value));
+                set_screen_width (buf, g_value_get_uint (value));
             else
                 buf->priv->screen_width = g_value_get_uint (value);
             break;
 
         case PROP_SCREEN_HEIGHT:
             if (buf->priv->constructed)
-                moo_term_buffer_set_screen_height (buf, g_value_get_uint (value));
+                set_screen_height (buf, g_value_get_uint (value));
             else
                 buf->priv->screen_height = g_value_get_uint (value);
             break;
@@ -305,8 +311,8 @@ void    moo_term_buffer_scrollback_changed  (MooTermBuffer  *buf)
 }
 
 
-void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
-                                             guint           width)
+static void     set_screen_width    (MooTermBuffer  *buf,
+                                     guint           width)
 {
     guint old_width;
 
@@ -333,7 +339,7 @@ void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
         }
         else
         {
-            moo_term_buffer_reset_tab_stops (buf);
+            reset_tab_stops (buf);
         }
 
         g_object_notify (G_OBJECT (buf), "screen-width");
@@ -342,8 +348,8 @@ void    moo_term_buffer_set_screen_width    (MooTermBuffer  *buf,
 }
 
 
-void    moo_term_buffer_set_screen_height   (MooTermBuffer  *buf,
-                                             guint           height)
+static void     set_screen_height   (MooTermBuffer  *buf,
+                                     guint           height)
 {
     guint old_height = buf->priv->screen_height;
     guint width = buf->priv->screen_width;
@@ -469,8 +475,8 @@ void    moo_term_buffer_set_screen_size (MooTermBuffer  *buf,
                                          guint           columns,
                                          guint           rows)
 {
-    moo_term_buffer_set_screen_height (buf, rows);
-    moo_term_buffer_set_screen_width (buf, columns);
+    set_screen_height (buf, rows);
+    set_screen_width (buf, columns);
 }
 
 
@@ -672,7 +678,7 @@ void    moo_term_buffer_feed_child      (MooTermBuffer  *buf,
 }
 
 
-void    moo_term_buffer_reset_tab_stops     (MooTermBuffer  *buf)
+static void     reset_tab_stops     (MooTermBuffer  *buf)
 {
     guint i;
     guint width = buf_screen_width (buf);
@@ -818,16 +824,6 @@ MooTermBuffer  *moo_term_buffer_new         (guint width,
                          "screen-width", width,
                          "screen-height", height,
                          NULL);
-}
-
-
-void    moo_term_buffer_changed_clear           (MooTermBuffer  *buf)
-{
-    if (buf->priv->changed)
-        gdk_region_destroy (buf->priv->changed);
-
-    buf->priv->changed = NULL;
-    buf->priv->changed_all = FALSE;
 }
 
 

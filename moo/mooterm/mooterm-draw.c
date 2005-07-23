@@ -23,12 +23,16 @@
 #define PIXEL_WIDTH(term)   (CHAR_WIDTH (term) * (term)->priv->width)
 #define PIXEL_HEIGHT(term)  (CHAR_HEIGHT (term) * (term)->priv->height)
 
-
 #define CHARS \
 "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\QWERTYUIOP"\
 "{}|asdfghjkl;'ASDFGHJKL:\"zxcvbnm,./ZXCVBNM<>?"
 
 #define HOW_MANY(x, y) (((x) + (y) - 1) / (y))
+
+
+static void moo_term_invalidate_content_all (MooTerm        *term);
+static void moo_term_invalidate_content_rect(MooTerm        *term,
+                                             GdkRectangle   *rect);
 
 
 static void font_calculate  (MooTermFont *font)
@@ -119,7 +123,6 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
     g_return_if_fail (ctx != NULL);
 
     term->priv->font = moo_term_font_new (ctx);
-
     term->priv->layout = pango_layout_new (ctx);
 
     g_object_unref (ctx);
@@ -439,14 +442,14 @@ void        moo_term_update_back_pixmap     (MooTerm        *term)
 }
 
 
-void        moo_term_invalidate_content_all (MooTerm        *term)
+static void moo_term_invalidate_content_all (MooTerm        *term)
 {
     GdkRectangle rect = {0, 0, term->priv->width, term->priv->height};
     moo_term_invalidate_content_rect (term, &rect);
 }
 
 
-void        moo_term_invalidate_content_rect(MooTerm        *term,
+static void moo_term_invalidate_content_rect(MooTerm        *term,
                                              GdkRectangle   *rect)
 {
     if (term->priv->changed_content)

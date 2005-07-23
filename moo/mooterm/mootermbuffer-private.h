@@ -78,8 +78,6 @@ typedef enum {
 } ClearTabType;
 
 
-void    moo_term_buffer_changed_clear           (MooTermBuffer  *buf);
-
 void    moo_term_buffer_changed                 (MooTermBuffer  *buf);
 void    moo_term_buffer_scrollback_changed      (MooTermBuffer  *buf);
 void    moo_term_buffer_cursor_moved            (MooTermBuffer  *buf);
@@ -99,10 +97,6 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
                                                  guint           mode,
                                                  gboolean        val);
 
-void    moo_term_buffer_set_screen_width        (MooTermBuffer  *buf,
-                                                 guint           columns);
-void    moo_term_buffer_set_screen_height       (MooTermBuffer  *buf,
-                                                 guint           rows);
 void    moo_term_buffer_set_screen_size         (MooTermBuffer  *buf,
                                                  guint           columns,
                                                  guint           rows);
@@ -114,7 +108,6 @@ void    moo_term_buffer_cursor_move_to          (MooTermBuffer  *buf,
                                                  int             row,
                                                  int             col);
 
-void    moo_term_buffer_reset_tab_stops         (MooTermBuffer  *buf);
 guint   moo_term_buffer_next_tab_stop           (MooTermBuffer  *buf,
                                                  guint           current);
 guint   moo_term_buffer_prev_tab_stop           (MooTermBuffer  *buf,

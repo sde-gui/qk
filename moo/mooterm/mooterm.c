@@ -76,6 +76,9 @@ static void     child_died                      (MooTerm        *term);
 
 static void     clear_saved_cursor              (MooTerm        *term);
 
+static void     moo_term_set_alternate_buffer   (MooTerm        *term,
+                                                 gboolean        alternate);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
@@ -174,7 +177,7 @@ static void moo_term_class_init (MooTermClass *klass)
                                      g_param_spec_string ("font-name",
                                              "font-name",
                                              "font-name",
-                                             NULL,
+                                             DEFAULT_MONOSPACE_FONT,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[SET_SCROLL_ADJUSTMENTS] =
@@ -1308,7 +1311,7 @@ void        moo_term_set_ca_mode            (MooTerm    *term,
 }
 
 
-void        moo_term_set_alternate_buffer   (MooTerm        *term,
+static void moo_term_set_alternate_buffer   (MooTerm        *term,
                                              gboolean        alternate)
 {
     if ((alternate && term->priv->buffer == term->priv->alternate_buffer) ||
