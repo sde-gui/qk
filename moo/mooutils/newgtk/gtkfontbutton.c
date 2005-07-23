@@ -33,13 +33,7 @@
 #include <config.h>
 #include <gtk/gtk.h>
 
-/* GtkFontButton is in gtk since 2.4, but it was broken until 2.4.5 */
-#if !GTK_CHECK_VERSION(2,4,5)
-
-/* If gtk is >= 2.4 then no need to include my copy. Just for case */
-#if !GTK_CHECK_VERSION(2,4,0)
 #include "mooutils/newgtk/gtkfontbutton.h"
-#endif /* !GTK_CHECK_VERSION(2,4,5) */
 
 #define P_(s) (s)
 #define _(s) (s)
@@ -949,6 +943,3 @@ gtk_font_button_update_font_info (GtkFontButton *font_button)
 
   pango_font_description_free (desc);
 }
-
-
-#endif /* !GTK_CHECK_VERSION(2,4,5) */

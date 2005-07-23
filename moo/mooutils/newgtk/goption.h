@@ -28,10 +28,6 @@
 #include <glib/gerror.h>
 #include <glib/gquark.h>
 
-#if GLIB_CHECK_VERSION(2,6,0)
-#error "This file should not be used if you have glib 2.6.0 or higher"
-#endif
-
 G_BEGIN_DECLS
 
 

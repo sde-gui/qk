@@ -97,7 +97,7 @@ AC_DEFUN([AC_CHECK_PYTHON],[
             AC_MSG_RESULT([$PYTHON_INCLUDES])
             AC_MSG_CHECKING([PYTHON_LDFLAGS])
             AC_MSG_RESULT([$PYTHON_LDFLAGS])
-            AC_MSG_NOTICE([Didn't do real linking])
+            AC_MSG_NOTICE([Did not do real linking])
             AC_SUBST(PYTHON_INCLUDES)
             AC_SUBST(PYTHON_LDFLAGS)
             found_python="yes"
@@ -384,16 +384,16 @@ AC_DEFUN([AC_CHECK_DEBUG_STUFF],[
     fi
 
     if test x$all_gcc_warnings = "xyes"; then
-        M_CFLAGS="$M_CFLAGS -W -Wall -Wpointer-arith \
-                  -std=c99 -Wcast-align -Wsign-compare -Winline -Wreturn-type \
-                  -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
-                  -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs \
-                  -Wunreachable-code -Wdisabled-optimization"
-        M_CXXFLAGS="$M_CXXFLAGS -W -Wall -Woverloaded-virtual \
-                    -Wpointer-arith -Wcast-align -Wsign-compare -Wnon-virtual-dtor \
-                    -Wno-long-long -Wundef -Wconversion -Wchar-subscripts -Wwrite-strings \
-                    -Wmissing-format-attribute -Wcast-align -Wdisabled-optimization \
-                    -Wnon-template-friend -Wsign-promo -Wno-ctor-dtor-privacy"
+M_CFLAGS="$M_CFLAGS -W -Wall -Wpointer-arith dnl
+-std=c99 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
+-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
+-Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
+-Wunreachable-code -Wdisabled-optimization"
+M_CXXFLAGS="$M_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
+-Wpointer-arith -Wcast-align -Wsign-compare -Wnon-virtual-dtor dnl
+-Wno-long-long -Wundef -Wconversion -Wchar-subscripts -Wwrite-strings dnl
+-Wmissing-format-attribute -Wcast-align -Wdisabled-optimization dnl
+-Wnon-template-friend -Wsign-promo -Wno-ctor-dtor-privacy"
     fi
 
     if test x$debug = "xyes"; then
@@ -428,34 +428,42 @@ AC_DEFUN([AC_CHECK_DEBUG_STUFF],[
 ])
 
 
-AC_DEFUN([AC_PKG_ARG_ENV_VAR],[
-    AC_ARG_WITH(pkg-config-path,
-    AC_HELP_STRING([--with-pkg-config-path=PATH], [sets PKG_CONFIG_PATH environment variable (for using in kdevelop)]),
-    [
-        PKG_CONFIG_PATH=$with_pkg_config_path; export PKG_CONFIG_PATH
-    ])
+AC_DEFUN([_CHECK_VERSION],[
+    PKG_CHECK_MODULES($1, $2)
 
-    AC_ARG_WITH(path,
-    AC_HELP_STRING([--with-path=PATH], [sets PATH environment variable (for using in kdevelop)]),
-    [
-        PATH=$with_path; export PATH
-    ])
+    AC_MSG_CHECKING($1 version)
+    $1[]_VERSION=`$PKG_CONFIG --modversion $2`
 
-    AC_ARG_WITH(ld-library-path,
-    AC_HELP_STRING([--with-ld-library-path=PATH], [sets LD_LIBRARY_PATH environment variable (for using in kdevelop)]),
-    [
-        LD_LIBRARY_PATH=$with_ld_library_path; export LD_LIBRARY_PATH
-    ])
+    i=0
+    for part in `echo $[]$1[]_VERSION | sed 's/\./ /g'`; do
+        i=`expr $i + 1`
+        eval part$i=$part
+    done
 
-    AC_ARG_WITH(cflags,
-    AC_HELP_STRING([--with-cflags=CFLAGS], [sets CFLAGS environment variable (for using in kdevelop)]),
-    [
-        CFLAGS=$with_cflags; export CFLAGS
-    ])
+    $1[]_MAJOR_VERSION=$part1
+    $1[]_MINOR_VERSION=$part2
+    $1[]_MICRO_VERSION=$part3
 
-    AC_ARG_WITH(cxxflags,
-    AC_HELP_STRING([--with-cxxflags=CXXFLAGS], [sets CXXFLAGS environment variable (for using in kdevelop)]),
-    [
-        CXXFLAGS=$with_cxxflags; export CXXFLAGS
-    ])
+    if test $[]$1[]_MINOR_VERSION -ge 6; then
+        ver_2_6=yes
+    fi
+    if test $[]$1[]_MINOR_VERSION -ge 4; then
+        ver_2_4=yes
+    fi
+    if test $[]$1[]_MINOR_VERSION -ge 2; then
+        ver_2_2=yes
+    fi
+
+    AM_CONDITIONAL($1[]_2_6, test x$ver_2_6 = "xyes")
+    AM_CONDITIONAL($1[]_2_4, test x$ver_2_4 = "xyes")
+    AM_CONDITIONAL($1[]_2_2, test x$ver_2_2 = "xyes")
+
+    AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
 ])
+
+# PKG_CHECK_GTK_VERSIONS
+AC_DEFUN([PKG_CHECK_GTK_VERSIONS],[
+    _CHECK_VERSION(GTK, gtk+-2.0)
+    _CHECK_VERSION(GLIB, glib-2.0)
+    _CHECK_VERSION(GDK, gdk-2.0)
+])# PKG_CHECK_GTK_VERSIONS

@@ -35,8 +35,6 @@
 #include <config.h>
 #include <gtk/gtk.h>
 
-#if !GTK_CHECK_VERSION(2,4,0)
-
 #include "mooutils/newgtk/gtkcolorbutton.h"
 #define P_(s) (s)
 #define _(s) (s)
@@ -1020,6 +1018,3 @@ gtk_color_button_get_property (GObject    *object,
       break;
     }
 }
-
-
-#endif /* !GTK_CHECK_VERSION(2,4,0) */

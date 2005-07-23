@@ -26,8 +26,6 @@
 #include "config.h"
 #include "glib.h"
 
-#if !GLIB_CHECK_VERSION(2,6,0)
-
 #include "mooutils/newgtk/goption.h"
 
 #define P_(s) (s)
@@ -1671,6 +1669,3 @@ g_option_group_set_translation_domain (GOptionGroup *group,
 				     g_strdup (domain),
 				     g_free);
 }
-
-
-#endif /* !GLIB_CHECK_VERSION(2,6,0) */

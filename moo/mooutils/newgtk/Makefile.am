@@ -14,11 +14,22 @@ AM_CFLAGS =                             \
     -DG_LOG_DOMAIN=\"Gtk\"
 
 noinst_LTLIBRARIES = libnewgtk.la
+libnewgtk_la_SOURCES = newgtk-dummy.c
 
-libnewgtk_la_SOURCES =  \
+glib_2_6_sources =      \
     goption.c           \
-    goption.h           \
+    goption.h
+
+gtk_2_4_sources =       \
     gtkcolorbutton.c    \
     gtkcolorbutton.h    \
     gtkfontbutton.c     \
     gtkfontbutton.h
+
+if !GLIB_2_6
+libnewgtk_la_SOURCES += glib_2_6_sources
+endif !GLIB_2_6
+
+if !GTK_2_4
+libnewgtk_la_SOURCES += gtk_2_4_sources
+endif

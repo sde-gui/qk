@@ -11,7 +11,6 @@ AC_INIT(libmoo, [moo_version], [muntyan@math.tamu.edu], libmoo)
 AM_INIT_AUTOMAKE(libmoo, [moo_version])
 
 AC_CONFIG_HEADERS(config.h)
-AC_PKG_ARG_ENV_VAR
 
 AC_DEFINE(MOO_VERSION, ["moo_version"], "libmoo version")
 MOO_VERSION=\"moo_version\"
@@ -116,9 +115,7 @@ AM_CONDITIONAL(CYGWIN_BUILD, test x$cygwin_build = "xyes")
 ################################################################################
 #  GTK libraries
 #
-PKG_CHECK_MODULES(GTK, gtk+-2.0,,exit)
-PKG_CHECK_MODULES(GLIB, glib-2.0,,exit)
-PKG_CHECK_MODULES(GDK, gdk-2.0,,exit)
+PKG_CHECK_GTK_VERSIONS
 
 
 ################################################################################
