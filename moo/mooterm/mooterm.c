@@ -88,6 +88,7 @@ enum {
     CHILD_DIED,
     POPULATE_POPUP,
     SET_WIDTH,
+    APPLY_SETTINGS,
     LAST_SIGNAL
 };
 
@@ -163,6 +164,7 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->motion_notify_event = moo_term_motion_notify;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
+    klass->apply_settings = moo_term_apply_settings;
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURSOR_BLINKS,
@@ -249,6 +251,15 @@ static void moo_term_class_init (MooTermClass *klass)
                                _moo_marshal_VOID__UINT,
                                G_TYPE_NONE, 1,
                                GTK_TYPE_UINT);
+
+    signals[APPLY_SETTINGS] =
+            g_signal_new ("apply-settings",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooTermClass, apply_settings),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE,0);
 }
 
 
@@ -521,6 +532,8 @@ static void moo_term_realize                (GtkWidget          *widget)
     widget->style = gtk_style_attach (widget->style, widget->window);
 
     gtk_widget_set_double_buffered (widget, FALSE);
+
+    moo_term_apply_settings (term);
 
     moo_term_setup_palette (term);
     moo_term_init_back_pixmap (term);
@@ -888,7 +901,7 @@ void             moo_term_copy_clipboard    (MooTerm        *term,
     GtkClipboard *cb;
     char *text;
 
-    text = moo_term_selection_get_text (term);
+    text = moo_term_get_selection (term);
 
     if (text && *text)
     {
@@ -1642,7 +1655,7 @@ static void clipboard_get   (GtkClipboard       *clipboard,
                              G_GNUC_UNUSED guint info,
                              MooTerm            *term)
 {
-    char *text = moo_term_selection_get_text (term);
+    char *text = moo_term_get_selection (term);
 
     if (text)
     {

@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOEDIT_COMPILATION
 #error "Do not include this file"

@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOUTILS_MOOSIGNAL_H
 #define MOOUTILS_MOOSIGNAL_H

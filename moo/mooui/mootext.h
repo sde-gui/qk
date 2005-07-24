@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOUI_MOOTEXT_H
 #define MOOUI_MOOTEXT_H

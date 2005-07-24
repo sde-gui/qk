@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOTERM_MOOTERMPT_PRIVATE_H
 #define MOOTERM_MOOTERMPT_PRIVATE_H

@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOTERM_MOOTERM_H
 #define MOOTERM_MOOTERM_H
@@ -54,6 +54,8 @@ struct _MooTermClass
 
     void (*populate_popup)          (MooTerm        *term,
                                      GtkMenu        *menu);
+
+    void (*apply_settings)          (MooTerm        *term);
 };
 
 typedef enum {
@@ -94,13 +96,17 @@ void        moo_term_copy_clipboard         (MooTerm        *term,
                                              GdkAtom         selection);
 void        moo_term_paste_clipboard        (MooTerm        *term,
                                              GdkAtom         selection);
-
+void        moo_term_select_all             (MooTerm        *term);
+char       *moo_term_get_selection          (MooTerm        *term);
+char       *moo_term_get_content            (MooTerm        *term);
 void        moo_term_ctrl_c                 (MooTerm        *term);
 
 void        moo_term_set_pointer_visible    (MooTerm        *term,
                                              gboolean        visible);
 void        moo_term_set_font_from_string   (MooTerm        *term,
                                              const char     *font);
+void        moo_term_set_cursor_blink_time  (MooTerm        *term,
+                                             guint           ms);
 
 
 G_END_DECLS

@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOPREFS_MOOPREFS_H
 #define MOOPREFS_MOOPREFS_H

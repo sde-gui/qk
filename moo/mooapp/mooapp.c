@@ -703,7 +703,7 @@ static void     start_python            (MooApp         *app)
 
         moo_app_input = moo_app_input_new (moo_app_python,
                                            app->priv->info->short_name);
-        moo_app_input_start (moo_app_input);    
+        moo_app_input_start (moo_app_input);
     }
     else
     {
@@ -760,6 +760,7 @@ static void     moo_app_quit_real       (MooApp         *app)
     else
         app->priv->running = FALSE;
 
+#ifdef USE_PYTHON
     if (moo_app_input)
     {
         moo_app_input_shutdown (moo_app_input);
@@ -773,6 +774,7 @@ static void     moo_app_quit_real       (MooApp         *app)
         g_object_unref (moo_app_python);
         moo_app_python = NULL;
     }
+#endif
 
     list = g_slist_copy (app->priv->terminals);
     for (l = list; l != NULL; l = l->next)

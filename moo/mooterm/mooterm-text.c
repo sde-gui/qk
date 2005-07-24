@@ -64,6 +64,10 @@ static void CHECK_SEGMENT (const Segment *segment)
 #endif
 
 
+static void     get_start_iter      (MooTerm            *term,
+                                     GtkTextIter        *iter);
+static void     get_end_iter        (MooTerm            *term,
+                                     GtkTextIter        *iter);
 static int      iter_cmp            (const GtkTextIter  *first,
                                      const GtkTextIter  *second);
 static void     iter_order          (GtkTextIter        *first,
@@ -324,6 +328,22 @@ static void term_select_range (const GtkTextIter *start,
         moo_term_release_selection (term);
     else
         moo_term_grab_selection (term);
+}
+
+
+static void     get_start_iter      (MooTerm            *term,
+                                     GtkTextIter        *iter)
+{
+    FILL_ITER (iter, term, 0, 0);
+}
+
+
+static void     get_end_iter        (MooTerm            *term,
+                                     GtkTextIter        *iter)
+{
+    int width = term->priv->width;
+    int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
+    FILL_ITER (iter, term, total_height - 1, width);
 }
 
 
@@ -645,7 +665,7 @@ void        moo_term_text_iface_init        (gpointer        g_iface)
 }
 
 
-char       *moo_term_selection_get_text (MooTerm    *term)
+char       *moo_term_get_selection (MooTerm    *term)
 {
     return segment_get_text (term->priv->selection);
 }
@@ -904,4 +924,26 @@ static char    *segment_get_text    (Segment            *segment)
     }
 
     return g_string_free (text, FALSE);
+}
+
+
+void        moo_term_select_all             (MooTerm        *term)
+{
+    GtkTextIter start, end;
+
+    get_start_iter (term, &start);
+    get_end_iter (term, &end);
+
+    term_select_range (&start, &end);
+}
+
+
+char       *moo_term_get_content            (MooTerm        *term)
+{
+    Segment segm;
+
+    get_start_iter (term, &segm.start);
+    get_end_iter (term, &segm.end);
+
+    return segment_get_text (&segm);
 }

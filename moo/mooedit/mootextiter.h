@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOEDIT_MOOTEXTITER_H
 #define MOOEDIT_MOOTEXTITER_H

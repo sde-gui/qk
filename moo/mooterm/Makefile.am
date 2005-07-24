@@ -10,6 +10,8 @@ widget_sources =                \
     mooterm-ctlfuncs.h          \
     mooterm-input.c             \
     mooterm-keymap.h            \
+    mooterm-prefs.c             \
+    mooterm-prefs.h             \
     mooterm-private.h           \
     mooterm-selection.h         \
     mooterm-text.c              \
@@ -26,7 +28,9 @@ widget_sources =                \
     mootermparser-yacc.y        \
     mootermpt.c                 \
     mootermpt.h                 \
-    mootermpt-private.h
+    mootermpt-private.h         \
+    mootermwindow.c             \
+    mootermwindow.h
 
 widget_unix_sources =       \
     mootermpt-unix.c        \
@@ -60,15 +64,24 @@ BUILT_SOURCES =
 
 
 if UNIX_BUILD
-libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources)
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h
+libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources) mootermprefs-glade.c
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.c
 endif UNIX_BUILD
 
 
 if MINGW_BUILD
-libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources)
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h
+libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources) mootermprefs-glade.c
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.c
 endif MINGW_BUILD
+
+
+GLADE = $(srcdir)/glade
+TOOLBAR = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/toolbar.sh
+SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
+
+mootermprefs-glade.c: $(GLADE)/mootermprefs.c $(GLADE)/mootermprefs.sed $(TOOLBAR) $(SUPPORT)
+	cat $(GLADE)/mootermprefs.c | sh $(SUPPORT) | sed -f $(GLADE)/mootermprefs.sed \
+		> mootermprefs-glade.c
 
 
 ##############################################################################

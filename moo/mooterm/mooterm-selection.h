@@ -9,7 +9,7 @@
  *   (at your option) any later version.
  *
  *   See COPYING file that comes with this distribution.
-*/
+ */
 
 #ifndef MOOTERM_MOOTERM_SELECTION_H
 #define MOOTERM_MOOTERM_SELECTION_H
@@ -33,7 +33,6 @@ gpointer    moo_term_selection_new          (MooTerm    *term);
 
 void        moo_term_selection_invalidate   (MooTerm    *term);
 void        moo_term_selection_clear        (MooTerm    *term);
-char       *moo_term_selection_get_text     (MooTerm    *term);
 int         moo_term_row_selected           (MooTerm    *term,
                                              guint       row);
 gboolean    moo_term_cell_selected          (MooTerm    *term,

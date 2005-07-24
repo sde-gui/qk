@@ -4,7 +4,7 @@ s/#include <unistd.h>//
 s/#include <string.h>/#include "mooutils\/moocompat.h"/
 s/#include <stdio.h>/#include "mooterm\/mooterm.h"/
 s/#include "callbacks.h"/#include "mooutils\/mooprefsdialog.h"/
-s/#include "mootermprefs.h"/#include "mooterm\/mootermprefs.h"/
+s/#include "mootermprefs.h"/#include "mooterm\/mooterm-prefs.h"/
 s/create_term_prefs_window (void)/_create_moo_term_prefs_notebook (MooPrefsDialogPage *page);\nGtkWidget *_create_moo_term_prefs_notebook (MooPrefsDialogPage *page)/
 s/GtkWidget \*term_prefs_window;//
 s/term_prefs_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);//

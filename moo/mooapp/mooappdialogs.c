@@ -16,7 +16,7 @@
 #endif
 
 #include "mooapp/mooapp-private.h"
-#include "mooterm/mootermprefs.h"
+#include "mooterm/mooterm-prefs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"

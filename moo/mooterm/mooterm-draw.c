@@ -1019,3 +1019,19 @@ void        moo_term_set_cursor_blinks      (MooTerm        *term,
         stop_cursor_blinking (term);
     g_object_notify (G_OBJECT (term), "cursor-blinks");
 }
+
+
+void        moo_term_set_cursor_blink_time  (MooTerm        *term,
+                                             guint           ms)
+{
+    if (ms)
+    {
+        term->priv->cursor_blink_time = ms;
+        moo_term_set_cursor_blinks (term, TRUE);
+        moo_term_pause_cursor_blinking (term);
+    }
+    else
+    {
+        moo_term_set_cursor_blinks (term, FALSE);
+    }
+}

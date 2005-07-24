@@ -53,29 +53,12 @@ AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 AC_TYPE_PID_T
 
-#TODO: freebsd vte port patch removes this
-# AC_DEFINE(_XOPEN_SOURCE_EXTENDED,1,[Needed to get declarations for msg_control and msg_controllen on Solaris])
-# AC_DEFINE(_XOPEN_SOURCE,1,[Needed to get declarations for msg_control and msg_controllen on Solaris])
-# AC_DEFINE(__EXTENSIONS__,1,[Needed to get declarations for msg_control and msg_controllen on Solaris])
-
 # Check for headers.
 AC_CHECK_HEADERS(sys/select.h sys/termios.h sys/un.h stropts.h termios.h wchar.h)
 AC_HEADER_TIOCGWINSZ
 
 # Check for PTY handling functions.
 AC_CHECK_FUNCS(cfmakeraw getpgid getpt grantpt unlockpt ptsname ptsname_r recvmsg)
-
-# Pull in the right libraries for various functions which might not be
-# bundled into an exploded libc.
-AC_CHECK_FUNC(socket,[have_socket=1],AC_CHECK_LIB(socket,socket,[have_socket=1; LIBS="$LIBS -lsocket"]))
-AC_CHECK_FUNC(socketpair,[have_socketpair=1],AC_CHECK_LIB(socket,socketpair,[have_socketpair=1; LIBS="$LIBS -lsocket"]))
-if test x$have_socket = x1 ; then
-	AC_DEFINE(HAVE_SOCKET,1,[Define if you have the socket function.])
-fi
-if test x$have_socketpair = x1 ; then
-	AC_DEFINE(HAVE_SOCKETPAIR,1,[Define if you have the socketpair function.])
-fi
-AC_CHECK_FUNC(floor,,AC_CHECK_LIB(m,floor,LIBS=["$LIBS -lm"]))
 
 
 ################################################################################

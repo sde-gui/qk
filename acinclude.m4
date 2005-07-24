@@ -2,7 +2,7 @@ dnl Available from the GNU Autoconf Macro Archive at:
 dnl http://www.gnu.org/software/ac-archive/htmldoc/ac_python_devel.html
 dnl
 AC_DEFUN([AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON],[
-    # Check for Python include path
+# Check for Python include path
     AC_MSG_CHECKING([for Python include path])
     python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
     for i in "$python_path/include/python$PYTHON_VERSION/" "$python_path/include/python/" "$python_path/" ; do
@@ -19,7 +19,7 @@ AC_DEFUN([AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON],[
     fi
     AC_SUBST([PYTHON_INCLUDES],[-I$python_path])
 
-    # Check for Python library path
+# Check for Python library path
     AC_MSG_CHECKING([for Python library path])
     python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
     for i in "$python_path/lib/python$PYTHON_VERSION/config/" "$python_path/lib/python$PYTHON_VERSION/" "$python_path/lib/python/config/" "$python_path/lib/python/" "$python_path/" ; do
@@ -35,12 +35,12 @@ AC_DEFUN([AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON],[
         $2
     fi
     AC_SUBST([PYTHON_LDFLAGS],["-L$python_path -lpython$PYTHON_VERSION"])
-    #
+#
     python_site=`echo $python_path | sed "s/config/site-packages/"`
     AC_SUBST([PYTHON_SITE_PKG],[$python_site])
-    #
-    # libraries which must be linked in when embedding
-    #
+#
+# libraries which must be linked in when embedding
+#
     AC_MSG_CHECKING(python extra libraries)
     PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
         conf = distutils.sysconfig.get_config_var; \
@@ -81,15 +81,15 @@ AC_DEFUN([AC_CHECK_PYTHON],[
 
         AC_MSG_CHECKING([PYTHON_INCLUDES])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-            #include <Python.h>
+#include <Python.h>
             int main ()
-            {
+{
                 Py_Initialize();
                 PyRun_SimpleString("from time import time,ctime\n"
                                     "print 'Today is',ctime(time())\n");
                 Py_Finalize();
                 return 0;
-            }]])],
+}]])],
             [python_can_compile=yes],
             [python_can_compile=no])
 
@@ -119,8 +119,32 @@ AC_DEFUN([AC_CHECK_PYTHON],[
             AC_MSG_NOTICE([found python interpreter $PYTHON])
             AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON([
                 AC_MSG_NOTICE([found python libs and headers])
-                found_python="yes"
-                $2
+
+                AC_MSG_CHECKING([whether python can be used])
+                save_CPPFLAGS="$CPPFLAGS"
+                CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
+                save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS $PYTHON_INCLUDES"
+                AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+                    #include <Python.h>
+                    int main ()
+                    {
+                        PyObject *object = NULL;
+                        return 0;
+                    }]])],
+                    [python_can_compile=yes],
+                    [python_can_compile=no])
+                if test "x$python_can_compile" = "xyes"; then
+                    AC_MSG_RESULT(yes)
+                    found_python="yes"
+                    $2
+                else
+                    AC_MSG_RESULT(no)
+                    found_python="no"
+                    $3
+                fi
+                CFLAGS="$save_CFLAGS"
+                CPPFLAGS="$save_CPPFLAGS"
             ],[
                 AC_MSG_NOTICE([python libs and headers not found])
                 found_python="no"
@@ -161,12 +185,12 @@ AC_DEFUN([AC_CHECK_PYGTK],[
 
         AC_MSG_CHECKING([for pygtk headers])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-            #include <pygtk/pygtk.h>
+#include <pygtk/pygtk.h>
             int main ()
-            {
+{
                 init_pygtk();
                 return 0;
-            }]])],
+}]])],
             [pygtk_can_compile=yes],
             [pygtk_can_compile=no])
 
@@ -199,12 +223,12 @@ AC_DEFUN([AC_CHECK_PYGTK],[
             CXXFLAGS="$CXXFLAGS $PYGTK_CFLAGS $PYTHON_INCLUDES"
             AC_LANG_PUSH(C++)
             AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-                #include <pygobject.h>
+#include <pygobject.h>
                 int main ()
-                {
+{
                     PyObject *object = pygobject_new (NULL);
                     return 0;
-                }]])],
+}]])],
                 [pygtk_can_compile=yes],
                 [pygtk_can_compile=no])
             if test "x$pygtk_can_compile" = "xyes"; then
@@ -266,14 +290,14 @@ AC_DEFUN([AC_CHECK_XML_STUFF],[
 
         AC_MSG_CHECKING([for xmlParseFile])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-            #include <libxml/parser.h>
-            #include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
             int main ()
-            {
+{
                 xmlDoc *doc;
                 doc = xmlParseFile ("filename");
                 return 0;
-            }]])],
+}]])],
             [xmlparsefile_can_compile=yes],
             [xmlparsefile_can_compile=no])
         if test "x$xmlparsefile_can_compile" = "xyes"; then
@@ -285,14 +309,14 @@ AC_DEFUN([AC_CHECK_XML_STUFF],[
 
         AC_MSG_CHECKING([for xmlReadFile])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-            #include <libxml/parser.h>
-            #include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
             int main ()
-            {
+{
                 xmlDoc *doc;
                 doc = xmlReadFile ("filename", NULL, 0);
                 return 0;
-            }]])],
+}]])],
             [xmlreadfile_can_compile=yes],
             [xmlreadfile_can_compile=no])
         if test "x$xmlreadfile_can_compile" = "xyes"; then
@@ -304,15 +328,15 @@ AC_DEFUN([AC_CHECK_XML_STUFF],[
 
         AC_MSG_CHECKING([for xmlNode.line])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-            #include <libxml/parser.h>
-            #include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
             int main ()
-            {
+{
                 xmlNode *node;
                 int line;
                 line = node->line;
                 return 0;
-            }]])],
+}]])],
             [xmlnode_line_can_compile=yes],
             [xmlnode_line_can_compile=no])
         if test "x$xmlnode_line_can_compile" = "xyes"; then
@@ -429,36 +453,38 @@ M_CXXFLAGS="$M_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
 
 
 AC_DEFUN([_CHECK_VERSION],[
-    PKG_CHECK_MODULES($1, $2)
+    if test x$cygwin_build != xyes; then
+        PKG_CHECK_MODULES($1, $2)
 
-    AC_MSG_CHECKING($1 version)
-    $1[]_VERSION=`$PKG_CONFIG --modversion $2`
+        AC_MSG_CHECKING($1 version)
+        $1[]_VERSION=`$PKG_CONFIG --modversion $2`
 
-    i=0
-    for part in `echo $[]$1[]_VERSION | sed 's/\./ /g'`; do
-        i=`expr $i + 1`
-        eval part$i=$part
-    done
+        i=0
+        for part in `echo $[]$1[]_VERSION | sed 's/\./ /g'`; do
+            i=`expr $i + 1`
+            eval part$i=$part
+        done
 
-    $1[]_MAJOR_VERSION=$part1
-    $1[]_MINOR_VERSION=$part2
-    $1[]_MICRO_VERSION=$part3
+        $1[]_MAJOR_VERSION=$part1
+        $1[]_MINOR_VERSION=$part2
+        $1[]_MICRO_VERSION=$part3
 
-    if test $[]$1[]_MINOR_VERSION -ge 6; then
-        ver_2_6=yes
-    fi
-    if test $[]$1[]_MINOR_VERSION -ge 4; then
-        ver_2_4=yes
-    fi
-    if test $[]$1[]_MINOR_VERSION -ge 2; then
-        ver_2_2=yes
+        if test $[]$1[]_MINOR_VERSION -ge 6; then
+            ver_2_6=yes
+        fi
+        if test $[]$1[]_MINOR_VERSION -ge 4; then
+            ver_2_4=yes
+        fi
+        if test $[]$1[]_MINOR_VERSION -ge 2; then
+            ver_2_2=yes
+        fi
+
+        AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
     fi
 
     AM_CONDITIONAL($1[]_2_6, test x$ver_2_6 = "xyes")
     AM_CONDITIONAL($1[]_2_4, test x$ver_2_4 = "xyes")
     AM_CONDITIONAL($1[]_2_2, test x$ver_2_2 = "xyes")
-
-    AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
 ])
 
 # PKG_CHECK_GTK_VERSIONS
