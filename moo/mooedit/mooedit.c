@@ -359,31 +359,6 @@ static void moo_edit_class_init (MooEditClass *klass)
                       G_TYPE_NONE, 0);
 
     _moo_edit_set_default_settings ();
-
-#if 0
-//#ifdef ENABLE_DEBUG
-    GtkBindingSet *binding_set = gtk_binding_set_by_class (klass);
-    gtk_binding_entry_add_signal (binding_set, GDK_O, GDK_CONTROL_MASK,
-                                  "open", 2,
-                                  G_TYPE_STRING, "", G_TYPE_STRING, "");
-    gtk_binding_entry_add_signal (binding_set, GDK_S, GDK_CONTROL_MASK,
-                                  "save", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_S, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
-                                  "save_as", 2,
-                                  G_TYPE_STRING, "", G_TYPE_STRING, "");
-    gtk_binding_entry_add_signal (binding_set, GDK_W, GDK_CONTROL_MASK,
-                                  "close", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_L, GDK_CONTROL_MASK,
-                                  "goto-line", 1, G_TYPE_INT, -1);
-    gtk_binding_entry_add_signal (binding_set, GDK_F, GDK_CONTROL_MASK,
-                                  "find", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_G, GDK_CONTROL_MASK,
-                                  "find-next", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_G, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
-                                  "find-previous", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_R, GDK_CONTROL_MASK,
-                                  "replace", 0);
-#endif /* ENABLE_DEBUG */
 }
 
 
