@@ -533,13 +533,11 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     gtk_widget_set_double_buffered (widget, FALSE);
 
-    moo_term_apply_settings (term);
-
     moo_term_setup_palette (term);
     moo_term_init_back_pixmap (term);
     moo_term_size_changed (term);
 
-    gdk_window_set_background (widget->window, &(widget->style->white));
+    moo_term_apply_settings (term);
 
     term->priv->im = gtk_im_multicontext_new ();
     gtk_im_context_set_client_window (term->priv->im, widget->window);
