@@ -100,11 +100,7 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
     text_view = GTK_TEXT_VIEW (widget);
     buffer = edit->priv->text_buffer;
 
-    if (gtk_im_context_filter_keypress (text_view->im_context, event))
-    {
-        handled = TRUE;
-    }
-    else if (!mods)
+    if (!mods)
     {
         switch (keyval)
         {
