@@ -246,19 +246,24 @@ MooEditWindow   *moo_editor_get_active_window   (MooEditor      *editor)
 
 gboolean         moo_editor_close_all           (MooEditor      *editor)
 {
+    GSList *list, *l;
+    MooWindow *win;
+
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
-    GSList *list = g_slist_copy (editor->priv->windows);
-    GSList *l;
-    for (l = list; l != NULL; l = l->next) {
-        MooWindow *win = MOO_WINDOW (l->data);
+    list = g_slist_copy (editor->priv->windows);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        win = MOO_WINDOW (l->data);
         if (!(GTK_IN_DESTRUCTION & GTK_OBJECT_FLAGS (win)) &&
-              moo_window_close (win))
+              !moo_window_close (win))
         {
             g_slist_free (list);
             return FALSE;
         }
     }
+
     g_slist_free (list);
     return TRUE;
 }
