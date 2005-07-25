@@ -8,6 +8,7 @@ headers
 #include "mooui/moomenuaction.h"
 #include "mooui/mootoggleaction.h"
 #include "mooui/moowindow.h"
+#include "mooui/mooshortcutsprefs.h"
 %%
 modulename moo
 %%
