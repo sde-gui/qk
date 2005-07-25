@@ -13,6 +13,7 @@
 
 #define MOOTERM_COMPILATION
 #include "mooterm/mootermline.h"
+#include <string.h>
 
 #define CELLS(ar)               ((MooTermCellArray*) (ar))
 #define CELLS_ARRAY(cells)      ((GArray*) (cells))

@@ -26,6 +26,7 @@
 
 
 #include "mooutils/moocompat.h"
+#include <string.h>
 
 
 #if !GLIB_CHECK_VERSION(2,4,0)
