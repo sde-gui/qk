@@ -342,39 +342,9 @@ AC_DEFUN([AC_CHECK_XML_STUFF],[
         save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $XML_CFLAGS"
         save_LDFLAGS="$LDFLAGS"
-        LDFLAGS="$LDFLAGS $XML_LDFLAGS"
+        LDFLAGS="$LDFLAGS $XML_LIBS"
 
-        AC_MSG_CHECKING([for xmlParseFile])
-        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-        #include <libxml/parser.h>
-        #include <libxml/tree.h>
-        int main ()
-        {
-                xmlDoc *doc;
-                doc = xmlParseFile ("filename");
-                return 0;
-        }]])],[
-            AC_MSG_RESULT(found)
-            AC_DEFINE(HAVE_XMLPARSEFILE,1,[Define if libxml2 defines xmlParseFile])
-        ],[
-            AC_MSG_RESULT(not found)
-        ])
-
-        AC_MSG_CHECKING([for xmlReadFile])
-        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-        #include <libxml/parser.h>
-        #include <libxml/tree.h>
-        int main ()
-        {
-            xmlDoc *doc;
-            doc = xmlReadFile ("filename", NULL, 0);
-            return 0;
-        }]])],[
-            AC_MSG_RESULT(found)
-            AC_DEFINE(HAVE_XMLREADFILE,1,[Define if libxml2 defines xmlReadFile])
-        ],[
-            AC_MSG_RESULT(not found)
-        ])
+        AC_CHECK_FUNCS(xmlReadFile xmlParseFile)
 
         AC_MSG_CHECKING([for xmlNode.line])
         AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
