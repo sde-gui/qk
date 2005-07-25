@@ -1002,3 +1002,43 @@ GType       moo_edit_file_info_get_type             (void)
                                              (GBoxedFreeFunc)moo_edit_file_info_free);
     return type;
 }
+
+
+char       *moo_edit_get_selection          (MooEdit            *edit)
+{
+    GtkTextBuffer *buf;
+    GtkTextIter start, end;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+
+    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
+        return gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+    else
+        return NULL;
+}
+
+
+char       *moo_edit_get_text               (MooEdit            *edit)
+{
+    GtkTextBuffer *buf;
+    GtkTextIter start, end;
+    char *text;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+
+    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_text_buffer_get_bounds (buf, &start, &end);
+    text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+
+    if (text && *text)
+    {
+        return text;
+    }
+    else
+    {
+        g_free (text);
+        return NULL;
+    }
+}

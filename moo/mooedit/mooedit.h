@@ -196,8 +196,10 @@ gboolean    moo_edit_get_read_only          (MooEdit            *edit);
 void        moo_edit_set_read_only          (MooEdit            *edit,
                                              gboolean            readonly);
 
-void        moo_edit_delete_selection       (MooEdit            *edit);
+char       *moo_edit_get_selection          (MooEdit            *edit);
+char       *moo_edit_get_text               (MooEdit            *edit);
 
+void        moo_edit_delete_selection       (MooEdit            *edit);
 
 MooEditFileInfo *moo_edit_file_info_new     (const char         *filename,
                                              const char         *encoding);
