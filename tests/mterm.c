@@ -57,15 +57,21 @@ static void init (int *argc, char ***argv, const char **cmd)
 
     if (set_breakpoint)
     {
-#if GLIB_CHECK_VERSION(2,6,0)
+#if !GLIB_CHECK_VERSION(2,6,0)
         g_log_set_default_handler (breakpoint_log_handler, NULL);
 #else
-        g_log_set_handler ("Gtk", breakpoint_log_handler, NULL);
-        g_log_set_handler ("Glib", breakpoint_log_handler, NULL);
-        g_log_set_handler ("Pango", breakpoint_log_handler, NULL);
-        g_log_set_handler ("Gdk", breakpoint_log_handler, NULL);
-        g_log_set_handler ("Moo", breakpoint_log_handler, NULL);
-        g_log_set_handler (NULL, breakpoint_log_handler, NULL);
+        g_log_set_handler ("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                     | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
+        g_log_set_handler ("Glib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
+        g_log_set_handler ("Pango", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
+        g_log_set_handler ("Gdk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
+        g_log_set_handler ("Moo", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
+        g_log_set_handler (NULL, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
 #endif
     }
 }
