@@ -353,8 +353,8 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
     window->priv = g_new0 (MooEditWindowPrivate, 1);
     gtk_window_set_default_size (GTK_WINDOW (window), 500, 450);
     g_object_set (G_OBJECT (window),
-                  "menubar-ui-name", "EditorWindow/Menubar",
-                  "toolbar-ui-name", "EditorWindow/Toolbar",
+                  "menubar-ui-name", "Editor/Menubar",
+                  "toolbar-ui-name", "Editor/Toolbar",
                   NULL);
 }
 

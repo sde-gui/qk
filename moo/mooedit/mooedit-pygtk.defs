@@ -1601,9 +1601,10 @@
   (c-name "moo_editor_open")
   (return-type "gboolean")
   (parameters
-    '("MooEditWindow*" "window")
-    '("const-char*" "filename")
-    '("const-char*" "encoding")
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "filename" (null-ok) (default "NULL"))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 

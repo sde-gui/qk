@@ -84,6 +84,7 @@ MooEditor       *moo_editor_new                 (void);
 MooEditWindow   *moo_editor_new_window          (MooEditor      *editor);
 gboolean         moo_editor_open                (MooEditor      *editor,
                                                  MooEditWindow  *window,
+                                                 GtkWidget      *parent,
                                                  const char     *filename,
                                                  const char     *encoding);
 

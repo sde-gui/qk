@@ -13,6 +13,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor.h"
+#include "mooedit/mooeditdialogs.h"
 #include "mooui/moouiobject.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -206,20 +207,51 @@ static gboolean         window_closed       (MooEditor      *editor,
 
 gboolean         moo_editor_open                (MooEditor      *editor,
                                                  MooEditWindow  *window,
+                                                 GtkWidget      *parent,
                                                  const char     *filename,
                                                  const char     *encoding)
 {
+    MooEditFileInfo *info = NULL;
+    gboolean result;
+
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (window == NULL || MOO_IS_EDIT_WINDOW (window), FALSE);
 
+    if (!parent && window)
+        parent = GTK_WIDGET (window);
+
+    if (!filename)
+    {
+        info = moo_edit_open_dialog (parent);
+
+        if (!info)
+        {
+            return FALSE;
+        }
+        else
+        {
+            filename = info->filename;
+            encoding = info->encoding;
+        }
+    }
+
     if (!window)
         window = get_top_window (editor);
+
     if (!window)
         window = moo_editor_new_window (editor);
-    g_return_val_if_fail (window != NULL, FALSE);
+
+    if (!window)
+    {
+        moo_edit_file_info_free (info);
+        g_return_val_if_reached (FALSE);
+    }
 
     gtk_window_present (GTK_WINDOW (window));
-    return moo_edit_window_open (window, filename, encoding);
+    result = moo_edit_window_open (window, filename, encoding);
+    moo_edit_file_info_free (info);
+
+    return result;
 }
 
 
