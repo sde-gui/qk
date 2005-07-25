@@ -42,6 +42,7 @@ prefs_set (const char *key, PyObject *val, gboolean ignore_change)
             moo_prefs_set_int (key, ival);
     }
 #endif
+#ifdef PyBool_Check
     else if (PyBool_Check (val))
     {
         gboolean bool_val = (Py_True == val);
@@ -50,6 +51,7 @@ prefs_set (const char *key, PyObject *val, gboolean ignore_change)
         else
             moo_prefs_set_bool (key, bool_val);
     }
+#endif
     else if (PyFloat_Check (val))
     {
         if (ignore_change)
