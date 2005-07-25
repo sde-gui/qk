@@ -134,8 +134,6 @@ static GObject     *moo_term_window_constructor         (GType                  
     GTK_WIDGET_SET_FLAGS (terminal, GTK_CAN_FOCUS);
     GTK_WIDGET_SET_FLAGS (terminal, GTK_CAN_DEFAULT);
 
-    g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-
     gtk_widget_grab_focus (terminal);
     gtk_widget_grab_default (terminal);
 
