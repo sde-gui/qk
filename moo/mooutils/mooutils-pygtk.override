@@ -7,9 +7,16 @@ headers
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialog.h"
+#include "mooutils/moostock.h"
+
+
+void        moo_utils_register_classes  (PyObject   *dict);
+void        moo_utils_add_constants     (PyObject   *module,
+                                         const gchar *strip_prefix);
 
 static PyTypeObject *_PyGdkColor_Type;
 #define PyGdkColor_Type (*_PyGdkColor_Type)
+
 
 static void
 prefs_set (const char *key, PyObject *val, gboolean ignore_change)
