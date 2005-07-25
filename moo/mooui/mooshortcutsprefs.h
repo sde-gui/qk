@@ -20,12 +20,10 @@
 G_BEGIN_DECLS
 
 
-#define MOO_ACCEL_PREFS_KEY "shortcuts"
-
-GtkWidget   *moo_shortcuts_prefs_page_new           (MooActionGroup *group);
-GtkWidget   *moo_shortcuts_prefs_dialog_new         (MooActionGroup *group);
-void         moo_shortcuts_prefs_dialog_run         (MooActionGroup *group,
-                                                     GtkWidget      *parent);
+GtkWidget   *moo_shortcuts_prefs_page_new   (MooActionGroup *group);
+GtkWidget   *moo_shortcuts_prefs_dialog_new (MooActionGroup *group);
+void         moo_shortcuts_prefs_dialog_run (MooActionGroup *group,
+                                             GtkWidget      *parent);
 
 
 G_END_DECLS

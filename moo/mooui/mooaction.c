@@ -13,6 +13,7 @@
 
 #include "mooui/mooaction.h"
 #include "mooui/mooactiongroup.h"
+#include "mooui/mooaccel.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
@@ -116,10 +117,6 @@ static guint signals[LAST_SIGNAL] = {0};
 G_DEFINE_TYPE (MooAction, moo_action, G_TYPE_OBJECT)
 
 
-static GHashTable *accel_map = NULL;            /* char* -> char* */
-static GHashTable *default_accel_map = NULL;    /* char* -> char* */
-
-
 static void moo_action_class_init (MooActionClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -135,13 +132,6 @@ static void moo_action_class_init (MooActionClass *klass)
     klass->set_visible = moo_action_set_visible_real;
     klass->create_menu_item = moo_action_create_menu_item_real;
     klass->create_tool_item = moo_action_create_tool_item_real;
-
-    accel_map = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                       (GDestroyNotify) g_free,
-                                       (GDestroyNotify) g_free);
-    default_accel_map = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                               (GDestroyNotify) g_free,
-                                               (GDestroyNotify) g_free);
 
     g_object_class_install_property (gobject_class,
                                      PROP_ID,
@@ -348,9 +338,29 @@ GObject    *moo_action_constructor      (GType                  type,
     action->constructed = TRUE;
 
     if (action->dead)
+    {
+        action->visible = FALSE;
+        action->sensitive = FALSE;
+        action->no_accel = TRUE;
+        g_free (action->accel);
+        action->accel = g_strdup ("");
+        g_free (action->default_accel);
+        action->default_accel = g_strdup ("");
+        g_free (action->stock_id);
+        action->stock_id = NULL;
+        g_free (action->icon_stock_id);
+        action->icon_stock_id = NULL;
+        g_free (action->label);
+        action->label = g_strdup ("");
+        g_free (action->tooltip);
+        action->tooltip = g_strdup ("");
+        if (action->icon) g_object_unref (action->icon);
+        action->icon = NULL;
         return object;
+    }
 
-    if (!action->id || !action->id[0]) {
+    if (!action->id || !action->id[0])
+    {
         g_critical ("%s: no action id", G_STRLOC);
         if (!action->id)
             action->id = g_strdup ("");
@@ -360,7 +370,8 @@ GObject    *moo_action_constructor      (GType                  type,
     if (!action->name)
         action->name = g_strdup (action->id);
 
-    if (!action->group_id) {
+    if (!action->group_id)
+    {
         g_critical ("action doesn't have group id");
         if (!action->group_id)
             action->group_id = g_strdup ("");
@@ -370,8 +381,9 @@ GObject    *moo_action_constructor      (GType                  type,
         action->accel = g_strdup ("");
     if (!action->default_accel)
         action->default_accel = g_strdup (action->accel);
-    moo_action_set_accel (action, action->accel);
+
     moo_action_set_default_accel (action, action->default_accel);
+    moo_action_set_accel (action, action->accel);
 
     return object;
 }
@@ -601,11 +613,6 @@ static void moo_action_set_tooltip      (MooAction      *action,
 void moo_action_set_accel               (MooAction      *action,
                                          const char     *accel)
 {
-    const char *accel_path;
-    guint accel_key = 0;
-    GdkModifierType accel_mods = 0;
-    GtkAccelKey old;
-
     g_return_if_fail (MOO_IS_ACTION (action));
 
     if (!action->constructed) {
@@ -615,66 +622,14 @@ void moo_action_set_accel               (MooAction      *action,
     }
 
     g_return_if_fail (accel != NULL);
-    accel_path = moo_action_get_accel_path (action);
 
-    if (accel[0])
-    {
-        gtk_accelerator_parse (accel, &accel_key, &accel_mods);
-
-        if (accel_key || accel_mods) {
-            g_hash_table_insert (accel_map,
-                                 g_strdup (accel_path),
-                                 gtk_accelerator_name (accel_key, accel_mods));
-        }
-        else {
-            g_warning ("could not parse accelerator '%s'", accel);
-            g_hash_table_insert (accel_map,
-                                 g_strdup (accel_path),
-                                 g_strdup (""));
-        }
-    }
-    else {
-        g_hash_table_insert (accel_map,
-                             g_strdup (accel_path),
-                             g_strdup (""));
-    }
-    g_object_notify (G_OBJECT (action), "accel");
-
-    if (gtk_accel_map_lookup_entry (accel_path, &old))
-    {
-        if (accel_key == old.accel_key && accel_mods == old.accel_mods)
-            return;
-
-        if (accel_key || accel_mods)
-        {
-            if (!gtk_accel_map_change_entry (accel_path, accel_key,
-                                             accel_mods, TRUE))
-                g_warning ("could not set accel '%s' for accel_path '%s'",
-                           accel, accel_path);
-        }
-        else
-        {
-            gtk_accel_map_change_entry (accel_path, 0, 0, TRUE);
-        }
-    }
-    else
-    {
-        if (accel_key || accel_mods)
-        {
-            gtk_accel_map_add_entry (accel_path,
-                                     accel_key,
-                                     accel_mods);
-        }
-    }
+    moo_set_accel (moo_action_get_accel_path (action), accel);
 }
 
 
 void moo_action_set_default_accel       (MooAction      *action,
                                          const char     *accel)
 {
-    const char *accel_path;
-    const char *old_accel;
-
     g_return_if_fail (MOO_IS_ACTION (action));
 
     if (!action->constructed) {
@@ -684,76 +639,33 @@ void moo_action_set_default_accel       (MooAction      *action,
     }
 
     g_return_if_fail (accel != NULL);
-    accel_path = moo_action_get_accel_path (action);
-    old_accel = g_hash_table_lookup (default_accel_map, accel_path);
-    if (old_accel && !strcmp (old_accel, accel))
-        return;
 
-    if (accel[0]) {
-        guint accel_key = 0;
-        GdkModifierType accel_mods = 0;
-
-        gtk_accelerator_parse (accel, &accel_key, &accel_mods);
-
-        if (accel_key || accel_mods) {
-            g_hash_table_insert (default_accel_map,
-                                 g_strdup (accel_path),
-                                 gtk_accelerator_name (accel_key, accel_mods));
-            g_object_notify (G_OBJECT (action), "default-accel");
-        }
-        else {
-            g_warning ("could not parse accelerator '%s'", accel);
-        }
-    }
-    else {
-        g_hash_table_insert (default_accel_map,
-                             g_strdup (accel_path),
-                             g_strdup (""));
-        g_object_notify (G_OBJECT (action), "default-accel");
-    }
+    moo_set_default_accel (moo_action_get_accel_path (action), accel);
 }
 
 
 const char  *moo_action_get_accel           (MooAction      *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
-    return g_hash_table_lookup (accel_map,
-                                moo_action_get_accel_path (action));
+    return moo_get_accel (moo_action_get_accel_path (action));
 }
 
 const char  *moo_action_get_default_accel   (MooAction      *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
-    return g_hash_table_lookup (default_accel_map,
-                                moo_action_get_accel_path (action));
+    return moo_get_default_accel (moo_action_get_accel_path (action));
 }
 
 char        *moo_action_get_accel_label     (MooAction      *action)
 {
-    const char *accel;
-    guint key;
-    GdkModifierType mods;
-
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
-
-    accel = moo_action_get_accel (action);
-    if (!accel[0]) return g_strdup ("");
-    gtk_accelerator_parse (accel, &key, &mods);
-    return gtk_accelerator_get_label (key, mods);
+    return moo_get_accel_label (moo_action_get_accel (action));
 }
 
 char        *moo_action_get_default_accel_label (MooAction      *action)
 {
-    const char *accel;
-    guint key;
-    GdkModifierType mods;
-
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
-
-    accel = moo_action_get_default_accel (action);
-    if (!accel[0]) return g_strdup ("");
-    gtk_accelerator_parse (accel, &key, &mods);
-    return gtk_accelerator_get_label (key, mods);
+    return moo_get_accel_label (moo_action_get_default_accel (action));
 }
 
 
@@ -761,7 +673,11 @@ void         moo_action_set_no_accel        (MooAction      *action,
                                              gboolean        no_accel)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
+
     action->no_accel = no_accel;
+
+    if (no_accel)
+        moo_action_set_accel (action, "");
 }
 
 gboolean     moo_action_get_no_accel        (MooAction      *action)
@@ -1099,16 +1015,4 @@ static void moo_action_add_proxy        (MooAction      *action,
     g_object_weak_ref (G_OBJECT (action),
                        (GWeakNotify)action_destroyed,
                        proxy);
-}
-
-
-const char  *moo_action_get_path            (MooAction      *action)
-{
-    static char *path = NULL;
-
-    g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
-
-    g_free (path);
-    path = g_strdup_printf ("%s::%s", action->group_id, action->id);
-    return path;
 }

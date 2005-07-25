@@ -602,13 +602,10 @@ gboolean        moo_prefs_load          (const char     *file)
 
 #ifdef __WIN32__
 #define LINE_SEPARATOR "\r\n"
-#define LINE_SEPARATOR_LEN 2
 #elif defined(OS_DARWIN)
 #define LINE_SEPARATOR "\r"
-#define LINE_SEPARATOR_LEN 1
 #else
 #define LINE_SEPARATOR "\n"
-#define LINE_SEPARATOR_LEN 1
 #endif
 
 typedef struct {
@@ -624,6 +621,7 @@ static void write_item (const char  *key,
     gsize written;
     GIOStatus status;
     GError *err = NULL;
+    char *string;
 
     if (!(item->value && item->changed) || stuff->error)
         return;
@@ -646,23 +644,11 @@ static void write_item (const char  *key,
         }
     }
 
+    string = g_strdup_printf ("%s=%s" LINE_SEPARATOR, key, item->value);
     status = g_io_channel_write_chars (stuff->file,
-                                       key, strlen (key),
+                                       string, -1,
                                        &written, &err);
-    if (status == G_IO_STATUS_NORMAL)
-        status = g_io_channel_write_chars (stuff->file,
-                                           "=", 1,
-                                           &written, &err);
-    if (status == G_IO_STATUS_NORMAL)
-        status = g_io_channel_write_chars (stuff->file,
-                                           item->value,
-                                           strlen (item->value),
-                                           &written, &err);
-    if (status == G_IO_STATUS_NORMAL)
-        status = g_io_channel_write_chars (stuff->file,
-                                           LINE_SEPARATOR,
-                                           LINE_SEPARATOR_LEN,
-                                           &written, &err);
+    g_free (string);
 
     if (status != G_IO_STATUS_NORMAL)
     {

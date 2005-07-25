@@ -19,6 +19,8 @@ AM_CFLAGS =                             \
 noinst_LTLIBRARIES   = libmooui.la
 
 libmooui_la_SOURCES =           \
+    mooaccel.c                  \
+    mooaccel.h                  \
     mooaction.c                 \
     mooaction.h                 \
     mooactiongroup.c            \

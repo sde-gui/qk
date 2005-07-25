@@ -12,6 +12,7 @@
  */
 
 #include "mooui/mooshortcutsprefs.h"
+#include "mooui/mooaccel.h"
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
@@ -199,15 +200,20 @@ GtkWidget *moo_shortcuts_prefs_page_new (MooActionGroup *actions)
                                                        "text", COLUMN_ACTION_NAME,
                                                        NULL);
     gtk_tree_view_append_column (stuff->treeview, column);
+    gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACTION_NAME);
+
     renderer = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new_with_attributes ("Shortcut",
                                                        renderer,
                                                        "text", COLUMN_ACCEL,
                                                        NULL);
     gtk_tree_view_append_column (stuff->treeview, column);
+    gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACCEL);
 
     stuff->selection = gtk_tree_view_get_selection (stuff->treeview);
     gtk_tree_selection_set_mode (stuff->selection, GTK_SELECTION_SINGLE);
+
+    gtk_tree_view_set_headers_clickable (stuff->treeview, TRUE);
 
     g_signal_connect_swapped (stuff->selection, "changed",
                               G_CALLBACK (tree_selection_changed),
@@ -234,8 +240,7 @@ static void apply_one (MooAction    *action,
                        Shortcut     *shortcut,
                        G_GNUC_UNUSED Stuff        *stuff)
 {
-    char *prefs_key = g_strdup_printf (MOO_ACCEL_PREFS_KEY "::%s",
-                                       moo_action_get_path (action));
+    const char *accel_path = moo_action_get_accel_path (action);
     const char *accel = moo_action_get_accel (action);
     const char *default_accel = moo_action_get_default_accel (action);
 
@@ -243,26 +248,24 @@ static void apply_one (MooAction    *action,
         case NONE:
             if (accel[0])
                 moo_action_set_accel (action, "");
-            moo_prefs_set (prefs_key, "");
+            moo_prefs_set_accel (accel_path, "");
             break;
 
         case CUSTOM:
             if (strcmp (accel, shortcut->accel))
                 moo_action_set_accel (action, shortcut->accel);
-            moo_prefs_set (prefs_key, shortcut->accel);
+            moo_prefs_set_accel (accel_path, shortcut->accel);
             break;
 
         case DEFAULT:
             if (strcmp (accel, default_accel))
                 moo_action_set_accel (action, default_accel);
-            moo_prefs_set (prefs_key, NULL);
+            moo_prefs_set_accel (accel_path, NULL);
             break;
 
         default:
             g_assert_not_reached ();
     }
-
-    g_free (prefs_key);
 }
 
 static void apply (Stuff *stuff)

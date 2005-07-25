@@ -106,8 +106,6 @@ const char  *moo_action_get_id              (MooAction      *action);
 const char  *moo_action_get_group_id        (MooAction      *action);
 const char  *moo_action_get_name            (MooAction      *action);
 
-const char  *moo_action_get_path            (MooAction      *action);
-
 const char  *moo_action_get_accel_path      (MooAction      *action);
 
 void         moo_action_set_no_accel        (MooAction      *action,

@@ -252,7 +252,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "label", "_Delete",
                                     "tooltip", "Delete",
                                     "icon-stock-id", GTK_STOCK_DELETE,
-                                    "accel", "",
                                     "closure::signal", "delete-selection",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);

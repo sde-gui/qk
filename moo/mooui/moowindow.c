@@ -165,7 +165,6 @@ static void moo_window_class_init (MooWindowClass *klass)
                                     "label", "Configure _Shortcuts...",
                                     "tooltip", "Configure _Shortcuts...",
                                     "icon-stock-id", MOO_STOCK_KEYBOARD,
-                                    "default-accel", "",
                                     "closure::callback", moo_window_shortcuts_prefs_dialog,
                                     NULL);
 
@@ -507,91 +506,6 @@ static void moo_window_shortcuts_prefs_dialog (MooWindow *window)
         moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
         GTK_WIDGET (window));
 }
-
-
-#if 0
-void moo_window_new_action (gpointer        window,
-                            const char *id,
-                            const char *first_prop,
-                            ...)
-{
-    MooAction *action;
-    char *key;
-    const char *accel;
-    va_list args;
-
-    g_return_if_fail (MOO_IS_WINDOW (window));
-
-    va_start (args, first_prop);
-    action = moo_ui_object_new_actionv (MOO_UI_OBJECT (window), id, first_prop, args);
-    va_end (args);
-
-    key = g_strdup_printf ("%s::%s", MOO_ACCEL_PREFS_KEY, moo_action_get_path (action));
-    accel = moo_prefs_get (key);
-    if (accel) moo_action_set_accel (action, accel);
-    g_free (key);
-}
-
-void moo_window_new_toggle_action (gpointer    window,
-                                   const char *id,
-                                   const char *first_prop,
-                                   ...)
-{
-    MooUIObject *object;
-    MooAction *action;
-    char *key;
-    const char *accel;
-    va_list args;
-
-    g_return_if_fail (MOO_IS_WINDOW (window));
-
-    object = MOO_UI_OBJECT (window);
-    action = MOO_ACTION (g_object_new (MOO_TYPE_TOGGLE_ACTION,
-                                       "id", id,
-                                       "group_id", moo_ui_object_get_id (object),
-                                       "group_name", moo_ui_object_get_name (object),
-                                       NULL));
-
-    va_start (args, first_prop);
-    g_object_set_valist (G_OBJECT (action), first_prop, args);
-    va_end (args);
-
-    moo_ui_object_add_action (MOO_UI_OBJECT (object), action);
-    g_object_unref (action);
-
-    key = g_strdup_printf ("%s::%s", MOO_ACCEL_PREFS_KEY, moo_action_get_path (action));
-    accel = moo_prefs_get (key);
-    if (accel) moo_action_set_accel (action, accel);
-    g_free (key);
-}
-
-
-void        moo_window_add_standard_actions (MooWindow      *window)
-{
-    MooAction *toolbar_style_action;
-
-    moo_window_new_toggle_action (window, "ShowToolbar",
-        "name", "Show Toolbar",
-        "label", "Show Toolbar",
-        "tooltip", "Show Toolbar",
-        "default-accel", "",
-        "toggled-callback", moo_window_show_toolbar_toggled,
-        "toggled-data", window,
-        NULL);
-
-    toolbar_style_action =
-            MOO_ACTION (g_object_new (MOO_TYPE_MENU_ACTION,
-                        "id", "ToolbarStyle",
-                        "name", "Toolbar Style",
-                        "group_name", moo_ui_object_get_name (MOO_UI_OBJECT (window)),
-                        "create-menu-func", moo_window_create_toolbar_style_menu,
-                        "create-menu-data", window,
-                        "no-accel", TRUE,
-                        NULL));
-    moo_ui_object_add_action (MOO_UI_OBJECT (window), toolbar_style_action);
-    window->priv->toolbar_style_action = toolbar_style_action;
-}
-#endif
 
 
 static void moo_window_show_toolbar_toggled (MooWindow  *window,

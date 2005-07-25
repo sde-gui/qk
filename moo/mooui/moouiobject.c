@@ -12,7 +12,7 @@
  */
 
 #include "mooui/moouiobject-impl.h"
-#include "mooui/mooshortcutsprefs.h"
+#include "mooui/mooaccel.h"
 #include "mooui/mootoggleaction.h"
 #include "mooui/moomenuaction.h"
 #include "mooutils/mooprefs.h"
@@ -322,14 +322,11 @@ void             moo_ui_object_add_action       (MooUIObject    *object,
     group = moo_ui_object_get_actions (object);
     moo_action_group_add_action (group, action);
 
-    if (!action->dead) {
-        char *key;
+    if (!action->dead)
+    {
         const char *accel;
-
-        key = g_strdup_printf ("%s::%s", MOO_ACCEL_PREFS_KEY, moo_action_get_path (action));
-        accel = moo_prefs_get (key);
+        accel = moo_prefs_get_accel (moo_action_get_accel_path (action));
         if (accel) moo_action_set_accel (action, accel);
-        g_free (key);
     }
 }
 

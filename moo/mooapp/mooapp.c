@@ -895,7 +895,6 @@ static void install_actions (MooApp *app, GType  type)
                                     "label", _about,
                                     "tooltip", about,
                                     "icon-stock-id", GTK_STOCK_ABOUT,
-                                    "accel", "",
                                     "closure::callback", moo_app_about_dialog,
                                     NULL);
 
@@ -920,7 +919,6 @@ static void install_actions (MooApp *app, GType  type)
                                     "name", "Execute Script",
                                     "label", "_Execute Script",
                                     "tooltip", "Execute Script",
-                                    "accel", "",
                                     "icon-stock-id", GTK_STOCK_EXECUTE,
                                     "closure::callback", moo_app_python_execute_file,
                                     NULL);
