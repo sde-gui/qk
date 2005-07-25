@@ -90,6 +90,8 @@ static gboolean moo_app_try_quit_real   (MooApp         *app);
 static void     moo_app_set_name        (MooApp         *app,
                                          const char     *short_name,
                                          const char     *full_name);
+static void     moo_app_set_description (MooApp         *app,
+                                         const char     *description);
 
 static void     all_editors_closed      (MooApp         *app);
 
@@ -134,6 +136,7 @@ enum {
     PROP_ARGV,
     PROP_SHORT_NAME,
     PROP_FULL_NAME,
+    PROP_DESCRIPTION,
     PROP_WINDOW_POLICY,
     PROP_RUN_PYTHON
 };
@@ -195,6 +198,16 @@ static void moo_app_class_init (MooAppClass *klass)
                                              ("full-name",
                                               "full-name",
                                               "full-name",
+                                              NULL,
+                                              G_PARAM_READWRITE |
+                                                      G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_DESCRIPTION,
+                                     g_param_spec_string
+                                             ("description",
+                                              "description",
+                                              "description",
                                               NULL,
                                               G_PARAM_READWRITE |
                                                       G_PARAM_CONSTRUCT));
@@ -347,6 +360,10 @@ static void moo_app_set_property    (GObject        *object,
             moo_app_set_name (app, NULL, g_value_get_string (value));
             break;
 
+        case PROP_DESCRIPTION:
+            moo_app_set_description (app, g_value_get_string (value));
+            break;
+
         case PROP_WINDOW_POLICY:
             app->priv->window_policy = g_value_get_flags (value);
             g_object_notify (object, "window-policy");
@@ -380,6 +397,10 @@ static void moo_app_get_property    (GObject        *object,
 
         case PROP_FULL_NAME:
             g_value_set_string (value, app->priv->info->full_name);
+            break;
+
+        case PROP_DESCRIPTION:
+            g_value_set_string (value, app->priv->info->description);
             break;
 
         case PROP_WINDOW_POLICY:
@@ -834,6 +855,15 @@ static void     moo_app_set_name        (MooApp         *app,
         app->priv->info->full_name = g_strdup (full_name);
         g_object_notify (G_OBJECT (app), "full_name");
     }
+}
+
+
+static void     moo_app_set_description (MooApp         *app,
+                                         const char     *description)
+{
+    g_free (app->priv->info->description);
+    app->priv->info->description = g_strdup (description);
+    g_object_notify (G_OBJECT (app), "description");
 }
 
 

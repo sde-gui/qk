@@ -16,7 +16,7 @@
 #include <gtk/gtk.h>
 
 #include "callbacks.h"
-#include "about.h"
+#include "mooappabout.h"
 #include "support.h"
 
 #define GLADE_HOOKUP_OBJECT(component,widget,name) \
@@ -34,6 +34,7 @@ create_about_dialog (void)
   GtkWidget *alignment1;
   GtkWidget *vbox2;
   GtkWidget *logo;
+  GtkWidget *vbox3;
   GtkWidget *name_label;
   GtkWidget *comment_label;
   GtkWidget *copyright_label;
@@ -53,7 +54,7 @@ create_about_dialog (void)
   gtk_box_pack_start (GTK_BOX (dialog_vbox1), alignment1, TRUE, TRUE, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (alignment1), 20, 20, 20, 20);
 
-  vbox2 = gtk_vbox_new (FALSE, 0);
+  vbox2 = gtk_vbox_new (FALSE, 4);
   gtk_widget_show (vbox2);
   gtk_container_add (GTK_CONTAINER (alignment1), vbox2);
 
@@ -61,19 +62,22 @@ create_about_dialog (void)
   gtk_widget_show (logo);
   gtk_box_pack_start (GTK_BOX (vbox2), logo, FALSE, FALSE, 0);
 
+  vbox3 = gtk_vbox_new (FALSE, 3);
+  gtk_widget_show (vbox3);
+  gtk_box_pack_start (GTK_BOX (vbox2), vbox3, FALSE, FALSE, 0);
+
   name_label = gtk_label_new (_("<b>name</b>"));
   gtk_widget_show (name_label);
-  gtk_box_pack_start (GTK_BOX (vbox2), name_label, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox3), name_label, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (name_label), TRUE);
 
-  comment_label = gtk_label_new (_("<b>comment</b>"));
+  comment_label = gtk_label_new (_("comment"));
   gtk_widget_show (comment_label);
-  gtk_box_pack_start (GTK_BOX (vbox2), comment_label, FALSE, FALSE, 0);
-  gtk_label_set_use_markup (GTK_LABEL (comment_label), TRUE);
+  gtk_box_pack_start (GTK_BOX (vbox3), comment_label, FALSE, FALSE, 0);
 
   copyright_label = gtk_label_new (_("<b>copyright</b>"));
   gtk_widget_show (copyright_label);
-  gtk_box_pack_start (GTK_BOX (vbox2), copyright_label, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox3), copyright_label, FALSE, FALSE, 0);
   gtk_label_set_use_markup (GTK_LABEL (copyright_label), TRUE);
 
   dialog_action_area1 = GTK_DIALOG (about_dialog)->action_area;
@@ -100,6 +104,7 @@ create_about_dialog (void)
   GLADE_HOOKUP_OBJECT (about_dialog, alignment1, "alignment1");
   GLADE_HOOKUP_OBJECT (about_dialog, vbox2, "vbox2");
   GLADE_HOOKUP_OBJECT (about_dialog, logo, "logo");
+  GLADE_HOOKUP_OBJECT (about_dialog, vbox3, "vbox3");
   GLADE_HOOKUP_OBJECT (about_dialog, name_label, "name_label");
   GLADE_HOOKUP_OBJECT (about_dialog, comment_label, "comment_label");
   GLADE_HOOKUP_OBJECT (about_dialog, copyright_label, "copyright_label");

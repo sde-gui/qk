@@ -17,6 +17,7 @@ AM_CFLAGS =                             \
 
 noinst_LTLIBRARIES   = libmooapp.la
 
+BUILT_SOURCES =
 libmooapp_la_SOURCES =      \
     mooappdialogs.c         \
     mooapp-private.h        \
@@ -56,7 +57,7 @@ if USE_PYGTK
 libmooapp_la_SOURCES += mooapp-mod.c
 
 nodist_libmooapp_la_SOURCES = mooapp-pygtk.c
-BUILT_SOURCES = mooapp-pygtk.c
+BUILT_SOURCES += mooapp-pygtk.c
 CLEANFILES = mooapp-pygtk.c
 
 mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
@@ -69,4 +70,15 @@ mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
 	--outfilename mooapp-pygtk.c \
 	$(srcdir)/mooapp-pygtk.defs > mooapp-pygtk.c
 
+endif
+
+
+if GTK_2_6
+libmooapp_la_SOURCES += mooappabout-glade.c
+BUILT_SOURCES += mooappabout-glade.c
+GLADE = $(srcdir)/glade
+SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
+mooappabout-glade.c: $(GLADE)/mooappabout.c $(GLADE)/mooappabout.sed $(SUPPORT)
+	cat $(GLADE)/mooappabout.c | sh $(SUPPORT) | sed -f $(GLADE)/mooappabout.sed \
+		> mooappabout-glade.c
 endif

@@ -55,7 +55,31 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
 }
 
 
-#if GTK_CHECK_VERSION(2,6,0)
+static const char *copyright = "\302\251 2004-2005 Yevgen Muntyan";
+
+
+static void show_about_dialog (GtkWidget *dialog,
+                               GtkWindow *parent)
+{
+    g_return_if_fail (dialog != NULL);
+
+    if (!GTK_WIDGET_VISIBLE (dialog) && parent)
+    {
+        gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
+        gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
+    }
+
+    gtk_window_present (GTK_WINDOW (dialog));
+}
+
+static void dialog_destroyed (void)
+{
+    g_object_set_data (G_OBJECT (moo_app_get_instance()),
+                       "moo-app-about-dialog", NULL);
+}
+
+
+#if !GTK_CHECK_VERSION(2,6,0)
 
 static void open_link (G_GNUC_UNUSED GtkAboutDialog *about,
                        const gchar *link,
@@ -75,10 +99,10 @@ static void send_mail (G_GNUC_UNUSED GtkAboutDialog *about,
 void             moo_app_about_dialog           (GtkWidget  *parent)
 {
     GtkWindow *parent_window = NULL;
+    GtkWidget *dialog;
     static gboolean url_hook_set = FALSE;
     const MooAppInfo *info;
     const char *authors[] = {"Yevgen Muntyan <muntyan@math.tamu.edu>", NULL};
-    const char *copyright = "\302\251 2004-2005 Yevgen Muntyan";
     const char *gpl =
 #include "mooapp/gpl"
     ;
@@ -96,18 +120,85 @@ void             moo_app_about_dialog           (GtkWidget  *parent)
 
     info = moo_app_get_info (moo_app_get_instance());
 
-    gtk_show_about_dialog (parent_window,
-                           "authors", authors,
-                           "comments", info->description,
-                           "copyright", copyright,
-                           "license", gpl,
-                           "logo-icon-name", MOO_STOCK_APP,
-                           "name", info->full_name,
-                           "version", info->version,
-                           "website", info->website,
-                           "website-label", info->website_label,
-                           NULL);
+    dialog = g_object_get_data (G_OBJECT (moo_app_get_instance()),
+                                "moo-app-about-dialog");
+
+    if (!dialog)
+    {
+        dialog = g_object_new (GTK_TYPE_ABOUT_DIALOG,
+                                     "authors", authors,
+                                     "comments", info->description,
+                                     "copyright", copyright,
+                                     "license", gpl,
+                                     "logo-icon-name", MOO_STOCK_APP,
+                                     "name", info->full_name,
+                                     "version", info->version,
+                                     "website", info->website,
+                                     "website-label", info->website_label,
+                                     NULL);
+        g_object_set_data (G_OBJECT (moo_app_get_instance()),
+                           "moo-app-about-dialog",
+                           dialog);
+        g_signal_connect (dialog, "delete-event",
+                          G_CALLBACK (gtk_widget_hide_on_delete),
+                          NULL);
+        g_signal_connect (dialog, "destroy",
+                          G_CALLBACK (dialog_destroyed),
+                          NULL);
+    }
+
+    show_about_dialog (dialog, parent_window);
 }
 
 #else /* !GTK_CHECK_VERSION(2,6,0) */
+
+GtkWidget *_moo_app_create_about_dialog (const char *comment,
+                                         const char *copyright,
+                                         const char *name,
+                                         const char *logo_name);
+
+void moo_app_about_dialog (GtkWidget *parent)
+{
+    GtkWindow *parent_window = NULL;
+    GtkWidget *dialog;
+
+    if (parent)
+        parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
+
+    dialog = g_object_get_data (G_OBJECT (moo_app_get_instance()),
+                                "moo-app-about-dialog");
+
+    if (!dialog)
+    {
+        const MooAppInfo *info;
+        char *name_markup, *copyright_markup;
+
+        info = moo_app_get_info (moo_app_get_instance());
+
+        name_markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s</b></span>",
+                                       info->full_name);
+        copyright_markup = g_strdup_printf ("<small>%s</small>", copyright);
+
+        dialog =
+                _moo_app_create_about_dialog (info->description,
+                                              copyright_markup,
+                                              name_markup,
+                                              MOO_STOCK_APP);
+        g_object_set_data (G_OBJECT (moo_app_get_instance()),
+                           "moo-app-about-dialog",
+                           dialog);
+        g_signal_connect (dialog, "delete-event",
+                          G_CALLBACK (gtk_widget_hide_on_delete),
+                          NULL);
+        g_signal_connect (dialog, "destroy",
+                          G_CALLBACK (dialog_destroyed),
+                          NULL);
+
+        g_free (name_markup);
+        g_free (copyright_markup);
+    }
+
+    show_about_dialog (dialog, parent_window);
+}
+
 #endif /* !GTK_CHECK_VERSION(2,6,0) */

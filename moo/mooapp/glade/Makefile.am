@@ -3,7 +3,7 @@
 #
 
 EXTRA_DIST =            \
-    about.c             \
-    about.gladep        \
-    about.glade         \
-    about.sh
+    mooappabout.c       \
+    mooappabout.gladep  \
+    mooappabout.glade   \
+    mooappabout.sed
