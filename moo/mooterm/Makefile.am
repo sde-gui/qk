@@ -103,6 +103,7 @@ mooterm-pygtk.c: $(srcdir)/mooterm-pygtk.defs $(srcdir)/mooterm-pygtk.override
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(srcdir)/../mooui/mooui-pygtk.defs \
 	--override $(srcdir)/mooterm-pygtk.override \
+	--outfilename mooterm-pygtk.c \
 	$(srcdir)/mooterm-pygtk.defs > mooterm-pygtk.c
 
 endif USE_PYGTK

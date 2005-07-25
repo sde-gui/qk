@@ -66,6 +66,7 @@ mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
 	--register $(srcdir)/../mooedit/mooedit-pygtk.defs \
 	--register $(srcdir)/../mooui/mooui-pygtk.defs \
 	--override $(srcdir)/mooapp-pygtk.override \
+	--outfilename mooapp-pygtk.c \
 	$(srcdir)/mooapp-pygtk.defs > mooapp-pygtk.c
 
 endif

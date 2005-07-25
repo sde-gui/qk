@@ -72,6 +72,7 @@ mooui-pygtk.c: $(srcdir)/mooui-pygtk.defs $(srcdir)/mooui-pygtk.override
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--override $(srcdir)/mooui-pygtk.override \
+	--outfilename mooui-pygtk.c \
 	$(srcdir)/mooui-pygtk.defs > mooui-pygtk.c
 
 endif USE_PYGTK

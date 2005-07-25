@@ -136,6 +136,7 @@ mooutils-pygtk.c: $(srcdir)/mooutils-pygtk.defs $(srcdir)/mooutils-pygtk.overrid
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--override $(srcdir)/mooutils-pygtk.override \
+	--outfilename mooutils-pygtk.c \
 	$(srcdir)/mooutils-pygtk.defs > mooutils-pygtk.c
 
 endif

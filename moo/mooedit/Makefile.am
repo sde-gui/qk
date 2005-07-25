@@ -104,6 +104,7 @@ mooedit-pygtk.c: $(srcdir)/mooedit-pygtk.defs $(srcdir)/mooedit-pygtk.override
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(srcdir)/../mooui/mooui-pygtk.defs \
 	--override $(srcdir)/mooedit-pygtk.override \
+	--outfilename mooedit-pygtk.c \
 	$(srcdir)/mooedit-pygtk.defs > mooedit-pygtk.c
 
 endif USE_PYGTK
