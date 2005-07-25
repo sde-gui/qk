@@ -20,13 +20,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
+/*****************************************************************************
+ * Changed by Muntyan
+ *
+ * 07/24/2005: made gtksourceview_gettext return const char*
+ *****************************************************************************/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include "gtksourceview-i18n.h"
 
-char *
+const char *
 gtksourceview_gettext (const char *msgid)
 {
 	static gboolean initialized = FALSE;

@@ -28,6 +28,12 @@
  * Author: Tom Tromey <tromey@creche.cygnus.com>
  */
 
+/*****************************************************************************
+ * Changed by Muntyan
+ *
+ * 07/24/2005: made gtksourceview_gettext return const char*
+ *****************************************************************************/
+
 #ifndef __GTKSOURCEVIEW_18N_H__
 #define __GTKSOURCEVIEW_18N_H__ 1
 
@@ -65,7 +71,7 @@ G_BEGIN_DECLS
 #    define N_(String) (String)
 #endif
 
-char *gtksourceview_gettext (const char *msgid);
+const char *gtksourceview_gettext (const char *msgid);
 
 G_END_DECLS
 
