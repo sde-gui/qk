@@ -50,7 +50,7 @@ common_cflags =                         \
     $(GTK_CFLAGS)                       \
     -DG_LOG_DOMAIN=\"Moo\"
 
-AM_CFLAGS = $(common_cflags) $(M_CFLAGS) $(CFLAGS)
+AM_CFLAGS = $(common_cflags) $(DEBUG_CFLAGS) $(CFLAGS)
 AM_YFLAGS = -d
 
 EXTRA_DIST =                \

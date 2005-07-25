@@ -58,7 +58,7 @@ AM_CFLAGS =                                 \
     $(MOO_CFLAGS)                           \
     $(PYTHON_INCLUDES)                      \
     $(PYGTK_CFLAGS)                         \
-    $(M_CFLAGS)                             \
+    $(DEBUG_CFLAGS)                         \
     $(CFLAGS)                               \
     -DMOO_VERSION=\"$(MOO_VERSION)\"        \
     -DMOO_VERSION_MAJOR=$(MOO_VERSION_MAJOR)\

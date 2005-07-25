@@ -7,7 +7,7 @@ AM_CFLAGS =                             \
     -I$(top_builddir)                   \
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
-    $(M_CFLAGS)                         \
+    $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
     $(XML_CFLAGS)                       \
     $(GTK_CFLAGS)                       \

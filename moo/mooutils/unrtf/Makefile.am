@@ -8,7 +8,7 @@ AM_CFLAGS =                             \
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(GLIB_CFLAGS)                      \
-    $(M_CFLAGS)                         \
+    $(DEBUG_CFLAGS)                     \
     $(CFLAGS)
 
 libunrtf_la_src =       \

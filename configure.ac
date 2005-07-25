@@ -156,13 +156,17 @@ AC_ARG_ENABLE([moo-module],
 
 
 if test x$cygwin_build != "xyes" -a x$build_python != "xno"; then
-    AC_CHECK_PYTHON($python_version, [
+    AC_CHECK_PYTHON($python_version,[
         build_python="yes"
         AC_MSG_NOTICE([compiling python support])
-    ], [
+    ],[
         build_python="no"
         build_pygtk="no"
-        AC_MSG_WARN([Python not found])
+        if test x$build_python = "xyes"; then
+            AC_MSG_ERROR([Python not found])
+        else
+            AC_MSG_WARN([Python support will be disabled])
+        fi
     ])
 fi
 
@@ -177,7 +181,7 @@ fi
 #
 if test x$cygwin_build != "xyes"; then
     if test x$build_pygtk = xyes; then
-        AC_CHECK_PYGTK([$python_version], [
+        AC_CHECK_PYGTK([$python_version],[
             build_pygtk="yes"
             AC_MSG_NOTICE([compiling pygtk support])
         ],[

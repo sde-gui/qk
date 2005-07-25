@@ -26,7 +26,7 @@ DEFAULT_INCLUDES =
 AM_CFLAGS =                     \
     -I$(top_builddir)           \
     $(MOO_CFLAGS)               \
-    $(M_CFLAGS)                 \
+    $(DEBUG_CFLAGS)             \
     $(CFLAGS)                   \
     $(GTK_CFLAGS)
 

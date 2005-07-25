@@ -11,7 +11,7 @@ AM_CFLAGS =                             \
     $(PYTHON_INCLUDES)                  \
     $(PYGTK_CFLAGS)                     \
     $(MOO_CFLAGS)                       \
-    $(M_CFLAGS)                         \
+    $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
     -DG_LOG_DOMAIN=\"Moo\"
 

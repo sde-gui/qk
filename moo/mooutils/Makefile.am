@@ -9,7 +9,7 @@ AM_CFLAGS =                             \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
-    $(M_CFLAGS)                         \
+    $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
     $(GTK_CFLAGS)                       \
     $(PYTHON_INCLUDES)                  \
