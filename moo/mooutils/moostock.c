@@ -64,6 +64,7 @@ static void add_icon    (GtkIconFactory *factory,
     register_stock_icon (factory, stock_id);
 }
 
+#if !GTK_CHECK_VERSION(2,6,0)
 static void add_icon2   (GtkIconFactory *factory,
                          const gchar    *stock_id,
                          gint            size1,
@@ -75,6 +76,7 @@ static void add_icon2   (GtkIconFactory *factory,
     add_default_image (stock_id, size2, data2);
     register_stock_icon (factory, stock_id);
 }
+#endif /* !GTK_CHECK_VERSION(2,6,0) */
 
 
 void moo_create_stock_items (void)
