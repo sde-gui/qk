@@ -157,17 +157,3 @@ _wrap_moo_g_object_new (PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString (PyExc_NotImplementedError, "not implemented");
     return NULL;
 }
-%%
-override moo_prefs_get_color kwargs
-static PyObject *
-_wrap_moo_prefs_get_color (PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    static char *kwlist[] = { "key", NULL };
-    char *key;
-    const GdkColor *ret;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:prefs_get_color", kwlist, &key))
-        return NULL;
-    ret = moo_prefs_get_color(key);
-    return pyg_boxed_new (GDK_TYPE_COLOR, ret, TRUE, TRUE);
-}
