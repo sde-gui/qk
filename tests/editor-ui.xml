@@ -1,6 +1,6 @@
 <ui>
 
-<object name="EditorWindow">
+<object name="Editor">
 
     <menubar name="Menubar">
 
@@ -8,6 +8,8 @@
             <separator/>
             <item name="NewWindow" action="NewWindow"/>
             <item name="NewTab" action="NewTab"/>
+            <separator/>
+            <item name="Terminal" action="Terminal"/>
             <separator/>
             <item name="Open" action="Open"/>
             <item name="Save" action="Save"/>
@@ -33,6 +35,7 @@
             <separator/>
             <item name="SelectAll" action="SelectAll"/>
             <separator/>
+            <item name="SendToTerminal" action="SendToTerminal"/>
         </menu>
 
         <menu name="Search" label="_Search">
@@ -104,9 +107,9 @@
         <separator/>
     </toolbar> <!-- Toolbar -->
 
-</object> <!-- EditorWindow -->
+</object> <!-- Editor -->
 
-<object name="TerminalWindow">
+<object name="Terminal">
 
     <menubar name="Menubar">
 
@@ -114,6 +117,8 @@
             <separator/>
             <item name="Editor" action="NewEditor"/>
             <item name="Open" action="OpenInEditor"/>
+            <separator/>
+            <item name="Restart" action="Restart"/>
             <separator/>
             <item name="Save" action="SaveSelection"/>
             <separator/>
@@ -123,7 +128,9 @@
 
         <menu name="Edit" label="E_dit">
             <separator/>
+            <!--
             <item name="CopyLastOutput" action="CopyLastOutput"/>
+            -->
             <item name="Copy" action="Copy"/>
             <item name="Paste" action="Paste"/>
             <separator/>
@@ -131,6 +138,7 @@
             <separator/>
         </menu>
 
+        <!--
         <menu name="GAP" label="_GAP">
             <separator/>
             <item name="Read" action="GAPRead"/>
@@ -138,6 +146,7 @@
             <item name="Restart" action="Restart"/>
             <separator/>
         </menu>
+        -->
 
         <menu name="Python" action="PythonMenu">
             <separator/>
@@ -188,7 +197,7 @@
         <separator/>
     </menu>
 
-</object> <!-- TerminalWindow -->
+</object> <!-- Terminal -->
 
 </ui>
 

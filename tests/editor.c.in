@@ -16,21 +16,32 @@
 #include "mooui/moouiobject.h"
 
 
+static void init_terminal (void);
+static void init_editor (void);
+
 int main (int argc, char *argv[])
 {
+    const char *file = "@srcdir@/editor-ui.xml";
+    MooApp *app;
+    MooUIXML *xml;
+    MooEditor *editor;
+    MooEditWindow *win;
+
     gtk_init (&argc, &argv);
 
-    MooApp *app = MOO_APP (g_object_new (MOO_TYPE_APP,
-                                         "argv", argv,
-                                         "short-name", "medit",
-                                         "full-name", "MEdit",
-                                         "window-policy",
-                                         MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
-                                                 MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
-                                         "description", "MEdit is a text editor",
-                                         NULL));
+    init_terminal ();
+    init_editor ();
 
-    const char *file = "@srcdir@/editor-ui.xml";
+    app = MOO_APP (g_object_new (MOO_TYPE_APP,
+                   "argv", argv,
+                   "short-name", "medit",
+                   "full-name", "MEdit",
+                   "window-policy",
+                   MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
+                           MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
+                   "description", "MEdit is a text editor",
+                   NULL));
+
     if (!g_file_test (file, G_FILE_TEST_EXISTS))
     {
         file = "editor-ui.xml";
@@ -38,18 +49,86 @@ int main (int argc, char *argv[])
             g_error ("could not find editor-ui.xml");
     }
 
-    MooUIXML *xml = moo_app_get_ui_xml (app);
+    xml = moo_app_get_ui_xml (app);
 
     if (!moo_ui_xml_add_ui_from_file (xml, file, NULL))
         g_error ("%s", G_STRLOC);
 
     moo_app_init (app);
 
-    MooEditor *editor = moo_app_get_editor (app);
-    MooEditWindow *win = moo_editor_new_window (editor);
+    editor = moo_app_get_editor (app);
+    win = moo_editor_new_window (editor);
 
     if (argc > 1)
         moo_edit_window_open (MOO_EDIT_WINDOW (win), argv[1], NULL);
 
     return moo_app_run (app);
+}
+
+
+static void terminal_restart (MooTermWindow *win)
+{
+    MooTerm *term = moo_term_window_get_term (win);
+    moo_term_kill_child (term);
+    moo_term_fork_command (term, "bash", NULL, NULL);
+}
+
+
+static void init_terminal (void)
+{
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_TERM_WINDOW);
+
+    g_return_if_fail (klass != NULL);
+
+    moo_ui_object_class_new_action (klass,
+                                    "id", "Restart",
+                                    "name", "Restart",
+                                    "label", "_Restart",
+                                    "tooltip", "Restart",
+                                    "icon-stock-id", GTK_STOCK_REFRESH,
+                                    "closure::callback", terminal_restart,
+                                    NULL);
+
+    g_type_class_unref (klass);
+}
+
+
+static void editor_send_to_terminal (MooEditWindow *win)
+{
+    char *text;
+    MooEdit *edit;
+
+    edit = moo_edit_window_get_active_doc (win);
+
+    text = moo_edit_get_selection (edit);
+    if (!text)
+        text = moo_edit_get_text (edit);
+
+    if (text)
+    {
+        MooApp *app = moo_app_get_instance ();
+        MooTermWindow *term_win = moo_app_get_terminal (app);
+        MooTerm *term = moo_term_window_get_term (term_win);
+        moo_term_feed_child (term, text, -1);
+        g_free (text);
+    }
+}
+
+
+static void init_editor (void)
+{
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+
+    g_return_if_fail (klass != NULL);
+
+    moo_ui_object_class_new_action (klass,
+                                    "id", "SendToTerminal",
+                                    "name", "Send to Terminal",
+                                    "label", "_Send to Terminal",
+                                    "tooltip", "Send to Terminal",
+                                    "icon-stock-id", GTK_STOCK_GOTO_BOTTOM,
+                                    "closure::callback", editor_send_to_terminal,
+                                    NULL);
+
+    g_type_class_unref (klass);
 }
