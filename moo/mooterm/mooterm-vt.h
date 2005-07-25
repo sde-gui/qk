@@ -238,12 +238,12 @@ enum {
         case 106:                                   \
         case 1001:                                  \
             g_message ("%s: IGNORING mode %d",      \
-                       G_STRFUNC, code);            \
+                       G_STRLOC, code);             \
             break;                                  \
                                                     \
         default:                                    \
             g_warning ("%s: unknown mode %d",       \
-                       G_STRFUNC, code);            \
+                       G_STRLOC, code);             \
     }
 
 #define GET_ANSI_MODE(code, mode)                   \
@@ -274,7 +274,7 @@ enum {
         case 18:                                    \
         case 19:                                    \
             g_warning ("%s: ignoring mode %d",      \
-                    G_STRFUNC, code);               \
+                       G_STRLOC, code);             \
             break;                                  \
                                                     \
         case -1:                                    \
@@ -282,7 +282,7 @@ enum {
                                                     \
         default:                                    \
             g_warning ("%s: unknown mode %d",       \
-                    G_STRFUNC, code);               \
+                       G_STRLOC, code);             \
     }
 
 

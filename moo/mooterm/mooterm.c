@@ -1247,7 +1247,7 @@ void        moo_term_set_mode               (MooTerm    *term,
             break;
 
         default:
-            g_warning ("%s: unknown mode %d", G_STRFUNC, mode);
+            g_warning ("%s: unknown mode %d", G_STRLOC, mode);
     }
 }
 
@@ -1485,7 +1485,7 @@ void        moo_term_dsr                    (MooTerm    *term,
             break;
 
         default:
-            g_warning ("%s: unknown request", G_STRFUNC);
+            g_warning ("%s: unknown request", G_STRLOC);
     }
 
     if (answer)

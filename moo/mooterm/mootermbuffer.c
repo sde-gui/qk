@@ -638,7 +638,7 @@ void    moo_term_buffer_print_chars     (MooTermBuffer  *buf,
         }
         else if (*s == 0x7F)
         {
-            g_warning ("passed DEL to %s", G_STRFUNC);
+            g_warning ("%s: got DEL", G_STRLOC);
             ++p;
         }
         else
@@ -1501,7 +1501,7 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
             break;
 
         default:
-            g_warning ("%s: unknown mode %d", G_STRFUNC, mode);
+            g_warning ("%s: unknown mode %d", G_STRLOC, mode);
     }
 }
 
