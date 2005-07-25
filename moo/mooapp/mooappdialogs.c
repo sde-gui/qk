@@ -171,19 +171,21 @@ void moo_app_about_dialog (GtkWidget *parent)
     if (!dialog)
     {
         const MooAppInfo *info;
-        char *name_markup, *copyright_markup;
+        char *name_markup, *copyright_markup, *title;
 
         info = moo_app_get_info (moo_app_get_instance());
 
         name_markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s</b></span>",
                                        info->full_name);
         copyright_markup = g_strdup_printf ("<small>%s</small>", copyright);
+        title = g_strdup_printf ("About %s", info->full_name);
 
         dialog =
                 _moo_app_create_about_dialog (info->description,
                                               copyright_markup,
                                               name_markup,
                                               MOO_STOCK_APP);
+        gtk_window_set_title (GTK_WINDOW (dialog), title);
         g_object_set_data (G_OBJECT (moo_app_get_instance()),
                            "moo-app-about-dialog",
                            dialog);
@@ -196,6 +198,7 @@ void moo_app_about_dialog (GtkWidget *parent)
 
         g_free (name_markup);
         g_free (copyright_markup);
+        g_free (title);
     }
 
     show_about_dialog (dialog, parent_window);
