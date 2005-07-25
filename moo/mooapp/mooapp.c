@@ -1018,6 +1018,25 @@ static void open_terminal (void)
 }
 
 
+MooTermWindow *moo_app_get_terminal (MooApp *app)
+{
+    MooTermWindow *term;
+
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+
+    if (app->priv->terminals)
+    {
+        return app->priv->terminals->data;
+    }
+    else
+    {
+        term = new_terminal (app);
+        gtk_window_present (GTK_WINDOW (term));
+        return term;
+    }
+}
+
+
 static void install_editor_actions  (void)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
@@ -1221,36 +1240,20 @@ GType            moo_app_info_get_type          (void)
 static void     execute_selection       (MooEditWindow  *window)
 {
     MooEdit *edit;
-    GtkTextBuffer *buf;
-    GtkTextIter start, end;
     char *text;
 
     edit = moo_edit_window_get_active_doc (window);
 
     g_return_if_fail (edit != NULL);
 
-    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    text = moo_edit_get_selection (edit);
+    if (!text)
+        text = moo_edit_get_text (edit);
 
-    if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
+    if (text)
     {
-        text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+        moo_app_python_run_string (moo_app_get_instance (), text);
+        g_free (text);
     }
-    else
-    {
-        gtk_text_buffer_get_bounds (buf, &start, &end);
-
-        text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
-        g_return_if_fail (text != NULL);
-
-        if (!text[0])
-        {
-            g_free (text);
-            return;
-        }
-    }
-
-    moo_app_python_run_string (moo_app_get_instance (), text);
-
-    g_free (text);
 }
 #endif

@@ -103,6 +103,7 @@ const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_application_dir    (MooApp     *app);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
+MooTermWindow   *moo_app_get_terminal           (MooApp     *app);
 
 void             moo_app_prefs_dialog           (GtkWidget  *parent);
 void             moo_app_about_dialog           (GtkWidget  *parent);
