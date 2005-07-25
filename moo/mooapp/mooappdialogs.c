@@ -55,6 +55,8 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
 }
 
 
+#if GTK_CHECK_VERSION(2,6,0)
+
 static void open_link (G_GNUC_UNUSED GtkAboutDialog *about,
                        const gchar *link,
                        G_GNUC_UNUSED gpointer data)
@@ -69,8 +71,6 @@ static void send_mail (G_GNUC_UNUSED GtkAboutDialog *about,
     moo_open_email (address, NULL, NULL);
 }
 
-
-#if GTK_CHECK_VERSION(2,6,0)
 
 void             moo_app_about_dialog           (GtkWidget  *parent)
 {
