@@ -85,6 +85,27 @@ void moo_term_line_erase (MooTermLine *line)
 }
 
 
+#if GLIB_CHECK_VERSION(2,4,0)
+#define array_remove_range(ar,pos,len) g_array_remove_range (CELLS_ARRAY (ar), pos, len)
+#else
+static void array_remove_range (MooTermCellArray *array,
+                                guint             index,
+                                guint             length)
+{
+    g_return_if_fail (array);
+    g_return_if_fail (index < array->len);
+    g_return_if_fail (index + length <= array->len);
+
+    if (index + length != array->len)
+        g_memmove (&array->data[index],
+                    &array->data[index + length],
+                    (array->len - (index + length)) * sizeof (MooTermCell));
+
+    g_array_set_size (CELLS_ARRAY(array), array->len - length);
+}
+#endif
+
+
 void moo_term_line_delete_range (MooTermLine   *line,
                                  guint          pos,
                                  guint          len)
@@ -94,7 +115,7 @@ void moo_term_line_delete_range (MooTermLine   *line,
     else if (pos + len >= line->cells->len)
         return moo_term_line_set_len (line, pos);
     else
-        g_array_remove_range (CELLS_ARRAY (line->cells), pos, len);
+        array_remove_range (line->cells, pos, len);
 }
 
 

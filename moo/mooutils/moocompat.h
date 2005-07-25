@@ -86,8 +86,11 @@ type_name##_get_type (void) \
 #endif /* !G_DEFINE_TYPE */
 
 void       g_ptr_array_foreach            (GPtrArray        *array,
-					   GFunc             func,
-					   gpointer          user_data);
+                                           GFunc             func,
+                                           gpointer          user_data);
+void       g_ptr_array_remove_range       (GPtrArray        *array,
+                                           guint             index_,
+                                           guint             length);
 
 #endif /* !GLIB_CHECK_VERSION(2,4,0) */
 

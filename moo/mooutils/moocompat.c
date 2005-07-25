@@ -57,6 +57,22 @@ void g_ptr_array_foreach (GPtrArray *array,
         (*func) (array->pdata[i], data);
 }
 
+void g_ptr_array_remove_range (GPtrArray *array,
+                               guint      index,
+                               guint      length)
+{
+    g_return_if_fail (array);
+    g_return_if_fail (index < array->len);
+    g_return_if_fail (index + length <= array->len);
+
+    if (index + length != array->len)
+        g_memmove (&array->pdata[index],
+                    &array->pdata[index + length],
+                    (array->len - (index + length)) * sizeof (gpointer));
+
+    g_ptr_array_set_size (array, array->len - length);
+}
+
 #endif /* !GLIB_CHECK_VERSION(2,4,0) */
 
 
