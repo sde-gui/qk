@@ -21,6 +21,7 @@ prefs_set (const char *key, PyObject *val, gboolean ignore_change)
         else
             moo_prefs_set (key, NULL);
     }
+#ifdef PyGEnum_Type
     else if (PyObject_TypeCheck (val, &PyGEnum_Type))
     {
         int ival;
@@ -31,6 +32,7 @@ prefs_set (const char *key, PyObject *val, gboolean ignore_change)
         else
             moo_prefs_set_int (key, ival);
     }
+#endif
     else if (PyBool_Check (val))
     {
         gboolean bool_val = (Py_True == val);
