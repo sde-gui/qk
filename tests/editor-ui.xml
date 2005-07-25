@@ -57,11 +57,13 @@
 
         <menu name="Python" action="PythonMenu">
             <separator/>
+            <item name="ExecuteSelection" action="ExecuteSelection"/>
             <item name="ExecuteScript" action="ExecuteScript"/>
+            <separator/>
             <item name="ShowConsole" action="ShowConsole"/>
             <separator/>
         </menu>
-        
+
         <menu name="Settings" label="_Settings">
             <separator/>
             <item name="ShowToolbar" action="ShowToolbar"/>

@@ -26,10 +26,14 @@ gtk_2_4_sources =       \
     gtkfontbutton.c     \
     gtkfontbutton.h
 
+EXTRA_DIST =            \
+    $(glib_2_6_sources) \
+    $(gtk_2_4_sources)
+
 if !GLIB_2_6
-libnewgtk_la_SOURCES += glib_2_6_sources
+libnewgtk_la_SOURCES += $(glib_2_6_sources)
 endif !GLIB_2_6
 
 if !GTK_2_4
-libnewgtk_la_SOURCES += gtk_2_4_sources
+libnewgtk_la_SOURCES += $(gtk_2_4_sources)
 endif

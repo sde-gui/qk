@@ -120,7 +120,7 @@ void        moo_python_shutdown            (MooPython *python)
     Py_XDECREF ((PyObject*) python->main_mod);
     /* TODO: Py_Finalize is crash if shutdown() was initiated from python,
                like with app.quit() */
-#if 0
+#if 1
     Py_Finalize ();
 #endif
 

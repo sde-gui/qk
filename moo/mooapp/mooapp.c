@@ -37,8 +37,10 @@ void initmoo (void);
 
 
 static MooApp *moo_app_instance = NULL;
+#ifdef USE_PYTHON
 static MooPython *moo_app_python = NULL;
 static MooAppInput *moo_app_input = NULL;
+#endif
 
 
 struct _MooAppPrivate {
@@ -62,8 +64,9 @@ static GObject *moo_edit_constructor    (GType           type,
                                          GObjectConstructParam *params);
 static void     moo_app_finalize        (GObject        *object);
 
-static void     moo_app_install_actions (MooApp         *app,
+static void     install_actions         (MooApp         *app,
                                          GType           type);
+static void     install_editor_actions  (void);
 
 static void     moo_app_set_property    (GObject        *object,
                                          guint           prop_id,
@@ -88,7 +91,11 @@ static void     moo_app_set_name        (MooApp         *app,
                                          const char     *full_name);
 
 static void     all_editors_closed      (MooApp         *app);
+
 static void     start_python            (MooApp         *app);
+#ifdef USE_PYTHON
+static void     execute_selection       (MooEditWindow  *window);
+#endif
 
 
 static GObjectClass *moo_app_parent_class;
@@ -284,8 +291,9 @@ static GObject *moo_edit_constructor    (GType           type,
     if (!app->priv->info->full_name)
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
 
-    moo_app_install_actions (app, MOO_TYPE_EDIT_WINDOW);
-    moo_app_install_actions (app, MOO_TYPE_TERM_WINDOW);
+    install_actions (app, MOO_TYPE_EDIT_WINDOW);
+    install_actions (app, MOO_TYPE_TERM_WINDOW);
+    install_editor_actions ();
 
     return object;
 }
@@ -477,7 +485,7 @@ const char      *moo_app_get_rc_file_name       (MooApp *app)
 }
 
 
-void             moo_app_python_execute_file   (GtkWindow *parent_window)
+void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_window)
 {
 #ifdef USE_PYTHON
     GtkWidget *parent;
@@ -688,7 +696,7 @@ static gboolean moo_app_init_real       (MooApp         *app)
 }
 
 
-static void     start_python            (MooApp         *app)
+static void     start_python            (G_GNUC_UNUSED MooApp *app)
 {
 #ifdef USE_PYTHON
     if (app->priv->run_python)
@@ -850,8 +858,7 @@ static void     moo_app_set_name        (MooApp         *app,
 }
 
 
-static void     moo_app_install_actions (G_GNUC_UNUSED MooApp         *app,
-                                         GType           type)
+static void install_actions (MooApp *app, GType  type)
 {
     GObjectClass *klass = g_type_class_ref (type);
     char *about, *_about;
@@ -933,6 +940,28 @@ static void     moo_app_install_actions (G_GNUC_UNUSED MooApp         *app,
     g_type_class_unref (klass);
     g_free (about);
     g_free (_about);
+}
+
+
+static void install_editor_actions  (void)
+{
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+
+    g_return_if_fail (klass != NULL);
+
+#ifdef USE_PYTHON
+    moo_ui_object_class_new_action (klass,
+                                    "id", "ExecuteSelection",
+                                    "name", "Execute Selection",
+                                    "label", "_Execute Selection",
+                                    "tooltip", "Execute Selection",
+                                    "icon-stock-id", GTK_STOCK_EXECUTE,
+                                    "accel", "<shift><alt>Return",
+                                    "closure::callback", execute_selection,
+                                    NULL);
+#endif /* !USE_PYTHON */
+
+    g_type_class_unref (klass);
 }
 
 
@@ -1029,19 +1058,18 @@ static MooAppInfo  *moo_app_info_copy   (MooAppInfo *info)
 
 static void         moo_app_info_free   (MooAppInfo *info)
 {
-    if (!info)
-        return;
-
-    g_free (info->short_name);
-    g_free (info->full_name);
-    g_free (info->description);
-    g_free (info->version);
-    g_free (info->website);
-    g_free (info->website_label);
-    g_free (info->app_dir);
-    g_free (info->rc_file);
-
-    g_free (info);
+    if (info)
+    {
+        g_free (info->short_name);
+        g_free (info->full_name);
+        g_free (info->description);
+        g_free (info->version);
+        g_free (info->website);
+        g_free (info->website_label);
+        g_free (info->app_dir);
+        g_free (info->rc_file);
+        g_free (info);
+    }
 }
 
 
@@ -1054,3 +1082,42 @@ GType            moo_app_info_get_type          (void)
                                       (GBoxedFreeFunc) moo_app_info_free);
     return type;
 }
+
+
+#ifdef USE_PYTHON
+static void     execute_selection       (MooEditWindow  *window)
+{
+    MooEdit *edit;
+    GtkTextBuffer *buf;
+    GtkTextIter start, end;
+    char *text;
+
+    edit = moo_edit_window_get_active_doc (window);
+
+    g_return_if_fail (edit != NULL);
+
+    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
+    {
+        text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+    }
+    else
+    {
+        gtk_text_buffer_get_bounds (buf, &start, &end);
+
+        text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+        g_return_if_fail (text != NULL);
+
+        if (!text[0])
+        {
+            g_free (text);
+            return;
+        }
+    }
+
+    moo_app_python_run_string (moo_app_get_instance (), text);
+
+    g_free (text);
+}
+#endif

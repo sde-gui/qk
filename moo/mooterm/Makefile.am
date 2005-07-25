@@ -7,7 +7,6 @@ SUBDIRS = glade
 widget_sources =                \
     mooterm.c                   \
     mooterm.h                   \
-    mooterm-ctlfuncs.h          \
     mooterm-input.c             \
     mooterm-keymap.h            \
     mooterm-prefs.c             \
@@ -16,6 +15,7 @@ widget_sources =                \
     mooterm-selection.h         \
     mooterm-text.c              \
     mooterm-vt.h                \
+    mooterm-vtctls.h            \
     mooterm-draw.c              \
     mootermbuffer.c             \
     mootermbuffer-graph.h       \

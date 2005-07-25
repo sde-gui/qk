@@ -42,20 +42,14 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
     char *title;
     const MooAppInfo *info;
     MooPrefsDialog *dialog;
-    gboolean use_terminal, use_editor;
 
     info = moo_app_get_info (app);
     title = g_strdup_printf ("%s Preferences", info->full_name);
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
 
-    g_object_get (app, "use-terminal", &use_terminal, NULL);
-    g_object_get (app, "use-editor", &use_editor, NULL);
-
-    if (use_terminal)
-        moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
-    if (use_editor)
-        moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
 
     return GTK_WIDGET (dialog);
 }

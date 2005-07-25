@@ -3,163 +3,163 @@ dnl http://www.gnu.org/software/ac-archive/htmldoc/ac_python_devel.html
 dnl
 AC_DEFUN([AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON],[
 # Check for Python include path
-    AC_MSG_CHECKING([for Python include path])
-    python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
-    for i in "$python_path/include/python$PYTHON_VERSION/" "$python_path/include/python/" "$python_path/" ; do
-        python_path=`find $i -type f -name Python.h -print | sed "1q"`
-        if test -n "$python_path" ; then
-            break
-        fi
-    done
-    python_path=`echo $python_path | sed "s,/Python.h$,,"`
-    AC_MSG_RESULT([$python_path])
-    if test -z "$python_path" ; then
-        AC_MSG_NOTICE([cannot find Python include path])
-        $2
+AC_MSG_CHECKING([for Python include path])
+python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
+for i in "$python_path/include/python$PYTHON_VERSION/" "$python_path/include/python/" "$python_path/" ; do
+    python_path=`find $i -type f -name Python.h -print | sed "1q"`
+    if test -n "$python_path" ; then
+        break
     fi
-    AC_SUBST([PYTHON_INCLUDES],[-I$python_path])
+done
+python_path=`echo $python_path | sed "s,/Python.h$,,"`
+AC_MSG_RESULT([$python_path])
+if test -z "$python_path" ; then
+    AC_MSG_NOTICE([cannot find Python include path])
+    $2
+fi
+AC_SUBST([PYTHON_INCLUDES],[-I$python_path])
 
 # Check for Python library path
-    AC_MSG_CHECKING([for Python library path])
-    python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
-    for i in "$python_path/lib/python$PYTHON_VERSION/config/" "$python_path/lib/python$PYTHON_VERSION/" "$python_path/lib/python/config/" "$python_path/lib/python/" "$python_path/" ; do
-        python_path=`find $i -type f -name libpython$PYTHON_VERSION.* -print | sed "1q"`
-        if test -n "$python_path" ; then
-            break
-        fi
-    done
-    python_path=`echo $python_path | sed "s,/libpython.*$,,"`
-    AC_MSG_RESULT([$python_path])
-    if test -z "$python_path" ; then
-        AC_MSG_NOTICE([cannot find Python library path])
-        $2
+AC_MSG_CHECKING([for Python library path])
+python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
+for i in "$python_path/lib/python$PYTHON_VERSION/config/" "$python_path/lib/python$PYTHON_VERSION/" "$python_path/lib/python/config/" "$python_path/lib/python/" "$python_path/" ; do
+    python_path=`find $i -type f -name libpython$PYTHON_VERSION.* -print | sed "1q"`
+    if test -n "$python_path" ; then
+        break
     fi
-    AC_SUBST([PYTHON_LDFLAGS],["-L$python_path -lpython$PYTHON_VERSION"])
+done
+python_path=`echo $python_path | sed "s,/libpython.*$,,"`
+AC_MSG_RESULT([$python_path])
+if test -z "$python_path" ; then
+    AC_MSG_NOTICE([cannot find Python library path])
+    $2
+fi
+AC_SUBST([PYTHON_LDFLAGS],["-L$python_path -lpython$PYTHON_VERSION"])
 #
-    python_site=`echo $python_path | sed "s/config/site-packages/"`
-    AC_SUBST([PYTHON_SITE_PKG],[$python_site])
+python_site=`echo $python_path | sed "s/config/site-packages/"`
+AC_SUBST([PYTHON_SITE_PKG],[$python_site])
 #
 # libraries which must be linked in when embedding
 #
-    AC_MSG_CHECKING(python extra libraries)
-    PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
-        conf = distutils.sysconfig.get_config_var; \
-        print conf('LOCALMODLIBS')+' '+conf('LIBS')"
-    AC_MSG_RESULT($PYTHON_EXTRA_LIBS)`
-    AC_SUBST(PYTHON_EXTRA_LIBS)
+AC_MSG_CHECKING(python extra libraries)
+PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
+    conf = distutils.sysconfig.get_config_var; \
+    print conf('LOCALMODLIBS')+' '+conf('LIBS')"
+AC_MSG_RESULT($PYTHON_EXTRA_LIBS)`
+AC_SUBST(PYTHON_EXTRA_LIBS)
 
-    $1
+$1
 ])
 
 
 AC_DEFUN([AC_CHECK_PYTHON],[
-    AC_MSG_NOTICE([checking for headers and libs required to compile python extensions])
-    if test x$mingw_build = xyes; then
+AC_MSG_NOTICE([checking for headers and libs required to compile python extensions])
+if test x$mingw_build = xyes; then
 
-        no_dot_version=`echo $1 | sed "s/\.//"`
-        if test -z $PYTHON_PARENT_DIR; then
-            PYTHON_PARENT_DIR=/usr/local/win
-        fi
-        if test -z $PYTHON_PREFIX; then
-            PYTHON_PREFIX=$PYTHON_PARENT_DIR/Python$no_dot_version
-        fi
-        if test -z $PYTHON_INCLUDES; then
-            PYTHON_INCLUDES="-I$PYTHON_PREFIX/include -mno-cygwin"
-        fi
-        if test -z $PYTHON_LDFLAGS; then
-            PYTHON_LDFLAGS="-L$PYTHON_PREFIX/libs -lpython$no_dot_version -mno-cygwin"
-        fi
+no_dot_version=`echo $1 | sed "s/\.//"`
+if test -z $PYTHON_PARENT_DIR; then
+    PYTHON_PARENT_DIR=/usr/local/win
+fi
+if test -z $PYTHON_PREFIX; then
+    PYTHON_PREFIX=$PYTHON_PARENT_DIR/Python$no_dot_version
+fi
+if test -z $PYTHON_INCLUDES; then
+    PYTHON_INCLUDES="-I$PYTHON_PREFIX/include -mno-cygwin"
+fi
+if test -z $PYTHON_LDFLAGS; then
+    PYTHON_LDFLAGS="-L$PYTHON_PREFIX/libs -lpython$no_dot_version -mno-cygwin"
+fi
 
-        dnl check whether Python.h and library exists
-        save_CPPFLAGS="$CPPFLAGS"
-        CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
-        save_CFLAGS="$CPPFLAGS"
-        CFLAGS="$CFLAGS $PYTHON_INCLUDES"
-        save_LDFLAGS="$LDFLAGS"
-        LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
-        AC_LANG_PUSH(C)
+dnl check whether Python.h and library exists
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
+save_CFLAGS="$CPPFLAGS"
+CFLAGS="$CFLAGS $PYTHON_INCLUDES"
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
+AC_LANG_PUSH(C)
 
-        AC_MSG_CHECKING([PYTHON_INCLUDES])
-        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+AC_MSG_CHECKING([PYTHON_INCLUDES])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <Python.h>
-            int main ()
+int main ()
 {
-                Py_Initialize();
-                PyRun_SimpleString("from time import time,ctime\n"
-                                    "print 'Today is',ctime(time())\n");
-                Py_Finalize();
-                return 0;
+Py_Initialize();
+PyRun_SimpleString("from time import time,ctime\n"
+                    "print 'Today is',ctime(time())\n");
+Py_Finalize();
+return 0;
 }]])],
-            [python_can_compile=yes],
-            [python_can_compile=no])
+[python_can_compile=yes],
+[python_can_compile=no])
 
-        if test x$python_can_compile = x"yes"; then
-            AC_MSG_RESULT([$PYTHON_INCLUDES])
-            AC_MSG_CHECKING([PYTHON_LDFLAGS])
-            AC_MSG_RESULT([$PYTHON_LDFLAGS])
-            AC_MSG_NOTICE([Did not do real linking])
-            AC_SUBST(PYTHON_INCLUDES)
-            AC_SUBST(PYTHON_LDFLAGS)
-            found_python="yes"
-            pyexecdir=$PYTHON_PREFIX/Lib/site-packages
-            $2
-        else
-            AC_MSG_RESULT([Python.h not found])
-            $3
-        fi
+if test x$python_can_compile = x"yes"; then
+    AC_MSG_RESULT([$PYTHON_INCLUDES])
+    AC_MSG_CHECKING([PYTHON_LDFLAGS])
+    AC_MSG_RESULT([$PYTHON_LDFLAGS])
+    AC_MSG_NOTICE([Did not do real linking])
+    AC_SUBST(PYTHON_INCLUDES)
+    AC_SUBST(PYTHON_LDFLAGS)
+    found_python="yes"
+    pyexecdir=$PYTHON_PREFIX/Lib/site-packages
+    $2
+else
+    AC_MSG_RESULT([Python.h not found])
+    $3
+fi
 
-        AC_LANG_POP(C)
-        LDFLAGS="$save_LDFLAGS"
-        CFLAGS="$save_CFLAGS"
-        CPPFLAGS="$save_CPPFLAGS"
+AC_LANG_POP(C)
+LDFLAGS="$save_LDFLAGS"
+CFLAGS="$save_CFLAGS"
+CPPFLAGS="$save_CPPFLAGS"
 
-    else # mingw_build == "no"
+else # mingw_build == "no"
 
-        AM_PATH_PYTHON($1,[
-            AC_MSG_NOTICE([found python interpreter $PYTHON])
-            AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON([
-                AC_MSG_NOTICE([found python libs and headers])
+AM_PATH_PYTHON($1,[
+AC_MSG_NOTICE([found python interpreter $PYTHON])
+AC_PYTHON_DEVEL_NO_AM_PATH_PYTHON([
+AC_MSG_NOTICE([found python libs and headers])
 
-                AC_MSG_CHECKING([whether python can be used])
-                save_CPPFLAGS="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
-                save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS $PYTHON_INCLUDES"
-                AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-                    #include <Python.h>
-                    int main ()
-                    {
-                        PyObject *object = NULL;
-                        return 0;
-                    }]])],
-                    [python_can_compile=yes],
-                    [python_can_compile=no])
-                if test "x$python_can_compile" = "xyes"; then
-                    AC_MSG_RESULT(yes)
-                    found_python="yes"
-                    $2
-                else
-                    AC_MSG_RESULT(no)
-                    found_python="no"
-                    $3
-                fi
-                CFLAGS="$save_CFLAGS"
-                CPPFLAGS="$save_CPPFLAGS"
-            ],[
-                AC_MSG_NOTICE([python libs and headers not found])
-                found_python="no"
-                $3
-            ])
-        ],[
-            AC_MSG_NOTICE([python interpreter not found])
-            found_python="no"
-            $3
-        ])
+AC_MSG_CHECKING([whether python can be used])
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $PYTHON_INCLUDES"
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $PYTHON_INCLUDES"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <Python.h>
+int main ()
+{
+    PyObject *object = NULL;
+    return 0;
+}]])],
+[python_can_compile=yes],
+[python_can_compile=no])
+if test "x$python_can_compile" = "xyes"; then
+    AC_MSG_RESULT(yes)
+    found_python="yes"
+    $2
+else
+    AC_MSG_RESULT(no)
+    found_python="no"
+    $3
+fi
+CFLAGS="$save_CFLAGS"
+CPPFLAGS="$save_CPPFLAGS"
+],[
+AC_MSG_NOTICE([python libs and headers not found])
+found_python="no"
+$3
+])
+],[
+AC_MSG_NOTICE([python interpreter not found])
+found_python="no"
+$3
+])
 
-        if test x$found_python = x"yes"; then
-            AC_MSG_NOTICE([$PYTHON_INCLUDES $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS])
-        fi
-    fi # mingw_build == "no"
+if test x$found_python = x"yes"; then
+    AC_MSG_NOTICE([$PYTHON_INCLUDES $PYTHON_LDFLAGS $PYTHON_EXTRA_LIBS])
+fi
+fi # mingw_build == "no"
 ])
 
 
