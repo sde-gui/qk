@@ -177,13 +177,22 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
     {
         char *base = NULL;
         int len = strlen (utf8_filename);
+        int i;
 
-        if (len > 1 && g_pattern_match_simple ("*~", utf8_filename))
-            base = g_strndup (utf8_filename, len - 1);
-        else if (len > 4 && g_pattern_match_simple ("*.bak", utf8_filename))
-            base = g_strndup (utf8_filename, len - 4);
+        static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
 
-        if (base) {
+        for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
+        {
+            int ext_len = strlen (bak_globs[i]) - 1;
+            if (len > ext_len && g_pattern_match_simple (bak_globs[i], utf8_filename))
+            {
+                base = g_strndup (utf8_filename, len - ext_len);
+                break;
+            }
+        }
+
+        if (base)
+        {
             lang = moo_edit_lang_mgr_get_language_for_filename (mgr, base);
             g_free (base);
         }
