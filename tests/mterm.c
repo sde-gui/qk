@@ -56,7 +56,18 @@ static void init (int *argc, char ***argv, const char **cmd)
         gdk_window_set_debug_updates (TRUE);
 
     if (set_breakpoint)
+    {
+#if GLIB_CHECK_VERSION(2,6,0)
         g_log_set_default_handler (breakpoint_log_handler, NULL);
+#else
+        g_log_set_handler ("Gtk", breakpoint_log_handler, NULL);
+        g_log_set_handler ("Glib", breakpoint_log_handler, NULL);
+        g_log_set_handler ("Pango", breakpoint_log_handler, NULL);
+        g_log_set_handler ("Gdk", breakpoint_log_handler, NULL);
+        g_log_set_handler ("Moo", breakpoint_log_handler, NULL);
+        g_log_set_handler (NULL, breakpoint_log_handler, NULL);
+#endif
+    }
 }
 
 
