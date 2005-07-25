@@ -10,6 +10,8 @@ headers
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditsearch.h"
+#include "mooedit/mooeditprefs.h"
+#include "mooedit/mootextiter.h"
 %%
 modulename moo
 %%

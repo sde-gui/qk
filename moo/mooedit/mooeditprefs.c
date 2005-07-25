@@ -258,6 +258,7 @@ static void set_text_colors (MooEdit *edit)
 static void set_highlight_current_line (MooEdit *edit)
 {
     const GdkColor *color;
+    GdkColor c;
     GtkSourceView *view = GTK_SOURCE_VIEW (edit);
 
     color = get_color (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR);
@@ -265,7 +266,9 @@ static void set_highlight_current_line (MooEdit *edit)
         moo_prefs_set_ignore_change (MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR,
                                      "#EEF6FF");
     color = get_color (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR);
+    g_return_if_fail (color != NULL);
 
     gtk_source_view_set_highlight_current_line (view, get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE));
-    gtk_source_view_set_highlight_current_line_color (view, color);
+    c = *color;
+    gtk_source_view_set_highlight_current_line_color (view, &c);
 }
