@@ -1457,8 +1457,6 @@ void        moo_term_dsr                    (MooTerm    *term,
                                           buf_cursor_row (buf) + 1,
                                           buf_cursor_col (buf) + 1);
             break;
-
-            break;
         case 75:
             answer = g_strdup (VT_CSI_ "?70n");
             break;
