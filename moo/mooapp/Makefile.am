@@ -73,7 +73,7 @@ mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
 endif
 
 
-if GTK_2_6
+if !GTK_2_6
 libmooapp_la_SOURCES += mooappabout-glade.c
 BUILT_SOURCES += mooappabout-glade.c
 GLADE = $(srcdir)/glade
@@ -81,4 +81,4 @@ SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
 mooappabout-glade.c: $(GLADE)/mooappabout.c $(GLADE)/mooappabout.sed $(SUPPORT)
 	cat $(GLADE)/mooappabout.c | sh $(SUPPORT) | sed -f $(GLADE)/mooappabout.sed \
 		> mooappabout-glade.c
-endif
+endif !GTK_2_6

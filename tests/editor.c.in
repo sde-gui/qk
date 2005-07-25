@@ -27,6 +27,7 @@ int main (int argc, char *argv[])
                                          "window-policy",
                                          MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
                                                  MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
+                                         "description", "MEdit is a text editor",
                                          NULL));
 
     const char *file = "@srcdir@/editor-ui.xml";

@@ -79,7 +79,7 @@ static void dialog_destroyed (void)
 }
 
 
-#if !GTK_CHECK_VERSION(2,6,0)
+#if GTK_CHECK_VERSION(2,6,0)
 
 static void open_link (G_GNUC_UNUSED GtkAboutDialog *about,
                        const gchar *link,
