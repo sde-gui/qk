@@ -57,7 +57,7 @@ static void init (int *argc, char ***argv, const char **cmd)
 
     if (set_breakpoint)
     {
-#if !GLIB_CHECK_VERSION(2,6,0)
+#if GLIB_CHECK_VERSION(2,6,0)
         g_log_set_default_handler (breakpoint_log_handler, NULL);
 #else
         g_log_set_handler ("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
