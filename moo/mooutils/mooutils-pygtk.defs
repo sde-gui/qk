@@ -424,7 +424,7 @@
   (c-name "moo_prefs_dialog_append_page")
   (return-type "int")
   (parameters
-    '("MooPrefsDialogPage*" "page")
+    '("GtkWidget*" "page")
   )
 )
 
