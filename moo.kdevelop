@@ -46,7 +46,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

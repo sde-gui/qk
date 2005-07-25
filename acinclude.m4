@@ -70,11 +70,12 @@ AC_DEFUN([_AC_PYTHON_DEVEL],[
         python_found=no
         python_path=`echo $PYTHON | sed "s,/bin.*$,,"`
         for i in "$python_path/include/python$PYTHON_VERSION/" "$python_path/include/python/" ; do
-            if test -e "$python_path/Python.h"; then
+            if test -e "$i/Python.h"; then
                 python_found=yes
                 AC_MSG_CHECKING([for python include path])
-                AC_MSG_RESULT([$python_path])
-                AC_SUBST([PYTHON_INCLUDES],[-I$python_path])
+                AC_MSG_RESULT([$i])
+                PYTHON_INCLUDES="-I$i"
+                AC_SUBST([PYTHON_INCLUDES],[$PYTHON_INCLUDES])
                 break
             fi
         done
