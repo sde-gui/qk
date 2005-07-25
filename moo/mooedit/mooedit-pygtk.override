@@ -8,6 +8,7 @@ headers
 #include <gtksourceview/gtksourceundomanager.h>
 #include <gtksourceview/gtksourceview-typebuiltins.h>
 #include "mooedit/mooeditor.h"
+#include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditsearch.h"
 %%
 modulename moo

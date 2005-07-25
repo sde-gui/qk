@@ -102,16 +102,6 @@ const char      *moo_app_get_rc_file_name       (MooApp     *app);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_application_dir    (MooApp     *app);
 
-void             moo_app_python_execute_file    (GtkWindow  *parent);
-gboolean         moo_app_python_run_string      (MooApp     *app,
-                                                 const char *string);
-gboolean         moo_app_python_run_file        (MooApp     *app,
-                                                 const char *filename);
-
-GtkWidget       *moo_app_get_python_console     (MooApp     *app);
-void             moo_app_show_python_console    (MooApp     *app);
-void             moo_app_hide_python_console    (MooApp     *app);
-
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 
 void             moo_app_prefs_dialog           (GtkWidget  *parent);

@@ -204,12 +204,6 @@
   (return-type "const-char*")
 )
 
-(define-method get_path
-  (of-object "MooAction")
-  (c-name "moo_action_get_path")
-  (return-type "const-char*")
-)
-
 (define-method get_accel_path
   (of-object "MooAction")
   (c-name "moo_action_get_accel_path")

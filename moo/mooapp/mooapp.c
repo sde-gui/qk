@@ -18,11 +18,12 @@
 #ifdef USE_PYTHON
 #include <Python.h>
 #include "mooapp/moopythonconsole.h"
+#include "mooapp/mooapp-python.h"
+#include "mooapp/moopython.h"
+#include "mooapp/mooappinput.h"
 #endif
 
 #include "mooapp/mooapp-private.h"
-#include "mooapp/moopython.h"
-#include "mooapp/mooappinput.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooui/moouiobject.h"
@@ -485,9 +486,9 @@ const char      *moo_app_get_rc_file_name       (MooApp *app)
 }
 
 
+#ifdef USE_PYTHON
 void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_window)
 {
-#ifdef USE_PYTHON
     GtkWidget *parent;
     const char *filename = NULL;
     FILE *file;
@@ -517,16 +518,12 @@ void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_
         else
             PyErr_Print ();
     }
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-#endif /* !USE_PYTHON */
 }
 
 
 gboolean         moo_app_python_run_file       (G_GNUC_UNUSED MooApp      *app,
                                                 G_GNUC_UNUSED const char  *filename)
 {
-#ifdef USE_PYTHON
     FILE *file;
     PyObject *res;
 
@@ -546,16 +543,12 @@ gboolean         moo_app_python_run_file       (G_GNUC_UNUSED MooApp      *app,
         PyErr_Print ();
         return FALSE;
     }
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-    return FALSE;
-#endif /* !USE_PYTHON */
 }
+
 
 gboolean         moo_app_python_run_string     (G_GNUC_UNUSED MooApp      *app,
                                                 G_GNUC_UNUSED const char  *string)
 {
-#ifdef USE_PYTHON
     PyObject *res;
     g_return_val_if_fail (string != NULL, FALSE);
     g_return_val_if_fail (moo_app_python != NULL, FALSE);
@@ -568,59 +561,30 @@ gboolean         moo_app_python_run_string     (G_GNUC_UNUSED MooApp      *app,
         PyErr_Print ();
         return FALSE;
     }
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-    return FALSE;
-#endif /* !USE_PYTHON */
 }
 
 
 GtkWidget       *moo_app_get_python_console    (G_GNUC_UNUSED MooApp *app)
 {
-#ifdef USE_PYTHON
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
     g_return_val_if_fail (moo_app_python != NULL, NULL);
     return GTK_WIDGET (moo_app_python->console);
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-    return NULL;
-#endif /* !USE_PYTHON */
 }
+
 
 void             moo_app_show_python_console   (G_GNUC_UNUSED MooApp *app)
 {
-#ifdef USE_PYTHON
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (moo_app_python != NULL);
     gtk_window_present (GTK_WINDOW (moo_app_python->console));
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-#endif /* !USE_PYTHON */
 }
+
 
 void             moo_app_hide_python_console   (G_GNUC_UNUSED MooApp *app)
 {
-#ifdef USE_PYTHON
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (moo_app_python != NULL);
     gtk_widget_hide (GTK_WIDGET (moo_app_python->console));
-#else /* !USE_PYTHON */
-    g_warning ("%s: python support is not compiled in", G_STRLOC);
-#endif /* !USE_PYTHON */
-}
-
-
-MooEditor       *moo_app_get_editor            (MooApp          *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    return app->priv->editor;
-}
-
-
-const MooAppInfo*moo_app_get_info               (MooApp     *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    return app->priv->info;
 }
 
 
@@ -636,6 +600,21 @@ static guint strv_length (char **argv)
         ++len;
 
     return len;
+}
+#endif /* !USE_PYTHON */
+
+
+MooEditor       *moo_app_get_editor            (MooApp          *app)
+{
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+    return app->priv->editor;
+}
+
+
+const MooAppInfo*moo_app_get_info               (MooApp     *app)
+{
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+    return app->priv->info;
 }
 
 
@@ -906,14 +885,7 @@ static void install_actions (MooApp *app, GType  type)
                                     "visible", TRUE,
                                     "no-accel", TRUE,
                                     NULL);
-#else /* !USE_PYTHON */
-    moo_ui_object_class_new_action (klass,
-                                    "id", "PythonMenu",
-                                    "dead", TRUE,
-                                    NULL);
-#endif /* !USE_PYTHON */
 
-    /* this one can be compiled in since it defined and does nothing when !USE_PYTHON */
     moo_ui_object_class_new_action (klass,
                                     "id", "ExecuteScript",
                                     "name", "Execute Script",
@@ -923,7 +895,6 @@ static void install_actions (MooApp *app, GType  type)
                                     "closure::callback", moo_app_python_execute_file,
                                     NULL);
 
-#ifdef USE_PYTHON
     moo_ui_object_class_new_action (klass,
                                     "id", "ShowConsole",
                                     "name", "Show Console",
@@ -932,6 +903,11 @@ static void install_actions (MooApp *app, GType  type)
                                     "accel", "<alt>L",
                                     "closure::callback", moo_app_show_python_console,
                                     "closure::proxy-func", moo_app_get_instance,
+                                    NULL);
+#else /* !USE_PYTHON */
+    moo_ui_object_class_new_action (klass,
+                                    "id", "PythonMenu",
+                                    "dead", TRUE,
                                     NULL);
 #endif /* USE_PYTHON */
 

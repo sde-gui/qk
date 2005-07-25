@@ -25,6 +25,7 @@ libmooapp_la_SOURCES =      \
 
 if USE_PYTHON
 libmooapp_la_SOURCES += \
+    mooapp-python.h     \
     mooappinput.c       \
     mooappinput.h       \
     moopythonconsole.c  \
