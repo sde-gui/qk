@@ -112,7 +112,7 @@ gboolean 	 gtk_source_view_get_highlight_current_line
 							(GtkSourceView   *view);
 void		 gtk_source_view_set_highlight_current_line_color
 							(GtkSourceView   *view,
-							 const GdkColor  *color);
+							 GdkColor        *color);
 
 void		 gtk_source_view_set_margin 		(GtkSourceView   *view,
 							 guint            margin);

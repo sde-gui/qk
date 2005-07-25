@@ -2245,7 +2245,7 @@ gtk_source_view_create_current_line_gc (GtkSourceView     *view)
 
 void
 gtk_source_view_set_highlight_current_line_color (GtkSourceView   *view,
-						  const GdkColor  *color)
+						  GdkColor        *color)
 {
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
 	g_return_if_fail (color != NULL);
