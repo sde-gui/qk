@@ -889,7 +889,8 @@ void             moo_term_feed_child        (MooTerm        *term,
                                              int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
-    moo_term_pt_write (term->priv->pt, string, len);
+    if (moo_term_pt_child_alive (term->priv->pt))
+        moo_term_pt_write (term->priv->pt, string, len);
 }
 
 
@@ -1691,4 +1692,12 @@ void        moo_term_release_selection      (MooTerm        *term)
         gtk_clipboard_clear (primary);
         term->priv->owns_selection = FALSE;
     }
+}
+
+
+void        moo_term_kill_child             (MooTerm        *term)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    if (moo_term_pt_child_alive (term->priv->pt))
+        moo_term_pt_kill_child (term->priv->pt);
 }

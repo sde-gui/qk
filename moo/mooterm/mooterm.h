@@ -77,6 +77,7 @@ gboolean    moo_term_fork_command           (MooTerm        *term,
                                              const char     *cmd,
                                              const char     *working_dir,
                                              char          **envp);
+void        moo_term_kill_child             (MooTerm        *term);
 
 void        moo_term_feed                   (MooTerm        *term,
                                              const char     *data,
