@@ -13,6 +13,7 @@
 
 #include "mooui/mooaccel.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
