@@ -55,12 +55,13 @@ struct _MooAppPrivate {
     GSList     *terminals;
     MooTermWindow *term_window;
     MooUIXML   *ui_xml;
+    guint       quit_handler_id;
 };
 
 
 static void     moo_app_class_init      (MooAppClass    *klass);
 static void     moo_app_gobj_init       (MooApp         *app);
-static GObject *moo_edit_constructor    (GType           type,
+static GObject *moo_app_constructor     (GType           type,
                                          guint           n_params,
                                          GObjectConstructParam *params);
 static void     moo_app_finalize        (GObject        *object);
@@ -68,6 +69,7 @@ static void     moo_app_finalize        (GObject        *object);
 static void     install_actions         (MooApp         *app,
                                          GType           type);
 static void     install_editor_actions  (void);
+static void     install_terminal_actions(void);
 
 static void     moo_app_set_property    (GObject        *object,
                                          guint           prop_id,
@@ -162,7 +164,7 @@ static void moo_app_class_init (MooAppClass *klass)
 
     moo_app_parent_class = g_type_class_peek_parent (klass);
 
-    gobject_class->constructor = moo_edit_constructor;
+    gobject_class->constructor = moo_app_constructor;
     gobject_class->finalize = moo_app_finalize;
     gobject_class->set_property = moo_app_set_property;
     gobject_class->get_property = moo_app_get_property;
@@ -295,7 +297,7 @@ static void moo_app_gobj_init (MooApp *app)
 }
 
 
-static GObject *moo_edit_constructor    (GType           type,
+static GObject *moo_app_constructor     (GType           type,
                                          guint           n_params,
                                          GObjectConstructParam *params)
 {
@@ -307,6 +309,7 @@ static GObject *moo_edit_constructor    (GType           type,
 
     install_actions (app, MOO_TYPE_EDIT_WINDOW);
     install_actions (app, MOO_TYPE_TERM_WINDOW);
+    install_terminal_actions ();
     install_editor_actions ();
 
     return object;
@@ -723,11 +726,24 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
 }
 
 
+static gboolean on_gtk_main_quit (MooApp *app)
+{
+    app->priv->quit_handler_id = 0;
+
+    if (!moo_app_quit (app))
+        MOO_APP_GET_CLASS(app)->quit (app);
+
+    return FALSE;
+}
+
+
 static int      moo_app_run_real        (MooApp         *app)
 {
     g_return_val_if_fail (!app->priv->running, 0);
     app->priv->running = TRUE;
 
+    app->priv->quit_handler_id =
+            gtk_quit_add (0, (GtkFunction) on_gtk_main_quit, app);
     gtk_main ();
 
     return app->priv->exit_code;
@@ -797,6 +813,9 @@ static void     moo_app_quit_real       (MooApp         *app)
     app->priv->editor = NULL;
 
     moo_prefs_save (moo_app_get_rc_file_name (app));
+
+    if (app->priv->quit_handler_id)
+        gtk_quit_remove (app->priv->quit_handler_id);
 
     gtk_main_quit ();
 }
@@ -947,6 +966,58 @@ static void install_actions (MooApp *app, GType  type)
 }
 
 
+static void terminal_destroyed (MooTermWindow *term,
+                                MooApp        *app)
+{
+    MooAppWindowPolicy policy;
+    gboolean quit;
+
+    app->priv->terminals = g_slist_remove (app->priv->terminals,
+                                           term);
+
+    policy = app->priv->window_policy;
+    quit = (policy & MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS) ||
+            ((policy & MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS) &&
+             !moo_editor_get_active_window (app->priv->editor));
+
+    if (quit)
+        moo_app_quit (app);
+}
+
+
+static MooTermWindow *new_terminal (MooApp *app)
+{
+    MooTermWindow *term;
+
+    term = g_object_new (MOO_TYPE_TERM_WINDOW, NULL);
+    app->priv->terminals = g_slist_append (app->priv->terminals, term);
+
+    g_signal_connect (term, "destroy",
+                      G_CALLBACK (terminal_destroyed), app);
+
+    if (app->priv->ui_xml)
+        moo_ui_object_set_ui_xml (MOO_UI_OBJECT (term), app->priv->ui_xml);
+
+    return term;
+}
+
+
+static void open_terminal (void)
+{
+    MooApp *app = moo_app_get_instance ();
+    MooTermWindow *term;
+
+    g_return_if_fail (app != NULL);
+
+    if (app->priv->terminals)
+        term = app->priv->terminals->data;
+    else
+        term = new_terminal (app);
+
+    gtk_window_present (GTK_WINDOW (term));
+}
+
+
 static void install_editor_actions  (void)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
@@ -964,6 +1035,64 @@ static void install_editor_actions  (void)
                                     "closure::callback", execute_selection,
                                     NULL);
 #endif /* !USE_PYTHON */
+
+    moo_ui_object_class_new_action (klass,
+                                    "id", "Terminal",
+                                    "name", "Terminal",
+                                    "label", "_Terminal",
+                                    "tooltip", "Terminal",
+                                    "icon-stock-id", MOO_STOCK_TERMINAL,
+                                    "closure::callback", open_terminal,
+                                    NULL);
+
+    g_type_class_unref (klass);
+}
+
+
+static void new_editor (MooApp *app)
+{
+    g_return_if_fail (app != NULL);
+    gtk_window_present (GTK_WINDOW (moo_editor_new_window (app->priv->editor)));
+}
+
+static void open_in_editor (MooTermWindow *terminal)
+{
+    MooApp *app = moo_app_get_instance ();
+
+    g_return_if_fail (app != NULL);
+
+    moo_editor_open (app->priv->editor,
+                     NULL, GTK_WIDGET (terminal),
+                     NULL, NULL);
+}
+
+
+static void install_terminal_actions (void)
+{
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_TERM_WINDOW);
+
+    g_return_if_fail (klass != NULL);
+
+    moo_ui_object_class_new_action (klass,
+                                    "id", "NewEditor",
+                                    "name", "New Editor",
+                                    "label", "_New Editor",
+                                    "tooltip", "New Editor",
+                                    "icon-stock-id", GTK_STOCK_EDIT,
+                                    "accel", "<Alt>E",
+                                    "closure::callback", new_editor,
+                                    "closure::proxy-func", moo_app_get_instance,
+                                    NULL);
+
+    moo_ui_object_class_new_action (klass,
+                                    "id", "OpenInEditor",
+                                    "name", "Open In Editor",
+                                    "label", "_Open In Editor",
+                                    "tooltip", "Open In Editor",
+                                    "icon-stock-id", GTK_STOCK_OPEN,
+                                    "accel", "<Alt>O",
+                                    "closure::callback", open_in_editor,
+                                    NULL);
 
     g_type_class_unref (klass);
 }
