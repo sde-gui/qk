@@ -25,7 +25,6 @@ static GHashTable *moo_default_accel_map = NULL;    /* char* -> char* */
 static void watch_gtk_accel_map         (void);
 static void block_watch_gtk_accel_map   (void);
 static void unblock_watch_gtk_accel_map (void);
-static void sync_accel_prefs            (const char *accel_path);
 
 
 static void init_accel_map (void)
@@ -241,6 +240,27 @@ const char  *moo_get_default_accel          (const char     *accel_path)
 }
 
 
+#if GTK_CHECK_VERSION(2,4,0)
+static void sync_accel_prefs            (const char *accel_path)
+{
+    const char *default_accel, *accel;
+
+    g_return_if_fail (accel_path != NULL);
+
+    init_accel_map ();
+
+    accel = moo_get_accel (accel_path);
+    default_accel = moo_get_default_accel (accel_path);
+    if (!accel) accel = "";
+    if (!default_accel) default_accel = "";
+
+    if (strcmp (accel, default_accel))
+        moo_prefs_set_accel (accel_path, accel);
+    else
+        moo_prefs_set_accel (accel_path, NULL);
+}
+
+
 static void accel_map_changed (G_GNUC_UNUSED GtkAccelMap *object,
                                gchar *accel_path,
                                guint accel_key,
@@ -301,6 +321,19 @@ static void unblock_watch_gtk_accel_map (void)
                                        (gpointer) accel_map_changed,
                                        NULL);
 }
+#else /* !GTK_CHECK_VERSION(2,4,0) */
+static void watch_gtk_accel_map         (void)
+{
+}
+
+static void block_watch_gtk_accel_map   (void)
+{
+}
+
+static void unblock_watch_gtk_accel_map (void)
+{
+}
+#endif /* !GTK_CHECK_VERSION(2,4,0) */
 
 
 char        *moo_get_accel_label            (const char     *accel)
@@ -321,24 +354,4 @@ char        *moo_get_accel_label            (const char     *accel)
     {
         return g_strdup ("");
     }
-}
-
-
-static void sync_accel_prefs            (const char *accel_path)
-{
-    const char *default_accel, *accel;
-
-    g_return_if_fail (accel_path != NULL);
-
-    init_accel_map ();
-
-    accel = moo_get_accel (accel_path);
-    default_accel = moo_get_default_accel (accel_path);
-    if (!accel) accel = "";
-    if (!default_accel) default_accel = "";
-
-    if (strcmp (accel, default_accel))
-        moo_prefs_set_accel (accel_path, accel);
-    else
-        moo_prefs_set_accel (accel_path, NULL);
 }
