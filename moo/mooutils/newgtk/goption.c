@@ -21,6 +21,7 @@
 /*
  * Taken from glib-2.6.4 for glib < 2.6. Added glib version check to avoid compiling
  * it with recent glib versions, and added noop P_() and _().
+ * Made dgettext_swapped return const char*
  */
 
 #include "config.h"
@@ -1641,7 +1642,7 @@ g_option_group_set_translate_func (GOptionGroup   *group,
 
 #define dgettext(domainname,msgid) (msgid)
 
-static gchar *
+static const gchar *
 dgettext_swapped (const gchar *msgid,
 		  const gchar *domainname)
 {
