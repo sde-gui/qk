@@ -55,7 +55,7 @@ typedef struct {
 } ParserState;
 
 
-#define ELEMENT_TEXT_SEPARATOR " "
+#define ELEMENT_TEXT_SEPARATOR ' '
 #define BUFSIZE 1024
 
 
@@ -402,20 +402,33 @@ static void moo_markup_text_node_add_text   (MooMarkupText  *node,
 static void collect_text_content        (MooMarkupElement  *node)
 {
     MooMarkupNode *child;
-    char *text = NULL;
+    GString *text = NULL;
+
     for (child = node->children; child != NULL; child = child->next)
     {
         if (MOO_MARKUP_IS_TEXT (child))
         {
             if (text)
-                text = g_strconcat (text, ELEMENT_TEXT_SEPARATOR,
-                                    MOO_MARKUP_TEXT(child)->text, NULL);
+            {
+                g_string_append_c (text, ELEMENT_TEXT_SEPARATOR);
+                g_string_append_len (text,
+                                     MOO_MARKUP_TEXT(child)->text,
+                                     MOO_MARKUP_TEXT(child)->size);
+            }
             else
-                text = g_strndup (MOO_MARKUP_TEXT(child)->text,
-                                  MOO_MARKUP_TEXT(child)->size);
+            {
+                text = g_string_new_len (MOO_MARKUP_TEXT(child)->text,
+                                         MOO_MARKUP_TEXT(child)->size);
+            }
         }
     }
-    node->content = text;
+
+    g_free (node->content);
+
+    if (text)
+        node->content = g_string_free (text, FALSE);
+    else
+        node->content = NULL;
 }
 
 
