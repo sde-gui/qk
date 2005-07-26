@@ -28,6 +28,8 @@ struct _MooEditWindowPrivate {
     char            *app_name;
     MooEditor       *editor;
     GSList          *lang_actions;
+    GtkStatusbar    *statusbar;
+    guint            statusbar_context_id;
 };
 
 
@@ -76,6 +78,10 @@ static GtkMenuItem *create_lang_menu        (MooEditWindow      *window,
 static void     lang_menu_item_toggled      (GtkCheckMenuItem   *checkmenuitem,
                                              MooEditWindow      *window);
 static void     active_tab_lang_changed     (MooEditWindow      *window);
+static void     update_statusbar            (MooEditWindow      *window);
+static void     cursor_moved                (MooEditWindow      *window,
+                                             GtkTextIter        *iter,
+                                             MooEdit            *edit);
 
 
 /* actions */
@@ -372,6 +378,12 @@ GObject        *moo_edit_window_constructor (GType                  type,
 
     window = MOO_EDIT_WINDOW (object);
 
+    window->priv->statusbar = GTK_STATUSBAR (MOO_WINDOW(window)->statusbar);
+    gtk_widget_show (MOO_WINDOW(window)->statusbar);
+    window->priv->statusbar_context_id =
+            gtk_statusbar_get_context_id (window->priv->statusbar,
+                                          "MOoEditWindow");
+
     gtk_widget_show (MOO_WINDOW(window)->vbox);
     notebook = gtk_notebook_new ();
     gtk_widget_show (notebook);
@@ -453,8 +465,10 @@ static void     add_tab                 (MooEditWindow      *window,
                               G_CALLBACK (edit_can_undo_redo), window);
     g_signal_connect_swapped (edit, "lang-changed",
                               G_CALLBACK (active_tab_lang_changed), window);
+    g_signal_connect_swapped (edit, "cursor-moved",
+                              G_CALLBACK (cursor_moved), window);
 
-    active_tab_lang_changed (window);
+    edit_changed (edit, window);
 }
 
 
@@ -527,6 +541,7 @@ static void     edit_changed                (G_GNUC_UNUSED MooEdit            *e
     update_window_title (window);
     edit_can_undo_redo (window);
     active_tab_lang_changed (window);
+    update_statusbar (window);
 }
 
 
@@ -966,5 +981,49 @@ static void     active_tab_lang_changed     (MooEditWindow      *window)
         g_signal_handlers_block_by_func (item, lang_menu_item_toggled, window);
         gtk_check_menu_item_set_active (item, TRUE);
         g_signal_handlers_unblock_by_func (item, lang_menu_item_toggled, window);
+    }
+}
+
+
+static void set_statusbar_numbers (MooEditWindow *window,
+                                   int            line,
+                                   int            column)
+{
+    char *text;
+//     gtk_statusbar_pop (window->priv->statusbar,
+//                        window->priv->statusbar_context_id);
+    text = g_strdup_printf ("Line: %d Col: %d", line, column);
+    gtk_statusbar_push (window->priv->statusbar,
+                        window->priv->statusbar_context_id,
+                        text);
+    g_free (text);
+}
+
+
+static void update_statusbar (MooEditWindow *window)
+{
+    MooEdit *edit;
+    int line, column;
+    GtkTextIter iter;
+
+    edit = moo_edit_window_get_active_doc (window);
+    gtk_text_buffer_get_iter_at_mark (edit->priv->text_buffer, &iter,
+                                      gtk_text_buffer_get_insert (edit->priv->text_buffer));
+    line = gtk_text_iter_get_line (&iter) + 1;
+    column = gtk_text_iter_get_line_offset (&iter) + 1;
+
+    set_statusbar_numbers (window, line, column);
+}
+
+
+static void cursor_moved (MooEditWindow *window,
+                          GtkTextIter   *iter,
+                          MooEdit       *edit)
+{
+    if (edit == moo_edit_window_get_active_doc (window))
+    {
+        int line = gtk_text_iter_get_line (iter) + 1;
+        int column = gtk_text_iter_get_line_offset (iter) + 1;
+        set_statusbar_numbers (window, line, column);
     }
 }

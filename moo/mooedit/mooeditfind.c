@@ -83,11 +83,11 @@ void         moo_edit_goto_line             (MooEdit            *edit,
         line = gtk_text_iter_get_line (&iter);
 
         scale = GTK_RANGE (g_object_get_data (G_OBJECT (dialog), "scale"));
-        gtk_range_set_range (scale, 1, line_count + 1.00001);
+        gtk_range_set_range (scale, 1, line_count + 1);
         gtk_range_set_value (scale, line + 1);
 
         spin = GTK_SPIN_BUTTON (g_object_get_data (G_OBJECT (dialog), "spin"));
-        gtk_spin_button_set_range (spin, 1, line_count + 1);
+        gtk_spin_button_set_range (spin, 1, line_count);
         gtk_spin_button_set_value (spin, line + 1);
         gtk_editable_select_region (GTK_EDITABLE (spin), 0, -1);
 

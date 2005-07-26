@@ -655,7 +655,6 @@ char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
 
     if (!tcgetattr (pt->master, &tio))
     {
-        g_print ("erase char: %d\n", tio.c_cc[VERASE]);
         return tio.c_cc[VERASE];
     }
     else

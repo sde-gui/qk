@@ -70,7 +70,7 @@ static void terminal_restart (MooTermWindow *win)
 {
     MooTerm *term = moo_term_window_get_term (win);
     moo_term_kill_child (term);
-    moo_term_fork_command (term, "bash", NULL, NULL);
+    moo_term_start_default_profile (term);
 }
 
 

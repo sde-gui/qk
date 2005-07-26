@@ -25,6 +25,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moofileutils.h"
+#include "mooutils/moosignal.h"
 
 
 MooEditSearchParams *_moo_edit_search_params;
@@ -62,6 +63,20 @@ static void can_undo_cb                 (GtkSourceBuffer    *buffer,
 static void modified_changed_cb         (GtkTextBuffer      *buffer,
                                          MooEdit            *edit);
 
+static void mark_set_cb                 (GtkTextBuffer      *buffer,
+                                         GtkTextIter        *iter,
+                                         GtkTextMark        *mark,
+                                         MooEdit            *edit);
+static void insert_text_cb              (GtkTextBuffer      *buffer,
+                                         GtkTextIter        *iter,
+                                         gchar              *text,
+                                         gint                len,
+                                         MooEdit            *edit);
+static void delete_range_cb             (GtkTextBuffer      *textbuffer,
+                                         GtkTextIter        *iter1,
+                                         GtkTextIter        *iter2,
+                                         MooEdit            *edit);
+
 
 enum {
     OPEN,
@@ -85,6 +100,7 @@ enum {
     FIND_PREVIOUS,
     REPLACE,
     GOTO_LINE,
+    CURSOR_MOVED,
     LAST_SIGNAL
 };
 
@@ -358,6 +374,15 @@ static void moo_edit_class_init (MooEditClass *klass)
                       _moo_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
 
+    signals[CURSOR_MOVED] =
+            moo_signal_new_cb ("cursor-moved",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED,
+                               G_TYPE_NONE, 1,
+                               GTK_TYPE_TEXT_ITER);
+
     _moo_edit_set_default_settings ();
 }
 
@@ -417,6 +442,13 @@ static GObject *moo_edit_constructor (GType                  type,
     g_signal_connect (edit, "realize", G_CALLBACK (_moo_edit_apply_style_settings), NULL);
 
     _moo_edit_set_filename (edit, NULL, NULL);
+
+    g_signal_connect_after (edit->priv->text_buffer, "mark-set",
+                            G_CALLBACK (mark_set_cb), edit);
+    g_signal_connect_after (edit->priv->text_buffer, "insert-text",
+                            G_CALLBACK (insert_text_cb), edit);
+    g_signal_connect_after (edit->priv->text_buffer, "delete-range",
+                            G_CALLBACK (delete_range_cb), edit);
 
     return object;
 }
@@ -1041,4 +1073,31 @@ char       *moo_edit_get_text               (MooEdit            *edit)
         g_free (text);
         return NULL;
     }
+}
+
+
+static void mark_set_cb                 (GtkTextBuffer      *buffer,
+                                         GtkTextIter        *iter,
+                                         GtkTextMark        *mark,
+                                         MooEdit            *edit)
+{
+    if (mark == gtk_text_buffer_get_insert (buffer))
+        g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter);
+}
+
+static void insert_text_cb              (G_GNUC_UNUSED GtkTextBuffer *buffer,
+                                         GtkTextIter        *iter,
+                                         G_GNUC_UNUSED gchar *text,
+                                         G_GNUC_UNUSED gint  len,
+                                         MooEdit            *edit)
+{
+    g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter);
+}
+
+static void delete_range_cb             (G_GNUC_UNUSED GtkTextBuffer *textbuffer,
+                                         GtkTextIter        *iter1,
+                                         G_GNUC_UNUSED GtkTextIter *iter2,
+                                         MooEdit            *edit)
+{
+    g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter1);
 }
