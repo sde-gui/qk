@@ -79,6 +79,10 @@ libmooutils_la_SOURCES =        \
     stock-edit-24.h             \
     stock-terminal-24.h
 
+python_sources =                \
+    mooutils-python.c           \
+    mooutils-python.h
+
 nodist_libmooutils_la_SOURCES = \
     moomarshals.c               \
     moomarshals.h
@@ -86,6 +90,7 @@ CLEANFILES = $(nodist_libmooutils_la_SOURCES)
 
 EXTRA_DIST =            \
     $(unrtf_src)        \
+    $(python_sources)   \
     moomarshals.list    \
     xml2h.sh
 
@@ -121,6 +126,10 @@ stock-app.h: $(PIXMAPS)
 ##############################################################################
 # Pygtk stuff
 #
+
+if USE_PYTHON
+libmooutils_la_SOURCES += $(python_sources)
+endif
 
 EXTRA_DIST += mooutils-mod.c mooutils-pygtk.defs mooutils-pygtk.override
 
