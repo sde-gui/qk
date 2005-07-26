@@ -155,7 +155,7 @@ MooMarkupDoc   *moo_markup_parse_memory    (const char     *buffer,
 
 
 MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
-                                     GError        **error)
+                                            GError        **error)
 {
     GMarkupParser parser = {(markup_start_element_func)start_element,
                             (markup_end_element_func)end_element,
@@ -170,6 +170,7 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
     GIOChannel *file;
 
     file = g_io_channel_new_file (filename, "r", &err);
+
     if (!file)
     {
         if (err)
@@ -178,6 +179,10 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
             else g_error_free (err);
         }
         return NULL;
+    }
+    else
+    {
+        g_io_channel_set_close_on_unref (file, TRUE);
     }
 
     doc = moo_markup_doc_new_priv (filename);
@@ -199,6 +204,7 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
             }
             g_markup_parse_context_free (context);
             moo_markup_doc_unref (doc);
+            g_io_channel_unref (file);
             return NULL;
         }
 
@@ -213,6 +219,7 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
                 }
                 g_markup_parse_context_free (context);
                 moo_markup_doc_unref (doc);
+                g_io_channel_unref (file);
                 return NULL;
             }
         }
@@ -228,6 +235,7 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
                 }
                 g_markup_parse_context_free (context);
                 moo_markup_doc_unref (doc);
+                g_io_channel_unref (file);
                 return NULL;
             }
 
@@ -236,6 +244,7 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
     }
 
     g_markup_parse_context_free (context);
+    g_io_channel_unref (file);
     return doc;
 }
 
