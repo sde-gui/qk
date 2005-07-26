@@ -242,10 +242,14 @@ GObject    *moo_window_constructor      (GType                  type,
     moo_ui_object_init (MOO_UI_OBJECT (object));
 
     window = MOO_WINDOW (object);
+
     window->accel_group = gtk_accel_group_new ();
     gtk_window_add_accel_group (GTK_WINDOW (window),
                                 window->accel_group);
+
     window->tooltips = gtk_tooltips_new ();
+    g_object_ref (window->tooltips);
+    gtk_object_sink (GTK_OBJECT (window->tooltips));
 
     vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (vbox);
