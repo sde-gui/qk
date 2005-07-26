@@ -31,9 +31,9 @@
 #include <termios.h>
 
 #ifdef HAVE_POLL_H
-#include <poll.h>
+#  include <poll.h>
 #elif HAVE_SYS_POLL_H
-#include <sys/poll.h>
+#  include <sys/poll.h>
 #endif
 
 #define TERM_EMULATION          "xterm"
@@ -75,27 +75,32 @@ struct _MooTermPtUnixClass {
 
 static void     moo_term_pt_unix_finalize       (GObject        *object);
 
-static void     set_size        (MooTermPt      *pt,
-                                 guint           width,
-                                 guint           height);
-static gboolean fork_command    (MooTermPt      *pt,
-                                 const char     *cmd,
-                                 const char     *working_dir,
-                                 char          **envp);
-static void     pt_write        (MooTermPt      *pt,
-                                 const char     *string,
-                                 gssize          len);
-static void     kill_child      (MooTermPt      *pt);
+const char     *get_default_shell   (MooTermPt      *pt);
+static void     set_size            (MooTermPt      *pt,
+                                     guint           width,
+                                     guint           height);
+static gboolean fork_command        (MooTermPt      *pt,
+                                     const char     *cmd,
+                                     const char     *working_dir,
+                                     char          **envp);
+static gboolean fork_argv           (MooTermPt      *pt,
+                                     char          **argv,
+                                     const char     *working_dir,
+                                     char          **envp);
+static void     pt_write            (MooTermPt      *pt,
+                                     const char     *string,
+                                     gssize          len);
+static void     kill_child          (MooTermPt      *pt);
 
-static gboolean read_child_out  (GIOChannel     *source,
-                                 GIOCondition    condition,
-                                 MooTermPtUnix  *pt);
-static void     feed_buffer     (MooTermPtUnix  *pt,
-                                 const char     *string,
-                                 int             len);
+static gboolean read_child_out      (GIOChannel     *source,
+                                     GIOCondition    condition,
+                                     MooTermPtUnix  *pt);
+static void     feed_buffer         (MooTermPtUnix  *pt,
+                                     const char     *string,
+                                     int             len);
 
-static void     start_writer    (MooTermPt      *pt);
-static void     stop_writer     (MooTermPt      *pt);
+static void     start_writer        (MooTermPt      *pt);
+static void     stop_writer         (MooTermPt      *pt);
 
 
 /* MOO_TYPE_TERM_PT_UNIX */
@@ -111,8 +116,10 @@ static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 
     pt_class->set_size = set_size;
     pt_class->fork_command = fork_command;
+    pt_class->fork_argv = fork_argv;
     pt_class->write = pt_write;
     pt_class->kill_child = kill_child;
+    pt_class->get_default_shell = get_default_shell;
 }
 
 
@@ -158,43 +165,24 @@ static void     set_size        (MooTermPt      *pt,
 }
 
 
-static gboolean fork_command    (MooTermPt      *pt_gen,
-                                 const char     *cmd,
+static gboolean fork_argv       (MooTermPt      *pt_gen,
+                                 char          **argv,
                                  const char     *working_dir,
                                  char          **envp)
 {
     MooTermPtUnix *pt;
-    int argv_len;
-    char **argv = NULL;
     int env_len = 0;
     char **new_env;
-    GError *err = NULL;
     int status, flags;
     int i;
     GSource *src;
 
-    g_return_val_if_fail (cmd != NULL, FALSE);
+    g_return_val_if_fail (argv != NULL && argv[0] != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
 
     pt = MOO_TERM_PT_UNIX (pt_gen);
 
     g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
-
-    if (!g_shell_parse_argv (cmd, &argv_len, &argv, &err))
-    {
-        g_critical ("%s: could not parse command line", G_STRLOC);
-
-        if (err != NULL)
-        {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-
-        if (argv != NULL)
-            g_strfreev (argv);
-
-        return FALSE;
-    }
 
     if (envp)
     {
@@ -218,7 +206,6 @@ static gboolean fork_command    (MooTermPt      *pt_gen,
                                  pt->width, pt->height,
                                  FALSE, FALSE, FALSE);
     g_strfreev (new_env);
-    g_strfreev (argv);
 
     if (pt->master == -1)
     {
@@ -261,6 +248,46 @@ static gboolean fork_command    (MooTermPt      *pt_gen,
     pt_gen->priv->child_alive = TRUE;
 
     return TRUE;
+}
+
+
+static gboolean fork_command    (MooTermPt      *pt_gen,
+                                 const char     *cmd,
+                                 const char     *working_dir,
+                                 char          **envp)
+{
+    MooTermPtUnix *pt;
+    int argv_len;
+    char **argv = NULL;
+    GError *err = NULL;
+    gboolean result;
+
+    g_return_val_if_fail (cmd != NULL && cmd[0] != 0, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
+
+    pt = MOO_TERM_PT_UNIX (pt_gen);
+
+    g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
+
+    if (!g_shell_parse_argv (cmd, &argv_len, &argv, &err))
+    {
+        g_critical ("%s: could not parse command line", G_STRLOC);
+
+        if (err != NULL)
+        {
+            g_critical ("%s: %s", G_STRLOC, err->message);
+            g_error_free (err);
+        }
+
+        if (argv != NULL)
+            g_strfreev (argv);
+
+        return FALSE;
+    }
+
+    result = fork_argv (pt_gen, argv, working_dir, envp);
+    g_strfreev (argv);
+    return result;
 }
 
 
@@ -628,13 +655,14 @@ char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
 
     if (!tcgetattr (pt->master, &tio))
     {
+        g_print ("erase char: %d\n", tio.c_cc[VERASE]);
         return tio.c_cc[VERASE];
     }
     else
     {
         g_warning ("%s: %s", G_STRLOC,
                    g_strerror (errno));
-        return 0;
+        return 127;
     }
 }
 
@@ -644,4 +672,16 @@ void            moo_term_pt_send_intr       (MooTermPt      *pt)
     g_return_if_fail (pt->priv->child_alive);
     pt_flush_pending_write (pt);
     pt_write (pt, "\003", 1);
+}
+
+
+/* TODO: it should be in glib */
+const char *get_default_shell (G_GNUC_UNUSED MooTermPt *pt)
+{
+    const char *shell;
+
+    shell = g_strdup (g_getenv ("SHELL"));
+    if (!shell) shell = "/bin/sh";
+
+    return shell;
 }

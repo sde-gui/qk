@@ -42,12 +42,6 @@ static void moo_term_pt_class_init (MooTermPtClass *klass)
 
     gobject_class->finalize = moo_term_pt_finalize;
 
-    klass->set_size = NULL;
-    klass->fork_command = NULL;
-    klass->write = NULL;
-    klass->kill_child = NULL;
-    klass->child_died = NULL;
-
     signals[CHILD_DIED] =
             g_signal_new ("child-died",
                           G_OBJECT_CLASS_TYPE (gobject_class),
@@ -111,6 +105,16 @@ gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
 }
 
 
+gboolean        moo_term_pt_fork_argv       (MooTermPt      *pt,
+                                             char          **argv,
+                                             const char     *working_dir,
+                                             char          **envp)
+{
+    g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
+    return MOO_TERM_PT_GET_CLASS(pt)->fork_argv (pt, argv, working_dir, envp);
+}
+
+
 void            moo_term_pt_kill_child      (MooTermPt      *pt)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
@@ -130,4 +134,11 @@ void            moo_term_pt_write           (MooTermPt      *pt,
 gboolean        moo_term_pt_child_alive     (MooTermPt      *pt)
 {
     return pt->priv->child_alive;
+}
+
+
+const char     *moo_term_pt_get_default_shell (MooTermPt    *pt)
+{
+    g_return_val_if_fail (MOO_IS_TERM_PT (pt), NULL);
+    return MOO_TERM_PT_GET_CLASS(pt)->get_default_shell (pt);
 }

@@ -140,6 +140,10 @@ struct _MooTermPrivate {
         MooTermEraseBinding delete_binding;
         gboolean            allow_bold;
     } settings;
+
+    GPtrArray      *profiles;
+    MooTermProfile *default_shell;
+    int             default_profile;
 };
 
 #define term_top_line(term)                     \

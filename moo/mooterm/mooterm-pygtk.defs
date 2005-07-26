@@ -5,13 +5,30 @@
 ; object definitions ...
 
 (define-object Term
+
   (in-module "Moo")
   (parent "GtkWidget")
   (c-name "MooTerm")
   (gtype-id "MOO_TYPE_TERM")
 )
 
-;; Enumerations and flags ...
+(define-boxed TermProfile
+  (in-module "Moo")
+  (c-name "MooTermProfile")
+  (gtype-id "MOO_TYPE_TERM_PROFILE")
+  (copy-func "moo_term_profile_copy")
+  (release-func "moo_term_profile_free")
+  (fields
+    '("char*" "name")
+    '("char*" "cmd_line")
+    '("char**" "argv")
+    '("char**" "envp")
+    '("char*" "working_dir")
+  )
+)
+
+
+;; MooTerm methods
 
 (define-function moo_term_new
   (c-name "moo_term_new")
@@ -51,5 +68,21 @@
     '("const-gchar*" "cmd")
     '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
     '("char**" "envp" (null-ok) (default "NULL"))
+  )
+)
+
+
+;; MooTermProfile
+
+(define-function moo_term_profile_new
+  (c-name "moo_term_profile_new")
+  (is-constructor-of "MooTermProfile")
+  (return-type "MooTermProfile*")
+  (parameters
+    '("char*" "name" (null-ok) (default "NULL"))
+    '("char*" "cmd_line" (null-ok) (default "NULL"))
+    '("char**" "argv" (null-ok) (default "NULL"))
+    '("char**" "envp" (null-ok) (default "NULL"))
+    '("char*" "working_dir" (null-ok) (default "NULL"))
   )
 )

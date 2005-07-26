@@ -4,6 +4,10 @@ headers
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
 #include "mooterm/mooterm.h"
+#include "mooutils/mooutils-python.h"
+
+void moo_term_register_classes(PyObject *d);
+
 %%
 modulename moo
 %%
@@ -44,4 +48,59 @@ _wrap_moo_term_fork_command (PyGObject *self, PyObject *args, PyObject *kwargs)
 
     Py_INCREF(Py_None);
     return Py_None;
+}
+%%
+override-attr MooTermProfile.argv
+static PyObject *
+_wrap_moo_term_profile__get_argv (PyObject *self, G_GNUC_UNUSED void *closure)
+{
+    char **argv;
+
+    argv = pyg_boxed_get(self, MooTermProfile)->argv;
+
+    return moo_strv_to_pyobject (argv);
+}
+%%
+override-attr MooTermProfile.envp
+static PyObject *
+_wrap_moo_term_profile__get_envp (PyObject *self, G_GNUC_UNUSED void *closure)
+{
+    char **envp;
+
+    envp = pyg_boxed_get(self, MooTermProfile)->envp;
+
+    return moo_strv_to_pyobject (envp);
+}
+%%
+override moo_term_profile_new kwargs
+static int
+_wrap_moo_term_profile_new (PyGBoxed *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "name", "cmd_line", "argv", "envp", "working_dir", NULL };
+    char *name = NULL, *cmd_line = NULL, *working_dir = NULL;
+    char **argv = NULL, **envp = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|zzO&O&z:MooTermProfile.__init__", kwlist,
+                                     &name, &cmd_line, moo_pyobject_to_strv, &argv,
+                                     moo_pyobject_to_strv, &envp, &working_dir))
+    {
+        g_strfreev (argv);
+        g_strfreev (envp);
+        return -1;
+    }
+
+    self->gtype = MOO_TYPE_TERM_PROFILE;
+    self->free_on_dealloc = FALSE;
+    self->boxed = moo_term_profile_new (name, cmd_line, argv, envp, working_dir);
+
+    if (!self->boxed)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "could not create MooTermProfile object");
+        return -1;
+    }
+    else
+    {
+        self->free_on_dealloc = TRUE;
+        return 0;
+    }
 }
