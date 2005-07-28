@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/moomarkup.h"
+#include "mooutils/moofileutils.h"
 #include <string.h>
 #include <glib.h>
 
@@ -322,6 +323,12 @@ static MooMarkupDoc        *moo_markup_doc_new_priv      (const char    *name)
 }
 
 
+MooMarkupDoc    *moo_markup_doc_new         (const char *name)
+{
+    return moo_markup_doc_new_priv (name);
+}
+
+
 static MooMarkupNode       *moo_markup_element_new  (MooMarkupDoc   *doc,
                                                      MooMarkupNode  *parent,
                                                      const char     *name,
@@ -336,7 +343,10 @@ static MooMarkupNode       *moo_markup_element_new  (MooMarkupDoc   *doc,
 
     elm->attr_names = g_strdupv ((char**)attribute_names);
     elm->attr_vals = g_strdupv ((char**)attribute_values);
-    for (elm->n_attrs = 0; attribute_names[elm->n_attrs]; ++elm->n_attrs) ;
+    if (elm->attr_names)
+        for (elm->n_attrs = 0; attribute_names[elm->n_attrs]; ++elm->n_attrs) ;
+    else
+        elm->n_attrs = 0;
 
     return MOO_MARKUP_NODE (elm);
 }
@@ -497,11 +507,11 @@ static void moo_markup_doc_unref_private     (G_GNUC_UNUSED MooMarkupDoc      *d
 }
 
 
-char *moo_markup_doc_get_string (MooMarkupDoc      *doc)
+char *moo_markup_node_get_string (MooMarkupNode *node)
 {
     MooMarkupNode *child;
     GString *str = g_string_new ("");
-    for (child = doc->children; child != NULL; child = child->next)
+    for (child = node->children; child != NULL; child = child->next)
         switch (child->type)
         {
             case MOO_MARKUP_ELEMENT_NODE:
@@ -625,6 +635,175 @@ MooMarkupElement*moo_markup_get_root_element(MooMarkupDoc       *doc,
             return elm;
     }
     return NULL;
+}
+
+
+char            *moo_markup_element_get_path(MooMarkupElement   *elm)
+{
+    GString *path;
+    MooMarkupNode *node;
+
+    g_return_val_if_fail (node != NULL, NULL);
+
+    path = g_string_new (elm->name);
+
+    for (node = elm->parent;
+         node != NULL && MOO_MARKUP_IS_ELEMENT (node);
+         node = node->parent)
+    {
+        g_string_prepend (path, "/");
+        g_string_prepend (path, node->name);
+    }
+
+    return g_string_free (path, FALSE);
+}
+
+
+void             moo_markup_delete_node     (MooMarkupNode      *node)
+{
+    MooMarkupNode *parent, *child, *next, *prev;
+
+    g_return_if_fail (node != NULL);
+    g_return_if_fail (node->parent != NULL);
+
+    parent = node->parent;
+
+    for (child = parent->children; child != NULL && child != node;
+         child = child->next) ;
+
+    g_return_if_fail (child == node);
+
+    next = node->next;
+    prev = node->prev;
+
+    if (parent->children == node)
+        parent->children = next;
+    if (parent->last == node)
+        parent->last = prev;
+
+    if (prev)
+        prev->next = next;
+    if (next)
+        next->prev = prev;
+
+    g_free (node->name);
+
+    for (child = node->children; child != NULL; child = child->next)
+        moo_markup_node_free (child);
+
+    switch (node->type)
+    {
+        case MOO_MARKUP_ELEMENT_NODE:
+            moo_markup_element_free (MOO_MARKUP_ELEMENT (node));
+            break;
+        case MOO_MARKUP_TEXT_NODE:
+        case MOO_MARKUP_COMMENT_NODE:
+            moo_markup_text_node_free (node);
+            break;
+        default:
+            g_return_if_reached ();
+    }
+}
+
+
+MooMarkupElement*moo_markup_create_root_element
+                                            (MooMarkupDoc       *doc,
+                                             const char         *name)
+{
+    MooMarkupElement *elm;
+
+    g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    elm = moo_markup_get_root_element (doc, name);
+    if (elm) return elm;
+
+    elm = MOO_MARKUP_ELEMENT (moo_markup_element_new (doc,
+                              MOO_MARKUP_NODE (doc), name, NULL, NULL));
+
+    return elm;
+}
+
+
+static void create_text_element (MooMarkupElement   *node,
+                                 char              **path,
+                                 const char         *content)
+{
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
+    g_return_if_fail (path != NULL);
+
+    if (path[0])
+    {
+        MooMarkupNode *child = NULL;
+
+        for (child = node->children; child != NULL; child = child->next)
+            if (MOO_MARKUP_IS_ELEMENT (child) && child->name &&
+                !strcmp (child->name, path[0]))
+                    break;
+
+        if (!child)
+            child = moo_markup_element_new (node->doc, MOO_MARKUP_NODE (node),
+                                            path[0], NULL, NULL);
+
+        create_text_element (MOO_MARKUP_ELEMENT (child), ++path, content);
+    }
+    else
+    {
+        MooMarkupNode *child = NULL;
+
+        for (child = node->children; child != NULL; child = child->next)
+            moo_markup_node_free (child);
+
+        node->children = NULL;
+        node->last = NULL;
+        g_free (node->content);
+        g_strfreev (node->attr_names);
+        g_strfreev (node->attr_vals);
+        node->n_attrs = 0;
+
+        child = moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
+                                          node->doc, MOO_MARKUP_NODE (node),
+                                          content, strlen (content));
+        node->content = g_strdup (content);
+    }
+}
+
+
+void             moo_markup_create_text_element
+                                            (MooMarkupElement   *node,
+                                             const char         *path,
+                                             const char         *content)
+{
+    char **pieces;
+
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
+    g_return_if_fail (path != NULL);
+    g_return_if_fail (content != NULL);
+
+    pieces = g_strsplit (path, "/", 0);
+    g_return_if_fail (path != NULL);
+
+    create_text_element (node, pieces, content);
+    g_strfreev (pieces);
+}
+
+
+gboolean    moo_markup_save     (MooMarkupDoc       *doc,
+                                 const char         *filename,
+                                 GError            **error)
+{
+    char *text;
+    gboolean result;
+
+    g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    text = moo_markup_node_get_string (MOO_MARKUP_NODE (doc));
+    g_return_val_if_fail (text != NULL, FALSE);
+
+    result = moo_save_file_utf8 (filename, text, -1, error);
+    g_free (text);
+    return result;
 }
 
 

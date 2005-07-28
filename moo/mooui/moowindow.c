@@ -23,28 +23,32 @@
 #include <gtk/gtk.h>
 
 
-#define MOO_WINDOW_PREFS_SAVE_POSITION  "window_save_position"
-#define MOO_WINDOW_PREFS_X              "window_x"
-#define MOO_WINDOW_PREFS_Y              "window_y"
-#define MOO_WINDOW_PREFS_SAVE_SIZE      "window_save_size"
-#define MOO_WINDOW_PREFS_WIDTH          "window_width"
-#define MOO_WINDOW_PREFS_HEIGHT         "window_height"
-#define MOO_WINDOW_PREFS_SHOW_TOOLBAR   "window_show_toolbar"
-#define MOO_WINDOW_PREFS_SHOW_MENUBAR   "window_show_menubar"
-#define MOO_WINDOW_PREFS_TOOLBAR_STYLE  "window_toolbar_style"
+#define PREFS_SAVE_POSITION  "window/save_position"
+#define PREFS_X              "window/x"
+#define PREFS_Y              "window/y"
+#define PREFS_SAVE_SIZE      "window/save_size"
+#define PREFS_WIDTH          "window/width"
+#define PREFS_HEIGHT         "window/height"
+#define PREFS_SHOW_TOOLBAR   "window/show_toolbar"
+#define PREFS_SHOW_MENUBAR   "window/show_menubar"
+#define PREFS_TOOLBAR_STYLE  "window/toolbar_style"
+
 
 inline static const char *setting (MooWindow *window, const char *s)
 {
     static char *string = NULL;
-
     const char *id = moo_ui_object_get_id (MOO_UI_OBJECT (window));
 
     g_free (string);
+
     if (id)
-        return string = g_strdup_printf ("%s::%s", id, s);
+        return string = g_strdup_printf ("%s/%s", id, s);
     else
         return string = g_strdup (s);
 }
+
+static void init_prefs (MooWindow *window);
+static GtkToolbarStyle get_toolbar_style (MooWindow *window);
 
 
 struct _MooWindowPrivate {
@@ -243,6 +247,8 @@ GObject    *moo_window_constructor      (GType                  type,
 
     window = MOO_WINDOW (object);
 
+    init_prefs (window);
+
     window->accel_group = gtk_accel_group_new ();
     gtk_window_add_accel_group (GTK_WINDOW (window),
                                 window->accel_group);
@@ -325,24 +331,17 @@ void     moo_window_realize (MooWindow *window)
     MooAction *show_toolbar, *show_menubar;
     GtkToolbarStyle style;
 
-    if (moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SAVE_POSITION))) {
-        int x = moo_prefs_get_int (setting (window, MOO_WINDOW_PREFS_X));
-        int y = moo_prefs_get_int (setting (window, MOO_WINDOW_PREFS_Y));
+    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_POSITION))) {
+        int x = moo_prefs_get_int (setting (window, PREFS_X));
+        int y = moo_prefs_get_int (setting (window, PREFS_Y));
         gtk_window_move (GTK_WINDOW (window), x, y);
     }
-    if (moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SAVE_SIZE))) {
-        int width = moo_prefs_get_int (setting (window, MOO_WINDOW_PREFS_WIDTH));
-        int height = moo_prefs_get_int (setting (window, MOO_WINDOW_PREFS_HEIGHT));
+    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_SIZE))) {
+        int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
+        int height = moo_prefs_get_int (setting (window, PREFS_HEIGHT));
         if (width > 0 && height > 0)
             gtk_window_set_default_size (GTK_WINDOW (window), width, height);
     }
-
-    moo_prefs_set_bool_if_not_set_ignore_change (
-            setting (window, MOO_WINDOW_PREFS_SHOW_MENUBAR), TRUE);
-    moo_prefs_set_bool_if_not_set_ignore_change (
-            setting (window, MOO_WINDOW_PREFS_SHOW_TOOLBAR), TRUE);
-    moo_prefs_set_if_not_set_ignore_change (setting (window, MOO_WINDOW_PREFS_TOOLBAR_STYLE),
-                                            "GTK_TOOLBAR_ICONS");
 
     show_menubar =
             moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
@@ -350,30 +349,30 @@ void     moo_window_realize (MooWindow *window)
     show_toolbar =
             moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
                                          "ShowToolbar");
-    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_menubar),
-                                  moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SHOW_MENUBAR)));
-    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_toolbar),
-                                  moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SHOW_TOOLBAR)));
 
-    style = moo_prefs_get_enum (setting (window, MOO_WINDOW_PREFS_TOOLBAR_STYLE),
-                                GTK_TYPE_TOOLBAR_STYLE);
+    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_menubar),
+                                  moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
+    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_toolbar),
+                                  moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
+
+    style = get_toolbar_style (window);
     gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
 }
 
 
 static void moo_window_save_settings    (MooWindow      *window)
 {
-    if (moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SAVE_POSITION))) {
+    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_POSITION))) {
         int x, y;
         gtk_window_get_position (GTK_WINDOW (window), &x, &y);
-        moo_prefs_set_int (setting (window, MOO_WINDOW_PREFS_X), x);
-        moo_prefs_set_int (setting (window, MOO_WINDOW_PREFS_Y), y);
+        moo_prefs_set_int (setting (window, PREFS_X), x);
+        moo_prefs_set_int (setting (window, PREFS_Y), y);
     }
-    if (moo_prefs_get_bool (setting (window, MOO_WINDOW_PREFS_SAVE_SIZE))) {
+    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_SIZE))) {
         int width, height;
         gtk_window_get_size (GTK_WINDOW (window), &width, &height);
-        moo_prefs_set_int (setting (window, MOO_WINDOW_PREFS_WIDTH), width);
-        moo_prefs_set_int (setting (window, MOO_WINDOW_PREFS_HEIGHT), height);
+        moo_prefs_set_int (setting (window, PREFS_WIDTH), width);
+        moo_prefs_set_int (setting (window, PREFS_HEIGHT), height);
     }
 }
 
@@ -517,7 +516,7 @@ static void moo_window_show_toolbar_toggled (MooWindow  *window,
 {
     if (show) gtk_widget_show (window->toolbar);
     else gtk_widget_hide (window->toolbar);
-    moo_prefs_set_bool (setting (window, MOO_WINDOW_PREFS_SHOW_TOOLBAR), show);
+    moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), show);
 }
 
 
@@ -526,7 +525,7 @@ static void moo_window_show_menubar_toggled (MooWindow  *window,
 {
     if (show) gtk_widget_show (window->menubar);
     else gtk_widget_hide (window->menubar);
-    moo_prefs_set_bool (setting (window, MOO_WINDOW_PREFS_SHOW_MENUBAR), show);
+    moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), show);
 }
 
 
@@ -548,22 +547,16 @@ static void window_destroyed (GObject *menuitem,
 static void toolbar_style_toggled (GtkCheckMenuItem *item,
                                    MooWindow *window)
 {
-    int style;
-    GEnumClass *enum_class;
-    GEnumValue *val;
+    GtkToolbarStyle style;
 
     if (!gtk_check_menu_item_get_active (item))
         return;
 
     style = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item),
                                                 "moo_window_toolbar_style"));
-    gtk_toolbar_set_style (GTK_TOOLBAR (window->toolbar), (GtkToolbarStyle)style);
-
-    enum_class = G_ENUM_CLASS (g_type_class_peek (GTK_TYPE_TOOLBAR_STYLE));
-    g_return_if_fail (enum_class != NULL);
-    val = g_enum_get_value (enum_class, style);
-    g_return_if_fail (val != NULL);
-    moo_prefs_set (setting (window, MOO_WINDOW_PREFS_TOOLBAR_STYLE), val->value_name);
+    gtk_toolbar_set_style (GTK_TOOLBAR (window->toolbar), style);
+    moo_prefs_set_enum (setting (window, PREFS_TOOLBAR_STYLE),
+                        GTK_TYPE_TOOLBAR_STYLE, style);
 }
 
 
@@ -594,8 +587,7 @@ static GtkMenuItem *moo_window_create_toolbar_style_menu (MooWindow *window)
     gtk_widget_show_all (GTK_WIDGET (menu));
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), GTK_WIDGET (menu));
 
-    style = moo_prefs_get_enum (
-                setting (window, MOO_WINDOW_PREFS_TOOLBAR_STYLE), GTK_TYPE_TOOLBAR_STYLE);
+    style = get_toolbar_style (window);
     gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (items[style]), TRUE);
 
     for (i = 0; i < 3; ++i) {
@@ -607,4 +599,30 @@ static GtkMenuItem *moo_window_create_toolbar_style_menu (MooWindow *window)
     g_object_weak_ref (G_OBJECT (item), (GWeakNotify)toolbar_style_menu_destroyed, window);
 
     return GTK_MENU_ITEM (item);
+}
+
+
+static void init_prefs (MooWindow *window)
+{
+    moo_prefs_new_key_bool (setting (window, PREFS_SAVE_POSITION), FALSE);
+    moo_prefs_new_key_bool (setting (window, PREFS_SAVE_SIZE), FALSE);
+    moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
+    moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
+    moo_prefs_new_key (setting (window, PREFS_TOOLBAR_STYLE),
+                       GTK_TYPE_TOOLBAR_STYLE, NULL);
+}
+
+
+static GtkToolbarStyle get_toolbar_style (MooWindow *window)
+{
+    GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (window));
+    GtkToolbarStyle style;
+
+    g_return_val_if_fail (settings != NULL, 0);
+
+    g_object_get (settings, "gtk-toolbar-style", &style, NULL);
+    if (moo_prefs_get (setting (window, PREFS_TOOLBAR_STYLE)))
+        style = moo_prefs_get_int (setting (window, PREFS_TOOLBAR_STYLE));
+
+    return style;
 }

@@ -35,6 +35,8 @@ libmooedit_la_SOURCES =     \
     mooeditcursor.c         \
     mooeditdialogs.c        \
     mooeditdialogs.h        \
+    mooeditfilemgr.c        \
+    mooeditfilemgr.h        \
     mooeditfileops.c        \
     mooeditfind.c           \
     mooeditfind-glade.c     \

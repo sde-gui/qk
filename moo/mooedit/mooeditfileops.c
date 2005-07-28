@@ -37,26 +37,33 @@ gboolean    _moo_edit_open          (MooEdit    *edit,
                                      const char *file,
                                      const char *encoding)
 {
+    GtkTextIter start, end;
     MooEditFileInfo *info = NULL;
     GError *err = NULL;
     gboolean undo;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (!moo_edit_get_clean (edit) && moo_edit_get_modified (edit)) {
+    if (!moo_edit_get_clean (edit) && moo_edit_get_modified (edit))
+    {
         int resp = moo_edit_save_changes_dialog (edit);
-        if (resp == GTK_RESPONSE_YES) {
+
+        if (resp == GTK_RESPONSE_YES)
+        {
             if (!moo_edit_save (edit))
                 return FALSE;
         }
         else if (resp == GTK_RESPONSE_CANCEL)
+        {
             return FALSE;
+        }
     }
 
-    if (!file || !file[0]) {
+    if (!file || !file[0])
+    {
         info = moo_edit_open_dialog (GTK_WIDGET (edit));
-        if (!info)
-            return FALSE;
+
+        if (!info) return FALSE;
 
         file = info->filename;
         encoding = info->encoding;
@@ -74,33 +81,37 @@ gboolean    _moo_edit_open          (MooEdit    *edit,
     else
         gtk_source_buffer_begin_not_undoable_action (edit->priv->source_buffer);
 
-    {
-        GtkTextIter start, end;
-        gtk_text_buffer_get_bounds (edit->priv->text_buffer, &start, &end);
-        gtk_text_buffer_delete (edit->priv->text_buffer, &start, &end);
-    }
+    gtk_text_buffer_get_bounds (edit->priv->text_buffer, &start, &end);
+    gtk_text_buffer_delete (edit->priv->text_buffer, &start, &end);
 
-    if (!moo_edit_load (edit, file, encoding, &err)) {
-        if (err) {
+    if (!moo_edit_load (edit, file, encoding, &err))
+    {
+        if (err)
+        {
             moo_edit_open_error_dialog (GTK_WIDGET (edit), err->message);
             g_error_free (err);
         }
         else
+        {
             moo_edit_open_error_dialog (GTK_WIDGET (edit), NULL);
+        }
+
         moo_edit_file_info_free (info);
         edit->priv->status = 0;
         stop_file_watch (edit);
         unblock_buffer_signals (edit);
-        gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+
+        if (undo)
+            gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+        else
+            gtk_source_buffer_end_not_undoable_action (edit->priv->source_buffer);
+
         moo_edit_set_modified (edit, FALSE);
         return FALSE;
     }
 
-    {
-        GtkTextIter start;
-        gtk_text_buffer_get_start_iter (edit->priv->text_buffer, &start);
-        gtk_text_buffer_place_cursor (edit->priv->text_buffer, &start);
-    }
+    gtk_text_buffer_get_start_iter (edit->priv->text_buffer, &start);
+    gtk_text_buffer_place_cursor (edit->priv->text_buffer, &start);
 
     unblock_buffer_signals (edit);
     edit->priv->status = 0;

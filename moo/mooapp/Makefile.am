@@ -20,6 +20,7 @@ noinst_LTLIBRARIES   = libmooapp.la
 BUILT_SOURCES =
 libmooapp_la_SOURCES =      \
     mooappdialogs.c         \
+    mooapp-prefs.c          \
     mooapp-private.h        \
     mooapp.c                \
     mooapp.h

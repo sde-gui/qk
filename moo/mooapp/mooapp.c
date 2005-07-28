@@ -524,7 +524,7 @@ void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_
         filename = moo_file_dialogp (parent,
                                      MOO_DIALOG_FILE_OPEN_EXISTING,
                                      "Choose Python Script to Execute",
-                                     "dialogs::python_exec_file", NULL);
+                                     "python_exec_file", NULL);
 
     if (!filename) return;
 
@@ -656,7 +656,9 @@ static gboolean moo_app_init_real       (MooApp         *app)
 #endif
 
     rc_file = moo_app_get_rc_file_name (app);
-    moo_prefs_load (rc_file);
+
+    if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
+        moo_prefs_load (rc_file);
 
     ui_xml = moo_app_get_ui_xml (app);
 

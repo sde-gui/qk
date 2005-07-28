@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
 
         if (print)
         {
-            char *text = moo_markup_doc_get_string (doc);
+            char *text = moo_markup_node_get_string (MOO_MARKUP_NODE (doc));
             g_print ("%s\n", text);
             g_free (text);
             g_print ("------------------------------\n");

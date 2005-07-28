@@ -308,13 +308,10 @@ static void            setting_init_sig            (Setting        *s)
     g_return_if_fail (s != NULL);
 
     if (s->set_or_not) {
-        gboolean set = (gboolean) moo_prefs_get (SETTING_NAME (s));
+        gboolean set = moo_prefs_get (SETTING_NAME (s)) ? TRUE : FALSE;
         gtk_toggle_button_set_active (s->set_or_not, set);
         if (!set) return;
     }
-
-    if (s->widget && !GTK_WIDGET_SENSITIVE (s->widget))
-        return;
 
     switch (s->type) {
         case SETTING_STRING:
@@ -406,7 +403,7 @@ static void            string_setting_free         (G_GNUC_UNUSED StringSetting 
 
 static void            string_setting_init_sig     (StringSetting  *s)
 {
-    const char *val = moo_prefs_get (SETTING_NAME (s));
+    const char *val = moo_prefs_get_string (SETTING_NAME (s));
     if (!val) {
         val = "";
         if (!s->empty_is_null)
@@ -418,12 +415,12 @@ static void            string_setting_init_sig     (StringSetting  *s)
 
 static void            string_setting_apply_sig    (StringSetting  *s)
 {
-    const char *old_val = moo_prefs_get (SETTING_NAME (s));
+    const char *old_val = moo_prefs_get_string (SETTING_NAME (s));
     const char *new_val = gtk_entry_get_text (GTK_ENTRY (SETTING (s)->widget));
 
     if ((old_val && strcmp (old_val, new_val)) ||
         (!old_val && (!s->empty_is_null || new_val[0])))
-            moo_prefs_set (SETTING_NAME (s), new_val);
+            moo_prefs_set_string (SETTING_NAME (s), new_val);
 }
 
 
@@ -449,7 +446,7 @@ static void            font_setting_free           (G_GNUC_UNUSED FontSetting   
 
 static void            font_setting_init_sig       (FontSetting    *s)
 {
-    const char *val = moo_prefs_get (SETTING_NAME (s));
+    const char *val = moo_prefs_get_string (SETTING_NAME (s));
     if (!val)
         g_critical ("%s: '%s' not set", G_STRLOC, SETTING_NAME (s));
     else
@@ -459,12 +456,12 @@ static void            font_setting_init_sig       (FontSetting    *s)
 
 static void            font_setting_apply_sig      (FontSetting    *s)
 {
-    const char *old_val = moo_prefs_get (SETTING_NAME (s));
+    const char *old_val = moo_prefs_get_string (SETTING_NAME (s));
     const char *new_val = gtk_font_button_get_font_name (GTK_FONT_BUTTON (SETTING (s)->widget));
 
     if ((old_val && new_val && strcmp (old_val, new_val)) ||
         ((!old_val || !new_val) && old_val != new_val))
-            moo_prefs_set (SETTING_NAME (s), new_val);
+            moo_prefs_set_string (SETTING_NAME (s), new_val);
 }
 
 
@@ -616,7 +613,7 @@ static void             radio_setting_free          (RadioSetting   *s)
 static void             radio_setting_init_sig      (RadioSetting   *s)
 {
     int pos = -1;
-    const char *val = moo_prefs_get (SETTING_NAME(s));
+    const char *val = moo_prefs_get_string (SETTING_NAME(s));
     GtkToggleButton *btn = NULL;
 
     if (!val) {
@@ -656,7 +653,7 @@ static void             radio_setting_apply_sig     (RadioSetting   *s)
     new_val = g_slist_nth_data (s->values, (guint) pos);
     g_return_if_fail (new_val != NULL);
 
-    old_val = moo_prefs_get (SETTING_NAME (s));
+    old_val = moo_prefs_get_string (SETTING_NAME (s));
     if (!old_val || strcmp (old_val, new_val))
-        moo_prefs_set (SETTING_NAME (s), new_val);
+        moo_prefs_set_string (SETTING_NAME (s), new_val);
 }

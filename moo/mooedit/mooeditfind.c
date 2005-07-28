@@ -117,8 +117,6 @@ void         moo_edit_goto_line             (MooEdit            *edit,
 /* Search and replace
  */
 
-#define abs(a) ((a) > 0 ? (a) : -(a))
-
 static void          set                (GtkWidget  *dialog,
                                          gboolean    regex,
                                          gboolean    case_sensitive,
@@ -182,7 +180,7 @@ void        _moo_edit_find                  (MooEdit            *edit)
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
         gtk_text_buffer_get_selection_bounds (edit->priv->text_buffer, &sel_start, &sel_end) &&
-        abs (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
+        ABS (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
             selected = TRUE;
 
     dialog = _moo_edit_create_find_dialog (FALSE);
@@ -541,7 +539,7 @@ void        _moo_edit_replace               (MooEdit            *edit)
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
         gtk_text_buffer_get_selection_bounds (edit->priv->text_buffer, &sel_start, &sel_end) &&
-        abs (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
+        ABS (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
             selected = TRUE;
 
     dialog = _moo_edit_create_find_dialog (TRUE);

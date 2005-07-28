@@ -304,7 +304,7 @@ static void moo_term_init                   (MooTerm        *term)
     set_default_modes (term->priv->modes);
     set_default_modes (term->priv->saved_modes);
 
-    term->priv->profiles = g_ptr_array_new ();
+    term->priv->profiles = moo_term_profile_array_new ();
     term->priv->default_profile = -1;
 
     g_signal_connect_swapped (term->priv->primary_buffer,
@@ -404,9 +404,7 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->bg)
         g_object_unref (term->priv->bg);
 
-    for (i = 0; i < term->priv->profiles->len; ++i)
-        moo_term_profile_free (term->priv->profiles->pdata[i]);
-    g_ptr_array_free (term->priv->profiles, TRUE);
+    moo_term_profile_array_free (term->priv->profiles);
     moo_term_profile_free (term->priv->default_shell);
 
     g_free (term->priv);
@@ -912,6 +910,16 @@ void             moo_term_feed_child        (MooTerm        *term,
 }
 
 
+static GtkClipboard *term_get_clipboard (MooTerm        *term,
+                                         GdkAtom         selection)
+{
+    if (GTK_WIDGET_REALIZED (term))
+        return gtk_widget_get_clipboard (GTK_WIDGET (term), selection);
+    else
+        return gtk_clipboard_get (selection);
+}
+
+
 void             moo_term_copy_clipboard    (MooTerm        *term,
                                              GdkAtom         selection)
 {
@@ -922,7 +930,7 @@ void             moo_term_copy_clipboard    (MooTerm        *term,
 
     if (text && *text)
     {
-        cb = gtk_clipboard_get (selection);
+        cb = term_get_clipboard (term, selection);
         gtk_clipboard_set_text (cb, text, -1);
     }
 
@@ -948,12 +956,12 @@ void             moo_term_paste_clipboard   (MooTerm        *term,
 
     g_return_if_fail (MOO_IS_TERM (term));
 
-    cb = gtk_clipboard_get (selection);
+    cb = term_get_clipboard (term, selection);
     text = gtk_clipboard_wait_for_text (cb);
 
     if (text)
     {
-        moo_term_pt_write (term->priv->pt, text, -1);
+        moo_term_feed_child (term, text, -1);
         g_free (text);
     }
 }
@@ -1690,7 +1698,8 @@ void        moo_term_grab_selection         (MooTerm        *term)
 {
     if (!term->priv->owns_selection)
     {
-        GtkClipboard *primary = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+        GtkClipboard *primary;
+        primary = term_get_clipboard (term, GDK_SELECTION_PRIMARY);
         term->priv->owns_selection =
                 gtk_clipboard_set_with_owner (primary,
                                               target_table,
@@ -1706,10 +1715,18 @@ void        moo_term_release_selection      (MooTerm        *term)
 {
     if (term->priv->owns_selection)
     {
-        GtkClipboard *primary = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
+        GtkClipboard *primary;
+        primary = term_get_clipboard (term, GDK_SELECTION_PRIMARY);
         gtk_clipboard_clear (primary);
         term->priv->owns_selection = FALSE;
     }
+}
+
+
+gboolean    moo_term_child_alive            (MooTerm        *term)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+    return moo_term_pt_child_alive (term->priv->pt);
 }
 
 
@@ -1786,22 +1803,19 @@ GType       moo_term_profile_get_type       (void)
 }
 
 
-MooTermProfile **moo_term_get_profiles      (MooTerm        *term,
-                                             guint          *num)
+MooTermProfileArray *moo_term_get_profiles  (MooTerm        *term)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), NULL);
-    g_return_val_if_fail (num != NULL, NULL);
-    *num = term->priv->profiles->len;
-    return (MooTermProfile**) term->priv->profiles->pdata;
+    return moo_term_profile_array_copy (term->priv->profiles);
 }
 
 
-const MooTermProfile *moo_term_get_profile  (MooTerm        *term,
+MooTermProfile      *moo_term_get_profile   (MooTerm        *term,
                                              guint           index)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), NULL);
     g_return_val_if_fail (index < term->priv->profiles->len, NULL);
-    return term->priv->profiles->pdata[index];
+    return moo_term_profile_copy (term->priv->profiles->data[index]);
 }
 
 
@@ -1877,8 +1891,8 @@ void        moo_term_set_profile            (MooTerm        *term,
 
     if (check_profile (copy, &err))
     {
-        moo_term_profile_free (term->priv->profiles->pdata[index]);
-        term->priv->profiles->pdata[index] = copy;
+        moo_term_profile_free (term->priv->profiles->data[index]);
+        term->priv->profiles->data[index] = copy;
     }
     else
     {
@@ -1903,7 +1917,7 @@ void        moo_term_add_profile            (MooTerm        *term,
 
     if (check_profile (copy, &err))
     {
-        g_ptr_array_add (term->priv->profiles, copy);
+        g_ptr_array_add ((GPtrArray*)term->priv->profiles, copy);
     }
     else
     {
@@ -1920,8 +1934,8 @@ void        moo_term_remove_profile         (MooTerm        *term,
 {
     g_return_if_fail (MOO_IS_TERM (term));
     g_return_if_fail (index < term->priv->profiles->len);
-    moo_term_profile_free (term->priv->profiles->pdata[index]);
-    g_ptr_array_remove_index (term->priv->profiles, index);
+    moo_term_profile_free (term->priv->profiles->data[index]);
+    g_ptr_array_remove_index ((GPtrArray*) term->priv->profiles, index);
 
     if (term->priv->default_profile != -1)
     {
@@ -1967,7 +1981,7 @@ void        moo_term_start_profile          (MooTerm        *term,
     if (n < 0)
         profile = get_default_shell (term);
     else
-        profile = term->priv->profiles->pdata[n];
+        profile = term->priv->profiles->data[n];
 
     g_return_if_fail (profile != NULL);
 
@@ -1975,4 +1989,47 @@ void        moo_term_start_profile          (MooTerm        *term,
     moo_term_fork_argv (term, profile->argv,
                         profile->working_dir,
                         profile->envp);
+}
+
+
+MooTermProfileArray *moo_term_profile_array_new (void)
+{
+    return (MooTermProfileArray*) g_ptr_array_new ();
+}
+
+
+void moo_term_profile_array_add (MooTermProfileArray *array,
+                                 const MooTermProfile *profile)
+{
+    g_return_if_fail (array != NULL && profile != NULL);
+    g_ptr_array_add ((GPtrArray*) array, moo_term_profile_copy (profile));
+}
+
+
+MooTermProfileArray *moo_term_profile_array_copy (MooTermProfileArray *array)
+{
+    MooTermProfileArray *copy;
+    guint i;
+
+    g_return_val_if_fail (array != NULL, NULL);
+
+    copy = moo_term_profile_array_new ();
+    g_ptr_array_set_size ((GPtrArray*) copy, array->len);
+
+    for (i = 0; i < array->len; ++i)
+        copy->data[i] = moo_term_profile_copy (array->data[i]);
+
+    return copy;
+}
+
+
+void moo_term_profile_array_free (MooTermProfileArray *array)
+{
+    if (array)
+    {
+        guint i;
+        for (i = 0; i < array->len; ++i)
+            moo_term_profile_free (array->data[i]);
+        g_ptr_array_free ((GPtrArray*) array, TRUE);
+    }
 }

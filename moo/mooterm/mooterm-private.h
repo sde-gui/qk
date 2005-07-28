@@ -43,7 +43,7 @@ G_BEGIN_DECLS
 
 #define SCROLL_GRANULARITY          3
 
-#define DEFAULT_MONOSPACE_FONT      "Monospace 12"
+#define DEFAULT_MONOSPACE_FONT      "Monospace 10"
 
 
 typedef enum {
@@ -141,9 +141,9 @@ struct _MooTermPrivate {
         gboolean            allow_bold;
     } settings;
 
-    GPtrArray      *profiles;
-    MooTermProfile *default_shell;
-    int             default_profile;
+    MooTermProfileArray *profiles;
+    MooTermProfile      *default_shell;
+    int                  default_profile;
 };
 
 #define term_top_line(term)                     \

@@ -22,7 +22,6 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditlang-private.h"
-#include "mooedit/mooeditprefs.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>

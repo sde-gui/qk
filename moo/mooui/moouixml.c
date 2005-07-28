@@ -204,7 +204,7 @@ char            *moo_ui_xml_get_ui              (MooUIXML       *xml)
 {
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     if (!xml->doc) return NULL;
-    return moo_markup_doc_get_string (xml->doc);
+    return moo_markup_node_get_string (MOO_MARKUP_NODE (xml->doc));
 }
 
 

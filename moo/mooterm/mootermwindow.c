@@ -189,7 +189,7 @@ static void moo_term_window_save_selection (MooTermWindow *self)
         if (filename)
         {
             char *new_start = g_path_get_dirname (filename);
-            moo_prefs_set (MOO_TERM_PREFS_SAVE_SELECTION_DIR, new_start);
+            moo_prefs_set_string (MOO_TERM_PREFS_SAVE_SELECTION_DIR, new_start);
             g_free (new_start);
             moo_save_file_utf8 (filename, text, -1, NULL);
         }

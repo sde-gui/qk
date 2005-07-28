@@ -43,33 +43,37 @@ struct _MooPrefs
 struct _MooPrefsClass
 {
     GObjectClass   parent_class;
-
-    void (* changed)        (MooPrefs     *prefs,
-                             const char   *key,
-                             const char   *newval);
-    void (* set)            (MooPrefs     *prefs,
-                             const char   *key,
-                             const char   *val);
-    void (* unset)          (MooPrefs     *prefs,
-                             const char   *key);
 };
 
 
-GType           moo_prefs_get_type              (void) G_GNUC_CONST;
-GType           moo_prefs_match_type_get_type   (void) G_GNUC_CONST;
+GType       moo_prefs_get_type              (void) G_GNUC_CONST;
+GType       moo_prefs_match_type_get_type   (void) G_GNUC_CONST;
 
 gboolean        moo_prefs_load              (const char     *file);
 gboolean        moo_prefs_save              (const char     *file);
 
-const gchar    *moo_prefs_get               (const char     *key);
-void            moo_prefs_set               (const char     *key,
-                                             const char     *val);
-void            moo_prefs_set_ignore_change (const char     *key,
-                                             const char     *val);
+void            moo_prefs_new_key   (const char     *key,
+                                     GType           value_type,
+                                     const GValue   *default_value);
+const GValue   *moo_prefs_get       (const char     *key);
+void            moo_prefs_set       (const char     *key,
+                                     const GValue   *value);
+
+void    moo_prefs_new_key_bool      (const char     *key,
+                                     gboolean        default_val);
+void    moo_prefs_new_key_int       (const char     *key,
+                                     int             default_val);
+void    moo_prefs_new_key_string    (const char     *key,
+                                     const char     *default_val);
+void    moo_prefs_new_key_color     (const char     *key,
+                                     const GdkColor *default_val);
+void    moo_prefs_new_key_enum      (const char     *key,
+                                     GType           enum_type,
+                                     int             default_val);
 
 
 typedef void  (*MooPrefsNotify)             (const char     *key,
-                                             const char     *newval,
+                                             const GValue   *newval,
                                              gpointer        data);
 
 typedef enum
@@ -87,64 +91,27 @@ gboolean        moo_prefs_notify_block      (guint           id);
 gboolean        moo_prefs_notify_unblock    (guint           id);
 gboolean        moo_prefs_notify_disconnect (guint           id);
 
-
+const char     *moo_prefs_get_string        (const char     *key);
 gboolean        moo_prefs_get_bool          (const char     *key);
 gdouble         moo_prefs_get_double        (const char     *key);
 const GdkColor *moo_prefs_get_color         (const char     *key);
-#define         moo_prefs_get_int(key)      ((int)moo_prefs_get_double (key))
+int             moo_prefs_get_int           (const char     *key);
 int             moo_prefs_get_enum          (const char     *key,
                                              GType           type);
 
-void            moo_prefs_set_if_not_set    (const char     *key,
+void            moo_prefs_set_string        (const char     *key,
                                              const char     *val);
-void            moo_prefs_set_if_not_set_ignore_change
-                                            (const char     *key,
-                                             const char     *val);
-
 void            moo_prefs_set_double        (const char     *key,
                                              double          val);
-void            moo_prefs_set_double_ignore_change
-                                            (const char     *key,
-                                             double          val);
-void            moo_prefs_set_double_if_not_set
-                                            (const char     *key,
-                                             double          val);
-void            moo_prefs_set_double_if_not_set_ignore_change
-                                            (const char     *key,
-                                             double          val);
-
-#define moo_prefs_set_int(key,val)                          \
-    moo_prefs_set_double ((key), (double)(val))
-#define moo_prefs_set_int_ignore_change(key,val)            \
-    moo_prefs_set_double_ignore_change ((key), (double)(val))
-#define moo_prefs_set_int_if_not_set(key,val)               \
-    moo_prefs_set_double_if_not_set ((key), (double)(val))
-#define moo_prefs_set_int_if_not_set_ignore_change(key,val) \
-    moo_prefs_set_double_if_not_set_ignore_change ((key), (double)(val))
-
+void            moo_prefs_set_int           (const char     *key,
+                                             int             val);
 void            moo_prefs_set_bool          (const char     *key,
                                              gboolean        val);
-void            moo_prefs_set_bool_ignore_change
-                                            (const char     *key,
-                                             gboolean        val);
-void            moo_prefs_set_bool_if_not_set
-                                            (const char     *key,
-                                             gboolean        val);
-void            moo_prefs_set_bool_if_not_set_ignore_change
-                                            (const char     *key,
-                                             gboolean        val);
-
 void            moo_prefs_set_color         (const char     *key,
                                              const GdkColor *val);
-void            moo_prefs_set_color_ignore_change
-                                            (const char     *key,
-                                             const GdkColor *val);
-void            moo_prefs_set_color_if_not_set
-                                            (const char     *key,
-                                             const GdkColor *val);
-void            moo_prefs_set_color_if_not_set_ignore_change
-                                            (const char     *key,
-                                             const GdkColor *val);
+void            moo_prefs_set_enum          (const char     *key,
+                                             GType           type,
+                                             int             val);
 
 
 G_END_DECLS

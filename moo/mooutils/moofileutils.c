@@ -12,28 +12,47 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
+# include <sys/stat.h>
 #endif
 #ifdef HAVE_ERRNO_H
-#include <errno.h>
+# include <errno.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 #include <gdk/gdk.h>
 #include <string.h>
 #ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#endif /* GDK_WINDOWING_X11 */
+# include <gdk/gdkx.h>
+#endif
 #include "mooutils/moofileutils.h"
 #ifdef __WIN32__
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <shellapi.h>
-#endif /* __WIN32__ */
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include <shellapi.h>
+#endif
+#if GLIB_CHECK_VERSION(2,6,0)
+# include <glib/gstdio.h>
+#endif
+
+/* TODO TODO move this to moocompat.h and copy from glib */
+int         moo_unlink              (const char *filename)
+{
+#if GLIB_CHECK_VERSION(2,6,0)
+    return g_unlink (filename);
+#elif HAVE_UNLINK
+    return unlink (filenane);
+#else
+#error "unlink() is absent"
+#endif
+}
 
 
+/* TODO TODO remove this thing */
 gboolean moo_save_file_utf8 (const char *name,
                              const char *text,
                              gssize      len,

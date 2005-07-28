@@ -25,6 +25,7 @@ struct _MooEditorPrivate {
     char            *app_name;
     MooEditLangMgr  *lang_mgr;
     MooUIXML        *ui_xml;
+    MooEditFileMgr  *file_mgr;
 };
 
 
@@ -98,6 +99,7 @@ static void moo_editor_class_init (MooEditorClass *klass)
 static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
+    editor->priv->file_mgr = moo_edit_file_mgr_new ();
 }
 
 
@@ -110,6 +112,8 @@ static void moo_editor_finalize       (GObject      *object)
         g_object_unref (editor->priv->lang_mgr);
     if (editor->priv->ui_xml)
         g_object_unref (editor->priv->ui_xml);
+    if (editor->priv->file_mgr)
+        g_object_unref (editor->priv->file_mgr);
 
     g_free (editor->priv);
 
@@ -222,7 +226,10 @@ gboolean         moo_editor_open                (MooEditor      *editor,
 
     if (!filename)
     {
-        info = moo_edit_open_dialog (parent);
+        info = moo_edit_file_mgr_open_dialog (editor->priv->file_mgr,
+                                              parent);
+
+//         info = moo_edit_open_dialog (parent);
 
         if (!info)
         {
@@ -323,6 +330,13 @@ MooEditLangMgr  *moo_editor_get_lang_mgr        (MooEditor      *editor)
     if (!editor->priv->lang_mgr)
         editor->priv->lang_mgr = moo_edit_lang_mgr_new ();
     return editor->priv->lang_mgr;
+}
+
+
+MooEditFileMgr  *moo_editor_get_file_mgr        (MooEditor      *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    return editor->priv->file_mgr;
 }
 
 

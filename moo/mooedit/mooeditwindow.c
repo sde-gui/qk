@@ -742,37 +742,54 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
 {
     MooEdit *edit, *old_edit;
     MooEditFileInfo *info = NULL;
+    MooEditFileMgr *mgr;
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    if (!filename) {
-        info = moo_edit_open_dialog (GTK_WIDGET (window));
+    if (!filename)
+    {
+        if (window->priv->editor)
+            mgr = moo_editor_get_file_mgr (window->priv->editor);
+
+        if (mgr)
+            info = moo_edit_file_mgr_open_dialog (mgr, GTK_WIDGET (window));
+        else
+            info = moo_edit_open_dialog (GTK_WIDGET (window));
+
         if (!info)
+        {
             return FALSE;
-        else {
+        }
+        else
+        {
             filename = info->filename;
             encoding = info->encoding;
         }
     }
 
     edit = old_edit = moo_edit_window_get_active_doc (window);
-    if (!edit) {
+
+    if (!edit)
+    {
         moo_edit_file_info_free (info);
         g_return_val_if_fail (edit != NULL, FALSE);
     }
 
-    if (!moo_edit_is_empty (edit)) {
+    if (!moo_edit_is_empty (edit))
+    {
         edit = _moo_edit_new (window->priv->editor);
         add_tab (window, edit);
     }
 
     result = moo_edit_open (edit, filename, encoding);
     moo_edit_file_info_free (info);
-    if (!result && old_edit != edit) {
+    if (!result && old_edit != edit)
+    {
         close_tab (window, edit);
         set_active_tab (window, old_edit);
     }
+
     return result;
 }
 

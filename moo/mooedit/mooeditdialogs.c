@@ -135,14 +135,14 @@ MooEditFileInfo *moo_edit_save_as_dialog        (MooEdit *edit)
     const char *filename = NULL;
     MooEditFileInfo *file = NULL;
 
-    start = moo_prefs_get (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
+    start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
     if (!start)
-        start = moo_prefs_get (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+        start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
 
     filename = moo_file_dialog (GTK_WIDGET (edit), MOO_DIALOG_FILE_SAVE, title, start);
     if (filename) {
         char *new_start = g_path_get_dirname (filename);
-        moo_prefs_set (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
+        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
         g_free (new_start);
         file = moo_edit_file_info_new (filename, NULL);
     }
@@ -158,11 +158,11 @@ MooEditFileInfo *moo_edit_open_dialog           (GtkWidget *widget)
     const char *filename = NULL;
     MooEditFileInfo *file = NULL;
 
-    start = moo_prefs_get (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+    start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
     filename = moo_file_dialog (widget, MOO_DIALOG_FILE_OPEN_EXISTING, title, start);
     if (filename) {
         char *new_start = g_path_get_dirname (filename);
-        moo_prefs_set (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
+        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
         g_free (new_start);
         file = moo_edit_file_info_new (filename, NULL);
     }

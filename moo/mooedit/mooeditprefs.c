@@ -26,7 +26,7 @@ const char *moo_edit_setting                (const char     *setting_name)
     static char *s = NULL;
     g_return_val_if_fail (setting_name != NULL, NULL);
     g_free (s);
-    s = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "::%s", setting_name);
+    s = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/%s", setting_name);
     return s;
 }
 
@@ -37,34 +37,35 @@ static void set_text_colors (MooEdit *edit);
 static void set_highlight_current_line (MooEdit *edit);
 
 
-#define set_default(key,val) \
-    moo_prefs_set_if_not_set_ignore_change (MOO_EDIT_PREFS_PREFIX "::" key, val)
-#define set_default_color(key,val) \
-    moo_prefs_set_color_if_not_set_ignore_change (MOO_EDIT_PREFS_PREFIX "::" key, val)
+#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (MOO_EDIT_PREFS_PREFIX "/" s, v)
 
 void        _moo_edit_set_default_settings      (void)
 {
     GtkSettings *settings;
     GtkStyle *style;
+    GdkColor color;
 
-    set_default (MOO_EDIT_PREFS_SEARCH_SELECTED, "NO");
-    set_default (MOO_EDIT_PREFS_SMART_HOME_END, "YES");
-    set_default (MOO_EDIT_PREFS_TABS_WIDTH, "8");
-    set_default (MOO_EDIT_PREFS_SPACES_NO_TABS, "NO");
-    set_default (MOO_EDIT_PREFS_AUTO_INDENT, "NO");
-    set_default (MOO_EDIT_PREFS_LIMIT_UNDO, "NO");
-    set_default (MOO_EDIT_PREFS_LIMIT_UNDO_NUM, "25");
-    set_default (MOO_EDIT_PREFS_WRAP_ENABLE, "NO");
-    set_default (MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS, "YES");
-    set_default (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS, "NO");
-    set_default (MOO_EDIT_PREFS_SHOW_MARGIN, "NO");
-    set_default (MOO_EDIT_PREFS_MARGIN, "80");
-    set_default (MOO_EDIT_PREFS_CHECK_BRACKETS, "YES");
-    set_default (MOO_EDIT_PREFS_USE_DEFAULT_FONT, "NO");
-    set_default (MOO_EDIT_PREFS_FONT, "Courier New 11");
-    set_default (MOO_EDIT_PREFS_USE_DEFAULT_COLORS, "YES");
-    set_default (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE, "YES");
-    set_default (MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING, "YES");
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SEARCH_SELECTED, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SMART_HOME_END, TRUE);
+    NEW_KEY_INT (MOO_EDIT_PREFS_TABS_WIDTH, 8);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SPACES_NO_TABS, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_AUTO_INDENT, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_LIMIT_UNDO, FALSE);
+    NEW_KEY_INT (MOO_EDIT_PREFS_LIMIT_UNDO_NUM, 25);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_WRAP_ENABLE, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_MARGIN, FALSE);
+    NEW_KEY_INT (MOO_EDIT_PREFS_MARGIN, 80);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_CHECK_BRACKETS, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_DEFAULT_FONT, FALSE);
+    NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, "Courier New 11");
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_DEFAULT_COLORS, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE, TRUE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING, TRUE);
 
     settings = gtk_settings_get_default ();
     style = gtk_rc_get_style_by_paths (settings, "MooEdit", "MooEdit", MOO_TYPE_EDIT);
@@ -72,23 +73,26 @@ void        _moo_edit_set_default_settings      (void)
     else g_object_ref (G_OBJECT (style));
     g_return_if_fail (style != NULL);
 
-    set_default_color (MOO_EDIT_PREFS_FOREGROUND, &(style->text[GTK_STATE_NORMAL]));
-    set_default_color (MOO_EDIT_PREFS_BACKGROUND, &(style->base[GTK_STATE_NORMAL]));
-    set_default_color (MOO_EDIT_PREFS_SELECTED_FOREGROUND, &(style->text[GTK_STATE_SELECTED]));
-    set_default_color (MOO_EDIT_PREFS_SELECTED_BACKGROUND, &(style->base[GTK_STATE_SELECTED]));
+    NEW_KEY_COLOR (MOO_EDIT_PREFS_FOREGROUND, &(style->text[GTK_STATE_NORMAL]));
+    NEW_KEY_COLOR (MOO_EDIT_PREFS_BACKGROUND, &(style->base[GTK_STATE_NORMAL]));
+    NEW_KEY_COLOR (MOO_EDIT_PREFS_SELECTED_FOREGROUND, &(style->text[GTK_STATE_SELECTED]));
+    NEW_KEY_COLOR (MOO_EDIT_PREFS_SELECTED_BACKGROUND, &(style->base[GTK_STATE_SELECTED]));
+
+    gdk_color_parse ("#EEF6FF", &color);
+    NEW_KEY_COLOR (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR, &color);
+    gdk_color_parse ("#FFFF99", &color);
+    NEW_KEY_COLOR (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BACKGROUND, &color);
+    gdk_color_parse ("red", &color);
+    NEW_KEY_COLOR (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BACKGROUND, &color);
 
     g_object_unref (G_OBJECT (style));
-
-    set_default (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR, "#EEF6FF");
-    set_default (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_BACKGROUND, "#FFFF99");
-    set_default (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_BACKGROUND, "red");
 }
 
 
-#define get(key) moo_prefs_get (MOO_EDIT_PREFS_PREFIX "::" key)
-#define get_bool(key) moo_prefs_get_bool (MOO_EDIT_PREFS_PREFIX "::" key)
-#define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "::" key)
-#define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "::" key)
+#define get_string(key) moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/" key)
+#define get_bool(key) moo_prefs_get_bool (MOO_EDIT_PREFS_PREFIX "/" key)
+#define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "/" key)
+#define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "/" key)
 
 void        _moo_edit_apply_settings            (MooEdit    *edit)
 {
@@ -105,14 +109,17 @@ void        _moo_edit_apply_settings            (MooEdit    *edit)
     else
         gtk_source_buffer_set_max_undo_levels (buffer, get_int (MOO_EDIT_PREFS_LIMIT_UNDO_NUM));
 
-    if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE)) {
+    if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))
+    {
         if (get_bool (MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS))
             gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_WORD);
         else
             gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_CHAR);
     }
     else
+    {
         gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_NONE);
+    }
 
     gtk_source_view_set_show_line_numbers (view, get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS));
     gtk_source_view_set_show_margin (view, get_bool (MOO_EDIT_PREFS_SHOW_MARGIN));
@@ -139,41 +146,48 @@ void        _moo_edit_settings_changed          (const char *key,
 {
     GtkSourceBuffer *buffer = edit->priv->source_buffer;
 
-    if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_LIMIT_UNDO) ||
-        !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_LIMIT_UNDO_NUM))
+    if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_LIMIT_UNDO) ||
+         !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_LIMIT_UNDO_NUM))
     {
         if (get_bool (MOO_EDIT_PREFS_LIMIT_UNDO))
             gtk_source_buffer_set_max_undo_levels (buffer, 0);
         else
             gtk_source_buffer_set_max_undo_levels (buffer, get_int (MOO_EDIT_PREFS_LIMIT_UNDO_NUM));
     }
-
-    else if (!strncmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_MATCHING_BRACKETS_CORRECT,
-                       strlen (MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_MATCHING_BRACKETS_CORRECT)))
+    else if (!strncmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_MATCHING_BRACKETS_CORRECT,
+              strlen (MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_MATCHING_BRACKETS_CORRECT)))
+    {
         set_matching_bracket_styles (edit);
-    else if (!strncmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_MATCHING_BRACKETS_INCORRECT,
-                       strlen (MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_MATCHING_BRACKETS_INCORRECT)))
+    }
+    else if (!strncmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_MATCHING_BRACKETS_INCORRECT,
+              strlen (MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_MATCHING_BRACKETS_INCORRECT)))
+    {
         set_matching_bracket_styles (edit);
-
-    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_USE_DEFAULT_FONT) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_FONT))
+    }
+    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_USE_DEFAULT_FONT) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_FONT))
+    {
         set_font (edit);
-
-    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_USE_DEFAULT_COLORS) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_FOREGROUND) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_BACKGROUND) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_SELECTED_FOREGROUND) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_SELECTED_BACKGROUND) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_BACKGROUND) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_BACKGROUND))
+    }
+    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_USE_DEFAULT_COLORS) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_FOREGROUND) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_BACKGROUND) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_SELECTED_FOREGROUND) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_SELECTED_BACKGROUND) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_BACKGROUND) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_BACKGROUND))
+    {
         set_text_colors (edit);
-
-    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR) ||
-             !strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE))
+    }
+    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR) ||
+             !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE))
+    {
         set_highlight_current_line (edit);
-
-    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING))
+    }
+    else if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING))
+    {
         gtk_source_buffer_set_highlight (buffer, get_bool (MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING));
+    }
 }
 
 
@@ -186,16 +200,16 @@ static void set_matching_bracket_styles (MooEdit *edit)
     style.is_default = TRUE;
 
     style.mask = 0;
-    style.bold = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_BOLD);
-    style.italic = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_ITALIC);
-    style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_UNDERLINE);
-    style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_STRIKETHROUGH);
-    color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_BACKGROUND);
+    style.bold = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BOLD);
+    style.italic = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_ITALIC);
+    style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_UNDERLINE);
+    style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH);
+    color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BACKGROUND);
     if (color) {
         style.background = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
     }
-    color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "::" MOO_EDIT_PREFS_FOREGROUND);
+    color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_FOREGROUND);
     if (color) {
         style.foreground = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_FOREGROUND;
@@ -203,16 +217,16 @@ static void set_matching_bracket_styles (MooEdit *edit)
     gtk_source_buffer_set_bracket_correct_match_style (buffer, &style);
 
     style.mask = 0;
-    style.bold = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_BOLD);
-    style.italic = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_ITALIC);
-    style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_UNDERLINE);
-    style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_STRIKETHROUGH);
-    color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_BACKGROUND);
+    style.bold = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BOLD);
+    style.italic = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_ITALIC);
+    style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_UNDERLINE);
+    style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH);
+    color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BACKGROUND);
     if (color) {
         style.background = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
     }
-    color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "::" MOO_EDIT_PREFS_FOREGROUND);
+    color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_FOREGROUND);
     if (color) {
         style.foreground = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_FOREGROUND;
@@ -226,7 +240,7 @@ static void set_font (MooEdit *edit)
     if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))
         moo_edit_set_font_from_string (edit, NULL);
     else
-        moo_edit_set_font_from_string (edit, get (MOO_EDIT_PREFS_FONT));
+        moo_edit_set_font_from_string (edit, get_string (MOO_EDIT_PREFS_FONT));
 }
 
 
@@ -262,13 +276,17 @@ static void set_highlight_current_line (MooEdit *edit)
     GtkSourceView *view = GTK_SOURCE_VIEW (edit);
 
     color = get_color (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR);
+
     if (!color)
-        moo_prefs_set_ignore_change (MOO_EDIT_PREFS_PREFIX "::" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR,
-                                     "#EEF6FF");
-    color = get_color (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR);
-    g_return_if_fail (color != NULL);
+    {
+        gdk_color_parse ("#EEF6FF", &c);
+        moo_prefs_set_color (MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR, &c);
+    }
+    else
+    {
+        c = *color;
+    }
 
     gtk_source_view_set_highlight_current_line (view, get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE));
-    c = *color;
     gtk_source_view_set_highlight_current_line_color (view, &c);
 }

@@ -90,8 +90,12 @@ void             moo_edit_lang_mgr_add_language                 (MooEditLangMgr 
     id = moo_edit_lang_get_id (lang);
     g_assert (id != NULL);
     old = moo_edit_lang_mgr_get_language_by_id (mgr, id);
-    if (old) {
+
+    if (old)
+    {
+#ifdef DEBUG_LANGS
         g_message ("%s: loading another instance of language '%s'", G_STRLOC, id);
+#endif
         g_slist_remove (mgr->priv->langs, old);
         g_object_unref (G_OBJECT (old));
     }
@@ -154,9 +158,12 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
 
         if (!found)
             lang = NULL;
-        else
+
+#ifdef DEBUG_LANGS
+        if (found)
             g_message ("%s: found lang '%s' for file '%s' by extension",
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
+#endif
     }
 
 #ifdef USE_XDGMIME
@@ -166,9 +173,11 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
         const char *mime_type = xdg_mime_get_mime_type_for_file (filename);
         if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
             lang = moo_edit_lang_mgr_get_language_for_mime_type (mgr, mime_type);
+#ifdef DEBUG_LANGS
         if (lang)
             g_message ("%s: found lang '%s' for file '%s' by mime type",
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
+#endif
     }
 #endif /* USE_XDGMIME */
 
@@ -177,7 +186,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
     {
         char *base = NULL;
         int len = strlen (utf8_filename);
-        int i;
+        guint i;
 
         static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
 
@@ -198,8 +207,10 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
         }
     }
 
+#ifdef DEBUG_LANGS
     if (!lang)
         g_message ("%s: could not find lang for file '%s'", G_STRLOC, filename);
+#endif
 
     return lang;
 }
@@ -268,9 +279,12 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_filename    (MooEditLangMgr 
 
         if (!found)
             lang = NULL;
-        else
+
+#ifdef DEBUG_LANGS
+        if (found)
             g_message ("%s: found lang '%s' for file '%s' by extension",
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
+#endif
     }
 
 #ifdef USE_XDGMIME
@@ -280,9 +294,11 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_filename    (MooEditLangMgr 
         const char *mime_type = xdg_mime_get_mime_type_from_file_name (filename);
         if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
             lang = moo_edit_lang_mgr_get_language_for_mime_type (mgr, mime_type);
+#ifdef DEBUG_LANGS
         if (lang)
             g_message ("%s: found lang '%s' for file '%s' by mime type",
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
+#endif
     }
 #endif /* USE_XDGMIME */
 

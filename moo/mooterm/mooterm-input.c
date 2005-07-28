@@ -34,8 +34,7 @@ void        moo_term_im_commit          (G_GNUC_UNUSED GtkIMContext   *imcontext
                                          gchar          *arg,
                                          MooTerm        *term)
 {
-    if (moo_term_pt_child_alive (term->priv->pt))
-        moo_term_feed_child (term, arg, -1);
+    moo_term_feed_child (term, arg, -1);
 }
 
 
@@ -80,7 +79,7 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     /* Unless it's a modifier key, hide the pointer. */
     if (!is_modifier &&
          term->priv->settings.hide_pointer_on_keypress &&
-         moo_term_pt_child_alive (term->priv->pt))
+         moo_term_child_alive (term))
     {
         moo_term_set_pointer_visible (term, FALSE);
     }
@@ -272,20 +271,17 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     /* If we got normal characters, send them to the child. */
     if (string)
     {
-        if (moo_term_pt_child_alive (term->priv->pt))
+        if (term->priv->settings.meta_sends_escape &&
+            !suppress_meta_esc &&
+            string_length > 0 &&
+            (modifiers & META_MASK))
         {
-            if (term->priv->settings.meta_sends_escape &&
-                !suppress_meta_esc &&
-                string_length > 0 &&
-                (modifiers & META_MASK))
-            {
-                moo_term_feed_child (term, VT_ESC_, 1);
-            }
+            moo_term_feed_child (term, VT_ESC_, 1);
+        }
 
-            if (string_length > 0)
-            {
-                moo_term_feed_child (term, string, string_length);
-            }
+        if (string_length > 0)
+        {
+            moo_term_feed_child (term, string, string_length);
         }
 
         /* Keep the cursor on-screen. */

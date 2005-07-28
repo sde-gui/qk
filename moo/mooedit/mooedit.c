@@ -383,6 +383,7 @@ static void moo_edit_class_init (MooEditClass *klass)
                                G_TYPE_NONE, 1,
                                GTK_TYPE_TEXT_ITER);
 
+    /* TODO: this is wrong */
     _moo_edit_set_default_settings ();
 }
 

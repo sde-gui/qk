@@ -102,7 +102,7 @@ void         moo_prefs_set_accel            (const char     *accel_path,
 {
     char *key = accel_path_to_prefs_key (accel_path);
     g_return_if_fail (key != NULL);
-    moo_prefs_set (key, accel);
+    moo_prefs_set_string (key, accel);
     g_free (key);
 }
 
@@ -112,7 +112,7 @@ const char  *moo_prefs_get_accel            (const char     *accel_path)
     const char *accel;
     char *key = accel_path_to_prefs_key (accel_path);
     g_return_val_if_fail (key != NULL, NULL);
-    accel = moo_prefs_get (key);
+    accel = moo_prefs_get_string (key);
     g_free (key);
     return accel;
 }

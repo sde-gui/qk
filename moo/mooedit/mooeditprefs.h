@@ -35,7 +35,7 @@ void        moo_edit_style_load             (const char     *lang_id,
                                              const char     *style_id,
                                              GtkSourceTagStyle *style);
 
-#define MOO_EDIT_PREFS_SEARCH_SELECTED              "search::search_selected"
+#define MOO_EDIT_PREFS_SEARCH_SELECTED              "search/search_selected"
 
 #define MOO_EDIT_PREFS_AUTO_SAVE                    "auto_save"
 #define MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL           "auto_save_interval"
@@ -53,8 +53,8 @@ void        moo_edit_style_load             (const char     *lang_id,
 #define MOO_EDIT_PREFS_SHOW_MARGIN                  "show_right_margin"
 #define MOO_EDIT_PREFS_MARGIN                       "right_margin"
 #define MOO_EDIT_PREFS_CHECK_BRACKETS               "check_brackets"
-#define MOO_EDIT_MATCHING_BRACKETS_CORRECT          "matching_brackets::correct"
-#define MOO_EDIT_MATCHING_BRACKETS_INCORRECT        "matching_brackets::incorrect"
+#define MOO_EDIT_MATCHING_BRACKETS_CORRECT          "matching_brackets/correct"
+#define MOO_EDIT_MATCHING_BRACKETS_INCORRECT        "matching_brackets/incorrect"
 #define MOO_EDIT_PREFS_USE_DEFAULT_FONT             "use_default_font"
 #define MOO_EDIT_PREFS_FONT                         "font"
 #define MOO_EDIT_PREFS_USE_DEFAULT_COLORS           "use_default_colors"
@@ -85,8 +85,8 @@ void        moo_edit_style_load             (const char     *lang_id,
 #define MOO_EDIT_PREFS_UNDERLINE                    "underline"
 #define MOO_EDIT_PREFS_STRIKETHROUGH                "strikethrough"
 
-#define MOO_EDIT_PREFS_DIALOGS_SAVE                 "dialogs::save"
-#define MOO_EDIT_PREFS_DIALOGS_OPEN                 "dialogs::open"
+#define MOO_EDIT_PREFS_DIALOGS_SAVE                 "dialogs/save"
+#define MOO_EDIT_PREFS_DIALOGS_OPEN                 "dialogs/open"
 
 
 G_END_DECLS

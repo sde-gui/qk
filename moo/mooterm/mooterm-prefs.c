@@ -16,7 +16,7 @@
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif /* __WIN32__ */
+#endif
 
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mooterm-prefs.h"
@@ -31,19 +31,17 @@
 GtkWidget  *_create_moo_term_prefs_notebook (MooPrefsDialogPage *page);
 
 
-#define SET_DEFAULT(s, val) \
-    moo_prefs_set_if_not_set_ignore_change (moo_term_setting (s), val)
-#define SET_DEFAULT_DOUBLE(s, val) \
-    moo_prefs_set_double_if_not_set_ignore_change (moo_term_setting (s), val)
-#define SET_DEFAULT_BOOL(s, val) \
-    moo_prefs_set_bool_if_not_set_ignore_change (moo_term_setting (s), val)
-#define SET_DEFAULT_COLOR(s, val) \
-    moo_prefs_set_color_if_not_set_ignore_change (moo_term_setting (s), val)
+#define PREFS_PREFIX        "Terminal"
 
-#define GET(s)          moo_prefs_get (moo_term_setting (s))
-#define GET_INT(s)      moo_prefs_get_int (moo_term_setting (s))
-#define GET_BOOL(s)     moo_prefs_get_bool (moo_term_setting (s))
-#define GET_COLOR(s)    moo_prefs_get_color (moo_term_setting (s))
+#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (PREFS_PREFIX "/" s, v)
+#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (PREFS_PREFIX "/" s, v)
+#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (PREFS_PREFIX "/" s, v)
+#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (PREFS_PREFIX "/" s, v)
+
+#define GET_STRING(s)   moo_prefs_get_string (PREFS_PREFIX "/" s)
+#define GET_INT(s)      moo_prefs_get_int (PREFS_PREFIX "/" s)
+#define GET_BOOL(s)     moo_prefs_get_bool (PREFS_PREFIX "/" s)
+#define GET_COLOR(s)    moo_prefs_get_color (PREFS_PREFIX "/" s)
 
 
 #ifdef __WIN32__
@@ -58,9 +56,9 @@ static void set_defaults (void)
     GtkSettings *settings;
     GtkStyle *style;
 
-    SET_DEFAULT (MOO_TERM_PREFS_FONT, DEFAULT_MONOSPACE_FONT);
-    SET_DEFAULT_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS, FALSE);
-    SET_DEFAULT_DOUBLE (MOO_TERM_PREFS_CURSOR_BLINK_TIME, DEFAULT_BLINK_TIME);
+    NEW_KEY_STRING (MOO_TERM_PREFS_FONT, DEFAULT_MONOSPACE_FONT);
+    NEW_KEY_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS, FALSE);
+    NEW_KEY_INT (MOO_TERM_PREFS_CURSOR_BLINK_TIME, DEFAULT_BLINK_TIME);
 
     settings = gtk_settings_get_default ();
     style = gtk_rc_get_style_by_paths (settings, "MooTerm", "MooTerm", MOO_TYPE_TERM);
@@ -72,8 +70,8 @@ static void set_defaults (void)
 
     g_return_if_fail (style != NULL);
 
-    SET_DEFAULT_COLOR (MOO_TERM_PREFS_FOREGROUND, &(style->text[GTK_STATE_NORMAL]));
-    SET_DEFAULT_COLOR (MOO_TERM_PREFS_BACKGROUND, &(style->base[GTK_STATE_NORMAL]));
+    NEW_KEY_COLOR (MOO_TERM_PREFS_FOREGROUND, &(style->text[GTK_STATE_NORMAL]));
+    NEW_KEY_COLOR (MOO_TERM_PREFS_BACKGROUND, &(style->base[GTK_STATE_NORMAL]));
 
     g_object_unref (G_OBJECT (style));
 }
@@ -83,15 +81,17 @@ void moo_term_apply_settings (MooTerm *term)
 {
     set_defaults ();
 
-    moo_term_set_font_from_string (term, GET (MOO_TERM_PREFS_FONT));
+    moo_term_set_font_from_string (term, GET_STRING (MOO_TERM_PREFS_FONT));
 
     if (GET_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS))
     {
         int t = GET_INT (MOO_TERM_PREFS_CURSOR_BLINK_TIME);
         if (t <= 0)
         {
-            moo_prefs_set_bool (moo_term_setting (MOO_TERM_PREFS_CURSOR_BLINKS), FALSE);
-            moo_prefs_set_int (moo_term_setting (MOO_TERM_PREFS_CURSOR_BLINK_TIME), DEFAULT_BLINK_TIME);
+            moo_prefs_set_bool (moo_term_setting (MOO_TERM_PREFS_CURSOR_BLINKS),
+                                FALSE);
+            moo_prefs_set_int (moo_term_setting (MOO_TERM_PREFS_CURSOR_BLINK_TIME),
+                               DEFAULT_BLINK_TIME);
             moo_term_set_cursor_blink_time (term, 0);
         }
         else
@@ -120,13 +120,27 @@ GtkWidget  *moo_term_prefs_page_new   (void)
 }
 
 
+#define STR_STACK_SIZE 4
+
 const char     *moo_term_setting           (const char  *setting_name)
 {
-    static char *s = NULL;
+    static GString *stack[STR_STACK_SIZE];
+    static guint p;
 
     g_return_val_if_fail (setting_name != NULL, NULL);
 
-    g_free (s);
-    s = g_strdup_printf ("terminal::%s", setting_name);
-    return s;
+    if (!stack[0])
+    {
+        for (p = 0; p < STR_STACK_SIZE; ++p)
+            stack[p] = g_string_new ("");
+        p = STR_STACK_SIZE - 1;
+    }
+
+    if (p == STR_STACK_SIZE - 1)
+        p = 0;
+    else
+        p++;
+
+    g_string_printf (stack[p], PREFS_PREFIX "/%s", setting_name);
+    return stack[p]->str;
 }

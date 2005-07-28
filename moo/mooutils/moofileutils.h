@@ -35,6 +35,7 @@ gboolean    moo_save_file_utf8      (const char *name,
                                      const char *text,
                                      gssize      len,
                                      GError    **error);
+int         moo_unlink              (const char *filename);
 
 gboolean    moo_open_url            (const char *url);
 gboolean    moo_open_email          (const char *address,

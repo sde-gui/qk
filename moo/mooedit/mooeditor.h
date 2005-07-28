@@ -18,6 +18,7 @@
 #include "mooui/moouixml.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooeditlangmgr.h"
+#include "mooedit/mooeditfilemgr.h"
 
 G_BEGIN_DECLS
 
@@ -97,6 +98,7 @@ void             moo_editor_set_app_name        (MooEditor      *editor,
                                                  const char     *name);
 
 MooEditLangMgr  *moo_editor_get_lang_mgr        (MooEditor      *editor);
+MooEditFileMgr  *moo_editor_get_file_mgr        (MooEditor      *editor);
 
 MooUIXML        *moo_editor_get_ui_xml          (MooEditor      *editor);
 void             moo_editor_set_ui_xml          (MooEditor      *editor,

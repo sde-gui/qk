@@ -296,7 +296,7 @@
 
     <styles>
         <style name="Variable" default_style="Float"/>
-        <style name="Shebang" default_style="Comment" bold="TRUE"/>
+        <style name="Shebang" default_style="Comment" bold="TRUE" italic="FALSE"/>
     </styles>
 
 </language>
