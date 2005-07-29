@@ -624,6 +624,7 @@ static GtkMenuItem *moo_window_create_toolbar_style_menu (MooWindow *window)
 static void init_prefs (MooWindow *window)
 {
     moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
+    moo_prefs_new_key_bool (setting (window, PREFS_MAXIMIZED), FALSE);
     moo_prefs_new_key_int (setting (window, PREFS_WIDTH), -1);
     moo_prefs_new_key_int (setting (window, PREFS_HEIGHT), -1);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
