@@ -699,7 +699,7 @@ const char *moo_edit_style_setting          (const char     *lang_id,
     g_return_val_if_fail (lang_id != NULL && style_id != NULL && setting != NULL, NULL);
 
     g_free (s);
-    return s = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "::syntax::%s::%s::%s", lang_id, style_id, setting);
+    return s = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/syntax/%s/%s/%s", lang_id, style_id, setting);
 }
 
 
