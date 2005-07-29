@@ -88,9 +88,17 @@ nodist_libmooutils_la_SOURCES = \
     moomarshals.h
 CLEANFILES = $(nodist_libmooutils_la_SOURCES)
 
+if GTK_2_4
+libmooutils_la_SOURCES +=   \
+    moofilechooser.c        \
+    moofilechooser.h
+endif GTK_2_4
+
 EXTRA_DIST =            \
     $(unrtf_src)        \
     $(python_sources)   \
+    moofilechooser.c    \
+    moofilechooser.h    \
     moomarshals.list    \
     xml2h.sh
 

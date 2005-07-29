@@ -11,9 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <gtk/gtk.h>
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
-#include <gtk/gtk.h>
+#if GTK_CHECK_VERSION(2,4,0)
+#include "mooutils/moofilechooser.h"
+#endif
 
 
 static void message_dialog (GtkWidget       *parent,
@@ -132,7 +135,7 @@ GtkWidget *file_chooser_dialog_new (const char *title,
                                     const char *okbtn,
                                     const char *start_dir)
 {
-    GtkWidget *dialog = gtk_file_chooser_dialog_new (
+    GtkWidget *dialog = moo_file_chooser_new (
         title, parent, action,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         okbtn, GTK_RESPONSE_OK,
