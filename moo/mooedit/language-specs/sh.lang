@@ -53,10 +53,6 @@
         <end-regex>`</end-regex>
     </string>
 
-    <pattern-item _name = "Punctuators" style = "Others">
-        <regex>[();\|&amp;/]</regex>
-    </pattern-item>
-
     <pattern-item _name = "Functions" style = "Function">
         <regex>\b[a-zA-Z_][a-zA-Z0-9_]+[ \t]*\(\)</regex>
     </pattern-item>
