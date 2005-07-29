@@ -567,7 +567,9 @@ static void moo_markup_text_node_print      (MooMarkupNode  *node,
                                              GString        *str)
 {
     MooMarkupText *text = (MooMarkupText*) node;
-    g_string_append (str, text->text);
+    char *escaped = g_markup_escape_text (text->text, -1);
+    g_string_append (str, escaped);
+    g_free (escaped);
 }
 
 
