@@ -56,7 +56,6 @@ typedef struct {
 } ParserState;
 
 
-#define ELEMENT_TEXT_SEPARATOR ' '
 #define BUFSIZE 1024
 
 
@@ -420,7 +419,6 @@ static void collect_text_content        (MooMarkupElement  *node)
         {
             if (text)
             {
-                g_string_append_c (text, ELEMENT_TEXT_SEPARATOR);
                 g_string_append_len (text,
                                      MOO_MARKUP_TEXT(child)->text,
                                      MOO_MARKUP_TEXT(child)->size);

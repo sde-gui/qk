@@ -23,12 +23,10 @@
 #include <gtk/gtk.h>
 
 
-#define PREFS_SAVE_POSITION  "window/save_position"
-#define PREFS_X              "window/x"
-#define PREFS_Y              "window/y"
-#define PREFS_SAVE_SIZE      "window/save_size"
+#define PREFS_REMEMBER_SIZE  "window/remember_size"
 #define PREFS_WIDTH          "window/width"
 #define PREFS_HEIGHT         "window/height"
+#define PREFS_MAXIMIZED      "window/maximized"
 #define PREFS_SHOW_TOOLBAR   "window/show_toolbar"
 #define PREFS_SHOW_MENUBAR   "window/show_menubar"
 #define PREFS_TOOLBAR_STYLE  "window/toolbar_style"
@@ -52,6 +50,7 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window);
 
 
 struct _MooWindowPrivate {
+    guint save_size_id;
     int update_id;
     char *toolbar_ui_name;
     char *menubar_ui_name;
@@ -79,7 +78,7 @@ static gboolean moo_window_delete_event         (GtkWidget      *widget,
                                                  GdkEventAny    *event);
 
 static void moo_window_realize                  (MooWindow      *window);
-static void moo_window_save_settings            (MooWindow      *window);
+static gboolean moo_window_save_size            (MooWindow      *window);
 
 static void moo_window_shortcuts_prefs_dialog   (MooWindow      *window);
 
@@ -282,6 +281,8 @@ GObject    *moo_window_constructor      (GType                  type,
 
     g_signal_connect (window, "realize",
                       G_CALLBACK (moo_window_realize), NULL);
+    g_signal_connect (window, "configure-event",
+                      G_CALLBACK (moo_window_save_size), NULL);
     return object;
 }
 
@@ -289,8 +290,6 @@ GObject    *moo_window_constructor      (GType                  type,
 static void moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
-    window->priv->menubar_ui_name = NULL;
-    window->priv->toolbar_ui_name = NULL;
 }
 
 
@@ -309,6 +308,10 @@ static void moo_window_finalize       (GObject      *object)
     if (window->tooltips)
         g_object_unref (window->tooltips);
 
+    if (window->priv->save_size_id)
+        g_source_remove (window->priv->save_size_id);
+    window->priv->save_size_id = 0;
+
     g_signal_handlers_disconnect_by_func (moo_ui_object_get_ui_xml (MOO_UI_OBJECT (window)),
                                           (gpointer) moo_window_ui_changed, window);
 
@@ -321,7 +324,6 @@ static gboolean moo_window_delete_event     (GtkWidget      *widget,
 {
     gboolean result = FALSE;
     g_signal_emit_by_name (widget, "close", &result);
-    if (!result) moo_window_save_settings (MOO_WINDOW (widget));
     return result;
 }
 
@@ -331,16 +333,15 @@ void     moo_window_realize (MooWindow *window)
     MooAction *show_toolbar, *show_menubar;
     GtkToolbarStyle style;
 
-    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_POSITION))) {
-        int x = moo_prefs_get_int (setting (window, PREFS_X));
-        int y = moo_prefs_get_int (setting (window, PREFS_Y));
-        gtk_window_move (GTK_WINDOW (window), x, y);
-    }
-    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_SIZE))) {
+    if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
+    {
         int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
         int height = moo_prefs_get_int (setting (window, PREFS_HEIGHT));
-        if (width > 0 && height > 0)
-            gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+
+        gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+
+        if (moo_prefs_get_bool (setting (window, PREFS_MAXIMIZED)))
+            gtk_window_maximize (GTK_WINDOW (window));
     }
 
     show_menubar =
@@ -360,20 +361,36 @@ void     moo_window_realize (MooWindow *window)
 }
 
 
-static void moo_window_save_settings    (MooWindow      *window)
+static gboolean save_size (MooWindow      *window)
 {
-    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_POSITION))) {
-        int x, y;
-        gtk_window_get_position (GTK_WINDOW (window), &x, &y);
-        moo_prefs_set_int (setting (window, PREFS_X), x);
-        moo_prefs_set_int (setting (window, PREFS_Y), y);
+    window->priv->save_size_id = 0;
+
+    if (MOO_IS_WINDOW (window) && GTK_WIDGET_REALIZED (window))
+    {
+        GdkWindowState state;
+        state = gdk_window_get_state (GTK_WIDGET(window)->window);
+        moo_prefs_set_bool (setting (window, PREFS_MAXIMIZED),
+                            state & GDK_WINDOW_STATE_MAXIMIZED);
+
+        if (!(state & GDK_WINDOW_STATE_MAXIMIZED))
+        {
+            int width, height;
+            gtk_window_get_size (GTK_WINDOW (window), &width, &height);
+            moo_prefs_set_int (setting (window, PREFS_WIDTH), width);
+            moo_prefs_set_int (setting (window, PREFS_HEIGHT), height);
+        }
     }
-    if (moo_prefs_get_bool (setting (window, PREFS_SAVE_SIZE))) {
-        int width, height;
-        gtk_window_get_size (GTK_WINDOW (window), &width, &height);
-        moo_prefs_set_int (setting (window, PREFS_WIDTH), width);
-        moo_prefs_set_int (setting (window, PREFS_HEIGHT), height);
-    }
+
+    return FALSE;
+}
+
+
+static gboolean moo_window_save_size    (MooWindow      *window)
+{
+    if (!window->priv->save_size_id)
+        window->priv->save_size_id =
+                g_idle_add ((GSourceFunc)save_size, window);
+    return FALSE;
 }
 
 
@@ -381,13 +398,15 @@ gboolean moo_window_close (MooWindow *window)
 {
     gboolean result = FALSE;
     g_signal_emit_by_name (window, "close", &result);
-    if (!result) {
-        moo_window_save_settings (window);
+    if (!result)
+    {
         gtk_widget_destroy (GTK_WIDGET (window));
         return TRUE;
     }
     else
+    {
         return FALSE;
+    }
 }
 
 
@@ -604,8 +623,9 @@ static GtkMenuItem *moo_window_create_toolbar_style_menu (MooWindow *window)
 
 static void init_prefs (MooWindow *window)
 {
-    moo_prefs_new_key_bool (setting (window, PREFS_SAVE_POSITION), FALSE);
-    moo_prefs_new_key_bool (setting (window, PREFS_SAVE_SIZE), FALSE);
+    moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
+    moo_prefs_new_key_int (setting (window, PREFS_WIDTH), -1);
+    moo_prefs_new_key_int (setting (window, PREFS_HEIGHT), -1);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
     moo_prefs_new_key (setting (window, PREFS_TOOLBAR_STYLE),

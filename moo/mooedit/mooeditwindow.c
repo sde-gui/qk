@@ -374,7 +374,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 static void     moo_edit_window_init        (MooEditWindow  *window)
 {
     window->priv = g_new0 (MooEditWindowPrivate, 1);
-    gtk_window_set_default_size (GTK_WINDOW (window), 500, 450);
     g_object_set (G_OBJECT (window),
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
@@ -1032,8 +1031,8 @@ static void set_statusbar_numbers (MooEditWindow *window,
                                    int            column)
 {
     char *text;
-//     gtk_statusbar_pop (window->priv->statusbar,
-//                        window->priv->statusbar_context_id);
+    gtk_statusbar_pop (window->priv->statusbar,
+                       window->priv->statusbar_context_id);
     text = g_strdup_printf ("Line: %d Col: %d", line, column);
     gtk_statusbar_push (window->priv->statusbar,
                         window->priv->statusbar_context_id,

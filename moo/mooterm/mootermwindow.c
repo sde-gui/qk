@@ -117,7 +117,6 @@ static GObject     *moo_term_window_constructor         (GType                  
     /************************************************************************/
     /* Gui                                                                  */
     /***/
-    gtk_window_set_default_size (GTK_WINDOW (window), 500, 450);
 
     scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
     gtk_widget_show (scrolledwindow);
