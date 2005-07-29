@@ -981,8 +981,10 @@ static void format_element (MooMarkupElement *elm,
     }
     else
     {
+        char *escaped = g_markup_escape_text (elm->content, -1);
         g_string_append_printf (str, ">%s</%s>" LINE_SEPARATOR,
-                                elm->content, elm->name);
+                                escaped, elm->name);
+        g_free (escaped);
     }
 
     g_free (fill);

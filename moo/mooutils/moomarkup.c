@@ -782,7 +782,7 @@ void             moo_markup_create_text_element
     g_return_if_fail (content != NULL);
 
     pieces = g_strsplit (path, "/", 0);
-    g_return_if_fail (path != NULL);
+    g_return_if_fail (pieces != NULL);
 
     create_text_element (node, pieces, content);
     g_strfreev (pieces);
