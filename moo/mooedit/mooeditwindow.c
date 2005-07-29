@@ -19,6 +19,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moosignal.h"
 #include <string.h>
 
 
@@ -100,6 +101,13 @@ enum {
     PROP_0,
     PROP_EDITOR
 };
+
+enum {
+    NEW_DOCUMENT,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
 
 
 static void moo_edit_window_class_init (MooEditWindowClass *klass)
@@ -351,6 +359,15 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "id", "SyntaxMenu",
                                     "create-menu-func", create_lang_menu,
                                     NULL);
+
+    signals[NEW_DOCUMENT] =
+            moo_signal_new_cb ("new-document",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_FIRST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__OBJECT,
+                               G_TYPE_NONE, 1,
+                               MOO_TYPE_EDIT);
 }
 
 
@@ -469,6 +486,8 @@ static void     add_tab                 (MooEditWindow      *window,
                               G_CALLBACK (cursor_moved), window);
 
     edit_changed (edit, window);
+
+    g_signal_emit (window, signals[NEW_DOCUMENT], 0, edit);
 }
 
 
@@ -740,10 +759,11 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
                                                  const char     *filename,
                                                  const char     *encoding)
 {
-    MooEdit *edit, *old_edit;
+    MooEdit *edit;
     MooEditFileInfo *info = NULL;
     MooEditFileMgr *mgr;
     gboolean result;
+    gboolean add = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
@@ -768,7 +788,7 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
         }
     }
 
-    edit = old_edit = moo_edit_window_get_active_doc (window);
+    edit = moo_edit_window_get_active_doc (window);
 
     if (!edit)
     {
@@ -779,15 +799,20 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
     if (!moo_edit_is_empty (edit))
     {
         edit = _moo_edit_new (window->priv->editor);
-        add_tab (window, edit);
+        gtk_object_sink (gtk_object_ref (GTK_OBJECT (edit)));
+        add = TRUE;
     }
 
     result = moo_edit_open (edit, filename, encoding);
+
     moo_edit_file_info_free (info);
-    if (!result && old_edit != edit)
+
+    if (add)
     {
-        close_tab (window, edit);
-        set_active_tab (window, old_edit);
+        if (result)
+            add_tab (window, edit);
+        else
+            g_object_unref (edit);
     }
 
     return result;
@@ -1043,4 +1068,20 @@ static void cursor_moved (MooEditWindow *window,
         int column = gtk_text_iter_get_line_offset (iter) + 1;
         set_statusbar_numbers (window, line, column);
     }
+}
+
+
+GSList          *moo_edit_window_list_docs      (MooEditWindow  *window)
+{
+    GSList *list = NULL;
+    int num, i;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    num = gtk_notebook_get_n_pages (window->priv->notebook);
+
+    for (i = num - 1; i >= 0; i--)
+        list = g_slist_prepend (list, get_nth_tab (window, i));
+
+    return list;
 }

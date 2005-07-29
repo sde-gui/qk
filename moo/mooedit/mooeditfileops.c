@@ -223,17 +223,17 @@ gboolean    _moo_edit_close         (MooEdit    *edit)
     int response;
 
     if (moo_edit_get_clean (edit) || !moo_edit_get_modified (edit))
-        return TRUE;
+        return FALSE;
 
     response = moo_edit_save_changes_dialog (edit);
     if (response == GTK_RESPONSE_YES) {
         if (!moo_edit_save (edit))
-            return FALSE;
+            return TRUE;
     }
     else if (response == GTK_RESPONSE_CANCEL)
-        return FALSE;
+        return TRUE;
 
-    return TRUE;
+    return FALSE;
 }
 
 

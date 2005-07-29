@@ -117,6 +117,7 @@ MooEdit         *moo_edit_window_get_active_doc (MooEditWindow  *window);
 
 gboolean         moo_edit_window_close_doc      (MooEditWindow  *window,
                                                  MooEdit        *doc);
+GSList          *moo_edit_window_list_docs      (MooEditWindow  *window);
 
 
 #ifdef MOOEDIT_COMPILATION

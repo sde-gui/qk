@@ -228,7 +228,7 @@ static void moo_edit_class_init (MooEditClass *klass)
                       G_OBJECT_CLASS_TYPE (klass),
                       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                       G_STRUCT_OFFSET (MooEditClass, close),
-                      NULL, NULL,
+                      g_signal_accumulator_true_handled, NULL,
                       _moo_marshal_BOOLEAN__VOID,
                       G_TYPE_BOOLEAN, 0);
 
@@ -557,7 +557,7 @@ gboolean    moo_edit_close                  (MooEdit            *edit)
     gboolean result;
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_signal_emit (edit, signals[CLOSE], 0, &result);
-    return result;
+    return !result;
 }
 
 

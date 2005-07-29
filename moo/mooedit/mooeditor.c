@@ -20,8 +20,32 @@
 #include "mooutils/moowin.h"
 
 
+typedef struct {
+    MooEditWindow *win;
+    GSList        *docs;
+} WindowInfo;
+
+static WindowInfo   *window_info_new        (MooEditWindow  *win);
+static void          window_info_free       (WindowInfo     *win);
+static void          window_info_add        (WindowInfo     *win,
+                                             MooEdit        *doc);
+static void          window_info_remove     (WindowInfo     *win,
+                                             MooEdit        *doc);
+
+static void          window_list_free       (MooEditor      *editor);
+static void          window_list_delete     (MooEditor      *editor,
+                                             WindowInfo     *win);
+static WindowInfo   *window_list_add        (MooEditor      *editor,
+                                             MooEditWindow  *win);
+static WindowInfo   *window_list_find       (MooEditor      *editor,
+                                             MooEditWindow  *win);
+static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
+                                             MooEdit        *edit);
+
+
 struct _MooEditorPrivate {
     GSList          *windows;
+    GSList          *window_list;
     char            *app_name;
     MooEditLangMgr  *lang_mgr;
     MooUIXML        *ui_xml;
@@ -40,6 +64,11 @@ static gboolean         contains_window     (MooEditor      *editor,
 static MooEditWindow   *get_top_window      (MooEditor      *editor);
 static gboolean         window_closed       (MooEditor      *editor,
                                              MooEditWindow  *window);
+static void             new_document        (MooEditor      *editor,
+                                             MooEdit        *edit,
+                                             MooEditWindow  *window);
+static gboolean         document_closed     (MooEditor      *editor,
+                                             MooEdit        *doc);
 
 
 enum {
@@ -100,6 +129,7 @@ static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
     editor->priv->file_mgr = moo_edit_file_mgr_new ();
+    editor->priv->window_list = NULL;
 }
 
 
@@ -114,6 +144,7 @@ static void moo_editor_finalize       (GObject      *object)
         g_object_unref (editor->priv->ui_xml);
     if (editor->priv->file_mgr)
         g_object_unref (editor->priv->file_mgr);
+    window_list_free (editor);
 
     g_free (editor->priv);
 
@@ -147,6 +178,8 @@ static void              add_window     (MooEditor      *editor,
                                          MooEditWindow  *window)
 {
     MooUIXML *ui_xml;
+    WindowInfo *info;
+    GSList *list, *l;
 
     g_return_if_fail (!contains_window (editor, window));
     g_return_if_fail (window != NULL);
@@ -159,11 +192,31 @@ static void              add_window     (MooEditor      *editor,
     _moo_edit_window_set_app_name (MOO_EDIT_WINDOW (window),
                                    editor->priv->app_name);
 
+    info = window_list_add (editor, window);
+    list = moo_edit_window_list_docs (window);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        MooEdit *edit = l->data;
+        g_signal_connect_data (edit, "close",
+                               G_CALLBACK (document_closed), editor,
+                               NULL,
+                               G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+        window_info_add (info, edit);
+    }
+
+    g_slist_free (list);
+
     ui_xml = moo_editor_get_ui_xml (editor);
     moo_ui_object_set_ui_xml (MOO_UI_OBJECT (window), ui_xml);
 
     g_signal_connect_data (window, "close",
                            G_CALLBACK (window_closed), editor,
+                           NULL,
+                           G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+
+    g_signal_connect_data (window, "new-document",
+                           G_CALLBACK (new_document), editor,
                            NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 }
@@ -172,6 +225,8 @@ static void              add_window     (MooEditor      *editor,
 static void              remove_window  (MooEditor      *editor,
                                          MooEditWindow  *window)
 {
+    WindowInfo *info;
+
     g_return_if_fail (contains_window (editor, window));
     g_return_if_fail (window != NULL);
 
@@ -179,8 +234,31 @@ static void              remove_window  (MooEditor      *editor,
 
     editor->priv->windows = g_slist_remove (editor->priv->windows, window);
 
+    info = window_list_find (editor, window);
+    window_list_delete (editor, info);
+
     if (!editor->priv->windows)
         g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0, NULL);
+}
+
+
+static void             new_document        (MooEditor      *editor,
+                                             MooEdit        *edit,
+                                             MooEditWindow  *window)
+{
+    WindowInfo *info = window_list_find (editor, window);
+    g_return_if_fail (info != NULL);
+    window_info_add (info, edit);
+}
+
+
+static gboolean         document_closed     (MooEditor      *editor,
+                                             MooEdit        *edit)
+{
+    WindowInfo *info = window_list_find_doc (editor, edit);
+    g_return_val_if_fail (info != NULL, FALSE);
+    window_info_remove (info, edit);
+    return FALSE;
 }
 
 
@@ -203,7 +281,7 @@ static gboolean         contains_window     (MooEditor      *editor,
 static gboolean         window_closed       (MooEditor      *editor,
                                              MooEditWindow  *window)
 {
-    g_return_val_if_fail (contains_window (editor, window), TRUE);
+    g_return_val_if_fail (contains_window (editor, window), FALSE);
     remove_window (editor, window);
     return FALSE;
 }
@@ -228,8 +306,6 @@ gboolean         moo_editor_open                (MooEditor      *editor,
     {
         info = moo_edit_file_mgr_open_dialog (editor->priv->file_mgr,
                                               parent);
-
-//         info = moo_edit_open_dialog (parent);
 
         if (!info)
         {
@@ -370,4 +446,95 @@ void             moo_editor_set_ui_xml          (MooEditor      *editor,
     for (l = editor->priv->windows; l != NULL; l = l->next)
         moo_ui_object_set_ui_xml (MOO_UI_OBJECT (l->data),
                                   editor->priv->ui_xml);
+}
+
+
+static WindowInfo   *window_info_new    (MooEditWindow  *win)
+{
+    WindowInfo *w = g_new0 (WindowInfo, 1);
+    w->win = win;
+    return w;
+}
+
+static void          window_info_free   (WindowInfo     *win)
+{
+    if (win)
+    {
+        g_slist_free (win->docs);
+        g_free (win);
+    }
+}
+
+static void          window_info_add        (WindowInfo     *win,
+                                             MooEdit        *edit)
+{
+    g_return_if_fail (!g_slist_find (win->docs, edit));
+    win->docs = g_slist_prepend (win->docs, edit);
+}
+
+static void          window_info_remove     (WindowInfo     *win,
+                                             MooEdit        *edit)
+{
+    g_return_if_fail (g_slist_find (win->docs, edit));
+    win->docs = g_slist_remove (win->docs, edit);
+}
+
+static void          window_list_free   (MooEditor      *editor)
+{
+    g_slist_foreach (editor->priv->window_list,
+                     (GFunc) window_info_free, NULL);
+    g_slist_free (editor->priv->window_list);
+    editor->priv->window_list = NULL;
+}
+
+static void          window_list_delete (MooEditor      *editor,
+                                         WindowInfo     *win)
+{
+    g_return_if_fail (g_slist_find (editor->priv->window_list, win));
+    window_info_free (win);
+    editor->priv->window_list =
+            g_slist_remove (editor->priv->window_list, win);
+}
+
+static WindowInfo   *window_list_add    (MooEditor      *editor,
+                                         MooEditWindow  *win)
+{
+    WindowInfo *w = window_info_new (win);
+    editor->priv->window_list =
+            g_slist_prepend (editor->priv->window_list, w);
+    return w;
+}
+
+static int window_cmp (WindowInfo *w, MooEditWindow *e)
+{
+    g_return_val_if_fail (w != NULL, 1);
+    return !(w->win == e);
+}
+
+static WindowInfo   *window_list_find   (MooEditor      *editor,
+                                         MooEditWindow  *win)
+{
+    GSList *l = g_slist_find_custom (editor->priv->window_list, win,
+                                     (GCompareFunc) window_cmp);
+    if (l)
+        return l->data;
+    else
+        return NULL;
+}
+
+static int doc_cmp (WindowInfo *w, MooEdit *e)
+{
+    g_return_val_if_fail (w != NULL, 1);
+    return !g_slist_find (w->docs, e);
+}
+
+static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
+                                             MooEdit        *edit)
+{
+    GSList *l = g_slist_find_custom (editor->priv->window_list, edit,
+                                     (GCompareFunc) doc_cmp);
+    if (l)
+        return l->data;
+    else
+        return NULL;
 }
