@@ -687,7 +687,7 @@ MooEditPrivate *moo_edit_private_new (void)
 
 //     priv->timestamp = MOO_MTIME_EINVAL;
     priv->file_watch_timeout = 5000;
-    priv->file_watch_policy = MOO_EDIT_ALWAYS_ALERT;
+    priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
 #if defined(__WIN32__)
     priv->line_end_type = MOO_EDIT_LINE_END_WIN32;

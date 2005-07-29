@@ -679,7 +679,7 @@ const char *get_default_shell (G_GNUC_UNUSED MooTermPt *pt)
 {
     const char *shell;
 
-    shell = g_strdup (g_getenv ("SHELL"));
+    shell = g_getenv ("SHELL");
     if (!shell) shell = "/bin/sh";
 
     return shell;

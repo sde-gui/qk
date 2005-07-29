@@ -37,6 +37,7 @@ void        moo_edit_style_load             (const char     *lang_id,
 
 #define MOO_EDIT_PREFS_SEARCH_SELECTED              "search/search_selected"
 
+#define MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES          "on_external_changes"
 #define MOO_EDIT_PREFS_AUTO_SAVE                    "auto_save"
 #define MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL           "auto_save_interval"
 #define MOO_EDIT_PREFS_SMART_HOME_END               "smart_home_end"

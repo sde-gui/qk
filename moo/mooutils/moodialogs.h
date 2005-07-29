@@ -37,6 +37,13 @@ const char *moo_file_dialog (GtkWidget          *parent,
                              const char         *title,
                              const char         *start_dir);
 
+GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
+                                             MooFileDialogType   type,
+                                             const char         *title,
+                                             const char         *start_dir);
+gboolean    moo_file_dialog_run             (GtkWidget          *dialog);
+const char *moo_file_dialog_get_filename    (GtkWidget          *dialog);
+
 const char *moo_file_dialogp(GtkWidget          *parent,
                              MooFileDialogType   type,
                              const char         *title,

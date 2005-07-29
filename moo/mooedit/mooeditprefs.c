@@ -21,13 +21,29 @@
 #include <string.h>
 
 
+#define STR_STACK_SIZE 4
+
 const char *moo_edit_setting                (const char     *setting_name)
 {
-    static char *s = NULL;
+    static GString *stack[STR_STACK_SIZE];
+    static guint p;
+
     g_return_val_if_fail (setting_name != NULL, NULL);
-    g_free (s);
-    s = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/%s", setting_name);
-    return s;
+
+    if (!stack[0])
+    {
+        for (p = 0; p < STR_STACK_SIZE; ++p)
+            stack[p] = g_string_new ("");
+        p = STR_STACK_SIZE - 1;
+    }
+
+    if (p == STR_STACK_SIZE - 1)
+        p = 0;
+    else
+        p++;
+
+    g_string_printf (stack[p], MOO_EDIT_PREFS_PREFIX "/%s", setting_name);
+    return stack[p]->str;
 }
 
 
@@ -41,6 +57,7 @@ static void set_highlight_current_line (MooEdit *edit);
 #define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_ENUM(s,t,v) moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 
 void        _moo_edit_set_default_settings      (void)
 {
@@ -66,6 +83,9 @@ void        _moo_edit_set_default_settings      (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_DEFAULT_COLORS, TRUE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE, TRUE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING, TRUE);
+    NEW_KEY_ENUM (MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES,
+                  MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES,
+                  MOO_EDIT_RELOAD_IF_SAFE);
 
     settings = gtk_settings_get_default ();
     style = gtk_rc_get_style_by_paths (settings, "MooEdit", "MooEdit", MOO_TYPE_EDIT);
@@ -93,6 +113,7 @@ void        _moo_edit_set_default_settings      (void)
 #define get_bool(key) moo_prefs_get_bool (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "/" key)
+#define get_enum(key) moo_prefs_get_enum (MOO_EDIT_PREFS_PREFIX "/" key)
 
 void        _moo_edit_apply_settings            (MooEdit    *edit)
 {

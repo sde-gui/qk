@@ -22,6 +22,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditlang-private.h"
+#include "mooedit/mooeditprefs.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
@@ -828,17 +829,24 @@ static gboolean process_syntax_item_node    (MooEditLang    *lang,
 
     name = xmlGetProp (node, (const xmlChar*)"_name");
     if (!name) name = xmlGetProp (node, (const xmlChar*)"name");
+
     style = xmlGetProp (node, (const xmlChar*)"_style");
     if (!style) style = xmlGetProp (node, (const xmlChar*)"style");
 
     for (n = node->children; n != NULL; n = n->next)
     {
-        if (n->type == XML_ELEMENT_NODE) {
-            if (!xmlStrcmp (n->name, (const xmlChar*)"start-regex"))
+        if (n->type == XML_ELEMENT_NODE)
+        {
+            if (!start_regex && !xmlStrcmp (n->name, (const xmlChar*)"start-regex"))
+            {
                 start_regex = xmlNodeGetContent (n);
-            else if (!xmlStrcmp (n->name, (const xmlChar*)"end-regex"))
+            }
+            else if (!end_regex && !xmlStrcmp (n->name, (const xmlChar*)"end-regex"))
+            {
                 end_regex = xmlNodeGetContent (n);
-            else {
+            }
+            else
+            {
                 g_critical ("%s: pattern node has wrong name '%s'",
                             G_STRLOC, n->name);
                 success = FALSE;
@@ -847,19 +855,23 @@ static gboolean process_syntax_item_node    (MooEditLang    *lang,
         }
     }
 
-    if (success && name && start_regex && end_regex) {
+    if (success && name && start_regex && end_regex)
+    {
         tag = gtk_block_comment_tag_new ((char*)name, (char*)name,
                                          strconvescape((char*)start_regex),
                                          strconvescape((char*)end_regex));
-        if (tag) {
+        if (tag)
+        {
             add_tag (lang, GTK_SOURCE_TAG (tag), style);
         }
-        else {
+        else
+        {
             g_critical ("%s: could not create tag '%s'", G_STRLOC, (char*)name);
             success = FALSE;
         }
     }
-    else {
+    else
+    {
         if (!name)
             g_critical ("%s: no name attribute", G_STRLOC);
         if (!start_regex)

@@ -643,7 +643,7 @@ char            *moo_markup_element_get_path(MooMarkupElement   *elm)
     GString *path;
     MooMarkupNode *node;
 
-    g_return_val_if_fail (node != NULL, NULL);
+    g_return_val_if_fail (elm != NULL, NULL);
 
     path = g_string_new (elm->name);
 
@@ -757,8 +757,11 @@ static void create_text_element (MooMarkupElement   *node,
         node->children = NULL;
         node->last = NULL;
         g_free (node->content);
+        node->content = NULL;
         g_strfreev (node->attr_names);
+        node->attr_names = NULL;
         g_strfreev (node->attr_vals);
+        node->attr_vals = NULL;
         node->n_attrs = 0;
 
         child = moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,

@@ -14,7 +14,6 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditdialogs.h"
-#include "mooedit/mooeditlangmgr.h"
 #include "mooutils/moofileutils.h"
 #include <string.h>
 
@@ -177,8 +176,19 @@ gboolean    _moo_edit_save_as       (MooEdit    *edit,
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (!file || !file[0]) {
-        info = moo_edit_save_as_dialog (edit);
+    if (!file || !file[0])
+    {
+        if (edit->priv->editor)
+        {
+            MooEditFileMgr *mgr;
+            mgr = moo_editor_get_file_mgr (edit->priv->editor);
+            info = moo_edit_file_mgr_save_as_dialog (mgr, edit);
+        }
+        else
+        {
+            info = moo_edit_save_as_dialog (edit);
+        }
+
         if (!info)
             return FALSE;
 

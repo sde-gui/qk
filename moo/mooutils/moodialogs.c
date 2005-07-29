@@ -190,91 +190,159 @@ const char *moo_file_dialog (GtkWidget  *parent,
                              const char *title,
                              const char *start_dir)
 {
-    static char *filename = NULL;
+    const char *filename;
+    GtkWidget *dialog;
+
+    dialog = moo_file_dialog_create (parent, type, title, start_dir);
+    g_return_val_if_fail (dialog != NULL, NULL);
+
+    moo_file_dialog_run (dialog);
+    filename = moo_file_dialog_get_filename (dialog);
+
+    gtk_widget_destroy (dialog);
+    return filename;
+}
+
+
+GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
+                                             MooFileDialogType   type,
+                                             const char         *title,
+                                             const char         *start_dir)
+{
     GtkWindow *parent_window = NULL;
     GtkFileChooserAction chooser_action;
     GtkWidget *dialog = NULL;
 
-    if (filename) g_free (filename);
-    filename = NULL;
-
-    parent_window = NULL;
-    if (parent) parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
+    if (parent)
+        parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
 
     switch (type) {
-    case MOO_DIALOG_FILE_OPEN_EXISTING:
-    case MOO_DIALOG_FILE_OPEN_ANY:
-    case MOO_DIALOG_DIR_OPEN:
-    {
-        if (type == MOO_DIALOG_DIR_OPEN)
-            chooser_action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
-        else
-            chooser_action = GTK_FILE_CHOOSER_ACTION_OPEN;
+        case MOO_DIALOG_FILE_OPEN_EXISTING:
+        case MOO_DIALOG_FILE_OPEN_ANY:
+        case MOO_DIALOG_DIR_OPEN:
+            if (type == MOO_DIALOG_DIR_OPEN)
+                chooser_action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+            else
+                chooser_action = GTK_FILE_CHOOSER_ACTION_OPEN;
 
-        dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
-                                          GTK_STOCK_OPEN, start_dir);
-        gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+            dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
+                                              GTK_STOCK_OPEN, start_dir);
+            gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+            break;
 
-        if (gtk_dialog_run (GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
-        {
-            filename = file_chooser_get_filename (dialog);
-            gtk_widget_destroy (dialog);
-            return filename;
-        }
-        else {
-            gtk_widget_destroy (dialog);
+        case MOO_DIALOG_FILE_SAVE:
+            chooser_action = GTK_FILE_CHOOSER_ACTION_SAVE;
+
+            dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
+                                              GTK_STOCK_SAVE, start_dir);
+            gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+            break;
+
+        default:
+            g_critical ("%s: incorrect dialog type specified", G_STRLOC);
             return NULL;
-        }
     }
 
-    case MOO_DIALOG_FILE_SAVE:
+    g_object_set_data (G_OBJECT (dialog),
+                       "moo-file-dialog-action",
+                       GINT_TO_POINTER (type));
+    g_object_set_data (G_OBJECT (dialog),
+                       "moo-file-dialog",
+                       GINT_TO_POINTER (1));
+    g_object_set_data_full (G_OBJECT (dialog),
+                            "moo-file-dialog-filename", NULL,
+                            g_free);
+
+    return dialog;
+}
+
+
+gboolean    moo_file_dialog_run             (GtkWidget          *dialog)
+{
+    char *filename;
+    MooFileDialogType type;
+
+    g_return_val_if_fail (GPOINTER_TO_INT (g_object_get_data
+            (G_OBJECT (dialog), "moo-file-dialog")) == 1, FALSE);
+    g_return_val_if_fail (dialog != NULL, FALSE);
+
+    g_object_set_data_full (G_OBJECT (dialog),
+                            "moo-file-dialog-filename", NULL,
+                            g_free);
+
+    type = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (dialog),
+                            "moo-file-dialog-action"));
+
+    switch (type)
     {
-        chooser_action = GTK_FILE_CHOOSER_ACTION_SAVE;
+        case MOO_DIALOG_FILE_OPEN_EXISTING:
+        case MOO_DIALOG_FILE_OPEN_ANY:
+        case MOO_DIALOG_DIR_OPEN:
+            if (gtk_dialog_run (GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+            {
+                g_object_set_data_full (G_OBJECT (dialog),
+                                        "moo-file-dialog-filename",
+                                        file_chooser_get_filename (dialog),
+                                        g_free);
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
 
-        dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
-                                          GTK_STOCK_SAVE, start_dir);
-        gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
-
-        while (TRUE) {
-            if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog))) {
-                filename = file_chooser_get_filename (dialog);
-                if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
-                    ! g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+        case MOO_DIALOG_FILE_SAVE:
+            while (TRUE)
+            {
+                if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
                 {
-                    moo_error_dialog (dialog,
-                                      "Choosen file is not a regular file",
-                                      NULL);
-                    g_free (filename);
-                    filename = NULL;
-                }
-                else if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
-                        g_file_test (filename, G_FILE_TEST_IS_REGULAR))
-                {
-                    if (overwrite_dialog (GTK_WINDOW (dialog))) {
-                        gtk_widget_destroy (dialog);
-                        return filename;
-                    }
-                    else {
+                    filename = file_chooser_get_filename (dialog);
+                    if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
+                        ! g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+                    {
+                        moo_error_dialog (dialog,
+                                          "Choosen file is not a regular file",
+                                          NULL);
                         g_free (filename);
-                        filename = NULL;
+                    }
+                    else if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
+                             g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+                    {
+                        if (overwrite_dialog (GTK_WINDOW (dialog)))
+                        {
+                            g_object_set_data_full (G_OBJECT (dialog),
+                                    "moo-file-dialog-filename", filename,
+                                    g_free);
+                            return TRUE;
+                        }
+                    }
+                    else
+                    {
+                        g_object_set_data_full (G_OBJECT (dialog),
+                                "moo-file-dialog-filename", filename,
+                                g_free);
+                        return TRUE;
                     }
                 }
-                else { /* file doesn't exist */
-                    gtk_widget_destroy (dialog);
-                    return filename;
+                else
+                {
+                    return FALSE;
                 }
             }
-            else {
-                gtk_widget_destroy (dialog);
-                return NULL;
-            }
-        }
-    }
 
-    default:
-        g_critical ("%s: incorrect dialog type specified", G_STRLOC);
-        return NULL;
+        default:
+            g_critical ("%s: incorrect dialog type specified", G_STRLOC);
+            return FALSE;
     }
+}
+
+
+const char  *moo_file_dialog_get_filename    (GtkWidget          *dialog)
+{
+    g_return_val_if_fail (dialog != NULL, NULL);
+    g_return_val_if_fail (GPOINTER_TO_INT (g_object_get_data
+            (G_OBJECT (dialog), "moo-file-dialog")) == 1, NULL);
+    return g_object_get_data (G_OBJECT (dialog), "moo-file-dialog-filename");
 }
 
 
