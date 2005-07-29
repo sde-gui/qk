@@ -52,9 +52,6 @@ static void init_accel_map (void)
 
 static char *accel_path_to_prefs_key (const char *accel_path)
 {
-    GString *key;
-    const char *p;
-
     if (accel_path && accel_path[0] == '<')
     {
         accel_path = strchr (accel_path, '/');
@@ -65,35 +62,7 @@ static char *accel_path_to_prefs_key (const char *accel_path)
     if (!accel_path || !accel_path[0])
         return NULL;
 
-    key = g_string_new (MOO_ACCEL_PREFS_KEY);
-
-    while (accel_path && *accel_path)
-    {
-        p = strchr (accel_path, '/');
-
-        g_string_append (key, "::");
-
-        if (p)
-        {
-            g_string_append_len (key, accel_path, p - accel_path);
-            accel_path = p + 1;
-        }
-        else
-        {
-            g_string_append (key, accel_path);
-            accel_path = NULL;
-        }
-    }
-
-    if (key->len > strlen (MOO_ACCEL_PREFS_KEY))
-    {
-        return g_string_free (key, FALSE);
-    }
-    else
-    {
-        g_string_free (key, TRUE);
-        return NULL;
-    }
+    return g_strdup_printf (MOO_ACCEL_PREFS_KEY "/%s", accel_path);
 }
 
 
