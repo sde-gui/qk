@@ -32,6 +32,10 @@ static void     moo_ui_object_set_id            (MooUIObject    *object,
                                                  const char     *id);
 static void     moo_ui_object_add_class_actions (MooUIObject    *object);
 
+static void     xml_changed     (MooUIObject    *object);
+static void     unref_xml       (GObject        *xml,
+                                 gpointer        object);
+
 
 GType moo_ui_object_get_type (void)
 {
@@ -59,24 +63,55 @@ GType moo_ui_object_get_type (void)
 
 static void    moo_ui_object_iface_init    (G_GNUC_UNUSED gpointer g_iface)
 {
+    static gboolean done = FALSE;
+    if (done) return;
+    done = TRUE;
+
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_string ("ui-object-name",
+                                                 "ui-object-name",
+                                                 "ui-object-name",
+                                                 NULL,
+                                                 G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_string ("ui-object-id",
+                                                 "ui-object-id",
+                                                 "ui-object-id",
+                                                 NULL,
+                                                 G_PARAM_READABLE));
+
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_object ("ui-object-actions",
+                                                 "ui-object-actions",
+                                                 "ui-object-actions",
+                                                 MOO_TYPE_ACTION_GROUP,
+                                                 G_PARAM_READABLE));
+
+    g_object_interface_install_property (g_iface,
+                                         g_param_spec_object ("ui-object-xml",
+                                                 "ui-object-xml",
+                                                 "ui-object-xml",
+                                                 MOO_TYPE_UI_XML,
+                                                 G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 
-const char      *moo_ui_object_get_name         (MooUIObject        *object)
+const char      *_moo_ui_object_get_name_impl   (MooUIObject        *object)
 {
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
     return g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_NAME_QUARK);
 }
 
 
-const char      *moo_ui_object_get_id           (MooUIObject        *object)
+const char      *_moo_ui_object_get_id_impl     (MooUIObject        *object)
 {
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
     return g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_ID_QUARK);
 }
 
 
-void             moo_ui_object_set_name         (MooUIObject        *object,
+void             _moo_ui_object_set_name_impl   (MooUIObject        *object,
                                                  const char         *name)
 {
     g_return_if_fail (MOO_IS_UI_OBJECT (object) && name != NULL);
@@ -85,7 +120,7 @@ void             moo_ui_object_set_name         (MooUIObject        *object,
                              g_strdup (name),
                              (GDestroyNotify) g_free);
     moo_action_group_set_name (moo_ui_object_get_actions (object), name);
-    g_object_notify (G_OBJECT (object), "name");
+    g_object_notify (G_OBJECT (object), "ui-object-name");
 }
 
 
@@ -100,56 +135,71 @@ static void     moo_ui_object_set_id            (MooUIObject    *object,
 }
 
 
-MooActionGroup  *moo_ui_object_get_actions      (MooUIObject        *object)
+MooActionGroup  *_moo_ui_object_get_actions_impl(MooUIObject        *object)
 {
     MooActionGroup *group;
 
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
 
     group = g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_ACTIONS_QUARK);
-    if (!group) {
+
+    if (!group)
+    {
         group = moo_action_group_new (moo_ui_object_get_name (object));
         g_object_set_qdata_full (G_OBJECT (object),
                                  MOO_UI_OBJECT_ACTIONS_QUARK,
                                  group,
                                  (GDestroyNotify) g_object_unref);
+        g_object_notify (G_OBJECT (object), "ui-object-actions");
     }
 
     return group;
 }
 
 
-MooUIXML        *moo_ui_object_get_ui_xml       (MooUIObject        *object)
+MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object)
 {
     MooUIXML *xml;
 
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
 
     xml = g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_UI_XML_QUARK);
-    if (!xml) {
+
+    if (!xml)
+    {
         xml = moo_ui_xml_new ();
+        g_signal_connect_swapped (xml, "changed",
+                                  G_CALLBACK (xml_changed), object);
         g_object_set_qdata_full (G_OBJECT (object),
                                  MOO_UI_OBJECT_UI_XML_QUARK,
                                  xml,
-                                 (GDestroyNotify) g_object_unref);
+                                 (GDestroyNotify) unref_xml);
+        g_object_notify (G_OBJECT (object), "ui-object-xml");
     }
 
     return xml;
 }
 
 
-void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
+void             _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
                                                  MooUIXML           *xml)
 {
+    MooUIXML *old;
+
     g_return_if_fail (MOO_IS_UI_OBJECT (object));
+
+    old = g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_UI_XML_QUARK);
+    if (old == xml) return;
 
     if (xml)
     {
         g_object_ref (G_OBJECT (xml));
+        g_signal_connect_swapped (xml, "changed",
+                                  G_CALLBACK (xml_changed), object);
         g_object_set_qdata_full (G_OBJECT (object),
                                  MOO_UI_OBJECT_UI_XML_QUARK,
                                  xml,
-                                 (GDestroyNotify) g_object_unref);
+                                 (GDestroyNotify) unref_xml);
     }
     else
     {
@@ -157,6 +207,23 @@ void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
                             MOO_UI_OBJECT_UI_XML_QUARK,
                             NULL);
     }
+
+    g_object_notify (G_OBJECT (object), "ui-object-xml");
+}
+
+
+static void     xml_changed     (MooUIObject    *object)
+{
+    g_object_notify (G_OBJECT (object), "ui-object-xml");
+}
+
+
+static void     unref_xml       (GObject        *xml,
+                                 gpointer        object)
+{
+    g_signal_handlers_disconnect_by_func (xml, (gpointer)xml_changed,
+                                          object);
+    g_object_unref (xml);
 }
 
 
@@ -548,4 +615,61 @@ static const GQuark *get_quark (void)
         q[3] = g_quark_from_static_string ("moo_ui_object_name");
     }
     return q;
+}
+
+
+MooUIXML        *moo_ui_object_get_ui_xml       (MooUIObject        *object)
+{
+    MooUIXML *xml;
+    g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+    g_object_get (G_OBJECT (object), "ui-object-xml", &xml, NULL);
+    if (xml) g_object_unref (xml);
+    return xml;
+}
+
+
+void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
+                                                 MooUIXML           *xml)
+{
+    g_return_if_fail (MOO_IS_UI_OBJECT (object));
+    g_return_if_fail (!xml || MOO_IS_UI_XML (xml));
+    g_object_set (G_OBJECT (object), "ui-object-xml", xml, NULL);
+}
+
+
+MooActionGroup  *moo_ui_object_get_actions      (MooUIObject        *object)
+{
+    MooActionGroup *actions;
+    g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+    g_object_get (G_OBJECT (object), "ui-object-actions", &actions, NULL);
+    if (actions) g_object_unref (actions);
+    return actions;
+}
+
+
+const char      *moo_ui_object_get_name         (MooUIObject        *object)
+{
+    static char *name = NULL;
+    g_free (name);
+    g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+    g_object_get (G_OBJECT (object), "ui-object-name", &name, NULL);
+    return name;
+}
+
+
+const char      *moo_ui_object_get_id           (MooUIObject        *object)
+{
+    static char *id = NULL;
+    g_free (id);
+    g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+    g_object_get (G_OBJECT (object), "ui-object-id", &id, NULL);
+    return id;
+}
+
+
+void             moo_ui_object_set_name         (MooUIObject        *object,
+                                                 const char         *name)
+{
+    g_return_if_fail (MOO_IS_UI_OBJECT (object));
+    g_object_set (G_OBJECT (object), "ui-object-name", name, NULL);
 }

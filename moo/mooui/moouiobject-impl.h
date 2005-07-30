@@ -28,15 +28,16 @@ void        moo_ui_object_init              (MooUIObject    *object);
 void        moo_ui_object_add_action        (MooUIObject    *object,
                                              MooAction      *action);
 
-// void             _moo_ui_object_base_init           (gpointer iface);
-// 
-// void             _moo_ui_object_class_init          (GObjectClass   *klass,
-//                                                      const char     *class_id);
-// 
-// void             _moo_ui_object_add_class_actions   (MooUIObject    *object);
-// 
-// void             _moo_ui_object_set_id              (MooUIObject    *object,
-//                                                      const char     *id);
+MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object);
+void             _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
+                                                 MooUIXML           *xml);
+
+MooActionGroup  *_moo_ui_object_get_actions_impl(MooUIObject        *object);
+
+const char      *_moo_ui_object_get_name_impl   (MooUIObject        *object);
+const char      *_moo_ui_object_get_id_impl     (MooUIObject        *object);
+void             _moo_ui_object_set_name_impl   (MooUIObject        *object,
+                                                 const char         *name);
 
 
 G_END_DECLS

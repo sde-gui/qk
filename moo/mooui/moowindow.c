@@ -51,7 +51,6 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window);
 
 struct _MooWindowPrivate {
     guint save_size_id;
-    int update_id;
     char *toolbar_ui_name;
     char *menubar_ui_name;
 };
@@ -82,9 +81,6 @@ static gboolean moo_window_save_size            (MooWindow      *window);
 
 static void moo_window_shortcuts_prefs_dialog   (MooWindow      *window);
 
-static void moo_window_ui_changed               (MooWindow      *window);
-static gboolean update_ui_callback              (MooWindow      *window);
-
 static void moo_window_show_menubar_toggled     (MooWindow      *window,
                                                  gboolean        show);
 static void moo_window_show_toolbar_toggled     (MooWindow      *window,
@@ -97,7 +93,11 @@ enum {
     PROP_0,
     PROP_ACCEL_GROUP,
     PROP_MENUBAR_UI_NAME,
-    PROP_TOOLBAR_UI_NAME
+    PROP_TOOLBAR_UI_NAME,
+    PROP_UI_OBJECT_NAME,
+    PROP_UI_OBJECT_ID,
+    PROP_UI_OBJECT_XML,
+    PROP_UI_OBJECT_ACTIONS
 };
 
 enum {
@@ -209,7 +209,7 @@ static void moo_window_class_init (MooWindowClass *klass)
                                      g_param_spec_string ("menubar-ui-name",
                                                           "menubar-ui-name",
                                                           "menubar-ui-name",
-                                                          "Menubar",
+                                                          NULL,
                                                           G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
@@ -217,8 +217,40 @@ static void moo_window_class_init (MooWindowClass *klass)
                                      g_param_spec_string ("toolbar-ui-name",
                                                           "toolbar-ui-name",
                                                           "toolbar-ui-name",
-                                                          "Toolbar",
+                                                          NULL,
                                                           G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_UI_OBJECT_NAME,
+                                     g_param_spec_string ("ui-object-name",
+                                             "ui-object-name",
+                                             "ui-object-name",
+                                             NULL,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_UI_OBJECT_ID,
+                                     g_param_spec_string ("ui-object-id",
+                                             "ui-object-id",
+                                             "ui-object-id",
+                                             NULL,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_UI_OBJECT_ACTIONS,
+                                     g_param_spec_object ("ui-object-actions",
+                                             "ui-object-actions",
+                                             "ui-object-actions",
+                                             MOO_TYPE_ACTION_GROUP,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_UI_OBJECT_XML,
+                                     g_param_spec_object ("ui-object-xml",
+                                             "ui-object-xml",
+                                             "ui-object-xml",
+                                             MOO_TYPE_UI_XML,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[CLOSE] =
         g_signal_new ("close",
@@ -273,16 +305,18 @@ GObject    *moo_window_constructor      (GType                  type,
     moo_action_group_set_accel_group (actions, window->accel_group);
     moo_action_group_set_tooltips  (actions, window->tooltips);
 
-    g_signal_connect_swapped (moo_ui_object_get_ui_xml (MOO_UI_OBJECT (window)),
-                              "changed",
-                              G_CALLBACK (moo_window_ui_changed),
-                              window);
-    moo_window_ui_changed (window);
+    g_signal_connect (window, "notify::toolbar-ui-name",
+                      G_CALLBACK (moo_window_update_ui), NULL);
+    g_signal_connect (window, "notify::menubar-ui-name",
+                      G_CALLBACK (moo_window_update_ui), NULL);
+    g_signal_connect (window, "notify::ui-object-xml",
+                      G_CALLBACK (moo_window_update_ui), NULL);
 
     g_signal_connect (window, "realize",
                       G_CALLBACK (moo_window_realize), NULL);
-    g_signal_connect (window, "configure-event",
-                      G_CALLBACK (moo_window_save_size), NULL);
+
+    moo_window_update_ui (window);
+
     return object;
 }
 
@@ -297,8 +331,6 @@ static void moo_window_finalize       (GObject      *object)
 {
     MooWindow *window = MOO_WINDOW(object);
 
-    if (window->priv->update_id > 0)
-        g_source_remove (window->priv->update_id);
     g_free (window->priv->menubar_ui_name);
     g_free (window->priv->toolbar_ui_name);
     g_free (window->priv);
@@ -311,9 +343,6 @@ static void moo_window_finalize       (GObject      *object)
     if (window->priv->save_size_id)
         g_source_remove (window->priv->save_size_id);
     window->priv->save_size_id = 0;
-
-    g_signal_handlers_disconnect_by_func (moo_ui_object_get_ui_xml (MOO_UI_OBJECT (window)),
-                                          (gpointer) moo_window_ui_changed, window);
 
     G_OBJECT_CLASS (moo_window_parent_class)->finalize (object);
 }
@@ -330,9 +359,6 @@ static gboolean moo_window_delete_event     (GtkWidget      *widget,
 
 void     moo_window_realize (MooWindow *window)
 {
-    MooAction *show_toolbar, *show_menubar;
-    GtkToolbarStyle style;
-
     if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
     {
         int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
@@ -344,20 +370,8 @@ void     moo_window_realize (MooWindow *window)
             gtk_window_maximize (GTK_WINDOW (window));
     }
 
-    show_menubar =
-            moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
-                                         "ShowMenubar");
-    show_toolbar =
-            moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
-                                         "ShowToolbar");
-
-    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_menubar),
-                                  moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
-    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_toolbar),
-                                  moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
-
-    style = get_toolbar_style (window);
-    gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
+    g_signal_connect (window, "configure-event",
+                      G_CALLBACK (moo_window_save_size), NULL);
 }
 
 
@@ -417,6 +431,8 @@ static void moo_window_set_property     (GObject      *object,
 {
     const char *name = NULL;
     MooWindow *window = MOO_WINDOW (object);
+    MooUIObject *ui_obj = MOO_UI_OBJECT (object);
+    MooUIXML *xml;
 
     switch (prop_id)
     {
@@ -434,6 +450,18 @@ static void moo_window_set_property     (GObject      *object,
             g_object_notify (object, "menubar-ui-name");
             break;
 
+        case PROP_UI_OBJECT_NAME:
+            if (g_value_get_string (value))
+                _moo_ui_object_set_name_impl (ui_obj,
+                                              g_value_get_string (value));
+            break;
+
+        case PROP_UI_OBJECT_XML:
+            if (g_value_get_object (value))
+                _moo_ui_object_set_ui_xml_impl (ui_obj,
+                        g_value_get_object (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -446,6 +474,7 @@ static void moo_window_get_property     (GObject      *object,
                                          GParamSpec   *pspec)
 {
     MooWindow *window = MOO_WINDOW (object);
+    MooUIObject *ui_obj = MOO_UI_OBJECT (object);
 
     switch (prop_id)
     {
@@ -464,6 +493,26 @@ static void moo_window_get_property     (GObject      *object,
                                 window->priv->menubar_ui_name);
             break;
 
+        case PROP_UI_OBJECT_NAME:
+            g_value_set_string (value,
+                                _moo_ui_object_get_name_impl (ui_obj));
+            break;
+
+        case PROP_UI_OBJECT_ID:
+            g_value_set_string (value,
+                                _moo_ui_object_get_id_impl (ui_obj));
+            break;
+
+        case PROP_UI_OBJECT_XML:
+            g_value_set_object (value,
+                                _moo_ui_object_get_ui_xml_impl (ui_obj));
+            break;
+
+        case PROP_UI_OBJECT_ACTIONS:
+            g_value_set_object (value,
+                                _moo_ui_object_get_actions_impl (ui_obj));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -471,54 +520,55 @@ static void moo_window_get_property     (GObject      *object,
 }
 
 
-static void moo_window_ui_changed (MooWindow *window)
-{
-    if (!window->priv->update_id)
-    {
-        if (!gtk_main_level ())
-        {
-            window->priv->update_id = -1;
-            gtk_init_add ((GtkFunction) update_ui_callback,
-                          window);
-        }
-        else
-            window->priv->update_id =
-                g_idle_add_full (G_PRIORITY_HIGH,
-                                 (GSourceFunc) update_ui_callback,
-                                 window, NULL);
-    }
-}
-
-
-static gboolean update_ui_callback (MooWindow *window)
-{
-    moo_window_update_ui (window);
-    window->priv->update_id = 0;
-    return FALSE;
-}
-
-
 void        moo_window_update_ui            (MooWindow  *window)
 {
     MooUIXML *xml;
+    MooAction *show_toolbar, *show_menubar;
+    GtkToolbarStyle style;
 
-    g_return_if_fail (MOO_IS_WINDOW (window) && window->priv != NULL);
+    g_return_if_fail (MOO_IS_WINDOW (window));
 
     xml = moo_ui_object_get_ui_xml (MOO_UI_OBJECT (window));
 
     if (window->priv->menubar_ui_name && window->priv->menubar_ui_name[0] &&
         moo_ui_xml_has_widget (xml, window->priv->menubar_ui_name))
-            moo_ui_xml_update_widget (xml, window->menubar,
-                                      window->priv->menubar_ui_name,
-                                      moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
-                                      window->accel_group, window->tooltips);
+    {
+        moo_ui_xml_update_widget (xml, window->menubar,
+                                  window->priv->menubar_ui_name,
+                                  moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
+                                  window->accel_group, window->tooltips);
+        show_menubar =
+                moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
+                                             "ShowMenubar");
+        moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_menubar),
+                                      moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
+    }
+    else
+    {
+        gtk_widget_hide (window->menubar);
+    }
 
     if (window->priv->toolbar_ui_name && window->priv->toolbar_ui_name[0] &&
         moo_ui_xml_has_widget (xml, window->priv->toolbar_ui_name))
-            moo_ui_xml_update_widget (xml, window->toolbar,
-                                      window->priv->toolbar_ui_name,
-                                      moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
-                                      window->accel_group, window->tooltips);
+    {
+        moo_ui_xml_update_widget (xml, window->toolbar,
+                                  window->priv->toolbar_ui_name,
+                                  moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
+                                  window->accel_group, window->tooltips);
+
+        show_toolbar =
+                moo_action_group_get_action (moo_ui_object_get_actions (MOO_UI_OBJECT (window)),
+                                             "ShowToolbar");
+        moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_toolbar),
+                                      moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
+
+        style = get_toolbar_style (window);
+        gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
+    }
+    else
+    {
+        gtk_widget_hide (window->toolbar);
+    }
 }
 
 
@@ -533,18 +583,24 @@ static void moo_window_shortcuts_prefs_dialog (MooWindow *window)
 static void moo_window_show_toolbar_toggled (MooWindow  *window,
                                              gboolean        show)
 {
-    if (show) gtk_widget_show (window->toolbar);
-    else gtk_widget_hide (window->toolbar);
-    moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), show);
+    if (show != GTK_WIDGET_VISIBLE (window->toolbar))
+    {
+        if (show) gtk_widget_show (window->toolbar);
+        else gtk_widget_hide (window->toolbar);
+        moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), show);
+    }
 }
 
 
 static void moo_window_show_menubar_toggled (MooWindow  *window,
                                              gboolean        show)
 {
-    if (show) gtk_widget_show (window->menubar);
-    else gtk_widget_hide (window->menubar);
-    moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), show);
+    if (show != GTK_WIDGET_VISIBLE (window->menubar))
+    {
+        if (show) gtk_widget_show (window->menubar);
+        else gtk_widget_hide (window->menubar);
+        moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), show);
+    }
 }
 
 
