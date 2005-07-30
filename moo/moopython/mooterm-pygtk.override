@@ -27,7 +27,7 @@ _wrap_moo_term_new (PyGObject *self, PyObject *args, PyObject *kwargs)
         return -1;
 
     self->obj = g_object_new (MOO_TYPE_TERM, NULL);
-    pygobject_register_wrapper (self);
+    pygobject_register_wrapper ((PyObject*)self);
 
     return 0;
 }

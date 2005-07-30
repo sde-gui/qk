@@ -17,8 +17,6 @@ AM_CFLAGS =                             \
     -DXDG_PREFIX=_moo_edit_xdg          \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
-    $(PYTHON_INCLUDES)                  \
-    $(PYGTK_CFLAGS)                     \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
@@ -85,28 +83,3 @@ mooeditgotoline-glade.c: $(GLADE)/mooeditgotoline.c $(GLADE)/mooeditgotoline.sed
 mooeditprefs-glade.c: $(GLADE)/mooeditprefs.c $(GLADE)/mooeditprefs.sed $(TOOLBAR) $(SUPPORT)
 	cat  $(GLADE)/mooeditprefs.c | sh $(SUPPORT) | \
 	sed -f $(GLADE)/mooeditprefs.sed > mooeditprefs-glade.c
-
-
-##############################################################################
-# Pygtk stuff
-#
-
-EXTRA_DIST += mooedit-mod.c mooedit-pygtk.defs mooedit-pygtk.override
-
-if USE_PYGTK
-libmooedit_la_SOURCES += mooedit-mod.c
-
-nodist_libmooedit_la_SOURCES = mooedit-pygtk.c
-BUILT_SOURCES += mooedit-pygtk.c
-CLEANFILES = mooedit-pygtk.c
-
-mooedit-pygtk.c: $(srcdir)/mooedit-pygtk.defs $(srcdir)/mooedit-pygtk.override
-	pygtk-codegen-2.0 --prefix moo_edit \
-	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-	--register $(srcdir)/../mooui/mooui-pygtk.defs \
-	--override $(srcdir)/mooedit-pygtk.override \
-	--outfilename mooedit-pygtk.c \
-	$(srcdir)/mooedit-pygtk.defs > mooedit-pygtk.c
-
-endif USE_PYGTK

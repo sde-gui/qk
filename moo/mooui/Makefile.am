@@ -9,8 +9,6 @@ AM_CFLAGS =                             \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
-    $(PYTHON_INCLUDES)                  \
-    $(PYGTK_CFLAGS)                     \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
     $(XML_CFLAGS)                       \
@@ -53,26 +51,3 @@ SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
 mooshortcutsprefs-glade.c: $(GLADE)/shortcutsprefs.c $(GLADE)/shortcutsprefs.sed $(SUPPORT)
 	cat $(GLADE)/shortcutsprefs.c | sh $(SUPPORT) | \
 		sed -f $(GLADE)/shortcutsprefs.sed > mooshortcutsprefs-glade.c
-
-##############################################################################
-# Pygtk stuff
-#
-
-EXTRA_DIST += mooui-mod.c mooui-pygtk.defs mooui-pygtk.override
-
-if USE_PYGTK
-libmooui_la_SOURCES += mooui-mod.c
-
-nodist_libmooui_la_SOURCES = mooui-pygtk.c
-BUILT_SOURCES += mooui-pygtk.c
-CLEANFILES = mooui-pygtk.c
-
-mooui-pygtk.c: $(srcdir)/mooui-pygtk.defs $(srcdir)/mooui-pygtk.override
-	pygtk-codegen-2.0 --prefix moo_ui \
-	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-	--override $(srcdir)/mooui-pygtk.override \
-	--outfilename mooui-pygtk.c \
-	$(srcdir)/mooui-pygtk.defs > mooui-pygtk.c
-
-endif USE_PYGTK

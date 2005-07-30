@@ -45,8 +45,6 @@ common_cflags =                         \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
-    $(PYTHON_INCLUDES)                  \
-    $(PYGTK_CFLAGS)                     \
     $(GTK_CFLAGS)                       \
     -DG_LOG_DOMAIN=\"Moo\"
 
@@ -82,31 +80,6 @@ SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
 mootermprefs-glade.c: $(GLADE)/mootermprefs.c $(GLADE)/mootermprefs.sed $(TOOLBAR) $(SUPPORT)
 	cat $(GLADE)/mootermprefs.c | sh $(SUPPORT) | sed -f $(GLADE)/mootermprefs.sed \
 		> mootermprefs-glade.c
-
-
-##############################################################################
-# Pygtk stuff
-#
-
-EXTRA_DIST += mooterm-mod.c mooterm-pygtk.defs mooterm-pygtk.override
-
-if USE_PYGTK
-libmooterm_la_SOURCES += mooterm-mod.c
-
-nodist_libmooterm_la_SOURCES = mooterm-pygtk.c
-BUILT_SOURCES += mooterm-pygtk.c
-CLEANFILES = mooterm-pygtk.c
-
-mooterm-pygtk.c: $(srcdir)/mooterm-pygtk.defs $(srcdir)/mooterm-pygtk.override
-	pygtk-codegen-2.0 --prefix moo_term \
-	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-	--register $(srcdir)/../mooui/mooui-pygtk.defs \
-	--override $(srcdir)/mooterm-pygtk.override \
-	--outfilename mooterm-pygtk.c \
-	$(srcdir)/mooterm-pygtk.defs > mooterm-pygtk.c
-
-endif USE_PYGTK
 
 
 ############################################################################

@@ -429,6 +429,11 @@ DEBUG_CFLAGS="$DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wunreachable-code -Wdisabled-optimization"
+PYTHON_DEBUG_CFLAGS="$PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
+-std=c99 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
+-Wmissing-prototypes -Wmissing-declarations dnl
+-Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
+-Wunreachable-code -Wdisabled-optimization"
 DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
 -Wpointer-arith -Wcast-align -Wsign-compare -Wnon-virtual-dtor dnl
 -Wno-long-long -Wundef -Wconversion -Wchar-subscripts -Wwrite-strings dnl
@@ -437,14 +442,15 @@ DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
     fi
 
     if test x$debug = "xyes"; then
-        DEBUG_CFLAGS="$DEBUG_CFLAGS -DG_DISABLE_DEPRECATED -DDEBUG dnl
--DENABLE_DEBUG -DENABLE_PROFILE -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE"
-        DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -DG_DISABLE_DEPRECATED -DDEBUG dnl
+        flags="-DG_DISABLE_DEPRECATED -DDEBUG dnl
 -DENABLE_DEBUG -DENABLE_PROFILE -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE"
     else
-        DEBUG_CFLAGS="$DEBUG_CFLAGS -DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
-        DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
+        flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
     fi
+
+    DEBUG_CFLAGS="$DEBUG_CFLAGS $flags"
+    PYTHON_DEBUG_CFLAGS="$PYTHON_DEBUG_CFLAGS $flags"
+    DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS $flags"
 
     if test "x$all_gcc_warnings" = "xyes" -a "x$warnings_fatal" = "xyes"; then
         DEBUG_CXXFlAGS_NO_WERROR=$DEBUG_CXXFLAGS
@@ -452,6 +458,7 @@ DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
     fi
 
     AC_SUBST(DEBUG_CFLAGS)
+    AC_SUBST(PYTHON_DEBUG_CFLAGS)
     AC_SUBST(DEBUG_CXXFLAGS)
     AC_SUBST(DEBUG_CXXFlAGS_NO_WERROR)
 

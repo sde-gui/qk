@@ -277,7 +277,7 @@
 
 (define-function prefs_get
   (c-name "moo_prefs_get")
-  (return-type "const-gchar*")
+  (return-type "const-GValue*")
   (parameters
     '("const-char*" "key")
   )
@@ -288,62 +288,9 @@
   (return-type "none")
   (parameters
     '("const-char*" "key")
-    '("const-char*" "val" (null-ok))
-    '("gboolean" "ignore_change" (null-ok) (default="FALSE"))
+    '("const-GValue*" "val" (null-ok))
   )
 )
-
-(define-function prefs_set_if_not_set
-  (c-name "moo_prefs_set_if_not_set")
-  (return-type "none")
-  (parameters
-    '("const-char*" "key")
-    '("const-char*" "val")
-    '("gboolean" "ignore_change" (null-ok) (default="FALSE"))
-  )
-)
-
-(define-function prefs_get_bool
-  (c-name "moo_prefs_get_bool")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "key")
-  )
-)
-
-(define-function prefs_get_double
-  (c-name "moo_prefs_get_double")
-  (return-type "gdouble")
-  (parameters
-    '("const-char*" "key")
-  )
-)
-
-(define-function prefs_get_double
-  (c-name "moo_prefs_get_int")
-  (return-type "int")
-  (parameters
-    '("const-char*" "key")
-  )
-)
-
-(define-function prefs_get_color
-  (c-name "moo_prefs_get_color")
-  (return-type "const-GdkColor*")
-  (parameters
-    '("const-char*" "key")
-  )
-)
-
-(define-function prefs_get_enum
-  (c-name "moo_prefs_get_enum")
-  (return-type "int")
-  (parameters
-    '("const-char*" "key")
-    '("GType" "type")
-  )
-)
-
 
 
 ;; From mooprefsdialog.h

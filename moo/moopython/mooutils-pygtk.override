@@ -10,6 +10,7 @@ headers
 #include "mooutils/moostock.h"
 #include "mooutils/moofileutils.h"
 #include "mooutils/moolog.h"
+#include "mooutils/mooutils-python.h"
 
 
 void        moo_utils_register_classes  (PyObject   *dict);
@@ -21,72 +22,46 @@ static PyTypeObject *_PyGdkColor_Type;
 
 
 static void
-prefs_set (const char *key, PyObject *val, gboolean ignore_change)
+prefs_set (const char *key, PyObject *val)
 {
     if (val == Py_None)
     {
-        if (ignore_change)
-            moo_prefs_set_ignore_change (key, NULL);
-        else
-            moo_prefs_set (key, NULL);
+        moo_prefs_set (key, NULL);
     }
 #ifdef PyGEnum_Type
     else if (PyObject_TypeCheck (val, &PyGEnum_Type))
     {
         int ival;
         pyg_enum_get_value (pyg_type_from_object (val), val, &ival);
-
-        if (ignore_change)
-            moo_prefs_set_int_ignore_change (key, ival);
-        else
-            moo_prefs_set_int (key, ival);
+        moo_prefs_set_enum (key, pyg_type_from_object (val), ival);
     }
 #endif
 #ifdef PyBool_Check
     else if (PyBool_Check (val))
     {
-        gboolean bool_val = (Py_True == val);
-        if (ignore_change)
-            moo_prefs_set_bool_ignore_change (key, bool_val);
-        else
-            moo_prefs_set_bool (key, bool_val);
+        moo_prefs_set_bool (key, Py_True == val);
     }
 #endif
     else if (PyFloat_Check (val))
     {
-        if (ignore_change)
-            moo_prefs_set_double_ignore_change (key, PyFloat_AS_DOUBLE (val));
-        else
-            moo_prefs_set_double (key, PyFloat_AS_DOUBLE (val));
+        moo_prefs_set_double (key, PyFloat_AS_DOUBLE (val));
     }
     else if (PyLong_Check (val))
     {
-        if (ignore_change)
-            moo_prefs_set_double_ignore_change (key, PyLong_AsDouble (val));
-        else
-            moo_prefs_set_double (key, PyLong_AsDouble (val));
+        moo_prefs_set_int (key, PyLong_AsLong (val));
     }
     else if (PyInt_Check (val))
     {
-        if (ignore_change)
-            moo_prefs_set_double_ignore_change (key, PyInt_AS_LONG (val));
-        else
-            moo_prefs_set_double (key, PyInt_AS_LONG (val));
+        moo_prefs_set_int (key, PyInt_AS_LONG (val));
     }
     else if (PyString_Check (val))
     {
-        if (ignore_change)
-            moo_prefs_set_ignore_change (key, PyString_AS_STRING (val));
-        else
-            moo_prefs_set (key, PyString_AS_STRING (val));
+        moo_prefs_set_string (key, PyString_AS_STRING (val));
     }
     else if (PyObject_TypeCheck (val, &PyGdkColor_Type))
     {
         GdkColor *color = ((PyGBoxed*)val)->boxed;
-        if (ignore_change)
-            moo_prefs_set_color_ignore_change (key, color);
-        else
-            moo_prefs_set_color (key, color);
+        moo_prefs_set_color (key, color);
     }
     else
     {
@@ -113,15 +88,14 @@ override moo_prefs_set kwargs
 static PyObject *
 _wrap_moo_prefs_set(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { "key", "val", "ignore_change", NULL };
+    static char *kwlist[] = { "key", "val", NULL };
     char *key;
     PyObject *val;
-    int ignore_change = FALSE;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i:prefs_set", kwlist, &key, &val, &ignore_change))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO:prefs_set", kwlist, &key, &val))
         return NULL;
 
-    prefs_set (key, val, ignore_change);
+    prefs_set (key, val);
 
     if (!PyErr_Occurred ())
     {
@@ -134,26 +108,17 @@ _wrap_moo_prefs_set(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 %%
-override moo_prefs_set_if_not_set kwargs
+override moo_prefs_get kwargs
 static PyObject *
-_wrap_moo_prefs_set_if_not_set(PyObject *self, PyObject *args, PyObject *kwargs)
+_wrap_moo_prefs_get(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { "key", "val", "ignore_change", NULL };
+    static char *kwlist[] = {"key", NULL};
     char *key;
-    PyObject *val;
-    int ignore_change = FALSE;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i:prefs_set", kwlist, &key, &val, &ignore_change))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:prefs_get", kwlist, &key))
         return NULL;
 
-    if (!moo_prefs_get (key))
-        prefs_set (key, val, ignore_change);
-
-    if (!PyErr_Occurred ())
-    {
-        Py_INCREF (Py_None);
-        return Py_None;
-    }
+    return moo_gvalue_to_pyobject (moo_prefs_get (key));
 }
 %%
 override moo_g_object_new kwargs

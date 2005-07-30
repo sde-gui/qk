@@ -64,6 +64,7 @@ AC_CHECK_FUNCS(cfmakeraw getpgid getpt grantpt unlockpt ptsname ptsname_r recvms
 ################################################################################
 #  Check debug options
 #
+# TODO TODO check gcc
 AC_CHECK_DEBUG_STUFF([-Wall])
 
 
@@ -382,6 +383,7 @@ moo/mooutils/newgtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/pixmaps/Makefile
 moo/mooutils/unrtf/Makefile
+moo/moopython/Makefile
 tests/Makefile
 tests/medit.c
 tests/editor.c

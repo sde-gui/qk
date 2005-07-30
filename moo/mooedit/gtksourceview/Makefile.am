@@ -46,17 +46,3 @@ libgtksourceview_la_SOURCES =   \
 
 EXTRA_DIST = \
     gtksourceview-marshal.list
-
-# if USE_PYGTK
-# libgtksourceview_la_SOURCES += gtksourceview-pygtk.c
-# endif
-
-# BUILT_SOURCES = gtksourceview-pygtk.c
-# EXTRA_DIST += gtksourceview-pygtk.c gtksourceview-pygtk.defs gtksourceview-pygtk.override
-# 
-# gtksourceview-pygtk.c: $(srcdir)/gtksourceview-pygtk.defs $(srcdir)/gtksourceview-pygtk.override
-# 	pygtk-codegen-2.0 --prefix moo_gtksourceview \
-# 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-# 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-# 	--override $(srcdir)/gtksourceview-pygtk.override \
-# 	$(srcdir)/gtksourceview-pygtk.defs > $(srcdir)/gtksourceview-pygtk.c

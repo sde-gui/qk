@@ -83,6 +83,10 @@ python_sources =                \
     mooutils-python.c           \
     mooutils-python.h
 
+if USE_PYTHON
+libmooutils_la_SOURCES += $(python_sources)
+endif
+
 nodist_libmooutils_la_SOURCES = \
     moomarshals.c               \
     moomarshals.h
@@ -129,31 +133,3 @@ stock-app.h: $(PIXMAPS)
 		GAP_ICON  $(srcdir)/pixmaps/gap.png   \
 		GGAP_ICON $(srcdir)/pixmaps/ggap.png  \
 	> $(srcdir)/stock-app.h
-
-
-##############################################################################
-# Pygtk stuff
-#
-
-if USE_PYTHON
-libmooutils_la_SOURCES += $(python_sources)
-endif
-
-EXTRA_DIST += mooutils-mod.c mooutils-pygtk.defs mooutils-pygtk.override
-
-if USE_PYGTK
-
-libmooutils_la_SOURCES += mooutils-mod.c
-nodist_libmooutils_la_SOURCES += mooutils-pygtk.c
-BUILT_SOURCES += mooutils-pygtk.c
-CLEANFILES += mooutils-pygtk.c
-
-mooutils-pygtk.c: $(srcdir)/mooutils-pygtk.defs $(srcdir)/mooutils-pygtk.override
-	pygtk-codegen-2.0 --prefix moo_utils \
-	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-	--override $(srcdir)/mooutils-pygtk.override \
-	--outfilename mooutils-pygtk.c \
-	$(srcdir)/mooutils-pygtk.defs > mooutils-pygtk.c
-
-endif

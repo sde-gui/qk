@@ -11,12 +11,15 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <Python.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include "mooutils/mooutils-python.h"
-
-
-#define return_None     \
-    Py_INCREF(Py_None); \
-    return Py_None;
+#ifdef USE_PYGTK
+# define NO_IMPORT_PYGOBJECT
+# include "pygobject.h"
+#endif
 
 
 PyObject *moo_strv_to_pyobject (char **strv)
@@ -92,4 +95,10 @@ int moo_pyobject_to_strv (PyObject *obj, char ***dest)
     }
 
     return TRUE;
+}
+
+
+PyObject *moo_gvalue_to_pyobject (const GValue *val)
+{
+    return pyg_value_as_pyobject (val, TRUE);
 }

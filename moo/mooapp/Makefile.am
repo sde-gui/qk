@@ -33,10 +33,9 @@ libmooapp_la_SOURCES += \
     moopythonconsole.c  \
     moopythonconsole.h  \
     moopython.c         \
-    moopython.h         \
-    pyutils.h
-
+    moopython.h
 endif USE_PYTHON
+
 
 EXTRA_DIST =            \
     gpl                 \
@@ -45,33 +44,7 @@ EXTRA_DIST =            \
     moopython.c         \
     moopython.h         \
     moopythonconsole.c  \
-    moopythonconsole.h  \
-    pyutils.h
-
-##############################################################################
-# Pygtk stuff
-#
-
-EXTRA_DIST += mooapp-mod.c mooapp-pygtk.defs mooapp-pygtk.override
-
-if USE_PYGTK
-libmooapp_la_SOURCES += mooapp-mod.c
-
-nodist_libmooapp_la_SOURCES = mooapp-pygtk.c
-BUILT_SOURCES += mooapp-pygtk.c
-CLEANFILES = mooapp-pygtk.c
-
-mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
-	pygtk-codegen-2.0 --prefix moo_app \
-	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
-	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
-	--register $(srcdir)/../mooedit/mooedit-pygtk.defs \
-	--register $(srcdir)/../mooui/mooui-pygtk.defs \
-	--override $(srcdir)/mooapp-pygtk.override \
-	--outfilename mooapp-pygtk.c \
-	$(srcdir)/mooapp-pygtk.defs > mooapp-pygtk.c
-
-endif
+    moopythonconsole.h
 
 
 if !GTK_2_6
