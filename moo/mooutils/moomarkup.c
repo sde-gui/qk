@@ -566,8 +566,16 @@ static void moo_markup_element_print        (MooMarkupElement   *node,
 static void moo_markup_text_node_print      (MooMarkupNode  *node,
                                              GString        *str)
 {
+    char *p, *escaped;
     MooMarkupText *text = (MooMarkupText*) node;
-    char *escaped = g_markup_escape_text (text->text, -1);
+
+    if (!g_utf8_validate (text->text, -1, (const char**) &p))
+    {
+        g_critical ("%s: invalid UTF8", G_STRLOC);
+        *p = 0;
+    }
+
+    escaped = g_markup_escape_text (text->text, -1);
     g_string_append (str, escaped);
     g_free (escaped);
 }
