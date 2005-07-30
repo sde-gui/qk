@@ -84,6 +84,9 @@ static void     cursor_moved                (MooEditWindow      *window,
                                              GtkTextIter        *iter,
                                              MooEdit            *edit);
 
+static void     file_saved                  (MooEditWindow      *window,
+                                             MooEditFileInfo    *info);
+
 
 /* actions */
 static void moo_edit_window_new_cb          (MooEditWindow   *window);
@@ -104,6 +107,8 @@ enum {
 
 enum {
     NEW_DOCUMENT,
+    FILE_OPENED,
+    FILE_SAVED,
     NUM_SIGNALS
 };
 
@@ -368,6 +373,24 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                _moo_marshal_VOID__OBJECT,
                                G_TYPE_NONE, 1,
                                MOO_TYPE_EDIT);
+
+    signals[FILE_OPENED] =
+            moo_signal_new_cb ("file-opened",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_FIRST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED,
+                               G_TYPE_NONE, 1,
+                               MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[FILE_SAVED] =
+            moo_signal_new_cb ("file-saved",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_FIRST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED,
+                               G_TYPE_NONE, 1,
+                               MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 
@@ -483,6 +506,8 @@ static void     add_tab                 (MooEditWindow      *window,
                               G_CALLBACK (active_tab_lang_changed), window);
     g_signal_connect_swapped (edit, "cursor-moved",
                               G_CALLBACK (cursor_moved), window);
+    g_signal_connect_swapped (edit, "file-saved",
+                              G_CALLBACK (file_saved), window);
 
     edit_changed (edit, window);
 
@@ -792,7 +817,7 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
     if (!edit)
     {
         moo_edit_file_info_free (info);
-        g_return_val_if_fail (edit != NULL, FALSE);
+        g_return_val_if_reached (FALSE);
     }
 
     if (!moo_edit_is_empty (edit))
@@ -804,8 +829,6 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
 
     result = moo_edit_open (edit, filename, encoding);
 
-    moo_edit_file_info_free (info);
-
     if (add)
     {
         if (result)
@@ -814,6 +837,13 @@ gboolean     moo_edit_window_open               (MooEditWindow  *window,
             g_object_unref (edit);
     }
 
+    if (!info)
+        info = moo_edit_file_info_new (filename, encoding);
+
+    if (result)
+        g_signal_emit (window, signals[FILE_OPENED], 0, info);
+
+    moo_edit_file_info_free (info);
     return result;
 }
 
@@ -1083,4 +1113,18 @@ GSList          *moo_edit_window_list_docs      (MooEditWindow  *window)
         list = g_slist_prepend (list, get_nth_tab (window, i));
 
     return list;
+}
+
+
+MooEditor       *_moo_edit_window_get_editor    (MooEditWindow  *window)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    return window->priv->editor;
+}
+
+
+static void     file_saved                  (MooEditWindow      *window,
+                                             MooEditFileInfo    *info)
+{
+    g_signal_emit (window, signals[FILE_SAVED], 0, info);
 }

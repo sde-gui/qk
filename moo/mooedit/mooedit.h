@@ -203,7 +203,7 @@ void        moo_edit_delete_selection       (MooEdit            *edit);
 
 MooEditFileInfo *moo_edit_file_info_new     (const char         *filename,
                                              const char         *encoding);
-MooEditFileInfo *moo_edit_file_info_copy    (MooEditFileInfo    *info);
+MooEditFileInfo *moo_edit_file_info_copy    (const MooEditFileInfo *info);
 void        moo_edit_file_info_free         (MooEditFileInfo    *info);
 
 gboolean    moo_edit_can_redo               (MooEdit            *edit);

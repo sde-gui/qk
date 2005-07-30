@@ -84,6 +84,7 @@ enum {
     SAVE,
     SAVE_AS,
     SAVE_AS_INTERACTIVE,
+    FILE_SAVED,
     CLOSE,
     LOAD,
     RELOAD,
@@ -223,14 +224,23 @@ static void moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
+    signals[FILE_SAVED] =
+            moo_signal_new_cb ("file-saved",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_FIRST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED,
+                               G_TYPE_NONE, 1,
+                               MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE);
+
     signals[CLOSE] =
-        g_signal_new ("close",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, close),
-                      g_signal_accumulator_true_handled, NULL,
-                      _moo_marshal_BOOLEAN__VOID,
-                      G_TYPE_BOOLEAN, 0);
+            g_signal_new ("close",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, close),
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__VOID,
+                          G_TYPE_BOOLEAN, 0);
 
     signals[LOAD] =
         g_signal_new ("load",
@@ -719,7 +729,7 @@ MooEditFileInfo *moo_edit_file_info_new     (const char         *filename,
     return info;
 }
 
-MooEditFileInfo *moo_edit_file_info_copy    (MooEditFileInfo    *info)
+MooEditFileInfo *moo_edit_file_info_copy    (const MooEditFileInfo  *info)
 {
     MooEditFileInfo *copy;
     g_return_val_if_fail (info != NULL, NULL);

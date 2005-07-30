@@ -12,6 +12,7 @@
             <item name="Terminal" action="Terminal"/>
             <separator/>
             <item name="Open" action="Open"/>
+            <item name="OpenRecent" action="OpenRecent"/>
             <item name="Save" action="Save"/>
             <item name="SaveAs" action="SaveAs"/>
             <separator/>

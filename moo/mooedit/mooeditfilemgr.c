@@ -14,21 +14,16 @@
 #include "mooedit/mooeditfilemgr.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moomarshals.h"
 #include <string.h>
 
 #define PREFS_FILTERS       "filters"
 #define PREFS_LAST_FILTER   PREFS_FILTERS "/last"
 #define PREFS_USER          "user"
-#define NUM_USER_FILTERS        3
-
-
-typedef struct {
-    MooEditFileInfo *info;
-} RecentEntry;
-
-static RecentEntry  *recent_entry_new   (const char     *filename);
-static RecentEntry  *recent_entry_copy  (RecentEntry    *entry);
-static void          recent_entry_free  (RecentEntry    *entry);
+#define PREFS_RECENT        "recent_files"
+#define PREFS_ENTRY         "entry"
+#define NUM_USER_FILTERS    3
+#define NUM_RECENT_FILES    5
 
 
 typedef struct {
@@ -47,8 +42,10 @@ static const char       *filter_get_glob        (Filter *filter);
 static const char       *filter_get_description (Filter *filter);
 
 
+typedef struct _RecentStuff RecentStuff;
+
 struct _MooEditFileMgrPrivate {
-    GSList          *recent_files;  /* RecentEntry* */
+    RecentStuff     *recent;
     GtkListStore    *filters;
     Filter          *last_filter;
     Filter          *null_filter;
@@ -65,6 +62,9 @@ enum {
 static void moo_edit_file_mgr_class_init    (MooEditFileMgrClass    *klass);
 static void moo_edit_file_mgr_init          (MooEditFileMgr         *mgr);
 static void moo_edit_file_mgr_finalize      (GObject                *object);
+
+static void mgr_recent_stuff_init           (MooEditFileMgr *mgr);
+static void mgr_recent_stuff_free           (MooEditFileMgr *mgr);
 
 static void      mgr_load_filter_prefs      (MooEditFileMgr *mgr);
 static void      mgr_save_filter_prefs      (MooEditFileMgr *mgr);
@@ -83,18 +83,34 @@ static void      list_store_append_filter   (MooEditFileMgr *mgr,
                                              Filter         *filter);
 static Filter   *list_store_find_filter     (MooEditFileMgr *mgr,
                                              const char     *text);
-static void      list_store_add_user        (MooEditFileMgr *mgr,
-                                             Filter         *filter);
 
 
 /* MOO_TYPE_EDIT_FILE_MGR */
 G_DEFINE_TYPE (MooEditFileMgr, moo_edit_file_mgr, G_TYPE_OBJECT)
 
+enum {
+    OPEN_RECENT,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
 
 static void moo_edit_file_mgr_class_init    (MooEditFileMgrClass   *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     gobject_class->finalize = moo_edit_file_mgr_finalize;
+
+    signals[OPEN_RECENT] =
+            g_signal_new ("open-recent",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditFileMgrClass, open_recent),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOXED_POINTER_OBJECT,
+                          G_TYPE_NONE, 3,
+                          MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          G_TYPE_POINTER,
+                          GTK_TYPE_MENU_ITEM);
 }
 
 
@@ -102,6 +118,7 @@ static void moo_edit_file_mgr_init          (MooEditFileMgr        *mgr)
 {
     mgr->priv = g_new0 (MooEditFileMgrPrivate, 1);
     list_store_init (mgr);
+    mgr_recent_stuff_init (mgr);
 }
 
 
@@ -109,6 +126,7 @@ static void moo_edit_file_mgr_finalize      (GObject            *object)
 {
     MooEditFileMgr *mgr = MOO_EDIT_FILE_MGR (object);
     list_store_destroy (mgr);
+    mgr_recent_stuff_free (mgr);
     G_OBJECT_CLASS (moo_edit_file_mgr_parent_class)->finalize (object);
 }
 
@@ -711,4 +729,414 @@ static Filter   *mgr_new_user_filter        (MooEditFileMgr *mgr,
     mgr_save_filter_prefs (mgr);
 
     return filter;
+}
+
+
+/************************************************************************/
+/* Recent files
+ */
+
+struct _RecentStuff {
+    GSList  *files;  /* RecentEntry* */
+    GSList  *menus;  /* RecentMenu* */
+    gboolean prefs_loaded;
+};
+
+typedef struct {
+    MooEditFileInfo *info;
+} RecentEntry;
+
+typedef struct {
+    GtkMenuItem *parent;
+    GtkMenu     *menu;
+    gpointer     data;
+    GSList      *items;     /* GtkMenuItem*, synchronized with recent files list */
+} RecentMenu;
+
+static RecentEntry  *recent_entry_new       (const MooEditFileInfo  *info);
+static void          recent_entry_free      (RecentEntry            *entry);
+
+static RecentEntry  *recent_list_find       (MooEditFileMgr     *mgr,
+                                             MooEditFileInfo    *info);
+static void          recent_list_delete_tail(MooEditFileMgr     *mgr);
+
+static GtkWidget    *recent_menu_item_new   (MooEditFileMgr         *mgr,
+                                             const MooEditFileInfo  *info,
+                                             gpointer                data);
+
+static void          mgr_add_recent         (MooEditFileMgr         *mgr,
+                                             const MooEditFileInfo  *info);
+static void          mgr_reorder_recent     (MooEditFileMgr     *mgr,
+                                             RecentEntry        *top);
+static void          mgr_load_recent        (MooEditFileMgr     *mgr);
+static void          mgr_save_recent        (MooEditFileMgr     *mgr);
+
+static void          save_recent            (guint               n,
+                                             RecentEntry        *entry);
+static RecentEntry  *load_recent            (guint               n);
+
+static void          menu_item_activated    (GtkMenuItem        *item,
+                                             MooEditFileMgr     *mgr);
+static void          menu_destroyed         (GtkMenuItem        *parent,
+                                             MooEditFileMgr     *mgr);
+
+
+static void          mgr_recent_stuff_init  (MooEditFileMgr *mgr)
+{
+    mgr->priv->recent = g_new0 (RecentStuff, 1);
+}
+
+
+static void          mgr_recent_stuff_free  (MooEditFileMgr *mgr)
+{
+    GSList *l;
+
+    for (l = mgr->priv->recent->files; l != NULL; l = l->next)
+        recent_entry_free (l->data);
+    g_slist_free (mgr->priv->recent->files);
+    mgr->priv->recent->files = NULL;
+
+    for (l = mgr->priv->recent->menus; l != NULL; l = l->next)
+    {
+        RecentMenu *menu = l->data;
+        GSList *i;
+
+        g_signal_handlers_disconnect_by_func (menu->parent,
+                                              (gpointer) menu_destroyed,
+                                              mgr);
+
+        for (i = menu->items; i != NULL; i = i->next)
+        {
+            if (GTK_IS_MENU_ITEM (i->data))
+                g_signal_handlers_disconnect_by_func (i->data,
+                    (gpointer) menu_item_activated, mgr);
+        }
+
+        g_slist_free (menu->items);
+        menu->items = NULL;
+        g_free (menu);
+    }
+}
+
+
+void             moo_edit_file_mgr_add_recent       (MooEditFileMgr *mgr,
+                                                     MooEditFileInfo *info)
+{
+    RecentEntry *entry;
+
+    g_return_if_fail (MOO_IS_EDIT_FILE_MGR (mgr));
+    g_return_if_fail (info != NULL);
+    g_return_if_fail (info->filename != NULL);
+
+    mgr_load_recent (mgr);
+
+    entry = recent_list_find (mgr, info);
+
+    if (!entry)
+        mgr_add_recent (mgr, info);
+    else
+        mgr_reorder_recent (mgr, entry);
+
+    mgr_save_recent (mgr);
+}
+
+
+static void          mgr_add_recent     (MooEditFileMgr         *mgr,
+                                         const MooEditFileInfo  *info)
+{
+    GSList *l;
+    RecentEntry *entry = recent_entry_new (info);
+    gboolean delete_last = FALSE;
+
+    if (g_slist_length (mgr->priv->recent->files) == NUM_RECENT_FILES)
+        delete_last = TRUE;
+
+    mgr->priv->recent->files =
+            g_slist_prepend (mgr->priv->recent->files, entry);
+
+    if (delete_last)
+        recent_list_delete_tail (mgr);
+
+    for (l = mgr->priv->recent->menus; l != NULL; l = l->next)
+    {
+        RecentMenu *menu;
+        GtkWidget *item;
+
+        menu = l->data;
+
+        item = recent_menu_item_new (mgr, info, menu->data);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu->menu), item);
+        menu->items = g_slist_prepend (menu->items, item);
+
+        if (delete_last)
+        {
+            GSList *tail;
+            tail = g_slist_last (menu->items);
+            g_signal_handlers_disconnect_by_func (tail->data,
+                    (gpointer) menu_item_activated, mgr);
+            gtk_container_remove (GTK_CONTAINER (menu->menu), tail->data);
+            menu->items = g_slist_delete_link (menu->items, tail);
+        }
+    }
+}
+
+
+static void          mgr_reorder_recent     (MooEditFileMgr     *mgr,
+                                             RecentEntry        *top)
+{
+    int index;
+    GSList *l;
+
+    index = g_slist_index (mgr->priv->recent->files, top);
+    g_return_if_fail (index >= 0);
+
+    if (index == 0)
+        return;
+
+    mgr->priv->recent->files =
+            g_slist_delete_link (mgr->priv->recent->files,
+                                 g_slist_nth (mgr->priv->recent->files, index));
+    mgr->priv->recent->files =
+            g_slist_prepend (mgr->priv->recent->files, top);
+
+    for (l = mgr->priv->recent->menus; l != NULL; l = l->next)
+    {
+        RecentMenu *menu;
+        GtkWidget *item;
+
+        menu = l->data;
+        item = g_slist_nth_data (menu->items, index);
+        g_assert (item != NULL);
+
+        g_object_ref (item);
+
+        gtk_container_remove (GTK_CONTAINER (menu->menu), item);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu->menu), item);
+
+        g_object_unref (item);
+
+        menu->items = g_slist_delete_link (menu->items,
+                                           g_slist_nth (menu->items, index));
+        menu->items = g_slist_prepend (menu->items, item);
+    }
+}
+
+
+static void          mgr_save_recent        (MooEditFileMgr     *mgr)
+{
+    guint i, num;
+
+    num = g_slist_length (mgr->priv->recent->files);
+
+    for (i = 0; i < num; ++i)
+        save_recent (i, g_slist_nth_data (mgr->priv->recent->files, i));
+    for (; i < NUM_RECENT_FILES; ++i)
+        save_recent (i, NULL);
+}
+
+
+static void          mgr_load_recent        (MooEditFileMgr     *mgr)
+{
+    guint i;
+
+    if (mgr->priv->recent->prefs_loaded)
+        return;
+
+    mgr->priv->recent->prefs_loaded = TRUE;
+
+    for (i = 0; i < NUM_RECENT_FILES; ++i)
+    {
+        RecentEntry *entry = load_recent (i);
+        if (entry)
+            mgr->priv->recent->files =
+                    g_slist_append (mgr->priv->recent->files, entry);
+    }
+}
+
+
+static gboolean file_cmp (RecentEntry       *entry,
+                          MooEditFileInfo   *info)
+{
+    return strcmp (entry->info->filename, info->filename);
+}
+
+static RecentEntry  *recent_list_find       (MooEditFileMgr     *mgr,
+                                             MooEditFileInfo    *info)
+{
+    GSList *l = g_slist_find_custom (mgr->priv->recent->files,
+                                     info, (GCompareFunc) file_cmp);
+    if (l)
+        return l->data;
+    else
+        return NULL;
+}
+
+
+static void          recent_list_delete_tail(MooEditFileMgr     *mgr)
+{
+    GSList *l = g_slist_last (mgr->priv->recent->files);
+    g_return_if_fail (l != NULL);
+    recent_entry_free (l->data);
+    g_slist_delete_link (mgr->priv->recent->files, l);
+}
+
+
+static GtkWidget    *recent_menu_item_new   (MooEditFileMgr         *mgr,
+                                             const MooEditFileInfo  *info,
+                                             gpointer                data)
+{
+    GtkWidget *item = gtk_menu_item_new_with_label (info->filename);
+    gtk_widget_show (item);
+    g_signal_connect (item, "activate",
+                      G_CALLBACK (menu_item_activated), mgr);
+    g_object_set_data_full (G_OBJECT (item), "moo-edit-file-mgr-recent-file",
+                            moo_edit_file_info_copy (info),
+                            (GDestroyNotify) moo_edit_file_info_free);
+    g_object_set_data (G_OBJECT (item),
+                       "moo-edit-file-mgr-recent-file-data", data);
+    return item;
+}
+
+
+static void          menu_item_activated    (GtkMenuItem        *item,
+                                             MooEditFileMgr     *mgr)
+{
+    MooEditFileInfo *info = g_object_get_data (G_OBJECT (item),
+                                               "moo-edit-file-mgr-recent-file");
+    gpointer data = g_object_get_data (G_OBJECT (item),
+                                       "moo-edit-file-mgr-recent-file-data");
+    g_return_if_fail (info != NULL);
+    g_signal_emit (mgr, signals[OPEN_RECENT], 0, info, data, item);
+}
+
+
+static RecentEntry  *recent_entry_new       (const MooEditFileInfo  *info)
+{
+    RecentEntry *entry = g_new0 (RecentEntry, 1);
+    entry->info = moo_edit_file_info_copy (info);
+    return entry;
+}
+
+
+static void          recent_entry_free      (RecentEntry        *entry)
+{
+    if (entry)
+    {
+        moo_edit_file_info_free (entry->info);
+        g_free (entry);
+    }
+}
+
+
+#define RECENT_PREFIX MOO_EDIT_PREFS_PREFIX "/" PREFS_RECENT "/" PREFS_ENTRY
+#define RECENT_FILENAME RECENT_PREFIX "%d/filename"
+#define RECENT_ENCODING RECENT_PREFIX "%d/encoding"
+
+static void          save_recent            (guint               n,
+                                             RecentEntry        *entry)
+{
+    char *key;
+    const char *filename, *encoding;
+
+    filename = entry ? entry->info->filename : NULL;
+    encoding = entry ? entry->info->encoding : NULL;
+
+    key = g_strdup_printf (RECENT_FILENAME, n);
+    moo_prefs_set_string (key, filename);
+    g_free (key);
+
+    key = g_strdup_printf (RECENT_ENCODING, n);
+    moo_prefs_set_string (key, encoding);
+    g_free (key);
+}
+
+
+static RecentEntry  *load_recent            (guint               n)
+{
+    RecentEntry *entry = NULL;
+    char *filename, *encoding;
+    char *key;
+
+    key = g_strdup_printf (RECENT_FILENAME, n);
+    filename = g_strdup (moo_prefs_get_string (key));
+    g_free (key);
+
+    key = g_strdup_printf (RECENT_ENCODING, n);
+    encoding = g_strdup (moo_prefs_get_string (key));
+    g_free (key);
+
+    if (filename)
+    {
+        MooEditFileInfo *info = moo_edit_file_info_new (filename, encoding);
+        entry = recent_entry_new (info);
+        moo_edit_file_info_free (info);
+    }
+
+    g_free (filename);
+    g_free (encoding);
+
+    return entry;
+}
+
+#undef RECENT_PREFIX
+#undef RECENT_FILENAME
+#undef RECENT_ENCODING
+
+
+GtkMenuItem *moo_edit_file_mgr_create_recent_files_menu (MooEditFileMgr *mgr,
+                                                         gpointer        data)
+{
+    RecentMenu *menu;
+    GSList *l;
+
+    mgr_load_recent (mgr);
+
+    menu = g_new0 (RecentMenu, 1);
+    menu->data = data;
+    menu->parent = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Open Recent"));
+    menu->menu = GTK_MENU (gtk_menu_new ());
+    gtk_menu_item_set_submenu (menu->parent, GTK_WIDGET (menu->menu));
+
+    gtk_widget_show (GTK_WIDGET (menu->parent));
+    gtk_widget_show (GTK_WIDGET (menu->menu));
+
+    g_signal_connect (menu->parent, "destroy",
+                      G_CALLBACK (menu_destroyed), mgr);
+
+    for (l = mgr->priv->recent->files; l != NULL; l = l->next)
+    {
+        RecentEntry *entry = l->data;
+        GtkWidget *item = recent_menu_item_new (mgr, entry->info, data);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu->menu), item);
+        menu->items = g_slist_append (menu->items, item);
+    }
+
+    mgr->priv->recent->menus = g_slist_prepend (mgr->priv->recent->menus, menu);
+    return menu->parent;
+}
+
+
+static gboolean menu_cmp (RecentMenu    *menu,
+                          GtkMenuItem   *parent)
+{
+    return menu->parent != parent;
+}
+
+static void          menu_destroyed         (GtkMenuItem        *parent,
+                                             MooEditFileMgr     *mgr)
+{
+    RecentMenu *menu;
+    GSList *l = g_slist_find_custom (mgr->priv->recent->menus,
+                                     parent,
+                                     (GCompareFunc) menu_cmp);
+
+    g_return_if_fail (l != NULL);
+
+    menu = l->data;
+
+    g_slist_free (menu->items);
+    g_free (menu);
+
+    mgr->priv->recent->menus =
+            g_slist_remove (mgr->priv->recent->menus, menu);
 }

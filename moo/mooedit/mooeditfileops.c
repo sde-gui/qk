@@ -132,6 +132,7 @@ gboolean    _moo_edit_open          (MooEdit    *edit,
 gboolean    _moo_edit_save              (MooEdit    *edit)
 {
     GError *err = NULL;
+    MooEditFileInfo *info;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
@@ -162,6 +163,11 @@ gboolean    _moo_edit_save              (MooEdit    *edit)
     edit->priv->status = 0;
     moo_edit_set_modified (edit, FALSE);
     start_file_watch (edit);
+
+    info = moo_edit_file_info_new (edit->priv->filename,
+                                   edit->priv->encoding);
+    g_signal_emit_by_name (edit, "file-saved", info);
+    moo_edit_file_info_free (info);
 
     return TRUE;
 }
@@ -212,6 +218,8 @@ gboolean    _moo_edit_save_as       (MooEdit    *edit,
     edit->priv->status = 0;
     moo_edit_set_modified (edit, FALSE);
     start_file_watch (edit);
+
+    g_signal_emit_by_name (edit, "file-saved", info);
 
     moo_edit_file_info_free (info);
     return TRUE;

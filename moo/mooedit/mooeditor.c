@@ -15,6 +15,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooui/moouiobject.h"
+#include "mooui/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moowin.h"
@@ -42,6 +43,8 @@ static WindowInfo   *window_list_find       (MooEditor      *editor,
 static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
                                              MooEdit        *edit);
 
+static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
+                                             MooAction      *action);
 
 struct _MooEditorPrivate {
     GSList          *windows;
@@ -69,6 +72,11 @@ static void             new_document        (MooEditor      *editor,
                                              MooEditWindow  *window);
 static gboolean         document_closed     (MooEditor      *editor,
                                              MooEdit        *doc);
+static void             open_recent         (MooEditor      *editor,
+                                             MooEditFileInfo *info,
+                                             MooEditWindow  *window);
+static void             file_opened_or_saved(MooEditor      *editor,
+                                             MooEditFileInfo *info);
 
 
 enum {
@@ -88,6 +96,7 @@ G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 static void moo_editor_class_init (MooEditorClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GObjectClass *edit_window_class;
 
     gobject_class->finalize = moo_editor_finalize;
 
@@ -122,13 +131,25 @@ static void moo_editor_class_init (MooEditorClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    moo_ui_object_class_new_action (edit_window_class,
+                                    "action-type::", MOO_TYPE_MENU_ACTION,
+                                    "id", "OpenRecent",
+                                    "create-menu-func", create_recent_menu,
+                                    NULL);
+    g_type_class_unref (edit_window_class);
 }
 
 
 static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
+
     editor->priv->file_mgr = moo_edit_file_mgr_new ();
+    g_signal_connect_swapped (editor->priv->file_mgr, "open-recent",
+                              G_CALLBACK (open_recent), editor);
+
     editor->priv->window_list = NULL;
 }
 
@@ -195,6 +216,11 @@ static void              add_window     (MooEditor      *editor,
     info = window_list_add (editor, window);
     list = moo_edit_window_list_docs (window);
 
+    g_signal_connect_swapped (window, "file-opened",
+                              G_CALLBACK (file_opened_or_saved), editor);
+    g_signal_connect_swapped (window, "file-saved",
+                              G_CALLBACK (file_opened_or_saved), editor);
+
     for (l = list; l != NULL; l = l->next)
     {
         MooEdit *edit = l->data;
@@ -230,8 +256,6 @@ static void              remove_window  (MooEditor      *editor,
     g_return_if_fail (contains_window (editor, window));
     g_return_if_fail (window != NULL);
 
-    g_object_unref (editor);
-
     editor->priv->windows = g_slist_remove (editor->priv->windows, window);
 
     info = window_list_find (editor, window);
@@ -239,6 +263,9 @@ static void              remove_window  (MooEditor      *editor,
 
     if (!editor->priv->windows)
         g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0, NULL);
+
+    /* it was referenced in add_window */
+    g_object_unref (editor);
 }
 
 
@@ -537,4 +564,39 @@ static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
         return l->data;
     else
         return NULL;
+}
+
+
+static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
+                                             G_GNUC_UNUSED MooAction *action)
+{
+    MooEditor *editor = _moo_edit_window_get_editor (window);
+    g_return_val_if_fail (editor != NULL, NULL);
+    return moo_edit_file_mgr_create_recent_files_menu (editor->priv->file_mgr, window);
+}
+
+
+static void             open_recent         (MooEditor       *editor,
+                                             MooEditFileInfo *info,
+                                             MooEditWindow   *window)
+{
+    WindowInfo *win_info;
+
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (info != NULL);
+
+    win_info = window_list_find (editor, window);
+    g_return_if_fail (win_info != NULL);
+
+    moo_edit_window_open (window, info->filename, info->encoding);
+}
+
+
+static void             file_opened_or_saved(MooEditor      *editor,
+                                             MooEditFileInfo *info)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (info != NULL);
+    moo_edit_file_mgr_add_recent (editor->priv->file_mgr, info);
 }

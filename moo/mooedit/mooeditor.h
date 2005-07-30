@@ -125,6 +125,7 @@ GtkWidget       *_moo_edit_window_new           (MooEditor      *editor);
 
 void             _moo_edit_window_set_app_name  (MooEditWindow  *window,
                                                  const char     *name);
+MooEditor       *_moo_edit_window_get_editor    (MooEditWindow  *window);
 #endif /* MOOEDIT_COMPILATION */
 
 

@@ -41,6 +41,10 @@ struct _MooEditFileMgr
 struct _MooEditFileMgrClass
 {
     GObjectClass parent_class;
+
+    void (*open_recent) (MooEditFileMgr     *mgr,
+                         MooEditFileInfo    *file,
+                         GtkWidget          *menu_item);
 };
 
 
@@ -49,8 +53,11 @@ GType            moo_edit_file_mgr_get_type         (void) G_GNUC_CONST;
 MooEditFileMgr  *moo_edit_file_mgr_new              (void);
 
 GtkMenuItem     *moo_edit_file_mgr_create_recent_files_menu
-                                                    (MooEditFileMgr *mgr);
+                                                    (MooEditFileMgr *mgr,
+                                                     gpointer        data);
 
+void             moo_edit_file_mgr_add_recent       (MooEditFileMgr *mgr,
+                                                     MooEditFileInfo *info);
 
 MooEditFileInfo *moo_edit_file_mgr_save_as_dialog   (MooEditFileMgr *mgr,
                                                      MooEdit        *edit);
