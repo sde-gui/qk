@@ -33,6 +33,7 @@ typedef struct _MooTermPt           MooTermPt;
 typedef struct _MooTermPtPrivate    MooTermPtPrivate;
 typedef struct _MooTermPtClass      MooTermPtClass;
 struct _MooTerm;
+struct _MooTermCommand;
 
 struct _MooTermPt {
     GObject           parent;
@@ -47,18 +48,14 @@ struct _MooTermPtClass {
                                          guint       width,
                                          guint       height);
     gboolean    (*fork_command)         (MooTermPt  *pt,
-                                         const char *cmd,
+                                         const struct _MooTermCommand *cmd,
                                          const char *working_dir,
-                                         char      **envp);
-    gboolean    (*fork_argv)            (MooTermPt  *pt,
-                                         char      **argv,
-                                         const char *working_dir,
-                                         char      **envp);
+                                         char      **envp,
+                                         GError    **error);
     void        (*write)                (MooTermPt  *pt,
                                          const char *data,
                                          gssize      len);
     void        (*kill_child)           (MooTermPt  *pt);
-    const char *(*get_default_shell)    (MooTermPt  *pt);
 
     /* signals */
     void        (*child_died)   (MooTermPt  *pt);
@@ -82,13 +79,10 @@ char            moo_term_pt_get_erase_char  (MooTermPt      *pt);
 void            moo_term_pt_send_intr       (MooTermPt      *pt);
 
 gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
-                                             const char     *cmd,
+                                             const struct _MooTermCommand *cmd,
                                              const char     *working_dir,
-                                             char          **envp);
-gboolean        moo_term_pt_fork_argv       (MooTermPt      *pt,
-                                             char          **argv,
-                                             const char     *working_dir,
-                                             char          **envp);
+                                             char          **envp,
+                                             GError        **error);
 void            moo_term_pt_kill_child      (MooTermPt      *pt);
 
 gboolean        moo_term_pt_child_alive     (MooTermPt      *pt);
@@ -97,7 +91,9 @@ void            moo_term_pt_write           (MooTermPt      *pt,
                                              const char     *data,
                                              gssize          len);
 
-const char     *moo_term_pt_get_default_shell (MooTermPt    *pt);
+struct _MooTermCommand *moo_term_get_default_shell (void);
+gboolean        moo_term_check_cmd          (struct _MooTermCommand *cmd,
+                                             GError     **error);
 
 
 G_END_DECLS

@@ -75,18 +75,19 @@ struct _MooTermPtUnixClass {
 
 static void     moo_term_pt_unix_finalize       (GObject        *object);
 
-const char     *get_default_shell   (MooTermPt      *pt);
 static void     set_size            (MooTermPt      *pt,
                                      guint           width,
                                      guint           height);
 static gboolean fork_command        (MooTermPt      *pt,
-                                     const char     *cmd,
+                                     const MooTermCommand *cmd,
                                      const char     *working_dir,
-                                     char          **envp);
+                                     char          **envp,
+                                     GError        **error);
 static gboolean fork_argv           (MooTermPt      *pt,
                                      char          **argv,
                                      const char     *working_dir,
-                                     char          **envp);
+                                     char          **envp,
+                                     GError        **error);
 static void     pt_write            (MooTermPt      *pt,
                                      const char     *string,
                                      gssize          len);
@@ -116,10 +117,8 @@ static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
 
     pt_class->set_size = set_size;
     pt_class->fork_command = fork_command;
-    pt_class->fork_argv = fork_argv;
     pt_class->write = pt_write;
     pt_class->kill_child = kill_child;
-    pt_class->get_default_shell = get_default_shell;
 }
 
 
@@ -168,7 +167,8 @@ static void     set_size        (MooTermPt      *pt,
 static gboolean fork_argv       (MooTermPt      *pt_gen,
                                  char          **argv,
                                  const char     *working_dir,
-                                 char          **envp)
+                                 char          **envp,
+                                 GError        **error)
 {
     MooTermPtUnix *pt;
     int env_len = 0;
@@ -210,6 +210,15 @@ static gboolean fork_argv       (MooTermPt      *pt_gen,
     if (pt->master == -1)
     {
         g_critical ("%s: could not fork child", G_STRLOC);
+
+        if (errno)
+            g_set_error (error, MOO_TERM_ERROR, errno,
+                         "could not fork command: %s",
+                         g_strerror (errno));
+        else
+            g_set_error (error, MOO_TERM_ERROR, errno,
+                         "could not fork command");
+
         return FALSE;
     }
     else
@@ -252,42 +261,16 @@ static gboolean fork_argv       (MooTermPt      *pt_gen,
 
 
 static gboolean fork_command    (MooTermPt      *pt_gen,
-                                 const char     *cmd,
+                                 const MooTermCommand *cmd,
                                  const char     *working_dir,
-                                 char          **envp)
+                                 char          **envp,
+                                 GError        **error)
 {
-    MooTermPtUnix *pt;
-    int argv_len;
-    char **argv = NULL;
-    GError *err = NULL;
-    gboolean result;
-
-    g_return_val_if_fail (cmd != NULL && cmd[0] != 0, FALSE);
+    g_return_val_if_fail (cmd != NULL, FALSE);
+    g_return_val_if_fail (cmd->argv != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
 
-    pt = MOO_TERM_PT_UNIX (pt_gen);
-
-    g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
-
-    if (!g_shell_parse_argv (cmd, &argv_len, &argv, &err))
-    {
-        g_critical ("%s: could not parse command line", G_STRLOC);
-
-        if (err != NULL)
-        {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-
-        if (argv != NULL)
-            g_strfreev (argv);
-
-        return FALSE;
-    }
-
-    result = fork_argv (pt_gen, argv, working_dir, envp);
-    g_strfreev (argv);
-    return result;
+    return fork_argv (pt_gen, cmd->argv, working_dir, envp, error);
 }
 
 
@@ -675,14 +658,17 @@ void            moo_term_pt_send_intr       (MooTermPt      *pt)
 
 
 /* TODO: it should be in glib */
-const char *get_default_shell (G_GNUC_UNUSED MooTermPt *pt)
+MooTermCommand *moo_term_get_default_shell (void)
 {
-    const char *shell;
+    static char *argv[2] = {NULL, NULL};
 
-    shell = g_getenv ("SHELL");
-    if (!shell) shell = "/bin/sh";
+    if (!argv[0])
+    {
+        argv[0] = g_strdup (g_getenv ("SHELL"));
+        if (!argv[0]) argv[0] = g_strdup ("/bin/sh");
+    }
 
-    return shell;
+    return moo_term_command_new (NULL, argv);
 }
 
 
@@ -690,4 +676,60 @@ const char *get_default_shell (G_GNUC_UNUSED MooTermPt *pt)
 void        moo_term_set_helper_directory   (G_GNUC_UNUSED const char *dir)
 {
     g_return_if_reached ();
+}
+
+
+static char *argv_to_cmd_line (char **argv)
+{
+    GString *cmd = NULL;
+    char **p;
+
+    g_return_val_if_fail (argv != NULL, NULL);
+    g_return_val_if_fail (argv[0] != NULL, NULL);
+
+    for (p = argv; *p != NULL; ++p)
+    {
+        char *quoted = g_shell_quote (*p);
+        /* TODO: may not happen? */
+        g_return_val_if_fail (quoted != NULL,
+                              g_string_free (cmd, FALSE));
+        if (cmd)
+            g_string_append_printf (cmd, " %s", quoted);
+        else
+            cmd = g_string_new (quoted);
+        g_free (quoted);
+    }
+
+    return g_string_free (cmd, FALSE);
+}
+
+
+static char **cmd_line_to_argv (const char  *cmd_line,
+                                GError     **error)
+{
+    int argc;
+    char **argv;
+    g_shell_parse_argv (cmd_line, &argc, &argv, error);
+    return argv;
+}
+
+
+gboolean        moo_term_check_cmd          (MooTermCommand *cmd,
+                                             GError     **error)
+{
+    g_return_val_if_fail (cmd != NULL, FALSE);
+    g_return_val_if_fail (cmd->cmd_line != NULL || cmd->argv != NULL, FALSE);
+
+    if (cmd->argv)
+    {
+        g_free (cmd->cmd_line);
+        cmd->cmd_line = argv_to_cmd_line (cmd->argv);
+        g_return_val_if_fail (cmd->cmd_line != NULL, FALSE);
+        return TRUE;
+    }
+    else
+    {
+        cmd->argv = cmd_line_to_argv (cmd->cmd_line, error);
+        return cmd->argv != NULL;
+    }
 }

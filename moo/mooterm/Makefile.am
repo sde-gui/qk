@@ -38,7 +38,14 @@ widget_unix_sources =       \
     pty.h
 
 widget_win32_sources =      \
+    mootermhelper.h         \
     mootermpt-win32.c
+
+termhelper_sources =        \
+    mootermhelper.c         \
+    mootermhelper.h         \
+    pty.c                   \
+    pty.h
 
 AM_INCLUDES =
 common_cflags =                         \
@@ -54,7 +61,9 @@ AM_YFLAGS = -d
 EXTRA_DIST =                \
     $(widget_sources)       \
     $(widget_unix_sources)  \
-    $(widget_win32_sources)
+    $(widget_win32_sources) \
+    $(termhelper_sources)   \
+    termhelper_res.res.in
 
 noinst_LTLIBRARIES = libmooterm.la
 libmooterm_la_SOURCES =

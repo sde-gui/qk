@@ -883,25 +883,72 @@ void        moo_term_size_changed       (MooTerm        *term)
 }
 
 
-gboolean         moo_term_fork_command      (MooTerm        *term,
-                                             const char     *cmd,
+gboolean    moo_term_fork_command           (MooTerm        *term,
+                                             const MooTermCommand *cmd,
                                              const char     *working_dir,
-                                             char          **envp)
+                                             char          **envp,
+                                             GError        **error)
 {
+    MooTermCommand *copy;
+    gboolean result;
+
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
-    return moo_term_pt_fork_command (term->priv->pt,
-                                     cmd, working_dir, envp);
+    g_return_val_if_fail (cmd != NULL, FALSE);
+
+    copy = moo_term_command_copy (cmd);
+    result = moo_term_check_cmd (copy, error);
+
+    if (!result)
+    {
+        moo_term_command_free (copy);
+        return FALSE;
+    }
+
+    result = moo_term_pt_fork_command (term->priv->pt, copy,
+                                       working_dir, envp,
+                                       error);
+    moo_term_command_free (copy);
+    return result;
+}
+
+
+gboolean         moo_term_fork_command_line (MooTerm        *term,
+                                             const char     *cmd_line,
+                                             const char     *working_dir,
+                                             char          **envp,
+                                             GError        **error)
+{
+    MooTermCommand *cmd;
+    gboolean result;
+
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+    g_return_val_if_fail (cmd_line != NULL, FALSE);
+
+    cmd = moo_term_command_new (cmd_line, NULL);
+    result = moo_term_fork_command (term, cmd, working_dir,
+                                    envp, error);
+    moo_term_command_free (cmd);
+    return result;
 }
 
 
 gboolean    moo_term_fork_argv              (MooTerm        *term,
                                              char          **argv,
                                              const char     *working_dir,
-                                             char          **envp)
+                                             char          **envp,
+                                             GError        **error)
 {
+    MooTermCommand *cmd;
+    gboolean result;
+
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
-    return moo_term_pt_fork_argv (term->priv->pt,
-                                  argv, working_dir, envp);
+    g_return_val_if_fail (argv != NULL, FALSE);
+
+    cmd = moo_term_command_new (NULL, argv);
+    result = moo_term_fork_command (term, cmd, working_dir,
+                                    envp, error);
+    moo_term_command_free (cmd);
+    return result;
 }
 
 
@@ -1744,16 +1791,14 @@ void        moo_term_kill_child             (MooTerm        *term)
 
 
 MooTermProfile *moo_term_profile_new        (const char     *name,
-                                             const char     *cmd_line,
-                                             char          **argv,
+                                             const MooTermCommand *cmd,
                                              char          **envp,
                                              const char     *working_dir)
 {
     MooTermProfile *profile = g_new (MooTermProfile, 1);
 
     profile->name = g_strdup (name);
-    profile->cmd_line = g_strdup (cmd_line);
-    profile->argv = g_strdupv (argv);
+    profile->cmd = moo_term_command_copy (cmd);
     profile->envp = g_strdupv (envp);
     profile->working_dir = g_strdup (working_dir);
 
@@ -1770,8 +1815,7 @@ MooTermProfile *moo_term_profile_copy       (const MooTermProfile *profile)
     copy = g_new (MooTermProfile, 1);
 
     copy->name = g_strdup (profile->name);
-    copy->cmd_line = g_strdup (profile->cmd_line);
-    copy->argv = g_strdupv (profile->argv);
+    copy->cmd = moo_term_command_copy (profile->cmd);
     copy->envp = g_strdupv (profile->envp);
     copy->working_dir = g_strdup (profile->working_dir);
 
@@ -1784,8 +1828,7 @@ void        moo_term_profile_free           (MooTermProfile *profile)
     if (profile)
     {
         g_free (profile->name);
-        g_free (profile->cmd_line);
-        g_strfreev (profile->argv);
+        moo_term_command_free (profile->cmd);
         g_strfreev (profile->envp);
         g_free (profile->working_dir);
         g_free (profile);
@@ -1796,14 +1839,21 @@ void        moo_term_profile_free           (MooTermProfile *profile)
 GType       moo_term_profile_get_type       (void)
 {
     static GType type = 0;
-
     if (!type)
-    {
         type = g_boxed_type_register_static ("MooTermProfile",
                                              (GBoxedCopyFunc) moo_term_profile_copy,
                                              (GBoxedFreeFunc) moo_term_profile_free);
-    }
+    return type;
+}
 
+
+GType       moo_term_command_get_type       (void)
+{
+    static GType type = 0;
+    if (!type)
+        type = g_boxed_type_register_static ("MooTermCommand",
+                                             (GBoxedCopyFunc) moo_term_command_copy,
+                                             (GBoxedFreeFunc) moo_term_command_free);
     return type;
 }
 
@@ -1827,40 +1877,24 @@ MooTermProfile      *moo_term_get_profile   (MooTerm        *term,
 static gboolean check_profile (MooTermProfile *profile,
                                char          **err_msg)
 {
-    g_return_val_if_fail (profile->cmd_line ||
-            (profile->argv && profile->argv[0]), FALSE);
+    GError *err = NULL;
+    gboolean result;
+
+    g_return_val_if_fail (profile->cmd != NULL, FALSE);
 
     if (!profile->name)
         profile->name = g_strdup ("");
 
-    if (profile->argv && profile->argv[0])
-    {
-        g_free (profile->cmd_line);
-        profile->cmd_line = g_strjoinv (" ", profile->argv);
-    }
-    else
-    {
-        GError *err = NULL;
-        int argc;
+    result = moo_term_check_cmd (profile->cmd, &err);
+    g_return_val_if_fail (result || err, FALSE);
 
-        if (profile->argv)
-        {
-            g_free (profile->argv);
-            profile->argv = NULL;
-        }
-
-        if (!g_shell_parse_argv (profile->cmd_line,
-                                 &argc,
-                                 &profile->argv,
-                                 &err))
-        {
-            if (err_msg)
-                *err_msg = g_strdup (err->message);
-            g_error_free (err);
-        }
+    if (err)
+    {
+        *err_msg = g_strdup (err->message);
+        g_error_free (err);
     }
 
-    return TRUE;
+    return result;
 }
 
 
@@ -1868,14 +1902,10 @@ static MooTermProfile *get_default_shell (MooTerm *term)
 {
     if (!term->priv->default_shell)
     {
-        char **argv = g_new (char*, 2);
-        argv[0] = g_strdup (moo_term_pt_get_default_shell (term->priv->pt));
-        argv[1] = NULL;
         term->priv->default_shell =
-                moo_term_profile_new ("Default", NULL, argv,
+                moo_term_profile_new ("Default",
+                                      moo_term_get_default_shell (),
                                       NULL, g_get_home_dir ());
-        check_profile (term->priv->default_shell, NULL);
-        g_strfreev (argv);
     }
     return term->priv->default_shell;
 }
@@ -1969,14 +1999,18 @@ int         moo_term_get_default_profile    (MooTerm        *term)
 }
 
 
-void        moo_term_start_default_profile  (MooTerm        *term)
+void        moo_term_start_default_profile  (MooTerm        *term,
+                                             GError        **error)
 {
-    moo_term_start_profile (term , moo_term_get_default_profile (term));
+    moo_term_start_profile (term ,
+                            moo_term_get_default_profile (term),
+                            error);
 }
 
 
 void        moo_term_start_profile          (MooTerm        *term,
-                                             int             n)
+                                             int             n,
+                                             GError        **error)
 {
     MooTermProfile *profile;
 
@@ -1991,9 +2025,9 @@ void        moo_term_start_profile          (MooTerm        *term,
     g_return_if_fail (profile != NULL);
 
     moo_term_kill_child (term);
-    moo_term_fork_argv (term, profile->argv,
-                        profile->working_dir,
-                        profile->envp);
+    moo_term_fork_command (term, profile->cmd,
+                           profile->working_dir,
+                           profile->envp, error);
 }
 
 
@@ -2037,4 +2071,42 @@ void moo_term_profile_array_free (MooTermProfileArray *array)
             moo_term_profile_free (array->data[i]);
         g_ptr_array_free ((GPtrArray*) array, TRUE);
     }
+}
+
+
+MooTermCommand  *moo_term_command_new       (const char     *cmd_line,
+                                             char          **argv)
+{
+    MooTermCommand *cmd = g_new0 (MooTermCommand, 1);
+    cmd->cmd_line = g_strdup (cmd_line);
+    cmd->argv = g_strdupv (argv);
+    return cmd;
+}
+
+
+MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd)
+{
+    MooTermCommand *copy = g_new0 (MooTermCommand, 1);
+    copy->cmd_line = g_strdup (cmd->cmd_line);
+    copy->argv = g_strdupv (cmd->argv);
+    return copy;
+}
+
+
+void             moo_term_command_free      (MooTermCommand *cmd)
+{
+    if (cmd)
+    {
+        g_free (cmd->cmd_line);
+        g_strfreev (cmd->argv);
+        g_free (cmd);
+    }
+}
+
+
+GQuark      moo_term_error_quark            (void)
+{
+    static GQuark q = 0;
+    if (!q) q = g_quark_from_static_string ("moo-term-error-quark");
+    return q;
 }
