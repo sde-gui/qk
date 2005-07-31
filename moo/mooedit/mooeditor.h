@@ -64,12 +64,6 @@ struct _MooEditor
 struct _MooEditorClass
 {
     GObjectClass            parent_class;
-
-    void (*new_window)          (MooEditor       *editor,
-                                 MooEditWindow   *window);
-    void (*new_document)        (MooEditor       *editor,
-                                 MooEdit         *doc);
-    void (*all_windows_closed)  (MooEditor       *editor);
 };
 
 
@@ -92,6 +86,8 @@ gboolean         moo_editor_open                (MooEditor      *editor,
 MooEdit         *moo_editor_get_active_doc      (MooEditor      *editor);
 MooEditWindow   *moo_editor_get_active_window   (MooEditor      *editor);
 
+gboolean         moo_editor_close_doc           (MooEditor      *editor,
+                                                 MooEdit        *doc);
 gboolean         moo_editor_close_all           (MooEditor      *editor);
 
 void             moo_editor_set_app_name        (MooEditor      *editor,
@@ -109,19 +105,20 @@ void             moo_editor_set_ui_xml          (MooEditor      *editor,
 /* MooEditWindow
  */
 
-gboolean         moo_edit_window_open           (MooEditWindow  *window,
-                                                 const char     *filename,
-                                                 const char     *encoding);
-
 MooEdit         *moo_edit_window_get_active_doc (MooEditWindow  *window);
+void             moo_edit_window_set_active_doc (MooEditWindow  *window,
+                                                 MooEdit        *edit);
 
-gboolean         moo_edit_window_close_doc      (MooEditWindow  *window,
-                                                 MooEdit        *doc);
 GSList          *moo_edit_window_list_docs      (MooEditWindow  *window);
 
 
 #ifdef MOOEDIT_COMPILATION
+gboolean         _moo_edit_window_open          (MooEditWindow  *window,
+                                                 const char     *filename,
+                                                 const char     *encoding);
 GtkWidget       *_moo_edit_window_new           (MooEditor      *editor);
+gboolean         _moo_edit_window_close_doc     (MooEditWindow  *window,
+                                                 MooEdit        *doc);
 
 void             _moo_edit_window_set_app_name  (MooEditWindow  *window,
                                                  const char     *name);

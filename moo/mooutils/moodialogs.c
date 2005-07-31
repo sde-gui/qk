@@ -154,8 +154,12 @@ GtkWidget *file_chooser_dialog_new (const char *title,
     return dialog;
 }
 
+#define file_chooser_set_select_multiple(dialog,multiple) \
+    gtk_file_chooser_set_select_multiple (GTK_FILE_CHOOSER (dialog), multiple)
 #define file_chooser_get_filename(dialog) \
     (gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog)))
+#define file_chooser_get_filenames(dialog)  \
+    (gtk_file_chooser_get_filenames (GTK_FILE_CHOOSER (dialog)))
 
 #else /* !GTK_CHECK_VERSION(2,4,0) */
 
@@ -196,7 +200,7 @@ const char *moo_file_dialog (GtkWidget  *parent,
     const char *filename;
     GtkWidget *dialog;
 
-    dialog = moo_file_dialog_create (parent, type, title, start_dir);
+    dialog = moo_file_dialog_create (parent, type, FALSE, title, start_dir);
     g_return_val_if_fail (dialog != NULL, NULL);
 
     moo_file_dialog_run (dialog);
@@ -209,6 +213,7 @@ const char *moo_file_dialog (GtkWidget  *parent,
 
 GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
                                              MooFileDialogType   type,
+                                             gboolean            multiple,
                                              const char         *title,
                                              const char         *start_dir)
 {
@@ -230,6 +235,7 @@ GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
 
             dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
                                               GTK_STOCK_OPEN, start_dir);
+            file_chooser_set_select_multiple (dialog, multiple);
             gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
             break;
 
@@ -238,6 +244,7 @@ GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
 
             dialog = file_chooser_dialog_new (title, parent_window, chooser_action,
                                               GTK_STOCK_SAVE, start_dir);
+            file_chooser_set_select_multiple (dialog, multiple);
             gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
             break;
 
@@ -252,11 +259,33 @@ GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
     g_object_set_data (G_OBJECT (dialog),
                        "moo-file-dialog",
                        GINT_TO_POINTER (1));
+    g_object_set_data (G_OBJECT (dialog),
+                       "moo-file-dialog-multiple",
+                       GINT_TO_POINTER (multiple));
     g_object_set_data_full (G_OBJECT (dialog),
                             "moo-file-dialog-filename", NULL,
                             g_free);
 
     return dialog;
+}
+
+
+static GSList *string_slist_copy (GSList *list)
+{
+    GSList *copy = NULL;
+    GSList *l;
+
+    for (l = list; l != NULL; l = l->next)
+        copy = g_slist_prepend (copy, g_strdup (l->data));
+
+    return g_slist_reverse (copy);
+}
+
+
+static void    string_slist_free (GSList *list)
+{
+    g_slist_foreach (list, (GFunc) g_free, NULL);
+    g_slist_free (list);
 }
 
 
@@ -287,6 +316,11 @@ gboolean    moo_file_dialog_run             (GtkWidget          *dialog)
                                         "moo-file-dialog-filename",
                                         file_chooser_get_filename (dialog),
                                         g_free);
+                if (g_object_get_data (G_OBJECT (dialog), "moo-file-dialog-multiple"))
+                    g_object_set_data_full (G_OBJECT (dialog),
+                                            "moo-file-dialog-filenames",
+                                            file_chooser_get_filenames (dialog),
+                                            (GDestroyNotify) string_slist_free);
                 return TRUE;
             }
             else
@@ -346,6 +380,18 @@ const char  *moo_file_dialog_get_filename    (GtkWidget          *dialog)
     g_return_val_if_fail (GPOINTER_TO_INT (g_object_get_data
             (G_OBJECT (dialog), "moo-file-dialog")) == 1, NULL);
     return g_object_get_data (G_OBJECT (dialog), "moo-file-dialog-filename");
+}
+
+
+GSList     *moo_file_dialog_get_filenames   (GtkWidget          *dialog)
+{
+    g_return_val_if_fail (dialog != NULL, NULL);
+    g_return_val_if_fail (GPOINTER_TO_INT (g_object_get_data
+            (G_OBJECT (dialog), "moo-file-dialog")) == 1, NULL);
+    g_return_val_if_fail (g_object_get_data (G_OBJECT (dialog),
+                          "moo-file-dialog-multiple"), NULL);
+    return string_slist_copy (g_object_get_data (G_OBJECT (dialog),
+                              "moo-file-dialog-filenames"));
 }
 
 

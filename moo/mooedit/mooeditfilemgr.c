@@ -205,37 +205,47 @@ static void setup_open_dialog (MooEditFileMgr   *mgr,
 }
 
 
-MooEditFileInfo *moo_edit_file_mgr_open_dialog      (MooEditFileMgr *mgr,
+GSList          *moo_edit_file_mgr_open_dialog      (MooEditFileMgr *mgr,
                                                      GtkWidget      *parent)
 {
-    const char *filename;
+    GSList *filenames;
+    GSList *result = NULL;
     const char *title = "Open File";
     const char *start = NULL;
-    MooEditFileInfo *file = NULL;
     GtkWidget *dialog;
 
     g_return_val_if_fail (MOO_IS_EDIT_FILE_MGR (mgr), NULL);
 
     start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
 
-    dialog = moo_file_dialog_create (parent, MOO_DIALOG_FILE_OPEN_EXISTING,
+    dialog = moo_file_dialog_create (parent,
+                                     MOO_DIALOG_FILE_OPEN_EXISTING,
+                                     TRUE,
                                      title, start);
 
     setup_open_dialog (mgr, dialog);
     moo_file_dialog_run (dialog);
 
-    filename = moo_file_dialog_get_filename (dialog);
+    filenames = moo_file_dialog_get_filenames (dialog);
 
-    if (filename)
+    if (filenames)
     {
-        char *new_start = g_path_get_dirname (filename);
+        GSList *l;
+        char *new_start = g_path_get_dirname (filenames->data);
         moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
         g_free (new_start);
-        file = moo_edit_file_info_new (filename, NULL);
+
+        for (l = filenames; l != NULL; l = l->next)
+        {
+            result = g_slist_prepend (result, moo_edit_file_info_new (l->data, NULL));
+            g_free (l->data);
+        }
+
+        g_slist_free (filenames);
     }
 
     gtk_widget_destroy (dialog);
-    return file;
+    return g_slist_reverse (result);
 }
 
 
@@ -253,7 +263,7 @@ MooEditFileInfo *moo_edit_file_mgr_save_as_dialog   (G_GNUC_UNUSED MooEditFileMg
         start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
 
     dialog = moo_file_dialog_create (GTK_WIDGET (edit), MOO_DIALOG_FILE_SAVE,
-                                     title, start);
+                                     FALSE, title, start);
 
     moo_file_dialog_run (dialog);
 

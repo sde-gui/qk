@@ -19,6 +19,8 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moowin.h"
+#include "mooutils/moosignal.h"
+#include <string.h>
 
 
 typedef struct {
@@ -32,6 +34,8 @@ static void          window_info_add        (WindowInfo     *win,
                                              MooEdit        *doc);
 static void          window_info_remove     (WindowInfo     *win,
                                              MooEdit        *doc);
+static MooEdit      *window_info_find       (WindowInfo     *win,
+                                             const char     *filename);
 
 static void          window_list_free       (MooEditor      *editor);
 static void          window_list_delete     (MooEditor      *editor,
@@ -42,6 +46,9 @@ static WindowInfo   *window_list_find       (MooEditor      *editor,
                                              MooEditWindow  *win);
 static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
                                              MooEdit        *edit);
+static WindowInfo   *window_list_find_filename (MooEditor   *editor,
+                                             const char     *filename,
+                                             MooEdit       **edit);
 
 static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
                                              MooAction      *action);
@@ -53,6 +60,7 @@ struct _MooEditorPrivate {
     MooEditLangMgr  *lang_mgr;
     MooUIXML        *ui_xml;
     MooEditFileMgr  *file_mgr;
+    gboolean         open_single;
 };
 
 
@@ -67,11 +75,12 @@ static gboolean         contains_window     (MooEditor      *editor,
 static MooEditWindow   *get_top_window      (MooEditor      *editor);
 static gboolean         window_closed       (MooEditor      *editor,
                                              MooEditWindow  *window);
-static void             new_document        (MooEditor      *editor,
+static void             document_new        (MooEditor      *editor,
                                              MooEdit        *edit,
                                              MooEditWindow  *window);
-static gboolean         document_closed     (MooEditor      *editor,
-                                             MooEdit        *doc);
+static void             document_closed     (MooEditor      *editor,
+                                             MooEdit        *edit,
+                                             MooEditWindow  *window);
 static void             open_recent         (MooEditor      *editor,
                                              MooEditFileInfo *info,
                                              MooEditWindow  *window);
@@ -80,8 +89,6 @@ static void             file_opened_or_saved(MooEditor      *editor,
 
 
 enum {
-    NEW_WINDOW,
-    NEW_DOCUMENT,
     ALL_WINDOWS_CLOSED,
     LAST_SIGNAL
 };
@@ -100,37 +107,13 @@ static void moo_editor_class_init (MooEditorClass *klass)
 
     gobject_class->finalize = moo_editor_finalize;
 
-    klass->new_window = NULL;
-    klass->new_document = NULL;
-    klass->all_windows_closed = NULL;
-
-    signals[NEW_WINDOW] =
-            g_signal_new ("new-window",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooEditorClass, new_window),
-                          NULL, NULL,
-                          _moo_marshal_VOID__OBJECT,
-                          /* G_TYPE_OBJECT to not put MOO_TYPE_WHATEVER into marshals.list */
-                          G_TYPE_NONE, 1, G_TYPE_OBJECT);
-
-    signals[NEW_DOCUMENT] =
-            g_signal_new ("new-document",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooEditorClass, new_window),
-                          NULL, NULL,
-                          _moo_marshal_VOID__OBJECT,
-                          G_TYPE_NONE, 1, G_TYPE_OBJECT);
-
     signals[ALL_WINDOWS_CLOSED] =
-            g_signal_new ("all-windows-closed",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooEditorClass, all_windows_closed),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+            moo_signal_new_cb ("all-windows-closed",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_ui_object_class_new_action (edit_window_class,
@@ -149,7 +132,7 @@ static void     moo_editor_init        (MooEditor  *editor)
     editor->priv->file_mgr = moo_edit_file_mgr_new ();
     g_signal_connect_swapped (editor->priv->file_mgr, "open-recent",
                               G_CALLBACK (open_recent), editor);
-
+    editor->priv->open_single = TRUE;
     editor->priv->window_list = NULL;
 }
 
@@ -216,18 +199,9 @@ static void              add_window     (MooEditor      *editor,
     info = window_list_add (editor, window);
     list = moo_edit_window_list_docs (window);
 
-    g_signal_connect_swapped (window, "file-opened",
-                              G_CALLBACK (file_opened_or_saved), editor);
-    g_signal_connect_swapped (window, "file-saved",
-                              G_CALLBACK (file_opened_or_saved), editor);
-
     for (l = list; l != NULL; l = l->next)
     {
         MooEdit *edit = l->data;
-        g_signal_connect_data (edit, "close",
-                               G_CALLBACK (document_closed), editor,
-                               NULL,
-                               G_CONNECT_AFTER | G_CONNECT_SWAPPED);
         window_info_add (info, edit);
     }
 
@@ -241,10 +215,14 @@ static void              add_window     (MooEditor      *editor,
                            NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
-    g_signal_connect_data (window, "new-document",
-                           G_CALLBACK (new_document), editor,
-                           NULL,
-                           G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+    g_signal_connect_swapped (window, "file-opened",
+                              G_CALLBACK (file_opened_or_saved), editor);
+    g_signal_connect_swapped (window, "file-saved",
+                              G_CALLBACK (file_opened_or_saved), editor);
+    g_signal_connect_swapped (window, "document-new",
+                              G_CALLBACK (document_new), editor);
+    g_signal_connect_swapped (window, "document-closed",
+                              G_CALLBACK (document_closed), editor);
 }
 
 
@@ -269,7 +247,7 @@ static void              remove_window  (MooEditor      *editor,
 }
 
 
-static void             new_document        (MooEditor      *editor,
+static void             document_new        (MooEditor      *editor,
                                              MooEdit        *edit,
                                              MooEditWindow  *window)
 {
@@ -279,13 +257,14 @@ static void             new_document        (MooEditor      *editor,
 }
 
 
-static gboolean         document_closed     (MooEditor      *editor,
-                                             MooEdit        *edit)
+static void             document_closed     (MooEditor      *editor,
+                                             MooEdit        *edit,
+                                             MooEditWindow  *window)
 {
     WindowInfo *info = window_list_find_doc (editor, edit);
-    g_return_val_if_fail (info != NULL, FALSE);
+    g_return_if_fail (info != NULL);
+    g_return_if_fail (info->win == window);
     window_info_remove (info, edit);
-    return FALSE;
 }
 
 
@@ -314,34 +293,66 @@ static gboolean         window_closed       (MooEditor      *editor,
 }
 
 
+static void file_info_list_free (GSList *list)
+{
+    g_slist_foreach (list, (GFunc) moo_edit_file_info_free, NULL);
+    g_slist_free (list);
+}
+
+
 gboolean         moo_editor_open                (MooEditor      *editor,
                                                  MooEditWindow  *window,
                                                  GtkWidget      *parent,
                                                  const char     *filename,
                                                  const char     *encoding)
 {
-    MooEditFileInfo *info = NULL;
-    gboolean result;
-
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (window == NULL || MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    if (!parent && window)
-        parent = GTK_WIDGET (window);
-
     if (!filename)
     {
-        info = moo_edit_file_mgr_open_dialog (editor->priv->file_mgr,
-                                              parent);
+        GSList *files, *l;
+        gboolean result;
 
-        if (!info)
-        {
+        if (!parent && window)
+            parent = GTK_WIDGET (window);
+
+        files = moo_edit_file_mgr_open_dialog (editor->priv->file_mgr,
+                                               parent);
+
+        if (!files)
             return FALSE;
-        }
-        else
+
+        for (l = files; l != NULL; l = l->next)
         {
-            filename = info->filename;
-            encoding = info->encoding;
+            MooEditFileInfo *info = l->data;
+
+            if (!info || !info->filename)
+            {
+                file_info_list_free (files);
+                return FALSE;
+            }
+
+            result = moo_editor_open (editor, window, parent,
+                                      info->filename, info->encoding);
+
+            if (!result)
+                break;
+        }
+
+        return result;
+    }
+
+    if (editor->priv->open_single)
+    {
+        MooEdit *edit;
+        WindowInfo *info = window_list_find_filename (editor, filename, &edit);
+
+        if (info)
+        {
+            gtk_window_present (GTK_WINDOW (info->win));
+            moo_edit_window_set_active_doc (info->win, edit);
+            return TRUE;
         }
     }
 
@@ -351,17 +362,11 @@ gboolean         moo_editor_open                (MooEditor      *editor,
     if (!window)
         window = moo_editor_new_window (editor);
 
-    if (!window)
-    {
-        moo_edit_file_info_free (info);
-        g_return_val_if_reached (FALSE);
-    }
+    g_return_val_if_fail (window != NULL, FALSE);
 
     gtk_window_present (GTK_WINDOW (window));
-    result = moo_edit_window_open (window, filename, encoding);
-    moo_edit_file_info_free (info);
 
-    return result;
+    return _moo_edit_window_open (window, filename, encoding);
 }
 
 
@@ -506,6 +511,29 @@ static void          window_info_remove     (WindowInfo     *win,
     win->docs = g_slist_remove (win->docs, edit);
 }
 
+
+static int edit_and_file_cmp (MooEdit *edit, const char *filename)
+{
+    const char *edit_filename;
+    g_return_val_if_fail (MOO_IS_EDIT (edit) && filename != NULL, TRUE);
+    edit_filename = moo_edit_get_filename (edit);
+    if (edit_filename)
+        return strcmp (edit_filename, filename);
+    else
+        return TRUE;
+}
+
+static MooEdit      *window_info_find       (WindowInfo     *win,
+                                             const char     *filename)
+{
+    GSList *l;
+    g_return_val_if_fail (win != NULL && filename != NULL, NULL);
+    l = g_slist_find_custom (win->docs, filename,
+                             (GCompareFunc) edit_and_file_cmp);
+    return l ? l->data : NULL;
+}
+
+
 static void          window_list_free   (MooEditor      *editor)
 {
     g_slist_foreach (editor->priv->window_list,
@@ -534,7 +562,7 @@ static WindowInfo   *window_list_add    (MooEditor      *editor,
 
 static int window_cmp (WindowInfo *w, MooEditWindow *e)
 {
-    g_return_val_if_fail (w != NULL, 1);
+    g_return_val_if_fail (w != NULL, TRUE);
     return !(w->win == e);
 }
 
@@ -567,6 +595,38 @@ static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
 }
 
 
+struct FilenameAndDoc {
+    const char *filename;
+    MooEdit    *edit;
+};
+
+static int filename_and_doc_cmp (WindowInfo *w, struct FilenameAndDoc *data)
+{
+    g_return_val_if_fail (w != NULL, TRUE);
+    data->edit = window_info_find (w, data->filename);
+    return data->edit == NULL;
+}
+
+static WindowInfo   *window_list_find_filename (MooEditor   *editor,
+                                                const char     *filename,
+                                                MooEdit       **edit)
+{
+    struct FilenameAndDoc data = {filename, NULL};
+    GSList *l = g_slist_find_custom (editor->priv->window_list, &data,
+                                     (GCompareFunc) filename_and_doc_cmp);
+    if (l)
+    {
+        g_assert (data.edit != NULL);
+        if (edit) *edit = data.edit;
+        return l->data;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+
 static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
                                              G_GNUC_UNUSED MooAction *action)
 {
@@ -589,7 +649,8 @@ static void             open_recent         (MooEditor       *editor,
     win_info = window_list_find (editor, window);
     g_return_if_fail (win_info != NULL);
 
-    moo_edit_window_open (window, info->filename, info->encoding);
+    moo_editor_open (editor, window, GTK_WIDGET (window),
+                     info->filename, info->encoding);
 }
 
 

@@ -61,8 +61,8 @@ void             moo_edit_file_mgr_add_recent       (MooEditFileMgr *mgr,
 
 MooEditFileInfo *moo_edit_file_mgr_save_as_dialog   (MooEditFileMgr *mgr,
                                                      MooEdit        *edit);
-MooEditFileInfo *moo_edit_file_mgr_open_dialog      (MooEditFileMgr *mgr,
-                                                     GtkWidget  *widget);
+GSList          *moo_edit_file_mgr_open_dialog      (MooEditFileMgr *mgr,
+                                                     GtkWidget      *parent);
 
 
 G_END_DECLS

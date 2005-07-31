@@ -1656,16 +1656,6 @@
   )
 )
 
-(define-method open
-  (of-object "MooEditWindow")
-  (c-name "moo_edit_window_open")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "filename")
-    '("const-char*" "encoding")
-  )
-)
-
 (define-method get_active_doc
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_get_active_doc")

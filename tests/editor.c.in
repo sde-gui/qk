@@ -60,7 +60,8 @@ int main (int argc, char *argv[])
     win = moo_editor_new_window (editor);
 
     if (argc > 1)
-        moo_edit_window_open (MOO_EDIT_WINDOW (win), argv[1], NULL);
+        moo_editor_open (editor, MOO_EDIT_WINDOW (win),
+                         GTK_WIDGET (win), argv[1], NULL);
 
     return moo_app_run (app);
 }
@@ -70,7 +71,7 @@ static void terminal_restart (MooTermWindow *win)
 {
     MooTerm *term = moo_term_window_get_term (win);
     moo_term_kill_child (term);
-    moo_term_start_default_profile (term);
+    moo_term_start_default_profile (term, NULL);
 }
 
 

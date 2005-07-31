@@ -133,7 +133,7 @@ int main (int argc, char *argv[])
     g_signal_connect_swapped (term, "set-icon-name",
                               G_CALLBACK (gdk_window_set_icon_name), win->window);
 
-    moo_term_fork_command (MOO_TERM (term), cmd, NULL, NULL);
+    moo_term_fork_command_line (MOO_TERM (term), cmd, NULL, NULL, NULL);
 
     g_signal_connect (win, "destroy", gtk_main_quit, NULL);
     g_signal_connect_swapped (term, "child-died",

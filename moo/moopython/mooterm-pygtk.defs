@@ -12,6 +12,18 @@
   (gtype-id "MOO_TYPE_TERM")
 )
 
+(define-boxed TermCommand
+  (in-module "Moo")
+  (c-name "MooTermCommand")
+  (gtype-id "MOO_TYPE_TERM_COMMAND")
+  (copy-func "moo_term_command_copy")
+  (release-func "moo_term_command_free")
+  (fields
+    '("char*" "cmd_line")
+    '("char**" "argv")
+  )
+)
+
 (define-boxed TermProfile
   (in-module "Moo")
   (c-name "MooTermProfile")
@@ -20,8 +32,7 @@
   (release-func "moo_term_profile_free")
   (fields
     '("char*" "name")
-    '("char*" "cmd_line")
-    '("char**" "argv")
+    '("MooTermCommand*" "cmd")
     '("char**" "envp")
     '("char*" "working_dir")
   )
@@ -60,14 +71,39 @@
   )
 )
 
+(define-method fork_command_line
+  (of-object "MooTerm")
+  (c-name "moo_term_fork_command_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "cmd_line")
+    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
+    '("char**" "envp" (null-ok) (default "NULL"))
+    '("GError**" "error" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method fork_argv
+  (of-object "MooTerm")
+  (c-name "moo_term_fork_argv")
+  (return-type "gboolean")
+  (parameters
+    '("char**" "argv")
+    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
+    '("char**" "envp" (null-ok) (default "NULL"))
+    '("GError**" "error" (null-ok) (default "NULL"))
+  )
+)
+
 (define-method fork_command
   (of-object "MooTerm")
   (c-name "moo_term_fork_command")
   (return-type "gboolean")
   (parameters
-    '("const-gchar*" "cmd")
+    '("const-MooTermCommand*" "cmd")
     '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
     '("char**" "envp" (null-ok) (default "NULL"))
+    '("GError**" "error" (null-ok) (default "NULL"))
   )
 )
 
@@ -80,9 +116,18 @@
   (return-type "MooTermProfile*")
   (parameters
     '("char*" "name" (null-ok) (default "NULL"))
-    '("char*" "cmd_line" (null-ok) (default "NULL"))
-    '("char**" "argv" (null-ok) (default "NULL"))
+    '("const-MooTermCommand*" "cmd" (null-ok) (default "NULL"))
     '("char**" "envp" (null-ok) (default "NULL"))
     '("char*" "working_dir" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function moo_term_command_new
+  (c-name "moo_term_command_new")
+  (is-constructor-of "MooTermCommand")
+  (return-type "MooTermCommand*")
+  (parameters
+    '("char*" "cmd_line" (null-ok) (default "NULL"))
+    '("char**" "argv" (null-ok) (default "NULL"))
   )
 )

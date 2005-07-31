@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #line 14 "@srcdir@/medit.c.in"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditlangmgr.h"
@@ -43,7 +44,7 @@ int main (int argc, char **argv)
         if (!moo_ui_xml_add_ui_from_file (xml, "meditui.xml", NULL))
             g_error ("could not find medui.xml");
 
-    if (argc > 1) moo_edit_window_open (MOO_EDIT_WINDOW (win), argv[1], NULL);
+    if (argc > 1) _moo_edit_window_open (MOO_EDIT_WINDOW (win), argv[1], NULL);
 
     gtk_main ();
 

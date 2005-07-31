@@ -1043,6 +1043,12 @@ gboolean        moo_prefs_save              (const char     *file)
     {
         result = moo_save_file_utf8 (file, text, -1, &err);
 
+        if (!result)
+        {
+            g_critical ("%s: could not save preferences to '%s'",
+                        G_STRLOC, file);
+        }
+
         if (err)
         {
             g_critical ("%s: %s", G_STRLOC, err->message);

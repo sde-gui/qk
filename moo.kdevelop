@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>mingw</useconfiguration>
     </general>
     <run>
       <mainprogram>tests/editor</mainprogram>
@@ -46,7 +46,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module  --without-python</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
