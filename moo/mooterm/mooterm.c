@@ -407,6 +407,11 @@ static void moo_term_finalize               (GObject        *object)
     moo_term_profile_array_free (term->priv->profiles);
     moo_term_profile_free (term->priv->default_shell);
 
+    if (term->priv->pending_adjustment_changed)
+        g_source_remove (term->priv->pending_adjustment_changed);
+    if (term->priv->pending_adjustment_value_changed)
+        g_source_remove (term->priv->pending_adjustment_value_changed);
+
     g_free (term->priv);
     G_OBJECT_CLASS (moo_term_parent_class)->finalize (object);
 }
