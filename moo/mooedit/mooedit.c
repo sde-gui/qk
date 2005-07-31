@@ -723,7 +723,7 @@ MooEditPrivate *moo_edit_private_new (void)
 MooEditFileInfo *moo_edit_file_info_new     (const char         *filename,
                                              const char         *encoding)
 {
-    MooEditFileInfo *info = g_new (MooEditFileInfo, 1);
+    MooEditFileInfo *info = g_new0 (MooEditFileInfo, 1);
     info->filename = g_strdup (filename);
     info->encoding = g_strdup (encoding);
     return info;
@@ -734,42 +734,19 @@ MooEditFileInfo *moo_edit_file_info_copy    (const MooEditFileInfo  *info)
     MooEditFileInfo *copy;
     g_return_val_if_fail (info != NULL, NULL);
     copy = g_new (MooEditFileInfo, 1);
-    copy->filename = g_strdup (info->filename);
     copy->encoding = g_strdup (info->encoding);
+    copy->filename = g_strdup (info->filename);
     return copy;
 }
 
 void        moo_edit_file_info_free         (MooEditFileInfo    *info)
 {
-    if (!info) return;
-    g_free (info->filename);
-    g_free (info->encoding);
-    g_free (info);
-}
-
-
-const char *moo_edit_get_filename           (MooEdit            *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->filename;
-}
-
-const char *moo_edit_get_basename           (MooEdit            *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->basename;
-}
-
-const char *moo_edit_get_display_filename   (MooEdit            *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->display_filename;
-}
-
-const char *moo_edit_get_display_basename   (MooEdit            *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->display_basename;
+    if (info)
+    {
+        g_free (info->encoding);
+        g_free (info->filename);
+        g_free (info);
+    }
 }
 
 
@@ -1111,4 +1088,29 @@ static void delete_range_cb             (G_GNUC_UNUSED GtkTextBuffer *textbuffer
                                          MooEdit            *edit)
 {
     g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter1);
+}
+
+
+const char *moo_edit_get_filename           (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->filename;
+}
+
+const char *moo_edit_get_basename           (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->basename;
+}
+
+const char *moo_edit_get_display_filename   (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->display_filename;
+}
+
+const char *moo_edit_get_display_basename   (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->display_basename;
 }

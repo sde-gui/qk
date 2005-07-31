@@ -11,19 +11,22 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditfilemgr.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooedit-private.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>
 
-#define PREFS_FILTERS       "filters"
-#define PREFS_LAST_FILTER   PREFS_FILTERS "/last"
-#define PREFS_USER          "user"
-#define PREFS_RECENT        "recent_files"
-#define PREFS_ENTRY         "entry"
-#define NUM_USER_FILTERS    3
-#define NUM_RECENT_FILES    5
+#define PREFS_FILTERS           "filters"
+#define PREFS_LAST_FILTER       PREFS_FILTERS "/last"
+#define PREFS_USER              "user"
+#define PREFS_RECENT            "recent_files"
+#define PREFS_ENTRY             "entry"
+#define PREFS_SHOW_FULL_NAME    PREFS_RECENT "/show_full_name"
+#define NUM_USER_FILTERS        3
+#define NUM_RECENT_FILES        5
 
 
 typedef struct {
@@ -740,6 +743,8 @@ struct _RecentStuff {
     GSList  *files;  /* RecentEntry* */
     GSList  *menus;  /* RecentMenu* */
     gboolean prefs_loaded;
+    GtkTooltips *tooltips;
+    gboolean display_full_name;
 };
 
 typedef struct {
@@ -784,6 +789,9 @@ static void          menu_destroyed         (GtkMenuItem        *parent,
 static void          mgr_recent_stuff_init  (MooEditFileMgr *mgr)
 {
     mgr->priv->recent = g_new0 (RecentStuff, 1);
+    mgr->priv->recent->tooltips = gtk_tooltips_new ();
+    gtk_object_sink (gtk_object_ref (GTK_OBJECT (mgr->priv->recent->tooltips)));
+    mgr->priv->recent->display_full_name = FALSE;
 }
 
 
@@ -795,6 +803,8 @@ static void          mgr_recent_stuff_free  (MooEditFileMgr *mgr)
         recent_entry_free (l->data);
     g_slist_free (mgr->priv->recent->files);
     mgr->priv->recent->files = NULL;
+    g_object_unref (mgr->priv->recent->tooltips);
+    mgr->priv->recent->tooltips = NULL;
 
     for (l = mgr->priv->recent->menus; l != NULL; l = l->next)
     {
@@ -814,6 +824,7 @@ static void          mgr_recent_stuff_free  (MooEditFileMgr *mgr)
 
         g_slist_free (menu->items);
         menu->items = NULL;
+
         g_free (menu);
     }
 }
@@ -944,6 +955,9 @@ static void          mgr_load_recent        (MooEditFileMgr     *mgr)
 
     mgr->priv->recent->prefs_loaded = TRUE;
 
+    mgr->priv->recent->display_full_name =
+            moo_prefs_get_bool (moo_edit_setting (PREFS_SHOW_FULL_NAME));
+
     for (i = 0; i < NUM_RECENT_FILES; ++i)
     {
         RecentEntry *entry = load_recent (i);
@@ -985,8 +999,31 @@ static GtkWidget    *recent_menu_item_new   (MooEditFileMgr         *mgr,
                                              const MooEditFileInfo  *info,
                                              gpointer                data)
 {
-    GtkWidget *item = gtk_menu_item_new_with_label (info->filename);
+    GtkWidget *item;
+
+    if (mgr->priv->recent->display_full_name)
+    {
+        char *display_name = _moo_edit_filename_to_utf8 (info->filename);
+        item = gtk_menu_item_new_with_label (display_name);
+        g_free (display_name);
+    }
+    else
+    {
+        char *basename = g_path_get_basename (info->filename);
+        char *display_basename = _moo_edit_filename_to_utf8 (basename);
+        char *display_fullname = _moo_edit_filename_to_utf8 (info->filename);
+
+        item = gtk_menu_item_new_with_label (display_basename);
+        gtk_tooltips_set_tip (mgr->priv->recent->tooltips, item,
+                              display_fullname, NULL);
+
+        g_free (display_basename);
+        g_free (display_fullname);
+        g_free (basename);
+    }
+
     gtk_widget_show (item);
+
     g_signal_connect (item, "activate",
                       G_CALLBACK (menu_item_activated), mgr);
     g_object_set_data_full (G_OBJECT (item), "moo-edit-file-mgr-recent-file",
@@ -1093,7 +1130,12 @@ GtkMenuItem *moo_edit_file_mgr_create_recent_files_menu (MooEditFileMgr *mgr,
 
     menu = g_new0 (RecentMenu, 1);
     menu->data = data;
-    menu->parent = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Open Recent"));
+
+    menu->parent = GTK_MENU_ITEM (gtk_image_menu_item_new_with_label ("Open Recent"));
+    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menu->parent),
+                                   gtk_image_new_from_stock (GTK_STOCK_OPEN,
+                                           GTK_ICON_SIZE_MENU));
+
     menu->menu = GTK_MENU (gtk_menu_new ());
     gtk_menu_item_set_submenu (menu->parent, GTK_WIDGET (menu->menu));
 

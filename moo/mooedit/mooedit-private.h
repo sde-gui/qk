@@ -24,6 +24,9 @@
 G_BEGIN_DECLS
 
 
+char       *_moo_edit_filename_to_utf8      (const char         *filename);
+
+
 /***********************************************************************/
 /* GtkTextView stuff
 /*/

@@ -305,34 +305,12 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
     }
     else
     {
-        GError *err = NULL;
-
         edit->priv->filename = g_strdup (file);
         edit->priv->basename = g_path_get_basename (file);
         edit->priv->display_filename =
-                g_filename_to_utf8 (file, -1, NULL, NULL, &err);
-        if (!edit->priv->display_filename)
-        {
-            g_critical ("%s: could not convert filename to utf8", G_STRLOC);
-            if (err) {
-                g_critical ("%s: %s", G_STRLOC, err->message);
-                g_error_free (err);
-                err = NULL;
-            }
-            edit->priv->display_filename = g_strdup ("<Unknown>");
-        }
+                _moo_edit_filename_to_utf8 (file);
         edit->priv->display_basename =
-                g_filename_to_utf8 (edit->priv->basename, -1, NULL, NULL, &err);
-        if (!edit->priv->display_basename)
-        {
-            g_critical ("%s: could not convert filename to utf8", G_STRLOC);
-            if (err) {
-                g_critical ("%s: %s", G_STRLOC, err->message);
-                g_error_free (err);
-                err = NULL;
-            }
-            edit->priv->display_basename = g_strdup ("<Unknown>");
-        }
+                _moo_edit_filename_to_utf8 (edit->priv->basename);
     }
 
     if (!edit->priv->lang_custom)
@@ -806,4 +784,31 @@ gboolean    _moo_edit_write             (MooEdit    *edit,
 
     g_io_channel_unref (file);
     return TRUE;
+}
+
+
+char       *_moo_edit_filename_to_utf8      (const char         *filename)
+{
+    GError *err = NULL;
+    char *utf_filename;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    utf_filename = g_filename_to_utf8 (filename, -1, NULL, NULL, &err);
+
+    if (!utf_filename)
+    {
+        g_critical ("%s: could not convert filename to utf8", G_STRLOC);
+
+        if (err)
+        {
+            g_critical ("%s: %s", G_STRLOC, err->message);
+            g_error_free (err);
+            err = NULL;
+        }
+
+        utf_filename = g_strdup ("<Unknown>");
+    }
+
+    return utf_filename;
 }
