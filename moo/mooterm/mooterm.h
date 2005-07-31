@@ -101,6 +101,9 @@ gboolean    moo_term_fork_argv              (MooTerm        *term,
 gboolean    moo_term_child_alive            (MooTerm        *term);
 void        moo_term_kill_child             (MooTerm        *term);
 
+/* makes sense only for win32 */
+void        moo_term_set_helper_directory   (const char     *dir);
+
 void        moo_term_feed                   (MooTerm        *term,
                                              const char     *data,
                                              int             len);

@@ -684,3 +684,10 @@ const char *get_default_shell (G_GNUC_UNUSED MooTermPt *pt)
 
     return shell;
 }
+
+
+/* it's a win32 function */
+void        moo_term_set_helper_directory   (G_GNUC_UNUSED const char *dir)
+{
+    g_return_if_reached ();
+}

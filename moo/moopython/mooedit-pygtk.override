@@ -12,6 +12,9 @@ headers
 #include "mooedit/mooeditsearch.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextiter.h"
+
+void moo_edit_add_constants (PyObject *module, const gchar *strip_prefix);
+void moo_edit_register_classes (PyObject *d);
 %%
 modulename moo
 %%

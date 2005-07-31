@@ -432,7 +432,6 @@ static void moo_window_set_property     (GObject      *object,
     const char *name = NULL;
     MooWindow *window = MOO_WINDOW (object);
     MooUIObject *ui_obj = MOO_UI_OBJECT (object);
-    MooUIXML *xml;
 
     switch (prop_id)
     {

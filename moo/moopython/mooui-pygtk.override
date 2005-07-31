@@ -9,6 +9,8 @@ headers
 #include "mooui/mootoggleaction.h"
 #include "mooui/moowindow.h"
 #include "mooui/mooshortcutsprefs.h"
+
+void moo_ui_register_classes (PyObject *d);
 %%
 modulename moo
 %%

@@ -5,6 +5,9 @@ headers
 #include "pygobject.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/mooapp-python.h"
+
+void moo_app_add_constants (PyObject *module, const gchar *strip_prefix);
+void moo_app_register_classes (PyObject *d);
 %%
 modulename moo
 %%

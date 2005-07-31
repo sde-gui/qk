@@ -1189,46 +1189,32 @@ char           *_moo_term_nice_char     (guchar          c)
                 return g_strdup ("<ESC>");
             case 0x84:
                 return g_strdup ("<IND>");
-                break;
             case 0x85:
                 return g_strdup ("<NEL>");
-                break;
             case 0x88:
                 return g_strdup ("<HTS>");
-                break;
             case 0x8D:
                 return g_strdup ("<RI>");
-                break;
             case 0x8E:
                 return g_strdup ("<SS2>");
-                break;
             case 0x8F:
                 return g_strdup ("<SS3>");
-                break;
             case 0x90:
                 return g_strdup ("<DCS>");
-                break;
             case 0x98:
                 return g_strdup ("<SOS>");
-                break;
             case 0x9A:
                 return g_strdup ("<DECID>");
-                break;
             case 0x9B:
                 return g_strdup ("<CSI>");
-                break;
             case 0x9C:
                 return g_strdup ("<ST>");
-                break;
             case 0x9D:
                 return g_strdup ("<OSC>");
-                break;
             case 0x9E:
                 return g_strdup ("<PM>");
-                break;
             case 0x9F:
                 return g_strdup ("<APC>");
-                break;
             default:
                 if ('A' - 64 <= c && c <= ']' - 64)
                     return g_strdup_printf ("^%c", c + 64);

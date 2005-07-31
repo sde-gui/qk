@@ -14,3 +14,23 @@
 #include "mooterm/mootermpt.h"
 
 
+void            moo_term_pt_send_intr       (MooTermPt      *pt)
+{
+}
+
+
+char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
+{
+    return 127;
+}
+
+
+GType           moo_term_pt_win_get_type    (void)
+{
+    return 0;
+}
+
+
+void        moo_term_set_helper_directory   (G_GNUC_UNUSED const char *dir)
+{
+}

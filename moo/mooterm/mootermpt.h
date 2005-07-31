@@ -75,7 +75,9 @@ MooTermPt      *moo_term_pt_new             (struct _MooTerm *term);
 void            moo_term_pt_set_size        (MooTermPt      *pt,
                                              guint           width,
                                              guint           height);
-
+void            moo_term_pt_set_helper_directory
+                                            (MooTermPt      *pt,
+                                             const char     *dir);
 char            moo_term_pt_get_erase_char  (MooTermPt      *pt);
 void            moo_term_pt_send_intr       (MooTermPt      *pt);
 

@@ -379,7 +379,7 @@ static void      prefs_new_key  (MooPrefs       *prefs,
         item_set_type (item, type);
         if (default_value)
             item_set_default (item, default_value);
-        if (!item_value && item_default_value (item))
+        if (!item_value (item) && item_default_value (item))
             item_set (item, item_default_value (item));
         emit_notify (prefs, key, item_value (item));
     }
