@@ -1019,7 +1019,7 @@ gboolean        moo_prefs_save              (const char     *file)
     gboolean empty;
     GError *err = NULL;
     char *text;
-    gboolean result;
+    gboolean result = TRUE;
 
     g_return_val_if_fail (file != NULL, FALSE);
 
@@ -1035,32 +1035,29 @@ gboolean        moo_prefs_save              (const char     *file)
             empty = FALSE;
 
     if (empty)
+    {
+        if (g_file_test (file, G_FILE_TEST_EXISTS))
+            if (moo_unlink (file))
+                g_critical ("%s: %s", G_STRLOC,
+                            g_strerror (errno));
         return TRUE;
+    }
 
     text = format_xml (xml);
+    g_return_val_if_fail (text != NULL, FALSE);
 
-    if (text)
-    {
-        result = moo_save_file_utf8 (file, text, -1, &err);
+    result = moo_save_file_utf8 (file, text, -1, &err);
 
-        if (!result)
-        {
-            g_critical ("%s: could not save preferences to '%s'",
+    if (!result)
+        g_critical ("%s: could not save preferences to '%s'",
                         G_STRLOC, file);
-        }
 
-        if (err)
-        {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-    }
-    else if (moo_unlink (file))
+    if (err)
     {
-        g_critical ("%s: %s", G_STRLOC,
-                    g_strerror (errno));
+        g_critical ("%s: %s", G_STRLOC, err->message);
+        g_error_free (err);
     }
-
+    
     g_free (text);
     return result;
 }

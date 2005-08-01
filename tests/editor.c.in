@@ -14,14 +14,13 @@
 #line 14 "@srcdir@/editor.c.in"
 #include "mooapp/mooapp.h"
 #include "mooui/moouiobject.h"
-
+#include "editor-ui.h"
 
 static void init_terminal (void);
 static void init_editor (void);
 
 int main (int argc, char *argv[])
 {
-    const char *file = "@srcdir@/editor-ui.xml";
     MooApp *app;
     MooUIXML *xml;
     MooEditor *editor;
@@ -42,16 +41,9 @@ int main (int argc, char *argv[])
                    "description", "MEdit is a text editor",
                    NULL));
 
-    if (!g_file_test (file, G_FILE_TEST_EXISTS))
-    {
-        file = "editor-ui.xml";
-        if (!g_file_test (file, G_FILE_TEST_EXISTS))
-            g_error ("could not find editor-ui.xml");
-    }
-
     xml = moo_app_get_ui_xml (app);
 
-    if (!moo_ui_xml_add_ui_from_file (xml, file, NULL))
+    if (!moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1, NULL))
         g_error ("%s", G_STRLOC);
 
     moo_app_init (app);

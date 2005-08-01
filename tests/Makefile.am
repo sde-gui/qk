@@ -3,13 +3,22 @@
 #
 
 EXTRA_PROGRAMS = medit mterm markup editor termbuffer
+bin_PROGRAMS = 
 noinst_PROGRAMS =
 
-EXTRA_DIST = pyapp.py.in
+EXTRA_DIST =        \
+    pyapp.py.in     \
+    meditui.xml     \
+    editor-ui.xml
+    
+BUILT_SOURCES = editor-ui.h
+editor-ui.h: editor-ui.xml
+	sh $(srcdir)/../moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/editor-ui.xml > editor-ui.h
+
 all-am: pyapp.py
 
 if BUILD_MOOAPP
-noinst_PROGRAMS += editor
+bin_PROGRAMS += editor
 endif
 if BUILD_MOOEDIT
 noinst_PROGRAMS += medit
@@ -46,7 +55,9 @@ if MINGW_BUILD
 editor_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-editor_SOURCES = editor.c
+editor_SOURCES =    \
+    editor.c        \
+    editor-ui.h
 
 
 ##############################################################################

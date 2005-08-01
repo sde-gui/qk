@@ -452,7 +452,7 @@ static void     filter_entry_activated  (GtkEntry       *entry,
                                          GtkFileChooser *dialog)
 {
     const char *text;
-    Filter *filter;
+    Filter *filter = NULL;
     MooEditFileMgr *mgr;
 
     mgr = g_object_get_data (G_OBJECT (dialog), "file-mgr");
