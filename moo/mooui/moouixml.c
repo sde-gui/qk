@@ -416,11 +416,15 @@ static GtkWidget *create_menu_bar   (MooMarkupElement   *node,
     for (child = node->children; child != NULL; child = child->next)
     {
         if (MOO_MARKUP_IS_ELEMENT (child))
-            g_return_val_if_fail (create_menu_item (MOO_MARKUP_ELEMENT (child),
-                                                    actions,
-                                                    accel_group, tooltips,
-                                                    GTK_MENU_SHELL (menubar), -1),
-                                  GTK_WIDGET (menubar));
+        {
+            if (!create_menu_item (MOO_MARKUP_ELEMENT (child),
+                                   actions,
+                                   accel_group, tooltips,
+                                   GTK_MENU_SHELL (menubar), -1))
+            {
+                g_return_val_if_reached (GTK_WIDGET (menubar));
+            }
+        }
     }
     return GTK_WIDGET (menubar);
 }
@@ -444,40 +448,43 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
     gtk_menu_set_accel_group (GTK_MENU (menu), accel_group);
 
     for (ch = node->children; ch != NULL; ch = ch->next)
-    {
-        MooMarkupElement *child;
-
-        if (!MOO_MARKUP_IS_ELEMENT (ch)) continue;
-        child = MOO_MARKUP_ELEMENT (ch);
-
-        if (!g_ascii_strcasecmp (child->name, "menu") ||
-            !g_ascii_strcasecmp (child->name, "item"))
+        if (MOO_MARKUP_IS_ELEMENT (ch))
         {
-            if (need_separator) {
-                GtkWidget *sep = gtk_separator_menu_item_new ();
-                gtk_widget_show (sep);
-                gtk_menu_shell_append (GTK_MENU_SHELL (menu), sep);
-                need_separator = FALSE;
+            MooMarkupElement *child = MOO_MARKUP_ELEMENT (ch);
+
+            if (!g_ascii_strcasecmp (child->name, "menu") ||
+                !g_ascii_strcasecmp (child->name, "item"))
+            {
+                if (need_separator)
+                {
+                    GtkWidget *sep = gtk_separator_menu_item_new ();
+                    gtk_widget_show (sep);
+                    gtk_menu_shell_append (GTK_MENU_SHELL (menu), sep);
+                    need_separator = FALSE;
+                }
+
+                if (!create_menu_item (child, actions,
+                                       accel_group, tooltips,
+                                       GTK_MENU_SHELL (menu), -1))
+                {
+                    g_return_val_if_reached (GTK_WIDGET (menu));
+                }
+
+                start = FALSE;
             }
-            g_return_val_if_fail (create_menu_item (child, actions,
-                                                    accel_group, tooltips,
-                                                    GTK_MENU_SHELL (menu), -1),
-                                  GTK_WIDGET (menu));
-            start = FALSE;
+            else if (!g_ascii_strcasecmp (child->name, "placeholder"))
+            {
+            }
+            else if (!g_ascii_strcasecmp (child->name, "separator"))
+            {
+                if (!start) need_separator = TRUE;
+            }
+            else
+            {
+                g_critical ("unknown node %s\n", child->name);
+                return GTK_WIDGET (menu);
+            }
         }
-        else if (!g_ascii_strcasecmp (child->name, "placeholder"))
-        {
-        }
-        else if (!g_ascii_strcasecmp (child->name, "separator"))
-        {
-            if (!start) need_separator = TRUE;
-        }
-        else
-        {
-            g_critical ("unknown node %s\n", child->name);
-            return GTK_WIDGET (menu);
-        }
-    }
 
     return GTK_WIDGET (menu);
 }
