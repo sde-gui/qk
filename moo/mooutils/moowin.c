@@ -101,7 +101,6 @@ static GtkWindow *find_by_xid (GSList *windows, XID w)
     for (l = windows; l != NULL; l = l->next)
         if (GDK_WINDOW_XID (GTK_WIDGET(l->data)->window) == w)
             return l->data;
-    g_return_val_if_fail (l != NULL, NULL);
     return NULL;
 }
 
@@ -298,4 +297,24 @@ gboolean    moo_window_set_icon_from_stock  (GtkWindow      *window,
 #else /* __WIN32__ */
     return TRUE;
 #endif /* __WIN32__ */
+}
+
+
+GtkWindow   *moo_get_toplevel_window        (void)
+{
+    GList *list, *l;
+    GSList *windows = NULL;
+    GtkWindow *top;
+
+    list = gtk_window_list_toplevels ();
+
+    for (l = list; l != NULL; l = l->next)
+        if (GTK_IS_WINDOW (l->data) && GTK_WIDGET(l->data)->window)
+            windows = g_slist_prepend (windows, l->data);
+
+    top = moo_get_top_window (windows);
+
+    g_list_free (list);
+    g_slist_free (windows);
+    return top;
 }
