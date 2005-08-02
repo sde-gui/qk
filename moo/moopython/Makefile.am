@@ -96,6 +96,7 @@ mooui-pygtk.c: $(srcdir)/mooui-pygtk.defs $(srcdir)/mooui-pygtk.override
 	pygtk-codegen-2.0 --prefix moo_ui \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/mooutils-pygtk.defs \
 	--override $(srcdir)/mooui-pygtk.override \
 	--outfilename mooui-pygtk.c \
 	$(srcdir)/mooui-pygtk.defs > mooui-pygtk.c
@@ -104,6 +105,8 @@ mooterm-pygtk.c: $(srcdir)/mooterm-pygtk.defs $(srcdir)/mooterm-pygtk.override
 	pygtk-codegen-2.0 --prefix moo_term \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/mooui-pygtk.defs \
+	--register $(srcdir)/mooutils-pygtk.defs \
 	--override $(srcdir)/mooterm-pygtk.override \
 	--outfilename mooterm-pygtk.c \
 	$(srcdir)/mooterm-pygtk.defs > mooterm-pygtk.c
@@ -112,6 +115,8 @@ mooedit-pygtk.c: $(srcdir)/mooedit-pygtk.defs $(srcdir)/mooedit-pygtk.override
 	pygtk-codegen-2.0 --prefix moo_edit \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/mooui-pygtk.defs \
+	--register $(srcdir)/mooutils-pygtk.defs \
 	--override $(srcdir)/mooedit-pygtk.override \
 	--outfilename mooedit-pygtk.c \
 	$(srcdir)/mooedit-pygtk.defs > mooedit-pygtk.c
@@ -120,6 +125,10 @@ mooapp-pygtk.c: $(srcdir)/mooapp-pygtk.defs $(srcdir)/mooapp-pygtk.override
 	pygtk-codegen-2.0 --prefix moo_app \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(srcdir)/mooedit-pygtk.defs \
+	--register $(srcdir)/mooterm-pygtk.defs \
+	--register $(srcdir)/mooui-pygtk.defs \
+	--register $(srcdir)/mooutils-pygtk.defs \
 	--override $(srcdir)/mooapp-pygtk.override \
 	--outfilename mooapp-pygtk.c \
 	$(srcdir)/mooapp-pygtk.defs > mooapp-pygtk.c
