@@ -787,35 +787,40 @@ static void process_element (MooMarkupElement *elm)
 }
 
 
-static gboolean moo_prefs_load_old          (const char     *file);
 gboolean        moo_prefs_load              (const char     *file)
 {
     MooMarkupDoc *xml;
     MooMarkupElement *root;
     GError *err = NULL;
     MooPrefs *prefs;
+    char *content;
 
     prefs = instance ();
 
     g_return_val_if_fail (file != NULL, FALSE);
 
-    xml = moo_markup_parse_file (file, &err);
+    if (!g_file_test (file, G_FILE_TEST_EXISTS))
+        return TRUE;
+
+    if (!g_file_get_contents (file, &content, NULL, &err))
+    {
+        g_warning ("%s: could not load file '%s'", G_STRLOC, file);
+        g_warning ("%s: %s", G_STRLOC, err->message);
+        g_error_free (err);
+        return FALSE;
+    }
+
+    xml = moo_markup_parse_memory (content, -1, &err);
+    g_free (content);
 
     if (!xml)
     {
+        g_warning ("%s: parse error", G_STRLOC);
+
         if (err)
         {
-            if (err->domain == G_MARKUP_ERROR)
-            {
-                g_message ("%s: parse error, trying old format", G_STRLOC);
-                g_error_free (err);
-                return moo_prefs_load_old (file);
-            }
-            else
-            {
-                g_warning ("%s: %s", G_STRLOC, err->message);
-                g_error_free (err);
-            }
+            g_warning ("%s: %s", G_STRLOC, err->message);
+            g_error_free (err);
         }
 
         return FALSE;
@@ -992,22 +997,16 @@ static void format_element (MooMarkupElement *elm,
 
 static char *format_xml (MooMarkupDoc *doc)
 {
-    GString *str = NULL;
+    GString *str;
     MooMarkupNode *child;
 
-    for (child = doc->children; child != NULL; child = child->next)
-    {
-        if (MOO_MARKUP_IS_ELEMENT (child))
-        {
-            if (!str) str = g_string_new ("");
-            format_element (MOO_MARKUP_ELEMENT (child), str, 0);
-        }
-    }
+    str = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-    if (str)
-        return g_string_free (str, FALSE);
-    else
-        return NULL;
+    for (child = doc->children; child != NULL; child = child->next)
+        if (MOO_MARKUP_IS_ELEMENT (child))
+            format_element (MOO_MARKUP_ELEMENT (child), str, 0);
+
+    return g_string_free (str, FALSE);
 }
 
 
@@ -1057,116 +1056,9 @@ gboolean        moo_prefs_save              (const char     *file)
         g_critical ("%s: %s", G_STRLOC, err->message);
         g_error_free (err);
     }
-    
+
     g_free (text);
     return result;
-}
-
-
-static gboolean moo_prefs_load_old          (const char     *file)
-{
-    GError *err = NULL;
-    char *content = NULL;
-    gsize len = 0;
-    char** lines;
-    guint i;
-
-    g_return_val_if_fail (file != NULL, FALSE);
-
-    if (!g_file_get_contents (file, &content, &len, &err))
-    {
-        g_critical ("%s: could not load file '%s'", G_STRLOC, file);
-        if (err) {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-        return FALSE;
-    }
-
-    if (!len) {
-        g_free (content);
-        return TRUE;
-    }
-
-    g_strdelimit (content, "\r\f", '\n');
-    lines = g_strsplit (content, "\n", 0);
-
-    for (i = 0; lines[i]; ++i)
-    {
-        char **keyval = g_strsplit (lines[i], "=", 2);
-
-        if (keyval[0])
-        {
-            if (keyval[1])
-            {
-                char **pieces = g_strsplit (keyval[0], "::", 0);
-                guint j;
-
-                if (!pieces || !pieces[0])
-                {
-                    g_critical ("%s: error in file '%s' "
-                                "on line %d", G_STRLOC, file, i);
-                }
-                else
-                {
-                    char *key;
-
-                    for (j = 0; pieces[j] != NULL; ++j)
-                    {
-                        const char *replacement = NULL;
-
-                        if (j == 0 && !strcmp (pieces[j], "terminal"))
-                            replacement = "Terminal";
-                        else if (!strcmp (pieces[j], "window_save_position"))
-                            replacement = "window/save_position";
-                        else if (!strcmp (pieces[j], "window_save_size"))
-                            replacement = "window/save_size";
-                        else if (!strcmp (pieces[j], "window_width"))
-                            replacement = "window/width";
-                        else if (!strcmp (pieces[j], "window_height"))
-                            replacement = "window/height";
-                        else if (!strcmp (pieces[j], "window_show_toolbar"))
-                            replacement = "window/show_toolbar";
-                        else if (!strcmp (pieces[j], "window_show_menubar"))
-                            replacement = "window/show_menubar";
-                        else if (!strcmp (pieces[j], "window_toolbar_style"))
-                            replacement = "window/toolbar_style";
-                        else if (!strcmp (pieces[j], "window_x"))
-                            replacement = "window/x";
-                        else if (!strcmp (pieces[j], "window_y"))
-                            replacement = "window/y";
-
-                        if (replacement)
-                        {
-                            g_free (pieces[j]);
-                            pieces[j] = g_strdup (replacement);
-                        }
-                    }
-
-                    key = g_strjoinv ("/", pieces);
-                    moo_prefs_set_string (key, keyval[1]);
-#ifdef DEBUG_READWRITE
-                    g_print ("key: '%s', val: '%s'\n",
-                             key, keyval[1]);
-#endif
-                    g_free (key);
-                }
-
-                g_strfreev (pieces);
-            }
-            else
-            {
-                g_critical ("%s: error in file '%s' "
-                        "on line %d", G_STRLOC, file, i);
-            }
-        }
-
-        g_strfreev (keyval);
-    }
-
-    g_free (content);
-    g_strfreev (lines);
-    return TRUE;
 }
 
 
