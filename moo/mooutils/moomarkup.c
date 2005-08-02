@@ -157,94 +157,17 @@ MooMarkupDoc   *moo_markup_parse_memory    (const char     *buffer,
 MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
                                             GError        **error)
 {
-    GMarkupParser parser = {(markup_start_element_func)start_element,
-                            (markup_end_element_func)end_element,
-                            (markup_text_func)text,
-                            (markup_passthrough_func)passthrough,
-                            NULL};
-
-    GError *err = NULL;
+    char *content;
     MooMarkupDoc *doc;
-    ParserState state;
-    GMarkupParseContext *context;
-    GIOChannel *file;
 
-    file = g_io_channel_new_file (filename, "r", &err);
+    g_return_val_if_fail (filename != NULL, NULL);
 
-    if (!file)
-    {
-        if (err)
-        {
-            if (error) *error = err;
-            else g_error_free (err);
-        }
+    if (!g_file_get_contents (filename, &content, NULL, error))
         return NULL;
-    }
-    else
-    {
-        g_io_channel_set_close_on_unref (file, TRUE);
-    }
 
-    doc = moo_markup_doc_new_priv (filename);
-    state.doc = doc;
-    state.current = MOO_MARKUP_NODE (doc);
-    context = g_markup_parse_context_new (&parser, (GMarkupParseFlags)0, &state, NULL);
+    doc = moo_markup_parse_memory (content, -1, error);
 
-    while (TRUE)
-    {
-        char buf[BUFSIZE];
-        gsize len = 0;
-        GIOStatus status = g_io_channel_read_chars (file, buf, BUFSIZE, &len, &err);
-        if (status == G_IO_STATUS_ERROR)
-        {
-            if (err)
-            {
-                if (error) *error = err;
-                else g_error_free (err);
-            }
-            g_markup_parse_context_free (context);
-            moo_markup_doc_unref (doc);
-            g_io_channel_unref (file);
-            return NULL;
-        }
-
-        if (len > 0)
-        {
-            if (!g_markup_parse_context_parse (context, buf, len, &err))
-            {
-                if (err)
-                {
-                    if (error) *error = err;
-                    else g_error_free (err);
-                }
-                g_markup_parse_context_free (context);
-                moo_markup_doc_unref (doc);
-                g_io_channel_unref (file);
-                return NULL;
-            }
-        }
-
-        if (status == G_IO_STATUS_EOF)
-        {
-            if (!g_markup_parse_context_end_parse (context, &err))
-            {
-                if (err)
-                {
-                    if (error) *error = err;
-                    else g_error_free (err);
-                }
-                g_markup_parse_context_free (context);
-                moo_markup_doc_unref (doc);
-                g_io_channel_unref (file);
-                return NULL;
-            }
-
-            break;
-        }
-    }
-
-    g_markup_parse_context_free (context);
-    g_io_channel_unref (file);
+    g_free (content);
     return doc;
 }
 
@@ -636,12 +559,13 @@ MooMarkupElement*moo_markup_get_root_element(MooMarkupDoc       *doc,
     MooMarkupNode *child;
     for (child = doc->children; child; child = child->next)
     {
-        MooMarkupElement *elm;
-        if (!MOO_MARKUP_IS_ELEMENT (child)) continue;
-        elm = MOO_MARKUP_ELEMENT (child);
-        if (!name || !strcmp (elm->name, name))
-            return elm;
+        if (MOO_MARKUP_IS_ELEMENT (child))
+        {
+            if (!name || !strcmp (child->name, name))
+                return MOO_MARKUP_ELEMENT (child);
+        }
     }
+
     return NULL;
 }
 
