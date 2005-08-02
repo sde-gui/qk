@@ -14,6 +14,7 @@
 #include <gtk/gtk.h>
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moowin.h"
 #if GTK_CHECK_VERSION(2,4,0)
 #include "mooutils/moofilechooser.h"
 #endif
@@ -27,7 +28,13 @@ static void message_dialog (GtkWidget       *parent,
     GtkWindow *parent_window = NULL;
     GtkWidget *dialog;
 
-    if (parent) parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+
+    if (GTK_IS_WINDOW (parent))
+        parent_window = GTK_WINDOW (parent);
+    else
+        parent_window = moo_get_toplevel_window ();
 
 #if GTK_CHECK_VERSION(2,6,0)
     dialog = gtk_message_dialog_new_with_markup (
