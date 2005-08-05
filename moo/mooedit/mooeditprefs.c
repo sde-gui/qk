@@ -162,7 +162,7 @@ void        _moo_edit_apply_style_settings      (MooEdit    *edit)
 
 
 void        _moo_edit_settings_changed          (const char *key,
-                                                 G_GNUC_UNUSED const char *newval,
+                                                 G_GNUC_UNUSED const GValue *newval,
                                                  MooEdit    *edit)
 {
     GtkSourceBuffer *buffer = edit->priv->source_buffer;

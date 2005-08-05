@@ -56,11 +56,11 @@ int         _moo_edit_extend_selection      (MooEdit            *edit,
 /* Preferences
 /*/
 void        _moo_edit_set_default_settings  (void);
-void        _moo_edit_apply_settings        (MooEdit    *edit);
-void        _moo_edit_apply_style_settings  (MooEdit    *edit);
-void        _moo_edit_settings_changed      (const char *key,
-                                             const char *newval,
-                                             MooEdit    *edit);
+void        _moo_edit_apply_settings        (MooEdit        *edit);
+void        _moo_edit_apply_style_settings  (MooEdit        *edit);
+void        _moo_edit_settings_changed      (const char     *key,
+                                             const GValue   *newval,
+                                             MooEdit        *edit);
 
 /***********************************************************************/
 /* File operations
