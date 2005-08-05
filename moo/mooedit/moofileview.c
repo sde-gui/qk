@@ -480,7 +480,9 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
     /* Up */
     icon = gtk_image_new_from_stock (GTK_STOCK_GO_UP,
                                      GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
     item = gtk_tool_button_new (icon, NULL);
+    gtk_widget_show (GTK_WIDGET (item));
     gtk_tool_item_set_tooltip (item, tooltips, "Up", "Up");
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
     g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
@@ -492,7 +494,9 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
     /* Back */
     icon = gtk_image_new_from_stock (GTK_STOCK_GO_BACK,
                                      GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
     item = gtk_tool_button_new (icon, NULL);
+    gtk_widget_show (GTK_WIDGET (item));
     gtk_tool_item_set_tooltip (item, tooltips, "Back", "Back");
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
     g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
@@ -504,7 +508,9 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
     /* Forward */
     icon = gtk_image_new_from_stock (GTK_STOCK_GO_FORWARD,
                                      GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
     item = gtk_tool_button_new (icon, NULL);
+    gtk_widget_show (GTK_WIDGET (item));
     gtk_tool_item_set_tooltip (item, tooltips, "Forward", "Forward");
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
     g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
@@ -516,7 +522,9 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
     /* Home */
     icon = gtk_image_new_from_stock (GTK_STOCK_HOME,
                                      GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
     item = gtk_tool_button_new (icon, NULL);
+    gtk_widget_show (GTK_WIDGET (item));
     gtk_tool_item_set_tooltip (item, tooltips, "Home", "Home");
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
     g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
