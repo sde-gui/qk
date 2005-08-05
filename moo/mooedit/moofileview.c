@@ -15,6 +15,12 @@
 #include "config.h"
 #endif
 
+#ifdef GTK_DISABLE_DEPRECATED
+# undef GTK_DISABLE_DEPRECATED
+# include <gtk/gtktoolbar.h>
+# define GTK_DISABLE_DEPRECATED
+#endif
+
 #include "mooedit/moofileview.h"
 #include "mooedit/mooeditfilemgr.h"
 #include "mooutils/moomarshals.h"
@@ -430,6 +436,7 @@ static void         init_gui        (MooFileView    *fileview)
     toolbar = create_toolbar (fileview);
     gtk_widget_show (toolbar);
     gtk_box_pack_start (box, toolbar, FALSE, FALSE, 0);
+    fileview->toolbar = toolbar;
 
     notebook = create_notebook (fileview);
     gtk_widget_show (notebook);
@@ -472,8 +479,10 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
 
     toolbar = gtk_toolbar_new ();
     gtk_toolbar_set_show_arrow (GTK_TOOLBAR (toolbar), TRUE);
+
     gtk_toolbar_set_icon_size (GTK_TOOLBAR (toolbar),
                                GTK_ICON_SIZE_MENU);
+
     gtk_toolbar_set_style (GTK_TOOLBAR (toolbar),
                            GTK_TOOLBAR_ICONS);
 
@@ -1525,7 +1534,7 @@ static void         fileview_set_filter     (MooFileView    *fileview,
     if (filter)
     {
         const char *name;
-        gtk_object_sink (gtk_object_ref (GTK_OBJECT (filter)));
+        gtk_object_sink (GTK_OBJECT (g_object_ref (filter)));
         name = gtk_file_filter_get_name (filter);
         gtk_entry_set_text (fileview->priv->filter_entry, name);
         fileview_set_use_filter (fileview, TRUE, FALSE);

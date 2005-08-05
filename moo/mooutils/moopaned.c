@@ -258,7 +258,7 @@ static GObject *moo_paned_constructor   (GType                  type,
             break;
     }
 
-    gtk_object_sink (gtk_object_ref (GTK_OBJECT (paned->button_box)));
+    gtk_object_sink (GTK_OBJECT (g_object_ref (paned->button_box)));
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
     gtk_widget_show (paned->button_box);
     g_signal_connect_swapped (paned->button_box, "notify::visible",
@@ -1050,6 +1050,8 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
         if (paned->priv->pane_window)
         {
             get_pane_window_rect (paned, &rect);
+            gdk_window_show (paned->priv->pane_window);
+            gdk_window_raise (paned->priv->pane_window);
             gdk_window_move_resize (paned->priv->pane_window,
                                     rect.x, rect.y,
                                     rect.width, rect.height);
@@ -1203,6 +1205,10 @@ static void button_toggled          (GtkToggleButton *button,
             paned->priv->current_pane->button == GTK_WIDGET (button))
         {
             gtk_widget_hide (paned->priv->current_pane->frame);
+
+            if (GTK_WIDGET_REALIZED (paned))
+                gdk_window_hide (paned->priv->pane_window);
+
             paned->priv->current_pane = NULL;
             paned->priv->pane_widget_visible = FALSE;
             paned->priv->pane_widget_size = 0;
@@ -1227,6 +1233,8 @@ static void button_toggled          (GtkToggleButton *button,
     {
         gtk_widget_set_parent_window (pane->frame,
                                       paned->priv->pane_window);
+        gdk_window_show (paned->priv->pane_window);
+        gdk_window_raise (paned->priv->pane_window);
         gtk_widget_queue_resize (GTK_WIDGET (paned));
     }
 
@@ -1679,7 +1687,7 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
     pane = g_new (Pane, 1);
 
     pane->frame = create_frame_widget (paned, pane);
-    gtk_object_sink (gtk_object_ref (GTK_OBJECT (pane->frame)));
+    gtk_object_sink (GTK_OBJECT (g_object_ref (pane->frame)));
     gtk_widget_set_parent (pane->frame, GTK_WIDGET (paned));
 
     pane->child = pane_widget;

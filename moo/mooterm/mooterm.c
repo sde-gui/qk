@@ -250,7 +250,7 @@ static void moo_term_class_init (MooTermClass *klass)
                                NULL, NULL,
                                _moo_marshal_VOID__UINT,
                                G_TYPE_NONE, 1,
-                               GTK_TYPE_UINT);
+                               G_TYPE_UINT);
 
     signals[APPLY_SETTINGS] =
             g_signal_new ("apply-settings",
@@ -1718,10 +1718,10 @@ static gboolean moo_term_scroll             (GtkWidget      *widget,
 
 
 static const GtkTargetEntry target_table[] = {
-    { "UTF8_STRING", 0, 0 },
-    { "TEXT", 0, 0 },
-    { "text/plain", 0, 0 },
-    { "text/plain;charset=utf-8", 0, 0 }
+    { (char*) "UTF8_STRING", 0, 0 },
+    { (char*) "TEXT", 0, 0 },
+    { (char*) "text/plain", 0, 0 },
+    { (char*) "text/plain;charset=utf-8", 0, 0 }
 };
 
 

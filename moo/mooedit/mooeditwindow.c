@@ -14,16 +14,19 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditdialogs.h"
+#include "mooedit/moofileview.h"
 #include "mooui/moouiobject-impl.h"
 #include "mooui/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moosignal.h"
+#include "mooutils/moopaned.h"
 #include <string.h>
 
 
 struct _MooEditWindowPrivate {
+    MooPaned        *paned;
     GtkNotebook     *notebook;
     gboolean         use_fullname;
     char            *app_name;
@@ -84,6 +87,10 @@ static void     cursor_moved                (MooEditWindow      *window,
 
 static void     file_saved                  (MooEditWindow      *window,
                                              MooEditFileInfo    *info);
+
+static void     fileview_activate           (MooEditWindow      *window,
+                                             MooFileViewFile    *file);
+
 
 
 /* actions */
@@ -416,8 +423,9 @@ GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
                                              GObjectConstructParam *props)
 {
-    GtkWidget *notebook;
+    GtkWidget *notebook, *paned, *fileview;
     MooEdit *edit;
+    MooEditFileMgr *mgr = NULL;
     MooEditWindow *window;
 
     GObject *object =
@@ -432,10 +440,29 @@ GObject        *moo_edit_window_constructor (GType                  type,
                                           "MooEditWindow");
 
     gtk_widget_show (MOO_WINDOW(window)->vbox);
+
+    paned = moo_paned_new (GTK_POS_RIGHT);
+    gtk_widget_show (paned);
+    gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), paned, TRUE, TRUE, 0);
+    window->priv->paned = MOO_PANED (paned);
+
+    if (window->priv->editor)
+        mgr = moo_editor_get_file_mgr (window->priv->editor);
+
+    fileview = GTK_WIDGET (g_object_new (MOO_TYPE_FILE_VIEW,
+                           "file-mgr", mgr, NULL));
+    g_signal_connect_swapped (fileview, "activate",
+                              G_CALLBACK (fileview_activate),
+                              window);
+
+    moo_paned_add_pane (MOO_PANED (paned),
+                        fileview, "File Selector",
+                        GTK_STOCK_OPEN);
+
     notebook = gtk_notebook_new ();
     gtk_notebook_set_scrollable (GTK_NOTEBOOK (notebook), TRUE);
     gtk_widget_show (notebook);
-    gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), notebook, TRUE, TRUE, 0);
+    gtk_container_add (GTK_CONTAINER (paned), notebook);
 
     window->priv->notebook = GTK_NOTEBOOK (notebook);
     g_signal_connect_after (window->priv->notebook, "switch-page",
@@ -826,7 +853,7 @@ gboolean     _moo_edit_window_open              (MooEditWindow  *window,
     if (!moo_edit_is_empty (edit))
     {
         edit = _moo_edit_new (window->priv->editor);
-        gtk_object_sink (gtk_object_ref (GTK_OBJECT (edit)));
+        gtk_object_sink (GTK_OBJECT (g_object_ref (edit)));
         add = TRUE;
     }
 
@@ -1130,4 +1157,16 @@ static void     file_saved                  (MooEditWindow      *window,
                                              MooEditFileInfo    *info)
 {
     g_signal_emit (window, signals[FILE_SAVED], 0, info);
+}
+
+
+static void     fileview_activate           (MooEditWindow      *window,
+                                             MooFileViewFile    *file)
+{
+    const char *path = moo_file_view_file_path (file);
+    if (_moo_edit_window_open (window, path, NULL))
+    {
+        MooEdit *edit = moo_edit_window_get_active_doc (window);
+        gtk_widget_grab_focus (GTK_WIDGET (edit));
+    }
 }

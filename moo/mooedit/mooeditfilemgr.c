@@ -424,13 +424,13 @@ static Filter   *filter_new     (const char *description,
     filter->user = user;
 
     filter->filter = gtk_file_filter_new ();
-    gtk_object_sink (gtk_object_ref (GTK_OBJECT (filter->filter)));
+    gtk_object_sink (GTK_OBJECT (g_object_ref (filter->filter)));
     gtk_file_filter_set_name (filter->filter, description);
 
     if (negative)
     {
         filter->aux = gtk_file_filter_new ();
-        gtk_object_sink (gtk_object_ref (GTK_OBJECT (filter->aux)));
+        gtk_object_sink (GTK_OBJECT (g_object_ref (filter->aux)));
 
         for (p = globs; *p != NULL; p++)
             gtk_file_filter_add_pattern (filter->aux, *p);
@@ -874,7 +874,7 @@ static void          mgr_recent_stuff_init  (MooEditFileMgr *mgr)
 {
     mgr->priv->recent = g_new0 (RecentStuff, 1);
     mgr->priv->recent->tooltips = gtk_tooltips_new ();
-    gtk_object_sink (gtk_object_ref (GTK_OBJECT (mgr->priv->recent->tooltips)));
+    gtk_object_sink (GTK_OBJECT (g_object_ref (mgr->priv->recent->tooltips)));
     mgr->priv->recent->display_full_name = FALSE;
 }
 
