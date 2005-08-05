@@ -2,7 +2,7 @@
 #   tests/Makefile.am
 #
 
-EXTRA_PROGRAMS = medit mterm markup editor termbuffer
+EXTRA_PROGRAMS = medit mterm markup editor termbuffer testfileview testpaned
 bin_PROGRAMS =
 noinst_PROGRAMS =
 
@@ -21,13 +21,13 @@ if BUILD_MOOAPP
 bin_PROGRAMS += editor
 endif
 if BUILD_MOOEDIT
-noinst_PROGRAMS += medit
+noinst_PROGRAMS += medit testfileview
 endif
 if BUILD_MOOTERM
 noinst_PROGRAMS += mterm termbuffer
 endif
 if BUILD_MOOUTILS
-noinst_PROGRAMS += markup testpaned testfileview
+noinst_PROGRAMS += markup testpaned
 endif
 
 

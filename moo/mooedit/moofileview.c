@@ -1,5 +1,5 @@
 /*
- *   mooutils/moofileview.c
+ *   mooedit/moofileview.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,7 +11,11 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moofileview.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "mooedit/moofileview.h"
 #include "mooutils/moomarshals.h"
 #include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
@@ -19,6 +23,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#ifdef USE_XDGMIME
+#include "mooedit/xdgmime/xdgmime.h"
+#endif
 
 #define TREEVIEW_UPDATE_TIMEOUT 0.5
 
@@ -35,7 +42,7 @@ struct _MooFileViewFile {
     char        *fullname;
     char        *uri;
     char        *display_name;
-    char        *mime_type;
+    const char  *mime_type;
     GdkPixbuf   *pixbuf;
     gboolean     is_dir;
     struct stat  statbuf;
@@ -769,14 +776,20 @@ static MooFileViewFile  *file_new   (MooFileView    *fileview,
     g_return_val_if_fail (basename != NULL, NULL);
     g_return_val_if_fail (fullname != NULL, NULL);
 
-    file = g_new (MooFileViewFile, 1);
+    file = g_new0 (MooFileViewFile, 1);
     file->ref_count = 1;
 
     file->basename = g_strdup (basename);
     file->fullname = g_strdup (fullname);
     file->uri = g_strdup_printf ("file://%s", fullname);
     file->display_name = g_filename_display_basename (basename);
+
+#ifdef USE_XDGMIME
+    file->mime_type = xdg_mime_get_mime_type_for_file (fullname);
+#else
     file->mime_type = NULL;
+#endif
+
 
     file->time = NULL;  /* struct tm* */
     file->date_string = NULL;
@@ -836,7 +849,6 @@ static void              file_unref (MooFileViewFile  *file)
         g_free (file->fullname);
         g_free (file->uri);
         g_free (file->display_name);
-        g_free (file->mime_type);
         if (file->pixbuf) g_object_unref (file->pixbuf);
         g_free (file->time);  /* struct tm* */
         g_free (file->date_string);

@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moofileview.h"
+#include "mooedit/moofileview.h"
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
