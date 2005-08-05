@@ -16,6 +16,7 @@
 #endif
 
 #include "mooedit/moofileview.h"
+#include "mooedit/mooeditfilemgr.h"
 #include "mooutils/moomarshals.h"
 #include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
@@ -64,6 +65,13 @@ struct _MooFileViewPrivate {
     History         *history;
     guint            populate_idle;
     GDir            *populate_dir;
+
+    MooEditFileMgr  *mgr;
+    GtkToggleButton *filter_button;
+    GtkComboBox     *filter_combo;
+    GtkEntry        *filter_entry;
+    GtkFileFilter   *current_filter;
+    gboolean         use_current_filter;
 };
 
 
@@ -74,7 +82,18 @@ static MooFileViewFile  *file_ref   (MooFileViewFile    *file);
 static void              file_unref (MooFileViewFile    *file);
 
 
-static void         moo_file_view_finalize  (GObject        *object);
+static void         moo_file_view_finalize      (GObject        *object);
+static void         moo_file_view_set_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 const GValue   *value,
+                                                 GParamSpec     *pspec);
+static void         moo_file_view_get_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 GValue         *value,
+                                                 GParamSpec     *pspec);
+
+static void         moo_file_view_set_file_mgr  (MooFileView    *fileview,
+                                                 MooEditFileMgr *mgr);
 
 static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
                                              const char     *dir,
@@ -86,6 +105,7 @@ static void         moo_file_view_go_forward(MooFileView    *fileview);
 
 static void         history_init            (MooFileView    *fileview);
 static void         history_free            (MooFileView    *fileview);
+static void         history_clear           (MooFileView    *fileview);
 static void         history_goto            (MooFileView    *fileview,
                                              const char     *dirname);
 static const char  *history_go              (MooFileView    *fileview,
@@ -102,11 +122,22 @@ static int          tree_compare_func       (GtkTreeModel       *model,
                                              GtkTreeIter        *b);
 
 static void         init_gui                (MooFileView    *fileview);
+static void         focus_to_file_view      (MooFileView    *fileview);
 static GtkWidget   *create_toolbar          (MooFileView    *fileview);
 static void         toolbar_button_clicked  (GtkToolButton  *button,
                                              MooFileView    *fileview);
 static GtkWidget   *create_notebook         (MooFileView    *fileview);
+
 static GtkWidget   *create_filter_combo     (MooFileView    *fileview);
+static void         init_filter_combo       (MooFileView    *fileview);
+static void         filter_button_toggled   (MooFileView    *fileview);
+static void         filter_combo_changed    (MooFileView    *fileview);
+static void         filter_entry_activate   (MooFileView    *fileview);
+static void         fileview_set_filter     (MooFileView    *fileview,
+                                             GtkFileFilter  *filter);
+static void         fileview_set_use_filter (MooFileView    *fileview,
+                                             gboolean        use,
+                                             gboolean        block_signals);
 
 static GtkWidget   *create_treeview         (MooFileView    *fileview);
 static void         tree_row_activated      (GtkTreeView    *treeview,
@@ -128,7 +159,8 @@ G_DEFINE_TYPE (MooFileView, moo_file_view, GTK_TYPE_VBOX)
 
 enum {
     PROP_0,
-    PROP_DIRECTORY
+    PROP_CURRENT_DIRECTORY,
+    PROP_FILE_MGR
 };
 
 enum {
@@ -157,12 +189,30 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
     GtkBindingSet *binding_set;
 
     gobject_class->finalize = moo_file_view_finalize;
+    gobject_class->set_property = moo_file_view_set_property;
+    gobject_class->get_property = moo_file_view_get_property;
 
     klass->chdir = moo_file_view_chdir_real;
     klass->go_up = moo_file_view_go_up;
     klass->go_home = moo_file_view_go_home;
     klass->go_back = moo_file_view_go_back;
     klass->go_forward = moo_file_view_go_forward;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CURRENT_DIRECTORY,
+                                     g_param_spec_string ("current-directory",
+                                             "current-directory",
+                                             "current-directory",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FILE_MGR,
+                                     g_param_spec_object ("file-mgr",
+                                             "file-mgr",
+                                             "file-mgr",
+                                             MOO_TYPE_EDIT_FILE_MGR,
+                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     signals[CHDIR] = g_signal_new ("chdir",
                                    G_OBJECT_CLASS_TYPE (klass),
@@ -260,6 +310,7 @@ static void moo_file_view_init      (MooFileView *fileview)
     fileview->priv->show_hidden_files = FALSE;
 
     fileview->priv->view_type = MOO_FILE_VIEW_LIST;
+    fileview->priv->use_current_filter = FALSE;
 
     history_init (fileview);
 
@@ -294,10 +345,13 @@ static void moo_file_view_finalize  (GObject      *object)
 
     g_object_unref (fileview->priv->filter_model);
     g_object_unref (fileview->priv->store);
-
     history_free (fileview);
-
     g_free (fileview->priv->current_dir);
+
+    if (fileview->priv->mgr)
+        g_object_unref (fileview->priv->mgr);
+    if (fileview->priv->current_filter)
+        g_object_unref (fileview->priv->current_filter);
 
     g_free (fileview->priv);
 
@@ -318,7 +372,19 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
     char *real_new_dir;
 
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), FALSE);
-    g_return_val_if_fail (new_dir != NULL, FALSE);
+
+    if (!new_dir)
+    {
+        if (fileview->priv->current_dir)
+        {
+            g_free (fileview->priv->current_dir);
+            fileview->priv->current_dir = NULL;
+            history_clear (fileview);
+            gtk_list_store_clear (fileview->priv->store);
+        }
+
+        return TRUE;
+    }
 
     if (fileview->priv->current_dir && !strcmp (fileview->priv->current_dir, new_dir))
         return TRUE;
@@ -374,17 +440,22 @@ static void         init_gui        (MooFileView    *fileview)
     gtk_box_pack_start (box, filter_combo, FALSE, FALSE, 0);
 
     if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
-    {
         gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
                                        ICONVIEW_PAGE);
-        gtk_widget_grab_focus (fileview->priv->iconview);
-    }
     else
-    {
         gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
                                        TREEVIEW_PAGE);
+
+    focus_to_file_view (fileview);
+}
+
+
+static void         focus_to_file_view      (MooFileView    *fileview)
+{
+    if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
+        gtk_widget_grab_focus (fileview->priv->iconview);
+    else
         gtk_widget_grab_focus (fileview->priv->treeview);
-    }
 }
 
 
@@ -512,6 +583,21 @@ static GtkWidget   *create_filter_combo (G_GNUC_UNUSED MooFileView *fileview)
     combo = gtk_combo_box_entry_new ();
     gtk_widget_show (combo);
     gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 0);
+
+    fileview->priv->filter_button = GTK_TOGGLE_BUTTON (button);
+    fileview->priv->filter_combo = GTK_COMBO_BOX (combo);
+    fileview->priv->filter_entry = GTK_ENTRY (GTK_BIN(combo)->child);
+
+    g_signal_connect_swapped (button, "toggled",
+                              G_CALLBACK (filter_button_toggled),
+                              fileview);
+    g_signal_connect_data (combo, "changed",
+                           G_CALLBACK (filter_combo_changed),
+                           fileview, NULL,
+                           G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+    g_signal_connect_swapped (GTK_BIN(combo)->child, "activate",
+                              G_CALLBACK (filter_entry_activate),
+                              fileview);
 
     return hbox;
 }
@@ -722,6 +808,24 @@ static gboolean     filter_visible_func (GtkTreeModel   *model,
         goto out;
     }
 
+    if (file->is_dir)
+        goto out;
+
+    if (fileview->priv->current_filter && fileview->priv->use_current_filter)
+    {
+        GtkFileFilterInfo filter_info;
+        GtkFileFilter *filter = fileview->priv->current_filter;
+
+        filter_info.contains = gtk_file_filter_get_needed (filter);
+        filter_info.filename = file->fullname;
+        filter_info.uri = file->uri;
+        filter_info.display_name = file->display_name;
+        filter_info.mime_type = file->mime_type;
+
+        visible = gtk_file_filter_filter (fileview->priv->current_filter,
+                                          &filter_info);
+    }
+
 out:
     file_unref (file);
     return visible;
@@ -879,7 +983,6 @@ gboolean    moo_file_view_chdir             (MooFileView    *fileview,
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), FALSE);
-    g_return_val_if_fail (dir != NULL, FALSE);
 
     g_signal_emit (fileview, signals[CHDIR], 0, dir, error, &result);
 
@@ -1048,9 +1151,7 @@ struct _History {
 
 static void         history_init            (MooFileView    *fileview)
 {
-    History *hist;
-
-    fileview->priv->history = hist = g_new0 (History, 1);
+    fileview->priv->history = g_new0 (History, 1);
 }
 
 
@@ -1060,6 +1161,15 @@ static void         history_free            (MooFileView    *fileview)
     g_list_free (fileview->priv->history->list);
     g_free (fileview->priv->history);
     fileview->priv->history = NULL;
+}
+
+
+static void         history_clear           (MooFileView    *fileview)
+{
+    g_list_foreach (fileview->priv->history->list, (GFunc) g_free, NULL);
+    g_list_free (fileview->priv->history->list);
+    fileview->priv->history->current = NULL;
+    fileview->priv->history->list = NULL;
 }
 
 
@@ -1188,4 +1298,268 @@ const char *moo_file_view_file_mime_type    (MooFileViewFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->mime_type;
+}
+
+
+static void         moo_file_view_set_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 const GValue   *value,
+                                                 GParamSpec     *pspec)
+{
+    MooFileView *fileview = MOO_FILE_VIEW (object);
+    GError *error = NULL;
+    const char *dir;
+
+    switch (prop_id)
+    {
+        case PROP_CURRENT_DIRECTORY:
+            dir = g_value_get_string (value);
+
+            if (dir)
+            {
+                if (!moo_file_view_chdir (fileview, dir, &error))
+                {
+                    g_warning ("%s: could not chdir to '%s'",
+                               G_STRLOC, dir);
+
+                    if (error)
+                    {
+                        g_warning ("%s: %s", G_STRLOC, error->message);
+                        g_error_free (error);
+                    }
+                }
+            }
+            else
+            {
+                moo_file_view_chdir (fileview, NULL, NULL);
+            }
+
+            break;
+
+        case PROP_FILE_MGR:
+            moo_file_view_set_file_mgr (fileview,
+                                        g_value_get_object (value));
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void         moo_file_view_get_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 GValue         *value,
+                                                 GParamSpec     *pspec)
+{
+    MooFileView *fileview = MOO_FILE_VIEW (object);
+
+    switch (prop_id)
+    {
+        case PROP_CURRENT_DIRECTORY:
+            g_value_set_string (value, fileview->priv->current_dir);
+            break;
+
+        case PROP_FILE_MGR:
+            g_value_set_object (value, fileview->priv->mgr);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void         moo_file_view_set_file_mgr  (MooFileView    *fileview,
+                                                 MooEditFileMgr *mgr)
+{
+    if (!mgr)
+    {
+        mgr = moo_edit_file_mgr_new ();
+        moo_file_view_set_file_mgr (fileview, mgr);
+        g_object_unref (mgr);
+        return;
+    }
+
+    if (mgr == fileview->priv->mgr)
+        return;
+
+    if (fileview->priv->mgr)
+        g_object_unref (fileview->priv->mgr);
+    fileview->priv->mgr = mgr;
+    g_object_ref (fileview->priv->mgr);
+
+    init_filter_combo (fileview);
+}
+
+
+static void         block_filter_signals    (MooFileView    *fileview)
+{
+    g_signal_handlers_block_by_func (fileview->priv->filter_combo,
+                                     (gpointer) filter_button_toggled,
+                                     fileview);
+    g_signal_handlers_block_by_func (fileview->priv->filter_combo,
+                                     (gpointer) filter_combo_changed,
+                                     fileview);
+    g_signal_handlers_block_by_func (fileview->priv->filter_combo,
+                                     (gpointer) filter_entry_activate,
+                                     fileview);
+}
+
+static void         unblock_filter_signals  (MooFileView    *fileview)
+{
+    g_signal_handlers_unblock_by_func (fileview->priv->filter_combo,
+                                       (gpointer) filter_button_toggled,
+                                       fileview);
+    g_signal_handlers_unblock_by_func (fileview->priv->filter_combo,
+                                       (gpointer) filter_combo_changed,
+                                       fileview);
+    g_signal_handlers_unblock_by_func (fileview->priv->filter_combo,
+                                       (gpointer) filter_entry_activate,
+                                       fileview);
+}
+
+
+static void         init_filter_combo       (MooFileView    *fileview)
+{
+    MooEditFileMgr *mgr = fileview->priv->mgr;
+    GtkFileFilter *filter;
+
+    block_filter_signals (fileview);
+
+    moo_edit_file_mgr_init_filter_combo (mgr, fileview->priv->filter_combo);
+    if (fileview->priv->current_filter)
+        g_object_unref (fileview->priv->current_filter);
+    fileview->priv->current_filter = NULL;
+    fileview->priv->use_current_filter = FALSE;
+    gtk_toggle_button_set_active (fileview->priv->filter_button, FALSE);
+    gtk_entry_set_text (fileview->priv->filter_entry, "");
+
+    unblock_filter_signals (fileview);
+
+    filter = moo_edit_file_mgr_get_last_filter (mgr);
+    if (filter) fileview_set_filter (fileview, filter);
+}
+
+
+static void         filter_button_toggled   (MooFileView    *fileview)
+{
+    gboolean active =
+            gtk_toggle_button_get_active (fileview->priv->filter_button);
+
+    if (active == fileview->priv->use_current_filter)
+        return;
+
+    fileview_set_use_filter (fileview, active, TRUE);
+    focus_to_file_view (fileview);
+}
+
+
+static void         filter_combo_changed    (MooFileView    *fileview)
+{
+    GtkTreeIter iter;
+    GtkFileFilter *filter;
+    MooEditFileMgr *mgr = fileview->priv->mgr;
+    GtkComboBox *combo = fileview->priv->filter_combo;
+
+    if (!gtk_combo_box_get_active_iter (combo, &iter))
+        return;
+
+    filter = moo_edit_file_mgr_get_filter (mgr, &iter);
+    g_return_if_fail (filter != NULL);
+
+    fileview_set_filter (fileview, filter);
+    focus_to_file_view (fileview);
+}
+
+
+static void         filter_entry_activate   (MooFileView    *fileview)
+{
+    const char *text;
+    GtkFileFilter *filter;
+    MooEditFileMgr *mgr = fileview->priv->mgr;
+
+    text = gtk_entry_get_text (fileview->priv->filter_entry);
+
+    if (text && text[0])
+        filter = moo_edit_file_mgr_new_user_filter (mgr, text);
+    else
+        filter = NULL;
+
+    fileview_set_filter (fileview, filter);
+    focus_to_file_view (fileview);
+}
+
+
+static void         fileview_set_filter     (MooFileView    *fileview,
+                                             GtkFileFilter  *filter)
+{
+    GtkFileFilter *null_filter;
+
+    if (filter && filter == fileview->priv->current_filter)
+    {
+        fileview_set_use_filter (fileview, TRUE, TRUE);
+        return;
+    }
+
+    null_filter = moo_edit_file_mgr_get_null_filter (fileview->priv->mgr);
+    if (filter == null_filter)
+        return fileview_set_filter (fileview, NULL);
+
+    block_filter_signals (fileview);
+
+    if (fileview->priv->current_filter)
+        g_object_unref (fileview->priv->current_filter);
+    fileview->priv->current_filter = filter;
+
+    if (filter)
+    {
+        const char *name;
+        gtk_object_sink (gtk_object_ref (GTK_OBJECT (filter)));
+        name = gtk_file_filter_get_name (filter);
+        gtk_entry_set_text (fileview->priv->filter_entry, name);
+        fileview_set_use_filter (fileview, TRUE, FALSE);
+    }
+    else
+    {
+        gtk_entry_set_text (fileview->priv->filter_entry, "");
+        fileview_set_use_filter (fileview, FALSE, FALSE);
+    }
+
+    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
+            (fileview->priv->filter_model));
+
+    unblock_filter_signals (fileview);
+}
+
+
+static void         fileview_set_use_filter (MooFileView    *fileview,
+                                             gboolean        use,
+                                             gboolean        block_signals)
+{
+    if (block_signals)
+        block_filter_signals (fileview);
+
+    gtk_toggle_button_set_active (fileview->priv->filter_button, use);
+
+    if (fileview->priv->use_current_filter != use)
+    {
+        if (fileview->priv->current_filter)
+        {
+            fileview->priv->use_current_filter = use;
+            if (block_signals)
+                gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
+                        (fileview->priv->filter_model));
+        }
+        else
+        {
+            fileview->priv->use_current_filter = FALSE;
+            gtk_toggle_button_set_active (fileview->priv->filter_button, FALSE);
+        }
+    }
+
+    if (block_signals)
+        unblock_filter_signals (fileview);
 }

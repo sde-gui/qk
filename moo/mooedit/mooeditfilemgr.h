@@ -52,6 +52,15 @@ GType            moo_edit_file_mgr_get_type         (void) G_GNUC_CONST;
 
 MooEditFileMgr  *moo_edit_file_mgr_new              (void);
 
+void             moo_edit_file_mgr_init_filter_combo(MooEditFileMgr *mgr,
+                                                     GtkComboBox    *combo);
+GtkFileFilter   *moo_edit_file_mgr_get_filter       (MooEditFileMgr *mgr,
+                                                     GtkTreeIter    *iter);
+GtkFileFilter   *moo_edit_file_mgr_get_null_filter  (MooEditFileMgr *mgr);
+GtkFileFilter   *moo_edit_file_mgr_get_last_filter  (MooEditFileMgr *mgr);
+GtkFileFilter   *moo_edit_file_mgr_new_user_filter  (MooEditFileMgr *mgr,
+                                                     const char     *text);
+
 GtkMenuItem     *moo_edit_file_mgr_create_recent_files_menu
                                                     (MooEditFileMgr *mgr,
                                                      gpointer        data);

@@ -34,10 +34,12 @@ typedef struct {
     GtkFileFilter   *aux;
     char            *description;
     char            *glob;
+    gboolean         user;
 } Filter;
 
 static Filter   *filter_new     (const char *description,
-                                 const char *glob);
+                                 const char *glob,
+                                 gboolean    user);
 static void      filter_free    (Filter     *filter);
 
 static GtkFileFilter    *filter_get_gtk_filter  (Filter *filter);
@@ -177,11 +179,8 @@ static void setup_open_dialog (MooEditFileMgr   *mgr,
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 
-    combo = gtk_combo_box_entry_new_with_model (GTK_TREE_MODEL (mgr->priv->filters),
-            COLUMN_DESCRIPTION);
-    gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo),
-                                          row_is_separator,
-                                          NULL, NULL);
+    combo = gtk_combo_box_entry_new ();
+    moo_edit_file_mgr_init_filter_combo (mgr, GTK_COMBO_BOX (combo));
     gtk_widget_show (combo);
     gtk_box_pack_start (GTK_BOX (hbox), combo, TRUE, TRUE, 0);
 
@@ -202,6 +201,21 @@ static void setup_open_dialog (MooEditFileMgr   *mgr,
 
     if (filter)
         mgr_set_filter (mgr, GTK_FILE_CHOOSER (dialog), filter);
+}
+
+
+void             moo_edit_file_mgr_init_filter_combo(MooEditFileMgr *mgr,
+                                                     GtkComboBox    *combo)
+{
+    g_return_if_fail (MOO_IS_EDIT_FILE_MGR (mgr));
+    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+
+    gtk_combo_box_set_model (combo, GTK_TREE_MODEL (mgr->priv->filters));
+    gtk_combo_box_set_row_separator_func (combo, row_is_separator,
+                                          NULL, NULL);
+
+    gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY (combo),
+                                         COLUMN_DESCRIPTION);
 }
 
 
@@ -286,12 +300,22 @@ static Filter   *mgr_get_null_filter        (MooEditFileMgr     *mgr)
 {
     if (!mgr->priv->null_filter)
     {
-        Filter *filter = filter_new ("All Files", "*");
+        Filter *filter = filter_new ("All Files", "*", FALSE);
         list_store_append_filter (mgr, filter);
         mgr->priv->null_filter = filter;
     }
     return mgr->priv->null_filter;
 }
+
+
+GtkFileFilter   *moo_edit_file_mgr_get_null_filter  (MooEditFileMgr *mgr)
+{
+    Filter *filter;
+    g_return_val_if_fail (MOO_IS_EDIT_FILE_MGR (mgr), NULL);
+    filter = mgr_get_null_filter (mgr);
+    return filter->filter;
+}
+
 
 static Filter   *mgr_get_last_filter        (MooEditFileMgr     *mgr)
 {
@@ -299,6 +323,18 @@ static Filter   *mgr_get_last_filter        (MooEditFileMgr     *mgr)
     if (!mgr->priv->last_filter)
         mgr->priv->last_filter = mgr_get_null_filter (mgr);
     return mgr->priv->last_filter;
+}
+
+
+GtkFileFilter   *moo_edit_file_mgr_get_last_filter  (MooEditFileMgr *mgr)
+{
+    Filter *filter;
+    g_return_val_if_fail (MOO_IS_EDIT_FILE_MGR (mgr), NULL);
+    filter = mgr_get_last_filter (mgr);
+    if (filter)
+        return filter->filter;
+    else
+        return NULL;
 }
 
 
@@ -357,7 +393,8 @@ static gboolean neg_filter_func (const GtkFileFilterInfo *filter_info,
 
 
 static Filter   *filter_new     (const char *description,
-                                 const char *glob)
+                                 const char *glob,
+                                 gboolean    user)
 {
     Filter *filter;
     char **globs, **p;
@@ -384,6 +421,7 @@ static Filter   *filter_new     (const char *description,
 
     filter->description = g_strdup (description);
     filter->glob = g_strdup (glob);
+    filter->user = user;
 
     filter->filter = gtk_file_filter_new ();
     gtk_object_sink (gtk_object_ref (GTK_OBJECT (filter->filter)));
@@ -682,6 +720,9 @@ static Filter   *mgr_new_user_filter        (MooEditFileMgr *mgr,
 
     filter = list_store_find_filter (mgr, glob);
 
+    if (filter && !filter->user)
+        return filter;
+
     if (filter)
     {
         GtkTreeIter iter;
@@ -697,7 +738,7 @@ static Filter   *mgr_new_user_filter        (MooEditFileMgr *mgr,
     }
     else
     {
-        filter = filter_new (glob, glob);
+        filter = filter_new (glob, glob, TRUE);
 
         if (filter)
         {
@@ -742,6 +783,39 @@ static Filter   *mgr_new_user_filter        (MooEditFileMgr *mgr,
     mgr_save_filter_prefs (mgr);
 
     return filter;
+}
+
+
+GtkFileFilter   *moo_edit_file_mgr_get_filter       (MooEditFileMgr *mgr,
+                                                     GtkTreeIter    *iter)
+{
+    Filter *filter = NULL;
+
+    g_return_val_if_fail (MOO_IS_EDIT_FILE_MGR (mgr), NULL);
+    g_return_val_if_fail (iter != NULL, NULL);
+
+    gtk_tree_model_get (GTK_TREE_MODEL (mgr->priv->filters), iter,
+                        COLUMN_FILTER, &filter, -1);
+    g_return_val_if_fail (filter != NULL, NULL);
+
+    return filter->filter;
+}
+
+
+GtkFileFilter   *moo_edit_file_mgr_new_user_filter  (MooEditFileMgr *mgr,
+                                                     const char     *text)
+{
+    Filter *filter;
+
+    g_return_val_if_fail (MOO_IS_EDIT_FILE_MGR (mgr), NULL);
+    g_return_val_if_fail (text && text[0], NULL);
+
+    filter = mgr_new_user_filter (mgr, text);
+
+    if (filter)
+        return filter->filter;
+    else
+        return NULL;
 }
 
 
