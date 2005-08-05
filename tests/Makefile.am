@@ -2,7 +2,7 @@
 #   tests/Makefile.am
 #
 
-EXTRA_PROGRAMS = medit mterm markup editor termbuffer testfileview testpaned
+EXTRA_PROGRAMS = medit mterm markup editor termbuffer testfileview testpaned testpanedfileview
 bin_PROGRAMS =
 noinst_PROGRAMS =
 
@@ -21,7 +21,7 @@ if BUILD_MOOAPP
 bin_PROGRAMS += editor
 endif
 if BUILD_MOOEDIT
-noinst_PROGRAMS += medit testfileview
+noinst_PROGRAMS += medit testfileview testpanedfileview
 endif
 if BUILD_MOOTERM
 noinst_PROGRAMS += mterm termbuffer
@@ -119,3 +119,10 @@ if MINGW_BUILD
 testfileview_LDFLAGS += -mwindows
 endif MINGW_BUILD
 testfileview_SOURCES = testfileview.c
+
+testpanedfileview_LDFLAGS =
+testpanedfileview_LDADD = $(MOO_LIBS) ../moo/libmoo.la
+if MINGW_BUILD
+testpanedfileview_LDFLAGS += -mwindows
+endif MINGW_BUILD
+testpanedfileview_SOURCES = testpanedfileview.c
