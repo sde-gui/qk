@@ -130,7 +130,7 @@ static int          tree_compare_func       (GtkTreeModel       *model,
 static void         init_gui                (MooFileView    *fileview);
 static void         focus_to_file_view      (MooFileView    *fileview);
 static GtkWidget   *create_toolbar          (MooFileView    *fileview);
-static void         toolbar_button_clicked  (GtkToolButton  *button,
+static void         toolbar_button_clicked  (GtkButton      *button,
                                              MooFileView    *fileview);
 static GtkWidget   *create_notebook         (MooFileView    *fileview);
 
@@ -466,87 +466,54 @@ static void         focus_to_file_view      (MooFileView    *fileview)
 }
 
 
+static void create_button (MooFileView  *fileview,
+                           GtkWidget    *box,
+                           GtkTooltips  *tooltips,
+                           const char   *stock_id,
+                           const char   *tip,
+                           const char   *signal)
+{
+    GtkWidget *icon, *button;
+
+    icon = gtk_image_new_from_stock (stock_id,
+                                     GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
+    button = gtk_button_new ();
+    gtk_container_add (GTK_CONTAINER (button), icon);
+    gtk_widget_show (button);
+    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
+    gtk_tooltips_set_tip (tooltips, button, tip, tip);
+    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
+    g_object_set_data (G_OBJECT (button), "moo-file-view-signal",
+                       (gpointer) signal);
+    g_signal_connect (button, "clicked",
+                      G_CALLBACK (toolbar_button_clicked),
+                      fileview);
+}
+
 static GtkWidget   *create_toolbar  (MooFileView    *fileview)
 {
-    GtkWidget *toolbar, *icon;
-    GtkToolItem *item;
+    GtkWidget *toolbar;
     GtkTooltips *tooltips;
 
     tooltips = gtk_tooltips_new ();
+    toolbar = gtk_hbox_new (FALSE, 0);
 
-    /*********************************************************/
-    /* Navigation toolbar                                    */
-
-    toolbar = gtk_toolbar_new ();
-    gtk_toolbar_set_show_arrow (GTK_TOOLBAR (toolbar), TRUE);
-
-    gtk_toolbar_set_icon_size (GTK_TOOLBAR (toolbar),
-                               GTK_ICON_SIZE_MENU);
-
-    gtk_toolbar_set_style (GTK_TOOLBAR (toolbar),
-                           GTK_TOOLBAR_ICONS);
-
-    /* Up */
-    icon = gtk_image_new_from_stock (GTK_STOCK_GO_UP,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    item = gtk_tool_button_new (icon, NULL);
-    gtk_widget_show (GTK_WIDGET (item));
-    gtk_tool_item_set_tooltip (item, tooltips, "Up", "Up");
-    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
-    g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
-                       (gpointer) "go-up");
-    g_signal_connect (item, "clicked",
-                      G_CALLBACK (toolbar_button_clicked),
-                      fileview);
-
-    /* Back */
-    icon = gtk_image_new_from_stock (GTK_STOCK_GO_BACK,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    item = gtk_tool_button_new (icon, NULL);
-    gtk_widget_show (GTK_WIDGET (item));
-    gtk_tool_item_set_tooltip (item, tooltips, "Back", "Back");
-    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
-    g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
-                       (gpointer) "go-back");
-    g_signal_connect (item, "clicked",
-                      G_CALLBACK (toolbar_button_clicked),
-                      fileview);
-
-    /* Forward */
-    icon = gtk_image_new_from_stock (GTK_STOCK_GO_FORWARD,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    item = gtk_tool_button_new (icon, NULL);
-    gtk_widget_show (GTK_WIDGET (item));
-    gtk_tool_item_set_tooltip (item, tooltips, "Forward", "Forward");
-    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
-    g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
-                       (gpointer) "go-forward");
-    g_signal_connect (item, "clicked",
-                      G_CALLBACK (toolbar_button_clicked),
-                      fileview);
-
-    /* Home */
-    icon = gtk_image_new_from_stock (GTK_STOCK_HOME,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    item = gtk_tool_button_new (icon, NULL);
-    gtk_widget_show (GTK_WIDGET (item));
-    gtk_tool_item_set_tooltip (item, tooltips, "Home", "Home");
-    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, -1);
-    g_object_set_data (G_OBJECT (item), "moo-file-view-signal",
-                       (gpointer) "go-home");
-    g_signal_connect (item, "clicked",
-                      G_CALLBACK (toolbar_button_clicked),
-                      fileview);
+    create_button (fileview, toolbar, tooltips,
+                   GTK_STOCK_GO_UP, "Up", "go-up");
+    create_button (fileview, toolbar, tooltips,
+                   GTK_STOCK_GO_BACK, "Back", "go-back");
+    create_button (fileview, toolbar, tooltips,
+                   GTK_STOCK_GO_FORWARD, "Forward", "go-forward");
+    create_button (fileview, toolbar, tooltips,
+                   GTK_STOCK_HOME, "Home", "go-home");
 
     return toolbar;
 }
 
 
-static void         toolbar_button_clicked  (GtkToolButton  *button,
+static void         toolbar_button_clicked  (GtkButton      *button,
                                              MooFileView    *fileview)
 {
     const char *signal = g_object_get_data (G_OBJECT (button),

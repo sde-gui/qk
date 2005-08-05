@@ -28,6 +28,7 @@
 struct _MooEditWindowPrivate {
     MooPaned        *paned;
     GtkNotebook     *notebook;
+    MooFileView     *fileview;
     gboolean         use_fullname;
     char            *app_name;
     MooEditor       *editor;
@@ -90,7 +91,7 @@ static void     file_saved                  (MooEditWindow      *window,
 
 static void     fileview_activate           (MooEditWindow      *window,
                                              MooFileViewFile    *file);
-
+static void     current_doc_dir_clicked     (MooEditWindow      *window);
 
 
 /* actions */
@@ -423,7 +424,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
                                              GObjectConstructParam *props)
 {
-    GtkWidget *notebook, *paned, *fileview;
+    GtkWidget *notebook, *paned, *fileview, *button, *icon;
     MooEdit *edit;
     MooEditFileMgr *mgr = NULL;
     MooEditWindow *window;
@@ -450,9 +451,28 @@ GObject        *moo_edit_window_constructor (GType                  type,
         mgr = moo_editor_get_file_mgr (window->priv->editor);
 
     fileview = GTK_WIDGET (g_object_new (MOO_TYPE_FILE_VIEW,
-                           "file-mgr", mgr, NULL));
+                           "file-mgr", mgr,
+                           "current-directory", g_get_home_dir (),
+                           NULL));
     g_signal_connect_swapped (fileview, "activate",
                               G_CALLBACK (fileview_activate),
+                              window);
+    window->priv->fileview = MOO_FILE_VIEW (fileview);
+
+    icon = gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_MENU);
+    gtk_widget_show (GTK_WIDGET (icon));
+    button = gtk_button_new ();
+    gtk_container_add (GTK_CONTAINER (button), icon);
+    gtk_widget_show (button);
+    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
+    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+    gtk_tooltips_set_tip (MOO_WINDOW(window)->tooltips, button,
+                          "Current Document Directory",
+                          "Current Document Directory");
+    gtk_box_pack_end (GTK_BOX (MOO_FILE_VIEW (fileview)->toolbar),
+                      button, FALSE, FALSE, 0);
+    g_signal_connect_swapped (button, "clicked",
+                              G_CALLBACK (current_doc_dir_clicked),
                               window);
 
     moo_paned_add_pane (MOO_PANED (paned),
@@ -1168,5 +1188,19 @@ static void     fileview_activate           (MooEditWindow      *window,
     {
         MooEdit *edit = moo_edit_window_get_active_doc (window);
         gtk_widget_grab_focus (GTK_WIDGET (edit));
+    }
+}
+
+
+static void     current_doc_dir_clicked     (MooEditWindow      *window)
+{
+    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    const char *filename = moo_edit_get_filename (edit);
+
+    if (filename)
+    {
+        char *dirname = g_path_get_dirname (filename);
+        moo_file_view_chdir (window->priv->fileview, dirname, NULL);
+        g_free (dirname);
     }
 }
