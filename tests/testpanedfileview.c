@@ -95,6 +95,7 @@ static void create_window_with_paned (GtkPositionType pane_position)
     gtk_widget_show (label);
     gtk_container_add (GTK_CONTAINER (button), label);
 
+    gtk_widget_grab_focus (textview);
     gtk_widget_show_all (window);
 }
 

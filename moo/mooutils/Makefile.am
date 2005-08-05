@@ -76,7 +76,7 @@ libmooutils_la_SOURCES =        \
     shortcutdialog-glade.c      \
     stock-about-16.h            \
     stock-about-24.h            \
-    stock-app.h                 \
+    stock-moo.h                 \
     stock-edit-16.h             \
     stock-edit-24.h             \
     stock-terminal-24.h
@@ -112,7 +112,7 @@ BUILT_SOURCES =             \
     moomarshals.h           \
     moomarshals.c           \
     shortcutdialog-glade.c  \
-    stock-app.h
+    stock-moo.h
 
 moomarshals.c: moomarshals.list
 	glib-genmarshal --prefix=_moo_marshal --body \
@@ -126,12 +126,16 @@ shortcutdialog-glade.c: $(GLADE)/shortcutdialog.c $(GLADE)/shortcutdialog.sed $(
 	cat $(GLADE)/shortcutdialog.c | sh $(GLADE)/support.sh | \
 		sed -f $(GLADE)/shortcutdialog.sed > shortcutdialog-glade.c
 
-PIXMAPS =                       \
-    $(srcdir)/pixmaps/gap.png   \
-    $(srcdir)/pixmaps/ggap.png
+PIXMAPS =                           \
+    $(srcdir)/pixmaps/gap.png       \
+    $(srcdir)/pixmaps/ggap.png      \
+    $(srcdir)/pixmaps/close.png     \
+    $(srcdir)/pixmaps/sticky.png
 
-stock-app.h: $(PIXMAPS)
-	gdk-pixbuf-csource --static --build-list      \
-		GAP_ICON  $(srcdir)/pixmaps/gap.png   \
-		GGAP_ICON $(srcdir)/pixmaps/ggap.png  \
-	> $(srcdir)/stock-app.h
+stock-moo.h: $(PIXMAPS)
+	gdk-pixbuf-csource --static --build-list              \
+		GAP_ICON  $(srcdir)/pixmaps/gap.png           \
+		GGAP_ICON $(srcdir)/pixmaps/ggap.png          \
+		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png    \
+		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png  \
+	> $(srcdir)/stock-moo.h

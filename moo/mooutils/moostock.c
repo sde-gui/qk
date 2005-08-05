@@ -14,7 +14,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/stock-terminal-24.h"
-#include "mooutils/stock-app.h"
+#include "mooutils/stock-moo.h"
 #include <gtk/gtk.h>
 
 #if !GTK_CHECK_VERSION(2,6,0)
@@ -24,6 +24,7 @@
 #include "mooutils/stock-edit-24.h"
 #endif
 
+#define REAL_SMALL 6
 
 #if GTK_CHECK_VERSION(2,4,0)
 
@@ -97,6 +98,10 @@ void moo_create_stock_items (void)
               24, GGAP_ICON);
     add_icon (factory, MOO_STOCK_GAP,
               24, GAP_ICON);
+    add_icon (factory, MOO_STOCK_CLOSE,
+              REAL_SMALL, MOO_CLOSE_ICON);
+    add_icon (factory, MOO_STOCK_STICKY,
+              REAL_SMALL, MOO_STICKY_ICON);
 
 #if !GTK_CHECK_VERSION(2,6,0)
     add_icon2 (factory, GTK_STOCK_ABOUT,
@@ -162,3 +167,14 @@ void moo_create_stock_items (void)
 }
 
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
+
+
+GtkIconSize moo_get_icon_size_real_small    (void)
+{
+    static GtkIconSize size = 0;
+
+    if (!size)
+        size = gtk_icon_size_register ("moo-real-small", 4, 4);
+
+    return size;
+}

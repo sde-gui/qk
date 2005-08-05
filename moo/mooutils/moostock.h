@@ -14,9 +14,9 @@
 #ifndef MOOUTILS_STOCK_H
 #define MOOUTILS_STOCK_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <gtk/gtk.h>
+
+G_BEGIN_DECLS
 
 
 #define MOO_STOCK_APP                   "moo-app"
@@ -26,13 +26,15 @@ extern "C" {
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
 #define MOO_STOCK_DOC_DELETED           GTK_STOCK_DIALOG_ERROR
 #define MOO_STOCK_DOC_MODIFIED_ON_DISK  GTK_STOCK_DIALOG_WARNING
+#define MOO_STOCK_CLOSE                 "moo-close"
+#define MOO_STOCK_STICKY                "moo-sticky"
+
+#define MOO_ICON_SIZE_REAL_SMALL        (moo_get_icon_size_real_small ())
+
+void        moo_create_stock_items          (void);
+GtkIconSize moo_get_icon_size_real_small    (void) G_GNUC_CONST;
 
 
-void moo_create_stock_items (void);
-
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+G_END_DECLS
 
 #endif /* MOOUTILS_STOCK_H */
