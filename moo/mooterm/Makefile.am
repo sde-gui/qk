@@ -63,7 +63,7 @@ EXTRA_DIST =                \
     $(widget_unix_sources)  \
     $(widget_win32_sources) \
     $(termhelper_sources)   \
-    termhelper_res.res.in
+    termhelper_res.rc.in
 
 noinst_LTLIBRARIES = libmooterm.la
 libmooterm_la_SOURCES =

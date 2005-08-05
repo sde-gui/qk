@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#line 14 "@srcdir@/medit.c.in"
+#line 16 "@srcdir@/medit.c.in"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditlangmgr.h"
 #include "mooui/moouiobject.h"

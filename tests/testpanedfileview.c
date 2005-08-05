@@ -10,17 +10,9 @@ static void window_destroyed (void)
 }
 
 
-static void sticky_button_toggled (GtkToggleButton *button,
-                                   MooPaned        *paned)
-{
-    gboolean active = gtk_toggle_button_get_active (button);
-    moo_paned_set_sticky_pane (paned, active);
-}
-
-
 static void create_window_with_paned (GtkPositionType pane_position)
 {
-    GtkWidget *window, *paned, *textview, *button, *label, *swin, *fileview;
+    GtkWidget *window, *paned, *textview, *swin, *fileview;
     GtkTextBuffer *buffer;
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -70,30 +62,6 @@ static void create_window_with_paned (GtkPositionType pane_position)
                         gtk_label_new ("This is a label"),
                         "Label",
                         GTK_STOCK_CANCEL);
-
-    button = gtk_toggle_button_new ();
-    gtk_widget_show (button);
-    g_signal_connect (button, "toggled",
-                      G_CALLBACK (sticky_button_toggled),
-                      paned);
-    gtk_box_pack_end (GTK_BOX (MOO_PANED(paned)->button_box),
-                      button, FALSE, FALSE, 0);
-
-    label = gtk_label_new ("Sticky");
-    switch (pane_position)
-    {
-        case GTK_POS_LEFT:
-            gtk_label_set_angle (GTK_LABEL (label), 90);
-            break;
-        case GTK_POS_RIGHT:
-            gtk_label_set_angle (GTK_LABEL (label), 270);
-            break;
-        default:
-            break;
-    }
-
-    gtk_widget_show (label);
-    gtk_container_add (GTK_CONTAINER (button), label);
 
     gtk_widget_grab_focus (textview);
     gtk_widget_show_all (window);

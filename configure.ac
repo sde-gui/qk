@@ -379,7 +379,6 @@ moo/mooutils/unrtf/Makefile
 moo/moopython/Makefile
 tests/Makefile
 tests/medit.c
-tests/editor.c
 tests/pyapp.py
 ])
 

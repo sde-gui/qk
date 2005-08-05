@@ -15,7 +15,7 @@ BUILT_SOURCES = editor-ui.h
 editor-ui.h: editor-ui.xml
 	sh $(srcdir)/../moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/editor-ui.xml > editor-ui.h
 
-all-am: pyapp.py
+all-am: pyapp.py editor-ui.h
 
 if BUILD_MOOAPP
 bin_PROGRAMS += editor
@@ -31,7 +31,6 @@ noinst_PROGRAMS += markup testpaned
 endif
 
 
-DEFAULT_INCLUDES =
 AM_CFLAGS =                     \
     -I$(top_builddir)           \
     $(MOO_CFLAGS)               \

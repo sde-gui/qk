@@ -11,7 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#line 14 "@srcdir@/editor.c.in"
 #include "mooapp/mooapp.h"
 #include "mooui/moouiobject.h"
 #include "editor-ui.h"
