@@ -265,6 +265,8 @@ static GObject *moo_paned_constructor   (GType                  type,
                               G_CALLBACK (button_box_visible_notify),
                               paned);
 
+    gtk_container_set_reallocate_redraws (GTK_CONTAINER (paned), TRUE);
+
     return object;
 }
 
@@ -1155,11 +1157,14 @@ static void draw_handle             (MooPaned       *paned)
 {
     GtkWidget *widget = GTK_WIDGET (paned);
     GtkStateType state;
-
     GdkRectangle area;
+    GtkOrientation orientation;
+    int shadow_size;
+    GtkShadowType shadow = GTK_SHADOW_ETCHED_IN;
 
     area.x = 0;
     area.y = 0;
+    shadow_size = 1;
 
     switch (paned->priv->pane_position)
     {
@@ -1167,11 +1172,17 @@ static void draw_handle             (MooPaned       *paned)
         case GTK_POS_RIGHT:
             area.width = paned->priv->handle_size;
             area.height = widget->allocation.height;
+            if (area.width <= 2)
+                shadow_size = 0;
+            orientation = GTK_ORIENTATION_VERTICAL;
             break;
         case GTK_POS_TOP:
         case GTK_POS_BOTTOM:
             area.width = widget->allocation.width;
             area.height = paned->priv->handle_size;
+            if (area.height <= 2)
+                shadow_size = 0;
+            orientation = GTK_ORIENTATION_HORIZONTAL;
             break;
     }
 
@@ -1190,7 +1201,59 @@ static void draw_handle             (MooPaned       *paned)
                       widget,
                       "paned",
                       area.x, area.y, area.width, area.height,
-                      GTK_ORIENTATION_VERTICAL);
+                      orientation);
+
+    if (shadow_size)
+    {
+        if (orientation == GTK_ORIENTATION_VERTICAL)
+        {
+            area.width = shadow_size;
+
+            gtk_paint_shadow (widget->style,
+                              paned->priv->handle_window,
+                              state,
+                              shadow,
+                              &area,
+                              widget,
+                              "paned",
+                              area.x, area.y, area.width, area.height);
+
+            area.x = paned->priv->handle_size - shadow_size;
+
+            gtk_paint_shadow (widget->style,
+                              paned->priv->handle_window,
+                              state,
+                              shadow,
+                              &area,
+                              widget,
+                              "paned",
+                              area.x, area.y, area.width, area.height);
+        }
+        else
+        {
+            area.height = shadow_size;
+
+            gtk_paint_shadow (widget->style,
+                              paned->priv->handle_window,
+                              state,
+                              shadow,
+                              &area,
+                              widget,
+                              "paned",
+                              area.x, area.y, area.width, area.height);
+
+            area.y = paned->priv->handle_size - shadow_size;
+
+            gtk_paint_shadow (widget->style,
+                              paned->priv->handle_window,
+                              state,
+                              shadow,
+                              &area,
+                              widget,
+                              "paned",
+                              area.x, area.y, area.width, area.height);
+        }
+    }
 }
 
 
@@ -1207,11 +1270,14 @@ static void button_toggled          (GtkToggleButton *button,
             gtk_widget_hide (paned->priv->current_pane->frame);
 
             if (GTK_WIDGET_REALIZED (paned))
+            {
+                gdk_window_hide (paned->priv->handle_window);
                 gdk_window_hide (paned->priv->pane_window);
+            }
 
             paned->priv->current_pane = NULL;
             paned->priv->pane_widget_visible = FALSE;
-            paned->priv->pane_widget_size = 0;
+            paned->priv->handle_visible = FALSE;
             gtk_widget_queue_resize (GTK_WIDGET (paned));
         }
 
@@ -1234,20 +1300,18 @@ static void button_toggled          (GtkToggleButton *button,
         gtk_widget_set_parent_window (pane->frame,
                                       paned->priv->pane_window);
         gdk_window_show (paned->priv->pane_window);
-        gdk_window_raise (paned->priv->pane_window);
-        gtk_widget_queue_resize (GTK_WIDGET (paned));
+        gdk_window_show (paned->priv->handle_window);
     }
 
     paned->priv->current_pane = pane;
     gtk_widget_show (pane->frame);
 
     paned->priv->handle_visible = TRUE;
-    gtk_widget_style_get (GTK_WIDGET (paned),
-                          "handle_size", &paned->priv->handle_size,
-                          NULL);
     paned->priv->pane_widget_visible = TRUE;
     if (paned->priv->position > 0)
         paned->priv->pane_widget_size = paned->priv->position;
+
+    gtk_widget_queue_resize (GTK_WIDGET (paned));
 }
 
 
@@ -1711,11 +1775,6 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
 
     if (GTK_WIDGET_VISIBLE (paned->button_box))
         paned->priv->button_box_visible = TRUE;
-
-    paned->priv->handle_visible = TRUE;
-    gtk_widget_style_get (GTK_WIDGET (paned),
-                          "handle_size", &paned->priv->handle_size,
-                          NULL);
 
     if (GTK_WIDGET_VISIBLE (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
