@@ -54,6 +54,7 @@ struct _MooFileViewFile {
     gboolean     is_dir;
     struct stat  statbuf;
     gboolean     exists;
+    gboolean     broken_link;
     gpointer     time;  /* struct tm* */
     gpointer     date_string;
     guint        size;
@@ -756,9 +757,17 @@ static gboolean populate_tree           (MooFileView    *fileview,
     fileview->priv->populate_dir = g_dir_open (path, 0, error);
     if (!fileview->priv->populate_dir) return FALSE;
 
+#if 1
     if (populate_a_bit (fileview))
         fileview->priv->populate_idle =
                 g_idle_add ((GSourceFunc) populate_a_bit, fileview);
+#else
+    while (populate_a_bit (fileview))
+    {
+        while (gtk_events_pending ())
+            gtk_main_iteration ();
+    }
+#endif
 
     if (gtk_tree_model_get_iter_first (fileview->priv->filter_model, &iter))
     {
@@ -872,31 +881,27 @@ static MooFileViewFile  *file_new   (MooFileView    *fileview,
     file->uri = g_strdup_printf ("file://%s", fullname);
     file->display_name = g_filename_display_basename (basename);
 
-#ifdef USE_XDGMIME
-    file->mime_type = xdg_mime_get_mime_type_for_file (fullname);
-#else
-    file->mime_type = NULL;
-#endif
-
-
     file->time = NULL;  /* struct tm* */
     file->date_string = NULL;
     file->size = 0;
 
     file->is_dir = FALSE;
     file->exists = TRUE;
+    file->broken_link = FALSE;
 
     if (g_stat (fullname, &file->statbuf) != 0)
     {
-        if (errno == ENOENT)
+        file->exists = FALSE;
+
+        if (errno == ENOENT && !g_lstat (fullname, &file->statbuf))
         {
             gchar *display_name = g_filename_display_name (fullname);
-            g_warning ("%s: file '%s' doesn't exist",
+            g_message ("%s: file '%s' is a broken link",
                        G_STRLOC, display_name);
             g_free (display_name);
-            file->exists = FALSE;
+            file->broken_link = TRUE;
         }
-        else if (g_lstat (fullname, &file->statbuf) != 0)
+        else
         {
             int save_errno = errno;
             gchar *display_name = g_filename_display_name (fullname);
@@ -904,7 +909,6 @@ static MooFileViewFile  *file_new   (MooFileView    *fileview,
                        G_STRLOC, display_name,
                        g_strerror (save_errno));
             g_free (display_name);
-            file->exists = FALSE;
         }
     }
 
@@ -912,6 +916,12 @@ static MooFileViewFile  *file_new   (MooFileView    *fileview,
     {
         if (S_ISDIR (file->statbuf.st_mode))
             file->is_dir = TRUE;
+
+#ifdef USE_XDGMIME
+        file->mime_type = xdg_mime_get_mime_type_for_file (fullname);
+#else
+        file->mime_type = NULL;
+#endif
     }
 
     file->pixbuf = NULL;
@@ -1264,10 +1274,18 @@ static GtkWidget   *create_iconview         (MooFileView    *fileview)
 gconstpointer moo_file_view_file_get_stat   (MooFileViewFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
-    if (file->exists)
+
+    if (file->exists || file->broken_link)
         return &file->statbuf;
     else
         return NULL;
+}
+
+
+gboolean    moo_file_view_file_is_broken_link (MooFileViewFile *file)
+{
+    g_return_val_if_fail (file != NULL, FALSE);
+    return file->broken_link;
 }
 
 

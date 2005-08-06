@@ -292,8 +292,10 @@ GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
         case ICON_NONE:
             goto fallback;
 
+        /* what's the point in having symlink icon for broken links? */
+        case ICON_BROKEN_SYMBOLIC_LINK:
         case ICON_NOENT:
-            pixbuf = get_fallback_icon (widget, icon_type, size);
+            pixbuf = get_fallback_icon (widget, ICON_NOENT, size);
             break;
 
         case ICON_REGULAR:

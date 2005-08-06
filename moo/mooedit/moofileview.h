@@ -76,6 +76,7 @@ void        moo_file_view_set_view_type     (MooFileView    *fileview,
                                              MooFileViewType type);
 
 gconstpointer moo_file_view_file_get_stat   (MooFileViewFile *file);
+gboolean    moo_file_view_file_is_broken_link (MooFileViewFile *file);
 const char *moo_file_view_file_path         (MooFileViewFile *file);
 const char *moo_file_view_file_mime_type    (MooFileViewFile *file);
 

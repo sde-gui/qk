@@ -535,6 +535,8 @@ static void     add_tab                 (MooEditWindow      *window,
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow),
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
+                                         GTK_SHADOW_ETCHED_IN);
     gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (edit));
     gtk_widget_show_all (scrolledwindow);
     g_object_set_qdata (G_OBJECT (edit), SCROLLED_WINDOW_QUARK, scrolledwindow);
