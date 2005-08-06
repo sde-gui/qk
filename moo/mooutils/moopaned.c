@@ -1734,6 +1734,7 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
 
     button = gtk_toggle_button_new ();
     gtk_widget_show (button);
+    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     gtk_container_add (GTK_CONTAINER (button), button_widget);
     gtk_widget_show (button_widget);
 
