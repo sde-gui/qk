@@ -16,6 +16,7 @@
 #include "mooutils/moosignal.h"
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
+#include <math.h>
 
 
 typedef struct _Column      Column;
@@ -96,6 +97,8 @@ static gboolean moo_icon_view_expose        (GtkWidget      *widget,
 
 static gboolean moo_icon_view_button_press  (GtkWidget      *widget,
                                              GdkEventButton *event);
+static gboolean moo_icon_view_scroll_event  (GtkWidget      *widget,
+                                             GdkEventScroll *event);
 
 static void     row_changed                 (GtkTreeModel   *model,
                                              GtkTreePath    *path,
@@ -126,6 +129,8 @@ static void     moo_icon_view_set_scroll_adjustments
                                                  GtkAdjustment  *vadj);
 static void     moo_icon_view_update_adjustment (MooIconView    *view);
 static void     moo_icon_view_scroll_to         (MooIconView    *view,
+                                                 int             offset);
+static int      clamp_offset                    (MooIconView    *view,
                                                  int             offset);
 
 static void     moo_icon_view_invalidate_layout (MooIconView    *view);
@@ -185,6 +190,7 @@ static void moo_icon_view_class_init (MooIconViewClass *klass)
     widget_class->size_allocate = moo_icon_view_size_allocate;
     widget_class->expose_event = moo_icon_view_expose;
     widget_class->button_press_event = moo_icon_view_button_press;
+    widget_class->scroll_event = moo_icon_view_scroll_event;
 
     klass->set_scroll_adjustments = moo_icon_view_set_scroll_adjustments;
 
@@ -1055,7 +1061,6 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
     gboolean finish;
     GSList *l;
     int column_index;
-    Column *last_column;
 
     view->priv->update_idle = 0;
     gtk_widget_queue_draw (GTK_WIDGET (view));
@@ -1114,17 +1119,7 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
         layout->columns = g_slist_append (layout->columns, column);
     }
 
-    if (layout->width <= GTK_WIDGET(view)->allocation.width)
-    {
-        view->priv->xoffset = 0;
-    }
-    else
-    {
-        last_column = g_slist_last (layout->columns)->data;
-        view->priv->xoffset = CLAMP (view->priv->xoffset, 0,
-                                     layout->width - widget->allocation.width - 1);
-    }
-
+    view->priv->xoffset = clamp_offset (view, view->priv->xoffset);
     moo_icon_view_update_adjustment (view);
     return FALSE;
 }
@@ -2024,17 +2019,15 @@ static void     moo_icon_view_scroll_to     (MooIconView    *view,
                                              int             offset)
 {
     g_return_if_fail (GTK_WIDGET_REALIZED (view));
-    g_return_if_fail (offset >= 0);
-    g_return_if_fail (view->priv->layout->columns != NULL);
 
-    g_return_if_fail (offset < view->priv->layout->width -
-            GTK_WIDGET(view)->allocation.width);
+    offset = clamp_offset (view, offset);
 
     if (offset == view->priv->xoffset)
         return;
 
-    gdk_window_scroll (GTK_WIDGET(view)->window, - offset + view->priv->xoffset, 0);
+    gdk_window_scroll (GTK_WIDGET(view)->window, view->priv->xoffset - offset, 0);
     view->priv->xoffset = offset;
+
     moo_icon_view_update_adjustment (view);
 }
 
@@ -2062,11 +2055,7 @@ static void     move_cursor_to_entry        (MooIconView    *view,
     else if (column->offset + column->width > xoffset + widget->allocation.width)
         new_offset = column->offset + column->width - widget->allocation.width;
 
-    new_offset = CLAMP (new_offset, 0, view->priv->layout->width -
-            GTK_WIDGET(view)->allocation.width - 1);
-
-    if (new_offset != xoffset)
-        moo_icon_view_scroll_to (view, new_offset);
+    moo_icon_view_scroll_to (view, new_offset);
 }
 
 
@@ -2077,4 +2066,53 @@ GtkTreePath  *moo_icon_view_get_selected      (MooIconView    *view)
         return gtk_tree_row_reference_get_path (view->priv->selected);
     else
         return NULL;
+}
+
+
+static double get_wheel_delta (MooIconView  *view)
+{
+    GtkAdjustment *adj = view->priv->adjustment;
+
+#if 1
+    return pow (adj->page_size, 2.0 / 3.0);
+#else
+    return adj->step_increment * 2;
+#endif
+}
+
+
+static gboolean moo_icon_view_scroll_event  (GtkWidget      *widget,
+                                             GdkEventScroll *event)
+{
+    MooIconView *view = MOO_ICON_VIEW (widget);
+    int offset = view->priv->xoffset;
+
+    switch (event->direction)
+    {
+        case GDK_SCROLL_UP:
+        case GDK_SCROLL_LEFT:
+            offset -= get_wheel_delta (view);
+            break;
+
+        case GDK_SCROLL_DOWN:
+        case GDK_SCROLL_RIGHT:
+            offset += get_wheel_delta (view);
+            break;
+    }
+
+    moo_icon_view_scroll_to (view, offset);
+    return TRUE;
+}
+
+
+static int  clamp_offset    (MooIconView    *view,
+                             int             offset)
+{
+    int layout_width = view->priv->layout->width;
+    int width = GTK_WIDGET(view)->allocation.width;
+
+    if (layout_width <= width)
+        return 0;
+    else
+        return CLAMP (offset, 0, layout_width - width - 1);
 }
