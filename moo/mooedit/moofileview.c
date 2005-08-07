@@ -36,7 +36,7 @@
 #include "mooedit/xdgmime/xdgmime.h"
 #endif
 
-#define TREEVIEW_UPDATE_TIMEOUT 0.5
+#define TREEVIEW_UPDATE_TIMEOUT 0.3
 
 enum {
     TREEVIEW_PAGE = 0,
@@ -135,6 +135,7 @@ static int          tree_compare_func       (GtkTreeModel       *model,
 
 static void         init_gui                (MooFileView    *fileview);
 static void         focus_to_file_view      (MooFileView    *fileview);
+static void         focus_to_filter_entry   (MooFileView    *fileview);
 static GtkWidget   *create_toolbar          (MooFileView    *fileview);
 static GtkWidget   *create_notebook         (MooFileView    *fileview);
 
@@ -204,6 +205,8 @@ enum {
     GO_BACK,
     GO_FORWARD,
     GO_HOME,
+    FOCUS_TO_FILTER_ENTRY,
+    FOCUS_TO_FILE_VIEW,
     LAST_SIGNAL
 };
 
@@ -304,6 +307,24 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
 
+    signals[FOCUS_TO_FILTER_ENTRY] =
+            moo_signal_new_cb ("focus-to-filter-entry",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (focus_to_filter_entry),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
+    signals[FOCUS_TO_FILE_VIEW] =
+            moo_signal_new_cb ("focus-to-file-view",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (focus_to_file_view),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
     binding_set = gtk_binding_set_by_class (klass);
 
     gtk_binding_entry_add_signal (binding_set,
@@ -332,11 +353,20 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                                   0);
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_Home, GDK_MOD1_MASK,
-                                  "home-folder",
+                                  "go-home",
                                   0);
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_KP_Home, GDK_MOD1_MASK,
-                                  "home-folder",
+                                  "go-home",
+                                  0);
+
+    gtk_binding_entry_add_signal (binding_set,
+                                  GDK_f, GDK_MOD1_MASK | GDK_SHIFT_MASK,
+                                  "focus-to-filter-entry",
+                                  0);
+    gtk_binding_entry_add_signal (binding_set,
+                                  GDK_b, GDK_MOD1_MASK | GDK_SHIFT_MASK,
+                                  "focus-to-file-view",
                                   0);
 }
 
@@ -497,6 +527,12 @@ static void         focus_to_file_view      (MooFileView    *fileview)
         gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->iconview));
     else
         gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->treeview));
+}
+
+
+static void         focus_to_filter_entry   (MooFileView    *fileview)
+{
+    gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->filter_entry));
 }
 
 
@@ -1015,6 +1051,8 @@ static MooFileViewFile  *file_new   (MooFileView    *fileview,
 
 #ifdef USE_XDGMIME
         file->mime_type = xdg_mime_get_mime_type_for_file (fullname);
+        if (file->mime_type == xdg_mime_type_unknown)
+            file->mime_type = NULL;
 #else
         file->mime_type = NULL;
 #endif
