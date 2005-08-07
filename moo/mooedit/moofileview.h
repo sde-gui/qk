@@ -50,15 +50,9 @@ struct _MooFileViewClass
 {
     GtkVBoxClass        vbox_class;
 
-    gboolean    (*chdir)        (MooFileView        *fileview,
-                                 const char         *dir,
-                                 GError            **error);
-    void        (*activate)     (MooFileView        *fileview,
-                                 MooFileViewFile    *file);
-    void        (*go_back)      (MooFileView        *fileview);
-    void        (*go_forward)   (MooFileView        *fileview);
-    void        (*go_home)      (MooFileView        *fileview);
-    void        (*go_up)        (MooFileView        *fileview);
+    gboolean    (*chdir)            (MooFileView        *fileview,
+                                     const char         *dir,
+                                     GError            **error);
 };
 
 
@@ -83,6 +77,9 @@ const char *moo_file_view_file_mime_type    (MooFileViewFile *file);
 GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
                                              MooFileViewFile   *file,
                                              GtkIconSize        size);
+
+void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
+                                             gboolean        show);
 
 
 G_END_DECLS
