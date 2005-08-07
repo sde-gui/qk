@@ -11,6 +11,13 @@
  *   See COPYING file that comes with this distribution.
  */
 
+/*
+ *  This code is copied from gtk/gtkfilesystemunix.c, and adapted for libmoo.
+ *
+ *  gtkfilesystemunix.c: Default implementation of GtkFileSystem for UNIX-like systems
+ *  Copyright (C) 2003, Red Hat, Inc.
+ */
+
 #include "mooedit/moofileview.h"
 #include <sys/stat.h>
 #include <errno.h>
