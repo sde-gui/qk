@@ -694,7 +694,7 @@ void    moo_icon_view_set_cell_data_func    (MooIconView    *view,
 
 static gboolean     check_empty                 (MooIconView    *view)
 {
-    return !view->priv->model;
+    return !view->priv->model || !view->priv->layout->columns;
 }
 
 
@@ -1084,7 +1084,7 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
     layout->pixbuf_height = 0;
     layout->text_height = 0;
 
-    if (!GTK_WIDGET_REALIZED (view) || check_empty (view) ||
+    if (!GTK_WIDGET_REALIZED (view) || !view->priv->model ||
          model_empty (view->priv->model))
     {
         view->priv->xoffset = 0;
@@ -1518,6 +1518,9 @@ static void invalidate_path_rectangle       (MooIconView    *view,
     if (view->priv->update_idle)
         return;
 
+    if (check_empty (view))
+        return;
+
     column = find_column_by_path (view, path);
     g_return_if_fail (column != NULL);
     invalidate_cell_rect (view, column, path);
@@ -1845,7 +1848,7 @@ static void     move_cursor_right           (MooIconView    *view)
     Column *column, *next;
     int y;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1876,7 +1879,7 @@ static void     move_cursor_left            (MooIconView    *view)
     GtkTreePath *path;
     Column *column, *prev;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1902,7 +1905,7 @@ static void     move_cursor_up              (MooIconView    *view)
     Column *column, *prev;
     int y;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1936,7 +1939,7 @@ static void     move_cursor_down            (MooIconView    *view)
     Column *column, *next;
     int y;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1968,7 +1971,7 @@ static void     move_cursor_page_up         (MooIconView    *view)
 {
     GtkTreePath *path;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1981,7 +1984,7 @@ static void     move_cursor_page_down       (MooIconView    *view)
 {
     GtkTreePath *path;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
@@ -1994,7 +1997,7 @@ static void     move_cursor_home            (MooIconView    *view)
 {
     Column *column;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     column = view->priv->layout->columns->data;
@@ -2006,7 +2009,7 @@ static void     move_cursor_end             (MooIconView    *view)
 {
     Column *column;
 
-    if (check_empty (view) || model_empty (view->priv->model))
+    if (check_empty (view))
         return;
 
     column = g_slist_last (view->priv->layout->columns)->data;
