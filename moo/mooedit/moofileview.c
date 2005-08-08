@@ -114,6 +114,7 @@ static void         moo_file_view_go_up     (MooFileView    *fileview);
 static void         moo_file_view_go_home   (MooFileView    *fileview);
 static void         moo_file_view_go_back   (MooFileView    *fileview);
 static void         moo_file_view_go_forward(MooFileView    *fileview);
+static void         toggle_show_hidden      (MooFileView    *fileview);
 
 static void         history_init            (MooFileView    *fileview);
 static void         history_free            (MooFileView    *fileview);
@@ -207,6 +208,7 @@ enum {
     GO_HOME,
     FOCUS_TO_FILTER_ENTRY,
     FOCUS_TO_FILE_VIEW,
+    TOGGLE_SHOW_HIDDEN,
     LAST_SIGNAL
 };
 
@@ -325,6 +327,15 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
 
+    signals[TOGGLE_SHOW_HIDDEN] =
+            moo_signal_new_cb ("toggle-show-hidden",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (toggle_show_hidden),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
     binding_set = gtk_binding_set_by_class (klass);
 
     gtk_binding_entry_add_signal (binding_set,
@@ -367,6 +378,10 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
     gtk_binding_entry_add_signal (binding_set,
                                   GDK_b, GDK_MOD1_MASK | GDK_SHIFT_MASK,
                                   "focus-to-file-view",
+                                  0);
+    gtk_binding_entry_add_signal (binding_set,
+                                  GDK_h, GDK_MOD1_MASK | GDK_SHIFT_MASK,
+                                  "toggle-show-hidden",
                                   0);
 }
 
@@ -1946,4 +1961,11 @@ void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
         gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (
                 fileview->priv->filter_model));
     }
+}
+
+
+static void         toggle_show_hidden      (MooFileView    *fileview)
+{
+    moo_file_view_set_show_hidden (fileview,
+                                   !fileview->priv->show_hidden_files);
 }
