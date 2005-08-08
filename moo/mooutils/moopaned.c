@@ -13,6 +13,7 @@
 
 #include "mooutils/moopaned.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moomarshals.h"
 
 
 static int MIN_PANE_SIZE = 10;
@@ -93,6 +94,13 @@ static gboolean moo_paned_button_press  (GtkWidget      *widget,
 static gboolean moo_paned_button_release(GtkWidget      *widget,
                                          GdkEventButton *event);
 
+static int      pane_index              (MooPaned       *paned,
+                                         Pane           *pane);
+
+static void     moo_paned_open_pane_real(MooPaned       *paned,
+                                         guint           index);
+static void     moo_paned_hide_pane_real(MooPaned       *paned);
+
 static void     moo_paned_forall        (GtkContainer   *container,
                                          gboolean        include_internals,
                                          GtkCallback     callback,
@@ -123,6 +131,13 @@ enum {
     PROP_STICKY_PANE
 };
 
+enum {
+    OPEN_PANE,
+    HIDE_PANE,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
 
 static void moo_paned_class_init (MooPanedClass *klass)
 {
@@ -152,6 +167,9 @@ static void moo_paned_class_init (MooPanedClass *klass)
     container_class->forall = moo_paned_forall;
     container_class->set_focus_child = moo_paned_set_focus_child;
     container_class->remove = moo_paned_remove;
+
+    klass->open_pane = moo_paned_open_pane_real;
+    klass->hide_pane = moo_paned_hide_pane_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_PANE_POSITION,
@@ -196,6 +214,25 @@ static void moo_paned_class_init (MooPanedClass *klass)
                                                      G_MAXINT,
                                                      0,
                                                      G_PARAM_READABLE));
+
+    signals[OPEN_PANE] =
+            g_signal_new ("open-pane",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooPanedClass, open_pane),
+                          NULL, NULL,
+                          _moo_marshal_VOID__UINT,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_UINT);
+
+    signals[HIDE_PANE] =
+            g_signal_new ("hide-pane",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooPanedClass, hide_pane),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -1257,64 +1294,6 @@ static void draw_handle             (MooPaned       *paned)
 }
 
 
-static void button_toggled          (GtkToggleButton *button,
-                                     MooPaned       *paned)
-{
-    Pane *pane;
-
-    if (!gtk_toggle_button_get_active (button))
-    {
-        if (paned->priv->current_pane &&
-            paned->priv->current_pane->button == GTK_WIDGET (button))
-        {
-            gtk_widget_hide (paned->priv->current_pane->frame);
-
-            if (GTK_WIDGET_REALIZED (paned))
-            {
-                gdk_window_hide (paned->priv->handle_window);
-                gdk_window_hide (paned->priv->pane_window);
-            }
-
-            paned->priv->current_pane = NULL;
-            paned->priv->pane_widget_visible = FALSE;
-            paned->priv->handle_visible = FALSE;
-            gtk_widget_queue_resize (GTK_WIDGET (paned));
-        }
-
-        return;
-    }
-
-    if (paned->priv->current_pane)
-    {
-        Pane *old_pane = paned->priv->current_pane;
-        paned->priv->current_pane = NULL;
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (old_pane->button), FALSE);
-        gtk_widget_hide (old_pane->frame);
-    }
-
-    pane = g_object_get_data (G_OBJECT (button), "moo-pane");
-    g_return_if_fail (pane != NULL);
-
-    if (GTK_WIDGET_REALIZED (paned))
-    {
-        gtk_widget_set_parent_window (pane->frame,
-                                      paned->priv->pane_window);
-        gdk_window_show (paned->priv->pane_window);
-        gdk_window_show (paned->priv->handle_window);
-    }
-
-    paned->priv->current_pane = pane;
-    gtk_widget_show (pane->frame);
-
-    paned->priv->handle_visible = TRUE;
-    paned->priv->pane_widget_visible = TRUE;
-    if (paned->priv->position > 0)
-        paned->priv->pane_widget_size = paned->priv->position;
-
-    gtk_widget_queue_resize (GTK_WIDGET (paned));
-}
-
-
 void         moo_paned_set_sticky_pane  (MooPaned   *paned,
                                          gboolean    sticky)
 {
@@ -1333,30 +1312,6 @@ void         moo_paned_set_sticky_pane  (MooPaned   *paned,
                                       sticky);
 
     g_object_notify (G_OBJECT (paned), "sticky-pane");
-}
-
-
-void        moo_paned_hide_pane         (MooPaned   *paned)
-{
-    GtkToggleButton *btn;
-    g_return_if_fail (MOO_IS_PANED (paned));
-    if (paned->priv->current_pane)
-    {
-        btn = GTK_TOGGLE_BUTTON (paned->priv->current_pane->button);
-        gtk_toggle_button_set_active (btn, FALSE);
-    }
-}
-
-
-void        moo_paned_open_pane         (MooPaned   *paned,
-                                         guint       index)
-{
-    Pane *pane;
-    g_return_if_fail (MOO_IS_PANED (paned));
-    pane = g_slist_nth_data (paned->priv->panes, index);
-    g_return_if_fail (pane != NULL);
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->button),
-                                  TRUE);
 }
 
 
@@ -1875,4 +1830,134 @@ static void     sticky_button_toggled   (GtkToggleButton *button,
     gboolean active = gtk_toggle_button_get_active (button);
     if (active != paned->priv->sticky)
         moo_paned_set_sticky_pane (paned, active);
+}
+
+
+static void     moo_paned_open_pane_real(MooPaned       *paned,
+                                         guint           index)
+{
+    Pane *pane;
+
+    g_return_if_fail (index < moo_paned_n_panes (paned));
+
+    pane = g_slist_nth_data (paned->priv->panes, index);
+    g_return_if_fail (pane != NULL);
+
+    if (paned->priv->current_pane == pane)
+        return;
+
+    if (paned->priv->current_pane)
+    {
+        Pane *old_pane = paned->priv->current_pane;
+        paned->priv->current_pane = NULL;
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (old_pane->button), FALSE);
+        gtk_widget_hide (old_pane->frame);
+    }
+
+    if (GTK_WIDGET_REALIZED (paned))
+    {
+        gtk_widget_set_parent_window (pane->frame,
+                                      paned->priv->pane_window);
+        gdk_window_show (paned->priv->pane_window);
+        gdk_window_show (paned->priv->handle_window);
+    }
+
+    paned->priv->current_pane = pane;
+    gtk_widget_show (pane->frame);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->button), TRUE);
+
+    paned->priv->handle_visible = TRUE;
+    paned->priv->pane_widget_visible = TRUE;
+    if (paned->priv->position > 0)
+        paned->priv->pane_widget_size = paned->priv->position;
+
+    gtk_widget_queue_resize (GTK_WIDGET (paned));
+}
+
+
+static void     moo_paned_hide_pane_real(MooPaned       *paned)
+{
+    if (paned->priv->current_pane)
+    {
+        GtkWidget *button = paned->priv->current_pane->button;
+
+        gtk_widget_hide (paned->priv->current_pane->frame);
+
+        if (GTK_WIDGET_REALIZED (paned))
+        {
+            gdk_window_hide (paned->priv->handle_window);
+            gdk_window_hide (paned->priv->pane_window);
+        }
+
+        paned->priv->current_pane = NULL;
+        paned->priv->pane_widget_visible = FALSE;
+        paned->priv->handle_visible = FALSE;
+        gtk_widget_queue_resize (GTK_WIDGET (paned));
+
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
+    }
+}
+
+
+static void button_toggled          (GtkToggleButton *button,
+                                     MooPaned       *paned)
+{
+    Pane *pane;
+    int index;
+
+    if (!gtk_toggle_button_get_active (button))
+    {
+        if (paned->priv->current_pane &&
+            paned->priv->current_pane->button == GTK_WIDGET (button))
+        {
+            moo_paned_hide_pane (paned);
+        }
+    }
+    else if (!paned->priv->current_pane ||
+              paned->priv->current_pane->button != GTK_WIDGET (button))
+    {
+        pane = g_object_get_data (G_OBJECT (button), "moo-pane");
+        g_return_if_fail (pane != NULL);
+        index = pane_index (paned, pane);
+        g_return_if_fail (index >= 0);
+        moo_paned_open_pane (paned, index);
+    }
+}
+
+
+void        moo_paned_hide_pane         (MooPaned   *paned)
+{
+    g_return_if_fail (MOO_IS_PANED (paned));
+    g_signal_emit (paned, signals[HIDE_PANE], 0);
+}
+
+
+void        moo_paned_open_pane         (MooPaned   *paned,
+                                         guint       index)
+{
+    g_signal_emit (paned, signals[OPEN_PANE], 0, index);
+}
+
+
+static int      pane_index              (MooPaned       *paned,
+                                         Pane           *pane)
+{
+    return g_slist_index (paned->priv->panes, pane);
+}
+
+
+int         moo_paned_get_open_pane     (MooPaned   *paned)
+{
+    g_return_val_if_fail (MOO_IS_PANED (paned), -1);
+
+    if (!paned->priv->current_pane)
+        return -1;
+    else
+        return pane_index (paned, paned->priv->current_pane);
+}
+
+
+gboolean    moo_paned_is_open           (MooPaned   *paned)
+{
+    return moo_paned_get_open_pane (paned) != -1;
 }

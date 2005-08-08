@@ -41,6 +41,10 @@ struct _MooPaned
 struct _MooPanedClass
 {
     GtkBinClass bin_class;
+
+    void (*open_pane) (MooPaned *paned,
+                       guint     index);
+    void (*hide_pane) (MooPaned *paned);
 };
 
 
@@ -67,6 +71,9 @@ void        moo_paned_set_sticky_pane   (MooPaned   *paned,
 
 void        moo_paned_set_pane_size     (MooPaned   *paned,
                                          int         size);
+
+int         moo_paned_get_open_pane     (MooPaned   *paned);
+gboolean    moo_paned_is_open           (MooPaned   *paned);
 
 void        moo_paned_open_pane         (MooPaned   *paned,
                                          guint       index);
