@@ -57,6 +57,8 @@
             <separator/>
             <item name="SyntaxMenu" action="SyntaxMenu"/>
             <separator/>
+            <item name="ShowFileSelector" action="ShowFileSelector"/>
+            <separator/>
         </menu>
 
         <menu name="Python" action="PythonMenu">
