@@ -679,6 +679,8 @@ static gboolean moo_app_init_real       (MooApp         *app)
 
         app->priv->editor = moo_editor_new ();
         moo_editor_set_ui_xml (app->priv->editor, ui_xml);
+        moo_editor_set_app_name (app->priv->editor,
+                                 app->priv->info->short_name);
 
         mgr = moo_editor_get_lang_mgr (app->priv->editor);
         moo_edit_lang_mgr_add_lang_files_dir (mgr, lang_files_dir);
