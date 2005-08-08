@@ -17,12 +17,16 @@
 #include "mooedit/moofileview.h"
 #include "mooui/moouiobject-impl.h"
 #include "mooui/moomenuaction.h"
+#include "mooui/mootoggleaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moosignal.h"
 #include "mooutils/moopaned.h"
 #include <string.h>
+
+
+#define ACTIVE_DOC moo_edit_window_get_active_doc
 
 
 struct _MooEditWindowPrivate {
@@ -101,6 +105,13 @@ static void moo_edit_window_open_cb         (MooEditWindow   *window);
 static void moo_edit_window_close_tab       (MooEditWindow   *window);
 static void moo_edit_window_previous_tab    (MooEditWindow   *window);
 static void moo_edit_window_next_tab        (MooEditWindow   *window);
+static void show_file_selector_toggled_cb   (MooEditWindow   *window,
+                                             gboolean         show);
+static void pane_opened                     (MooPaned        *paned,
+                                             guint            index,
+                                             MooEditWindow   *window);
+static void pane_hidden                     (MooPaned        *paned,
+                                             MooEditWindow   *window);
 
 
 /* MOO_TYPE_EDIT_WINDOW */
@@ -372,6 +383,15 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "create-menu-func", create_lang_menu,
                                     NULL);
 
+    moo_ui_object_class_new_action (gobject_class,
+                                    "action-type::", MOO_TYPE_TOGGLE_ACTION,
+                                    "id", "ShowFileSelector",
+                                    "name", "Show File Selector",
+                                    "label", "Show File Selector",
+                                    "tooltip", "Show File Selector",
+                                    "toggled-callback", show_file_selector_toggled_cb,
+                                    NULL);
+
     signals[DOCUMENT_NEW] =
             moo_signal_new_cb ("document-new",
                                G_OBJECT_CLASS_TYPE (klass),
@@ -420,6 +440,13 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
 }
 
 
+static gboolean set_home_dir    (MooFileView    *fileview)
+{
+    moo_file_view_chdir (fileview, g_get_home_dir (), NULL);
+    return FALSE;
+}
+
+
 GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
                                              GObjectConstructParam *props)
@@ -446,18 +473,22 @@ GObject        *moo_edit_window_constructor (GType                  type,
     gtk_widget_show (paned);
     gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), paned, TRUE, TRUE, 0);
     window->priv->paned = MOO_PANED (paned);
+    g_signal_connect (window->priv->paned, "open-pane",
+                      G_CALLBACK (pane_opened), window);
+    g_signal_connect (window->priv->paned, "hide-pane",
+                      G_CALLBACK (pane_hidden), window);
 
     if (window->priv->editor)
         mgr = moo_editor_get_file_mgr (window->priv->editor);
 
     fileview = GTK_WIDGET (g_object_new (MOO_TYPE_FILE_VIEW,
                            "file-mgr", mgr,
-                           "current-directory", g_get_home_dir (),
                            NULL));
     g_signal_connect_swapped (fileview, "activate",
                               G_CALLBACK (fileview_activate),
                               window);
     window->priv->fileview = MOO_FILE_VIEW (fileview);
+    g_idle_add ((GSourceFunc) set_home_dir, fileview);
 
     icon = gtk_image_new_from_stock (GTK_STOCK_APPLY, GTK_ICON_SIZE_MENU);
     gtk_widget_show (GTK_WIDGET (icon));
@@ -612,7 +643,7 @@ static void     update_window_title         (MooEditWindow      *window)
     gboolean modified, deleted, modified_on_disk, clean;
     GString *title;
 
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
     if (window->priv->use_fullname)
         name = moo_edit_get_display_filename (edit);
@@ -657,7 +688,7 @@ static void     edit_can_undo_redo      (MooEditWindow      *window)
     MooAction *undo, *redo;
 
     g_return_if_fail (window != NULL);
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
 
     can_redo = moo_edit_can_redo (edit);
@@ -756,7 +787,7 @@ static gboolean moo_edit_window_close       (MooEditWindow      *window)
 
 static gboolean     close_current_tab       (MooEditWindow      *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     g_return_val_if_fail (edit != NULL, FALSE);
     return close_tab (window, edit);
 }
@@ -864,7 +895,7 @@ gboolean     _moo_edit_window_open              (MooEditWindow  *window,
         return moo_editor_open (window->priv->editor, window,
                                 GTK_WIDGET (window), NULL, NULL);
 
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
 
     if (!edit)
     {
@@ -1062,7 +1093,7 @@ static void     lang_menu_item_toggled      (GtkCheckMenuItem   *item,
 
     editor = window->priv->editor;
     g_return_if_fail (editor != NULL);
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
     if (!edit)
         return;
 
@@ -1085,7 +1116,7 @@ static void     active_tab_lang_changed     (MooEditWindow      *window)
     MooEdit *edit;
     GSList *l;
 
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
     if (!edit)
         return;
 
@@ -1129,7 +1160,7 @@ static void update_statusbar (MooEditWindow *window)
     int line, column;
     GtkTextIter iter;
 
-    edit = moo_edit_window_get_active_doc (window);
+    edit = ACTIVE_DOC (window);
     gtk_text_buffer_get_iter_at_mark (edit->priv->text_buffer, &iter,
                                       gtk_text_buffer_get_insert (edit->priv->text_buffer));
     line = gtk_text_iter_get_line (&iter) + 1;
@@ -1143,7 +1174,7 @@ static void cursor_moved (MooEditWindow *window,
                           GtkTextIter   *iter,
                           MooEdit       *edit)
 {
-    if (edit == moo_edit_window_get_active_doc (window))
+    if (edit == ACTIVE_DOC (window))
     {
         int line = gtk_text_iter_get_line (iter) + 1;
         int column = gtk_text_iter_get_line_offset (iter) + 1;
@@ -1188,7 +1219,7 @@ static void     fileview_activate           (MooEditWindow      *window,
     const char *path = moo_file_view_file_path (file);
     if (_moo_edit_window_open (window, path, NULL))
     {
-        MooEdit *edit = moo_edit_window_get_active_doc (window);
+        MooEdit *edit = ACTIVE_DOC (window);
         gtk_widget_grab_focus (GTK_WIDGET (edit));
     }
 }
@@ -1196,7 +1227,7 @@ static void     fileview_activate           (MooEditWindow      *window,
 
 static void     current_doc_dir_clicked     (MooEditWindow      *window)
 {
-    MooEdit *edit = moo_edit_window_get_active_doc (window);
+    MooEdit *edit = ACTIVE_DOC (window);
     const char *filename = moo_edit_get_filename (edit);
 
     if (filename)
@@ -1205,4 +1236,58 @@ static void     current_doc_dir_clicked     (MooEditWindow      *window)
         moo_file_view_chdir (window->priv->fileview, dirname, NULL);
         g_free (dirname);
     }
+}
+
+
+#define BOOL_EQUAL(a,b) ((a && b) || (!a && !b))
+
+static void show_file_selector_toggled_cb   (MooEditWindow   *window,
+                                             gboolean         show)
+{
+    gboolean open = moo_paned_is_open (window->priv->paned);
+
+    if (BOOL_EQUAL (show, open))
+        return;
+
+    if (show)
+    {
+        moo_paned_open_pane (window->priv->paned, 0);
+        g_signal_emit_by_name (window->priv->fileview,
+                               "focus-to-file-view");
+    }
+    else
+    {
+        MooEdit *edit = ACTIVE_DOC (window);
+        moo_paned_hide_pane (window->priv->paned);
+        if (edit) gtk_widget_grab_focus (GTK_WIDGET (edit));
+    }
+}
+
+
+static void pane_opened                     (G_GNUC_UNUSED MooPaned *paned,
+                                             G_GNUC_UNUSED guint index,
+                                             MooEditWindow   *window)
+{
+    MooActionGroup *actions;
+    MooAction *show;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+    show = moo_action_group_get_action (actions, "ShowFileSelector");
+    g_return_if_fail (show != NULL);
+
+    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show), TRUE);
+}
+
+
+static void pane_hidden                     (G_GNUC_UNUSED MooPaned *paned,
+                                             MooEditWindow   *window)
+{
+    MooActionGroup *actions;
+    MooAction *show;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+    show = moo_action_group_get_action (actions, "ShowFileSelector");
+    g_return_if_fail (show != NULL);
+
+    moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show), FALSE);
 }
