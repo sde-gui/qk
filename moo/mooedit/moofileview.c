@@ -69,7 +69,10 @@ struct _MooFileViewPrivate {
 
     GtkNotebook     *notebook;
     MooFileViewType  view_type;
+
     GtkTreeView     *treeview;
+    GtkTreeViewColumn *tree_name_column;
+
     MooIconView     *iconview;
 
     char            *current_dir;
@@ -84,6 +87,9 @@ struct _MooFileViewPrivate {
     GtkEntry        *filter_entry;
     GtkFileFilter   *current_filter;
     gboolean         use_current_filter;
+
+    GtkEntry        *search_entry;
+    gboolean         in_search;
 };
 
 
@@ -103,6 +109,10 @@ static void         moo_file_view_get_property  (GObject        *object,
                                                  guint           prop_id,
                                                  GValue         *value,
                                                  GParamSpec     *pspec);
+
+static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
+                                                 GdkEventKey    *event,
+                                                 MooFileView    *fileview);
 
 static void         moo_file_view_set_file_mgr  (MooFileView    *fileview,
                                                  MooEditFileMgr *mgr);
@@ -139,6 +149,7 @@ static void         focus_to_file_view      (MooFileView    *fileview);
 static void         focus_to_filter_entry   (MooFileView    *fileview);
 static GtkWidget   *create_toolbar          (MooFileView    *fileview);
 static GtkWidget   *create_notebook         (MooFileView    *fileview);
+static GtkWidget   *create_search_entry     (MooFileView    *fileview);
 
 static GtkWidget   *create_popup_menu       (MooFileView    *fileview);
 
@@ -180,6 +191,8 @@ static gboolean     icon_button_press       (MooIconView    *iconview,
 static void         get_icon                (MooFileView    *fileview,
                                              MooFileViewFile*file);
 
+static GtkWidget   *get_file_view_widget    (MooFileView    *fileview);
+
 
 /* MOO_TYPE_FILE_VIEW */
 G_DEFINE_TYPE (MooFileView, moo_file_view, GTK_TYPE_VBOX)
@@ -217,6 +230,7 @@ static guint signals[LAST_SIGNAL];
 static void moo_file_view_class_init (MooFileViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+//     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkBindingSet *binding_set;
 
     gobject_class->finalize = moo_file_view_finalize;
@@ -507,7 +521,7 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
 static void         init_gui        (MooFileView    *fileview)
 {
     GtkBox *box;
-    GtkWidget *toolbar, *notebook, *filter_combo;
+    GtkWidget *toolbar, *notebook, *filter_combo, *search_entry;
 
     box = GTK_BOX (fileview);
 
@@ -520,6 +534,10 @@ static void         init_gui        (MooFileView    *fileview)
     gtk_widget_show (notebook);
     gtk_box_pack_start (box, notebook, TRUE, TRUE, 0);
     fileview->priv->notebook = GTK_NOTEBOOK (notebook);
+
+    search_entry = create_search_entry (fileview);
+    gtk_box_pack_start (box, search_entry, FALSE, FALSE, 0);
+    fileview->priv->search_entry = GTK_ENTRY (search_entry);
 
     filter_combo = create_filter_combo (fileview);
     gtk_widget_show (filter_combo);
@@ -538,10 +556,7 @@ static void         init_gui        (MooFileView    *fileview)
 
 static void         focus_to_file_view      (MooFileView    *fileview)
 {
-    if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
-        gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->iconview));
-    else
-        gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->treeview));
+    gtk_widget_grab_focus (get_file_view_widget (fileview));
 }
 
 
@@ -681,6 +696,9 @@ static GtkWidget   *create_notebook     (MooFileView    *fileview)
     gtk_widget_show (treeview);
     gtk_container_add (GTK_CONTAINER (swin), treeview);
     fileview->priv->treeview = GTK_TREE_VIEW (treeview);
+    g_signal_connect (treeview, "key-press-event",
+                      G_CALLBACK (moo_file_view_key_press),
+                      fileview);
 
     swin = gtk_scrolled_window_new (NULL, NULL);
     gtk_widget_show (swin);
@@ -748,6 +766,7 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_title (column, "Name");
     gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
+    fileview->priv->tree_name_column = column;
 
     cell = gtk_cell_renderer_pixbuf_new ();
     gtk_tree_view_column_pack_start (column, cell, FALSE);
@@ -1407,6 +1426,9 @@ static GtkWidget   *create_iconview         (MooFileView    *fileview)
     GtkCellRenderer *cell;
 
     iconview = moo_icon_view_new_with_model (fileview->priv->filter_model);
+    g_signal_connect (iconview, "key-press-event",
+                      G_CALLBACK (moo_file_view_key_press),
+                      fileview);
     moo_icon_view_set_attributes (MOO_ICON_VIEW (iconview),
                                   MOO_ICON_VIEW_CELL_PIXBUF,
                                   "pixbuf", COLUMN_PIXBUF,
@@ -1968,4 +1990,326 @@ static void         toggle_show_hidden      (MooFileView    *fileview)
 {
     moo_file_view_set_show_hidden (fileview,
                                    !fileview->priv->show_hidden_files);
+}
+
+
+static GtkWidget   *get_file_view_widget        (MooFileView    *fileview)
+{
+    if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
+        return GTK_WIDGET(fileview->priv->iconview);
+    else
+        return GTK_WIDGET(fileview->priv->treeview);
+}
+
+
+/****************************************************************************/
+/* Interactive search
+ */
+
+enum {
+    SEARCH_COLUMN_NAME,
+    SEARCH_COLUMN_FILE
+};
+
+static GtkWidget   *create_search_entry     (MooFileView    *fileview)
+{
+    GtkWidget *entry;
+    GtkEntryCompletion *completion;
+    GtkListStore *store;
+
+    entry = gtk_entry_new ();
+    g_object_set_data (G_OBJECT (entry), "moo-file-view", fileview);
+    gtk_widget_set_no_show_all (entry, TRUE);
+
+    completion = gtk_entry_completion_new ();
+    gtk_entry_set_completion (GTK_ENTRY (entry), completion);
+
+    store = gtk_list_store_new (2, G_TYPE_STRING,
+                                MOO_TYPE_FILE_VIEW_FILE);
+    gtk_entry_completion_set_model (completion,
+                                    GTK_TREE_MODEL (store));
+    gtk_entry_completion_set_text_column (completion, SEARCH_COLUMN_NAME);
+
+    g_object_unref (store);
+    g_object_unref (completion);
+    return entry;
+}
+
+
+/****************************************************************************/
+/* Auxiliary stuff
+ */
+
+static GtkTreePath *tree_view_get_selected  (GtkTreeView    *treeview)
+{
+    GtkTreeSelection *selection;
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+
+    selection = gtk_tree_view_get_selection (treeview);
+
+    if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+        return NULL;
+    else
+        return gtk_tree_model_get_path (model, &iter);
+}
+
+
+static void     activate_file_widget        (MooFileView    *fileview)
+{
+    if (fileview->priv->view_type == MOO_FILE_VIEW_LIST)
+    {
+        GtkTreePath *path;
+        path = tree_view_get_selected (fileview->priv->treeview);
+        if (path)
+        {
+            gtk_tree_view_row_activated (fileview->priv->treeview, path,
+                                         fileview->priv->tree_name_column);
+            gtk_tree_path_free (path);
+        }
+    }
+    else
+    {
+        moo_icon_view_activate_selected (fileview->priv->iconview);
+    }
+}
+
+
+static void     file_widget_move_selection  (MooFileView    *fileview,
+                                             GtkTreeIter    *iter)
+{
+    GtkTreePath *path = NULL;
+
+    if (iter)
+    {
+        path = gtk_tree_model_get_path (fileview->priv->filter_model, iter);
+        g_return_if_fail (path != NULL);
+    }
+
+    if (fileview->priv->view_type == MOO_FILE_VIEW_LIST)
+    {
+        GtkTreeSelection *selection;
+        GtkTreeView *treeview;
+
+        treeview = fileview->priv->treeview;
+        selection = gtk_tree_view_get_selection (treeview);
+
+        gtk_tree_selection_unselect_all (selection);
+
+        if (path)
+        {
+            gtk_tree_selection_select_path (selection, path);
+            gtk_tree_view_scroll_to_cell (treeview, path, NULL,
+                                          FALSE, 0, 0);
+        }
+    }
+    else
+    {
+        moo_icon_view_move_cursor (fileview->priv->iconview, path);
+    }
+
+    gtk_tree_path_free (path);
+}
+
+
+static gboolean find_match                  (MooFileView    *fileview,
+                                             const char     *text,
+                                             GtkTreeIter    *iter)
+{
+    GtkTreeModel *model = fileview->priv->filter_model;
+    guint len;
+
+    g_return_val_if_fail (text != NULL, FALSE);
+    if (!text[0])
+        return FALSE;
+
+    if (!gtk_tree_model_get_iter_first (model, iter))
+        return FALSE;
+
+    len = strlen (text);
+
+    while (TRUE)
+    {
+        char *val;
+
+        gtk_tree_model_get (model, iter,
+                            COLUMN_DISPLAY_NAME, &val, -1);
+
+        if (val)
+        {
+            if (!strncmp (text, val, len))
+            {
+                g_free (val);
+                return TRUE;
+            }
+
+            g_free (val);
+        }
+
+        if (!gtk_tree_model_iter_next (model, iter))
+            return FALSE;
+    }
+}
+
+
+/****************************************************************************/
+/* Search entry
+ */
+
+static gboolean search_entry_key_press      (GtkWidget      *entry,
+                                             GdkEventKey    *event,
+                                             MooFileView    *fileview);
+static gboolean search_entry_focus_out      (GtkWidget      *entry,
+                                             GdkEventFocus  *event,
+                                             MooFileView    *fileview);
+static void     search_entry_activate       (GtkWidget      *entry,
+                                             MooFileView    *fileview);
+static void     search_entry_changed        (GtkEntry       *entry,
+                                             MooFileView    *fileview);
+
+static void         start_interactive_search    (MooFileView    *fileview)
+{
+    GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
+
+    file_widget_move_selection (fileview, NULL);
+    gtk_widget_show (entry);
+    gtk_widget_grab_focus (entry);
+
+    fileview->priv->in_search = TRUE;
+
+    g_signal_connect (entry, "key-press-event",
+                      G_CALLBACK (search_entry_key_press),
+                      fileview);
+    g_signal_connect (entry, "focus-out-event",
+                      G_CALLBACK (search_entry_focus_out),
+                      fileview);
+    g_signal_connect (entry, "activate",
+                      G_CALLBACK (search_entry_activate),
+                      fileview);
+    g_signal_connect (entry, "changed",
+                      G_CALLBACK (search_entry_changed),
+                      fileview);
+}
+
+
+static void         stop_interactive_search     (MooFileView    *fileview)
+{
+    GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
+
+    fileview->priv->in_search = FALSE;
+
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) search_entry_key_press,
+                                          fileview);
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) search_entry_focus_out,
+                                          fileview);
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) search_entry_activate,
+                                          fileview);
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) search_entry_changed,
+                                          fileview);
+
+    gtk_widget_hide (entry);
+
+    gtk_entry_set_text (GTK_ENTRY (entry), "");
+
+    gtk_widget_grab_focus (get_file_view_widget (fileview));
+}
+
+
+#define PRINT_KEY_EVENT(event)                                      \
+    g_print ("%s%s%s%s\n",                                          \
+             event->state & GDK_SHIFT_MASK ? "<Shift>" : "",        \
+             event->state & GDK_CONTROL_MASK ? "<Control>" : "",    \
+             event->state & GDK_MOD1_MASK ? "<Alt>" : "",           \
+             gdk_keyval_name (event->keyval))
+
+
+static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
+                                                 GdkEventKey    *event,
+                                                 MooFileView    *fileview)
+{
+    GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
+
+    if (fileview->priv->in_search)
+    {
+        g_warning ("%s: something wrong", G_STRLOC);
+        stop_interactive_search (fileview);
+        return FALSE;
+    }
+
+    if (GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (widget))->key_press_event (widget, event))
+        return TRUE;
+
+    if (GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (fileview))->key_press_event (widget, event))
+        return TRUE;
+
+    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK))
+        return FALSE;
+
+    if (event->string && event->length)
+    {
+        GdkEvent *copy = gdk_event_copy ((GdkEvent*) event);
+        gtk_widget_realize (entry);
+        g_object_unref (copy->key.window);
+        copy->key.window = g_object_ref (entry->window);
+
+        start_interactive_search (fileview);
+        gtk_widget_event (entry, copy);
+
+        gdk_event_free (copy);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+static gboolean search_entry_key_press      (G_GNUC_UNUSED GtkWidget *entry,
+                                             GdkEventKey    *event,
+                                             MooFileView    *fileview)
+{
+    switch (event->keyval)
+    {
+        case GDK_Escape:
+            stop_interactive_search (fileview);
+            return TRUE;
+
+        default:
+            return FALSE;
+    }
+}
+
+
+static gboolean search_entry_focus_out      (G_GNUC_UNUSED GtkWidget *entry,
+                                             G_GNUC_UNUSED GdkEventFocus *event,
+                                             MooFileView    *fileview)
+{
+    stop_interactive_search (fileview);
+    return FALSE;
+}
+
+
+static void     search_entry_activate       (GtkWidget      *entry,
+                                             MooFileView    *fileview)
+{
+    stop_interactive_search (fileview);
+    activate_file_widget (fileview);
+}
+
+
+static void     search_entry_changed        (GtkEntry       *entry,
+                                             MooFileView    *fileview)
+{
+    GtkTreeIter iter;
+    const char *text;
+
+    text = gtk_entry_get_text (entry);
+
+    if (find_match (fileview, text, &iter))
+        file_widget_move_selection (fileview, &iter);
+    else
+        file_widget_move_selection (fileview, NULL);
 }
