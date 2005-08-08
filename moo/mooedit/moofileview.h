@@ -66,6 +66,9 @@ gboolean    moo_file_view_chdir             (MooFileView    *fileview,
                                              const char     *dir,
                                              GError        **error);
 
+void        moo_file_view_select_file       (MooFileView    *fileview,
+                                             const char     *basename);
+
 void        moo_file_view_set_view_type     (MooFileView    *fileview,
                                              MooFileViewType type);
 
@@ -79,6 +82,8 @@ GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
                                              GtkIconSize        size);
 
 void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
+                                             gboolean        show);
+void        moo_file_view_set_show_parent   (MooFileView    *fileview,
                                              gboolean        show);
 
 
