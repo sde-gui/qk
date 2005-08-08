@@ -2060,10 +2060,16 @@ void          moo_icon_view_move_cursor       (MooIconView    *view,
 
     g_return_if_fail (gtk_tree_path_get_depth (path) == 1);
 
-    column = find_column_by_path (view, path, &index);
-    g_return_if_fail (column != NULL);
-
-    move_cursor_to_entry (view, column, index);
+    if (view->priv->update_idle)
+    {
+        moo_icon_view_select_path (view, path);
+    }
+    else
+    {
+        column = find_column_by_path (view, path, &index);
+        g_return_if_fail (column != NULL);
+        move_cursor_to_entry (view, column, index);
+    }
 }
 
 
