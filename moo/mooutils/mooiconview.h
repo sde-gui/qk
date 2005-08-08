@@ -103,6 +103,9 @@ GtkTreePath  *moo_icon_view_get_path          (MooIconView    *view,
                                                int             window_x,
                                                int             window_y);
 GtkTreePath  *moo_icon_view_get_selected      (MooIconView    *view);
+void          moo_icon_view_activate_selected (MooIconView    *view);
+void          moo_icon_view_move_cursor       (MooIconView    *view,
+                                               GtkTreePath    *path);
 
 
 G_END_DECLS

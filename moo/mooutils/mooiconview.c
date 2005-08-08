@@ -1280,7 +1280,8 @@ static int      path_get_index              (GtkTreePath    *path)
 
 
 static Column  *find_column_by_path         (MooIconView    *view,
-                                             GtkTreePath    *path)
+                                             GtkTreePath    *path,
+                                             int            *index)
 {
     GSList *l;
     int path_index;
@@ -1293,7 +1294,11 @@ static Column  *find_column_by_path         (MooIconView    *view,
         int first = path_get_index (column->first);
         if (first <= path_index && path_index < first +
             num_entries (column))
-                return column;
+        {
+            if (index)
+                *index = path_index - first;
+            return column;
+        }
     }
 
     g_return_val_if_reached (NULL);
@@ -1371,21 +1376,15 @@ static void     rows_reordered              (G_GNUC_UNUSED GtkTreeModel *model,
 
 static void     invalidate_cell_rect        (MooIconView    *view,
                                              Column         *column,
-                                             GtkTreePath    *path)
+                                             int             index)
 {
     GdkRectangle rect;
-    int first, path_index;
 
     if (view->priv->update_idle)
         return;
 
-    first = path_get_index (column->first);
-    path_index = path_get_index (path);
-    g_assert (first <= path_index);
-    g_assert (path_index < first + num_entries (column));
-
     rect.x = column->offset - view->priv->xoffset;
-    rect.y = (path_index - first) * view->priv->layout->row_height;
+    rect.y = index * view->priv->layout->row_height;
     rect.width = column->width;
     rect.height = view->priv->layout->row_height;
 
@@ -1514,6 +1513,7 @@ static void invalidate_path_rectangle       (MooIconView    *view,
                                              GtkTreePath    *path)
 {
     Column *column;
+    int index;
 
     if (view->priv->update_idle)
         return;
@@ -1521,9 +1521,9 @@ static void invalidate_path_rectangle       (MooIconView    *view,
     if (check_empty (view))
         return;
 
-    column = find_column_by_path (view, path);
+    column = find_column_by_path (view, path, &index);
     g_return_if_fail (column != NULL);
-    invalidate_cell_rect (view, column, path);
+    invalidate_cell_rect (view, column, index);
 }
 
 
@@ -1689,6 +1689,13 @@ GtkTreePath  *moo_icon_view_get_path        (MooIconView    *view,
 }
 
 
+void          moo_icon_view_activate_selected (MooIconView    *view)
+{
+    g_return_if_fail (MOO_IS_ICON_VIEW (view));
+    g_signal_emit (view, signals[ACTIVATE_SELECTED], 0);
+}
+
+
 static void     activate_selected           (MooIconView    *view)
 {
     GtkTreePath *path;
@@ -1774,24 +1781,6 @@ static GtkTreePath *get_path_at_cursor      (MooIconView    *view)
 }
 
 
-static int      column_get_index            (Column         *column,
-                                             GtkTreePath    *path)
-{
-    int first, index;
-
-    g_return_val_if_fail (column != NULL, -1);
-    g_return_val_if_fail (gtk_tree_path_get_depth (path) == 1, -1);
-
-    index = gtk_tree_path_get_indices(path)[0];
-    first = gtk_tree_path_get_indices(column->first)[0];
-
-    g_return_val_if_fail (first <= index, -1);
-    g_return_val_if_fail (index < first + num_entries (column), -1);
-
-    return index - first;
-}
-
-
 static GtkTreePath *column_get_path         (Column         *column,
                                              int             index)
 {
@@ -1853,18 +1842,18 @@ static void     move_cursor_right           (MooIconView    *view)
 
     path = get_path_at_cursor (view);
 
-    column = find_column_by_path (view, path);
+    column = find_column_by_path (view, path, &y);
     g_return_if_fail (column != NULL);
 
     next = column_next (view, column);
 
     if (!next)
     {
-        moo_icon_view_select_path (view, path);
+        move_cursor_to_entry (view, column,
+                              num_entries (column) - 1);
     }
     else
     {
-        y = column_get_index (column, path);
         if (y >= num_entries (next))
             y = num_entries (next) - 1;
         move_cursor_to_entry (view, next, y);
@@ -1878,22 +1867,22 @@ static void     move_cursor_left            (MooIconView    *view)
 {
     GtkTreePath *path;
     Column *column, *prev;
+    int index;
 
     if (check_empty (view))
         return;
 
     path = get_path_at_cursor (view);
 
-    column = find_column_by_path (view, path);
+    column = find_column_by_path (view, path, &index);
     g_return_if_fail (column != NULL);
 
     prev = column_prev (view, column);
 
     if (!prev)
-        moo_icon_view_select_path (view, path);
+        move_cursor_to_entry (view, column, 0);
     else
-        move_cursor_to_entry (view, prev,
-                              column_get_index (column, path));
+        move_cursor_to_entry (view, prev, index);
 
     gtk_tree_path_free (path);
 }
@@ -1910,10 +1899,8 @@ static void     move_cursor_up              (MooIconView    *view)
 
     path = get_path_at_cursor (view);
 
-    column = find_column_by_path (view, path);
+    column = find_column_by_path (view, path, &y);
     g_return_if_fail (column != NULL);
-
-    y = column_get_index (column, path);
 
     if (y)
     {
@@ -1944,10 +1931,8 @@ static void     move_cursor_down            (MooIconView    *view)
 
     path = get_path_at_cursor (view);
 
-    column = find_column_by_path (view, path);
+    column = find_column_by_path (view, path, &y);
     g_return_if_fail (column != NULL);
-
-    y = column_get_index (column, path);
 
     if (y < num_entries (column) - 1)
     {
@@ -2059,6 +2044,26 @@ static void     move_cursor_to_entry        (MooIconView    *view,
         new_offset = column->offset + column->width - widget->allocation.width;
 
     moo_icon_view_scroll_to (view, new_offset);
+}
+
+
+void          moo_icon_view_move_cursor       (MooIconView    *view,
+                                               GtkTreePath    *path)
+{
+    Column *column;
+    int index;
+
+    g_return_if_fail (MOO_IS_ICON_VIEW (view));
+
+    if (!path)
+        return moo_icon_view_select_path (view, NULL);
+
+    g_return_if_fail (gtk_tree_path_get_depth (path) == 1);
+
+    column = find_column_by_path (view, path, &index);
+    g_return_if_fail (column != NULL);
+
+    move_cursor_to_entry (view, column, index);
 }
 
 
