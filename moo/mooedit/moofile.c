@@ -38,6 +38,14 @@ G_STMT_START {              \
     g_timer_stop (timer);   \
 } G_STMT_END
 
+#if 0
+#define PRINT_TIMES g_print
+#else
+static void PRINT_TIMES (G_GNUC_UNUSED const char *format, ...)
+{
+}
+#endif
+
 typedef enum {
     STAGE_NAMES     = 1,
     STAGE_STAT      = 2,
@@ -438,9 +446,9 @@ static double   get_names               (MooFolder  *folder)
 
     folder->priv->done = STAGE_NAMES;
 
-    g_print ("names folder %s: %f sec\n",
-             folder->priv->path,
-             folder->priv->debug.names_timer);
+    PRINT_TIMES ("names folder %s: %f sec\n",
+                 folder->priv->path,
+                 folder->priv->debug.names_timer);
 
     return elapsed;
 }
@@ -502,10 +510,10 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
         g_assert (folder->priv->files_copy == NULL);
         folder->priv->populate_idle_id = 0;
 
-        g_print ("stat folder %s: %d iterations, %f sec\n",
-                 folder->priv->path,
-                 folder->priv->debug.stat_counter,
-                 folder->priv->debug.stat_timer);
+        PRINT_TIMES ("stat folder %s: %d iterations, %f sec\n",
+                     folder->priv->path,
+                     folder->priv->debug.stat_counter,
+                     folder->priv->debug.stat_timer);
 
         folder->priv->done = STAGE_STAT;
 
@@ -620,10 +628,10 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
 
     if (done)
     {
-        g_print ("icons folder %s: %d iterations, %f sec\n",
-                 folder->priv->path,
-                 folder->priv->debug.icons_counter,
-                 folder->priv->debug.icons_timer);
+        PRINT_TIMES ("icons folder %s: %d iterations, %f sec\n",
+                     folder->priv->path,
+                     folder->priv->debug.icons_counter,
+                     folder->priv->debug.icons_timer);
 
         g_assert (folder->priv->files_copy == NULL);
         folder->priv->populate_idle_id = 0;
