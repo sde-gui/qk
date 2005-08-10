@@ -32,6 +32,12 @@
 #define BACKGROUND_PRIORITY     G_PRIORITY_LOW
 #define BACKGROUND_TIMEOUT      0.001
 
+#define TIMER_CLEAR(timer)  \
+G_STMT_START {              \
+    g_timer_start (timer);  \
+    g_timer_stop (timer);   \
+} G_STMT_END
+
 typedef enum {
     STAGE_NAMES     = 1,
     STAGE_STAT      = 2,
@@ -61,6 +67,7 @@ struct _MooFolderPrivate {
     guint populate_idle_id;
     double populate_timeout;
     Debug debug;
+    GTimer *timer;
 };
 
 
@@ -182,6 +189,8 @@ static void moo_folder_init      (MooFolder    *folder)
     folder->priv->populate_func = NULL;
     folder->priv->populate_idle_id = 0;
     folder->priv->populate_timeout = BACKGROUND_TIMEOUT;
+    folder->priv->timer = g_timer_new ();
+    g_timer_stop (folder->priv->timer);
 }
 
 
@@ -196,6 +205,7 @@ static void moo_folder_finalize  (GObject      *object)
     g_free (folder->priv->path);
     if (folder->priv->populate_idle_id)
         g_source_remove (folder->priv->populate_idle_id);
+    g_timer_destroy (folder->priv->timer);
 
     g_free (folder->priv);
     folder->priv = NULL;
@@ -344,8 +354,11 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
     folder->priv->populate_timeout = NORMAL_TIMEOUT;
     folder->priv->populate_priority = NORMAL_PRIORITY;
 
+    TIMER_CLEAR (folder->priv->timer);
+
     if (!bit_now ||
-         (elapsed < folder->priv->populate_timeout && folder->priv->populate_func (folder)))
+        elapsed > folder->priv->populate_timeout ||
+         folder->priv->populate_func (folder))
     {
         folder->priv->populate_idle_id =
                 g_idle_add_full (folder->priv->populate_priority,
@@ -435,15 +448,16 @@ static double   get_names               (MooFolder  *folder)
 
 static gboolean get_stat_a_bit              (MooFolder  *folder)
 {
-    GTimer *timer;
     gboolean done = FALSE;
     GSList *changed = NULL;
+    double elapsed;
 
     g_assert (folder->priv->dir == NULL);
     g_assert (folder->priv->done == STAGE_NAMES);
     g_assert (folder->priv->path != NULL);
 
-    timer = g_timer_new ();
+    elapsed = g_timer_elapsed (folder->priv->timer, NULL);
+    g_timer_continue (folder->priv->timer);
 
     if (!folder->priv->files_copy)
         folder->priv->files_copy =
@@ -466,18 +480,24 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
         if (!folder->priv->files_copy)
             done = TRUE;
 
-        if (g_timer_elapsed (timer, NULL) > folder->priv->populate_timeout)
+        if (g_timer_elapsed (folder->priv->timer, NULL) > folder->priv->populate_timeout)
             break;
     }
 
-    folder->priv->debug.stat_timer += g_timer_elapsed (timer, NULL);
+    elapsed = g_timer_elapsed (folder->priv->timer, NULL) - elapsed;
+    folder->priv->debug.stat_timer += elapsed;
     folder->priv->debug.stat_counter += 1;
-    g_timer_destroy (timer);
+    g_timer_stop (folder->priv->timer);
 
     folder_emit_files (folder, FILES_CHANGED, changed);
     files_list_free (&changed);
 
-    if (done)
+    if (!done)
+    {
+        TIMER_CLEAR (folder->priv->timer);
+        return TRUE;
+    }
+    else
     {
         g_assert (folder->priv->files_copy == NULL);
         folder->priv->populate_idle_id = 0;
@@ -489,25 +509,43 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
 
         folder->priv->done = STAGE_STAT;
 
-        if (folder->priv->wanted >= STAGE_MIME_TYPE)
+        if (folder->priv->wanted >= STAGE_MIME_TYPE || folder->priv->wanted_bg >= STAGE_MIME_TYPE)
         {
+            if (folder->priv->wanted >= STAGE_MIME_TYPE)
+            {
+                folder->priv->populate_priority = NORMAL_PRIORITY;
+                folder->priv->populate_timeout = NORMAL_TIMEOUT;
+            }
+            else if (folder->priv->wanted_bg >= STAGE_MIME_TYPE)
+            {
+                folder->priv->populate_priority = BACKGROUND_PRIORITY;
+                folder->priv->populate_timeout = BACKGROUND_TIMEOUT;
+            }
+
+            if (folder->priv->populate_idle_id)
+                g_source_remove (folder->priv->populate_idle_id);
+            folder->priv->populate_idle_id = 0;
             folder->priv->populate_func = (GSourceFunc) get_icons_a_bit;
-            folder->priv->populate_priority = NORMAL_PRIORITY;
-            folder->priv->populate_timeout = NORMAL_TIMEOUT;
-            folder->priv->populate_idle_id =
-                    g_idle_add_full (folder->priv->populate_priority,
-                                     folder->priv->populate_func,
-                                     folder, NULL);
-        }
-        else if (folder->priv->wanted_bg >= STAGE_MIME_TYPE)
-        {
-            folder->priv->populate_func = (GSourceFunc) get_icons_a_bit;
-            folder->priv->populate_priority = BACKGROUND_PRIORITY;
-            folder->priv->populate_timeout = BACKGROUND_TIMEOUT;
-            folder->priv->populate_idle_id =
-                    g_idle_add_full (folder->priv->populate_priority,
-                                     folder->priv->populate_func,
-                                     folder, NULL);
+
+            if (g_timer_elapsed (folder->priv->timer, NULL) < folder->priv->populate_timeout)
+            {
+                /* in this case we may block for as much as twice TIMEOUT, but usually
+                   it allows stat and loading icons in one iteration */
+                TIMER_CLEAR (folder->priv->timer);
+                if (folder->priv->populate_func (folder))
+                    folder->priv->populate_idle_id =
+                            g_idle_add_full (folder->priv->populate_priority,
+                                             folder->priv->populate_func,
+                                             folder, NULL);
+            }
+            else
+            {
+                TIMER_CLEAR (folder->priv->timer);
+                folder->priv->populate_idle_id =
+                        g_idle_add_full (folder->priv->populate_priority,
+                                         folder->priv->populate_func,
+                                         folder, NULL);
+            }
         }
         else
         {
@@ -515,23 +553,24 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
             folder->priv->populate_priority = 0;
             folder->priv->populate_timeout = 0;
         }
-    }
 
-    return !done;
+        return FALSE;
+    }
 }
 
 
 static gboolean get_icons_a_bit             (MooFolder  *folder)
 {
-    GTimer *timer;
     gboolean done = FALSE;
+    double elapsed;
     GSList *changed = NULL;
 
     g_assert (folder->priv->dir == NULL);
     g_assert (folder->priv->done == STAGE_STAT);
     g_assert (folder->priv->path != NULL);
 
-    timer = g_timer_new ();
+    elapsed = g_timer_elapsed (folder->priv->timer, NULL);
+    g_timer_continue (folder->priv->timer);
 
     if (!folder->priv->files_copy)
         folder->priv->files_copy =
@@ -567,13 +606,14 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
         if (!folder->priv->files_copy)
             done = TRUE;
 
-        if (g_timer_elapsed (timer, NULL) > folder->priv->populate_timeout)
+        if (g_timer_elapsed (folder->priv->timer, NULL) > folder->priv->populate_timeout)
             break;
     }
 
-    folder->priv->debug.icons_timer += g_timer_elapsed (timer, NULL);
+    elapsed = g_timer_elapsed (folder->priv->timer, NULL) - elapsed;
+    folder->priv->debug.icons_timer += elapsed;
     folder->priv->debug.icons_counter += 1;
-    g_timer_destroy (timer);
+    TIMER_CLEAR (folder->priv->timer);
 
     folder_emit_files (folder, FILES_CHANGED, changed);
     files_list_free (&changed);
