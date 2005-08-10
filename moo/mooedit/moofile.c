@@ -40,7 +40,6 @@ typedef enum {
 
 typedef struct {
     double names_timer;
-    guint names_counter;
     double stat_timer;
     guint stat_counter;
     double icons_timer;
@@ -81,7 +80,7 @@ static void     files_list_free             (GSList    **list);
 
 static gboolean get_icons_a_bit             (MooFolder  *folder);
 static gboolean get_stat_a_bit              (MooFolder  *folder);
-static gboolean get_names_a_bit             (MooFolder  *folder);
+static double   get_names                   (MooFolder  *folder);
 
 static const char   *get_default_file_icon  (void);
 static const char   *get_nonexistent_icon   (void);
@@ -286,6 +285,7 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
                                          gboolean        bit_now)
 {
     Stage wanted_stage = STAGE_NAMES;
+    double elapsed = 0.0;
 
     g_return_if_fail (MOO_IS_FOLDER (folder));
     g_return_if_fail (!folder->priv->deleted);
@@ -309,6 +309,12 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
 
     folder->priv->wanted = wanted_stage;
 
+    if (!folder->priv->done)
+    {
+        g_assert (folder->priv->dir != NULL);
+        elapsed = get_names (folder);
+    }
+
     if (folder->priv->wanted_bg != 0)
     {
         g_assert (folder->priv->populate_idle_id != 0);
@@ -322,10 +328,6 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
 
         switch (folder->priv->done)
         {
-            case 0:
-                g_assert (folder->priv->dir != NULL);
-                folder->priv->populate_func = (GSourceFunc) get_names_a_bit;
-                break;
             case STAGE_NAMES:
                 g_assert (folder->priv->dir == NULL);
                 folder->priv->populate_func = (GSourceFunc) get_stat_a_bit;
@@ -335,18 +337,21 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
                 folder->priv->populate_func = (GSourceFunc) get_icons_a_bit;
                 break;
             default:
-                g_return_if_reached ();;
+                g_assert_not_reached ();
         }
     }
 
     folder->priv->populate_timeout = NORMAL_TIMEOUT;
     folder->priv->populate_priority = NORMAL_PRIORITY;
 
-    if (!bit_now || folder->priv->populate_func (folder))
+    if (!bit_now ||
+         (elapsed < folder->priv->populate_timeout && folder->priv->populate_func (folder)))
+    {
         folder->priv->populate_idle_id =
                 g_idle_add_full (folder->priv->populate_priority,
                                  folder->priv->populate_func,
                                  folder, NULL);
+    }
 }
 
 
@@ -385,101 +390,46 @@ GSList      *moo_folder_list_files      (MooFolder  *folder)
 }
 
 
-static gboolean get_names_a_bit             (MooFolder  *folder)
+static double   get_names               (MooFolder  *folder)
 {
-    const char *name;
     GTimer *timer;
-    gboolean done = FALSE;
     GSList *added = NULL;
+    const char *name;
+    MooFile *file;
+    double elapsed;
 
-    g_assert (folder->priv->dir != NULL);
     g_assert (folder->priv->path != NULL);
+    g_assert (folder->priv->dir != NULL);
 
     timer = g_timer_new ();
 
-    while (TRUE)
+    for (name = g_dir_read_name (folder->priv->dir);
+            name != NULL;
+            name = g_dir_read_name (folder->priv->dir))
     {
-        MooFile *file;
-
-        name = g_dir_read_name (folder->priv->dir);
-
-        if (!name)
-        {
-            done = TRUE;
-            break;
-        }
-
         file = moo_file_new (folder->priv->path, name);
         file->icon = get_blank_icon ();
         folder->priv->files = g_slist_prepend (folder->priv->files, file);
         added = g_slist_prepend (added, file);
-
-        /******************/
-        if (folder->priv->wanted >= STAGE_STAT)
-            moo_file_stat (file, folder->priv->path);
-        /******************/
-
-        if (g_timer_elapsed (timer, NULL) > folder->priv->populate_timeout)
-            break;
     }
 
-    folder->priv->debug.names_timer += g_timer_elapsed (timer, NULL);
-    folder->priv->debug.names_counter += 1;
+    elapsed = folder->priv->debug.names_timer =
+            g_timer_elapsed (timer, NULL);
     g_timer_destroy (timer);
 
     folder_emit_files (folder, FILES_ADDED, added);
     g_slist_free (added);
 
-    if (done)
-    {
-        g_dir_close (folder->priv->dir);
-        folder->priv->dir = NULL;
-        folder->priv->populate_idle_id = 0;
+    g_dir_close (folder->priv->dir);
+    folder->priv->dir = NULL;
 
-        g_print ("names folder %s: %d iterations, %f sec\n",
-                 folder->priv->path,
-                 folder->priv->debug.names_counter,
-                 folder->priv->debug.names_timer);
+    folder->priv->done = STAGE_NAMES;
 
-        if (!folder->priv->files)
-        {
-            folder->priv->done = STAGE_MIME_TYPE;
-            folder->priv->populate_func = NULL;
-            folder->priv->populate_priority = 0;
-            return FALSE;
-        }
+    g_print ("names folder %s: %f sec\n",
+             folder->priv->path,
+             folder->priv->debug.names_timer);
 
-        folder->priv->done = STAGE_NAMES;
-
-        if (folder->priv->wanted >= STAGE_STAT)
-        {
-            folder->priv->populate_func = (GSourceFunc) get_stat_a_bit;
-            folder->priv->populate_priority = NORMAL_PRIORITY;
-            folder->priv->populate_timeout = NORMAL_TIMEOUT;
-            folder->priv->populate_idle_id =
-                    g_idle_add_full (folder->priv->populate_priority,
-                                     folder->priv->populate_func,
-                                     folder, NULL);
-        }
-        else if (folder->priv->wanted_bg >= STAGE_STAT)
-        {
-            folder->priv->populate_func = (GSourceFunc) get_stat_a_bit;
-            folder->priv->populate_priority = BACKGROUND_PRIORITY;
-            folder->priv->populate_timeout = BACKGROUND_TIMEOUT;
-            folder->priv->populate_idle_id =
-                    g_idle_add_full (folder->priv->populate_priority,
-                                     folder->priv->populate_func,
-                                     folder, NULL);
-        }
-        else
-        {
-            folder->priv->populate_func = NULL;
-            folder->priv->populate_priority = 0;
-            folder->priv->populate_timeout = 0;
-        }
-    }
-
-    return !done;
+    return elapsed;
 }
 
 
@@ -493,14 +443,15 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
     g_assert (folder->priv->done == STAGE_NAMES);
     g_assert (folder->priv->path != NULL);
 
+    timer = g_timer_new ();
+
     if (!folder->priv->files_copy)
         folder->priv->files_copy =
                 files_list_copy (folder->priv->files);
-    g_assert (folder->priv->files_copy != NULL);
+    if (!folder->priv->files_copy)
+        done = TRUE;
 
-    timer = g_timer_new ();
-
-    while (TRUE)
+    while (!done)
     {
         MooFile *file = folder->priv->files_copy->data;
         folder->priv->files_copy =
@@ -513,10 +464,7 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
             moo_file_stat (file, folder->priv->path);
 
         if (!folder->priv->files_copy)
-        {
             done = TRUE;
-            break;
-        }
 
         if (g_timer_elapsed (timer, NULL) > folder->priv->populate_timeout)
             break;
@@ -583,14 +531,15 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
     g_assert (folder->priv->done == STAGE_STAT);
     g_assert (folder->priv->path != NULL);
 
+    timer = g_timer_new ();
+
     if (!folder->priv->files_copy)
         folder->priv->files_copy =
                 files_list_copy (folder->priv->files);
-    g_assert (folder->priv->files_copy != NULL);
+    if (!folder->priv->files_copy)
+        done = TRUE;
 
-    timer = g_timer_new ();
-
-    while (TRUE)
+    while (!done)
     {
         MooFile *file = folder->priv->files_copy->data;
         char *path;
@@ -616,10 +565,7 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
         }
 
         if (!folder->priv->files_copy)
-        {
             done = TRUE;
-            break;
-        }
 
         if (g_timer_elapsed (timer, NULL) > folder->priv->populate_timeout)
             break;
@@ -1061,18 +1007,28 @@ static GdkPixbuf    *create_named_icon      (GtkIconTheme   *icon_theme,
 
 static const char   *get_folder_icon        (const char     *path)
 {
+    static const char *home_path = NULL;
     static char *desktop_path = NULL;
+    static char *trash_path = NULL;
 
-    if (!g_get_home_dir ())
+    if (!home_path)
+        home_path = g_get_home_dir ();
+
+    if (!home_path)
         return "gnome-fs-directory";
 
     if (!desktop_path)
-        desktop_path = g_build_filename (g_get_home_dir (), "Desktop", NULL);
+        desktop_path = g_build_filename (home_path, "Desktop", NULL);
 
-    if (strcmp (g_get_home_dir (), path) == 0)
+    if (!trash_path)
+        trash_path = g_build_filename (desktop_path, "Trash", NULL);
+
+    if (strcmp (home_path, path) == 0)
         return "gnome-fs-home";
     else if (strcmp (desktop_path, path) == 0)
         return "gnome-fs-desktop";
+    else if (strcmp (trash_path, path) == 0)
+        return "gnome-fs-trash-full";
     else
         return "gnome-fs-directory";
 }
