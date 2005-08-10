@@ -1996,6 +1996,13 @@ static void         fileview_set_filter     (MooFileView    *fileview,
     if (filter == null_filter)
         return fileview_set_filter (fileview, NULL);
 
+    if (filter && (gtk_file_filter_get_needed (filter) & GTK_FILE_FILTER_URI))
+    {
+        g_warning ("%s: The filter set wants uri, but i do not know "
+                   "how to work with uri's. Ignoring");
+        return;
+    }
+
     block_filter_signals (fileview);
 
     if (fileview->priv->current_filter)
