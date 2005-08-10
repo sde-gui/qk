@@ -60,7 +60,7 @@ struct _MooFileViewPrivate {
     guint            change_files_idle;
 
     GtkTreeModel    *filter_model;
-    MooFolder       *folder;
+    MooFolder       *current_dir;
     MooFileSystem   *file_system;
 
     GtkIconSize      icon_size;
@@ -72,7 +72,6 @@ struct _MooFileViewPrivate {
 
     MooIconView     *iconview;
 
-    char            *current_dir;
     gboolean         show_hidden_files;
 //     gboolean         show_two_dots;
     History         *history;
@@ -412,7 +411,6 @@ static void moo_file_view_init      (MooFileView *fileview)
 {
     fileview->priv = g_new0 (MooFileViewPrivate, 1);
 
-    fileview->priv->current_dir = NULL;
     fileview->priv->show_hidden_files = FALSE;
 
     fileview->priv->view_type = MOO_FILE_VIEW_ICON;
@@ -445,7 +443,7 @@ static void moo_file_view_init      (MooFileView *fileview)
 
     fileview->priv->name_to_select = NULL;
 
-    fileview->priv->folder = NULL;
+    fileview->priv->current_dir = NULL;
     fileview->priv->file_system = moo_file_system_create ();
 
     fileview->priv->icon_size = GTK_ICON_SIZE_MENU;
@@ -462,7 +460,6 @@ static void moo_file_view_finalize  (GObject      *object)
     g_object_unref (fileview->priv->filter_model);
     g_object_unref (fileview->priv->store);
     history_free (fileview);
-    g_free (fileview->priv->current_dir);
     g_free (fileview->priv->name_to_select);
     fileview->priv->name_to_select = NULL;
 
@@ -488,14 +485,14 @@ GtkWidget   *moo_file_view_new              (void)
 
 static void         connect_folder          (MooFileView    *fileview)
 {
-    g_return_if_fail (fileview->priv->folder != NULL);
-    g_signal_connect (fileview->priv->folder, "files-added",
+    g_return_if_fail (fileview->priv->current_dir != NULL);
+    g_signal_connect (fileview->priv->current_dir, "files-added",
                       G_CALLBACK (files_added), fileview);
-    g_signal_connect (fileview->priv->folder, "files-changed",
+    g_signal_connect (fileview->priv->current_dir, "files-changed",
                       G_CALLBACK (files_changed), fileview);
-    g_signal_connect (fileview->priv->folder, "files-removed",
+    g_signal_connect (fileview->priv->current_dir, "files-removed",
                       G_CALLBACK (files_removed), fileview);
-    g_signal_connect (fileview->priv->folder, "deleted",
+    g_signal_connect (fileview->priv->current_dir, "deleted",
                       G_CALLBACK (folder_deleted), fileview);
 
     fileview->priv->files_to_add =
@@ -514,18 +511,18 @@ static void         connect_folder          (MooFileView    *fileview)
 
 static void         disconnect_folder       (MooFileView    *fileview)
 {
-    if (fileview->priv->folder)
+    if (fileview->priv->current_dir)
     {
-        g_signal_handlers_disconnect_by_func (fileview->priv->folder,
+        g_signal_handlers_disconnect_by_func (fileview->priv->current_dir,
                                               (gpointer)files_added,
                                               fileview);
-        g_signal_handlers_disconnect_by_func (fileview->priv->folder,
+        g_signal_handlers_disconnect_by_func (fileview->priv->current_dir,
                                               (gpointer)files_changed,
                                               fileview);
-        g_signal_handlers_disconnect_by_func (fileview->priv->folder,
+        g_signal_handlers_disconnect_by_func (fileview->priv->current_dir,
                                               (gpointer)files_removed,
                                               fileview);
-        g_signal_handlers_disconnect_by_func (fileview->priv->folder,
+        g_signal_handlers_disconnect_by_func (fileview->priv->current_dir,
                                               (gpointer)folder_deleted,
                                               fileview);
     }
@@ -575,10 +572,8 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
         if (fileview->priv->current_dir)
         {
             disconnect_folder (fileview);
-            g_free (fileview->priv->current_dir);
+            g_object_unref (fileview->priv->current_dir);
             fileview->priv->current_dir = NULL;
-            g_object_unref (fileview->priv->folder);
-            fileview->priv->folder = NULL;
             history_clear (fileview);
             gtk_list_store_clear (fileview->priv->store);
         }
@@ -586,16 +581,17 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
         return TRUE;
     }
 
-    if (fileview->priv->current_dir && !strcmp (fileview->priv->current_dir, new_dir))
-        return TRUE;
+    if (fileview->priv->current_dir &&
+        !strcmp (moo_folder_get_path (fileview->priv->current_dir), new_dir))
+            return TRUE;
 
-    if (g_path_is_absolute (new_dir))
+    if (g_path_is_absolute (new_dir) || !fileview->priv->current_dir)
     {
         real_new_dir = g_strdup (new_dir);
     }
     else
     {
-        real_new_dir = g_build_filename (fileview->priv->current_dir,
+        real_new_dir = g_build_filename (moo_folder_get_path (fileview->priv->current_dir),
                                          new_dir, NULL);
     }
 
@@ -609,13 +605,12 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
         return FALSE;
 
     disconnect_folder (fileview);
-    if (fileview->priv->folder)
-        g_object_unref (fileview->priv->folder);
+    if (fileview->priv->current_dir)
+        g_object_unref (fileview->priv->current_dir);
 
-    fileview->priv->folder = folder;
-    fileview->priv->current_dir = g_strdup (moo_folder_get_path (folder));
+    fileview->priv->current_dir = folder;
 
-    history_goto (fileview, fileview->priv->current_dir);
+    history_goto (fileview, moo_folder_get_path (folder));
 
     fileview->priv->need_to_clear = TRUE;
     g_idle_add ((GSourceFunc) clear_list_in_idle, fileview);
@@ -641,7 +636,7 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
 static void         folder_deleted          (MooFolder      *folder,
                                              MooFileView    *fileview)
 {
-    g_assert (folder == fileview->priv->folder);
+    g_assert (folder == fileview->priv->current_dir);
     disconnect_folder (fileview);
     gtk_list_store_clear (fileview->priv->store);
 }
@@ -651,7 +646,7 @@ static void         files_added             (MooFolder      *folder,
                                              GSList         *files,
                                              MooFileView    *fileview)
 {
-    g_assert (folder == fileview->priv->folder);
+    g_assert (folder == fileview->priv->current_dir);
     fileview_add_files (fileview, files);
 }
 
@@ -660,7 +655,7 @@ static void         files_changed           (MooFolder      *folder,
                                              GSList         *files,
                                              MooFileView    *fileview)
 {
-    g_assert (folder == fileview->priv->folder);
+    g_assert (folder == fileview->priv->current_dir);
     fileview_change_files (fileview, files);
 }
 
@@ -669,7 +664,7 @@ static void         files_removed           (MooFolder      *folder,
                                              GSList         *files,
                                              MooFileView    *fileview)
 {
-    g_assert (folder == fileview->priv->folder);
+    g_assert (folder == fileview->priv->current_dir);
     fileview_remove_files (fileview, files);
 }
 
@@ -1441,9 +1436,12 @@ static void         moo_file_view_go_up     (MooFileView    *fileview)
     char *dirname, *basename;
     GError *error = NULL;
 
-    basename = g_path_get_basename (fileview->priv->current_dir);
-    dirname = g_path_get_dirname (fileview->priv->current_dir);
+    g_return_if_fail (fileview->priv->current_dir != NULL);
 
+    basename = g_path_get_basename (moo_folder_get_path (fileview->priv->current_dir));
+    dirname = g_path_get_dirname (moo_folder_get_path (fileview->priv->current_dir));
+
+    /* TODO TODO do something about top-level directories */
     if (!strcmp (basename, dirname))
         goto out;
 
@@ -1526,8 +1524,8 @@ static void         tree_path_activated     (MooFileView    *fileview,
     else
     {
         char *path;
-        g_assert (fileview->priv->folder != NULL);
-        path = g_build_filename (moo_folder_get_path (fileview->priv->folder),
+        g_assert (fileview->priv->current_dir != NULL);
+        path = g_build_filename (moo_folder_get_path (fileview->priv->current_dir),
                                  moo_file_get_basename (file), NULL);
         g_signal_emit (fileview, signals[ACTIVATE], 0, path);
         g_free (path);
@@ -1802,7 +1800,10 @@ static void         moo_file_view_get_property  (GObject        *object,
     switch (prop_id)
     {
         case PROP_CURRENT_DIRECTORY:
-            g_value_set_string (value, fileview->priv->current_dir);
+            if (fileview->priv->current_dir)
+                g_value_set_string (value, moo_folder_get_path (fileview->priv->current_dir));
+            else
+                g_value_set_string (value, NULL);
             break;
 
         case PROP_FILE_MGR:
@@ -2178,8 +2179,8 @@ static void         do_popup                (MooFileView    *fileview,
 
     if (file != NULL)
     {
-        g_assert (fileview->priv->folder != NULL);
-        path = g_build_filename (moo_folder_get_path (fileview->priv->folder),
+        g_assert (fileview->priv->current_dir != NULL);
+        path = g_build_filename (moo_folder_get_path (fileview->priv->current_dir),
                                  moo_file_get_basename (file), NULL);
     }
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, path, menu);
