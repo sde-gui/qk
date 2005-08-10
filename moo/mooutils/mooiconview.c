@@ -73,6 +73,8 @@ struct _MooIconViewPrivate {
 
     Layout          *layout;
     GtkTreeRowReference *selected;
+
+    gboolean         mapped;
 };
 
 
@@ -86,6 +88,7 @@ static void     moo_icon_view_get_property  (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static void     moo_icon_view_map           (GtkWidget      *widget);
 static void     moo_icon_view_realize       (GtkWidget      *widget);
 static void     moo_icon_view_unrealize     (GtkWidget      *widget);
 static void     moo_icon_view_size_request  (GtkWidget      *widget,
@@ -184,6 +187,7 @@ static void moo_icon_view_class_init (MooIconViewClass *klass)
     gobject_class->set_property = moo_icon_view_set_property;
     gobject_class->get_property = moo_icon_view_get_property;
 
+    widget_class->map = moo_icon_view_map;
     widget_class->realize = moo_icon_view_realize;
     widget_class->unrealize = moo_icon_view_unrealize;
     widget_class->size_request = moo_icon_view_size_request;
@@ -698,6 +702,13 @@ static gboolean     check_empty                 (MooIconView    *view)
 }
 
 
+static void     moo_icon_view_map           (GtkWidget      *widget)
+{
+    GTK_WIDGET_CLASS(moo_icon_view_parent_class)->map (widget);
+    moo_icon_view_invalidate_layout (MOO_ICON_VIEW (widget));
+}
+
+
 static void     moo_icon_view_realize       (GtkWidget      *widget)
 {
     static GdkWindowAttr attributes;
@@ -1084,7 +1095,9 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
     layout->pixbuf_height = 0;
     layout->text_height = 0;
 
-    if (!GTK_WIDGET_REALIZED (view) || !view->priv->model ||
+    if (!GTK_WIDGET_REALIZED (view) ||
+         !GTK_WIDGET_MAPPED (view) ||
+         !view->priv->model ||
          model_empty (view->priv->model))
     {
         view->priv->xoffset = 0;
@@ -1310,8 +1323,9 @@ static void     row_changed                 (G_GNUC_UNUSED GtkTreeModel *model,
                                              G_GNUC_UNUSED GtkTreeIter *iter,
                                              MooIconView    *view)
 {
-    if (!GTK_WIDGET_REALIZED (view))
-        return;
+    if (!GTK_WIDGET_REALIZED (view) ||
+         !GTK_WIDGET_MAPPED (view))
+            return;
 
     if (gtk_tree_path_get_depth (path) != 1)
         return;
@@ -1336,8 +1350,9 @@ static void     row_deleted                 (G_GNUC_UNUSED GtkTreeModel *model,
         }
     }
 
-    if (!GTK_WIDGET_REALIZED (view))
-        return;
+    if (!GTK_WIDGET_REALIZED (view) ||
+         !GTK_WIDGET_MAPPED (view))
+            return;
 
     moo_icon_view_invalidate_layout (view);
 }
@@ -1348,8 +1363,9 @@ static void     row_inserted                (G_GNUC_UNUSED GtkTreeModel *model,
                                              G_GNUC_UNUSED GtkTreeIter *iter,
                                              MooIconView    *view)
 {
-    if (!GTK_WIDGET_REALIZED (view))
-        return;
+    if (!GTK_WIDGET_REALIZED (view) ||
+         !GTK_WIDGET_MAPPED (view))
+            return;
 
     if (gtk_tree_path_get_depth (path) != 1)
         return;
@@ -1364,8 +1380,9 @@ static void     rows_reordered              (G_GNUC_UNUSED GtkTreeModel *model,
                                              G_GNUC_UNUSED gpointer whatever,
                                              MooIconView    *view)
 {
-    if (!GTK_WIDGET_REALIZED (view))
-        return;
+    if (!GTK_WIDGET_REALIZED (view) ||
+         !GTK_WIDGET_MAPPED (view))
+            return;
 
     if (path != NULL)
         return;
@@ -1469,7 +1486,7 @@ void    moo_icon_view_set_adjustment    (MooIconView    *view,
                               G_CALLBACK (value_changed),
                               view);
 
-    if (GTK_WIDGET_REALIZED (view))
+    if (GTK_WIDGET_REALIZED (view) && GTK_WIDGET_MAPPED (view))
         moo_icon_view_update_adjustment (view);
 }
 
@@ -2034,7 +2051,7 @@ static void     move_cursor_to_entry        (MooIconView    *view,
     gtk_tree_path_free (path);
 
     if (!GTK_WIDGET_REALIZED (view))
-        return;
+            return;
 
     if (widget->allocation.width <= column->width)
         new_offset = column->offset;
