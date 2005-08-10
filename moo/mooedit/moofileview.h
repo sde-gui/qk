@@ -19,7 +19,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_VIEW_FILE         (moo_file_view_file_get_type ())
 #define MOO_TYPE_FILE_VIEW_TYPE         (moo_file_view_type_get_type ())
 #define MOO_TYPE_FILE_VIEW              (moo_file_view_get_type ())
 #define MOO_FILE_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_VIEW, MooFileView))
@@ -35,7 +34,6 @@ typedef enum {
 } MooFileViewType;
 
 typedef struct _MooFileView         MooFileView;
-typedef struct _MooFileViewFile     MooFileViewFile;
 typedef struct _MooFileViewPrivate  MooFileViewPrivate;
 typedef struct _MooFileViewClass    MooFileViewClass;
 
@@ -57,7 +55,6 @@ struct _MooFileViewClass
 
 
 GType       moo_file_view_get_type          (void) G_GNUC_CONST;
-GType       moo_file_view_file_get_type     (void) G_GNUC_CONST;
 GType       moo_file_view_type_get_type     (void) G_GNUC_CONST;
 
 GtkWidget  *moo_file_view_new               (void);
@@ -71,15 +68,6 @@ void        moo_file_view_select_file       (MooFileView    *fileview,
 
 void        moo_file_view_set_view_type     (MooFileView    *fileview,
                                              MooFileViewType type);
-
-gconstpointer moo_file_view_file_get_stat   (MooFileViewFile *file);
-gboolean    moo_file_view_file_is_broken_link (MooFileViewFile *file);
-const char *moo_file_view_file_path         (MooFileViewFile *file);
-const char *moo_file_view_file_mime_type    (MooFileViewFile *file);
-
-GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
-                                             MooFileViewFile   *file,
-                                             GtkIconSize        size);
 
 void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
                                              gboolean        show);

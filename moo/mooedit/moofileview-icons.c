@@ -19,6 +19,7 @@
  */
 
 #include "mooedit/moofileview.h"
+#include "mooedit/moofile.h"
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
@@ -89,13 +90,16 @@ static IconType get_icon_type_from_stat (const struct stat *statp)
 }
 
 
-static IconType get_icon_type (MooFileViewFile *file)
+static IconType get_icon_type (MooFile *file)
 {
-    const struct stat *statp = moo_file_view_file_get_stat (file);
-    if (statp)
-        return get_icon_type_from_stat (statp);
-    else
+    if (moo_file_test (file, MOO_FILE_HAS_STAT))
+        return get_icon_type_from_stat (moo_file_get_stat (file));
+    else if (!moo_file_test (file, MOO_FILE_EXISTS))
         return ICON_NOENT;
+    else if (moo_file_test (file, MOO_FILE_IS_FOLDER))
+        return ICON_DIRECTORY;
+    else
+        return ICON_NONE;
 }
 
 
@@ -193,11 +197,13 @@ static const char *get_icon_name_for_directory (const char *path)
 
 /* Renders an icon for a non-ICON_REGULAR file */
 static GdkPixbuf *get_special_icon (IconType         icon_type,
-                                    MooFileViewFile *file,
+                                    MooFolder       *folder,
+                                    MooFile         *file,
                                     GtkWidget       *widget,
                                     gint             pixel_size)
 {
     const char *name;
+    char *path;
 
     g_assert (icon_type != ICON_REGULAR);
 
@@ -213,8 +219,14 @@ static GdkPixbuf *get_special_icon (IconType         icon_type,
             name = "gnome-fs-chardev";
             break;
         case ICON_DIRECTORY:
-            name = get_icon_name_for_directory
-                    (moo_file_view_file_path (file));
+            if (folder)
+                path = g_build_filename (moo_folder_get_path (folder),
+                                         moo_file_get_basename (file),
+                                         NULL);
+            else
+                path = g_strdup (moo_file_get_basename (file));
+            name = get_icon_name_for_directory (path);
+            g_free (path);
             break;
         case ICON_EXECUTABLE:
             name ="gnome-fs-executable";
@@ -277,9 +289,10 @@ static GdkPixbuf *get_fallback_icon (GtkWidget     *widget,
 }
 
 
-GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
-                                             MooFileViewFile   *file,
-                                             GtkIconSize        size)
+GdkPixbuf  *moo_get_icon_for_file           (GtkWidget      *widget,
+                                             MooFolder      *folder,
+                                             MooFile        *file,
+                                             GtkIconSize     size)
 {
     IconType icon_type;
     GdkPixbuf *pixbuf;
@@ -287,7 +300,7 @@ GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
 
     icon_type = get_icon_type (file);
 
-    if (icon_type == ICON_REGULAR && !moo_file_view_file_mime_type (file))
+    if (icon_type == ICON_REGULAR && !moo_file_get_mime_type (file))
         icon_type = ICON_NONE;
 
     if (!gtk_icon_size_lookup (size, &pixel_size, NULL))
@@ -307,12 +320,12 @@ GdkPixbuf  *moo_get_icon_for_file           (GtkWidget         *widget,
 
         case ICON_REGULAR:
             pixbuf = get_icon_for_mime_type (widget,
-                                             moo_file_view_file_mime_type (file),
+                                             moo_file_get_mime_type (file),
                                              pixel_size);
             break;
 
         default:
-            pixbuf = get_special_icon (icon_type, file, widget, pixel_size);
+            pixbuf = get_special_icon (icon_type, folder, file, widget, pixel_size);
     }
 
     if (pixbuf)

@@ -14,6 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditdialogs.h"
+#include "mooedit/moofile.h"
 #include "mooedit/moofileview.h"
 #include "mooui/moouiobject-impl.h"
 #include "mooui/moomenuaction.h"
@@ -94,7 +95,7 @@ static void     file_saved                  (MooEditWindow      *window,
                                              MooEditFileInfo    *info);
 
 static void     fileview_activate           (MooEditWindow      *window,
-                                             MooFileViewFile    *file);
+                                             const char         *path);
 static void     current_doc_dir_clicked     (MooEditWindow      *window);
 
 
@@ -1214,9 +1215,8 @@ static void     file_saved                  (MooEditWindow      *window,
 
 
 static void     fileview_activate           (MooEditWindow      *window,
-                                             MooFileViewFile    *file)
+                                             const char         *path)
 {
-    const char *path = moo_file_view_file_path (file);
     if (_moo_edit_window_open (window, path, NULL))
     {
         MooEdit *edit = ACTIVE_DOC (window);

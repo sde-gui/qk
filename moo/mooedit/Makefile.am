@@ -54,9 +54,12 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.c         \
     mooeditsearch.h         \
     mooeditwindow.c         \
+    moofile.c               \
+    moofile.h               \
+    moofilesystem.c         \
+    moofilesystem.h         \
     moofileview.c           \
     moofileview.h           \
-    moofileview-icons.c     \
     mootextiter.h
 
 if USE_XML
