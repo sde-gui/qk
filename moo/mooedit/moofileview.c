@@ -51,6 +51,8 @@ struct _MooFileViewPrivate {
     GtkListStore    *store;
     GHashTable      *files; /* File* -> GtkTreeRowReference* */
     gboolean         need_to_clear; /* next add_file_in_idle will clear list store */
+    gboolean         process_changes_now; /* first bunch of files in a dir, should be
+                                             put into liststore immediately */
 
     GHashTable      *files_to_add;  /* File* */
     GHashTable      *files_to_remove;
@@ -613,7 +615,10 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
     history_goto (fileview, moo_folder_get_path (folder));
 
     fileview->priv->need_to_clear = TRUE;
-    g_idle_add ((GSourceFunc) clear_list_in_idle, fileview);
+    g_idle_add_full (G_PRIORITY_LOW,
+                     (GSourceFunc) clear_list_in_idle,
+                     fileview, NULL);
+    fileview->priv->process_changes_now = TRUE;
 
     if (fileview->priv->files)
         g_hash_table_destroy (fileview->priv->files);
@@ -788,7 +793,8 @@ static gboolean     fileview_add_files_in_idle  (MooFileView    *fileview)
 
     if (!g_hash_table_size (fileview->priv->files_to_add))
     {
-        g_source_remove (fileview->priv->add_files_idle);
+        if (fileview->priv->add_files_idle)
+            g_source_remove (fileview->priv->add_files_idle);
         fileview->priv->add_files_idle = 0;
         return FALSE;
     }
@@ -834,6 +840,7 @@ static void         fileview_add_files      (MooFileView    *fileview,
 
     if (add)
         start_add (fileview);
+
     if (change)
         start_change (fileview);
 }
@@ -946,7 +953,8 @@ static gboolean     fileview_change_files_in_idle   (MooFileView    *fileview)
 
     if (!g_hash_table_size (fileview->priv->files_to_change))
     {
-        g_source_remove (fileview->priv->change_files_idle);
+        if (fileview->priv->change_files_idle)
+            g_source_remove (fileview->priv->change_files_idle);
         fileview->priv->change_files_idle = 0;
         return FALSE;
     }
@@ -987,6 +995,7 @@ static void         fileview_change_files   (MooFileView    *fileview,
 
     if (add)
         start_add (fileview);
+
     if (change)
         start_change (fileview);
 }
@@ -995,17 +1004,29 @@ static void         fileview_change_files   (MooFileView    *fileview,
 static void     start_add       (MooFileView    *fileview)
 {
     if (!fileview->priv->add_files_idle)
-        fileview->priv->add_files_idle =
-                g_idle_add ((GSourceFunc) fileview_add_files_in_idle,
-                             fileview);
+    {
+        if (!fileview->priv->process_changes_now || fileview_add_files_in_idle (fileview))
+            fileview->priv->add_files_idle =
+                    g_idle_add ((GSourceFunc) fileview_add_files_in_idle,
+                                 fileview);
+        else
+            start_change (fileview);
+    }
+
+    fileview->priv->process_changes_now = FALSE;
 }
 
 static void     start_change    (MooFileView    *fileview)
 {
     if (!fileview->priv->change_files_idle)
-        fileview->priv->change_files_idle =
-                g_idle_add ((GSourceFunc) fileview_change_files_in_idle,
-                             fileview);
+    {
+        if (!fileview->priv->process_changes_now || fileview_change_files_in_idle (fileview))
+            fileview->priv->change_files_idle =
+                    g_idle_add ((GSourceFunc) fileview_change_files_in_idle,
+                                 fileview);
+    }
+
+    fileview->priv->process_changes_now = FALSE;
 }
 
 static void     start_remove    (MooFileView    *fileview)
