@@ -75,7 +75,7 @@ struct _MooFileViewPrivate {
     MooIconView     *iconview;
 
     gboolean         show_hidden_files;
-//     gboolean         show_two_dots;
+    gboolean         show_two_dots;
     History         *history;
     char            *name_to_select;
 
@@ -167,8 +167,8 @@ static void         goto_item_activated     (GtkWidget      *widget,
                                              MooFileView    *fileview);
 static void         show_hidden_toggled     (GtkWidget      *widget,
                                              MooFileView    *fileview);
-// static void         show_two_dots_toggled   (GtkWidget      *widget,
-//                                              MooFileView    *fileview);
+static void         show_two_dots_toggled   (GtkWidget      *widget,
+                                             MooFileView    *fileview);
 static void         view_type_item_toggled  (GtkWidget      *widget,
                                              MooFileView    *fileview);
 
@@ -1363,6 +1363,12 @@ static gboolean     filter_visible_func (GtkTreeModel   *model,
         goto out;
     }
 
+    if (!strcmp (moo_file_get_basename (file), ".."))
+    {
+        visible = fileview->priv->show_two_dots;
+        goto out;
+    }
+
     if (!fileview->priv->show_hidden_files && moo_file_test (file, MOO_FILE_IS_HIDDEN))
     {
         visible = FALSE;
@@ -1405,12 +1411,16 @@ static int          tree_compare_func   (GtkTreeModel   *model,
     gtk_tree_model_get (model, b, COLUMN_FILE, &f2, -1);
     g_assert (f1 != NULL && f2 != NULL);
 
+    if (f1 == f2)
+    {
+        result = 0;
+        goto out;
+    }
+
     if (!f1 || !f2)
     {
         if (f1 < f2)
             result = -1;
-        else if (f1 == f2)
-            result = 0;
         else
             result = 1;
         goto out;
@@ -1425,6 +1435,18 @@ static int          tree_compare_func   (GtkTreeModel   *model,
             result = -1;
         else
             result = 1;
+        goto out;
+    }
+
+    if (is_dir1)
+    {
+        if (!strcmp (moo_file_get_basename (f1), ".."))
+            result = -1;
+        else if (!strcmp (moo_file_get_basename (f2), ".."))
+            result = 1;
+        else
+            result = strcmp (moo_file_get_basename (f1),
+                             moo_file_get_basename (f2));
         goto out;
     }
 
@@ -2130,13 +2152,13 @@ static void create_view_submenu (MooFileView   *fileview,
     g_signal_connect (item, "toggled",
                       G_CALLBACK (show_hidden_toggled), fileview);
 
-//     item = gtk_check_menu_item_new_with_label ("Show Parent Folders");
-//     gtk_widget_show (item);
-//     gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
-//     gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
-//                                     fileview->priv->show_two_dots);
-//     g_signal_connect (item, "toggled",
-//                       G_CALLBACK (show_two_dots_toggled), fileview);
+    item = gtk_check_menu_item_new_with_label ("Show Parent Folder");
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (submenu), item);
+    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
+                                    fileview->priv->show_two_dots);
+    g_signal_connect (item, "toggled",
+                      G_CALLBACK (show_two_dots_toggled), fileview);
 
     add_separator_item (submenu);
     create_view_type_items (fileview, submenu);
@@ -2270,13 +2292,13 @@ static void         show_hidden_toggled     (GtkWidget      *widget,
 }
 
 
-// static void         show_two_dots_toggled   (GtkWidget      *widget,
-//                                              MooFileView    *fileview)
-// {
-//     gboolean active = fileview->priv->show_two_dots;
-//     g_object_get (G_OBJECT (widget), "active", &active, NULL);
-//     moo_file_view_set_show_parent (fileview, active);
-// }
+static void         show_two_dots_toggled   (GtkWidget      *widget,
+                                             MooFileView    *fileview)
+{
+    gboolean active = fileview->priv->show_two_dots;
+    g_object_get (G_OBJECT (widget), "active", &active, NULL);
+    moo_file_view_set_show_parent (fileview, active);
+}
 
 
 void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
@@ -2293,18 +2315,18 @@ void        moo_file_view_set_show_hidden   (MooFileView    *fileview,
 }
 
 
-// void        moo_file_view_set_show_parent   (MooFileView    *fileview,
-//                                              gboolean        show)
-// {
-//     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
-//
-//     if (fileview->priv->show_two_dots != show)
-//     {
-//         fileview->priv->show_two_dots = show;
-//         gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (
-//                 fileview->priv->filter_model));
-//     }
-// }
+void        moo_file_view_set_show_parent   (MooFileView    *fileview,
+                                             gboolean        show)
+{
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+
+    if (fileview->priv->show_two_dots != show)
+    {
+        fileview->priv->show_two_dots = show;
+        gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (
+                fileview->priv->filter_model));
+    }
+}
 
 
 static void         toggle_show_hidden      (MooFileView    *fileview)

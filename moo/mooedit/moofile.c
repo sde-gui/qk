@@ -424,6 +424,13 @@ static double   get_names               (MooFolder  *folder)
 
     timer = g_timer_new ();
 
+    file = moo_file_new (folder->priv->path, "..");
+    file->icon = get_folder_icon (NULL);
+    file->flags = MOO_FILE_HAS_MIME_TYPE | MOO_FILE_HAS_ICON;
+    file->info = MOO_FILE_EXISTS | MOO_FILE_IS_FOLDER;
+    folder->priv->files = g_slist_prepend (folder->priv->files, file);
+    added = g_slist_prepend (added, file);
+
     for (name = g_dir_read_name (folder->priv->dir);
             name != NULL;
             name = g_dir_read_name (folder->priv->dir))
@@ -892,6 +899,10 @@ static void     files_list_free             (GSList    **list)
 
 /***************************************************************************/
 
+#define GNOME_HOME_ICON_NAME            "gnome-fs-home"
+#define GNOME_DESKTOP_ICON_NAME         "gnome-fs-desktop"
+#define GNOME_TRASH_ICON_NAME           "gnome-fs-trash-full"
+#define GNOME_DIRECTORY_ICON_NAME       "gnome-fs-directory"
 #define FILE_ICON_NAME                  "gnome-fs-regular"
 #define BLOCK_DEVICE_ICON_NAME          "gnome-fs-blockdev"
 #define EXECUTABLE_ICON_NAME            "gnome-fs-executable"
@@ -1059,11 +1070,14 @@ static const char   *get_folder_icon        (const char     *path)
     static char *desktop_path = NULL;
     static char *trash_path = NULL;
 
+    if (!path)
+        return GNOME_DIRECTORY_ICON_NAME;
+
     if (!home_path)
         home_path = g_get_home_dir ();
 
     if (!home_path)
-        return "gnome-fs-directory";
+        return GNOME_DIRECTORY_ICON_NAME;
 
     if (!desktop_path)
         desktop_path = g_build_filename (home_path, "Desktop", NULL);
@@ -1072,13 +1086,13 @@ static const char   *get_folder_icon        (const char     *path)
         trash_path = g_build_filename (desktop_path, "Trash", NULL);
 
     if (strcmp (home_path, path) == 0)
-        return "gnome-fs-home";
+        return GNOME_HOME_ICON_NAME;
     else if (strcmp (desktop_path, path) == 0)
-        return "gnome-fs-desktop";
+        return GNOME_DESKTOP_ICON_NAME;
     else if (strcmp (trash_path, path) == 0)
-        return "gnome-fs-trash-full";
+        return GNOME_TRASH_ICON_NAME;
     else
-        return "gnome-fs-directory";
+        return GNOME_DIRECTORY_ICON_NAME;
 }
 
 
