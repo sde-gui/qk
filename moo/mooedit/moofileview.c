@@ -1331,82 +1331,6 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
 }
 
 
-// static void         get_icon            (MooFileView    *fileview,
-//                                          MooFileViewFile*file)
-// {
-//     GdkPixbuf *pixbuf = NULL;
-//
-//     g_return_if_fail (file != NULL);
-//
-//     pixbuf = moo_get_icon_for_file (GTK_WIDGET (fileview), file,
-//                                     GTK_ICON_SIZE_MENU);
-//
-//     if (file->pixbuf)
-//         g_object_unref (file->pixbuf);
-//
-//     if (pixbuf)
-//         file->pixbuf = g_object_ref (pixbuf);
-//     else
-//         file->pixbuf = NULL;
-// }
-
-
-// static gboolean populate_tree           (MooFileView    *fileview,
-//                                          GError        **error)
-// {
-//     const char *path = fileview->priv->current_dir;
-//     GtkTreeIter iter;
-//     MooFileViewFile *file;
-//     char *parent;
-//
-//     g_return_val_if_fail (path != NULL, FALSE);
-//
-//     if (fileview->priv->populate_idle)
-//     {
-//         g_source_remove (fileview->priv->populate_idle);
-//         fileview->priv->populate_idle = 0;
-//         g_dir_close (fileview->priv->populate_dir);
-//     }
-//
-//     fileview->priv->populate_dir = g_dir_open (path, 0, error);
-//     if (!fileview->priv->populate_dir) return FALSE;
-//
-//     /* add .. */
-//     parent = g_build_filename (path, "..", NULL);
-//     file = file_new (fileview, "..", parent);
-//     gtk_list_store_append (fileview->priv->store, &iter);
-//     gtk_list_store_set (fileview->priv->store, &iter,
-//                         COLUMN_FILE, file,
-//                         COLUMN_DISPLAY_NAME, file->display_name,
-//                         COLUMN_PIXBUF, file->pixbuf,
-//                         -1);
-//     g_free (parent);
-//     file_unref (file);
-//
-// #if 1
-//     if (populate_a_bit (fileview))
-//         fileview->priv->populate_idle =
-//                 g_idle_add ((GSourceFunc) populate_a_bit, fileview);
-// #else
-//     while (populate_a_bit (fileview))
-//     {
-//         while (gtk_events_pending ())
-//             gtk_main_iteration ();
-//     }
-// #endif
-//
-//     if (gtk_tree_model_get_iter_first (fileview->priv->filter_model, &iter))
-//     {
-//         GtkTreeSelection *selection;
-//         selection = gtk_tree_view_get_selection (fileview->priv->treeview);
-//         gtk_tree_selection_select_iter (selection, &iter);
-//         moo_icon_view_select_iter (fileview->priv->iconview, &iter);
-//     }
-//
-//     return TRUE;
-// }
-
-
 static gboolean     filter_visible_func (GtkTreeModel   *model,
                                          GtkTreeIter    *iter,
                                          MooFileView    *fileview)
@@ -1416,17 +1340,12 @@ static gboolean     filter_visible_func (GtkTreeModel   *model,
 
     gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
 
+    /* file == NULL when row was just added */
     if (!file)
     {
         visible = FALSE;
         goto out;
     }
-
-//     if (!strcmp (file->basename, ".."))
-//     {
-//         visible = fileview->priv->show_two_dots;
-//         goto out;
-//     }
 
     if (!fileview->priv->show_hidden_files && moo_file_test (file, MOO_FILE_IS_HIDDEN))
     {
@@ -1468,6 +1387,7 @@ static int          tree_compare_func   (GtkTreeModel   *model,
 
     gtk_tree_model_get (model, a, COLUMN_FILE, &f1, -1);
     gtk_tree_model_get (model, b, COLUMN_FILE, &f2, -1);
+    g_assert (f1 != NULL && f2 != NULL);
 
     if (!f1 || !f2)
     {
