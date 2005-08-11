@@ -78,6 +78,8 @@ struct _MooFileViewPrivate {
     gboolean         show_two_dots;
     History         *history;
     char            *name_to_select;
+    char            *temp_visible;  /* tempporary visible name, for interactive search */
+    GtkTreeRowReference *temp_visible_row;  /* row containing temp_visible (in the store) */
 
     MooEditFileMgr  *mgr;
     GtkToggleButton *filter_button;
@@ -217,7 +219,11 @@ enum {
     COLUMN_PIXBUF       = 1,
     COLUMN_DISPLAY_NAME = 2,
     COLUMN_SIZE         = 3,
-    COLUMN_DATE         = 4
+    COLUMN_DATE         = 4,
+    COLUMN_COLOR        = 5,
+    COLUMN_STYLE        = 6,
+    COLUMN_STYLE_SET    = 7,
+    NUM_COLUMNS
 };
 
 enum {
@@ -421,12 +427,16 @@ static void moo_file_view_init      (MooFileView *fileview)
     history_init (fileview);
 
     fileview->priv->store =
-            gtk_list_store_new (5,
-                                MOO_TYPE_FILE,
-                                GDK_TYPE_PIXBUF,
-                                G_TYPE_STRING,
-                                G_TYPE_STRING,
-                                G_TYPE_STRING);
+            gtk_list_store_new (NUM_COLUMNS,
+                                MOO_TYPE_FILE,      /* COLUMN_FILE */
+                                GDK_TYPE_PIXBUF,    /* COLUMN_PIXBUF */
+                                G_TYPE_STRING,      /* COLUMN_DISPLAY_NAME */
+                                G_TYPE_STRING,      /* COLUMN_SIZE */
+                                G_TYPE_STRING,      /* COLUMN_DATE */
+                                G_TYPE_STRING,      /* COLUMN_COLOR */
+                                PANGO_TYPE_STYLE,   /* COLUMN_STYLE */
+                                G_TYPE_BOOLEAN);    /* COLUMN_STYLE_SET */
+
     gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (fileview->priv->store),
                                      COLUMN_FILE,
                                      (GtkTreeIterCompareFunc) tree_compare_func,
@@ -469,6 +479,9 @@ static void moo_file_view_finalize  (GObject      *object)
         g_object_unref (fileview->priv->mgr);
     if (fileview->priv->current_filter)
         g_object_unref (fileview->priv->current_filter);
+
+    g_free (fileview->priv->temp_visible);
+    gtk_tree_row_reference_free (fileview->priv->temp_visible_row);
 
     disconnect_folder (fileview);
     g_object_unref (fileview->priv->file_system);
@@ -772,6 +785,16 @@ static void add_one_file (MooFileView    *fileview,
                         moo_file_get_display_basename (file),
                         COLUMN_SIZE, NULL,
                         COLUMN_DATE, NULL, -1);
+
+    if (fileview->priv->name_to_select &&
+        !strcmp (fileview->priv->name_to_select,
+                 moo_file_get_display_basename (file)))
+    {
+        g_free (fileview->priv->name_to_select);
+        fileview->priv->name_to_select = NULL;
+        moo_file_view_select_file (fileview,
+                                   moo_file_get_display_basename (file));
+    }
 }
 
 
@@ -1319,6 +1342,8 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
     gtk_tree_view_column_pack_start (column, cell, TRUE);
     gtk_tree_view_column_set_attributes (column, cell,
                                          "text", COLUMN_DISPLAY_NAME,
+                                         "style", COLUMN_STYLE,
+                                         "style-set", COLUMN_STYLE_SET,
                                          NULL);
 
 #if 1
@@ -1330,6 +1355,8 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
     gtk_tree_view_column_pack_start (column, cell, FALSE);
     gtk_tree_view_column_set_attributes (column, cell,
                                          "text", COLUMN_SIZE,
+                                         "style", COLUMN_STYLE,
+                                         "style-set", COLUMN_STYLE_SET,
                                          NULL);
 
     column = gtk_tree_view_column_new ();
@@ -1340,10 +1367,48 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
     gtk_tree_view_column_pack_start (column, cell, FALSE);
     gtk_tree_view_column_set_attributes (column, cell,
                                          "text", COLUMN_DATE,
+                                         "style", COLUMN_STYLE,
+                                         "style-set", COLUMN_STYLE_SET,
                                          NULL);
 #endif
 
     return treeview;
+}
+
+
+static GtkWidget   *create_iconview         (MooFileView    *fileview)
+{
+    GtkWidget *iconview;
+    GtkCellRenderer *cell;
+
+    iconview = moo_icon_view_new_with_model (fileview->priv->filter_model);
+    g_signal_connect (iconview, "key-press-event",
+                      G_CALLBACK (moo_file_view_key_press),
+                      fileview);
+    moo_icon_view_set_attributes (MOO_ICON_VIEW (iconview),
+                                  MOO_ICON_VIEW_CELL_PIXBUF,
+                                  "pixbuf", COLUMN_PIXBUF,
+                                  NULL);
+    moo_icon_view_set_attributes (MOO_ICON_VIEW (iconview),
+                                  MOO_ICON_VIEW_CELL_TEXT,
+                                  "text", COLUMN_DISPLAY_NAME,
+                                  "style", COLUMN_STYLE,
+                                  "style-set", COLUMN_STYLE_SET,
+                                  NULL);
+
+    cell = moo_icon_view_get_cell (MOO_ICON_VIEW (iconview),
+                                   MOO_ICON_VIEW_CELL_TEXT);
+    g_object_set (cell, "xalign", 0.0, NULL);
+    cell = moo_icon_view_get_cell (MOO_ICON_VIEW (iconview),
+                                   MOO_ICON_VIEW_CELL_PIXBUF);
+    g_object_set (cell, "xpad", 1, "ypad", 1, NULL);
+
+    g_signal_connect (iconview, "item-activated",
+                      G_CALLBACK (icon_item_activated), fileview);
+    g_signal_connect (iconview, "button-press-event",
+                      G_CALLBACK (icon_button_press), fileview);
+
+    return iconview;
 }
 
 
@@ -1366,6 +1431,23 @@ static gboolean     filter_visible_func (GtkTreeModel   *model,
     if (!strcmp (moo_file_get_basename (file), ".."))
     {
         visible = fileview->priv->show_two_dots;
+        goto out;
+    }
+
+    if (fileview->priv->temp_visible &&
+        !strcmp (moo_file_get_basename (file), fileview->priv->temp_visible))
+    {
+#if 1
+        GtkTreePath *tmp = NULL, *tmp2 = NULL;
+        g_assert (fileview->priv->temp_visible_row != NULL);
+        g_assert (gtk_tree_row_reference_valid (fileview->priv->temp_visible_row));
+        tmp = gtk_tree_row_reference_get_path (fileview->priv->temp_visible_row);
+        tmp2 = gtk_tree_model_get_path (model, iter);
+        g_assert (!gtk_tree_path_compare (tmp, tmp2));
+        gtk_tree_path_free (tmp);
+        gtk_tree_path_free (tmp2);
+#endif
+        visible = TRUE;
         goto out;
     }
 
@@ -1752,40 +1834,6 @@ static void         history_goto            (MooFileView    *fileview,
 }
 
 
-static GtkWidget   *create_iconview         (MooFileView    *fileview)
-{
-    GtkWidget *iconview;
-    GtkCellRenderer *cell;
-
-    iconview = moo_icon_view_new_with_model (fileview->priv->filter_model);
-    g_signal_connect (iconview, "key-press-event",
-                      G_CALLBACK (moo_file_view_key_press),
-                      fileview);
-    moo_icon_view_set_attributes (MOO_ICON_VIEW (iconview),
-                                  MOO_ICON_VIEW_CELL_PIXBUF,
-                                  "pixbuf", COLUMN_PIXBUF,
-                                  NULL);
-    moo_icon_view_set_attributes (MOO_ICON_VIEW (iconview),
-                                  MOO_ICON_VIEW_CELL_TEXT,
-                                  "text", COLUMN_DISPLAY_NAME,
-                                  NULL);
-
-    cell = moo_icon_view_get_cell (MOO_ICON_VIEW (iconview),
-                                   MOO_ICON_VIEW_CELL_TEXT);
-    g_object_set (cell, "xalign", 0.0, NULL);
-    cell = moo_icon_view_get_cell (MOO_ICON_VIEW (iconview),
-                                   MOO_ICON_VIEW_CELL_PIXBUF);
-    g_object_set (cell, "xpad", 1, "ypad", 1, NULL);
-
-    g_signal_connect (iconview, "item-activated",
-                      G_CALLBACK (icon_item_activated), fileview);
-    g_signal_connect (iconview, "button-press-event",
-                      G_CALLBACK (icon_button_press), fileview);
-
-    return iconview;
-}
-
-
 static void         moo_file_view_set_property  (GObject        *object,
                                                  guint           prop_id,
                                                  const GValue   *value,
@@ -1999,7 +2047,7 @@ static void         fileview_set_filter     (MooFileView    *fileview,
     if (filter && (gtk_file_filter_get_needed (filter) & GTK_FILE_FILTER_URI))
     {
         g_warning ("%s: The filter set wants uri, but i do not know "
-                   "how to work with uri's. Ignoring");
+                   "how to work with uri's. Ignoring", G_STRLOC);
         return;
     }
 
@@ -2511,6 +2559,28 @@ static gboolean find_match                  (MooFileView    *fileview,
 /* Search entry
  */
 
+static void set_temp_visible_attributes     (MooFileView    *fileview,
+                                             GtkTreePath    *path,
+                                             gboolean        set)
+{
+    GtkTreeIter iter;
+    g_assert (path != NULL);
+    g_print ("%s\n", set ? "SET" : "UNSET");
+    gtk_tree_model_get_iter (GTK_TREE_MODEL (fileview->priv->store),
+                             &iter, path);
+    if (set)
+        gtk_list_store_set (fileview->priv->store, &iter,
+                            COLUMN_STYLE, PANGO_STYLE_ITALIC,
+                            COLUMN_STYLE_SET, TRUE,
+                            -1);
+    else
+        gtk_list_store_set (fileview->priv->store, &iter,
+                            COLUMN_STYLE, PANGO_STYLE_NORMAL,
+                            COLUMN_STYLE_SET, FALSE,
+                            -1);
+}
+
+
 static gboolean search_entry_key_press      (GtkWidget      *entry,
                                              GdkEventKey    *event,
                                              MooFileView    *fileview);
@@ -2535,9 +2605,9 @@ static void         start_interactive_search    (MooFileView    *fileview)
     g_signal_connect (entry, "key-press-event",
                       G_CALLBACK (search_entry_key_press),
                       fileview);
-    g_signal_connect (entry, "focus-out-event",
-                      G_CALLBACK (search_entry_focus_out),
-                      fileview);
+    g_signal_connect_after (entry, "focus-out-event",
+                            G_CALLBACK (search_entry_focus_out),
+                            fileview);
     g_signal_connect (entry, "activate",
                       G_CALLBACK (search_entry_activate),
                       fileview);
@@ -2547,7 +2617,8 @@ static void         start_interactive_search    (MooFileView    *fileview)
 }
 
 
-static void         stop_interactive_search     (MooFileView    *fileview)
+static void         stop_interactive_search     (MooFileView    *fileview,
+                                                 gboolean        focus_to_file_view)
 {
     GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
 
@@ -2567,10 +2638,37 @@ static void         stop_interactive_search     (MooFileView    *fileview)
                                           fileview);
 
     gtk_widget_hide (entry);
-
     gtk_entry_set_text (GTK_ENTRY (entry), "");
 
-    gtk_widget_grab_focus (get_file_view_widget (fileview));
+    /* TODO: may it become invalid? */
+    if (fileview->priv->temp_visible_row &&
+        gtk_tree_row_reference_valid (fileview->priv->temp_visible_row))
+    {
+        GtkTreePath *temp_path =
+                gtk_tree_row_reference_get_path (fileview->priv->temp_visible_row);
+        g_assert (temp_path != NULL);
+        set_temp_visible_attributes (fileview, temp_path, FALSE);
+    }
+
+    if (fileview->priv->temp_visible_row)
+    {
+        g_assert (gtk_tree_row_reference_valid (fileview->priv->temp_visible_row));
+
+        gtk_tree_row_reference_free (fileview->priv->temp_visible_row);
+        fileview->priv->temp_visible_row = NULL;
+        g_free (fileview->priv->temp_visible);
+        fileview->priv->temp_visible = NULL;
+
+        gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
+                (fileview->priv->filter_model));
+    }
+    else
+    {
+        g_assert (fileview->priv->temp_visible == NULL);
+    }
+
+    if (focus_to_file_view)
+        gtk_widget_grab_focus (get_file_view_widget (fileview));
 }
 
 
@@ -2591,7 +2689,7 @@ static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
     if (fileview->priv->in_search)
     {
         g_warning ("%s: something wrong", G_STRLOC);
-        stop_interactive_search (fileview);
+        stop_interactive_search (fileview, FALSE);
         return FALSE;
     }
 
@@ -2629,7 +2727,7 @@ static gboolean search_entry_key_press      (G_GNUC_UNUSED GtkWidget *entry,
     switch (event->keyval)
     {
         case GDK_Escape:
-            stop_interactive_search (fileview);
+            stop_interactive_search (fileview, TRUE);
             return TRUE;
 
         default:
@@ -2638,11 +2736,12 @@ static gboolean search_entry_key_press      (G_GNUC_UNUSED GtkWidget *entry,
 }
 
 
-static gboolean search_entry_focus_out      (G_GNUC_UNUSED GtkWidget *entry,
+static gboolean search_entry_focus_out      (GtkWidget *entry,
                                              G_GNUC_UNUSED GdkEventFocus *event,
                                              MooFileView    *fileview)
 {
-    stop_interactive_search (fileview);
+    /* focus may be lost due to switching to other window, focus file list then */
+    stop_interactive_search (fileview, gtk_widget_is_focus (entry));
     return FALSE;
 }
 
@@ -2650,19 +2749,73 @@ static gboolean search_entry_focus_out      (G_GNUC_UNUSED GtkWidget *entry,
 static void     search_entry_activate       (GtkWidget      *entry,
                                              MooFileView    *fileview)
 {
-    stop_interactive_search (fileview);
+    stop_interactive_search (fileview, TRUE);
     activate_file_widget (fileview);
 }
 
 
+static void     process_entry_text          (MooFileView    *fileview,
+                                             GtkEntry       *entry,
+                                             const char     *text);
 static void     search_entry_changed        (GtkEntry       *entry,
                                              MooFileView    *fileview)
 {
+    const char *text = gtk_entry_get_text (entry);
+    g_return_if_fail (text != NULL);
+    process_entry_text (fileview, entry, text);
+}
+
+
+static void     process_entry_text          (MooFileView    *fileview,
+                                             GtkEntry       *entry,
+                                             const char     *text)
+{
     GtkTreeIter iter, filter_iter;
-    const char *text;
+    GtkEntryCompletion *completion;
+    GtkListStore *completion_store;
+    gboolean need_to_refilter = FALSE;
+    gboolean need_to_clear_completion = TRUE;
 
-    text = gtk_entry_get_text (entry);
+    g_return_if_fail (text != NULL);
 
+    if (!strncmp (text, "./", 2))
+        return process_entry_text (fileview, entry, text + 2);
+
+    completion = gtk_entry_get_completion (entry);
+    g_assert (completion != NULL);
+    completion_store = GTK_LIST_STORE (gtk_entry_completion_get_model (completion));
+    g_assert (completion_store != NULL);
+
+    /* Check if some file was shown temporarily, and hide it */
+    if (fileview->priv->temp_visible)
+    {
+        /* if still the same filename is entered, don't do anything */
+        if (!strcmp (text, fileview->priv->temp_visible))
+            goto out;
+
+        if (fileview->priv->temp_visible_row &&
+            gtk_tree_row_reference_valid (fileview->priv->temp_visible_row))
+        {
+            GtkTreePath *temp_path =
+                    gtk_tree_row_reference_get_path (fileview->priv->temp_visible_row);
+            g_assert (temp_path != NULL);
+            set_temp_visible_attributes (fileview, temp_path, FALSE);
+        }
+
+        gtk_tree_row_reference_free (fileview->priv->temp_visible_row);
+        fileview->priv->temp_visible_row = NULL;
+        g_free (fileview->priv->temp_visible);
+        fileview->priv->temp_visible = NULL;
+        need_to_refilter = TRUE;
+    }
+
+    if (!text[0])
+    {
+        file_widget_move_selection (fileview, NULL);
+        goto out;
+    }
+
+    /* first, try if this is a file in the list */
     if (find_match (fileview, text, &iter, FALSE))
     {
         GtkTreePath *filter_path, *path;
@@ -2673,24 +2826,66 @@ static void     search_entry_changed        (GtkEntry       *entry,
 
         filter_path = gtk_tree_model_filter_convert_child_path_to_path (
                 GTK_TREE_MODEL_FILTER (fileview->priv->filter_model), path);
+
+        /* file is not currently visible, check if full name was typed in,
+           and show the file if it's the case */
         if (!filter_path)
         {
-            gtk_tree_path_free (path);
-            file_widget_move_selection (fileview, NULL);
+            MooFile *file = NULL;
+            gtk_tree_model_get (GTK_TREE_MODEL (fileview->priv->store),
+                                &iter, COLUMN_FILE, &file, -1);
+
+            if (file && !strcmp (moo_file_get_display_basename (file), text))
+            {
+                /* full name of hidden file was typed in, show it */
+                fileview->priv->temp_visible =
+                        g_strdup (moo_file_get_display_basename (file));
+                fileview->priv->temp_visible_row =
+                        gtk_tree_row_reference_new (GTK_TREE_MODEL (fileview->priv->store), path);
+                gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
+                        (fileview->priv->filter_model));
+                need_to_refilter = FALSE;
+                set_temp_visible_attributes (fileview, path, TRUE);
+
+                filter_path = gtk_tree_model_filter_convert_child_path_to_path (
+                        GTK_TREE_MODEL_FILTER (fileview->priv->filter_model), path);
+                g_assert (filter_path != NULL);
+
+                gtk_tree_model_get_iter (fileview->priv->filter_model,
+                                         &filter_iter, filter_path);
+                file_widget_move_selection (fileview, &filter_iter);
+            }
+            else
+            {
+                /* only some part of name of hidden file was typed in,
+                   deselect currently selected file */
+                file_widget_move_selection (fileview, NULL);
+            }
+
+            moo_file_unref (file);
         }
+        /* file is visible,just move cursor there */
         else
         {
             gtk_tree_model_get_iter (fileview->priv->filter_model,
                                      &filter_iter, filter_path);
             file_widget_move_selection (fileview, &filter_iter);
-            gtk_tree_path_free (path);
-            gtk_tree_path_free (filter_path);
         }
+
+        gtk_tree_path_free (path);
+        gtk_tree_path_free (filter_path);
+        goto out;
     }
-    else
-    {
-        file_widget_move_selection (fileview, NULL);
-    }
+
+    /* typed text is not a filename in the list, try completion */
+    file_widget_move_selection (fileview, NULL);
+
+out:
+    if (need_to_refilter)
+        gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
+            (fileview->priv->filter_model));
+    if (need_to_clear_completion)
+        gtk_list_store_clear (completion_store);
 }
 
 
