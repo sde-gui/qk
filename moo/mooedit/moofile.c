@@ -741,16 +741,26 @@ void         moo_file_stat              (MooFile        *file,
         if (errno == ENOENT && !lstat (fullname, &file->statbuf))
         {
             gchar *display_name = g_filename_display_name (fullname);
-            g_warning ("%s: file '%s' is a broken link",
+            g_message ("%s: file '%s' is a broken link",
                        G_STRLOC, display_name);
             g_free (display_name);
             file->info = MOO_FILE_IS_LINK;
+        }
+        else if (errno == EACCES)
+        {
+            gchar *display_name = g_filename_display_name (fullname);
+            g_message ("%s: error getting information for '%s': %s",
+                       G_STRLOC, display_name,
+                       g_strerror (EACCES));
+            g_free (display_name);
+            file->info = 0;
+            file->flags = 0;
         }
         else
         {
             int save_errno = errno;
             gchar *display_name = g_filename_display_name (fullname);
-            g_warning ("%s: error getting information for '%s': %s",
+            g_message ("%s: error getting information for '%s': %s",
                        G_STRLOC, display_name,
                        g_strerror (save_errno));
             g_free (display_name);
