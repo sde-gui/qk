@@ -487,10 +487,15 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
                 g_slist_delete_link (folder->priv->files_copy,
                                      folder->priv->files_copy);
 
-        changed = g_slist_prepend (changed, file);
-
         if (!(file->flags & MOO_FILE_HAS_STAT))
+        {
+            changed = g_slist_prepend (changed, file);
             moo_file_stat (file, folder->priv->path);
+        }
+        else
+        {
+            moo_file_unref (file);
+        }
 
         if (!folder->priv->files_copy)
             done = TRUE;
