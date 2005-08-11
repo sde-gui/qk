@@ -318,7 +318,7 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
     if (wanted_stage <= folder->priv->done)
         return;
 
-    if (folder->priv->wanted != 0)
+    if (folder->priv->wanted > folder->priv->done)
     {
         g_assert (folder->priv->populate_idle_id != 0);
         folder->priv->wanted = MAX (folder->priv->wanted, wanted_stage);
@@ -649,6 +649,27 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
     }
 
     return !done;
+}
+
+
+/* TODO TODO */
+MooFile     *moo_folder_get_file        (MooFolder  *folder,
+                                         const char *basename)
+{
+    GSList *l;
+
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    g_return_val_if_fail (basename != NULL, NULL);
+
+    for (l = folder->priv->files; l != NULL; l = l->next)
+    {
+        MooFile *file = l->data;
+        g_assert (file != NULL && file->basename != NULL);
+        if (!strcmp (basename, file->basename))
+            return file;
+    }
+
+    return NULL;
 }
 
 

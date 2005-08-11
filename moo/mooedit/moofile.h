@@ -141,6 +141,8 @@ GdkPixbuf   *moo_file_get_icon              (const MooFile  *file,
 const char  *moo_folder_get_path        (MooFolder  *folder);
 /* list should be freed and elements unref'ed */
 GSList      *moo_folder_list_files      (MooFolder  *folder);
+MooFile     *moo_folder_get_file        (MooFolder  *folder,
+                                         const char *basename);
 
 
 #ifdef MOO_FILE_SYSTEM_COMPILATION
