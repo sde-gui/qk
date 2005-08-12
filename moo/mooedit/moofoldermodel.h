@@ -41,11 +41,29 @@ struct _MooFolderModelClass
 };
 
 
+typedef enum {
+    MOO_FOLDER_MODEL_COLUMN_FILE = 0,
+    MOO_FOLDER_MODEL_N_COLUMNS   = 1
+} MooFolderModelColumn;
+
+
 GType            moo_folder_model_get_type      (void) G_GNUC_CONST;
 GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder);
 void             moo_folder_model_set_folder    (MooFolderModel *model,
                                                  MooFolder      *folder);
 MooFolder       *moo_folder_model_get_folder    (MooFolderModel *model);
+
+gboolean         moo_folder_model_get_iter      (MooFolderModel *model,
+                                                 MooFile        *file,
+                                                 GtkTreeIter    *iter);
+gboolean         moo_folder_model_get_iter_by_name
+                                                (MooFolderModel *model,
+                                                 const char     *name,
+                                                 GtkTreeIter    *iter);
+gboolean         moo_folder_model_get_iter_by_display_name
+                                                (MooFolderModel *model,
+                                                 const char     *name,
+                                                 GtkTreeIter    *iter);
 
 
 G_END_DECLS

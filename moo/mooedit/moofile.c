@@ -460,7 +460,6 @@ static double   get_names               (MooFolder  *folder)
 static gboolean get_stat_a_bit              (MooFolder  *folder)
 {
     gboolean done = FALSE;
-    GSList *changed = NULL;
     double elapsed;
 
     g_assert (folder->priv->dir == NULL);
@@ -478,20 +477,23 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
 
     while (!done)
     {
-        MooFile *file = folder->priv->files_copy->data;
+        GSList *changed = folder->priv->files_copy;
+        MooFile *file = changed->data;
         folder->priv->files_copy =
-                g_slist_delete_link (folder->priv->files_copy,
+                g_slist_remove_link (folder->priv->files_copy,
                                      folder->priv->files_copy);
 
         if (!(file->flags & MOO_FILE_HAS_STAT))
         {
-            changed = g_slist_prepend (changed, file);
             moo_file_stat (file, folder->priv->path);
+            folder_emit_files (folder, FILES_CHANGED, changed);
         }
         else
         {
             moo_file_unref (file);
         }
+
+        g_slist_free_1 (changed);
 
         if (!folder->priv->files_copy)
             done = TRUE;
@@ -504,9 +506,6 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
     folder->priv->debug.stat_timer += elapsed;
     folder->priv->debug.stat_counter += 1;
     g_timer_stop (folder->priv->timer);
-
-    folder_emit_files (folder, FILES_CHANGED, changed);
-    files_list_free (&changed);
 
     if (!done)
     {
@@ -579,7 +578,6 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
 {
     gboolean done = FALSE;
     double elapsed;
-    GSList *changed = NULL;
 
     g_assert (folder->priv->dir == NULL);
     g_assert (folder->priv->done == STAGE_STAT);
@@ -596,28 +594,31 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
 
     while (!done)
     {
-        MooFile *file = folder->priv->files_copy->data;
+        GSList *changed = folder->priv->files_copy;
+        MooFile *file = changed->data;
         char *path;
 
         folder->priv->files_copy =
-                g_slist_delete_link (folder->priv->files_copy,
-                                     folder->priv->files_copy);
+                g_slist_remove_link (folder->priv->files_copy,
+                                     changed);
 
         if (file->info & MOO_FILE_EXISTS &&
             !(file->flags & MOO_FILE_HAS_MIME_TYPE))
         {
-            changed = g_slist_prepend (changed, file);
             path = FILE_PATH (folder, file);
             file->mime_type = xdg_mime_get_mime_type_for_file (path);
             file->flags |= MOO_FILE_HAS_MIME_TYPE;
             file->flags |= MOO_FILE_HAS_ICON;
             file->icon = get_icon (folder, file);
+            folder_emit_files (folder, FILES_CHANGED, changed);
             g_free (path);
         }
         else
         {
             moo_file_unref (file);
         }
+
+        g_slist_free_1 (changed);
 
         if (!folder->priv->files_copy)
             done = TRUE;
@@ -630,9 +631,6 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
     folder->priv->debug.icons_timer += elapsed;
     folder->priv->debug.icons_counter += 1;
     TIMER_CLEAR (folder->priv->timer);
-
-    folder_emit_files (folder, FILES_CHANGED, changed);
-    files_list_free (&changed);
 
     if (done)
     {

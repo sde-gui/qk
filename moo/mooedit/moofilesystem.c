@@ -420,8 +420,10 @@ static char     *normalize_folder_path  (const char     *path)
         normpath = tmp;
     }
 
+#if 0
     g_print ("path: '%s'\nnormpath: '%s'\n",
              path, normpath);
+#endif
 
     return normpath;
 }
