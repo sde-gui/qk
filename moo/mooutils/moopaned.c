@@ -940,7 +940,8 @@ static void clamp_child_requisition (MooPaned *paned,
 static void clamp_pane_widget_size (MooPaned       *paned,
                                     GtkRequisition *child_requisition)
 {
-    int min_size, max_size;
+    int min_size;
+    int max_size = 0;
 
     switch (paned->priv->pane_position)
     {
@@ -1195,7 +1196,7 @@ static void draw_handle             (MooPaned       *paned)
     GtkWidget *widget = GTK_WIDGET (paned);
     GtkStateType state;
     GdkRectangle area;
-    GtkOrientation orientation;
+    GtkOrientation orientation = GTK_ORIENTATION_VERTICAL;
     int shadow_size;
     GtkShadowType shadow = GTK_SHADOW_ETCHED_IN;
 
