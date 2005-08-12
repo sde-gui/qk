@@ -2170,6 +2170,7 @@ static void         stop_interactive_search     (MooFileView    *fileview,
     gtk_widget_hide (entry);
     gtk_entry_set_text (GTK_ENTRY (entry), "");
 
+#ifdef DEBUG
     /* TODO: may it become invalid? */
     if (fileview->priv->temp_visible_row &&
         gtk_tree_row_reference_valid (fileview->priv->temp_visible_row))
@@ -2178,6 +2179,7 @@ static void         stop_interactive_search     (MooFileView    *fileview,
                 gtk_tree_row_reference_get_path (fileview->priv->temp_visible_row);
         g_assert (temp_path != NULL);
     }
+#endif
 
     if (fileview->priv->temp_visible_row)
     {
@@ -2321,6 +2323,7 @@ static void     process_entry_text          (MooFileView    *fileview,
         if (!strcmp (text, fileview->priv->temp_visible))
             goto out;
 
+#ifdef DEBUG
         if (fileview->priv->temp_visible_row &&
             gtk_tree_row_reference_valid (fileview->priv->temp_visible_row))
         {
@@ -2328,6 +2331,7 @@ static void     process_entry_text          (MooFileView    *fileview,
                     gtk_tree_row_reference_get_path (fileview->priv->temp_visible_row);
             g_assert (temp_path != NULL);
         }
+#endif
 
         gtk_tree_row_reference_free (fileview->priv->temp_visible_row);
         fileview->priv->temp_visible_row = NULL;
@@ -2914,7 +2918,7 @@ static void     completion_update_files     (MooFileView    *fileview)
 }
 
 
-static void     completion_folder_deleted   (MooFolder      *folder,
+static void     completion_folder_deleted   (G_GNUC_UNUSED MooFolder *folder,
                                              MooFileView    *fileview)
 {
     g_assert (folder == fileview->priv->completion->folder);
@@ -2924,7 +2928,7 @@ static void     completion_folder_deleted   (MooFolder      *folder,
 
 
 /* TODO */
-static void     completion_files_added      (MooFolder      *folder,
+static void     completion_files_added      (G_GNUC_UNUSED MooFolder *folder,
                                              G_GNUC_UNUSED GSList *files,
                                              MooFileView    *fileview)
 {
@@ -2933,7 +2937,7 @@ static void     completion_files_added      (MooFolder      *folder,
     completion_update_files (fileview);
 }
 
-static void     completion_files_changed    (MooFolder      *folder,
+static void     completion_files_changed    (G_GNUC_UNUSED MooFolder *folder,
                                              G_GNUC_UNUSED GSList *files,
                                              MooFileView    *fileview)
 {
@@ -2942,7 +2946,7 @@ static void     completion_files_changed    (MooFolder      *folder,
     completion_update_files (fileview);
 }
 
-static void     completion_files_removed    (MooFolder      *folder,
+static void     completion_files_removed    (G_GNUC_UNUSED MooFolder *folder,
                                              G_GNUC_UNUSED GSList *files,
                                              MooFileView    *fileview)
 {
@@ -2972,7 +2976,7 @@ static void     activate_filename           (MooFileView    *fileview,
         if (!moo_file_view_chdir (fileview, path, &error))
         {
             g_warning ("%s: could not chdir to %s",
-                       G_STRLOC, dirname);
+                       G_STRLOC, path);
             if (error)
             {
                 g_warning ("%s: %s", G_STRLOC, error->message);
