@@ -60,6 +60,7 @@ libmooedit_la_SOURCES =     \
     moofilesystem.h         \
     moofileview.c           \
     moofileview.h           \
+    moofoldermodel.c        \
     mootextiter.h
 
 if USE_XML
