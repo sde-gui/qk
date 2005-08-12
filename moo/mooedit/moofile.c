@@ -227,7 +227,6 @@ MooFolder   *moo_folder_new             (MooFileSystem  *fs,
                                          MooFileFlags    wanted,
                                          GError        **error)
 {
-    char *norm_path;
     GDir *dir;
     MooFolder *folder;
     GError *file_error = NULL;
@@ -235,10 +234,8 @@ MooFolder   *moo_folder_new             (MooFileSystem  *fs,
     g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
 
     g_return_val_if_fail (path != NULL, NULL);
-    norm_path = moo_normalize_path (path);
-    g_return_val_if_fail (norm_path != NULL, NULL);
 
-    dir = g_dir_open (norm_path, 0, &file_error);
+    dir = g_dir_open (path, 0, &file_error);
 
     if (!dir)
     {
@@ -274,13 +271,12 @@ MooFolder   *moo_folder_new             (MooFileSystem  *fs,
         }
 
         g_error_free (file_error);
-        g_free (norm_path);
         return NULL;
     }
 
     folder = g_object_new (MOO_TYPE_FOLDER, NULL);
     folder->priv->fs = fs;
-    folder->priv->path = norm_path;
+    folder->priv->path = g_strdup (path);
 
     folder->priv->dir = dir;
 
@@ -678,6 +674,22 @@ MooFile     *moo_folder_get_file        (MooFolder  *folder,
 }
 
 
+MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
+                                         MooFileFlags    wanted)
+{
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    return moo_file_system_get_parent_folder (folder->priv->fs,
+                                              folder, wanted);
+}
+
+
+MooFileSystem *moo_folder_get_file_system       (MooFolder      *folder)
+{
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    return folder->priv->fs;
+}
+
+
 /********************************************************************/
 /* MooFile
  */
@@ -807,12 +819,6 @@ gboolean     moo_file_test              (const MooFile  *file,
 {
     g_return_val_if_fail (file != NULL, FALSE);
     return file->info & test;
-}
-
-
-char        *moo_normalize_path         (const char     *path)
-{
-    return g_strdup (path);
 }
 
 

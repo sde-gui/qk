@@ -78,6 +78,7 @@ struct _MooFileViewPrivate {
     gboolean         show_hidden_files;
     gboolean         show_two_dots;
     History         *history;
+    gboolean         select_first;
     char            *name_to_select;
     char            *temp_visible;  /* tempporary visible name, for interactive search */
     GtkTreeRowReference *temp_visible_row;  /* row containing temp_visible (in the store) */
@@ -112,9 +113,12 @@ static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
 static void         moo_file_view_set_file_mgr  (MooFileView    *fileview,
                                                  MooEditFileMgr *mgr);
 
-static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
-                                             const char     *dir,
-                                             GError        **error);
+static void         moo_file_view_set_current_dir (MooFileView  *fileview,
+                                                 MooFolder      *folder);
+static gboolean     moo_file_view_chdir_real    (MooFileView    *fileview,
+                                                 const char     *dir,
+                                                 GError        **error);
+
 static void         moo_file_view_go_up     (MooFileView    *fileview);
 static void         moo_file_view_go_home   (MooFileView    *fileview);
 static void         moo_file_view_go_back   (MooFileView    *fileview);
@@ -582,17 +586,18 @@ static gboolean     clear_list_in_idle      (MooFileView    *fileview)
     return FALSE;
 }
 
-static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
-                                             const char     *new_dir,
-                                             GError        **error)
+static void         moo_file_view_set_current_dir (MooFileView  *fileview,
+                                                   MooFolder      *folder)
 {
-    char *real_new_dir;
-    MooFolder *folder;
     GSList *files;
 
-    g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), FALSE);
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+    g_return_if_fail (!folder || MOO_IS_FOLDER (folder));
 
-    if (!new_dir)
+    if (folder == fileview->priv->current_dir)
+        return;
+
+    if (!folder)
     {
         if (fileview->priv->current_dir)
         {
@@ -603,12 +608,54 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
             gtk_list_store_clear (fileview->priv->store);
         }
 
-        return TRUE;
+        return;
     }
 
-    if (fileview->priv->current_dir &&
-        !strcmp (moo_folder_get_path (fileview->priv->current_dir), new_dir))
-            return TRUE;
+    disconnect_folder (fileview);
+    if (fileview->priv->current_dir)
+        g_object_unref (fileview->priv->current_dir);
+
+    fileview->priv->current_dir = g_object_ref (folder);
+
+    history_goto (fileview, moo_folder_get_path (folder));
+
+    fileview->priv->need_to_clear = TRUE;
+    g_idle_add_full (G_PRIORITY_LOW,
+                     (GSourceFunc) clear_list_in_idle,
+                     fileview, NULL);
+    fileview->priv->process_changes_now = TRUE;
+
+    if (fileview->priv->files)
+        g_hash_table_destroy (fileview->priv->files);
+    fileview->priv->files =
+            g_hash_table_new_full (g_direct_hash, g_direct_equal,
+                                   (GDestroyNotify) moo_file_unref,
+                                   (GDestroyNotify) gtk_tree_row_reference_free);
+
+    connect_folder (fileview);
+
+    fileview->priv->select_first = TRUE;
+    files = moo_folder_list_files (folder);
+    fileview_add_files (fileview, files);
+    g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+    g_slist_free (files);
+}
+
+
+static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
+                                             const char     *new_dir,
+                                             GError        **error)
+{
+    char *real_new_dir;
+    MooFolder *folder;
+
+    g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), FALSE);
+
+    if (!new_dir)
+    {
+        moo_file_view_set_current_dir (fileview, NULL);
+        return TRUE;
+    }
 
     if (g_path_is_absolute (new_dir) || !fileview->priv->current_dir)
     {
@@ -629,34 +676,8 @@ static gboolean     moo_file_view_chdir_real(MooFileView    *fileview,
     if (!folder)
         return FALSE;
 
-    disconnect_folder (fileview);
-    if (fileview->priv->current_dir)
-        g_object_unref (fileview->priv->current_dir);
-
-    fileview->priv->current_dir = folder;
-
-    history_goto (fileview, moo_folder_get_path (folder));
-
-    fileview->priv->need_to_clear = TRUE;
-    g_idle_add_full (G_PRIORITY_LOW,
-                     (GSourceFunc) clear_list_in_idle,
-                     fileview, NULL);
-    fileview->priv->process_changes_now = TRUE;
-
-    if (fileview->priv->files)
-        g_hash_table_destroy (fileview->priv->files);
-    fileview->priv->files =
-            g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                   (GDestroyNotify) moo_file_unref,
-                                   (GDestroyNotify) gtk_tree_row_reference_free);
-
-    connect_folder (fileview);
-
-    files = moo_folder_list_files (folder);
-    fileview_add_files (fileview, files);
-    g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
-    g_slist_free (files);
-
+    moo_file_view_set_current_dir (fileview, folder);
+    g_object_unref (folder);
     return TRUE;
 }
 
@@ -796,12 +817,20 @@ static void add_one_file (MooFileView    *fileview,
                         COLUMN_SIZE, NULL,
                         COLUMN_DATE, NULL, -1);
 
-    if (fileview->priv->name_to_select &&
-        !strcmp (fileview->priv->name_to_select,
-                 moo_file_get_display_basename (file)))
+    if (fileview->priv->name_to_select)
     {
-        g_free (fileview->priv->name_to_select);
-        fileview->priv->name_to_select = NULL;
+        if (!strcmp (fileview->priv->name_to_select,
+             moo_file_get_display_basename (file)))
+        {
+            g_free (fileview->priv->name_to_select);
+            fileview->priv->name_to_select = NULL;
+            moo_file_view_select_file (fileview,
+                                       moo_file_get_display_basename (file));
+        }
+    }
+    else if (fileview->priv->select_first)
+    {
+        fileview->priv->select_first = FALSE;
         moo_file_view_select_file (fileview,
                                    moo_file_get_display_basename (file));
     }
@@ -811,8 +840,10 @@ static void add_one_file (MooFileView    *fileview,
 static gboolean     fileview_add_files_in_idle  (MooFileView    *fileview)
 {
     if (fileview->priv->need_to_clear)
+    {
         gtk_list_store_clear (fileview->priv->store);
-    fileview->priv->need_to_clear = FALSE;
+        fileview->priv->need_to_clear = FALSE;
+    }
 
     if (fileview->priv->remove_files_idle)
         remove_a_bit (fileview);
@@ -1581,36 +1612,28 @@ gboolean    moo_file_view_chdir             (MooFileView    *fileview,
 
 static void         moo_file_view_go_up     (MooFileView    *fileview)
 {
-    char *dirname, *basename;
-    GError *error = NULL;
+    MooFolder *parent;
+    char *name;
 
     g_return_if_fail (fileview->priv->current_dir != NULL);
 
-    basename = g_path_get_basename (moo_folder_get_path (fileview->priv->current_dir));
-    dirname = g_path_get_dirname (moo_folder_get_path (fileview->priv->current_dir));
+    parent = moo_folder_get_parent (fileview->priv->current_dir,
+                                    MOO_FILE_HAS_ICON);
 
-    /* TODO TODO do something about top-level directories */
-    if (!strcmp (basename, dirname))
-        goto out;
+    g_print ("current dir: '%s'\nparent dir: '%s'\n",
+             moo_folder_get_path (fileview->priv->current_dir),
+             moo_folder_get_path (parent));
 
-    if (!moo_file_view_chdir (fileview, dirname, &error))
+    if (parent != fileview->priv->current_dir)
     {
-        g_warning ("%s: could not go up", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
-        goto out;
+        name = g_filename_display_basename (
+                moo_folder_get_path (fileview->priv->current_dir));
+        moo_file_view_set_current_dir (fileview, parent);
+        moo_file_view_select_file (fileview, name);
+        g_free (name);
     }
 
-    moo_file_view_select_file (fileview, basename);
-
-out:
-    g_free (dirname);
-    g_free (basename);
+    g_object_unref (parent);
 }
 
 
@@ -2719,10 +2742,22 @@ static gboolean search_entry_key_press      (G_GNUC_UNUSED GtkWidget *entry,
                                              GdkEventKey    *event,
                                              MooFileView    *fileview)
 {
+    GtkWidget *filewidget;
     switch (event->keyval)
     {
         case GDK_Escape:
             stop_interactive_search (fileview, TRUE);
+            return TRUE;
+
+        case GDK_Up:
+        case GDK_KP_Up:
+        case GDK_Down:
+        case GDK_KP_Down:
+            stop_interactive_search (fileview, TRUE);
+            filewidget = get_file_view_widget (fileview);
+            gtk_widget_grab_focus (filewidget);
+            GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (filewidget))->
+                    key_press_event (filewidget, event);
             return TRUE;
 
         default:
@@ -2896,7 +2931,11 @@ void        moo_file_view_select_file       (MooFileView    *fileview,
             if (!filter_path)
             {
                 gtk_tree_path_free (path);
-                file_widget_move_selection (fileview, NULL);
+                if (gtk_tree_model_get_iter_first (fileview->priv->filter_model,
+                                                   &filter_iter))
+                    file_widget_move_selection (fileview, &filter_iter);
+                else
+                    fileview->priv->select_first = TRUE;
             }
             else
             {

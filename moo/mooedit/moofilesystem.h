@@ -50,47 +50,40 @@ struct _MooFileSystemClass
                                      const char     *path,
                                      MooFileFlags    flags,
                                      GError        **error);
-
-    gboolean    (*create_folder)    (MooFileSystem  *fs,
-                                     const char     *path,
-                                     GError        **error);
-    gboolean    (*delete_file)      (MooFileSystem  *fs,
-                                     const char     *path,
-                                     GError        **error);
-
-    char*       (*get_parent)       (MooFileSystem  *fs,
-                                     const char     *path,
-                                     GError        **error);
-    char*       (*make_path)        (MooFileSystem  *fs,
-                                     const char     *base_path,
-                                     const char     *display_name,
-                                     GError        **error);
+    MooFolder*  (*get_parent_folder)(MooFileSystem  *fs,
+                                     MooFolder      *folder,
+                                     MooFileFlags    flags);
 };
 
 
-GType            moo_file_system_get_type   (void) G_GNUC_CONST;
+GType        moo_file_system_get_type           (void) G_GNUC_CONST;
 
-MooFileSystem   *moo_file_system_create     (void);
+MooFileSystem *moo_file_system_create           (void);
 
-MooFolder       *moo_file_system_get_folder (MooFileSystem  *fs,
-                                             const char     *path,
-                                             MooFileFlags    wanted,
-                                             GError        **error);
+MooFolder   *moo_file_system_get_folder         (MooFileSystem  *fs,
+                                                 const char     *path,
+                                                 MooFileFlags    wanted,
+                                                 GError        **error);
+MooFolder   *moo_file_system_get_parent_folder  (MooFileSystem  *fs,
+                                                 MooFolder      *folder,
+                                                 MooFileFlags    wanted);
 
-gboolean         moo_file_system_create_folder (MooFileSystem *fs,
-                                             const char     *path,
-                                             GError        **error);
-gboolean         moo_file_system_delete_file(MooFileSystem  *fs,
-                                             const char     *path,
-                                             GError        **error);
+MooFileSystem *moo_folder_get_file_system       (MooFolder      *folder);
 
-char            *moo_file_system_get_parent (MooFileSystem  *fs,
-                                             const char     *path,
-                                             GError        **error);
-char            *moo_file_system_make_path  (MooFileSystem  *fs,
-                                             const char     *base_path,
-                                             const char     *display_name,
-                                             GError        **error);
+// gboolean     moo_file_system_create_folder      (MooFileSystem *fs,
+//                                                  const char     *path,
+//                                                  GError        **error);
+// gboolean     moo_file_system_delete_file        (MooFileSystem  *fs,
+//                                                  const char     *path,
+//                                                  GError        **error);
+//
+// char        *moo_file_system_get_parent         (MooFileSystem  *fs,
+//                                                  const char     *path,
+//                                                  GError        **error);
+// char        *moo_file_system_make_path          (MooFileSystem  *fs,
+//                                                  const char     *base_path,
+//                                                  const char     *display_name,
+//                                                  GError        **error);
 
 
 G_END_DECLS

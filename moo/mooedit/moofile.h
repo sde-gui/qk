@@ -117,8 +117,6 @@ GType        moo_file_flags_get_type    (void) G_GNUC_CONST;
 GType        moo_file_info_get_type     (void) G_GNUC_CONST;
 GType        moo_folder_get_type        (void) G_GNUC_CONST;
 
-char        *moo_normalize_path         (const char     *path);
-
 MooFile     *moo_file_ref               (MooFile        *file);
 void         moo_file_unref             (MooFile        *file);
 
@@ -138,11 +136,15 @@ GdkPixbuf   *moo_file_get_icon              (const MooFile  *file,
                                              GtkIconSize     size);
 
 
-const char  *moo_folder_get_path        (MooFolder  *folder);
+const char  *moo_folder_get_path            (MooFolder      *folder);
 /* list should be freed and elements unref'ed */
-GSList      *moo_folder_list_files      (MooFolder  *folder);
-MooFile     *moo_folder_get_file        (MooFolder  *folder,
-                                         const char *basename);
+GSList      *moo_folder_list_files          (MooFolder      *folder);
+MooFile     *moo_folder_get_file            (MooFolder      *folder,
+                                             const char     *basename);
+/* result should be unref'ed */
+MooFolder   *moo_folder_get_parent          (MooFolder      *folder,
+                                             MooFileFlags    wanted);
+char        *moo_folder_get_parent_path     (MooFolder      *folder);
 
 
 #ifdef MOO_FILE_SYSTEM_COMPILATION
