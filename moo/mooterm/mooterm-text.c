@@ -196,7 +196,7 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
         }
     }
 
-    g_assert_not_reached ();
+    g_return_val_if_reached (0);
 }
 
 
@@ -740,7 +740,7 @@ static gboolean extend_selection        (MooText        *obj,
         return iter_cmp (start, end);
     }
 
-    g_assert_not_reached ();
+    g_return_val_if_reached (FALSE);
 }
 
 

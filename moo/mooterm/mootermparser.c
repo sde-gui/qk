@@ -1032,10 +1032,9 @@ int     _moo_term_yylex (MooTermParser  *parser)
                 case PART_DONE:
                     return 0;
             }
-
-        default:
-            g_assert_not_reached ();
     }
+
+    g_return_val_if_reached (0);
 }
 
 
