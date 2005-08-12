@@ -190,13 +190,13 @@ static void moo_folder_model_get_property       (GObject *object,
 struct _MooFolderModelPrivate {
     MooFolder   *folder;
 
-    GSList      *dirs;                  /* MooFile*, sorted by name */
+    GList       *dirs;                  /* MooFile*, sorted by name */
     int          n_dirs;
-    GHashTable  *name_to_dir;           /* char* -> GSList* */
-    GHashTable  *display_name_to_dir;   /* char* -> GSList* */
-    GHashTable  *dir_to_link;           /* MooFile* -> GSList* */
+    GHashTable  *name_to_dir;           /* char* -> MooFile* */
+    GHashTable  *display_name_to_dir;   /* char* -> MooFile* */
+    GHashTable  *dir_to_link;           /* MooFile* -> GList* */
 
-    GSList      *files;
+    GList       *files;
     int          n_files;
     GHashTable  *name_to_file;
     GHashTable  *display_name_to_file;
@@ -303,10 +303,10 @@ static void moo_folder_model_finalize           (GObject *object)
     g_hash_table_destroy (model->priv->name_to_file);
     g_hash_table_destroy (model->priv->file_to_link);
 
-    g_slist_foreach (model->priv->dirs, (GFunc)moo_file_unref, NULL);
-    g_slist_foreach (model->priv->files, (GFunc)moo_file_unref, NULL);
-    g_slist_free (model->priv->dirs);
-    g_slist_free (model->priv->files);
+    g_list_foreach (model->priv->dirs, (GFunc)moo_file_unref, NULL);
+    g_list_foreach (model->priv->files, (GFunc)moo_file_unref, NULL);
+    g_list_free (model->priv->dirs);
+    g_list_free (model->priv->files);
 
     g_free (model->priv);
     model->priv = NULL;
@@ -336,34 +336,26 @@ static gboolean model_contains_file     (MooFolderModel *model,
 static gboolean model_is_dir            (MooFolderModel *model,
                                          MooFile        *file);
 
-static GSList  *list_insert_sorted      (GSList        **list,
+static GList   *list_insert_sorted      (GList         **list,
                                          int            *list_len,
                                          MooFile        *file,
                                          int            *position);
-static void     list_delete_link        (GSList        **list,
-                                         GSList         *link,
+static void     list_delete_link        (GList         **list,
+                                         GList          *link,
                                          int            *list_len);
-#if 0
-static void     list_remove_link        (GSList        **list,
-                                         GSList         *link,
-                                         int            *list_len);
-static int      list_insert_link_sorted (GSList        **list,
-                                         int            *list_len,
-                                         GSList         *link);
-#endif
-static GSList  *list_find_dir           (MooFolderModel *model,
+static GList   *list_find_dir           (MooFolderModel *model,
                                          MooFile        *file,
                                          int            *index);
-static GSList  *list_find_file          (MooFolderModel *model,
+static GList   *list_find_file          (MooFolderModel *model,
                                          MooFile        *file,
                                          int            *index);
 
 static void     hash_table_insert_dir   (MooFolderModel *model,
                                          MooFile        *file,
-                                         GSList         *link);
+                                         GList          *link);
 static void     hash_table_insert_file  (MooFolderModel *model,
                                          MooFile        *file,
-                                         GSList         *link);
+                                         GList          *link);
 static void     hash_table_remove_dir   (MooFolderModel *model,
                                          MooFile        *file);
 static void     hash_table_remove_file  (MooFolderModel *model,
@@ -426,7 +418,7 @@ static void         moo_folder_model_remove_files   (MooFolderModel *model,
 static void     model_add_moo_file  (MooFile        *file,
                                      MooFolderModel *model)
 {
-    GSList *link;
+    GList *link;
     int index;
     GtkTreePath *path;
     GtkTreeIter iter;
@@ -444,7 +436,7 @@ static void     model_add_moo_file  (MooFile        *file,
                                    &model->priv->n_dirs,
                                    moo_file_ref (file),
                                    &index);
-        g_assert (g_slist_nth (model->priv->dirs, index) == link);
+        g_assert (g_list_nth (model->priv->dirs, index) == link);
         hash_table_insert_dir (model, file, link);
     }
     else
@@ -454,7 +446,7 @@ static void     model_add_moo_file  (MooFile        *file,
                                    &model->priv->n_files,
                                    moo_file_ref (file),
                                    &index);
-        g_assert (g_slist_nth (model->priv->files, index) == link);
+        g_assert (g_list_nth (model->priv->files, index) == link);
         index += model->priv->n_dirs;
         hash_table_insert_file (model, file, link);
     }
@@ -474,7 +466,7 @@ static void     model_change_moo_file   (MooFile        *file,
                                          MooFolderModel *model)
 {
     int index;
-    GSList *link;
+    GList *link;
     GtkTreePath *path;
     GtkTreeIter iter;
     gboolean is_dir;
@@ -495,7 +487,7 @@ static void     model_change_moo_file   (MooFile        *file,
 
         link = g_hash_table_lookup (model->priv->dir_to_link, file);
         g_assert (link != NULL);
-        index = g_slist_position (model->priv->dirs, link);
+        index = g_list_position (model->priv->dirs, link);
         g_assert (index >= 0);
         is_dir = TRUE;
     }
@@ -512,7 +504,7 @@ static void     model_change_moo_file   (MooFile        *file,
 
         link = g_hash_table_lookup (model->priv->file_to_link, file);
         g_assert (link != NULL);
-        index = g_slist_position (model->priv->files, link);
+        index = g_list_position (model->priv->files, link);
         g_assert (index >= 0);
         index += model->priv->n_dirs;
         is_dir = FALSE;
@@ -532,7 +524,7 @@ static void     model_change_moo_file   (MooFile        *file,
 static void     model_remove_moo_file   (MooFile        *file,
                                          MooFolderModel *model)
 {
-    GSList *link;
+    GList *link;
     int index;
     GtkTreePath *path;
 
@@ -588,148 +580,6 @@ G_STMT_START {                              \
 #endif
 
 
-#if 0
-static void     model_change_from_file_to_dir   (MooFolderModel *model,
-                                                 MooFile        *file)
-{
-    GSList *link;
-    int file_index, dir_index;
-    int total, i;
-    int *new_order;
-    GtkTreeIter iter;
-    GtkTreePath *path;
-
-    g_assert (!model_is_dir (model, file));
-    g_assert (moo_file_test (file, MOO_FILE_IS_FOLDER));
-
-    link = list_find_file (model, file, &file_index);
-    g_assert (link != NULL);
-    file_index += model->priv->n_dirs;
-
-    hash_table_remove_file (model, file);
-    list_remove_link (&model->priv->files, link,
-                      &model->priv->n_files);
-
-    dir_index = list_insert_link_sorted (&model->priv->dirs,
-                                         &model->priv->n_dirs,
-                                         link);
-    hash_table_insert_dir (model, file, link);
-
-    g_assert (dir_index <= file_index);
-
-    if (file_index != dir_index)
-    {
-        int *tmp;
-
-        total = model->priv->n_files + model->priv->n_dirs;
-        new_order = g_new (int, total);
-
-        for (i = 0; i < dir_index; ++i)
-            new_order[i] = i;
-        for (i = dir_index; i < file_index; ++i)
-            new_order[i] = i+1;
-        for (i = file_index + 1; i < total; ++i)
-            new_order[i] = i;
-
-        new_order[file_index] = dir_index;
-
-        CHECK_ORDER (new_order, total);
-
-        tmp = g_new (int, total);
-        for (i = 0; i < total; ++i)
-            tmp[new_order[i]] = i;
-        g_free (new_order);
-        new_order = tmp;
-
-        CHECK_ORDER (new_order, total);
-
-        gtk_tree_model_rows_reordered (GTK_TREE_MODEL (model), NULL, NULL,
-                                       new_order);
-        g_free (new_order);
-    }
-
-    CHECK_INTEGRITY (model);
-
-    ITER_INIT (&iter, model, file, TRUE);
-    CHECK_ITER (model, &iter);
-
-    path = gtk_tree_path_new_from_indices (dir_index, -1);
-    gtk_tree_model_row_changed (GTK_TREE_MODEL (model), path, &iter);
-    gtk_tree_path_free (path);
-}
-
-
-static void     model_change_from_dir_to_file   (MooFolderModel *model,
-                                                 MooFile        *file)
-{
-    GSList *link;
-    int file_index, dir_index;
-    int total, i;
-    int *new_order;
-    GtkTreeIter iter;
-    GtkTreePath *path;
-
-    g_assert (model_is_dir (model, file));
-    g_assert (!moo_file_test (file, MOO_FILE_IS_FOLDER));
-
-    link = list_find_dir (model, file, &dir_index);
-    g_assert (link != NULL);
-
-    hash_table_remove_dir (model, file);
-    list_remove_link (&model->priv->dirs, link,
-                       &model->priv->n_dirs);
-
-    file_index = list_insert_link_sorted (&model->priv->files,
-                                          &model->priv->n_files,
-                                          link);
-    hash_table_insert_file (model, file, link);
-    file_index += model->priv->n_dirs;
-
-    g_assert (dir_index <= file_index);
-
-    if (file_index != dir_index)
-    {
-        int *tmp;
-
-        total = model->priv->n_files + model->priv->n_dirs;
-        new_order = g_new (int, total);
-
-        for (i = 0; i < dir_index; ++i)
-            new_order[i] = i;
-        for (i = dir_index + 1; i <= file_index; ++i)
-            new_order[i] = i - 1;
-        for (i = file_index + 1; i < total; ++i)
-            new_order[i] = i;
-
-        new_order[dir_index] = file_index;
-
-        CHECK_ORDER (new_order, total);
-
-        tmp = g_new (int, total);
-        for (i = 0; i < total; ++i)
-            tmp[new_order[i]] = i;
-        g_free (new_order);
-        new_order = tmp;
-
-        CHECK_ORDER (new_order, total);
-
-        gtk_tree_model_rows_reordered (GTK_TREE_MODEL (model), NULL, NULL,
-                                       new_order);
-        g_free (new_order);
-    }
-
-    CHECK_INTEGRITY (model);
-
-    ITER_INIT (&iter, model, file, FALSE);
-    CHECK_ITER (model, &iter);
-
-    path = gtk_tree_path_new_from_indices (file_index, -1);
-    gtk_tree_model_row_changed (GTK_TREE_MODEL (model), path, &iter);
-    gtk_tree_path_free (path);
-}
-#endif
-
-
 static gboolean model_contains_file     (MooFolderModel *model,
                                          MooFile        *file)
 {
@@ -747,7 +597,7 @@ static gboolean model_is_dir            (MooFolderModel *model,
 
 static void     hash_table_insert_dir   (MooFolderModel *model,
                                          MooFile        *file,
-                                         GSList         *link)
+                                         GList          *link)
 {
     g_hash_table_insert (model->priv->dir_to_link, file, link);
     g_hash_table_insert (model->priv->name_to_dir,
@@ -760,7 +610,7 @@ static void     hash_table_insert_dir   (MooFolderModel *model,
 
 static void     hash_table_insert_file  (MooFolderModel *model,
                                          MooFile        *file,
-                                         GSList         *link)
+                                         GList          *link)
 {
     g_hash_table_insert (model->priv->file_to_link, file, link);
     g_hash_table_insert (model->priv->name_to_file,
@@ -792,48 +642,36 @@ static void     hash_table_remove_file  (MooFolderModel *model,
 }
 
 
-static void     list_delete_link        (GSList        **list,
-                                         GSList         *link,
+static void     list_delete_link        (GList         **list,
+                                         GList          *link,
                                          int            *list_len)
 {
-    g_assert (*list_len == (int)g_slist_length (*list));
-    *list = g_slist_delete_link (*list, link);
+    g_assert (*list_len == (int)g_list_length (*list));
+    *list = g_list_delete_link (*list, link);
     (*list_len)--;
-    g_assert (*list_len == (int)g_slist_length (*list));
+    g_assert (*list_len == (int)g_list_length (*list));
 }
 
 
-#if 0
-static void     list_remove_link        (GSList        **list,
-                                         GSList         *link,
-                                         int            *list_len)
-{
-    *list = g_slist_remove_link (*list, link);
-    (*list_len)--;
-    g_assert (*list_len == (int)g_slist_length (*list));
-}
-#endif
-
-
-static GSList  *list_find_dir           (MooFolderModel *model,
+static GList   *list_find_dir           (MooFolderModel *model,
                                          MooFile        *file,
                                          int            *index)
 {
-    GSList *link = g_hash_table_lookup (model->priv->dir_to_link, file);
+    GList *link = g_hash_table_lookup (model->priv->dir_to_link, file);
     g_return_val_if_fail (link != NULL, NULL);
-    *index = g_slist_position (model->priv->dirs, link);
+    *index = g_list_position (model->priv->dirs, link);
     g_return_val_if_fail (*index >= 0, NULL);
     return link;
 }
 
 
-static GSList  *list_find_file          (MooFolderModel *model,
+static GList   *list_find_file          (MooFolderModel *model,
                                          MooFile        *file,
                                          int            *index)
 {
-    GSList *link = g_hash_table_lookup (model->priv->file_to_link, file);
+    GList *link = g_hash_table_lookup (model->priv->file_to_link, file);
     g_return_val_if_fail (link != NULL, NULL);
-    *index = g_slist_position (model->priv->files, link);
+    *index = g_list_position (model->priv->files, link);
     g_return_val_if_fail (*index >= 0, NULL);
     return link;
 }
@@ -845,58 +683,138 @@ static int      cmp_filenames   (MooFile *f1, MooFile *f2)
                    moo_file_get_basename (f2));
 }
 
+static void     find_insert_position    (GList          *list,
+                                         int             list_len,
+                                         MooFile        *file,
+                                         GList         **prev,
+                                         GList         **next,
+                                         int            *position)
+{
+    GList *left = NULL, *right = NULL;
+    int pos = -1;
+
+    while (list_len)
+    {
+        int cmp;
+
+        if (!left)
+        {
+            left = list;
+            pos = 0;
+        }
+
+        cmp = cmp_filenames (file, left->data);
+        g_assert (cmp != 0);
+
+        if (cmp < 0)
+        {
+            right = left;
+            left = left->prev;
+            pos--;
+            break;
+        }
+        else
+        {
+            if (list_len == 1)
+            {
+                right = left->next;
+                break;
+            }
+            else if (list_len == 2)
+            {
+                g_assert (left->next != NULL);
+                cmp = cmp_filenames (file, left->next->data);
+                g_assert (cmp != 0);
+
+                if (cmp < 0)
+                {
+                    right = left->next;
+                }
+                else
+                {
+                    right = left->next->next;
+                    left = left->next;
+                    pos++;
+                }
+
+                break;
+            }
+            else if (list_len % 2)
+            {
+                right = g_list_nth (left, list_len / 2);
+                g_assert (right != NULL);
+
+                cmp = cmp_filenames (file, right->data);
+                g_assert (cmp != 0);
+
+                if (cmp > 0)
+                {
+                    left = right;
+                    pos += list_len / 2;
+                }
+
+                list_len = list_len / 2 + 1;
+            }
+            else
+            {
+                right = g_list_nth (left, list_len / 2);
+                g_assert (right != NULL);
+
+                cmp = cmp_filenames (file, right->data);
+                g_assert (cmp != 0);
+
+                if (cmp < 0)
+                {
+                    list_len = list_len / 2 + 1;
+                }
+                else
+                {
+                    left = right;
+                    pos += list_len / 2;
+                    list_len = list_len / 2;
+                }
+            }
+        }
+    }
+
+    *next = right;
+    *prev = left;
+    *position = pos + 1;
+}
+
 /* TODO */
-static GSList  *list_insert_sorted      (GSList        **list,
+static GList   *list_insert_sorted      (GList         **list,
                                          int            *list_len,
                                          MooFile        *file,
                                          int            *position)
 {
-    GSList *link;
-    g_assert (*list_len == (int)g_slist_length (*list));
-    g_assert (g_slist_find (*list, file) == NULL);
-    *list = g_slist_insert_sorted (*list, file, (GCompareFunc) cmp_filenames);
-    link = g_slist_find (*list, file);
-    g_assert (link != NULL);
-    *position = g_slist_position (*list, link);
+    GList *link;
+    GList *prev, *next;
+
+    g_assert (*list_len == (int)g_list_length (*list));
+    g_assert (g_list_find (*list, file) == NULL);
+
+    find_insert_position (*list, *list_len, file, &prev, &next, position);
     g_assert (*position >= 0);
+
+    link = g_list_alloc ();
+    link->data = file;
+    link->prev = prev;
+    link->next = next;
+
+    if (prev)
+        prev->next = link;
+    else
+        *list = link;
+
+    if (next)
+        next->prev = link;
+
     (*list_len)++;
-    g_assert (*list_len == (int)g_slist_length (*list));
+    g_assert (g_list_nth (*list, *position) == link);
+    g_assert (*list_len == (int)g_list_length (*list));
     return link;
 }
-
-
-#if 0
-static int      list_insert_link_sorted (GSList        **list,
-                                         int            *list_len,
-                                         GSList         *link)
-{
-    int position;
-    GSList *tmp_link;
-
-    g_assert (*list_len == (int)g_slist_length (*list));
-    g_assert (g_slist_find (*list, link->data) == NULL);
-    tmp_link = list_insert_sorted (list, list_len, link->data, &position);
-
-    if (position == 0)
-    {
-        link->next = tmp_link->next;
-        *list = link;
-        g_slist_free_1 (tmp_link);
-    }
-    else
-    {
-        GSList *prev = g_slist_nth (*list, position - 1);
-        prev->next = link;
-        link->next = tmp_link->next;
-        g_slist_free_1 (tmp_link);
-    }
-
-    g_assert (g_slist_nth (*list, position) == link);
-    g_assert (*list_len == (int)g_slist_length (*list));
-    g_assert (g_slist_find (*list, link->data) == link);
-    return position;
-}
-#endif
 
 
 /***************************************************************************/
@@ -930,7 +848,7 @@ static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
 {
     MooFolderModel *model;
     int index;
-    GSList *link;
+    GList *link;
     gboolean is_dir;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), FALSE);
@@ -951,13 +869,13 @@ static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
     if (index < model->priv->n_dirs)
     {
         is_dir = TRUE;
-        link = g_slist_nth (model->priv->dirs, index);
+        link = g_list_nth (model->priv->dirs, index);
     }
     else
     {
         is_dir = FALSE;
         index -= model->priv->n_dirs;
-        link = g_slist_nth (model->priv->files, index);
+        link = g_list_nth (model->priv->files, index);
     }
 
     g_assert (link != NULL);
@@ -973,7 +891,7 @@ static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
 {
     MooFolderModel *model;
     int index;
-    GSList *link;
+    GList *link;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), NULL);
     g_return_val_if_fail (iter != NULL, NULL);
@@ -992,9 +910,9 @@ static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
     g_return_val_if_fail (link != NULL, NULL);
 
     if (ITER_DIR (iter))
-        index = g_slist_position (model->priv->dirs, link);
+        index = g_list_position (model->priv->dirs, link);
     else
-        index = g_slist_position (model->priv->files, link) +
+        index = g_list_position (model->priv->files, link) +
                 model->priv->n_dirs;
 
     g_return_val_if_fail (index >= 0, NULL);
@@ -1024,7 +942,7 @@ static gboolean     moo_folder_model_iter_next      (GtkTreeModel *tree_model,
                                                      GtkTreeIter  *iter)
 {
     MooFolderModel *model;
-    GSList *link;
+    GList *link;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), FALSE);
     g_return_val_if_fail (iter != NULL, FALSE);
@@ -1293,9 +1211,9 @@ gboolean    moo_folder_model_get_iter_by_display_name   (MooFolderModel *model,
 #ifdef DEFINE_CHECK_INTEGRITY
 static void CHECK_INTEGRITY (MooFolderModel *model)
 {
-    GSList *link;
+    GList *link;
 
-    g_assert ((int)g_slist_length (model->priv->dirs) == model->priv->n_dirs);
+    g_assert ((int)g_list_length (model->priv->dirs) == model->priv->n_dirs);
     g_assert ((int)g_hash_table_size (model->priv->name_to_dir) == model->priv->n_dirs);
     g_assert ((int)g_hash_table_size (model->priv->display_name_to_dir) == model->priv->n_dirs);
     g_assert ((int)g_hash_table_size (model->priv->dir_to_link) == model->priv->n_dirs);
@@ -1311,7 +1229,7 @@ static void CHECK_INTEGRITY (MooFolderModel *model)
         g_assert (link == g_hash_table_lookup (model->priv->dir_to_link, file));
     }
 
-    g_assert ((int)g_slist_length (model->priv->files) == model->priv->n_files);
+    g_assert ((int)g_list_length (model->priv->files) == model->priv->n_files);
     g_assert ((int)g_hash_table_size (model->priv->name_to_file) == model->priv->n_files);
     g_assert ((int)g_hash_table_size (model->priv->display_name_to_file) == model->priv->n_files);
     g_assert ((int)g_hash_table_size (model->priv->file_to_link) == model->priv->n_files);
