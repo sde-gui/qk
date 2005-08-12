@@ -42,7 +42,9 @@ struct _MooFolderModelClass
 
 
 GType            moo_folder_model_get_type      (void) G_GNUC_CONST;
-GtkTreeModel    *moo_folder_get_model           (MooFolder      *folder);
+GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder);
+void             moo_folder_model_set_folder    (MooFolderModel *model,
+                                                 MooFolder      *folder);
 MooFolder       *moo_folder_model_get_folder    (MooFolderModel *model);
 
 

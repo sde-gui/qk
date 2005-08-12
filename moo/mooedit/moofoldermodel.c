@@ -88,12 +88,10 @@ static void moo_folder_model_class_init         (MooFolderModelClass *klass)
                                              "folder",
                                              "folder",
                                              MOO_TYPE_FOLDER,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             G_PARAM_READWRITE));
 }
 
 
-static void         moo_folder_model_set_folder     (MooFolderModel *model,
-                                                     MooFolder      *folder);
 static void         moo_folder_model_add_files      (MooFolderModel *model,
                                                      GSList         *files);
 static void         moo_folder_model_change_files   (MooFolderModel *model,
@@ -204,30 +202,58 @@ struct _MooFolderModelPrivate {
 };
 
 
-static void         moo_folder_model_set_folder     (MooFolderModel *model,
-                                                     MooFolder      *folder)
+void             moo_folder_model_set_folder    (MooFolderModel *model,
+                                                 MooFolder      *folder)
 {
     GSList *files;
 
-    g_return_if_fail (model->priv->folder == NULL);
-    g_return_if_fail (MOO_IS_FOLDER (folder));
+    g_return_if_fail (!folder || MOO_IS_FOLDER (folder));
 
-    model->priv->folder = folder;
+    if (model->priv->folder == folder)
+        return;
 
-    g_signal_connect_swapped (folder, "files_added",
-                              G_CALLBACK (moo_folder_model_add_files),
-                              model);
-    g_signal_connect_swapped (folder, "files_removed",
-                              G_CALLBACK (moo_folder_model_remove_files),
-                              model);
-    g_signal_connect_swapped (folder, "files_changed",
-                              G_CALLBACK (moo_folder_model_change_files),
-                              model);
+    if (model->priv->folder)
+    {
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_add_files,
+                                              model);
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_remove_files,
+                                              model);
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_change_files,
+                                              model);
 
-    files = moo_folder_list_files (folder);
-    moo_folder_model_add_files (model, files);
-    g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
-    g_slist_free (files);
+        files = moo_folder_list_files (model->priv->folder);
+        moo_folder_model_remove_files (model, files);
+        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_free (files);
+
+        g_object_unref (model->priv->folder);
+        model->priv->folder = NULL;
+    }
+
+    if (folder)
+    {
+        model->priv->folder = g_object_ref (folder);
+
+        g_signal_connect_swapped (folder, "files_added",
+                                  G_CALLBACK (moo_folder_model_add_files),
+                                  model);
+        g_signal_connect_swapped (folder, "files_removed",
+                                  G_CALLBACK (moo_folder_model_remove_files),
+                                  model);
+        g_signal_connect_swapped (folder, "files_changed",
+                                  G_CALLBACK (moo_folder_model_change_files),
+                                  model);
+
+        files = moo_folder_list_files (folder);
+        moo_folder_model_add_files (model, files);
+        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_free (files);
+    }
+
+    g_object_notify (G_OBJECT (model), "folder");
 }
 
 
@@ -248,6 +274,8 @@ static void moo_folder_model_init               (MooFolderModel *model)
 static void moo_folder_model_finalize           (GObject *object)
 {
     MooFolderModel *model = MOO_FOLDER_MODEL (object);
+
+    moo_folder_model_set_folder (model, NULL);
 
     g_hash_table_destroy (model->priv->name_to_dir);
     g_hash_table_destroy (model->priv->dir_to_link);
@@ -986,4 +1014,12 @@ static gboolean     moo_folder_model_iter_parent    (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_FILE (child) != NULL, FALSE);
     ITER_INIT (iter, NULL, NULL, FALSE);
     return FALSE;
+}
+
+
+GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder)
+{
+    g_return_val_if_fail (!folder || MOO_IS_FOLDER (folder), NULL);
+    return GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_MODEL,
+                                         "folder", folder, NULL));
 }
