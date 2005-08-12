@@ -977,7 +977,8 @@ static void icon_data_func  (G_GNUC_UNUSED GObject *column_or_iconview,
     gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
 
     if (file)
-        pixbuf = moo_file_get_icon (file, GTK_WIDGET (fileview), GTK_ICON_SIZE_MENU);
+        pixbuf = moo_file_get_icon (file, GTK_WIDGET (fileview),
+                                    fileview->priv->icon_size);
 
     g_object_set (cell, "pixbuf", pixbuf, NULL);
     moo_file_unref (file);
