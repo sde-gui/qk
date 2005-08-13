@@ -140,6 +140,7 @@ static void name_data_func  (GObject            *column_or_iconview,
                              GtkTreeModel       *model,
                              GtkTreeIter        *iter,
                              MooFileView        *fileview);
+#ifdef USE_SIZE_AND_STUFF
 static void date_data_func  (GObject            *column_or_iconview,
                              GtkCellRenderer    *cell,
                              GtkTreeModel       *model,
@@ -150,6 +151,7 @@ static void size_data_func  (GObject            *column_or_iconview,
                              GtkTreeModel       *model,
                              GtkTreeIter        *iter,
                              MooFileView        *fileview);
+#endif
 
 static void         init_gui                (MooFileView    *fileview);
 static void         focus_to_file_view      (MooFileView    *fileview);
@@ -234,7 +236,6 @@ static guint signals[LAST_SIGNAL];
 static void moo_file_view_class_init (MooFileViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-//     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkBindingSet *binding_set;
 
     gobject_class->finalize = moo_file_view_finalize;
@@ -491,19 +492,9 @@ static void         moo_file_view_set_current_dir (MooFileView  *fileview,
     }
 
     if (fileview->priv->current_dir)
-    {
-#if 0
-        g_print ("current dir: '%s'\n",
-                 moo_folder_get_path (fileview->priv->current_dir));
-#endif
         g_object_unref (fileview->priv->current_dir);
-    }
 
     fileview->priv->current_dir = g_object_ref (folder);
-#if 0
-    g_print ("changing to: '%s'\n",
-             moo_folder_get_path (fileview->priv->current_dir));
-#endif
     moo_folder_model_set_folder (MOO_FOLDER_MODEL (fileview->priv->model),
                                  folder);
 
@@ -793,8 +784,6 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
     GtkCellRenderer *cell;
 
     treeview = gtk_tree_view_new_with_model (fileview->priv->filter_model);
-//     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
-//     gtk_tree_view_set_search_column (GTK_TREE_VIEW (treeview), COLUMN_DISPLAY_NAME);
 
     g_signal_connect (treeview, "row-activated",
                       G_CALLBACK (tree_row_activated), fileview);
@@ -818,7 +807,7 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
                                              (GtkTreeCellDataFunc) name_data_func,
                                              fileview, NULL);
 
-#if 0
+#ifdef USE_SIZE_AND_STUFF
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_title (column, "Size");
     gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
@@ -998,6 +987,7 @@ static void name_data_func  (G_GNUC_UNUSED GObject *column_or_iconview,
 }
 
 
+#ifdef USE_SIZE_AND_STUFF
 static void date_data_func  (G_GNUC_UNUSED GObject            *column_or_iconview,
                              G_GNUC_UNUSED GtkCellRenderer    *cell,
                              G_GNUC_UNUSED GtkTreeModel       *model,
@@ -1013,67 +1003,7 @@ static void size_data_func  (G_GNUC_UNUSED GObject            *column_or_iconvie
                              G_GNUC_UNUSED MooFileView *fileview)
 {
 }
-
-
-// static int          tree_compare_func   (GtkTreeModel   *model,
-//                                          GtkTreeIter    *a,
-//                                          GtkTreeIter    *b)
-// {
-//     MooFile *f1, *f2;
-//     gboolean is_dir1, is_dir2;
-//     gboolean result = 0;
-//
-//     gtk_tree_model_get (model, a, COLUMN_FILE, &f1, -1);
-//     gtk_tree_model_get (model, b, COLUMN_FILE, &f2, -1);
-//     g_assert (f1 != NULL && f2 != NULL);
-//
-//     if (f1 == f2)
-//     {
-//         result = 0;
-//         goto out;
-//     }
-//
-//     if (!f1 || !f2)
-//     {
-//         if (f1 < f2)
-//             result = -1;
-//         else
-//             result = 1;
-//         goto out;
-//     }
-//
-//     is_dir1 = moo_file_test (f1, MOO_FILE_IS_FOLDER);
-//     is_dir2 = moo_file_test (f2, MOO_FILE_IS_FOLDER);
-//
-//     if (is_dir1 != is_dir2)
-//     {
-//         if (is_dir1 && !is_dir2)
-//             result = -1;
-//         else
-//             result = 1;
-//         goto out;
-//     }
-//
-//     if (is_dir1)
-//     {
-//         if (!strcmp (moo_file_get_basename (f1), ".."))
-//             result = -1;
-//         else if (!strcmp (moo_file_get_basename (f2), ".."))
-//             result = 1;
-//         else
-//             result = strcmp (moo_file_get_basename (f1),
-//                              moo_file_get_basename (f2));
-//         goto out;
-//     }
-//
-//     result = strcmp (moo_file_get_basename (f1),
-//                      moo_file_get_basename (f2));
-//
-// out:
-//     moo_file_unref (f1);
-//     moo_file_unref (f2);
-//     return result;
-// }
+#endif
 
 
 gboolean    moo_file_view_chdir             (MooFileView    *fileview,
@@ -2038,53 +1968,6 @@ static gboolean find_match_visible  (MooFileView    *fileview,
             return FALSE;
     }
 }
-
-
-// static gboolean find_match                  (MooFileView    *fileview,
-//                                              const char     *text,
-//                                              GtkTreeIter    *iter,
-//                                              gboolean        exact_match)
-// {
-//     GtkTreeModel *model = fileview->priv->model;
-//     guint len;
-//
-//     g_return_val_if_fail (text != NULL, FALSE);
-//     if (!text[0])
-//         return FALSE;
-//
-//     if (!gtk_tree_model_get_iter_first (model, iter))
-//         return FALSE;
-//
-//     len = strlen (text);
-//
-//     while (TRUE)
-//     {
-//         MooFile *file = NULL;
-//         gboolean match;
-//
-//         gtk_tree_model_get (model, iter,
-//                             COLUMN_FILE, &file, -1);
-//
-//         if (file)
-//         {
-//             if (exact_match)
-//                 match = !strcmp (text,
-//                                  moo_file_get_display_basename (file));
-//             else
-//                 match = !strncmp (text,
-//                                   moo_file_get_display_basename (file),
-//                                   len);
-//
-//             moo_file_unref (file);
-//
-//             if (match)
-//                 return TRUE;
-//         }
-//
-//         if (!gtk_tree_model_iter_next (model, iter))
-//             return FALSE;
-//     }
-// }
 
 
 /****************************************************************************/
