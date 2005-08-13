@@ -124,9 +124,6 @@ static void         history_revert_go       (MooFileView    *fileview);
 static gboolean     filter_visible_func     (GtkTreeModel       *model,
                                              GtkTreeIter        *iter,
                                              MooFileView        *fileview);
-// static int          tree_compare_func       (GtkTreeModel       *model,
-//                                              GtkTreeIter        *a,
-//                                              GtkTreeIter        *b);
 
 static gboolean     moo_file_view_check_visible (MooFileView        *fileview,
                                                  MooFile            *file,
@@ -153,9 +150,6 @@ static void size_data_func  (GObject            *column_or_iconview,
                              GtkTreeModel       *model,
                              GtkTreeIter        *iter,
                              MooFileView        *fileview);
-
-// static void         folder_deleted          (MooFolder      *folder,
-//                                              MooFileView    *fileview);
 
 static void         init_gui                (MooFileView    *fileview);
 static void         focus_to_file_view      (MooFileView    *fileview);
@@ -824,7 +818,7 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
                                              (GtkTreeCellDataFunc) name_data_func,
                                              fileview, NULL);
 
-#if 1
+#if 0
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_title (column, "Size");
     gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
@@ -1962,7 +1956,7 @@ static void         file_view_move_selection(MooFileView    *fileview,
 
         if (path)
         {
-            gtk_tree_selection_select_path (selection, path);
+            gtk_tree_view_set_cursor (treeview, path, NULL, FALSE);
             gtk_tree_view_scroll_to_cell (treeview, path, NULL,
                                           FALSE, 0, 0);
         }
@@ -1976,14 +1970,14 @@ static void         file_view_move_selection(MooFileView    *fileview,
 }
 
 
-/* returns path in the fileview->priv->model */
+/* returns path in the fileview->priv->filter_model */
 static GtkTreePath *file_widget_get_selected    (MooFileView    *fileview)
 {
     if (fileview->priv->view_type == MOO_FILE_VIEW_LIST)
     {
         GtkTreeSelection *selection;
         GtkTreeView *treeview;
-        GtkTreeIter filter_iter, iter;
+        GtkTreeIter filter_iter;
         GtkTreeModel *filter_model;
 
         treeview = fileview->priv->treeview;
@@ -1992,21 +1986,11 @@ static GtkTreePath *file_widget_get_selected    (MooFileView    *fileview)
         if (!gtk_tree_selection_get_selected (selection, &filter_model, &filter_iter))
             return NULL;
 
-        gtk_tree_model_filter_convert_iter_to_child_iter (
-                GTK_TREE_MODEL_FILTER (filter_model), &iter, &filter_iter);
-
-        return gtk_tree_model_get_path (fileview->priv->model, &iter);
+        return gtk_tree_model_get_path (fileview->priv->filter_model, &filter_iter);
     }
     else
     {
-        GtkTreePath *path;
-        GtkTreePath *filter_path = moo_icon_view_get_selected (fileview->priv->iconview);
-        if (!filter_path)
-            return NULL;
-        path = gtk_tree_model_filter_convert_path_to_child_path (
-                GTK_TREE_MODEL_FILTER (fileview->priv->filter_model), filter_path);
-        gtk_tree_path_free (filter_path);
-        return path;
+        return moo_icon_view_get_selected (fileview->priv->iconview);
     }
 }
 
@@ -2123,9 +2107,18 @@ static void     search_entry_activate       (GtkEntry       *entry,
 static void     search_entry_changed        (GtkEntry       *entry,
                                              MooFileView    *fileview);
 
-static void         start_interactive_search    (MooFileView    *fileview)
+static void         start_interactive_search    (MooFileView    *fileview,
+                                                 GdkEventKey    *event)
 {
+    GdkEvent *copy;
     GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
+
+    g_return_if_fail (event != NULL);
+
+    copy = gdk_event_copy ((GdkEvent*) event);
+    gtk_widget_realize (entry);
+    g_object_unref (copy->key.window);
+    copy->key.window = g_object_ref (entry->window);
 
     file_view_move_selection (fileview, NULL);
     gtk_widget_show (entry);
@@ -2145,11 +2138,14 @@ static void         start_interactive_search    (MooFileView    *fileview)
     g_signal_connect (entry, "changed",
                       G_CALLBACK (search_entry_changed),
                       fileview);
+
+    gtk_widget_event (entry, copy);
+    gdk_event_free (copy);
 }
 
 
 static void         stop_interactive_search     (MooFileView    *fileview,
-                                                 gboolean        focus_to_file_view)
+                                                 gboolean        move_focus_to_file_view)
 {
     GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
 
@@ -2201,8 +2197,8 @@ static void         stop_interactive_search     (MooFileView    *fileview,
 
     completion_clear (fileview);
 
-    if (focus_to_file_view)
-        gtk_widget_grab_focus (get_file_view_widget (fileview));
+    if (move_focus_to_file_view)
+        focus_to_file_view (fileview);
 }
 
 
@@ -2218,8 +2214,6 @@ static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
                                                  GdkEventKey    *event,
                                                  MooFileView    *fileview)
 {
-    GtkWidget *entry = GTK_WIDGET (fileview->priv->search_entry);
-
     if (fileview->priv->in_search)
     {
         g_warning ("%s: something wrong", G_STRLOC);
@@ -2227,26 +2221,259 @@ static gboolean     moo_file_view_key_press     (GtkWidget      *widget,
         return FALSE;
     }
 
+    /* return immediately if event doesn't seem like text typed in */
+
+    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK))
+        return FALSE;
+
+    switch (event->keyval)
+    {
+        case GDK_VoidSymbol:
+        case GDK_BackSpace:
+        case GDK_Tab:
+        case GDK_Linefeed:
+        case GDK_Clear:
+        case GDK_Return:
+        case GDK_Pause:
+        case GDK_Scroll_Lock:
+        case GDK_Sys_Req:
+        case GDK_Escape:
+        case GDK_Delete:
+        case GDK_Multi_key:
+        case GDK_Codeinput:
+        case GDK_SingleCandidate:
+        case GDK_MultipleCandidate:
+        case GDK_PreviousCandidate:
+        case GDK_Kanji:
+        case GDK_Muhenkan:
+        case GDK_Henkan_Mode:
+        case GDK_Romaji:
+        case GDK_Hiragana:
+        case GDK_Katakana:
+        case GDK_Hiragana_Katakana:
+        case GDK_Zenkaku:
+        case GDK_Hankaku:
+        case GDK_Zenkaku_Hankaku:
+        case GDK_Touroku:
+        case GDK_Massyo:
+        case GDK_Kana_Lock:
+        case GDK_Kana_Shift:
+        case GDK_Eisu_Shift:
+        case GDK_Eisu_toggle:
+        case GDK_Home:
+        case GDK_Left:
+        case GDK_Up:
+        case GDK_Right:
+        case GDK_Down:
+        case GDK_Page_Up:
+        case GDK_Page_Down:
+        case GDK_End:
+        case GDK_Begin:
+        case GDK_Select:
+        case GDK_Print:
+        case GDK_Execute:
+        case GDK_Insert:
+        case GDK_Undo:
+        case GDK_Redo:
+        case GDK_Menu:
+        case GDK_Find:
+        case GDK_Cancel:
+        case GDK_Help:
+        case GDK_Break:
+        case GDK_Mode_switch:
+        case GDK_Num_Lock:
+        case GDK_KP_Tab:
+        case GDK_KP_Enter:
+        case GDK_KP_F1:
+        case GDK_KP_F2:
+        case GDK_KP_F3:
+        case GDK_KP_F4:
+        case GDK_KP_Home:
+        case GDK_KP_Left:
+        case GDK_KP_Up:
+        case GDK_KP_Right:
+        case GDK_KP_Down:
+        case GDK_KP_Page_Up:
+        case GDK_KP_Page_Down:
+        case GDK_KP_End:
+        case GDK_KP_Begin:
+        case GDK_KP_Insert:
+        case GDK_KP_Delete:
+        case GDK_F1:
+        case GDK_F2:
+        case GDK_F3:
+        case GDK_F4:
+        case GDK_F5:
+        case GDK_F6:
+        case GDK_F7:
+        case GDK_F8:
+        case GDK_F9:
+        case GDK_F10:
+        case GDK_F11:
+        case GDK_F12:
+        case GDK_F13:
+        case GDK_F14:
+        case GDK_F15:
+        case GDK_F16:
+        case GDK_F17:
+        case GDK_F18:
+        case GDK_F19:
+        case GDK_F20:
+        case GDK_F21:
+        case GDK_F22:
+        case GDK_F23:
+        case GDK_F24:
+        case GDK_F25:
+        case GDK_F26:
+        case GDK_F27:
+        case GDK_F28:
+        case GDK_F29:
+        case GDK_F30:
+        case GDK_F31:
+        case GDK_F32:
+        case GDK_F33:
+        case GDK_F34:
+        case GDK_F35:
+        case GDK_Shift_L:
+        case GDK_Shift_R:
+        case GDK_Control_L:
+        case GDK_Control_R:
+        case GDK_Caps_Lock:
+        case GDK_Shift_Lock:
+        case GDK_Meta_L:
+        case GDK_Meta_R:
+        case GDK_Alt_L:
+        case GDK_Alt_R:
+        case GDK_Super_L:
+        case GDK_Super_R:
+        case GDK_Hyper_L:
+        case GDK_Hyper_R:
+        case GDK_ISO_Lock:
+        case GDK_ISO_Level2_Latch:
+        case GDK_ISO_Level3_Shift:
+        case GDK_ISO_Level3_Latch:
+        case GDK_ISO_Level3_Lock:
+        case GDK_ISO_Group_Latch:
+        case GDK_ISO_Group_Lock:
+        case GDK_ISO_Next_Group:
+        case GDK_ISO_Next_Group_Lock:
+        case GDK_ISO_Prev_Group:
+        case GDK_ISO_Prev_Group_Lock:
+        case GDK_ISO_First_Group:
+        case GDK_ISO_First_Group_Lock:
+        case GDK_ISO_Last_Group:
+        case GDK_ISO_Last_Group_Lock:
+        case GDK_ISO_Left_Tab:
+        case GDK_ISO_Move_Line_Up:
+        case GDK_ISO_Move_Line_Down:
+        case GDK_ISO_Partial_Line_Up:
+        case GDK_ISO_Partial_Line_Down:
+        case GDK_ISO_Partial_Space_Left:
+        case GDK_ISO_Partial_Space_Right:
+        case GDK_ISO_Set_Margin_Left:
+        case GDK_ISO_Set_Margin_Right:
+        case GDK_ISO_Release_Margin_Left:
+        case GDK_ISO_Release_Margin_Right:
+        case GDK_ISO_Release_Both_Margins:
+        case GDK_ISO_Fast_Cursor_Left:
+        case GDK_ISO_Fast_Cursor_Right:
+        case GDK_ISO_Fast_Cursor_Up:
+        case GDK_ISO_Fast_Cursor_Down:
+        case GDK_ISO_Continuous_Underline:
+        case GDK_ISO_Discontinuous_Underline:
+        case GDK_ISO_Emphasize:
+        case GDK_ISO_Center_Object:
+        case GDK_ISO_Enter:
+        case GDK_First_Virtual_Screen:
+        case GDK_Prev_Virtual_Screen:
+        case GDK_Next_Virtual_Screen:
+        case GDK_Last_Virtual_Screen:
+        case GDK_Terminate_Server:
+        case GDK_AccessX_Enable:
+        case GDK_AccessX_Feedback_Enable:
+        case GDK_RepeatKeys_Enable:
+        case GDK_SlowKeys_Enable:
+        case GDK_BounceKeys_Enable:
+        case GDK_StickyKeys_Enable:
+        case GDK_MouseKeys_Enable:
+        case GDK_MouseKeys_Accel_Enable:
+        case GDK_Overlay1_Enable:
+        case GDK_Overlay2_Enable:
+        case GDK_AudibleBell_Enable:
+        case GDK_Pointer_Left:
+        case GDK_Pointer_Right:
+        case GDK_Pointer_Up:
+        case GDK_Pointer_Down:
+        case GDK_Pointer_UpLeft:
+        case GDK_Pointer_UpRight:
+        case GDK_Pointer_DownLeft:
+        case GDK_Pointer_DownRight:
+        case GDK_Pointer_Button_Dflt:
+        case GDK_Pointer_Button1:
+        case GDK_Pointer_Button2:
+        case GDK_Pointer_Button3:
+        case GDK_Pointer_Button4:
+        case GDK_Pointer_Button5:
+        case GDK_Pointer_DblClick_Dflt:
+        case GDK_Pointer_DblClick1:
+        case GDK_Pointer_DblClick2:
+        case GDK_Pointer_DblClick3:
+        case GDK_Pointer_DblClick4:
+        case GDK_Pointer_DblClick5:
+        case GDK_Pointer_Drag_Dflt:
+        case GDK_Pointer_Drag1:
+        case GDK_Pointer_Drag2:
+        case GDK_Pointer_Drag3:
+        case GDK_Pointer_Drag4:
+        case GDK_Pointer_Drag5:
+        case GDK_Pointer_EnableKeys:
+        case GDK_Pointer_Accelerate:
+        case GDK_Pointer_DfltBtnNext:
+        case GDK_Pointer_DfltBtnPrev:
+        case GDK_3270_Duplicate:
+        case GDK_3270_FieldMark:
+        case GDK_3270_Right2:
+        case GDK_3270_Left2:
+        case GDK_3270_BackTab:
+        case GDK_3270_EraseEOF:
+        case GDK_3270_EraseInput:
+        case GDK_3270_Reset:
+        case GDK_3270_Quit:
+        case GDK_3270_PA1:
+        case GDK_3270_PA2:
+        case GDK_3270_PA3:
+        case GDK_3270_Test:
+        case GDK_3270_Attn:
+        case GDK_3270_CursorBlink:
+        case GDK_3270_AltCursor:
+        case GDK_3270_KeyClick:
+        case GDK_3270_Jump:
+        case GDK_3270_Ident:
+        case GDK_3270_Rule:
+        case GDK_3270_Copy:
+        case GDK_3270_Play:
+        case GDK_3270_Setup:
+        case GDK_3270_Record:
+        case GDK_3270_ChangeScreen:
+        case GDK_3270_DeleteWord:
+        case GDK_3270_ExSelect:
+        case GDK_3270_CursorSelect:
+        case GDK_3270_PrintScreen:
+        case GDK_3270_Enter:
+            return FALSE;
+    }
+
+    PRINT_KEY_EVENT (event);
+
     if (GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (widget))->key_press_event (widget, event))
         return TRUE;
 
     if (GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (fileview))->key_press_event (widget, event))
         return TRUE;
 
-    if (event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK))
-        return FALSE;
-
     if (event->string && event->length)
     {
-        GdkEvent *copy = gdk_event_copy ((GdkEvent*) event);
-        gtk_widget_realize (entry);
-        g_object_unref (copy->key.window);
-        copy->key.window = g_object_ref (entry->window);
-
-        start_interactive_search (fileview);
-        gtk_widget_event (entry, copy);
-
-        gdk_event_free (copy);
+        start_interactive_search (fileview, event);
         return TRUE;
     }
 
@@ -3037,16 +3264,13 @@ static void     search_entry_activate       (GtkEntry       *entry,
     {
         GtkTreeIter iter;
         MooFile *file = NULL;
-        gtk_tree_model_get_iter (fileview->priv->model, &iter, selected);
-        gtk_tree_model_get (fileview->priv->model, &iter, COLUMN_FILE, &file, -1);
-        if (!file)
-        {
-            gtk_tree_path_free (selected);
-            g_return_if_fail (file != NULL);
-        }
+        gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, selected);
+        gtk_tree_model_get (fileview->priv->filter_model, &iter, COLUMN_FILE, &file, -1);
+        gtk_tree_path_free (selected);
+        g_return_if_fail (file != NULL);
+
         filename = g_strdup (moo_file_get_basename (file));
         moo_file_unref (file);
-        gtk_tree_path_free (selected);
     }
     else
     {
