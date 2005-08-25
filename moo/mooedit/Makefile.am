@@ -4,10 +4,10 @@
 
 DIST_SUBDIRS = glade xdgmime gtksourceview language-specs
 
-if BUILD_XDGMIME
+if MOO_USE_XDGMIME
     xdgmime = xdgmime
     xdgmime_lib = xdgmime/libxdgmime.la
-endif BUILD_XDGMIME
+endif MOO_USE_XDGMIME
 
 SUBDIRS = glade $(xdgmime) gtksourceview language-specs .
 
@@ -20,7 +20,8 @@ AM_CFLAGS =                             \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
-    -DG_LOG_DOMAIN=\"Moo\"
+    -DG_LOG_DOMAIN=\"Moo\"              \
+    -D__MOO__
 
 noinst_LTLIBRARIES   = libmooedit.la
 
@@ -65,9 +66,9 @@ libmooedit_la_SOURCES =     \
     moofoldermodel-private.h\
     mootextiter.h
 
-if USE_XML
+if MOO_USE_XML
     libmooedit_la_SOURCES += mooeditlang-xml.c
-endif USE_XML
+endif MOO_USE_XML
 
 EXTRA_DIST =                \
     mooeditlang-xml.c

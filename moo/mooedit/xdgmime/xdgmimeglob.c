@@ -35,11 +35,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#ifndef __WIN32__
 #include <fnmatch.h>
-#else /* __WIN32__ */
-#include "winfuncs.h"
-#endif /* __WIN32__ */
 
 #ifndef	FALSE
 #define	FALSE	(0)
@@ -245,6 +241,7 @@ _xdg_glob_hash_insert_text (XdgGlobHashNode *glob_hash_node,
   text = _xdg_utf8_next_char (text);
   if (*text == '\000')
     {
+      free ((void *) node->mime_type);
       node->mime_type = mime_type;
     }
   else
@@ -292,6 +289,10 @@ _xdg_glob_hash_lookup_file_name (XdgGlobHash *glob_hash,
   XdgGlobList *list;
   const char *mime_type;
   const char *ptr;
+  char stopchars[128];
+  int i;
+  XdgGlobHashNode *node;
+
   /* First, check the literals */
 
   assert (file_name != NULL);
@@ -300,18 +301,26 @@ _xdg_glob_hash_lookup_file_name (XdgGlobHash *glob_hash,
     if (strcmp ((const char *)list->data, file_name) == 0)
       return list->mime_type;
 
-  ptr = strchr (file_name, '.');
-  while (ptr != NULL)
+  i = 0;
+  for (node = glob_hash->simple_node; node; node = node->next)
+    {
+      if (node->character < 128)
+ 	stopchars[i++] = (char)node->character;
+    }
+  stopchars[i] = '\0';
+ 
+  ptr = strpbrk (file_name, stopchars);
+  while (ptr)
     {
       mime_type = (_xdg_glob_hash_node_lookup_file_name (glob_hash->simple_node, ptr, FALSE));
       if (mime_type != NULL)
         return mime_type;
-
+      
       mime_type = (_xdg_glob_hash_node_lookup_file_name (glob_hash->simple_node, ptr, TRUE));
       if (mime_type != NULL)
         return mime_type;
-
-      ptr = strchr (ptr+1, '.');
+      
+      ptr = strpbrk (ptr + 1, stopchars);
     }
 
   /* FIXME: Not UTF-8 safe */

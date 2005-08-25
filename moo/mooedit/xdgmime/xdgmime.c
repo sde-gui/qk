@@ -2,13 +2,13 @@
 /* xdgmime.c: XDG Mime Spec mime resolver.  Based on version 0.11 of the spec.
  *
  * More info can be found at http://www.freedesktop.org/standards/
- *
+ * 
  * Copyright (C) 2003,2004  Red Hat, Inc.
  * Copyright (C) 2003,2004  Jonathan Blandford <jrb@alum.mit.edu>
  *
  * Licensed under the Academic Free License version 2.0
  * Or under the following terms:
- *
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -35,6 +35,7 @@
 #include "xdgmimemagic.h"
 #include "xdgmimealias.h"
 #include "xdgmimeparent.h"
+#include "xdgmimecache.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -42,11 +43,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <assert.h>
-
-#ifdef __WIN32__
-#include "winfuncs.h"
-#endif /* __WIN32__ */
-
 
 typedef struct XdgDirTimeList XdgDirTimeList;
 typedef struct XdgCallbackList XdgCallbackList;
@@ -60,6 +56,9 @@ static XdgAliasList *alias_list = NULL;
 static XdgParentList *parent_list = NULL;
 static XdgDirTimeList *dir_time_list = NULL;
 static XdgCallbackList *callback_list = NULL;
+XdgMimeCache **caches = NULL;
+int n_caches = 0;
+
 const char *xdg_mime_type_unknown = "application/octet-stream";
 
 
@@ -126,6 +125,29 @@ xdg_mime_init_from_directory (const char *directory)
   XdgDirTimeList *list;
 
   assert (directory != NULL);
+
+  file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
+  strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
+  if (stat (file_name, &st) == 0)
+    {
+      XdgMimeCache *cache = _xdg_mime_cache_new_from_file (file_name);
+
+      if (cache != NULL)
+	{
+	  list = xdg_dir_time_list_new ();
+	  list->directory_name = file_name;
+	  list->mtime = st.st_mtime;
+	  list->next = dir_time_list;
+	  dir_time_list = list;
+
+	  caches = realloc (caches, sizeof (XdgMimeCache *) * (n_caches + 1));
+	  caches[n_caches] = cache;
+	  n_caches++;
+
+	  return FALSE;
+	}
+    }
+  free (file_name);
 
   file_name = malloc (strlen (directory) + strlen ("/mime/globs") + 1);
   strcpy (file_name, directory); strcat (file_name, "/mime/globs");
@@ -316,6 +338,17 @@ xdg_check_dir (const char *directory,
       return TRUE;
     }
 
+  /* Check the mime.cache file */
+  file_name = malloc (strlen (directory) + strlen ("/mime/mime.cache") + 1);
+  strcpy (file_name, directory); strcat (file_name, "/mime/mime.cache");
+  invalid = xdg_check_file (file_name);
+  free (file_name);
+  if (invalid)
+    {
+      *invalid_dir_list = TRUE;
+      return TRUE;
+    }
+
   return FALSE; /* Keep processing */
 }
 
@@ -400,6 +433,9 @@ xdg_mime_get_mime_type_for_data (const void *data,
 
   xdg_mime_init ();
 
+  if (caches)
+    return _xdg_mime_cache_get_mime_type_for_data (data, len);
+
   mime_type = _xdg_mime_magic_lookup_data (global_magic, data, len);
 
   if (mime_type)
@@ -426,6 +462,9 @@ xdg_mime_get_mime_type_for_file (const char *file_name)
 
   xdg_mime_init ();
 
+  if (caches)
+    return _xdg_mime_cache_get_mime_type_for_file (file_name);
+
   base_name = _xdg_get_base_name (file_name);
   mime_type = xdg_mime_get_mime_type_from_file_name (base_name);
 
@@ -445,7 +484,7 @@ xdg_mime_get_mime_type_for_file (const char *file_name)
   data = malloc (max_extent);
   if (data == NULL)
     return XDG_MIME_TYPE_UNKNOWN;
-
+        
       file = fopen (file_name, "r");
   if (file == NULL)
     {
@@ -479,6 +518,9 @@ xdg_mime_get_mime_type_from_file_name (const char *file_name)
 
   xdg_mime_init ();
 
+  if (caches)
+    return _xdg_mime_cache_get_mime_type_from_file_name (file_name);
+
   mime_type = _xdg_glob_hash_lookup_file_name (global_hash, file_name);
   if (mime_type)
     return mime_type;
@@ -505,7 +547,7 @@ xdg_mime_shutdown (void)
       xdg_dir_time_list_free (dir_time_list);
       dir_time_list = NULL;
     }
-
+	
   if (global_hash)
     {
       _xdg_glob_hash_free (global_hash);
@@ -523,6 +565,12 @@ xdg_mime_shutdown (void)
       alias_list = NULL;
     }
 
+  if (parent_list)
+    {
+      _xdg_mime_parent_list_free (parent_list);
+      parent_list = NULL;
+    }
+  
   for (list = callback_list; list; list = list->next)
     (list->callback) (list->data);
 
@@ -533,6 +581,9 @@ int
 xdg_mime_get_max_buffer_extents (void)
 {
   xdg_mime_init ();
+  
+  if (caches)
+    return _xdg_mime_cache_get_max_buffer_extents ();
 
   return _xdg_mime_magic_get_buffer_extents (global_magic);
 }
@@ -543,6 +594,9 @@ xdg_mime_unalias_mime_type (const char *mime_type)
   const char *lookup;
 
   xdg_mime_init ();
+
+  if (caches)
+    return _xdg_mime_cache_unalias_mime_type (mime_type);
 
   if ((lookup = _xdg_mime_alias_list_lookup (alias_list, mime_type)) != NULL)
     return lookup;
@@ -576,7 +630,7 @@ xdg_mime_media_type_equal (const char *mime_a,
   xdg_mime_init ();
 
   sep = strchr (mime_a, '/');
-
+  
   if (sep && strncmp (mime_a, mime_b, sep - mime_a + 1) == 0)
     return 1;
 
@@ -609,13 +663,16 @@ xdg_mime_mime_type_subclass (const char *mime,
 
   xdg_mime_init ();
 
+  if (caches)
+    return _xdg_mime_cache_mime_type_subclass (mime, base);
+
   umime = xdg_mime_unalias_mime_type (mime);
   ubase = xdg_mime_unalias_mime_type (base);
 
   if (strcmp (umime, ubase) == 0)
     return 1;
 
-#if 0
+#if 0  
   /* Handle supertypes */
   if (xdg_mime_is_super_type (ubase) &&
       xdg_mime_media_type_equal (umime, ubase))
@@ -623,13 +680,13 @@ xdg_mime_mime_type_subclass (const char *mime,
 #endif
 
   /*  Handle special cases text/plain and application/octet-stream */
-  if (strcmp (ubase, "text/plain") == 0 &&
+  if (strcmp (ubase, "text/plain") == 0 && 
       strncmp (umime, "text/", 5) == 0)
     return 1;
 
   if (strcmp (ubase, "application/octet-stream") == 0)
     return 1;
-
+  
   parents = _xdg_mime_parent_list_lookup (parent_list, umime);
   for (; parents && *parents; parents++)
     {
@@ -638,6 +695,26 @@ xdg_mime_mime_type_subclass (const char *mime,
     }
 
   return 0;
+}
+
+char **
+xdg_mime_list_mime_parents (const char *mime)
+{
+  const char **parents;
+  char **result;
+  int i, n;
+
+  if (caches)
+    return _xdg_mime_cache_list_mime_parents (mime);
+
+  parents = xdg_mime_get_mime_parents (mime);
+  for (i = 0; parents[i]; i++) ;
+  
+  n = (i + 1) * sizeof (char *);
+  result = (char **) malloc (n);
+  memcpy (result, parents, n);
+
+  return result;
 }
 
 const char **
@@ -652,7 +729,7 @@ xdg_mime_get_mime_parents (const char *mime)
   return _xdg_mime_parent_list_lookup (parent_list, umime);
 }
 
-void
+void 
 xdg_mime_dump (void)
 {
   printf ("*** ALIASES ***\n\n");

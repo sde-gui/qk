@@ -95,6 +95,25 @@ PKG_CHECK_GTK_VERSIONS
 
 
 ################################################################################
+#  File monitoring
+#
+if test x$unix_build = xyes; then
+    AC_CHECK_FAM([has_fam=yes],[has_fam=no])
+    if test x$has_fam = xyes; then
+        AC_DEFINE(MOO_USE_FAM, 1, [use libfam for monitoring files])
+    else
+        AC_MSG_WARN([FAM or gamin not found. It is not required, everything will work but maybe not as well as with FAM.])
+    fi
+fi
+
+# Win32 file watch needs a thread for WaitForMultipleObjects
+if test x$mingw_build = xyes; then
+    AC_DEFINE(MOO_NEED_THREAD, 1, [enable glib thread support])
+    PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
+fi
+
+
+################################################################################
 #  Python stuff
 #
 AC_ARG_WITH([pygtk],
@@ -220,33 +239,22 @@ fi
 if test x$found_xml = "xyes"; then
     use_xml=yes
     AC_MSG_NOTICE([compiling with xml support])
-    AC_DEFINE(USE_XML,, [use libxml])
+    AC_DEFINE(MOO_USE_XML,, [use libxml])
 else
     use_xml=no
     AC_MSG_NOTICE([compiling without xml support])
 fi
 
-AM_CONDITIONAL(USE_XML, test x$use_xml = xyes)
+AM_CONDITIONAL(MOO_USE_XML, test x$use_xml = xyes)
 
 
 ################################################################################
-#  mime
+#  xdgmime
 #
-AC_ARG_WITH([mime],
-    AC_HELP_STRING([--with-mime], [enable mime]),
-    [use_mime=$withval],
-    [use_mime=yes]
-)
-
-if test x$cygwin_build != "xyes" -a x$use_mime != xno; then
-    use_mime=yes
-    use_xdgmime=yes
-    AC_DEFINE(USE_MIME,, [use mime])
-    AC_DEFINE(USE_XDGMIME,, [use xdgmime])
+if test x$unix_build = "xyes"; then
+    AC_DEFINE(MOO_USE_XDGMIME,, [use xdgmime])
 fi
-
-AM_CONDITIONAL(USE_MIME, test x$use_mime = xyes)
-AM_CONDITIONAL(BUILD_XDGMIME, test x$use_xdgmime = xyes)
+AM_CONDITIONAL(MOO_USE_XDGMIME, test x$unix_build = "xyes")
 
 
 ################################################################################

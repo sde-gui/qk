@@ -358,7 +358,7 @@ void                 moo_edit_lang_set_style        (MooEditLang    *lang,
 }
 
 
-#ifndef USE_XML
+#ifndef MOO_USE_XML
 gboolean    moo_edit_lang_load_description  (G_GNUC_UNUSED MooEditLang *lang)
 {
     g_warning ("XML support disabled, can't load language description");
@@ -377,7 +377,7 @@ gboolean    moo_edit_lang_load_full         (MooEditLang *lang)
 
     return FALSE;
 }
-#endif /* USE_XML */
+#endif /* MOO_USE_XML */
 
 
 static void free_tag_array              (GPtrArray          *array)

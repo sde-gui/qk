@@ -13,7 +13,8 @@ AM_CFLAGS =                             \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
-    -DG_LOG_DOMAIN=\"Moo\"
+    -DG_LOG_DOMAIN=\"Moo\"              \
+    -D__MOO__
 
 noinst_LTLIBRARIES   = libmooapp.la
 

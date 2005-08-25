@@ -53,7 +53,8 @@ common_cflags =                         \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
     $(GTK_CFLAGS)                       \
-    -DG_LOG_DOMAIN=\"Moo\"
+    -DG_LOG_DOMAIN=\"Moo\"              \
+    -D__MOO__
 
 AM_CFLAGS = $(common_cflags) $(DEBUG_CFLAGS) $(CFLAGS)
 AM_YFLAGS = -d

@@ -1,3 +1,53 @@
+Thu Jun  9 23:55:25 2005  Jonathan Blandford  <jrb@redhat.com>
+
+	* src/xdgmime.c (xdg_mime_init_from_directory): patch from
+	federico to realloc the right size, #3506
+
+2005-04-17  Christophe Fergeau  <teuf@gnome.org>
+
+	* src/xdgmimeint.c: fix gcc4 signedness warning
+
+2005-04-17  Christophe Fergeau  <teuf@gnome.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_matchlet_compare_to_data),
+	(_xdg_mime_magic_matchlet_compare_level),
+	(_xdg_mime_magic_lookup_data): when  magic patterns matches, check if
+	there aren't subtypes with matching patterns too, and if so, favour
+	the subtype over the parent type, should fix #2686
+
+2005-04-16  Christophe Fergeau  <teuf@gnome.org>
+
+	* src/xdgmime.c: (xdg_mime_init_from_directory): fix leak when
+	mime.cache doesn't exist
+
+2005-04-16  Christophe Fergeau  <teuf@gnome.org>
+
+	* src/test-mime.c: (main): disabled call to xdg_mime_dump for now
+	* src/xdgmimemagic.c: (_xdg_mime_magic_matchlet_compare_to_data):
+	fixed off by 1 error when handling offsets, fixes bug #2050 and 
+	partly bug #2359
+
+Fri Apr  8 23:37:33 2005  Jonathan Blandford  <jrb@redhat.com>
+
+	* src/xdgmimecache.c: Actually add the file.  Also, patch from
+	Matthias Clasen <mclasen@redhat.com> to fix small bugs, #2939
+
+Fri Apr  1 14:59:43 2005  Jonathan Blandford  <jrb@redhat.com>
+
+	* src/xdgmimecache.c: Patch from Matthias Clasen to mmap the
+	cached xdg file.
+
+Mon Mar 28 13:58:32 2005  Jonathan Blandford  <jrb@redhat.com>
+
+	* src/xdgmimeglob.c (_xdg_glob_hash_insert_text): patch from
+	Matthias Clasen to handle globs that don't have '.' chars in
+	them.  As an example 'foo~' should match '*~'
+
+Mon Mar 21 13:16:12 2005  Jonathan Blandford  <jrb@redhat.com>
+
+	* src/xdgmime.c (xdg_mime_shutdown): fix from  Axel Liljencrantz
+	<f97-ali@nada.kth.se> to free parent_list in shutdown.
+
 2005-01-10  Christophe Fergeau  <teuf@gnome.org>
 
 	* src/xdgmimeglob.c: (_xdg_glob_hash_lookup_file_name): make previous

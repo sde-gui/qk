@@ -14,7 +14,8 @@ AM_CFLAGS =                             \
     $(GTK_CFLAGS)                       \
     $(PYTHON_INCLUDES)                  \
     $(PYGTK_CFLAGS)                     \
-    -DG_LOG_DOMAIN=\"Moo\"
+    -DG_LOG_DOMAIN=\"Moo\"              \
+    -D__MOO__
 
 # if USE_UNRTF
 #     unrtf = unrtf

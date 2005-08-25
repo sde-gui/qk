@@ -443,8 +443,8 @@ DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
 
     if test x$debug = "xyes"; then
         flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
--DGDK_DISABLE_DEPRECATED -DDEBUG -DENABLE_DEBUG -DENABLE_PROFILE dnl
--DG_ENABLE_DEBUG -DG_ENABLE_PROFILE"
+ -DGDK_DISABLE_DEPRECATED -DDEBUG -DENABLE_DEBUG -DENABLE_PROFILE dnl
+ -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE"
     else
         flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
     fi
@@ -524,4 +524,51 @@ AC_DEFUN([PKG_CHECK_GTK_VERSIONS],[
     _CHECK_VERSION(GTK, gtk+-2.0)
     _CHECK_VERSION(GLIB, glib-2.0)
     _CHECK_VERSION(GDK, gdk-2.0)
+])
+
+
+##############################################################################
+# AC_CHECK_FAM(action-if-found,action-if-not-found)
+#
+AC_DEFUN([AC_CHECK_FAM],[
+    save_CFLAGS="$CFLAGS"
+    save_LDFLAGS="$LDFLAGS"
+
+    CFLAGS="$CFLAGS $FAM_CFLAGS"
+    if test x$FAM_LIBS = x; then
+        FAM_LIBS=-lfam
+    fi
+    LDFLAGS="$LDFLAGS $FAM_LIBS"
+
+    AC_CHECK_HEADERS(fam.h,[
+        AC_CHECK_FUNCS([FAMMonitorDirectory FAMOpen],[fam_found=yes],[fam_found=no])
+    ],[fam_found=no])
+
+    if test x$fam_found != xno; then
+        AC_SUBST(FAM_CFLAGS)
+        AC_SUBST(FAM_LIBS)
+
+        AC_MSG_CHECKING(for FAM_CFLAGS)
+        if test -z $FAM_CFLAGS; then
+            AC_MSG_RESULT(None)
+        else
+            AC_MSG_RESULT($FAM_CFLAGS)
+        fi
+
+        AC_MSG_CHECKING(for FAM_LIBS)
+        if test -z $FAM_LIBS; then
+            AC_MSG_RESULT(None)
+        else
+            AC_MSG_RESULT($FAM_LIBS)
+        fi
+
+        ifelse([$1], , :, [$1])
+    else
+        unset FAM_CFLAGS
+        unset FAM_LIBS
+        ifelse([$2], , [AC_MSG_ERROR(libfam not found)], [$2])
+    fi
+
+    CFLAGS="$save_CFLAGS"
+    LDFLAGS="$save_LDFLAGS"
 ])

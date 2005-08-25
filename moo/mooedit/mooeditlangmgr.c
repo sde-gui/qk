@@ -166,7 +166,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
 #endif
     }
 
-#ifdef USE_XDGMIME
+#ifdef MOO_USE_XDGMIME
     /* TODO: xdgmime wants utf8-encoded filename here. is it a problem? */
     if (!lang)
     {
@@ -179,7 +179,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
 #endif
     }
-#endif /* USE_XDGMIME */
+#endif /* MOO_USE_XDGMIME */
 
     /* check if it's backup file */
     if (!lang && utf8_filename)
@@ -287,7 +287,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_filename    (MooEditLangMgr 
 #endif
     }
 
-#ifdef USE_XDGMIME
+#ifdef MOO_USE_XDGMIME
     /* TODO: xdgmime wants utf8-encoded filename here. is it a problem? */
     if (!lang)
     {
@@ -300,7 +300,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_filename    (MooEditLangMgr 
                        G_STRLOC, moo_edit_lang_get_id (lang), filename);
 #endif
     }
-#endif /* USE_XDGMIME */
+#endif /* MOO_USE_XDGMIME */
 
     if (!lang)
         g_message ("%s: could not find lang for file '%s'", G_STRLOC, filename);
@@ -323,10 +323,10 @@ void             moo_edit_lang_mgr_add_lang_files_dir           (MooEditLangMgr 
     GDir *dir;
     const char *entry;
 
-#ifndef USE_XML
+#ifndef MOO_USE_XML
     g_warning ("%s: xml support disabled, can't load lang files", G_STRLOC);
     return;
-#endif /* USE_XML */
+#endif /* MOO_USE_XML */
 
     g_return_if_fail (MOO_IS_EDIT_LANG_MGR (mgr) && dirname != NULL);
     g_return_if_fail (!g_slist_find_custom (mgr->priv->lang_dirs, dirname,
