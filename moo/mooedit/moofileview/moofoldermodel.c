@@ -12,13 +12,25 @@
  */
 
 #define MOO_FILE_SYSTEM_COMPILATION
-#include "mooedit/moofoldermodel.h"
-#include "mooedit/moofoldermodel-private.h"
+#include "moofoldermodel.h"
+#include "moofoldermodel-private.h"
+
+
+struct _MooFolderModelPrivate {
+    MooFolder   *folder;
+    FileList    *dirs;
+    FileList    *files;
+    gboolean     sort_case_sensitive;
+    MooFileCmp   cmp_func;
+};
 
 
 static void moo_folder_model_class_init         (MooFolderModelClass *klass);
 static void moo_folder_model_init               (MooFolderModel *model);
-static void moo_folder_model_tree_iface_init    (GtkTreeModelIface *iface);
+
+static void moo_folder_model_tree_iface_init        (GtkTreeModelIface      *iface);
+static void moo_folder_model_drag_source_iface_init (GtkTreeDragSourceIface *iface);
+
 static void moo_folder_model_finalize           (GObject *object);
 static void moo_folder_model_set_property       (GObject *object,
                                                  guint property_id,
@@ -51,8 +63,14 @@ GType            moo_folder_model_get_type  (void)
             NULL /* value_table; */
         };
 
-        static GInterfaceInfo iface_info = {
+        static GInterfaceInfo tree_model_info = {
             (GInterfaceInitFunc) moo_folder_model_tree_iface_init,
+            NULL, /* interface_finalize; */
+            NULL /* interface_data; */
+        };
+
+        static GInterfaceInfo drag_source_info = {
+            (GInterfaceInitFunc) moo_folder_model_drag_source_iface_init,
             NULL, /* interface_finalize; */
             NULL /* interface_data; */
         };
@@ -61,7 +79,9 @@ GType            moo_folder_model_get_type  (void)
                                        "MooFolderModel",
                                        &info, 0);
         g_type_add_interface_static (type, GTK_TYPE_TREE_MODEL,
-                                     &iface_info);
+                                     &tree_model_info);
+        g_type_add_interface_static (type, GTK_TYPE_TREE_DRAG_SOURCE,
+                                     &drag_source_info);
     }
 
     return type;
@@ -69,7 +89,8 @@ GType            moo_folder_model_get_type  (void)
 
 enum {
     PROP_0,
-    PROP_FOLDER
+    PROP_FOLDER,
+    PROP_SORT_CASE_SENSITIVE
 };
 
 static void moo_folder_model_class_init         (MooFolderModelClass *klass)
@@ -89,6 +110,14 @@ static void moo_folder_model_class_init         (MooFolderModelClass *klass)
                                              "folder",
                                              MOO_TYPE_FOLDER,
                                              G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SORT_CASE_SENSITIVE,
+                                     g_param_spec_boolean ("sort-case-sensitive",
+                                             "sort-case-sensitive",
+                                             "sort-case-sensitive",
+                                             MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT,
+                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 }
 
 
@@ -98,6 +127,9 @@ static void         moo_folder_model_change_files   (MooFolderModel *model,
                                                      GSList         *files);
 static void         moo_folder_model_remove_files   (MooFolderModel *model,
                                                      GSList         *files);
+static void         moo_folder_model_folder_deleted (MooFolderModel *model);
+static void         moo_folder_model_disconnect_folder (MooFolderModel *model);
+
 
 static GtkTreeModelFlags moo_folder_model_get_flags (GtkTreeModel *tree_model);
 static gint         moo_folder_model_get_n_columns  (GtkTreeModel *tree_model);
@@ -161,6 +193,11 @@ static void moo_folder_model_set_property       (GObject *object,
                                          g_value_get_object (value));
             break;
 
+        case PROP_SORT_CASE_SENSITIVE:
+            moo_folder_model_set_sort_case_sensitive (model,
+                    g_value_get_boolean (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -181,17 +218,14 @@ static void moo_folder_model_get_property       (GObject *object,
                                 moo_folder_model_get_folder (model));
             break;
 
+        case PROP_SORT_CASE_SENSITIVE:
+            g_value_set_boolean (value, model->priv->sort_case_sensitive);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
 }
-
-
-struct _MooFolderModelPrivate {
-    MooFolder   *folder;
-    FileList    *dirs;
-    FileList    *files;
-};
 
 
 void             moo_folder_model_set_folder    (MooFolderModel *model,
@@ -204,26 +238,7 @@ void             moo_folder_model_set_folder    (MooFolderModel *model,
     if (model->priv->folder == folder)
         return;
 
-    if (model->priv->folder)
-    {
-        g_signal_handlers_disconnect_by_func (model->priv->folder,
-                                              (gpointer) moo_folder_model_add_files,
-                                              model);
-        g_signal_handlers_disconnect_by_func (model->priv->folder,
-                                              (gpointer) moo_folder_model_remove_files,
-                                              model);
-        g_signal_handlers_disconnect_by_func (model->priv->folder,
-                                              (gpointer) moo_folder_model_change_files,
-                                              model);
-
-        files = moo_folder_list_files (model->priv->folder);
-        moo_folder_model_remove_files (model, files);
-        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
-        g_slist_free (files);
-
-        g_object_unref (model->priv->folder);
-        model->priv->folder = NULL;
-    }
+    moo_folder_model_disconnect_folder (model);
 
     if (folder)
     {
@@ -237,6 +252,9 @@ void             moo_folder_model_set_folder    (MooFolderModel *model,
                                   model);
         g_signal_connect_swapped (folder, "files_changed",
                                   G_CALLBACK (moo_folder_model_change_files),
+                                  model);
+        g_signal_connect_swapped (folder, "deleted",
+                                  G_CALLBACK (moo_folder_model_folder_deleted),
                                   model);
 
         files = moo_folder_list_files (folder);
@@ -252,8 +270,16 @@ void             moo_folder_model_set_folder    (MooFolderModel *model,
 static void moo_folder_model_init               (MooFolderModel *model)
 {
     model->priv = g_new0 (MooFolderModelPrivate, 1);
-    model->priv->files = file_list_new ();
-    model->priv->dirs = file_list_new ();
+
+    model->priv->sort_case_sensitive = MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT;
+
+    if (model->priv->sort_case_sensitive)
+        model->priv->cmp_func = moo_file_cmp;
+    else
+        model->priv->cmp_func = moo_file_case_cmp;
+
+    model->priv->files = file_list_new (model->priv->cmp_func);
+    model->priv->dirs = file_list_new (model->priv->cmp_func);
 }
 
 
@@ -283,6 +309,58 @@ static void moo_folder_model_finalize           (GObject *object)
     model->priv = NULL;
 
     G_OBJECT_CLASS(moo_folder_model_parent_class)->finalize (object);
+}
+
+
+void    moo_folder_model_set_sort_case_sensitive    (MooFolderModel *model,
+                                                     gboolean        case_sensitive)
+{
+    g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
+
+    if (model->priv->sort_case_sensitive != case_sensitive)
+    {
+        int *new_order, *real_new_order;
+        guint i;
+        guint dir_num = model->priv->dirs->size;
+        guint total = model->priv->dirs->size + model->priv->files->size;
+        GtkTreePath *path = gtk_tree_path_new ();
+
+        model->priv->sort_case_sensitive = case_sensitive;
+
+        if (model->priv->sort_case_sensitive)
+            model->priv->cmp_func = moo_file_cmp;
+        else
+            model->priv->cmp_func = moo_file_case_cmp;
+
+        real_new_order = g_new (int, total);
+
+        for (i = 0; i < total; ++i)
+            real_new_order[i] = i;
+
+        file_list_set_cmp_func (model->priv->dirs, model->priv->cmp_func, &new_order);
+
+        if (dir_num)
+        {
+            for (i = 0; i < dir_num; ++i)
+                real_new_order[i] = new_order[i];
+            g_free (new_order);
+        }
+
+        file_list_set_cmp_func (model->priv->files, model->priv->cmp_func, &new_order);
+
+        if (model->priv->files->size)
+        {
+            for (i = dir_num; i < total; ++i)
+                real_new_order[i] = new_order[i - dir_num] + dir_num;
+            g_free (new_order);
+        }
+
+        g_signal_emit_by_name (model, "rows-reordered", path, NULL, real_new_order);
+        g_object_notify (G_OBJECT (model), "sort-case-sensitive");
+
+        g_free (real_new_order);
+        gtk_tree_path_free (path);
+    }
 }
 
 
@@ -330,6 +408,47 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter);
 #endif
 
 
+static void         moo_folder_model_disconnect_folder  (MooFolderModel *model)
+{
+    GSList *files;
+
+    if (model->priv->folder)
+    {
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_add_files,
+                                              model);
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_remove_files,
+                                              model);
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_change_files,
+                                              model);
+        g_signal_handlers_disconnect_by_func (model->priv->folder,
+                                              (gpointer) moo_folder_model_folder_deleted,
+                                              model);
+
+        files = file_list_get_slist (model->priv->files);
+        moo_folder_model_remove_files (model, files);
+        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_free (files);
+
+        files = file_list_get_slist (model->priv->dirs);
+        moo_folder_model_remove_files (model, files);
+        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_free (files);
+
+        g_object_unref (model->priv->folder);
+        model->priv->folder = NULL;
+    }
+
+}
+
+
+static void         moo_folder_model_folder_deleted (MooFolderModel *model)
+{
+    moo_folder_model_disconnect_folder (model);
+}
+
 static void         moo_folder_model_add_files      (MooFolderModel *model,
                                                      GSList         *files)
 {
@@ -352,7 +471,7 @@ static void         moo_folder_model_remove_files   (MooFolderModel *model,
 static void     model_add_moo_file  (MooFile        *file,
                                      MooFolderModel *model)
 {
-    int index;
+    int index_;
     GtkTreePath *path;
     GtkTreeIter iter;
     gboolean is_dir;
@@ -362,22 +481,22 @@ static void     model_add_moo_file  (MooFile        *file,
 
     moo_file_ref (file);
 
-    if (moo_file_test (file, MOO_FILE_IS_FOLDER))
+    if (MOO_FILE_IS_DIR (file))
     {
         is_dir = TRUE;
-        index = file_list_add (model->priv->dirs, file);
+        index_ = file_list_add (model->priv->dirs, file);
     }
     else
     {
         is_dir = FALSE;
-        index = file_list_add (model->priv->files, file);
-        index += model->priv->dirs->size;
+        index_ = file_list_add (model->priv->files, file);
+        index_ += model->priv->dirs->size;
     }
 
     ITER_INIT (&iter, model, file, is_dir);
     CHECK_ITER (model, &iter);
 
-    path = gtk_tree_path_new_from_indices (index, -1);
+    path = gtk_tree_path_new_from_indices (index_, -1);
     gtk_tree_model_row_inserted (GTK_TREE_MODEL (model), path, &iter);
     gtk_tree_path_free (path);
 }
@@ -386,7 +505,7 @@ static void     model_add_moo_file  (MooFile        *file,
 static void     model_change_moo_file   (MooFile        *file,
                                          MooFolderModel *model)
 {
-    int index;
+    int index_;
     GtkTreePath *path;
     GtkTreeIter iter;
     gboolean is_dir;
@@ -396,7 +515,7 @@ static void     model_change_moo_file   (MooFile        *file,
 
     if (model_is_dir (model, file))
     {
-        if (!moo_file_test (file, MOO_FILE_IS_FOLDER))
+        if (!MOO_FILE_IS_DIR (file))
         {
             moo_file_ref (file);
             model_remove_moo_file (file, model);
@@ -405,13 +524,13 @@ static void     model_change_moo_file   (MooFile        *file,
             return;
         }
 
-        index = file_list_position (model->priv->dirs, file);
-        g_assert (index >= 0);
+        index_ = file_list_position (model->priv->dirs, file);
+        g_assert (index_ >= 0);
         is_dir = TRUE;
     }
     else
     {
-        if (moo_file_test (file, MOO_FILE_IS_FOLDER))
+        if (MOO_FILE_IS_DIR (file))
         {
             moo_file_ref (file);
             model_remove_moo_file (file, model);
@@ -420,16 +539,16 @@ static void     model_change_moo_file   (MooFile        *file,
             return;
         }
 
-        index = file_list_position (model->priv->files, file);
-        g_assert (index >= 0);
-        index += model->priv->dirs->size;
+        index_ = file_list_position (model->priv->files, file);
+        g_assert (index_ >= 0);
+        index_ += model->priv->dirs->size;
         is_dir = FALSE;
     }
 
     ITER_INIT (&iter, model, file, is_dir);
     CHECK_ITER (model, &iter);
 
-    path = gtk_tree_path_new_from_indices (index, -1);
+    path = gtk_tree_path_new_from_indices (index_, -1);
     gtk_tree_model_row_changed (GTK_TREE_MODEL (model), path, &iter);
     gtk_tree_path_free (path);
 }
@@ -438,7 +557,7 @@ static void     model_change_moo_file   (MooFile        *file,
 static void     model_remove_moo_file   (MooFile        *file,
                                          MooFolderModel *model)
 {
-    int index;
+    int index_;
     GtkTreePath *path;
 
     g_assert (model_contains_file (model, file));
@@ -448,15 +567,15 @@ static void     model_remove_moo_file   (MooFile        *file,
 
     if (model_is_dir (model, file))
     {
-        index = file_list_remove (model->priv->dirs, file);
+        index_ = file_list_remove (model->priv->dirs, file);
     }
     else
     {
-        index = file_list_remove (model->priv->files, file);
-        index += model->priv->dirs->size;
+        index_ = file_list_remove (model->priv->files, file);
+        index_ += model->priv->dirs->size;
     }
 
-    path = gtk_tree_path_new_from_indices (index, -1);
+    path = gtk_tree_path_new_from_indices (index_, -1);
     gtk_tree_model_row_deleted (GTK_TREE_MODEL (model), path);
     gtk_tree_path_free (path);
 
@@ -530,7 +649,7 @@ static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
                                                      GtkTreePath  *path)
 {
     MooFolderModel *model;
-    int index;
+    int index_;
     MooFile *file;
     gboolean is_dir;
 
@@ -542,23 +661,23 @@ static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
     if (gtk_tree_path_get_depth (path) != 1)
         g_return_val_if_reached (FALSE);
 
-    index = gtk_tree_path_get_indices(path)[0];
+    index_ = gtk_tree_path_get_indices(path)[0];
 
-    g_return_val_if_fail (index >= 0, FALSE);
+    g_return_val_if_fail (index_ >= 0, FALSE);
 
-    if (index >= model->priv->files->size + model->priv->dirs->size)
+    if (index_ >= model->priv->files->size + model->priv->dirs->size)
         return FALSE;
 
-    if (index < model->priv->dirs->size)
+    if (index_ < model->priv->dirs->size)
     {
         is_dir = TRUE;
-        file = file_list_nth (model->priv->dirs, index);
+        file = file_list_nth (model->priv->dirs, index_);
     }
     else
     {
         is_dir = FALSE;
-        index -= model->priv->dirs->size;
-        file = file_list_nth (model->priv->files, index);
+        index_ -= model->priv->dirs->size;
+        file = file_list_nth (model->priv->files, index_);
     }
 
     g_assert (file != NULL);
@@ -573,8 +692,7 @@ static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
                                                      GtkTreeIter  *iter)
 {
     MooFolderModel *model;
-    int index;
-    GList *link;
+    int index_;
 
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), NULL);
     g_return_val_if_fail (iter != NULL, NULL);
@@ -583,23 +701,21 @@ static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_MODEL (iter) == model, NULL);
     g_return_val_if_fail (ITER_FILE (iter) != NULL, NULL);
 
-    g_return_val_if_fail (link != NULL, NULL);
-
     if (ITER_DIR (iter))
     {
-        index = file_list_position (model->priv->dirs,
-                                    ITER_FILE (iter));
-        g_return_val_if_fail (index >= 0, NULL);
+        index_ = file_list_position (model->priv->dirs,
+                                     ITER_FILE (iter));
+        g_return_val_if_fail (index_ >= 0, NULL);
     }
     else
     {
-        index = file_list_position (model->priv->files,
-                                    ITER_FILE (iter));
-        g_return_val_if_fail (index >= 0, NULL);
-        index += model->priv->dirs->size;
+        index_ = file_list_position (model->priv->files,
+                                     ITER_FILE (iter));
+        g_return_val_if_fail (index_ >= 0, NULL);
+        index_ += model->priv->dirs->size;
     }
 
-    return gtk_tree_path_new_from_indices (index, -1);
+    return gtk_tree_path_new_from_indices (index_, -1);
 }
 
 
@@ -928,3 +1044,137 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter)
     gtk_tree_path_free (path2);
 }
 #endif /* DEFINE_CHECK_ITER */
+
+
+/***********************************************************************/
+/* DnD
+ */
+
+static GdkAtom uri_atom (void)
+{
+    static GdkAtom atom = 0;
+    if (!atom)
+        atom = gdk_atom_intern ("text/uri-list", FALSE);
+    return atom;
+}
+
+
+static gboolean source_drag_data_get    (GtkTreeDragSource  *drag_source,
+                                         GtkTreePath        *path,
+                                         GtkSelectionData   *selection_data)
+{
+    GtkTreeIter iter;
+    MooFolderModel *model;
+    char *file_path;
+    static char *uris[2];
+    gboolean result;
+
+    model = MOO_FOLDER_MODEL (drag_source);
+
+    if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (model), &iter, path))
+        return FALSE;
+
+    g_assert (ITER_MODEL (&iter) == model);
+    g_assert (ITER_FILE (&iter) != NULL);
+
+    file_path = g_build_filename (moo_folder_get_path (model->priv->folder),
+                                  moo_file_name (ITER_FILE (&iter)),
+                                  NULL);
+
+    if (selection_data->target != uri_atom())
+    {
+        result = gtk_selection_data_set_text (selection_data, file_path, -1);
+    }
+    else
+    {
+        uris[0] = g_strdup_printf ("file://%s", file_path);
+        uris[1] = NULL;
+        result = gtk_selection_data_set_uris (selection_data, uris);
+        g_free (uris[0]);
+    }
+
+    g_free (file_path);
+    return result;
+}
+
+
+static gboolean source_drag_data_delete (GtkTreeDragSource  *drag_source,
+                                         GtkTreePath        *path)
+{
+    g_print ("deleting\n");
+    return TRUE;
+}
+
+
+static void moo_folder_model_drag_source_iface_init (GtkTreeDragSourceIface *iface)
+{
+    iface->drag_data_get = source_drag_data_get;
+    iface->drag_data_delete = source_drag_data_delete;
+}
+
+
+static void moo_folder_filter_class_init                (MooFolderFilterClass   *klass);
+
+
+GType            moo_folder_filter_get_type     (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static GTypeInfo info = {
+            /* interface types, classed types, instantiated types */
+            sizeof (MooFolderFilterClass),
+            NULL, /* base_init; */
+            NULL, /* base_finalize; */
+            (GClassInitFunc) moo_folder_filter_class_init,
+            NULL, /* class_finalize; */
+            NULL, /* class_data; */
+            sizeof (MooFolderFilter),
+            0, /* n_preallocs; */
+//             (GInstanceInitFunc) moo_folder_filter_init,
+            NULL,
+            NULL /* value_table; */
+        };
+
+        type = g_type_register_static (GTK_TYPE_TREE_MODEL_FILTER,
+                                       "MooFolderFilter",
+                                       &info, 0);
+    }
+
+    return type;
+}
+
+
+GtkTreeModel    *moo_folder_filter_new              (MooFolderModel     *model)
+{
+    g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
+    return g_object_new (MOO_TYPE_FOLDER_FILTER,
+                         "child-model", model, NULL);
+}
+
+
+static void moo_folder_filter_class_init                (MooFolderFilterClass   *klass)
+{
+}
+
+
+void             moo_folder_filter_set_folder       (MooFolderFilter    *filter,
+                                                     MooFolder          *folder)
+{
+    GtkTreeModel *model;
+    g_return_if_fail (MOO_IS_FOLDER_FILTER (filter));
+    model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (filter));
+    g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
+    moo_folder_model_set_folder (MOO_FOLDER_MODEL (model), folder);
+}
+
+
+MooFolder       *moo_folder_filter_get_folder       (MooFolderFilter    *filter)
+{
+    GtkTreeModel *model;
+    g_return_val_if_fail (MOO_IS_FOLDER_FILTER (filter), NULL);
+    model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (filter));
+    g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
+    return moo_folder_model_get_folder (MOO_FOLDER_MODEL (model));
+}

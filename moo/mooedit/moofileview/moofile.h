@@ -1,5 +1,5 @@
 /*
- *   mooedit/moofile.h
+ *   moofile.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -15,6 +15,7 @@
 #define __MOO_FILE_H__
 
 #include <gtk/gtk.h>
+
 #ifdef MOO_FILE_SYSTEM_COMPILATION
 #include <sys/stat.h>
 #endif
@@ -31,6 +32,9 @@ typedef enum
     MOO_FILE_ERROR_BAD_FILENAME,
     MOO_FILE_ERROR_FAILED,
     MOO_FILE_ERROR_ALREADY_EXISTS,
+    MOO_FILE_ERROR_ACCESS_DENIED,
+    MOO_FILE_ERROR_READONLY,
+    MOO_FILE_ERROR_DIFFERENT_FS,
     MOO_FILE_ERROR_NOT_IMPLEMENTED
 } MooFileError;
 
@@ -47,7 +51,14 @@ GQuark  moo_file_error_quark (void);
 #define MOO_IS_FOLDER_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FOLDER))
 #define MOO_FOLDER_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FOLDER, MooFolderClass))
 
-typedef gint64 MooFileTime;
+#ifdef __WIN32__
+/* FILETIME */
+typedef guint64 MooFileTime;
+#else
+/* time_t */
+typedef GTime MooFileTime;
+#endif
+
 typedef gint64 MooFileSize;
 
 typedef struct _MooFile          MooFile;
@@ -57,13 +68,31 @@ typedef struct _MooFolderClass   MooFolderClass;
 typedef struct _MooFileSystem    MooFileSystem;
 
 typedef enum {
-    MOO_FILE_EXISTS     = 1 << 1,
-    MOO_FILE_IS_FOLDER  = 1 << 2,
-    MOO_FILE_IS_HIDDEN  = 1 << 3,
-    MOO_FILE_IS_LINK    = 1 << 4
+    MOO_FILE_INFO_EXISTS         = 1 << 0,
+    MOO_FILE_INFO_IS_DIR         = 1 << 1,
+    MOO_FILE_INFO_IS_HIDDEN      = 1 << 2,
+    MOO_FILE_INFO_IS_LINK        = 1 << 3,
+    MOO_FILE_INFO_IS_BLOCK_DEV   = 1 << 4,
+    MOO_FILE_INFO_IS_CHAR_DEV    = 1 << 5,
+    MOO_FILE_INFO_IS_FIFO        = 1 << 6,
+    MOO_FILE_INFO_IS_SOCKET      = 1 << 7,
+    MOO_FILE_INFO_IS_LOCKED      = 1 << 8   /* no read premissions */
 } MooFileInfo;
 
-/* should be ordered */
+#define MOO_FILE_INFO_IS_SPECIAL (MOO_FILE_INFO_IS_LINK | MOO_FILE_INFO_IS_BLOCK_DEV |  \
+                                  MOO_FILE_INFO_IS_CHAR_DEV | MOO_FILE_INFO_IS_FIFO |   \
+                                  MOO_FILE_INFO_IS_SOCKET)
+
+#define MOO_FILE_EXISTS(file)           (moo_file_test (file, MOO_FILE_INFO_EXISTS))
+#define MOO_FILE_IS_DIR(file)           (moo_file_test (file, MOO_FILE_INFO_IS_DIR))
+#define MOO_FILE_IS_SPECIAL(file)       (moo_file_test (file, MOO_FILE_INFO_IS_SPECIAL))
+#define MOO_FILE_IS_LINK(file)          (moo_file_test (file, MOO_FILE_INFO_IS_LINK))
+#define MOO_FILE_IS_BROKEN_LINK(file)   (!MOO_FILE_EXISTS (file) && MOO_FILE_IS_LINK (file))
+#define MOO_FILE_IS_LOCKED(file)        (moo_file_test (file, MOO_FILE_INFO_IS_LOCKED))
+#define MOO_FILE_IS_HIDDEN(file)        (moo_file_test (file, MOO_FILE_INFO_IS_HIDDEN))
+
+
+/* should be ordered TODO why? */
 typedef enum {
     MOO_FILE_HAS_STAT       = 1 << 1,
     MOO_FILE_HAS_MIME_TYPE  = 1 << 2,
@@ -81,13 +110,6 @@ struct _MooFolderClass
 {
     GObjectClass    parent_class;
 
-    MooFile* (*get_file)        (MooFolder  *folder,
-                                 const char *path,
-                                 GError    **error);
-    gboolean (*list_files)      (MooFolder  *folder,
-                                 GSList    **children,
-                                 GError    **error);
-
     void     (*deleted)         (MooFolder  *folder);
     void     (*files_added)     (MooFolder  *folder,
                                  GSList     *files);
@@ -100,14 +122,18 @@ struct _MooFolderClass
 #ifdef MOO_FILE_SYSTEM_COMPILATION
 struct _MooFile
 {
-    char           *basename;
-    char           *display_basename;
+    char           *name;
+    char           *link_target;
+    char           *display_name; /* normalized */
+    char           *case_display_name;
+    char           *collation_key;
     MooFileInfo     info;
     MooFileFlags    flags;
-    struct stat     statbuf;
-    const char     *icon;
+    guint8          icon;
     const char     *mime_type;
     int             ref_count;
+/* TODO: who needs whole structure? */
+    struct stat     statbuf;
 };
 #endif /* MOO_FILE_SYSTEM_COMPILATION */
 
@@ -127,31 +153,36 @@ MooFileInfo  moo_file_get_info          (const MooFile  *file);
 gboolean     moo_file_test              (const MooFile  *file,
                                          MooFileInfo     test);
 
-const char  *moo_file_get_display_basename  (const MooFile  *file);
-const char  *moo_file_get_basename          (const MooFile  *file);
-const char  *moo_file_get_mime_type         (const MooFile  *file);
-gconstpointer moo_file_get_stat             (const MooFile  *file);
-GdkPixbuf   *moo_file_get_icon              (const MooFile  *file,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size);
+const char  *moo_file_name              (const MooFile  *file);
+const char  *moo_file_get_mime_type     (const MooFile  *file);
+GdkPixbuf   *moo_file_get_icon          (const MooFile  *file,
+                                         GtkWidget      *widget,
+                                         GtkIconSize     size);
 
+const char  *moo_file_display_name      (const MooFile  *file);
+const char  *moo_file_collation_key     (const MooFile  *file);
+const char  *moo_file_case_display_name (const MooFile *file);
 
-const char  *moo_folder_get_path            (MooFolder      *folder);
+#ifndef __WIN32__
+gconstpointer moo_file_get_stat         (const MooFile  *file);
+const char  *moo_file_link_get_target   (const MooFile  *file);
+#endif
+
+const char  *moo_folder_get_path        (MooFolder      *folder);
 /* list should be freed and elements unref'ed */
-GSList      *moo_folder_list_files          (MooFolder      *folder);
-MooFile     *moo_folder_get_file            (MooFolder      *folder,
-                                             const char     *basename);
+GSList      *moo_folder_list_files      (MooFolder      *folder);
+MooFile     *moo_folder_get_file        (MooFolder      *folder,
+                                         const char     *basename);
 /* result should be unref'ed */
-MooFolder   *moo_folder_get_parent          (MooFolder      *folder,
-                                             MooFileFlags    wanted);
-char        *moo_folder_get_parent_path     (MooFolder      *folder);
+MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
+                                         MooFileFlags    wanted);
+char        *moo_folder_get_parent_path (MooFolder      *folder);
+
+void         moo_folder_get_file_info   (MooFolder      *folder,
+                                         MooFile        *file);
 
 
 #ifdef MOO_FILE_SYSTEM_COMPILATION
-MooFile     *moo_file_new               (const char     *dirname,
-                                         const char     *basename);
-void         moo_file_stat              (MooFile        *file,
-                                         const char     *dirname);
 MooFolder   *moo_folder_new             (MooFileSystem  *fs,
                                          const char     *path,
                                          MooFileFlags    wanted,

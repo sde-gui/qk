@@ -1,5 +1,5 @@
 #include "mooutils/moopaned.h"
-#include "mooedit/moofileview.h"
+#include "moofileview/moofileview.h"
 
 
 static int WINDOWS = 0;

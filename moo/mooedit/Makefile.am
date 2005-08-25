@@ -9,7 +9,7 @@ if MOO_USE_XDGMIME
     xdgmime_lib = xdgmime/libxdgmime.la
 endif MOO_USE_XDGMIME
 
-SUBDIRS = glade $(xdgmime) gtksourceview language-specs .
+SUBDIRS = moofileview glade $(xdgmime) gtksourceview language-specs .
 
 
 DEFAULT_INCLUDES =
@@ -25,7 +25,10 @@ AM_CFLAGS =                             \
 
 noinst_LTLIBRARIES   = libmooedit.la
 
-libmooedit_la_LIBADD = gtksourceview/libgtksourceview.la $(xdgmime_lib)
+libmooedit_la_LIBADD =                  \
+    gtksourceview/libgtksourceview.la   \
+    moofileview/libmoofileview.la       \
+    $(xdgmime_lib)
 
 libmooedit_la_SOURCES =     \
     mooedit.c               \
@@ -55,15 +58,6 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.c         \
     mooeditsearch.h         \
     mooeditwindow.c         \
-    moofile.c               \
-    moofile.h               \
-    moofilesystem.c         \
-    moofilesystem.h         \
-    moofileview.c           \
-    moofileview.h           \
-    moofoldermodel.c        \
-    moofoldermodel.h        \
-    moofoldermodel-private.h\
     mootextiter.h
 
 if MOO_USE_XML

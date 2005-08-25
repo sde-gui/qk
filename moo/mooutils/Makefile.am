@@ -49,8 +49,6 @@ libmooutils_la_SOURCES =        \
     moodialogs.h                \
     moofileutils.c              \
     moofileutils.h              \
-    mooiconview.c               \
-    mooiconview.h               \
     moolog.c                    \
     moolog.h                    \
     moomarkup.c                 \

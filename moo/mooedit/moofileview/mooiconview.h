@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOICONVIEW_H
-#define MOOUTILS_MOOICONVIEW_H
+#ifndef __MOO_ICON_VIEW_H__
+#define __MOO_ICON_VIEW_H__
 
 #include <gtk/gtk.h>
 
@@ -41,12 +41,15 @@ struct _MooIconViewClass
 {
     GtkVBoxClass        vbox_class;
 
-    void    (*set_scroll_adjustments)   (GtkWidget      *widget,
-                                         GtkAdjustment  *hadjustment,
-                                         GtkAdjustment  *vadjustment);
+    void    (*set_scroll_adjustments)   (GtkWidget          *widget,
+                                         GtkAdjustment      *hadjustment,
+                                         GtkAdjustment      *vadjustment);
 
-    void    (*item_activated)           (MooIconView    *iconview,
-                                         GtkTreePath    *path);
+    void    (*row_activated)            (MooIconView        *iconview,
+                                         const GtkTreePath  *path);
+    void    (*selection_changed)        (MooIconView        *iconview);
+    void    (*cursor_moved)             (MooIconView        *iconview,
+                                         const GtkTreePath  *path);
 };
 
 typedef enum {
@@ -93,21 +96,48 @@ void          moo_icon_view_set_cell_data_func(MooIconView    *view,
 void          moo_icon_view_set_adjustment    (MooIconView    *view,
                                                GtkAdjustment  *adjustment);
 
-void          moo_icon_view_select_path       (MooIconView    *view,
-                                               GtkTreePath    *path);
-void          moo_icon_view_select_iter       (MooIconView    *view,
-                                               GtkTreeIter    *iter);
-gboolean      moo_icon_view_path_is_selected  (MooIconView    *view,
-                                               GtkTreePath    *path);
-GtkTreePath  *moo_icon_view_get_path          (MooIconView    *view,
-                                               int             window_x,
-                                               int             window_y);
-GtkTreePath  *moo_icon_view_get_selected      (MooIconView    *view);
-void          moo_icon_view_activate_selected (MooIconView    *view);
-void          moo_icon_view_move_cursor       (MooIconView    *view,
-                                               GtkTreePath    *path);
+
+/* TreeView-like selection and cursor interface */
+void        moo_icon_view_set_selection_mode    (MooIconView        *view,
+                                                 GtkSelectionMode    mode);
+gboolean    moo_icon_view_get_selected          (MooIconView        *view,
+                                                 GtkTreeIter        *iter);
+GtkTreePath *moo_icon_view_get_selected_path    (MooIconView        *view);
+void        moo_icon_view_selected_foreach      (MooIconView        *view,
+                                                 GtkTreeSelectionForeachFunc func,
+                                                 gpointer data);
+GList*      moo_icon_view_get_selected_rows     (MooIconView        *view);
+gint        moo_icon_view_count_selected_rows   (MooIconView        *view);
+void        moo_icon_view_select_path           (MooIconView        *view,
+                                                 GtkTreePath        *path);
+void        moo_icon_view_unselect_path         (MooIconView        *view,
+                                                 GtkTreePath        *path);
+void        moo_icon_view_select_range          (MooIconView        *view,
+                                                 GtkTreePath        *start,
+                                                 GtkTreePath        *end);
+gboolean    moo_icon_view_path_is_selected      (MooIconView        *view,
+                                                 GtkTreePath        *path);
+void        moo_icon_view_select_all            (MooIconView        *view);
+void        moo_icon_view_unselect_all          (MooIconView        *view);
+
+void        moo_icon_view_scroll_to_cell        (MooIconView        *view,
+                                                 GtkTreePath        *path);
+void        moo_icon_view_set_cursor            (MooIconView        *view,
+                                                 GtkTreePath        *path,
+                                                 gboolean            start_editing);
+GtkTreePath* moo_icon_view_get_cursor           (MooIconView        *view);
+void        moo_icon_view_row_activated         (MooIconView        *view,
+                                                 GtkTreePath        *path);
+
+gboolean    moo_icon_view_get_path_at_pos       (MooIconView        *view,
+                                                 int                 x,
+                                                 int                 y,
+                                                 GtkTreePath       **path,
+                                                 MooIconViewCell    *cell,
+                                                 int                *cell_x,
+                                                 int                *cell_y);
 
 
 G_END_DECLS
 
-#endif /* MOOUTILS_MOOICONVIEW_H */
+#endif /* __MOO_ICON_VIEW_H__ */

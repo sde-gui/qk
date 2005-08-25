@@ -14,8 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditdialogs.h"
-#include "mooedit/moofile.h"
-#include "mooedit/moofileview.h"
+#include "moofileview/moofileview.h"
 #include "mooui/moouiobject-impl.h"
 #include "mooui/moomenuaction.h"
 #include "mooui/mootoggleaction.h"

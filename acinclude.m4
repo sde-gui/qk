@@ -425,12 +425,12 @@ AC_DEFUN([AC_CHECK_DEBUG_STUFF],[
 
     if test x$all_gcc_warnings = "xyes"; then
 DEBUG_CFLAGS="$DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
--std=c99 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
+-Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wunreachable-code -Wdisabled-optimization"
 PYTHON_DEBUG_CFLAGS="$PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
--std=c99 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
+-Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
 -Wunreachable-code -Wdisabled-optimization"

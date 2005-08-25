@@ -50,4 +50,6 @@ int main (int argc, char **argv)
 
     moo_prefs_save (rcfile);
     g_free (rcfile);
+
+    return 0;
 }

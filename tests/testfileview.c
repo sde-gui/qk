@@ -1,4 +1,4 @@
-#include "mooedit/moofileview.h"
+#include "moofileview/moofileview.h"
 
 
 int main (int argc, char *argv[])
