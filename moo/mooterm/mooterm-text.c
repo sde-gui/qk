@@ -744,6 +744,7 @@ static gboolean extend_selection        (MooText        *obj,
 }
 
 
+/* TODO */
 static int      char_class              (MooTerm            *term,
                                          const GtkTextIter  *iter)
 {

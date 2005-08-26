@@ -31,6 +31,8 @@ libmooedit_la_LIBADD =                  \
     $(xdgmime_lib)
 
 libmooedit_la_SOURCES =     \
+    moobigpaned.c           \
+    moobigpaned.h           \
     mooedit.c               \
     mooedit.h               \
     mooedit-private.h       \
@@ -58,6 +60,8 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.c         \
     mooeditsearch.h         \
     mooeditwindow.c         \
+    moopaned.c              \
+    moopaned.h              \
     mootextiter.h
 
 if MOO_USE_XML

@@ -55,8 +55,6 @@ libmooutils_la_SOURCES =        \
     moomarkup.h                 \
     mooobjectfactory.c          \
     mooobjectfactory.h          \
-    moopaned.c                  \
-    moopaned.h                  \
     mooparam.c                  \
     mooparam.h                  \
     mooprefs.c                  \

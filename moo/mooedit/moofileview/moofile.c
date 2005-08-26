@@ -1565,6 +1565,8 @@ static gchar *g_utf8_collate_key_for_filename   (const gchar *str,
 
 /***************************************************************************/
 
+/* XXX check out IconTheme changes */
+
 typedef enum {
     MOO_ICON_LINK       = 1 << 0,
     MOO_ICON_LOCK       = 1 << 1,

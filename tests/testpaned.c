@@ -1,34 +1,39 @@
-#include "mooutils/moopaned.h"
+#include "mooedit/moobigpaned.h"
 
 
-static int WINDOWS = 0;
-
-static void window_destroyed (void)
+static void add_panes (GtkWidget *paned, MooPanePosition pane_position)
 {
-    if (!--WINDOWS) gtk_main_quit ();
-}
-
-
-static void sticky_button_toggled (GtkToggleButton *button,
-                                   MooPaned        *paned)
-{
-    gboolean active = gtk_toggle_button_get_active (button);
-    moo_paned_set_sticky_pane (paned, active);
-}
-
-
-static void create_window_with_paned (GtkPositionType pane_position)
-{
-    GtkWidget *window, *paned, *textview, *button, *label, *swin;
+    GtkWidget *textview;
     GtkTextBuffer *buffer;
 
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
-    g_signal_connect (window, "destroy",
-                      G_CALLBACK (window_destroyed), NULL);
-    WINDOWS++;
+    textview = gtk_text_view_new ();
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+    gtk_text_buffer_insert_at_cursor (buffer, "Hi there. Hi there. "
+            "Hi there. Hi there. Hi there. Hi there. Hi there. ", -1);
+    moo_big_paned_add_pane (MOO_BIG_PANED (paned),
+                            textview, pane_position,
+                            "TextView", GTK_STOCK_OK);
+    moo_big_paned_add_pane (MOO_BIG_PANED (paned),
+                            gtk_label_new ("This is a label"),
+                            pane_position, "Label", GTK_STOCK_CANCEL);
+}
 
-    paned = moo_paned_new (pane_position);
+
+int main (int argc, char *argv[])
+{
+    GtkWidget *window, *paned, *textview, *swin;
+    GtkTextBuffer *buffer;
+
+    gtk_init (&argc, &argv);
+//     gdk_window_set_debug_updates (TRUE);
+
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
+    g_signal_connect (window, "destroy",
+                      G_CALLBACK (gtk_main_quit), NULL);
+
+    paned = moo_big_paned_new ();
     gtk_widget_show (paned);
     gtk_container_add (GTK_CONTAINER (window), paned);
 
@@ -39,78 +44,33 @@ static void create_window_with_paned (GtkPositionType pane_position)
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
     gtk_widget_show (swin);
-    gtk_container_add (GTK_CONTAINER (paned), swin);
+    moo_big_paned_add_child (MOO_BIG_PANED (paned), swin);
     gtk_container_add (GTK_CONTAINER (swin), textview);
 
     gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
     gtk_text_buffer_insert_at_cursor (buffer, "Click a button. Click a button. "
             "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. "
-            "Click a button. Click a button. Click a button. Click a button. ",
-                                     -1);
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. "
+                    "Click a button. Click a button. Click a button. Click a button. ",
+            -1);
 
-    textview = gtk_text_view_new ();
-    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
-    gtk_text_buffer_insert_at_cursor (buffer, "Hi there. Hi there. "
-            "Hi there. Hi there. Hi there. Hi there. Hi there. ", -1);
-    moo_paned_add_pane (MOO_PANED (paned),
-                        textview,
-                        "TextView",
-                        GTK_STOCK_OK);
-    moo_paned_add_pane (MOO_PANED (paned),
-                        gtk_label_new ("This is a label"),
-                        "Label",
-                        GTK_STOCK_CANCEL);
-
-    button = gtk_toggle_button_new ();
-    gtk_widget_show (button);
-    g_signal_connect (button, "toggled",
-                      G_CALLBACK (sticky_button_toggled),
-                      paned);
-    gtk_box_pack_end (GTK_BOX (MOO_PANED(paned)->button_box),
-                      button, FALSE, FALSE, 0);
-
-    label = gtk_label_new ("Sticky");
-    switch (pane_position)
-    {
-        case GTK_POS_LEFT:
-            gtk_label_set_angle (GTK_LABEL (label), 90);
-            break;
-        case GTK_POS_RIGHT:
-            gtk_label_set_angle (GTK_LABEL (label), 270);
-            break;
-        default:
-            break;
-    }
-
-    gtk_widget_show (label);
-    gtk_container_add (GTK_CONTAINER (button), label);
+    add_panes (paned, MOO_PANE_POS_RIGHT);
+    add_panes (paned, MOO_PANE_POS_LEFT);
+    add_panes (paned, MOO_PANE_POS_TOP);
+    add_panes (paned, MOO_PANE_POS_BOTTOM);
 
     gtk_widget_show_all (window);
-}
-
-
-int main (int argc, char *argv[])
-{
-    gtk_init (&argc, &argv);
-
-//     gdk_window_set_debug_updates (TRUE);
-
-    create_window_with_paned (GTK_POS_RIGHT);
-    create_window_with_paned (GTK_POS_LEFT);
-    create_window_with_paned (GTK_POS_TOP);
-    create_window_with_paned (GTK_POS_BOTTOM);
 
     gtk_main ();
+
     return 0;
 }

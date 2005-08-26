@@ -1,4 +1,4 @@
-#include "mooutils/moopaned.h"
+#include "mooedit/moopaned.h"
 #include "moofileview/moofileview.h"
 
 

@@ -21,13 +21,13 @@ if BUILD_MOOAPP
 bin_PROGRAMS += editor
 endif
 if BUILD_MOOEDIT
-noinst_PROGRAMS += medit testfileview testpanedfileview
+noinst_PROGRAMS += medit testfileview testpanedfileview testpaned
 endif
 if BUILD_MOOTERM
 noinst_PROGRAMS += mterm termbuffer
 endif
 if BUILD_MOOUTILS
-noinst_PROGRAMS += markup testpaned
+noinst_PROGRAMS += markup
 endif
 
 

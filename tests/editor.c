@@ -26,6 +26,7 @@ int main (int argc, char *argv[])
     MooEditWindow *win;
 
     gtk_init (&argc, &argv);
+//     gdk_window_set_debug_updates (TRUE);
 
     init_terminal ();
     init_editor ();

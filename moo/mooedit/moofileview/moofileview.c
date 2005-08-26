@@ -662,6 +662,9 @@ static void         moo_file_view_set_current_dir (MooFileView  *fileview,
     if (gtk_tree_model_get_iter_first (fileview->priv->filter_model, &filter_iter))
         file_view_move_selection (fileview, &filter_iter);
 
+    if (gtk_widget_is_focus (GTK_WIDGET (fileview->priv->entry)))
+        focus_to_file_view (fileview);
+
     path = g_filename_display_name (moo_folder_get_path (folder));
     path_entry_set_text (fileview, path);
     g_free (path);

@@ -14,6 +14,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditdialogs.h"
+#include "mooedit/moobigpaned.h"
 #include "moofileview/moofileview.h"
 #include "mooui/moouiobject-impl.h"
 #include "mooui/moomenuaction.h"
@@ -22,7 +23,6 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moosignal.h"
-#include "mooutils/moopaned.h"
 #include <string.h>
 
 
@@ -30,7 +30,7 @@
 
 
 struct _MooEditWindowPrivate {
-    MooPaned        *paned;
+    MooBigPaned     *paned;
     GtkNotebook     *notebook;
     MooFileView     *fileview;
     gboolean         use_fullname;
@@ -107,10 +107,12 @@ static void moo_edit_window_previous_tab    (MooEditWindow   *window);
 static void moo_edit_window_next_tab        (MooEditWindow   *window);
 static void show_file_selector_toggled_cb   (MooEditWindow   *window,
                                              gboolean         show);
-static void pane_opened                     (MooPaned        *paned,
+static void pane_opened                     (MooBigPaned     *paned,
+                                             MooPanePosition  position,
                                              guint            index,
                                              MooEditWindow   *window);
-static void pane_hidden                     (MooPaned        *paned,
+static void pane_hidden                     (MooBigPaned     *paned,
+                                             MooPanePosition  position,
                                              MooEditWindow   *window);
 
 
@@ -469,10 +471,10 @@ GObject        *moo_edit_window_constructor (GType                  type,
 
     gtk_widget_show (MOO_WINDOW(window)->vbox);
 
-    paned = moo_paned_new (GTK_POS_RIGHT);
+    paned = moo_big_paned_new ();
     gtk_widget_show (paned);
     gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), paned, TRUE, TRUE, 0);
-    window->priv->paned = MOO_PANED (paned);
+    window->priv->paned = MOO_BIG_PANED (paned);
     g_signal_connect (window->priv->paned, "open-pane",
                       G_CALLBACK (pane_opened), window);
     g_signal_connect (window->priv->paned, "hide-pane",
@@ -482,7 +484,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
         mgr = moo_editor_get_file_mgr (window->priv->editor);
 
     fileview = GTK_WIDGET (g_object_new (MOO_TYPE_FILE_VIEW,
-                           "file-mgr", mgr,
+//                            "file-mgr", mgr,
                            NULL));
     g_signal_connect_swapped (fileview, "activate",
                               G_CALLBACK (fileview_activate),
@@ -506,14 +508,14 @@ GObject        *moo_edit_window_constructor (GType                  type,
                               G_CALLBACK (current_doc_dir_clicked),
                               window);
 
-    moo_paned_add_pane (MOO_PANED (paned),
-                        fileview, "File Selector",
-                        GTK_STOCK_OPEN);
+    moo_big_paned_add_pane (MOO_BIG_PANED (paned),
+                            fileview, MOO_PANE_POS_LEFT,
+                            "File Selector", GTK_STOCK_OPEN);
 
     notebook = gtk_notebook_new ();
     gtk_notebook_set_scrollable (GTK_NOTEBOOK (notebook), TRUE);
     gtk_widget_show (notebook);
-    gtk_container_add (GTK_CONTAINER (paned), notebook);
+    moo_big_paned_add_child (window->priv->paned, notebook);
 
     window->priv->notebook = GTK_NOTEBOOK (notebook);
     g_signal_connect_after (window->priv->notebook, "switch-page",
@@ -566,8 +568,8 @@ static void     add_tab                 (MooEditWindow      *window,
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow),
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
-                                         GTK_SHADOW_ETCHED_IN);
+//     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
+//                                          GTK_SHADOW_ETCHED_IN);
     gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (edit));
     gtk_widget_show_all (scrolledwindow);
     g_object_set_qdata (G_OBJECT (edit), SCROLLED_WINDOW_QUARK, scrolledwindow);
@@ -1243,7 +1245,7 @@ static void     current_doc_dir_clicked     (MooEditWindow      *window)
 static void show_file_selector_toggled_cb   (MooEditWindow   *window,
                                              gboolean         show)
 {
-    gboolean open = moo_paned_is_open (window->priv->paned);
+/*    gboolean open = moo_paned_is_open (window->priv->paned);
 
     if (BOOL_EQUAL (show, open))
         return;
@@ -1259,11 +1261,12 @@ static void show_file_selector_toggled_cb   (MooEditWindow   *window,
         MooEdit *edit = ACTIVE_DOC (window);
         moo_paned_hide_pane (window->priv->paned);
         if (edit) gtk_widget_grab_focus (GTK_WIDGET (edit));
-    }
+    }*/
 }
 
 
-static void pane_opened                     (G_GNUC_UNUSED MooPaned *paned,
+static void pane_opened                     (G_GNUC_UNUSED MooBigPaned *paned,
+                                             G_GNUC_UNUSED MooPanePosition position,
                                              G_GNUC_UNUSED guint index,
                                              MooEditWindow   *window)
 {
@@ -1278,7 +1281,8 @@ static void pane_opened                     (G_GNUC_UNUSED MooPaned *paned,
 }
 
 
-static void pane_hidden                     (G_GNUC_UNUSED MooPaned *paned,
+static void pane_hidden                     (G_GNUC_UNUSED MooBigPaned *paned,
+                                             G_GNUC_UNUSED MooPanePosition position,
                                              MooEditWindow   *window)
 {
     MooActionGroup *actions;

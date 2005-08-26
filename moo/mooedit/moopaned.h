@@ -26,10 +26,18 @@ G_BEGIN_DECLS
 #define MOO_IS_PANED_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PANED))
 #define MOO_PANED_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PANED, MooPanedClass))
 
+#define MOO_TYPE_PANE_POSITION      (moo_pane_position_get_type ())
 
 typedef struct _MooPaned         MooPaned;
 typedef struct _MooPanedPrivate  MooPanedPrivate;
 typedef struct _MooPanedClass    MooPanedClass;
+
+typedef enum {
+    MOO_PANE_POS_LEFT = 0,
+    MOO_PANE_POS_RIGHT,
+    MOO_PANE_POS_TOP,
+    MOO_PANE_POS_BOTTOM
+} MooPanePosition;
 
 struct _MooPaned
 {
@@ -49,8 +57,9 @@ struct _MooPanedClass
 
 
 GType       moo_paned_get_type          (void) G_GNUC_CONST;
+GType       moo_pane_position_get_type  (void) G_GNUC_CONST;
 
-GtkWidget  *moo_paned_new               (GtkPositionType pane_position);
+GtkWidget  *moo_paned_new               (MooPanePosition pane_position);
 
 void        moo_paned_add_pane          (MooPaned   *paned,
                                          GtkWidget  *pane_widget,
@@ -62,7 +71,7 @@ void        moo_paned_insert_pane       (MooPaned   *paned,
                                          int         position);
 
 guint       moo_paned_n_panes           (MooPaned   *paned);
-
+GSList     *moo_paned_get_panes         (MooPaned   *paned);
 GtkWidget  *moo_paned_get_nth_pane      (MooPaned   *paned,
                                          guint       n);
 

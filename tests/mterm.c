@@ -141,4 +141,5 @@ int main (int argc, char *argv[])
     g_signal_connect (term, "bell", G_CALLBACK (gdk_beep), NULL);
 
     gtk_main ();
+    return 0;
 }
