@@ -2089,8 +2089,8 @@ void        moo_paned_insert_pane       (MooPaned       *paned,
     g_signal_connect (pane->handle, "expose-event",
                       G_CALLBACK (handle_expose), paned);
 
-    if (GTK_WIDGET_VISIBLE (paned->button_box))
-        paned->priv->button_box_visible = TRUE;
+    gtk_widget_show (paned->button_box);
+    paned->priv->button_box_visible = TRUE;
 
     if (GTK_WIDGET_VISIBLE (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
@@ -2161,6 +2161,7 @@ void moo_paned_remove_pane              (MooPaned   *paned,
         if (paned->priv->pane_window)
             window_hide (paned->priv->pane_window);
         gtk_widget_hide (paned->button_box);
+        paned->priv->button_box_visible = FALSE;
     }
 
     if (GTK_WIDGET_VISIBLE (paned))
