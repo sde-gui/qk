@@ -57,11 +57,11 @@ static void create_window_with_paned (GtkPositionType pane_position)
     moo_paned_add_pane (MOO_PANED (paned),
                         fileview,
                         "TextView",
-                        GTK_STOCK_OK);
+                        GTK_STOCK_OK, -1);
     moo_paned_add_pane (MOO_PANED (paned),
                         gtk_label_new ("This is a label"),
                         "Label",
-                        GTK_STOCK_CANCEL);
+                        GTK_STOCK_CANCEL, -1);
 
     gtk_widget_grab_focus (textview);
     gtk_widget_show_all (window);

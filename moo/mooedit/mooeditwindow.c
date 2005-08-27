@@ -510,7 +510,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
 
     moo_big_paned_add_pane (MOO_BIG_PANED (paned),
                             fileview, MOO_PANE_POS_LEFT,
-                            "File Selector", GTK_STOCK_OPEN);
+                            "File Selector", GTK_STOCK_OPEN, -1);
 
     notebook = gtk_notebook_new ();
     gtk_notebook_set_scrollable (GTK_NOTEBOOK (notebook), TRUE);

@@ -1,5 +1,5 @@
 /*
- *   mooutils/moopaned.h
+ *   moopaned.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOPANED_H
-#define MOOUTILS_MOOPANED_H
+#ifndef __MOO_PANED_H__
+#define __MOO_PANED_H__
 
 #include <gtk/gtk.h>
 
@@ -27,10 +27,19 @@ G_BEGIN_DECLS
 #define MOO_PANED_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PANED, MooPanedClass))
 
 #define MOO_TYPE_PANE_POSITION      (moo_pane_position_get_type ())
+#define MOO_TYPE_PANE_LABEL         (moo_pane_label_get_type ())
 
 typedef struct _MooPaned         MooPaned;
 typedef struct _MooPanedPrivate  MooPanedPrivate;
 typedef struct _MooPanedClass    MooPanedClass;
+typedef struct _MooPaneLabel     MooPaneLabel;
+
+struct _MooPaneLabel {
+    char *icon_stock_id;
+    GdkPixbuf *icon_pixbuf;
+    GtkWidget *icon_widget;
+    char *label;
+};
 
 typedef enum {
     MOO_PANE_POS_LEFT = 0,
@@ -53,42 +62,65 @@ struct _MooPanedClass
     void (*open_pane) (MooPaned *paned,
                        guint     index);
     void (*hide_pane) (MooPaned *paned);
+
+    void (*handle_drag_start)   (MooPaned   *paned,
+                                 GtkWidget  *pane_widget);
+    void (*handle_drag_motion)  (MooPaned   *paned,
+                                 GtkWidget  *pane_widget);
+    void (*handle_drag_end)     (MooPaned   *paned,
+                                 GtkWidget  *pane_widget);
 };
 
 
 GType       moo_paned_get_type          (void) G_GNUC_CONST;
 GType       moo_pane_position_get_type  (void) G_GNUC_CONST;
+GType       moo_pane_label_get_type     (void) G_GNUC_CONST;
 
 GtkWidget  *moo_paned_new               (MooPanePosition pane_position);
 
-void        moo_paned_add_pane          (MooPaned   *paned,
-                                         GtkWidget  *pane_widget,
-                                         const char *button_label,
-                                         const char *button_stock_id);
-void        moo_paned_insert_pane       (MooPaned   *paned,
-                                         GtkWidget  *pane_widget,
-                                         GtkWidget  *button_widget,
-                                         int         position);
+MooPaneLabel *moo_pane_label_new        (const char     *stock_id,
+                                         GdkPixbuf      *pixbuf,
+                                         GtkWidget      *icon,
+                                         const char     *label);
+MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label);
+void        moo_pane_label_free         (MooPaneLabel   *label);
 
-guint       moo_paned_n_panes           (MooPaned   *paned);
-GSList     *moo_paned_get_panes         (MooPaned   *paned);
-GtkWidget  *moo_paned_get_nth_pane      (MooPaned   *paned,
-                                         guint       n);
+void        moo_paned_add_pane          (MooPaned       *paned,
+                                         GtkWidget      *pane_widget,
+                                         const char     *label,
+                                         const char     *icon_stock_id,
+                                         int             position);
+void        moo_paned_insert_pane       (MooPaned       *paned,
+                                         GtkWidget      *pane_widget,
+                                         MooPaneLabel   *pane_label,
+                                         int             position);
+void        moo_paned_remove_pane       (MooPaned       *paned,
+                                         GtkWidget      *pane_widget);
 
-void        moo_paned_set_sticky_pane   (MooPaned   *paned,
-                                         gboolean    sticky);
+guint       moo_paned_n_panes           (MooPaned       *paned);
+GSList     *moo_paned_get_panes         (MooPaned       *paned);
+GtkWidget  *moo_paned_get_nth_pane      (MooPaned       *paned,
+                                         guint           n);
+/* label should be freed with moo_pane_label_free() */
+MooPaneLabel *moo_paned_get_label       (MooPaned       *paned,
+                                         GtkWidget      *pane_widget);
 
-void        moo_paned_set_pane_size     (MooPaned   *paned,
-                                         int         size);
+void        moo_paned_set_sticky_pane   (MooPaned       *paned,
+                                         gboolean        sticky);
 
-int         moo_paned_get_open_pane     (MooPaned   *paned);
-gboolean    moo_paned_is_open           (MooPaned   *paned);
+void        moo_paned_set_pane_size     (MooPaned       *paned,
+                                         int             size);
+int         moo_paned_get_pane_size     (MooPaned       *paned);
+int         moo_paned_get_button_box_size (MooPaned     *paned);
 
-void        moo_paned_open_pane         (MooPaned   *paned,
-                                         guint       index);
-void        moo_paned_hide_pane         (MooPaned   *paned);
+int         moo_paned_get_open_pane     (MooPaned       *paned);
+gboolean    moo_paned_is_open           (MooPaned       *paned);
+
+void        moo_paned_open_pane         (MooPaned       *paned,
+                                         guint           index);
+void        moo_paned_hide_pane         (MooPaned       *paned);
 
 
 G_END_DECLS
 
-#endif /* MOOUTILS_MOOPANED_H */
+#endif /* __MOO_PANED_H__ */

@@ -1,5 +1,5 @@
 /*
- *   mooutils/moopaned.c
+ *   moopaned.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,9 +11,14 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include MOO_MARSHALS_H
+#ifndef __MOO__
+#include "moopaned.h"
+#include "icons.h"
+#else
 #include "mooedit/moopaned.h"
 #include "mooutils/moostock.h"
-#include "mooutils/moomarshals.h"
+#endif
 
 
 static int MIN_PANE_SIZE = 10;
@@ -21,11 +26,13 @@ static int SPACING_IN_BUTTON = 4;
 
 
 typedef struct {
-    GtkWidget   *frame;
-    GtkWidget   *child;
-    GtkWidget   *button;
-    GtkWidget   *sticky_button;
-    GtkWidget   *close_button;
+    MooPaneLabel *label;
+    GtkWidget    *frame;
+    GtkWidget    *handle;
+    GtkWidget    *child;
+    GtkWidget    *button;
+    GtkWidget    *sticky_button;
+    GtkWidget    *close_button;
 } Pane;
 
 
@@ -53,6 +60,12 @@ struct _MooPanedPrivate {
     gboolean     handle_prelit;
     gboolean     in_drag;
     int          drag_start;
+
+    gboolean     enable_handle_drag;
+    gboolean     handle_in_drag;
+    gboolean     handle_button_pressed;
+    int          handle_drag_start_x;
+    int          handle_drag_start_y;
 };
 
 
@@ -109,8 +122,6 @@ static void     moo_paned_add           (GtkContainer   *container,
                                          GtkWidget      *widget);
 static void     moo_paned_remove        (GtkContainer   *container,
                                          GtkWidget      *widget);
-static void     moo_paned_remove_pane   (MooPaned       *paned,
-                                         GtkWidget      *pane_widget);
 
 static void     realize_handle          (MooPaned       *paned);
 static void     realize_pane            (MooPaned       *paned);
@@ -122,6 +133,19 @@ static void     button_toggled          (GtkToggleButton *button,
 static void     sticky_button_toggled   (GtkToggleButton *button,
                                          MooPaned       *paned);
 
+static gboolean handle_button_press     (GtkWidget      *widget,
+                                         GdkEventButton *event,
+                                         MooPaned       *paned);
+static gboolean handle_button_release   (GtkWidget      *widget,
+                                         GdkEventButton *event,
+                                         MooPaned       *paned);
+static gboolean handle_motion           (GtkWidget      *widget,
+                                         GdkEventMotion *event,
+                                         MooPaned       *paned);
+static gboolean handle_expose           (GtkWidget      *widget,
+                                         GdkEventExpose *event,
+                                         MooPaned       *paned);
+
 
 /* MOO_TYPE_PANED */
 G_DEFINE_TYPE (MooPaned, moo_paned, GTK_TYPE_BIN)
@@ -130,12 +154,16 @@ enum {
     PROP_0,
     PROP_PANE_POSITION,
     PROP_CLOSE_PANE_ON_CHILD_FOCUS,
-    PROP_STICKY_PANE
+    PROP_STICKY_PANE,
+    PROP_ENABLE_HANDLE_DRAG
 };
 
 enum {
     OPEN_PANE,
     HIDE_PANE,
+    HANDLE_DRAG_START,
+    HANDLE_DRAG_MOTION,
+    HANDLE_DRAG_END,
     NUM_SIGNALS
 };
 
@@ -147,7 +175,9 @@ static void moo_paned_class_init (MooPanedClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
+#ifdef __MOO__
     moo_create_stock_items ();
+#endif
 
     gobject_class->finalize = moo_paned_finalize;
     gobject_class->set_property = moo_paned_set_property;
@@ -200,6 +230,14 @@ static void moo_paned_class_init (MooPanedClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_HANDLE_DRAG,
+                                     g_param_spec_boolean ("enable-handle-drag",
+                                             "enable-handle-drag",
+                                             "enable-handle-drag",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
     gtk_widget_class_install_style_property (widget_class,
                                              g_param_spec_int ("handle-size",
                                                      "handle-size",
@@ -236,6 +274,36 @@ static void moo_paned_class_init (MooPanedClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    signals[HANDLE_DRAG_START] =
+            g_signal_new ("handle-drag-start",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooPanedClass, handle_drag_start),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          GTK_TYPE_WIDGET);
+
+    signals[HANDLE_DRAG_MOTION] =
+            g_signal_new ("handle-drag-motion",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooPanedClass, handle_drag_motion),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          GTK_TYPE_WIDGET);
+
+    signals[HANDLE_DRAG_END] =
+            g_signal_new ("handle-drag-end",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooPanedClass, handle_drag_end),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          GTK_TYPE_WIDGET);
 }
 
 
@@ -300,6 +368,8 @@ static GObject *moo_paned_constructor   (GType                  type,
             break;
     }
 
+    gtk_widget_set_redraw_on_allocate (paned->button_box, FALSE);
+
     gtk_object_sink (GTK_OBJECT (g_object_ref (paned->button_box)));
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
     gtk_widget_show (paned->button_box);
@@ -337,6 +407,11 @@ static void     moo_paned_set_property  (GObject        *object,
                                        g_value_get_boolean (value));
             break;
 
+        case PROP_ENABLE_HANDLE_DRAG:
+            paned->priv->enable_handle_drag = g_value_get_boolean (value);
+            g_object_notify (object, "enable-handle-drag");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -364,6 +439,10 @@ static void     moo_paned_get_property  (GObject        *object,
             g_value_set_boolean (value, paned->priv->sticky);
             break;
 
+        case PROP_ENABLE_HANDLE_DRAG:
+            g_value_set_boolean (value, paned->priv->enable_handle_drag);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -373,6 +452,7 @@ static void     moo_paned_get_property  (GObject        *object,
 static void moo_paned_finalize  (GObject      *object)
 {
     MooPaned *paned = MOO_PANED (object);
+
     g_free (paned->priv);
     G_OBJECT_CLASS (moo_paned_parent_class)->finalize (object);
 }
@@ -555,7 +635,6 @@ static void realize_pane (MooPaned *paned)
     attributes.visual = gtk_widget_get_visual (widget);
     attributes.colormap = gtk_widget_get_colormap (widget);
     attributes.wclass = GDK_INPUT_OUTPUT;
-    attributes.cursor = gdk_cursor_new (GDK_SB_H_DOUBLE_ARROW);
 
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL |
             GDK_WA_COLORMAP;
@@ -1051,6 +1130,64 @@ static void get_handle_window_rect (MooPaned      *paned,
 }
 
 
+static void window_move_resize      (GdkWindow  *window,
+                                     int         x,
+                                     int         y,
+                                     int         width,
+                                     int         height,
+                                     const char *debug)
+{
+    int old_x, old_y, old_width, old_height;
+    gboolean move = FALSE, resize = FALSE;
+
+    gdk_window_get_position (window, &old_x, &old_y);
+    gdk_drawable_get_size (GDK_DRAWABLE (window), &old_width, &old_height);
+
+    if (old_x != x || old_y != y)
+        move = TRUE;
+    if (old_width != width || old_height != height)
+        resize = TRUE;
+
+    if (move && resize)
+    {
+        if (debug)
+            g_print ("%s move_resize: %d, %d, %d, %d", debug, x, y, width, height);
+        gdk_window_move_resize (window, x, y, width, height);
+    }
+    else if (move)
+    {
+        if (debug)
+            g_print ("%s move: %d, %d, %d, %d", debug, x, y, width, height);
+        gdk_window_move (window, x, y);
+    }
+    else if (resize)
+    {
+        if (debug)
+            g_print ("%s resize: %d, %d, %d, %d", debug, x, y, width, height);
+        gdk_window_resize (window, width, height);
+    }
+}
+
+
+static void window_show             (GdkWindow  *window,
+                                     gboolean    raise)
+{
+    if (raise || !g_object_get_data (G_OBJECT (window), "moo-gdk-window-shown"))
+    {
+        gdk_window_show (window);
+        g_object_set_data (G_OBJECT (window), "moo-gdk-window-shown",
+                           GINT_TO_POINTER (TRUE));
+    }
+}
+
+
+static void window_hide             (GdkWindow  *window)
+{
+    gdk_window_hide (window);
+    g_object_set_data (G_OBJECT (window), "moo-gdk-window-shown", NULL);
+}
+
+
 static void moo_paned_size_allocate (GtkWidget     *widget,
                                      GtkAllocation *allocation)
 {
@@ -1091,28 +1228,28 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
     {
         GdkRectangle rect;
 
-        gdk_window_move_resize (widget->window,
-                                allocation->x,
-                                allocation->y,
-                                allocation->width,
-                                allocation->height);
+        window_move_resize (widget->window,
+                            allocation->x,
+                            allocation->y,
+                            allocation->width,
+                            allocation->height,
+                            NULL);
 
-        /* XXX */
         if (paned->priv->pane_widget_visible)
         {
             get_pane_window_rect (paned, &rect);
-            gdk_window_show (paned->priv->pane_window);
-            gdk_window_move_resize (paned->priv->pane_window,
-                                    rect.x, rect.y,
-                                    rect.width, rect.height);
+            window_move_resize (paned->priv->pane_window,
+                                rect.x, rect.y,
+                                rect.width, rect.height,
+                                NULL);
         }
 
         if (paned->priv->handle_visible)
         {
             get_handle_window_rect (paned, &rect);
-            gdk_window_move_resize (paned->priv->handle_window,
-                                    rect.x, rect.y,
-                                    rect.width, rect.height);
+            window_move_resize (paned->priv->handle_window,
+                                rect.x, rect.y,
+                                rect.width, rect.height, NULL);
         }
     }
 
@@ -1134,6 +1271,9 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
         gtk_widget_size_allocate (paned->priv->current_pane->frame,
                                   &child_allocation);
     }
+
+    if (paned->priv->in_drag)
+        gdk_window_process_updates (widget->window, TRUE);
 }
 
 
@@ -1141,14 +1281,14 @@ static void moo_paned_map (GtkWidget *widget)
 {
     MooPaned *paned = MOO_PANED (widget);
 
-    gdk_window_show (widget->window);
+    window_show (widget->window, FALSE);
 
     (* GTK_WIDGET_CLASS (moo_paned_parent_class)->map) (widget);
 
     if (paned->priv->handle_visible)
     {
-        gdk_window_show (paned->priv->pane_window);
-        gdk_window_show (paned->priv->handle_window);
+        window_show (paned->priv->pane_window, TRUE);
+        window_show (paned->priv->handle_window, FALSE);
     }
 }
 
@@ -1185,11 +1325,9 @@ static gboolean moo_paned_expose    (GtkWidget      *widget,
                                         paned->button_box, event);
 
     if (GTK_WIDGET_DRAWABLE (GTK_BIN(paned)->child))
-    {
         gtk_container_propagate_expose (GTK_CONTAINER (paned),
                                         GTK_BIN(paned)->child,
                                         event);
-    }
 
     if (paned->priv->pane_widget_visible)
         gtk_container_propagate_expose (GTK_CONTAINER (paned),
@@ -1199,10 +1337,12 @@ static gboolean moo_paned_expose    (GtkWidget      *widget,
     if (paned->priv->handle_visible)
         draw_handle (paned);
 
-    return FALSE;
+    return TRUE;
 }
 
 
+#if 0
+/* TODO */
 static GdkEventExpose *clip_bin_child_event (MooPaned       *paned,
                                              GdkEventExpose *event)
 {
@@ -1220,29 +1360,7 @@ static GdkEventExpose *clip_bin_child_event (MooPaned       *paned,
     gdk_region_destroy (child_rect);
     return child_event;
 }
-
-
-static gboolean child_expose            (GtkWidget      *child,
-                                         GdkEventExpose *event,
-                                         MooPaned       *paned)
-{
-    GdkEvent *child_event;
-
-    g_return_val_if_fail (GTK_BIN(paned)->child == child, FALSE);
-
-    /* this is bullshit. widgets with window get expose directly from gdk */
-    /* XXX */
-    return FALSE;
-
-    child_event = (GdkEvent*) clip_bin_child_event (paned, event);
-
-    g_signal_handlers_block_by_func (child, (gpointer) child_expose, paned);
-    gtk_widget_event (child, child_event);
-    g_signal_handlers_unblock_by_func (child, (gpointer) child_expose, paned);
-
-    gdk_event_free (child_event);
-    return TRUE;
-}
+#endif
 
 
 static void     moo_paned_add           (GtkContainer   *container,
@@ -1266,9 +1384,6 @@ static void     moo_paned_add           (GtkContainer   *container,
 
     gtk_widget_set_parent (child, GTK_WIDGET (bin));
     bin->child = child;
-
-    g_signal_connect (child, "expose-event",
-                      G_CALLBACK (child_expose), bin);
 }
 
 
@@ -1278,16 +1393,9 @@ static void     moo_paned_remove        (GtkContainer   *container,
     MooPaned *paned = MOO_PANED (container);
 
     if (widget == GTK_BIN(paned)->child)
-    {
-        g_signal_handlers_disconnect_by_func (widget,
-                                              (gpointer) child_expose,
-                                              container);
         GTK_CONTAINER_CLASS(moo_paned_parent_class)->remove (container, widget);
-    }
     else
-    {
         moo_paned_remove_pane (paned, widget);
-    }
 }
 
 
@@ -1424,6 +1532,19 @@ GtkWidget  *moo_paned_get_nth_pane      (MooPaned   *paned,
     pane = g_slist_nth_data (paned->priv->panes, n);
     g_return_val_if_fail (pane != NULL, NULL);
     return pane->child;
+}
+
+
+MooPaneLabel *moo_paned_get_label       (MooPaned       *paned,
+                                         GtkWidget      *pane_widget)
+{
+    Pane *pane;
+
+    g_return_val_if_fail (MOO_IS_PANED (paned), NULL);
+
+    pane = g_object_get_data (G_OBJECT (pane_widget), "moo-pane");
+    g_return_val_if_fail (pane != NULL, NULL);
+    return moo_pane_label_copy (pane->label);
 }
 
 
@@ -1597,42 +1718,104 @@ static gboolean moo_paned_button_release(GtkWidget      *widget,
 }
 
 
+int         moo_paned_get_pane_size     (MooPaned   *paned)
+{
+    g_return_val_if_fail (MOO_IS_PANED (paned), 0);
+    return paned->priv->pane_widget_size;
+}
+
+
+int         moo_paned_get_button_box_size (MooPaned *paned)
+{
+    g_return_val_if_fail (MOO_IS_PANED (paned), 0);
+    return paned->priv->button_box_size;
+}
+
+
+static gboolean invalidate_predicate (GdkWindow *window,
+                                      gpointer   data)
+{
+    gpointer user_data;
+    gdk_window_get_user_data (window, &user_data);
+    return (user_data == data);
+}
+
 void         moo_paned_set_pane_size    (MooPaned   *paned,
                                          int         size)
 {
+    GdkRegion *region;
+    GtkWidget *widget;
+    GdkRectangle rect;
+
     g_return_if_fail (MOO_IS_PANED (paned));
 
-    if (GTK_WIDGET_REALIZED (paned))
-    {
-        GtkWidget *widget = GTK_WIDGET (paned);
-
-        switch (paned->priv->pane_position)
-        {
-            case MOO_PANE_POS_LEFT:
-            case MOO_PANE_POS_RIGHT:
-                size = CLAMP (size, 0,
-                              widget->allocation.width - paned->priv->button_box_size -
-                                      paned->priv->handle_size);
-                break;
-            case MOO_PANE_POS_TOP:
-            case MOO_PANE_POS_BOTTOM:
-                size = CLAMP (size, 0,
-                              widget->allocation.height - paned->priv->button_box_size -
-                                      paned->priv->handle_size);
-                break;
-        }
-
-        if (size != paned->priv->position)
-        {
-            paned->priv->position = size;
-            if (paned->priv->pane_widget_visible)
-                gtk_widget_queue_resize (widget);
-        }
-    }
-    else
+    if (!GTK_WIDGET_REALIZED (paned))
     {
         paned->priv->position = size;
+        return;
     }
+
+    widget = GTK_WIDGET (paned);
+
+    switch (paned->priv->pane_position)
+    {
+        case MOO_PANE_POS_LEFT:
+        case MOO_PANE_POS_RIGHT:
+            size = CLAMP (size, 0,
+                          widget->allocation.width - paned->priv->button_box_size -
+                                  paned->priv->handle_size);
+            break;
+        case MOO_PANE_POS_TOP:
+        case MOO_PANE_POS_BOTTOM:
+            size = CLAMP (size, 0,
+                          widget->allocation.height - paned->priv->button_box_size -
+                                  paned->priv->handle_size);
+            break;
+    }
+
+    if (size == paned->priv->position)
+        return;
+
+    paned->priv->position = size;
+
+    if (!paned->priv->pane_widget_visible)
+        return;
+
+    /* button box redrawing is too slow */
+    if (!paned->priv->button_box_visible)
+    {
+        gtk_widget_queue_resize (widget);
+        return;
+    }
+
+    rect.x = rect.y = 0;
+    rect.width = widget->allocation.width;
+    rect.height = widget->allocation.height;
+
+    switch (paned->priv->pane_position)
+    {
+        case MOO_PANE_POS_LEFT:
+            rect.x += paned->priv->button_box_size;
+            rect.width -= paned->priv->button_box_size;
+            break;
+        case MOO_PANE_POS_RIGHT:
+            rect.width -= paned->priv->button_box_size;
+            break;
+        case MOO_PANE_POS_TOP:
+            rect.y += paned->priv->button_box_size;
+            rect.height -= paned->priv->button_box_size;
+            break;
+        case MOO_PANE_POS_BOTTOM:
+            rect.height -= paned->priv->button_box_size;
+            break;
+    }
+
+    region = gdk_region_rectangle (&rect);
+    gdk_window_invalidate_maybe_recurse (widget->window, region,
+                                         invalidate_predicate, widget);
+    gdk_region_destroy (region);
+
+    gtk_widget_queue_resize_no_redraw (widget);
 }
 
 
@@ -1651,105 +1834,140 @@ static void     button_box_visible_notify (MooPaned     *paned)
 }
 
 
-void         moo_paned_add_pane     (MooPaned   *paned,
-                                     GtkWidget  *pane_widget,
-                                     const char *button_label,
-                                     const char *button_stock_id)
+static GtkWidget *moo_pane_label_get_widget (MooPaneLabel   *label,
+                                             MooPanePosition position)
 {
-    GtkWidget *box;
-    GtkWidget *label = NULL;
+    GtkWidget *box = NULL;
+    GtkWidget *text = NULL;
     GtkWidget *icon = NULL;
 
-    g_return_if_fail (MOO_IS_PANED (paned));
-    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
-    g_return_if_fail (pane_widget->parent == NULL);
+    g_return_val_if_fail (label != NULL, NULL);
+    g_return_val_if_fail (position < 4, NULL);
 
-    switch (paned->priv->pane_position)
+    if (label->label)
     {
-        case MOO_PANE_POS_LEFT:
-        case MOO_PANE_POS_RIGHT:
-            box = gtk_vbox_new (FALSE, SPACING_IN_BUTTON);
-            break;
-        default:
-            box = gtk_hbox_new (FALSE, SPACING_IN_BUTTON);
-            break;
-    }
+        text = gtk_label_new (label->label);
 
-    gtk_widget_show (box);
-
-    if (button_label)
-    {
-        label = gtk_label_new (button_label);
-        gtk_widget_show (label);
-
-        switch (paned->priv->pane_position)
+        switch (position)
         {
             case MOO_PANE_POS_LEFT:
-                gtk_label_set_angle (GTK_LABEL (label), 90);
+                gtk_label_set_angle (GTK_LABEL (text), 90);
                 break;
             case MOO_PANE_POS_RIGHT:
-                gtk_label_set_angle (GTK_LABEL (label), 270);
+                gtk_label_set_angle (GTK_LABEL (text), 270);
                 break;
             default:
                 break;
         }
     }
 
-    if (button_stock_id)
-    {
-        icon = gtk_image_new_from_stock (button_stock_id,
+    if (label->icon_widget)
+        icon = label->icon_widget;
+    else if (label->icon_stock_id)
+        icon = gtk_image_new_from_stock (label->icon_stock_id,
                                          GTK_ICON_SIZE_MENU);
+    else if (label->icon_pixbuf)
+        icon = gtk_image_new_from_pixbuf (label->icon_pixbuf);
+
+    if (icon)
         gtk_widget_show (icon);
-    }
+    if (text)
+        gtk_widget_show (text);
 
-    switch (paned->priv->pane_position)
+    if (icon && text)
     {
-        case MOO_PANE_POS_LEFT:
-            if (label)
-                gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
-            if (icon)
+        switch (position)
+        {
+            case MOO_PANE_POS_LEFT:
+            case MOO_PANE_POS_RIGHT:
+                box = gtk_vbox_new (FALSE, SPACING_IN_BUTTON);
+                break;
+            default:
+                box = gtk_hbox_new (FALSE, SPACING_IN_BUTTON);
+                break;
+        }
+
+        gtk_widget_show (box);
+
+        switch (position)
+        {
+            case MOO_PANE_POS_LEFT:
+                gtk_box_pack_start (GTK_BOX (box), text, FALSE, FALSE, 0);
                 gtk_box_pack_start (GTK_BOX (box), icon, FALSE, FALSE, 0);
-            break;
-        default:
-            if (icon)
+                break;
+            default:
                 gtk_box_pack_start (GTK_BOX (box), icon, FALSE, FALSE, 0);
-            if (label)
-                gtk_box_pack_start (GTK_BOX (box), label, FALSE, FALSE, 0);
-            break;
+                gtk_box_pack_start (GTK_BOX (box), text, FALSE, FALSE, 0);
+                break;
+        }
+
+        return box;
     }
 
-    moo_paned_insert_pane (paned, pane_widget, box, -1);
+    if (icon)
+        return icon;
+    if (text)
+        return text;
+
+    g_warning ("%s: empty label", G_STRLOC);
+
+    box = gtk_vbox_new (FALSE, SPACING_IN_BUTTON);
+    gtk_widget_show (box);
+    return box;
 }
 
+
+void         moo_paned_add_pane     (MooPaned   *paned,
+                                     GtkWidget  *pane_widget,
+                                     const char *button_label,
+                                     const char *button_stock_id,
+                                     int         position)
+{
+    MooPaneLabel *label;
+
+    g_return_if_fail (MOO_IS_PANED (paned));
+    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
+    g_return_if_fail (pane_widget->parent == NULL);
+
+    label = moo_pane_label_new (button_stock_id, NULL, NULL, button_label);
+    moo_paned_insert_pane (paned, pane_widget, label, position);
+    moo_pane_label_free (label);
+}
+
+
+#ifndef __MOO__
+static GtkWidget   *create_icon (const guint8 *data)
+{
+    GdkPixbuf *pixbuf;
+    GtkWidget *icon;
+    static GtkIconSize size = 0;
+
+    if (!size)
+        size = gtk_icon_size_register ("moo-real-small", 4, 4);
+
+    icon = gtk_image_new_from_stock ("ewgfwegwegwe", size);
+    pixbuf = gdk_pixbuf_new_from_inline (-1, data, TRUE, NULL);
+    g_return_val_if_fail (pixbuf != NULL, icon);
+    gtk_image_set_from_pixbuf (GTK_IMAGE (icon), pixbuf);
+
+    g_object_unref (pixbuf);
+    return icon;
+}
+#endif /* !__MOO__ */
 
 static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                          Pane       *pane)
 {
-    GtkWidget *frame, *hbox, *button, *icon;
+    GtkWidget *vbox, *hbox, *separator, *button, *icon, *handle;
     GtkTooltips *tooltips;
 
-    frame = gtk_frame_new (NULL);
-    gtk_frame_set_label_align (GTK_FRAME (frame), 1.0, 0.5);
-    gtk_frame_set_shadow_type (GTK_FRAME (frame),
-                               GTK_SHADOW_NONE);
-//     gtk_container_set_border_width (GTK_CONTAINER (frame), 3);
-
-    hbox = gtk_hbox_new (TRUE, 0);
-
     tooltips = gtk_tooltips_new ();
+    vbox = gtk_vbox_new (FALSE, 0);
 
-    button = gtk_toggle_button_new ();
-    pane->sticky_button = button;
-    g_object_set_data (G_OBJECT (button), "moo-pane", pane);
-    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
-    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-    gtk_tooltips_set_tip (tooltips, button, "Sticky", "Sticky");
-    icon = gtk_image_new_from_stock (MOO_STOCK_STICKY,
-                                     MOO_ICON_SIZE_REAL_SMALL);
-    gtk_container_add (GTK_CONTAINER (button), icon);
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
-                                  paned->priv->sticky);
-    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    hbox = gtk_hbox_new (FALSE, 0);
+
+    pane->handle = handle = gtk_event_box_new ();
+    gtk_box_pack_start (GTK_BOX (hbox), handle, TRUE, TRUE, 3);
 
     button = gtk_button_new ();
     pane->close_button = button;
@@ -1757,37 +1975,65 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
     gtk_tooltips_set_tip (tooltips, button, "Hide pane", "Hide pane");
+#ifdef __MOO__
     icon = gtk_image_new_from_stock (MOO_STOCK_CLOSE,
                                      MOO_ICON_SIZE_REAL_SMALL);
+#else
+    icon = create_icon (MOO_CLOSE_ICON);
+#endif
     gtk_container_add (GTK_CONTAINER (button), icon);
-    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    gtk_box_pack_end (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+
+    button = gtk_toggle_button_new ();
+    pane->sticky_button = button;
+    g_object_set_data (G_OBJECT (button), "moo-pane", pane);
+    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
+    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+    gtk_tooltips_set_tip (tooltips, button, "Sticky", "Sticky");
+#ifdef __MOO__
+    icon = gtk_image_new_from_stock (MOO_STOCK_STICKY,
+                                     MOO_ICON_SIZE_REAL_SMALL);
+#else
+    icon = create_icon (MOO_STICKY_ICON);
+#endif
+    gtk_container_add (GTK_CONTAINER (button), icon);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button),
+                                  paned->priv->sticky);
+    gtk_box_pack_end (GTK_BOX (hbox), button, FALSE, FALSE, 0);
 
     gtk_widget_show_all (hbox);
-    gtk_frame_set_label_widget (GTK_FRAME (frame), hbox);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
-    return frame;
+    separator = gtk_hseparator_new ();
+    gtk_widget_show (separator);
+    gtk_box_pack_start (GTK_BOX (vbox), separator, FALSE, FALSE, 0);
+
+    return vbox;
 }
 
 
-void         moo_paned_insert_pane      (MooPaned   *paned,
-                                         GtkWidget  *pane_widget,
-                                         GtkWidget  *button_widget,
-                                         int         position)
+void        moo_paned_insert_pane       (MooPaned       *paned,
+                                         GtkWidget      *pane_widget,
+                                         MooPaneLabel   *pane_label,
+                                         int             position)
 {
-    GtkWidget *button;
+    GtkWidget *button, *label_widget;
     Pane *pane;
 
     g_return_if_fail (MOO_IS_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (pane_widget));
-    g_return_if_fail (GTK_IS_WIDGET (button_widget));
+    g_return_if_fail (pane_label != NULL);
     g_return_if_fail (pane_widget->parent == NULL);
-    g_return_if_fail (button_widget->parent == NULL);
 
     button = gtk_toggle_button_new ();
     gtk_widget_show (button);
+    gtk_widget_set_redraw_on_allocate (button, FALSE);
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
-    gtk_container_add (GTK_CONTAINER (button), button_widget);
-    gtk_widget_show (button_widget);
+
+    label_widget = moo_pane_label_get_widget (pane_label,
+                                              paned->priv->pane_position);
+    gtk_container_add (GTK_CONTAINER (button), label_widget);
+    gtk_widget_show (label_widget);
 
     if (position < 0 || position > (int) moo_paned_n_panes (paned))
         position = moo_paned_n_panes (paned);
@@ -1802,13 +2048,21 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
 
     pane = g_new (Pane, 1);
 
+    pane->label = moo_pane_label_copy (pane_label);
+
     pane->frame = create_frame_widget (paned, pane);
     gtk_object_sink (GTK_OBJECT (g_object_ref (pane->frame)));
+
+    if (GTK_WIDGET_REALIZED (paned))
+        gtk_widget_set_parent_window (pane->frame,
+                                      paned->priv->pane_window);
+
     gtk_widget_set_parent (pane->frame, GTK_WIDGET (paned));
 
     pane->child = pane_widget;
+    gtk_widget_unrealize (pane->child);
     gtk_widget_show (pane->child);
-    gtk_container_add (GTK_CONTAINER (pane->frame), pane->child);
+    gtk_box_pack_start (GTK_BOX (pane->frame), pane->child, TRUE, TRUE, 0);
 
     pane->button = button;
     paned->priv->panes = g_slist_insert (paned->priv->panes,
@@ -1817,6 +2071,7 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
     g_object_set_data (G_OBJECT (button), "moo-pane", pane);
     g_object_set_data (G_OBJECT (pane->child), "moo-pane", pane);
     g_object_set_data (G_OBJECT (pane->frame), "moo-pane", pane);
+    g_object_set_data (G_OBJECT (pane->handle), "moo-pane", pane);
 
     g_signal_connect (button, "toggled",
                       G_CALLBACK (button_toggled), paned);
@@ -1825,22 +2080,28 @@ void         moo_paned_insert_pane      (MooPaned   *paned,
     g_signal_connect (pane->sticky_button, "toggled",
                       G_CALLBACK (sticky_button_toggled), paned);
 
+    g_signal_connect (pane->handle, "button-press-event",
+                      G_CALLBACK (handle_button_press), paned);
+    g_signal_connect (pane->handle, "button-release-event",
+                      G_CALLBACK (handle_button_release), paned);
+    g_signal_connect (pane->handle, "motion-notify-event",
+                      G_CALLBACK (handle_motion), paned);
+    g_signal_connect (pane->handle, "expose-event",
+                      G_CALLBACK (handle_expose), paned);
+
     if (GTK_WIDGET_VISIBLE (paned->button_box))
         paned->priv->button_box_visible = TRUE;
 
     if (GTK_WIDGET_VISIBLE (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
-
-    if (GTK_WIDGET_REALIZED (paned))
-        gtk_widget_set_parent_window (pane->frame,
-                                      paned->priv->pane_window);
 }
 
 
-static void moo_paned_remove_pane       (MooPaned   *paned,
+void moo_paned_remove_pane              (MooPaned   *paned,
                                          GtkWidget  *pane_widget)
 {
     Pane *pane;
+    GtkWidget *label;
 
     g_return_if_fail (MOO_IS_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (pane_widget));
@@ -1848,6 +2109,7 @@ static void moo_paned_remove_pane       (MooPaned   *paned,
     pane = g_object_get_data (G_OBJECT (pane_widget), "moo-pane");
     g_return_if_fail (pane != NULL);
     g_return_if_fail (pane->child == pane_widget);
+    g_return_if_fail (g_slist_find (paned->priv->panes, pane) != NULL);
 
     if (paned->priv->current_pane && paned->priv->current_pane == pane)
         moo_paned_hide_pane (paned);
@@ -1855,6 +2117,8 @@ static void moo_paned_remove_pane       (MooPaned   *paned,
     g_object_set_data (G_OBJECT (pane->button), "moo-pane", NULL);
     g_object_set_data (G_OBJECT (pane->child), "moo-pane", NULL);
     g_object_set_data (G_OBJECT (pane->frame), "moo-pane", NULL);
+    g_object_set_data (G_OBJECT (pane->handle), "moo-pane", NULL);
+
     g_signal_handlers_disconnect_by_func (pane->button,
                                           (gpointer) button_toggled,
                                           paned);
@@ -1865,18 +2129,37 @@ static void moo_paned_remove_pane       (MooPaned   *paned,
                                           (gpointer) moo_paned_hide_pane,
                                           paned);
 
+    g_signal_handlers_disconnect_by_func (pane->handle,
+                                          (gpointer) handle_button_press,
+                                          paned);
+    g_signal_handlers_disconnect_by_func (pane->handle,
+                                          (gpointer) handle_button_release,
+                                          paned);
+    g_signal_handlers_disconnect_by_func (pane->handle,
+                                          (gpointer) handle_motion,
+                                          paned);
+    g_signal_handlers_disconnect_by_func (pane->handle,
+                                          (gpointer) handle_expose,
+                                          paned);
+
+    label = gtk_bin_get_child (GTK_BIN (pane->button));
+    gtk_container_remove (GTK_CONTAINER (pane->button), label);
+
     gtk_container_remove (GTK_CONTAINER (paned->button_box), pane->button);
     paned->priv->panes = g_slist_remove (paned->priv->panes, pane);
 
     gtk_container_remove (GTK_CONTAINER (pane->frame), pane->child);
     gtk_widget_unparent (pane->frame);
 
+    moo_pane_label_free (pane->label);
+    g_free (pane);
+
     if (!moo_paned_n_panes (paned))
     {
         paned->priv->handle_visible = FALSE;
         paned->priv->handle_size = 0;
         if (paned->priv->pane_window)
-            gdk_window_hide (paned->priv->pane_window);
+            window_hide (paned->priv->pane_window);
         gtk_widget_hide (paned->button_box);
     }
 
@@ -1942,8 +2225,8 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
     {
         gtk_widget_set_parent_window (pane->frame,
                                       paned->priv->pane_window);
-        gdk_window_show (paned->priv->pane_window);
-        gdk_window_show (paned->priv->handle_window);
+        window_show (paned->priv->pane_window, TRUE);
+        window_show (paned->priv->handle_window, FALSE);
     }
 
     paned->priv->current_pane = pane;
@@ -1969,8 +2252,8 @@ static void     moo_paned_hide_pane_real(MooPaned       *paned)
 
         if (GTK_WIDGET_REALIZED (paned))
         {
-            gdk_window_hide (paned->priv->handle_window);
-            gdk_window_hide (paned->priv->pane_window);
+            window_hide (paned->priv->handle_window);
+            window_hide (paned->priv->pane_window);
         }
 
         paned->priv->current_pane = NULL;
@@ -2081,4 +2364,192 @@ GSList     *moo_paned_get_panes         (MooPaned   *paned)
     }
 
     return g_slist_reverse (list);
+}
+
+
+static gboolean handle_button_press     (G_GNUC_UNUSED GtkWidget *widget,
+                                         GdkEventButton *event,
+                                         MooPaned       *paned)
+{
+    if (event->button != 1 || event->type != GDK_BUTTON_PRESS)
+        return FALSE;
+
+    if (!paned->priv->enable_handle_drag)
+        return FALSE;
+
+    g_return_val_if_fail (!paned->priv->handle_in_drag, FALSE);
+    g_return_val_if_fail (!paned->priv->handle_button_pressed, FALSE);
+
+    paned->priv->handle_button_pressed = TRUE;
+    paned->priv->handle_drag_start_x = event->x;
+    paned->priv->handle_drag_start_y = event->y;
+
+    return TRUE;
+}
+
+
+static gboolean handle_motion           (GtkWidget      *widget,
+                                         GdkEventMotion *event,
+                                         MooPaned       *paned)
+{
+    Pane *pane;
+
+    if (!paned->priv->handle_button_pressed)
+        return FALSE;
+
+    pane = g_object_get_data (G_OBJECT (widget), "moo-pane");
+    g_return_val_if_fail (pane != NULL && pane->child != NULL, FALSE);
+
+    if (!paned->priv->handle_in_drag)
+    {
+        if (!gtk_drag_check_threshold (widget,
+                                       paned->priv->handle_drag_start_x,
+                                       paned->priv->handle_drag_start_y,
+                                       event->x,
+                                       event->y))
+            return FALSE;
+
+        paned->priv->handle_in_drag = TRUE;
+
+        g_signal_emit (paned, signals[HANDLE_DRAG_START], 0, pane->child);
+    }
+
+    g_signal_emit (paned, signals[HANDLE_DRAG_MOTION], 0, pane->child);
+    return TRUE;
+}
+
+
+static gboolean handle_button_release   (GtkWidget      *widget,
+                                         G_GNUC_UNUSED GdkEventButton *event,
+                                         MooPaned       *paned)
+{
+    Pane *pane;
+
+    if (!paned->priv->handle_in_drag)
+        return FALSE;
+
+    paned->priv->handle_in_drag = FALSE;
+    paned->priv->handle_button_pressed = FALSE;
+
+    pane = g_object_get_data (G_OBJECT (widget), "moo-pane");
+    g_return_val_if_fail (pane != NULL && pane->child != NULL, FALSE);
+
+    g_signal_emit (paned, signals[HANDLE_DRAG_END], 0, pane->child);
+
+    return TRUE;
+}
+
+
+#define HANDLE_HEIGHT 12
+
+static gboolean handle_expose           (GtkWidget      *widget,
+                                         GdkEventExpose *event,
+                                         MooPaned       *paned)
+{
+    int height;
+
+    if (!paned->priv->enable_handle_drag)
+        return FALSE;
+
+    height = MIN (widget->allocation.height, HANDLE_HEIGHT);
+
+    gtk_paint_handle (widget->style,
+                      widget->window,
+                      widget->state,
+                      GTK_SHADOW_ETCHED_IN,
+                      &event->area,
+                      widget,
+                      "moo-pane-handle",
+                      0,
+                      (widget->allocation.height - height) / 2,
+                      widget->allocation.width,
+                      height,
+                      GTK_ORIENTATION_HORIZONTAL);
+    return TRUE;
+}
+
+
+static void   label_icon_destroyed      (GtkWidget      *icon,
+                                         MooPaneLabel   *label)
+{
+    g_return_if_fail (label->icon_widget == icon);
+    g_object_unref (label->icon_widget);
+    label->icon_widget = NULL;
+}
+
+MooPaneLabel *moo_pane_label_new        (const char     *stock_id,
+                                         GdkPixbuf      *pixbuf,
+                                         GtkWidget      *icon,
+                                         const char     *text)
+{
+    MooPaneLabel *label = g_new0 (MooPaneLabel, 1);
+
+    label->icon_stock_id = g_strdup (stock_id);
+    label->label = g_strdup (text);
+
+    if (pixbuf)
+        label->icon_pixbuf = g_object_ref (pixbuf);
+
+    if (icon)
+    {
+        label->icon_widget = icon;
+        g_object_ref (icon);
+        gtk_object_sink (GTK_OBJECT (icon));
+        g_signal_connect (icon, "destroy",
+                          G_CALLBACK (label_icon_destroyed),
+                          label);
+    }
+
+    return label;
+}
+
+
+MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label)
+{
+    MooPaneLabel *copy;
+
+    g_return_val_if_fail (label != NULL, NULL);
+
+    copy = g_new0 (MooPaneLabel, 1);
+
+    copy->icon_stock_id = g_strdup (label->icon_stock_id);
+    copy->label = g_strdup (label->label);
+
+    if (label->icon_pixbuf)
+        copy->icon_pixbuf = g_object_ref (label->icon_pixbuf);
+
+    if (label->icon_widget)
+    {
+        copy->icon_widget = label->icon_widget;
+        g_object_ref (copy->icon_widget);
+        gtk_object_sink (GTK_OBJECT (copy->icon_widget));
+        g_signal_connect (copy->icon_widget, "destroy",
+                          G_CALLBACK (label_icon_destroyed),
+                          copy);
+    }
+
+    return copy;
+}
+
+
+void        moo_pane_label_free         (MooPaneLabel   *label)
+{
+    if (label)
+    {
+        g_free (label->icon_stock_id);
+        g_free (label->label);
+
+        if (label->icon_pixbuf)
+            g_object_unref (label->icon_pixbuf);
+
+        if (label->icon_widget)
+        {
+            g_signal_handlers_disconnect_by_func (label->icon_widget,
+                                                  (gpointer) label_icon_destroyed,
+                                                  label);
+            g_object_unref (label->icon_widget);
+        }
+
+        g_free (label);
+    }
 }

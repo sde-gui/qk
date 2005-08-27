@@ -34,9 +34,16 @@ typedef struct _MooBigPanedClass    MooBigPanedClass;
 struct _MooBigPaned
 {
     GtkFrame     parent;
-    MooPaned    *paned[4];
+
+    GtkWidget   *paned[4];
     MooPanePosition order[4]; /* inner is paned[order[3]]*/
-    MooPaned    *inner;
+    GtkWidget   *inner;
+    GtkWidget   *outer;
+
+    gboolean     enable_handle_drag;
+    int          drop_pos;
+    GdkRectangle drop_rect;
+    GdkWindow   *drop_outline;
 };
 
 struct _MooBigPanedClass
@@ -67,10 +74,11 @@ void        moo_big_paned_add_pane          (MooBigPaned    *paned,
                                              GtkWidget      *pane_widget,
                                              MooPanePosition position,
                                              const char     *button_label,
-                                             const char     *button_stock_id);
+                                             const char     *button_stock_id,
+                                             int             index_);
 void        moo_big_paned_insert_pane       (MooBigPaned    *paned,
                                              GtkWidget      *pane_widget,
-                                             GtkWidget      *button_widget,
+                                             MooPaneLabel   *pane_label,
                                              MooPanePosition position,
                                              int             index_);
 
