@@ -1271,9 +1271,6 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
         gtk_widget_size_allocate (paned->priv->current_pane->frame,
                                   &child_allocation);
     }
-
-    if (paned->priv->in_drag)
-        gdk_window_process_updates (widget->window, TRUE);
 }
 
 
