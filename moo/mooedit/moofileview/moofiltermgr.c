@@ -12,7 +12,6 @@
  */
 
 #include "moofiltermgr.h"
-#include "mooutils/moomarshals.h"
 #include <string.h>
 
 #define NUM_USER_FILTERS 5

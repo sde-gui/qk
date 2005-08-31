@@ -13,7 +13,7 @@
 
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofilesystem.h"
-#include "mooutils/moomarshals.h"
+#include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>

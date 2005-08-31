@@ -29,7 +29,8 @@ AM_CFLAGS =                             \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
     -DG_LOG_DOMAIN=\"Moo\"              \
-    -D__MOO__
+    -D__MOO__                           \
+    -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
 
 libmoofileview_la_SOURCES =     \
     moobookmarkmgr.c            \

@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <string.h>
 #include "moofilewatch.h"
-#include "mooutils/moomarshals.h"
+#include MOO_MARSHALS_H
 
 
 #if 0

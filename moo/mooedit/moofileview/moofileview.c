@@ -22,7 +22,7 @@
 #include "moobookmarkmgr.h"
 #include "moofilesystem.h"
 #include "moofoldermodel.h"
-#include "mooutils/moomarshals.h"
+#include MOO_MARSHALS_H
 #include "mooiconview.h"
 #include "moosignal.h"
 #include <gdk/gdkkeysyms.h>
@@ -5062,6 +5062,40 @@ static gboolean completion_visible_func         (GtkTreeModel   *model,
 }
 
 
+/* XXX _gtk_entry_get_borders from gtkentry.c */
+static void entry_get_borders (GtkEntry *entry,
+                               gint     *xborder,
+                               gint     *yborder)
+{
+    GtkWidget *widget = GTK_WIDGET (entry);
+    gint focus_width;
+    gboolean interior_focus;
+
+    gtk_widget_style_get (widget,
+                          "interior-focus", &interior_focus,
+                          "focus-line-width", &focus_width,
+                          NULL);
+
+    if (entry->has_frame)
+    {
+        *xborder = widget->style->xthickness;
+        *yborder = widget->style->ythickness;
+    }
+    else
+    {
+        *xborder = 0;
+        *yborder = 0;
+    }
+
+    if (!interior_focus)
+    {
+        *xborder += focus_width;
+        *yborder += focus_width;
+    }
+}
+
+
+/* XXX gtk_entry_completion_resize_popup from gtkentrycompletion.c */
 static gboolean completion_resize_popup         (Completion *cmpl)
 {
     gint x, y;
@@ -5076,7 +5110,7 @@ static gboolean completion_resize_popup         (Completion *cmpl)
 
     gdk_window_get_origin (GTK_WIDGET(cmpl->entry)->window, &x, &y);
     /* XXX */
-    _gtk_entry_get_borders (cmpl->entry, &x_border, &y_border);
+    entry_get_borders (cmpl->entry, &x_border, &y_border);
 
     matches = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (cmpl->model), NULL);
 

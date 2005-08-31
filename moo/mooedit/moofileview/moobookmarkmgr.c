@@ -12,7 +12,7 @@
  */
 
 #include "moobookmarkmgr.h"
-#include "mooutils/moomarshals.h"
+#include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
