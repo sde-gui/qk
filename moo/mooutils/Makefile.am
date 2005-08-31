@@ -121,12 +121,18 @@ PIXMAPS =                           \
     $(srcdir)/pixmaps/gap.png       \
     $(srcdir)/pixmaps/ggap.png      \
     $(srcdir)/pixmaps/close.png     \
+    $(srcdir)/pixmaps/detach.png    \
+    $(srcdir)/pixmaps/attach.png    \
+    $(srcdir)/pixmaps/keepontop.png \
     $(srcdir)/pixmaps/sticky.png
 
 stock-moo.h: $(PIXMAPS)
-	gdk-pixbuf-csource --static --build-list              \
-		GAP_ICON  $(srcdir)/pixmaps/gap.png           \
-		GGAP_ICON $(srcdir)/pixmaps/ggap.png          \
-		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png    \
-		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png  \
+	gdk-pixbuf-csource --static --build-list                      \
+		GAP_ICON  $(srcdir)/pixmaps/gap.png                   \
+		GGAP_ICON $(srcdir)/pixmaps/ggap.png                  \
+		MOO_CLOSE_ICON $(srcdir)/pixmaps/close.png            \
+		MOO_STICKY_ICON $(srcdir)/pixmaps/sticky.png          \
+		MOO_DETACH_ICON $(srcdir)/pixmaps/detach.png          \
+		MOO_ATTACH_ICON $(srcdir)/pixmaps/attach.png          \
+		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png  \
 	> $(srcdir)/stock-moo.h

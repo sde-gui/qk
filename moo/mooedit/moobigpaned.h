@@ -40,7 +40,6 @@ struct _MooBigPaned
     GtkWidget   *inner;
     GtkWidget   *outer;
 
-    gboolean     enable_handle_drag;
     int          drop_pos;
     GdkRectangle drop_rect;
     GdkWindow   *drop_outline;

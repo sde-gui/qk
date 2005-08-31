@@ -53,7 +53,9 @@ G_DEFINE_TYPE (MooBigPaned, moo_big_paned, GTK_TYPE_FRAME)
 enum {
     PROP_0,
     PROP_PANE_ORDER,
-    PROP_ENABLE_HANDLE_DRAG
+    PROP_ENABLE_HANDLE_DRAG,
+    PROP_ENABLE_DETACHING,
+    PROP_HANDLE_CURSOR_TYPE
 };
 
 enum {
@@ -85,6 +87,23 @@ static void moo_big_paned_class_init (MooBigPanedClass *klass)
                                              "enable-handle-drag",
                                              "enable-handle-drag",
                                              TRUE,
+                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_DETACHING,
+                                     g_param_spec_boolean ("enable-detaching",
+                                             "enable-detaching",
+                                             "enable-detaching",
+                                             FALSE,
+                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HANDLE_CURSOR_TYPE,
+                                     g_param_spec_enum ("handle-cursor-type",
+                                             "handle-cursor-type",
+                                             "handle-cursor-type",
+                                             GDK_TYPE_CURSOR_TYPE,
+                                             GDK_HAND2,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     signals[OPEN_PANE] =
@@ -117,7 +136,6 @@ static void moo_big_paned_init      (MooBigPaned *paned)
     int i;
 
     paned->drop_pos = -1;
-    paned->enable_handle_drag = TRUE;
 
     /* XXX destroy */
     for (i = 0; i < 4; ++i)
@@ -127,7 +145,6 @@ static void moo_big_paned_init      (MooBigPaned *paned)
         paned->paned[i] = child =
                 g_object_new (MOO_TYPE_PANED,
                               "pane-position", (MooPanePosition) i,
-                              "enable-handle-drag", paned->enable_handle_drag,
                               NULL);
 
         g_object_ref (child);
@@ -346,7 +363,6 @@ static void     moo_big_paned_set_property  (GObject        *object,
                                              GParamSpec     *pspec)
 {
     MooBigPaned *paned = MOO_BIG_PANED (object);
-    gboolean enable;
     int i;
 
     switch (prop_id)
@@ -356,15 +372,27 @@ static void     moo_big_paned_set_property  (GObject        *object,
             break;
 
         case PROP_ENABLE_HANDLE_DRAG:
-            enable = g_value_get_boolean (value);
-            if (enable != paned->enable_handle_drag)
-            {
-                paned->enable_handle_drag = enable;
-                for (i = 0; i < 4; ++i)
-                    g_object_set (paned->paned[i], "enable-handle-drag",
-                                  enable, NULL);
-                g_object_notify (object, "enable-handle-drag");
-            }
+            for (i = 0; i < 4; ++i)
+                g_object_set (paned->paned[i],
+                              "enable-handle-drag",
+                              g_value_get_boolean (value),
+                              NULL);
+            break;
+
+        case PROP_ENABLE_DETACHING:
+            for (i = 0; i < 4; ++i)
+                g_object_set (paned->paned[i],
+                              "enable-detaching",
+                              g_value_get_boolean (value),
+                              NULL);
+            break;
+
+        case PROP_HANDLE_CURSOR_TYPE:
+            for (i = 0; i < 4; ++i)
+                g_object_set (paned->paned[i], "handle-cursor-type",
+                              (GdkCursorType) g_value_get_enum (value),
+                              NULL);
+            g_object_notify (object, "handle-cursor-type");
             break;
 
         default:
@@ -379,6 +407,7 @@ static void     moo_big_paned_get_property  (GObject        *object,
                                              GParamSpec     *pspec)
 {
     MooBigPaned *paned = MOO_BIG_PANED (object);
+    GdkCursorType cursor_type;
 
     switch (prop_id)
     {
@@ -386,8 +415,10 @@ static void     moo_big_paned_get_property  (GObject        *object,
             g_value_set_pointer (value, paned->order);
             break;
 
-        case PROP_ENABLE_HANDLE_DRAG:
-            g_value_set_boolean (value, paned->enable_handle_drag);
+        case PROP_HANDLE_CURSOR_TYPE:
+            g_object_get (paned->paned[0], "handle-cursor-type",
+                          &cursor_type, NULL);
+            g_value_set_enum (value, cursor_type);
             break;
 
         default:
@@ -416,13 +447,7 @@ static void         handle_drag_start       (G_GNUC_UNUSED MooPaned *child,
                                              G_GNUC_UNUSED GtkWidget *pane_widget,
                                              MooBigPaned    *paned)
 {
-    GdkCursor *cursor;
-
     g_return_if_fail (GTK_WIDGET_REALIZED (paned->outer));
-
-    cursor = gdk_cursor_new (GDK_FLEUR);
-    gdk_window_set_cursor (paned->outer->window, cursor);
-    gdk_cursor_unref (cursor);
 
     g_signal_connect (paned->outer, "expose-event",
                       G_CALLBACK (moo_big_paned_expose), paned);
@@ -477,7 +502,6 @@ static void     handle_drag_end             (MooPaned       *child,
     g_return_if_fail (GTK_WIDGET_REALIZED (paned->outer));
 
     gdk_window_get_pointer (paned->outer->window, &x, &y, NULL);
-    gdk_window_set_cursor (paned->outer->window, NULL);
 
     pos = get_drop_position (paned, child, x, y);
 

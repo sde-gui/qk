@@ -6,5 +6,7 @@ EXTRA_DIST =    \
     ggap.png    \
     gap.png     \
     close.png   \
-    sticky.png
-
+    sticky.png  \
+    detach.png  \
+    attach.png  \
+    keepontop.png

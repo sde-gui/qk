@@ -61,6 +61,8 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.c         \
     mooeditsearch.h         \
     mooeditwindow.c         \
+    moonotebook.c           \
+    moonotebook.h           \
     moopaned.c              \
     moopaned.h              \
     mootextiter.h

@@ -117,8 +117,12 @@ int         moo_paned_get_open_pane     (MooPaned       *paned);
 gboolean    moo_paned_is_open           (MooPaned       *paned);
 
 void        moo_paned_open_pane         (MooPaned       *paned,
-                                         guint           index);
+                                         guint           index_);
 void        moo_paned_hide_pane         (MooPaned       *paned);
+void        moo_paned_detach_pane       (MooPaned       *paned,
+                                         guint           index_);
+void        moo_paned_attach_pane       (MooPaned       *paned,
+                                         guint           index_);
 
 
 G_END_DECLS

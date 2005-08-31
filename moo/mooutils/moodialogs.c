@@ -38,7 +38,7 @@ static void message_dialog (GtkWidget       *parent,
         parent_window,
         GTK_DIALOG_MODAL,
         type,
-        GTK_BUTTONS_OK,
+        GTK_BUTTONS_NONE,
         "<span weight=\"bold\" size=\"larger\">%s</span>", text);
     if (secondary_text)
         gtk_message_dialog_format_secondary_text (
@@ -49,7 +49,7 @@ static void message_dialog (GtkWidget       *parent,
             parent_window,
             GTK_DIALOG_MODAL,
             type,
-            GTK_BUTTONS_OK,
+            GTK_BUTTONS_NONE,
             "<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
             text, secondary_text ? secondary_text : "");
 #else /* !GTK_CHECK_VERSION(2,4,0) */
@@ -57,10 +57,16 @@ static void message_dialog (GtkWidget       *parent,
             parent_window,
             GTK_DIALOG_MODAL,
             type,
-            GTK_BUTTONS_OK,
+            GTK_BUTTONS_NONE,
             "%s\n%s",
             text, secondary_text ? secondary_text : "");
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
+
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_OK, GTK_RESPONSE_CANCEL,
+                            NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog),
+                                     GTK_RESPONSE_CANCEL);
 
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);

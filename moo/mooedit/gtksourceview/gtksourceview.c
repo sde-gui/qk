@@ -187,6 +187,10 @@ static void	gtk_source_view_get_property		(GObject           *object,
 static void	gtk_source_view_style_set               (GtkWidget         *widget,
 							 GtkStyle          *previous_style);
 static void	gtk_source_view_create_current_line_gc  (GtkSourceView     *view);
+static void	draw_tabs				(GtkSourceView     *view,
+							 GdkEventExpose    *event,
+							 GtkTextIter       *start,
+							 GtkTextIter       *end);
 
 
 /* Private functions. */
@@ -1217,6 +1221,7 @@ gtk_source_view_expose (GtkWidget      *widget,
 	GtkSourceView *view;
 	GtkTextView *text_view;
 	gboolean event_handled;
+        GtkTextIter start, end;
 	
 	view = GTK_SOURCE_VIEW (widget);
 	text_view = GTK_TEXT_VIEW (widget);
@@ -1236,7 +1241,7 @@ gtk_source_view_expose (GtkWidget      *widget,
 	    view->priv->source_buffer != NULL) 
 	{
 		GdkRectangle visible_rect;
-		GtkTextIter iter1, iter2;
+		GtkTextIter iter1, iter2, iter3, iter4;
 		
 		gtk_text_view_get_visible_rect (text_view, &visible_rect);
 		gtk_text_view_get_line_at_y (text_view, &iter1,
@@ -1246,6 +1251,9 @@ gtk_source_view_expose (GtkWidget      *widget,
 					     visible_rect.y
 					     + visible_rect.height, NULL);
 		gtk_text_iter_forward_line (&iter2);
+
+                start = iter1;
+                end = iter2;
 
 		_gtk_source_buffer_highlight_region (view->priv->source_buffer,
 						     &iter1, &iter2, FALSE);
@@ -1361,9 +1369,12 @@ gtk_source_view_expose (GtkWidget      *widget,
 			event_handled = 
 				(* GTK_WIDGET_CLASS (parent_class)->expose_event)
 				(widget, event);
-
+				
+		if (event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT) &&
+		    view->priv->source_buffer != NULL)
+			draw_tabs (GTK_SOURCE_VIEW (text_view), event, &start, &end);
 	}
-	
+
 	return event_handled;	
 }
 
@@ -2254,4 +2265,43 @@ gtk_source_view_set_highlight_current_line_color (GtkSourceView   *view,
 		gdk_gc_set_foreground (view->priv->current_line_gc, color);
 	else
 		view->priv->current_line_color = *color;
+}
+
+
+static void
+draw_tab_at_iter (GtkTextView    *textview,
+		  GdkEventExpose *event,
+		  GtkTextIter    *iter)
+{
+	GdkRectangle rect;
+	GdkPoint points[3];
+	
+	gtk_text_view_get_iter_location (textview, iter, &rect);
+	gtk_text_view_buffer_to_window_coords (textview, GTK_TEXT_WINDOW_TEXT,
+					       rect.x, rect.y + rect.height - 2, 
+					       &points[0].x, &points[0].y);
+	points[1] = points[0];
+	points[2] = points[0];
+	points[1].y += 1;
+	points[2].x += 1;
+	points[2].y += 1;
+	gdk_draw_polygon (event->window,
+			  GTK_WIDGET(textview)->style->text_gc[GTK_STATE_NORMAL],
+			  FALSE, points, 3);
+}
+
+
+static void
+draw_tabs (GtkSourceView     *view,
+	   GdkEventExpose    *event,
+	   GtkTextIter       *start,
+	   GtkTextIter       *end)
+{
+	while (gtk_text_iter_compare (start, end) < 0)
+	{
+		if (gtk_text_iter_get_char (start) == '\t')
+			draw_tab_at_iter (GTK_TEXT_VIEW (view), event, start);
+		if (!gtk_text_iter_forward_char (start))
+			break;
+	}
 }

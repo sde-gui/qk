@@ -102,6 +102,12 @@ void moo_create_stock_items (void)
               REAL_SMALL, MOO_CLOSE_ICON);
     add_icon (factory, MOO_STOCK_STICKY,
               REAL_SMALL, MOO_STICKY_ICON);
+    add_icon (factory, MOO_STOCK_DETACH,
+              REAL_SMALL, MOO_DETACH_ICON);
+    add_icon (factory, MOO_STOCK_ATTACH,
+              REAL_SMALL, MOO_ATTACH_ICON);
+    add_icon (factory, MOO_STOCK_KEEP_ON_TOP,
+              REAL_SMALL, MOO_KEEP_ON_TOP_ICON);
 
 #if !GTK_CHECK_VERSION(2,6,0)
     add_icon2 (factory, GTK_STOCK_ABOUT,
