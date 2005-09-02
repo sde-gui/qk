@@ -22,85 +22,85 @@
 GtkWidget *_moo_edit_create_prompt_on_replace_dialog (void); /* in mooeditfind-glade.c */
 
 
-int              moo_edit_save_changes_dialog   (MooEdit *edit)
-{
-    GtkDialog *dialog;
-    int response;
-    const char *name = edit->priv->display_basename;
-
-#if GTK_CHECK_VERSION(2,6,0)
-    dialog = GTK_DIALOG (gtk_message_dialog_new (
-        GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        name ?
-            "Save changes to document \"%s\" before closing?" :
-            "Save changes to document before closing?",
-        name));
-
-    gtk_message_dialog_format_secondary_text (
-        GTK_MESSAGE_DIALOG (dialog),
-        "If you don't save, changes will be discarded");
-#elif GTK_CHECK_VERSION(2,4,0)
-    dialog = NULL;
-    if (name)
-        dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "<span weight=\"bold\" size=\"larger\">Save changes to "
-            "document \"%s\" before closing?</span>\n"
-            "If you don't save, changes will be discarded",
-            name));
-    else
-        dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "<span weight=\"bold\" size=\"larger\">Save changes to "
-            "document before closing?</span>\n"
-            "If you don't save, changes will be discarded"));
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    dialog = NULL;
-    if (name)
-        dialog = GTK_DIALOG (gtk_message_dialog_new (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "Save changes to document \"%s\" before closing?\n"
-            "If you don't save, changes will be discarded",
-            name));
-    else
-        dialog = GTK_DIALOG (gtk_message_dialog_new (
-            GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
-            GTK_DIALOG_MODAL,
-            GTK_MESSAGE_WARNING,
-            GTK_BUTTONS_NONE,
-            "Save changes to document before closing?\n"
-            "If you don't save, changes will be discarded"));
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
-    gtk_dialog_add_buttons (dialog,
-        "Close _without Saving", GTK_RESPONSE_NO,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_YES,
-        NULL);
-#if GTK_CHECK_VERSION(2,6,0)
-    gtk_dialog_set_alternative_button_order (dialog,
-        GTK_RESPONSE_YES, GTK_RESPONSE_NO, GTK_RESPONSE_CANCEL, -1);
-#endif /* GTK_CHECK_VERSION(2,6,0) */
-    gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
-
-    response = gtk_dialog_run (dialog);
-    if (response == GTK_RESPONSE_DELETE_EVENT)
-        response = GTK_RESPONSE_CANCEL;
-    gtk_widget_destroy (GTK_WIDGET (dialog));
-    return response;
-}
+// int              moo_edit_save_changes_dialog   (MooEdit *edit)
+// {
+//     GtkDialog *dialog;
+//     int response;
+//     const char *name = edit->priv->display_basename;
+//
+// #if GTK_CHECK_VERSION(2,6,0)
+//     dialog = GTK_DIALOG (gtk_message_dialog_new (
+//         GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
+//         GTK_DIALOG_MODAL,
+//         GTK_MESSAGE_WARNING,
+//         GTK_BUTTONS_NONE,
+//         name ?
+//             "Save changes to document \"%s\" before closing?" :
+//             "Save changes to document before closing?",
+//         name));
+//
+//     gtk_message_dialog_format_secondary_text (
+//         GTK_MESSAGE_DIALOG (dialog),
+//         "If you don't save, changes will be discarded");
+// #elif GTK_CHECK_VERSION(2,4,0)
+//     dialog = NULL;
+//     if (name)
+//         dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
+//             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
+//             GTK_DIALOG_MODAL,
+//             GTK_MESSAGE_WARNING,
+//             GTK_BUTTONS_NONE,
+//             "<span weight=\"bold\" size=\"larger\">Save changes to "
+//             "document \"%s\" before closing?</span>\n"
+//             "If you don't save, changes will be discarded",
+//             name));
+//     else
+//         dialog = GTK_DIALOG (gtk_message_dialog_new_with_markup (
+//             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
+//             GTK_DIALOG_MODAL,
+//             GTK_MESSAGE_WARNING,
+//             GTK_BUTTONS_NONE,
+//             "<span weight=\"bold\" size=\"larger\">Save changes to "
+//             "document before closing?</span>\n"
+//             "If you don't save, changes will be discarded"));
+// #else /* !GTK_CHECK_VERSION(2,4,0) */
+//     dialog = NULL;
+//     if (name)
+//         dialog = GTK_DIALOG (gtk_message_dialog_new (
+//             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
+//             GTK_DIALOG_MODAL,
+//             GTK_MESSAGE_WARNING,
+//             GTK_BUTTONS_NONE,
+//             "Save changes to document \"%s\" before closing?\n"
+//             "If you don't save, changes will be discarded",
+//             name));
+//     else
+//         dialog = GTK_DIALOG (gtk_message_dialog_new (
+//             GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))),
+//             GTK_DIALOG_MODAL,
+//             GTK_MESSAGE_WARNING,
+//             GTK_BUTTONS_NONE,
+//             "Save changes to document before closing?\n"
+//             "If you don't save, changes will be discarded"));
+// #endif /* !GTK_CHECK_VERSION(2,4,0) */
+//
+//     gtk_dialog_add_buttons (dialog,
+//         "Close _without Saving", GTK_RESPONSE_NO,
+//         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+//         GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+//         NULL);
+// #if GTK_CHECK_VERSION(2,6,0)
+//     gtk_dialog_set_alternative_button_order (dialog,
+//         GTK_RESPONSE_YES, GTK_RESPONSE_NO, GTK_RESPONSE_CANCEL, -1);
+// #endif /* GTK_CHECK_VERSION(2,6,0) */
+//     gtk_dialog_set_default_response (dialog, GTK_RESPONSE_YES);
+//
+//     response = gtk_dialog_run (dialog);
+//     if (response == GTK_RESPONSE_DELETE_EVENT)
+//         response = GTK_RESPONSE_CANCEL;
+//     gtk_widget_destroy (GTK_WIDGET (dialog));
+//     return response;
+// }
 
 
 void             moo_edit_save_error_dialog     (GtkWidget  *widget,
@@ -111,6 +111,7 @@ void             moo_edit_save_error_dialog     (GtkWidget  *widget,
                       err_msg);
 }
 
+/* XXX filename */
 void             moo_edit_open_error_dialog     (GtkWidget *widget,
                                                  const char *err_msg)
 {
@@ -128,7 +129,8 @@ void             moo_edit_load_error_dialog     (GtkWidget *widget,
 }
 
 
-MooEditFileInfo *moo_edit_save_as_dialog        (MooEdit *edit)
+MooEditFileInfo *moo_edit_save_as_dialog            (MooEdit        *edit,
+                                                     MooFilterMgr   *mgr)
 {
     const char *title = "Save File";
     const char *start = NULL;
@@ -151,24 +153,25 @@ MooEditFileInfo *moo_edit_save_as_dialog        (MooEdit *edit)
 }
 
 
-MooEditFileInfo *moo_edit_open_dialog           (GtkWidget *widget)
-{
-    const char *title = "Open File";
-    const char *start = NULL;
-    const char *filename = NULL;
-    MooEditFileInfo *file = NULL;
-
-    start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
-    filename = moo_file_dialog (widget, MOO_DIALOG_FILE_OPEN_EXISTING, title, start);
-    if (filename) {
-        char *new_start = g_path_get_dirname (filename);
-        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
-        g_free (new_start);
-        file = moo_edit_file_info_new (filename, NULL);
-    }
-
-    return file;
-}
+// GSList          *moo_edit_open_dialog               (GtkWidget      *widget,
+//                                                      MooFilterMgr   *mgr)
+// {
+//     const char *title = "Open File";
+//     const char *start = NULL;
+//     const char *filename = NULL;
+//     MooEditFileInfo *file = NULL;
+//
+//     start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+//     filename = moo_file_dialog (widget, MOO_DIALOG_FILE_OPEN_EXISTING, title, start);
+//     if (filename) {
+//         char *new_start = g_path_get_dirname (filename);
+//         moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
+//         g_free (new_start);
+//         file = moo_edit_file_info_new (filename, NULL);
+//     }
+//
+//     return file;
+// }
 
 
 void             moo_edit_nothing_found_dialog  (MooEdit    *edit,

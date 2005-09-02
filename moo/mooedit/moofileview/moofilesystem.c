@@ -70,6 +70,9 @@ static gboolean     parse_path_unix         (MooFileSystem  *fs,
                                              char          **display_dirname,
                                              char          **display_basename,
                                              GError        **error);
+static char        *get_absolute_path_unix  (MooFileSystem  *fs,
+                                             const char     *display_name,
+                                             const char     *current_dir);
 
 #else /* __WIN32__ */
 
@@ -103,6 +106,9 @@ static gboolean     parse_path_win32        (MooFileSystem  *fs,
                                              char          **display_dirname,
                                              char          **display_basename,
                                              GError        **error);
+static char        *get_absolute_path_win32 (MooFileSystem  *fs,
+                                             const char     *display_name,
+                                             const char     *current_dir);
 #endif /* __WIN32__ */
 
 
@@ -127,6 +133,7 @@ static void moo_file_system_class_init (MooFileSystemClass *klass)
     klass->normalize_path = normalize_path_win32;
     klass->make_path = make_path_win32;
     klass->parse_path = parse_path_win32;
+    klass->get_absolute_path = get_absolute_path_win32;
 #else /* !__WIN32__ */
     klass->get_root_folder = get_root_folder_unix;
     klass->get_parent_folder = get_parent_folder_unix;
@@ -135,6 +142,7 @@ static void moo_file_system_class_init (MooFileSystemClass *klass)
     klass->normalize_path = normalize_path_unix;
     klass->make_path = make_path_unix;
     klass->parse_path = parse_path_unix;
+    klass->get_absolute_path = get_absolute_path_unix;
 #endif /* !__WIN32__ */
 }
 
@@ -277,6 +285,16 @@ gboolean    moo_file_system_parse_path  (MooFileSystem  *fs,
     return MOO_FILE_SYSTEM_GET_CLASS(fs)->parse_path (fs, path_utf8, dirname,
                                                       display_dirname, display_basename,
                                                       error);
+}
+
+
+char        *moo_file_system_get_absolute_path  (MooFileSystem  *fs,
+                                                 const char     *display_name,
+                                                 const char     *current_dir)
+{
+    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
+    g_return_val_if_fail (display_name != NULL, NULL);
+    return MOO_FILE_SYSTEM_GET_CLASS(fs)->get_absolute_path (fs, display_name, current_dir);
 }
 
 
@@ -810,6 +828,34 @@ success:
     *display_dirname_p = display_dirname;
     *display_basename_p = display_basename;
     return TRUE;
+}
+
+
+/* XXX unicode */
+static char        *get_absolute_path_unix  (G_GNUC_UNUSED MooFileSystem *fs,
+                                             const char     *short_name,
+                                             const char     *current_dir)
+{
+    g_return_val_if_fail (short_name && short_name[0], NULL);
+
+    if (short_name[0] == '~')
+    {
+        const char *home = g_get_home_dir ();
+        g_return_val_if_fail (home != NULL, NULL);
+
+        if (short_name[1])
+            return g_build_filename (home, short_name + 1, NULL);
+        else
+            return g_strdup (home);
+    }
+
+    if (g_path_is_absolute (short_name))
+        return g_strdup (short_name);
+
+    if (current_dir)
+        return g_build_filename (current_dir, short_name, NULL);
+
+    return NULL;
 }
 
 #endif /* !__WIN32__ */

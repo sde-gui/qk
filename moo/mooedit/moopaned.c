@@ -1,3 +1,4 @@
+/*-*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-*/
 /*
  *   moopaned.c
  *
@@ -25,6 +26,13 @@
 #define SPACING_IN_BUTTON 4
 
 
+typedef enum {
+    FOCUS_NONE = 0,
+    FOCUS_CHILD,
+    FOCUS_PANE,
+    FOCUS_BUTTON
+} FocusPosition;
+
 typedef struct {
     MooPaneLabel *label;
     GtkWidget    *frame;
@@ -33,16 +41,18 @@ typedef struct {
     GtkWidget    *child_holder;
     GtkWidget    *button;
     GtkWidget    *sticky_button;
-    GtkWidget    *close_button;
     GtkWidget    *detach_button;
 
     GtkWidget    *window;
-    GtkWidget    *attach_button;
     GtkWidget    *keep_on_top_button;
     GtkWidget    *window_child_holder;
     gboolean      keep_on_top;
     gboolean      detached;
     gboolean      detachable;
+    GdkRectangle  window_position;
+
+    /* XXX weak pointer */
+    GtkWidget    *focus_child;
 } Pane;
 
 
@@ -51,6 +61,13 @@ struct _MooPanedPrivate {
 
     GdkWindow   *handle_window;
     GdkWindow   *pane_window;
+
+    /* XXX weak pointer */
+    GtkWidget   *focus_child; /* focused grandchild of bin->child */
+    Pane        *focus_pane;
+    FocusPosition focus;
+    gboolean     button_real_focus; /* button was focused by keyboard navigation */
+    gboolean     dont_move_focus;   /* do not try to move focus in open_pane/hide_pane */
 
     Pane        *current_pane;
     GSList      *panes;
@@ -100,7 +117,10 @@ static void     moo_paned_destroy       (GtkObject      *object);
 
 static void     moo_paned_realize       (GtkWidget      *widget);
 static void     moo_paned_unrealize     (GtkWidget      *widget);
+/* XXX unmap */
 static void     moo_paned_map           (GtkWidget      *widget);
+static gboolean moo_paned_focus         (GtkWidget      *widget,
+                                         GtkDirectionType direction);
 
 static void     moo_paned_set_focus_child (GtkContainer *container,
                                          GtkWidget      *widget);
@@ -180,6 +200,9 @@ static void     moo_paned_set_handle_cursor_type(MooPaned     *paned,
                                                  gboolean      really_set);
 static void     moo_paned_set_enable_detaching  (MooPaned     *paned,
                                                  gboolean      enable);
+static gboolean pane_window_configure   (GtkWindow          *window,
+                                         GdkEventConfigure  *event,
+                                         MooPaned           *paned);
 
 
 /* MOO_TYPE_PANED */
@@ -236,6 +259,7 @@ static void moo_paned_class_init (MooPanedClass *klass)
     widget_class->leave_notify_event = moo_paned_leave;
     widget_class->button_press_event = moo_paned_button_press;
     widget_class->button_release_event = moo_paned_button_release;
+    widget_class->focus = moo_paned_focus;
 
     container_class->forall = moo_paned_forall;
     container_class->set_focus_child = moo_paned_set_focus_child;
@@ -2147,16 +2171,15 @@ static GtkWidget   *create_icon (const guint8 *data)
 #endif /* !__MOO__ */
 
 
-static GtkWidget   *create_button       (MooPaned   *paned,
-                                         Pane *pane,
-                                         GtkWidget  *toolbar,
-                                         GtkTooltips *tooltips,
-                                         const char *tip,
-                                         gboolean toggle,
+static GtkWidget    *create_button  (Pane           *pane,
+                                     GtkWidget      *toolbar,
+                                     GtkTooltips    *tooltips,
+                                     const char     *tip,
+                                     gboolean        toggle,
 #ifndef __MOO__
-                                         const guint8 *data)
+                                     const guint8   *data)
 #else
-                                         const char *stock_id)
+                                     const char     *stock_id)
 #endif
 {
     GtkWidget *button;
@@ -2210,51 +2233,53 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
 
     if (embedded)
     {
-        pane->close_button = create_button (paned, pane, toolbar,
-                                            tooltips, "Hide pane",
-                                            FALSE,
+        GtkWidget *close_button;
+
+        close_button = create_button (pane, toolbar, tooltips,
+                                      "Hide pane", FALSE,
 #ifndef __MOO__
-                                            MOO_CLOSE_ICON);
+                                      MOO_CLOSE_ICON);
 #else
-                                            MOO_STOCK_CLOSE);
+                                      MOO_STOCK_CLOSE);
 #endif
 
-        pane->sticky_button = create_button (paned, pane, toolbar,
-                                             tooltips, "Sticky",
-                                             TRUE,
+        pane->sticky_button = create_button (pane, toolbar, tooltips,
+                                             "Sticky", TRUE,
 #ifndef __MOO__
                                              MOO_STICKY_ICON);
 #else
                                              MOO_STOCK_STICKY);
 #endif
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->sticky_button),
-                                      paned->priv->sticky);
 
-        pane->detach_button = create_button (paned, pane, toolbar,
-                                             tooltips, "Detach pane",
-                                             FALSE,
+        pane->detach_button = create_button (pane, toolbar, tooltips,
+                                             "Detach pane", FALSE,
 #ifndef __MOO__
                                              MOO_DETACH_ICON);
 #else
                                              MOO_STOCK_DETACH);
 #endif
+
         if (!paned->priv->enable_detaching || !pane->detachable)
             gtk_widget_hide (pane->detach_button);
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->sticky_button),
+                                      paned->priv->sticky);
+        g_signal_connect_swapped (close_button, "clicked",
+                                  G_CALLBACK (moo_paned_hide_pane), paned);
     }
     else
     {
-        pane->attach_button = create_button (paned, pane, toolbar,
-                                             tooltips, "Attach",
-                                             FALSE,
+        GtkWidget *attach_button;
+
+        attach_button = create_button (pane, toolbar, tooltips,
+                                       "Attach", FALSE,
 #ifndef __MOO__
-                                             MOO_ATTACH_ICON);
+                                       MOO_ATTACH_ICON);
 #else
-                                             MOO_STOCK_ATTACH);
+                                       MOO_STOCK_ATTACH);
 #endif
 
-        pane->keep_on_top_button = create_button (paned, pane, toolbar,
-                                                  tooltips, "Keep on top",
-                                                  TRUE,
+        pane->keep_on_top_button = create_button (pane, toolbar, tooltips,
+                                                  "Keep on top", TRUE,
 #ifndef __MOO__
                                                   MOO_KEEP_ON_TOP_ICON);
 #else
@@ -2263,6 +2288,9 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
 
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->keep_on_top_button),
                                       pane->keep_on_top);
+        g_object_set_data (G_OBJECT (attach_button), "moo-pane", pane);
+        g_signal_connect (attach_button, "clicked",
+                          G_CALLBACK (attach_button_clicked), paned);
     }
 
     gtk_widget_show (toolbar);
@@ -2381,8 +2409,6 @@ void        moo_paned_insert_pane       (MooPaned       *paned,
 
     g_signal_connect (button, "toggled",
                       G_CALLBACK (button_toggled), paned);
-    g_signal_connect_swapped (pane->close_button, "clicked",
-                              G_CALLBACK (moo_paned_hide_pane), paned);
     g_signal_connect (pane->sticky_button, "toggled",
                       G_CALLBACK (sticky_button_toggled), paned);
     g_signal_connect (pane->detach_button, "clicked",
@@ -2439,9 +2465,6 @@ void moo_paned_remove_pane              (MooPaned   *paned,
     g_signal_handlers_disconnect_by_func (pane->sticky_button,
                                           (gpointer) sticky_button_toggled,
                                           paned);
-    g_signal_handlers_disconnect_by_func (pane->close_button,
-                                          (gpointer) moo_paned_hide_pane,
-                                          paned);
     g_signal_handlers_disconnect_by_func (pane->detach_button,
                                           (gpointer) detach_button_clicked,
                                           paned);
@@ -2470,6 +2493,7 @@ void moo_paned_remove_pane              (MooPaned   *paned,
 
     gtk_container_remove (GTK_CONTAINER (pane->child_holder), pane->child);
     gtk_widget_unparent (pane->frame);
+    gtk_widget_destroy (pane->frame);
 
     moo_pane_label_free (pane->label);
     g_free (pane);
@@ -2496,19 +2520,398 @@ guint       moo_paned_n_panes           (MooPaned   *paned)
 }
 
 
+static GtkWidget *find_focus                (GtkWidget  *widget)
+{
+    GtkWidget *focus_child, *window;
+
+    if (!widget)
+        return NULL;
+
+    window = gtk_widget_get_toplevel (widget);
+
+    if (!GTK_IS_WINDOW (window))
+        return NULL;
+
+    focus_child = gtk_window_get_focus (GTK_WINDOW (window));
+
+    if (focus_child && gtk_widget_is_ancestor (focus_child, widget))
+        return focus_child;
+    else
+        return NULL;
+}
+
+
+static GtkWidget *find_focus_child          (MooPaned   *paned)
+{
+    return find_focus (GTK_BIN(paned)->child);
+}
+
+
+static GtkWidget *find_pane_focus_child     (Pane       *pane)
+{
+    g_return_val_if_fail (pane != NULL && pane->child != NULL, NULL);
+    return find_focus (pane->child);
+}
+
+
 static void     moo_paned_set_focus_child   (GtkContainer   *container,
                                              GtkWidget      *widget)
 {
     MooPaned *paned = MOO_PANED (container);
+    FocusPosition new_focus = FOCUS_NONE;
+    Pane *new_focus_pane = NULL;
+    Pane *old_focus_pane = paned->priv->focus_pane;
+    GSList *l;
+
+    if (widget)
+    {
+        if (widget == GTK_BIN(paned)->child)
+            new_focus = FOCUS_CHILD;
+        else if (widget == paned->button_box)
+            new_focus = FOCUS_BUTTON;
+
+        if (!new_focus)
+        {
+            for (l = paned->priv->panes; l != NULL; l = l->next)
+            {
+                Pane *pane = l->data;
+                if (widget == pane->frame)
+                {
+                    new_focus_pane = pane;
+                    new_focus = FOCUS_PANE;
+                    break;
+                }
+            }
+        }
+
+        if (!new_focus)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            GTK_CONTAINER_CLASS(moo_paned_parent_class)->set_focus_child (container, widget);
+            paned->priv->focus = FOCUS_NONE;
+            paned->priv->focus_pane = NULL;
+            g_return_if_reached ();
+        }
+    }
+
+    if (new_focus != FOCUS_BUTTON)
+        paned->priv->button_real_focus = FALSE;
+
+    switch (paned->priv->focus)
+    {
+        case FOCUS_NONE:
+        case FOCUS_BUTTON:
+            break;
+
+        case FOCUS_CHILD:
+            if (new_focus != FOCUS_CHILD)
+            {
+                if (paned->priv->focus_child)
+                    g_object_remove_weak_pointer (G_OBJECT (paned->priv->focus_child),
+                                                  (gpointer*) &paned->priv->focus_child);
+
+                paned->priv->focus_child = find_focus_child (paned);
+
+                if (paned->priv->focus_child)
+                    g_object_add_weak_pointer (G_OBJECT (paned->priv->focus_child),
+                                               (gpointer*) &paned->priv->focus_child);
+            }
+            break;
+
+        case FOCUS_PANE:
+            g_assert (old_focus_pane != NULL);
+            if (new_focus_pane != old_focus_pane)
+            {
+                if (old_focus_pane->focus_child)
+                    g_object_remove_weak_pointer (G_OBJECT (old_focus_pane->focus_child),
+                                                  (gpointer*) &old_focus_pane->focus_child);
+
+                old_focus_pane->focus_child = find_pane_focus_child (old_focus_pane);
+
+                if (old_focus_pane->focus_child)
+                    g_object_add_weak_pointer (G_OBJECT (old_focus_pane->focus_child),
+                                               (gpointer*) &old_focus_pane->focus_child);
+            }
+            break;
+    }
 
     GTK_CONTAINER_CLASS(moo_paned_parent_class)->set_focus_child (container, widget);
 
-    if (widget == GTK_BIN(paned)->child &&
+    paned->priv->focus = new_focus;
+    paned->priv->focus_pane = new_focus_pane;
+
+    if (new_focus == FOCUS_CHILD &&
         paned->priv->close_on_child_focus &&
         !paned->priv->sticky)
     {
+        paned->priv->dont_move_focus = TRUE;
         moo_paned_hide_pane (paned);
+        paned->priv->dont_move_focus = FALSE;
     }
+}
+
+
+static gboolean focus_to_child  (MooPaned           *paned,
+                                 GtkDirectionType    direction)
+{
+    return GTK_BIN(paned)->child &&
+            gtk_widget_child_focus (GTK_BIN(paned)->child, direction);
+}
+
+
+static gboolean focus_to_pane   (MooPaned           *paned,
+                                 GtkDirectionType    direction)
+{
+    Pane *pane = paned->priv->current_pane;
+
+    if (!pane)
+        return FALSE;
+
+    if (find_focus (pane->frame))
+    {
+        return gtk_widget_child_focus (pane->frame, direction);
+    }
+    else
+    {
+        return gtk_widget_child_focus (pane->child, direction) ||
+                gtk_widget_child_focus (pane->frame, direction);
+    }
+}
+
+
+static gboolean focus_to_button (MooPaned           *paned,
+                                 GtkDirectionType    direction)
+{
+    if (gtk_widget_child_focus (paned->button_box, direction))
+    {
+        paned->priv->button_real_focus = TRUE;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
+static gboolean moo_left_paned_focus            (MooPaned   *paned,
+                                                 GtkDirectionType direction)
+{
+    switch (paned->priv->focus)
+    {
+        case FOCUS_NONE:
+            switch (direction)
+            {
+                case GTK_DIR_LEFT:
+                case GTK_DIR_UP:
+                    return focus_to_child (paned, direction) ||
+                            (paned->priv->current_pane && focus_to_pane (paned, direction)) ||
+                            focus_to_button (paned, direction);
+                case GTK_DIR_RIGHT:
+                case GTK_DIR_DOWN:
+                    return focus_to_button (paned, direction) ||
+                            focus_to_child (paned, direction);
+                default:
+                    g_return_val_if_reached (FALSE);
+            }
+
+        case FOCUS_CHILD:
+            if (focus_to_child (paned, direction))
+                return TRUE;
+
+            switch (direction)
+            {
+                case GTK_DIR_LEFT:
+                    return (paned->priv->current_pane && focus_to_pane (paned, direction)) ||
+                            focus_to_button (paned, direction);
+                default:
+                    return FALSE;
+            }
+
+        case FOCUS_PANE:
+            if (focus_to_pane (paned, direction))
+                return TRUE;
+
+            switch (direction)
+            {
+                case GTK_DIR_LEFT:
+                    return focus_to_button (paned, direction);
+                case GTK_DIR_RIGHT:
+                    return focus_to_child (paned, direction);
+                default:
+                    return FALSE;
+            }
+
+        case FOCUS_BUTTON:
+            if (focus_to_button (paned, direction))
+                return TRUE;
+
+            switch (direction)
+            {
+                case GTK_DIR_RIGHT:
+                    return focus_to_pane (paned, direction) ||
+                            focus_to_child (paned, direction);
+                default:
+                    return FALSE;
+            }
+    }
+
+    g_return_val_if_reached (FALSE);
+}
+
+
+static gboolean moo_left_paned_tab_focus(MooPaned   *paned,
+                                         gboolean    forward,
+                                         GtkDirectionType direction)
+{
+    if (forward)
+    {
+        switch (paned->priv->focus)
+        {
+            case FOCUS_NONE:
+                return focus_to_button (paned, direction) ||
+                        focus_to_child (paned, direction);
+            case FOCUS_CHILD:
+                return focus_to_child (paned, direction);
+            case FOCUS_PANE:
+                return focus_to_pane (paned, direction) ||
+                        focus_to_child (paned, direction);
+            case FOCUS_BUTTON:
+                return focus_to_button (paned, direction) ||
+                        focus_to_pane (paned, direction) ||
+                        focus_to_child (paned, direction);
+        }
+    }
+    else
+    {
+        switch (paned->priv->focus)
+        {
+            case FOCUS_NONE:
+            case FOCUS_CHILD:
+                return focus_to_child (paned, direction) ||
+                        focus_to_pane (paned, direction) ||
+                        focus_to_button (paned, direction);
+            case FOCUS_PANE:
+                return focus_to_pane (paned, direction) ||
+                        focus_to_button (paned, direction);
+            case FOCUS_BUTTON:
+                return focus_to_button (paned, direction);
+        }
+    }
+
+    g_return_val_if_reached (FALSE);
+}
+
+
+static gboolean moo_top_paned_tab_focus (MooPaned   *paned,
+                                         GtkDirectionType direction)
+{
+    switch (paned->priv->focus)
+    {
+        case FOCUS_NONE:
+            return focus_to_button (paned, direction) ||
+                    focus_to_child (paned, direction);
+        case FOCUS_BUTTON:
+            return focus_to_button (paned, direction) ||
+                    focus_to_pane (paned, direction) ||
+                    focus_to_child (paned, direction);
+        case FOCUS_PANE:
+            return focus_to_pane (paned, direction) ||
+                    focus_to_child (paned, direction);
+        case FOCUS_CHILD:
+            return focus_to_child (paned, direction);
+    }
+
+    g_return_val_if_reached (FALSE);
+}
+
+
+static gboolean moo_paned_focus         (GtkWidget      *widget,
+                                         GtkDirectionType direction)
+{
+    MooPaned *paned = MOO_PANED (widget);
+    gboolean invert = FALSE;
+    gboolean flip = FALSE;
+
+    paned->priv->button_real_focus = FALSE;
+
+    if (direction == GTK_DIR_TAB_FORWARD ||
+        direction == GTK_DIR_TAB_BACKWARD)
+    {
+        switch (paned->priv->pane_position)
+        {
+            case MOO_PANE_POS_RIGHT:
+                return moo_left_paned_tab_focus (paned, direction != GTK_DIR_TAB_FORWARD,
+                                                 direction);
+            case MOO_PANE_POS_LEFT:
+                return moo_left_paned_tab_focus (paned, direction == GTK_DIR_TAB_FORWARD,
+                                                 direction);
+
+            case MOO_PANE_POS_BOTTOM:
+            case MOO_PANE_POS_TOP:
+                return moo_top_paned_tab_focus (paned, direction);
+        }
+    }
+
+    switch (paned->priv->pane_position)
+    {
+        case MOO_PANE_POS_RIGHT:
+            invert = TRUE;
+            /* fall through */
+        case MOO_PANE_POS_LEFT:
+            break;
+
+        case MOO_PANE_POS_BOTTOM:
+            invert = TRUE;
+            /* fall through */
+        case MOO_PANE_POS_TOP:
+            flip = TRUE;
+            break;
+    }
+
+    if (invert)
+    {
+        switch (direction)
+        {
+            case GTK_DIR_RIGHT:
+                direction = GTK_DIR_LEFT;
+                break;
+            case GTK_DIR_LEFT:
+                direction = GTK_DIR_RIGHT;
+                break;
+            case GTK_DIR_UP:
+                direction = GTK_DIR_DOWN;
+                break;
+            case GTK_DIR_DOWN:
+                direction = GTK_DIR_UP;
+                break;
+            default:
+                g_return_val_if_reached (FALSE);
+        }
+    }
+
+    if (flip)
+    {
+        switch (direction)
+        {
+            case GTK_DIR_RIGHT:
+                direction = GTK_DIR_DOWN;
+                break;
+            case GTK_DIR_DOWN:
+                direction = GTK_DIR_RIGHT;
+                break;
+            case GTK_DIR_LEFT:
+                direction = GTK_DIR_UP;
+                break;
+            case GTK_DIR_UP:
+                direction = GTK_DIR_LEFT;
+                break;
+            default:
+                g_return_val_if_reached (FALSE);
+        }
+    }
+
+    return moo_left_paned_focus (paned, direction);
 }
 
 
@@ -2534,6 +2937,7 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
                                          guint           index)
 {
     Pane *pane;
+    FocusPosition old_focus;
 
     g_return_if_fail (index < moo_paned_n_panes (paned));
 
@@ -2542,6 +2946,8 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
 
     if (paned->priv->current_pane == pane)
         return;
+
+    old_focus = paned->priv->focus;
 
     if (paned->priv->current_pane)
     {
@@ -2572,6 +2978,21 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
     if (paned->priv->position > 0)
         paned->priv->pane_widget_size = paned->priv->position;
 
+    /* XXX it's wrong, it should look if button was clicked */
+    if (!paned->priv->dont_move_focus &&
+        (old_focus != FOCUS_BUTTON || !paned->priv->button_real_focus))
+    {
+        if (pane->focus_child)
+        {
+            gtk_widget_grab_focus (pane->focus_child);
+        }
+        else if (!gtk_widget_child_focus (pane->child, GTK_DIR_TAB_FORWARD))
+        {
+            paned->priv->button_real_focus = FALSE;
+            gtk_widget_grab_focus (pane->button);
+        }
+    }
+
     gtk_widget_queue_resize (GTK_WIDGET (paned));
 }
 
@@ -2581,6 +3002,7 @@ static void     moo_paned_hide_pane_real(MooPaned       *paned)
     if (paned->priv->current_pane)
     {
         GtkWidget *button = paned->priv->current_pane->button;
+        FocusPosition old_focus = paned->priv->focus;
 
         gtk_widget_hide (paned->priv->current_pane->frame);
 
@@ -2594,6 +3016,28 @@ static void     moo_paned_hide_pane_real(MooPaned       *paned)
         paned->priv->pane_widget_visible = FALSE;
         paned->priv->handle_visible = FALSE;
         gtk_widget_queue_resize (GTK_WIDGET (paned));
+
+        /* XXX it's wrong, it should look if button was clicked */
+        if (!paned->priv->dont_move_focus &&
+            old_focus != FOCUS_NONE &&
+            (old_focus != FOCUS_BUTTON || !paned->priv->button_real_focus))
+        {
+            if (paned->priv->focus_child)
+            {
+                gtk_widget_grab_focus (paned->priv->focus_child);
+            }
+            else if (!GTK_BIN(paned)->child ||
+                      !gtk_widget_child_focus (GTK_BIN(paned)->child, GTK_DIR_TAB_FORWARD))
+            {
+                if (GTK_WIDGET_VISIBLE (button))
+                    gtk_widget_grab_focus (button);
+            }
+            else
+            {
+                GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (paned));
+                gtk_widget_child_focus (toplevel, GTK_DIR_TAB_FORWARD);
+            }
+        }
 
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), FALSE);
     }
@@ -2701,10 +3145,14 @@ GSList     *moo_paned_get_panes         (MooPaned   *paned)
 }
 
 
-static gboolean handle_button_press     (G_GNUC_UNUSED GtkWidget *widget,
+static gboolean handle_button_press     (GtkWidget      *widget,
                                          GdkEventButton *event,
                                          MooPaned       *paned)
 {
+#if 1
+    GdkCursor *cursor;
+#endif
+
     if (event->button != 1 || event->type != GDK_BUTTON_PRESS)
         return FALSE;
 
@@ -2717,6 +3165,13 @@ static gboolean handle_button_press     (G_GNUC_UNUSED GtkWidget *widget,
     paned->priv->handle_button_pressed = TRUE;
     paned->priv->handle_drag_start_x = event->x;
     paned->priv->handle_drag_start_y = event->y;
+
+#if 1
+    cursor = gdk_cursor_new (paned->priv->handle_cursor_type);
+    g_return_val_if_fail (cursor != NULL, TRUE);
+    gdk_window_set_cursor (widget->window, cursor);
+    gdk_cursor_unref (cursor);
+#endif
 
     return TRUE;
 }
@@ -2766,6 +3221,10 @@ static gboolean handle_button_release   (GtkWidget      *widget,
 
     paned->priv->handle_in_drag = FALSE;
 
+#if 1
+    gdk_window_set_cursor (widget->window, NULL);
+#endif
+
     pane = g_object_get_data (G_OBJECT (widget), "moo-pane");
     g_return_val_if_fail (pane != NULL && pane->child != NULL, FALSE);
 
@@ -2807,7 +3266,9 @@ static gboolean handle_expose           (GtkWidget      *widget,
 static void     handle_realize          (GtkWidget      *widget,
                                          MooPaned       *paned)
 {
+#if 0
     GdkCursor *cursor;
+#endif
 
     g_return_if_fail (widget->window != NULL);
     g_return_if_fail (MOO_IS_PANED (paned));
@@ -2815,10 +3276,12 @@ static void     handle_realize          (GtkWidget      *widget,
     if (!paned->priv->enable_handle_drag)
         return;
 
+#if 0
     cursor = gdk_cursor_new (paned->priv->handle_cursor_type);
     g_return_if_fail (cursor != NULL);
     gdk_window_set_cursor (widget->window, cursor);
     gdk_cursor_unref (cursor);
+#endif
 }
 
 
@@ -2834,6 +3297,7 @@ static void     moo_paned_set_handle_cursor_type    (MooPaned     *paned,
         Pane *pane = l->data;
         if (pane->handle && pane->handle->window)
         {
+#if 0
             if (set && !cursor)
             {
                 cursor = gdk_cursor_new (cursor_type);
@@ -2841,6 +3305,7 @@ static void     moo_paned_set_handle_cursor_type    (MooPaned     *paned,
             }
 
             gdk_window_set_cursor (pane->handle->window, cursor);
+#endif
         }
     }
 
@@ -2970,6 +3435,7 @@ void        moo_paned_detach_pane       (MooPaned       *paned,
 {
     Pane *pane;
     GtkWidget *widget = GTK_WIDGET (paned);
+    gboolean visible;
 
     g_return_if_fail (MOO_IS_PANED (paned));
 
@@ -3017,13 +3483,12 @@ void        moo_paned_detach_pane       (MooPaned       *paned,
         gtk_container_add (GTK_CONTAINER (pane->window), frame);
 
         g_object_set_data (G_OBJECT (pane->window), "moo-pane", pane);
-        g_object_set_data (G_OBJECT (pane->attach_button), "moo-pane", pane);
         g_object_set_data (G_OBJECT (pane->keep_on_top_button), "moo-pane", pane);
 
         g_signal_connect (pane->keep_on_top_button, "toggled",
                           G_CALLBACK (keep_on_top_button_toggled), paned);
-        g_signal_connect (pane->attach_button, "clicked",
-                          G_CALLBACK (attach_button_clicked), paned);
+        g_signal_connect (pane->window, "configure-event",
+                          G_CALLBACK (pane_window_configure), paned);
     }
 
     gtk_widget_reparent (pane->child, pane->window_child_holder);
@@ -3040,11 +3505,29 @@ void        moo_paned_detach_pane       (MooPaned       *paned,
         gtk_window_set_transient_for (GTK_WINDOW (pane->window), NULL);
     }
 
+    if (pane->focus_child)
+        gtk_widget_grab_focus (pane->focus_child);
+    else
+        gtk_widget_child_focus (pane->child, GTK_DIR_TAB_FORWARD);
+
+    g_object_get (pane->window, "visible", &visible, NULL);
+
+    if (!visible &&
+         pane->window_position.width > 0 &&
+         pane->window_position.height > 0)
+    {
+        gtk_window_move (GTK_WINDOW (pane->window),
+                         pane->window_position.x,
+                         pane->window_position.y);
+        gtk_window_set_default_size (GTK_WINDOW (pane->window),
+                                     pane->window_position.width,
+                                     pane->window_position.height);
+    }
+
     gtk_window_present (GTK_WINDOW (pane->window));
 }
 
 
-/* XXX focus */
 void        moo_paned_attach_pane       (MooPaned       *paned,
                                          guint           index_)
 {
@@ -3059,6 +3542,14 @@ void        moo_paned_attach_pane       (MooPaned       *paned,
         return;
 
     pane->detached = FALSE;
+
+    if (pane->focus_child)
+        g_object_remove_weak_pointer (G_OBJECT (pane->focus_child),
+                                      (gpointer*) &pane->focus_child);
+    pane->focus_child = find_focus (pane->child);
+    if (pane->focus_child)
+        g_object_add_weak_pointer (G_OBJECT (pane->focus_child),
+                                   (gpointer*) &pane->focus_child);
 
     gtk_widget_reparent (pane->child, pane->child_holder);
     gtk_widget_hide (pane->window);
@@ -3099,7 +3590,15 @@ static void     attach_button_clicked   (GtkWidget      *button,
     g_return_if_fail (index_ >= 0);
 
     moo_paned_attach_pane (paned, index_);
+
+    paned->priv->dont_move_focus = TRUE;
     moo_paned_open_pane (paned, index_);
+    paned->priv->dont_move_focus = TRUE;
+
+    if (pane->focus_child)
+        gtk_widget_grab_focus (pane->focus_child);
+    else if (!gtk_widget_child_focus (pane->child, GTK_DIR_TAB_FORWARD))
+        gtk_widget_grab_focus (pane->button);
 }
 
 
@@ -3128,4 +3627,18 @@ static void     keep_on_top_button_toggled (GtkToggleButton *button,
     {
         gtk_window_set_transient_for (GTK_WINDOW (pane->window), NULL);
     }
+}
+
+
+static gboolean pane_window_configure   (GtkWindow          *window,
+                                         GdkEventConfigure  *event,
+                                         MooPaned           *paned)
+{
+    Pane *pane = g_object_get_data (G_OBJECT (window), "moo-pane");
+    g_return_val_if_fail (g_slist_find (paned->priv->panes, pane) != NULL, FALSE);
+    pane->window_position.x = event->x;
+    pane->window_position.y = event->y;
+    pane->window_position.width = event->width;
+    pane->window_position.height = event->height;
+    return FALSE;
 }

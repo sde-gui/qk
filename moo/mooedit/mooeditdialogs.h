@@ -15,38 +15,53 @@
 #define MOOEDIT_MOOEDITDIALOGS_H
 
 #include "mooedit/mooedit.h"
+#include "mooedit/moofileview/moofiltermgr.h"
 
 G_BEGIN_DECLS
 
 
-int              moo_edit_save_changes_dialog       (MooEdit    *edit);
-void             moo_edit_save_error_dialog         (GtkWidget  *widget,
-                                                     const char *err_msg);
-MooEditFileInfo *moo_edit_save_as_dialog            (MooEdit    *edit);
-MooEditFileInfo *moo_edit_open_dialog               (GtkWidget  *widget);
-void             moo_edit_open_error_dialog         (GtkWidget  *widget,
-                                                     const char *err_msg);
-void             moo_edit_load_error_dialog         (GtkWidget  *widget,
-                                                     const char *err_msg);
+typedef enum {
+    MOO_EDIT_RESPONSE_CANCEL,
+    MOO_EDIT_RESPONSE_SAVE,
+    MOO_EDIT_RESPONSE_DONT_SAVE
+} MooEditDialogResponse;
 
-gboolean         moo_edit_reload_dialog             (MooEdit    *edit);
-gboolean         moo_edit_overwrite_modified_dialog (MooEdit    *edit);
-gboolean         moo_edit_overwrite_deleted_dialog  (MooEdit    *edit);
 
-void             moo_edit_file_deleted_dialog       (MooEdit    *edit);
-int              moo_edit_file_modified_on_disk_dialog (MooEdit *edit);
+MooEditDialogResponse moo_edit_save_changes_dialog  (MooEdit        *edit);
+MooEditDialogResponse moo_edit_save_multiple_changes_dialog (GSList *docs,
+                                                     GSList        **to_save);
 
-void             moo_edit_nothing_found_dialog      (MooEdit    *edit,
-                                                     const char *text,
-                                                     gboolean    regex);
+void             moo_edit_save_error_dialog         (GtkWidget      *widget,
+                                                     const char     *err_msg);
+MooEditFileInfo *moo_edit_save_as_dialog            (MooEdit        *edit,
+                                                     MooFilterMgr   *mgr);
+GSList          *moo_edit_open_dialog               (GtkWidget      *widget,
+                                                     MooFilterMgr   *mgr);
+void             moo_edit_open_error_dialog         (GtkWidget      *widget,
+                                                     const char     *err_msg);
+void             moo_edit_load_error_dialog         (GtkWidget      *widget,
+                                                     const char     *err_msg);
+void             moo_edit_reload_error_dialog       (GtkWidget      *widget,
+                                                     const char     *err_msg);
+
+gboolean         moo_edit_reload_dialog             (MooEdit        *edit);
+gboolean         moo_edit_overwrite_modified_dialog (MooEdit        *edit);
+gboolean         moo_edit_overwrite_deleted_dialog  (MooEdit        *edit);
+
+void             moo_edit_file_deleted_dialog       (MooEdit        *edit);
+int              moo_edit_file_modified_on_disk_dialog (MooEdit     *edit);
+
+void             moo_edit_nothing_found_dialog      (MooEdit        *edit,
+                                                     const char     *text,
+                                                     gboolean        regex);
 gboolean         moo_edit_search_from_beginning_dialog
-                                                    (MooEdit    *edit,
-                                                     gboolean    backwards);
-void             moo_edit_regex_error_dialog        (MooEdit    *edit,
-                                                     GError     *err);
-void             moo_edit_replaced_n_dialog         (MooEdit    *edit,
-                                                     guint       n);
-GtkWidget       *moo_edit_prompt_on_replace_dialog  (MooEdit    *edit);
+                                                    (MooEdit        *edit,
+                                                     gboolean        backwards);
+void             moo_edit_regex_error_dialog        (MooEdit        *edit,
+                                                     GError         *error);
+void             moo_edit_replaced_n_dialog         (MooEdit        *edit,
+                                                     guint           n);
+GtkWidget       *moo_edit_prompt_on_replace_dialog  (MooEdit        *edit);
 
 
 G_END_DECLS

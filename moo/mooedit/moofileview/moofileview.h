@@ -82,8 +82,6 @@ void        moo_file_view_set_sort_case_sensitive       (MooFileView    *filevie
                                                          gboolean        case_sensitive);
 void        moo_file_view_set_typeahead_case_sensitive  (MooFileView    *fileview,
                                                          gboolean        case_sensitive);
-void        moo_file_view_set_completion_case_sensitive (MooFileView    *fileview,
-                                                         gboolean        case_sensitive);
 
 
 G_END_DECLS

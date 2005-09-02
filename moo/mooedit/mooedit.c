@@ -49,9 +49,6 @@ static void moo_edit_get_property   (GObject        *object,
                                      GValue         *value,
                                      GParamSpec     *pspec);
 
-static void open_interactive            (MooEdit            *edit);
-static void save_as_interactive         (MooEdit            *edit);
-static void reload_interactive          (MooEdit            *edit);
 static void goto_line                   (MooEdit            *edit);
 
 static void can_redo_cb                 (GtkSourceBuffer    *buffer,
@@ -79,17 +76,6 @@ static void delete_range_cb             (GtkTextBuffer      *textbuffer,
 
 
 enum {
-    OPEN,
-    OPEN_INTERACTIVE,
-    SAVE,
-    SAVE_AS,
-    SAVE_AS_INTERACTIVE,
-    FILE_SAVED,
-    CLOSE,
-    LOAD,
-    RELOAD,
-    RELOAD_INTERACTIVE,
-    WRITE,
     DOC_STATUS_CHANGED,
     FILENAME_CHANGED,
     LANG_CHANGED,
@@ -143,16 +129,6 @@ static void moo_edit_class_init (MooEditClass *klass)
     text_view_class->move_cursor = _moo_edit_move_cursor;
     text_view_class->delete_from_cursor = _moo_edit_delete_from_cursor;
 
-    klass->open = _moo_edit_open;
-    klass->save = _moo_edit_save;
-    klass->save_as = _moo_edit_save_as;
-    klass->close = _moo_edit_close;
-    klass->open_interactive = open_interactive;
-    klass->save_as_interactive = save_as_interactive;
-    klass->reload_interactive = reload_interactive;
-    klass->load = _moo_edit_load;
-    klass->reload = _moo_edit_reload;
-    klass->write = _moo_edit_write;
     klass->doc_status_changed = NULL;
     klass->filename_changed = NULL;
     klass->lang_changed = NULL;
@@ -174,115 +150,6 @@ static void moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              MOO_TYPE_EDITOR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    signals[OPEN] =
-            g_signal_new ("open",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, open),
-                          NULL, NULL,
-                          _moo_marshal_BOOLEAN__STRING_STRING,
-                          G_TYPE_BOOLEAN, 2,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
-
-    signals[OPEN_INTERACTIVE] =
-            g_signal_new ("open-interactive",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, open_interactive),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[SAVE] =
-        g_signal_new ("save",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, save),
-                      NULL, NULL,
-                      _moo_marshal_BOOLEAN__VOID,
-                      G_TYPE_BOOLEAN, 0);
-
-    signals[SAVE_AS] =
-        g_signal_new ("save_as",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, save_as),
-                      NULL, NULL,
-                      _moo_marshal_BOOLEAN__STRING_STRING,
-                      G_TYPE_BOOLEAN, 2,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
-
-    signals[SAVE_AS_INTERACTIVE] =
-            g_signal_new ("save-as-interactive",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, save_as_interactive),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[FILE_SAVED] =
-            moo_signal_new_cb ("file-saved",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_FIRST,
-                               NULL, NULL, NULL,
-                               _moo_marshal_VOID__BOXED,
-                               G_TYPE_NONE, 1,
-                               MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE);
-
-    signals[CLOSE] =
-            g_signal_new ("close",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, close),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
-
-    signals[LOAD] =
-        g_signal_new ("load",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, load),
-                      NULL, NULL,
-                      _moo_marshal_BOOLEAN__STRING_STRING_POINTER,
-                      G_TYPE_BOOLEAN, 3,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                      G_TYPE_POINTER);
-
-    signals[RELOAD] =
-            g_signal_new ("reload",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, reload),
-                          NULL, NULL,
-                          _moo_marshal_BOOLEAN__POINTER,
-                          G_TYPE_BOOLEAN, 1, G_TYPE_POINTER);
-
-    signals[RELOAD_INTERACTIVE] =
-            g_signal_new ("reload-interactive",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEditClass, reload_interactive),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[WRITE] =
-        g_signal_new ("write",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, write),
-                      NULL, NULL,
-                      _moo_marshal_BOOLEAN__STRING_STRING_POINTER,
-                      G_TYPE_BOOLEAN, 3,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                      G_TYPE_POINTER);
 
     signals[DOC_STATUS_CHANGED] =
         g_signal_new ("doc-status-changed",
@@ -500,9 +367,9 @@ MooEdit        *_moo_edit_new               (MooEditor  *editor)
 }
 
 
-GtkWidget   *moo_edit_new                   (void)
+MooEdit        *moo_edit_new                   (void)
 {
-    return GTK_WIDGET (g_object_new (MOO_TYPE_EDIT, NULL));
+    return g_object_new (MOO_TYPE_EDIT, NULL);
 }
 
 
@@ -510,98 +377,6 @@ void moo_edit_delete_selection   (MooEdit    *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     gtk_text_buffer_delete_selection (edit->priv->text_buffer, TRUE, TRUE);
-}
-
-
-gboolean    moo_edit_open                   (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    if (file && !file[0]) file = NULL;
-    g_signal_emit (edit, signals[OPEN], 0, file, encoding, &result);
-    return result;
-}
-
-static void open_interactive            (MooEdit            *edit)
-{
-    gboolean result;
-    g_signal_emit (edit, signals[OPEN], 0, NULL, NULL, &result);
-}
-
-static void save_as_interactive         (MooEdit            *edit)
-{
-    gboolean result;
-    g_signal_emit (edit, signals[SAVE_AS], 0, NULL, NULL, &result);
-}
-
-static void reload_interactive          (MooEdit            *edit)
-{
-    gboolean result;
-    if (edit->priv->filename)
-        g_signal_emit (edit, signals[RELOAD], 0, NULL, &result);
-}
-
-gboolean    moo_edit_save_as                (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    if (file && !file[0]) file = NULL;
-    g_signal_emit (edit, signals[SAVE_AS], 0, file, encoding, &result);
-    return result;
-}
-
-gboolean    moo_edit_save                   (MooEdit            *edit)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_signal_emit (edit, signals[SAVE], 0, &result);
-    return result;
-}
-
-gboolean    moo_edit_close                  (MooEdit            *edit)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_signal_emit (edit, signals[CLOSE], 0, &result);
-    return !result;
-}
-
-
-gboolean    moo_edit_load                   (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding,
-                                             GError            **error)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    if (file && !file[0]) file = NULL;
-    g_signal_emit (edit, signals[LOAD], 0, file, encoding, error, &result);
-    return result;
-}
-
-gboolean    moo_edit_reload                 (MooEdit            *edit,
-                                             GError            **error)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_signal_emit (edit, signals[RELOAD], 0, error, &result);
-    return result;
-}
-
-gboolean    moo_edit_write                  (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding,
-                                             GError            **error)
-{
-    gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    if (file && !file[0]) file = NULL;
-    g_signal_emit (edit, signals[WRITE], 0, file, encoding, error, &result);
-    return result;
 }
 
 
@@ -626,12 +401,6 @@ static void modified_changed_cb         (GtkTextBuffer      *buffer,
 }
 
 
-gboolean    moo_edit_get_modified           (MooEdit            *edit)
-{
-    return edit->priv->status & MOO_EDIT_DOC_MODIFIED;
-}
-
-
 void        moo_edit_set_modified           (MooEdit            *edit,
                                              gboolean            modified)
 {
@@ -652,33 +421,27 @@ void        moo_edit_set_modified           (MooEdit            *edit,
     }
 
     if (modified)
-        edit->priv->status |= MOO_EDIT_DOC_MODIFIED;
+        edit->priv->status |= MOO_EDIT_MODIFIED;
     else
-        edit->priv->status &= ~MOO_EDIT_DOC_MODIFIED;
+        edit->priv->status &= ~MOO_EDIT_MODIFIED;
 
-    moo_edit_doc_status_changed (edit);
+    moo_edit_status_changed (edit);
 }
 
-
-gboolean    moo_edit_get_clean              (MooEdit            *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return edit->priv->status & MOO_EDIT_DOC_CLEAN;
-}
 
 void        moo_edit_set_clean              (MooEdit            *edit,
                                              gboolean            clean)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     if (clean)
-        edit->priv->status |= MOO_EDIT_DOC_CLEAN;
+        edit->priv->status |= MOO_EDIT_CLEAN;
     else
-        edit->priv->status &= ~MOO_EDIT_DOC_CLEAN;
-    moo_edit_doc_status_changed (edit);
+        edit->priv->status &= ~MOO_EDIT_CLEAN;
+    moo_edit_status_changed (edit);
 }
 
 
-void        moo_edit_doc_status_changed     (MooEdit            *edit)
+void        moo_edit_status_changed     (MooEdit            *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_signal_emit (edit, signals[DOC_STATUS_CHANGED], 0, NULL);
@@ -859,7 +622,7 @@ void        moo_edit_set_read_only          (MooEdit            *edit,
     g_return_if_fail (MOO_IS_EDIT (edit));
     edit->priv->readonly = readonly;
     gtk_text_view_set_editable (GTK_TEXT_VIEW (edit), !readonly);
-    moo_edit_doc_status_changed (edit);
+    moo_edit_status_changed (edit);
 }
 
 
@@ -869,7 +632,7 @@ gboolean    moo_edit_is_empty               (MooEdit            *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (moo_edit_get_modified (edit) || edit->priv->filename)
+    if (MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
         return FALSE;
 
     gtk_text_buffer_get_bounds (edit->priv->text_buffer, &start, &end);
@@ -898,7 +661,7 @@ void        moo_edit_select_all             (MooEdit            *edit)
 }
 
 
-MooEditDocStatus moo_edit_get_doc_status    (MooEdit            *edit)
+MooEditStatus moo_edit_get_status    (MooEdit            *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), 0);
     return edit->priv->status;
@@ -963,14 +726,14 @@ GType       moo_edit_doc_status_get_type            (void)
     if (!type)
     {
         static const GFlagsValue values[] = {
-            { MOO_EDIT_DOC_MODIFIED_ON_DISK, (char*)"MOO_EDIT_DOC_MODIFIED_ON_DISK", (char*)"modified-on-disk" },
-            { MOO_EDIT_DOC_DELETED, (char*)"MOO_EDIT_DOC_DELETED", (char*)"deleted" },
-            { MOO_EDIT_DOC_CHANGED_ON_DISK, (char*)"MOO_EDIT_DOC_CHANGED_ON_DISK", (char*)"changed-on-disk" },
-            { MOO_EDIT_DOC_MODIFIED, (char*)"MOO_EDIT_DOC_MODIFIED", (char*)"modified" },
-            { MOO_EDIT_DOC_CLEAN, (char*)"MOO_EDIT_DOC_CLEAN", (char*)"clean" },
+            { MOO_EDIT_MODIFIED_ON_DISK, (char*)"MOO_EDIT_MODIFIED_ON_DISK", (char*)"modified-on-disk" },
+            { MOO_EDIT_DELETED, (char*)"MOO_EDIT_DELETED", (char*)"deleted" },
+            { MOO_EDIT_CHANGED_ON_DISK, (char*)"MOO_EDIT_CHANGED_ON_DISK", (char*)"changed-on-disk" },
+            { MOO_EDIT_MODIFIED, (char*)"MOO_EDIT_MODIFIED", (char*)"modified" },
+            { MOO_EDIT_CLEAN, (char*)"MOO_EDIT_CLEAN", (char*)"clean" },
             { 0, NULL, NULL }
         };
-        type = g_flags_register_static ("MooEditDocStatus", values);
+        type = g_flags_register_static ("MooEditStatus", values);
     }
 
     return type;
@@ -1113,4 +876,10 @@ const char *moo_edit_get_display_basename   (MooEdit            *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->display_basename;
+}
+
+const char *moo_edit_get_encoding           (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->encoding;
 }

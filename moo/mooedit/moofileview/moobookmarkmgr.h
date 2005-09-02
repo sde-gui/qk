@@ -90,6 +90,7 @@ void            moo_bookmark_mgr_make_menu  (MooBookmarkMgr *mgr,
                                              MooBookmarkFunc func,
                                              gpointer        data);
 
+#ifndef __MOO__
 gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,
                                              const char     *file,
                                              gboolean        add,
@@ -97,6 +98,7 @@ gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,
 gboolean        moo_bookmark_mgr_save       (MooBookmarkMgr *mgr,
                                              const char     *file,
                                              GError       **error);
+#endif
 
 GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr);
 

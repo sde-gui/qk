@@ -40,8 +40,6 @@ libmooedit_la_SOURCES =     \
     mooeditcursor.c         \
     mooeditdialogs.c        \
     mooeditdialogs.h        \
-    mooeditfilemgr.c        \
-    mooeditfilemgr.h        \
     mooeditfileops.c        \
     mooeditfind.c           \
     mooeditfind-glade.c     \
@@ -61,10 +59,13 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.c         \
     mooeditsearch.h         \
     mooeditwindow.c         \
+    mooeditwindow.h         \
     moonotebook.c           \
     moonotebook.h           \
     moopaned.c              \
     moopaned.h              \
+    moorecentmgr.c          \
+    moorecentmgr.h          \
     mootextiter.h
 
 if MOO_USE_XML

@@ -65,30 +65,10 @@ void        _moo_edit_settings_changed      (const char     *key,
 /***********************************************************************/
 /* File operations
 /*/
-gboolean    _moo_edit_load              (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding,
-                                         GError    **error);
-gboolean    _moo_edit_write             (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding,
-                                         GError    **error);
 
-gboolean    _moo_edit_open              (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding);
-gboolean    _moo_edit_save              (MooEdit    *edit);
-gboolean    _moo_edit_save_as           (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding);
-gboolean    _moo_edit_close             (MooEdit    *edit);
-gboolean    _moo_edit_reload            (MooEdit    *edit,
-                                         GError    **error);
-
-void        _moo_edit_set_filename      (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding);
-
+void            _moo_edit_set_filename      (MooEdit    *edit,
+                                             const char *file,
+                                             const char *encoding);
 
 MooEdit        *_moo_edit_new               (MooEditor  *editor);
 MooEditLangMgr *_moo_edit_get_lang_mgr      (MooEdit    *edit);
@@ -147,7 +127,7 @@ struct _MooEditPrivate {
 
     char *encoding;
     MooEditLineEndType line_end_type;
-    MooEditDocStatus status;
+    MooEditStatus status;
 
     MooEditOnExternalChanges file_watch_policy;
     GTime timestamp;

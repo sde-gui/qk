@@ -12,6 +12,7 @@
  */
 
 #include "moobookmarkmgr.h"
+#include "moofileentry.h"
 #include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
@@ -416,6 +417,7 @@ static void moo_bookmark_mgr_update_menu(GtkMenuShell   *menu,
 /***************************************************************************/
 /* Loading and saving
  */
+#ifndef __MOO__
 
 gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,
                                              const char     *file,
@@ -628,6 +630,7 @@ gboolean        moo_bookmark_mgr_save       (MooBookmarkMgr *mgr,
 
     return status == G_IO_STATUS_NORMAL;
 }
+#endif
 
 
 /***************************************************************************/
@@ -795,6 +798,10 @@ static void     path_edited         (GtkCellRenderer    *cell,
                                      char               *path,
                                      char               *text,
                                      GladeXML           *xml);
+static void     path_editing_started(GtkCellRenderer    *cell,
+                                     GtkCellEditable    *editable);
+static void     path_entry_realize  (GtkWidget          *entry);
+static void     path_entry_unrealize(GtkWidget          *entry);
 
 static void     init_icon_combo     (GtkComboBox        *combo,
                                      GladeXML           *xml);
@@ -809,6 +816,7 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
     GtkCellRenderer *cell;
     GtkTreeSelection *selection;
     GtkWidget *button, *icon_combo;
+    MooFileEntryCompletion *completion;
 
     icon_combo = glade_xml_get_widget (xml, "icon_combo");
     init_icon_combo (GTK_COMBO_BOX (icon_combo), xml);
@@ -866,6 +874,8 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
     g_object_set (cell, "editable", TRUE, NULL);
     g_signal_connect (cell, "edited",
                       G_CALLBACK (path_edited), xml);
+    g_signal_connect (cell, "editing-started",
+                      G_CALLBACK (path_editing_started), NULL);
 
     column = gtk_tree_view_column_new_with_attributes ("Path", cell, NULL);
     gtk_tree_view_column_set_cell_data_func (column, cell,
@@ -876,6 +886,12 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
                        "moo-bookmarks-path-column",
                        column);
 
+    completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
+                               "directories-only", TRUE,
+                               "show-hidden", FALSE,
+                               NULL);
+    g_object_set_data_full (G_OBJECT (cell), "moo-file-entry-completion",
+                            completion, g_object_unref);
 }
 
 
@@ -1008,6 +1024,7 @@ static void     selection_changed   (GtkTreeSelection   *selection,
             gtk_widget_set_sensitive (selected_hbox, TRUE);
             icon_combo = glade_xml_get_widget (xml, "icon_combo");
             combo_update_icon (GTK_COMBO_BOX (icon_combo), xml);
+            moo_bookmark_free (bookmark);
         }
         else
         {
@@ -1159,6 +1176,7 @@ static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
     GtkWidget *treeview;
     GtkListStore *store;
     MooBookmark *bookmark;
+    MooFileEntryCompletion *cmpl;
 
     treeview = glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
@@ -1185,6 +1203,82 @@ static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
 
     moo_bookmark_free (bookmark);
     gtk_tree_path_free (path);
+
+    cmpl = g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
+    g_return_if_fail (cmpl != NULL);
+    g_object_set (cmpl, "entry", NULL, NULL);
+}
+
+
+static void     path_editing_started(GtkCellRenderer    *cell,
+                                     GtkCellEditable    *editable)
+{
+    MooFileEntryCompletion *cmpl =
+            g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
+
+    g_return_if_fail (cmpl != NULL);
+    g_return_if_fail (GTK_IS_ENTRY (editable));
+
+    g_object_set (cmpl, "entry", editable, NULL);
+
+//     if (!g_object_get_data (G_OBJECT (editable), "moo-stupid-entry-workaround"))
+//     {
+//         g_signal_connect (editable, "realize",
+//                           G_CALLBACK (path_entry_realize), NULL);
+//         g_signal_connect (editable, "unrealize",
+//                           G_CALLBACK (path_entry_unrealize), NULL);
+//         g_object_set_data (G_OBJECT (editable), "moo-stupid-entry-workaround",
+//                            GINT_TO_POINTER (TRUE));
+//     }
+}
+
+
+static void     path_entry_realize  (GtkWidget          *entry)
+{
+    GtkSettings *settings;
+    gboolean value;
+
+    g_return_if_fail (gtk_widget_has_screen (entry));
+    settings = gtk_settings_get_for_screen (gtk_widget_get_screen (entry));
+    g_return_if_fail (settings != NULL);
+
+    g_object_get (settings, "gtk-entry-select-on-focus", &value, NULL);
+    g_object_set (settings, "gtk-entry-select-on-focus", FALSE, NULL);
+    g_object_set_data (G_OBJECT (settings),
+                       "moo-stupid-entry-workaround",
+                       GINT_TO_POINTER (TRUE));
+    g_object_set_data (G_OBJECT (settings),
+                       "moo-stupid-entry-workaround-value",
+                       GINT_TO_POINTER (value));
+
+    gtk_editable_set_position (GTK_EDITABLE (entry), -1);
+}
+
+
+static void     path_entry_unrealize(GtkWidget          *entry)
+{
+    GtkSettings *settings;
+    gboolean value;
+
+    g_return_if_fail (gtk_widget_has_screen (entry));
+    settings = gtk_settings_get_for_screen (gtk_widget_get_screen (entry));
+    g_return_if_fail (settings != NULL);
+
+    if (g_object_get_data (G_OBJECT (settings), "moo-stupid-entry-workaround"))
+    {
+        value = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (settings),
+                                 "moo-stupid-entry-workaround-value"));
+        g_object_set (settings, "gtk-entry-select-on-focus", value, NULL);
+        g_object_set_data (G_OBJECT (settings), "moo-stupid-entry-workaround", NULL);
+    }
+
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) path_entry_realize,
+                                          NULL);
+    g_signal_handlers_disconnect_by_func (entry,
+                                          (gpointer) path_entry_unrealize,
+                                          NULL);
+    g_object_set_data (G_OBJECT (entry), "moo-stupid-entry-workaround", NULL);
 }
 
 

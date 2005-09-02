@@ -85,6 +85,9 @@ struct _MooFileSystemClass
                                      char          **display_dirname,
                                      char          **display_basename,
                                      GError        **error);
+    char*       (*get_absolute_path)(MooFileSystem  *fs,
+                                     const char     *display_name,
+                                     const char     *current_dir);
 };
 
 
@@ -128,6 +131,10 @@ gboolean     moo_file_system_parse_path         (MooFileSystem  *fs,
                                                  char          **display_dirname,
                                                  char          **display_basename,
                                                  GError        **error);
+char        *moo_file_system_get_absolute_path  (MooFileSystem  *fs,
+                                                 const char     *display_name,
+                                                 const char     *current_dir);
+
 
 MooFileSystem *moo_folder_get_file_system       (MooFolder      *folder);
 

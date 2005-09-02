@@ -1,5 +1,5 @@
 /*
- *   mooedit/mooeditor.h
+ *   mooeditor.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,23 +11,17 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDITOR_H
-#define MOOEDIT_MOOEDITOR_H
+#ifndef __MOO_EDITOR_H__
+#define __MOO_EDITOR_H__
 
-#include "mooui/moowindow.h"
-#include "mooui/moouixml.h"
-#include "mooedit/mooedit.h"
+#include "mooedit/mooeditwindow.h"
 #include "mooedit/mooeditlangmgr.h"
-#include "mooedit/mooeditfilemgr.h"
+#include "mooedit/moorecentmgr.h"
+#include "mooedit/moofileview/moofiltermgr.h"
+#include "mooui/moouixml.h"
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_EDIT_WINDOW            (moo_edit_window_get_type ())
-#define MOO_EDIT_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindow))
-#define MOO_EDIT_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
-#define MOO_IS_EDIT_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_EDIT_WINDOW))
-#define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
-#define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
 #define MOO_TYPE_EDITOR                 (moo_editor_get_type ())
 #define MOO_EDITOR(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_EDITOR, MooEditor))
@@ -36,24 +30,9 @@ G_BEGIN_DECLS
 #define MOO_IS_EDITOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDITOR))
 #define MOO_EDITOR_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDITOR, MooEditorClass))
 
-
-typedef struct _MooEditWindow           MooEditWindow;
-typedef struct _MooEditWindowPrivate    MooEditWindowPrivate;
-typedef struct _MooEditWindowClass      MooEditWindowClass;
 typedef struct _MooEditor               MooEditor;
 typedef struct _MooEditorPrivate        MooEditorPrivate;
 typedef struct _MooEditorClass          MooEditorClass;
-
-struct _MooEditWindow
-{
-    MooWindow               parent;
-    MooEditWindowPrivate   *priv;
-};
-
-struct _MooEditWindowClass
-{
-    MooWindowClass          parent_class;
-};
 
 struct _MooEditor
 {
@@ -67,65 +46,76 @@ struct _MooEditorClass
 };
 
 
-GType            moo_editor_get_type            (void) G_GNUC_CONST;
-GType            moo_edit_window_get_type       (void) G_GNUC_CONST;
+GType            moo_editor_get_type        (void) G_GNUC_CONST;
 
-/*****************************************************************************/
-/* MooEditor
- */
+MooEditor       *moo_editor_new             (void);
 
-MooEditor       *moo_editor_new                 (void);
+MooEditWindow   *moo_editor_new_window      (MooEditor      *editor);
+void             moo_editor_open            (MooEditor      *editor,
+                                             MooEditWindow  *window,
+                                             GtkWidget      *parent,
+                                             GSList         *files); /* list of MooEditFileInfo* */
+void             moo_editor_open_file       (MooEditor      *editor,
+                                             MooEditWindow  *window,
+                                             GtkWidget      *parent,
+                                             const char     *filename,
+                                             const char     *encoding);
 
-MooEditWindow   *moo_editor_new_window          (MooEditor      *editor);
-gboolean         moo_editor_open                (MooEditor      *editor,
-                                                 MooEditWindow  *window,
-                                                 GtkWidget      *parent,
-                                                 const char     *filename,
-                                                 const char     *encoding);
+MooEdit         *moo_editor_get_active_doc  (MooEditor      *editor);
+MooEditWindow   *moo_editor_get_active_window (MooEditor    *editor);
 
-MooEdit         *moo_editor_get_active_doc      (MooEditor      *editor);
-MooEditWindow   *moo_editor_get_active_window   (MooEditor      *editor);
+void             moo_editor_set_active_window (MooEditor    *editor,
+                                             MooEditWindow  *window);
+void             moo_editor_set_active_doc  (MooEditor      *editor,
+                                             MooEdit        *doc);
 
-gboolean         moo_editor_close_doc           (MooEditor      *editor,
-                                                 MooEdit        *doc);
-gboolean         moo_editor_close_all           (MooEditor      *editor);
+GSList          *moo_editor_list_windows    (MooEditor      *editor);
 
-void             moo_editor_set_app_name        (MooEditor      *editor,
-                                                 const char     *name);
+gboolean         moo_editor_close_window    (MooEditor      *editor,
+                                             MooEditWindow  *window);
+gboolean         moo_editor_close_doc       (MooEditor      *editor,
+                                             MooEdit        *doc);
+gboolean         moo_editor_close_docs      (MooEditor      *editor,
+                                             GSList         *list);
+gboolean         moo_editor_close_all       (MooEditor      *editor);
 
-MooEditLangMgr  *moo_editor_get_lang_mgr        (MooEditor      *editor);
-MooEditFileMgr  *moo_editor_get_file_mgr        (MooEditor      *editor);
+void             moo_editor_set_app_name    (MooEditor      *editor,
+                                             const char     *name);
 
-MooUIXML        *moo_editor_get_ui_xml          (MooEditor      *editor);
-void             moo_editor_set_ui_xml          (MooEditor      *editor,
-                                                 MooUIXML       *xml);
+MooEditLangMgr  *moo_editor_get_lang_mgr    (MooEditor      *editor);
+MooRecentMgr    *moo_editor_get_recent_mgr  (MooEditor      *editor);
+MooFilterMgr    *moo_editor_get_filter_mgr  (MooEditor      *editor);
 
-
-/*****************************************************************************/
-/* MooEditWindow
- */
-
-MooEdit         *moo_edit_window_get_active_doc (MooEditWindow  *window);
-void             moo_edit_window_set_active_doc (MooEditWindow  *window,
-                                                 MooEdit        *edit);
-
-GSList          *moo_edit_window_list_docs      (MooEditWindow  *window);
+MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
+void             moo_editor_set_ui_xml      (MooEditor      *editor,
+                                             MooUIXML       *xml);
 
 
 #ifdef MOOEDIT_COMPILATION
-gboolean         _moo_edit_window_open          (MooEditWindow  *window,
-                                                 const char     *filename,
-                                                 const char     *encoding);
-GtkWidget       *_moo_edit_window_new           (MooEditor      *editor);
-gboolean         _moo_edit_window_close_doc     (MooEditWindow  *window,
+MooEditWindow   *_moo_edit_window_new           (MooEditor      *editor);
+// void             _moo_edit_window_close         (MooEditWindow  *window);
+
+void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
+                                                 MooEdit        *doc,
+                                                 int             position);
+void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc);
 
 void             _moo_edit_window_set_app_name  (MooEditWindow  *window,
                                                  const char     *name);
 MooEditor       *_moo_edit_window_get_editor    (MooEditWindow  *window);
+
+void             _moo_editor_reload             (MooEditor      *editor,
+                                                 MooEdit        *doc);
+gboolean         _moo_editor_save               (MooEditor      *editor,
+                                                 MooEdit        *doc);
+gboolean         _moo_editor_save_as            (MooEditor      *editor,
+                                                 MooEdit        *doc,
+                                                 const char     *filename,
+                                                 const char     *encoding);
 #endif /* MOOEDIT_COMPILATION */
 
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDITOR_H */
+#endif /* __MOO_EDITOR_H__ */

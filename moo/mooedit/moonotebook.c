@@ -24,12 +24,13 @@
 #define DEFAULT_VBORDER 3
 #define LABEL_FOCUS_HEIGHT 2
 #define LABEL_OVERLAP 2
+#define LABEL_ALPHA 128
 
 typedef struct {
     /* XXX do something about text */
     char *text;
     GtkWidget *widget;
-    int width; /* widget->allocation.width + 2 * LABEL_XPAD */
+    int width;
     int height;
     int offset;
 } Label;
@@ -389,7 +390,7 @@ static void moo_notebook_init      (MooNotebook *notebook)
 {
     notebook->priv = g_new0 (MooNotebookPrivate, 1);
 
-    notebook->priv->enable_popup = TRUE;
+    notebook->priv->enable_popup = FALSE;
     notebook->priv->popup_func = popup_func;
     notebook->priv->popup_user_data = NULL;
 
@@ -842,7 +843,7 @@ static void     moo_notebook_size_allocate  (GtkWidget      *widget,
     tabs_allocation.y = 0;
     tabs_allocation.width = get_tab_window_width (nb);
     tabs_allocation.height = nb->priv->tabs_height;
-    
+
     if (GTK_WIDGET_REALIZED (widget) && nb->priv->tabs_visible)
         gdk_window_move_resize (nb->priv->tab_window,
                                 allocation->x + border_width + nb->priv->action_widgets_size[LEFT],
@@ -1081,7 +1082,7 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
     else
     {
         int tab_width = get_tab_window_width (nb);
-        
+
         gap_x = page->label->offset - nb->priv->labels_offset;
         gap_width = page->label->width;
 
@@ -1619,6 +1620,7 @@ static void     moo_notebook_switch_page    (GtkNotebook     *notebook,
 {
     Page *page;
     MooNotebook *nb = MOO_NOTEBOOK (notebook);
+    FocusType old_focus = nb->priv->focus;
 
     page = nb->priv->current_page;
 
@@ -1637,12 +1639,15 @@ static void     moo_notebook_switch_page    (GtkNotebook     *notebook,
     nb->priv->current_page = page;
     nb->priv->label_move_onscreen = TRUE;
 
-    gtk_widget_queue_resize (GTK_WIDGET (nb));
+    /* XXX write some focus_child() */
+    if (old_focus == FOCUS_CHILD)
+        gtk_widget_child_focus (page->child, GTK_DIR_TAB_FORWARD);
 
+    gtk_widget_queue_resize (GTK_WIDGET (nb));
     g_object_notify (G_OBJECT (nb), "page");
 }
 
-/* XXX focus */
+
 void        moo_notebook_set_current_page   (MooNotebook    *notebook,
                                              gint            page_num)
 {
@@ -1756,7 +1761,7 @@ static void     moo_notebook_check_tabs     (MooNotebook    *nb)
     {
         gdk_window_show (nb->priv->tab_window);
     }
-    
+
     NOTEBOOK_CHECK_INVARIANTS (nb);
 }
 
@@ -1983,29 +1988,19 @@ static void     moo_notebook_draw_label     (MooNotebook    *nb,
     int x, y, height;
     GtkStateType state;
 
-    if (page == nb->priv->drag_page)
+    if (page == nb->priv->current_page)
     {
-        x = nb->priv->drag_tab_x - nb->priv->labels_offset;
         y = 0;
-        height = nb->priv->tabs_height;
         state = GTK_STATE_NORMAL;
     }
     else
     {
-        if (page == nb->priv->current_page)
-        {
-            y = 0;
-            state = GTK_STATE_NORMAL;
-        }
-        else
-        {
-            y = LABEL_FOCUS_HEIGHT;
-            state = GTK_STATE_ACTIVE;
-        }
-
-        x = page->label->offset - nb->priv->labels_offset;
-        height = nb->priv->tabs_height - y;
+        y = LABEL_FOCUS_HEIGHT;
+        state = GTK_STATE_ACTIVE;
     }
+
+    x = page->label->offset - nb->priv->labels_offset;
+    height = nb->priv->tabs_height - y;
 
     gtk_paint_extension (widget->style,
                          window,
@@ -2044,7 +2039,7 @@ static void     moo_notebook_draw_labels    (MooNotebook    *nb,
 {
     if (!nb->priv->current_page)
         return;
-    
+
     VISIBLE_FOREACH_START (nb, page)
     {
         if (page != nb->priv->current_page)
@@ -2065,8 +2060,7 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
 
     g_return_if_fail (nb->priv->drag_page != NULL);
 
-    /* XXX this is wrong */
-    width = nb->priv->drag_page->label->width + widget->style->xthickness;
+    width = nb->priv->drag_page->label->width;
     height = nb->priv->tabs_height;
 
     if (nb->priv->want_snapshot)
@@ -2078,6 +2072,7 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
         g_return_if_fail (nb->priv->snapshot_pixmap == NULL &&
                 nb->priv->snapshot_pixbuf == NULL);
 
+        /* TODO: this event may not cover whole label area */
         moo_notebook_draw_label (nb, nb->priv->drag_page, event);
         gtk_container_propagate_expose (GTK_CONTAINER (nb),
                                         nb->priv->drag_page->label->widget,
@@ -2116,7 +2111,7 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
 
             for (row = 0; row < height; ++row)
                 for (i = 0; i < width; ++i)
-                    pixels[row*rowstride + 4*i + 3] = 128;
+                    pixels[row*rowstride + 4*i + 3] = LABEL_ALPHA;
         }
     }
     else
@@ -2153,11 +2148,6 @@ static void moo_notebook_draw_dragged_label (MooNotebook    *nb,
                                event->area.width,
                                event->area.height);
     }
-
-//     moo_notebook_draw_label (nb, nb->priv->drag_page, event);
-//     gtk_container_propagate_expose (GTK_CONTAINER (nb),
-//                                     nb->priv->drag_page->label->widget,
-//                                     event);
 }
 
 
@@ -2498,6 +2488,7 @@ static void     tab_drag_end                (MooNotebook    *nb,
 
         index_ = page_index (nb, old_page);
         moo_notebook_reorder_child (nb, drag_page->child, index_);
+        labels_move_label_onscreen  (nb, get_nth_page (nb, index_), FALSE);
     }
 
     labels_invalidate (nb);
@@ -2509,6 +2500,7 @@ static void     tab_drag_start              (MooNotebook    *nb,
                                              GdkEventMotion *event)
 {
     Page *page;
+    GdkRectangle rect;
 
     g_return_if_fail (nb->priv->button_pressed);
 
@@ -2521,6 +2513,14 @@ static void     tab_drag_start              (MooNotebook    *nb,
     nb->priv->in_drag = TRUE;
 
     nb->priv->want_snapshot = TRUE;
+
+    rect.x = page->label->offset - nb->priv->labels_offset;
+    rect.y = 0;
+    rect.width = page->label->width;
+    rect.height = nb->priv->tabs_height;
+
+    gdk_window_invalidate_rect (nb->priv->tab_window, &rect, TRUE);
+    gdk_window_process_updates (nb->priv->tab_window, TRUE);
 }
 
 
@@ -2932,14 +2932,24 @@ static gboolean focus_to_action_widget      (MooNotebook    *nb,
 
 static void     labels_invalidate           (MooNotebook    *nb)
 {
-    GdkRectangle rect = {
-           0, 0,
-           nb->priv->labels_visible_width,
-           nb->priv->tabs_height
-    };
+    GdkRectangle rect;
+    GtkWidget *widget = GTK_WIDGET(nb);
+    int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
 
-    if (GTK_WIDGET_MAPPED (nb))
-        gdk_window_invalidate_rect (nb->priv->tab_window, &rect, TRUE);
+    if (!GTK_WIDGET_MAPPED (nb))
+        return;
+
+    rect.x = 0;
+    rect.y = 0;
+    rect.width = nb->priv->labels_visible_width;
+    rect.height = nb->priv->tabs_height;
+    gdk_window_invalidate_rect (nb->priv->tab_window, &rect, TRUE);
+
+    rect.x = widget->allocation.x + border_width;
+    rect.y = widget->allocation.y + border_width + nb->priv->tabs_height;
+    rect.width = widget->allocation.width - 2*border_width;
+    rect.height = 2*widget->style->ythickness;
+    gdk_window_invalidate_rect (widget->window, &rect, FALSE);
 }
 
 static gboolean focus_to_next_label         (MooNotebook    *nb,

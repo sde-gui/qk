@@ -48,12 +48,15 @@ typedef enum {
 } MooEditOnExternalChanges;
 
 typedef enum {
-    MOO_EDIT_DOC_MODIFIED_ON_DISK   = 1 << 0,
-    MOO_EDIT_DOC_DELETED            = 1 << 1,
-    MOO_EDIT_DOC_CHANGED_ON_DISK    = MOO_EDIT_DOC_MODIFIED_ON_DISK | MOO_EDIT_DOC_DELETED,
-    MOO_EDIT_DOC_MODIFIED           = 1 << 2,
-    MOO_EDIT_DOC_CLEAN              = 1 << 3  /* doesn't prompt if it's closed, even if it's modified*/
-} MooEditDocStatus;
+    MOO_EDIT_MODIFIED_ON_DISK   = 1 << 0,
+    MOO_EDIT_DELETED            = 1 << 1,
+    MOO_EDIT_CHANGED_ON_DISK    = MOO_EDIT_MODIFIED_ON_DISK | MOO_EDIT_DELETED,
+    MOO_EDIT_MODIFIED           = 1 << 2,
+    MOO_EDIT_CLEAN              = 1 << 3  /* doesn't prompt if it's closed, even if it's modified*/
+} MooEditStatus;
+
+#define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)
+#define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
 
 struct _MooEditFileInfo {
     char *filename;
@@ -77,39 +80,6 @@ struct _MooEditClass
 {
     GtkSourceViewClass parent_class;
 
-    /* signals */
-    /* these are just virtual methods, but they are made signals
-     * for possibility to subclass them from python */
-
-    /* These correspond to usual editor actions, they ask user
-       if he wants to save changes, etc.
-       Default implementations call load, write, and set_filename */
-    gboolean (* open)               (MooEdit    *edit,
-                                     const char *file,
-                                     const char *encoding);
-    gboolean (* save)               (MooEdit    *edit);
-    gboolean (* save_as)            (MooEdit    *edit,
-                                     const char *file,
-                                     const char *encoding);
-    gboolean (* close)              (MooEdit    *edit);
-
-    /* these are pure file operation */
-    gboolean (* load)               (MooEdit    *edit,
-                                     const char *file,
-                                     const char *encoding,
-                                     GError    **error);
-    gboolean (* reload)             (MooEdit    *edit,
-    GError    **error);
-    gboolean (* write)              (MooEdit    *edit,
-                                     const char *file,
-                                     const char *encoding,
-                                     GError    **error);
-
-    /* emit corresponding signal with NULL arguments and ignores return value */
-    void     (* open_interactive)   (MooEdit    *edit);
-    void     (* save_as_interactive)(MooEdit    *edit);
-    void     (* reload_interactive) (MooEdit    *edit);
-
     /* emitted when filename, modified status, or file on disk
        are changed. for use in editor to adjust title bar, etc. */
     void (* doc_status_changed)     (MooEdit    *edit);
@@ -121,11 +91,13 @@ struct _MooEditClass
 
     void (* delete_selection)       (MooEdit    *edit);
 
+    /* these two are buffer signals */
     void (* can_redo)               (MooEdit    *edit,
                                      gboolean    arg);
     void (* can_undo)               (MooEdit    *edit,
                                      gboolean    arg);
 
+    /* these are made signals for convenience */
     void (* find)                   (MooEdit    *edit);
     void (* replace)                (MooEdit    *edit);
     void (* find_next)              (MooEdit    *edit);
@@ -150,47 +122,27 @@ GType       moo_edit_on_external_changes_get_type   (void) G_GNUC_CONST;
 GType       moo_edit_file_info_get_type             (void) G_GNUC_CONST;
 
 
-GtkWidget  *moo_edit_new                    (void);
-
-gboolean    moo_edit_open                   (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding);
-gboolean    moo_edit_save                   (MooEdit            *edit);
-gboolean    moo_edit_save_as                (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding);
-gboolean    moo_edit_close                  (MooEdit            *edit);
-
-gboolean    moo_edit_load                   (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding,
-                                             GError            **error);
-gboolean    moo_edit_reload                 (MooEdit            *edit,
-                                             GError            **error);
-gboolean    moo_edit_write                  (MooEdit            *edit,
-                                             const char         *file,
-                                             const char         *encoding,
-                                             GError            **error);
+MooEdit    *moo_edit_new                    (void);
 
 const char *moo_edit_get_filename           (MooEdit            *edit);
 const char *moo_edit_get_basename           (MooEdit            *edit);
 const char *moo_edit_get_display_filename   (MooEdit            *edit);
 const char *moo_edit_get_display_basename   (MooEdit            *edit);
 
+const char *moo_edit_get_encoding           (MooEdit            *edit);
 void        moo_edit_set_encoding           (MooEdit            *edit,
                                              const char         *encoding);
 
 void        moo_edit_select_all             (MooEdit            *edit);
 
 gboolean    moo_edit_is_empty               (MooEdit            *edit);
-gboolean    moo_edit_get_modified           (MooEdit            *edit);
 void        moo_edit_set_modified           (MooEdit            *edit,
                                              gboolean            modified);
 gboolean    moo_edit_get_clean              (MooEdit            *edit);
 void        moo_edit_set_clean              (MooEdit            *edit,
                                              gboolean            clean);
-MooEditDocStatus moo_edit_get_doc_status    (MooEdit            *edit);
-void        moo_edit_doc_status_changed     (MooEdit            *edit);
+MooEditStatus moo_edit_get_status           (MooEdit            *edit);
+void        moo_edit_status_changed         (MooEdit            *edit);
 
 gboolean    moo_edit_get_read_only          (MooEdit            *edit);
 void        moo_edit_set_read_only          (MooEdit            *edit,

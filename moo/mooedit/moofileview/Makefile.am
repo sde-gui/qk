@@ -37,12 +37,15 @@ libmoofileview_la_SOURCES =     \
     moobookmarkmgr.h            \
     moofile.c                   \
     moofile.h                   \
+    moofileentry.c              \
+    moofileentry.h              \
     moofilesystem.c             \
     moofilesystem.h             \
     moofileview.c               \
     moofileview.h               \
     moofileview-dialogs.c       \
     moofileview-dialogs.h       \
+    moofileview-private.h       \
     moofilewatch.c              \
     moofilewatch.h              \
     moofiltermgr.c              \

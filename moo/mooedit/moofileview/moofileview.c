@@ -22,11 +22,12 @@
 #include "moobookmarkmgr.h"
 #include "moofilesystem.h"
 #include "moofoldermodel.h"
+#include "moofileentry.h"
 #include MOO_MARSHALS_H
 #include "mooiconview.h"
 #include "moosignal.h"
+#include "moofileview-private.h"
 #include <gdk/gdkkeysyms.h>
-#include <string.h>
 
 
 #ifndef __WIN32__
@@ -55,7 +56,6 @@ static GtkTargetEntry source_targets[] = {
 
 
 typedef struct _History History;
-typedef struct _Completion Completion;
 typedef struct _Typeahead Typeahead;
 
 struct _MooFileViewPrivate {
@@ -95,7 +95,6 @@ struct _MooFileViewPrivate {
     int              entry_state;   /* it can be one of three: nothing, typeahead, or completion,
                                        depending on text entered into the entry */
     Typeahead       *typeahead;
-    Completion      *completion;
     gboolean         typeahead_case_sensitive;
     gboolean         sort_case_sensitive;
     gboolean         completion_case_sensitive;
@@ -230,7 +229,7 @@ static void         stop_path_entry         (MooFileView    *fileview,
                                              gboolean        focus_file_list);
 static void         path_entry_delete_to_cursor (MooFileView *fileview);
 static void         file_view_activate_filename (MooFileView *fileview,
-                                             const char     *filename);
+                                             const char     *display_name);
 
 static void moo_file_view_populate_popup    (MooFileView    *fileview,
                                              GList          *selected,
@@ -279,8 +278,6 @@ enum {
     CREATE_FOLDER,
     LAST_SIGNAL
 };
-
-#define COLUMN_FILE MOO_FOLDER_MODEL_COLUMN_FILE
 
 static guint signals[LAST_SIGNAL];
 
@@ -648,6 +645,8 @@ static void         moo_file_view_set_current_dir (MooFileView  *fileview,
         }
 
         path_entry_set_text (fileview, "");
+        g_object_set (MOO_FILE_ENTRY (fileview->priv->entry),
+                      "current-dir", NULL, NULL);
         g_object_notify (G_OBJECT (fileview), "current-directory");
         return;
     }
@@ -668,6 +667,9 @@ static void         moo_file_view_set_current_dir (MooFileView  *fileview,
     path = g_filename_display_name (moo_folder_get_path (folder));
     path_entry_set_text (fileview, path);
     g_free (path);
+
+    g_object_set (MOO_FILE_ENTRY(fileview->priv->entry)->completion,
+                  "current-dir", moo_folder_get_path (folder), NULL);
 
     history_goto (fileview, moo_folder_get_path (folder));
     g_object_notify (G_OBJECT (fileview), "current-directory");
@@ -726,7 +728,7 @@ static void         init_gui        (MooFileView    *fileview)
     gtk_box_pack_start (box, toolbar, FALSE, FALSE, 0);
     fileview->toolbar = toolbar;
 
-    entry = gtk_entry_new ();
+    entry = moo_file_entry_new ();
     g_object_set_data (G_OBJECT (entry), "moo-file-view", fileview);
     gtk_widget_show (entry);
     gtk_box_pack_start (box, entry, FALSE, FALSE, 0);
@@ -1519,7 +1521,9 @@ static void         moo_file_view_set_property  (GObject        *object,
             break;
 
         case PROP_COMPLETION_CASE_SENSITIVE:
-            moo_file_view_set_completion_case_sensitive (fileview, g_value_get_boolean (value));
+            g_object_set (MOO_FILE_ENTRY(fileview->priv->entry)->completion,
+                          "case-sensitive", g_value_get_boolean (value), NULL);
+            g_object_notify (object, "completion-case-sensitive");
             break;
 
         default:
@@ -1535,6 +1539,7 @@ static void         moo_file_view_get_property  (GObject        *object,
                                                  GParamSpec     *pspec)
 {
     MooFileView *fileview = MOO_FILE_VIEW (object);
+    gboolean val;
 
     switch (prop_id)
     {
@@ -1566,7 +1571,9 @@ static void         moo_file_view_get_property  (GObject        *object,
             break;
 
         case PROP_COMPLETION_CASE_SENSITIVE:
-            g_value_set_boolean (value, fileview->priv->completion_case_sensitive);
+            g_object_get (MOO_FILE_ENTRY(fileview->priv->entry)->completion,
+                          "case-sensitive", &val, NULL);
+            g_value_set_boolean (value, val);
             break;
 
         default:
@@ -2928,12 +2935,6 @@ enum {
     ENTRY_STATE_COMPLETION  = 2
 };
 
-static void     completion_create       (MooFileView    *fileview);
-static void     completion_destroy      (MooFileView    *fileview);
-static void     completion_try          (MooFileView    *fileview);
-static void     completion_tab_key      (MooFileView    *fileview);
-static gboolean completion_stop_tab_cycle (MooFileView  *fileview);
-
 static void     typeahead_create        (MooFileView    *fileview);
 static void     typeahead_destroy       (MooFileView    *fileview);
 static void     typeahead_try           (MooFileView    *fileview,
@@ -2953,7 +2954,7 @@ static void     entry_activate          (GtkEntry       *entry,
                                          MooFileView    *fileview);
 
 static gboolean entry_stop_tab_cycle    (MooFileView    *fileview);
-static void     entry_tab_key           (GtkEntry       *entry,
+static gboolean entry_tab_key           (GtkEntry       *entry,
                                          MooFileView    *fileview);
 
 static gboolean looks_like_path         (const char     *text);
@@ -2963,6 +2964,7 @@ static void         path_entry_init         (MooFileView    *fileview)
 {
     GtkEntry *entry = fileview->priv->entry;
 
+    /* XXX after? */
     g_signal_connect (entry, "changed",
                       G_CALLBACK (entry_changed), fileview);
     g_signal_connect (entry, "key-press-event",
@@ -2973,14 +2975,12 @@ static void         path_entry_init         (MooFileView    *fileview)
                       G_CALLBACK (entry_activate), fileview);
 
     typeahead_create (fileview);
-    completion_create (fileview);
 }
 
 
 static void         path_entry_deinit       (MooFileView    *fileview)
 {
     typeahead_destroy (fileview);
-    completion_destroy (fileview);
 }
 
 
@@ -3035,7 +3035,8 @@ static void     entry_changed       (GtkEntry       *entry,
 
         file_view_move_selection (fileview, NULL);
         fileview->priv->entry_state = ENTRY_STATE_COMPLETION;
-        return completion_try (fileview);
+        /* XXX call complete() or something, for automatic popup */
+        return;
     }
     else
     {
@@ -3081,8 +3082,7 @@ static gboolean entry_key_press     (GtkEntry       *entry,
             return TRUE;
 
         case GDK_Tab:
-            entry_tab_key (entry, fileview);
-            return TRUE;
+            return entry_tab_key (entry, fileview);
 
         default:
             return FALSE;
@@ -3097,14 +3097,15 @@ static gboolean entry_stop_tab_cycle    (MooFileView    *fileview)
         case ENTRY_STATE_TYPEAHEAD:
             return typeahead_stop_tab_cycle (fileview);
         case ENTRY_STATE_COMPLETION:
-            return completion_stop_tab_cycle (fileview);
+            fileview->priv->entry_state = 0;
+            return FALSE;
         default:
             return FALSE;
     }
 }
 
 
-static void     entry_tab_key       (GtkEntry       *entry,
+static gboolean entry_tab_key       (GtkEntry       *entry,
                                      MooFileView    *fileview)
 {
     const char *text;
@@ -3116,19 +3117,22 @@ static void     entry_tab_key       (GtkEntry       *entry,
         if (text[0])
         {
             g_signal_emit_by_name (entry, "changed");
-            g_return_if_fail (fileview->priv->entry_state != 0);
+            g_return_val_if_fail (fileview->priv->entry_state != 0, FALSE);
             return entry_tab_key (entry, fileview);
         }
         else
         {
-            return;
+            return FALSE;
         }
     }
 
-    if (fileview->priv->entry_state == ENTRY_STATE_COMPLETION)
-        completion_tab_key (fileview);
-    else
+    if (fileview->priv->entry_state == ENTRY_STATE_TYPEAHEAD)
+    {
         typeahead_tab_key (fileview);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
@@ -3171,7 +3175,8 @@ static void     entry_activate      (GtkEntry       *entry,
         gtk_tree_path_free (selected);
         g_return_if_fail (file != NULL);
 
-        filename = g_strdup (moo_file_name (file));
+        /* XXX display_name() */
+        filename = g_strdup (moo_file_display_name (file));
         moo_file_unref (file);
     }
     else
@@ -3499,7 +3504,6 @@ static void     stop_path_entry     (MooFileView    *fileview,
 {
     char *text;
 
-    completion_stop_tab_cycle (fileview);
     typeahead_stop_tab_cycle (fileview);
 
     fileview->priv->entry_state = 0;
@@ -3519,43 +3523,19 @@ static void     stop_path_entry     (MooFileView    *fileview,
 
 
 /* WIN32_XXX */
-/* XXX must return absolute filename or NULL */
-static char *filename_to_absolute           (MooFileView    *fileview,
-                                             const char     *filename)
-{
-    g_return_val_if_fail (filename && filename[0], NULL);
-
-    if (filename[0] == '~')
-    {
-        const char *home = g_get_home_dir ();
-        g_return_val_if_fail (home != NULL, NULL);
-
-        if (filename[1])
-            return g_build_filename (home, filename + 1, NULL);
-        else
-            return g_strdup (home);
-    }
-
-    if (g_path_is_absolute (filename))
-        return g_strdup (filename);
-
-    if (fileview->priv->current_dir)
-        return g_build_filename (moo_folder_get_path (fileview->priv->current_dir),
-                                 filename, NULL);
-
-    return NULL;
-}
-
-
-/* WIN32_XXX */
 static void         file_view_activate_filename (MooFileView    *fileview,
-                                                 const char     *filename)
+                                                 const char     *display_name)
 {
     GError *error = NULL;
     char *dirname, *basename;
     char *path = NULL;
+    const char *current_dir = NULL;
 
-    path = filename_to_absolute (fileview, filename);
+    if (fileview->priv->current_dir)
+        current_dir = moo_folder_get_path (fileview->priv->current_dir);
+
+    path = moo_file_system_get_absolute_path (fileview->priv->file_system,
+                                              display_name, current_dir);
 
     if (!path || !g_file_test (path, G_FILE_TEST_EXISTS))
     {
@@ -3627,187 +3607,6 @@ static gboolean looks_like_path         (const char     *text)
 #endif
     else
         return FALSE;
-}
-
-
-/*********************************************************************/
-/* Typeahead and completion
- */
-
-/* TODO: strncmp should accept char len, not byte len? */
- typedef struct {
-    int     (*strcmp_func)      (const char   *str,
-                                 MooFile      *file);
-    int     (*strncmp_func)     (const char   *str,
-                                 MooFile      *file,
-                                 guint         len);
-    char*   (*normalize_func)   (const char   *str,
-                                 gssize        len);
-} TextFuncs;
-
-
-static int   strcmp_func            (const char *str,
-                                     MooFile    *file)
-{
-    return strcmp (str, moo_file_display_name (file));
-}
-
-static int   strncmp_func           (const char *str,
-                                     MooFile    *file,
-                                     guint       len)
-{
-    return strncmp (str, moo_file_display_name (file), len);
-}
-
-static char *normalize_func         (const char *str,
-                                     gssize      len)
-{
-    return g_utf8_normalize (str, len, G_NORMALIZE_ALL);
-}
-
-
-static int   case_strcmp_func       (const char *str,
-                                     MooFile    *file)
-{
-    return strcmp (str, moo_file_case_display_name (file));
-}
-
-static int   case_strncmp_func      (const char *str,
-                                     MooFile    *file,
-                                     guint       len)
-{
-    return strncmp (str, moo_file_case_display_name (file), len);
-}
-
-static char *case_normalize_func    (const char *str,
-                                     gssize      len)
-{
-    char *norm = g_utf8_normalize (str, len, G_NORMALIZE_ALL);
-    char *res = g_utf8_casefold (norm, -1);
-    g_free (norm);
-    return res;
-}
-
-
-static gboolean model_find_next_match   (GtkTreeModel   *model,
-                                         GtkTreeIter    *iter,
-                                         const char     *text,
-                                         gssize          len,
-                                         TextFuncs      *funcs,
-                                         gboolean        exact_match)
-{
-    char *normalized_text;
-    guint normalized_text_len;
-
-    g_return_val_if_fail (text != NULL, FALSE);
-
-    normalized_text = funcs->normalize_func (text, len);
-    normalized_text_len = strlen (normalized_text);
-
-    while (TRUE)
-    {
-        MooFile *file = NULL;
-        gboolean match;
-
-        gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
-
-        if (file)
-        {
-            if (exact_match)
-                match = !funcs->strcmp_func (normalized_text, file);
-            else
-                match = !funcs->strncmp_func (normalized_text, file,
-                                              normalized_text_len);
-
-            moo_file_unref (file);
-
-            if (match)
-            {
-                g_free (normalized_text);
-                return TRUE;
-            }
-        }
-
-        if (!gtk_tree_model_iter_next (model, iter))
-        {
-            g_free (normalized_text);
-            return FALSE;
-        }
-    }
-}
-
-
-static GString *model_find_max_prefix   (GtkTreeModel   *model,
-                                         const char     *text,
-                                         TextFuncs      *funcs,
-                                         gboolean       *unique_p,
-                                         GtkTreeIter    *unique_iter_p)
-{
-    GtkTreeIter iter, unique_iter;
-    guint text_len;
-    GString *prefix = NULL;
-    gboolean unique = FALSE;
-
-    g_assert (text && text[0]);
-
-    text_len = strlen (text);
-
-    if (!gtk_tree_model_get_iter_first (model, &iter))
-        goto out;
-
-    while (TRUE)
-    {
-        MooFile *file = NULL;
-        const char *name;
-        guint i;
-
-        if (!model_find_next_match (model, &iter, text, text_len, funcs, FALSE))
-            goto out;
-
-        gtk_tree_model_get (model, &iter,
-                            COLUMN_FILE, &file, -1);
-        g_assert (file != NULL);
-
-        name = moo_file_display_name (file);
-
-        if (!prefix)
-        {
-            prefix = g_string_new (moo_file_display_name (file));
-            unique_iter = iter;
-            unique = TRUE;
-
-            /* nothing to look for, just check if it's really unique */
-            if (prefix->len == text_len)
-            {
-                if (gtk_tree_model_iter_next (model, &iter) &&
-                    model_find_next_match (model, &iter, text, text_len, funcs, FALSE))
-                        unique = FALSE;
-
-                goto out;
-            }
-        }
-        else
-        {
-            for (i = text_len; i < prefix->len && name[i] == prefix->str[i]; ++i) ;
-
-            prefix->str[i] = 0;
-            prefix->len = i;
-            unique = FALSE;
-
-            if (prefix->len == text_len)
-                goto out;
-        }
-
-        if (!gtk_tree_model_iter_next (model, &iter))
-            goto out;
-    }
-
-out:
-    if (unique_p)
-        *unique_p = unique;
-    if (unique_iter_p)
-        *unique_iter_p = unique_iter;
-    return prefix;
 }
 
 
@@ -4168,988 +3967,4 @@ static gboolean typeahead_find_match_hidden     (MooFileView    *fileview,
         if (!gtk_tree_model_iter_next (model, iter))
             return FALSE;
     }
-}
-
-
-/*********************************************************************/
-/* Completion
- */
-
-#define COMPLETION_POPUP_LEN 15
-
-struct _Completion {
-    MooFileView *fileview;
-    GtkEntry *entry;
-
-    gboolean recheck_prefix;
-    char *dirname;
-    char *display_dirname;
-    char *display_basename;
-    guint display_basename_len;
-    GtkWidget *popup;
-    GtkTreeView *treeview;
-    GtkTreeViewColumn *column;
-    GtkTreeModel *model;
-
-    TextFuncs text_funcs;
-    gboolean case_sensitive;
-};
-
-
-static void     completion_create_popup         (Completion     *cmpl);
-static void     completion_connect_folder       (Completion     *cmpl,
-                                                 MooFolder      *folder);
-static void     completion_disconnect_folder    (Completion     *cmpl);
-static void     completion_popup                (Completion     *cmpl);
-static void     completion_popdown              (Completion     *cmpl);
-static gboolean completion_resize_popup         (Completion     *cmpl);
-static void     completion_cell_data_func       (GtkTreeViewColumn *column,
-                                                 GtkCellRenderer *cell,
-                                                 GtkTreeModel   *model,
-                                                 GtkTreeIter    *iter,
-                                                 Completion     *cmpl);
-static gboolean completion_visible_func         (GtkTreeModel   *model,
-                                                 GtkTreeIter    *iter,
-                                                 Completion     *cmpl);
-static gboolean completion_entry_focus_out      (Completion     *cmpl);
-static gboolean completion_button_press         (Completion     *cmpl,
-                                                 GdkEventButton *event);
-static gboolean completion_key_press            (Completion     *cmpl,
-                                                 GdkEventKey    *event);
-static gboolean completion_list_button_press    (Completion     *cmpl,
-                                                 GdkEventButton *event);
-static void     completion_entry_changed        (Completion     *cmpl);
-static gboolean completion_parse_text           (Completion     *cmpl,
-                                                 gboolean        refilter);
-static char    *completion_make_text            (Completion     *cmpl,
-                                                 MooFile        *file);
-static int      completion_get_selected         (Completion     *cmpl);
-
-
-#define TAKE_STRING(p,s)    \
-G_STMT_START {              \
-    g_free (p);             \
-    p = s;                  \
-    s = NULL;               \
-} G_STMT_END
-
-#define DELETE_MEM(p)       \
-G_STMT_START {              \
-    g_free (p);             \
-    p = NULL;               \
-} G_STMT_END
-
-
-static void     completion_try          (MooFileView    *fileview)
-{
-    Completion *cmpl = fileview->priv->completion;
-
-    if (GTK_WIDGET_MAPPED (cmpl->popup))
-    {
-        completion_popdown (cmpl);
-        g_return_if_reached ();
-    }
-}
-
-
-static void     completion_create       (MooFileView    *fileview)
-{
-    GtkTreeModel *model;
-    Completion *cmpl = g_new0 (Completion, 1);
-
-    cmpl->fileview = fileview;
-    cmpl->entry = fileview->priv->entry;
-    cmpl->case_sensitive = fileview->priv->completion_case_sensitive;
-
-    if (cmpl->case_sensitive)
-    {
-        cmpl->text_funcs.strcmp_func = strcmp_func;
-        cmpl->text_funcs.strncmp_func = strncmp_func;
-        cmpl->text_funcs.normalize_func = normalize_func;
-    }
-    else
-    {
-        cmpl->text_funcs.strcmp_func = case_strcmp_func;
-        cmpl->text_funcs.strncmp_func = case_strncmp_func;
-        cmpl->text_funcs.normalize_func = case_normalize_func;
-    }
-
-    model = moo_folder_model_new (NULL);
-    cmpl->model = moo_folder_filter_new (MOO_FOLDER_MODEL (model));
-    gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (cmpl->model),
-                                            (GtkTreeModelFilterVisibleFunc) completion_visible_func,
-                                            cmpl, NULL);
-    completion_create_popup (cmpl);
-    g_object_unref (model);
-
-    fileview->priv->completion = cmpl;
-}
-
-
-static void     completion_destroy      (MooFileView    *fileview)
-{
-    Completion *cmpl = fileview->priv->completion;
-
-    completion_disconnect_folder (cmpl);
-    g_free (cmpl->dirname);
-
-    gtk_widget_destroy (cmpl->popup);
-    g_object_unref (cmpl->model);
-
-    g_free (cmpl);
-    fileview->priv->completion = NULL;
-}
-
-
-static void     completion_entry_changed        (Completion     *cmpl)
-{
-    int n_items, selected;
-    GtkTreePath *path;
-
-    if (!completion_parse_text (cmpl, FALSE))
-        goto finish;
-
-    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (cmpl->model));
-
-    n_items = gtk_tree_model_iter_n_children (cmpl->model, NULL);
-
-    if (!n_items)
-        goto finish;
-
-    completion_resize_popup (cmpl);
-    selected = completion_get_selected (cmpl);
-
-    if (selected < 0)
-        selected = 0;
-
-    path = gtk_tree_path_new_from_indices (selected, -1);
-    gtk_tree_view_scroll_to_cell (cmpl->treeview, path, NULL, FALSE, 0, 0);
-    gtk_tree_path_free (path);
-
-    cmpl->recheck_prefix = TRUE;
-
-    return;
-
-finish:
-    completion_popdown (cmpl);
-    DELETE_MEM (cmpl->display_dirname);
-    DELETE_MEM (cmpl->display_basename);
-    DELETE_MEM (cmpl->dirname);
-    cmpl->fileview->priv->entry_state = 0;
-    g_signal_emit_by_name (cmpl->entry, "changed");
-}
-
-
-static char    *completion_make_text            (Completion     *cmpl,
-                                                 MooFile        *file)
-{
-    g_return_val_if_fail (file != NULL, NULL);
-    g_return_val_if_fail (cmpl->display_dirname != NULL, NULL);
-
-    if (MOO_FILE_IS_DIR (file))
-        return g_strdup_printf ("%s%s%c", cmpl->display_dirname,
-                                moo_file_display_name (file),
-                                G_DIR_SEPARATOR);
-    else
-        return g_strdup_printf ("%s%s", cmpl->display_dirname,
-                                moo_file_display_name (file));
-}
-
-
-static gboolean completion_parse_text           (Completion     *cmpl,
-                                                 gboolean        refilter)
-{
-    GtkEntry *entry = cmpl->entry;
-    const char *text;
-    GError *error = NULL;
-    MooFolder *folder;
-    gboolean result = FALSE;
-    guint text_len;
-    char *path = NULL, *dirname = NULL;
-    char *display_dirname = NULL, *display_basename = NULL;
-
-    text = gtk_entry_get_text (entry);
-
-    if (!text || !text[0])
-        return FALSE;
-
-    path = filename_to_absolute (cmpl->fileview, text);
-
-    if (!path)
-        return FALSE;
-
-    if (!moo_file_system_parse_path (cmpl->fileview->priv->file_system,
-                                     path, &dirname, &display_dirname,
-                                     &display_basename, &error))
-    {
-        g_message ("%s: could not parse path '%s'", G_STRLOC, path);
-        g_message ("%s: %s", G_STRLOC, error->message);
-        goto out;
-    }
-
-    TAKE_STRING (cmpl->display_basename, display_basename);
-    cmpl->display_basename_len = strlen (cmpl->display_basename);
-
-    text_len = strlen (text);
-
-    if (text_len <= cmpl->display_basename_len)
-    {
-        g_warning ("%s: something wrong", G_STRLOC);
-        goto out;
-    }
-
-    if (!cmpl->dirname || strcmp (cmpl->dirname, dirname))
-    {
-        completion_disconnect_folder (cmpl);
-        DELETE_MEM (cmpl->dirname);
-
-        folder = moo_file_system_get_folder (cmpl->fileview->priv->file_system,
-                                             dirname, MOO_FILE_HAS_STAT,
-                                             &error);
-        if (!folder)
-        {
-            g_message ("%s: could not get folder '%s'", G_STRLOC, dirname);
-            g_message ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-            goto out;
-        }
-
-        g_free (cmpl->display_dirname);
-        cmpl->display_dirname = g_strndup (text, text_len - cmpl->display_basename_len);
-        TAKE_STRING (cmpl->dirname, dirname);
-
-        completion_connect_folder (cmpl, folder);
-    }
-    else if (refilter)
-    {
-        gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (cmpl->model));
-    }
-
-    result = TRUE;
-
-out:
-    g_free (path);
-    g_free (dirname);
-    g_free (display_dirname);
-    g_free (display_basename);
-    return result;
-}
-
-
-static void     completion_tab_key              (MooFileView    *fileview)
-{
-    int n_items;
-    GtkTreePath *path;
-    GtkTreeIter iter;
-    MooFile *file = NULL;
-    char *text;
-    GString *prefix;
-    gboolean unique;
-    Completion *cmpl = fileview->priv->completion;
-
-    if (!completion_parse_text (cmpl, TRUE))
-        return;
-
-    n_items = gtk_tree_model_iter_n_children (cmpl->model, NULL);
-
-    if (!n_items)
-        return;
-
-    if (n_items == 1)
-    {
-        path = gtk_tree_path_new_from_indices (0, -1);
-        gtk_tree_model_get_iter (cmpl->model, &iter, path);
-        gtk_tree_path_free (path);
-
-        gtk_tree_model_get (cmpl->model, &iter, COLUMN_FILE, &file, -1);
-        g_return_if_fail (file != NULL);
-
-        text = completion_make_text (cmpl, file);
-        path_entry_set_text (cmpl->fileview, text);
-        g_signal_emit_by_name (cmpl->entry, "changed");
-
-        g_free (text);
-        return;
-    }
-
-    if (cmpl->display_basename && cmpl->display_basename[0])
-    {
-        prefix = model_find_max_prefix (cmpl->model, cmpl->display_basename,
-                                        &cmpl->text_funcs, &unique, NULL);
-
-        if (!prefix)
-        {
-            g_critical ("%s: oops", G_STRLOC);
-        }
-        else if (prefix->len > cmpl->display_basename_len)
-        {
-            text = g_strdup_printf ("%s%s", cmpl->display_dirname,
-                                    prefix->str);
-            path_entry_set_text (cmpl->fileview, text);
-            g_free (text);
-        }
-
-        g_string_free (prefix, TRUE);
-    }
-
-    /* XXX scroll to selected */
-    completion_popup (fileview->priv->completion);
-}
-
-
-static gboolean completion_tab_key_press    (Completion     *cmpl)
-{
-    cmpl->recheck_prefix = FALSE;
-
-    int n_items;
-    GtkTreePath *path;
-    GtkTreeIter iter;
-    MooFile *file = NULL;
-    char *text;
-    GString *prefix;
-    gboolean unique;
-
-    n_items = gtk_tree_model_iter_n_children (cmpl->model, NULL);
-
-    if (!n_items)
-    {
-        completion_popdown (cmpl);
-        g_return_val_if_reached (TRUE);
-    }
-
-    if (n_items == 1)
-    {
-        path = gtk_tree_path_new_from_indices (0, -1);
-        gtk_tree_model_get_iter (cmpl->model, &iter, path);
-        gtk_tree_path_free (path);
-
-        gtk_tree_model_get (cmpl->model, &iter, COLUMN_FILE, &file, -1);
-        g_return_val_if_fail (file != NULL, FALSE);
-
-        completion_popdown (cmpl);
-
-        text = completion_make_text (cmpl, file);
-        path_entry_set_text (cmpl->fileview, text);
-        g_signal_emit_by_name (cmpl->entry, "changed");
-
-        moo_file_unref (file);
-        g_free (text);
-        return TRUE;
-    }
-
-    if (cmpl->display_basename && cmpl->display_basename[0])
-    {
-        prefix = model_find_max_prefix (cmpl->model, cmpl->display_basename,
-                                        &cmpl->text_funcs, &unique, NULL);
-
-        if (!prefix)
-        {
-            g_critical ("%s: oops", G_STRLOC);
-            return FALSE;
-        }
-
-        if (prefix->len > cmpl->display_basename_len)
-        {
-            text = g_strdup_printf ("%s%s", cmpl->display_dirname,
-                                    prefix->str);
-            path_entry_set_text (cmpl->fileview, text);
-            g_signal_emit_by_name (cmpl->entry, "changed");
-            g_free (text);
-            g_string_free (prefix, TRUE);
-            return TRUE;
-        }
-
-        g_string_free (prefix, TRUE);
-    }
-
-    return FALSE;
-}
-
-
-static gboolean completion_stop_tab_cycle (MooFileView  *fileview)
-{
-    if (GTK_WIDGET_MAPPED (fileview->priv->completion->popup))
-    {
-        completion_popdown (fileview->priv->completion);
-        g_return_val_if_reached (FALSE);
-    }
-
-    return FALSE;
-}
-
-
-void        moo_file_view_set_completion_case_sensitive (MooFileView    *fileview,
-                                                         gboolean        case_sensitive)
-{
-    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
-
-    case_sensitive = case_sensitive ? TRUE : FALSE;
-
-    if (case_sensitive != fileview->priv->completion_case_sensitive)
-    {
-        Completion *cmpl = fileview->priv->completion;
-
-        fileview->priv->typeahead_case_sensitive = case_sensitive;
-        cmpl->case_sensitive = case_sensitive;
-
-        if (case_sensitive)
-        {
-            cmpl->text_funcs.strcmp_func = strcmp_func;
-            cmpl->text_funcs.strncmp_func = strncmp_func;
-            cmpl->text_funcs.normalize_func = normalize_func;
-        }
-        else
-        {
-            cmpl->text_funcs.strcmp_func = case_strcmp_func;
-            cmpl->text_funcs.strncmp_func = case_strncmp_func;
-            cmpl->text_funcs.normalize_func = case_normalize_func;
-        }
-
-        g_object_notify (G_OBJECT (fileview), "completion-case-sensitive");
-    }
-}
-
-
-static void send_focus_change (GtkWidget *widget, gboolean in)
-{
-    GdkEvent *fevent = gdk_event_new (GDK_FOCUS_CHANGE);
-
-    g_object_ref (widget);
-
-    if (in)
-        GTK_WIDGET_SET_FLAGS (widget, GTK_HAS_FOCUS);
-    else
-        GTK_WIDGET_UNSET_FLAGS (widget, GTK_HAS_FOCUS);
-
-    fevent->focus_change.type = GDK_FOCUS_CHANGE;
-    fevent->focus_change.window = g_object_ref (widget->window);
-    fevent->focus_change.in = in;
-
-    gtk_widget_event (widget, fevent);
-
-    g_object_notify (G_OBJECT (widget), "has-focus");
-
-    g_object_unref (widget);
-    gdk_event_free (fevent);
-}
-
-
-static void     completion_popup                (Completion *cmpl)
-{
-    GtkWidget *window;
-
-    if (GTK_WIDGET_MAPPED (cmpl->popup))
-        return;
-
-    window = gtk_widget_get_toplevel (GTK_WIDGET (cmpl->entry));
-    g_return_if_fail (GTK_IS_WINDOW (window));
-
-    gtk_widget_realize (cmpl->popup);
-
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET (cmpl->treeview), GTK_CAN_FOCUS);
-
-    if (GTK_WINDOW (window)->group)
-        gtk_window_group_add_window (GTK_WINDOW (window)->group,
-                                     GTK_WINDOW (window));
-    gtk_window_set_modal (GTK_WINDOW (cmpl->popup), TRUE);
-
-    completion_resize_popup (cmpl);
-
-    gtk_widget_show (cmpl->popup);
-    send_focus_change (GTK_WIDGET (cmpl->popup), TRUE);
-
-    /* XXX deselect and scroll */
-
-    gtk_grab_add (cmpl->popup);
-    gdk_pointer_grab (cmpl->popup->window, TRUE,
-                      GDK_BUTTON_PRESS_MASK |
-                              GDK_BUTTON_RELEASE_MASK |
-                              GDK_POINTER_MOTION_MASK,
-                      NULL, NULL, GDK_CURRENT_TIME);
-
-    g_signal_connect_swapped (cmpl->entry, "focus-out-event",
-                              G_CALLBACK (completion_entry_focus_out),
-                              cmpl);
-    g_signal_connect_swapped (cmpl->entry, "changed",
-                              G_CALLBACK (completion_entry_changed),
-                              cmpl);
-
-    g_signal_connect_swapped (cmpl->popup, "button-press-event",
-                              G_CALLBACK (completion_button_press),
-                              cmpl);
-    g_signal_connect_swapped (cmpl->popup, "key-press-event",
-                              G_CALLBACK (completion_key_press),
-                              cmpl);
-
-    g_signal_connect_swapped (cmpl->treeview, "button-press-event",
-                              G_CALLBACK (completion_list_button_press),
-                              cmpl);
-
-    g_signal_handlers_block_by_func (cmpl->entry,
-                                     (gpointer) entry_changed,
-                                     cmpl->fileview);
-    g_signal_handlers_block_by_func (cmpl->entry,
-                                     (gpointer) entry_key_press,
-                                     cmpl->fileview);
-}
-
-
-static gboolean completion_entry_focus_out      (Completion     *cmpl)
-{
-    completion_popdown (cmpl);
-    return FALSE;
-}
-
-
-static void     completion_popdown              (Completion *cmpl)
-{
-    if (!GTK_WIDGET_MAPPED (cmpl->popup))
-        return;
-
-    g_signal_handlers_disconnect_by_func (cmpl->entry,
-                                          (gpointer) completion_entry_focus_out,
-                                          cmpl);
-    g_signal_handlers_disconnect_by_func (cmpl->entry,
-                                          (gpointer) completion_entry_changed,
-                                          cmpl);
-
-    g_signal_handlers_disconnect_by_func (cmpl->popup,
-                                          (gpointer) completion_button_press,
-                                          cmpl);
-    g_signal_handlers_disconnect_by_func (cmpl->popup,
-                                          (gpointer) completion_key_press,
-                                          cmpl);
-
-    g_signal_handlers_disconnect_by_func (cmpl->treeview,
-                                          (gpointer) completion_list_button_press,
-                                          cmpl);
-
-    g_signal_handlers_unblock_by_func (cmpl->entry,
-                                       (gpointer) entry_changed,
-                                       cmpl->fileview);
-    g_signal_handlers_unblock_by_func (cmpl->entry,
-                                       (gpointer) entry_key_press,
-                                       cmpl->fileview);
-
-    gdk_pointer_ungrab (GDK_CURRENT_TIME);
-    gtk_grab_remove (cmpl->popup);
-    gtk_widget_hide (cmpl->popup);
-    gtk_widget_unrealize (cmpl->popup);
-}
-
-
-static gboolean completion_button_press         (Completion     *cmpl,
-                                                 GdkEventButton *event)
-{
-    if (event->window == cmpl->popup->window)
-    {
-        gint width, height;
-        gdk_drawable_get_size (GDK_DRAWABLE (event->window),
-                               &width, &height);
-        if (event->x < 0 || event->x >= width ||
-            event->y < 0 || event->y >= height)
-        {
-            completion_popdown (cmpl);
-        }
-    }
-    else
-    {
-        g_print ("click\n");
-        completion_popdown (cmpl);
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-
-static void     completion_select_iter          (Completion     *cmpl,
-                                                 GtkTreeIter    *iter)
-{
-    MooFile *file = NULL;
-    char *text;
-
-    gtk_tree_model_get (cmpl->model, iter, COLUMN_FILE, &file, -1);
-    g_return_if_fail (file != NULL);
-
-    text = completion_make_text (cmpl, file);
-    completion_popdown (cmpl);
-    path_entry_set_text (cmpl->fileview, text);
-//     gtk_entry_set_text (cmpl->entry, text);
-    g_signal_emit_by_name (cmpl->entry, "changed");
-
-    g_free (text);
-    moo_file_unref (file);
-}
-
-
-static gboolean completion_list_button_press    (Completion     *cmpl,
-                                                 GdkEventButton *event)
-{
-    GtkTreePath *path;
-    GtkTreeIter iter;
-
-    if (gtk_tree_view_get_path_at_pos (cmpl->treeview,
-                                       event->x, event->y,
-                                       &path, NULL, NULL, NULL))
-    {
-        gtk_tree_model_get_iter (cmpl->model, &iter, path);
-        completion_select_iter (cmpl, &iter);
-        gtk_tree_path_free (path);
-        return TRUE;
-    }
-
-    g_print ("click click\n");
-    return FALSE;
-}
-
-
-static gboolean completion_return_key           (Completion     *cmpl)
-{
-    GtkTreeIter iter;
-    GtkTreeView *treeview = cmpl->treeview;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
-
-    if (gtk_tree_selection_get_selected (selection, NULL, &iter))
-    {
-        completion_select_iter (cmpl, &iter);
-    }
-    else
-    {
-        g_warning ("%s: oops", G_STRLOC);
-        completion_popdown (cmpl);
-    }
-
-    return TRUE;
-}
-
-
-static int      completion_get_selected         (Completion     *cmpl)
-{
-    int ind;
-    GtkTreeIter iter;
-    GtkTreePath *path;
-    GtkTreeView *treeview = cmpl->treeview;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
-
-    if (gtk_tree_selection_get_selected (selection, NULL, &iter))
-    {
-        path = gtk_tree_model_get_path (cmpl->model, &iter);
-        g_return_val_if_fail (path != NULL, -1);
-        ind = gtk_tree_path_get_indices (path)[0];
-        gtk_tree_path_free (path);
-        return ind;
-    }
-    else
-    {
-        return -1;
-    }
-}
-
-
-static void     completion_move_selection       (Completion     *cmpl,
-                                                 GdkEventKey    *event)
-{
-    int n_items, current_item, new_item = -1;
-    GtkTreePath *path;
-    GtkTreeSelection *selection;
-
-    n_items = gtk_tree_model_iter_n_children (cmpl->model, NULL);
-    g_return_if_fail (n_items != 0);
-
-    current_item = completion_get_selected (cmpl);
-
-    switch (event->keyval)
-    {
-        case GDK_Down:
-        case GDK_KP_Down:
-            if (current_item < n_items - 1)
-                new_item = current_item + 1;
-            else
-                new_item = -1;
-            break;
-
-        case GDK_Up:
-        case GDK_KP_Up:
-            if (current_item < 0)
-                new_item = n_items - 1;
-            else
-                new_item = current_item - 1;
-            break;
-
-        case GDK_Page_Down:
-        case GDK_KP_Page_Down:
-            new_item = current_item + COMPLETION_POPUP_LEN - 1;
-            if (new_item >= n_items)
-                new_item = n_items - 1;
-            break;
-
-        case GDK_Page_Up:
-        case GDK_KP_Page_Up:
-            new_item = current_item - COMPLETION_POPUP_LEN + 1;
-            if (new_item < 0)
-                new_item = 0;
-            break;
-
-        case GDK_Tab:
-        case GDK_KP_Tab:
-            if (current_item < n_items - 1)
-                new_item = current_item + 1;
-            else
-                new_item = 0;
-            break;
-
-        case GDK_ISO_Left_Tab:
-            if (current_item <= 0)
-                new_item = n_items - 1;
-            else
-                new_item = current_item - 1;
-            break;
-
-        default:
-            g_return_if_reached ();
-    }
-
-    selection = gtk_tree_view_get_selection (cmpl->treeview);
-    gtk_tree_selection_unselect_all (selection);
-
-    if (new_item >= 0)
-    {
-        path = gtk_tree_path_new_from_indices (new_item, -1);
-        gtk_tree_selection_select_path (selection, path);
-        gtk_tree_view_scroll_to_cell (cmpl->treeview, path, NULL, FALSE, 0, 0);
-        gtk_tree_path_free (path);
-    }
-}
-
-
-static gboolean completion_key_press            (Completion     *cmpl,
-                                                 GdkEventKey    *event)
-{
-    switch (event->keyval)
-    {
-        case GDK_Down:
-        case GDK_Up:
-        case GDK_KP_Down:
-        case GDK_KP_Up:
-        case GDK_Page_Down:
-        case GDK_Page_Up:
-            completion_move_selection (cmpl, event);
-            return TRUE;
-
-        case GDK_Tab:
-        case GDK_KP_Tab:
-            if (cmpl->recheck_prefix && completion_tab_key_press (cmpl))
-                return TRUE;
-            /* fallthrough */
-        case GDK_ISO_Left_Tab:
-            completion_move_selection (cmpl, event);
-            return TRUE;
-
-        case GDK_Escape:
-            completion_popdown (cmpl);
-            return TRUE;
-
-        case GDK_Return:
-        case GDK_ISO_Enter:
-        case GDK_KP_Enter:
-            return completion_return_key (cmpl);
-
-        default:
-            return gtk_widget_event (GTK_WIDGET (cmpl->entry), (GdkEvent*) event);
-    }
-}
-
-
-static void     completion_connect_folder       (Completion *cmpl,
-                                                 MooFolder  *folder)
-{
-    moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->model), folder);
-}
-
-
-static void     completion_disconnect_folder    (Completion *cmpl)
-{
-    moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->model), NULL);
-}
-
-
-static void     completion_create_popup         (Completion *cmpl)
-{
-    GtkCellRenderer *cell;
-    GtkWidget *scrolled_window, *frame;
-    GtkTreeSelection *selection;
-
-    cmpl->popup = gtk_window_new (GTK_WINDOW_POPUP);
-    gtk_widget_set_size_request (cmpl->popup, -1, -1);
-    gtk_window_set_default_size (GTK_WINDOW (cmpl->popup), 1, 1);
-    gtk_window_set_resizable (GTK_WINDOW (cmpl->popup), FALSE);
-    gtk_widget_add_events (cmpl->popup, GDK_KEY_PRESS_MASK | GDK_BUTTON_PRESS_MASK);
-
-    cell = gtk_cell_renderer_text_new ();
-    cmpl->column = gtk_tree_view_column_new ();
-    gtk_tree_view_column_pack_start (cmpl->column, cell, TRUE);
-    gtk_tree_view_column_set_cell_data_func (cmpl->column, cell,
-                                             (GtkTreeCellDataFunc) completion_cell_data_func,
-                                             cmpl, NULL);
-
-    cmpl->treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (cmpl->model));
-    gtk_widget_set_size_request (GTK_WIDGET (cmpl->treeview), -1, -1);
-    gtk_tree_view_append_column (cmpl->treeview, cmpl->column);
-    gtk_tree_view_set_headers_visible (cmpl->treeview, FALSE);
-    gtk_tree_view_set_hover_selection (cmpl->treeview, TRUE);
-
-    selection = gtk_tree_view_get_selection (cmpl->treeview);
-    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-
-    scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-    gtk_widget_set_size_request (scrolled_window, -1, -1);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
-                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-//     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
-//                                          GTK_SHADOW_ETCHED_IN);
-    gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (cmpl->treeview));
-
-    frame = gtk_frame_new (NULL);
-    gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_ETCHED_IN);
-    gtk_container_add (GTK_CONTAINER (frame), scrolled_window);
-
-    gtk_widget_show_all (frame);
-    gtk_container_add (GTK_CONTAINER (cmpl->popup), frame);
-}
-
-
-static void     completion_cell_data_func       (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                                                 GtkCellRenderer    *cell,
-                                                 GtkTreeModel       *model,
-                                                 GtkTreeIter        *iter,
-                                                 Completion         *cmpl)
-{
-    MooFile *file = NULL;
-    char *text;
-
-    g_return_if_fail (cmpl->display_dirname != NULL);
-    gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
-    g_return_if_fail (file != NULL);
-
-    text = completion_make_text (cmpl, file);
-    g_object_set (cell, "text", text, NULL);
-
-    g_free (text);
-    moo_file_unref (file);
-}
-
-
-static gboolean completion_visible_func         (GtkTreeModel   *model,
-                                                 GtkTreeIter    *iter,
-                                                 Completion     *cmpl)
-{
-    MooFile *file = NULL;
-    gboolean visible = FALSE;
-
-    if (!cmpl->display_basename)
-        return FALSE;
-
-    gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
-    g_return_val_if_fail (file != NULL, FALSE);
-
-    if (moo_file_view_check_visible (cmpl->fileview, file, TRUE, TRUE))
-        visible = !cmpl->text_funcs.strncmp_func (cmpl->display_basename, file,
-                                                  cmpl->display_basename_len);
-
-    moo_file_unref (file);
-    return visible ? TRUE : FALSE; /* #314335 */
-}
-
-
-/* XXX _gtk_entry_get_borders from gtkentry.c */
-static void entry_get_borders (GtkEntry *entry,
-                               gint     *xborder,
-                               gint     *yborder)
-{
-    GtkWidget *widget = GTK_WIDGET (entry);
-    gint focus_width;
-    gboolean interior_focus;
-
-    gtk_widget_style_get (widget,
-                          "interior-focus", &interior_focus,
-                          "focus-line-width", &focus_width,
-                          NULL);
-
-    if (entry->has_frame)
-    {
-        *xborder = widget->style->xthickness;
-        *yborder = widget->style->ythickness;
-    }
-    else
-    {
-        *xborder = 0;
-        *yborder = 0;
-    }
-
-    if (!interior_focus)
-    {
-        *xborder += focus_width;
-        *yborder += focus_width;
-    }
-}
-
-
-/* XXX gtk_entry_completion_resize_popup from gtkentrycompletion.c */
-static gboolean completion_resize_popup         (Completion *cmpl)
-{
-    gint x, y;
-    gint matches, items, height, x_border, y_border;
-    GdkScreen *screen;
-    gint monitor_num;
-    GdkRectangle monitor;
-    GtkRequisition popup_req;
-    GtkRequisition entry_req;
-    gboolean above;
-    gint width;
-
-    gdk_window_get_origin (GTK_WIDGET(cmpl->entry)->window, &x, &y);
-    /* XXX */
-    entry_get_borders (cmpl->entry, &x_border, &y_border);
-
-    matches = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (cmpl->model), NULL);
-
-    items = MIN (matches, COMPLETION_POPUP_LEN);
-
-    gtk_tree_view_column_cell_get_size (cmpl->column, NULL,
-                                        NULL, NULL, NULL, &height);
-
-    screen = gtk_widget_get_screen (GTK_WIDGET (cmpl->entry));
-    monitor_num = gdk_screen_get_monitor_at_window (screen,
-            GTK_WIDGET (cmpl->entry)->window);
-    gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
-
-    width = MIN (GTK_WIDGET(cmpl->entry)->allocation.width, monitor.width) - 2 * x_border;
-    gtk_widget_set_size_request (GTK_WIDGET (cmpl->treeview), width, items * height);
-    g_print ("%d\n", items * height);
-
-    gtk_widget_set_size_request (cmpl->popup, -1, -1);
-    gtk_widget_size_request (cmpl->popup, &popup_req);
-    g_print ("%d %d \n", popup_req.width, popup_req.height);
-    gtk_widget_size_request (GTK_WIDGET (cmpl->entry), &entry_req);
-
-    if (x < monitor.x)
-        x = monitor.x;
-    else if (x + popup_req.width > monitor.x + monitor.width)
-        x = monitor.x + monitor.width - popup_req.width;
-
-    if (y + entry_req.height + popup_req.height <= monitor.y + monitor.height)
-    {
-        y += entry_req.height;
-        above = FALSE;
-    }
-    else
-    {
-        y -= popup_req.height;
-        above = TRUE;
-    }
-
-    gtk_window_move (GTK_WINDOW (cmpl->popup), x, y);
-
-    return above;
 }
