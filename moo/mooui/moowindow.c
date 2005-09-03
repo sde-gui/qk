@@ -76,7 +76,6 @@ static void moo_window_get_property             (GObject        *object,
 static gboolean moo_window_delete_event         (GtkWidget      *widget,
                                                  GdkEventAny    *event);
 
-static void moo_window_realize                  (MooWindow      *window);
 static gboolean moo_window_save_size            (MooWindow      *window);
 
 static void moo_window_shortcuts_prefs_dialog   (MooWindow      *window);
@@ -312,10 +311,21 @@ GObject    *moo_window_constructor      (GType                  type,
     g_signal_connect (window, "notify::ui-object-xml",
                       G_CALLBACK (moo_window_update_ui), NULL);
 
-    g_signal_connect (window, "realize",
-                      G_CALLBACK (moo_window_realize), NULL);
-
     moo_window_update_ui (window);
+
+    if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
+    {
+        int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
+        int height = moo_prefs_get_int (setting (window, PREFS_HEIGHT));
+
+        gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+
+        if (moo_prefs_get_bool (setting (window, PREFS_MAXIMIZED)))
+            gtk_window_maximize (GTK_WINDOW (window));
+    }
+
+    g_signal_connect (window, "configure-event",
+                      G_CALLBACK (moo_window_save_size), NULL);
 
     return object;
 }
@@ -354,24 +364,6 @@ static gboolean moo_window_delete_event     (GtkWidget      *widget,
     gboolean result = FALSE;
     g_signal_emit_by_name (widget, "close", &result);
     return result;
-}
-
-
-void     moo_window_realize (MooWindow *window)
-{
-    if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
-    {
-        int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
-        int height = moo_prefs_get_int (setting (window, PREFS_HEIGHT));
-
-        gtk_window_set_default_size (GTK_WINDOW (window), width, height);
-
-        if (moo_prefs_get_bool (setting (window, PREFS_MAXIMIZED)))
-            gtk_window_maximize (GTK_WINDOW (window));
-    }
-
-    g_signal_connect (window, "configure-event",
-                      G_CALLBACK (moo_window_save_size), NULL);
 }
 
 
