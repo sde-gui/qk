@@ -768,9 +768,14 @@ static GtkWidget *moo_action_create_menu_item_real (MooAction      *action,
 {
     GtkWidget *item = NULL;
 
-    if (action->stock_id)
-        item = gtk_image_menu_item_new_from_stock (action->stock_id,
-                                                   NULL);
+    if (action->dead)
+    {
+        return NULL;
+    }
+    else if (action->stock_id)
+    {
+        item = gtk_image_menu_item_new_from_stock (action->stock_id, NULL);
+    }
     else
     {
         GtkWidget *icon = NULL;

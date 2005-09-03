@@ -455,6 +455,22 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
             if (!g_ascii_strcasecmp (child->name, "menu") ||
                 !g_ascii_strcasecmp (child->name, "item"))
             {
+                const char *action_name = moo_markup_get_prop (child, "action");
+
+                if (action_name)
+                {
+                    MooAction *action = moo_action_group_get_action (actions, action_name);
+
+                    if (!action)
+                    {
+                        g_critical ("could not find action '%s'", action_name);
+                        continue;
+                    }
+
+                    if (action->dead)
+                        continue;
+                }
+
                 if (need_separator)
                 {
                     GtkWidget *sep = gtk_separator_menu_item_new ();
@@ -477,7 +493,8 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
             }
             else if (!g_ascii_strcasecmp (child->name, "separator"))
             {
-                if (!start) need_separator = TRUE;
+                if (!start)
+                    need_separator = TRUE;
             }
             else
             {
@@ -509,7 +526,9 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
 
     if (action)
     {
-        if (action->dead) return TRUE;
+        if (action->dead)
+            return TRUE;
+
         menuitem = moo_action_create_menu_item (action, menu_shell, position);
     }
     else
@@ -547,14 +566,17 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
         }
     }
 
-    if (!menuitem) return FALSE;
+    if (!menuitem)
+        return FALSE;
 
-    if (!g_ascii_strcasecmp (node->name, "menu")) {
+    if (!g_ascii_strcasecmp (node->name, "menu"))
+    {
         GtkWidget *menu = create_menu (node, actions, accel_group, tooltips, NULL);
         gtk_widget_show (menu);
         g_return_val_if_fail (menu != NULL, FALSE);
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
     }
+
     return TRUE;
 }
 
@@ -577,12 +599,32 @@ static GtkWidget *create_toolbar    (MooMarkupElement   *node,
     for (ch = node->children; ch != NULL; ch = ch->next)
     {
         MooMarkupElement *child;
-        if (!MOO_MARKUP_IS_ELEMENT (ch)) continue;
+
+        if (!MOO_MARKUP_IS_ELEMENT (ch))
+            continue;
+
         child = MOO_MARKUP_ELEMENT (ch);
 
         if (!g_ascii_strcasecmp (child->name, "item"))
         {
-            if (need_separator) {
+            const char *action_name = moo_markup_get_prop (child, "action");
+
+            if (action_name)
+            {
+                MooAction *action = moo_action_group_get_action (actions, action_name);
+
+                if (!action)
+                {
+                    g_critical ("could not find action '%s'", action_name);
+                    continue;
+                }
+
+                if (action->dead)
+                    continue;
+            }
+
+            if (need_separator)
+            {
 #if GTK_CHECK_VERSION(2,4,0)
                 GtkToolItem *sep = gtk_separator_tool_item_new ();
                 gtk_widget_show (GTK_WIDGET (sep));
