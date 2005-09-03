@@ -18,7 +18,8 @@
             <separator/>
             <item name="Reload" action="Reload"/>
             <separator/>
-            <item name="CloseTab" action="CloseTab"/>
+            <item name="Close" action="Close"/>
+            <item name="CloseAll" action="CloseAll"/>
             <separator/>
             <item name="Quit" action="Quit"/>
             <separator/>
@@ -91,7 +92,7 @@
 
     <toolbar name="Toolbar">
         <separator/>
-        <item name="NewWindow" action="NewWindow"/>
+        <item name="NewTab" action="NewTab"/>
         <separator/>
         <item name="Open" action="Open"/>
         <item name="Save" action="Save"/>
