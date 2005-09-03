@@ -522,12 +522,30 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
 }
 
 
-static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
-                                             G_GNUC_UNUSED MooAction *action)
+static void          recent_item_added      (MooRecentMgr   *mgr,
+                                             MooAction      *action)
 {
+    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
+}
+
+
+static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
+                                             MooAction      *action)
+{
+    GtkMenuItem *item;
+    MooRecentMgr *mgr;
     MooEditor *editor = _moo_edit_window_get_editor (window);
+
     g_return_val_if_fail (editor != NULL, NULL);
-    return moo_recent_mgr_create_menu (editor->priv->recent_mgr, window);
+
+    mgr = editor->priv->recent_mgr;
+    item = moo_recent_mgr_create_menu (mgr, window);
+    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
+    /* XXX */
+    g_signal_connect (mgr, "item-added",
+                      G_CALLBACK (recent_item_added), action);
+
+    return item;
 }
 
 
@@ -1118,6 +1136,7 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
     MooEditSaver *saver;
     GError *error = NULL;
     MooEditFileInfo *file_info;
+    gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
@@ -1133,7 +1152,10 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
     file_info = moo_edit_file_info_new (moo_edit_get_filename (doc),
                                         moo_edit_get_encoding (doc));
 
-    /* moo_edit_save() modifies edit->priv->filename */
+    if ((moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
+         !moo_edit_overwrite_modified_dialog (doc))
+            goto out;
+
     if (!moo_edit_save (saver, doc, file_info->filename,
                         file_info->encoding, &error))
     {
@@ -1141,13 +1163,16 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
                                     error ? error->message : NULL);
         if (error)
             g_error_free (error);
-        return FALSE;
+        goto out;
     }
 
     moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
-    moo_edit_file_info_free (file_info);
+    result = TRUE;
 
-    return TRUE;
+    /* fall through */
+out:
+    moo_edit_file_info_free (file_info);
+    return result;
 }
 
 
