@@ -88,6 +88,8 @@ enum {
     REPLACE,
     GOTO_LINE,
     CURSOR_MOVED,
+    HAS_SELECTION,
+    HAS_TEXT,
     LAST_SIGNAL
 };
 
@@ -136,6 +138,8 @@ static void moo_edit_class_init (MooEditClass *klass)
     klass->delete_selection = moo_edit_delete_selection;
     klass->can_redo = NULL;
     klass->can_undo = NULL;
+    klass->has_selection = NULL;
+    klass->has_text = NULL;
     klass->extend_selection = _moo_edit_extend_selection;
     klass->find = _moo_edit_find;
     klass->find_next = _moo_edit_find_next;
@@ -152,32 +156,32 @@ static void moo_edit_class_init (MooEditClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     signals[DOC_STATUS_CHANGED] =
-        g_signal_new ("doc-status-changed",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooEditClass, doc_status_changed),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("doc-status-changed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, doc_status_changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[FILENAME_CHANGED] =
-        g_signal_new ("filename-changed",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooEditClass, filename_changed),
-                      NULL, NULL,
-                      _moo_marshal_VOID__STRING,
-                      G_TYPE_NONE, 1,
-                      G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+            g_signal_new ("filename-changed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, filename_changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[DELETE_SELECTION] =
-        g_signal_new ("delete-selection",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                      G_STRUCT_OFFSET (MooEditClass, delete_selection),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("delete-selection",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                          G_STRUCT_OFFSET (MooEditClass, delete_selection),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[LANG_CHANGED] =
             g_signal_new ("lang-changed",
@@ -189,67 +193,85 @@ static void moo_edit_class_init (MooEditClass *klass)
                           G_TYPE_NONE, 0);
 
     signals[CAN_UNDO] =
-        g_signal_new ("can-undo",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooEditClass, can_undo),
-                      NULL, NULL,
-                      _moo_marshal_VOID__BOOLEAN,
-                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+            g_signal_new ("can-undo",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, can_undo),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOOLEAN,
+                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
     signals[CAN_REDO] =
-        g_signal_new ("can-redo",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooEditClass, can_redo),
-                      NULL, NULL,
-                      _moo_marshal_VOID__BOOLEAN,
-                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+            g_signal_new ("can-redo",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, can_redo),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOOLEAN,
+                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+    signals[HAS_SELECTION] =
+            g_signal_new ("has-selection",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, has_selection),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOOLEAN,
+                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+    signals[HAS_TEXT] =
+            g_signal_new ("has-text",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, has_text),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOOLEAN,
+                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
     signals[FIND] =
-        g_signal_new ("find",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, find),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("find",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, find),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[FIND_NEXT] =
-        g_signal_new ("find-next",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, find_next),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("find-next",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, find_next),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[FIND_PREVIOUS] =
-        g_signal_new ("find-previous",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, find_previous),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("find-previous",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, find_previous),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[REPLACE] =
-        g_signal_new ("replace",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, replace),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("replace",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, replace),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[GOTO_LINE] =
-        g_signal_new ("goto-line",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MooEditClass, goto_line),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+            g_signal_new ("goto-line",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditClass, goto_line),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[CURSOR_MOVED] =
             moo_signal_new_cb ("cursor-moved",
@@ -804,6 +826,33 @@ char       *moo_edit_get_selection          (MooEdit            *edit)
 }
 
 
+gboolean    moo_edit_has_selection          (MooEdit            *edit)
+{
+    GtkTextBuffer *buf;
+    GtkTextIter start, end;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+
+    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    return gtk_text_buffer_get_selection_bounds (buf, &start, &end);
+}
+
+
+gboolean    moo_edit_has_text               (MooEdit            *edit)
+{
+    GtkTextBuffer *buf;
+    GtkTextIter start, end;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+
+    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_text_buffer_get_bounds (buf, &start, &end);
+
+    return gtk_text_iter_compare (&start, &end) ? TRUE : FALSE;
+}
+
+
 char       *moo_edit_get_text               (MooEdit            *edit)
 {
     GtkTextBuffer *buf;
@@ -833,9 +882,33 @@ static void mark_set_cb                 (GtkTextBuffer      *buffer,
                                          GtkTextMark        *mark,
                                          MooEdit            *edit)
 {
-    if (mark == gtk_text_buffer_get_insert (buffer))
+    GtkTextMark *insert = gtk_text_buffer_get_insert (buffer);
+    GtkTextMark *sel_bound = gtk_text_buffer_get_selection_bound (buffer);
+    gboolean has_selection = edit->priv->has_selection;
+
+    if (mark == insert)
+    {
+        GtkTextIter iter2;
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter2, sel_bound);
+        has_selection = gtk_text_iter_compare (iter, &iter2) ? TRUE : FALSE;
+    }
+    else if (mark == sel_bound)
+    {
+        GtkTextIter iter2;
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter2, insert);
+        has_selection = gtk_text_iter_compare (iter, &iter2) ? TRUE : FALSE;
+    }
+
+    if (has_selection != edit->priv->has_selection)
+    {
+        edit->priv->has_selection = has_selection;
+        g_signal_emit (edit, signals[HAS_SELECTION], 0, has_selection);
+    }
+
+    if (mark == insert)
         g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter);
 }
+
 
 static void insert_text_cb              (G_GNUC_UNUSED GtkTextBuffer *buffer,
                                          GtkTextIter        *iter,
@@ -844,14 +917,32 @@ static void insert_text_cb              (G_GNUC_UNUSED GtkTextBuffer *buffer,
                                          MooEdit            *edit)
 {
     g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter);
+
+    if (!edit->priv->has_text)
+    {
+        edit->priv->has_text = TRUE;
+        g_signal_emit (edit, signals[HAS_TEXT], 0, TRUE);
+    }
 }
 
-static void delete_range_cb             (G_GNUC_UNUSED GtkTextBuffer *textbuffer,
-                                         GtkTextIter        *iter1,
+
+static void delete_range_cb             (GtkTextBuffer *buffer,
+                                         GtkTextIter   *iter1,
                                          G_GNUC_UNUSED GtkTextIter *iter2,
-                                         MooEdit            *edit)
+                                         MooEdit       *edit)
 {
     g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter1);
+
+    if (edit->priv->has_text)
+    {
+        GtkTextIter start, end;
+        gtk_text_buffer_get_bounds (buffer, &start, &end);
+        if (!gtk_text_iter_compare (&start, &end))
+        {
+            edit->priv->has_text = FALSE;
+            g_signal_emit (edit, signals[HAS_TEXT], 0, FALSE);
+        }
+    }
 }
 
 

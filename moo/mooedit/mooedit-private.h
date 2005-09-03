@@ -104,13 +104,15 @@ extern MooEditSearchParams *_moo_edit_search_params;
 
 
 struct _MooEditPrivate {
-    guint constructed : 1;
+    gboolean constructed;
 
     GtkTextBuffer *text_buffer;
     GtkSourceBuffer *source_buffer;
 
     MooEditor *editor;
 
+    gboolean has_selection;
+    gboolean has_text;
     gulong can_undo_handler_id;
     gulong can_redo_handler_id;
     gulong modified_changed_handler_id;

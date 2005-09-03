@@ -24,6 +24,7 @@
 
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
+#define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
 
 
 struct _MooEditWindowPrivate {
@@ -78,7 +79,10 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
 
 static void     edit_changed            (MooEditWindow      *window,
                                          MooEdit            *doc);
+static void     edit_filename_changed   (MooEditWindow      *window);
 static void     edit_can_undo_redo      (MooEditWindow      *window);
+static void     edit_has_selection      (MooEditWindow      *window);
+static void     edit_has_text           (MooEditWindow      *window);
 static GtkWidget *create_tab_label      (MooEdit            *edit);
 static void     update_tab_label        (MooEditWindow      *window,
                                          MooEdit            *doc);
@@ -209,10 +213,10 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class,
-                                    "id", "CloseTab",
-                                    "name", "Close Tab",
-                                    "label", "_Close Tab",
-                                    "tooltip", "Close current document tab",
+                                    "id", "Close",
+                                    "name", "Close",
+                                    "label", "_Close",
+                                    "tooltip", "Close document",
                                     "icon-stock-id", GTK_STOCK_CLOSE,
                                     "accel", "<ctrl>W",
                                     "closure::callback", moo_edit_window_close_tab,
@@ -221,9 +225,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_ui_object_class_new_action (gobject_class,
                                     "id", "CloseAll",
                                     "name", "Close All",
-                                    "label", "_Close All",
+                                    "label", "Close _All",
                                     "tooltip", "Close all documents",
-                                    "icon-stock-id", GTK_STOCK_CLOSE,
                                     "accel", "<shift><ctrl>W",
                                     "closure::callback", moo_edit_window_close_all,
                                     NULL);
@@ -402,6 +405,8 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
 {
     window->priv = g_new0 (MooEditWindowPrivate, 1);
 
+    window->priv->app_name = g_strdup ("medit");
+
     window->priv->lang_menu_items =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
@@ -551,229 +556,12 @@ GObject        *moo_edit_window_constructor (GType                  type,
 }
 
 
-// #define SCROLLED_WINDOW_QUARK (scrolled_window_quark())
-// static GQuark scrolled_window_quark (void)
-// {
-//     static GQuark q = 0;
-//     if (!q)
-//         q = g_quark_from_static_string ("moo_edit_window_edit_scrolled_window");
-//     return q;
-// }
-
-
-// static void     add_tab                 (MooEditWindow      *window,
-//                                          MooEdit            *edit)
-// {
-//     GtkWidget *label;
-//     GtkWidget *scrolledwindow;
-//     int n;
-//
-//     g_return_if_fail (MOO_IS_WINDOW (window) && MOO_EDIT (edit));
-//
-//     label = create_tab_label (edit);
-//     gtk_widget_show (label);
-//     scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-//     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow),
-//                                     GTK_POLICY_AUTOMATIC,
-//                                     GTK_POLICY_AUTOMATIC);
-//     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
-//                                          GTK_SHADOW_ETCHED_IN);
-//     gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (edit));
-//     gtk_widget_show_all (scrolledwindow);
-//     g_object_set_qdata (G_OBJECT (edit), SCROLLED_WINDOW_QUARK, scrolledwindow);
-//
-//     n = moo_notebook_insert_page (window->priv->notebook, scrolledwindow, label, -1);
-//
-//     moo_notebook_set_current_page (window->priv->notebook, n);
-//     g_signal_connect (edit, "doc_status_changed",
-//                       G_CALLBACK (edit_changed), window);
-//     g_signal_connect_swapped (edit, "can-undo",
-//                               G_CALLBACK (edit_can_undo_redo), window);
-//     g_signal_connect_swapped (edit, "can-redo",
-//                               G_CALLBACK (edit_can_undo_redo), window);
-//     g_signal_connect_swapped (edit, "lang-changed",
-//                               G_CALLBACK (active_tab_lang_changed), window);
-//     g_signal_connect_swapped (edit, "cursor-moved",
-//                               G_CALLBACK (cursor_moved), window);
-//
-//     edit_changed (edit, window);
-// }
-
-
-// static void     notebook_switch_page        (G_GNUC_UNUSED MooNotebook *notebook,
-//                                              G_GNUC_UNUSED gpointer whatever,
-//                                              guint               page_num,
-//                                              MooEditWindow      *window)
-// {
-//     edit_changed (get_nth_tab (window, page_num), window);
-// }
-
-
-// static MooEdit *get_nth_tab             (MooEditWindow      *window,
-//                                          int                 n)
-// {
-//     GtkWidget *swin = moo_notebook_get_nth_page (window->priv->notebook, n);
-//     g_return_val_if_fail (swin != NULL, NULL);
-//     return MOO_EDIT (gtk_bin_get_child (GTK_BIN (swin)));
-// }
-
-
-// void             moo_edit_window_set_active_doc (MooEditWindow  *window,
-//                                                  MooEdit        *edit)
-// {
-//     int index;
-//     g_return_if_fail (MOO_IS_EDIT_WINDOW (window) && MOO_IS_EDIT (edit));
-//     index = moo_notebook_page_num (window->priv->notebook,
-//                                    g_object_get_qdata (G_OBJECT (edit),
-//                                            SCROLLED_WINDOW_QUARK));
-//     g_return_if_fail (index >= 0);
-//     moo_notebook_set_current_page (window->priv->notebook, index);
-// }
-
-
-// static void     update_window_title         (MooEditWindow      *window)
-// {
-//     MooEdit *edit;
-//     const char *name;
-//     MooEditStatus status;
-//     gboolean modified, deleted, modified_on_disk, clean;
-//     GString *title;
-//
-//     edit = ACTIVE_DOC (window);
-//     g_return_if_fail (edit != NULL);
-//     if (window->priv->use_fullname)
-//         name = moo_edit_get_display_filename (edit);
-//     else
-//         name = moo_edit_get_display_basename (edit);
-//     if (!name) name = "<\?\?\?\?\?>";
-//
-//     status = moo_edit_get_status (edit);
-//     clean = status & MOO_EDIT_CLEAN;
-//     modified = status & MOO_EDIT_MODIFIED;
-//     deleted = status & MOO_EDIT_DELETED;
-//     modified_on_disk = status & MOO_EDIT_MODIFIED_ON_DISK;
-//
-//     title = g_string_new ("");
-//     if (window->priv->app_name)
-//         g_string_append_printf (title, "%s - ", window->priv->app_name);
-//     g_string_append_printf (title, "%s%s%s",
-//                             (modified && !clean) ? "* " : "",
-//                             name,
-//                             deleted ? " [deleted]" :
-//                                 (modified_on_disk ? " [modified on disk]" : ""));
-//     gtk_window_set_title (GTK_WINDOW (window), title->str);
-//     g_string_free (title, TRUE);
-// }
-
-
-// static void     edit_changed                (G_GNUC_UNUSED MooEdit            *edit,
-//                                              MooEditWindow      *window)
-// {
-//     update_window_title (window);
-//     edit_can_undo_redo (window);
-//     active_tab_lang_changed (window);
-//     update_statusbar (window);
-// }
-
-
-// static void     edit_can_undo_redo      (MooEditWindow      *window)
-// {
-//     MooEdit *edit;
-//     gboolean can_redo, can_undo;
-//     MooActionGroup *actions;
-//     MooAction *undo, *redo;
-//
-//     g_return_if_fail (window != NULL);
-//     edit = ACTIVE_DOC (window);
-//     g_return_if_fail (edit != NULL);
-//
-//     can_redo = moo_edit_can_redo (edit);
-//     can_undo = moo_edit_can_undo (edit);
-//
-//     actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-//     undo = moo_action_group_get_action (actions, "Undo");
-//     redo = moo_action_group_get_action (actions, "Redo");
-//     g_return_if_fail (undo != NULL && redo != NULL);
-//
-//     moo_action_set_sensitive (undo, can_undo);
-//     moo_action_set_sensitive (redo, can_redo);
-// }
-
-
-// static GtkWidget *create_tab_label          (MooEdit            *edit)
-// {
-//     GtkWidget *eventbox, *hbox, *filename, *icon;
-//
-//     eventbox = gtk_event_box_new ();
-//     hbox = gtk_hbox_new (FALSE, 0);
-//     gtk_widget_show (hbox);
-//     icon = gtk_image_new ();
-//     filename = gtk_label_new (moo_edit_get_display_basename (edit));
-//     gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
-//     gtk_box_pack_start (GTK_BOX (hbox), filename, TRUE, TRUE, 3);
-//
-//     g_object_set_data (G_OBJECT (eventbox), "filename", filename);
-//     g_object_set_data (G_OBJECT (eventbox), "icon", icon);
-//     gtk_widget_show (filename);
-//
-//     g_signal_connect_swapped (edit, "doc-status-changed",
-//                               G_CALLBACK (update_tab_label), eventbox);
-//
-//     return hbox;
-// }
-
-
-// static void     update_tab_label            (GtkWidget          *label,
-//                                              MooEdit            *edit)
-// {
-//     const char *name;
-//     MooEditStatus status;
-//     gboolean clean, modified, deleted, modified_on_disk;
-//     GString *title;
-//     GtkWidget *filename, *icon;
-//
-//     filename = g_object_get_data (G_OBJECT (label), "filename");
-//     icon = g_object_get_data (G_OBJECT (label), "icon");
-//
-//     name = moo_edit_get_display_basename (edit);
-//     if (!name) name = "<\?\?\?\?\?>";
-//
-//     status = moo_edit_get_status (edit);
-//     clean = status & MOO_EDIT_CLEAN;
-//     modified = status & MOO_EDIT_MODIFIED;
-//     deleted = status & MOO_EDIT_DELETED;
-//     modified_on_disk = status & MOO_EDIT_MODIFIED_ON_DISK;
-//
-//     title = g_string_new ("");
-//     g_string_append_printf (title, "%s%s",
-//                             (modified && !clean) ? "* " : "",
-//                             name);
-//     gtk_label_set_text (GTK_LABEL (filename), title->str);
-//     g_string_free (title, TRUE);
-//
-//     if (deleted || modified_on_disk)
-//         gtk_widget_show (icon);
-//     else
-//         gtk_widget_hide (icon);
-//
-//     if (deleted)
-//         gtk_image_set_from_stock (GTK_IMAGE (icon),
-//                                   MOO_STOCK_DOC_DELETED,
-//                                   GTK_ICON_SIZE_MENU);
-//     else if (modified_on_disk)
-//         gtk_image_set_from_stock (GTK_IMAGE (icon),
-//                                   MOO_STOCK_DOC_MODIFIED_ON_DISK,
-//                                   GTK_ICON_SIZE_MENU);
-// }
-
-
 /* XXX */
 static void     update_window_title     (MooEditWindow      *window)
 {
     MooEdit *edit;
     const char *name;
     MooEditStatus status;
-    gboolean modified, deleted, modified_on_disk, clean;
     GString *title;
 
     edit = ACTIVE_DOC (window);
@@ -794,21 +582,21 @@ static void     update_window_title     (MooEditWindow      *window)
         name = "<\?\?\?\?\?>";
 
     status = moo_edit_get_status (edit);
-    clean = status & MOO_EDIT_CLEAN;
-    modified = status & MOO_EDIT_MODIFIED;
-    deleted = status & MOO_EDIT_DELETED;
-    modified_on_disk = status & MOO_EDIT_MODIFIED_ON_DISK;
 
     title = g_string_new ("");
 
     if (window->priv->app_name)
         g_string_append_printf (title, "%s - ", window->priv->app_name);
 
-    g_string_append_printf (title, "%s%s%s",
-                            (modified && !clean) ? "* " : "",
-                            name,
-                            deleted ? " [deleted]" :
-                                (modified_on_disk ? " [modified on disk]" : ""));
+    g_string_append_printf (title, "%s", name);
+
+    if (status & MOO_EDIT_MODIFIED_ON_DISK)
+        g_string_append (title, " [modified on disk]");
+    else if (status & MOO_EDIT_DELETED)
+        g_string_append (title, " [deleted]");
+
+    if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
+        g_string_append (title, " [modified]");
 
     gtk_window_set_title (GTK_WINDOW (window), title->str);
     g_string_free (title, TRUE);
@@ -938,20 +726,83 @@ static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
 }
 
 
+static void     update_close_and_save   (MooEditWindow      *window,
+                                         MooEdit            *doc)
+{
+    GtkWidget *close_button;
+    MooActionGroup *actions;
+    MooAction *close, *close_all, *save, *save_as, *paste;
+    MooAction *find, *replace, *find_next, *find_prev, *goto_line;
+
+    close_button = moo_notebook_get_action_widget (window->priv->notebook, TRUE);
+    gtk_widget_set_sensitive (close_button, doc != NULL);
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+
+    close = moo_action_group_get_action (actions, "Close");
+    close_all = moo_action_group_get_action (actions, "CloseAll");
+    save = moo_action_group_get_action (actions, "Save");
+    save_as = moo_action_group_get_action (actions, "SaveAs");
+    paste = moo_action_group_get_action (actions, "Paste");
+    find = moo_action_group_get_action (actions, "Find");
+    replace = moo_action_group_get_action (actions, "Replace");
+    find_next = moo_action_group_get_action (actions, "FindNext");
+    find_prev = moo_action_group_get_action (actions, "FindPrevious");
+    goto_line = moo_action_group_get_action (actions, "GoToLine");
+
+    moo_action_set_sensitive (close, doc != NULL);
+    moo_action_set_sensitive (close_all, doc != NULL);
+    moo_action_set_sensitive (save, doc != NULL);
+    moo_action_set_sensitive (save_as, doc != NULL);
+    moo_action_set_sensitive (paste, doc != NULL);
+    moo_action_set_sensitive (find, doc != NULL);
+    moo_action_set_sensitive (replace, doc != NULL);
+    moo_action_set_sensitive (find_next, doc != NULL);
+    moo_action_set_sensitive (find_prev, doc != NULL);
+    moo_action_set_sensitive (goto_line, doc != NULL);
+}
+
+
+static void     update_next_prev_tab    (MooEditWindow      *window)
+{
+    MooActionGroup *actions;
+    MooAction *next, *prev;
+    gboolean has_next = FALSE, has_prev = FALSE;
+    int num, current;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+
+    next = moo_action_group_get_action (actions, "NextTab");
+    prev = moo_action_group_get_action (actions, "PreviousTab");
+
+    num = moo_edit_window_num_docs (window);
+
+    if (num)
+    {
+        current = ACTIVE_PAGE (window);
+        has_prev = (current > 0);
+        has_next = (current < num - 1);
+    }
+
+    moo_action_set_sensitive (next, has_next);
+    moo_action_set_sensitive (prev, has_prev);
+}
+
+
 static void     edit_changed            (MooEditWindow      *window,
                                          MooEdit            *doc)
 {
     if (doc == ACTIVE_DOC (window))
     {
-        GtkWidget *close_button;
-
+        update_close_and_save (window, doc);
+        update_next_prev_tab (window);
         update_window_title (window);
         edit_can_undo_redo (window);
         active_tab_lang_changed (window);
         update_statusbar (window);
-
-        close_button = moo_notebook_get_action_widget (window->priv->notebook, TRUE);
-        gtk_widget_set_sensitive (close_button, doc != NULL);
+        edit_has_selection (window);
+        edit_has_text (window);
+        edit_filename_changed (window);
     }
 
     if (doc)
@@ -967,6 +818,7 @@ static void     edit_lang_changed       (MooEditWindow      *window,
 }
 
 
+/* XXX do not recheck for non-active doc */
 static void     edit_can_undo_redo      (MooEditWindow      *window)
 {
     MooEdit *edit;
@@ -994,6 +846,79 @@ static void     edit_can_undo_redo      (MooEditWindow      *window)
 
     moo_action_set_sensitive (undo, can_undo);
     moo_action_set_sensitive (redo, can_redo);
+}
+
+
+/* XXX do not recheck for non-active doc */
+static void     edit_filename_changed   (MooEditWindow      *window)
+{
+    MooEdit *edit;
+    gboolean has_name;
+    MooActionGroup *actions;
+    MooAction *reload;
+
+    edit = ACTIVE_DOC (window);
+
+    if (edit)
+        has_name = (moo_edit_get_filename (edit) != NULL);
+    else
+        has_name = FALSE;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+    reload = moo_action_group_get_action (actions, "Reload");
+    g_return_if_fail (reload != NULL);
+
+    moo_action_set_sensitive (reload, has_name);
+}
+
+
+/* XXX do not recheck for non-active doc */
+static void     edit_has_selection      (MooEditWindow      *window)
+{
+    MooEdit *edit;
+    gboolean has_selection;
+    MooActionGroup *actions;
+    MooAction *cut, *copy, *delete;
+
+    edit = ACTIVE_DOC (window);
+
+    if (edit)
+        has_selection = moo_edit_has_selection (edit);
+    else
+        has_selection = FALSE;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+    cut = moo_action_group_get_action (actions, "Cut");
+    copy = moo_action_group_get_action (actions, "Copy");
+    delete = moo_action_group_get_action (actions, "Delete");
+    g_return_if_fail (cut != NULL && copy != NULL && delete != NULL);
+
+    moo_action_set_sensitive (cut, has_selection);
+    moo_action_set_sensitive (copy, has_selection);
+    moo_action_set_sensitive (delete, has_selection);
+}
+
+
+/* XXX do not recheck for non-active doc */
+static void     edit_has_text           (MooEditWindow      *window)
+{
+    MooEdit *edit;
+    gboolean has_text;
+    MooActionGroup *actions;
+    MooAction *select_all;
+
+    edit = ACTIVE_DOC (window);
+
+    if (edit)
+        has_text = moo_edit_has_text (edit);
+    else
+        has_text = FALSE;
+
+    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
+    select_all = moo_action_group_get_action (actions, "SelectAll");
+    g_return_if_fail (select_all != NULL);
+
+    moo_action_set_sensitive (select_all, has_text);
 }
 
 
@@ -1107,10 +1032,16 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
 
     g_signal_connect_swapped (edit, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
+    g_signal_connect_swapped (edit, "filename_changed",
+                              G_CALLBACK (edit_filename_changed), window);
     g_signal_connect_swapped (edit, "can-undo",
                               G_CALLBACK (edit_can_undo_redo), window);
     g_signal_connect_swapped (edit, "can-redo",
                               G_CALLBACK (edit_can_undo_redo), window);
+    g_signal_connect_swapped (edit, "has-selection",
+                              G_CALLBACK (edit_has_selection), window);
+    g_signal_connect_swapped (edit, "has-text",
+                              G_CALLBACK (edit_has_text), window);
     g_signal_connect_swapped (edit, "lang-changed",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (edit, "cursor-moved",
@@ -1154,19 +1085,31 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 
 static GtkWidget *create_tab_label      (MooEdit            *edit)
 {
-    GtkWidget *hbox, *icon, *label;
+    GtkWidget *hbox, *modified_icon, *modified_on_disk_icon, *label;
+    GtkSizeGroup *group;
+
+    group = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
     hbox = gtk_hbox_new (FALSE, 3);
     gtk_widget_show (hbox);
 
-    icon = gtk_image_new ();
-    gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
+    modified_on_disk_icon = gtk_image_new ();
+    gtk_box_pack_start (GTK_BOX (hbox), modified_on_disk_icon, FALSE, FALSE, 0);
+
+    modified_icon = gtk_image_new_from_stock (MOO_STOCK_DOC_MODIFIED,
+                                              GTK_ICON_SIZE_MENU);
+    gtk_box_pack_start (GTK_BOX (hbox), modified_icon, FALSE, FALSE, 0);
 
     label = gtk_label_new (moo_edit_get_display_basename (edit));
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-    g_object_set_data (G_OBJECT (hbox), "moo-edit-icon", icon);
+    gtk_size_group_add_widget (group, modified_on_disk_icon);
+    gtk_size_group_add_widget (group, modified_icon);
+    gtk_size_group_add_widget (group, label);
+
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-modified-on-disk-icon", modified_on_disk_icon);
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-modified-icon", modified_icon);
     g_object_set_data (G_OBJECT (hbox), "moo-edit-label", label);
 
     return hbox;
@@ -1176,7 +1119,7 @@ static GtkWidget *create_tab_label      (MooEdit            *edit)
 static void     update_tab_label        (MooEditWindow      *window,
                                          MooEdit            *doc)
 {
-    GtkWidget *hbox, *icon, *label;
+    GtkWidget *hbox, *modified_icon, *modified_on_disk_icon, *label;
     MooEditStatus status;
     int page = get_page_num (window, doc);
 
@@ -1184,38 +1127,38 @@ static void     update_tab_label        (MooEditWindow      *window,
 
     hbox = moo_notebook_get_tab_label (window->priv->notebook,
                                        GTK_WIDGET(doc)->parent);
-    icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon");
+    modified_icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-modified-icon");
+    modified_on_disk_icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-modified-on-disk-icon");
     label = g_object_get_data (G_OBJECT (hbox), "moo-edit-label");
-    g_return_if_fail (GTK_IS_WIDGET (hbox) && GTK_IS_WIDGET (icon) &&
-            GTK_IS_WIDGET (label));
+
+    g_return_if_fail (GTK_IS_WIDGET (hbox) && GTK_IS_WIDGET (modified_icon) &&
+            GTK_IS_WIDGET (modified_on_disk_icon));
 
     status = moo_edit_get_status (doc);
 
     if (status & MOO_EDIT_MODIFIED_ON_DISK)
     {
-        gtk_image_set_from_stock (GTK_IMAGE (icon),
+        gtk_image_set_from_stock (GTK_IMAGE (modified_on_disk_icon),
                                   MOO_STOCK_DOC_MODIFIED_ON_DISK,
                                   GTK_ICON_SIZE_MENU);
-        gtk_widget_show (icon);
+        gtk_widget_show (modified_on_disk_icon);
     }
     else if (status & MOO_EDIT_DELETED)
     {
-        gtk_image_set_from_stock (GTK_IMAGE (icon),
+        gtk_image_set_from_stock (GTK_IMAGE (modified_on_disk_icon),
                                   MOO_STOCK_DOC_DELETED,
                                   GTK_ICON_SIZE_MENU);
-        gtk_widget_show (icon);
-    }
-    else if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
-    {
-        gtk_image_set_from_stock (GTK_IMAGE (icon),
-                                  MOO_STOCK_DOC_MODIFIED,
-                                  GTK_ICON_SIZE_MENU);
-        gtk_widget_show (icon);
+        gtk_widget_show (modified_on_disk_icon);
     }
     else
     {
-        gtk_widget_hide (icon);
+        gtk_widget_hide (modified_on_disk_icon);
     }
+
+    if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
+        gtk_widget_show (modified_icon);
+    else
+        gtk_widget_hide (modified_icon);
 
     gtk_label_set_text (GTK_LABEL (label), moo_edit_get_display_basename (doc));
 }
@@ -1301,16 +1244,6 @@ static void     setup_paned             (G_GNUC_UNUSED MooEditWindow *window)
 }
 
 
-// MooEdit     *moo_edit_window_get_active_doc    (MooEditWindow  *window)
-// {
-//     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-//     g_return_val_if_fail (moo_notebook_get_n_pages (window->priv->notebook) > 0,
-//                           NULL);
-//     return get_nth_tab (window,
-//                         moo_notebook_get_current_page (window->priv->notebook));
-// }
-//
-//
 /****************************************************************************/
 /* Languages menu
  */

@@ -21,6 +21,8 @@
 
 static MooEditLoader *default_loader = NULL;
 static MooEditSaver *default_saver = NULL;
+static GSList *UNTITLED = NULL;
+static GHashTable *UNTITLED_NO = NULL;
 
 
 static gboolean moo_edit_load_default   (MooEditLoader  *loader,
@@ -122,15 +124,25 @@ void             moo_edit_saver_unref           (MooEditSaver   *saver)
 
 gboolean         moo_edit_load              (MooEditLoader  *loader,
                                              MooEdit        *edit,
-                                             const char     *file,
+                                             const char     *filename,
                                              const char     *encoding,
                                              GError        **error)
 {
+    char *filename_copy, *encoding_copy;
+    gboolean result;
+
     g_return_val_if_fail (loader != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (file != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
 
-    return loader->load (loader, edit, file, encoding, error);
+    filename_copy = g_strdup (filename);
+    encoding_copy = g_strdup (encoding);
+
+    result = loader->load (loader, edit, filename_copy, encoding_copy, error);
+
+    g_free (filename_copy);
+    g_free (encoding_copy);
+    return result;
 }
 
 
@@ -147,15 +159,25 @@ gboolean         moo_edit_reload            (MooEditLoader  *loader,
 
 gboolean         moo_edit_save              (MooEditSaver   *saver,
                                              MooEdit        *edit,
-                                             const char     *file,
+                                             const char     *filename,
                                              const char     *encoding,
                                              GError        **error)
 {
+    char *filename_copy, *encoding_copy;
+    gboolean result;
+
     g_return_val_if_fail (saver != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (file != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
 
-    return saver->save (saver, edit, file, encoding, error);
+    filename_copy = g_strdup (filename);
+    encoding_copy = g_strdup (encoding);
+
+    result = saver->save (saver, edit, filename_copy, encoding_copy, error);
+
+    g_free (filename_copy);
+    g_free (encoding_copy);
+    return result;
 }
 
 
@@ -322,8 +344,8 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
     gtk_text_buffer_delete (edit->priv->text_buffer,
                             &start, &end);
 
-    if (!moo_edit_load_default (loader, edit, edit->priv->filename,
-                                edit->priv->encoding, error))
+    if (!moo_edit_load (loader, edit, edit->priv->filename,
+                        edit->priv->encoding, error))
     {
         gtk_text_buffer_end_user_action (edit->priv->text_buffer);
         unblock_buffer_signals (edit);
@@ -644,6 +666,48 @@ static void     add_status                  (MooEdit        *edit,
 }
 
 
+static void remove_untitled             (gpointer    destroyed,
+                                         MooEdit    *edit)
+{
+    gpointer n = g_hash_table_lookup (UNTITLED_NO, edit);
+
+    if (n)
+    {
+        UNTITLED = g_slist_remove (UNTITLED, n);
+        g_hash_table_remove (UNTITLED_NO, edit);
+        if (!destroyed)
+            g_object_weak_unref (G_OBJECT (edit),
+                                 (GWeakNotify) remove_untitled,
+                                 GINT_TO_POINTER (TRUE));
+    }
+}
+
+
+static int  add_untitled                (MooEdit    *edit)
+{
+    int n;
+
+    if (!(n = GPOINTER_TO_INT (g_hash_table_lookup (UNTITLED_NO, edit))))
+    {
+        for (n = 1; ; ++n)
+        {
+            if (!g_slist_find (UNTITLED, GINT_TO_POINTER (n)))
+            {
+                UNTITLED = g_slist_prepend (UNTITLED, GINT_TO_POINTER (n));
+                break;
+            }
+        }
+
+        g_hash_table_insert (UNTITLED_NO, edit, GINT_TO_POINTER (n));
+        g_object_weak_ref (G_OBJECT (edit),
+                           (GWeakNotify) remove_untitled,
+                           GINT_TO_POINTER (TRUE));
+    }
+
+    return n;
+}
+
+
 void        _moo_edit_set_filename      (MooEdit    *edit,
                                          const char *file,
                                          const char *encoding)
@@ -655,18 +719,30 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
 
+    if (!UNTITLED_NO)
+        UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
+
     if (!file)
     {
+        int n = add_untitled (edit);
+
         edit->priv->filename = NULL;
         edit->priv->basename = NULL;
-        /* TODO TODO */
-        edit->priv->display_filename = g_strdup ("Untitled");
-        edit->priv->display_basename = g_strdup ("Untitled");
+
+        if (n == 1)
+            edit->priv->display_filename = g_strdup ("Untitled");
+        else
+            edit->priv->display_filename = g_strdup_printf ("Untitled %d", n);
+
+        edit->priv->display_basename = g_strdup (edit->priv->display_filename);
     }
     else
     {
+        remove_untitled (NULL, edit);
+
         edit->priv->filename = g_strdup (file);
         edit->priv->basename = g_path_get_basename (file);
+
         edit->priv->display_filename =
                 _moo_edit_filename_to_utf8 (file);
         edit->priv->display_basename =

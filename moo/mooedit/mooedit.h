@@ -97,6 +97,11 @@ struct _MooEditClass
     void (* can_undo)               (MooEdit    *edit,
                                      gboolean    arg);
 
+    void (* has_selection)          (MooEdit    *edit,
+                                     gboolean    arg);
+    void (* has_text)               (MooEdit    *edit,
+                                     gboolean    arg);
+
     /* these are made signals for convenience */
     void (* find)                   (MooEdit    *edit);
     void (* replace)                (MooEdit    *edit);
@@ -150,6 +155,8 @@ void        moo_edit_set_read_only          (MooEdit            *edit,
 
 char       *moo_edit_get_selection          (MooEdit            *edit);
 char       *moo_edit_get_text               (MooEdit            *edit);
+gboolean    moo_edit_has_selection          (MooEdit            *edit);
+gboolean    moo_edit_has_text               (MooEdit            *edit);
 
 void        moo_edit_delete_selection       (MooEdit            *edit);
 
