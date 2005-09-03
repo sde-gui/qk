@@ -24,13 +24,18 @@ G_BEGIN_DECLS
 #define MOO_STOCK_TERMINAL              "moo-terminal"
 #define MOO_STOCK_TERMINAL              "moo-terminal"
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
-#define MOO_STOCK_DOC_DELETED           GTK_STOCK_DIALOG_ERROR
-#define MOO_STOCK_DOC_MODIFIED_ON_DISK  GTK_STOCK_DIALOG_WARNING
 #define MOO_STOCK_CLOSE                 "moo-close"
 #define MOO_STOCK_STICKY                "moo-sticky"
 #define MOO_STOCK_DETACH                "moo-detach"
 #define MOO_STOCK_ATTACH                "moo-attach"
 #define MOO_STOCK_KEEP_ON_TOP           "moo-keep-on-top"
+
+#define MOO_STOCK_DOC_DELETED           GTK_STOCK_DIALOG_ERROR
+#define MOO_STOCK_DOC_MODIFIED_ON_DISK  GTK_STOCK_DIALOG_WARNING
+#define MOO_STOCK_DOC_MODIFIED          GTK_STOCK_SAVE
+
+#define MOO_STOCK_SAVE_NONE             "moo-save-none"
+#define MOO_STOCK_SAVE_SELECTED         "moo-save-selected"
 
 #define MOO_ICON_SIZE_REAL_SMALL        (moo_get_icon_size_real_small ())
 

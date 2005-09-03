@@ -26,6 +26,13 @@
 
 #define REAL_SMALL 6
 
+
+static GtkStockItem stock_items[] = {
+    {(char*) MOO_STOCK_SAVE_NONE, (char*) "Save _None", 0, 0, NULL},
+    {(char*) MOO_STOCK_SAVE_SELECTED, (char*) "Save _Selected", 0, 0, NULL}
+};
+
+
 #if GTK_CHECK_VERSION(2,4,0)
 
 static void register_stock_icon     (GtkIconFactory *factory,
@@ -80,6 +87,71 @@ static void add_icon2   (GtkIconFactory *factory,
 #endif /* !GTK_CHECK_VERSION(2,6,0) */
 
 
+#else /* !GTK_CHECK_VERSION(2,4,0) */
+
+/* TODO: take code from gtk */
+
+
+static void add_icon    (GtkIconFactory *factory,
+                         const gchar    *stock_id,
+                         G_GNUC_UNUSED gint size,
+                         const guchar   *data)
+{
+    GtkIconSet *set = NULL;
+    GdkPixbuf *pixbuf = NULL;
+
+    pixbuf = gdk_pixbuf_new_from_inline (-1, data, FALSE, NULL);
+
+    if (pixbuf)
+    {
+        set = gtk_icon_set_new_from_pixbuf (pixbuf);
+        gdk_pixbuf_unref (pixbuf);
+    }
+    else
+    {
+        set = gtk_icon_set_new ();
+    }
+
+    gtk_icon_factory_add (factory, stock_id, set);
+    gtk_icon_set_unref (set);
+}
+
+static void add_icon2   (GtkIconFactory *factory,
+                         const gchar    *stock_id,
+                         gint            size1,
+                         const guchar   *data1,
+                         G_GNUC_UNUSED gint size2,
+                         G_GNUC_UNUSED const guchar *data2)
+{
+    add_icon (factory, stock_id, size1, data1);
+}
+
+
+#endif /* !GTK_CHECK_VERSION(2,4,0) */
+
+
+GtkIconSize moo_get_icon_size_real_small    (void)
+{
+    static GtkIconSize size = 0;
+
+    if (!size)
+        size = gtk_icon_size_register ("moo-real-small", 4, 4);
+
+    return size;
+}
+
+
+static void register_stock_icon_alias (GtkIconFactory *factory,
+                                       const gchar    *stock_id,
+                                       const gchar    *new_stock_id)
+{
+    /* must use gtk_icon_factory_lookup_default() to initialize gtk icons */
+    GtkIconSet *set = gtk_icon_factory_lookup_default (stock_id);
+    g_return_if_fail (set != NULL);
+    gtk_icon_factory_add (factory, new_stock_id, set);
+}
+
+
 void moo_create_stock_items (void)
 {
     static gboolean created = FALSE;
@@ -118,69 +190,9 @@ void moo_create_stock_items (void)
                16, STOCK_EDIT_16);
 #endif
 
-    g_object_unref (G_OBJECT (factory));
-}
-
-
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-
-/* TODO: take code from gtk */
-
-void moo_create_stock_items (void)
-{
-    static gboolean created = FALSE;
-    GtkIconSet *set = NULL;
-    GdkPixbuf *pixbuf = NULL;
-    GtkIconFactory *factory;
-
-    if (created) return;
-    else created = TRUE;
-
-    factory = gtk_icon_factory_new ();
-    gtk_icon_factory_add_default (factory);
-
-    pixbuf = gdk_pixbuf_new_from_inline (-1, MOO_GNOME_TERMINAL_ICON, FALSE, NULL);
-    if (pixbuf) {
-        set = gtk_icon_set_new_from_pixbuf (pixbuf);
-        gdk_pixbuf_unref (pixbuf);
-    }
-    else
-        set = gtk_icon_set_new ();
-    gtk_icon_factory_add (factory, MOO_STOCK_TERMINAL, set);
-    gtk_icon_set_unref (set);
-
-    pixbuf = gdk_pixbuf_new_from_inline (-1, STOCK_ABOUT_24, FALSE, NULL);
-    if (pixbuf) {
-        set = gtk_icon_set_new_from_pixbuf (pixbuf);
-        gdk_pixbuf_unref (pixbuf);
-    }
-    else
-        set = gtk_icon_set_new ();
-    gtk_icon_factory_add (factory, GTK_STOCK_ABOUT, set);
-    gtk_icon_set_unref (set);
-
-    pixbuf = gdk_pixbuf_new_from_inline (-1, STOCK_EDIT_24, FALSE, NULL);
-    if (pixbuf) {
-        set = gtk_icon_set_new_from_pixbuf (pixbuf);
-        gdk_pixbuf_unref (pixbuf);
-    }
-    else
-        set = gtk_icon_set_new ();
-    gtk_icon_factory_add (factory, GTK_STOCK_EDIT, set);
-    gtk_icon_set_unref (set);
+    gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
+    register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE);
+    register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED);
 
     g_object_unref (G_OBJECT (factory));
-}
-
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
-
-GtkIconSize moo_get_icon_size_real_small    (void)
-{
-    static GtkIconSize size = 0;
-
-    if (!size)
-        size = gtk_icon_size_register ("moo-real-small", 4, 4);
-
-    return size;
 }

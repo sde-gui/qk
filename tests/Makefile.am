@@ -8,7 +8,6 @@ noinst_PROGRAMS =
 
 EXTRA_DIST =        \
     pyapp.py.in     \
-    meditui.xml     \
     editor-ui.xml
 
 BUILT_SOURCES = editor-ui.h
@@ -70,7 +69,7 @@ if MINGW_BUILD
 medit_LDFLAGS += -mwindows
 endif MINGW_BUILD
 
-medit_SOURCES = medit.c
+medit_SOURCES = medit.c editor-ui.h
 
 
 ##############################################################################

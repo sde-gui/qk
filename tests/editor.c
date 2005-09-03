@@ -52,8 +52,8 @@ int main (int argc, char *argv[])
     win = moo_editor_new_window (editor);
 
     if (argc > 1)
-        moo_editor_open (editor, MOO_EDIT_WINDOW (win),
-                         GTK_WIDGET (win), argv[1], NULL);
+        moo_editor_open_file (editor, MOO_EDIT_WINDOW (win),
+                              GTK_WIDGET (win), argv[1], NULL);
 
     return moo_app_run (app);
 }
