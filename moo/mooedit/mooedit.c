@@ -671,6 +671,7 @@ MooEditStatus moo_edit_get_status    (MooEdit            *edit)
 MooEditLangMgr *_moo_edit_get_lang_mgr      (MooEdit    *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+
     if (edit->priv->editor)
         return moo_editor_get_lang_mgr (edit->priv->editor);
     else

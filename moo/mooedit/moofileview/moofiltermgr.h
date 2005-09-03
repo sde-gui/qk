@@ -49,13 +49,27 @@ GType            moo_filter_mgr_get_type            (void) G_GNUC_CONST;
 MooFilterMgr    *moo_filter_mgr_new                 (void);
 
 void             moo_filter_mgr_init_filter_combo   (MooFilterMgr   *mgr,
-                                                     GtkComboBox    *combo);
+                                                     GtkComboBox    *combo,
+                                                     const char     *user_id);
+void             moo_filter_mgr_attach              (MooFilterMgr   *mgr,
+                                                     GtkFileChooser *filechooser,
+                                                     const char     *user_id);
+
 GtkFileFilter   *moo_filter_mgr_get_filter          (MooFilterMgr   *mgr,
-                                                     GtkTreeIter    *iter);
+                                                     GtkTreeIter    *iter,
+                                                     const char     *user_id);
+
 GtkFileFilter   *moo_filter_mgr_get_null_filter     (MooFilterMgr   *mgr);
-GtkFileFilter   *moo_filter_mgr_get_last_filter     (MooFilterMgr   *mgr);
+GtkFileFilter   *moo_filter_mgr_get_last_filter     (MooFilterMgr   *mgr,
+                                                     const char     *user_id);
 GtkFileFilter   *moo_filter_mgr_new_user_filter     (MooFilterMgr   *mgr,
-                                                     const char     *text);
+                                                     const char     *glob,
+                                                     const char     *user_id);
+GtkFileFilter   *moo_filter_mgr_new_builtin_filter  (MooFilterMgr   *mgr,
+                                                     const char     *description,
+                                                     const char     *glob,
+                                                     const char     *user_id,
+                                                     int             position);
 
 
 G_END_DECLS

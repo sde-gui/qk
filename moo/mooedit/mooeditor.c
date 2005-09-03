@@ -136,6 +136,7 @@ static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
 
+    editor->priv->lang_mgr = moo_edit_lang_mgr_new ();
     editor->priv->filter_mgr = moo_filter_mgr_new ();
     editor->priv->recent_mgr = moo_recent_mgr_new ();
     g_signal_connect_swapped (editor->priv->recent_mgr, "open-recent",
@@ -506,13 +507,32 @@ MooEditWindow   *moo_editor_new_window      (MooEditor      *editor)
     window = _moo_edit_window_new (editor);
     moo_editor_add_window (editor, window);
 
-    doc = MOO_EDIT (moo_edit_new ());
+    doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
     _moo_edit_window_insert_doc (window, doc, -1);
     moo_editor_add_doc (editor, window, doc,
                         moo_edit_loader_get_default (),
                         moo_edit_saver_get_default ());
 
     return window;
+}
+
+
+MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
+                                             MooEditWindow  *window)
+{
+    MooEdit *doc;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (window_list_find (editor, window) != NULL, NULL);
+
+    doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+    _moo_edit_window_insert_doc (window, doc, -1);
+    moo_editor_add_doc (editor, window, doc,
+                        moo_edit_loader_get_default (),
+                        moo_edit_saver_get_default ());
+
+    return doc;
 }
 
 
@@ -554,7 +574,8 @@ void             moo_editor_open            (MooEditor      *editor,
         MooEditFileInfo *info = l->data;
         GError *error = NULL;
 
-        doc = MOO_EDIT (moo_edit_new ());
+        /* XXX check current doc */
+        doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
         gtk_object_sink (g_object_ref (doc));
 
         /* XXX open_single */
@@ -725,6 +746,9 @@ static void          do_close_window        (MooEditor      *editor,
     /* XXX */
     gtk_widget_destroy (GTK_WIDGET (window));
 
+    if (!editor->priv->windows)
+        g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0);
+
     g_slist_free (list);
 }
 
@@ -766,12 +790,13 @@ gboolean         moo_editor_close_docs      (MooEditor      *editor,
 
     for (l = list; l != NULL; l = l->next)
     {
-        g_return_val_if_fail (MOO_IS_EDIT (l->data), FALSE);
-        g_return_val_if_fail (window_list_find (editor, l->data) != NULL, FALSE);
+        MooEdit *doc = l->data;
+        g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+        g_return_val_if_fail (window_list_find_doc (editor, doc) != NULL, FALSE);
     }
 
     /* do i care? */
-    info = window_list_find (editor, list->data);
+    info = window_list_find_doc (editor, list->data);
     g_return_val_if_fail (info != NULL, FALSE);
 
     if (close_docs_real (editor, list))
@@ -779,7 +804,7 @@ gboolean         moo_editor_close_docs      (MooEditor      *editor,
         if (!moo_edit_window_num_docs (info->window) &&
              !editor->priv->allow_empty_window)
         {
-            MooEdit *doc = moo_edit_new ();
+            MooEdit *doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
             _moo_edit_window_insert_doc (info->window, doc, -1);
             moo_editor_add_doc (editor, info->window, doc,
                                 moo_edit_loader_get_default (),
@@ -810,7 +835,7 @@ static gboolean      close_docs_real        (MooEditor      *editor,
     }
     else if (!modified->next)
     {
-        WindowInfo *info = window_list_find (editor, modified->data);
+        WindowInfo *info = window_list_find_doc (editor, modified->data);
         g_return_val_if_fail (info != NULL, FALSE);
 
         moo_edit_window_set_active_doc (info->window, modified->data);
@@ -959,7 +984,7 @@ void        _moo_editor_reload      (MooEditor      *editor,
     g_return_if_fail (moo_edit_get_filename (doc) != NULL);
 
     if (!MOO_EDIT_IS_CLEAN (doc) && MOO_EDIT_IS_MODIFIED (doc) &&
-         !moo_edit_reload_dialog (doc))
+         !moo_edit_reload_modified_dialog (doc))
             return;
 
     if (!moo_edit_reload (loader, doc, &error))

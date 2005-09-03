@@ -1661,7 +1661,8 @@ static void         init_filter_combo       (MooFileView    *fileview)
 
     block_filter_signals (fileview);
 
-    moo_filter_mgr_init_filter_combo (mgr, fileview->priv->filter_combo);
+    moo_filter_mgr_init_filter_combo (mgr, fileview->priv->filter_combo,
+                                      "MooFileView");
     if (fileview->priv->current_filter)
         g_object_unref (fileview->priv->current_filter);
     fileview->priv->current_filter = NULL;
@@ -1671,8 +1672,10 @@ static void         init_filter_combo       (MooFileView    *fileview)
 
     unblock_filter_signals (fileview);
 
-    filter = moo_filter_mgr_get_last_filter (mgr);
-    if (filter) fileview_set_filter (fileview, filter);
+    filter = moo_filter_mgr_get_last_filter (mgr, "MooFileView");
+
+    if (filter)
+        fileview_set_filter (fileview, filter);
 }
 
 
@@ -1700,7 +1703,7 @@ static void         filter_combo_changed    (MooFileView    *fileview)
     if (!gtk_combo_box_get_active_iter (combo, &iter))
         return;
 
-    filter = moo_filter_mgr_get_filter (mgr, &iter);
+    filter = moo_filter_mgr_get_filter (mgr, &iter, "MooFileView");
     g_return_if_fail (filter != NULL);
 
     fileview_set_filter (fileview, filter);
@@ -1717,7 +1720,7 @@ static void         filter_entry_activate   (MooFileView    *fileview)
     text = gtk_entry_get_text (fileview->priv->filter_entry);
 
     if (text && text[0])
-        filter = moo_filter_mgr_new_user_filter (mgr, text);
+        filter = moo_filter_mgr_new_user_filter (mgr, text, "MooFileView");
     else
         filter = NULL;
 

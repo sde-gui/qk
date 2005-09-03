@@ -241,7 +241,7 @@ static gboolean do_load                 (MooEdit        *edit,
     GIOChannel *file = NULL;
     GIOStatus status;
 
-    g_return_val_if_fail (file != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
 
     *error = NULL;
     file = g_io_channel_new_file (filename, "r", error);
@@ -362,8 +362,6 @@ static gboolean moo_edit_save_default   (G_GNUC_UNUSED MooEditSaver *saver,
                                          const char     *encoding,
                                          GError        **error)
 {
-    MooEditFileInfo *info;
-
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (filename && filename[0], FALSE);
 
@@ -374,11 +372,6 @@ static gboolean moo_edit_save_default   (G_GNUC_UNUSED MooEditSaver *saver,
     _moo_edit_set_filename (edit, filename, encoding);
     moo_edit_set_modified (edit, FALSE);
     start_file_watch (edit);
-
-    info = moo_edit_file_info_new (edit->priv->filename,
-                                   edit->priv->encoding);
-    g_signal_emit_by_name (edit, "file-saved", info);
-    moo_edit_file_info_free (info);
 
     return TRUE;
 }
