@@ -1081,12 +1081,8 @@ static void new_editor (MooApp *app)
 static void open_in_editor (MooTermWindow *terminal)
 {
     MooApp *app = moo_app_get_instance ();
-
     g_return_if_fail (app != NULL);
-
-    moo_editor_open (app->priv->editor,
-                     NULL, GTK_WIDGET (terminal),
-                     NULL, NULL);
+    moo_editor_open (app->priv->editor, NULL, GTK_WIDGET (terminal), NULL);
 }
 
 
