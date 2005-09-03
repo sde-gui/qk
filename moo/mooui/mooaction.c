@@ -898,14 +898,14 @@ void         moo_action_set_sensitive   (MooAction      *action,
                                          gboolean        sensitive)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
-    g_signal_emit (action, signals[SET_SENSITIVE], 0, sensitive);
+    g_signal_emit (action, signals[SET_SENSITIVE], 0, sensitive ? TRUE : FALSE);
 }
 
 void         moo_action_set_visible    (MooAction      *action,
                                         gboolean        visible)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
-    g_signal_emit (action, signals[SET_VISIBLE], 0, visible);
+    g_signal_emit (action, signals[SET_VISIBLE], 0, visible ? TRUE : FALSE);
 }
 
 
@@ -913,7 +913,7 @@ static void         moo_action_set_sensitive_real   (MooAction      *action,
                                                      gboolean        sensitive)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
-    action->sensitive = sensitive;
+    action->sensitive = sensitive ? TRUE : FALSE;
     g_object_notify (G_OBJECT (action), "sensitive");
 }
 
@@ -921,7 +921,7 @@ static void         moo_action_set_visible_real     (MooAction      *action,
                                                      gboolean        visible)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
-    action->visible = visible;
+    action->visible = visible ? TRUE : FALSE;
     g_object_notify (G_OBJECT (action), "visible");
 }
 
