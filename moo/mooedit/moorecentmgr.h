@@ -45,6 +45,7 @@ struct _MooRecentMgrClass
     void (*open_recent) (MooRecentMgr       *mgr,
                          MooEditFileInfo    *file,
                          GtkWidget          *menu_item);
+    void (*item_added)  (MooRecentMgr       *mgr);
 };
 
 
@@ -57,6 +58,7 @@ GtkMenuItem     *moo_recent_mgr_create_menu     (MooRecentMgr   *mgr,
 
 void             moo_recent_mgr_add_recent      (MooRecentMgr   *mgr,
                                                  MooEditFileInfo *info);
+guint            moo_recent_mgr_get_num_items   (MooRecentMgr   *mgr);
 
 
 G_END_DECLS

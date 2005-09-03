@@ -21,7 +21,7 @@
 #define PREFS_RECENT            "recent_files"
 #define PREFS_ENTRY             "entry"
 #define PREFS_SHOW_FULL_NAME    PREFS_RECENT "/show_full_name"
-#define NUM_RECENT_FILES        5
+#define NUM_RECENT_FILES        10
 
 
 typedef struct {
@@ -81,6 +81,7 @@ G_DEFINE_TYPE (MooRecentMgr, moo_recent_mgr, G_TYPE_OBJECT)
 
 enum {
     OPEN_RECENT,
+    ITEM_ADDED,
     NUM_SIGNALS
 };
 
@@ -103,6 +104,15 @@ moo_recent_mgr_class_init (MooRecentMgrClass *klass)
                           MOO_TYPE_EDIT_FILE_INFO | G_SIGNAL_TYPE_STATIC_SCOPE,
                           G_TYPE_POINTER,
                           GTK_TYPE_MENU_ITEM);
+
+    signals[ITEM_ADDED] =
+            g_signal_new ("item-added",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooRecentMgrClass, item_added),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -238,6 +248,8 @@ mgr_add_recent (MooRecentMgr          *mgr,
             menu->items = g_slist_delete_link (menu->items, tail);
         }
     }
+
+    g_signal_emit (mgr, signals[ITEM_ADDED], 0);
 }
 
 
@@ -314,8 +326,11 @@ mgr_load_recent (MooRecentMgr *mgr)
     {
         RecentEntry *entry = load_recent (i);
         if (entry)
+        {
             mgr->priv->files =
                     g_slist_append (mgr->priv->files, entry);
+            g_signal_emit (mgr, signals[ITEM_ADDED], 0);
+        }
     }
 }
 
@@ -546,4 +561,12 @@ menu_destroyed (GtkMenuItem  *parent,
 
     mgr->priv->menus =
             g_slist_remove (mgr->priv->menus, menu);
+}
+
+
+guint
+moo_recent_mgr_get_num_items (MooRecentMgr *mgr)
+{
+    g_return_val_if_fail (MOO_IS_RECENT_MGR (mgr), 0);
+    return g_slist_length (mgr->priv->files);
 }
