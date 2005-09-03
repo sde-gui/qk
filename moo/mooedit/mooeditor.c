@@ -391,7 +391,7 @@ static void          window_info_add        (WindowInfo     *win,
                                              MooEdit        *edit)
 {
     g_return_if_fail (!g_slist_find (win->docs, edit));
-    win->docs = g_slist_prepend (win->docs, edit);
+    win->docs = g_slist_append (win->docs, edit);
 }
 
 static void          window_info_remove     (WindowInfo     *win,
@@ -1130,8 +1130,12 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
     if (!moo_edit_get_filename (doc))
         return _moo_editor_save_as (editor, doc, NULL, NULL);
 
-    if (!moo_edit_save (saver, doc, moo_edit_get_filename (doc),
-                        moo_edit_get_encoding (doc), &error))
+    file_info = moo_edit_file_info_new (moo_edit_get_filename (doc),
+                                        moo_edit_get_encoding (doc));
+
+    /* moo_edit_save() modifies edit->priv->filename */
+    if (!moo_edit_save (saver, doc, file_info->filename,
+                        file_info->encoding, &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
@@ -1140,8 +1144,6 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
         return FALSE;
     }
 
-    file_info = moo_edit_file_info_new (moo_edit_get_filename (doc),
-                                        moo_edit_get_encoding (doc));
     moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
     moo_edit_file_info_free (file_info);
 
@@ -1158,7 +1160,7 @@ gboolean    _moo_editor_save_as     (MooEditor      *editor,
     MooEditSaver *saver;
     GError *error = NULL;
     MooEditFileInfo *file_info = NULL;
-    gboolean result = TRUE;
+    gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
@@ -1173,24 +1175,22 @@ gboolean    _moo_editor_save_as     (MooEditor      *editor,
         file_info = moo_edit_save_as_dialog (doc, editor->priv->filter_mgr);
 
         if (!file_info)
-            return FALSE;
-
-        filename = file_info->filename;
-        encoding = file_info->encoding;
+            goto out;
+    }
+    else
+    {
+        file_info = moo_edit_file_info_new (filename, encoding);
     }
 
-    if (!moo_edit_save (saver, doc, filename, encoding, &error))
+    if (!moo_edit_save (saver, doc, file_info->filename, file_info->encoding, &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
         if (error)
             g_error_free (error);
-        result = FALSE;
         goto out;
     }
 
-    if (!file_info)
-        file_info = moo_edit_file_info_new (filename, encoding);
     moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
     result = TRUE;
 

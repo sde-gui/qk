@@ -47,13 +47,13 @@ moo_edit_open_dialog (GtkWidget      *widget,
     for (l = filenames; l != NULL; l = l->next)
         infos = g_slist_prepend (infos, moo_edit_file_info_new (l->data, NULL));
     infos = g_slist_reverse (infos);
-    g_slist_foreach (filenames, (GFunc) g_free, NULL);
 
     new_start = g_path_get_dirname (filenames->data);
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
     g_free (new_start);
 
     gtk_widget_destroy (dialog);
+    g_slist_foreach (filenames, (GFunc) g_free, NULL);
     return infos;
 }
 
@@ -199,18 +199,177 @@ moo_edit_save_changes_dialog (MooEdit *edit)
 /* Save multiple
  */
 
+enum {
+    COLUMN_SAVE = 0,
+    COLUMN_EDIT,
+    NUM_COLUMNS
+};
+
+static void
+name_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                GtkCellRenderer   *cell,
+                GtkTreeModel      *model,
+                GtkTreeIter       *iter)
+{
+    MooEdit *edit = NULL;
+
+    gtk_tree_model_get (model, iter, COLUMN_EDIT, &edit, -1);
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    g_object_set (cell, "text", moo_edit_get_display_basename (edit), NULL);
+    g_object_unref (edit);
+}
+
+
+static void
+save_toggled (GtkCellRendererToggle *cell,
+              gchar                 *path,
+              GtkTreeModel          *model)
+{
+    GtkTreePath *tree_path;
+    GtkTreeIter iter;
+    gboolean save = TRUE;
+    gboolean active;
+    gboolean sensitive;
+    GtkDialog *dialog;
+
+    g_return_if_fail (GTK_IS_LIST_STORE (model));
+
+    tree_path = gtk_tree_path_new_from_string (path);
+    g_return_if_fail (tree_path != NULL);
+
+    gtk_tree_model_get_iter (model, &iter, tree_path);
+    gtk_tree_model_get (model, &iter, COLUMN_SAVE, &save, -1);
+
+    active = gtk_cell_renderer_toggle_get_active (cell);
+
+    if (active == save)
+        gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_SAVE, !save, -1);
+
+    gtk_tree_path_free (tree_path);
+
+    dialog = g_object_get_data (G_OBJECT (model), "moo-dialog");
+    g_return_if_fail (dialog != NULL);
+
+    if (!save)
+    {
+        sensitive = TRUE;
+    }
+    else
+    {
+        sensitive = FALSE;
+        gtk_tree_model_get_iter_first (model, &iter);
+
+        do
+        {
+            gtk_tree_model_get (model, &iter, COLUMN_SAVE, &save, -1);
+            if (save)
+            {
+                sensitive = TRUE;
+                break;
+            }
+        }
+        while (gtk_tree_model_iter_next (model, &iter));
+    }
+
+    gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_YES, sensitive);
+}
+
+static GtkWidget*
+files_treeview_create (GtkWidget *dialog, GSList  *docs)
+{
+    GtkListStore *store;
+    GtkTreeView *treeview;
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *cell;
+    GSList *l;
+
+    store = gtk_list_store_new (NUM_COLUMNS, G_TYPE_BOOLEAN, MOO_TYPE_EDIT);
+
+    for (l = docs; l != NULL; l = l->next)
+    {
+        GtkTreeIter iter;
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter,
+                            COLUMN_SAVE, TRUE,
+                            COLUMN_EDIT, l->data, -1);
+    }
+
+    treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL (store)));
+    gtk_tree_view_set_headers_visible (treeview, FALSE);
+
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_append_column (treeview, column);
+    cell = gtk_cell_renderer_toggle_new ();
+    gtk_tree_view_column_pack_start (column, cell, FALSE);
+    g_object_set (cell, "activatable", TRUE, NULL);
+    gtk_tree_view_column_add_attribute (column, cell, "active", COLUMN_SAVE);
+    g_signal_connect (cell, "toggled", G_CALLBACK (save_toggled), store);
+
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_append_column (treeview, column);
+    cell = gtk_cell_renderer_text_new ();
+    gtk_tree_view_column_pack_start (column, cell, TRUE);
+    gtk_tree_view_column_set_cell_data_func (column, cell,
+                                             (GtkTreeCellDataFunc) name_data_func,
+                                             NULL, NULL);
+
+    g_object_set_data (G_OBJECT (store), "moo-dialog", dialog);
+
+    g_object_unref (store);
+    return GTK_WIDGET (treeview);
+}
+
+
+static GSList *
+files_treeview_get_to_save (GtkWidget *treeview)
+{
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    GSList *list = NULL;
+
+    g_return_val_if_fail (GTK_IS_TREE_VIEW (treeview), NULL);
+
+    model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+    g_return_val_if_fail (model != NULL, NULL);
+
+    gtk_tree_model_get_iter_first (model, &iter);
+
+    do
+    {
+        MooEdit *edit = NULL;
+        gboolean save = TRUE;
+
+        gtk_tree_model_get (model, &iter,
+                            COLUMN_SAVE, &save,
+                            COLUMN_EDIT, &edit, -1);
+        g_return_val_if_fail (MOO_IS_EDIT (edit), list);
+
+        if (save)
+            list = g_slist_prepend (list, edit);
+
+        g_object_unref (edit);
+    }
+    while (gtk_tree_model_iter_next (model, &iter));
+
+    return g_slist_reverse (list);
+}
+
+
 MooEditDialogResponse
 moo_edit_save_multiple_changes_dialog (GSList  *docs,
-                                       G_GNUC_UNUSED GSList **to_save)
+                                       GSList **to_save)
 {
     GSList *l;
     GtkWidget *dialog, *parent;
-    GtkWidget *table, *vbox, *icon, *label, *treeview;
+    GtkWidget *table, *icon, *label, *treeview, *swin;
     char *msg;
     int response;
+    MooEditDialogResponse retval;
 
     g_return_val_if_fail (docs != NULL, MOO_EDIT_RESPONSE_CANCEL);
     g_return_val_if_fail (docs->next != NULL, MOO_EDIT_RESPONSE_CANCEL);
+    g_return_val_if_fail (to_save != NULL, MOO_EDIT_RESPONSE_CANCEL);
 
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
@@ -231,7 +390,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                              GTK_RESPONSE_CANCEL, -1);
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
-    table = gtk_table_new (2, 2, FALSE);
+    table = gtk_table_new (3, 2, FALSE);
     icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
     gtk_table_attach (GTK_TABLE (table), icon,
                       0, 1, 0, 1, 0, 0, 0, 0);
@@ -246,24 +405,43 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
     gtk_table_attach (GTK_TABLE (table), label,
                       1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-    vbox = gtk_vbox_new (FALSE, 0);
-    gtk_table_attach (GTK_TABLE (table), vbox,
+    label = gtk_label_new ("Select the documents you want to save:");
+    gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+    gtk_table_attach (GTK_TABLE (table), label,
                       1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-    label = gtk_label_new ("Select the documents you want to save:");
-    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+    swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
+                                         GTK_SHADOW_ETCHED_IN);
+    gtk_table_attach (GTK_TABLE (table), swin,
+                      1, 2, 2, 3, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 
-    treeview = gtk_tree_view_new ();
-    gtk_box_pack_start (GTK_BOX (vbox), treeview, TRUE, TRUE, 0);
+    treeview = files_treeview_create (dialog, docs);
+    gtk_container_add (GTK_CONTAINER (swin), treeview);
 
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
     gtk_widget_show_all (table);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
 
-    /* XXX */
-    return MOO_EDIT_RESPONSE_CANCEL;
+    switch (response)
+    {
+        case GTK_RESPONSE_NO:
+            retval = MOO_EDIT_RESPONSE_DONT_SAVE;
+            break;
+        case GTK_RESPONSE_YES:
+            *to_save = files_treeview_get_to_save (treeview);
+            retval = MOO_EDIT_RESPONSE_SAVE;
+            break;
+        default:
+            retval = MOO_EDIT_RESPONSE_CANCEL;
+    }
+
+    gtk_widget_destroy (dialog);
+    return retval;
 }
 
 
