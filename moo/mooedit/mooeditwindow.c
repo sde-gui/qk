@@ -943,10 +943,15 @@ static void     edit_changed            (MooEditWindow      *window,
 {
     if (doc == ACTIVE_DOC (window))
     {
+        GtkWidget *close_button;
+
         update_window_title (window);
         edit_can_undo_redo (window);
         active_tab_lang_changed (window);
         update_statusbar (window);
+
+        close_button = moo_notebook_get_action_widget (window->priv->notebook, TRUE);
+        gtk_widget_set_sensitive (close_button, doc != NULL);
     }
 
     if (doc)
@@ -1147,17 +1152,72 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 }
 
 
-static GtkWidget *create_tab_label      (G_GNUC_UNUSED MooEdit            *edit)
+static GtkWidget *create_tab_label      (MooEdit            *edit)
 {
-    /* XXX */
-    return gtk_label_new ("Document");
+    GtkWidget *hbox, *icon, *label;
+
+    hbox = gtk_hbox_new (FALSE, 3);
+    gtk_widget_show (hbox);
+
+    icon = gtk_image_new ();
+    gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
+
+    label = gtk_label_new (moo_edit_get_display_basename (edit));
+    gtk_widget_show (label);
+    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-icon", icon);
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-label", label);
+
+    return hbox;
 }
 
 
-static void     update_tab_label        (G_GNUC_UNUSED MooEditWindow      *window,
-                                         G_GNUC_UNUSED MooEdit            *doc)
+static void     update_tab_label        (MooEditWindow      *window,
+                                         MooEdit            *doc)
 {
-    /* XXX */
+    GtkWidget *hbox, *icon, *label;
+    MooEditStatus status;
+    int page = get_page_num (window, doc);
+
+    g_return_if_fail (page >= 0);
+
+    hbox = moo_notebook_get_tab_label (window->priv->notebook,
+                                       GTK_WIDGET(doc)->parent);
+    icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon");
+    label = g_object_get_data (G_OBJECT (hbox), "moo-edit-label");
+    g_return_if_fail (GTK_IS_WIDGET (hbox) && GTK_IS_WIDGET (icon) &&
+            GTK_IS_WIDGET (label));
+
+    status = moo_edit_get_status (doc);
+
+    if (status & MOO_EDIT_MODIFIED_ON_DISK)
+    {
+        gtk_image_set_from_stock (GTK_IMAGE (icon),
+                                  MOO_STOCK_DOC_MODIFIED_ON_DISK,
+                                  GTK_ICON_SIZE_MENU);
+        gtk_widget_show (icon);
+    }
+    else if (status & MOO_EDIT_DELETED)
+    {
+        gtk_image_set_from_stock (GTK_IMAGE (icon),
+                                  MOO_STOCK_DOC_DELETED,
+                                  GTK_ICON_SIZE_MENU);
+        gtk_widget_show (icon);
+    }
+    else if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
+    {
+        gtk_image_set_from_stock (GTK_IMAGE (icon),
+                                  MOO_STOCK_DOC_MODIFIED,
+                                  GTK_ICON_SIZE_MENU);
+        gtk_widget_show (icon);
+    }
+    else
+    {
+        gtk_widget_hide (icon);
+    }
+
+    gtk_label_set_text (GTK_LABEL (label), moo_edit_get_display_basename (doc));
 }
 
 
@@ -1209,6 +1269,7 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
     g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
 
     item = gtk_menu_item_new_with_label ("Close");
+    gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
     g_object_set_data (G_OBJECT (item), "moo-edit", edit);
     g_signal_connect (item, "activate",
@@ -1218,6 +1279,7 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
     if (moo_edit_window_num_docs (window) > 1)
     {
         item = gtk_menu_item_new_with_label ("Close All Others");
+        gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", edit);
         g_signal_connect (item, "activate",

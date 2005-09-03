@@ -73,6 +73,10 @@ static MooEditLoader*get_loader             (MooEditor      *editor,
 static MooEditSaver *get_saver              (MooEditor      *editor,
                                              MooEdit        *doc);
 
+static void          open_recent            (MooEditor      *editor,
+                                             MooEditFileInfo *info,
+                                             MooEditWindow  *window);
+
 
 struct _MooEditorPrivate {
     GSList          *windows; /* WindowInfo* */
@@ -88,12 +92,22 @@ struct _MooEditorPrivate {
 };
 
 
-static void             moo_editor_finalize (GObject        *object);
+static void     moo_editor_finalize     (GObject        *object);
+static void     moo_editor_set_property (GObject        *object,
+                                         guint           prop_id,
+                                         const GValue   *value,
+                                         GParamSpec     *pspec);
+static void     moo_editor_get_property (GObject        *object,
+                                         guint           prop_id,
+                                         GValue         *value,
+                                         GParamSpec     *pspec);
 
-static void             open_recent         (MooEditor      *editor,
-                                             MooEditFileInfo *info,
-                                             MooEditWindow  *window);
 
+enum {
+    PROP_0,
+    PROP_OPEN_SINGLE,
+    PROP_ALLOW_EMPTY_WINDOW
+};
 
 enum {
     ALL_WINDOWS_CLOSED,
@@ -113,6 +127,24 @@ static void moo_editor_class_init (MooEditorClass *klass)
     GObjectClass *edit_window_class;
 
     gobject_class->finalize = moo_editor_finalize;
+    gobject_class->set_property = moo_editor_set_property;
+    gobject_class->get_property = moo_editor_get_property;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_OPEN_SINGLE,
+                                     g_param_spec_boolean ("open-single",
+                                             "open-single",
+                                             "open-single",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ALLOW_EMPTY_WINDOW,
+                                     g_param_spec_boolean ("allow-empty-window",
+                                             "allow-empty-window",
+                                             "allow-empty-window",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[ALL_WINDOWS_CLOSED] =
             moo_signal_new_cb ("all-windows-closed",
@@ -142,7 +174,6 @@ static void     moo_editor_init        (MooEditor  *editor)
     g_signal_connect_swapped (editor->priv->recent_mgr, "open-recent",
                               G_CALLBACK (open_recent), editor);
     editor->priv->windows = NULL;
-    editor->priv->open_single = TRUE;
 
     editor->priv->loaders =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
@@ -150,6 +181,54 @@ static void     moo_editor_init        (MooEditor  *editor)
     editor->priv->savers =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                    NULL, (GDestroyNotify) moo_edit_saver_unref);
+}
+
+
+static void     moo_editor_set_property (GObject        *object,
+                                         guint           prop_id,
+                                         const GValue   *value,
+                                         GParamSpec     *pspec)
+{
+    MooEditor *editor = MOO_EDITOR (object);
+
+    switch (prop_id) {
+        case PROP_OPEN_SINGLE:
+            editor->priv->open_single = g_value_get_boolean (value);
+            g_object_notify (object, "open_single");
+            break;
+
+        case PROP_ALLOW_EMPTY_WINDOW:
+            editor->priv->allow_empty_window = g_value_get_boolean (value);
+            g_object_notify (object, "allow_empty_window");
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void     moo_editor_get_property (GObject        *object,
+                                         guint           prop_id,
+                                         GValue         *value,
+                                         GParamSpec     *pspec)
+{
+    MooEditor *editor = MOO_EDITOR (object);
+
+    switch (prop_id) {
+        case PROP_OPEN_SINGLE:
+            g_value_set_boolean (value, editor->priv->open_single);
+            break;
+
+        case PROP_ALLOW_EMPTY_WINDOW:
+            g_value_set_boolean (value, editor->priv->allow_empty_window);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
 }
 
 
@@ -168,8 +247,11 @@ static void moo_editor_finalize       (GObject      *object)
     if (editor->priv->recent_mgr)
         g_object_unref (editor->priv->recent_mgr);
 
-    /* XXX it must be empty here */
-    window_list_free (editor);
+    if (editor->priv->windows)
+    {
+        g_critical ("finalizing editor while some windows are open");
+        window_list_free (editor);
+    }
 
     g_hash_table_destroy (editor->priv->loaders);
     g_hash_table_destroy (editor->priv->savers);
@@ -542,9 +624,9 @@ void             moo_editor_open            (MooEditor      *editor,
                                              GSList         *files)
 {
     GSList *l;
-    MooEdit *doc;
     MooEditLoader *loader;
     MooEditSaver *saver;
+    MooEdit *bring_to_front = NULL;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
@@ -573,10 +655,34 @@ void             moo_editor_open            (MooEditor      *editor,
     {
         MooEditFileInfo *info = l->data;
         GError *error = NULL;
+        gboolean new_doc = FALSE;
+        MooEdit *doc = NULL;
 
-        /* XXX check current doc */
-        doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
-        gtk_object_sink (g_object_ref (doc));
+        if (window_list_find_filename (editor, info->filename, &bring_to_front))
+        {
+            moo_recent_mgr_add_recent (editor->priv->recent_mgr, info);
+            continue;
+        }
+        else
+        {
+            bring_to_front = NULL;
+        }
+
+        if (window)
+        {
+            doc = moo_edit_window_get_active_doc (window);
+            if (doc && moo_edit_is_empty (doc))
+                g_object_ref (doc);
+            else
+                doc = NULL;
+        }
+
+        if (!doc)
+        {
+            doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+            gtk_object_sink (g_object_ref (doc));
+            new_doc = TRUE;
+        }
 
         /* XXX open_single */
         if (!moo_edit_load (loader, doc, info->filename, info->encoding, &error))
@@ -591,14 +697,22 @@ void             moo_editor_open            (MooEditor      *editor,
                 moo_editor_add_window (editor, window);
             }
 
-            _moo_edit_window_insert_doc (window, doc, -1);
-            moo_editor_add_doc (editor, window, doc, loader, saver);
+            if (new_doc)
+            {
+                _moo_edit_window_insert_doc (window, doc, -1);
+                moo_editor_add_doc (editor, window, doc, loader, saver);
+            }
+
+            moo_recent_mgr_add_recent (editor->priv->recent_mgr, info);
 
             parent = GTK_WIDGET (window);
         }
 
         g_object_unref (doc);
     }
+
+    if (bring_to_front)
+        moo_editor_set_active_doc (editor, bring_to_front);
 }
 
 
@@ -1003,6 +1117,7 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
     WindowInfo *info;
     MooEditSaver *saver;
     GError *error = NULL;
+    MooEditFileInfo *file_info;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
@@ -1024,6 +1139,11 @@ gboolean    _moo_editor_save        (MooEditor      *editor,
             g_error_free (error);
         return FALSE;
     }
+
+    file_info = moo_edit_file_info_new (moo_edit_get_filename (doc),
+                                        moo_edit_get_encoding (doc));
+    moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
+    moo_edit_file_info_free (file_info);
 
     return TRUE;
 }
@@ -1069,6 +1189,9 @@ gboolean    _moo_editor_save_as     (MooEditor      *editor,
         goto out;
     }
 
+    if (!file_info)
+        file_info = moo_edit_file_info_new (filename, encoding);
+    moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
     result = TRUE;
 
     /* fall through */
