@@ -145,6 +145,8 @@ static gboolean moo_paned_button_release(GtkWidget      *widget,
 
 static int      pane_index              (MooPaned       *paned,
                                          Pane           *pane);
+static Pane    *get_nth_pane            (MooPaned       *paned,
+                                         guint           index_);
 
 static void     moo_paned_open_pane_real(MooPaned       *paned,
                                          guint           index);
@@ -1744,9 +1746,26 @@ GtkWidget  *moo_paned_get_nth_pane      (MooPaned   *paned,
 {
     Pane *pane;
     g_return_val_if_fail (MOO_IS_PANED (paned), NULL);
-    pane = g_slist_nth_data (paned->priv->panes, n);
+    pane = get_nth_pane (paned, n);
     g_return_val_if_fail (pane != NULL, NULL);
     return pane->child;
+}
+
+
+int         moo_paned_get_pane_num      (MooPaned       *paned,
+                                         GtkWidget      *widget)
+{
+    Pane *pane;
+
+    g_return_val_if_fail (MOO_IS_PANED (paned), -1);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), -1);
+
+    pane = g_object_get_data (G_OBJECT (widget), "moo-pane");
+
+    if (pane)
+        return pane_index (paned, pane);
+    else
+        return -1;
 }
 
 
@@ -2132,21 +2151,24 @@ static GtkWidget *moo_pane_label_get_widget (MooPaneLabel   *label,
 }
 
 
-void         moo_paned_add_pane     (MooPaned   *paned,
+int          moo_paned_add_pane     (MooPaned   *paned,
                                      GtkWidget  *pane_widget,
                                      const char *button_label,
                                      const char *button_stock_id,
                                      int         position)
 {
     MooPaneLabel *label;
+    int result;
 
-    g_return_if_fail (MOO_IS_PANED (paned));
-    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
-    g_return_if_fail (pane_widget->parent == NULL);
+    g_return_val_if_fail (MOO_IS_PANED (paned), -1);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), -1);
+    g_return_val_if_fail (pane_widget->parent == NULL, -1);
 
     label = moo_pane_label_new (button_stock_id, NULL, NULL, button_label);
-    moo_paned_insert_pane (paned, pane_widget, label, position);
+    result = moo_paned_insert_pane (paned, pane_widget, label, position);
+
     moo_pane_label_free (label);
+    return result;
 }
 
 
@@ -2342,7 +2364,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
 }
 
 
-void        moo_paned_insert_pane       (MooPaned       *paned,
+int         moo_paned_insert_pane       (MooPaned       *paned,
                                          GtkWidget      *pane_widget,
                                          MooPaneLabel   *pane_label,
                                          int             position)
@@ -2350,10 +2372,10 @@ void        moo_paned_insert_pane       (MooPaned       *paned,
     GtkWidget *button, *label_widget;
     Pane *pane;
 
-    g_return_if_fail (MOO_IS_PANED (paned));
-    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
-    g_return_if_fail (pane_label != NULL);
-    g_return_if_fail (pane_widget->parent == NULL);
+    g_return_val_if_fail (MOO_IS_PANED (paned), -1);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), -1);
+    g_return_val_if_fail (pane_label != NULL, -1);
+    g_return_val_if_fail (pane_widget->parent == NULL, -1);
 
     button = gtk_toggle_button_new ();
     gtk_widget_show (button);
@@ -2428,22 +2450,24 @@ void        moo_paned_insert_pane       (MooPaned       *paned,
 
     if (GTK_WIDGET_VISIBLE (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
+
+    return position;
 }
 
 
-void moo_paned_remove_pane              (MooPaned   *paned,
+gboolean    moo_paned_remove_pane       (MooPaned   *paned,
                                          GtkWidget  *pane_widget)
 {
     Pane *pane;
     GtkWidget *label;
 
-    g_return_if_fail (MOO_IS_PANED (paned));
-    g_return_if_fail (GTK_IS_WIDGET (pane_widget));
+    g_return_val_if_fail (MOO_IS_PANED (paned), FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), FALSE);
 
     pane = g_object_get_data (G_OBJECT (pane_widget), "moo-pane");
-    g_return_if_fail (pane != NULL);
-    g_return_if_fail (pane->child == pane_widget);
-    g_return_if_fail (g_slist_find (paned->priv->panes, pane) != NULL);
+    g_return_val_if_fail (pane != NULL, FALSE);
+    g_return_val_if_fail (pane->child == pane_widget, FALSE);
+    g_return_val_if_fail (g_slist_find (paned->priv->panes, pane) != NULL, FALSE);
 
     if (paned->priv->current_pane == pane)
         moo_paned_hide_pane (paned);
@@ -2510,6 +2534,8 @@ void moo_paned_remove_pane              (MooPaned   *paned,
 
     if (GTK_WIDGET_VISIBLE (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
+
+    return TRUE;
 }
 
 
@@ -2933,6 +2959,47 @@ static void     detach_button_clicked   (G_GNUC_UNUSED GtkWidget *button,
 }
 
 
+void        moo_paned_present_pane      (MooPaned       *paned,
+                                         guint           index_)
+{
+    Pane *pane;
+
+    g_return_if_fail (MOO_IS_PANED (paned));
+    g_return_if_fail (index_ < moo_paned_n_panes (paned));
+
+    pane = get_nth_pane (paned, index_);
+    g_return_if_fail (pane != NULL);
+
+    if (paned->priv->current_pane == pane)
+    {
+        paned->priv->dont_move_focus = FALSE;
+
+        if (!find_focus (pane->child))
+        {
+            if (pane->focus_child)
+            {
+                gtk_widget_grab_focus (pane->focus_child);
+            }
+            else if (!gtk_widget_child_focus (pane->child, GTK_DIR_TAB_FORWARD))
+            {
+                paned->priv->button_real_focus = FALSE;
+                gtk_widget_grab_focus (pane->button);
+            }
+        }
+
+        return;
+    }
+    else if (pane->detached)
+    {
+        gtk_window_present (GTK_WINDOW (pane->window));
+    }
+    else
+    {
+        moo_paned_open_pane (paned, index_);
+    }
+}
+
+
 static void     moo_paned_open_pane_real(MooPaned       *paned,
                                          guint           index)
 {
@@ -2941,7 +3008,7 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
 
     g_return_if_fail (index < moo_paned_n_panes (paned));
 
-    pane = g_slist_nth_data (paned->priv->panes, index);
+    pane = get_nth_pane (paned, index);
     g_return_if_fail (pane != NULL);
 
     if (paned->priv->current_pane == pane)
@@ -3091,6 +3158,13 @@ static int      pane_index              (MooPaned       *paned,
 }
 
 
+static Pane    *get_nth_pane            (MooPaned       *paned,
+                                         guint           index_)
+{
+    return g_slist_nth_data (paned->priv->panes, index_);
+}
+
+
 int         moo_paned_get_open_pane     (MooPaned   *paned)
 {
     g_return_val_if_fail (MOO_IS_PANED (paned), -1);
@@ -3214,16 +3288,18 @@ static gboolean handle_button_release   (GtkWidget      *widget,
 {
     Pane *pane;
 
-    paned->priv->handle_button_pressed = FALSE;
+    if (paned->priv->handle_button_pressed)
+    {
+#if 1
+        gdk_window_set_cursor (widget->window, NULL);
+#endif
+        paned->priv->handle_button_pressed = FALSE;
+    }
 
     if (!paned->priv->handle_in_drag)
         return FALSE;
 
     paned->priv->handle_in_drag = FALSE;
-
-#if 1
-    gdk_window_set_cursor (widget->window, NULL);
-#endif
 
     pane = g_object_get_data (G_OBJECT (widget), "moo-pane");
     g_return_val_if_fail (pane != NULL && pane->child != NULL, FALSE);
@@ -3429,7 +3505,6 @@ static gboolean pane_window_delete_event    (GtkWidget  *window,
 }
 
 
-/* XXX focus */
 void        moo_paned_detach_pane       (MooPaned       *paned,
                                          guint           index_)
 {
@@ -3439,7 +3514,7 @@ void        moo_paned_detach_pane       (MooPaned       *paned,
 
     g_return_if_fail (MOO_IS_PANED (paned));
 
-    pane = g_slist_nth_data (paned->priv->panes, index_);
+    pane = get_nth_pane (paned, index_);
     g_return_if_fail (pane != NULL);
 
     if (pane->detached)
@@ -3535,7 +3610,7 @@ void        moo_paned_attach_pane       (MooPaned       *paned,
 
     g_return_if_fail (MOO_IS_PANED (paned));
 
-    pane = g_slist_nth_data (paned->priv->panes, index_);
+    pane = get_nth_pane (paned, index_);
     g_return_if_fail (pane != NULL);
 
     if (!pane->detached)

@@ -184,6 +184,7 @@ static void start_element   (G_GNUC_UNUSED GMarkupParseContext    *ctx,
                                                  element_name,
                                                  attribute_names,
                                                  attribute_values);
+    g_assert (elm->parent == state->current);
     state->current = elm;
 }
 
@@ -313,6 +314,8 @@ static void              add_node            (MooMarkupDoc     *doc,
     }
     else
     {
+        g_assert (parent->children == NULL);
+        g_assert (parent->last == NULL);
         parent->children = node;
         parent->last = node;
     }
@@ -323,11 +326,12 @@ static void moo_markup_text_node_add_text   (MooMarkupText  *node,
                                              const char     *text,
                                              gsize           text_len)
 {
-    char *tmp = (char*)g_memdup (node->text, sizeof(char) * (node->size + text_len));
-    g_memmove (tmp + node->size, text, sizeof(char) * text_len);
+    char *tmp = (char*)g_memdup (node->text, node->size + text_len + 1);
+    g_memmove (tmp + node->size, text, text_len);
     tmp[node->size + text_len] = 0;
     g_free (node->text);
     node->text = tmp;
+    node->size += text_len;
 }
 
 
@@ -366,13 +370,17 @@ static void collect_text_content        (MooMarkupElement  *node)
 static void moo_markup_node_free    (MooMarkupNode     *node)
 {
     MooMarkupNode *child;
+    GSList *children = NULL, *l;
 
     g_return_if_fail (node != NULL);
 
-    g_free (node->name);
-
     for (child = node->children; child != NULL; child = child->next)
-        moo_markup_node_free (child);
+        children = g_slist_prepend (children, child);
+
+    for (l = children; l != NULL; l = l->next)
+        moo_markup_node_free (l->data);
+
+    g_free (node->name);
 
     switch (node->type)
     {
@@ -389,6 +397,9 @@ static void moo_markup_node_free    (MooMarkupNode     *node)
         default:
             g_assert_not_reached ();
     }
+
+    g_slist_free (children);
+    g_free (node);
 }
 
 
@@ -609,32 +620,23 @@ void             moo_markup_delete_node     (MooMarkupNode      *node)
     prev = node->prev;
 
     if (parent->children == node)
+    {
+        g_assert (node->prev == NULL);
         parent->children = next;
+    }
+
     if (parent->last == node)
+    {
+        g_assert (node->next == NULL);
         parent->last = prev;
+    }
 
     if (prev)
         prev->next = next;
     if (next)
         next->prev = prev;
 
-    g_free (node->name);
-
-    for (child = node->children; child != NULL; child = child->next)
-        moo_markup_node_free (child);
-
-    switch (node->type)
-    {
-        case MOO_MARKUP_ELEMENT_NODE:
-            moo_markup_element_free (MOO_MARKUP_ELEMENT (node));
-            break;
-        case MOO_MARKUP_TEXT_NODE:
-        case MOO_MARKUP_COMMENT_NODE:
-            moo_markup_text_node_free (node);
-            break;
-        default:
-            g_return_if_reached ();
-    }
+    moo_markup_node_free (node);
 }
 
 

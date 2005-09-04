@@ -313,7 +313,6 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                                              g_get_home_dir (),
 #else
 #warning "Do something here"
-                                             NULL,
 #endif
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 

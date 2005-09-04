@@ -60,6 +60,7 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.h         \
     mooeditwindow.c         \
     mooeditwindow.h         \
+    mooeditwindow-pane.h    \
     moonotebook.c           \
     moonotebook.h           \
     moopaned.c              \

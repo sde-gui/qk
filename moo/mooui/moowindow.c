@@ -343,7 +343,6 @@ static void moo_window_finalize       (GObject      *object)
 
     g_free (window->priv->menubar_ui_name);
     g_free (window->priv->toolbar_ui_name);
-    g_free (window->priv);
 
     if (window->accel_group)
         g_object_unref (window->accel_group);
@@ -353,6 +352,8 @@ static void moo_window_finalize       (GObject      *object)
     if (window->priv->save_size_id)
         g_source_remove (window->priv->save_size_id);
     window->priv->save_size_id = 0;
+
+    g_free (window->priv);
 
     G_OBJECT_CLASS (moo_window_parent_class)->finalize (object);
 }

@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #ifndef __WIN32__
 #include "xdgmime/xdgmime.h"
@@ -81,7 +82,7 @@ struct _MooFolderPrivate {
     Stage wanted_bg;
     MooFileSystem *fs;
     GDir *dir;
-    GHashTable *files;
+    GHashTable *files; /* basename -> MooFile* */
     GSList *files_copy;
     char *path;
     GSourceFunc populate_func;
@@ -940,11 +941,60 @@ static gboolean moo_folder_reload           (MooFolder  *folder)
 }
 
 
-void         moo_folder_get_file_info   (MooFolder      *folder,
+/* XXX */
+static char *moo_file_get_type_string   (MooFile        *file)
+{
+    g_return_val_if_fail (MOO_FILE_EXISTS (file), NULL);
+
+    if (MOO_FILE_IS_DIR (file))
+        return g_strdup ("folder");
+    else if (file->mime_type)
+        return g_strdup (file->mime_type);
+    else
+        return g_strdup ("file");
+}
+
+
+/* XXX */
+static char *moo_file_get_size_string   (MooFile        *file)
+{
+    return g_strdup_printf ("%" G_GINT64_FORMAT, (MooFileSize) file->statbuf.st_size);
+}
+
+
+/* XXX */
+static char *moo_file_get_mtime_string  (MooFile        *file)
+{
+    static char buf[1024];
+
+    if (!MOO_FILE_EXISTS (file))
+        return NULL;
+
+#ifdef __WIN32__
+    if (MOO_FILE_IS_DIR (file))
+        return NULL;
+#endif
+
+    if (strftime (buf, 1024, "%x %X", localtime ((time_t*)&file->statbuf.st_mtime)))
+        return g_strdup (buf);
+    else
+        return NULL;
+}
+
+
+char       **moo_folder_get_file_info   (MooFolder      *folder,
                                          MooFile        *file)
 {
-    g_return_if_fail (MOO_IS_FOLDER (folder));
-    g_return_if_fail (file != NULL);
+    GPtrArray *array;
+    GSList *list;
+
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    g_return_val_if_fail (file != NULL, NULL);
+    g_return_val_if_fail (!folder->priv->deleted, NULL);
+    g_return_val_if_fail (folder->priv->files != NULL, NULL);
+    g_return_val_if_fail (g_hash_table_lookup (folder->priv->files,
+                                    moo_file_name (file)) == file, NULL);
+
     moo_file_stat (file, folder->priv->path);
 
 #ifndef __WIN32__
@@ -959,6 +1009,66 @@ void         moo_folder_get_file_info   (MooFolder      *folder,
         g_free (path);
     }
 #endif
+
+    array = g_ptr_array_new ();
+
+    if (file->info & MOO_FILE_INFO_EXISTS)
+    {
+        char *type, *mtime, *location;
+
+        g_ptr_array_add (array, g_strdup ("Type:"));
+        type = moo_file_get_type_string (file);
+
+        if (file->info & MOO_FILE_INFO_IS_LINK)
+        {
+            g_ptr_array_add (array, g_strdup_printf ("link to %s", type));
+            g_free (type);
+        }
+        else
+        {
+            g_ptr_array_add (array, type);
+        }
+
+        location = g_filename_display_name (moo_folder_get_path (folder));
+        g_ptr_array_add (array, g_strdup ("Location:"));
+        g_ptr_array_add (array, location);
+
+        if (!(file->info & MOO_FILE_INFO_IS_DIR))
+        {
+            g_ptr_array_add (array, g_strdup ("Size:"));
+            g_ptr_array_add (array, moo_file_get_size_string (file));
+        }
+
+        mtime = moo_file_get_mtime_string (file);
+
+        if (mtime)
+        {
+            g_ptr_array_add (array, g_strdup ("Modified:"));
+            g_ptr_array_add (array, mtime);
+        }
+    }
+    else if (file->info & MOO_FILE_INFO_IS_LINK)
+    {
+        g_ptr_array_add (array, g_strdup ("Type:"));
+        g_ptr_array_add (array, g_strdup ("broken symbolic link"));
+    }
+
+    if ((file->info & MOO_FILE_INFO_IS_LINK) &&
+         moo_file_link_get_target (file))
+    {
+        g_ptr_array_add (array, g_strdup ("Points to:"));
+        g_ptr_array_add (array, g_strdup (moo_file_link_get_target (file)));
+    }
+
+    list = g_slist_append (NULL, moo_file_ref (file));
+    g_object_ref (folder);
+    folder_emit_files (folder, FILES_CHANGED, list);
+    g_object_unref (folder);
+    moo_file_unref (file);
+    g_slist_free (list);
+
+    g_ptr_array_add (array, NULL);
+    return (char**) g_ptr_array_free (array, FALSE);
 }
 
 
@@ -1988,7 +2098,7 @@ static GdkPixbuf    *_create_broken_icon        (G_GNUC_UNUSED GtkIconTheme *ico
 
 static GdkPixbuf    *_create_icon_with_flags    (GdkPixbuf      *original,
                                                  MooIconFlags    flags,
-                                                 GtkIconTheme   *icon_theme,
+                                                 G_GNUC_UNUSED GtkIconTheme *icon_theme,
                                                  G_GNUC_UNUSED GtkWidget *widget,
                                                  GtkIconSize     size)
 {

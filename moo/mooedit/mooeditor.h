@@ -93,10 +93,11 @@ MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
 void             moo_editor_set_ui_xml      (MooEditor      *editor,
                                              MooUIXML       *xml);
 
+MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
+
 
 #ifdef MOOEDIT_COMPILATION
 MooEditWindow   *_moo_edit_window_new           (MooEditor      *editor);
-// void             _moo_edit_window_close         (MooEditWindow  *window);
 
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc,
@@ -106,7 +107,6 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 
 void             _moo_edit_window_set_app_name  (MooEditWindow  *window,
                                                  const char     *name);
-MooEditor       *_moo_edit_window_get_editor    (MooEditWindow  *window);
 
 void             _moo_editor_reload             (MooEditor      *editor,
                                                  MooEdit        *doc);

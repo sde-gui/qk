@@ -70,17 +70,26 @@ void        moo_big_paned_add_child         (MooBigPaned    *paned,
 void        moo_big_paned_remove_child      (MooBigPaned    *paned);
 GtkWidget  *moo_big_paned_get_child         (MooBigPaned    *paned);
 
-void        moo_big_paned_add_pane          (MooBigPaned    *paned,
+int         moo_big_paned_add_pane          (MooBigPaned    *paned,
                                              GtkWidget      *pane_widget,
                                              MooPanePosition position,
                                              const char     *button_label,
                                              const char     *button_stock_id,
                                              int             index_);
-void        moo_big_paned_insert_pane       (MooBigPaned    *paned,
+int         moo_big_paned_insert_pane       (MooBigPaned    *paned,
                                              GtkWidget      *pane_widget,
                                              MooPaneLabel   *pane_label,
                                              MooPanePosition position,
                                              int             index_);
+gboolean    moo_big_paned_remove_pane       (MooBigPaned    *paned,
+                                             GtkWidget      *pane_widget);
+
+void        moo_big_paned_open_pane         (MooBigPaned    *paned,
+                                             GtkWidget      *pane_widget);
+void        moo_big_paned_hide_pane         (MooBigPaned    *paned,
+                                             GtkWidget      *pane_widget);
+void        moo_big_paned_present_pane      (MooBigPaned    *paned,
+                                             GtkWidget      *pane_widget);
 
 
 G_END_DECLS

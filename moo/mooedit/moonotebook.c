@@ -735,7 +735,7 @@ static int      labels_get_height_request     (MooNotebook    *nb)
 {
     int height = 0;
     GtkRequisition child_req;
-    gboolean has_visible;
+    gboolean has_visible = FALSE;
 
     g_assert (nb->priv->tabs_visible);
 
@@ -1069,7 +1069,7 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
     GtkWidget *widget = GTK_WIDGET (nb);
     Page *page = nb->priv->current_page;
     int border_width = gtk_container_get_border_width (GTK_CONTAINER (nb));
-    gboolean draw_gap;
+    gboolean draw_gap = TRUE;
     int gap_x, gap_width;
 
     if (!page)
@@ -1536,7 +1536,10 @@ static void     delete_page                 (MooNotebook    *nb,
     if (page == nb->priv->current_page)
         nb->priv->current_page = NULL;
 
-    /* XXX disconnect focus_child */
+    if (page->focus_child)
+        g_object_weak_unref (G_OBJECT (page->focus_child),
+                             (GWeakNotify) g_nullify_pointer,
+                             &page->focus_child);
 
     g_free (page->label->text);
     g_free (page->label);

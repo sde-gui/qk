@@ -104,8 +104,11 @@ static void moo_ui_xml_init (MooUIXML *xml)
 static void moo_ui_xml_finalize       (GObject      *object)
 {
     MooUIXML *xml = MOO_UI_XML (object);
-    if (xml->doc) moo_markup_doc_unref (xml->doc);
+
+    if (xml->doc)
+        moo_markup_doc_unref (xml->doc);
     xml->doc = NULL;
+
     G_OBJECT_CLASS (moo_ui_xml_parent_class)->finalize (object);
 }
 
@@ -166,17 +169,21 @@ static void moo_ui_xml_set_ui           (MooUIXML       *xml,
 {
     if (!ui)
     {
-        if (xml->doc) moo_markup_doc_unref (xml->doc);
+        if (xml->doc)
+            moo_markup_doc_unref (xml->doc);
         xml->doc = NULL;
     }
-    else {
+    else
+    {
         if (!xml->doc)
         {
             GError *err = NULL;
             xml->doc = moo_markup_parse_memory (ui, -1, &err);
-            if (!xml->doc) {
+            if (!xml->doc)
+            {
                 g_critical ("moo_ui_xml_set_ui: could not parse markup\n%s", ui);
-                if (err) {
+                if (err)
+                {
                     g_critical ("%s", err->message);
                     g_error_free (err);
                 }
@@ -193,18 +200,27 @@ static void moo_ui_xml_set_ui           (MooUIXML       *xml,
 static void moo_ui_xml_set_markup       (MooUIXML       *xml,
                                          MooMarkupDoc   *doc)
 {
-    if (doc == xml->doc) return;
-    if (xml->doc) moo_markup_doc_unref (xml->doc);
+    if (doc == xml->doc)
+        return;
+
+    if (xml->doc)
+        moo_markup_doc_unref (xml->doc);
+
     xml->doc = doc;
-    if (xml->doc) moo_markup_doc_ref (xml->doc);
+
+    if (xml->doc)
+        moo_markup_doc_ref (xml->doc);
 }
 
 
 char            *moo_ui_xml_get_ui              (MooUIXML       *xml)
 {
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
-    if (!xml->doc) return NULL;
-    return moo_markup_node_get_string (MOO_MARKUP_NODE (xml->doc));
+
+    if (!xml->doc)
+        return NULL;
+    else
+        return moo_markup_node_get_string (MOO_MARKUP_NODE (xml->doc));
 }
 
 
@@ -224,25 +240,27 @@ gboolean         moo_ui_xml_add_ui_from_string  (MooUIXML       *xml,
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml) && ui != NULL, FALSE);
 
-    if (xml->doc) {
+    if (xml->doc)
+    {
         g_critical ("%s: implement me", G_STRLOC);
         return FALSE;
     }
 
     xml->doc = moo_markup_parse_memory (ui, len, &err);
+
     if (xml->doc)
     {
-        if (error) *error = NULL;
+        g_clear_error (error);
         g_signal_emit (xml, signals[CHANGED], 0);
         return TRUE;
     }
-
-    if (err)
+    else
     {
-        if (error) *error = err;
-        else g_error_free (err);
+        if (err)
+            g_propagate_error (error, err);
+
+        return FALSE;
     }
-    return FALSE;
 }
 
 
@@ -252,25 +270,20 @@ gboolean         moo_ui_xml_add_ui_from_file    (MooUIXML       *xml,
 {
     g_return_val_if_fail (MOO_IS_UI_XML (xml) && file != NULL, FALSE);
 
-    if (xml->doc) {
+    if (xml->doc)
+    {
         g_critical ("%s: implement me", G_STRLOC);
         return FALSE;
     }
 
-    GError *err = NULL;
-    xml->doc = moo_markup_parse_file (file, &err);
+    xml->doc = moo_markup_parse_file (file, error);
+
     if (xml->doc)
     {
-        if (error) *error = NULL;
         g_signal_emit (xml, signals[CHANGED], 0);
         return TRUE;
     }
 
-    if (err)
-    {
-        if (error) *error = err;
-        else g_error_free (err);
-    }
     return FALSE;
 }
 

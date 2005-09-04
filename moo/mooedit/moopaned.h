@@ -86,22 +86,25 @@ MooPaneLabel *moo_pane_label_new        (const char     *stock_id,
 MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label);
 void        moo_pane_label_free         (MooPaneLabel   *label);
 
-void        moo_paned_add_pane          (MooPaned       *paned,
+int         moo_paned_add_pane          (MooPaned       *paned,
                                          GtkWidget      *pane_widget,
                                          const char     *label,
                                          const char     *icon_stock_id,
                                          int             position);
-void        moo_paned_insert_pane       (MooPaned       *paned,
+int         moo_paned_insert_pane       (MooPaned       *paned,
                                          GtkWidget      *pane_widget,
                                          MooPaneLabel   *pane_label,
                                          int             position);
-void        moo_paned_remove_pane       (MooPaned       *paned,
+gboolean    moo_paned_remove_pane       (MooPaned       *paned,
                                          GtkWidget      *pane_widget);
 
 guint       moo_paned_n_panes           (MooPaned       *paned);
 GSList     *moo_paned_get_panes         (MooPaned       *paned);
 GtkWidget  *moo_paned_get_nth_pane      (MooPaned       *paned,
                                          guint           n);
+int         moo_paned_get_pane_num      (MooPaned       *paned,
+                                         GtkWidget      *widget);
+
 /* label should be freed with moo_pane_label_free() */
 MooPaneLabel *moo_paned_get_label       (MooPaned       *paned,
                                          GtkWidget      *pane_widget);
@@ -118,6 +121,8 @@ int         moo_paned_get_open_pane     (MooPaned       *paned);
 gboolean    moo_paned_is_open           (MooPaned       *paned);
 
 void        moo_paned_open_pane         (MooPaned       *paned,
+                                         guint           index_);
+void        moo_paned_present_pane      (MooPaned       *paned,
                                          guint           index_);
 void        moo_paned_hide_pane         (MooPaned       *paned);
 void        moo_paned_detach_pane       (MooPaned       *paned,

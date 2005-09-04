@@ -178,7 +178,7 @@ MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
                                          MooFileFlags    wanted);
 char        *moo_folder_get_parent_path (MooFolder      *folder);
 
-void         moo_folder_get_file_info   (MooFolder      *folder,
+char       **moo_folder_get_file_info   (MooFolder      *folder,
                                          MooFile        *file);
 
 

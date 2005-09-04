@@ -11,15 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofileview-dialogs.h"
 #include "moofilesystem.h"
-#include "xdgmime/xdgmime.h"
-#include <glade/glade.h>
 #include <time.h>
 #include <string.h>
 
@@ -32,15 +26,10 @@ static void dialog_response             (GtkWidget  *dialog,
 static void dialog_ok                   (GtkWidget  *dialog);
 
 
-#ifndef MOO_FILE_PROPS_GLADE_FILE
-#define MOO_FILE_PROPS_GLADE_FILE "fileprops.glade"
-#endif
-
-
 GtkWidget  *moo_file_props_dialog_new   (GtkWidget  *parent)
 {
-    GtkWidget *dialog, *notebook, *entry;
-    GladeXML *xml;
+    GtkWidget *dialog, *notebook, *alignment, *vbox, *hbox, *label, *button;
+    GtkWidget *table, *icon, *entry;
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
@@ -54,24 +43,47 @@ GtkWidget  *moo_file_props_dialog_new   (GtkWidget  *parent)
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,
                                           NULL);
 
-    xml = glade_xml_new (MOO_FILE_PROPS_GLADE_FILE, "notebook", NULL);
-
-    if (!xml)
-        g_error ("Yes, glade is great usually, but not always");
-
-    g_object_set_data_full (G_OBJECT (dialog), "dialog-glade-xml",
-                            xml, g_object_unref);
-
-    notebook = glade_xml_get_widget (xml, "notebook");
-    g_assert (notebook != NULL);
+    notebook = gtk_notebook_new ();
+    gtk_widget_show (notebook);
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG(dialog)->vbox), notebook, TRUE, TRUE, 0);
 
-    entry = glade_xml_get_widget (xml, "entry_name");
-    gtk_widget_grab_focus (entry);
+    alignment = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
+    gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 6, 6, 6, 6);
+    gtk_widget_show (alignment);
+    label = gtk_label_new ("General");
+    gtk_widget_show (alignment);
+    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), alignment, label);
+
+    vbox = gtk_vbox_new (FALSE, 6);
+    gtk_widget_show (vbox);
+    gtk_container_add (GTK_CONTAINER (alignment), vbox);
+
+    button = gtk_button_new ();
+    icon = gtk_image_new ();
+    gtk_container_add (GTK_CONTAINER (button), icon);
+    entry = gtk_entry_new ();
+
+    hbox = gtk_hbox_new (FALSE, 6);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
+    gtk_widget_show_all (hbox);
+
+    table = gtk_table_new (1, 2, FALSE);
+    gtk_table_set_row_spacings (GTK_TABLE (table), 6);
+    gtk_table_set_col_spacings (GTK_TABLE (table), 6);
+    gtk_box_pack_start (GTK_BOX (vbox), table, TRUE, TRUE, 0);
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
     g_object_set_data (G_OBJECT (dialog), MAGIC_STRING, MAGIC_NUMBER);
     g_signal_connect (dialog, "response", G_CALLBACK (dialog_response), NULL);
+
+    gtk_widget_grab_focus (entry);
+
+    g_object_set_data (G_OBJECT (dialog), "moo-dialog-icon", icon);
+    g_object_set_data (G_OBJECT (dialog), "moo-dialog-entry", entry);
+    g_object_set_data (G_OBJECT (dialog), "moo-dialog-table", table);
+    g_object_set_data (G_OBJECT (dialog), "moo-dialog-notebook", notebook);
 
     return dialog;
 }
@@ -99,10 +111,6 @@ static void dialog_response             (GtkWidget  *dialog,
 }
 
 
-#define get_widget(dialog,name) \
-    (glade_xml_get_widget (g_object_get_data (G_OBJECT (dialog), "dialog-glade-xml"), name))
-
-
 static void dialog_ok                   (GtkWidget  *dialog)
 {
     GtkWidget *entry;
@@ -118,7 +126,9 @@ static void dialog_ok                   (GtkWidget  *dialog)
     if (!file)
         return;
 
-    entry = get_widget (dialog, "entry_name");
+    entry = g_object_get_data (G_OBJECT (dialog), "moo-dialog-entry");
+    g_return_if_fail (GTK_IS_ENTRY (entry));
+
     old_name = moo_file_display_name (file);
     new_name = gtk_entry_get_text (GTK_ENTRY (entry));
 
@@ -163,7 +173,8 @@ static void set_file        (GtkWidget  *dialog,
                              MooFile    *file,
                              MooFolder  *folder)
 {
-    GtkWidget *entry = get_widget (dialog, "entry_name");
+    GtkWidget *entry = g_object_get_data (G_OBJECT (dialog), "moo-dialog-entry");
+    g_return_if_fail (GTK_IS_ENTRY (entry));
 
     if (file)
     {
@@ -194,71 +205,45 @@ static void set_file        (GtkWidget  *dialog,
 }
 
 
-static void set_label       (GtkWidget  *dialog,
-                             const char *label_name,
-                             const char *text)
-{
-    GtkWidget *label = get_widget (dialog, label_name);
-    gtk_label_set_text (GTK_LABEL (label), text ? text : "");
-}
-
-
-static void set_points_to   (GtkWidget  *dialog,
-                             const char *text)
-{
-    GtkWidget *label = get_widget (dialog, "points_to_label");
-    GtkWidget *caption = get_widget (dialog, "points_to_caption");
-
-    if (text && text[0])
-    {
-        gtk_widget_show (label);
-        gtk_widget_show (caption);
-        gtk_label_set_text (GTK_LABEL (label), text);
-    }
-    else
-    {
-        gtk_widget_hide (label);
-        gtk_widget_hide (caption);
-    }
-}
-
-
 static void set_icon        (GtkWidget  *dialog,
                              GdkPixbuf  *icon)
 {
-    GtkWidget *image = get_widget (dialog, "image_icon");
-    gtk_image_set_from_pixbuf (GTK_IMAGE (image), icon);
+    GtkImage *image = g_object_get_data (G_OBJECT (dialog), "moo-dialog-icon");
+    g_return_if_fail (GTK_IS_IMAGE (image));
+    gtk_image_set_from_pixbuf (image, icon);
 }
 
 
-#define MAX_DATE_LEN 1024
+static void erase_table (GtkWidget *table)
+{
+    gtk_container_foreach (GTK_CONTAINER (table),
+                           (GtkCallback) gtk_widget_destroy, NULL);
+}
+
 
 void        moo_file_props_dialog_set_file      (GtkWidget      *dialog,
                                                  MooFile        *file,
                                                  MooFolder      *folder)
 {
-    GdkPixbuf *icon;
     char *text;
-    GtkWidget *notebook;
-    MooFileTime mtime;
-    MooFileSize size;
-    char buf[MAX_DATE_LEN];
+    GtkWidget *notebook, *table;
+    char **info, **p;
+    int i;
 
     g_return_if_fail (GTK_IS_DIALOG (dialog));
     g_return_if_fail ((!file && !folder) || (file && MOO_IS_FOLDER (folder)));
     g_return_if_fail (g_object_get_data (G_OBJECT (dialog), MAGIC_STRING) == MAGIC_NUMBER);
 
-    notebook = get_widget (dialog, "notebook");
+    notebook = g_object_get_data (G_OBJECT (dialog), "moo-dialog-notebook");
+    table = g_object_get_data (G_OBJECT (dialog), "moo-dialog-table");
+    g_return_if_fail (GTK_IS_NOTEBOOK (notebook));
+    g_return_if_fail (GTK_IS_TABLE (table));
 
     if (!file)
     {
         gtk_widget_set_sensitive (notebook, FALSE);
-
+        erase_table (table);
         set_file (dialog, NULL, NULL);
-        set_label (dialog, "location_label", NULL);
-        set_label (dialog, "mime_label", NULL);
-        set_points_to (dialog, NULL);
-
         return;
     }
     else
@@ -266,64 +251,49 @@ void        moo_file_props_dialog_set_file      (GtkWidget      *dialog,
         gtk_widget_set_sensitive (notebook, TRUE);
     }
 
-    moo_folder_get_file_info (folder, file);
+    info = moo_folder_get_file_info (folder, file);
+    g_return_if_fail (info != NULL);
 
-    icon = moo_file_get_icon (file, dialog, GTK_ICON_SIZE_DIALOG);
-    set_icon (dialog, icon);
-
+    set_icon (dialog, moo_file_get_icon (file, dialog, GTK_ICON_SIZE_DIALOG));
     set_file (dialog, file, folder);
 
-    text = g_filename_display_name (moo_folder_get_path (folder));
-    set_label (dialog, "location_label", text);
-    g_free (text);
-
-    set_label (dialog, "mime_label", moo_file_get_mime_type (file));
-
-    if (MOO_FILE_IS_LINK (file))
+    for (p = info, i = 0; *p != NULL; ++i)
     {
-#ifndef __WIN32__
-        char *display_target;
-        const char *target = moo_file_link_get_target (file);
+        GtkWidget *label;
 
-        if (target)
-            display_target = g_filename_display_name (target);
-        else
-            display_target = g_strdup ("<Broken>");
+        if (!p[1])
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            break;
+        }
 
-        set_points_to (dialog, display_target);
-        g_free (display_target);
-#endif /* !__WIN32__ */
+        label = gtk_label_new (NULL);
+        text = g_markup_printf_escaped ("<b>%s</b>", *(p++));
+        gtk_label_set_markup (GTK_LABEL (label), text);
+        g_free (text);
+        gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
+        gtk_table_attach (GTK_TABLE (table), label, 0, 1, i, i+1,
+                          GTK_EXPAND | GTK_FILL, 0, 0, 0);
+
+        label = gtk_label_new (*(p++));
+        gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+        gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+        gtk_table_attach (GTK_TABLE (table), label, 1, 2, i, i+1,
+                          GTK_EXPAND | GTK_FILL, 0, 0, 0);
     }
-    else
-    {
-        set_points_to (dialog, NULL);
-    }
 
-    size = moo_file_get_size (file);
-    text = g_strdup_printf ("%" G_GINT64_FORMAT, size);
-    set_label (dialog, "size_label", text);
-    g_free (text);
+    gtk_widget_show_all (table);
 
-    mtime = moo_file_get_mtime (file);
-    if (strftime (buf, MAX_DATE_LEN, "%x %X", localtime ((time_t*)&mtime)))
-        set_label (dialog, "time_label", buf);
-    else
-        set_label (dialog, "time_label", NULL);
+    g_strfreev (info);
 }
 
-
-
-#ifndef MOO_CREATE_FOLDER_GLADE_FILE
-#define MOO_CREATE_FOLDER_GLADE_FILE "create_folder.glade"
-#endif
 
 
 char       *moo_create_folder_dialog        (GtkWidget  *parent,
                                              MooFolder  *folder)
 {
-    GtkWidget *dialog, *entry, *label;
-    GladeXML *xml;
-    char *path, *new_folder_name = NULL;
+    GtkWidget *dialog, *entry, *label, *alignment, *vbox;
+    char *text, *path, *new_folder_name = NULL;
 
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
 
@@ -332,31 +302,42 @@ char       *moo_create_folder_dialog        (GtkWidget  *parent,
     if (!GTK_IS_WINDOW (parent))
         parent = NULL;
 
-    xml = glade_xml_new (MOO_CREATE_FOLDER_GLADE_FILE, NULL, NULL);
+    dialog = gtk_dialog_new_with_buttons ("New Folder",
+                                          parent ? GTK_WINDOW (parent) : NULL,
+                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                          NULL);
 
-    if (!xml)
-        g_error ("Yes, glade is great usually, but not always");
+    alignment = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
+    gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 6, 6, 6, 6);
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG(dialog)->vbox), alignment, TRUE, TRUE, 0);
+    vbox = gtk_vbox_new (FALSE, 6);
+    gtk_container_add (GTK_CONTAINER (alignment), vbox);
 
-    dialog = glade_xml_get_widget (xml, "dialog");
-    entry = glade_xml_get_widget (xml, "entry");
-    label = glade_xml_get_widget (xml, "location_label");
-    g_assert (dialog != NULL && entry != NULL && label != NULL);
+    label = gtk_label_new (NULL);
+    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
     path = g_filename_display_name (moo_folder_get_path (folder));
-    gtk_label_set_text (GTK_LABEL (label), path);
+    text = g_strdup_printf ("Create new folder in %s", path);
+    gtk_label_set_text (GTK_LABEL (label), text);
     g_free (path);
+    g_free (text);
 
-    gtk_entry_set_text (GTK_ENTRY (entry), "New Folder");
-    gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
-    gtk_widget_grab_focus (entry);
+    entry = gtk_entry_new ();
+    gtk_box_pack_start (GTK_BOX (vbox), entry, FALSE, FALSE, 0);
 
     if (parent)
         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+
+    gtk_entry_set_text (GTK_ENTRY (entry), "New Folder");
+    gtk_widget_show_all (dialog);
+    gtk_widget_grab_focus (entry);
+    gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
 
     if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
         new_folder_name = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
 
     gtk_widget_destroy (dialog);
-    g_object_unref (xml);
     return new_folder_name;
 }

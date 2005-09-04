@@ -32,9 +32,9 @@ static void     moo_ui_object_set_id            (MooUIObject    *object,
                                                  const char     *id);
 static void     moo_ui_object_add_class_actions (MooUIObject    *object);
 
-static void     xml_changed     (MooUIObject    *object);
-static void     unref_xml       (GObject        *xml,
-                                 gpointer        object);
+static void     xml_changed                     (MooUIObject    *object);
+static void     disconnect_xml_changed          (MooUIXML       *xml,
+                                                 gpointer        object);
 
 
 GType moo_ui_object_get_type (void)
@@ -170,10 +170,11 @@ MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object)
         xml = moo_ui_xml_new ();
         g_signal_connect_swapped (xml, "changed",
                                   G_CALLBACK (xml_changed), object);
-        g_object_set_qdata_full (G_OBJECT (object),
-                                 MOO_UI_OBJECT_UI_XML_QUARK,
-                                 xml,
-                                 (GDestroyNotify) unref_xml);
+        g_object_weak_ref (G_OBJECT (object),
+                           (GWeakNotify) disconnect_xml_changed, xml);
+        g_object_set_qdata (G_OBJECT (object),
+                            MOO_UI_OBJECT_UI_XML_QUARK,
+                            xml);
         g_object_notify (G_OBJECT (object), "ui-object-xml");
     }
 
@@ -187,19 +188,27 @@ void             _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
     MooUIXML *old;
 
     g_return_if_fail (MOO_IS_UI_OBJECT (object));
+    g_return_if_fail (!xml || MOO_IS_UI_XML (xml));
 
     old = g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_UI_XML_QUARK);
     if (old == xml) return;
 
+    if (old)
+    {
+        g_object_weak_unref (G_OBJECT (object),
+                             (GWeakNotify) disconnect_xml_changed, old);
+        disconnect_xml_changed (old, object);
+    }
+
     if (xml)
     {
-        g_object_ref (G_OBJECT (xml));
         g_signal_connect_swapped (xml, "changed",
                                   G_CALLBACK (xml_changed), object);
-        g_object_set_qdata_full (G_OBJECT (object),
-                                 MOO_UI_OBJECT_UI_XML_QUARK,
-                                 xml,
-                                 (GDestroyNotify) unref_xml);
+        g_object_weak_ref (G_OBJECT (object),
+                           (GWeakNotify) disconnect_xml_changed, xml);
+        g_object_set_qdata (G_OBJECT (object),
+                            MOO_UI_OBJECT_UI_XML_QUARK,
+                            g_object_ref (xml));
     }
     else
     {
@@ -218,11 +227,13 @@ static void     xml_changed     (MooUIObject    *object)
 }
 
 
-static void     unref_xml       (GObject        *xml,
-                                 gpointer        object)
+static void     disconnect_xml_changed  (MooUIXML       *xml,
+                                         gpointer        object)
 {
-    g_signal_handlers_disconnect_by_func (xml, (gpointer)xml_changed,
-                                          object);
+    guint num;
+    g_assert (MOO_IS_UI_XML (xml));
+    num = g_signal_handlers_disconnect_by_func (xml, (gpointer) xml_changed, object);
+    g_assert (num == 1);
     g_object_unref (xml);
 }
 
@@ -307,6 +318,7 @@ const char      *moo_ui_object_class_get_name   (GObjectClass       *klass)
 }
 
 
+/* XXX check existing instances */
 void             moo_ui_object_class_install_action
                                                 (GObjectClass       *klass,
                                                  MooObjectFactory   *action,

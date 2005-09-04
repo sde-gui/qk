@@ -1,1 +1,1 @@
-EXTRA_DIST = create_folder.glade fileprops.glade bookmark_editor.glade
+EXTRA_DIST = bookmark_editor.glade

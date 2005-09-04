@@ -534,7 +534,7 @@ static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
 {
     GtkMenuItem *item;
     MooRecentMgr *mgr;
-    MooEditor *editor = _moo_edit_window_get_editor (window);
+    MooEditor *editor = moo_edit_window_get_editor (window);
 
     g_return_val_if_fail (editor != NULL, NULL);
 
@@ -720,6 +720,10 @@ void             moo_editor_open            (MooEditor      *editor,
                 _moo_edit_window_insert_doc (window, doc, -1);
                 moo_editor_add_doc (editor, window, doc, loader, saver);
             }
+            else
+            {
+                bring_to_front = doc;
+            }
 
             moo_recent_mgr_add_recent (editor->priv->recent_mgr, info);
 
@@ -730,7 +734,10 @@ void             moo_editor_open            (MooEditor      *editor,
     }
 
     if (bring_to_front)
+    {
         moo_editor_set_active_doc (editor, bring_to_front);
+        gtk_widget_grab_focus (GTK_WIDGET (bring_to_front));
+    }
 }
 
 
