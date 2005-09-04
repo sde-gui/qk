@@ -3600,6 +3600,7 @@ void        moo_paned_detach_pane       (MooPaned       *paned,
     }
 
     gtk_window_present (GTK_WINDOW (pane->window));
+    gtk_widget_queue_resize (GTK_WIDGET (paned));
 }
 
 
@@ -3628,6 +3629,7 @@ void        moo_paned_attach_pane       (MooPaned       *paned,
 
     gtk_widget_reparent (pane->child, pane->child_holder);
     gtk_widget_hide (pane->window);
+    gtk_widget_queue_resize (GTK_WIDGET (paned));
 }
 
 
