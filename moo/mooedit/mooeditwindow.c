@@ -689,21 +689,27 @@ static void moo_edit_window_next_tab        (MooEditWindow   *window)
 
 static void     setup_notebook          (MooEditWindow      *window)
 {
-    GtkWidget *button, *icon;
+    GtkWidget *button, *icon, *frame;
 
     g_signal_connect_after (window->priv->notebook, "switch-page",
                             G_CALLBACK (notebook_switch_page), window);
     g_signal_connect (window->priv->notebook, "populate-popup",
                       G_CALLBACK (notebook_populate_popup), window);
 
+    frame = gtk_aspect_frame_new (NULL, 0.5, 0.5, 1.0, FALSE);
+    gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_NONE);
+
     button = gtk_button_new ();
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
-    icon = gtk_image_new_from_stock (MOO_STOCK_CLOSE, MOO_ICON_SIZE_REAL_SMALL);
-    gtk_container_add (GTK_CONTAINER (button), icon);
-    gtk_widget_show_all (button);
-    moo_notebook_set_action_widget (window->priv->notebook, button, TRUE);
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (moo_edit_window_close_tab), window);
+
+    icon = gtk_image_new_from_stock (MOO_STOCK_CLOSE, MOO_ICON_SIZE_REAL_SMALL);
+
+    gtk_container_add (GTK_CONTAINER (button), icon);
+    gtk_container_add (GTK_CONTAINER (frame), button);
+    gtk_widget_show_all (frame);
+    moo_notebook_set_action_widget (window->priv->notebook, frame, TRUE);
 }
 
 
