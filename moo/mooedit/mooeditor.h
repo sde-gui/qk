@@ -97,7 +97,9 @@ MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 
 
 #ifdef MOOEDIT_COMPILATION
+/* in mooeditplugin.c */
 MooEditWindow   *_moo_edit_window_new           (MooEditor      *editor);
+void             _moo_edit_window_close         (MooEditWindow  *window);
 
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc,

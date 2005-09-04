@@ -15,6 +15,7 @@
 #define __MOO_EDIT_WINDOW_H__
 
 #include "mooedit/mooedit.h"
+#include "mooedit/moobigpaned.h"
 #include "mooui/moowindow.h"
 
 G_BEGIN_DECLS
@@ -35,6 +36,7 @@ typedef struct _MooEditWindowClass      MooEditWindowClass;
 struct _MooEditWindow
 {
     MooWindow               parent;
+    MooBigPaned            *paned;
     MooEditWindowPrivate   *priv;
 };
 

@@ -52,6 +52,8 @@ libmooedit_la_SOURCES =     \
     mooeditlangmgr.h        \
     mooeditor.c             \
     mooeditor.h             \
+    mooeditplugin.c         \
+    mooeditplugin.h         \
     mooeditprefs.c          \
     mooeditprefs.h          \
     mooeditprefs-glade.c    \
@@ -60,7 +62,6 @@ libmooedit_la_SOURCES =     \
     mooeditsearch.h         \
     mooeditwindow.c         \
     mooeditwindow.h         \
-    mooeditwindow-pane.h    \
     moonotebook.c           \
     moonotebook.h           \
     moopaned.c              \

@@ -882,8 +882,7 @@ static void          do_close_window        (MooEditor      *editor,
 
     window_list_delete (editor, info);
 
-    /* XXX */
-    gtk_widget_destroy (GTK_WIDGET (window));
+    _moo_edit_window_close (window);
 
     if (!editor->priv->windows)
         g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0);

@@ -13,7 +13,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit-private.h"
-#include "mooedit/mooeditwindowpane.h"
+#include "mooedit/mooeditplugin.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/moobigpaned.h"
 #include "mooedit/moonotebook.h"
@@ -29,19 +29,14 @@
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
 
-static GSList *registered_panes = NULL;
-static GSList *window_instances = NULL;
-
 
 struct _MooEditWindowPrivate {
     MooEditor *editor;
     GtkStatusbar *statusbar;
     guint statusbar_context_id;
-    MooBigPaned *paned;
     MooNotebook *notebook;
     char *app_name;
     gboolean use_fullname;
-    GHashTable *panes;
 
     GtkWidget *languages_menu_item;
     GHashTable *lang_menu_items;
@@ -63,11 +58,8 @@ static void     moo_edit_window_get_property(GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
-static void     moo_edit_window_destroy     (GtkObject      *object);
 
 static void     register_fileview           (void);
-static void     moo_edit_window_add_panes   (MooEditWindow  *window);
-static void     moo_edit_window_remove_panes(MooEditWindow  *window);
 
 static gboolean moo_edit_window_close       (MooEditWindow  *window);
 
@@ -137,15 +129,12 @@ enum {
 static void moo_edit_window_class_init (MooEditWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
 
     gobject_class->constructor = moo_edit_window_constructor;
     gobject_class->finalize = moo_edit_window_finalize;
     gobject_class->set_property = moo_edit_window_set_property;
     gobject_class->get_property = moo_edit_window_get_property;
-
-    gtkobject_class->destroy = moo_edit_window_destroy;
 
     window_class->close = (gboolean (*) (MooWindow*))moo_edit_window_close;
 
@@ -417,8 +406,6 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
 #endif
 
     window->priv = g_new0 (MooEditWindowPrivate, 1);
-    window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                 g_free, g_object_unref);
     window->priv->app_name = g_strdup ("medit");
     window->priv->lang_menu_items =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
@@ -427,16 +414,6 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
                   NULL);
-}
-
-
-MooEditWindow   *_moo_edit_window_new           (MooEditor      *editor)
-{
-    MooEditWindow *window;
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    window = g_object_new (MOO_TYPE_EDIT_WINDOW, "editor", editor, NULL);
-    gtk_widget_show (GTK_WIDGET (window));
-    return window;
 }
 
 
@@ -451,7 +428,6 @@ static void moo_edit_window_finalize       (GObject      *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     /* XXX */
-    g_hash_table_destroy (window->priv->panes);
     g_hash_table_destroy (window->priv->lang_menu_items);
     g_free (window->priv->app_name);
     g_free (window->priv);
@@ -504,13 +480,6 @@ static void     moo_edit_window_get_property(GObject        *object,
 }
 
 
-MooBigPaned *moo_edit_window_get_paned      (MooEditWindow          *window)
-{
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-    return window->priv->paned;
-}
-
-
 void         _moo_edit_window_set_app_name      (MooEditWindow  *window,
                                                  const char     *name)
 {
@@ -560,7 +529,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
                           NULL);
     gtk_widget_show (paned);
     gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), paned, TRUE, TRUE, 0);
-    window->priv->paned = MOO_BIG_PANED (paned);
+    window->paned = MOO_BIG_PANED (paned);
 
     notebook = g_object_new (MOO_TYPE_NOTEBOOK,
                              "show-tabs", TRUE,
@@ -568,30 +537,13 @@ GObject        *moo_edit_window_constructor (GType                  type,
                              "enable-reordering", TRUE,
                              NULL);
     gtk_widget_show (notebook);
-    moo_big_paned_add_child (window->priv->paned, notebook);
+    moo_big_paned_add_child (window->paned, notebook);
     window->priv->notebook = MOO_NOTEBOOK (notebook);
     setup_notebook (window);
 
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
 
-    window_instances = g_slist_append (window_instances, window);
-    moo_edit_window_add_panes (window);
-
     return object;
-}
-
-
-static void     moo_edit_window_destroy     (GtkObject      *object)
-{
-    MooEditWindow *window = MOO_EDIT_WINDOW (object);
-
-    if (g_slist_find (window_instances, window))
-    {
-        moo_edit_window_remove_panes (window);
-        window_instances = g_slist_remove (window_instances, window);
-    }
-
-    GTK_OBJECT_CLASS(moo_edit_window_parent_class)->destroy (object);
 }
 
 
@@ -1498,292 +1450,83 @@ static void     edit_cursor_moved       (MooEditWindow      *window,
 
 
 /****************************************************************************/
-/* Panes
- */
-
-typedef struct {
-    MooEditWindowPaneInfo info;
-    gpointer data;
-    gboolean initialized;
-} PaneFullInfo;
-
-static PaneFullInfo *pane_full_info_new         (MooEditWindowPaneInfo  *pane_info,
-                                                 gpointer                data);
-static void          pane_full_info_free        (PaneFullInfo           *info);
-
-static PaneFullInfo *find_pane                  (const char             *id);
-static void          moo_edit_window_add_pane   (MooEditWindow          *window,
-                                                 const char             *id);
-static void          moo_edit_window_remove_pane(MooEditWindow          *window,
-                                                 const char             *id);
-
-
-void
-moo_edit_window_register_pane (MooEditWindowPaneInfo  *info,
-                               gpointer                data)
-{
-    PaneFullInfo *full_info;
-    GSList *l;
-
-    g_return_if_fail (info != NULL);
-    g_return_if_fail (info->id && info->id[0]);
-    g_return_if_fail (g_utf8_validate (info->id, -1, NULL));
-    g_return_if_fail (!info->name || g_utf8_validate (info->name, -1, NULL));
-    g_return_if_fail (!info->description || g_utf8_validate (info->description, -1, NULL));
-    g_return_if_fail (info->create != NULL);
-
-    full_info = pane_full_info_new (info, data);
-    g_return_if_fail (full_info != NULL);
-
-    if (find_pane (full_info->info.id))
-    {
-        g_warning ("pane with id '%s' already registered", info->id);
-        moo_edit_window_unregister_pane (full_info->info.id);
-    }
-
-    g_return_if_fail (find_pane (full_info->info.id) == NULL);
-
-    if (full_info->info.params->enabled)
-    {
-        if (full_info->info.init && !full_info->info.init (&full_info->info, full_info->data))
-        {
-            pane_full_info_free (full_info);
-            return;
-        }
-        else
-        {
-            full_info->initialized = TRUE;
-        }
-    }
-
-    registered_panes = g_slist_append (registered_panes, full_info);
-
-    for (l = window_instances; l != NULL; l = l->next)
-        moo_edit_window_add_pane (l->data, full_info->info.id);
-}
-
-
-void
-moo_edit_window_unregister_pane (const char *id)
-{
-    PaneFullInfo *full_info;
-    GSList *l;
-
-    g_return_if_fail (id != NULL);
-
-    full_info = find_pane (id);
-    g_return_if_fail (full_info != NULL);
-
-    registered_panes = g_slist_remove (registered_panes, full_info);
-
-    for (l = window_instances; l != NULL; l = l->next)
-        moo_edit_window_remove_pane (l->data, full_info->info.id);
-
-    if (full_info->initialized && full_info->info.deinit)
-        full_info->info.deinit (&full_info->info, full_info->data);
-    full_info->initialized = FALSE;
-
-    pane_full_info_free (full_info);
-}
-
-
-static void
-moo_edit_window_add_panes (MooEditWindow *window)
-{
-    GSList *l;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    for (l = registered_panes; l != NULL; l = l->next)
-    {
-        PaneFullInfo *full_info = l->data;
-        moo_edit_window_add_pane (window, full_info->info.id);
-    }
-}
-
-
-static void
-moo_edit_window_remove_panes (MooEditWindow *window)
-{
-    GSList *l, *reversed;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    reversed = g_slist_copy (registered_panes);
-    reversed = g_slist_reverse (reversed);
-
-    for (l = reversed; l != NULL; l = l->next)
-    {
-        PaneFullInfo *full_info = l->data;
-        moo_edit_window_remove_pane (window, full_info->info.id);
-    }
-
-    g_slist_free (reversed);
-}
-
-
-static PaneFullInfo*
-find_pane (const char *id)
-{
-    GSList *l;
-
-    g_return_val_if_fail (id != NULL, NULL);
-
-    for (l = registered_panes; l != NULL; l = l->next)
-    {
-        PaneFullInfo *full_info = l->data;
-        if (!strcmp (full_info->info.id, id))
-            return full_info;
-    }
-
-    return NULL;
-}
-
-
-static void
-moo_edit_window_add_pane (MooEditWindow          *window,
-                          const char             *id)
-{
-    PaneFullInfo *full_info;
-    MooPaneLabel *label = NULL;
-    GtkWidget *widget = NULL;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    full_info = find_pane (id);
-    g_return_if_fail (full_info != NULL);
-
-    if (!full_info->info.params->enabled)
-        return;
-
-    if (!full_info->initialized)
-    {
-        if (full_info->info.init && !full_info->info.init (&full_info->info, full_info->data))
-            return;
-        full_info->initialized = TRUE;
-    }
-
-    if (!full_info->info.create (window, &full_info->info, &label, &widget, full_info->data))
-        return;
-
-    g_return_if_fail (GTK_IS_WIDGET (widget) && label != NULL);
-
-    if (moo_big_paned_insert_pane (window->priv->paned, widget, label,
-                                   full_info->info.params->position, -1) >= 0)
-        g_hash_table_insert (window->priv->panes,
-                             g_strdup (full_info->info.id),
-                             g_object_ref (widget));
-
-    gtk_widget_unref (widget);
-    moo_pane_label_free (label);
-}
-
-
-static void
-moo_edit_window_remove_pane (MooEditWindow          *window,
-                             const char             *id)
-{
-    PaneFullInfo *full_info;
-    GtkWidget *widget;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    full_info = find_pane (id);
-    g_return_if_fail (full_info != NULL);
-
-    widget = g_hash_table_lookup (window->priv->panes, id);
-
-    if (widget)
-    {
-        if (full_info->info.destroy)
-            full_info->info.destroy (window, &full_info->info, full_info->data);
-
-        g_hash_table_remove (window->priv->panes, full_info->info.id);
-        moo_big_paned_remove_pane (window->priv->paned, widget);
-    }
-}
-
-
-static PaneFullInfo*
-pane_full_info_new (MooEditWindowPaneInfo  *pane_info,
-                    gpointer                data)
-{
-    PaneFullInfo *full_info;
-
-    g_return_val_if_fail (pane_info != NULL, NULL);
-    g_return_val_if_fail (pane_info->id != NULL, NULL);
-    g_return_val_if_fail (pane_info->create != NULL, NULL);
-    g_return_val_if_fail (pane_info->params != NULL, NULL);
-
-    full_info = g_new0 (PaneFullInfo, 1);
-
-    full_info->data = data;
-    full_info->initialized = FALSE;
-
-    full_info->info.id = g_strdup (pane_info->id);
-    full_info->info.name = g_strdup (pane_info->name ? pane_info->name : pane_info->id);
-    full_info->info.description = g_strdup (pane_info->description ?
-                                                pane_info->description :
-                                                full_info->info.name);
-
-    full_info->info.init = pane_info->init;
-    full_info->info.deinit = pane_info->deinit;
-    full_info->info.create = pane_info->create;
-    full_info->info.destroy = pane_info->destroy;
-
-    full_info->info.params = g_new (MooEditWindowPaneParams, 1);
-    full_info->info.params->position = pane_info->params->position;
-    full_info->info.params->enabled = pane_info->params->enabled;
-
-    return full_info;
-}
-
-
-static void          pane_full_info_free        (PaneFullInfo           *full_info)
-{
-    if (full_info)
-    {
-        g_free (full_info->info.params);
-        g_free ((char*) full_info->info.id);
-        g_free ((char*) full_info->info.name);
-        g_free ((char*) full_info->info.description);
-        g_free (full_info);
-    }
-}
-
-
-GtkWidget   *moo_edit_window_lookup_pane    (MooEditWindow          *window,
-                                             const char             *id)
-{
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-    g_return_val_if_fail (id != NULL, NULL);
-    g_return_val_if_fail (window->priv->panes != NULL, NULL);
-    return g_hash_table_lookup (window->priv->panes, id);
-}
-
-
-/****************************************************************************/
 /* Fileview pane
  */
 
 #define FILEVIEW_PANE_ID    "fileview"
-
 #define FILEVIEW_DIR_PREFS  "panes/fileview/last_dir"
+
+
+typedef struct {
+    MooEditWindow *window;
+    MooFileView *fileview;
+} FileViewPluginStuff;
+
+
+// static void
+// fileview_factory_deinit_func (G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
+// {
+//     /* XXX remove action */
+// }
+
+
+// static gboolean
+// fileview_create_func (MooEditWindow *window,
+//                       G_GNUC_UNUSED MooEditWindowPaneInfo  *info,
+//                       MooPaneLabel **label,
+//                       GtkWidget    **widget)
+// {
+//     GtkWidget *fileview;
+//
+//     fileview = moo_file_view_new ();
+//
+//     g_idle_add ((GSourceFunc) fileview_go_home, fileview);
+//     g_signal_connect (fileview, "notify::current-directory",
+//                       G_CALLBACK (fileview_chdir), NULL);
+//     g_signal_connect (fileview, "activate",
+//                       G_CALLBACK (fileview_activate), window);
+//
+//     *widget = fileview;
+//     gtk_object_sink (GTK_OBJECT (g_object_ref (*widget)));
+//     *label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
+//                                  NULL, NULL, "File Selector");
+//
+//     return TRUE;
+// }
+
+
+// static void
+// fileview_destroy_func (MooEditWindow          *window,
+//                        G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
+// {
+//     GtkWidget *fileview = moo_edit_window_lookup_pane (window, FILEVIEW_PANE_ID);
+//     g_return_if_fail (fileview != NULL);
+//     g_signal_handlers_disconnect_by_func (fileview,
+//                                           (gpointer) fileview_chdir,
+//                                           NULL);
+//     g_signal_handlers_disconnect_by_func (fileview,
+//                                           (gpointer) fileview_activate,
+//                                           window);
+// }
 
 
 static void
 show_fileview (MooEditWindow *window)
 {
-    GtkWidget *fileview = moo_edit_window_lookup_pane (window, FILEVIEW_PANE_ID);
-    MooBigPaned *paned = moo_edit_window_get_paned (window);
+    MooEditPluginWindowData *data;
+    FileViewPluginStuff *stuff;
 
-    if (MOO_IS_BIG_PANED (paned) && MOO_IS_FILE_VIEW (fileview))
-        moo_big_paned_present_pane (paned, fileview);
+    data = moo_edit_plugin_get_window_data (window, FILEVIEW_PANE_ID);
+    g_return_if_fail (data != NULL && data->data != NULL);
+    stuff = data->data;
+
+    moo_big_paned_present_pane (window->paned,
+                                GTK_WIDGET (stuff->fileview));
 }
 
 
 static gboolean
-fileview_factory_init_func (G_GNUC_UNUSED MooEditWindowPaneInfo *info)
+fileview_plugin_init (G_GNUC_UNUSED MooEditPluginInfo *info)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_val_if_fail (klass != NULL, FALSE);
@@ -1805,9 +1548,32 @@ fileview_factory_init_func (G_GNUC_UNUSED MooEditWindowPaneInfo *info)
 
 
 static void
-fileview_factory_deinit_func (G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
+fileview_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info)
 {
     /* XXX remove action */
+}
+
+
+static void
+fileview_plugin_attach (G_GNUC_UNUSED MooEditPluginInfo *info,
+                        MooEditPluginWindowData *plugin_window_data)
+{
+    FileViewPluginStuff *stuff;
+
+    stuff = g_new0 (FileViewPluginStuff, 1);
+    stuff->window = plugin_window_data->window;
+    stuff->fileview = NULL;
+
+    plugin_window_data->data = stuff;
+}
+
+
+static void
+fileview_plugin_detach (G_GNUC_UNUSED MooEditPluginInfo *info,
+                        MooEditPluginWindowData    *plugin_window_data)
+{
+    g_free (plugin_window_data->data);
+    plugin_window_data->data = NULL;
 }
 
 
@@ -1868,42 +1634,52 @@ fileview_activate (G_GNUC_UNUSED MooFileView *fileview,
 
 
 static gboolean
-fileview_create_func (MooEditWindow *window,
-                      G_GNUC_UNUSED MooEditWindowPaneInfo  *info,
-                      MooPaneLabel **label,
-                      GtkWidget    **widget)
+fileview_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
+                             MooEditPluginWindowData    *plugin_window_data,
+                             MooPaneLabel              **label,
+                             GtkWidget                 **widget)
 {
     GtkWidget *fileview;
+    FileViewPluginStuff *stuff;
+
+    g_return_val_if_fail (plugin_window_data->data != NULL, FALSE);
+    stuff = plugin_window_data->data;
 
     fileview = moo_file_view_new ();
+    gtk_object_sink (GTK_OBJECT (g_object_ref (fileview)));
 
     g_idle_add ((GSourceFunc) fileview_go_home, fileview);
     g_signal_connect (fileview, "notify::current-directory",
                       G_CALLBACK (fileview_chdir), NULL);
     g_signal_connect (fileview, "activate",
-                      G_CALLBACK (fileview_activate), window);
+                      G_CALLBACK (fileview_activate),
+                      plugin_window_data->window);
 
     *widget = fileview;
-    gtk_object_sink (GTK_OBJECT (g_object_ref (*widget)));
     *label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                  NULL, NULL, "File Selector");
 
+    stuff->fileview = MOO_FILE_VIEW (fileview);
     return TRUE;
 }
 
 
 static void
-fileview_destroy_func (MooEditWindow          *window,
-                       G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
+fileview_plugin_pane_destroy (G_GNUC_UNUSED MooEditPluginInfo *info,
+                              MooEditPluginWindowData    *plugin_window_data)
 {
-    GtkWidget *fileview = moo_edit_window_lookup_pane (window, FILEVIEW_PANE_ID);
-    g_return_if_fail (fileview != NULL);
-    g_signal_handlers_disconnect_by_func (fileview,
+    FileViewPluginStuff *stuff;
+
+    g_return_if_fail (plugin_window_data->data != NULL);
+    stuff = plugin_window_data->data;
+
+    g_return_if_fail (stuff->fileview != NULL);
+    g_signal_handlers_disconnect_by_func (stuff->fileview,
                                           (gpointer) fileview_chdir,
                                           NULL);
-    g_signal_handlers_disconnect_by_func (fileview,
+    g_signal_handlers_disconnect_by_func (stuff->fileview,
                                           (gpointer) fileview_activate,
-                                          window);
+                                          stuff->window);
 }
 
 
@@ -1913,23 +1689,22 @@ static void     register_fileview       (void)
 
     if (!done)
     {
-        MooEditWindowPaneParams params = {
-            MOO_PANE_POS_LEFT,
-            TRUE
-        };
+        MooEditPluginParams params = { TRUE, TRUE, MOO_PANE_POS_LEFT };
 
-        MooEditWindowPaneInfo info = {
+        MooEditPluginInfo info = {
             FILEVIEW_PANE_ID,
             "File Selector",
             "File Selector",
-            (MooPaneFactoryInitFunc) fileview_factory_init_func,
-            (MooPaneFactoryDeinitFunc) fileview_factory_deinit_func,
-            (MooPaneCreateFunc) fileview_create_func,
-            (MooPaneDestroyFunc) fileview_destroy_func,
+            (MooEditPluginInitFunc) fileview_plugin_init,
+            (MooEditPluginDeinitFunc) fileview_plugin_deinit,
+            (MooEditPluginWindowAttachFunc) fileview_plugin_attach,
+            (MooEditPluginWindowDetachFunc) fileview_plugin_detach,
+            (MooEditPluginPaneCreateFunc) fileview_plugin_pane_create,
+            (MooEditPluginPaneDestroyFunc) fileview_plugin_pane_destroy,
             &params
         };
 
-        moo_edit_window_register_pane (&info, NULL);
+        moo_edit_plugin_register (&info, NULL);
     }
 
     done = TRUE;
