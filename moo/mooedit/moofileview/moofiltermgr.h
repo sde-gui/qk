@@ -58,6 +58,9 @@ void             moo_filter_mgr_attach              (MooFilterMgr   *mgr,
 GtkFileFilter   *moo_filter_mgr_get_filter          (MooFilterMgr   *mgr,
                                                      GtkTreeIter    *iter,
                                                      const char     *user_id);
+void             moo_filter_mgr_set_last_filter     (MooFilterMgr   *mgr,
+                                                     GtkTreeIter    *iter,
+                                                     const char     *user_id);
 
 GtkFileFilter   *moo_filter_mgr_get_null_filter     (MooFilterMgr   *mgr);
 GtkFileFilter   *moo_filter_mgr_get_last_filter     (MooFilterMgr   *mgr,

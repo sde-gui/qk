@@ -12,6 +12,9 @@
  */
 
 #include "moofiltermgr.h"
+#ifdef __MOO__
+#include "mooutils/mooprefs.h"
+#endif
 #include <string.h>
 
 #define NUM_USER_FILTERS  5
@@ -43,21 +46,24 @@ typedef struct {
     guint            max_num_user;
 } FilterStore;
 
-static FilterStore  *filter_store_new           (MooFilterMgr   *mgr);
-static void          filter_store_free          (FilterStore    *store);
+static FilterStore  *filter_store_new               (MooFilterMgr   *mgr);
+static void          filter_store_free              (FilterStore    *store);
 
-static void          filter_store_add_builtin   (FilterStore    *store,
-                                                 Filter         *filter,
-                                                 int             position);
-static void          filter_store_add_user      (FilterStore    *store,
-                                                 Filter         *filter);
-static Filter       *filter_store_get_last      (FilterStore    *store);
+static void          filter_store_add_builtin       (FilterStore    *store,
+                                                     Filter         *filter,
+                                                     int             position);
+static void          filter_store_add_user          (FilterStore    *store,
+                                                     Filter         *filter);
+static Filter       *filter_store_get_last          (FilterStore    *store);
+static GSList       *filter_store_list_user_filters (FilterStore    *store);
 
 
 struct _MooFilterMgrPrivate {
     FilterStore *default_store;
     GHashTable  *named_stores;  /* user_id -> FilterStore* */
     GHashTable  *filters;       /* glob -> Filter* */
+    gboolean     loaded;
+    guint        save_idle_id;
 };
 
 enum {
@@ -91,6 +97,12 @@ static void          mgr_set_last_filter        (MooFilterMgr   *mgr,
 static Filter       *mgr_new_user_filter        (MooFilterMgr   *mgr,
                                                  const char     *glob,
                                                  const char     *user_id);
+static GSList       *mgr_list_user_ids          (MooFilterMgr   *mgr);
+
+#ifdef __MOO__
+static void          mgr_load                   (MooFilterMgr   *mgr);
+static void          mgr_save                   (MooFilterMgr   *mgr);
+#endif
 
 
 /* MOO_TYPE_FILTER_MGR */
@@ -129,6 +141,9 @@ moo_filter_mgr_finalize (GObject *object)
 {
     MooFilterMgr *mgr = MOO_FILTER_MGR (object);
 
+    if (mgr->priv->save_idle_id)
+        g_source_remove (mgr->priv->save_idle_id);
+
     filter_store_free (mgr->priv->default_store);
     g_hash_table_destroy (mgr->priv->named_stores);
     g_hash_table_destroy (mgr->priv->filters);
@@ -155,6 +170,10 @@ moo_filter_mgr_init_filter_combo (MooFilterMgr   *mgr,
 
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
     g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
 
     store = mgr_get_store (mgr, user_id, TRUE);
     g_return_if_fail (store != NULL);
@@ -209,6 +228,23 @@ mgr_get_store (MooFilterMgr   *mgr,
 }
 
 
+static void
+prepend_id (const char *user_id,
+            G_GNUC_UNUSED gpointer store,
+            GSList   **list)
+{
+    *list = g_slist_prepend (*list, g_strdup (user_id));
+}
+
+static GSList*
+mgr_list_user_ids (MooFilterMgr *mgr)
+{
+    GSList *list = NULL;
+    g_hash_table_foreach (mgr->priv->named_stores, (GHFunc) prepend_id, &list);
+    return g_slist_reverse (list);
+}
+
+
 GtkFileFilter*
 moo_filter_mgr_get_filter (MooFilterMgr   *mgr,
                            GtkTreeIter    *iter,
@@ -220,12 +256,43 @@ moo_filter_mgr_get_filter (MooFilterMgr   *mgr,
     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
     g_return_val_if_fail (iter != NULL, NULL);
 
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
     store = mgr_get_store (mgr, user_id, FALSE);
     g_return_val_if_fail (store != NULL, NULL);
 
-    gtk_tree_model_get (GTK_TREE_MODEL (store->filters), iter, &filter, -1);
+    gtk_tree_model_get (GTK_TREE_MODEL (store->filters), iter,
+                        COLUMN_FILTER, &filter, -1);
 
     return filter_get_gtk_filter (filter);
+}
+
+
+void
+moo_filter_mgr_set_last_filter (MooFilterMgr   *mgr,
+                                GtkTreeIter    *iter,
+                                const char     *user_id)
+{
+    FilterStore *store;
+    Filter *filter = NULL;
+
+    g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
+    g_return_if_fail (iter != NULL);
+
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
+    store = mgr_get_store (mgr, user_id, FALSE);
+    g_return_if_fail (store != NULL);
+
+    gtk_tree_model_get (GTK_TREE_MODEL (store->filters), iter,
+                        COLUMN_FILTER, &filter, -1);
+    g_return_if_fail (filter != NULL);
+
+    mgr_set_last_filter (mgr, user_id, filter);
 }
 
 
@@ -249,6 +316,11 @@ moo_filter_mgr_get_last_filter (MooFilterMgr   *mgr,
                                 const char     *user_id)
 {
     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
+
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
     return filter_get_gtk_filter (mgr_get_last_filter (mgr, user_id));
 }
 
@@ -281,6 +353,10 @@ mgr_set_last_filter (MooFilterMgr   *mgr,
 
     store = mgr_get_store (mgr, user_id, TRUE);
     store->last_filter = filter;
+
+#ifdef __MOO__
+    mgr_save (mgr);
+#endif
 }
 
 
@@ -291,6 +367,11 @@ moo_filter_mgr_new_user_filter (MooFilterMgr   *mgr,
 {
     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
     g_return_val_if_fail (glob != NULL, NULL);
+
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
     return filter_get_gtk_filter (mgr_new_user_filter (mgr, glob, user_id));
 }
 
@@ -308,6 +389,11 @@ mgr_new_user_filter (MooFilterMgr   *mgr,
 
     store = mgr_get_store (mgr, user_id, TRUE);
     filter_store_add_user (store, filter);
+
+#ifdef __MOO__
+    mgr_save (mgr);
+#endif
+
     return filter;
 }
 
@@ -326,11 +412,16 @@ moo_filter_mgr_new_builtin_filter (MooFilterMgr   *mgr,
     g_return_val_if_fail (glob != NULL, NULL);
     g_return_val_if_fail (description != NULL, NULL);
 
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
     filter = mgr_new_filter (mgr, description, glob, FALSE);
     g_return_val_if_fail (filter != NULL, NULL);
 
     store = mgr_get_store (mgr, user_id, TRUE);
     filter_store_add_builtin (store, filter, position);
+
     return filter->filter;
 }
 
@@ -448,6 +539,10 @@ moo_filter_mgr_attach (MooFilterMgr   *mgr,
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
     g_return_if_fail (GTK_IS_FILE_CHOOSER (dialog));
 
+#ifdef __MOO__
+    mgr_load (mgr);
+#endif
+
     alignment = gtk_alignment_new (1, 0.5, 0, 1);
     gtk_widget_show (alignment);
     gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog), alignment);
@@ -524,6 +619,58 @@ filter_store_free (FilterStore *store)
 }
 
 
+static GSList*
+filter_store_list_user_filters (FilterStore *store)
+{
+    GSList *list = NULL;
+    GtkTreeIter iter;
+    guint offset;
+
+    g_return_val_if_fail (store != NULL, NULL);
+
+    if (!store->num_user)
+        return NULL;
+
+    offset = store->num_builtin + (store->has_separator ? 1 : 0);
+
+    if (!gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters), &iter, NULL, offset))
+        g_return_val_if_reached (NULL);
+
+    do
+    {
+        Filter *filter = NULL;
+        gtk_tree_model_get (GTK_TREE_MODEL (store->filters), &iter,
+                            COLUMN_FILTER, &filter, -1);
+        list = g_slist_prepend (list, filter);
+    }
+    while (gtk_tree_model_iter_next (GTK_TREE_MODEL (store->filters), &iter));
+
+    return g_slist_reverse (list);
+}
+
+
+static gboolean
+filter_store_find_builtin (FilterStore    *store,
+                           Filter         *filter,
+                           GtkTreeIter    *iter)
+{
+    guint i;
+    Filter *filt = NULL;
+
+    for (i = 0; i < store->num_builtin; ++i)
+    {
+        gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters),
+                                       iter, NULL, i);
+        gtk_tree_model_get (GTK_TREE_MODEL (store->filters), iter,
+                            COLUMN_FILTER, &filt, -1);
+        if (filter == filt)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 static void
 filter_store_add_builtin (FilterStore    *store,
                           Filter         *filter,
@@ -535,6 +682,9 @@ filter_store_add_builtin (FilterStore    *store,
     g_return_if_fail (filter != NULL);
 
     store->last_filter = filter;
+
+    if (filter_store_find_builtin (store, filter, &iter))
+        return;
 
     if (position < 0 || position > (int) store->num_builtin)
         position = store->num_builtin;
@@ -564,28 +714,6 @@ filter_store_find_user (FilterStore    *store,
     offset = store->num_builtin + (store->has_separator ? 1 : 0);
 
     for (i = offset; i < offset + store->num_user; ++i)
-    {
-        gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters),
-                                       iter, NULL, i);
-        gtk_tree_model_get (GTK_TREE_MODEL (store->filters), iter,
-                            COLUMN_FILTER, &filt, -1);
-        if (filter == filt)
-            return TRUE;
-    }
-
-    return FALSE;
-}
-
-
-static gboolean
-filter_store_find_builtin (FilterStore    *store,
-                           Filter         *filter,
-                           GtkTreeIter    *iter)
-{
-    guint i;
-    Filter *filt = NULL;
-
-    for (i = 0; i < store->num_builtin; ++i)
     {
         gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters),
                                        iter, NULL, i);
@@ -766,12 +894,12 @@ static GtkFileFilter *filter_get_gtk_filter (Filter     *filter)
 }
 
 
-// static const char*
-// filter_get_glob (Filter *filter)
-// {
-//     g_return_val_if_fail (filter != NULL, NULL);
-//     return filter->glob;
-// }
+static const char*
+filter_get_glob (Filter *filter)
+{
+    g_return_val_if_fail (filter != NULL, NULL);
+    return filter->glob;
+}
 
 
 static const char*
@@ -782,361 +910,253 @@ filter_get_description (Filter *filter)
 }
 
 
-// void             moo_filter_mgr_init_filter_combo   (MooFilterMgr *mgr,
-//                                                      GtkComboBox    *combo)
-// {
-//     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
-//     g_return_if_fail (GTK_IS_COMBO_BOX (combo));
-//
-//     gtk_combo_box_set_model (combo, GTK_TREE_MODEL (mgr->priv->filters));
-//     gtk_combo_box_set_row_separator_func (combo, row_is_separator,
-//                                           NULL, NULL);
-//
-//     gtk_combo_box_entry_set_text_column (GTK_COMBO_BOX_ENTRY (combo),
-//                                          COLUMN_DESCRIPTION);
-// }
+/***************************************************************************/
+/* Loading and saving
+ */
+
+#ifdef __MOO__
+
+#define FILTERS_ROOT            "Editor/filters"
+#define ELEMENT_DEFAULT         "default"
+#define ELEMENT_SET             "set"
+#define ELEMENT_FILTER          "filter"
+#define ELEMENT_LAST            "last"
+#define PROP_USER_ID            "user-id"
+#define PROP_USER               "user"
+#define PROP_DESCRIPTION        "description"
 
 
-// static Filter   *mgr_get_null_filter        (MooFilterMgr     *mgr)
-// {
-//     if (!mgr->priv->null_filter)
-//     {
-//         Filter *filter = filter_new ("All Files", "*", FALSE);
-//         list_store_append_filter (mgr, filter);
-//         mgr->priv->null_filter = filter;
-//     }
-//     return mgr->priv->null_filter;
-// }
+static void
+mgr_load_set (MooFilterMgr      *mgr,
+              const char        *user_id,
+              MooMarkupElement  *root)
+{
+    MooMarkupNode *node;
+
+    for (node = root->last; node != NULL; node = node->prev)
+    {
+        MooMarkupElement *elm;
+
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        elm = MOO_MARKUP_ELEMENT (node);
+
+        if (!strcmp (elm->name, ELEMENT_FILTER))
+        {
+            const char *glob = elm->content;
+
+            if (!glob || !glob[0])
+            {
+                g_warning ("%s: empty glob in filter entry", G_STRLOC);
+                continue;
+            }
+
+            moo_filter_mgr_new_user_filter (mgr, glob, user_id);
+        }
+        else if (!strcmp (elm->name, ELEMENT_LAST))
+        {
+            const char *glob = elm->content;
+            const char *user_str = moo_markup_get_prop (elm, PROP_USER);
+            const char *description = moo_markup_get_prop (elm, PROP_DESCRIPTION);
+            gboolean user;
+
+            if (!glob || !glob[0])
+            {
+                g_warning ("%s: empty glob in filter entry", G_STRLOC);
+                continue;
+            }
+
+            if (user_str)
+                user = strcmp (user_str, "TRUE") ? FALSE : TRUE;
+            else
+                user = FALSE;
+
+            if (!user && !description)
+            {
+                g_warning ("%s: no description in filter entry", G_STRLOC);
+                continue;
+            }
+
+            /* XXX */
+            if (user)
+            {
+                moo_filter_mgr_new_user_filter (mgr, glob, user_id);
+            }
+            else
+            {
+                Filter *filter;
+                moo_filter_mgr_new_builtin_filter (mgr, description, glob, user_id, -1);
+                filter = mgr_new_filter (mgr, description, glob, FALSE);
+                g_return_if_fail (filter != NULL);
+                mgr_set_last_filter (mgr, user_id, filter);
+            }
+        }
+        else
+        {
+            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+        }
+    }
+}
 
 
-// GtkFileFilter   *moo_filter_mgr_get_null_filter  (MooFilterMgr *mgr)
-// {
-//     Filter *filter;
-//     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
-//     filter = mgr_get_null_filter (mgr);
-//     return filter->filter;
-// }
+static void
+mgr_load (MooFilterMgr *mgr)
+{
+    MooMarkupDoc *xml;
+    MooMarkupElement *root;
+    MooMarkupNode *node;
+
+    if (mgr->priv->loaded)
+        return;
+    else
+        mgr->priv->loaded = TRUE;
+
+    xml = moo_prefs_get_markup ();
+    g_return_if_fail (xml != NULL);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+
+    if (!root)
+        return;
+
+    for (node = root->children; node != NULL; node = node->next)
+    {
+        MooMarkupElement *elm;
+
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        elm = MOO_MARKUP_ELEMENT (node);
+
+        if (!strcmp (elm->name, ELEMENT_DEFAULT))
+        {
+            mgr_load_set (mgr, NULL, elm);
+        }
+        else if (!strcmp (elm->name, ELEMENT_SET))
+        {
+            const char *user_id = moo_markup_get_prop (elm, PROP_USER_ID);
+
+            if (!user_id || !user_id[0])
+            {
+                g_warning ("%s: empty user id", G_STRLOC);
+                continue;
+            }
+
+            mgr_load_set (mgr, user_id, elm);
+        }
+        else
+        {
+            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+        }
+    }
+}
 
 
-// static Filter   *mgr_get_last_filter        (MooFilterMgr     *mgr)
-// {
-//     mgr_load_filter_prefs (mgr);
-//     if (!mgr->priv->last_filter)
-//         mgr->priv->last_filter = mgr_get_null_filter (mgr);
-//     return mgr->priv->last_filter;
-// }
+/* XXX */
+static void
+mgr_save_set (MooFilterMgr      *mgr,
+              const char        *user_id,
+              MooMarkupElement  *root)
+{
+    MooMarkupElement *elm;
+    GSList *list, *l;
+    FilterStore *store;
+    Filter *filter;
+
+    store = mgr_get_store (mgr, user_id, FALSE);
+    g_return_if_fail (store != NULL);
+
+    if (!store->num_user && !store->last_filter)
+        return;
+
+    if (store->last_filter)
+    {
+        filter = store->last_filter;
+        elm = moo_markup_create_text_element (MOO_MARKUP_NODE (root),
+                                              ELEMENT_LAST,
+                                              filter_get_glob (filter));
+        moo_markup_set_prop (elm, PROP_USER, filter->user ? "TRUE" : "FALSE");
+        if (!filter->user)
+            moo_markup_set_prop (elm, PROP_DESCRIPTION, filter->description);
+    }
+
+    list = filter_store_list_user_filters (store);
+
+    if (!list)
+        return;
+
+    for (l = list; l != NULL; l = l->next)
+        moo_markup_create_text_element (MOO_MARKUP_NODE (root),
+                                        ELEMENT_FILTER,
+                                        filter_get_glob (l->data));
+
+    g_slist_free (list);
+}
 
 
-// GtkFileFilter   *moo_filter_mgr_get_last_filter  (MooFilterMgr *mgr)
-// {
-//     Filter *filter;
-//     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
-//     filter = mgr_get_last_filter (mgr);
-//     if (filter)
-//         return filter->filter;
-//     else
-//         return NULL;
-// }
+static gboolean
+mgr_do_save (MooFilterMgr *mgr)
+{
+    MooMarkupDoc *xml;
+    MooMarkupElement *root, *elm;
+    GSList *user_ids, *l;
+
+    mgr->priv->save_idle_id = 0;
+
+    xml = moo_prefs_get_markup ();
+    g_return_val_if_fail (xml != NULL, FALSE);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+
+    if (root)
+        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+
+    root = NULL;
+
+    user_ids = mgr_list_user_ids (mgr);
+    user_ids = g_slist_prepend (user_ids, NULL);
+
+    for (l = user_ids; l != NULL; l = l->next)
+    {
+        FilterStore *store = mgr_get_store (mgr, l->data, FALSE);
+        g_return_val_if_fail (!l->data || store != NULL, FALSE);
+
+        if (!store)
+            continue;
+
+        if (store->num_user || store->last_filter != mgr_get_null_filter (mgr))
+        {
+            if (!root)
+            {
+                root = moo_markup_create_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+                g_return_val_if_fail (root != NULL, FALSE);
+            }
+
+            if (l->data)
+            {
+                elm = moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_SET);
+                moo_markup_set_prop (elm, PROP_USER_ID, l->data);
+            }
+            else
+            {
+                elm = moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_DEFAULT);
+            }
+
+            mgr_save_set (mgr, l->data, elm);
+        }
+    }
+
+    g_slist_foreach (user_ids, (GFunc) g_free, NULL);
+    g_slist_free (user_ids);
+    return FALSE;
+}
 
 
-// static void      list_store_init            (MooFilterMgr     *mgr)
-// {
-//     mgr->priv->filters = gtk_list_store_new (NUM_COLUMNS,
-//                                              G_TYPE_STRING,
-//                                              G_TYPE_POINTER);
-//     mgr_get_null_filter (mgr);
-// }
+static void          mgr_save                   (MooFilterMgr   *mgr)
+{
+    if (!mgr->priv->save_idle_id)
+        mgr->priv->save_idle_id = g_idle_add ((GSourceFunc) mgr_do_save, mgr);
+}
 
-
-// static gboolean filter_free_func (GtkTreeModel  *model,
-//                                   G_GNUC_UNUSED GtkTreePath *path,
-//                                   GtkTreeIter   *iter,
-//                                   G_GNUC_UNUSED gpointer data)
-// {
-//     Filter *filter;
-//     gtk_tree_model_get (model, iter, COLUMN_FILTER, &filter, -1);
-//     if (filter)
-//         filter_free (filter);
-//     return FALSE;
-// }
-
-// static void      list_store_destroy         (MooFilterMgr     *mgr)
-// {
-//     gtk_tree_model_foreach (GTK_TREE_MODEL (mgr->priv->filters),
-//                             filter_free_func, NULL);
-//     g_object_unref (mgr->priv->filters);
-//     mgr->priv->filters = NULL;
-//     mgr->priv->last_filter = NULL;
-//     mgr->priv->null_filter = NULL;
-// }
-
-
-// static void      list_store_append_filter   (MooFilterMgr     *mgr,
-//                                              Filter             *filter)
-// {
-//     GtkTreeIter iter;
-//     gtk_list_store_append (mgr->priv->filters, &iter);
-//     if (filter)
-//         gtk_list_store_set (mgr->priv->filters, &iter,
-//                             COLUMN_DESCRIPTION, filter_get_description (filter),
-//                             COLUMN_FILTER, filter, -1);
-// }
-
-
-//
-//
-//
-//
-//
-// typedef gboolean (*ListFoundFunc) (GtkTreeModel *model,
-//                                    GtkTreeIter  *iter,
-//                                    gpointer      data);
-//
-// typedef struct {
-//     GtkTreeIter     *iter;
-//     ListFoundFunc    func;
-//     gpointer         user_data;
-//     gboolean         found;
-// } ListStoreFindData;
-//
-// static gboolean list_store_find_check_func (GtkTreeModel        *model,
-//                                             G_GNUC_UNUSED GtkTreePath *path,
-//                                             GtkTreeIter         *iter,
-//                                             ListStoreFindData   *data)
-// {
-//     if (data->func (model, iter, data->user_data))
-//     {
-//         data->found = TRUE;
-//         if (data->iter)
-//             *data->iter = *iter;
-//         return TRUE;
-//     }
-//     else
-//     {
-//         return FALSE;
-//     }
-// }
-//
-// static gboolean list_store_find     (GtkListStore   *store,
-//                                      GtkTreeIter    *iter,
-//                                      ListFoundFunc   func,
-//                                      gpointer        user_data)
-// {
-//     ListStoreFindData data = {iter, func, user_data, FALSE};
-//     gtk_tree_model_foreach (GTK_TREE_MODEL (store),
-//                             (GtkTreeModelForeachFunc) list_store_find_check_func,
-//                             &data);
-//     return data.found;
-// }
-//
-//
-// static gboolean check_filter_match (GtkTreeModel   *model,
-//                                     GtkTreeIter    *iter,
-//                                     const char     *text)
-// {
-//     Filter *filter = NULL;
-//
-//     gtk_tree_model_get (model, iter, COLUMN_FILTER, &filter, -1);
-//
-//     if (!filter)
-//         return FALSE;
-//
-//     if (!strcmp (text, filter_get_description (filter)) ||
-//          !strcmp (text, filter_get_glob (filter)))
-//             return TRUE;
-//
-//     return FALSE;
-// }
-//
-// static Filter   *list_store_find_filter     (MooFilterMgr *mgr,
-//                                              const char     *text)
-// {
-//     GtkTreeIter iter;
-//
-//     g_return_val_if_fail (text != NULL, NULL);
-//
-//     if (list_store_find (mgr->priv->filters, &iter,
-//                          (ListFoundFunc)check_filter_match,
-//                          (gpointer)text))
-//     {
-//         Filter *filter;
-//         gtk_tree_model_get (GTK_TREE_MODEL (mgr->priv->filters),
-//                             &iter, COLUMN_FILTER, &filter, -1);
-//         return filter;
-//     }
-//     else
-//     {
-//         return NULL;
-//     }
-// }
-//
-//
-// static void      mgr_load_filter_prefs      (MooFilterMgr *mgr)
-// {
-// //     guint i;
-// //     char *key;
-// //     char *glob;
-// //     Filter *filter;
-//
-// //     for (i = 0; i < NUM_USER_FILTERS; ++i)
-// //     {
-// //         key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/"
-// //                                PREFS_FILTERS "/" PREFS_USER "%d", i);
-// //
-// //         glob = g_strdup (moo_prefs_get_string (key));
-// //
-// //         if (glob && glob[0])
-// //             mgr_new_user_filter (mgr, glob);
-// //
-// //         g_free (key);
-// //         g_free (glob);
-// //     }
-//
-// //     glob = g_strdup (moo_prefs_get_string (moo_edit_setting (PREFS_LAST_FILTER)));
-// //
-// //     if (glob && glob[0])
-// //     {
-// //         filter = mgr_new_user_filter (mgr, glob);
-// //
-// //         if (filter)
-// //             mgr_set_last_filter (mgr, filter);
-// //     }
-// //
-// //     g_free (glob);
-// }
-//
-//
-// static void      mgr_save_filter_prefs      (MooFilterMgr *mgr)
-// {
-// //     GtkTreeIter iter;
-// //     gboolean user_present;
-// //     guint i = 0;
-// //
-// //     user_present = list_store_find (mgr->priv->filters, &iter,
-// //                                     row_is_separator, NULL);
-// //
-// //     if (user_present)
-// //     {
-// //         while (i < NUM_USER_FILTERS &&
-// //                gtk_tree_model_iter_next (GTK_TREE_MODEL (mgr->priv->filters), &iter))
-// //         {
-// //             Filter *filter = NULL;
-// //             gtk_tree_model_get (GTK_TREE_MODEL (mgr->priv->filters), &iter,
-// //                                 COLUMN_FILTER, &filter, -1);
-// //             g_assert (filter != NULL);
-// //             set_user_filter_prefs (i, filter_get_glob (filter));
-// //             i++;
-// //         }
-// //     }
-// //
-// //     for ( ; i < NUM_USER_FILTERS; ++i)
-// //         set_user_filter_prefs (i, NULL);
-// }
-//
-//
-// static Filter   *mgr_new_user_filter        (MooFilterMgr *mgr,
-//                                              const char     *glob)
-// {
-//     Filter *filter;
-//
-//     g_return_val_if_fail (glob && glob[0], NULL);
-//
-//     filter = list_store_find_filter (mgr, glob);
-//
-//     if (filter && !filter->user)
-//         return filter;
-//
-//     if (filter)
-//     {
-//         GtkTreeIter iter;
-//         gboolean user_present;
-//
-//         user_present = list_store_find (mgr->priv->filters, &iter,
-//                                         row_is_separator, NULL);
-//
-//         g_return_val_if_fail (user_present, filter);
-//         g_return_val_if_fail (gtk_tree_model_iter_next
-//                 (GTK_TREE_MODEL (mgr->priv->filters), &iter), filter);
-//         gtk_list_store_move_before (mgr->priv->filters, &iter, NULL);
-//     }
-//     else
-//     {
-//         filter = filter_new (glob, glob, TRUE);
-//
-//         if (filter)
-//         {
-//             GtkTreeIter iter;
-//             gboolean user_present;
-//
-//             user_present = list_store_find (mgr->priv->filters, &iter,
-//                                             row_is_separator, NULL);
-//
-//             if (!user_present)
-//                 gtk_list_store_append (mgr->priv->filters, &iter);
-//
-//             if (mgr->priv->num_user_filters == NUM_USER_FILTERS)
-//             {
-//                 Filter *old = NULL;
-//
-//                 --mgr->priv->num_user_filters;
-//
-//                 if (!gtk_tree_model_iter_next (GTK_TREE_MODEL (mgr->priv->filters),
-//                                                 &iter))
-//                 {
-//                     filter_free (filter);
-//                     g_return_val_if_reached (NULL);
-//                 }
-//
-//                 gtk_tree_model_get (GTK_TREE_MODEL (mgr->priv->filters),
-//                                     &iter, COLUMN_FILTER, &old, -1);
-//                 g_assert (old != NULL && old != mgr->priv->last_filter);
-//                 gtk_list_store_remove (mgr->priv->filters, &iter);
-//                 filter_free (old);
-//             }
-//
-//             gtk_list_store_append (mgr->priv->filters, &iter);
-//             gtk_list_store_set (mgr->priv->filters, &iter,
-//                                 COLUMN_FILTER, filter,
-//                                 COLUMN_DESCRIPTION, filter_get_description (filter),
-//                                 -1);
-//             ++mgr->priv->num_user_filters;
-//         }
-//     }
-//
-//     mgr_save_filter_prefs (mgr);
-//
-//     return filter;
-// }
-//
-//
-// GtkFileFilter   *moo_filter_mgr_get_filter          (MooFilterMgr *mgr,
-//                                                      GtkTreeIter    *iter)
-// {
-//     Filter *filter = NULL;
-//
-//     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
-//     g_return_val_if_fail (iter != NULL, NULL);
-//
-//     gtk_tree_model_get (GTK_TREE_MODEL (mgr->priv->filters), iter,
-//                         COLUMN_FILTER, &filter, -1);
-//     g_return_val_if_fail (filter != NULL, NULL);
-//
-//     return filter->filter;
-// }
-//
-//
-// GtkFileFilter   *moo_filter_mgr_new_user_filter     (MooFilterMgr *mgr,
-//                                                      const char     *text)
-// {
-//     Filter *filter;
-//
-//     g_return_val_if_fail (MOO_IS_FILTER_MGR (mgr), NULL);
-//     g_return_val_if_fail (text && text[0], NULL);
-//
-//     filter = mgr_new_user_filter (mgr, text);
-//
-//     if (filter)
-//         return filter->filter;
-//     else
-//         return NULL;
-// }
+#endif /* __MOO__ */

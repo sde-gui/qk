@@ -1712,6 +1712,7 @@ static void         filter_combo_changed    (MooFileView    *fileview)
 
     filter = moo_filter_mgr_get_filter (mgr, &iter, "MooFileView");
     g_return_if_fail (filter != NULL);
+    moo_filter_mgr_set_last_filter (mgr, &iter, "MooFileView");
 
     fileview_set_filter (fileview, filter);
     focus_to_file_view (fileview);
