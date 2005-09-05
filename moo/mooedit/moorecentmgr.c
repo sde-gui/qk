@@ -18,9 +18,6 @@
 #include "mooutils/moomarshals.h"
 #include <string.h>
 
-#define PREFS_RECENT            "recent_files"
-#define PREFS_ENTRY             "entry"
-#define PREFS_SHOW_FULL_NAME    PREFS_RECENT "/show_full_name"
 #define NUM_RECENT_FILES        10
 
 
@@ -65,10 +62,6 @@ static void          mgr_reorder_recent     (MooRecentMgr           *mgr,
                                              RecentEntry            *top);
 static void          mgr_load_recent        (MooRecentMgr           *mgr);
 static void          mgr_save_recent        (MooRecentMgr           *mgr);
-
-static void          save_recent            (guint                   n,
-                                             RecentEntry            *entry);
-static RecentEntry  *load_recent            (guint                   n);
 
 static void          menu_item_activated    (GtkMenuItem            *item,
                                              MooRecentMgr           *mgr);
@@ -295,44 +288,131 @@ mgr_reorder_recent (MooRecentMgr *mgr,
 }
 
 
-static void
-mgr_save_recent (MooRecentMgr *mgr)
-{
-    guint i, num;
+/***************************************************************************/
+/* Loading and saving
+ */
 
-    num = g_slist_length (mgr->priv->files);
-
-    for (i = 0; i < num; ++i)
-        save_recent (i, g_slist_nth_data (mgr->priv->files, i));
-    for (; i < NUM_RECENT_FILES; ++i)
-        save_recent (i, NULL);
-}
-
+#define RECENT_FILES_ROOT       "Editor/recent-files"
+#define ELEMENT_ENTRY           "file"
+#define PROP_ENCODING           "encoding"
+#define PREFS_SHOW_FULL_NAME    "recent_files/show_full_name"
 
 static void
 mgr_load_recent (MooRecentMgr *mgr)
 {
-    guint i;
+    MooMarkupDoc *xml;
+    MooMarkupElement *root;
+    MooMarkupNode *node;
 
     if (mgr->priv->prefs_loaded)
         return;
-
-    mgr->priv->prefs_loaded = TRUE;
+    else
+        mgr->priv->prefs_loaded = TRUE;
 
     mgr->priv->display_full_name =
             moo_prefs_get_bool (moo_edit_setting (PREFS_SHOW_FULL_NAME));
 
-    for (i = 0; i < NUM_RECENT_FILES; ++i)
+    xml = moo_prefs_get_markup ();
+    g_return_if_fail (xml != NULL);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+
+    if (!root)
+        return;
+
+    for (node = root->children; node != NULL; node = node->next)
     {
-        RecentEntry *entry = load_recent (i);
-        if (entry)
+        MooMarkupElement *elm;
+
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        elm = MOO_MARKUP_ELEMENT (node);
+
+        if (!strcmp (elm->name, ELEMENT_ENTRY))
         {
-            mgr->priv->files =
-                    g_slist_append (mgr->priv->files, entry);
-            g_signal_emit (mgr, signals[ITEM_ADDED], 0);
+            MooEditFileInfo *info;
+            const char *encoding = moo_markup_get_prop (elm, PROP_ENCODING);
+            const char *file_utf8 = elm->content;
+            char *file;
+
+            if (!file_utf8 || !file_utf8[0])
+            {
+                g_warning ("%s: empty path in recent entry", G_STRLOC);
+                continue;
+            }
+
+            file = g_filename_from_utf8 (file_utf8, -1, NULL, NULL, NULL);
+
+            if (!file)
+            {
+                g_warning ("%s: could not convert '%s' to filename encoding",
+                           G_STRLOC, file_utf8);
+                continue;
+            }
+
+            info = moo_edit_file_info_new (file, encoding);
+
+            mgr->priv->files = g_slist_append (mgr->priv->files, recent_entry_new (info));
+
+            moo_edit_file_info_free (info);
+            g_free (file);
+        }
+        else
+        {
+            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
         }
     }
 }
+
+
+static void
+mgr_save_recent (MooRecentMgr *mgr)
+{
+    MooMarkupDoc *xml;
+    MooMarkupElement *root;
+    GSList *l;
+
+    xml = moo_prefs_get_markup ();
+    g_return_if_fail (xml != NULL);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+
+    if (root)
+        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+
+    if (!mgr->priv->files)
+        return;
+
+    root = moo_markup_create_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+    g_return_if_fail (root != NULL);
+
+    for (l = mgr->priv->files; l != NULL; l = l->next)
+    {
+        RecentEntry *entry = l->data;
+        MooMarkupElement *elm;
+        char *path_utf8;
+
+        g_return_if_fail (entry != NULL && entry->info != NULL);
+
+        path_utf8 = g_filename_display_name (entry->info->filename);
+        g_return_if_fail (path_utf8 != NULL);
+
+        elm = moo_markup_create_text_element (MOO_MARKUP_NODE (root),
+                                              ELEMENT_ENTRY,
+                                              path_utf8);
+        if (entry->info->encoding)
+            moo_markup_set_prop (elm, PROP_ENCODING, entry->info->encoding);
+
+        g_free (path_utf8);
+    }
+}
+
+
+#undef RECENT_FILES_ROOT
+#undef ELEMENT_ENTRY
+#undef PROP_ENCODING
+#undef PREFS_SHOW_FULL_NAME
 
 
 static gboolean
@@ -444,53 +524,53 @@ recent_entry_free (RecentEntry        *entry)
 #define RECENT_ENCODING RECENT_PREFIX "%d/encoding"
 
 
-static void
-save_recent (guint        n,
-             RecentEntry *entry)
-{
-    char *key;
-    const char *filename, *encoding;
+// static void
+// save_recent (guint        n,
+//              RecentEntry *entry)
+// {
+//     char *key;
+//     const char *filename, *encoding;
+//
+//     filename = entry ? entry->info->filename : NULL;
+//     encoding = entry ? entry->info->encoding : NULL;
+//
+//     key = g_strdup_printf (RECENT_FILENAME, n);
+//     moo_prefs_set_string (key, filename);
+//     g_free (key);
+//
+//     key = g_strdup_printf (RECENT_ENCODING, n);
+//     moo_prefs_set_string (key, encoding);
+//     g_free (key);
+// }
 
-    filename = entry ? entry->info->filename : NULL;
-    encoding = entry ? entry->info->encoding : NULL;
 
-    key = g_strdup_printf (RECENT_FILENAME, n);
-    moo_prefs_set_string (key, filename);
-    g_free (key);
-
-    key = g_strdup_printf (RECENT_ENCODING, n);
-    moo_prefs_set_string (key, encoding);
-    g_free (key);
-}
-
-
-static RecentEntry*
-load_recent (guint n)
-{
-    RecentEntry *entry = NULL;
-    char *filename, *encoding;
-    char *key;
-
-    key = g_strdup_printf (RECENT_FILENAME, n);
-    filename = g_strdup (moo_prefs_get_string (key));
-    g_free (key);
-
-    key = g_strdup_printf (RECENT_ENCODING, n);
-    encoding = g_strdup (moo_prefs_get_string (key));
-    g_free (key);
-
-    if (filename)
-    {
-        MooEditFileInfo *info = moo_edit_file_info_new (filename, encoding);
-        entry = recent_entry_new (info);
-        moo_edit_file_info_free (info);
-    }
-
-    g_free (filename);
-    g_free (encoding);
-
-    return entry;
-}
+// static RecentEntry*
+// load_recent (guint n)
+// {
+//     RecentEntry *entry = NULL;
+//     char *filename, *encoding;
+//     char *key;
+//
+//     key = g_strdup_printf (RECENT_FILENAME, n);
+//     filename = g_strdup (moo_prefs_get_string (key));
+//     g_free (key);
+//
+//     key = g_strdup_printf (RECENT_ENCODING, n);
+//     encoding = g_strdup (moo_prefs_get_string (key));
+//     g_free (key);
+//
+//     if (filename)
+//     {
+//         MooEditFileInfo *info = moo_edit_file_info_new (filename, encoding);
+//         entry = recent_entry_new (info);
+//         moo_edit_file_info_free (info);
+//     }
+//
+//     g_free (filename);
+//     g_free (encoding);
+//
+//     return entry;
+// }
 
 #undef RECENT_PREFIX
 #undef RECENT_FILENAME
