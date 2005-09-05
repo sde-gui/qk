@@ -1487,6 +1487,7 @@ static void     moo_icon_view_update_adjustment (MooIconView    *view)
     GSList *link;
 
     link = g_slist_last (view->priv->layout->columns);
+    view->priv->xoffset = clamp_offset (view, view->priv->xoffset);
 
     if (!link || view->priv->layout->width <= GTK_WIDGET(view)->allocation.width)
     {
