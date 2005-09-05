@@ -167,8 +167,6 @@ static void     draw_handle             (MooPaned       *paned,
                                          GdkEventExpose *event);
 static void     draw_border             (MooPaned       *paned,
                                          GdkEventExpose *event);
-static void     draw_border             (MooPaned       *paned,
-                                         GdkEventExpose *event);
 static void     button_box_visible_notify (MooPaned     *paned);
 
 static void     button_toggled          (GtkToggleButton *button,
@@ -217,7 +215,8 @@ enum {
     PROP_STICKY_PANE,
     PROP_ENABLE_HANDLE_DRAG,
     PROP_HANDLE_CURSOR_TYPE,
-    PROP_ENABLE_DETACHING
+    PROP_ENABLE_DETACHING,
+    PROP_ENABLE_BORDER
 };
 
 enum {
@@ -320,6 +319,14 @@ static void moo_paned_class_init (MooPanedClass *klass)
                                              "handle-cursor-type",
                                              GDK_TYPE_CURSOR_TYPE,
                                              GDK_HAND2,
+                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_BORDER,
+                                     g_param_spec_boolean ("enable-border",
+                                             "enable-border",
+                                             "enable-border",
+                                             FALSE,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     gtk_widget_class_install_style_property (widget_class,
@@ -487,6 +494,12 @@ static void     moo_paned_set_property  (GObject        *object,
             g_object_notify (object, "close-pane-on-child-focus");
             break;
 
+        case PROP_ENABLE_BORDER:
+            paned->priv->enable_border = g_value_get_boolean (value);
+            gtk_widget_queue_resize (GTK_WIDGET (paned));
+            g_object_notify (object, "enable_border");
+            break;
+
         case PROP_STICKY_PANE:
             moo_paned_set_sticky_pane (paned,
                                        g_value_get_boolean (value));
@@ -541,6 +554,10 @@ static void     moo_paned_get_property  (GObject        *object,
 
         case PROP_ENABLE_HANDLE_DRAG:
             g_value_set_boolean (value, paned->priv->enable_handle_drag);
+            break;
+
+        case PROP_ENABLE_BORDER:
+            g_value_set_boolean (value, paned->priv->enable_border);
             break;
 
         case PROP_ENABLE_DETACHING:
@@ -951,9 +968,7 @@ static void moo_paned_size_request (GtkWidget      *widget,
         paned->priv->pane_widget_size = 0;
     }
 
-    if (paned->priv->button_box_visible &&
-        !paned->priv->pane_widget_visible &&
-        paned->priv->enable_border)
+    if (paned->priv->enable_border)
     {
         switch (paned->priv->pane_position)
         {
@@ -1490,8 +1505,9 @@ static gboolean moo_paned_expose    (GtkWidget      *widget,
     if (paned->priv->handle_visible && event->window == paned->priv->handle_window)
         draw_handle (paned, event);
 
-    if (paned->priv->border_size && event->window == widget->window)
-        draw_border (paned, event);
+    if (paned->priv->button_box_visible && !paned->priv->pane_widget_visible &&
+        paned->priv->border_size && event->window == widget->window)
+            draw_border (paned, event);
 
     return TRUE;
 }
