@@ -1062,7 +1062,15 @@ completion_popup_key_press (G_GNUC_UNUSED GtkWidget *popup,
             return completion_return_key (cmpl);
 
         default:
-            return gtk_widget_event (GTK_WIDGET (cmpl->priv->entry), (GdkEvent*) event);
+            if (gtk_widget_event (GTK_WIDGET (cmpl->priv->entry), (GdkEvent*) event))
+            {
+                completion_entry_changed (cmpl->priv->entry, cmpl);
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
     }
 }
 

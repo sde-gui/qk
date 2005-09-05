@@ -43,6 +43,12 @@ struct _MooEditWindow
 struct _MooEditWindowClass
 {
     MooWindowClass          parent_class;
+
+    /* these do not open or close document */
+    void (*new_doc)     (MooEditWindow  *window,
+                         MooEdit        *doc);
+    void (*close_doc)   (MooEditWindow  *window,
+                         MooEdit        *doc);
 };
 
 

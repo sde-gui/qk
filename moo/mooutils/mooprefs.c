@@ -620,6 +620,13 @@ static void      pattern_free   (Pattern             p,
 /* MooPrefs
  */
 
+MooMarkupDoc   *moo_prefs_get_markup        (void)
+{
+    MooPrefs *prefs = instance ();
+    return prefs->priv->xml;
+}
+
+
 guint           moo_prefs_notify_connect        (const char         *pattern,
                                                  MooPrefsMatchType   match_type,
                                                  MooPrefsNotify      callback,
@@ -890,7 +897,7 @@ static void write_item (const char  *key,
 
     g_return_if_fail (stuff->root != NULL);
 
-    moo_markup_create_text_element (stuff->root, key, string);
+    moo_markup_create_text_element (MOO_MARKUP_NODE (stuff->root), key, string);
 
 #ifdef DEBUG_READWRITE
     g_print ("writing key: '%s', val: '%s'\n", key, string);

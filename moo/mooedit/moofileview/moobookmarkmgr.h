@@ -41,7 +41,6 @@ typedef struct _MooBookmarkMgrClass     MooBookmarkMgrClass;
 struct _MooBookmark {
     char *path;
     char *display_path;
-    char *description;
     char *label;
     char *icon_stock_id;
     GdkPixbuf *pixbuf;
@@ -84,11 +83,12 @@ GtkTreeModel   *moo_bookmark_mgr_get_model  (MooBookmarkMgr *mgr);
 void            moo_bookmark_mgr_add        (MooBookmarkMgr *mgr,
                                              MooBookmark    *bookmark);
 
-void            moo_bookmark_mgr_make_menu  (MooBookmarkMgr *mgr,
+void            moo_bookmark_mgr_fill_menu  (MooBookmarkMgr *mgr,
                                              GtkMenuShell   *menu,
                                              int             position,
                                              MooBookmarkFunc func,
                                              gpointer        data);
+gboolean        moo_bookmark_mgr_is_empty   (MooBookmarkMgr *mgr);
 
 #ifndef __MOO__
 gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,

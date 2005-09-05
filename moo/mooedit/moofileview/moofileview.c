@@ -120,6 +120,7 @@ static void         moo_file_view_set_filter_mgr    (MooFileView    *fileview,
                                                      MooFilterMgr   *mgr);
 static void         moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
                                                      MooBookmarkMgr *mgr);
+static void         destroy_bookmarks_menu          (MooFileView    *fileview);
 
 static void         moo_file_view_set_current_dir (MooFileView  *fileview,
                                                  MooFolder      *folder);
@@ -584,8 +585,15 @@ static void moo_file_view_finalize  (GObject      *object)
     g_object_unref (fileview->priv->filter_model);
     history_free (fileview);
 
+    destroy_bookmarks_menu (fileview);
+
     if (fileview->priv->bookmark_mgr)
+    {
+        g_signal_handlers_disconnect_by_func (fileview->priv->bookmark_mgr,
+                                              (gpointer) destroy_bookmarks_menu,
+                                              fileview);
         g_object_unref (fileview->priv->bookmark_mgr);
+    }
 
     if (fileview->priv->filter_mgr)
         g_object_unref (fileview->priv->filter_mgr);
@@ -2545,6 +2553,17 @@ static GtkWidget   *get_file_view_widget        (MooFileView    *fileview)
 /* Bookmarks menu
  */
 
+static void         destroy_bookmarks_menu          (MooFileView    *fileview)
+{
+    if (fileview->priv->bookmarks_menu)
+    {
+        gtk_widget_destroy (GTK_WIDGET (fileview->priv->bookmarks_menu));
+        g_object_unref (fileview->priv->bookmarks_menu);
+        fileview->priv->bookmarks_menu = NULL;
+    }
+}
+
+
 static void         moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
                                                      MooBookmarkMgr *mgr)
 {
@@ -2560,9 +2579,20 @@ static void         moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
         return;
 
     if (fileview->priv->bookmark_mgr)
+    {
+        g_signal_handlers_disconnect_by_func (fileview->priv->bookmark_mgr,
+                                              (gpointer) destroy_bookmarks_menu,
+                                              fileview);
         g_object_unref (fileview->priv->bookmark_mgr);
+    }
 
     fileview->priv->bookmark_mgr = g_object_ref (mgr);
+    g_signal_connect_swapped (fileview->priv->bookmark_mgr,
+                              "changed",
+                              G_CALLBACK (destroy_bookmarks_menu),
+                              fileview);
+
+    destroy_bookmarks_menu (fileview);
 
     g_object_set_data (G_OBJECT (fileview),
                        "moo-file-view-bookmarks-editor",
@@ -2577,6 +2607,7 @@ static void     bookmark_activated      (MooBookmark    *bookmark,
     g_return_if_fail (bookmark != NULL && bookmark->path != NULL);
     moo_file_view_chdir (fileview, bookmark->path, NULL);
 }
+
 
 static void     add_bookmark            (MooFileView    *fileview)
 {
@@ -2597,6 +2628,7 @@ static void     add_bookmark            (MooFileView    *fileview)
     moo_bookmark_free (bookmark);
     g_free (display_path);
 }
+
 
 static void     edit_bookmarks          (MooFileView    *fileview)
 {
@@ -2628,13 +2660,16 @@ static GtkMenu *create_bookmarks_menu   (MooFileView    *fileview)
     GtkWidget *item;
     GtkWidget *menu = gtk_menu_new ();
 
-    moo_bookmark_mgr_make_menu (fileview->priv->bookmark_mgr,
-                                GTK_MENU_SHELL (menu),
-                                -1,
-                                (MooBookmarkFunc) bookmark_activated,
-                                fileview);
+    if (!moo_bookmark_mgr_is_empty (fileview->priv->bookmark_mgr))
+    {
+        moo_bookmark_mgr_fill_menu (fileview->priv->bookmark_mgr,
+                                    GTK_MENU_SHELL (menu),
+                                    -1,
+                                    (MooBookmarkFunc) bookmark_activated,
+                                    fileview);
 
-    add_separator_item (GTK_MENU (menu));
+        add_separator_item (GTK_MENU (menu));
+    }
 
     item = create_menu_item (GTK_STOCK_ADD, "Add Bookmark", 0, 0, 0);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
@@ -2683,6 +2718,7 @@ static void         boomarks_button_toggled (GtkToggleButton *button,
     if (!fileview->priv->bookmarks_menu)
     {
         fileview->priv->bookmarks_menu = create_bookmarks_menu (fileview);
+        gtk_object_sink (GTK_OBJECT (g_object_ref (fileview->priv->bookmarks_menu)));
         g_signal_connect_swapped (fileview->priv->bookmarks_menu, "deactivate",
                                   G_CALLBACK (toggle_bookmarks_button), button);
     }

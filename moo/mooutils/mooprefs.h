@@ -16,6 +16,7 @@
 
 #include <glib-object.h>
 #include <gdk/gdkcolor.h>
+#include "mooutils/moomarkup.h"
 
 G_BEGIN_DECLS
 
@@ -51,6 +52,8 @@ GType       moo_prefs_match_type_get_type   (void) G_GNUC_CONST;
 
 gboolean        moo_prefs_load              (const char     *file);
 gboolean        moo_prefs_save              (const char     *file);
+
+MooMarkupDoc   *moo_prefs_get_markup        (void);
 
 void            moo_prefs_new_key   (const char     *key,
                                      GType           value_type,

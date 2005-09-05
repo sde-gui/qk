@@ -19,6 +19,7 @@
 
 G_BEGIN_DECLS
 
+#define MOO_EDIT_PLUGIN_PREFS_ROOT  "Plugins"
 
 typedef struct _MooEditPluginInfo       MooEditPluginInfo;
 typedef struct _MooEditPluginWindowData MooEditPluginWindowData;

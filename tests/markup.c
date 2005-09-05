@@ -69,4 +69,6 @@ int main (int argc, char *argv[])
 
         moo_markup_doc_unref (doc);
     }
+
+    return 0;
 }

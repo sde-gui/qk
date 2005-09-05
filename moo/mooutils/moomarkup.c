@@ -515,20 +515,67 @@ static void moo_markup_text_node_print      (MooMarkupNode  *node,
 }
 
 
-static MooMarkupElement *get_element (MooMarkupNode *node,
-                                      char **path)
+static MooMarkupElement*
+get_element_by_names (MooMarkupNode *node,
+                      char         **path)
 {
     MooMarkupNode *child;
 
-    if (!path || !path[0] || !path[0][0]) return MOO_MARKUP_ELEMENT (node);
+    if (!path || !path[0] || !path[0][0])
+        return MOO_MARKUP_ELEMENT (node);
 
-    /* TODO: fix this */
     for (child = node->children; child; child = child->next)
     {
-        if (MOO_MARKUP_IS_ELEMENT (child)) {
-            const char *name = moo_markup_get_prop (MOO_MARKUP_ELEMENT (child),
-                                                    "name");
+        if (MOO_MARKUP_IS_ELEMENT (child))
+        {
+            const char *name;
+
+            name = moo_markup_get_prop (MOO_MARKUP_ELEMENT (child), "name");
+
             if (name && !strcmp (path[0], name))
+                return get_element_by_names (child, ++path);
+        }
+    }
+
+    return NULL;
+}
+
+
+MooMarkupElement*
+moo_markup_get_element_by_names (MooMarkupNode      *node,
+                                 const char         *path)
+{
+    char **p;
+    MooMarkupElement *elm;
+
+    g_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node) ||
+                          MOO_MARKUP_IS_DOC (node), NULL);
+
+    p = g_strsplit (path, "/", 0);
+    g_return_val_if_fail (p != NULL, NULL);
+
+    elm = get_element_by_names (node, p);
+
+    g_strfreev (p);
+    return elm;
+}
+
+
+static MooMarkupElement*
+get_element (MooMarkupNode *node,
+             char         **path)
+{
+    MooMarkupNode *child;
+
+    if (!path[0])
+        return MOO_MARKUP_ELEMENT (node);
+
+    for (child = node->children; child; child = child->next)
+    {
+        if (MOO_MARKUP_IS_ELEMENT (child))
+        {
+            if (!strcmp (path[0], child->name))
                 return get_element (child, ++path);
         }
     }
@@ -537,16 +584,22 @@ static MooMarkupElement *get_element (MooMarkupNode *node,
 }
 
 
-MooMarkupElement *moo_markup_get_element     (MooMarkupNode  *node,
-                                              const char     *path)
+MooMarkupElement*
+moo_markup_get_element (MooMarkupNode      *node,
+                        const char         *path)
 {
     char **p;
     MooMarkupElement *elm;
 
     g_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node) ||
+                          MOO_MARKUP_IS_DOC (node), NULL);
 
     p = g_strsplit (path, "/", 0);
+    g_return_val_if_fail (p != NULL, NULL);
+
     elm = get_element (node, p);
+
     g_strfreev (p);
     return elm;
 }
@@ -561,6 +614,103 @@ const char      *moo_markup_get_prop        (MooMarkupElement   *node,
         if (!strcmp (prop_name, node->attr_names[i]))
             return node->attr_vals[i];
     return NULL;
+}
+
+
+void             moo_markup_set_prop        (MooMarkupElement   *node,
+                                             const char         *prop_name,
+                                             const char         *val)
+{
+    guint i;
+    char **attr_names, **attr_vals;
+
+    g_return_if_fail (node != NULL && prop_name != NULL);
+    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
+    g_return_if_fail (!val || g_utf8_validate (val, -1, NULL));
+
+    /* XXX validate prop_name and val */
+
+    for (i = 0 ; i < node->n_attrs; ++i)
+        if (!strcmp (prop_name, node->attr_names[i]))
+        {
+            if (val)
+            {
+                g_free (node->attr_vals[i]);
+                node->attr_vals[i] = g_strdup (val);
+                return;
+            }
+            else if (node->n_attrs == 1)
+            {
+                g_strfreev (node->attr_names);
+                g_strfreev (node->attr_vals);
+                node->attr_names = NULL;
+                node->attr_vals = NULL;
+                node->n_attrs = 0;
+                return;
+            }
+            else
+            {
+                guint j;
+                char **attr_names, **attr_vals;
+
+                /* XXX just move them */
+
+                attr_names = g_new (char*, node->n_attrs);
+                attr_vals = g_new (char*, node->n_attrs);
+
+                for (j = 0; j < i; ++j)
+                {
+                    attr_names[j] = node->attr_names[j];
+                    attr_vals[j] = node->attr_vals[j];
+                }
+
+                for (j = i + 1; j < node->n_attrs; ++j)
+                {
+                    attr_names[j-1] = node->attr_names[j];
+                    attr_vals[j-1] = node->attr_vals[j];
+                }
+
+                attr_names[node->n_attrs - 1] = NULL;
+                attr_vals[node->n_attrs - 1] = NULL;
+
+                g_free (node->attr_names[i]);
+                g_free (node->attr_vals[i]);
+                g_free (node->attr_names);
+                g_free (node->attr_vals);
+
+                node->attr_names = attr_names;
+                node->attr_vals = attr_vals;
+                node->n_attrs--;
+
+                return;
+            }
+        }
+
+    if (!val)
+        return;
+
+    g_return_if_fail (g_utf8_validate (prop_name, -1, NULL));
+
+    attr_names = g_new (char*, node->n_attrs + 2);
+    attr_vals = g_new (char*, node->n_attrs + 2);
+
+    for (i = 0; i < node->n_attrs; ++i)
+    {
+        attr_names[i] = node->attr_names[i];
+        attr_vals[i] = node->attr_vals[i];
+    }
+
+    attr_names[node->n_attrs] = g_strdup (prop_name);
+    attr_vals[node->n_attrs] = g_strdup (val);
+    attr_names[node->n_attrs + 1] = NULL;
+    attr_vals[node->n_attrs + 1] = NULL;
+
+    g_free (node->attr_names);
+    g_free (node->attr_vals);
+
+    node->attr_names = attr_names;
+    node->attr_vals = attr_vals;
+    node->n_attrs++;
 }
 
 
@@ -659,69 +809,83 @@ MooMarkupElement*moo_markup_create_root_element
 }
 
 
-static void create_text_element (MooMarkupElement   *node,
-                                 char              **path,
-                                 const char         *content)
+static MooMarkupElement*
+create_element (MooMarkupNode      *node,
+                char              **path)
 {
-    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
-    g_return_if_fail (path != NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node) || MOO_MARKUP_IS_DOC (node), NULL);
+    g_return_val_if_fail (path && path[0], NULL);
 
-    if (path[0])
+    if (path[1])
     {
         MooMarkupNode *child = NULL;
 
         for (child = node->children; child != NULL; child = child->next)
-            if (MOO_MARKUP_IS_ELEMENT (child) && child->name &&
-                !strcmp (child->name, path[0]))
-                    break;
+            if (MOO_MARKUP_IS_ELEMENT (child) && child->name && !strcmp (child->name, path[0]))
+                break;
 
         if (!child)
             child = moo_markup_element_new (node->doc, MOO_MARKUP_NODE (node),
                                             path[0], NULL, NULL);
 
-        create_text_element (MOO_MARKUP_ELEMENT (child), ++path, content);
+        return create_element (child, ++path);
     }
     else
     {
-        MooMarkupNode *child = NULL;
-
-        for (child = node->children; child != NULL; child = child->next)
-            moo_markup_node_free (child);
-
-        node->children = NULL;
-        node->last = NULL;
-        g_free (node->content);
-        node->content = NULL;
-        g_strfreev (node->attr_names);
-        node->attr_names = NULL;
-        g_strfreev (node->attr_vals);
-        node->attr_vals = NULL;
-        node->n_attrs = 0;
-
-        child = moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
-                                          node->doc, MOO_MARKUP_NODE (node),
-                                          content, strlen (content));
-        node->content = g_strdup (content);
+        return MOO_MARKUP_ELEMENT (moo_markup_element_new (node->doc, MOO_MARKUP_NODE (node),
+                                                           path[0], NULL, NULL));
     }
 }
 
 
-void             moo_markup_create_text_element
-                                            (MooMarkupElement   *node,
-                                             const char         *path,
-                                             const char         *content)
+MooMarkupElement*
+moo_markup_create_element (MooMarkupNode      *parent,
+                           const char         *path)
 {
     char **pieces;
+    MooMarkupElement *elm;
 
-    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (node));
-    g_return_if_fail (path != NULL);
-    g_return_if_fail (content != NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (parent) ||
+                          MOO_MARKUP_IS_DOC (parent), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
 
     pieces = g_strsplit (path, "/", 0);
-    g_return_if_fail (pieces != NULL);
+    g_return_val_if_fail (pieces != NULL, NULL);
 
-    create_text_element (node, pieces, content);
+    elm = create_element (parent, pieces);
+
     g_strfreev (pieces);
+    return elm;
+}
+
+
+MooMarkupElement*
+moo_markup_create_text_element (MooMarkupNode      *parent,
+                                const char         *path,
+                                const char         *content)
+{
+    MooMarkupElement *elm;
+    MooMarkupNode *child;
+
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (parent) ||
+            MOO_MARKUP_IS_DOC (parent), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (content != NULL, NULL);
+    g_return_val_if_fail (g_utf8_validate (content, -1, NULL), NULL);
+
+    elm = moo_markup_create_element (MOO_MARKUP_NODE (parent), path);
+
+    if (!elm)
+        return NULL;
+
+    child = moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
+                                      elm->doc, MOO_MARKUP_NODE (elm),
+                                      content, strlen (content));
+
+    g_free (elm->content);
+    elm->content = g_strdup (content);
+
+    return elm;
 }
 
 

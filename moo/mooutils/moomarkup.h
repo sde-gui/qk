@@ -121,41 +121,55 @@ struct _MooMarkupText {
 };
 
 
-GType            moo_markup_doc_get_type    (void);
+GType               moo_markup_doc_get_type         (void);
 
-MooMarkupDoc    *moo_markup_doc_new         (const char         *name);
+MooMarkupDoc       *moo_markup_doc_new              (const char         *name);
 
-MooMarkupDoc    *moo_markup_parse_file      (const char         *filename,
-                                             GError            **error);
-MooMarkupDoc    *moo_markup_parse_memory    (const char         *buffer,
-                                             int                 size,
-                                             GError            **error);
-gboolean         moo_markup_save            (MooMarkupDoc       *doc,
-                                             const char         *filename,
-                                             GError            **error);
+MooMarkupDoc       *moo_markup_parse_file           (const char         *filename,
+                                                     GError            **error);
+MooMarkupDoc       *moo_markup_parse_memory         (const char         *buffer,
+                                                     int                 size,
+                                                     GError            **error);
+gboolean            moo_markup_save                 (MooMarkupDoc       *doc,
+                                                     const char         *filename,
+                                                     GError            **error);
 
-char            *moo_markup_node_get_string (MooMarkupNode      *node);
+char               *moo_markup_node_get_string      (MooMarkupNode      *node);
 
-MooMarkupDoc    *moo_markup_doc_ref         (MooMarkupDoc       *doc);
-void             moo_markup_doc_unref       (MooMarkupDoc       *doc);
+MooMarkupDoc       *moo_markup_doc_ref              (MooMarkupDoc       *doc);
+void                moo_markup_doc_unref            (MooMarkupDoc       *doc);
 
-MooMarkupElement*moo_markup_get_root_element(MooMarkupDoc       *doc,
-                                             const char         *name);
-MooMarkupElement*moo_markup_get_element     (MooMarkupNode      *node,
-                                             const char         *path);
+MooMarkupElement   *moo_markup_get_root_element     (MooMarkupDoc       *doc,
+                                                     const char         *name);
 
-const char      *moo_markup_get_prop        (MooMarkupElement   *node,
-                                             const char         *prop_name);
-char            *moo_markup_element_get_path(MooMarkupElement   *node);
+/* looks for element by 'name' attribute, e.g. elm2 in
+   <elm name="blah"> <elm2 name="blah2"/> ..
+   corresponds to "blah/blah2" */
+MooMarkupElement   *moo_markup_get_element_by_names (MooMarkupNode      *node,
+                                                     const char         *path);
 
-void             moo_markup_delete_node     (MooMarkupNode      *node);
-MooMarkupElement*moo_markup_create_root_element
-                                            (MooMarkupDoc       *doc,
-                                             const char         *name);
-void             moo_markup_create_text_element
-                                            (MooMarkupElement   *node,
-                                             const char         *path,
-                                             const char         *content);
+MooMarkupElement   *moo_markup_get_element          (MooMarkupNode      *node,
+                                                     const char         *path);
+
+const char         *moo_markup_get_prop             (MooMarkupElement   *node,
+                                                     const char         *prop_name);
+void                moo_markup_set_prop             (MooMarkupElement   *node,
+                                                     const char         *prop_name,
+                                                     const char         *val);
+void                moo_markup_set_content          (MooMarkupElement   *node,
+                                                     const char         *text);
+
+char               *moo_markup_element_get_path     (MooMarkupElement   *node);
+
+void                moo_markup_delete_node          (MooMarkupNode      *node);
+
+MooMarkupElement   *moo_markup_create_root_element  (MooMarkupDoc       *doc,
+                                                     const char         *name);
+MooMarkupElement   *moo_markup_create_element       (MooMarkupNode      *parent,
+                                                     const char         *path);
+MooMarkupElement   *moo_markup_create_text_element  (MooMarkupNode      *parent,
+                                                     const char         *path,
+                                                     const char         *content);
 
 
 G_END_DECLS

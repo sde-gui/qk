@@ -18,7 +18,9 @@
 #include "mooedit/moobigpaned.h"
 #include "mooedit/moonotebook.h"
 #include "mooedit/moofileview/moofileview.h"
+#include "mooedit/moofileview/moobookmarkmgr.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moomarshals.h"
 #include "mooui/moomenuaction.h"
 #include "mooui/moouiobject-impl.h"
 #include <string.h>
@@ -125,6 +127,14 @@ enum {
     PROP_ACTIVE_DOC
 };
 
+enum {
+    NEW_DOC,
+    CLOSE_DOC,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
+
 
 static void moo_edit_window_class_init (MooEditWindowClass *klass)
 {
@@ -153,6 +163,26 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                              "active-doc",
                                              MOO_TYPE_EDIT,
                                              G_PARAM_READWRITE));
+
+    signals[NEW_DOC] =
+            g_signal_new ("new-doc",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditWindowClass, new_doc),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_EDIT);
+
+    signals[CLOSE_DOC] =
+            g_signal_new ("close-doc",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditWindowClass, close_doc),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_EDIT);
 
     moo_ui_object_class_init (gobject_class, "Editor", "Editor");
 
@@ -1044,6 +1074,8 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "cursor-moved",
                               G_CALLBACK (edit_cursor_moved), window);
 
+    g_signal_emit (window, signals[NEW_DOC], 0, edit);
+
     moo_edit_window_set_active_doc (window, edit);
     edit_changed (window, edit);
     gtk_widget_grab_focus (GTK_WIDGET (edit));
@@ -1060,6 +1092,8 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 
     page = get_page_num (window, doc);
     g_return_if_fail (page >= 0);
+
+    g_signal_emit (window, signals[CLOSE_DOC], 0, doc);
 
     g_signal_handlers_disconnect_by_func (doc,
                                           (gpointer) edit_changed,
@@ -1459,8 +1493,8 @@ static void     edit_cursor_moved       (MooEditWindow      *window,
 /* Fileview pane
  */
 
-#define FILEVIEW_PANE_ID    "fileview"
-#define FILEVIEW_DIR_PREFS  "panes/fileview/last_dir"
+#define FILEVIEW_PANE_ID    "FileSelector"
+#define FILEVIEW_DIR_PREFS  MOO_EDIT_PLUGIN_PREFS_ROOT "/" FILEVIEW_PANE_ID "/last_dir"
 
 
 typedef struct {
@@ -1468,52 +1502,9 @@ typedef struct {
     MooFileView *fileview;
 } FileViewPluginStuff;
 
-
-// static void
-// fileview_factory_deinit_func (G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
-// {
-//     /* XXX remove action */
-// }
-
-
-// static gboolean
-// fileview_create_func (MooEditWindow *window,
-//                       G_GNUC_UNUSED MooEditWindowPaneInfo  *info,
-//                       MooPaneLabel **label,
-//                       GtkWidget    **widget)
-// {
-//     GtkWidget *fileview;
-//
-//     fileview = moo_file_view_new ();
-//
-//     g_idle_add ((GSourceFunc) fileview_go_home, fileview);
-//     g_signal_connect (fileview, "notify::current-directory",
-//                       G_CALLBACK (fileview_chdir), NULL);
-//     g_signal_connect (fileview, "activate",
-//                       G_CALLBACK (fileview_activate), window);
-//
-//     *widget = fileview;
-//     gtk_object_sink (GTK_OBJECT (g_object_ref (*widget)));
-//     *label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-//                                  NULL, NULL, "File Selector");
-//
-//     return TRUE;
-// }
-
-
-// static void
-// fileview_destroy_func (MooEditWindow          *window,
-//                        G_GNUC_UNUSED MooEditWindowPaneInfo  *info)
-// {
-//     GtkWidget *fileview = moo_edit_window_lookup_pane (window, FILEVIEW_PANE_ID);
-//     g_return_if_fail (fileview != NULL);
-//     g_signal_handlers_disconnect_by_func (fileview,
-//                                           (gpointer) fileview_chdir,
-//                                           NULL);
-//     g_signal_handlers_disconnect_by_func (fileview,
-//                                           (gpointer) fileview_activate,
-//                                           window);
-// }
+typedef struct {
+    MooBookmarkMgr *bookmark_mgr;
+} FileViewPluginGlobalStuff;
 
 
 static void
@@ -1554,9 +1545,13 @@ fileview_plugin_init (G_GNUC_UNUSED MooEditPluginInfo *info)
 
 
 static void
-fileview_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info)
+fileview_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info,
+                        FileViewPluginGlobalStuff *global_stuff)
 {
     /* XXX remove action */
+    if (global_stuff->bookmark_mgr)
+        g_object_unref (global_stuff->bookmark_mgr);
+    global_stuff->bookmark_mgr = NULL;
 }
 
 
@@ -1643,15 +1638,27 @@ static gboolean
 fileview_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
                              MooEditPluginWindowData    *plugin_window_data,
                              MooPaneLabel              **label,
-                             GtkWidget                 **widget)
+                             GtkWidget                 **widget,
+                             FileViewPluginGlobalStuff  *global_stuff)
 {
     GtkWidget *fileview;
     FileViewPluginStuff *stuff;
+    MooEditor *editor;
 
+    g_return_val_if_fail (global_stuff != NULL, FALSE);
     g_return_val_if_fail (plugin_window_data->data != NULL, FALSE);
     stuff = plugin_window_data->data;
 
-    fileview = moo_file_view_new ();
+    editor = moo_edit_window_get_editor (plugin_window_data->window);
+
+    if (!global_stuff->bookmark_mgr)
+        global_stuff->bookmark_mgr = moo_bookmark_mgr_new ();
+
+    fileview = g_object_new (MOO_TYPE_FILE_VIEW,
+                             "filter-mgr", moo_editor_get_filter_mgr (editor),
+                             "bookmark-mgr", global_stuff->bookmark_mgr,
+                             NULL);
+
     gtk_object_sink (GTK_OBJECT (g_object_ref (fileview)));
 
     g_idle_add ((GSourceFunc) fileview_go_home, fileview);
@@ -1710,7 +1717,9 @@ static void     register_fileview       (void)
             &params
         };
 
-        moo_edit_plugin_register (&info, NULL);
+        static FileViewPluginGlobalStuff stuff = { NULL };
+
+        moo_edit_plugin_register (&info, &stuff);
     }
 
     done = TRUE;

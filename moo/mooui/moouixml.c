@@ -344,7 +344,7 @@ GtkWidget       *moo_ui_xml_create_widget       (MooUIXML       *xml,
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
     g_return_val_if_fail (node != NULL, NULL);
 
     return create_widget (node, actions, accel_group, tooltips, NULL);
@@ -361,7 +361,7 @@ gboolean         moo_ui_xml_has_widget          (MooUIXML       *xml,
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, FALSE);
-    node = moo_markup_get_element (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
     return node != NULL;
 }
 
@@ -406,7 +406,7 @@ GtkWidget       *moo_ui_xml_update_widget       (MooUIXML       *xml,
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
     g_return_val_if_fail (node != NULL, NULL);
 
     return create_widget (node, actions, accel_group, tooltips, widget);
