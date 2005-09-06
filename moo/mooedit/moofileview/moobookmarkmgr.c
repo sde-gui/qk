@@ -14,13 +14,14 @@
 #include "moobookmarkmgr.h"
 #include "moofileentry.h"
 #include MOO_MARSHALS_H
-#include "mooutils/mooprefs.h"
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <glib/gstdio.h>
 #include <glade/glade.h>
-
+#ifdef __MOO__
+#include "mooutils/mooprefs.h"
+#endif
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 
@@ -122,7 +123,7 @@ static void emit_changed                (MooBookmarkMgr *mgr)
 }
 
 
-static void moo_bookmark_mgr_changed    (MooBookmarkMgr *mgr)
+static void moo_bookmark_mgr_changed    (G_GNUC_UNUSED MooBookmarkMgr *mgr)
 {
 #ifdef __MOO__
     if (!mgr->priv->loading)
@@ -602,7 +603,7 @@ gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,
 
         if (!strncmp (group, "Separator", strlen ("Separator")))
         {
-            gtk_list_store_append (mgr->priv->store, &iter);
+            moo_bookmark_mgr_add_separator (mgr);
             continue;
         }
         else if (strncmp (group, "Bookmark", strlen ("Bookmark")))
@@ -629,17 +630,6 @@ gboolean        moo_bookmark_mgr_load       (MooBookmarkMgr *mgr,
             g_free (bookmark->display_path);
             bookmark->path = path;
             bookmark->display_path = val;
-        }
-        else
-        {
-            g_free (val);
-        }
-
-        val = g_key_file_get_value (key_file, group, "description", NULL);
-        if (val && val[0])
-        {
-            g_free (bookmark->description);
-            bookmark->description = val;
         }
         else
         {
@@ -747,8 +737,6 @@ gboolean        moo_bookmark_mgr_save       (MooBookmarkMgr *mgr,
                               bookmark->label ? bookmark->label : "");
         g_key_file_set_value (key_file, group, "path",
                               bookmark->display_path ? bookmark->display_path : "");
-        g_key_file_set_value (key_file, group, "description",
-                              bookmark->description ? bookmark->description : "");
         g_key_file_set_value (key_file, group, "icon",
                               bookmark->icon_stock_id ? bookmark->icon_stock_id : "");
 
