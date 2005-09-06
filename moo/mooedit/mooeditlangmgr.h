@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditlangmgr.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditlangmgr.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDITLANGMGR_H
-#define MOOEDIT_MOOEDITLANGMGR_H
+#ifndef __MOO_EDIT_LANG_MGR_H__
+#define __MOO_EDIT_LANG_MGR_H__
 
 #include "mooedit/mooeditlang.h"
 
@@ -76,4 +76,4 @@ void             moo_edit_lang_mgr_add_lang_files_dir           (MooEditLangMgr 
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDITLANGMGR_H */
+#endif /* __MOO_EDIT_LANG_MGR_H__ */

@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditprefs.c
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditprefs.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -119,7 +119,7 @@ void        _moo_edit_apply_settings            (MooEdit    *edit)
 {
     GtkSourceView *view = GTK_SOURCE_VIEW (edit);
     GtkTextView *text_view = GTK_TEXT_VIEW (edit);
-    GtkSourceBuffer *buffer = edit->priv->source_buffer;
+    GtkSourceBuffer *buffer = GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)));
 
     gtk_source_view_set_smart_home_end (view, get_bool (MOO_EDIT_PREFS_SMART_HOME_END));
     gtk_source_view_set_auto_indent (view, get_bool (MOO_EDIT_PREFS_AUTO_INDENT));
@@ -165,7 +165,7 @@ void        _moo_edit_settings_changed          (const char *key,
                                                  G_GNUC_UNUSED const GValue *newval,
                                                  MooEdit    *edit)
 {
-    GtkSourceBuffer *buffer = edit->priv->source_buffer;
+    GtkSourceBuffer *buffer = GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)));
 
     if (!strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_LIMIT_UNDO) ||
          !strcmp (key, MOO_EDIT_PREFS_PREFIX "/" MOO_EDIT_PREFS_LIMIT_UNDO_NUM))
@@ -214,7 +214,7 @@ void        _moo_edit_settings_changed          (const char *key,
 
 static void set_matching_bracket_styles (MooEdit *edit)
 {
-    GtkSourceBuffer *buffer = edit->priv->source_buffer;
+    GtkSourceBuffer *buffer = GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)));
     GtkSourceTagStyle style;
     const GdkColor *color;
 

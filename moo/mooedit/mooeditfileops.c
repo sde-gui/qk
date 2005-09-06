@@ -1,4 +1,4 @@
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *   mooeditfileops.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -199,6 +199,7 @@ static gboolean moo_edit_load_default   (G_GNUC_UNUSED MooEditLoader *loader,
                                          GError        **error)
 {
     GtkTextIter start, end;
+    GtkTextBuffer *buffer;
     MooEditFileInfo *info = NULL;
     gboolean undo;
 
@@ -212,13 +213,15 @@ static gboolean moo_edit_load_default   (G_GNUC_UNUSED MooEditLoader *loader,
     else
         undo = TRUE;
 
-    if (undo)
-        gtk_text_buffer_begin_user_action (edit->priv->text_buffer);
-    else
-        gtk_source_buffer_begin_not_undoable_action (edit->priv->source_buffer);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
-    gtk_text_buffer_get_bounds (edit->priv->text_buffer, &start, &end);
-    gtk_text_buffer_delete (edit->priv->text_buffer, &start, &end);
+    if (undo)
+        gtk_text_buffer_begin_user_action (buffer);
+    else
+        gtk_source_buffer_begin_not_undoable_action (GTK_SOURCE_BUFFER (buffer));
+
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_delete (buffer, &start, &end);
 
     if (!do_load (edit, file, encoding, error))
     {
@@ -228,16 +231,16 @@ static gboolean moo_edit_load_default   (G_GNUC_UNUSED MooEditLoader *loader,
         unblock_buffer_signals (edit);
 
         if (undo)
-            gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+            gtk_text_buffer_end_user_action (buffer);
         else
-            gtk_source_buffer_end_not_undoable_action (edit->priv->source_buffer);
+            gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (buffer));
 
         moo_edit_set_modified (edit, FALSE);
         return FALSE;
     }
 
-    gtk_text_buffer_get_start_iter (edit->priv->text_buffer, &start);
-    gtk_text_buffer_place_cursor (edit->priv->text_buffer, &start);
+    gtk_text_buffer_get_start_iter (buffer, &start);
+    gtk_text_buffer_place_cursor (buffer, &start);
 
     unblock_buffer_signals (edit);
     edit->priv->status = 0;
@@ -248,9 +251,9 @@ static gboolean moo_edit_load_default   (G_GNUC_UNUSED MooEditLoader *loader,
     moo_edit_file_info_free (info);
 
     if (undo)
-        gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+        gtk_text_buffer_end_user_action (buffer);
     else
-        gtk_source_buffer_end_not_undoable_action (edit->priv->source_buffer);
+        gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (buffer));
 
     return TRUE;
 }
@@ -263,10 +266,13 @@ static gboolean do_load                 (MooEdit        *edit,
 {
     GIOChannel *file = NULL;
     GIOStatus status;
+    GtkTextBuffer *buffer;
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    if (!encoding)
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    if (!encoding || !strcmp (encoding, "UTF-8") || !strcmp (encoding, "UTF8"))
     {
         char *contents;
         gsize len;
@@ -286,7 +292,7 @@ static gboolean do_load                 (MooEdit        *edit,
                 return FALSE;
             }
 
-            gtk_text_buffer_insert_at_cursor (edit->priv->text_buffer, contents, len);
+            gtk_text_buffer_insert_at_cursor (buffer, contents, len);
             g_free (edit->priv->encoding);
             edit->priv->encoding = NULL;
 
@@ -306,7 +312,10 @@ static gboolean do_load                 (MooEdit        *edit,
     if (!file)
         return FALSE;
 
-    if (encoding && g_io_channel_set_encoding (file, encoding, error) != G_IO_STATUS_NORMAL)
+    if (!encoding)
+        encoding = "UTF8";
+
+    if (g_io_channel_set_encoding (file, encoding, error) != G_IO_STATUS_NORMAL)
     {
         g_io_channel_shutdown (file, TRUE, NULL);
         g_io_channel_unref (file);
@@ -333,8 +342,7 @@ static gboolean do_load                 (MooEdit        *edit,
                 return FALSE;
             }
 
-            gtk_text_buffer_insert_at_cursor (edit->priv->text_buffer,
-                                              line, len);
+            gtk_text_buffer_insert_at_cursor (buffer, line, len);
             g_free (line);
         }
 
@@ -368,27 +376,28 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
                                          GError        **error)
 {
     GtkTextIter start, end;
+    GtkTextBuffer *buffer;
 
     g_return_val_if_fail (edit->priv->filename != NULL, FALSE);
 
-    block_buffer_signals (edit);
-    gtk_text_buffer_begin_user_action (edit->priv->text_buffer);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
-    gtk_text_buffer_get_bounds (edit->priv->text_buffer,
-                                &start, &end);
-    gtk_text_buffer_delete (edit->priv->text_buffer,
-                            &start, &end);
+    block_buffer_signals (edit);
+    gtk_text_buffer_begin_user_action (buffer);
+
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_delete (buffer, &start, &end);
 
     if (!moo_edit_load (loader, edit, edit->priv->filename,
                         edit->priv->encoding, error))
     {
-        gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+        gtk_text_buffer_end_user_action (buffer);
         unblock_buffer_signals (edit);
         return FALSE;
     }
     else
     {
-        gtk_text_buffer_end_user_action (edit->priv->text_buffer);
+        gtk_text_buffer_end_user_action (buffer);
         edit->priv->status = 0;
         unblock_buffer_signals (edit);
         moo_edit_set_modified (edit, FALSE);
@@ -444,11 +453,11 @@ static gboolean do_write                (MooEdit        *edit,
     GtkTextIter line_start;
     const char *le = line_end[edit->priv->line_end_type];
     gssize le_len = line_end_len[edit->priv->line_end_type];
-    GtkTextBuffer *buf = edit->priv->text_buffer;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    if (encoding && !strcmp (encoding, "UTF8"))
+    if (encoding && (!strcmp (encoding, "UTF-8") || !strcmp (encoding, "UTF8")))
         encoding = NULL;
 
     file = g_io_channel_new_file (filename, "w", error);
@@ -463,7 +472,7 @@ static gboolean do_write                (MooEdit        *edit,
         return FALSE;
     }
 
-    gtk_text_buffer_get_start_iter (buf, &line_start);
+    gtk_text_buffer_get_start_iter (buffer, &line_start);
 
     do
     {
@@ -477,7 +486,7 @@ static gboolean do_write                (MooEdit        *edit,
             gssize len = -1;
 
             gtk_text_iter_forward_to_line_end (&line_end);
-            line = gtk_text_buffer_get_text (buf, &line_start, &line_end, FALSE);
+            line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, FALSE);
 
             status = g_io_channel_write_chars (file, line, len, &written, error);
             g_free (line);
@@ -530,23 +539,19 @@ static gboolean do_write                (MooEdit        *edit,
 
 static void     block_buffer_signals        (MooEdit        *edit)
 {
-    g_signal_handler_block (edit->priv->source_buffer,
-                            edit->priv->can_undo_handler_id);
-    g_signal_handler_block (edit->priv->source_buffer,
-                            edit->priv->can_redo_handler_id);
-    g_signal_handler_block (edit->priv->source_buffer,
-                            edit->priv->modified_changed_handler_id);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    g_signal_handler_block (buffer, edit->priv->can_undo_handler_id);
+    g_signal_handler_block (buffer, edit->priv->can_redo_handler_id);
+    g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
 static void     unblock_buffer_signals      (MooEdit        *edit)
 {
-    g_signal_handler_unblock (edit->priv->source_buffer,
-                              edit->priv->can_undo_handler_id);
-    g_signal_handler_unblock (edit->priv->source_buffer,
-                              edit->priv->can_redo_handler_id);
-    g_signal_handler_unblock (edit->priv->source_buffer,
-                              edit->priv->modified_changed_handler_id);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    g_signal_handler_unblock (buffer, edit->priv->can_undo_handler_id);
+    g_signal_handler_unblock (buffer, edit->priv->can_redo_handler_id);
+    g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
@@ -795,6 +800,8 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
 
     g_free (edit->priv->encoding);
     edit->priv->encoding = g_strdup (encoding);
+
+    _moo_edit_choose_indenter (edit);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     g_signal_emit_by_name (edit, "doc-status-changed", NULL);

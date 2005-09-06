@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditfind.c
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditfind.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -57,7 +57,7 @@ void         moo_edit_goto_line             (MooEdit            *edit,
                                              int                 line)
 {
     GtkWidget *dialog;
-    GtkTextBuffer *buf;
+    GtkTextBuffer *buffer;
     int line_count;
     GtkTextIter iter;
     GtkRange *scale;
@@ -66,8 +66,8 @@ void         moo_edit_goto_line             (MooEdit            *edit,
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    buf = edit->priv->text_buffer;
-    line_count = gtk_text_buffer_get_line_count (buf);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    line_count = gtk_text_buffer_get_line_count (buffer);
 
     if (line < 0 || line >= line_count)
     {
@@ -79,7 +79,7 @@ void         moo_edit_goto_line             (MooEdit            *edit,
                                                  -1);
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
-        gtk_text_buffer_get_iter_at_mark (buf, &iter, gtk_text_buffer_get_insert (buf));
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
         line = gtk_text_iter_get_line (&iter);
 
         scale = GTK_RANGE (g_object_get_data (G_OBJECT (dialog), "scale"));
@@ -106,10 +106,10 @@ void         moo_edit_goto_line             (MooEdit            *edit,
         gtk_widget_destroy (dialog);
     }
 
-    gtk_text_buffer_get_iter_at_line (buf, &iter, line);
-    gtk_text_buffer_place_cursor (buf, &iter);
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+    gtk_text_buffer_place_cursor (buffer, &iter);
     gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit),
-                                        gtk_text_buffer_get_insert (buf));
+                                        gtk_text_buffer_get_insert (buffer));
 }
 
 
@@ -171,6 +171,8 @@ void        _moo_edit_find                  (MooEdit            *edit)
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
     regex = _moo_edit_search_params->regex;
     case_sensitive = _moo_edit_search_params->case_sensitive;
     backwards = _moo_edit_search_params->backwards;
@@ -179,7 +181,7 @@ void        _moo_edit_find                  (MooEdit            *edit)
 
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
-        gtk_text_buffer_get_selection_bounds (edit->priv->text_buffer, &sel_start, &sel_end) &&
+        gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
         ABS (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
             selected = TRUE;
 
@@ -225,7 +227,6 @@ void        _moo_edit_find                  (MooEdit            *edit)
     if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
     if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
 
-    buffer = edit->priv->text_buffer;
     insert = gtk_text_buffer_get_insert (buffer);
 
     {
@@ -326,6 +327,8 @@ void        _moo_edit_find_next             (MooEdit            *edit)
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
     if (_moo_edit_search_params->last_search_stamp < 0 ||
         !_moo_edit_search_params->text)
             return moo_edit_find (edit);
@@ -344,7 +347,6 @@ void        _moo_edit_find_next             (MooEdit            *edit)
     if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
     if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
 
-    buffer = edit->priv->text_buffer;
     insert = gtk_text_buffer_get_insert (buffer);
 
     {
@@ -425,6 +427,8 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
     if (_moo_edit_search_params->last_search_stamp < 0 ||
         !_moo_edit_search_params->text)
             return moo_edit_find (edit);
@@ -443,7 +447,6 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
     if (!backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
     if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
 
-    buffer = edit->priv->text_buffer;
     insert = gtk_text_buffer_get_insert (buffer);
 
     {
@@ -529,6 +532,8 @@ void        _moo_edit_replace               (MooEdit            *edit)
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
     regex = _moo_edit_search_params->regex;
     case_sensitive = _moo_edit_search_params->case_sensitive;
     backwards = _moo_edit_search_params->backwards;
@@ -538,7 +543,7 @@ void        _moo_edit_replace               (MooEdit            *edit)
 
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
-        gtk_text_buffer_get_selection_bounds (edit->priv->text_buffer, &sel_start, &sel_end) &&
+        gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
         ABS (gtk_text_iter_get_line (&sel_start) - gtk_text_iter_get_line (&sel_end) > 1))
             selected = TRUE;
 
@@ -589,7 +594,6 @@ void        _moo_edit_replace               (MooEdit            *edit)
     if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
     if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
 
-    buffer = edit->priv->text_buffer;
     insert = gtk_text_buffer_get_insert (buffer);
 
     {

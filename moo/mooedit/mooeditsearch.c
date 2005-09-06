@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditsearch.c
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditsearch.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -1087,14 +1087,14 @@ static gboolean moo_edit_match_regex_replace_forward
 
 
 static gboolean moo_edit_search_regex_replace_backward
-                                                (const GtkTextIter  *start,
-                                                 const GtkTextIter  *end,
-                                                 EggRegex           *regex,
-                                                 const char         *replacement,
-                                                 char              **replacement_text,
-                                                 GtkTextIter        *match_start,
-                                                 GtkTextIter        *match_end,
-                                                 GError            **error)
+                                                (G_GNUC_UNUSED const GtkTextIter  *start,
+                                                 G_GNUC_UNUSED const GtkTextIter  *end,
+                                                 G_GNUC_UNUSED EggRegex           *regex,
+                                                 G_GNUC_UNUSED const char         *replacement,
+                                                 G_GNUC_UNUSED char              **replacement_text,
+                                                 G_GNUC_UNUSED GtkTextIter        *match_start,
+                                                 G_GNUC_UNUSED GtkTextIter        *match_end,
+                                                 G_GNUC_UNUSED GError            **error)
 {
     g_warning ("%s: implement me", G_STRLOC);
     return FALSE;
@@ -1102,14 +1102,14 @@ static gboolean moo_edit_search_regex_replace_backward
 
 
 static gboolean moo_edit_match_regex_replace_backward
-                                                (const GtkTextIter  *start,
-                                                 const GtkTextIter  *end,
-                                                 EggRegex           *regex,
-                                                 const char         *replacement,
-                                                 char              **replacement_text,
-                                                 GtkTextIter        *match_start,
-                                                 GtkTextIter        *match_end,
-                                                 GError            **error)
+                                                (G_GNUC_UNUSED const GtkTextIter  *start,
+                                                 G_GNUC_UNUSED const GtkTextIter  *end,
+                                                 G_GNUC_UNUSED EggRegex           *regex,
+                                                 G_GNUC_UNUSED const char         *replacement,
+                                                 G_GNUC_UNUSED char              **replacement_text,
+                                                 G_GNUC_UNUSED GtkTextIter        *match_start,
+                                                 G_GNUC_UNUSED GtkTextIter        *match_end,
+                                                 G_GNUC_UNUSED GError            **error)
 {
     g_warning ("%s: implement me", G_STRLOC);
     return FALSE;

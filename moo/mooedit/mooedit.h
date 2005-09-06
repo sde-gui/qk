@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooedit.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooedit.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,10 +11,11 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDIT_H
-#define MOOEDIT_MOOEDIT_H
+#ifndef __MOO_EDIT_H__
+#define __MOO_EDIT_H__
 
 #include <gtksourceview/gtksourceview.h>
+#include "mooedit/mooindenter.h"
 #include "mooutils/mooprefs.h"
 #include "mooedit/mooeditlang.h"
 
@@ -185,7 +186,11 @@ void        moo_edit_set_lang               (MooEdit            *edit,
 void        moo_edit_set_font_from_string   (MooEdit            *edit,
                                              const char         *font);
 
+MooIndenter *moo_edit_get_indenter          (MooEdit            *edit);
+void         moo_edit_set_indenter          (MooEdit            *edit,
+                                             MooIndenter        *indenter);
+
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDIT_H */
+#endif /* __MOO_EDIT_H__ */

@@ -1,4 +1,4 @@
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *   moobookmarkmgr.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -1599,6 +1599,13 @@ static void fill_icon_store         (GtkListStore       *store,
                                 l->data, -1);
         }
     }
+
+    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store),
+                                          ICON_COLUMN_LABEL,
+                                          GTK_SORT_ASCENDING);
+    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store),
+                                          GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                          GTK_SORT_ASCENDING);
 
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, ICON_COLUMN_LABEL, "None", -1);

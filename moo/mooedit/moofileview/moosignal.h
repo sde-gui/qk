@@ -1,5 +1,5 @@
-/*
- *   mooutils/moosignal.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   moosignal.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOSIGNAL_H
-#define MOOUTILS_MOOSIGNAL_H
+#ifndef __MOO_SIGNAL_H__
+#define __MOO_SIGNAL_H__
 
 #include <glib-object.h>
 
@@ -70,4 +70,4 @@ static guint moo_signal_new_cb (const gchar        *signal_name,
 }
 
 
-#endif /* MOOUTILS_MOOSIGNAL_H */
+#endif /* __MOO_SIGNAL_H__ */

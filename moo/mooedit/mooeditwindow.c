@@ -1,4 +1,4 @@
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *   mooeditwindow.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -1456,6 +1456,7 @@ static void update_statusbar (MooEditWindow *window)
     MooEdit *edit;
     int line, column;
     GtkTextIter iter;
+    GtkTextBuffer *buffer;
 
     edit = ACTIVE_DOC (window);
 
@@ -1466,8 +1467,9 @@ static void update_statusbar (MooEditWindow *window)
         return;
     }
 
-    gtk_text_buffer_get_iter_at_mark (edit->priv->text_buffer, &iter,
-                                      gtk_text_buffer_get_insert (edit->priv->text_buffer));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
     line = gtk_text_iter_get_line (&iter) + 1;
     column = gtk_text_iter_get_line_offset (&iter) + 1;
 

@@ -1,5 +1,4 @@
-/*-*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-*/
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *   moopaned.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -830,7 +829,7 @@ static void     moo_paned_unrealize     (GtkWidget      *widget)
     gdk_window_set_user_data (widget->window, NULL);
     gdk_window_destroy (widget->window);
     widget->window = NULL;
-    
+
     GTK_WIDGET_UNSET_FLAGS (widget, GTK_REALIZED);
 }
 
@@ -1316,7 +1315,7 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
                                 allocation->y,
                                 allocation->width,
                                 allocation->height);
-    
+
         if (paned->priv->pane_widget_visible)
         {
             get_pane_window_rect (paned, &rect);
@@ -1360,7 +1359,7 @@ static void moo_paned_map (GtkWidget *widget)
     MooPaned *paned = MOO_PANED (widget);
 
     gdk_window_show (widget->window);
-    
+
     GTK_WIDGET_CLASS(moo_paned_parent_class)->map (widget);
 
     if (paned->priv->handle_visible)

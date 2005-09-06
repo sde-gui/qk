@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooedit.c
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooedit.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -26,6 +26,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moofileutils.h"
 #include "mooutils/moosignal.h"
+#include <string.h>
 
 
 MooEditSearchParams *_moo_edit_search_params;
@@ -98,7 +99,8 @@ static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
-    PROP_EDITOR
+    PROP_EDITOR,
+    PROP_INDENTER
 };
 
 
@@ -154,6 +156,14 @@ static void moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              MOO_TYPE_EDITOR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_INDENTER,
+                                     g_param_spec_object ("indenter",
+                                             "indenter",
+                                             "indenter",
+                                             MOO_TYPE_INDENTER,
+                                             G_PARAM_READWRITE));
 
     signals[DOC_STATUS_CHANGED] =
             g_signal_new ("doc-status-changed",
@@ -304,6 +314,7 @@ static GObject *moo_edit_constructor (GType                  type,
     object = G_OBJECT_CLASS (moo_edit_parent_class)->constructor (
         type, n_construct_properties, construct_param);
 
+    /* XXX do something about this */
     buffer = gtk_source_buffer_new (NULL);
     gtk_text_view_set_buffer (GTK_TEXT_VIEW (object), GTK_TEXT_BUFFER (buffer));
     g_object_unref (G_OBJECT (buffer));
@@ -311,23 +322,21 @@ static GObject *moo_edit_constructor (GType                  type,
     edit = MOO_EDIT (object);
 
     edit->priv->constructed = TRUE;
-    edit->priv->text_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    edit->priv->source_buffer = GTK_SOURCE_BUFFER (edit->priv->text_buffer);
 
     moo_edit_instances = g_slist_prepend (moo_edit_instances, edit);
 
     edit->priv->can_undo_handler_id =
-            g_signal_connect (edit->priv->source_buffer,
+            g_signal_connect (buffer,
                               "can-undo",
                               G_CALLBACK (can_undo_cb),
                               edit);
     edit->priv->can_redo_handler_id =
-            g_signal_connect (edit->priv->source_buffer,
+            g_signal_connect (buffer,
                               "can-redo",
                               G_CALLBACK (can_redo_cb),
                               edit);
     edit->priv->modified_changed_handler_id =
-            g_signal_connect (edit->priv->text_buffer,
+            g_signal_connect (buffer,
                               "modified-changed",
                               G_CALLBACK (modified_changed_cb),
                               edit);
@@ -343,11 +352,11 @@ static GObject *moo_edit_constructor (GType                  type,
 
     _moo_edit_set_filename (edit, NULL, NULL);
 
-    g_signal_connect_after (edit->priv->text_buffer, "mark-set",
+    g_signal_connect_after (buffer, "mark-set",
                             G_CALLBACK (mark_set_cb), edit);
-    g_signal_connect_after (edit->priv->text_buffer, "insert-text",
+    g_signal_connect_after (buffer, "insert-text",
                             G_CALLBACK (insert_text_cb), edit);
-    g_signal_connect_after (edit->priv->text_buffer, "delete-range",
+    g_signal_connect_after (buffer, "delete-range",
                             G_CALLBACK (delete_range_cb), edit);
 
     return object;
@@ -370,6 +379,9 @@ static void moo_edit_finalize       (GObject      *object)
 
     if (edit->priv->lang)
         g_object_unref (edit->priv->lang);
+
+    if (edit->priv->indenter)
+        g_object_unref (edit->priv->indenter);
 
     g_free (edit->priv);
     edit->priv = NULL;
@@ -397,8 +409,12 @@ MooEdit        *moo_edit_new                   (void)
 
 void moo_edit_delete_selection   (MooEdit    *edit)
 {
+    GtkTextBuffer *buffer;
+
     g_return_if_fail (MOO_IS_EDIT (edit));
-    gtk_text_buffer_delete_selection (edit->priv->text_buffer, TRUE, TRUE);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_text_buffer_delete_selection (buffer, TRUE, TRUE);
 }
 
 
@@ -427,18 +443,21 @@ void        moo_edit_set_modified           (MooEdit            *edit,
                                              gboolean            modified)
 {
     gboolean buf_modified;
+    GtkTextBuffer *buffer;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
     buf_modified =
-            gtk_text_buffer_get_modified (edit->priv->text_buffer);
+            gtk_text_buffer_get_modified (buffer);
 
     if (buf_modified != modified)
     {
-        g_signal_handler_block (edit->priv->text_buffer,
+        g_signal_handler_block (buffer,
                                 edit->priv->modified_changed_handler_id);
-        gtk_text_buffer_set_modified (edit->priv->text_buffer, modified);
-        g_signal_handler_unblock (edit->priv->text_buffer,
+        gtk_text_buffer_set_modified (buffer, modified);
+        g_signal_handler_unblock (buffer,
                                   edit->priv->modified_changed_handler_id);
     }
 
@@ -494,10 +513,11 @@ MooEditPrivate *moo_edit_private_new (void)
 
     priv->last_search_stamp = -1;
 
+    priv->enable_indentation = TRUE;
     priv->tab_indents = TRUE;
     priv->shift_tab_unindents = TRUE;
     priv->backspace_indents = TRUE;
-    priv->auto_indent = TRUE;
+    priv->enter_indents = TRUE;
     priv->ctrl_up_down_scrolls = TRUE;
     priv->ctrl_page_up_down_scrolls = TRUE;
 
@@ -569,20 +589,25 @@ void        moo_edit_set_lang               (MooEdit            *edit,
                                              MooEditLang        *lang)
 {
     GtkTextTagTable *table;
+    GtkTextBuffer *buffer;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    if (lang == edit->priv->lang) return;
+    if (lang == edit->priv->lang)
+        return;
 
-    table = gtk_text_buffer_get_tag_table (edit->priv->text_buffer);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    table = gtk_text_buffer_get_tag_table (buffer);
     gtk_source_tag_table_remove_source_tags (GTK_SOURCE_TAG_TABLE (table));
 
-    if (edit->priv->lang) {
+    if (edit->priv->lang)
+    {
         g_object_unref (edit->priv->lang);
         edit->priv->lang = NULL;
     }
 
-    if (lang) {
+    if (lang)
+    {
         GSList *tags;
         gunichar escape_char;
 
@@ -595,15 +620,16 @@ void        moo_edit_set_lang               (MooEdit            *edit,
         g_slist_free (tags);
 
         escape_char = moo_edit_lang_get_escape_char (lang);
-        gtk_source_buffer_set_escape_char (edit->priv->source_buffer,
+        gtk_source_buffer_set_escape_char (GTK_SOURCE_BUFFER (buffer),
                                            escape_char);
 
-        gtk_source_buffer_set_brackets (edit->priv->source_buffer,
+        gtk_source_buffer_set_brackets (GTK_SOURCE_BUFFER (buffer),
                                         moo_edit_lang_get_brackets (lang));
     }
-    else {
-        gtk_source_buffer_set_escape_char (edit->priv->source_buffer, '\\');
-        gtk_source_buffer_set_brackets (edit->priv->source_buffer, "{}()[]");
+    else
+    {
+        gtk_source_buffer_set_escape_char (GTK_SOURCE_BUFFER (buffer), '\\');
+        gtk_source_buffer_set_brackets (GTK_SOURCE_BUFFER (buffer), "{}()[]");
     }
 
     g_signal_emit (edit, signals[LANG_CHANGED], 0, NULL);
@@ -613,8 +639,12 @@ void        moo_edit_set_lang               (MooEdit            *edit,
 void        moo_edit_set_highlight          (MooEdit            *edit,
                                              gboolean            highlight)
 {
+    GtkTextBuffer *buffer;
+
     g_return_if_fail (MOO_IS_EDIT (edit));
-    gtk_source_buffer_set_highlight (edit->priv->source_buffer, highlight);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_source_buffer_set_highlight (GTK_SOURCE_BUFFER (buffer), highlight);
 }
 
 
@@ -651,28 +681,39 @@ void        moo_edit_set_read_only          (MooEdit            *edit,
 gboolean    moo_edit_is_empty               (MooEdit            *edit)
 {
     GtkTextIter start, end;
+    GtkTextBuffer *buffer;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
     if (MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
         return FALSE;
 
-    gtk_text_buffer_get_bounds (edit->priv->text_buffer, &start, &end);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+
     return !gtk_text_iter_compare (&start, &end);
 }
 
 
 gboolean    moo_edit_can_redo               (MooEdit            *edit)
 {
+    GtkTextBuffer *buffer;
+
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return gtk_source_buffer_can_redo (edit->priv->source_buffer);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    return gtk_source_buffer_can_redo (GTK_SOURCE_BUFFER (buffer));
 }
 
 
 gboolean    moo_edit_can_undo               (MooEdit            *edit)
 {
+    GtkTextBuffer *buffer;
+
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return gtk_source_buffer_can_undo (edit->priv->source_buffer);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    return gtk_source_buffer_can_undo (GTK_SOURCE_BUFFER (buffer));
 }
 
 
@@ -707,10 +748,17 @@ static void     moo_edit_set_property       (GObject        *object,
                                              GParamSpec     *pspec)
 {
     MooEdit *edit = MOO_EDIT (object);
-    switch (prop_id) {
+
+    switch (prop_id)
+    {
         case PROP_EDITOR:
-            edit->priv->editor = MOO_EDITOR (g_value_get_object (value));
+            edit->priv->editor = g_value_get_object (value);
             break;
+
+        case PROP_INDENTER:
+            moo_edit_set_indenter (edit, g_value_get_object (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -723,9 +771,15 @@ static void     moo_edit_get_property       (GObject        *object,
                                              GParamSpec     *pspec)
 {
     MooEdit *edit = MOO_EDIT (object);
-    switch (prop_id) {
+
+    switch (prop_id)
+    {
         case PROP_EDITOR:
             g_value_set_object (value, edit->priv->editor);
+            break;
+
+        case PROP_INDENTER:
+            g_value_set_object (value, edit->priv->indenter);
             break;
 
         default:
@@ -910,10 +964,10 @@ static void mark_set_cb                 (GtkTextBuffer      *buffer,
 }
 
 
-static void insert_text_cb              (G_GNUC_UNUSED GtkTextBuffer *buffer,
+static void insert_text_cb              (GtkTextBuffer      *buffer,
                                          GtkTextIter        *iter,
-                                         G_GNUC_UNUSED gchar *text,
-                                         G_GNUC_UNUSED gint  len,
+                                         gchar              *text,
+                                         gint                len,
                                          MooEdit            *edit)
 {
     g_signal_emit (edit, signals[CURSOR_MOVED], 0, iter);
@@ -922,6 +976,15 @@ static void insert_text_cb              (G_GNUC_UNUSED GtkTextBuffer *buffer,
     {
         edit->priv->has_text = TRUE;
         g_signal_emit (edit, signals[HAS_TEXT], 0, TRUE);
+    }
+
+    if (edit->priv->in_key_press && edit->priv->indenter &&
+        g_utf8_strlen (text, len) == 1)
+    {
+        gtk_text_buffer_begin_user_action (buffer);
+        moo_indenter_character (edit->priv->indenter, buffer,
+                                g_utf8_get_char (text), iter);
+        gtk_text_buffer_end_user_action (buffer);
     }
 }
 
@@ -974,4 +1037,140 @@ const char *moo_edit_get_encoding           (MooEdit            *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->encoding;
+}
+
+
+MooIndenter *moo_edit_get_indenter          (MooEdit            *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->indenter;
+}
+
+
+void         moo_edit_set_indenter          (MooEdit            *edit,
+                                             MooIndenter        *indenter)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (!indenter || MOO_IS_INDENTER (indenter));
+
+    if (edit->priv->indenter == indenter)
+        return;
+
+    if (edit->priv->indenter)
+        g_object_unref (edit->priv->indenter);
+    edit->priv->indenter = indenter;
+    if (edit->priv->indenter)
+        g_object_ref (edit->priv->indenter);
+
+    g_object_notify (G_OBJECT (edit), "indenter");
+}
+
+
+#define MODE_STRING "-*-"
+
+static MooIndenter *get_indenter_for_mode_string (MooEdit *edit)
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    GtkTextIter line_start, line_end;
+    char *text, *start, *end, *mode_string;
+    char **vars, **p;
+    MooIndenter *indenter;
+
+    mode_string = NULL;
+    vars = NULL;
+    indenter = NULL;
+
+    gtk_text_buffer_get_start_iter (buffer, &line_start);
+    line_end = line_start;
+    gtk_text_iter_forward_to_line_end (&line_end);
+
+    text = gtk_text_buffer_get_text (buffer, &line_start, &line_end, FALSE);
+
+    start = strstr (text, MODE_STRING);
+
+    if (!start || !start[strlen (MODE_STRING)])
+        goto out;
+
+    start += strlen (MODE_STRING);
+
+    end = strstr (start, MODE_STRING);
+
+    if (!end)
+        goto out;
+
+    mode_string = g_strndup (start, end - start);
+    g_strstrip (mode_string);
+
+    vars = g_strsplit (mode_string, ";", 0);
+
+    if (!vars)
+        goto out;
+
+    for (p = vars; *p != NULL; p++)
+    {
+        char *colon, *var, *value;
+
+        colon = g_strrstr (*p, ":");
+        if (!colon || colon == *p || !colon[1])
+            goto out;
+
+        var = g_strndup (*p, colon - *p);
+        g_strstrip (var);
+        if (!var[0])
+        {
+            g_free (var);
+            goto out;
+        }
+
+        value = colon + 1;
+        g_strstrip (value);
+        if (!value)
+        {
+            g_free (var);
+            goto out;
+        }
+
+        if (!indenter)
+        {
+            if (!g_ascii_strcasecmp (var, "mode"))
+                indenter = moo_indenter_get_for_mode (value);
+
+            if (!indenter)
+            {
+                g_free (var);
+                goto out;
+            }
+        }
+        else
+        {
+            moo_indenter_set_value (indenter, var, value);
+        }
+
+        g_free (var);
+    }
+
+out:
+    g_free (text);
+    g_free (mode_string);
+    g_strfreev (vars);
+    return indenter;
+}
+
+
+void        _moo_edit_choose_indenter       (MooEdit            *edit)
+{
+    MooIndenter *indenter;
+
+    if (!edit->priv->enable_indentation)
+        return;
+
+    indenter = get_indenter_for_mode_string (edit);
+
+    if (!indenter && edit->priv->lang)
+        indenter = moo_indenter_get_for_lang (moo_edit_lang_get_id (edit->priv->lang));
+
+    if (!indenter)
+        indenter = moo_indenter_default_new ();
+
+    moo_edit_set_indenter (edit, indenter);
 }

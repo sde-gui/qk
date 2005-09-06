@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditsearch.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditsearch.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDITSEARCH_H
-#define MOOEDIT_MOOEDITSEARCH_H
+#ifndef __MOO_EDIT_SEARCH_H__
+#define __MOO_EDIT_SEARCH_H__
 
 #include "mooedit/mooedit.h"
 #include "mooutils/eggregex.h"
@@ -106,4 +106,4 @@ void        _moo_edit_find_previous         (MooEdit            *edit);
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDITSEARCH_H */
+#endif /* __MOO_EDIT_SEARCH_H__ */

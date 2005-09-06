@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditprefs.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditprefs.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDITPREFS_H
-#define MOOEDIT_MOOEDITPREFS_H
+#ifndef __MOO_EDIT_PREFS_H__
+#define __MOO_EDIT_PREFS_H__
 
 #include "mooedit/mooeditor.h"
 
@@ -92,4 +92,4 @@ void        moo_edit_style_load             (const char     *lang_id,
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDITPREFS_H */
+#endif /* __MOO_EDIT_PREFS_H__ */

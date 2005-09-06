@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooeditlang-private.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooeditlang-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOEDITLANG_PRIVATE_H
-#define MOOEDIT_MOOEDITLANG_PRIVATE_H
+#ifndef __MOO_EDIT_LANG_PRIVATE_H__
+#define __MOO_EDIT_LANG_PRIVATE_H__
 
 #ifndef MOOEDIT_COMPILATION
 #error "Do not include this file"
@@ -60,4 +60,4 @@ gboolean    moo_edit_lang_load_full         (MooEditLang *lang);
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDITLANG_PRIVATE_H */
+#endif /* __MOO_EDIT_LANG_PRIVATE_H__ */

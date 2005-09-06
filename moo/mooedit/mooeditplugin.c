@@ -1,4 +1,4 @@
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *   mooeditplugin.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -14,6 +14,9 @@
 #define MOOEDIT_COMPILATION
 #include "mooeditplugin.h"
 #include <string.h>
+
+
+#define PLUGIN_PREFS_ENABLED "enabled"
 
 
 static GSList *registered_plugins = NULL;   /* Plugin* */
@@ -58,6 +61,8 @@ static void         moo_edit_plugin_attach  (WindowInfo         *window_info,
 static void         moo_edit_plugin_detach  (WindowInfo         *window_info,
                                              Plugin             *plugin);
 
+static const char  *make_prefs_key          (Plugin             *plugin,
+                                             const char         *key);
 
 
 gboolean
@@ -66,6 +71,7 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
 {
     Plugin *plugin;
     GSList *l;
+    const char *prefs_key;
 
     g_return_val_if_fail (info != NULL, FALSE);
     g_return_val_if_fail (info->id && info->id[0], FALSE);
@@ -84,6 +90,10 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
         g_warning ("plugin with id '%s' already registered", plugin_id (plugin));
         moo_edit_plugin_unregister (plugin_id (plugin));
     }
+
+    prefs_key = make_prefs_key (plugin, PLUGIN_PREFS_ENABLED);
+    moo_prefs_new_key_bool (prefs_key, plugin_enabled (plugin));
+    plugin->info.params->enabled = moo_prefs_get_bool (prefs_key);
 
     if (!plugin_init (plugin))
     {
@@ -496,4 +506,20 @@ moo_edit_plugin_get_window_data (MooEditWindow      *window,
     full_window_data = window_info_lookup_plugin (window_info, plugin);
 
     return full_window_data ? &full_window_data->window_data : NULL;
+}
+
+
+static const char*
+make_prefs_key (Plugin             *plugin,
+                const char         *key)
+{
+    static char *prefs_key = NULL;
+
+    g_return_val_if_fail (plugin != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+
+    g_free (prefs_key);
+    prefs_key = g_strdup_printf (MOO_EDIT_PLUGIN_PREFS_ROOT "/%s/%s",
+                                 plugin_id (plugin), key);
+    return prefs_key;
 }

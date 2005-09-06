@@ -1,5 +1,5 @@
-/*
- *   mooedit/mooedit-private.h
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *   mooedit-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -15,8 +15,8 @@
 #error "Do not include this file"
 #endif
 
-#ifndef MOOEDIT_MOOEDIT_PRIVATE_H
-#define MOOEDIT_MOOEDIT_PRIVATE_H
+#ifndef __MOO_EDIT_PRIVATE_H__
+#define __MOO_EDIT_PRIVATE_H__
 
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditsearch.h"
@@ -25,6 +25,7 @@ G_BEGIN_DECLS
 
 
 char       *_moo_edit_filename_to_utf8      (const char         *filename);
+void        _moo_edit_choose_indenter       (MooEdit            *edit);
 
 
 /***********************************************************************/
@@ -106,9 +107,6 @@ extern MooEditSearchParams *_moo_edit_search_params;
 struct _MooEditPrivate {
     gboolean constructed;
 
-    GtkTextBuffer *text_buffer;
-    GtkSourceBuffer *source_buffer;
-
     MooEditor *editor;
 
     gboolean has_selection;
@@ -150,6 +148,19 @@ struct _MooEditPrivate {
     gboolean lang_custom;
 
     /***********************************************************************/
+    /* Indentation
+    /*/
+    gboolean enable_indentation;
+    MooIndenter *indenter;
+    gboolean tab_indents;
+    gboolean shift_tab_unindents;
+    gboolean backspace_indents;
+    gboolean enter_indents;
+    /* key press handler sets this flag in order to distinguish typed in
+       characters in buffer's insert-text signal */
+    gboolean in_key_press;
+
+    /***********************************************************************/
     /* Preferences
     /*/
     guint prefs_notify;
@@ -157,10 +168,6 @@ struct _MooEditPrivate {
     /***********************************************************************/
     /* Keyboard
     /*/
-    gboolean tab_indents;
-    gboolean shift_tab_unindents;
-    gboolean backspace_indents;
-    gboolean auto_indent;
     gboolean ctrl_up_down_scrolls;
     gboolean ctrl_page_up_down_scrolls;
 
@@ -183,4 +190,4 @@ MooEditPrivate *moo_edit_private_new (void);
 
 G_END_DECLS
 
-#endif /* MOOEDIT_MOOEDIT_PRIVATE_H */
+#endif /* __MOO_EDIT_PRIVATE_H__ */
