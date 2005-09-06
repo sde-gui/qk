@@ -18,8 +18,7 @@
  * Boston, MA 02111-1307, USA.
  */
 /*
- * Taken from glib-2.6.4 for glib < 2.6. Added glib version check to avoid compiling
- * it with recent glib versions, added some stuff to make it work with glib < 2.6.
+ * Taken from glib-2.6.4 for glib < 2.6
  */
 
 #ifndef __G_OPTION_H__

@@ -498,6 +498,9 @@ AC_DEFUN([_CHECK_VERSION],[
         $1[]_MINOR_VERSION=$part2
         $1[]_MICRO_VERSION=$part3
 
+        if test $[]$1[]_MINOR_VERSION -ge 8; then
+            ver_2_8=yes
+        fi
         if test $[]$1[]_MINOR_VERSION -ge 6; then
             ver_2_6=yes
         fi
@@ -511,6 +514,7 @@ AC_DEFUN([_CHECK_VERSION],[
         AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
     fi
 
+    AM_CONDITIONAL($1[]_2_8, test x$ver_2_8 = "xyes")
     AM_CONDITIONAL($1[]_2_6, test x$ver_2_6 = "xyes")
     AM_CONDITIONAL($1[]_2_4, test x$ver_2_4 = "xyes")
     AM_CONDITIONAL($1[]_2_2, test x$ver_2_2 = "xyes")

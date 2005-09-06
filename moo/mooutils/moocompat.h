@@ -20,6 +20,10 @@
 #include <sys/types.h>
 #endif /* __WIN32__ */
 
+#if !GLIB_CHECK_VERSION(2,8,0)
+#include "mooutils/newgtk/gmappedfile.h"
+#endif /* !GLIB_CHECK_VERSION(2,8,0) */
+
 #if !GLIB_CHECK_VERSION(2,6,0)
 #include "mooutils/newgtk/goption.h"
 /* TODO */

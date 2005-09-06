@@ -35,6 +35,10 @@ AC_PROG_YACC
 # for pcre
 AC_CHECK_FUNCS(memmove bcopy strerror)
 
+#for GMappedFile
+AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_FUNCS(mmap)
+
 
 ################################################################################
 #  Terminal stuff

@@ -16,6 +16,10 @@ AM_CFLAGS =                             \
 noinst_LTLIBRARIES = libnewgtk.la
 libnewgtk_la_SOURCES = newgtk-dummy.c
 
+glib_2_8_sources =      \
+    gmappedfile.c       \
+    gmappedfile.h
+
 glib_2_6_sources =      \
     goption.c           \
     goption.h
@@ -27,8 +31,13 @@ gtk_2_4_sources =       \
     gtkfontbutton.h
 
 EXTRA_DIST =            \
+    $(glib_2_8_sources) \
     $(glib_2_6_sources) \
     $(gtk_2_4_sources)
+
+if !GLIB_2_8
+libnewgtk_la_SOURCES += $(glib_2_8_sources)
+endif !GLIB_2_8
 
 if !GLIB_2_6
 libnewgtk_la_SOURCES += $(glib_2_6_sources)

@@ -19,8 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 /*
- * Taken from glib-2.6.4 for glib < 2.6. Added glib version check to avoid compiling
- * it with recent glib versions, and added noop P_() and _().
+ * Taken from glib-2.6.4 for glib < 2.6. Added noop P_() and _().
  * Made dgettext_swapped return const char*
  */
 

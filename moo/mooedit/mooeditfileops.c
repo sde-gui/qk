@@ -16,6 +16,7 @@
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooutils/moofileutils.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 
 
@@ -265,7 +266,41 @@ static gboolean do_load                 (MooEdit        *edit,
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    *error = NULL;
+    if (!encoding)
+    {
+        char *contents;
+        gsize len;
+        GMappedFile *mapped_file = g_mapped_file_new (filename, FALSE, error);
+
+        if (mapped_file)
+        {
+            contents = g_mapped_file_get_contents (mapped_file);
+            len = g_mapped_file_get_length (mapped_file);
+
+            if (!g_utf8_validate (contents, len, NULL))
+            {
+                g_mapped_file_free (mapped_file);
+                g_set_error (error, G_CONVERT_ERROR,
+                             G_CONVERT_ERROR_ILLEGAL_SEQUENCE,
+                             "Invalid UTF8 data read from file");
+                return FALSE;
+            }
+
+            gtk_text_buffer_insert_at_cursor (edit->priv->text_buffer, contents, len);
+            g_free (edit->priv->encoding);
+            edit->priv->encoding = NULL;
+
+            g_mapped_file_free (mapped_file);
+            return TRUE;
+        }
+        else
+        {
+            g_warning ("%s: could not create mapped file", G_STRLOC);
+            g_warning ("%s: %s", G_STRLOC, (*error)->message);
+            g_clear_error (error);
+        }
+    }
+
     file = g_io_channel_new_file (filename, "r", error);
 
     if (!file)
