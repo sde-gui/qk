@@ -1107,7 +1107,7 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
             gap_width = tab_width - gap_x;
         }
 
-        gap_x += widget->allocation.x + nb->priv->action_widgets_size[LEFT];
+        gap_x += nb->priv->action_widgets_size[LEFT];
     }
 
     if (draw_gap)
