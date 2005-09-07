@@ -20,7 +20,7 @@ if BUILD_MOOAPP
 bin_PROGRAMS += editor
 endif
 if BUILD_MOOEDIT
-noinst_PROGRAMS += medit testfileview testpanedfileview testpaned
+noinst_PROGRAMS += medit
 endif
 if BUILD_MOOTERM
 noinst_PROGRAMS += mterm termbuffer

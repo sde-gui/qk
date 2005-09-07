@@ -133,6 +133,10 @@ MooMarkupDoc       *moo_markup_parse_memory         (const char         *buffer,
 gboolean            moo_markup_save                 (MooMarkupDoc       *doc,
                                                      const char         *filename,
                                                      GError            **error);
+gboolean            moo_markup_save_pretty          (MooMarkupDoc       *doc,
+                                                     const char         *filename,
+                                                     guint               indent,
+                                                     GError            **error);
 
 char               *moo_markup_node_get_string      (MooMarkupNode      *node);
 

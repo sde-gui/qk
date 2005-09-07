@@ -666,7 +666,6 @@ static gboolean check_file_status           (MooEdit        *edit,
 static void     file_modified_on_disk       (MooEdit        *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
-    g_message ("%s: file '%s'", G_STRLOC, edit->priv->filename);
     stop_file_watch (edit);
     add_status (edit, MOO_EDIT_MODIFIED_ON_DISK);
 }
@@ -675,7 +674,6 @@ static void     file_modified_on_disk       (MooEdit        *edit)
 static void     file_deleted                (MooEdit        *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
-    g_message ("%s: file '%s'", G_STRLOC, edit->priv->filename);
     stop_file_watch (edit);
     add_status (edit, MOO_EDIT_DELETED);
 }

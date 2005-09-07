@@ -38,12 +38,21 @@ struct _MooRecentMgrPrivate {
     gboolean prefs_loaded;
     GtkTooltips *tooltips;
     gboolean display_full_name;
+    char *user_id;
 };
 
 
-static void moo_recent_mgr_class_init    (MooRecentMgrClass    *klass);
-static void moo_recent_mgr_init          (MooRecentMgr         *mgr);
-static void moo_recent_mgr_finalize      (GObject                *object);
+static void moo_recent_mgr_class_init   (MooRecentMgrClass  *klass);
+static void moo_recent_mgr_init         (MooRecentMgr       *mgr);
+static void moo_recent_mgr_finalize     (GObject            *object);
+static void moo_recent_mgr_set_property (GObject            *object,
+                                         guint               prop_id,
+                                         const GValue       *value,
+                                         GParamSpec         *pspec);
+static void moo_recent_mgr_get_property (GObject            *object,
+                                         guint               prop_id,
+                                         GValue             *value,
+                                         GParamSpec         *pspec);
 
 static RecentEntry  *recent_entry_new       (const MooEditFileInfo  *info);
 static void          recent_entry_free      (RecentEntry            *entry);
@@ -78,13 +87,29 @@ enum {
     NUM_SIGNALS
 };
 
+enum {
+    PROP_0,
+    PROP_USER_ID
+};
+
 static guint signals[NUM_SIGNALS];
 
 static void
 moo_recent_mgr_class_init (MooRecentMgrClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
     gobject_class->finalize = moo_recent_mgr_finalize;
+    gobject_class->set_property = moo_recent_mgr_set_property;
+    gobject_class->get_property = moo_recent_mgr_get_property;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USER_ID,
+                                     g_param_spec_string ("user-id",
+                                             "user-id",
+                                             "user-id",
+                                             NULL,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     signals[OPEN_RECENT] =
             g_signal_new ("open-recent",
@@ -117,6 +142,44 @@ moo_recent_mgr_init (MooRecentMgr *mgr)
     mgr->priv->tooltips = gtk_tooltips_new ();
     gtk_object_sink (GTK_OBJECT (g_object_ref (mgr->priv->tooltips)));
     mgr->priv->display_full_name = FALSE;
+}
+
+
+static void moo_recent_mgr_set_property (GObject            *object,
+                                         guint               prop_id,
+                                         const GValue       *value,
+                                         GParamSpec         *pspec)
+{
+    MooRecentMgr *mgr = MOO_RECENT_MGR (object);
+
+    switch (prop_id)
+    {
+        case PROP_USER_ID:
+            mgr->priv->user_id = g_strdup (g_value_get_string (value));
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+
+static void moo_recent_mgr_get_property (GObject            *object,
+                                         guint               prop_id,
+                                         GValue             *value,
+                                         GParamSpec         *pspec)
+{
+    MooRecentMgr *mgr = MOO_RECENT_MGR (object);
+
+    switch (prop_id)
+    {
+        case PROP_USER_ID:
+            g_value_set_string (value, mgr->priv->user_id);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
 }
 
 
@@ -162,9 +225,9 @@ moo_recent_mgr_finalize (GObject *object)
 
 
 MooRecentMgr*
-moo_recent_mgr_new (void)
+moo_recent_mgr_new (const char *user_id)
 {
-    return MOO_RECENT_MGR (g_object_new (MOO_TYPE_RECENT_MGR, NULL));
+    return g_object_new (MOO_TYPE_RECENT_MGR, "user-id", user_id, NULL);
 }
 
 
@@ -292,7 +355,7 @@ mgr_reorder_recent (MooRecentMgr *mgr,
 /* Loading and saving
  */
 
-#define RECENT_FILES_ROOT       "Editor/recent-files"
+#define ELEMENT_RECENT_FILES    "recent-files"
 #define ELEMENT_ENTRY           "file"
 #define PROP_ENCODING           "encoding"
 #define PREFS_SHOW_FULL_NAME    "recent_files/show_full_name"
@@ -303,6 +366,7 @@ mgr_load_recent (MooRecentMgr *mgr)
     MooMarkupDoc *xml;
     MooMarkupElement *root;
     MooMarkupNode *node;
+    char *root_path;
 
     if (mgr->priv->prefs_loaded)
         return;
@@ -315,7 +379,13 @@ mgr_load_recent (MooRecentMgr *mgr)
     xml = moo_prefs_get_markup ();
     g_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+    if (mgr->priv->user_id)
+        root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_FILES, mgr->priv->user_id);
+    else
+        root_path = g_strdup (ELEMENT_RECENT_FILES);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
+    g_free (root_path);
 
     if (!root)
         return;
@@ -372,19 +442,28 @@ mgr_save_recent (MooRecentMgr *mgr)
     MooMarkupDoc *xml;
     MooMarkupElement *root;
     GSList *l;
+    char *root_path;
 
     xml = moo_prefs_get_markup ();
     g_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+    if (mgr->priv->user_id)
+        root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_FILES, mgr->priv->user_id);
+    else
+        root_path = g_strdup (ELEMENT_RECENT_FILES);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
 
     if (root)
         moo_markup_delete_node (MOO_MARKUP_NODE (root));
 
     if (!mgr->priv->files)
+    {
+        g_free (root_path);
         return;
+    }
 
-    root = moo_markup_create_element (MOO_MARKUP_NODE (xml), RECENT_FILES_ROOT);
+    root = moo_markup_create_element (MOO_MARKUP_NODE (xml), root_path);
     g_return_if_fail (root != NULL);
 
     for (l = mgr->priv->files; l != NULL; l = l->next)
@@ -406,10 +485,12 @@ mgr_save_recent (MooRecentMgr *mgr)
 
         g_free (path_utf8);
     }
+
+    g_free (root_path);
 }
 
 
-#undef RECENT_FILES_ROOT
+#undef ELEMENT_RECENT_FILES
 #undef ELEMENT_ENTRY
 #undef PROP_ENCODING
 #undef PREFS_SHOW_FULL_NAME
@@ -519,67 +600,10 @@ recent_entry_free (RecentEntry        *entry)
 }
 
 
-#define RECENT_PREFIX MOO_EDIT_PREFS_PREFIX "/" PREFS_RECENT "/" PREFS_ENTRY
-#define RECENT_FILENAME RECENT_PREFIX "%d/filename"
-#define RECENT_ENCODING RECENT_PREFIX "%d/encoding"
-
-
-// static void
-// save_recent (guint        n,
-//              RecentEntry *entry)
-// {
-//     char *key;
-//     const char *filename, *encoding;
-//
-//     filename = entry ? entry->info->filename : NULL;
-//     encoding = entry ? entry->info->encoding : NULL;
-//
-//     key = g_strdup_printf (RECENT_FILENAME, n);
-//     moo_prefs_set_string (key, filename);
-//     g_free (key);
-//
-//     key = g_strdup_printf (RECENT_ENCODING, n);
-//     moo_prefs_set_string (key, encoding);
-//     g_free (key);
-// }
-
-
-// static RecentEntry*
-// load_recent (guint n)
-// {
-//     RecentEntry *entry = NULL;
-//     char *filename, *encoding;
-//     char *key;
-//
-//     key = g_strdup_printf (RECENT_FILENAME, n);
-//     filename = g_strdup (moo_prefs_get_string (key));
-//     g_free (key);
-//
-//     key = g_strdup_printf (RECENT_ENCODING, n);
-//     encoding = g_strdup (moo_prefs_get_string (key));
-//     g_free (key);
-//
-//     if (filename)
-//     {
-//         MooEditFileInfo *info = moo_edit_file_info_new (filename, encoding);
-//         entry = recent_entry_new (info);
-//         moo_edit_file_info_free (info);
-//     }
-//
-//     g_free (filename);
-//     g_free (encoding);
-//
-//     return entry;
-// }
-
-#undef RECENT_PREFIX
-#undef RECENT_FILENAME
-#undef RECENT_ENCODING
-
-
 GtkMenuItem*
 moo_recent_mgr_create_menu (MooRecentMgr *mgr,
-                            gpointer      data)
+                            gpointer      data,
+                            const char   *menu_label)
 {
     RecentMenu *menu;
     GSList *l;
@@ -589,7 +613,8 @@ moo_recent_mgr_create_menu (MooRecentMgr *mgr,
     menu = g_new0 (RecentMenu, 1);
     menu->data = data;
 
-    menu->parent = GTK_MENU_ITEM (gtk_image_menu_item_new_with_label ("Open Recent"));
+    menu->parent = GTK_MENU_ITEM (gtk_image_menu_item_new_with_label
+            (menu_label ? menu_label : "Open Recent"));
     gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menu->parent),
                                    gtk_image_new_from_stock (GTK_STOCK_OPEN,
                                            GTK_ICON_SIZE_MENU));

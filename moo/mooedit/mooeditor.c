@@ -15,6 +15,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
+#include "mooedit/mooeditplugin.h"
 #include "mooui/moouiobject.h"
 #include "mooui/moomenuaction.h"
 #include "mooutils/moocompat.h"
@@ -54,8 +55,7 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
 static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
                                              MooAction      *action);
 
-static void          moo_editor_add_window  (MooEditor      *editor,
-                                             MooEditWindow  *window);
+static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              MooEdit        *doc,
@@ -170,7 +170,7 @@ static void     moo_editor_init        (MooEditor  *editor)
 
     editor->priv->lang_mgr = moo_edit_lang_mgr_new ();
     editor->priv->filter_mgr = moo_filter_mgr_new ();
-    editor->priv->recent_mgr = moo_recent_mgr_new ();
+    editor->priv->recent_mgr = moo_recent_mgr_new ("Editor");
     g_signal_connect_swapped (editor->priv->recent_mgr, "open-recent",
                               G_CALLBACK (open_recent), editor);
     editor->priv->windows = NULL;
@@ -308,8 +308,7 @@ void             moo_editor_set_app_name        (MooEditor      *editor,
     editor->priv->app_name = g_strdup (name);
 
     for (l = editor->priv->windows; l != NULL; l = l->next)
-        _moo_edit_window_set_app_name (MOO_EDIT_WINDOW (l->data),
-                                       name);
+        moo_edit_window_set_title_prefix (MOO_EDIT_WINDOW (l->data), name);
 }
 
 
@@ -539,7 +538,7 @@ static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
     g_return_val_if_fail (editor != NULL, NULL);
 
     mgr = editor->priv->recent_mgr;
-    item = moo_recent_mgr_create_menu (mgr, window);
+    item = moo_recent_mgr_create_menu (mgr, window, "Open Recent");
     moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
     /* XXX */
     g_signal_connect (mgr, "item-added",
@@ -571,11 +570,14 @@ static void             open_recent         (MooEditor       *editor,
 
 /*****************************************************************************/
 
-static void          moo_editor_add_window  (MooEditor      *editor,
-                                             MooEditWindow  *window)
+static MooEditWindow *create_window         (MooEditor      *editor)
 {
-    g_return_if_fail (window_list_find (editor, window) == NULL);
+    MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
+                                          "editor", editor, NULL);
     window_list_add (editor, window);
+    _moo_edit_plugin_window_attach (window);
+    gtk_widget_show (GTK_WIDGET (window));
+    return window;
 }
 
 
@@ -604,14 +606,16 @@ MooEditWindow   *moo_editor_new_window      (MooEditor      *editor)
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
-    window = _moo_edit_window_new (editor);
-    moo_editor_add_window (editor, window);
+    window = create_window (editor);
 
-    doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
-    _moo_edit_window_insert_doc (window, doc, -1);
-    moo_editor_add_doc (editor, window, doc,
-                        moo_edit_loader_get_default (),
-                        moo_edit_saver_get_default ());
+    if (!editor->priv->allow_empty_window)
+    {
+        doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+        _moo_edit_window_insert_doc (window, doc, -1);
+        moo_editor_add_doc (editor, window, doc,
+                            moo_edit_loader_get_default (),
+                            moo_edit_saver_get_default ());
+    }
 
     return window;
 }
@@ -710,10 +714,7 @@ void             moo_editor_open            (MooEditor      *editor,
         else
         {
             if (!window)
-            {
-                window = _moo_edit_window_new (editor);
-                moo_editor_add_window (editor, window);
-            }
+                window = create_window (editor);
 
             if (new_doc)
             {
@@ -882,7 +883,8 @@ static void          do_close_window        (MooEditor      *editor,
 
     window_list_delete (editor, info);
 
-    _moo_edit_window_close (window);
+    _moo_edit_plugin_window_detach (window);
+    gtk_widget_destroy (GTK_WIDGET (window));
 
     if (!editor->priv->windows)
         g_signal_emit (editor, signals[ALL_WINDOWS_CLOSED], 0);

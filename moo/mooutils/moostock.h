@@ -41,6 +41,15 @@ G_BEGIN_DECLS
 
 #define MOO_ICON_SIZE_REAL_SMALL        (moo_get_icon_size_real_small ())
 
+#define MOO_STOCK_NEW_PROJECT           "moo-new-project"
+#define MOO_STOCK_OPEN_PROJECT          "moo-open-project"
+#define MOO_STOCK_CLOSE_PROJECT         "moo-close-project"
+#define MOO_STOCK_PROJECT_OPTIONS       "moo-project-options"
+#define MOO_STOCK_BUILD                 "moo-build"
+#define MOO_STOCK_COMPILE               "moo-compile"
+#define MOO_STOCK_EXECUTE               "moo-execute"
+
+
 void        moo_create_stock_items          (void);
 GtkIconSize moo_get_icon_size_real_small    (void) G_GNUC_CONST;
 

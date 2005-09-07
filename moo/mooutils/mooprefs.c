@@ -1181,6 +1181,32 @@ const char     *moo_prefs_get_string        (const char     *key)
 }
 
 
+const char     *moo_prefs_get_filename      (const char     *key)
+{
+    const char *utf8_val;
+    static char *val = NULL;
+    GError *error = NULL;
+
+    utf8_val = moo_prefs_get_string (key);
+
+    if (!utf8_val)
+        return NULL;
+
+    g_free (val);
+    val = g_filename_from_utf8 (utf8_val, -1, NULL, NULL, &error);
+
+    if (!val)
+    {
+        g_warning ("%s: could not convert '%s' to filename encoding",
+                   G_STRLOC, utf8_val);
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+    }
+
+    return val;
+}
+
+
 gboolean        moo_prefs_get_bool          (const char     *key)
 {
     const GValue *val;
@@ -1260,6 +1286,28 @@ void            moo_prefs_set_string        (const char     *key,
     {
         moo_prefs_set (key, NULL);
     }
+}
+
+
+void            moo_prefs_set_filename      (const char     *key,
+                                             const char     *val)
+{
+    char *utf8_val;
+
+    g_return_if_fail (key != NULL);
+
+    if (!val)
+        return moo_prefs_set_string (key, NULL);
+
+    utf8_val = g_filename_display_name (val);
+
+    if (!utf8_val)
+    {
+        g_warning ("%s: could not convert '%s' to utf8", G_STRLOC, val);
+        return;
+    }
+
+    moo_prefs_set_string (key, utf8_val);
 }
 
 

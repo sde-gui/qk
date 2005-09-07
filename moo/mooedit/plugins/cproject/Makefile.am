@@ -10,6 +10,7 @@ AM_CFLAGS =                             \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
+    $(GLADE_CFLAGS)                     \
     -DG_LOG_DOMAIN=\"Moo\"              \
     -D__MOO__                           \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
@@ -17,10 +18,16 @@ AM_CFLAGS =                             \
 pluginsdir = ${MOO_EDIT_PLUGINS_DIR}
 plugins_LTLIBRARIES = cproject.la
 
-cproject_la_SOURCES = cproject.c cproject.h
+cproject_la_SOURCES =   \
+    cproject.c          \
+    cproject.h          \
+    cproject-plugin.c   \
+    cproject-project.c  \
+    cproject-project.h
 
 if MINGW_BUILD
 mingw_flags = -no-undefined
 endif MINGW_BUILD
 
 cproject_la_LDFLAGS = -module -avoid-version -export-symbols-regex cproject_init $(mingw_flags)
+cproject_la_LIBADD = $(GLADE_LIBS)

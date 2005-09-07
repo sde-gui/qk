@@ -44,6 +44,7 @@ struct _MooRecentMgrClass
 
     void (*open_recent) (MooRecentMgr       *mgr,
                          MooEditFileInfo    *file,
+                         gpointer            data,
                          GtkWidget          *menu_item);
     void (*item_added)  (MooRecentMgr       *mgr);
 };
@@ -51,10 +52,11 @@ struct _MooRecentMgrClass
 
 GType            moo_recent_mgr_get_type        (void) G_GNUC_CONST;
 
-MooRecentMgr    *moo_recent_mgr_new             (void);
+MooRecentMgr    *moo_recent_mgr_new             (const char     *user_id);
 
 GtkMenuItem     *moo_recent_mgr_create_menu     (MooRecentMgr   *mgr,
-                                                 gpointer        data);
+                                                 gpointer        data,
+                                                 const char     *menu_label);
 
 void             moo_recent_mgr_add_recent      (MooRecentMgr   *mgr,
                                                  MooEditFileInfo *info);

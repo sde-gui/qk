@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gmodule.h>
 #include "mooedit/mooeditplugin.h"
 #include "mooedit/moofileview/moofileview.h"
@@ -18,6 +22,9 @@
 #include "mooui/moouiobject.h"
 #include "mooutils/moostock.h"
 
+#ifndef MOO_VERSION
+#define MOO_VERSION NULL
+#endif
 
 #define FILE_SELECTOR_PLUGIN_ID "FileSelector"
 #define FILE_SELECTOR_DIR_PREFS MOO_EDIT_PLUGIN_PREFS_ROOT "/" FILE_SELECTOR_PLUGIN_ID "/last_dir"
@@ -51,7 +58,7 @@ show_file_selector (MooEditWindow *window)
 
 
 static gboolean
-file_selector_plugin_init (G_GNUC_UNUSED MooEditPluginInfo *info)
+file_selector_plugin_init (void)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_val_if_fail (klass != NULL, FALSE);
@@ -73,8 +80,7 @@ file_selector_plugin_init (G_GNUC_UNUSED MooEditPluginInfo *info)
 
 
 static void
-file_selector_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info,
-                             FileSelectorPluginGlobalStuff *global_stuff)
+file_selector_plugin_deinit (FileSelectorPluginGlobalStuff *global_stuff)
 {
     /* XXX remove action */
     if (global_stuff->bookmark_mgr)
@@ -84,8 +90,7 @@ file_selector_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info,
 
 
 static void
-file_selector_plugin_attach (G_GNUC_UNUSED MooEditPluginInfo *info,
-                             MooEditPluginWindowData *plugin_window_data)
+file_selector_plugin_attach (MooEditPluginWindowData *plugin_window_data)
 {
     FileSelectorPluginStuff *stuff;
 
@@ -98,8 +103,7 @@ file_selector_plugin_attach (G_GNUC_UNUSED MooEditPluginInfo *info,
 
 
 static void
-file_selector_plugin_detach (G_GNUC_UNUSED MooEditPluginInfo *info,
-                             MooEditPluginWindowData    *plugin_window_data)
+file_selector_plugin_detach (MooEditPluginWindowData *plugin_window_data)
 {
     g_free (plugin_window_data->data);
     plugin_window_data->data = NULL;
@@ -130,8 +134,7 @@ file_selector_go_home (MooFileView *fileview)
 
 
 static void
-fileview_chdir (MooFileView   *fileview,
-                G_GNUC_UNUSED GParamSpec *whatever)
+fileview_chdir (MooFileView *fileview)
 {
     char *dir = NULL;
     char *utf8_dir = NULL;
@@ -153,9 +156,8 @@ fileview_chdir (MooFileView   *fileview,
 
 
 static void
-fileview_activate (G_GNUC_UNUSED MooFileView *fileview,
-                   const char       *path,
-                   MooEditWindow    *window)
+fileview_activate (MooEditWindow    *window,
+                   const char       *path)
 {
     moo_editor_open_file (moo_edit_window_get_editor (window),
                           window, NULL, path, NULL);
@@ -163,10 +165,9 @@ fileview_activate (G_GNUC_UNUSED MooFileView *fileview,
 
 
 static gboolean
-file_selector_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
-                                  MooEditPluginWindowData    *plugin_window_data,
-                                  MooPaneLabel              **label,
-                                  GtkWidget                 **widget,
+file_selector_plugin_pane_create (MooEditPluginWindowData        *plugin_window_data,
+                                  MooPaneLabel                  **label,
+                                  GtkWidget                     **widget,
                                   FileSelectorPluginGlobalStuff  *global_stuff)
 {
     GtkWidget *fileview;
@@ -192,9 +193,9 @@ file_selector_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
     g_idle_add ((GSourceFunc) file_selector_go_home, fileview);
     g_signal_connect (fileview, "notify::current-directory",
                       G_CALLBACK (fileview_chdir), NULL);
-    g_signal_connect (fileview, "activate",
-                      G_CALLBACK (fileview_activate),
-                      plugin_window_data->window);
+    g_signal_connect_swapped (fileview, "activate",
+                              G_CALLBACK (fileview_activate),
+                              plugin_window_data->window);
 
     *widget = fileview;
     *label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
@@ -206,8 +207,7 @@ file_selector_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
 
 
 static void
-file_selector_plugin_pane_destroy (G_GNUC_UNUSED MooEditPluginInfo *info,
-                                   MooEditPluginWindowData    *plugin_window_data)
+file_selector_plugin_pane_destroy (MooEditPluginWindowData *plugin_window_data)
 {
     FileSelectorPluginStuff *stuff;
 
@@ -232,15 +232,20 @@ fileselector_init (void)
 
     MooEditPluginInfo info = {
         MOO_EDIT_PLUGIN_CURRENT_VERSION,
+
         FILE_SELECTOR_PLUGIN_ID,
         "File Selector",
         "File Selector",
+        "Yevgen Muntyan <muntyan@tamu.edu>",
+        MOO_VERSION,
+
         (MooEditPluginInitFunc) file_selector_plugin_init,
         (MooEditPluginDeinitFunc) file_selector_plugin_deinit,
         (MooEditPluginWindowAttachFunc) file_selector_plugin_attach,
         (MooEditPluginWindowDetachFunc) file_selector_plugin_detach,
         (MooEditPluginPaneCreateFunc) file_selector_plugin_pane_create,
         (MooEditPluginPaneDestroyFunc) file_selector_plugin_pane_destroy,
+
         &params,
         &prefs_params
     };

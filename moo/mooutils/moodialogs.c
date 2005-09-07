@@ -207,14 +207,16 @@ const char *moo_file_dialog (GtkWidget  *parent,
                              const char *title,
                              const char *start_dir)
 {
-    const char *filename;
+    static char *filename;
     GtkWidget *dialog;
 
     dialog = moo_file_dialog_create (parent, type, FALSE, title, start_dir);
     g_return_val_if_fail (dialog != NULL, NULL);
 
     moo_file_dialog_run (dialog);
-    filename = moo_file_dialog_get_filename (dialog);
+
+    g_free (filename);
+    filename = g_strdup (moo_file_dialog_get_filename (dialog));
 
     gtk_widget_destroy (dialog);
     return filename;

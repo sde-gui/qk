@@ -45,21 +45,25 @@ struct _MooEditWindowClass
     MooWindowClass          parent_class;
 
     /* these do not open or close document */
-    void (*new_doc)     (MooEditWindow  *window,
-                         MooEdit        *doc);
-    void (*close_doc)   (MooEditWindow  *window,
-                         MooEdit        *doc);
+    void (*new_doc)         (MooEditWindow  *window,
+                             MooEdit        *doc);
+    void (*close_doc)       (MooEditWindow  *window,
+                             MooEdit        *doc);
+    void (*close_doc_after) (MooEditWindow  *window);
 };
 
 
-GType        moo_edit_window_get_type       (void) G_GNUC_CONST;
+GType        moo_edit_window_get_type           (void) G_GNUC_CONST;
 
-MooEdit     *moo_edit_window_get_active_doc (MooEditWindow  *window);
-void         moo_edit_window_set_active_doc (MooEditWindow  *window,
-                                             MooEdit        *edit);
+MooEdit     *moo_edit_window_get_active_doc     (MooEditWindow  *window);
+void         moo_edit_window_set_active_doc     (MooEditWindow  *window,
+                                                 MooEdit        *edit);
 
-GSList      *moo_edit_window_list_docs      (MooEditWindow  *window);
-guint        moo_edit_window_num_docs       (MooEditWindow  *window);
+GSList      *moo_edit_window_list_docs          (MooEditWindow  *window);
+guint        moo_edit_window_num_docs           (MooEditWindow  *window);
+
+void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
+                                                 const char     *prefix);
 
 
 G_END_DECLS

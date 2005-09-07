@@ -1,5 +1,12 @@
 #include <gmodule.h>
 #include "mooedit/mooeditplugin.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifndef MOO_VERSION
+#define MOO_VERSION NULL
+#endif
 
 gboolean dummy_init (void);
 
@@ -31,6 +38,8 @@ dummy_init (void)
         "Dummy",
         "Dummy",
         "Dummy plugin",
+        "Yevgen Muntyan <muntyan@tamu.edu>",
+        MOO_VERSION,
         (MooEditPluginInitFunc) dummy_plugin_init,
         NULL, /* MooEditPluginDeinitFunc */
         NULL, /* MooEditPluginWindowAttachFunc */

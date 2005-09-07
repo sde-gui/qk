@@ -1052,11 +1052,15 @@ static gboolean process_keyword_list_node   (MooEditLang    *lang,
     }
 
     prop = xmlGetProp (node, (const xmlChar*)"case-sensitive");
+
     if (!prop)
     {
+#if 0
         /* not a warning because it happens in gtksourceview files */
         g_message ("%s: no 'case-sensitive' atribute in file '%s'",
                    G_STRLOC, lang->priv->filename ? lang->priv->filename : "???");
+#endif
+        case_sensitive = TRUE;
     }
     else
     {

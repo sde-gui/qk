@@ -148,16 +148,13 @@ moo_edit_plugin_unregister (const char *id)
 }
 
 
-MooEditWindow*
-_moo_edit_window_new (MooEditor *editor)
+void
+_moo_edit_plugin_window_attach (MooEditWindow *window)
 {
     GSList *l;
-    MooEditWindow *window;
     WindowInfo *window_info;
 
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-
-    window = g_object_new (MOO_TYPE_EDIT_WINDOW, "editor", editor, NULL);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
     window_info = window_info_new (window);
     edit_windows = g_slist_append (edit_windows, window_info);
@@ -167,14 +164,11 @@ _moo_edit_window_new (MooEditor *editor)
         Plugin *plugin = l->data;
         moo_edit_plugin_attach (window_info, plugin);
     }
-
-    gtk_widget_show (GTK_WIDGET (window));
-    return window;
 }
 
 
 void
-_moo_edit_window_close (MooEditWindow *window)
+_moo_edit_plugin_window_detach (MooEditWindow *window)
 {
     WindowInfo *window_info;
     GSList *plugins, *l;
@@ -196,7 +190,6 @@ _moo_edit_window_close (MooEditWindow *window)
     edit_windows = g_slist_remove (edit_windows, window_info);
     window_info_free (window_info);
 
-    gtk_widget_destroy (GTK_WIDGET (window));
     g_slist_free (plugins);
 }
 
@@ -269,11 +262,11 @@ moo_edit_plugin_attach (WindowInfo         *window_info,
     window_info->plugins = g_slist_append (window_info->plugins, full_window_data);
 
     if (plugin->info.attach)
-        plugin->info.attach (&plugin->info, &full_window_data->window_data, plugin->data);
+        plugin->info.attach (&full_window_data->window_data, plugin->data, &plugin->info);
 
     if (plugin->info.params->want_pane &&
-        plugin->info.pane_create (&plugin->info, &full_window_data->window_data,
-                                  &label, &widget, plugin->data))
+        plugin->info.pane_create (&full_window_data->window_data,
+                                  &label, &widget, plugin->data, &plugin->info))
     {
         if (moo_big_paned_insert_pane (window_info->window->paned, widget, label,
                                        plugin->info.params->pane_position, -1) >= 0)
@@ -299,18 +292,16 @@ moo_edit_plugin_detach (WindowInfo         *window_info,
     if (full_window_data->pane_widget)
     {
         if (plugin->info.pane_destroy)
-            plugin->info.pane_destroy (&plugin->info,
-                                       &full_window_data->window_data,
-                                       plugin->data);
+            plugin->info.pane_destroy (&full_window_data->window_data,
+                                        plugin->data, &plugin->info);
         moo_big_paned_remove_pane (window_info->window->paned,
                                    full_window_data->pane_widget);
         full_window_data->pane_widget = NULL;
     }
 
     if (plugin->info.detach)
-        plugin->info.detach (&plugin->info,
-                             &full_window_data->window_data,
-                             plugin->data);
+        plugin->info.detach (&full_window_data->window_data,
+                              plugin->data, &plugin->info);
 
     window_info->plugins = g_slist_remove (window_info->plugins, full_window_data);
     plugin_full_window_data_free (full_window_data);
@@ -420,6 +411,8 @@ plugin_new (MooEditPluginInfo  *info,
     plugin->info.id = g_strdup (info->id);
     plugin->info.name = g_strdup (info->name ? info->name : info->id);
     plugin->info.description = g_strdup (info->description ? info->description : plugin->info.name);
+    plugin->info.author = g_strdup (info->author ? info->author : "<unknown person>");
+    plugin->info.version = g_strdup (info->version ? info->version : "<unknown version>");
 
     plugin->info.init = info->init;
     plugin->info.deinit = info->deinit;
@@ -494,7 +487,7 @@ plugin_init (Plugin *plugin)
         return TRUE;
 
     if (!plugin->info.init ||
-         plugin->info.init (&plugin->info, plugin->data))
+         plugin->info.init (plugin->data, &plugin->info))
     {
         plugin->initialized = TRUE;
         return TRUE;
@@ -516,7 +509,7 @@ plugin_deinit (Plugin *plugin)
         return;
 
     if (plugin->info.deinit)
-        plugin->info.deinit (&plugin->info, plugin->data);
+        plugin->info.deinit (plugin->data, &plugin->info);
 
     plugin->initialized = FALSE;
 }
@@ -527,6 +520,14 @@ moo_edit_plugin_lookup (const char *id)
 {
     Plugin *plugin = plugin_lookup (id);
     return plugin ? &plugin->info : NULL;
+}
+
+
+gpointer
+moo_edit_plugin_get_data (const char *id)
+{
+    Plugin *plugin = plugin_lookup (id);
+    return plugin ? plugin->data : NULL;
 }
 
 

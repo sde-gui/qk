@@ -194,5 +194,13 @@ void moo_create_stock_items (void)
     register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE);
     register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED);
 
+    register_stock_icon_alias (factory, GTK_STOCK_NEW, MOO_STOCK_NEW_PROJECT);
+    register_stock_icon_alias (factory, GTK_STOCK_OPEN, MOO_STOCK_OPEN_PROJECT);
+    register_stock_icon_alias (factory, GTK_STOCK_CLOSE, MOO_STOCK_CLOSE_PROJECT);
+    register_stock_icon_alias (factory, GTK_STOCK_PREFERENCES, MOO_STOCK_PROJECT_OPTIONS);
+    register_stock_icon_alias (factory, GTK_STOCK_GOTO_BOTTOM, MOO_STOCK_BUILD);
+    register_stock_icon_alias (factory, GTK_STOCK_GO_DOWN, MOO_STOCK_COMPILE);
+    register_stock_icon_alias (factory, GTK_STOCK_EXECUTE, MOO_STOCK_EXECUTE);
+
     g_object_unref (G_OBJECT (factory));
 }

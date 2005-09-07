@@ -11,4 +11,55 @@
  *   See COPYING file that comes with this distribution.
  */
 
-gboolean cproject_init (void);
+#ifndef __C_PROJECT_H__
+#define __C_PROJECT_H__
+
+#include "mooedit/mooeditplugin.h"
+#include "cproject-project.h"
+
+G_BEGIN_DECLS
+
+#define CPROJECT_PLUGIN_ID "CProject"
+
+typedef struct _CProjectPlugin CProjectPlugin;
+typedef struct _CProjectPluginWindowData CProjectPluginWindowData;
+
+
+struct _CProjectPlugin
+{
+    Project *project;
+    MooEditWindow *window;
+    GtkWidget *build_configuration_menu;
+    MooRecentMgr *recent_mgr;
+};
+
+struct _CProjectPluginWindowData
+{
+};
+
+
+gboolean    cproject_plugin_init        (CProjectPlugin             *plugin);
+void        cproject_plugin_deinit      (CProjectPlugin             *plugin);
+void        cproject_plugin_attach      (MooEditPluginWindowData    *window_data,
+                                         CProjectPlugin             *plugin);
+void        cproject_plugin_detach      (MooEditPluginWindowData    *window_data,
+                                         CProjectPlugin             *plugin);
+
+void        cproject_load_prefs         (CProjectPlugin             *plugin);
+void        cproject_save_prefs         (CProjectPlugin             *plugin);
+void        cproject_update_project_ui  (CProjectPlugin             *plugin);
+void        cproject_update_file_ui     (CProjectPlugin             *plugin);
+
+gboolean    cproject_close_project      (CProjectPlugin             *plugin);
+void        cproject_new_project        (CProjectPlugin             *plugin);
+void        cproject_open_project       (CProjectPlugin             *plugin,
+                                         const char                 *path);
+void        cproject_project_options    (CProjectPlugin             *plugin);
+void        cproject_build_project      (CProjectPlugin             *plugin);
+void        cproject_compile_file       (CProjectPlugin             *plugin);
+void        cproject_execute            (CProjectPlugin             *plugin);
+
+
+G_END_DECLS
+
+#endif /* __C_PROJECT_H__ */

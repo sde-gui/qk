@@ -2974,12 +2974,12 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
         gdk_window_show (paned->priv->handle_window);
     }
 
-    if (pane->detached)
-        moo_paned_attach_pane (paned, index);
-
     paned->priv->current_pane = pane;
     gtk_widget_show (pane->frame);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->button), TRUE);
+
+    if (pane->detached)
+        moo_paned_attach_pane (paned, index);
 
     paned->priv->handle_visible = TRUE;
     paned->priv->pane_widget_visible = TRUE;

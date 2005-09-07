@@ -157,6 +157,8 @@ static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action,
 
     item = menu_action->create_menu_func (menu_action->create_menu_data,
                                           action);
+    g_return_val_if_fail (item != NULL, NULL);
+
     gtk_menu_shell_insert (menushell, GTK_WIDGET (item), position);
     moo_menu_action_add_proxy (action, GTK_WIDGET (item));
     return GTK_WIDGET (item);

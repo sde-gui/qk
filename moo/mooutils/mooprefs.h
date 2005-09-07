@@ -95,6 +95,7 @@ gboolean        moo_prefs_notify_unblock    (guint           id);
 gboolean        moo_prefs_notify_disconnect (guint           id);
 
 const char     *moo_prefs_get_string        (const char     *key);
+const char     *moo_prefs_get_filename      (const char     *key);
 gboolean        moo_prefs_get_bool          (const char     *key);
 gdouble         moo_prefs_get_double        (const char     *key);
 const GdkColor *moo_prefs_get_color         (const char     *key);
@@ -103,6 +104,8 @@ int             moo_prefs_get_enum          (const char     *key,
                                              GType           type);
 
 void            moo_prefs_set_string        (const char     *key,
+                                             const char     *val);
+void            moo_prefs_set_filename      (const char     *key,
                                              const char     *val);
 void            moo_prefs_set_double        (const char     *key,
                                              double          val);

@@ -35,7 +35,7 @@ struct _MooEditWindowPrivate {
     GtkStatusbar *statusbar;
     guint statusbar_context_id;
     MooNotebook *notebook;
-    char *app_name;
+    char *prefix;
     gboolean use_fullname;
 
     GtkWidget *languages_menu_item;
@@ -126,6 +126,7 @@ enum {
 enum {
     NEW_DOC,
     CLOSE_DOC,
+    CLOSE_DOC_AFTER,
     NUM_SIGNALS
 };
 
@@ -179,6 +180,15 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                           _moo_marshal_VOID__OBJECT,
                           G_TYPE_NONE, 1,
                           MOO_TYPE_EDIT);
+
+    signals[CLOSE_DOC_AFTER] =
+            g_signal_new ("close-doc-after",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditWindowClass, close_doc_after),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     moo_ui_object_class_init (gobject_class, "Editor", "Editor");
 
@@ -421,7 +431,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 static void     moo_edit_window_init        (MooEditWindow  *window)
 {
     window->priv = g_new0 (MooEditWindowPrivate, 1);
-    window->priv->app_name = g_strdup ("medit");
+    window->priv->prefix = g_strdup ("medit");
     window->priv->lang_menu_items =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
@@ -444,7 +454,7 @@ static void moo_edit_window_finalize       (GObject      *object)
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     /* XXX */
     g_hash_table_destroy (window->priv->lang_menu_items);
-    g_free (window->priv->app_name);
+    g_free (window->priv->prefix);
     g_free (window->priv);
     G_OBJECT_CLASS (moo_edit_window_parent_class)->finalize (object);
 }
@@ -495,13 +505,13 @@ static void     moo_edit_window_get_property(GObject        *object,
 }
 
 
-void         _moo_edit_window_set_app_name      (MooEditWindow  *window,
-                                                 const char     *name)
+void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
+                                                 const char     *prefix)
 {
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    g_free (window->priv->app_name);
-    window->priv->app_name = g_strdup (name);
+    g_free (window->priv->prefix);
+    window->priv->prefix = g_strdup (prefix);
 
     if (GTK_WIDGET_REALIZED (GTK_WIDGET (window)))
         update_window_title (window);
@@ -575,7 +585,7 @@ static void     update_window_title     (MooEditWindow      *window)
     if (!edit)
     {
         gtk_window_set_title (GTK_WINDOW (window),
-                              window->priv->app_name ? window->priv->app_name : "");
+                              window->priv->prefix ? window->priv->prefix : "");
         return;
     }
 
@@ -591,8 +601,8 @@ static void     update_window_title     (MooEditWindow      *window)
 
     title = g_string_new ("");
 
-    if (window->priv->app_name)
-        g_string_append_printf (title, "%s - ", window->priv->app_name);
+    if (window->priv->prefix)
+        g_string_append_printf (title, "%s - ", window->priv->prefix);
 
     g_string_append_printf (title, "%s", name);
 
@@ -1095,6 +1105,8 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 
     moo_notebook_remove_page (window->priv->notebook, page);
     edit_changed (window, NULL);
+
+    g_signal_emit (window, signals[CLOSE_DOC_AFTER], 0);
     g_object_notify (G_OBJECT (window), "active-doc");
 }
 
