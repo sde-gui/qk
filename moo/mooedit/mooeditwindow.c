@@ -26,8 +26,6 @@
 #include <string.h>
 
 
-#define MOO_USE_FILE_VIEW 1
-
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
 
@@ -60,8 +58,6 @@ static void     moo_edit_window_get_property(GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
-
-static void     register_fileview           (void);
 
 static gboolean moo_edit_window_close       (MooEditWindow  *window);
 
@@ -419,22 +415,11 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "id", "SyntaxMenu",
                                     "create-menu-func", create_lang_menu,
                                     NULL);
-
-#ifndef MOO_USE_FILE_VIEW
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "ShowFileSelector",
-                                    "dead", TRUE,
-                                    NULL);
-#endif
 }
 
 
 static void     moo_edit_window_init        (MooEditWindow  *window)
 {
-#ifdef MOO_USE_FILE_VIEW
-    register_fileview ();
-#endif
-
     window->priv = g_new0 (MooEditWindowPrivate, 1);
     window->priv->app_name = g_strdup ("medit");
     window->priv->lang_menu_items =
@@ -1488,241 +1473,4 @@ static void     edit_cursor_moved       (MooEditWindow      *window,
         int column = gtk_text_iter_get_line_offset (iter) + 1;
         set_statusbar_numbers (window, line, column);
     }
-}
-
-
-/****************************************************************************/
-/* Fileview pane
- */
-
-#define FILEVIEW_PANE_ID    "FileSelector"
-#define FILEVIEW_DIR_PREFS  MOO_EDIT_PLUGIN_PREFS_ROOT "/" FILEVIEW_PANE_ID "/last_dir"
-
-
-typedef struct {
-    MooEditWindow *window;
-    MooFileView *fileview;
-} FileViewPluginStuff;
-
-typedef struct {
-    MooBookmarkMgr *bookmark_mgr;
-} FileViewPluginGlobalStuff;
-
-
-static void
-show_fileview (MooEditWindow *window)
-{
-    MooEditPluginWindowData *data;
-    FileViewPluginStuff *stuff;
-
-    data = moo_edit_plugin_get_window_data (window, FILEVIEW_PANE_ID);
-    g_return_if_fail (data != NULL && data->data != NULL);
-    stuff = data->data;
-
-    moo_big_paned_present_pane (window->paned,
-                                GTK_WIDGET (stuff->fileview));
-}
-
-
-static gboolean
-fileview_plugin_init (G_GNUC_UNUSED MooEditPluginInfo *info)
-{
-    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    g_return_val_if_fail (klass != NULL, FALSE);
-
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ShowFileSelector",
-                                    "name", "Show File Selector",
-                                    "label", "Show File Selector",
-                                    "tooltip", "Show file selector",
-                                    "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
-                                    "closure::callback", show_fileview,
-                                    NULL);
-
-    moo_prefs_new_key_string (FILEVIEW_DIR_PREFS, NULL);
-
-    g_type_class_unref (klass);
-    return TRUE;
-}
-
-
-static void
-fileview_plugin_deinit (G_GNUC_UNUSED MooEditPluginInfo *info,
-                        FileViewPluginGlobalStuff *global_stuff)
-{
-    /* XXX remove action */
-    if (global_stuff->bookmark_mgr)
-        g_object_unref (global_stuff->bookmark_mgr);
-    global_stuff->bookmark_mgr = NULL;
-}
-
-
-static void
-fileview_plugin_attach (G_GNUC_UNUSED MooEditPluginInfo *info,
-                        MooEditPluginWindowData *plugin_window_data)
-{
-    FileViewPluginStuff *stuff;
-
-    stuff = g_new0 (FileViewPluginStuff, 1);
-    stuff->window = plugin_window_data->window;
-    stuff->fileview = NULL;
-
-    plugin_window_data->data = stuff;
-}
-
-
-static void
-fileview_plugin_detach (G_GNUC_UNUSED MooEditPluginInfo *info,
-                        MooEditPluginWindowData    *plugin_window_data)
-{
-    g_free (plugin_window_data->data);
-    plugin_window_data->data = NULL;
-}
-
-
-/* XXX */
-static gboolean
-fileview_go_home (MooFileView *fileview)
-{
-    const char *dir;
-    char *real_dir = NULL;
-
-    if (!MOO_IS_FILE_VIEW (fileview))
-        return FALSE;
-
-    dir = moo_prefs_get_string (FILEVIEW_DIR_PREFS);
-
-    if (dir)
-        real_dir = g_filename_from_utf8 (dir, -1, NULL, NULL, NULL);
-
-    if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
-        g_signal_emit_by_name (fileview, "go-home");
-
-    g_free (real_dir);
-    return FALSE;
-}
-
-
-static void
-fileview_chdir (MooFileView   *fileview,
-                G_GNUC_UNUSED GParamSpec *whatever)
-{
-    char *dir = NULL;
-    char *utf8_dir = NULL;
-
-    g_object_get (fileview, "current-directory", &dir, NULL);
-
-    if (!dir)
-    {
-        moo_prefs_set (FILEVIEW_DIR_PREFS, NULL);
-        return;
-    }
-
-    utf8_dir = g_filename_to_utf8 (dir, -1, NULL, NULL, NULL);
-    moo_prefs_set_string (FILEVIEW_DIR_PREFS, utf8_dir);
-
-    g_free (utf8_dir);
-    g_free (dir);
-}
-
-
-static void
-fileview_activate (G_GNUC_UNUSED MooFileView *fileview,
-                   const char       *path,
-                   MooEditWindow    *window)
-{
-    moo_editor_open_file (moo_edit_window_get_editor (window),
-                          window, NULL, path, NULL);
-}
-
-
-static gboolean
-fileview_plugin_pane_create (G_GNUC_UNUSED MooEditPluginInfo *info,
-                             MooEditPluginWindowData    *plugin_window_data,
-                             MooPaneLabel              **label,
-                             GtkWidget                 **widget,
-                             FileViewPluginGlobalStuff  *global_stuff)
-{
-    GtkWidget *fileview;
-    FileViewPluginStuff *stuff;
-    MooEditor *editor;
-
-    g_return_val_if_fail (global_stuff != NULL, FALSE);
-    g_return_val_if_fail (plugin_window_data->data != NULL, FALSE);
-    stuff = plugin_window_data->data;
-
-    editor = moo_edit_window_get_editor (plugin_window_data->window);
-
-    if (!global_stuff->bookmark_mgr)
-        global_stuff->bookmark_mgr = moo_bookmark_mgr_new ();
-
-    fileview = g_object_new (MOO_TYPE_FILE_VIEW,
-                             "filter-mgr", moo_editor_get_filter_mgr (editor),
-                             "bookmark-mgr", global_stuff->bookmark_mgr,
-                             NULL);
-
-    gtk_object_sink (GTK_OBJECT (g_object_ref (fileview)));
-
-    g_idle_add ((GSourceFunc) fileview_go_home, fileview);
-    g_signal_connect (fileview, "notify::current-directory",
-                      G_CALLBACK (fileview_chdir), NULL);
-    g_signal_connect (fileview, "activate",
-                      G_CALLBACK (fileview_activate),
-                      plugin_window_data->window);
-
-    *widget = fileview;
-    *label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                 NULL, NULL, "File Selector");
-
-    stuff->fileview = MOO_FILE_VIEW (fileview);
-    return TRUE;
-}
-
-
-static void
-fileview_plugin_pane_destroy (G_GNUC_UNUSED MooEditPluginInfo *info,
-                              MooEditPluginWindowData    *plugin_window_data)
-{
-    FileViewPluginStuff *stuff;
-
-    g_return_if_fail (plugin_window_data->data != NULL);
-    stuff = plugin_window_data->data;
-
-    g_return_if_fail (stuff->fileview != NULL);
-    g_signal_handlers_disconnect_by_func (stuff->fileview,
-                                          (gpointer) fileview_chdir,
-                                          NULL);
-    g_signal_handlers_disconnect_by_func (stuff->fileview,
-                                          (gpointer) fileview_activate,
-                                          stuff->window);
-}
-
-
-static void     register_fileview       (void)
-{
-    static gboolean done = FALSE;
-
-    if (!done)
-    {
-        MooEditPluginParams params = { TRUE, TRUE, MOO_PANE_POS_LEFT };
-
-        MooEditPluginInfo info = {
-            FILEVIEW_PANE_ID,
-            "File Selector",
-            "File Selector",
-            (MooEditPluginInitFunc) fileview_plugin_init,
-            (MooEditPluginDeinitFunc) fileview_plugin_deinit,
-            (MooEditPluginWindowAttachFunc) fileview_plugin_attach,
-            (MooEditPluginWindowDetachFunc) fileview_plugin_detach,
-            (MooEditPluginPaneCreateFunc) fileview_plugin_pane_create,
-            (MooEditPluginPaneDestroyFunc) fileview_plugin_pane_destroy,
-            &params
-        };
-
-        static FileViewPluginGlobalStuff stuff = { NULL };
-
-        moo_edit_plugin_register (&info, &stuff);
-    }
-
-    done = TRUE;
 }

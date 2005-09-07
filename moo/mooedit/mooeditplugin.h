@@ -16,40 +16,53 @@
 
 #include "mooedit/mooeditor.h"
 #include "mooedit/moobigpaned.h"
+#include "mooutils/mooprefsdialog.h"
 
 G_BEGIN_DECLS
 
 #define MOO_EDIT_PLUGIN_PREFS_ROOT  "Plugins"
-
-typedef struct _MooEditPluginInfo       MooEditPluginInfo;
-typedef struct _MooEditPluginWindowData MooEditPluginWindowData;
-typedef struct _MooEditPluginParams     MooEditPluginParams;
+#define MOO_EDIT_PLUGIN_CURRENT_VERSION 1
 
 
-typedef gboolean (*MooEditPluginInitFunc)           (MooEditPluginInfo          *info,
-                                                     gpointer                    plugin_data);
-typedef void     (*MooEditPluginDeinitFunc)         (MooEditPluginInfo          *info,
-                                                     gpointer                    plugin_data);
-
-typedef void     (*MooEditPluginWindowAttachFunc)   (MooEditPluginInfo          *info,
-                                                     MooEditPluginWindowData    *plugin_window_data,
-                                                     gpointer                    plugin_data);
-typedef void     (*MooEditPluginWindowDetachFunc)   (MooEditPluginInfo          *info,
-                                                     MooEditPluginWindowData    *plugin_window_data,
-                                                     gpointer                    plugin_data);
-
-typedef gboolean (*MooEditPluginPaneCreateFunc)     (MooEditPluginInfo          *info,
-                                                     MooEditPluginWindowData    *plugin_window_data,
-                                                     MooPaneLabel              **label,
-                                                     GtkWidget                 **widget,
-                                                     gpointer                    plugin_data);
-typedef void     (*MooEditPluginPaneDestroyFunc)    (MooEditPluginInfo          *info,
-                                                     MooEditPluginWindowData    *plugin_window_data,
-                                                     gpointer                    plugin_data);
+typedef struct _MooEditPluginInfo           MooEditPluginInfo;
+typedef struct _MooEditPluginWindowData     MooEditPluginWindowData;
+typedef struct _MooEditPluginParams         MooEditPluginParams;
+typedef struct _MooEditPluginPrefsParams    MooEditPluginPrefsParams;
 
 
+typedef gboolean    (*MooEditPluginInitFunc)            (MooEditPluginInfo          *info,
+                                                         gpointer                    plugin_data);
+typedef void        (*MooEditPluginDeinitFunc)          (MooEditPluginInfo          *info,
+                                                         gpointer                    plugin_data);
+
+typedef void        (*MooEditPluginWindowAttachFunc)    (MooEditPluginInfo          *info,
+                                                         MooEditPluginWindowData    *plugin_window_data,
+                                                         gpointer                    plugin_data);
+typedef void        (*MooEditPluginWindowDetachFunc)    (MooEditPluginInfo          *info,
+                                                         MooEditPluginWindowData    *plugin_window_data,
+                                                         gpointer                    plugin_data);
+
+typedef gboolean    (*MooEditPluginPaneCreateFunc)      (MooEditPluginInfo          *info,
+                                                         MooEditPluginWindowData    *plugin_window_data,
+                                                         MooPaneLabel              **label,
+                                                         GtkWidget                 **widget,
+                                                         gpointer                    plugin_data);
+typedef void        (*MooEditPluginPaneDestroyFunc)     (MooEditPluginInfo          *info,
+                                                         MooEditPluginWindowData    *plugin_window_data,
+                                                         gpointer                    plugin_data);
+
+typedef GtkWidget*  (*MooEditPluginPrefsPageCreateFunc) (MooEditPluginInfo          *info,
+                                                         gpointer                    plugin_data);
+
+
+typedef gboolean    (*MooEditPluginModuleInitFunc)      (void);
+
+
+/* keep plugin_new() in sync */
 struct _MooEditPluginInfo
 {
+    guint plugin_system_version;
+
     const char *id;
     const char *name;
     const char *description;
@@ -62,6 +75,7 @@ struct _MooEditPluginInfo
     MooEditPluginPaneDestroyFunc pane_destroy;
 
     MooEditPluginParams *params;
+    MooEditPluginPrefsParams *prefs_params;
 };
 
 
@@ -80,6 +94,12 @@ struct _MooEditPluginParams
 };
 
 
+struct _MooEditPluginPrefsParams
+{
+    MooEditPluginPrefsPageCreateFunc prefs_page_create;
+};
+
+
 gboolean                 moo_edit_plugin_register           (MooEditPluginInfo  *info,
                                                              gpointer            plugin_data);
 void                     moo_edit_plugin_unregister         (const char         *id);
@@ -90,6 +110,12 @@ GSList                  *moo_edit_list_plugins              (void);
 
 MooEditPluginWindowData *moo_edit_plugin_get_window_data    (MooEditWindow      *window,
                                                              const char         *id);
+
+void                     moo_edit_plugin_attach_prefs       (MooPrefsDialog     *dialog);
+
+void                     moo_edit_plugin_read_dir           (const char         *dir);
+gboolean                 moo_edit_plugin_read_module        (GModule            *module,
+                                                             const char         *name);
 
 
 G_END_DECLS

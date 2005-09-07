@@ -370,6 +370,17 @@ AC_SUBST(MOO_EDIT_LANG_FILES_DIR)
 AC_DEFINE_UNQUOTED(MOO_EDIT_LANG_FILES_DIR, "${mooprefix}/${moorootdir}/language-specs", [lang files dir])
 
 
+moolibdir=lib/moo
+NO_PREFIX_MOO_LIB_DIR="${moolibdir}"
+AC_SUBST(NO_PREFIX_MOO_LIB_DIR)
+MOO_LIB_DIR="${mooprefix}/${moolibdir}"
+AC_SUBST(MOO_LIB_DIR)
+AC_DEFINE_UNQUOTED(MOO_LIB_DIR, "${mooprefix}/${moolibdir}", [plugins and stuff go to MOO_LIB_DIR])
+MOO_EDIT_PLUGINS_DIR="${mooprefix}/${moolibdir}/plugins"
+AC_SUBST(MOO_EDIT_PLUGINS_DIR)
+AC_DEFINE_UNQUOTED(MOO_EDIT_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugins dir])
+
+
 ################################################################################
 #  Created files
 #
@@ -385,6 +396,8 @@ moo/mooedit/glade/Makefile
 moo/mooedit/language-specs/Makefile
 moo/mooedit/moofileview/Makefile
 moo/mooedit/moofileview/glade/Makefile
+moo/mooedit/plugins/Makefile
+moo/mooedit/plugins/cproject/Makefile
 moo/mooterm/Makefile
 moo/mooterm/termhelper_res.rc
 moo/mooterm/glade/Makefile

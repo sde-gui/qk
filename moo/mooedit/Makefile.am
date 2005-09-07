@@ -9,7 +9,7 @@ if MOO_USE_XDGMIME
     xdgmime_lib = xdgmime/libxdgmime.la
 endif MOO_USE_XDGMIME
 
-SUBDIRS = moofileview glade $(xdgmime) gtksourceview language-specs .
+SUBDIRS = moofileview glade $(xdgmime) gtksourceview language-specs plugins .
 
 
 DEFAULT_INCLUDES =
