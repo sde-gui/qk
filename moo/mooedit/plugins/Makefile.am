@@ -4,6 +4,8 @@
 
 SUBDIRS = cproject
 
+real_src_dir = `cd $(srcdir) && pwd`
+
 DEFAULT_INCLUDES =
 AM_CFLAGS =                             \
     -DXDG_PREFIX=_moo_edit_xdg          \
@@ -15,7 +17,7 @@ AM_CFLAGS =                             \
     $(GLADE_CFLAGS)                     \
     -DG_LOG_DOMAIN=\"Moo\"              \
     -D__MOO__                           \
-    -DMOO_GREP_GLADE_FILE=\"$(srcdir)/moogrep.glade\" \
+    -DMOO_GREP_GLADE_FILE=\"$(real_src_dir)/moogrep.glade\" \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
 
 if MINGW_BUILD
