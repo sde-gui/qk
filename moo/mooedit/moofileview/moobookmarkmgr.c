@@ -919,8 +919,6 @@ static void     path_data_func      (GtkTreeViewColumn  *column,
                                      GtkCellRenderer    *cell,
                                      GtkTreeModel       *model,
                                      GtkTreeIter        *iter);
-// static gboolean separator_func      (GtkTreeModel       *model,
-//                                      GtkTreeIter        *iter);
 
 static void     selection_changed   (GtkTreeSelection   *selection,
                                      GladeXML           *xml);
@@ -958,10 +956,6 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
 
     icon_combo = glade_xml_get_widget (xml, "icon_combo");
     init_icon_combo (GTK_COMBO_BOX (icon_combo), xml);
-
-//     gtk_tree_view_set_row_separator_func (treeview,
-//                                           (GtkTreeViewRowSeparatorFunc) separator_func,
-//                                           NULL, NULL);
 
     selection = gtk_tree_view_get_selection (treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
@@ -1048,23 +1042,6 @@ static void     set_bookmark    (GtkListStore       *store,
 {
     gtk_list_store_set (store, iter, COLUMN_BOOKMARK, bookmark, -1);
 }
-
-
-// static gboolean separator_func  (GtkTreeModel       *model,
-//                                  GtkTreeIter        *iter)
-// {
-//     MooBookmark *bookmark = get_bookmark (model, iter);
-//
-//     if (bookmark)
-//     {
-//         moo_bookmark_free (bookmark);
-//         return FALSE;
-//     }
-//     else
-//     {
-//         return TRUE;
-//     }
-// }
 
 
 static void     icon_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
@@ -1359,15 +1336,17 @@ static void     path_editing_started(GtkCellRenderer    *cell,
 
     g_object_set (cmpl, "entry", editable, NULL);
 
-//     if (!g_object_get_data (G_OBJECT (editable), "moo-stupid-entry-workaround"))
-//     {
-//         g_signal_connect (editable, "realize",
-//                           G_CALLBACK (path_entry_realize), NULL);
-//         g_signal_connect (editable, "unrealize",
-//                           G_CALLBACK (path_entry_unrealize), NULL);
-//         g_object_set_data (G_OBJECT (editable), "moo-stupid-entry-workaround",
-//                            GINT_TO_POINTER (TRUE));
-//     }
+#if 0
+    if (!g_object_get_data (G_OBJECT (editable), "moo-stupid-entry-workaround"))
+    {
+        g_signal_connect (editable, "realize",
+                          G_CALLBACK (path_entry_realize), NULL);
+        g_signal_connect (editable, "unrealize",
+                          G_CALLBACK (path_entry_unrealize), NULL);
+        g_object_set_data (G_OBJECT (editable), "moo-stupid-entry-workaround",
+                           GINT_TO_POINTER (TRUE));
+    }
+#endif
 }
 
 

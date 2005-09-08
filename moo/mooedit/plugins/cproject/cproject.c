@@ -259,10 +259,17 @@ cproject_plugin_attach (MooEditWindow              *window,
 {
     MooPaneLabel *label;
     GtkWidget *widget, *swin;
+    MooEditor *editor;
 
     g_return_if_fail (plugin->window == NULL);
 
     plugin->window = window;
+
+    editor = moo_edit_window_get_editor (window);
+    g_object_set (editor,
+                  "allow-empty-window", TRUE,
+                  "single-window", TRUE,
+                  NULL);
 
     cproject_load_prefs (plugin);
     cproject_update_project_ui (plugin);
@@ -589,13 +596,13 @@ command_exit (GPid            pid,
 
     if (!WEXITSTATUS (status))
     {
-        moo_pane_view_write_raw (plugin->output, "*** Success ***", -1);
+        moo_pane_view_write_line (plugin->output, "*** Success ***", -1, NULL);
     }
     else
     {
         char *msg = g_strdup_printf ("Command failed with status %d",
                                      WEXITSTATUS (status));
-        moo_pane_view_write_raw (plugin->output, msg, -1);
+        moo_pane_view_write_line (plugin->output, msg, -1, NULL);
         g_free (msg);
     }
 }
@@ -626,7 +633,7 @@ command_out_or_err (GIOChannel     *channel,
 
     if (line)
     {
-        moo_pane_view_write_raw (plugin->output, line, length);
+        moo_pane_view_write_line (plugin->output, line, length, NULL);
         g_free (line);
     }
 

@@ -64,6 +64,9 @@ void             moo_editor_open_file       (MooEditor      *editor,
                                              const char     *filename,
                                              const char     *encoding);
 
+MooEdit         *moo_editor_get_doc         (MooEditor      *editor,
+                                             const char     *filename);
+
 MooEdit         *moo_editor_get_active_doc  (MooEditor      *editor);
 MooEditWindow   *moo_editor_get_active_window (MooEditor    *editor);
 

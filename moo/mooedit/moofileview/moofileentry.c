@@ -1396,9 +1396,10 @@ completion_default_visible_func (MooFile *file)
 }
 
 
-void    moo_file_entry_completion_set_visible_func  (MooFileEntryCompletion *cmpl,
-                                                     MooFileVisibleFunc      func,
-                                                     gpointer                data)
+void
+moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
+                                            MooFileVisibleFunc      func,
+                                            gpointer                data)
 {
     g_return_if_fail (MOO_IS_FILE_ENTRY_COMPLETION (cmpl));
 
@@ -1407,6 +1408,24 @@ void    moo_file_entry_completion_set_visible_func  (MooFileEntryCompletion *cmp
 
     cmpl->priv->visible_func = func;
     cmpl->priv->visible_func_data = data;
+}
+
+
+void
+moo_file_entry_completion_set_path (MooFileEntryCompletion *cmpl,
+                                    const char             *path)
+{
+    char *path_utf8;
+
+    g_return_if_fail (MOO_IS_FILE_ENTRY_COMPLETION (cmpl));
+    g_return_if_fail (path != NULL);
+    g_return_if_fail (cmpl->priv->entry != NULL);
+
+    path_utf8 = g_filename_display_name (path);
+    g_return_if_fail (path_utf8 != NULL);
+
+    gtk_entry_set_text (GTK_ENTRY (cmpl->priv->entry), path_utf8);
+    g_free (path_utf8);
 }
 
 
@@ -1462,7 +1481,8 @@ moo_file_entry_class_init (MooFileEntryClass *klass)
 }
 
 
-static void moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
+static void
+moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
 {
     entry->completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION, NULL);
     entry->completion->priv->managed = TRUE;
@@ -1470,7 +1490,8 @@ static void moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
 }
 
 
-static void     moo_file_entry_destroy      (GtkObject      *object)
+static void
+moo_file_entry_destroy (GtkObject *object)
 {
     MooFileEntry *entry = MOO_FILE_ENTRY (object);
 
@@ -1521,14 +1542,16 @@ moo_file_entry_get_property (GObject        *object,
 }
 
 
-GtkWidget              *moo_file_entry_new              (void)
+GtkWidget*
+moo_file_entry_new (void)
 {
     return g_object_new (MOO_TYPE_FILE_ENTRY, NULL);
 }
 
 
-static gboolean moo_file_entry_key_press    (GtkWidget      *widget,
-                                             GdkEventKey    *event)
+static gboolean
+moo_file_entry_key_press (GtkWidget      *widget,
+                          GdkEventKey    *event)
 {
     return completion_entry_key_press (GTK_ENTRY (widget), event,
                                        MOO_FILE_ENTRY(widget)->completion) ||

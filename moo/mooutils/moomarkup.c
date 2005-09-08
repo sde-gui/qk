@@ -17,7 +17,8 @@
 #include <glib.h>
 
 
-GType moo_markup_doc_get_type (void)
+GType
+moo_markup_doc_get_type (void)
 {
     static GType type = 0;
     if (type == 0)
@@ -113,9 +114,10 @@ static void passthrough     (GMarkupParseContext    *context,
                              GError                **error);
 
 
-MooMarkupDoc   *moo_markup_parse_memory    (const char     *buffer,
-                                            int             size,
-                                            GError        **error)
+MooMarkupDoc*
+moo_markup_parse_memory (const char     *buffer,
+                         int             size,
+                         GError        **error)
 {
     GError *err = NULL;
 
@@ -154,8 +156,9 @@ MooMarkupDoc   *moo_markup_parse_memory    (const char     *buffer,
 }
 
 
-MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
-                                            GError        **error)
+MooMarkupDoc*
+moo_markup_parse_file (const char     *filename,
+                       GError        **error)
 {
     char *content;
     MooMarkupDoc *doc;
@@ -172,12 +175,13 @@ MooMarkupDoc   *moo_markup_parse_file      (const char     *filename,
 }
 
 
-static void start_element   (G_GNUC_UNUSED GMarkupParseContext    *ctx,
-                             const gchar            *element_name,
-                             const gchar           **attribute_names,
-                             const gchar           **attribute_values,
-                             ParserState            *state,
-                             G_GNUC_UNUSED GError                **error)
+static void
+start_element (G_GNUC_UNUSED GMarkupParseContext    *ctx,
+               const gchar            *element_name,
+               const gchar           **attribute_names,
+               const gchar           **attribute_values,
+               ParserState            *state,
+               G_GNUC_UNUSED GError                **error)
 {
     MooMarkupNode *elm = moo_markup_element_new (state->doc,
                                                  state->current,
@@ -189,10 +193,11 @@ static void start_element   (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 }
 
 
-static void end_element     (G_GNUC_UNUSED GMarkupParseContext    *ctx,
-                             G_GNUC_UNUSED const gchar            *elm,
-                             ParserState            *state,
-                             G_GNUC_UNUSED GError                **error)
+static void
+end_element (G_GNUC_UNUSED GMarkupParseContext    *ctx,
+             G_GNUC_UNUSED const gchar            *elm,
+             ParserState            *state,
+             G_GNUC_UNUSED GError                **error)
 {
     g_assert (state->current->type == MOO_MARKUP_ELEMENT_NODE);
     collect_text_content (MOO_MARKUP_ELEMENT (state->current));
@@ -201,11 +206,12 @@ static void end_element     (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 }
 
 
-static void text            (G_GNUC_UNUSED GMarkupParseContext    *ctx,
-                             const gchar            *text,
-                             gsize                   text_len,
-                             ParserState            *state,
-                             G_GNUC_UNUSED GError                **error)
+static void
+text (G_GNUC_UNUSED GMarkupParseContext    *ctx,
+      const gchar            *text,
+      gsize                   text_len,
+      ParserState            *state,
+      G_GNUC_UNUSED GError                **error)
 {
     if (MOO_MARKUP_IS_TEXT (state->current->last))
         moo_markup_text_node_add_text (MOO_MARKUP_TEXT (state->current->last),
@@ -217,11 +223,12 @@ static void text            (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 }
 
 
-static void passthrough     (G_GNUC_UNUSED GMarkupParseContext    *ctx,
-                             const gchar            *passthrough_text,
-                             gsize                   text_len,
-                             ParserState            *state,
-                             G_GNUC_UNUSED GError                **error)
+static void
+passthrough (G_GNUC_UNUSED GMarkupParseContext    *ctx,
+             const gchar            *passthrough_text,
+             gsize                   text_len,
+             ParserState            *state,
+             G_GNUC_UNUSED GError                **error)
 {
     if (MOO_MARKUP_IS_COMMENT (state->current->last))
         moo_markup_text_node_add_text (MOO_MARKUP_COMMENT (state->current->last),
@@ -233,7 +240,8 @@ static void passthrough     (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 }
 
 
-static MooMarkupDoc        *moo_markup_doc_new_priv      (const char    *name)
+static MooMarkupDoc*
+moo_markup_doc_new_priv (const char *name)
 {
     MooMarkupDoc *doc = g_new0 (MooMarkupDoc, 1);
 
@@ -246,17 +254,19 @@ static MooMarkupDoc        *moo_markup_doc_new_priv      (const char    *name)
 }
 
 
-MooMarkupDoc    *moo_markup_doc_new         (const char *name)
+MooMarkupDoc*
+moo_markup_doc_new (const char *name)
 {
     return moo_markup_doc_new_priv (name);
 }
 
 
-static MooMarkupNode       *moo_markup_element_new  (MooMarkupDoc   *doc,
-                                                     MooMarkupNode  *parent,
-                                                     const char     *name,
-                                                     const char    **attribute_names,
-                                                     const char    **attribute_values)
+static MooMarkupNode*
+moo_markup_element_new (MooMarkupDoc   *doc,
+                        MooMarkupNode  *parent,
+                        const char     *name,
+                        const char    **attribute_names,
+                        const char    **attribute_values)
 {
     MooMarkupElement *elm = g_new0 (MooMarkupElement, 1);
     add_node (doc, parent, MOO_MARKUP_NODE (elm));
@@ -275,11 +285,12 @@ static MooMarkupNode       *moo_markup_element_new  (MooMarkupDoc   *doc,
 }
 
 
-static MooMarkupNode       *moo_markup_text_node_new(MooMarkupNodeType   type,
-                                                     MooMarkupDoc       *doc,
-                                                     MooMarkupNode      *parent,
-                                                     const char         *text,
-                                                     gsize               text_len)
+static MooMarkupNode*
+moo_markup_text_node_new (MooMarkupNodeType   type,
+                          MooMarkupDoc       *doc,
+                          MooMarkupNode      *parent,
+                          const char         *text,
+                          gsize               text_len)
 {
     MooMarkupText *node;
 
@@ -300,12 +311,18 @@ static MooMarkupNode       *moo_markup_text_node_new(MooMarkupNodeType   type,
 }
 
 
-static void              add_node            (MooMarkupDoc     *doc,
-                                              MooMarkupNode    *parent,
-                                              MooMarkupNode    *node)
+static void
+add_node (MooMarkupDoc     *doc,
+          MooMarkupNode    *parent,
+          MooMarkupNode    *node)
 {
+    g_assert (MOO_MARKUP_IS_DOC (doc));
+    g_assert (parent != NULL);
+    g_assert (node != NULL);
+
     node->doc = doc;
     node->parent = parent;
+
     if (parent->last)
     {
         parent->last->next = node;
@@ -322,9 +339,10 @@ static void              add_node            (MooMarkupDoc     *doc,
 }
 
 
-static void moo_markup_text_node_add_text   (MooMarkupText  *node,
-                                             const char     *text,
-                                             gsize           text_len)
+static void
+moo_markup_text_node_add_text (MooMarkupText  *node,
+                               const char     *text,
+                               gsize           text_len)
 {
     char *tmp = (char*)g_memdup (node->text, node->size + text_len + 1);
     g_memmove (tmp + node->size, text, text_len);
@@ -335,7 +353,8 @@ static void moo_markup_text_node_add_text   (MooMarkupText  *node,
 }
 
 
-static void collect_text_content        (MooMarkupElement  *node)
+static void
+collect_text_content (MooMarkupElement *node)
 {
     MooMarkupNode *child;
     GString *text = NULL;
@@ -367,7 +386,8 @@ static void collect_text_content        (MooMarkupElement  *node)
 }
 
 
-static void moo_markup_node_free    (MooMarkupNode     *node)
+static void
+moo_markup_node_free (MooMarkupNode *node)
 {
     MooMarkupNode *child;
     GSList *children = NULL, *l;
@@ -403,7 +423,8 @@ static void moo_markup_node_free    (MooMarkupNode     *node)
 }
 
 
-static void moo_markup_element_free         (MooMarkupElement  *node)
+static void
+moo_markup_element_free (MooMarkupElement *node)
 {
     g_free (node->content);
     g_strfreev (node->attr_names);
@@ -411,14 +432,16 @@ static void moo_markup_element_free         (MooMarkupElement  *node)
 }
 
 
-static void moo_markup_text_node_free       (MooMarkupNode     *node)
+static void
+moo_markup_text_node_free (MooMarkupNode *node)
 {
     g_assert (node->type == MOO_MARKUP_TEXT_NODE || node->type == MOO_MARKUP_COMMENT_NODE);
     g_free (((MooMarkupText*)node)->text);
 }
 
 
-void moo_markup_doc_unref (MooMarkupDoc *doc)
+void
+moo_markup_doc_unref (MooMarkupDoc *doc)
 {
     if (doc)
     {
@@ -429,7 +452,8 @@ void moo_markup_doc_unref (MooMarkupDoc *doc)
 }
 
 
-MooMarkupDoc *moo_markup_doc_ref (MooMarkupDoc *doc)
+MooMarkupDoc*
+moo_markup_doc_ref (MooMarkupDoc *doc)
 {
     g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), NULL);
     ++(doc->ref_count);
@@ -437,12 +461,14 @@ MooMarkupDoc *moo_markup_doc_ref (MooMarkupDoc *doc)
 }
 
 
-static void moo_markup_doc_unref_private     (G_GNUC_UNUSED MooMarkupDoc      *doc)
+static void
+moo_markup_doc_unref_private (G_GNUC_UNUSED MooMarkupDoc *doc)
 {
 }
 
 
-char *moo_markup_node_get_string (MooMarkupNode *node)
+char*
+moo_markup_node_get_string (MooMarkupNode *node)
 {
     MooMarkupNode *child;
     GString *str = g_string_new ("");
@@ -464,8 +490,9 @@ char *moo_markup_node_get_string (MooMarkupNode *node)
 }
 
 
-static void moo_markup_element_print        (MooMarkupElement   *node,
-                                             GString            *str)
+static void
+moo_markup_element_print (MooMarkupElement   *node,
+                          GString            *str)
 {
     guint i;
 
@@ -500,8 +527,9 @@ static void moo_markup_element_print        (MooMarkupElement   *node,
 }
 
 
-static void moo_markup_text_node_print      (MooMarkupNode  *node,
-                                             GString        *str)
+static void
+moo_markup_text_node_print (MooMarkupNode  *node,
+                            GString        *str)
 {
     char *p, *escaped;
     MooMarkupText *text = (MooMarkupText*) node;
@@ -608,8 +636,9 @@ moo_markup_get_element (MooMarkupNode      *node,
 }
 
 
-const char      *moo_markup_get_prop        (MooMarkupElement   *node,
-                                             const char         *prop_name)
+const char*
+moo_markup_get_prop (MooMarkupElement   *node,
+                     const char         *prop_name)
 {
     guint i;
     g_return_val_if_fail (node != NULL && prop_name != NULL, NULL);
@@ -620,9 +649,10 @@ const char      *moo_markup_get_prop        (MooMarkupElement   *node,
 }
 
 
-void             moo_markup_set_prop        (MooMarkupElement   *node,
-                                             const char         *prop_name,
-                                             const char         *val)
+void
+moo_markup_set_prop (MooMarkupElement   *node,
+                     const char         *prop_name,
+                     const char         *val)
 {
     guint i;
     char **attr_names, **attr_vals;
@@ -717,8 +747,9 @@ void             moo_markup_set_prop        (MooMarkupElement   *node,
 }
 
 
-MooMarkupElement*moo_markup_get_root_element(MooMarkupDoc       *doc,
-                                             const char         *name)
+MooMarkupElement*
+moo_markup_get_root_element (MooMarkupDoc       *doc,
+                             const char         *name)
 {
     MooMarkupNode *child;
     for (child = doc->children; child; child = child->next)
@@ -734,7 +765,8 @@ MooMarkupElement*moo_markup_get_root_element(MooMarkupDoc       *doc,
 }
 
 
-char            *moo_markup_element_get_path(MooMarkupElement   *elm)
+char*
+moo_markup_element_get_path (MooMarkupElement *elm)
 {
     GString *path;
     MooMarkupNode *node;
@@ -755,7 +787,8 @@ char            *moo_markup_element_get_path(MooMarkupElement   *elm)
 }
 
 
-void             moo_markup_delete_node     (MooMarkupNode      *node)
+void
+moo_markup_delete_node (MooMarkupNode *node)
 {
     MooMarkupNode *parent, *child, *next, *prev;
 
@@ -793,9 +826,9 @@ void             moo_markup_delete_node     (MooMarkupNode      *node)
 }
 
 
-MooMarkupElement*moo_markup_create_root_element
-                                            (MooMarkupDoc       *doc,
-                                             const char         *name)
+MooMarkupElement*
+moo_markup_create_root_element (MooMarkupDoc       *doc,
+                                const char         *name)
 {
     MooMarkupElement *elm;
 
@@ -892,9 +925,48 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
 }
 
 
-gboolean    moo_markup_save     (MooMarkupDoc       *doc,
-                                 const char         *filename,
-                                 GError            **error)
+MooMarkupElement*
+moo_markup_create_file_element (MooMarkupNode      *parent,
+                                const char         *path,
+                                const char         *filename)
+{
+    char *filename_utf8;
+    MooMarkupElement *elm;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    filename_utf8 = g_filename_display_name (filename);
+
+    if (!filename_utf8)
+    {
+        g_warning ("%s: could not convert '%s' to utf8",
+                   G_STRLOC, filename);
+        return NULL;
+    }
+
+    elm = moo_markup_create_text_element (parent, path, filename_utf8);
+
+    g_free (filename_utf8);
+    return elm;
+}
+
+
+char*
+moo_markup_get_file_content (MooMarkupElement *element)
+{
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (element), NULL);
+
+    if (!element->content)
+        return NULL;
+
+    return g_filename_from_utf8 (element->content, -1, NULL, NULL, NULL);
+}
+
+
+gboolean
+moo_markup_save (MooMarkupDoc       *doc,
+                 const char         *filename,
+                 GError            **error)
 {
     char *text;
     gboolean result;
@@ -1029,7 +1101,8 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
 #endif
 
 
-MooMarkupNode      *MOO_MARKUP_NODE    (gpointer n)
+MooMarkupNode*
+MOO_MARKUP_NODE (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1041,7 +1114,8 @@ MooMarkupNode      *MOO_MARKUP_NODE    (gpointer n)
     return node;
 }
 
-MooMarkupDoc       *MOO_MARKUP_DOC     (gpointer n)
+MooMarkupDoc*
+MOO_MARKUP_DOC (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1049,7 +1123,8 @@ MooMarkupDoc       *MOO_MARKUP_DOC     (gpointer n)
     return (MooMarkupDoc*) n;
 }
 
-MooMarkupElement   *MOO_MARKUP_ELEMENT (gpointer n)
+MooMarkupElement*
+MOO_MARKUP_ELEMENT (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1057,7 +1132,8 @@ MooMarkupElement   *MOO_MARKUP_ELEMENT (gpointer n)
     return (MooMarkupElement*) n;
 }
 
-MooMarkupText      *MOO_MARKUP_TEXT    (gpointer n)
+MooMarkupText*
+MOO_MARKUP_TEXT (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1065,7 +1141,8 @@ MooMarkupText      *MOO_MARKUP_TEXT    (gpointer n)
     return (MooMarkupText*) n;
 }
 
-MooMarkupComment   *MOO_MARKUP_COMMENT (gpointer n)
+MooMarkupComment*
+MOO_MARKUP_COMMENT (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);

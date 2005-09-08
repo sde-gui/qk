@@ -49,6 +49,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_COMPILE               "moo-compile"
 #define MOO_STOCK_EXECUTE               "moo-execute"
 
+#define MOO_STOCK_GREP                  "moo-grep"
+
 
 void        moo_create_stock_items          (void);
 GtkIconSize moo_get_icon_size_real_small    (void) G_GNUC_CONST;

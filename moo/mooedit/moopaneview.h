@@ -28,33 +28,62 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooPaneView         MooPaneView;
+typedef struct _MooPaneViewPrivate  MooPaneViewPrivate;
 typedef struct _MooPaneViewClass    MooPaneViewClass;
 
 struct _MooPaneView
 {
     GtkSourceView  parent;
+    MooPaneViewPrivate *priv;
 };
 
 struct _MooPaneViewClass
 {
     GtkSourceViewClass parent_class;
+
+    gboolean (*click) (MooPaneView *view,
+                       gpointer     line_data,
+                       int          line);
 };
 
 
-GType       moo_pane_view_get_type  (void) G_GNUC_CONST;
+GType       moo_pane_view_get_type      (void) G_GNUC_CONST;
 
-GtkWidget  *moo_pane_view_new       (void);
+GtkWidget  *moo_pane_view_new           (void);
 
-gboolean    moo_pane_view_grab      (MooPaneView    *view,
-                                     gpointer        id);
-void        moo_pane_view_ungrab    (MooPaneView    *view,
-                                     gpointer        id);
+gboolean    moo_pane_view_grab          (MooPaneView    *view,
+                                         gpointer        user_id);
+void        moo_pane_view_ungrab        (MooPaneView    *view,
+                                         gpointer        user_id);
 
-void        moo_pane_view_clear     (MooPaneView    *view);
+void        moo_pane_view_set_line_data (MooPaneView    *view,
+                                         int             line,
+                                         gpointer        data,
+                                         GDestroyNotify  free_func);
+gpointer    moo_pane_view_get_line_data (MooPaneView    *view,
+                                         int             line);
 
-void        moo_pane_view_write_raw (MooPaneView    *view,
-                                     const char     *text,
-                                     gssize          len);
+GtkTextTag *moo_pane_view_create_tag    (MooPaneView    *view,
+                                         const char     *tag_name,
+                                         const char     *first_property_name,
+                                         ...);
+GtkTextTag *moo_pane_view_lookup_tag    (MooPaneView    *view,
+                                         const char     *tag_name);
+
+void        moo_pane_view_clear         (MooPaneView    *view);
+
+int         moo_pane_view_start_line    (MooPaneView    *view);
+void        moo_pane_view_write         (MooPaneView    *view,
+                                         const char     *text,
+                                         gssize          len,
+                                         GtkTextTag     *tag);
+void        moo_pane_view_end_line      (MooPaneView    *view);
+
+int         moo_pane_view_write_line    (MooPaneView    *view,
+                                         const char     *text,
+                                         gssize          len,
+                                         GtkTextTag     *tag);
+
 
 
 G_END_DECLS

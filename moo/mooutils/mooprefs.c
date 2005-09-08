@@ -929,94 +929,6 @@ static void     sync_xml    (void)
 }
 
 
-#define INDENT_SIZE 2
-#define INDENT_CHAR ' '
-
-#ifdef __WIN32__
-#define LINE_SEPARATOR "\r\n"
-#elif defined(OS_DARWIN)
-#define LINE_SEPARATOR "\r"
-#else
-#define LINE_SEPARATOR "\n"
-#endif
-
-static void format_element (MooMarkupElement *elm,
-                            GString          *str,
-                            guint             indent)
-{
-    gboolean isdir = FALSE;
-    gboolean empty = TRUE;
-    MooMarkupNode *child;
-    char *fill;
-    guint i;
-
-    g_return_if_fail (MOO_MARKUP_IS_ELEMENT (elm));
-    g_return_if_fail (str != NULL);
-
-    for (child = elm->children; child != NULL; child = child->next)
-    {
-        if (elm->content)
-            empty = FALSE;
-
-        if (MOO_MARKUP_IS_ELEMENT (child))
-        {
-            isdir = TRUE;
-            empty = FALSE;
-            break;
-        }
-    }
-
-    fill = g_strnfill (indent, INDENT_CHAR);
-
-    g_string_append_len (str, fill, indent);
-    g_string_append_printf (str, "<%s", elm->name);
-    for (i = 0; i < elm->n_attrs; ++i)
-        g_string_append_printf (str, " %s=\"%s\"",
-                                elm->attr_names[i],
-                                elm->attr_vals[i]);
-
-    if (empty)
-    {
-        g_string_append (str, "/>" LINE_SEPARATOR);
-    }
-    else if (isdir)
-    {
-        g_string_append (str, ">" LINE_SEPARATOR);
-
-        for (child = elm->children; child != NULL; child = child->next)
-            if (MOO_MARKUP_IS_ELEMENT (child))
-                format_element (MOO_MARKUP_ELEMENT (child), str,
-                                indent + INDENT_SIZE);
-
-        g_string_append_printf (str, "%s</%s>" LINE_SEPARATOR,
-                                fill, elm->name);
-    }
-    else
-    {
-        char *escaped = g_markup_escape_text (elm->content, -1);
-        g_string_append_printf (str, ">%s</%s>" LINE_SEPARATOR,
-                                escaped, elm->name);
-        g_free (escaped);
-    }
-
-    g_free (fill);
-}
-
-static char *format_xml (MooMarkupDoc *doc)
-{
-    GString *str;
-    MooMarkupNode *child;
-
-    str = g_string_new ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-
-    for (child = doc->children; child != NULL; child = child->next)
-        if (MOO_MARKUP_IS_ELEMENT (child))
-            format_element (MOO_MARKUP_ELEMENT (child), str, 0);
-
-    return g_string_free (str, FALSE);
-}
-
-
 gboolean        moo_prefs_save              (const char     *file)
 {
     MooPrefs *prefs = instance ();
@@ -1024,7 +936,6 @@ gboolean        moo_prefs_save              (const char     *file)
     MooMarkupNode *node;
     gboolean empty;
     GError *err = NULL;
-    char *text;
     gboolean result = TRUE;
 
     g_return_val_if_fail (file != NULL, FALSE);
@@ -1049,10 +960,7 @@ gboolean        moo_prefs_save              (const char     *file)
         return TRUE;
     }
 
-    text = format_xml (xml);
-    g_return_val_if_fail (text != NULL, FALSE);
-
-    result = moo_save_file_utf8 (file, text, -1, &err);
+    result = moo_markup_save_pretty (xml, file, 2, &err);
 
     if (!result)
         g_critical ("%s: could not save preferences to '%s'",
@@ -1064,7 +972,6 @@ gboolean        moo_prefs_save              (const char     *file)
         g_error_free (err);
     }
 
-    g_free (text);
     return result;
 }
 

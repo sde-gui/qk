@@ -79,6 +79,10 @@ void        moo_file_entry_completion_set_visible_func  (MooFileEntryCompletion 
 void        moo_file_entry_completion_set_entry         (MooFileEntryCompletion *completion,
                                                          GtkEntry               *entry);
 
+/* converts path to utf8 and sets entry content */
+void        moo_file_entry_completion_set_path          (MooFileEntryCompletion *completion,
+                                                         const char             *path);
+
 
 G_END_DECLS
 

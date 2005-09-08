@@ -826,11 +826,7 @@ static void     moo_paned_unrealize     (GtkWidget      *widget)
         paned->priv->pane_widget_size = 0;
     }
 
-    gdk_window_set_user_data (widget->window, NULL);
-    gdk_window_destroy (widget->window);
-    widget->window = NULL;
-
-    GTK_WIDGET_UNSET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_CLASS(moo_paned_parent_class)->unrealize (widget);
 }
 
 
@@ -2358,7 +2354,6 @@ int         moo_paned_insert_pane       (MooPaned       *paned,
     gtk_widget_set_parent (pane->frame, GTK_WIDGET (paned));
 
     pane->child = pane_widget;
-    gtk_widget_unrealize (pane->child);
     gtk_widget_show (pane->child);
     gtk_box_pack_start (GTK_BOX (pane->child_holder), pane->child, TRUE, TRUE, 0);
 
@@ -2970,12 +2965,17 @@ static void     moo_paned_open_pane_real(MooPaned       *paned,
         /* XXX move this to realize */
         gtk_widget_set_parent_window (pane->frame,
                                       paned->priv->pane_window);
+    }
+
+    if (GTK_WIDGET_MAPPED (paned))
+    {
         gdk_window_show (paned->priv->pane_window);
         gdk_window_show (paned->priv->handle_window);
     }
 
     paned->priv->current_pane = pane;
     gtk_widget_show (pane->frame);
+
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->button), TRUE);
 
     if (pane->detached)

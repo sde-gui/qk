@@ -47,6 +47,8 @@
             <item name="FindPrevious" action="FindPrevious"/>
             <item name="Replace" action="Replace"/>
             <separator/>
+            <item name="FindInFiles" action="FindInFiles"/>
+            <separator/>
             <item name="GoToLine" action="GoToLine"/>
             <separator/>
         </menu>
@@ -62,6 +64,7 @@
             <separator/>
         </menu>
 
+        <!--
         <menu name="Project" label="_Project">
             <separator/>
             <item name="NewProject" action="NewProject"/>
@@ -83,6 +86,7 @@
             <item name="Execute" action="Execute"/>
             <separator/>
         </menu>
+        -->
 
         <menu name="Python" action="PythonMenu">
             <separator/>

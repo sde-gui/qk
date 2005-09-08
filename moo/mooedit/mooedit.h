@@ -190,6 +190,10 @@ MooIndenter *moo_edit_get_indenter          (MooEdit            *edit);
 void         moo_edit_set_indenter          (MooEdit            *edit,
                                              MooIndenter        *indenter);
 
+void         moo_edit_move_cursor           (MooEdit            *edit,
+                                             int                 line,
+                                             int                 character);
+
 
 G_END_DECLS
 

@@ -50,6 +50,8 @@ static void moo_edit_get_property   (GObject        *object,
                                      GValue         *value,
                                      GParamSpec     *pspec);
 
+static GtkTextBuffer *get_buffer        (MooEdit            *edit);
+
 static void goto_line                   (MooEdit            *edit);
 
 static void can_redo_cb                 (GtkSourceBuffer    *buffer,
@@ -409,12 +411,8 @@ MooEdit        *moo_edit_new                   (void)
 
 void moo_edit_delete_selection   (MooEdit    *edit)
 {
-    GtkTextBuffer *buffer;
-
     g_return_if_fail (MOO_IS_EDIT (edit));
-
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    gtk_text_buffer_delete_selection (buffer, TRUE, TRUE);
+    gtk_text_buffer_delete_selection (get_buffer (edit), TRUE, TRUE);
 }
 
 
@@ -447,7 +445,7 @@ void        moo_edit_set_modified           (MooEdit            *edit,
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = get_buffer (edit);
 
     buf_modified =
             gtk_text_buffer_get_modified (buffer);
@@ -596,7 +594,7 @@ void        moo_edit_set_lang               (MooEdit            *edit,
     if (lang == edit->priv->lang)
         return;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = get_buffer (edit);
     table = gtk_text_buffer_get_tag_table (buffer);
     gtk_source_tag_table_remove_source_tags (GTK_SOURCE_TAG_TABLE (table));
 
@@ -639,12 +637,9 @@ void        moo_edit_set_lang               (MooEdit            *edit,
 void        moo_edit_set_highlight          (MooEdit            *edit,
                                              gboolean            highlight)
 {
-    GtkTextBuffer *buffer;
-
     g_return_if_fail (MOO_IS_EDIT (edit));
-
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    gtk_source_buffer_set_highlight (GTK_SOURCE_BUFFER (buffer), highlight);
+    gtk_source_buffer_set_highlight (GTK_SOURCE_BUFFER (get_buffer (edit)),
+                                     highlight);
 }
 
 
@@ -681,15 +676,13 @@ void        moo_edit_set_read_only          (MooEdit            *edit,
 gboolean    moo_edit_is_empty               (MooEdit            *edit)
 {
     GtkTextIter start, end;
-    GtkTextBuffer *buffer;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
     if (MOO_EDIT_IS_MODIFIED (edit) || edit->priv->filename)
         return FALSE;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_get_bounds (get_buffer (edit), &start, &end);
 
     return !gtk_text_iter_compare (&start, &end);
 }
@@ -697,23 +690,15 @@ gboolean    moo_edit_is_empty               (MooEdit            *edit)
 
 gboolean    moo_edit_can_redo               (MooEdit            *edit)
 {
-    GtkTextBuffer *buffer;
-
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    return gtk_source_buffer_can_redo (GTK_SOURCE_BUFFER (buffer));
+    return gtk_source_buffer_can_redo (GTK_SOURCE_BUFFER (get_buffer (edit)));
 }
 
 
 gboolean    moo_edit_can_undo               (MooEdit            *edit)
 {
-    GtkTextBuffer *buffer;
-
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    return gtk_source_buffer_can_undo (GTK_SOURCE_BUFFER (buffer));
+    return gtk_source_buffer_can_undo (GTK_SOURCE_BUFFER (get_buffer (edit)));
 }
 
 
@@ -871,7 +856,7 @@ char       *moo_edit_get_selection          (MooEdit            *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
-    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buf = get_buffer (edit);
 
     if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
         return gtk_text_buffer_get_text (buf, &start, &end, TRUE);
@@ -882,27 +867,19 @@ char       *moo_edit_get_selection          (MooEdit            *edit)
 
 gboolean    moo_edit_has_selection          (MooEdit            *edit)
 {
-    GtkTextBuffer *buf;
     GtkTextIter start, end;
-
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-
-    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-
-    return gtk_text_buffer_get_selection_bounds (buf, &start, &end);
+    return gtk_text_buffer_get_selection_bounds (get_buffer (edit), &start, &end);
 }
 
 
 gboolean    moo_edit_has_text               (MooEdit            *edit)
 {
-    GtkTextBuffer *buf;
     GtkTextIter start, end;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    gtk_text_buffer_get_bounds (buf, &start, &end);
-
+    gtk_text_buffer_get_bounds (get_buffer (edit), &start, &end);
     return gtk_text_iter_compare (&start, &end) ? TRUE : FALSE;
 }
 
@@ -915,7 +892,7 @@ char       *moo_edit_get_text               (MooEdit            *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
-    buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buf = get_buffer (edit);
     gtk_text_buffer_get_bounds (buf, &start, &end);
     text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
 
@@ -1070,7 +1047,7 @@ void         moo_edit_set_indenter          (MooEdit            *edit,
 
 static MooIndenter *get_indenter_for_mode_string (MooEdit *edit)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    GtkTextBuffer *buffer = get_buffer (edit);
     GtkTextIter line_start, line_end;
     char *text, *start, *end, *mode_string;
     char **vars, **p;
@@ -1173,4 +1150,45 @@ void        _moo_edit_choose_indenter       (MooEdit            *edit)
         indenter = moo_indenter_default_new ();
 
     moo_edit_set_indenter (edit, indenter);
+}
+
+
+void
+moo_edit_move_cursor (MooEdit *edit,
+                      int      line,
+                      int      character)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (line >= 0);
+
+    buffer = get_buffer (edit);
+
+    if (line >= gtk_text_buffer_get_line_count (buffer))
+        line = gtk_text_buffer_get_line_count (buffer) - 1;
+
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+
+    if (character >= 0)
+    {
+        if (character >= gtk_text_iter_get_chars_in_line (&iter) - 1)
+            character = gtk_text_iter_get_chars_in_line (&iter) - 2;
+        if (character < 0)
+            character = 0;
+        gtk_text_iter_set_line_offset (&iter, character);
+    }
+
+    gtk_text_buffer_place_cursor (buffer, &iter);
+    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (edit),
+                                  gtk_text_buffer_get_insert (buffer),
+                                  0.2, FALSE, 0, 0);
+}
+
+
+static GtkTextBuffer*
+get_buffer (MooEdit *edit)
+{
+    return gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 }

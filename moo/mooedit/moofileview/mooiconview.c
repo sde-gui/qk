@@ -1183,12 +1183,16 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
 
     if (view->priv->scroll_to)
     {
-        GtkTreePath *path = gtk_tree_row_reference_get_path (view->priv->scroll_to);
+        if (gtk_tree_row_reference_valid (view->priv->scroll_to))
+        {
+            GtkTreePath *path = gtk_tree_row_reference_get_path (view->priv->scroll_to);
+            moo_icon_view_update_adjustment (view);
+            moo_icon_view_scroll_to_cell (view, path);
+            gtk_tree_path_free (path);
+        }
+
         gtk_tree_row_reference_free (view->priv->scroll_to);
         view->priv->scroll_to = NULL;
-        moo_icon_view_update_adjustment (view);
-        moo_icon_view_scroll_to_cell (view, path);
-        gtk_tree_path_free (path);
     }
     else
     {

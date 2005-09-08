@@ -52,6 +52,9 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
                                              const char     *filename,
                                              MooEdit       **edit);
 
+static void          set_single_window      (MooEditor      *editor,
+                                             gboolean        single);
+
 static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
                                              MooAction      *action);
 
@@ -89,6 +92,7 @@ struct _MooEditorPrivate {
     MooRecentMgr    *recent_mgr;
     gboolean         open_single;
     gboolean         allow_empty_window;
+    gboolean         single_window;
 };
 
 
@@ -105,8 +109,9 @@ static void     moo_editor_get_property (GObject        *object,
 
 enum {
     PROP_0,
-    PROP_OPEN_SINGLE,
-    PROP_ALLOW_EMPTY_WINDOW
+    PROP_OPEN_SINGLE_FILE_INSTANCE,
+    PROP_ALLOW_EMPTY_WINDOW,
+    PROP_SINGLE_WINDOW
 };
 
 enum {
@@ -131,10 +136,10 @@ static void moo_editor_class_init (MooEditorClass *klass)
     gobject_class->get_property = moo_editor_get_property;
 
     g_object_class_install_property (gobject_class,
-                                     PROP_OPEN_SINGLE,
-                                     g_param_spec_boolean ("open-single",
-                                             "open-single",
-                                             "open-single",
+                                     PROP_OPEN_SINGLE_FILE_INSTANCE,
+                                     g_param_spec_boolean ("open-single-file-instance",
+                                             "open-single-file-instance",
+                                             "open-single-file-instance",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -143,7 +148,15 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                      g_param_spec_boolean ("allow-empty-window",
                                              "allow-empty-window",
                                              "allow-empty-window",
-                                             TRUE,
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SINGLE_WINDOW,
+                                     g_param_spec_boolean ("single-window",
+                                             "single-window",
+                                             "single-window",
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[ALL_WINDOWS_CLOSED] =
@@ -192,14 +205,18 @@ static void     moo_editor_set_property (GObject        *object,
     MooEditor *editor = MOO_EDITOR (object);
 
     switch (prop_id) {
-        case PROP_OPEN_SINGLE:
+        case PROP_OPEN_SINGLE_FILE_INSTANCE:
             editor->priv->open_single = g_value_get_boolean (value);
-            g_object_notify (object, "open_single");
+            g_object_notify (object, "open-single-file-instance");
             break;
 
         case PROP_ALLOW_EMPTY_WINDOW:
             editor->priv->allow_empty_window = g_value_get_boolean (value);
-            g_object_notify (object, "allow_empty_window");
+            g_object_notify (object, "allow-empty-window");
+            break;
+
+        case PROP_SINGLE_WINDOW:
+            set_single_window (editor, g_value_get_boolean (value));
             break;
 
         default:
@@ -217,12 +234,16 @@ static void     moo_editor_get_property (GObject        *object,
     MooEditor *editor = MOO_EDITOR (object);
 
     switch (prop_id) {
-        case PROP_OPEN_SINGLE:
+        case PROP_OPEN_SINGLE_FILE_INSTANCE:
             g_value_set_boolean (value, editor->priv->open_single);
             break;
 
         case PROP_ALLOW_EMPTY_WINDOW:
             g_value_set_boolean (value, editor->priv->allow_empty_window);
+            break;
+
+        case PROP_SINGLE_WINDOW:
+            g_value_set_boolean (value, editor->priv->single_window);
             break;
 
         default:
@@ -265,6 +286,15 @@ static void moo_editor_finalize       (GObject      *object)
 MooEditor       *moo_editor_new                 (void)
 {
     return MOO_EDITOR (g_object_new (MOO_TYPE_EDITOR, NULL));
+}
+
+
+static void          set_single_window      (MooEditor      *editor,
+                                             gboolean        single)
+{
+    /* XXX */
+    editor->priv->single_window = single;
+    g_object_notify (G_OBJECT (editor), "single-window");
 }
 
 
@@ -714,6 +744,8 @@ void             moo_editor_open            (MooEditor      *editor,
         else
         {
             if (!window)
+                window = moo_editor_get_active_window (editor);
+            if (!window)
                 window = create_window (editor);
 
             if (new_doc)
@@ -893,8 +925,9 @@ static void          do_close_window        (MooEditor      *editor,
 }
 
 
-static void          do_close_doc           (MooEditor      *editor,
-                                             MooEdit        *doc)
+static void
+do_close_doc (MooEditor      *editor,
+              MooEdit        *doc)
 {
     WindowInfo *info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
@@ -905,8 +938,9 @@ static void          do_close_doc           (MooEditor      *editor,
 }
 
 
-gboolean         moo_editor_close_doc       (MooEditor      *editor,
-                                             MooEdit        *doc)
+gboolean
+moo_editor_close_doc (MooEditor      *editor,
+                      MooEdit        *doc)
 {
     gboolean result;
     GSList *list;
@@ -919,8 +953,9 @@ gboolean         moo_editor_close_doc       (MooEditor      *editor,
 }
 
 
-gboolean         moo_editor_close_docs      (MooEditor      *editor,
-                                             GSList         *list)
+gboolean
+moo_editor_close_docs (MooEditor      *editor,
+                       GSList         *list)
 {
     WindowInfo *info;
     GSList *l;
@@ -960,8 +995,9 @@ gboolean         moo_editor_close_docs      (MooEditor      *editor,
 }
 
 
-static gboolean      close_docs_real        (MooEditor      *editor,
-                                             GSList         *docs)
+static gboolean
+close_docs_real (MooEditor      *editor,
+                 GSList         *docs)
 {
     MooEditDialogResponse response;
     GSList *modified, *l;
@@ -1037,7 +1073,8 @@ static gboolean      close_docs_real        (MooEditor      *editor,
 }
 
 
-static GSList       *find_modified          (GSList         *docs)
+static GSList*
+find_modified (GSList *docs)
 {
     GSList *modified = NULL, *l;
     for (l = docs; l != NULL; l = l->next)
@@ -1047,7 +1084,8 @@ static GSList       *find_modified          (GSList         *docs)
 }
 
 
-gboolean         moo_editor_close_all       (MooEditor      *editor)
+gboolean
+moo_editor_close_all (MooEditor *editor)
 {
     GSList *windows, *l;
 
@@ -1069,7 +1107,8 @@ gboolean         moo_editor_close_all       (MooEditor      *editor)
 }
 
 
-GSList          *moo_editor_list_windows    (MooEditor      *editor)
+GSList*
+moo_editor_list_windows (MooEditor *editor)
 {
     GSList *windows = NULL, *l;
 
@@ -1085,11 +1124,12 @@ GSList          *moo_editor_list_windows    (MooEditor      *editor)
 }
 
 
-void             moo_editor_open_file       (MooEditor      *editor,
-                                             MooEditWindow  *window,
-                                             GtkWidget      *parent,
-                                             const char     *filename,
-                                             const char     *encoding)
+void
+moo_editor_open_file (MooEditor      *editor,
+                      MooEditWindow  *window,
+                      GtkWidget      *parent,
+                      const char     *filename,
+                      const char     *encoding)
 {
     MooEditFileInfo *info;
     GSList *list;
@@ -1105,8 +1145,9 @@ void             moo_editor_open_file       (MooEditor      *editor,
 }
 
 
-void        _moo_editor_reload      (MooEditor      *editor,
-                                     MooEdit        *doc)
+void
+_moo_editor_reload (MooEditor      *editor,
+                    MooEdit        *doc)
 {
     WindowInfo *info;
     MooEditLoader *loader;
@@ -1137,8 +1178,9 @@ void        _moo_editor_reload      (MooEditor      *editor,
 }
 
 
-gboolean    _moo_editor_save        (MooEditor      *editor,
-                                     MooEdit        *doc)
+gboolean
+_moo_editor_save (MooEditor      *editor,
+                  MooEdit        *doc)
 {
     WindowInfo *info;
     MooEditSaver *saver;
@@ -1184,10 +1226,11 @@ out:
 }
 
 
-gboolean    _moo_editor_save_as     (MooEditor      *editor,
-                                     MooEdit        *doc,
-                                     const char     *filename,
-                                     const char     *encoding)
+gboolean
+_moo_editor_save_as (MooEditor      *editor,
+                     MooEdit        *doc,
+                     const char     *filename,
+                     const char     *encoding)
 {
     WindowInfo *info;
     MooEditSaver *saver;
@@ -1234,15 +1277,31 @@ out:
 }
 
 
-static MooEditLoader*get_loader             (MooEditor      *editor,
-                                             MooEdit        *doc)
+static MooEditLoader*
+get_loader (MooEditor      *editor,
+            MooEdit        *doc)
 {
     return g_hash_table_lookup (editor->priv->loaders, doc);
 }
 
 
-static MooEditSaver *get_saver              (MooEditor      *editor,
-                                             MooEdit        *doc)
+static MooEditSaver*
+get_saver (MooEditor      *editor,
+           MooEdit        *doc)
 {
     return g_hash_table_lookup (editor->priv->savers, doc);
+}
+
+
+MooEdit*
+moo_editor_get_doc (MooEditor      *editor,
+                    const char     *filename)
+{
+    MooEdit *doc = NULL;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    window_list_find_filename (editor, filename, &doc);
+    return doc;
 }

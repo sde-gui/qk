@@ -171,9 +171,14 @@ MooMarkupElement   *moo_markup_create_root_element  (MooMarkupDoc       *doc,
                                                      const char         *name);
 MooMarkupElement   *moo_markup_create_element       (MooMarkupNode      *parent,
                                                      const char         *path);
+
 MooMarkupElement   *moo_markup_create_text_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *content);
+MooMarkupElement   *moo_markup_create_file_element  (MooMarkupNode      *parent,
+                                                     const char         *path,
+                                                     const char         *filename);
+char               *moo_markup_get_file_content     (MooMarkupElement   *element);
 
 
 G_END_DECLS

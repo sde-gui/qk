@@ -557,26 +557,15 @@ save_file_list (GSList             *file_list,
 
     for (l = file_list; l != NULL; l = l->next)
     {
-        char *file_utf8;
         const char *file = l->data;
 
         g_return_if_fail (file != NULL);
 
-        file_utf8 = g_filename_display_name (file);
-
-        if (!file_utf8)
-        {
-            g_warning ("%s: could not convert '%s' to utf8",
-                       G_STRLOC, file);
-            continue;
-        }
-
         if (!list_elm)
             list_elm = moo_markup_create_element (parent, ELEMENT_FILE_LIST);
 
-        moo_markup_create_text_element (MOO_MARKUP_NODE (list_elm),
-                                        ELEMENT_FILE, file_utf8);
-        g_free (file_utf8);
+        moo_markup_create_file_element (MOO_MARKUP_NODE (list_elm),
+                                        ELEMENT_FILE, file);
     }
 }
 
@@ -604,7 +593,7 @@ get_file_list (MooMarkupNode *parent)
         g_return_val_if_fail (!strcmp (elm->name, ELEMENT_FILE), files);
         g_return_val_if_fail (elm->content && elm->content[0], files);
 
-        file = g_filename_from_utf8 (elm->content, -1, NULL, NULL, NULL);
+        file = moo_markup_get_file_content (elm);
 
         if (!file)
         {
