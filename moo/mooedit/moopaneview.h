@@ -41,9 +41,20 @@ struct _MooPaneViewClass
 };
 
 
-GType       moo_pane_view_get_type               (void) G_GNUC_CONST;
+GType       moo_pane_view_get_type  (void) G_GNUC_CONST;
 
-GtkWidget  *moo_pane_view_new                    (void);
+GtkWidget  *moo_pane_view_new       (void);
+
+gboolean    moo_pane_view_grab      (MooPaneView    *view,
+                                     gpointer        id);
+void        moo_pane_view_ungrab    (MooPaneView    *view,
+                                     gpointer        id);
+
+void        moo_pane_view_clear     (MooPaneView    *view);
+
+void        moo_pane_view_write_raw (MooPaneView    *view,
+                                     const char     *text,
+                                     gssize          len);
 
 
 G_END_DECLS

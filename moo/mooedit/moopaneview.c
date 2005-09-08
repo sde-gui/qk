@@ -50,18 +50,17 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-    gobject_class->set_property = moo_pane_view_set_property;
-    gobject_class->get_property = moo_pane_view_get_property;
-    gobject_class->finalize = moo_pane_view_finalize;
+//     gobject_class->set_property = moo_pane_view_set_property;
+//     gobject_class->get_property = moo_pane_view_get_property;
+//     gobject_class->finalize = moo_pane_view_finalize;
 
-    widget_class->button_press_event = moo_pane_view_button_press;
+//     widget_class->button_press_event = moo_pane_view_button_press;
 }
 
 
-// static void moo_pane_view_init (MooPaneView *view)
-// {
-//     view->priv = moo_pane_view_private_new ();
-// }
+static void moo_pane_view_init (MooPaneView *view)
+{
+}
 
 
 // static void moo_pane_view_finalize       (GObject      *object)
@@ -94,4 +93,22 @@ GtkWidget*
 moo_pane_view_new (void)
 {
     return g_object_new (MOO_TYPE_PANE_VIEW, NULL);
+}
+
+
+void
+moo_pane_view_write_raw (MooPaneView    *view,
+                         const char     *text,
+                         gssize          len)
+{
+    GtkTextBuffer *buffer;
+
+    g_return_if_fail (MOO_IS_PANE_VIEW (view));
+    g_return_if_fail (text != NULL);
+
+    /* XXX */
+    g_return_if_fail (g_utf8_validate (text, len, NULL));
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+    gtk_text_buffer_insert_at_cursor (buffer, text, len);
 }

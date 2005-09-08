@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooeditplugin.h"
+#include "mooedit/mooplugin.h"
 #include <string.h>
 
 
@@ -24,7 +24,7 @@ static GSList *edit_windows = NULL;         /* WindowInfo* */
 
 
 typedef struct {
-    MooEditPluginInfo info;
+    MooPluginInfo info;
     gpointer data;
     gboolean initialized;
     GModule *module;
@@ -32,43 +32,43 @@ typedef struct {
 
 typedef struct {
     Plugin *plugin;
-    MooEditPluginWindowData window_data;
-    GtkWidget *pane_widget;
-} PluginFullWindowData;
+    gpointer data;
+    GDestroyNotify free_func;
+} PluginWindowData;
 
 typedef struct {
-    GSList *plugins; /* PluginFullWindowData* */
+    GSList *plugins; /* PluginWindowData* */
     MooEditWindow *window;
 } WindowInfo;
 
 
-static WindowInfo  *window_info_new         (MooEditWindow      *window);
-static void         window_info_free        (WindowInfo         *window_info);
-static WindowInfo  *window_info_lookup      (MooEditWindow      *window);
+static WindowInfo  *window_info_new     (MooEditWindow  *window);
+static void         window_info_free    (WindowInfo     *window_info);
+static WindowInfo  *window_info_lookup  (MooEditWindow  *window);
 
-static Plugin      *plugin_new              (MooEditPluginInfo  *info,
-                                             gpointer            plugin_data);
-static void         plugin_free             (Plugin             *plugin);
+static Plugin      *plugin_new          (MooPluginInfo  *info,
+                                         gpointer        plugin_data);
+static void         plugin_free         (Plugin         *plugin);
 
-static Plugin      *plugin_lookup           (const char         *id);
-static const char  *plugin_id               (Plugin             *plugin);
+static Plugin      *plugin_lookup       (const char     *id);
+static const char  *plugin_id           (Plugin         *plugin);
 
-static gboolean     plugin_enabled          (Plugin             *plugin);
-static gboolean     plugin_init             (Plugin             *plugin);
-static void         plugin_deinit           (Plugin             *plugin);
+static gboolean     plugin_enabled      (Plugin         *plugin);
+static gboolean     plugin_init         (Plugin         *plugin);
+static void         plugin_deinit       (Plugin         *plugin);
 
-static void         moo_edit_plugin_attach  (WindowInfo         *window_info,
-                                             Plugin             *plugin);
-static void         moo_edit_plugin_detach  (WindowInfo         *window_info,
-                                             Plugin             *plugin);
+static void         moo_plugin_attach   (WindowInfo     *window_info,
+                                         Plugin         *plugin);
+static void         moo_plugin_detach   (WindowInfo     *window_info,
+                                         Plugin         *plugin);
 
-static const char  *make_prefs_key          (Plugin             *plugin,
-                                             const char         *key);
+static const char  *make_prefs_key      (Plugin         *plugin,
+                                         const char     *key);
 
 
 gboolean
-moo_edit_plugin_register (MooEditPluginInfo  *info,
-                          gpointer            plugin_data)
+moo_plugin_register (MooPluginInfo *info,
+                     gpointer       plugin_data)
 {
     Plugin *plugin;
     GSList *l;
@@ -76,11 +76,11 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
 
     g_return_val_if_fail (info != NULL, FALSE);
 
-    if (info->plugin_system_version != MOO_EDIT_PLUGIN_CURRENT_VERSION)
+    if (info->plugin_system_version != MOO_PLUGIN_CURRENT_VERSION)
     {
         g_warning ("%s: plugin of version %d is incompatible with "
                    "current version %d", G_STRLOC, info->plugin_system_version,
-                   MOO_EDIT_PLUGIN_CURRENT_VERSION);
+                   MOO_PLUGIN_CURRENT_VERSION);
         return FALSE;
     }
 
@@ -88,18 +88,17 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
     g_return_val_if_fail (g_utf8_validate (info->id, -1, NULL), FALSE);
     g_return_val_if_fail (!info->name || g_utf8_validate (info->name, -1, NULL), FALSE);
     g_return_val_if_fail (!info->description || g_utf8_validate (info->description, -1, NULL), FALSE);
-    g_return_val_if_fail (info->init || info->attach || info->pane_create, FALSE);
+    g_return_val_if_fail (info->init || info->attach, FALSE);
     g_return_val_if_fail (info->params != NULL, FALSE);
     g_return_val_if_fail (info->prefs_params != NULL, FALSE);
-    g_return_val_if_fail (!info->params->want_pane || info->pane_create, FALSE);
 
     plugin = plugin_new (info, plugin_data);
     g_return_val_if_fail (plugin != NULL, FALSE);
 
-    if (moo_edit_plugin_lookup (plugin_id (plugin)))
+    if (moo_plugin_lookup (plugin_id (plugin)))
     {
         g_warning ("plugin with id '%s' already registered", plugin_id (plugin));
-        moo_edit_plugin_unregister (plugin_id (plugin));
+        moo_plugin_unregister (plugin_id (plugin));
     }
 
     prefs_key = make_prefs_key (plugin, PLUGIN_PREFS_ENABLED);
@@ -117,7 +116,7 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
     for (l = edit_windows; l != NULL; l = l->next)
     {
         WindowInfo *window_info = l->data;
-        moo_edit_plugin_attach (window_info, plugin);
+        moo_plugin_attach (window_info, plugin);
     }
 
     return TRUE;
@@ -125,7 +124,7 @@ moo_edit_plugin_register (MooEditPluginInfo  *info,
 
 
 void
-moo_edit_plugin_unregister (const char *id)
+moo_plugin_unregister (const char *id)
 {
     Plugin *plugin;
     GSList *l;
@@ -140,16 +139,20 @@ moo_edit_plugin_unregister (const char *id)
     for (l = edit_windows; l != NULL; l = l->next)
     {
         WindowInfo *window_info = l->data;
-        moo_edit_plugin_detach (window_info, plugin);
+        moo_plugin_detach (window_info, plugin);
     }
 
     plugin_deinit (plugin);
+
+    if (plugin->module)
+        g_module_close (plugin->module);
+
     plugin_free (plugin);
 }
 
 
 void
-_moo_edit_plugin_window_attach (MooEditWindow *window)
+_moo_plugin_window_attach (MooEditWindow *window)
 {
     GSList *l;
     WindowInfo *window_info;
@@ -162,13 +165,13 @@ _moo_edit_plugin_window_attach (MooEditWindow *window)
     for (l = registered_plugins; l != NULL; l = l->next)
     {
         Plugin *plugin = l->data;
-        moo_edit_plugin_attach (window_info, plugin);
+        moo_plugin_attach (window_info, plugin);
     }
 }
 
 
 void
-_moo_edit_plugin_window_detach (MooEditWindow *window)
+_moo_plugin_window_detach (MooEditWindow *window)
 {
     WindowInfo *window_info;
     GSList *plugins, *l;
@@ -183,8 +186,8 @@ _moo_edit_plugin_window_detach (MooEditWindow *window)
 
     for (l = plugins; l != NULL; l = l->next)
     {
-        PluginFullWindowData *window_data = l->data;
-        moo_edit_plugin_detach (window_info, window_data->plugin);
+        PluginWindowData *window_data = l->data;
+        moo_plugin_detach (window_info, window_data->plugin);
     }
 
     edit_windows = g_slist_remove (edit_windows, window_info);
@@ -194,38 +197,29 @@ _moo_edit_plugin_window_detach (MooEditWindow *window)
 }
 
 
-static PluginFullWindowData*
-plugin_full_window_data_new (WindowInfo         *window_info,
-                             Plugin             *plugin)
+static PluginWindowData*
+plugin_window_data_new (WindowInfo *window_info,
+                        Plugin     *plugin)
 {
-    PluginFullWindowData *full_window_data;
+    PluginWindowData *window_data;
 
     g_return_val_if_fail (window_info != NULL && plugin != NULL, NULL);
 
-    full_window_data = g_new0 (PluginFullWindowData, 1);
+    window_data = g_new0 (PluginWindowData, 1);
+    window_data->plugin = plugin;
 
-    full_window_data->plugin = plugin;
-    full_window_data->pane_widget = NULL;
-
-    full_window_data->window_data.window = window_info->window;
-    full_window_data->window_data.data = NULL;
-
-    return full_window_data;
+    return window_data;
 }
 
 
 static void
-plugin_full_window_data_free (PluginFullWindowData *full_window_data)
+plugin_window_data_free (PluginWindowData *window_data)
 {
-    if (full_window_data)
-    {
-        g_assert (full_window_data->pane_widget == NULL);
-        g_free (full_window_data);
-    }
+    g_free (window_data);
 }
 
 
-static PluginFullWindowData*
+static PluginWindowData*
 window_info_lookup_plugin (WindowInfo *window_info,
                            Plugin     *plugin)
 {
@@ -235,9 +229,9 @@ window_info_lookup_plugin (WindowInfo *window_info,
 
     for (l = window_info->plugins; l != NULL; l = l->next)
     {
-        PluginFullWindowData *full_window_data = l->data;
-        if (full_window_data->plugin == plugin)
-            return full_window_data;
+        PluginWindowData *window_data = l->data;
+        if (window_data->plugin == plugin)
+            return window_data;
     }
 
     return NULL;
@@ -245,12 +239,10 @@ window_info_lookup_plugin (WindowInfo *window_info,
 
 
 static void
-moo_edit_plugin_attach (WindowInfo         *window_info,
-                        Plugin             *plugin)
+moo_plugin_attach (WindowInfo   *window_info,
+                   Plugin       *plugin)
 {
-    PluginFullWindowData *full_window_data;
-    GtkWidget *widget = NULL;
-    MooPaneLabel *label = NULL;
+    PluginWindowData *window_data;
 
     g_return_if_fail (window_info != NULL);
     g_return_if_fail (plugin != NULL);
@@ -258,53 +250,56 @@ moo_edit_plugin_attach (WindowInfo         *window_info,
     if (!plugin_enabled (plugin))
         return;
 
-    full_window_data = plugin_full_window_data_new (window_info, plugin);
-    window_info->plugins = g_slist_append (window_info->plugins, full_window_data);
+    window_data = plugin_window_data_new (window_info, plugin);
+    window_info->plugins = g_slist_append (window_info->plugins, window_data);
 
     if (plugin->info.attach)
-        plugin->info.attach (&full_window_data->window_data, plugin->data, &plugin->info);
-
-    if (plugin->info.params->want_pane &&
-        plugin->info.pane_create (&full_window_data->window_data,
-                                  &label, &widget, plugin->data, &plugin->info))
-    {
-        if (moo_big_paned_insert_pane (window_info->window->paned, widget, label,
-                                       plugin->info.params->pane_position, -1) >= 0)
-            full_window_data->pane_widget = widget;
-
-        gtk_widget_unref (widget);
-        moo_pane_label_free (label);
-    }
+        plugin->info.attach (window_info->window, plugin->data, &plugin->info);
 }
 
 
 static void
-moo_edit_plugin_detach (WindowInfo         *window_info,
-                        Plugin             *plugin)
+moo_plugin_detach (WindowInfo *window_info,
+                   Plugin     *plugin)
 {
-    PluginFullWindowData *full_window_data;
+    PluginWindowData *window_data;
 
-    full_window_data = window_info_lookup_plugin (window_info, plugin);
+    window_data = window_info_lookup_plugin (window_info, plugin);
 
-    if (!full_window_data)
+    if (!window_data)
         return;
 
-    if (full_window_data->pane_widget)
-    {
-        if (plugin->info.pane_destroy)
-            plugin->info.pane_destroy (&full_window_data->window_data,
-                                        plugin->data, &plugin->info);
-        moo_big_paned_remove_pane (window_info->window->paned,
-                                   full_window_data->pane_widget);
-        full_window_data->pane_widget = NULL;
-    }
-
     if (plugin->info.detach)
-        plugin->info.detach (&full_window_data->window_data,
-                              plugin->data, &plugin->info);
+        plugin->info.detach (window_info->window, plugin->data, &plugin->info);
 
-    window_info->plugins = g_slist_remove (window_info->plugins, full_window_data);
-    plugin_full_window_data_free (full_window_data);
+    if (window_data->data && window_data->free_func)
+        window_data->free_func (window_data->data);
+
+    window_info->plugins = g_slist_remove (window_info->plugins, window_data);
+    plugin_window_data_free (window_data);
+}
+
+
+void
+moo_plugin_set_window_data (const char     *plugin_id,
+                            MooEditWindow  *window,
+                            gpointer        data,
+                            GDestroyNotify  free_func)
+{
+    PluginWindowData *window_data;
+    WindowInfo *window_info = window_info_lookup (window);
+    Plugin *plugin = plugin_lookup (plugin_id);
+
+    g_return_if_fail (window_info != NULL && plugin != NULL);
+
+    window_data = window_info_lookup_plugin (window_info, plugin);
+    g_return_if_fail (window_data != NULL);
+
+    if (window_data->data && window_data->free_func)
+        window_data->free_func (window_data->data);
+
+    window_data->data = data;
+    window_data->free_func = free_func;
 }
 
 
@@ -353,76 +348,77 @@ window_info_lookup (MooEditWindow *window)
 }
 
 
-static MooEditPluginParams*
-plugin_params_copy (MooEditPluginParams *params)
+static MooPluginParams*
+plugin_params_copy (MooPluginParams *params)
 {
-    MooEditPluginParams *copy;
+    MooPluginParams *copy;
 
     g_return_val_if_fail (params != NULL, NULL);
 
-    copy = g_new0 (MooEditPluginParams, 1);
+    copy = g_new0 (MooPluginParams, 1);
     copy->enabled = params->enabled;
-    copy->want_pane = params->want_pane;
-    copy->pane_position = params->pane_position;
 
     return copy;
 }
 
 
 static void
-plugin_params_free (MooEditPluginParams *params)
+plugin_params_free (MooPluginParams *params)
 {
-    if (params)
-        g_free (params);
+    g_free (params);
 }
 
 
-static MooEditPluginPrefsParams*
-plugin_prefs_params_copy (MooEditPluginPrefsParams *params)
+static MooPluginPrefsParams*
+plugin_prefs_params_copy (MooPluginPrefsParams *params)
 {
-    MooEditPluginPrefsParams *copy;
+    MooPluginPrefsParams *copy;
 
     g_return_val_if_fail (params != NULL, NULL);
 
-    copy = g_new0 (MooEditPluginPrefsParams, 1);
-    copy->prefs_page_create = params->prefs_page_create;
+    copy = g_new0 (MooPluginPrefsParams, 1);
 
     return copy;
 }
 
 
 static void
-plugin_prefs_params_free (MooEditPluginPrefsParams *params)
+plugin_prefs_params_free (MooPluginPrefsParams *params)
 {
-    if (params)
-        g_free (params);
+    g_free (params);
+}
+
+
+static void
+plugin_info_copy (MooPluginInfo *dest,
+                  MooPluginInfo *src)
+{
+    dest->id = g_strdup (src->id);
+    dest->name = g_strdup (src->name ? src->name : dest->id);
+    dest->description = g_strdup (src->description ? src->description : dest->name);
+    dest->author = g_strdup (src->author ? src->author : "<unknown person>");
+    dest->version = g_strdup (src->version ? src->version : "<unknown version>");
+
+    dest->init = src->init;
+    dest->deinit = src->deinit;
+    dest->attach = src->attach;
+    dest->detach = src->detach;
+
+    dest->params = plugin_params_copy (src->params);
+    dest->prefs_params = plugin_prefs_params_copy (src->prefs_params);
 }
 
 
 static Plugin*
-plugin_new (MooEditPluginInfo  *info,
-            gpointer            plugin_data)
+plugin_new (MooPluginInfo  *info,
+            gpointer        plugin_data)
 {
     Plugin *plugin = g_new0 (Plugin, 1);
 
     plugin->data = plugin_data;
     plugin->initialized = FALSE;
 
-    plugin->info.id = g_strdup (info->id);
-    plugin->info.name = g_strdup (info->name ? info->name : info->id);
-    plugin->info.description = g_strdup (info->description ? info->description : plugin->info.name);
-    plugin->info.author = g_strdup (info->author ? info->author : "<unknown person>");
-    plugin->info.version = g_strdup (info->version ? info->version : "<unknown version>");
-
-    plugin->info.init = info->init;
-    plugin->info.deinit = info->deinit;
-    plugin->info.attach = info->attach;
-    plugin->info.detach = info->detach;
-    plugin->info.pane_create = info->pane_create;
-    plugin->info.pane_destroy = info->pane_destroy;
-
-    plugin->info.params = plugin_params_copy (info->params);
-    plugin->info.prefs_params = plugin_prefs_params_copy (info->prefs_params);
+    plugin_info_copy (&plugin->info, info);
 
     return plugin;
 }
@@ -515,8 +511,8 @@ plugin_deinit (Plugin *plugin)
 }
 
 
-MooEditPluginInfo*
-moo_edit_plugin_lookup (const char *id)
+MooPluginInfo*
+moo_plugin_lookup (const char *id)
 {
     Plugin *plugin = plugin_lookup (id);
     return plugin ? &plugin->info : NULL;
@@ -524,7 +520,7 @@ moo_edit_plugin_lookup (const char *id)
 
 
 gpointer
-moo_edit_plugin_get_data (const char *id)
+moo_plugin_get_data (const char *id)
 {
     Plugin *plugin = plugin_lookup (id);
     return plugin ? plugin->data : NULL;
@@ -532,7 +528,7 @@ moo_edit_plugin_get_data (const char *id)
 
 
 GSList*
-moo_edit_list_plugins (void)
+moo_list_plugins (void)
 {
     GSList *list = NULL, *l;
 
@@ -546,23 +542,23 @@ moo_edit_list_plugins (void)
 }
 
 
-MooEditPluginWindowData*
-moo_edit_plugin_get_window_data (MooEditWindow      *window,
-                                 const char         *id)
+gpointer
+moo_plugin_get_window_data (const char     *plugin_id,
+                            MooEditWindow  *window)
 {
     WindowInfo *window_info;
     Plugin *plugin;
-    PluginFullWindowData *full_window_data;
+    PluginWindowData *window_data;
 
-    plugin = plugin_lookup (id);
+    plugin = plugin_lookup (plugin_id);
     window_info = window_info_lookup (window);
 
     if (!window_info || !plugin)
         return NULL;
 
-    full_window_data = window_info_lookup_plugin (window_info, plugin);
+    window_data = window_info_lookup_plugin (window_info, plugin);
 
-    return full_window_data ? &full_window_data->window_data : NULL;
+    return window_data ? window_data->data : NULL;
 }
 
 
@@ -576,14 +572,41 @@ make_prefs_key (Plugin             *plugin,
     g_return_val_if_fail (key != NULL, NULL);
 
     g_free (prefs_key);
-    prefs_key = g_strdup_printf (MOO_EDIT_PLUGIN_PREFS_ROOT "/%s/%s",
+    prefs_key = g_strdup_printf (MOO_PLUGIN_PREFS_ROOT "/%s/%s",
                                  plugin_id (plugin), key);
     return prefs_key;
 }
 
 
+static gboolean
+moo_plugin_read_module (GModule            *module,
+                        const char         *name)
+{
+    MooPluginModuleInitFunc init_func;
+    char *init_func_name;
+    gboolean result = FALSE;
+
+    g_return_val_if_fail (module != NULL, FALSE);
+    g_return_val_if_fail (name != NULL, FALSE);
+
+    init_func_name = g_strdup_printf ("%s_init", name);
+
+    if (!g_module_symbol (module, init_func_name, (gpointer*) &init_func))
+        goto out;
+
+    if (!init_func ())
+        goto out;
+
+    result = TRUE;
+
+out:
+    g_free (init_func_name);
+    return result;
+}
+
+
 void
-moo_edit_plugin_read_dir (const char *path)
+moo_plugin_read_dir (const char *path)
 {
     GDir *dir;
     const char *name;
@@ -611,7 +634,7 @@ moo_edit_plugin_read_dir (const char *path)
 
         if (module)
         {
-            if (!moo_edit_plugin_read_module (module, prefix))
+            if (!moo_plugin_read_module (module, prefix))
                 g_module_close (module);
         }
         else
@@ -624,57 +647,4 @@ moo_edit_plugin_read_dir (const char *path)
     }
 
     g_dir_close (dir);
-}
-
-
-gboolean
-moo_edit_plugin_read_module (GModule            *module,
-                             const char         *name)
-{
-    MooEditPluginModuleInitFunc init_func;
-    char *init_func_name;
-    gboolean result = FALSE;
-
-    g_return_val_if_fail (module != NULL, FALSE);
-    g_return_val_if_fail (name != NULL, FALSE);
-
-    init_func_name = g_strdup_printf ("%s_init", name);
-
-    if (!g_module_symbol (module, init_func_name, (gpointer*) &init_func))
-        goto out;
-
-    if (!init_func ())
-        goto out;
-
-    result = TRUE;
-
-out:
-    g_free (init_func_name);
-    return result;
-}
-
-
-void
-moo_edit_plugin_attach_prefs (MooPrefsDialog *dialog)
-{
-    GSList *l;
-
-    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-
-    for (l = registered_plugins; l != NULL; l = l->next)
-    {
-        Plugin *plugin = l->data;
-
-        if (plugin->initialized && plugin->info.prefs_params->prefs_page_create)
-        {
-            GtkWidget *page = plugin->info.prefs_params->prefs_page_create (&plugin->info, plugin->data);
-
-            if (page)
-            {
-                gtk_object_sink (GTK_OBJECT (g_object_ref (page)));
-                moo_prefs_dialog_append_page (dialog, page);
-                g_object_unref (page);
-            }
-        }
-    }
 }

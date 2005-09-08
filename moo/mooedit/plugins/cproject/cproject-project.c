@@ -456,6 +456,7 @@ project_free (Project *project)
         g_free (project->name);
         g_free (project->file);
         g_free (project->project_path);
+        g_free (project->project_dir);
         run_options_free (project->run_options);
         make_options_free (project->make_options);
 
@@ -484,6 +485,9 @@ project_check (Project *project)
         g_free (project->project_path);
         project->project_path = g_strdup (".");
     }
+
+    g_free (project->project_dir);
+    project->project_dir = g_path_get_dirname (project->file);
 
     if (!project->configurations)
     {
@@ -613,4 +617,50 @@ get_file_list (MooMarkupNode *parent)
     }
 
     return files;
+}
+
+
+void
+command_free (Command *command)
+{
+    if (command)
+    {
+        g_free (command->working_dir);
+        g_strfreev (command->argv);
+        g_strfreev (command->envp);
+        g_free (command);
+    }
+}
+
+
+Command*
+project_get_command (Project    *project,
+                     CommandType command_type)
+{
+    Command *command;
+
+    g_return_val_if_fail (project != NULL, NULL);
+
+    command = g_new0 (Command, 1);
+
+    switch (command_type)
+    {
+        case COMMAND_BUILD_PROJECT:
+            command->argv = g_new0 (char*, 2);
+            command->argv[0] = g_strdup ("make");
+
+            if (g_path_is_absolute (project->active->build_dir))
+                command->working_dir = g_strdup (project->active->build_dir);
+            else
+                command->working_dir = g_build_filename (project->project_dir,
+                                                         project->active->build_dir,
+                                                         NULL);
+            break;
+
+        default:
+            g_free (command);
+            g_return_val_if_reached (NULL);
+    }
+
+    return command;
 }

@@ -14,7 +14,8 @@
 #ifndef __C_PROJECT_H__
 #define __C_PROJECT_H__
 
-#include "mooedit/mooeditplugin.h"
+#include "mooedit/mooplugin.h"
+#include "mooedit/moopaneview.h"
 #include "cproject-project.h"
 
 G_BEGIN_DECLS
@@ -31,6 +32,17 @@ struct _CProjectPlugin
     MooEditWindow *window;
     GtkWidget *build_configuration_menu;
     MooRecentMgr *recent_mgr;
+    MooPaneView *output;
+
+    Command *running;
+    int command_stdout;
+    int command_stderr;
+    GPid command_pid;
+    guint command_watch;
+    guint command_out_watch;
+    guint command_err_watch;
+    GString *command_out_buf;
+    GString *command_err_buf;
 };
 
 struct _CProjectPluginWindowData
@@ -40,9 +52,9 @@ struct _CProjectPluginWindowData
 
 gboolean    cproject_plugin_init        (CProjectPlugin             *plugin);
 void        cproject_plugin_deinit      (CProjectPlugin             *plugin);
-void        cproject_plugin_attach      (MooEditPluginWindowData    *window_data,
+void        cproject_plugin_attach      (MooEditWindow              *window,
                                          CProjectPlugin             *plugin);
-void        cproject_plugin_detach      (MooEditPluginWindowData    *window_data,
+void        cproject_plugin_detach      (MooEditWindow              *window,
                                          CProjectPlugin             *plugin);
 
 void        cproject_load_prefs         (CProjectPlugin             *plugin);
@@ -58,6 +70,9 @@ void        cproject_project_options    (CProjectPlugin             *plugin);
 void        cproject_build_project      (CProjectPlugin             *plugin);
 void        cproject_compile_file       (CProjectPlugin             *plugin);
 void        cproject_execute            (CProjectPlugin             *plugin);
+
+void        cproject_run_command        (CProjectPlugin             *plugin,
+                                         Command                    *command);
 
 
 G_END_DECLS

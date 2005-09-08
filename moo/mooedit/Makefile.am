@@ -2,7 +2,7 @@
 #   mooedit/Makefile.am
 #
 
-DIST_SUBDIRS = glade xdgmime gtksourceview language-specs
+DIST_SUBDIRS = glade xdgmime gtksourceview language-specs plugins
 
 if MOO_USE_XDGMIME
     xdgmime = xdgmime
@@ -24,11 +24,12 @@ AM_CFLAGS =                             \
     -D__MOO__                           \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
 
-noinst_LTLIBRARIES   = libmooedit.la
+noinst_LTLIBRARIES = libmooedit.la
 
 libmooedit_la_LIBADD =                  \
     gtksourceview/libgtksourceview.la   \
     moofileview/libmoofileview.la       \
+    plugins/libplugins.la               \
     $(xdgmime_lib)
 
 libmooedit_la_SOURCES =     \
@@ -52,8 +53,6 @@ libmooedit_la_SOURCES =     \
     mooeditlangmgr.h        \
     mooeditor.c             \
     mooeditor.h             \
-    mooeditplugin.c         \
-    mooeditplugin.h         \
     mooeditprefs.c          \
     mooeditprefs.h          \
     mooeditprefs-glade.c    \
@@ -70,6 +69,8 @@ libmooedit_la_SOURCES =     \
     moopaned.h              \
     moopaneview.c           \
     moopaneview.h           \
+    mooplugin.c             \
+    mooplugin.h             \
     moorecentmgr.c          \
     moorecentmgr.h          \
     mootextiter.h

@@ -14,7 +14,6 @@
 #ifndef __C_PROJECT_PROJECT_H__
 #define __C_PROJECT_PROJECT_H__
 
-#include "mooedit/mooeditplugin.h"
 #include "mooutils/moomarkup.h"
 
 G_BEGIN_DECLS
@@ -25,6 +24,7 @@ typedef struct _Configuration Configuration;
 typedef struct _RunOptions RunOptions;
 typedef struct _MakeOptions MakeOptions;
 typedef struct _ConfigureOptions ConfigureOptions;
+typedef struct _Command Command;
 
 
 struct _Project
@@ -33,6 +33,7 @@ struct _Project
     char *file;
 
     char *project_path;
+    char *project_dir;
     RunOptions *run_options;
     MakeOptions *make_options;
 
@@ -64,6 +65,17 @@ struct _ConfigureOptions
 {
 };
 
+struct _Command
+{
+    char *working_dir;
+    char **argv;
+    char **envp;
+};
+
+typedef enum {
+    COMMAND_BUILD_PROJECT
+} CommandType;
+
 
 Project        *project_load                (const char *file);
 gboolean        project_save                (Project    *project);
@@ -74,6 +86,12 @@ void            project_set_file_list       (Project    *project,
                                              GSList     *files);
 Configuration  *project_get_configuration   (Project    *project,
                                              const char *name);
+
+/* must be freed */
+Command        *project_get_command         (Project    *project,
+                                             CommandType command_type);
+
+void            command_free                (Command    *command);
 
 
 G_END_DECLS

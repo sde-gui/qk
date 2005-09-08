@@ -11,10 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#line 15 "@srcdir@/medit.c.in"
 #include "mooui/moouiobject.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooeditplugin.h"
-#include "mooedit/moofileview/moofileview.h"
+#include "mooedit/mooplugin.h"
+#include "mooedit/plugins/mooeditplugins.h"
+#include "mooedit/moopaneview.h"
 #include "editor-ui.h"
 
 
@@ -31,16 +33,19 @@ int main (int argc, char **argv)
 
     gtk_init (&argc, &argv);
 
-    init_actions ();
-    ref_types ();
-
     rcfile = g_build_filename (g_get_home_dir (), ".meditrc", NULL);
     moo_prefs_load (rcfile);
 
+    init_actions ();
+    ref_types ();
+
     plugin_dir = g_build_filename (g_get_home_dir (), ".medit", "plugins", NULL);
-    moo_edit_plugin_read_dir ("@MOO_EDIT_PLUGINS_DIR@");
-    moo_edit_plugin_read_dir (plugin_dir);
+    moo_plugin_read_dir ("@MOO_PLUGINS_DIR@");
+    moo_plugin_read_dir (plugin_dir);
     g_free (plugin_dir);
+
+    moo_grep_init ();
+    moo_file_selector_init ();
 
     editor = moo_editor_new ();
     mgr = moo_editor_get_lang_mgr (editor);
@@ -70,25 +75,25 @@ int main (int argc, char **argv)
 }
 
 
-static void show_preferences (MooEditWindow *window)
-{
-    GtkWidget *dialog = moo_prefs_dialog_new ("Preferences");
-    moo_edit_plugin_attach_prefs (MOO_PREFS_DIALOG (dialog));
-    moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (window));
-}
-
-
-static void init_prefs_action (GObjectClass *klass)
-{
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Preferences",
-                                    "name", "Preferences",
-                                    "label", "Preferences",
-                                    "tooltip", "Preferences",
-                                    "icon-stock-id", GTK_STOCK_PREFERENCES,
-                                    "closure::callback", show_preferences,
-                                    NULL);
-}
+// static void show_preferences (MooEditWindow *window)
+// {
+//     GtkWidget *dialog = moo_prefs_dialog_new ("Preferences");
+//     moo_edit_plugin_attach_prefs (MOO_PREFS_DIALOG (dialog));
+//     moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (window));
+// }
+//
+//
+// static void init_prefs_action (GObjectClass *klass)
+// {
+//     moo_ui_object_class_new_action (klass,
+//                                     "id", "Preferences",
+//                                     "name", "Preferences",
+//                                     "label", "Preferences",
+//                                     "tooltip", "Preferences",
+//                                     "icon-stock-id", GTK_STOCK_PREFERENCES,
+//                                     "closure::callback", show_preferences,
+//                                     NULL);
+// }
 
 
 static void init_actions (void)
@@ -117,7 +122,11 @@ static void init_actions (void)
                                     "id", "Quit",
                                     "dead", TRUE,
                                     NULL);
-    init_prefs_action (klass);
+    moo_ui_object_class_new_action (klass,
+                                    "id", "Preferences",
+                                    "dead", TRUE,
+                                    NULL);
+//     init_prefs_action (klass);
 
     g_type_class_unref (klass);
 }
@@ -125,6 +134,6 @@ static void init_actions (void)
 
 static void ref_types (void)
 {
-    volatile GType type;
-    type = MOO_TYPE_FILE_VIEW;
+    volatile gpointer p = moo_pane_view_new;
+    g_return_if_fail (p != NULL);
 }

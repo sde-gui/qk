@@ -17,9 +17,10 @@
 #include "mooui/moouiobject.h"
 #include "mooui/moomenuaction.h"
 #include <string.h>
+#include <sys/wait.h>
 
 
-#define CPROJECT_PREFS_ROOT MOO_EDIT_PLUGIN_PREFS_ROOT "/" CPROJECT_PLUGIN_ID
+#define CPROJECT_PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" CPROJECT_PLUGIN_ID
 
 #define LAST_PROJECT_PREFS      CPROJECT_PREFS_ROOT "/last-project"
 #define LOAD_LAST_PROJECT_PREFS CPROJECT_PREFS_ROOT "/load-last-project"
@@ -37,7 +38,7 @@ static void     unblock_window_signals      (CProjectPlugin *plugin);
 static void
 new_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_new_project (plugin);
 }
@@ -46,7 +47,7 @@ new_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 open_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_open_project (plugin, NULL);
 }
@@ -55,7 +56,7 @@ open_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 close_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_close_project (plugin);
 }
@@ -64,7 +65,7 @@ close_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 project_options_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_project_options (plugin);
 }
@@ -73,7 +74,7 @@ project_options_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 build_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_build_project (plugin);
 }
@@ -82,7 +83,7 @@ build_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 compile_file_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_compile_file (plugin);
 }
@@ -91,7 +92,7 @@ compile_file_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 execute_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_execute (plugin);
 }
@@ -105,7 +106,7 @@ create_build_configuration_menu (MooEditWindow  *window,
     CProjectPlugin *plugin;
     GtkWidget *item;
 
-    plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
@@ -141,7 +142,7 @@ create_recent_menu (MooEditWindow  *window,
     CProjectPlugin *plugin;
     GtkMenuItem *item;
 
-    plugin = moo_edit_plugin_get_data (CPROJECT_PLUGIN_ID);
+    plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
@@ -253,13 +254,15 @@ cproject_plugin_deinit (G_GNUC_UNUSED CProjectPlugin *plugin)
 
 
 void
-cproject_plugin_attach (MooEditPluginWindowData *window_data,
-                        CProjectPlugin          *plugin)
+cproject_plugin_attach (MooEditWindow              *window,
+                        CProjectPlugin             *plugin)
 {
+    MooPaneLabel *label;
+    GtkWidget *widget, *swin;
+
     g_return_if_fail (plugin->window == NULL);
 
-    window_data->data = g_new0 (CProjectPluginWindowData, 1);
-    plugin->window = window_data->window;
+    plugin->window = window;
 
     cproject_load_prefs (plugin);
     cproject_update_project_ui (plugin);
@@ -270,14 +273,33 @@ cproject_plugin_attach (MooEditPluginWindowData *window_data,
                               G_CALLBACK (cproject_update_filelist), plugin);
     g_signal_connect_swapped (plugin->window, "close",
                               G_CALLBACK (window_close), plugin);
+
+
+    swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
+                                         GTK_SHADOW_ETCHED_IN);
+
+    widget = moo_pane_view_new ();
+    gtk_container_add (GTK_CONTAINER (swin), widget);
+    gtk_widget_show_all (swin);
+
+    label = moo_pane_label_new (GTK_STOCK_EXECUTE, NULL, NULL, "Build");
+
+    moo_edit_window_add_pane (window, CPROJECT_PLUGIN_ID,
+                              swin, label, MOO_PANE_POS_BOTTOM);
+
+    plugin->output = MOO_PANE_VIEW (widget);
 }
 
 
 void
-cproject_plugin_detach (MooEditPluginWindowData *window_data,
-                        CProjectPlugin          *plugin)
+cproject_plugin_detach (MooEditWindow              *window,
+                        CProjectPlugin             *plugin)
 {
-    g_free (window_data->data);
+    g_return_if_fail (plugin->window == window);
 
     g_signal_handlers_disconnect_by_func (plugin->window,
                                           (gpointer) new_doc,
@@ -287,6 +309,7 @@ cproject_plugin_detach (MooEditPluginWindowData *window_data,
                                           plugin);
 
     plugin->window = NULL;
+    plugin->output = NULL;
 }
 
 
@@ -394,13 +417,6 @@ cproject_open_project (CProjectPlugin *plugin,
 
 void
 cproject_project_options (CProjectPlugin *plugin)
-{
-    g_return_if_fail (plugin->project != NULL);
-}
-
-
-void
-cproject_build_project (CProjectPlugin *plugin)
 {
     g_return_if_fail (plugin->project != NULL);
 }
@@ -518,7 +534,8 @@ cproject_update_filelist (CProjectPlugin *plugin)
 }
 
 
-static void block_window_signals        (CProjectPlugin *plugin)
+static void
+block_window_signals (CProjectPlugin *plugin)
 {
     g_signal_handlers_block_by_func (plugin->window,
                                      (gpointer) new_doc,
@@ -529,7 +546,8 @@ static void block_window_signals        (CProjectPlugin *plugin)
 }
 
 
-static void unblock_window_signals      (CProjectPlugin *plugin)
+static void
+unblock_window_signals (CProjectPlugin *plugin)
 {
     g_signal_handlers_unblock_by_func (plugin->window,
                                        (gpointer) new_doc,
@@ -540,10 +558,178 @@ static void unblock_window_signals      (CProjectPlugin *plugin)
 }
 
 
-static gboolean window_close                (CProjectPlugin *plugin)
+static gboolean
+window_close (CProjectPlugin *plugin)
 {
     if (!plugin->project)
         return FALSE;
     else
         return !cproject_close_project (plugin);
+}
+
+
+static void
+command_exit (GPid            pid,
+              gint            status,
+              CProjectPlugin *plugin)
+{
+    g_return_if_fail (pid == plugin->command_pid);
+
+    if (plugin->command_out_watch)
+        g_source_remove (plugin->command_out_watch);
+    if (plugin->command_err_watch)
+        g_source_remove (plugin->command_err_watch);
+
+    command_free (plugin->running);
+    plugin->running = NULL;
+
+    g_spawn_close_pid (pid);
+
+    g_return_if_fail (WIFEXITED (status));
+
+    if (!WEXITSTATUS (status))
+    {
+        moo_pane_view_write_raw (plugin->output, "*** Success ***", -1);
+    }
+    else
+    {
+        char *msg = g_strdup_printf ("Command failed with status %d",
+                                     WEXITSTATUS (status));
+        moo_pane_view_write_raw (plugin->output, msg, -1);
+        g_free (msg);
+    }
+}
+
+
+static gboolean
+command_out_or_err (GIOChannel     *channel,
+                    GIOCondition    condition,
+                    gboolean        stdout,
+                    CProjectPlugin *plugin)
+{
+    char *line = NULL;
+    gsize length;
+    GError *error = NULL;
+
+    if (condition & (G_IO_ERR | G_IO_HUP))
+        goto end;
+
+    g_io_channel_read_line (channel, &line, &length,
+                            NULL, &error);
+
+    if (error)
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        goto end;
+    }
+
+    if (line)
+    {
+        moo_pane_view_write_raw (plugin->output, line, length);
+        g_free (line);
+    }
+
+    return TRUE;
+
+end:
+    if (stdout)
+        plugin->command_out_watch = 0;
+    else
+        plugin->command_err_watch = 0;
+    return FALSE;
+}
+
+static gboolean
+command_out (GIOChannel     *channel,
+             GIOCondition    condition,
+             CProjectPlugin *plugin)
+{
+    return command_out_or_err (channel, condition, TRUE, plugin);
+}
+
+
+static gboolean
+command_err (GIOChannel     *channel,
+             GIOCondition    condition,
+             CProjectPlugin *plugin)
+{
+    return command_out_or_err (channel, condition, FALSE, plugin);
+}
+
+
+void
+cproject_run_command (CProjectPlugin *plugin,
+                      Command        *command)
+{
+    GError *error = NULL;
+    GIOChannel *command_out_chan, *command_err_chan;
+
+    g_return_if_fail (plugin->output != NULL);
+    g_return_if_fail (command != NULL);
+
+    if (plugin->running)
+        return;
+
+    g_spawn_async_with_pipes (command->working_dir,
+                              command->argv, command->envp,
+                              G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                              NULL, NULL,
+                              &plugin->command_pid,
+                              NULL,
+                              &plugin->command_stdout,
+                              &plugin->command_stderr,
+                              &error);
+
+    if (error)
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        command_free (command);
+        return;
+    }
+
+    plugin->running = command;
+
+    plugin->command_watch =
+            g_child_watch_add (plugin->command_pid,
+                               (GChildWatchFunc) command_exit,
+                               plugin);
+
+    command_out_chan = g_io_channel_unix_new (plugin->command_stdout);
+    g_io_channel_set_encoding (command_out_chan, NULL, NULL);
+    g_io_channel_set_buffered (command_out_chan, TRUE);
+    g_io_channel_set_flags (command_out_chan, G_IO_FLAG_NONBLOCK, NULL);
+    plugin->command_out_watch =
+            g_io_add_watch_full (command_out_chan,
+                                 G_PRIORITY_DEFAULT_IDLE,
+                                 G_IO_IN | G_IO_PRI,
+                                 (GIOFunc) command_out, plugin, NULL);
+    g_io_channel_unref (command_out_chan);
+
+    command_err_chan = g_io_channel_unix_new (plugin->command_stderr);
+    g_io_channel_set_encoding (command_err_chan, NULL, NULL);
+    g_io_channel_set_buffered (command_err_chan, TRUE);
+    g_io_channel_set_flags (command_err_chan, G_IO_FLAG_NONBLOCK, NULL);
+    plugin->command_err_watch =
+            g_io_add_watch_full (command_err_chan,
+                                 G_PRIORITY_DEFAULT_IDLE,
+                                 G_IO_IN | G_IO_PRI,
+                                 (GIOFunc) command_err, plugin, NULL);
+    g_io_channel_unref (command_err_chan);
+}
+
+
+void
+cproject_build_project (CProjectPlugin *plugin)
+{
+    Command *command;
+
+    g_return_if_fail (plugin->project != NULL);
+
+    command = project_get_command (plugin->project,
+                                   COMMAND_BUILD_PROJECT);
+    g_return_if_fail (command != NULL);
+
+    cproject_run_command (plugin, command);
 }

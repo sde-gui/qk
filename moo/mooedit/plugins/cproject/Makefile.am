@@ -15,7 +15,7 @@ AM_CFLAGS =                             \
     -D__MOO__                           \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
 
-pluginsdir = ${MOO_EDIT_PLUGINS_DIR}
+pluginsdir = ${MOO_PLUGINS_DIR}
 plugins_LTLIBRARIES = cproject.la
 
 cproject_la_SOURCES =   \

@@ -13,7 +13,6 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit-private.h"
-#include "mooedit/mooeditplugin.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/moobigpaned.h"
 #include "mooedit/moonotebook.h"
@@ -37,7 +36,7 @@ struct _MooEditWindowPrivate {
     MooNotebook *notebook;
     char *prefix;
     gboolean use_fullname;
-
+    GHashTable *panes;
     GtkWidget *languages_menu_item;
     GHashTable *lang_menu_items;
     GtkWidget *none_lang_item;
@@ -435,6 +434,8 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
     window->priv->lang_menu_items =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
+    window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
     g_object_set (G_OBJECT (window),
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
@@ -454,6 +455,7 @@ static void moo_edit_window_finalize       (GObject      *object)
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     /* XXX */
     g_hash_table_destroy (window->priv->lang_menu_items);
+       g_hash_table_destroy (window->priv->panes);
     g_free (window->priv->prefix);
     g_free (window->priv);
     G_OBJECT_CLASS (moo_edit_window_parent_class)->finalize (object);
@@ -567,6 +569,8 @@ GObject        *moo_edit_window_constructor (GType                  type,
     setup_notebook (window);
 
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
+
+    edit_changed (window, NULL);
 
     return object;
 }
@@ -1259,6 +1263,76 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
     }
 
     return FALSE;
+}
+
+
+/****************************************************************************/
+/* Panes
+ */
+
+gboolean
+moo_edit_window_add_pane (MooEditWindow  *window,
+                          const char     *user_id,
+                          GtkWidget      *widget,
+                          MooPaneLabel   *label,
+                          MooPanePosition position)
+{
+    gboolean result;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (user_id != NULL, FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+    g_return_val_if_fail (label != NULL, FALSE);
+
+    g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, FALSE);
+
+    gtk_object_sink (GTK_OBJECT (g_object_ref (widget)));
+
+    result = moo_big_paned_insert_pane (window->paned, widget, label,
+                                        position, -1);
+    result = (result < 0 ? FALSE : TRUE);
+
+    if (result)
+        g_hash_table_insert (window->priv->panes,
+                             g_strdup (user_id), widget);
+
+    g_object_unref (widget);
+    moo_pane_label_free (label);
+
+    return result;
+}
+
+
+gboolean
+moo_edit_window_remove_pane (MooEditWindow  *window,
+                             const char     *user_id)
+{
+    GtkWidget *widget;
+    gboolean result;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (user_id != NULL, FALSE);
+
+    widget = g_hash_table_lookup (window->priv->panes, user_id);
+
+    if (!widget)
+        return FALSE;
+
+    g_hash_table_remove (window->priv->panes, user_id);
+
+    result = moo_big_paned_remove_pane (window->paned, widget);
+    g_return_val_if_fail (result, FALSE);
+    return TRUE;
+}
+
+
+GtkWidget*
+moo_edit_window_get_pane (MooEditWindow  *window,
+                          const char     *user_id)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (user_id != NULL, NULL);
+    return g_hash_table_lookup (window->priv->panes, user_id);
 }
 
 

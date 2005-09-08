@@ -15,7 +15,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
-#include "mooedit/mooeditplugin.h"
+#include "mooedit/mooplugin.h"
 #include "mooui/moouiobject.h"
 #include "mooui/moomenuaction.h"
 #include "mooutils/moocompat.h"
@@ -575,7 +575,7 @@ static MooEditWindow *create_window         (MooEditor      *editor)
     MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
                                           "editor", editor, NULL);
     window_list_add (editor, window);
-    _moo_edit_plugin_window_attach (window);
+    _moo_plugin_window_attach (window);
     gtk_widget_show (GTK_WIDGET (window));
     return window;
 }
@@ -883,7 +883,7 @@ static void          do_close_window        (MooEditor      *editor,
 
     window_list_delete (editor, info);
 
-    _moo_edit_plugin_window_detach (window);
+    _moo_plugin_window_detach (window);
     gtk_widget_destroy (GTK_WIDGET (window));
 
     if (!editor->priv->windows)

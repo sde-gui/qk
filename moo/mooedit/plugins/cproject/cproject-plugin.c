@@ -26,32 +26,28 @@ gboolean    cproject_init           (void);
 G_MODULE_EXPORT gboolean
 cproject_init (void)
 {
-    MooEditPluginParams params = {
-        TRUE, FALSE, 0
+    MooPluginParams params = {
+        TRUE
     };
 
-    MooEditPluginPrefsParams prefs_params = {
-        NULL /* (MooEditPluginPrefsPageCreateFunc) */
-    };
+    MooPluginPrefsParams prefs_params;
 
-    MooEditPluginInfo info = {
-        MOO_EDIT_PLUGIN_CURRENT_VERSION,
+    MooPluginInfo info = {
+        MOO_PLUGIN_CURRENT_VERSION,
         CPROJECT_PLUGIN_ID,
         "CProject",
         "CProject",
         "Yevgen Muntyan <muntyan@tamu.edu>",
         MOO_VERSION,
-        (MooEditPluginInitFunc) cproject_plugin_init,
-        (MooEditPluginDeinitFunc) cproject_plugin_deinit,
-        (MooEditPluginWindowAttachFunc) cproject_plugin_attach,
-        (MooEditPluginWindowDetachFunc) cproject_plugin_detach,
-        NULL, /* MooEditPluginPaneCreateFunc */
-        NULL, /* MooEditPluginPaneDestroyFunc */
+        (MooPluginInitFunc) cproject_plugin_init,
+        (MooPluginDeinitFunc) cproject_plugin_deinit,
+        (MooPluginWindowAttachFunc) cproject_plugin_attach,
+        (MooPluginWindowDetachFunc) cproject_plugin_detach,
         &params,
         &prefs_params
     };
 
     static CProjectPlugin plugin;
 
-    return moo_edit_plugin_register (&info, &plugin);
+    return moo_plugin_register (&info, &plugin);
 }

@@ -20,11 +20,15 @@ if MINGW_BUILD
 mingw_flags = -no-undefined
 endif MINGW_BUILD
 
-pluginsdir = ${MOO_EDIT_PLUGINS_DIR}
-plugins_LTLIBRARIES = dummy.la fileselector.la
+pluginsdir = ${MOO_PLUGINS_DIR}
+plugins_LTLIBRARIES = dummy.la
 
 dummy_la_SOURCES = dummy.c
 dummy_la_LDFLAGS = -module -avoid-version -export-symbols-regex dummy_init $(mingw_flags)
 
-fileselector_la_SOURCES = fileselector.c
-fileselector_la_LDFLAGS = -module -avoid-version -export-symbols-regex fileselector_init $(mingw_flags)
+noinst_LTLIBRARIES = libplugins.la
+
+libplugins_la_SOURCES = \
+    mooeditplugins.h    \
+    fileselector.c      \
+    moogrep.c

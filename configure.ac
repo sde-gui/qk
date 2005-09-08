@@ -376,9 +376,9 @@ AC_SUBST(NO_PREFIX_MOO_LIB_DIR)
 MOO_LIB_DIR="${mooprefix}/${moolibdir}"
 AC_SUBST(MOO_LIB_DIR)
 AC_DEFINE_UNQUOTED(MOO_LIB_DIR, "${mooprefix}/${moolibdir}", [plugins and stuff go to MOO_LIB_DIR])
-MOO_EDIT_PLUGINS_DIR="${mooprefix}/${moolibdir}/plugins"
-AC_SUBST(MOO_EDIT_PLUGINS_DIR)
-AC_DEFINE_UNQUOTED(MOO_EDIT_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugins dir])
+MOO_PLUGINS_DIR="${mooprefix}/${moolibdir}/plugins"
+AC_SUBST(MOO_PLUGINS_DIR)
+AC_DEFINE_UNQUOTED(MOO_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugins dir])
 
 
 ################################################################################
