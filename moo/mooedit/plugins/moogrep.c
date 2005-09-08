@@ -19,6 +19,7 @@
 #endif
 
 #include "mooedit/mooplugin.h"
+#include "mooedit/plugins/moogrep-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/moofileview/moofileentry.h"
 #include "mooedit/moopaneview.h"
@@ -29,10 +30,6 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <signal.h>
-
-#ifndef MOO_GREP_GLADE_FILE
-#define MOO_GREP_GLADE_FILE "moogrep.glade"
-#endif
 
 #define GREP_PLUGIN_ID "grep"
 
@@ -256,8 +253,9 @@ create_dialog (MooEditWindow  *window,
 {
     GtkWidget *dir_entry, *pattern_entry;
 
-    stuff->xml = glade_xml_new (MOO_GREP_GLADE_FILE, NULL, NULL);
-
+    stuff->xml = glade_xml_new_from_buffer (MOO_GREP_GLADE_XML,
+                                            strlen (MOO_GREP_GLADE_XML),
+                                            NULL, NULL);
     g_return_if_fail (stuff->xml != NULL);
 
     stuff->dialog = glade_xml_get_widget (stuff->xml, "dialog");

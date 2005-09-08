@@ -4,8 +4,6 @@
 
 SUBDIRS = cproject
 
-real_src_dir = `cd $(srcdir) && pwd`
-
 DEFAULT_INCLUDES =
 AM_CFLAGS =                             \
     -DXDG_PREFIX=_moo_edit_xdg          \
@@ -17,7 +15,6 @@ AM_CFLAGS =                             \
     $(GLADE_CFLAGS)                     \
     -DG_LOG_DOMAIN=\"Moo\"              \
     -D__MOO__                           \
-    -DMOO_GREP_GLADE_FILE=\"$(real_src_dir)/moogrep.glade\" \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
 
 if MINGW_BUILD
@@ -35,4 +32,12 @@ noinst_LTLIBRARIES = libplugins.la
 libplugins_la_SOURCES = \
     mooeditplugins.h    \
     fileselector.c      \
-    moogrep.c
+    moogrep.c           \
+    moogrep-glade.h
+
+BUILT_SOURCES = moogrep-glade.h
+EXTRA_DIST = moogrep.glade
+
+moogrep-glade.h: moogrep.glade
+	sh $(srcdir)/../../mooutils/xml2h.sh MOO_GREP_GLADE_XML $(srcdir)/moogrep.glade > \
+	   moogrep-glade.h

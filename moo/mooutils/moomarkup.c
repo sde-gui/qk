@@ -119,8 +119,6 @@ moo_markup_parse_memory (const char     *buffer,
                          int             size,
                          GError        **error)
 {
-    GError *err = NULL;
-
     GMarkupParser parser = {(markup_start_element_func)start_element,
                             (markup_end_element_func)end_element,
                             (markup_text_func)text,
@@ -138,14 +136,9 @@ moo_markup_parse_memory (const char     *buffer,
     state.current = MOO_MARKUP_NODE (doc);
     context = g_markup_parse_context_new (&parser, (GMarkupParseFlags)0, &state, NULL);
 
-    if (!g_markup_parse_context_parse (context, buffer, size, &err) ||
-        !g_markup_parse_context_end_parse (context, &err))
+    if (!g_markup_parse_context_parse (context, buffer, size, error) ||
+         !g_markup_parse_context_end_parse (context, error))
     {
-        if (err)
-        {
-            if (error) *error = err;
-            else g_error_free (err);
-        }
         g_markup_parse_context_free (context);
         moo_markup_doc_unref (doc);
         return NULL;
