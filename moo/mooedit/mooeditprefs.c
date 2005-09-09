@@ -1,5 +1,4 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -146,7 +145,7 @@ void        _moo_edit_apply_settings            (MooEdit    *edit)
     gtk_source_view_set_show_line_numbers (view, get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS));
     gtk_source_view_set_show_margin (view, get_bool (MOO_EDIT_PREFS_SHOW_MARGIN));
     gtk_source_view_set_margin (view, get_int (MOO_EDIT_PREFS_MARGIN));
-    moo_text_buffer_set_check_brackets (MOO_TEXT_BUFFER (buffer), 
+    moo_text_buffer_set_check_brackets (MOO_TEXT_BUFFER (buffer),
                                         get_bool (MOO_EDIT_PREFS_CHECK_BRACKETS));
     set_matching_bracket_styles (edit);
     set_highlight_current_line (edit);
@@ -228,21 +227,21 @@ static void set_matching_bracket_styles (MooEdit *edit)
     style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_UNDERLINE);
     style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH);
     color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BACKGROUND);
-    
-    if (color) 
+
+    if (color)
     {
         style.background = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
     }
-    
+
     color = get_color (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_FOREGROUND);
-    
+
     if (color)
     {
         style.foreground = *color;
         style.mask |= GTK_SOURCE_TAG_STYLE_USE_FOREGROUND;
     }
-    
+
     moo_text_buffer_set_bracket_match_style (MOO_TEXT_BUFFER (buffer), &style);
 
 //     style.mask = 0;
@@ -251,21 +250,21 @@ static void set_matching_bracket_styles (MooEdit *edit)
 //     style.underline = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_UNDERLINE);
 //     style.strikethrough = get_bool (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH);
 //     color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BACKGROUND);
-//     
-//     if (color) 
+//
+//     if (color)
 //     {
 //         style.background = *color;
 //         style.mask |= GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
 //     }
-//     
+//
 //     color = get_color (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_FOREGROUND);
-//     
-//     if (color) 
+//
+//     if (color)
 //     {
 //         style.foreground = *color;
 //         style.mask |= GTK_SOURCE_TAG_STYLE_USE_FOREGROUND;
 //     }
-//     
+//
 //     moo_text_buffer_set_bracket_match_style (MOO_TEXT_BUFFER (buffer), &style);
 }
 
@@ -275,7 +274,7 @@ static void set_font (MooEdit *edit)
     if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit), NULL);
     else
-        moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit), 
+        moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
                                             get_string (MOO_EDIT_PREFS_FONT));
 }
 

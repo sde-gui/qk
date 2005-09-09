@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooeditdialogs.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -572,7 +572,7 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 GtkWidget *_moo_edit_create_prompt_on_replace_dialog (void); /* in mooeditfind-glade.c */
 
 
-void             
+void
 moo_text_nothing_found_dialog (MooTextView    *view,
                                const char     *text,
                                gboolean        regex)
@@ -603,7 +603,7 @@ moo_text_nothing_found_dialog (MooTextView    *view,
 }
 
 
-gboolean         
+gboolean
 moo_text_search_from_beginning_dialog (MooTextView    *view,
                                        gboolean        backwards)
 {
@@ -644,7 +644,7 @@ moo_text_search_from_beginning_dialog (MooTextView    *view,
 }
 
 
-void             
+void
 moo_text_regex_error_dialog (MooTextView *view,
                              GError      *err)
 {
@@ -683,7 +683,7 @@ moo_text_regex_error_dialog (MooTextView *view,
 }
 
 
-void             
+void
 moo_text_replaced_n_dialog (MooTextView *view,
                             guint        n)
 {

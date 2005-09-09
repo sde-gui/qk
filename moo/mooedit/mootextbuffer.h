@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *
  *   mootextbuffer.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -42,7 +43,7 @@ struct _MooTextBuffer
 struct _MooTextBufferClass
 {
     GtkSourceBufferClass parent_class;
-    
+
     void (*cursor_moved) (MooTextBuffer      *buffer,
                           const GtkTextIter  *iter);
 };
@@ -55,13 +56,13 @@ MooTextBuffer  *moo_text_buffer_new             (void);
 void            moo_text_buffer_set_lang        (MooTextBuffer  *buffer,
                                                  MooEditLang    *lang);
 
-void            moo_text_buffer_set_bracket_match_style 
+void            moo_text_buffer_set_bracket_match_style
                                                 (MooTextBuffer  *buffer,
                                                  const GtkSourceTagStyle *style);
-void            moo_text_buffer_set_brackets    (MooTextBuffer  *buffer, 
+void            moo_text_buffer_set_brackets    (MooTextBuffer  *buffer,
                                                  const char     *brackets);
 void            moo_text_buffer_set_check_brackets
-                                                (MooTextBuffer  *buffer, 
+                                                (MooTextBuffer  *buffer,
                                                  gboolean        check);
 
 gboolean        moo_text_buffer_has_text        (MooTextBuffer  *buffer);
@@ -70,4 +71,3 @@ gboolean        moo_text_buffer_has_selection   (MooTextBuffer  *buffer);
 G_END_DECLS
 
 #endif /* __MOO_TEXT_BUFFER_H__ */
-/* kate: space-indent on; indent-width 4; replace-tabs on; */

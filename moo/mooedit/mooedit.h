@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *
  *   mooedit.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -126,4 +127,3 @@ void             moo_edit_set_lang              (MooEdit        *edit,
 G_END_DECLS
 
 #endif /* __MOO_EDIT_H__ */
-/* kate: space-indent on; indent-width 4; replace-tabs on; */

@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooedit.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -71,7 +71,7 @@ enum {
 G_DEFINE_TYPE (MooEdit, moo_edit, MOO_TYPE_TEXT_VIEW)
 
 
-static void 
+static void
 moo_edit_class_init (MooEditClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -126,7 +126,7 @@ moo_edit_class_init (MooEditClass *klass)
 }
 
 
-static void 
+static void
 moo_edit_init (MooEdit *edit)
 {
     edit->priv = _moo_edit_private_new ();
@@ -169,7 +169,7 @@ moo_edit_constructor (GType                  type,
 }
 
 
-static void 
+static void
 moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
@@ -204,7 +204,7 @@ _moo_edit_new (MooEditor  *editor)
 }
 
 
-static void 
+static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
 {
@@ -212,7 +212,7 @@ modified_changed_cb (GtkTextBuffer      *buffer,
 }
 
 
-void        
+void
 moo_edit_set_modified (MooEdit            *edit,
                        gboolean            modified)
 {
@@ -244,7 +244,7 @@ moo_edit_set_modified (MooEdit            *edit,
 }
 
 
-void        
+void
 moo_edit_set_clean (MooEdit            *edit,
                     gboolean            clean)
 {
@@ -257,7 +257,7 @@ moo_edit_set_clean (MooEdit            *edit,
 }
 
 
-void        
+void
 moo_edit_status_changed (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
@@ -312,7 +312,7 @@ moo_edit_file_info_copy (const MooEditFileInfo  *info)
     return copy;
 }
 
-void        
+void
 moo_edit_file_info_free (MooEditFileInfo    *info)
 {
     if (info)
@@ -324,7 +324,7 @@ moo_edit_file_info_free (MooEditFileInfo    *info)
 }
 
 
-void        
+void
 moo_edit_set_lang (MooEdit            *edit,
                    MooEditLang        *lang)
 {
@@ -351,7 +351,7 @@ moo_edit_set_lang (MooEdit            *edit,
 }
 
 
-void        
+void
 moo_edit_set_highlight (MooEdit            *edit,
                         gboolean            highlight)
 {
@@ -361,7 +361,7 @@ moo_edit_set_highlight (MooEdit            *edit,
 }
 
 
-gboolean    
+gboolean
 moo_edit_get_readonly (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
@@ -369,7 +369,7 @@ moo_edit_get_readonly (MooEdit *edit)
 }
 
 
-void        
+void
 moo_edit_set_readonly (MooEdit            *edit,
                        gboolean            readonly)
 {
@@ -380,7 +380,7 @@ moo_edit_set_readonly (MooEdit            *edit,
 }
 
 
-gboolean    
+gboolean
 moo_edit_is_empty (MooEdit *edit)
 {
     GtkTextIter start, end;
@@ -396,7 +396,7 @@ moo_edit_is_empty (MooEdit *edit)
 }
 
 
-MooEditStatus 
+MooEditStatus
 moo_edit_get_status (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), 0);
@@ -416,7 +416,7 @@ _moo_edit_get_lang_mgr (MooEdit *edit)
 }
 
 
-static void     
+static void
 moo_edit_set_property (GObject        *object,
                        guint           prop_id,
                        const GValue   *value,
@@ -437,7 +437,7 @@ moo_edit_set_property (GObject        *object,
 }
 
 
-static void     
+static void
 moo_edit_get_property (GObject        *object,
                        guint           prop_id,
                        GValue         *value,
@@ -466,7 +466,7 @@ moo_edit_get_lang (MooEdit *edit)
 }
 
 
-GType       
+GType
 moo_edit_doc_status_get_type (void)
 {
     static GType type = 0;
@@ -488,7 +488,7 @@ moo_edit_doc_status_get_type (void)
 }
 
 
-GType       
+GType
 moo_edit_on_external_changes_get_type (void)
 {
     static GType type = 0;
@@ -509,7 +509,7 @@ moo_edit_on_external_changes_get_type (void)
 }
 
 
-GType       
+GType
 moo_edit_file_info_get_type (void)
 {
     static GType type = 0;
@@ -649,7 +649,7 @@ out:
 }
 
 
-void        
+void
 _moo_edit_choose_indenter (MooEdit *edit)
 {
     MooIndenter *indenter;

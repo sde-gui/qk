@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ *
  *   mooedit.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -121,16 +122,15 @@ void         moo_text_view_move_cursor              (MooTextView    *view,
                                                      int             character,
                                                      gboolean        in_idle);
 
-void         moo_text_view_set_highlight_current_line 
+void         moo_text_view_set_highlight_current_line
                                                     (MooTextView    *view,
                                                      gboolean        highlight);
 void         moo_text_view_set_current_line_color   (MooTextView    *view,
                                                      const GdkColor *color);
-void         moo_text_view_set_show_tabs            (MooTextView    *view, 
+void         moo_text_view_set_show_tabs            (MooTextView    *view,
                                                      gboolean        show);
 
 
 G_END_DECLS
 
 #endif /* __MOO_TEXT_VIEW_H__ */
-/* kate: space-indent on; indent-width 4; replace-tabs on; */

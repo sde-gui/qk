@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooeditkeys.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -51,7 +51,7 @@ static gboolean handle_ctrl_pgup    (MooTextView    *view,
                                      gboolean        up);
 
 
-int         
+int
 _moo_text_view_key_press_event (GtkWidget          *widget,
                                 GdkEventKey        *event)
 {
@@ -140,7 +140,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
 }
 
 
-static void 
+static void
 text_view_obscure_mouse_cursor (GtkTextView *text_view)
 {
     if (!text_view->mouse_cursor_obscured)
@@ -154,7 +154,7 @@ text_view_obscure_mouse_cursor (GtkTextView *text_view)
 }
 
 
-static void 
+static void
 set_invisible_cursor (GdkWindow *window)
 {
     GdkBitmap *empty_bitmap;
@@ -182,7 +182,7 @@ set_invisible_cursor (GdkWindow *window)
 }
 
 
-static gboolean 
+static gboolean
 handle_tab (MooTextView        *view,
             G_GNUC_UNUSED GdkEventKey    *event)
 {
@@ -243,7 +243,7 @@ handle_tab (MooTextView        *view,
 }
 
 
-static gboolean 
+static gboolean
 handle_shift_tab (MooTextView        *view,
                   G_GNUC_UNUSED GdkEventKey    *event)
 {
@@ -270,7 +270,7 @@ handle_shift_tab (MooTextView        *view,
 }
 
 
-static gboolean 
+static gboolean
 handle_backspace (MooTextView        *view,
                   G_GNUC_UNUSED GdkEventKey    *event)
 {
@@ -299,7 +299,7 @@ handle_backspace (MooTextView        *view,
 }
 
 
-static gboolean 
+static gboolean
 handle_enter (MooTextView        *view,
               G_GNUC_UNUSED GdkEventKey    *event)
 {
@@ -332,7 +332,7 @@ handle_enter (MooTextView        *view,
 }
 
 
-static gboolean 
+static gboolean
 handle_ctrl_up (MooTextView        *view,
                 G_GNUC_UNUSED GdkEventKey    *event,
                 gboolean        up)
@@ -369,7 +369,7 @@ handle_ctrl_up (MooTextView        *view,
 }
 
 
-static gboolean 
+static gboolean
 handle_ctrl_pgup (MooTextView        *view,
                   G_GNUC_UNUSED GdkEventKey    *event,
                   gboolean        up)

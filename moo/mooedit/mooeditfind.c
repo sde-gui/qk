@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooeditfind.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -54,7 +54,7 @@ static gboolean update_scale_value  (GtkSpinButton  *spin,
 }
 
 
-void         
+void
 moo_text_view_goto_line (MooTextView *view,
                          int          line)
 {
@@ -160,7 +160,7 @@ static MooTextReplaceResponseType prompt_on_replace_func
                                              gpointer            data);
 
 
-void        
+void
 _moo_text_view_find (MooTextView *view)
 {
     GtkWidget *dialog;
@@ -227,11 +227,11 @@ _moo_text_view_find (MooTextView *view)
 
     options = 0;
 
-    if (regex) 
+    if (regex)
         options |= MOO_TEXT_SEARCH_REGEX;
-    if (backwards) 
+    if (backwards)
         options |= MOO_TEXT_SEARCH_BACKWARDS;
-    if (!case_sensitive) 
+    if (!case_sensitive)
         options |= MOO_TEXT_SEARCH_CASE_INSENSITIVE;
 
     insert = gtk_text_buffer_get_insert (buffer);
@@ -324,7 +324,7 @@ _moo_text_view_find (MooTextView *view)
 }
 
 
-void        
+void
 _moo_text_view_find_next (MooTextView *view)
 {
     gboolean regex, case_sensitive, whole_words, backwards;
@@ -425,7 +425,7 @@ _moo_text_view_find_next (MooTextView *view)
 }
 
 
-void        
+void
 _moo_text_view_find_previous (MooTextView *view)
 {
     gboolean regex, case_sensitive, whole_words, backwards;
@@ -527,7 +527,7 @@ _moo_text_view_find_previous (MooTextView *view)
 }
 
 
-void        
+void
 _moo_text_view_replace (MooTextView *view)
 {
     GtkWidget *dialog;

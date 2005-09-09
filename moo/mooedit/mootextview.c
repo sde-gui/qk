@@ -1,5 +1,4 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
  *
  *   mootextview.c
  *
@@ -328,7 +327,7 @@ moo_text_view_constructor (GType                  type,
 }
 
 
-static void 
+static void
 moo_text_view_finalize (GObject *object)
 {
     MooTextView *view = MOO_TEXT_VIEW (object);
@@ -350,7 +349,7 @@ moo_text_view_new (void)
 }
 
 
-void 
+void
 moo_text_view_delete_selection (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
@@ -358,14 +357,14 @@ moo_text_view_delete_selection (MooTextView *view)
 }
 
 
-static void 
+static void
 can_redo_cb (MooTextView *view,
              gboolean     arg)
 {
     g_signal_emit (view, signals[CAN_REDO], 0, arg, NULL);
 }
 
-static void 
+static void
 can_undo_cb (MooTextView *view,
              gboolean     arg)
 {
@@ -398,35 +397,35 @@ _moo_text_view_private_new (void)
 }
 
 
-void        
+void
 moo_text_view_find (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_signal_emit (view, signals[FIND], 0, NULL);
 }
 
-void        
+void
 moo_text_view_replace (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_signal_emit (view, signals[REPLACE], 0, NULL);
 }
 
-void        
+void
 moo_text_view_find_next (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_signal_emit (view, signals[FIND_NEXT], 0, NULL);
 }
 
-void        
+void
 moo_text_view_find_previous (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_signal_emit (view, signals[FIND_PREVIOUS], 0, NULL);
 }
 
-static void 
+static void
 goto_line (MooTextView *view)
 {
     moo_text_view_goto_line (view, -1);
@@ -441,17 +440,17 @@ moo_text_view_set_font_from_string (MooTextView *view,
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (font) 
+    if (font)
         font_desc = pango_font_description_from_string (font);
-    
+
     gtk_widget_modify_font (GTK_WIDGET (view), font_desc);
-    
-    if (font_desc) 
+
+    if (font_desc)
         pango_font_description_free (font_desc);
 }
 
 
-gboolean    
+gboolean
 moo_text_view_can_redo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
@@ -459,7 +458,7 @@ moo_text_view_can_redo (MooTextView *view)
 }
 
 
-gboolean    
+gboolean
 moo_text_view_can_undo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
@@ -467,7 +466,7 @@ moo_text_view_can_undo (MooTextView *view)
 }
 
 
-void        
+void
 moo_text_view_select_all (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
@@ -475,7 +474,7 @@ moo_text_view_select_all (MooTextView *view)
 }
 
 
-static void     
+static void
 moo_text_view_set_property (GObject        *object,
                             guint           prop_id,
                             const GValue   *value,
@@ -503,9 +502,9 @@ moo_text_view_set_property (GObject        *object,
             {
                 g_object_ref (buffer);
             }
-        
+
             gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), buffer);
-            
+
             g_object_unref (buffer);
             break;
 
@@ -520,7 +519,7 @@ moo_text_view_set_property (GObject        *object,
         case PROP_CURRENT_LINE_COLOR_GDK:
             moo_text_view_set_current_line_color (view, g_value_get_boxed (value));
             break;
-        
+
         case PROP_CURRENT_LINE_COLOR:
             g_return_if_fail (g_value_get_string (value) != NULL);
             gdk_color_parse (g_value_get_string (value), &color);
@@ -537,7 +536,7 @@ moo_text_view_set_property (GObject        *object,
     }
 }
 
-static void     
+static void
 moo_text_view_get_property (GObject        *object,
                             guint           prop_id,
                             GValue         *value,
@@ -568,12 +567,12 @@ moo_text_view_get_property (GObject        *object,
             break;
 
         case PROP_HAS_TEXT:
-            g_value_set_boolean (value, 
+            g_value_set_boolean (value,
                                  moo_text_view_has_text (view));
             break;
 
         case PROP_HAS_SELECTION:
-            g_value_set_boolean (value, 
+            g_value_set_boolean (value,
                                  moo_text_view_has_selection (view));
             break;
 
@@ -584,7 +583,7 @@ moo_text_view_get_property (GObject        *object,
 }
 
 
-GType       
+GType
 moo_text_selection_type_get_type (void)
 {
     static GType type = 0;
@@ -621,7 +620,7 @@ moo_text_view_get_selection (MooTextView *view)
 }
 
 
-gboolean    
+gboolean
 moo_text_view_has_selection (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
@@ -629,7 +628,7 @@ moo_text_view_has_selection (MooTextView *view)
 }
 
 
-gboolean    
+gboolean
 moo_text_view_has_text (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
@@ -662,7 +661,7 @@ moo_text_view_get_text (MooTextView *view)
 }
 
 
-static void 
+static void
 insert_text_cb (GtkTextBuffer      *buffer,
                 GtkTextIter        *iter,
                 gchar              *text,
@@ -680,7 +679,7 @@ insert_text_cb (GtkTextBuffer      *buffer,
 }
 
 
-static void 
+static void
 cursor_moved (MooTextView    *view,
               GtkTextIter    *where)
 {
@@ -688,14 +687,14 @@ cursor_moved (MooTextView    *view,
 }
 
 
-static void 
+static void
 has_selection_notify (MooTextView *view)
 {
     g_object_notify (G_OBJECT (view), "has-selection");
 }
 
 
-static void 
+static void
 has_text_notify (MooTextView *view)
 {
     g_object_notify (G_OBJECT (view), "has-text");
@@ -710,7 +709,7 @@ moo_text_view_get_indenter (MooTextView *view)
 }
 
 
-void         
+void
 moo_text_view_set_indenter (MooTextView *view,
                             MooIndenter *indenter)
 {
@@ -812,7 +811,7 @@ get_moo_buffer (MooTextView *view)
 }
 
 
-void         
+void
         moo_text_view_set_highlight_current_line (MooTextView    *view,
                                           gboolean        highlight)
 {
@@ -820,7 +819,7 @@ void
 
     if (view->priv->highlight_current_line == highlight)
         return;
-    
+
     view->priv->highlight_current_line = highlight;
     g_object_notify (G_OBJECT (view), "highlight-current-line");
 
@@ -829,7 +828,7 @@ void
 }
 
 
-void         
+void
 moo_text_view_set_current_line_color (MooTextView    *view,
                                       const GdkColor *color)
 {
@@ -851,7 +850,7 @@ moo_text_view_set_current_line_color (MooTextView    *view,
 }
 
 
-static void     
+static void
 moo_text_view_realize (GtkWidget *widget)
 {
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
@@ -859,7 +858,7 @@ moo_text_view_realize (GtkWidget *widget)
 }
 
 
-static void     
+static void
 moo_text_view_unrealize (GtkWidget *widget)
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
@@ -870,36 +869,36 @@ moo_text_view_unrealize (GtkWidget *widget)
 }
 
 
-static void     
+static void
 create_current_line_gc (MooTextView *view)
 {
     GtkWidget *widget = GTK_WIDGET (view);
     GdkColormap *colormap;
     gboolean success;
     GdkWindow *window;
-    
+
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (view->priv->current_line_gc == NULL);
 
     colormap = gtk_widget_get_colormap (widget);
     g_return_if_fail (colormap != NULL);
-    
+
     window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
                                        GTK_TEXT_WINDOW_TEXT);
     g_return_if_fail (window != NULL);
-    
+
     success = gdk_colormap_alloc_color (colormap,
                                         &view->priv->current_line_color,
                                         FALSE, TRUE);
-    
+
     if (!success)
     {
         g_warning ("%s: failed to allocate color", G_STRLOC);
         view->priv->current_line_color = widget->style->bg[GTK_STATE_NORMAL];
     }
-    
+
     view->priv->current_line_gc = gdk_gc_new (window);
-    gdk_gc_set_foreground (view->priv->current_line_gc, 
+    gdk_gc_set_foreground (view->priv->current_line_gc,
                            &view->priv->current_line_color);
 }
 
@@ -974,13 +973,13 @@ draw_tab_at_iter (GtkTextView    *text_view,
 
 
 static void
-moo_text_view_draw_tab_markers (GtkTextView     *text_view, 
+moo_text_view_draw_tab_markers (GtkTextView     *text_view,
                                 GdkEventExpose  *event,
                                 GtkTextIter     *start,
                                 GtkTextIter     *end)
 {
-    
-    
+
+
     while (gtk_text_iter_compare (start, end) < 0)
     {
         if (gtk_text_iter_get_char (start) == '\t')
@@ -991,7 +990,7 @@ moo_text_view_draw_tab_markers (GtkTextView     *text_view,
 }
 
 
-static gboolean 
+static gboolean
 moo_text_view_expose (GtkWidget      *widget,
                       GdkEventExpose *event)
 {
@@ -999,7 +998,7 @@ moo_text_view_expose (GtkWidget      *widget,
     MooTextView *view = MOO_TEXT_VIEW (widget);
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
     GdkWindow *text_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT);
-    
+
     if (view->priv->highlight_current_line && event->window == text_window)
     {
         moo_text_view_draw_current_line (text_view, event);
@@ -1029,14 +1028,14 @@ moo_text_view_expose (GtkWidget      *widget,
 
 
 void
-moo_text_view_set_show_tabs (MooTextView    *view, 
+moo_text_view_set_show_tabs (MooTextView    *view,
                              gboolean        show)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    
+
     if (view->priv->show_tabs == show)
         return;
-    
+
     view->priv->show_tabs = show;
     g_object_notify (G_OBJECT (view), "show-tabs");
 

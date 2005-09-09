@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooedit-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -157,7 +157,7 @@ struct _MooTextViewPrivate {
     GdkColor current_line_color;
     GdkGC *current_line_gc;
     gboolean show_tabs;
-    
+
     /***********************************************************************/
     /* Search
     /*/

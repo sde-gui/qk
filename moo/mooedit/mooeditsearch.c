@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   mooeditsearch.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -19,7 +19,7 @@
 #include <string.h>
 
 
-GType 
+GType
 moo_text_search_options_get_type (void)
 {
     static GType type = 0;
@@ -39,7 +39,7 @@ moo_text_search_options_get_type (void)
     return type;
 }
 
-GType 
+GType
 moo_text_replace_response_type_get_type (void)
 {
     static GType type = 0;

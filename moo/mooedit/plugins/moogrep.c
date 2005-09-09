@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- * kate: space-indent on; indent-width 4; replace-tabs on;
+ *
  *   moogrep.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -843,7 +843,7 @@ output_click (WindowStuff    *stuff,
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
     if (line_data->line >= 0)
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), 
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
                                    line_data->line, -1, TRUE);
 
     return TRUE;
