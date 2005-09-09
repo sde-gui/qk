@@ -375,10 +375,7 @@ command_exit (GPid            pid,
     g_return_if_fail (pid == stuff->pid);
 
     stuff->child_watch = 0;
-
-    g_return_if_fail (WIFEXITED (status));
-
-    stuff->exit_status = WEXITSTATUS (status);
+    stuff->exit_status = status;
 
     g_spawn_close_pid (stuff->pid);
     stuff->pid = 0;
@@ -428,6 +425,13 @@ process_line (WindowStuff *stuff,
         return;
     }
 
+    /* Binary file blah matches */
+    if (g_str_has_prefix (line, "Binary file "))
+    {
+        moo_pane_view_write_line (stuff->output, line, -1, NULL);
+        return;
+    }
+
     p = line;
     if (!(colon = strchr (p, ':')) || !colon[1])
         goto parse_error;
@@ -457,6 +461,7 @@ process_line (WindowStuff *stuff,
         g_free (filename);
     }
 
+    errno = 0;
     line_no_64 = g_ascii_strtoull (number, NULL, 0);
 
     if (errno)
@@ -802,19 +807,55 @@ check_find_stop (WindowStuff *stuff)
 
     if (!stuff->child_watch && !stuff->stdout_watch && !stuff->stderr_watch)
     {
-        if (!stuff->exit_status)
+        if (WIFEXITED (stuff->exit_status))
+        {
+            guint8 exit_code = WEXITSTATUS (stuff->exit_status);
+
+            /*
+            xargs exits with the following status:
+            0 if it succeeds
+            123 if any invocation of the command exited with status 1-125
+            124 if the command exited with status 255
+            125 if the command is killed by a signal
+            126 if the command cannot be run
+            127 if the command is not found
+            1 if some other error occurred.
+            */
+
+            if (!exit_code || exit_code == 123)
+            {
+                moo_pane_view_write_line (stuff->output,
+                                          "*** Done ***", -1,
+                                          NULL);
+            }
+            else
+            {
+                char *msg = g_strdup_printf ("Command failed with status %d",
+                                             exit_code);
+                moo_pane_view_write_line (stuff->output,
+                                          msg, -1, stuff->error_tag);
+                g_free (msg);
+            }
+        }
+#ifdef WCOREDUMP
+        else if (WCOREDUMP (stuff->exit_status))
         {
             moo_pane_view_write_line (stuff->output,
-                                      "*** Success ***", -1,
+                                      "*** Dumped core ***", -1,
+                                      NULL);
+        }
+#endif
+        else if (WIFSIGNALED (stuff->exit_status))
+        {
+            moo_pane_view_write_line (stuff->output,
+                                      "*** Killed ***", -1,
                                       NULL);
         }
         else
         {
-            char *msg = g_strdup_printf ("Command failed with status %d",
-                                         stuff->exit_status);
             moo_pane_view_write_line (stuff->output,
-                                      msg, -1, stuff->error_tag);
-            g_free (msg);
+                                      "*** ??? ***", -1,
+                                      NULL);
         }
 
         stop_find (stuff);
