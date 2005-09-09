@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooeditwindow.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -341,7 +342,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "label", "Select _All",
                                     "tooltip", "Select all",
                                     "accel", "<ctrl>A",
-                                    "closure::callback", moo_edit_select_all,
+                                    "closure::callback", moo_text_view_select_all,
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
@@ -856,8 +857,8 @@ static void     edit_can_undo_redo      (MooEditWindow      *window)
 
     if (edit)
     {
-        can_redo = moo_edit_can_redo (edit);
-        can_undo = moo_edit_can_undo (edit);
+        can_redo = moo_text_view_can_redo (MOO_TEXT_VIEW (edit));
+        can_undo = moo_text_view_can_undo (MOO_TEXT_VIEW (edit));
     }
     else
     {
@@ -909,7 +910,7 @@ static void     edit_has_selection      (MooEditWindow      *window)
     edit = ACTIVE_DOC (window);
 
     if (edit)
-        has_selection = moo_edit_has_selection (edit);
+        has_selection = moo_text_view_has_selection (MOO_TEXT_VIEW (edit));
     else
         has_selection = FALSE;
 
@@ -936,7 +937,7 @@ static void     edit_has_text           (MooEditWindow      *window)
     edit = ACTIVE_DOC (window);
 
     if (edit)
-        has_text = moo_edit_has_text (edit);
+        has_text = moo_text_view_has_text (MOO_TEXT_VIEW (edit));
     else
         has_text = FALSE;
 
@@ -1064,9 +1065,9 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                               G_CALLBACK (edit_can_undo_redo), window);
     g_signal_connect_swapped (edit, "can-redo",
                               G_CALLBACK (edit_can_undo_redo), window);
-    g_signal_connect_swapped (edit, "has-selection",
+    g_signal_connect_swapped (edit, "notify::has-selection",
                               G_CALLBACK (edit_has_selection), window);
-    g_signal_connect_swapped (edit, "has-text",
+    g_signal_connect_swapped (edit, "notify::has-text",
                               G_CALLBACK (edit_has_text), window);
     g_signal_connect_swapped (edit, "lang-changed",
                               G_CALLBACK (edit_lang_changed), window);

@@ -19,23 +19,20 @@
 G_BEGIN_DECLS
 
 
-typedef enum _MooEditBracketMatchType {
-    MOO_EDIT_BRACKET_MATCH_NOT_AT_BRACKET   = -1,
-    MOO_EDIT_BRACKET_MATCH_NONE             = 0,
-    MOO_EDIT_BRACKET_MATCH_CORRECT          = 1,
-    MOO_EDIT_BRACKET_MATCH_INCORRECT        = 2
-} MooEditBracketMatchType;
+typedef enum _MooBracketMatchType {
+    MOO_BRACKET_MATCH_NOT_AT_BRACKET   = -1,
+    MOO_BRACKET_MATCH_NONE             = 0,
+    MOO_BRACKET_MATCH_CORRECT          = 1,
+    MOO_BRACKET_MATCH_INCORRECT        = 2
+} MooBracketMatchType;
 
 
 /* it assumes that iter points to a bracket */
-MooEditBracketMatchType moo_edit_find_matching_bracket
-                                        (GtkSourceBuffer    *buffer,
-                                         GtkTextIter        *iter);
+MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter);
 
 /* tries to find bracket near the iter, i.e. like |( or (|,
  *   and chooses right one in the case )|(                  */
-gboolean    moo_edit_at_bracket         (GtkSourceBuffer    *buffer,
-                                         GtkTextIter        *iter);
+gboolean    moo_text_iter_at_bracket    (GtkTextIter        *iter);
 
 /* does the same as gtk_text_buffer_get_iter_at_line_offset, with the
  * difference that it accepts invalid position */

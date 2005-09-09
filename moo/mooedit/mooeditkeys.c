@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooeditkeys.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -20,7 +21,8 @@
 #include <string.h>
 
 
-inline G_GNUC_CONST static GtkWidgetClass *parent_class (void)
+inline G_GNUC_CONST static GtkWidgetClass*
+parent_class (void)
 {
     static gpointer sourceview_class = NULL;
     if (!sourceview_class)
@@ -33,26 +35,27 @@ inline G_GNUC_CONST static GtkWidgetClass *parent_class (void)
 static void text_view_obscure_mouse_cursor (GtkTextView *text_view);
 static void set_invisible_cursor (GdkWindow *window);
 
-static gboolean handle_tab          (MooEdit        *edit,
+static gboolean handle_tab          (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_backspace    (MooEdit        *edit,
+static gboolean handle_backspace    (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_enter        (MooEdit        *edit,
+static gboolean handle_enter        (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_shift_tab    (MooEdit        *edit,
+static gboolean handle_shift_tab    (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_ctrl_up      (MooEdit        *edit,
+static gboolean handle_ctrl_up      (MooTextView    *view,
                                      GdkEventKey    *event,
                                      gboolean        up);
-static gboolean handle_ctrl_pgup    (MooEdit        *edit,
+static gboolean handle_ctrl_pgup    (MooTextView    *view,
                                      GdkEventKey    *event,
                                      gboolean        up);
 
 
-int         _moo_edit_key_press_event       (GtkWidget          *widget,
-                                             GdkEventKey        *event)
+int         
+_moo_text_view_key_press_event (GtkWidget          *widget,
+                                GdkEventKey        *event)
 {
-    MooEdit *edit;
+    MooTextView *view;
     GtkTextView *text_view;
     gboolean obscure = TRUE;
     gboolean handled = FALSE;
@@ -60,7 +63,7 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
     GdkModifierType mods =
             event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK);
 
-    edit = MOO_EDIT (widget);
+    view = MOO_TEXT_VIEW (widget);
     text_view = GTK_TEXT_VIEW (widget);
 
     if (!mods)
@@ -69,14 +72,14 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
         {
             case GDK_Tab:
             case GDK_KP_Tab:
-                handled = handle_tab (edit, event);
+                handled = handle_tab (view, event);
                 break;
             case GDK_BackSpace:
-                handled = handle_backspace (edit, event);
+                handled = handle_backspace (view, event);
                 break;
             case GDK_KP_Enter:
             case GDK_Return:
-                handled = handle_enter (edit, event);
+                handled = handle_enter (view, event);
                 break;
         }
     }
@@ -87,7 +90,7 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
             /* TODO TODO stupid X and gtk !!! */
             case GDK_ISO_Left_Tab:
             case GDK_KP_Tab:
-                handled = handle_shift_tab (edit, event);
+                handled = handle_shift_tab (view, event);
                 break;
         }
     }
@@ -97,23 +100,23 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
         {
             case GDK_Up:
             case GDK_KP_Up:
-                handled = handle_ctrl_up (edit, event, TRUE);
+                handled = handle_ctrl_up (view, event, TRUE);
                 /* if we scroll, let mouse cursor stay */
                 obscure = FALSE;
                 break;
             case GDK_Down:
             case GDK_KP_Down:
-                handled = handle_ctrl_up (edit, event, FALSE);
+                handled = handle_ctrl_up (view, event, FALSE);
                 obscure = FALSE;
                 break;
             case GDK_Page_Up:
             case GDK_KP_Page_Up:
-                handled = handle_ctrl_pgup (edit, event, TRUE);
+                handled = handle_ctrl_pgup (view, event, TRUE);
                 obscure = FALSE;
                 break;
             case GDK_Page_Down:
             case GDK_KP_Page_Down:
-                handled = handle_ctrl_pgup (edit, event, FALSE);
+                handled = handle_ctrl_pgup (view, event, FALSE);
                 obscure = FALSE;
                 break;
         }
@@ -129,15 +132,16 @@ int         _moo_edit_key_press_event       (GtkWidget          *widget,
     if (handled)
         return TRUE;
 
-    edit->priv->in_key_press = TRUE;
+    view->priv->in_key_press = TRUE;
     handled = parent_class()->key_press_event (widget, event);
-    edit->priv->in_key_press = FALSE;
+    view->priv->in_key_press = FALSE;
 
     return handled;
 }
 
 
-static void text_view_obscure_mouse_cursor (GtkTextView *text_view)
+static void 
+text_view_obscure_mouse_cursor (GtkTextView *text_view)
 {
     if (!text_view->mouse_cursor_obscured)
     {
@@ -150,7 +154,8 @@ static void text_view_obscure_mouse_cursor (GtkTextView *text_view)
 }
 
 
-static void set_invisible_cursor (GdkWindow *window)
+static void 
+set_invisible_cursor (GdkWindow *window)
 {
     GdkBitmap *empty_bitmap;
     GdkCursor *cursor;
@@ -177,21 +182,22 @@ static void set_invisible_cursor (GdkWindow *window)
 }
 
 
-static gboolean handle_tab          (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event)
+static gboolean 
+handle_tab (MooTextView        *view,
+            G_GNUC_UNUSED GdkEventKey    *event)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     GtkTextIter insert, bound, start, end;
     gboolean starts_line, insert_last;
     int first_line, last_line;
 
-    if (!edit->priv->indenter || !edit->priv->tab_indents)
+    if (!view->priv->indenter || !view->priv->tab_indents)
         return FALSE;
 
     if (!gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
     {
         gtk_text_buffer_begin_user_action (buffer);
-        moo_indenter_tab (edit->priv->indenter, buffer);
+        moo_indenter_tab (view->priv->indenter, buffer);
         gtk_text_buffer_end_user_action (buffer);
         return TRUE;
     }
@@ -211,7 +217,7 @@ static gboolean handle_tab          (MooEdit        *edit,
 
     gtk_text_buffer_begin_user_action (buffer);
 
-    moo_indenter_shift_lines (edit->priv->indenter, buffer, first_line, last_line, 1);
+    moo_indenter_shift_lines (view->priv->indenter, buffer, first_line, last_line, 1);
 
     if (starts_line)
     {
@@ -237,14 +243,15 @@ static gboolean handle_tab          (MooEdit        *edit,
 }
 
 
-static gboolean handle_shift_tab    (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event)
+static gboolean 
+handle_shift_tab (MooTextView        *view,
+                  G_GNUC_UNUSED GdkEventKey    *event)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     GtkTextIter start, end;
     int first_line, last_line;
 
-    if (!edit->priv->shift_tab_unindents || !edit->priv->indenter)
+    if (!view->priv->shift_tab_unindents || !view->priv->indenter)
         return FALSE;
 
     gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
@@ -256,23 +263,24 @@ static gboolean handle_shift_tab    (MooEdit        *edit,
         last_line -= 1;
 
     gtk_text_buffer_begin_user_action (buffer);
-    moo_indenter_shift_lines (edit->priv->indenter, buffer, first_line, last_line, -1);
+    moo_indenter_shift_lines (view->priv->indenter, buffer, first_line, last_line, -1);
     gtk_text_buffer_end_user_action (buffer);
 
     return TRUE;
 }
 
 
-static gboolean handle_backspace    (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event)
+static gboolean 
+handle_backspace (MooTextView        *view,
+                  G_GNUC_UNUSED GdkEventKey    *event)
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
     gboolean result;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-    if (!edit->priv->backspace_indents || !edit->priv->indenter)
+    if (!view->priv->backspace_indents || !view->priv->indenter)
         return FALSE;
     if (gtk_text_buffer_get_selection_bounds (buffer, NULL, NULL))
         return FALSE;
@@ -284,24 +292,25 @@ static gboolean handle_backspace    (MooEdit        *edit,
         return FALSE;
 
     gtk_text_buffer_begin_user_action (buffer);
-    result = moo_indenter_backspace (edit->priv->indenter, buffer);
+    result = moo_indenter_backspace (view->priv->indenter, buffer);
     gtk_text_buffer_begin_user_action (buffer);
 
     return result;
 }
 
 
-static gboolean handle_enter        (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event)
+static gboolean 
+handle_enter (MooTextView        *view,
+              G_GNUC_UNUSED GdkEventKey    *event)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
     gboolean has_selection;
 
-    if (!edit->priv->enter_indents || !edit->priv->indenter)
+    if (!view->priv->enter_indents || !view->priv->indenter)
         return FALSE;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
     has_selection =
             gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
@@ -313,28 +322,29 @@ static gboolean handle_enter        (MooEdit        *edit,
 
     /* XXX insert "\r\n" on windows? */
     gtk_text_buffer_insert (buffer, &start, "\n", 1);
-    moo_indenter_character (edit->priv->indenter, buffer, '\n', &start);
+    moo_indenter_character (view->priv->indenter, buffer, '\n', &start);
 
     gtk_text_buffer_end_user_action (buffer);
 
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit),
+    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
                                         gtk_text_buffer_get_insert (buffer));
     return TRUE;
 }
 
 
-static gboolean handle_ctrl_up      (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event,
-                                     gboolean        up)
+static gboolean 
+handle_ctrl_up (MooTextView        *view,
+                G_GNUC_UNUSED GdkEventKey    *event,
+                gboolean        up)
 {
     GtkTextView *text_view;
     GtkAdjustment *adjustment;
     double value;
 
-    if (!edit->priv->ctrl_up_down_scrolls)
+    if (!view->priv->ctrl_up_down_scrolls)
         return FALSE;
 
-    text_view = GTK_TEXT_VIEW (edit);
+    text_view = GTK_TEXT_VIEW (view);
     adjustment = text_view->vadjustment;
 
     if (!adjustment)
@@ -359,18 +369,19 @@ static gboolean handle_ctrl_up      (MooEdit        *edit,
 }
 
 
-static gboolean handle_ctrl_pgup    (MooEdit        *edit,
-                                     G_GNUC_UNUSED GdkEventKey    *event,
-                                     gboolean        up)
+static gboolean 
+handle_ctrl_pgup (MooTextView        *view,
+                  G_GNUC_UNUSED GdkEventKey    *event,
+                  gboolean        up)
 {
     GtkTextView *text_view;
     GtkAdjustment *adjustment;
     double value;
 
-    if (!edit->priv->ctrl_page_up_down_scrolls)
+    if (!view->priv->ctrl_page_up_down_scrolls)
         return FALSE;
 
-    text_view = GTK_TEXT_VIEW (edit);
+    text_view = GTK_TEXT_VIEW (view);
     adjustment = text_view->vadjustment;
 
     if (!adjustment)

@@ -16,12 +16,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/*****************************************************************************
- * Changed by Muntyan on 03/28/2005
- *
- * Added refcounting
- *****************************************************************************/
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: made GtkSourceRegex ref-countable
+ */
 
 #ifndef __GTK_SOURCE_REGEX_H__
 #define __GTK_SOURCE_REGEX_H__
@@ -37,7 +35,7 @@ struct _GtkSourceBufferMatch
 {
 	gint 			 startpos;
 	gint			 endpos;
-
+	
 	gint 			 startindex;
 	gint			 endindex;
 };
@@ -45,12 +43,12 @@ struct _GtkSourceBufferMatch
 typedef enum {
 	GTK_SOURCE_REGEX_NOT_BOL = 1 << 0,	/*< nick=not_bol >*/
 	GTK_SOURCE_REGEX_NOT_EOL = 1 << 1	/*< nick=not_eol >*/
-} GtkSourceRegexOptions;
+} GtkSourceRegexOptions; 
 
 GtkSourceRegex *gtk_source_regex_compile 	(const gchar          *pattern);
 
-GtkSourceRegex *gtk_source_regex_ref		(GtkSourceRegex       *regex);
-void		gtk_source_regex_unref		(GtkSourceRegex       *regex);
+GtkSourceRegex *gtk_source_regex_ref            (GtkSourceRegex       *regex);
+void		gtk_source_regex_unref          (GtkSourceRegex       *regex);
 void		gtk_source_regex_destroy	(GtkSourceRegex       *regex);
 
 gint 	        gtk_source_regex_search         (GtkSourceRegex       *regex,

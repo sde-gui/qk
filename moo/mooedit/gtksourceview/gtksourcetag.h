@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*- 
  *  gtksourcetag.h
  *
  *  Copyright (C) 2001
@@ -20,12 +20,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/*****************************************************************************
- * Changed by Muntyan on 03/28/2005
- *
- * Added copying tags
- *****************************************************************************/
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: added copying tags - gtk_source_tag_copy()
+ */
 
 #ifndef __GTK_SOURCE_TAG_H__
 #define __GTK_SOURCE_TAG_H__
@@ -69,27 +67,27 @@ typedef struct _GtkPatternTagClass  GtkPatternTagClass;
 
 GType 	           gtk_source_tag_get_type	(void) G_GNUC_CONST;
 
-GtkTextTag	  *gtk_source_tag_copy		(GtkSourceTag		 *tag);
+GtkTextTag        *gtk_source_tag_copy          (GtkSourceTag            *tag);
 
-gchar             *gtk_source_tag_get_id	(GtkSourceTag		 *tag);
+gchar              *gtk_source_tag_get_id	(GtkSourceTag		 *tag);
 
 GtkSourceTagStyle *gtk_source_tag_get_style	(GtkSourceTag            *tag);
 void               gtk_source_tag_set_style	(GtkSourceTag            *tag,
 						 const GtkSourceTagStyle *style);
 
 GType              gtk_syntax_tag_get_type	(void) G_GNUC_CONST;
-GtkTextTag        *gtk_syntax_tag_new		(const gchar 	*id,
-						 const gchar 	*name,
+GtkTextTag        *gtk_syntax_tag_new		(const gchar 	*id,	
+						 const gchar 	*name,	
 						 const gchar 	*pattern_start,
 						 const gchar 	*pattern_end);
 
 GType              gtk_pattern_tag_get_type	(void) G_GNUC_CONST;
-GtkTextTag        *gtk_pattern_tag_new		(const gchar 	*id,
-						 const gchar 	*name,
+GtkTextTag        *gtk_pattern_tag_new		(const gchar 	*id,	
+						 const gchar 	*name, 
 						 const gchar 	*pattern);
 
-GtkTextTag        *gtk_keyword_list_tag_new	(const gchar 	*id,
-						 const gchar 	*name,
+GtkTextTag        *gtk_keyword_list_tag_new	(const gchar 	*id,	
+						 const gchar 	*name, 
 						 const GSList 	*keywords,
 						 gboolean	 case_sensitive,
 						 gboolean	 match_empty_string_at_beginning,
@@ -99,11 +97,11 @@ GtkTextTag        *gtk_keyword_list_tag_new	(const gchar 	*id,
 
 #define gtk_block_comment_tag_new	gtk_syntax_tag_new
 
-GtkTextTag        *gtk_line_comment_tag_new	(const gchar 	*id,
+GtkTextTag        *gtk_line_comment_tag_new	(const gchar 	*id,	
 						 const gchar    *name,
 						 const gchar    *pattern_start);
 
-GtkTextTag        *gtk_string_tag_new		(const gchar 	*id,
+GtkTextTag        *gtk_string_tag_new		(const gchar 	*id,	
 						 const gchar    *name,
 						 const gchar    *pattern_start,
 						 const gchar	*pattern_end,

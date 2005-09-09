@@ -23,17 +23,12 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/*****************************************************************************
- * Changed by Muntyan
- *
- * 04/23/2005: Added highlighting correct/incorrect matching brackets;
- *             fixed memory leak in get_syntax_tag();
- *             added modifiable sets of brackets to match
- * 04/27/2005: Removed default bracket styles, they are in gtksourceview.c now
- * 05/07/2005: added gtk_source_buffer_set_brackets, parse_brackets
- *
- *****************************************************************************/
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: removed GtkSourceLanguage* stuff;
+ *              made iter_has_syntax_tag global exported function;
+ *              replaced gtksourceview_marshal* with _moo_marshal*
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -48,11 +43,10 @@
 #include "gtksourcetag-private.h"
 
 #include "gtksourceundomanager.h"
-#include "gtksourceview-marshal.h"
+#include "mooutils/moomarshals.h"
 #include "gtktextregion.h"
 
 #include "gtksourceiter.h"
-#include "mooedit/mootextiter.h"
 
 /*
 #define ENABLE_DEBUG
@@ -123,15 +117,9 @@ struct _GtkSourceBufferPrivate
 	gint                   highlight:1;
 	gint                   check_brackets:1;
 
-	guint                  num_brackets;
-	gunichar              *left_brackets, *right_brackets;
-	GtkTextTag            *bracket_correct_match_tag;
-	GtkTextTag            *bracket_incorrect_match_tag;
-	GtkTextMark           *bracket_mark1;
-	GtkTextMark           *bracket_mark2;
-	GtkTextMark           *bracket_mark3;
-	GtkTextMark           *bracket_mark4;
-	MooEditBracketMatchType bracket_found;
+	GtkTextTag            *bracket_match_tag;
+	GtkTextMark           *bracket_mark;
+	guint                  bracket_found:1;
 	
 	GArray                *markers;
 
@@ -195,8 +183,6 @@ static void 	 gtk_source_buffer_real_insert_text 	(GtkTextBuffer           *buff
 static void 	 gtk_source_buffer_real_delete_range 	(GtkTextBuffer           *buffer,
 							 GtkTextIter             *iter,
 							 GtkTextIter             *end);
-
-static const GtkSyntaxTag *iter_has_syntax_tag 		(const GtkTextIter       *iter);
 
 static void 	 get_tags_func 				(GtkTextTag              *tag, 
 		                                         gpointer                 data);
@@ -332,7 +318,7 @@ gtk_source_buffer_class_init (GtkSourceBufferClass *klass)
 			  G_SIGNAL_RUN_LAST,
 			  G_STRUCT_OFFSET (GtkSourceBufferClass, can_undo),
 			  NULL, NULL,
-			  gtksourceview_marshal_VOID__BOOLEAN,
+			  _moo_marshal_VOID__BOOLEAN,
 			  G_TYPE_NONE, 
 			  1, 
 			  G_TYPE_BOOLEAN);
@@ -343,7 +329,7 @@ gtk_source_buffer_class_init (GtkSourceBufferClass *klass)
 			  G_SIGNAL_RUN_LAST,
 			  G_STRUCT_OFFSET (GtkSourceBufferClass, can_redo),
 			  NULL, NULL,
-			  gtksourceview_marshal_VOID__BOOLEAN,
+			  _moo_marshal_VOID__BOOLEAN,
 			  G_TYPE_NONE, 
 			  1, 
 			  G_TYPE_BOOLEAN);
@@ -354,7 +340,7 @@ gtk_source_buffer_class_init (GtkSourceBufferClass *klass)
 			  G_SIGNAL_RUN_LAST,
 			  G_STRUCT_OFFSET (GtkSourceBufferClass, highlight_updated),
 			  NULL, NULL,
-			  gtksourceview_marshal_VOID__BOXED_BOXED,
+			  _moo_marshal_VOID__BOXED_BOXED,
 			  G_TYPE_NONE, 
 			  2, 
 			  GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
@@ -366,7 +352,7 @@ gtk_source_buffer_class_init (GtkSourceBufferClass *klass)
 			  G_SIGNAL_RUN_LAST,
 			  G_STRUCT_OFFSET (GtkSourceBufferClass, marker_updated),
 			  NULL, NULL,
-			  gtksourceview_marshal_VOID__BOXED,
+			  _moo_marshal_VOID__BOXED,
 			  G_TYPE_NONE, 
 			  1, 
 			  GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
@@ -384,8 +370,8 @@ gtk_source_buffer_init (GtkSourceBuffer *buffer)
 	priv->undo_manager = gtk_source_undo_manager_new (GTK_TEXT_BUFFER (buffer));
 
 	priv->check_brackets = TRUE;
-	priv->bracket_found = MOO_EDIT_BRACKET_MATCH_NONE;
-	gtk_source_buffer_set_brackets (buffer, NULL);
+	priv->bracket_mark = NULL;
+	priv->bracket_found = FALSE;
 	
 	priv->markers = g_array_new (FALSE, FALSE, sizeof (GtkSourceMarker *));
 
@@ -465,7 +451,26 @@ gtk_source_buffer_constructor (GType                  type,
 	
 	if (g_object) 
 	{
+		GtkSourceTagStyle *tag_style;
+		
 		GtkSourceBuffer *source_buffer = GTK_SOURCE_BUFFER (g_object);
+
+		tag_style = gtk_source_tag_style_new ();
+		
+		gdk_color_parse ("white", &tag_style->foreground);
+		gdk_color_parse ("gray", &tag_style->background);
+		tag_style->mask |= (GTK_SOURCE_TAG_STYLE_USE_BACKGROUND |
+				    GTK_SOURCE_TAG_STYLE_USE_FOREGROUND);
+
+		tag_style->italic = FALSE;
+		tag_style->bold = TRUE;
+		tag_style->underline = FALSE;
+		tag_style->strikethrough = FALSE;
+
+		/* Set default bracket match style */
+		gtk_source_buffer_set_bracket_match_style (source_buffer, tag_style);
+
+		gtk_source_tag_style_free (tag_style);
 
 		if (GTK_IS_SOURCE_TAG_TABLE (GTK_TEXT_BUFFER (source_buffer)->tag_table))
 		{
@@ -506,9 +511,6 @@ gtk_source_buffer_finalize (GObject *object)
 
 	buffer = GTK_SOURCE_BUFFER (object);
 	g_return_if_fail (buffer->priv != NULL);
-
-	g_free (buffer->priv->left_brackets);
-	g_free (buffer->priv->right_brackets);
 	
 	if (buffer->priv->markers)
 		g_array_free (buffer->priv->markers, TRUE);
@@ -695,9 +697,7 @@ gtk_source_buffer_move_cursor (GtkTextBuffer *buffer,
 			       GtkTextMark   *mark, 
 			       gpointer       data)
 {
-	GtkTextIter iter1, iter2, iter3, iter4;
-	MooEditBracketMatchType bracket_match;
-	GtkTextTag *tag;
+	GtkTextIter iter1, iter2;
 
 	g_return_if_fail (GTK_IS_SOURCE_BUFFER (buffer));
 	g_return_if_fail (iter != NULL);
@@ -707,123 +707,47 @@ gtk_source_buffer_move_cursor (GtkTextBuffer *buffer,
 	if (mark != gtk_text_buffer_get_insert (buffer))
 		return;
 
-	switch (GTK_SOURCE_BUFFER (buffer)->priv->bracket_found)
-	{
-		case MOO_EDIT_BRACKET_MATCH_CORRECT:
-			tag = GTK_SOURCE_BUFFER (buffer)->priv->bracket_correct_match_tag;
-			break;
-		case MOO_EDIT_BRACKET_MATCH_INCORRECT:
-			tag = GTK_SOURCE_BUFFER (buffer)->priv->bracket_incorrect_match_tag;
-			break;
-		default:
-			tag = NULL;
-	}
-
-	if (tag != NULL)
+	if (GTK_SOURCE_BUFFER (buffer)->priv->bracket_found) 
 	{
 		gtk_text_buffer_get_iter_at_mark (buffer,
 						  &iter1,
-						  GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark1);
-		gtk_text_buffer_get_iter_at_mark (buffer,
-						  &iter2,
-						  GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark2);
+						  GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark);
+		iter2 = iter1;
+		gtk_text_iter_forward_char (&iter2);
 		gtk_text_buffer_remove_tag (buffer,
-					    tag,
-					    &iter1,
+					    GTK_SOURCE_BUFFER (buffer)->priv->bracket_match_tag,
+					    &iter1, 
 					    &iter2);
-
-		gtk_text_buffer_get_iter_at_mark (buffer,
-						  &iter3,
-						  GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark3);
-		gtk_text_buffer_get_iter_at_mark (buffer,
-						  &iter4,
-						  GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark4);
-		gtk_text_buffer_remove_tag (buffer,
-					    tag,
-					    &iter3,
-					    &iter4);
 	}
 
 	if (!GTK_SOURCE_BUFFER (buffer)->priv->check_brackets)
 		return;
 
 	iter1 = *iter;
-	GTK_SOURCE_BUFFER (buffer)->priv->bracket_found = MOO_EDIT_BRACKET_MATCH_NONE;
-	if (!moo_edit_at_bracket (GTK_SOURCE_BUFFER (buffer), &iter1))
-		return;
-
-	iter3 = iter1;
-	bracket_match = moo_edit_find_matching_bracket (GTK_SOURCE_BUFFER (buffer),
-							&iter3); /* TODO: max chars*/
-
-	GTK_SOURCE_BUFFER (buffer)->priv->bracket_found = bracket_match;
-
-	switch (bracket_match)
+	if (gtk_source_buffer_find_bracket_match_real (&iter1, MAX_CHARS_BEFORE_FINDING_A_MATCH)) 
 	{
-		case MOO_EDIT_BRACKET_MATCH_CORRECT:
-			tag = GTK_SOURCE_BUFFER (buffer)->priv->bracket_correct_match_tag;
-			break;
-		case MOO_EDIT_BRACKET_MATCH_INCORRECT:
-			tag = GTK_SOURCE_BUFFER (buffer)->priv->bracket_incorrect_match_tag;
-			break;
-		default:
-			tag = NULL;
-	}
+		if (!GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark)
+			GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark =
+				gtk_text_buffer_create_mark (buffer, 
+							     NULL,
+							     &iter1, 
+							     FALSE);
+		else
+			gtk_text_buffer_move_mark (buffer,
+						   GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark,
+						   &iter1);
 
-	if (tag != NULL)
-	{
 		iter2 = iter1;
 		gtk_text_iter_forward_char (&iter2);
-		iter4 = iter3;
-		gtk_text_iter_forward_char (&iter4);
-
-		if (!GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark1)
-                {
-			GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark1 =
-				gtk_text_buffer_create_mark (buffer,
-							     NULL,
-							     &iter1,
-							     FALSE);
-			GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark2 =
-				gtk_text_buffer_create_mark (buffer,
-							     NULL,
-							     &iter2,
-							     FALSE);
-			GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark3 =
-				gtk_text_buffer_create_mark (buffer,
-							     NULL,
-							     &iter3,
-							     FALSE);
-			GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark4 =
-				gtk_text_buffer_create_mark (buffer,
-							     NULL,
-							     &iter4,
-							     FALSE);
-		}
-		else
-		{
-			gtk_text_buffer_move_mark (buffer,
-						   GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark1,
-						   &iter1);
-			gtk_text_buffer_move_mark (buffer,
-						   GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark2,
-						   &iter2);
-			gtk_text_buffer_move_mark (buffer,
-						   GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark3,
-						   &iter3);
-			gtk_text_buffer_move_mark (buffer,
-						   GTK_SOURCE_BUFFER (buffer)->priv->bracket_mark4,
-						   &iter4);
-		}
-
 		gtk_text_buffer_apply_tag (buffer,
-					   tag,
-					   &iter1,
+					   GTK_SOURCE_BUFFER (buffer)->priv->bracket_match_tag,
+					   &iter1, 
 					   &iter2);
-		gtk_text_buffer_apply_tag (buffer,
-					   tag,
-					   &iter3,
-					   &iter4);
+		GTK_SOURCE_BUFFER (buffer)->priv->bracket_found = TRUE;
+	}
+	else
+	{
+		GTK_SOURCE_BUFFER (buffer)->priv->bracket_found = FALSE;
 	}
 }
 
@@ -1041,24 +965,29 @@ sync_syntax_regex (GtkSourceBuffer *buffer)
 	g_string_free (str, TRUE);
 }
 
-static const GtkSyntaxTag *
-iter_has_syntax_tag (const GtkTextIter *iter)
+const GtkTextTag *
+gtk_source_iter_has_syntax_tag (const GtkTextIter *iter)
 {
 	const GtkSyntaxTag *tag;
-	GSList *list, *l;
+	GSList *list;
+	GSList *l;
 
 	g_return_val_if_fail (iter != NULL, NULL);
 
 	list = gtk_text_iter_get_tags (iter);
 	tag = NULL;
 
-	for (l = list; l != NULL && tag == NULL; l = g_slist_next (l))
-		if (GTK_IS_SYNTAX_TAG (l->data))
-			tag = GTK_SYNTAX_TAG (l->data);
+	l = list;
 
-	g_slist_free (list);
+	while ((list != NULL) && (tag == NULL)) {
+		if (GTK_IS_SYNTAX_TAG (list->data))
+			tag = GTK_SYNTAX_TAG (list->data);
+		list = g_slist_next (list);
+	}
 
-	return tag;
+	g_slist_free (l);
+
+	return GTK_TEXT_TAG (tag);
 }
 
 
@@ -1102,7 +1031,7 @@ gtk_source_buffer_find_bracket_match_real (GtkTextIter *orig, gint max_chars)
 	cur_char = gtk_text_iter_get_char (&iter);
 
 	base_char = search_char = cur_char;
-	base_tag = iter_has_syntax_tag (&iter);
+	base_tag = GTK_SYNTAX_TAG (gtk_source_iter_has_syntax_tag (&iter));
 	
 	switch ((int) base_char) {
 		case '{':
@@ -1155,7 +1084,7 @@ gtk_source_buffer_find_bracket_match_real (GtkTextIter *orig, gint max_chars)
 		++char_cont;
 		
 		if ((cur_char == search_char || cur_char == base_char) &&
-		    base_tag == iter_has_syntax_tag (&iter))
+				   GTK_TEXT_TAG (base_tag) == gtk_source_iter_has_syntax_tag (&iter))
 		{
 			if ((cur_char == search_char) && counter == 0) {
 				found = TRUE;
@@ -1406,9 +1335,9 @@ gtk_source_buffer_set_check_brackets (GtkSourceBuffer *buffer,
  * 
  * Sets the style used for highlighting matching brackets.
  **/
-void
-gtk_source_buffer_set_bracket_correct_match_style (GtkSourceBuffer         *source_buffer,
-						   const GtkSourceTagStyle *style)
+void 
+gtk_source_buffer_set_bracket_match_style (GtkSourceBuffer         *source_buffer,
+					   const GtkSourceTagStyle *style)
 {
 	GtkTextTag *tag;
 	GValue foreground = { 0, };
@@ -1418,26 +1347,26 @@ gtk_source_buffer_set_bracket_correct_match_style (GtkSourceBuffer         *sour
 	g_return_if_fail (style != NULL);
 
 	/* create the tag if not already done so */
-	if (source_buffer->priv->bracket_correct_match_tag == NULL)
+	if (source_buffer->priv->bracket_match_tag == NULL)
 	{
-		source_buffer->priv->bracket_correct_match_tag = gtk_text_tag_new (NULL);
+		source_buffer->priv->bracket_match_tag = gtk_text_tag_new (NULL);
 		gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (
 						GTK_TEXT_BUFFER (source_buffer)),
-					source_buffer->priv->bracket_correct_match_tag);
-		g_object_unref (source_buffer->priv->bracket_correct_match_tag);
+					source_buffer->priv->bracket_match_tag);
+		g_object_unref (source_buffer->priv->bracket_match_tag);
 	}
-
-	g_return_if_fail (source_buffer->priv->bracket_correct_match_tag != NULL);
-	tag = source_buffer->priv->bracket_correct_match_tag;
+	
+	g_return_if_fail (source_buffer->priv->bracket_match_tag != NULL);
+	tag = source_buffer->priv->bracket_match_tag;
 
 	/* Foreground color */
 	g_value_init (&foreground, GDK_TYPE_COLOR);
-
+	
 	if ((style->mask & GTK_SOURCE_TAG_STYLE_USE_FOREGROUND) != 0)
 		g_value_set_boxed (&foreground, &style->foreground);
 	else
 		g_value_set_boxed (&foreground, NULL);
-
+	
 	g_object_set_property (G_OBJECT (tag), "foreground_gdk", &foreground);
 
 	/* Background color */
@@ -1447,67 +1376,15 @@ gtk_source_buffer_set_bracket_correct_match_style (GtkSourceBuffer         *sour
 		g_value_set_boxed (&background, &style->background);
 	else
 		g_value_set_boxed (&background, NULL);
-
+	
 	g_object_set_property (G_OBJECT (tag), "background_gdk", &background);
-
-	g_object_set (G_OBJECT (tag),
+	
+	g_object_set (G_OBJECT (tag), 
 		      "style", style->italic ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL,
 		      "weight", style->bold ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
 		      "strikethrough", style->strikethrough,
 		      "underline", style->underline ? PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE,
-		      NULL);
-}
-
-void
-gtk_source_buffer_set_bracket_incorrect_match_style (GtkSourceBuffer         *source_buffer,
-						   const GtkSourceTagStyle *style)
-{
-	GtkTextTag *tag;
-	GValue foreground = { 0, };
-	GValue background = { 0, };
-
-	g_return_if_fail (GTK_IS_SOURCE_BUFFER (source_buffer));
-	g_return_if_fail (style != NULL);
-
-	/* create the tag if not already done so */
-	if (source_buffer->priv->bracket_incorrect_match_tag == NULL)
-	{
-		source_buffer->priv->bracket_incorrect_match_tag = gtk_text_tag_new (NULL);
-		gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (
-						GTK_TEXT_BUFFER (source_buffer)),
-					source_buffer->priv->bracket_incorrect_match_tag);
-		g_object_unref (source_buffer->priv->bracket_incorrect_match_tag);
-	}
-
-	g_return_if_fail (source_buffer->priv->bracket_incorrect_match_tag != NULL);
-	tag = source_buffer->priv->bracket_incorrect_match_tag;
-
-	/* Foreground color */
-	g_value_init (&foreground, GDK_TYPE_COLOR);
-
-	if ((style->mask & GTK_SOURCE_TAG_STYLE_USE_FOREGROUND) != 0)
-		g_value_set_boxed (&foreground, &style->foreground);
-	else
-		g_value_set_boxed (&foreground, NULL);
-
-	g_object_set_property (G_OBJECT (tag), "foreground_gdk", &foreground);
-
-	/* Background color */
-	g_value_init (&background, GDK_TYPE_COLOR);
-
-	if ((style->mask & GTK_SOURCE_TAG_STYLE_USE_BACKGROUND) != 0)
-		g_value_set_boxed (&background, &style->background);
-	else
-		g_value_set_boxed (&background, NULL);
-
-	g_object_set_property (G_OBJECT (tag), "background_gdk", &background);
-
-	g_object_set (G_OBJECT (tag),
-		      "style", style->italic ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL,
-		      "weight", style->bold ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
-		      "strikethrough", style->strikethrough,
-		      "underline", style->underline ? PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE,
-		      NULL);
+		      NULL);	
 }
 
 /**
@@ -3697,182 +3574,3 @@ gtk_source_buffer_get_prev_marker (GtkSourceBuffer *buffer,
 	return marker;
 }
 
-/**************************************************************************/
-
-static gboolean find (gunichar *vec, guint size, gunichar c)
-{
-	guint i;
-
-	for (i = 0; i < size; ++i)
-		if (c == vec[i])
-			return TRUE;
-
-	return FALSE;
-}
-
-
-gboolean    moo_edit_at_bracket         (GtkSourceBuffer    *buffer,
-                                         GtkTextIter        *iter)
-{
-	gunichar c;
-	GtkTextIter b;
-
-	c = gtk_text_iter_get_char (iter);
-	if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-	    find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
-	{
-		return TRUE;
-	}
-
-	b = *iter;
-	if (!gtk_text_iter_starts_line (&b) && gtk_text_iter_backward_char (&b))
-	{
-		c = gtk_text_iter_get_char (&b);
-		if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-		    find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
-		{
-			*iter = b;
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-
-MooEditBracketMatchType moo_edit_find_matching_bracket
-                                        (GtkSourceBuffer    *buffer,
-                                         GtkTextIter        *iter)
-{
-	int addition = 0;
-	gunichar *same_direction = NULL, *inverse_direction = NULL;
-	guint to_find = buffer->priv->num_brackets;
-	gunichar bracket = gtk_text_iter_get_char (iter);
-	gunichar bracket_to_find = 0;
-
-	const GtkSyntaxTag *tag;
-	guint stack = 0;
-	GtkTextIter b;
-
-	for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
-		if (bracket == buffer->priv->left_brackets[to_find])
-		{
-			bracket_to_find = buffer->priv->right_brackets[to_find];
-			addition = 1;
-			inverse_direction = buffer->priv->right_brackets;
-			same_direction = buffer->priv->left_brackets;
-			break;
-		}
-
-	if (to_find == buffer->priv->num_brackets)
-		for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
-			if (bracket == buffer->priv->right_brackets[to_find])
-			{
-				bracket_to_find = buffer->priv->left_brackets[to_find];
-				addition = -1;
-				same_direction = buffer->priv->right_brackets;
-				inverse_direction = buffer->priv->left_brackets;
-				break;
-			}
-
-	if (to_find == buffer->priv->num_brackets)
-		return MOO_EDIT_BRACKET_MATCH_NOT_AT_BRACKET;
-
-	tag = iter_has_syntax_tag (iter);
-	stack = 0;
-	b = *iter;
-
-	while (gtk_text_iter_forward_chars (&b, addition))
-	{
-		if (tag == iter_has_syntax_tag (&b))
-		{
-			gunichar c = gtk_text_iter_get_char (&b);
-			if (c == bracket_to_find && !stack)
-			{
-				*iter = b;
-				return MOO_EDIT_BRACKET_MATCH_CORRECT;
-			}
-
-			if (find (same_direction, buffer->priv->num_brackets, c)) ++stack;
-			else if (find (inverse_direction, buffer->priv->num_brackets, c))
-			{
-				if (stack) --stack;
-				else
-				{
-					*iter = b;
-					return MOO_EDIT_BRACKET_MATCH_INCORRECT;
-				}
-			}
-		}
-	}
-
-	return MOO_EDIT_BRACKET_MATCH_NONE;
-}
-
-
-static gboolean
-parse_brackets (const char     *string,
-                gunichar      **left_brackets,
-                gunichar      **right_brackets,
-                guint          *num)
-{
-	long len, i;
-	const char *p;
-	gunichar *left, *right;
-
-	g_return_val_if_fail (g_utf8_validate (string, -1, NULL), FALSE);
-	len = g_utf8_strlen (string, -1);
-	g_return_val_if_fail (len > 0 && (len / 2) * 2 == len, FALSE);
-
-	len /= 2;
-	p = string;
-	left = g_new (gunichar, len);
-	right = g_new (gunichar, len);
-
-	for (i = 0; i < len; ++i) {
-		left[i] = g_utf8_get_char (p);
-		p = g_utf8_next_char (p);
-		right[i] = g_utf8_get_char (p);
-		p = g_utf8_next_char (p);
-	}
-
-	*left_brackets = left;
-	*right_brackets = right;
-	*num = len;
-
-	return TRUE;
-}
-
-
-void
-gtk_source_buffer_set_brackets (GtkSourceBuffer *buffer,
-				const gchar     *string)
-{
-	g_return_if_fail (GTK_IS_SOURCE_BUFFER (buffer));
-
-	buffer->priv->num_brackets = 0;
-	g_free (buffer->priv->left_brackets);
-	buffer->priv->left_brackets = NULL;
-	g_free (buffer->priv->right_brackets);
-	buffer->priv->right_brackets = NULL;
-
-	if (!string) {
-		buffer->priv->num_brackets = 3;
-		buffer->priv->left_brackets = g_new (gunichar, 3);
-		buffer->priv->right_brackets = g_new (gunichar, 3);
-		buffer->priv->left_brackets[0] = '(';
-		buffer->priv->left_brackets[1] = '{';
-		buffer->priv->left_brackets[2] = '[';
-		buffer->priv->right_brackets[0] = ')';
-		buffer->priv->right_brackets[1] = '}';
-		buffer->priv->right_brackets[2] = ']';
-		return;
-	}
-	else if (!string[0])
-		return;
-
-	parse_brackets (string,
-			&(buffer->priv->left_brackets),
-			&(buffer->priv->right_brackets),
-			&(buffer->priv->num_brackets));
-}

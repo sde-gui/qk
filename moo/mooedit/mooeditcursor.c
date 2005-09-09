@@ -1,5 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *   mooeditcursor.c
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -18,7 +18,8 @@
 #include "mooutils/moocompat.h"
 
 
-inline static GtkWidgetClass *parent_class (void)
+inline static GtkWidgetClass*
+parent_class (void)
 {
     static gpointer sourceview_class = NULL;
     if (!sourceview_class)
@@ -27,7 +28,8 @@ inline static GtkWidgetClass *parent_class (void)
 }
 
 
-inline static gboolean is_word_char (const GtkTextIter *iter)
+inline static gboolean 
+is_word_char (const GtkTextIter *iter)
 {
     gunichar c = gtk_text_iter_get_char (iter);
     g_return_val_if_fail (c != 0, FALSE);
@@ -38,14 +40,16 @@ inline static gboolean is_word_char (const GtkTextIter *iter)
  * to use Pango or equivalent to get word breaking right, the algorithm
  * is fairly complex.)"
  */
-inline static gboolean is_space (const GtkTextIter *iter)
+inline static gboolean 
+is_space (const GtkTextIter *iter)
 {
     gunichar c = gtk_text_iter_get_char (iter);
     g_return_val_if_fail (c != 0, FALSE);
     return g_unichar_isspace (c);
 }
 
-inline static gboolean is_word_start (const GtkTextIter *iter)
+inline static gboolean 
+is_word_start (const GtkTextIter *iter)
 {
     GtkTextIter i;
     if (!is_word_char (iter)) return FALSE;
@@ -55,7 +59,8 @@ inline static gboolean is_word_start (const GtkTextIter *iter)
 }
 
 
-static gboolean text_iter_forward_word_start (GtkTextIter *iter)
+static gboolean 
+text_iter_forward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
     if (gtk_text_iter_is_end (iter)) return FALSE;
@@ -98,7 +103,8 @@ static gboolean text_iter_forward_word_start (GtkTextIter *iter)
     return moved && !gtk_text_iter_is_end (iter);
 }
 
-inline static gboolean text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
+inline static gboolean 
+text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 {
     if (!count) return FALSE;
     while (count) {
@@ -113,7 +119,8 @@ inline static gboolean text_iter_forward_word_start_n (GtkTextIter *iter, guint 
 }
 
 
-inline static gboolean text_iter_backward_word_start (GtkTextIter *iter)
+inline static gboolean 
+text_iter_backward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
     if (gtk_text_iter_starts_line (iter)) {
@@ -131,7 +138,8 @@ inline static gboolean text_iter_backward_word_start (GtkTextIter *iter)
     return moved;
 }
 
-inline static gboolean text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
+inline static gboolean 
+text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 {
     gboolean moved = FALSE;
     while (count && text_iter_backward_word_start (iter)) {
@@ -143,7 +151,8 @@ inline static gboolean text_iter_backward_word_start_n (GtkTextIter *iter, guint
 
 
 /* TODO: may I do this? */
-inline static void text_view_reset_im_context (GtkTextView *text_view)
+inline static void 
+text_view_reset_im_context (GtkTextView *text_view)
 {
   if (text_view->need_im_reset)
     {
@@ -153,10 +162,11 @@ inline static void text_view_reset_im_context (GtkTextView *text_view)
 }
 
 
-void    _moo_edit_move_cursor           (GtkTextView        *text_view,
-                                         GtkMovementStep     step,
-                                         gint                count,
-                                         gboolean            extend_selection)
+void    
+_moo_text_view_move_cursor (GtkTextView        *text_view,
+                            GtkMovementStep     step,
+                            gint                count,
+                            gboolean            extend_selection)
 {
     GtkTextBuffer *buffer;
     GtkTextIter insert;
@@ -199,9 +209,10 @@ void    _moo_edit_move_cursor           (GtkTextView        *text_view,
 }
 
 
-void    _moo_edit_delete_from_cursor    (GtkTextView        *text_view,
-                                         GtkDeleteType       type,
-                                         gint                count)
+void    
+_moo_text_view_delete_from_cursor (GtkTextView        *text_view,
+                                   GtkDeleteType       type,
+                                   gint                count)
 {
     GtkTextBuffer *buf;
     GtkTextMark *insert_mark;
@@ -238,28 +249,31 @@ void    _moo_edit_delete_from_cursor    (GtkTextView        *text_view,
 /* Mouse
  */
 
-inline static gboolean extend_selection (MooEdit                *edit,
-                                         MooEditSelectionType    type,
-                                         GtkTextIter            *insert,
-                                         GtkTextIter            *selection_bound)
+inline static gboolean 
+extend_selection (MooTextView          *view,
+                  MooTextSelectionType  type,
+                  GtkTextIter          *insert,
+                  GtkTextIter          *selection_bound)
 {
-    return MOO_EDIT_GET_CLASS(edit)->extend_selection (edit, type, insert, selection_bound);
+    return MOO_TEXT_VIEW_GET_CLASS(view)->extend_selection (view, type, insert, selection_bound);
 }
 
-inline static void clear_drag_stuff (MooEdit *edit)
+inline static void 
+clear_drag_stuff (MooTextView *view)
 {
-    edit->priv->drag_moved = FALSE;
-    edit->priv->drag_type = MOO_EDIT_DRAG_NONE;
-    edit->priv->drag_start_x = -1;
-    edit->priv->drag_start_y = -1;
-    edit->priv->drag_button = GDK_BUTTON_RELEASE;
+    view->priv->drag_moved = FALSE;
+    view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
+    view->priv->drag_start_x = -1;
+    view->priv->drag_start_y = -1;
+    view->priv->drag_button = GDK_BUTTON_RELEASE;
 }
 
-#define get_buf(edit) \
-    GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)))
+#define get_buf(view) \
+    GTK_SOURCE_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)))
 
 /* from gtktextview.c */
-inline static void text_view_unobscure_mouse_cursor (GtkTextView *text_view)
+inline static void 
+text_view_unobscure_mouse_cursor (GtkTextView *text_view)
 {
     if (text_view->mouse_cursor_obscured)
     {
@@ -272,21 +286,22 @@ inline static void text_view_unobscure_mouse_cursor (GtkTextView *text_view)
     }
 }
 
-static void start_drag_scroll (MooEdit *edit);
-static void stop_drag_scroll (MooEdit *edit);
-static gboolean drag_scroll_timeout_func (MooEdit *edit);
+static void     start_drag_scroll               (MooTextView        *view);
+static void     stop_drag_scroll                (MooTextView        *view);
+static gboolean drag_scroll_timeout_func        (MooTextView        *view);
 /* from gtktextview.c */
-static void text_view_start_selection_dnd (GtkTextView       *text_view,
-                                           const GtkTextIter *iter,
-                                           GdkEventMotion    *event);
+static void     text_view_start_selection_dnd   (GtkTextView        *text_view,
+                                                 const GtkTextIter  *iter,
+                                                 GdkEventMotion     *event);
 static const int SCROLL_TIMEOUT = 100;
 
 
-int     _moo_edit_button_press_event    (GtkWidget          *widget,
-                                         GdkEventButton     *event)
+int     
+_moo_text_view_button_press_event (GtkWidget          *widget,
+                                   GdkEventButton     *event)
 {
     GtkTextView *text_view;
-    MooEdit *edit;
+    MooTextView *view;
     GtkTextBuffer *buffer;
     int x, y;
     GtkTextIter iter;
@@ -299,7 +314,7 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
         return FALSE;
     }
 
-    edit = MOO_EDIT (widget);
+    view = MOO_TEXT_VIEW (widget);
     buffer = gtk_text_view_get_buffer (text_view);
     gtk_widget_grab_focus (widget);
 
@@ -315,9 +330,9 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
         if (event->button == 1) {
             GtkTextIter sel_start, sel_end;
 
-            edit->priv->drag_button = GDK_BUTTON_PRESS;
-            edit->priv->drag_start_x = x;
-            edit->priv->drag_start_y = y;
+            view->priv->drag_button = GDK_BUTTON_PRESS;
+            view->priv->drag_start_x = x;
+            view->priv->drag_start_y = y;
 
             /* if clicked in selected, start drag */
             if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
@@ -326,7 +341,7 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
                 if (gtk_text_iter_in_range (&iter, &sel_start, &sel_end)) {
                     /* clicked inside of selection,
                      * set up drag and return */
-                    edit->priv->drag_type = MOO_EDIT_DRAG_DRAG;
+                    view->priv->drag_type = MOO_TEXT_VIEW_DRAG_DRAG;
                     return TRUE;
                 }
             }
@@ -338,7 +353,7 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
                                            &iter);
             else
                 gtk_text_buffer_place_cursor (buffer, &iter);
-            edit->priv->drag_type = MOO_EDIT_DRAG_SELECT;
+            view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
         }
         else if (event->button == 2 || event->button == 3) {
             /* let GtkSourceView worry about this */
@@ -358,56 +373,57 @@ int     _moo_edit_button_press_event    (GtkWidget          *widget,
             gtk_text_buffer_place_cursor (buffer, &iter);
         }
 
-        edit->priv->drag_button = GDK_2BUTTON_PRESS;
-        edit->priv->drag_start_x = x;
-        edit->priv->drag_start_y = y;
-        edit->priv->drag_type = MOO_EDIT_DRAG_SELECT;
+        view->priv->drag_button = GDK_2BUTTON_PRESS;
+        view->priv->drag_start_x = x;
+        view->priv->drag_start_y = y;
+        view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
 
         bound = iter;
-        if (extend_selection (edit, MOO_EDIT_SELECT_WORDS, &iter, &bound))
+        if (extend_selection (view, MOO_TEXT_SELECT_WORDS, &iter, &bound))
             gtk_text_buffer_select_range (buffer, &iter, &bound);
     }
     else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
     {
         GtkTextIter bound = iter;
-        edit->priv->drag_button = GDK_3BUTTON_PRESS;
-        edit->priv->drag_start_x = x;
-        edit->priv->drag_start_y = y;
-        edit->priv->drag_type = MOO_EDIT_DRAG_SELECT;
-        if (extend_selection (edit, MOO_EDIT_SELECT_LINES, &iter, &bound))
+        view->priv->drag_button = GDK_3BUTTON_PRESS;
+        view->priv->drag_start_x = x;
+        view->priv->drag_start_y = y;
+        view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
+        if (extend_selection (view, MOO_TEXT_SELECT_LINES, &iter, &bound))
             gtk_text_buffer_select_range (buffer, &iter, &bound);
     }
     return TRUE;
 }
 
 
-int     _moo_edit_button_release_event  (GtkWidget          *widget,
-                                         G_GNUC_UNUSED GdkEventButton *event)
+int     
+_moo_text_view_button_release_event (GtkWidget          *widget,
+                                     G_GNUC_UNUSED GdkEventButton *event)
 {
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
-    MooEdit *edit = MOO_EDIT (widget);
+    MooTextView *view = MOO_TEXT_VIEW (widget);
     GtkTextIter iter;
 
-    switch (edit->priv->drag_type) {
-        case MOO_EDIT_DRAG_NONE:
+    switch (view->priv->drag_type) {
+        case MOO_TEXT_VIEW_DRAG_NONE:
             /* it may happen after right-click, or clicking outside
              * of widget or something like that
              * everything has been taken care of, so do nothing */
             break;
 
-        case MOO_EDIT_DRAG_SELECT:
+        case MOO_TEXT_VIEW_DRAG_SELECT:
             /* everything should be done already in button_press and
              * motion_notify handlers */
-            stop_drag_scroll (edit);
+            stop_drag_scroll (view);
             break;
 
-        case MOO_EDIT_DRAG_DRAG:
+        case MOO_TEXT_VIEW_DRAG_DRAG:
             /* if we were really dragging, drop it
              * otherwise, it was just a single click in selected text */
-            g_assert (!edit->priv->drag_moved); /* parent should handle drag */
+            g_assert (!view->priv->drag_moved); /* parent should handle drag */
             gtk_text_view_get_iter_at_location (text_view, &iter,
-                                                edit->priv->drag_start_x,
-                                                edit->priv->drag_start_y);
+                                                view->priv->drag_start_x,
+                                                view->priv->drag_start_y);
             gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (text_view),
                                           &iter);
             break;
@@ -416,7 +432,7 @@ int     _moo_edit_button_release_event  (GtkWidget          *widget,
             g_assert_not_reached ();
     }
 
-    clear_drag_stuff (edit);
+    clear_drag_stuff (view);
     return TRUE;
 }
 
@@ -427,17 +443,18 @@ int     _moo_edit_button_release_event  (GtkWidget          *widget,
      (x) >= (rect).x + (rect).width ||  \
      (y) >= (rect).y + (rect).height)
 
-int     _moo_edit_motion_event          (GtkWidget          *widget,
-                                         GdkEventMotion     *event)
+int     
+_moo_text_view_motion_event (GtkWidget          *widget,
+                             GdkEventMotion     *event)
 {
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
-    MooEdit *edit = MOO_EDIT (widget);
+    MooTextView *view = MOO_TEXT_VIEW (widget);
     int x, y, event_x, event_y;
     GtkTextIter iter;
 
     text_view_unobscure_mouse_cursor (text_view);
 
-    if (!edit->priv->drag_type) return FALSE;
+    if (!view->priv->drag_type) return FALSE;
 
     if (event->is_hint)
         gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
@@ -450,36 +467,36 @@ int     _moo_edit_motion_event          (GtkWidget          *widget,
                                            event_x, event_y, &x, &y);
     gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
-    if (edit->priv->drag_type == MOO_EDIT_DRAG_SELECT) {
+    if (view->priv->drag_type == MOO_TEXT_VIEW_DRAG_SELECT) {
         GdkRectangle rect;
         GtkTextIter start;
-        MooEditSelectionType t;
+        MooTextSelectionType t;
         GtkTextBuffer *buffer;
 
-        edit->priv->drag_moved = TRUE;
+        view->priv->drag_moved = TRUE;
         gtk_text_view_get_visible_rect (text_view, &rect);
 
         if (outside (x, y, rect)) {
-            start_drag_scroll (edit);
+            start_drag_scroll (view);
             return TRUE;
         }
         else
-            stop_drag_scroll (edit);
+            stop_drag_scroll (view);
 
         buffer = gtk_text_view_get_buffer (text_view);
 
         gtk_text_view_get_iter_at_location (text_view, &start,
-                                            edit->priv->drag_start_x,
-                                            edit->priv->drag_start_y);
+                                            view->priv->drag_start_x,
+                                            view->priv->drag_start_y);
 
-        if (edit->priv->drag_button == GDK_BUTTON_PRESS)
-            t = MOO_EDIT_SELECT_CHARS;
-        else if (edit->priv->drag_button == GDK_2BUTTON_PRESS)
-            t = MOO_EDIT_SELECT_WORDS;
+        if (view->priv->drag_button == GDK_BUTTON_PRESS)
+            t = MOO_TEXT_SELECT_CHARS;
+        else if (view->priv->drag_button == GDK_2BUTTON_PRESS)
+            t = MOO_TEXT_SELECT_WORDS;
         else
-            t = MOO_EDIT_SELECT_LINES;
+            t = MOO_TEXT_SELECT_LINES;
 
-        if (extend_selection (edit, t, &start, &iter))
+        if (extend_selection (view, t, &start, &iter))
             gtk_text_buffer_select_range (buffer, &iter, &start);
         else
             gtk_text_buffer_place_cursor (buffer, &iter);
@@ -491,8 +508,8 @@ int     _moo_edit_motion_event          (GtkWidget          *widget,
                                 &x, &y, NULL);
 
         if (gtk_drag_check_threshold (widget,
-                                      edit->priv->drag_start_x,
-                                      edit->priv->drag_start_y,
+                                      view->priv->drag_start_x,
+                                      view->priv->drag_start_y,
                                       x, y))
         {
             GtkTextIter iter;
@@ -500,14 +517,14 @@ int     _moo_edit_motion_event          (GtkWidget          *widget,
 
             gtk_text_view_window_to_buffer_coords (text_view,
                                                    GTK_TEXT_WINDOW_TEXT,
-                                                   edit->priv->drag_start_x,
-                                                   edit->priv->drag_start_y,
+                                                   view->priv->drag_start_x,
+                                                   view->priv->drag_start_y,
                                                    &buffer_x,
                                                    &buffer_y);
 
             gtk_text_view_get_iter_at_location (text_view, &iter, buffer_x, buffer_y);
 
-            edit->priv->drag_type = MOO_EDIT_DRAG_NONE;
+            view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
             text_view_start_selection_dnd (text_view, &iter, event);
         }
     }
@@ -520,9 +537,10 @@ static const GtkTargetEntry gtk_text_view_target_table[] = {
     { (char*)"GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
 };
 
-static void text_view_start_selection_dnd  (GtkTextView       *text_view,
-                                            G_GNUC_UNUSED const GtkTextIter *iter,
-                                            GdkEventMotion    *event)
+static void 
+text_view_start_selection_dnd (GtkTextView       *text_view,
+                               G_GNUC_UNUSED const GtkTextIter *iter,
+                               GdkEventMotion    *event)
 {
     GdkDragContext *context;
     GtkTargetList *target_list;
@@ -545,7 +563,8 @@ static void text_view_start_selection_dnd  (GtkTextView       *text_view,
 }
 
 
-inline static int char_class (const GtkTextIter *iter)
+inline static int 
+char_class (const GtkTextIter *iter)
 {
     if (gtk_text_iter_ends_line (iter)) return -1;
     else if (is_space (iter)) return 0;
@@ -553,35 +572,41 @@ inline static int char_class (const GtkTextIter *iter)
     else return 2;
 }
 
-int     _moo_edit_extend_selection      (MooEdit            *edit,
-                                         MooEditSelectionType type,
-                                         GtkTextIter        *start,
-                                         GtkTextIter        *end)
+int     
+_moo_text_view_extend_selection (MooTextView        *view,
+                                 MooTextSelectionType type,
+                                 GtkTextIter        *start,
+                                 GtkTextIter        *end)
 {
     int order = gtk_text_iter_compare (start, end);
-    if (type == MOO_EDIT_SELECT_CHARS) {
+    
+    if (type == MOO_TEXT_SELECT_CHARS) 
+    {
         return order;
     }
-    else if (type == MOO_EDIT_SELECT_WORDS) {
+    else if (type == MOO_TEXT_SELECT_WORDS) 
+    {
         int ch_class;
 
-        if (!order && edit->priv->double_click_selects_brackets) {
+        if (!order && view->priv->double_click_selects_brackets) 
+        {
             GtkTextIter rstart = *start;
-            if (moo_edit_at_bracket (get_buf (edit), &rstart) &&
+            if (moo_text_iter_at_bracket (&rstart) &&
                 !(order == 1 && gtk_text_iter_compare (&rstart, start) == -1))  /* this means (...)| */
             {
                 GtkTextIter rend = rstart;
-                if (moo_edit_find_matching_bracket (get_buf (edit), &rend) ==
-                        MOO_EDIT_BRACKET_MATCH_CORRECT)
+                if (moo_text_iter_find_matching_bracket (&rend) == MOO_BRACKET_MATCH_CORRECT)
                 {
-                    if (gtk_text_iter_compare (&rstart, &rend) > 0) {    /*  <rend>(     <rstart>) */
-                        if (edit->priv->double_click_selects_inside)
+                    if (gtk_text_iter_compare (&rstart, &rend) > 0) 
+                    {   /*  <rend>(     <rstart>) */
+                        if (view->priv->double_click_selects_inside)
                             gtk_text_iter_forward_char (&rend);
                         else
                             gtk_text_iter_forward_char (&rstart);
                     }
-                    else {              /*  <rstart>(     <rend>) */
-                        if (edit->priv->double_click_selects_inside)
+                    else 
+                    {   /*  <rstart>(     <rend>) */
+                        if (view->priv->double_click_selects_inside)
                             gtk_text_iter_forward_char (&rstart);
                         else
                             gtk_text_iter_forward_char (&rend);
@@ -593,28 +618,37 @@ int     _moo_edit_extend_selection      (MooEdit            *edit,
             }
         }
 
-        if (order > 0) {
+        if (order > 0) 
+        {
             GtkTextIter *tmp = start;
             start = end; end = tmp;
         }
+        
         ch_class = char_class (end);
+        
         while (!gtk_text_iter_ends_line (end) &&
                 char_class (end) == ch_class)
         {
             gtk_text_iter_forward_char (end);
         }
+        
         ch_class = char_class (start);
+        
         while (!gtk_text_iter_starts_line (start) &&
                 char_class (start) == ch_class)
         {
             gtk_text_iter_backward_char (start);
         }
+        
         if (char_class (start) != ch_class)
             gtk_text_iter_forward_char (start);
+        
         return gtk_text_iter_compare (start, end);
     }
-    else if (type == MOO_EDIT_SELECT_LINES) {
-        if (order > 0) {
+    else if (type == MOO_TEXT_SELECT_LINES) 
+    {
+        if (order > 0) 
+        {
             GtkTextIter *tmp = start;
             start = end; end = tmp;
         }
@@ -622,41 +656,45 @@ int     _moo_edit_extend_selection      (MooEdit            *edit,
         gtk_text_iter_forward_line (end);
         return gtk_text_iter_compare (start, end);
     }
+
     g_assert_not_reached ();
 }
 
 
-static void start_drag_scroll (MooEdit *edit)
+static void 
+start_drag_scroll (MooTextView *view)
 {
-    if (!edit->priv->drag_scroll_timeout)
-        edit->priv->drag_scroll_timeout =
+    if (!view->priv->drag_scroll_timeout)
+        view->priv->drag_scroll_timeout =
             g_timeout_add (SCROLL_TIMEOUT,
                            (GSourceFunc)drag_scroll_timeout_func,
-                           edit);
-    drag_scroll_timeout_func (edit);
+                           view);
+    drag_scroll_timeout_func (view);
 }
 
 
-static void stop_drag_scroll (MooEdit *edit)
+static void 
+stop_drag_scroll (MooTextView *view)
 {
-    if (edit->priv->drag_scroll_timeout)
-        g_source_remove (edit->priv->drag_scroll_timeout);
-    edit->priv->drag_scroll_timeout = 0;
+    if (view->priv->drag_scroll_timeout)
+        g_source_remove (view->priv->drag_scroll_timeout);
+    view->priv->drag_scroll_timeout = 0;
 }
 
 
-static gboolean drag_scroll_timeout_func (MooEdit *edit)
+static gboolean 
+drag_scroll_timeout_func (MooTextView *view)
 {
     GtkTextView *text_view;
     int x, y, px, py;
     GtkTextIter iter;
     GtkTextIter start;
-    MooEditSelectionType t;
+    MooTextSelectionType t;
     GtkTextBuffer *buffer;
 
-    g_assert (edit->priv->drag_type == MOO_EDIT_DRAG_SELECT);
+    g_assert (view->priv->drag_type == MOO_TEXT_VIEW_DRAG_SELECT);
 
-    text_view = GTK_TEXT_VIEW (edit);
+    text_view = GTK_TEXT_VIEW (view);
 
     gdk_window_get_pointer (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT),
                             &px, &py, NULL);
@@ -667,14 +705,17 @@ static gboolean drag_scroll_timeout_func (MooEdit *edit)
     buffer = gtk_text_view_get_buffer (text_view);
 
     gtk_text_view_get_iter_at_location (text_view, &start,
-                                        edit->priv->drag_start_x,
-                                        edit->priv->drag_start_y);
+                                        view->priv->drag_start_x,
+                                        view->priv->drag_start_y);
 
-    if (edit->priv->drag_button == GDK_BUTTON_PRESS) t = MOO_EDIT_SELECT_CHARS;
-    else if (edit->priv->drag_button == GDK_2BUTTON_PRESS) t = MOO_EDIT_SELECT_WORDS;
-    else t = MOO_EDIT_SELECT_LINES;
+    if (view->priv->drag_button == GDK_BUTTON_PRESS) 
+        t = MOO_TEXT_SELECT_CHARS;
+    else if (view->priv->drag_button == GDK_2BUTTON_PRESS) 
+        t = MOO_TEXT_SELECT_WORDS;
+    else 
+        t = MOO_TEXT_SELECT_LINES;
 
-    if (extend_selection (edit, t, &start, &iter))
+    if (extend_selection (view, t, &start, &iter))
         gtk_text_buffer_select_range (buffer, &iter, &start);
     else
         gtk_text_buffer_place_cursor (buffer, &iter);

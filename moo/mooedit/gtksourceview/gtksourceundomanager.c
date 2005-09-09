@@ -22,10 +22,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, 
  * Boston, MA 02111-1307, USA.
  */
-/* Changed by Muntyan
- *
- * 06/13/2005: replaced GTK_SOURCE_TYPE_UNDO_MANAGER with GTK_TYPE_SOURCE_UNDO_MANAGER
- *                      GTK_SOURCE_IS_UNDO_MANAGER with GTK_IS_SOURCE_UNDO_MANAGER
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: replaced gtksourceview_marshal* with _moo_marshal*
  */
 
 #ifdef HAVE_CONFIG_H
@@ -37,7 +36,7 @@
 #include <string.h>
 
 #include "gtksourceundomanager.h"
-#include "gtksourceview-marshal.h"
+#include "mooutils/moomarshals.h"
 
 
 #define DEFAULT_MAX_UNDO_LEVELS		25
@@ -214,7 +213,7 @@ gtk_source_undo_manager_class_init (GtkSourceUndoManagerClass *klass)
 			      G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (GtkSourceUndoManagerClass, can_undo),
 			      NULL, NULL,
-			      gtksourceview_marshal_VOID__BOOLEAN,
+			      _moo_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE,
 			      1,
 			      G_TYPE_BOOLEAN);
@@ -225,7 +224,7 @@ gtk_source_undo_manager_class_init (GtkSourceUndoManagerClass *klass)
 			      G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (GtkSourceUndoManagerClass, can_redo),
 			      NULL, NULL,
-			      gtksourceview_marshal_VOID__BOOLEAN,
+			      _moo_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE,
 			      1,
 			      G_TYPE_BOOLEAN);
@@ -260,7 +259,7 @@ gtk_source_undo_manager_finalize (GObject *object)
 	GtkSourceUndoManager *um;
 
 	g_return_if_fail (object != NULL);
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (object));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (object));
 	
    	um = GTK_SOURCE_UNDO_MANAGER (object);
 
@@ -293,7 +292,7 @@ gtk_source_undo_manager_new (GtkTextBuffer* buffer)
 {
  	GtkSourceUndoManager *um;
 
-        um = GTK_SOURCE_UNDO_MANAGER (g_object_new (GTK_TYPE_SOURCE_UNDO_MANAGER, NULL));
+	um = GTK_SOURCE_UNDO_MANAGER (g_object_new (GTK_SOURCE_TYPE_UNDO_MANAGER, NULL));
 
 	g_return_val_if_fail (um->priv != NULL, NULL);
   	um->priv->document = buffer;
@@ -319,7 +318,7 @@ gtk_source_undo_manager_new (GtkTextBuffer* buffer)
 void 
 gtk_source_undo_manager_begin_not_undoable_action (GtkSourceUndoManager *um)
 {
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	++um->priv->running_not_undoable_actions;
@@ -328,7 +327,7 @@ gtk_source_undo_manager_begin_not_undoable_action (GtkSourceUndoManager *um)
 static void 
 gtk_source_undo_manager_end_not_undoable_action_internal (GtkSourceUndoManager *um)
 {
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	g_return_if_fail (um->priv->running_not_undoable_actions > 0);
@@ -339,7 +338,7 @@ gtk_source_undo_manager_end_not_undoable_action_internal (GtkSourceUndoManager *
 void 
 gtk_source_undo_manager_end_not_undoable_action (GtkSourceUndoManager *um)
 {
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	gtk_source_undo_manager_end_not_undoable_action_internal (um);
@@ -374,7 +373,7 @@ gtk_source_undo_manager_end_not_undoable_action (GtkSourceUndoManager *um)
 gboolean
 gtk_source_undo_manager_can_undo (const GtkSourceUndoManager *um)
 {
-	g_return_val_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um), FALSE);
+	g_return_val_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um), FALSE);
 	g_return_val_if_fail (um->priv != NULL, FALSE);
 
 	return um->priv->can_undo;
@@ -383,7 +382,7 @@ gtk_source_undo_manager_can_undo (const GtkSourceUndoManager *um)
 gboolean 
 gtk_source_undo_manager_can_redo (const GtkSourceUndoManager *um)
 {
-	g_return_val_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um), FALSE);
+	g_return_val_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um), FALSE);
 	g_return_val_if_fail (um->priv != NULL, FALSE);
 
 	return um->priv->can_redo;
@@ -446,7 +445,7 @@ gtk_source_undo_manager_undo (GtkSourceUndoManager *um)
 	GtkSourceUndoAction *undo_action;
 	gboolean modified = FALSE;
 
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 	g_return_if_fail (um->priv->can_undo);
 	
@@ -548,7 +547,7 @@ gtk_source_undo_manager_redo (GtkSourceUndoManager *um)
 	GtkSourceUndoAction *undo_action;
 	gboolean modified = FALSE;
 
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 	g_return_if_fail (um->priv->can_redo);
 	
@@ -635,13 +634,12 @@ gtk_source_undo_manager_free_action_list (GtkSourceUndoManager *um)
 {
 	gint n, len;
 	
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	if (um->priv->actions == NULL)
-	{
 		return;
-	}
+	
 	len = g_list_length (um->priv->actions);
 	
 	for (n = 0; n < len; n++)
@@ -750,7 +748,7 @@ gtk_source_undo_manager_delete_range_handler (GtkTextBuffer 		*buffer,
 static void 
 gtk_source_undo_manager_begin_user_action_handler (GtkTextBuffer *buffer, GtkSourceUndoManager *um)
 {
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	if (um->priv->running_not_undoable_actions > 0)
@@ -817,7 +815,7 @@ gtk_source_undo_manager_free_first_n_actions (GtkSourceUndoManager	*um,
 {
 	gint i;
 	
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	if (um->priv->actions == NULL)
@@ -855,7 +853,7 @@ gtk_source_undo_manager_check_list_size (GtkSourceUndoManager *um)
 {
 	gint undo_levels;
 	
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 	
 	undo_levels = gtk_source_undo_manager_get_max_undo_levels (um);
@@ -866,7 +864,7 @@ gtk_source_undo_manager_check_list_size (GtkSourceUndoManager *um)
 	if (um->priv->num_of_groups > undo_levels)
 	{
 		GtkSourceUndoAction *undo_action;
-		GList* last;
+		GList *last;
 		
 		last = g_list_last (um->priv->actions);
 		undo_action = (GtkSourceUndoAction*) last->data;
@@ -919,7 +917,7 @@ gtk_source_undo_manager_merge_action (GtkSourceUndoManager 	*um,
 {
 	GtkSourceUndoAction *last_action;
 	
-	g_return_val_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um), FALSE);
+	g_return_val_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um), FALSE);
 	g_return_val_if_fail (um->priv != NULL, FALSE);
 
 	if (um->priv->actions == NULL)
@@ -1032,7 +1030,7 @@ gint
 gtk_source_undo_manager_get_max_undo_levels (GtkSourceUndoManager *um)
 {
 	g_return_val_if_fail (um != NULL, 0);
-	g_return_val_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um), 0);
+	g_return_val_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um), 0);
 
 	return um->priv->max_undo_levels;
 }
@@ -1044,7 +1042,7 @@ gtk_source_undo_manager_set_max_undo_levels (GtkSourceUndoManager	*um,
 	gint old_levels;
 	
 	g_return_if_fail (um != NULL);
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 
 	old_levels = um->priv->max_undo_levels;
 	um->priv->max_undo_levels = max_undo_levels;
@@ -1087,7 +1085,7 @@ gtk_source_undo_manager_modified_changed_handler (GtkTextBuffer        *buffer,
 	GtkSourceUndoAction *action;
 	GList *list;
 	
-	g_return_if_fail (GTK_IS_SOURCE_UNDO_MANAGER (um));
+	g_return_if_fail (GTK_SOURCE_IS_UNDO_MANAGER (um));
 	g_return_if_fail (um->priv != NULL);
 
 	if (um->priv->actions == NULL)
@@ -1116,10 +1114,16 @@ gtk_source_undo_manager_modified_changed_handler (GtkTextBuffer        *buffer,
 		return;
 	}
 
+	if (action == NULL)
+	{
+		g_return_if_fail (um->priv->running_not_undoable_actions > 0);
+
+		return;
+	}
+	
 	/* gtk_text_buffer_get_modified (buffer) == TRUE */
 
 	g_return_if_fail (um->priv->modified_action == NULL);
-	g_return_if_fail (action != NULL);
 
 	if (action->order_in_group > 1)
 		um->priv->modified_undoing_group  = TRUE;

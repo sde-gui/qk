@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooeditfind.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -53,8 +54,9 @@ static gboolean update_scale_value  (GtkSpinButton  *spin,
 }
 
 
-void         moo_edit_goto_line             (MooEdit            *edit,
-                                             int                 line)
+void         
+moo_text_view_goto_line (MooTextView *view,
+                         int          line)
 {
     GtkWidget *dialog;
     GtkTextBuffer *buffer;
@@ -64,9 +66,9 @@ void         moo_edit_goto_line             (MooEdit            *edit,
     GtkSpinButton *spin;
     int response;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     line_count = gtk_text_buffer_get_line_count (buffer);
 
     if (line < 0 || line >= line_count)
@@ -95,7 +97,7 @@ void         moo_edit_goto_line             (MooEdit            *edit,
         g_signal_connect (spin, "value-changed", G_CALLBACK (update_scale_value), scale);
 
         gtk_window_set_transient_for (GTK_WINDOW (dialog),
-                                      GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))));
+                                      GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))));
         response = gtk_dialog_run (GTK_DIALOG (dialog));
         if (response != GTK_RESPONSE_OK) {
             gtk_widget_destroy (dialog);
@@ -108,7 +110,7 @@ void         moo_edit_goto_line             (MooEdit            *edit,
 
     gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
     gtk_text_buffer_place_cursor (buffer, &iter);
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit),
+    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
                                         gtk_text_buffer_get_insert (buffer));
 }
 
@@ -144,12 +146,12 @@ GtkWidget *_moo_edit_create_find_dialog (gboolean replace);
 
 
 typedef struct {
-    MooEdit *edit;
+    MooTextView *view;
     GtkWidget *dialog;
-    MooEditReplaceResponseType response;
+    MooTextReplaceResponseType response;
 } PromptFuncData;
 
-static MooEditReplaceResponseType prompt_on_replace_func
+static MooTextReplaceResponseType prompt_on_replace_func
                                             (const char         *text,
                                              EggRegex           *regex,
                                              const char         *replacement,
@@ -158,26 +160,27 @@ static MooEditReplaceResponseType prompt_on_replace_func
                                              gpointer            data);
 
 
-void        _moo_edit_find                  (MooEdit            *edit)
+void        
+_moo_text_view_find (MooTextView *view)
 {
     GtkWidget *dialog;
     gboolean regex, case_sensitive, whole_words, from_cursor, backwards, selected;
     GtkTextIter sel_start, sel_end;
     int response;
-    MooEditSearchOptions options;
+    MooTextSearchOptions options;
     const char *text;
     GtkTextMark *insert;
     GtkTextBuffer *buffer;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-    regex = _moo_edit_search_params->regex;
-    case_sensitive = _moo_edit_search_params->case_sensitive;
-    backwards = _moo_edit_search_params->backwards;
-    whole_words = _moo_edit_search_params->whole_words;
-    from_cursor = _moo_edit_search_params->from_cursor;
+    regex = _moo_text_search_params->regex;
+    case_sensitive = _moo_text_search_params->case_sensitive;
+    backwards = _moo_text_search_params->backwards;
+    whole_words = _moo_text_search_params->whole_words;
+    from_cursor = _moo_text_search_params->from_cursor;
 
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
@@ -188,11 +191,11 @@ void        _moo_edit_find                  (MooEdit            *edit)
     dialog = _moo_edit_create_find_dialog (FALSE);
     set (dialog, regex, case_sensitive, whole_words,
          from_cursor, backwards, selected, FALSE);
-    if (_moo_edit_search_params->text)
-        set_text (dialog, _moo_edit_search_params->text);
+    if (_moo_text_search_params->text)
+        set_text (dialog, _moo_text_search_params->text);
 
     gtk_window_set_transient_for (GTK_WINDOW (dialog),
-                                  GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))));
+                                  GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))));
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     if (response != GTK_RESPONSE_OK) {
         gtk_widget_destroy (dialog);
@@ -208,24 +211,28 @@ void        _moo_edit_find                  (MooEdit            *edit)
         return;
     }
 
-    _moo_edit_search_params->regex = regex;
-    _moo_edit_search_params->case_sensitive = case_sensitive;
-    _moo_edit_search_params->backwards = backwards;
-    _moo_edit_search_params->whole_words = whole_words;
-    _moo_edit_search_params->from_cursor = from_cursor;
+    _moo_text_search_params->regex = regex;
+    _moo_text_search_params->case_sensitive = case_sensitive;
+    _moo_text_search_params->backwards = backwards;
+    _moo_text_search_params->whole_words = whole_words;
+    _moo_text_search_params->from_cursor = from_cursor;
 
-    _moo_edit_search_params->last_search_stamp++;
-    edit->priv->last_search_stamp = _moo_edit_search_params->last_search_stamp;
+    _moo_text_search_params->last_search_stamp++;
+    view->priv->last_search_stamp = _moo_text_search_params->last_search_stamp;
 
-    g_free (_moo_edit_search_params->text);
-    _moo_edit_search_params->text = g_strdup (get_text (dialog));
-    text = _moo_edit_search_params->text;
+    g_free (_moo_text_search_params->text);
+    _moo_text_search_params->text = g_strdup (get_text (dialog));
+    text = _moo_text_search_params->text;
     gtk_widget_destroy (dialog);
 
     options = 0;
-    if (regex) options |= MOO_EDIT_SEARCH_REGEX;
-    if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
-    if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
+
+    if (regex) 
+        options |= MOO_TEXT_SEARCH_REGEX;
+    if (backwards) 
+        options |= MOO_TEXT_SEARCH_BACKWARDS;
+    if (!case_sensitive) 
+        options |= MOO_TEXT_SEARCH_CASE_INSENSITIVE;
 
     insert = gtk_text_buffer_get_insert (buffer);
 
@@ -251,29 +258,29 @@ void        _moo_edit_find                  (MooEdit            *edit)
         else
             gtk_text_buffer_get_end_iter (buffer, &limit);
 
-        result = moo_edit_search (&start, &limit, text,
+        result = moo_text_search (&start, &limit, text,
                                   &match_start, &match_end, options,
                                   &err);
         if (!result)
         {
             if (err) {
-                moo_edit_regex_error_dialog (edit, err);
+                moo_text_regex_error_dialog (view, err);
                 g_error_free (err);
                 return;
             }
 
             if (!from_cursor) {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
             if ((backwards && gtk_text_iter_is_end (&start)) ||
                 (!backwards && gtk_text_iter_is_start (&start)))
             {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
 
-            if (!moo_edit_search_from_beginning_dialog (edit, backwards))
+            if (!moo_text_search_from_beginning_dialog (view, backwards))
             {
                 return;
             }
@@ -285,12 +292,12 @@ void        _moo_edit_find                  (MooEdit            *edit)
 
             limit = search_start;
 
-            result = moo_edit_search (&start, &limit, text,
+            result = moo_text_search (&start, &limit, text,
                                       &match_start, &match_end, options,
                                       NULL);
 
             if (!result) {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
         }
@@ -298,54 +305,55 @@ void        _moo_edit_find                  (MooEdit            *edit)
         if (backwards)
             gtk_text_iter_order (&match_end, &match_start);
 
-        if (!edit->priv->last_found_start) {
-            edit->priv->last_found_start =
+        if (!view->priv->last_found_start) {
+            view->priv->last_found_start =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_start, TRUE);
-            edit->priv->last_found_end =
+            view->priv->last_found_end =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_end, TRUE);
         }
         else {
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_start,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_start,
                                        &match_start);
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_end,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_end,
                                        &match_end);
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit), insert);
+        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
     }
 }
 
 
-void        _moo_edit_find_next             (MooEdit            *edit)
+void        
+_moo_text_view_find_next (MooTextView *view)
 {
     gboolean regex, case_sensitive, whole_words, backwards;
-    MooEditSearchOptions options;
+    MooTextSearchOptions options;
     const char *text;
     GtkTextMark *insert;
     GtkTextBuffer *buffer;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-    if (_moo_edit_search_params->last_search_stamp < 0 ||
-        !_moo_edit_search_params->text)
-            return moo_edit_find (edit);
+    if (_moo_text_search_params->last_search_stamp < 0 ||
+        !_moo_text_search_params->text)
+            return moo_text_view_find (view);
 
-    regex = _moo_edit_search_params->regex;
-    case_sensitive = _moo_edit_search_params->case_sensitive;
-    backwards = _moo_edit_search_params->backwards;
-    whole_words = _moo_edit_search_params->whole_words;
+    regex = _moo_text_search_params->regex;
+    case_sensitive = _moo_text_search_params->case_sensitive;
+    backwards = _moo_text_search_params->backwards;
+    whole_words = _moo_text_search_params->whole_words;
 
-    edit->priv->last_search_stamp = _moo_edit_search_params->last_search_stamp;
+    view->priv->last_search_stamp = _moo_text_search_params->last_search_stamp;
 
-    text = _moo_edit_search_params->text;
+    text = _moo_text_search_params->text;
 
     options = 0;
-    if (regex) options |= MOO_EDIT_SEARCH_REGEX;
-    if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
-    if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
+    if (regex) options |= MOO_TEXT_SEARCH_REGEX;
+    if (backwards) options |= MOO_TEXT_SEARCH_BACKWARDS;
+    if (!case_sensitive) options |= MOO_TEXT_SEARCH_CASE_INSENSITIVE;
 
     insert = gtk_text_buffer_get_insert (buffer);
 
@@ -361,7 +369,7 @@ void        _moo_edit_find_next             (MooEdit            *edit)
         else
             gtk_text_buffer_get_end_iter (buffer, &limit);
 
-        result = moo_edit_search (&start, &limit, text,
+        result = moo_text_search (&start, &limit, text,
                                   &match_start, &match_end, options,
                                   NULL);
         if (!result)
@@ -369,11 +377,11 @@ void        _moo_edit_find_next             (MooEdit            *edit)
             if ((backwards && gtk_text_iter_is_end (&start)) ||
                 (!backwards && gtk_text_iter_is_start (&start)))
             {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
 
-            if (!moo_edit_search_from_beginning_dialog (edit, backwards))
+            if (!moo_text_search_from_beginning_dialog (view, backwards))
             {
                 return;
             }
@@ -385,12 +393,12 @@ void        _moo_edit_find_next             (MooEdit            *edit)
 
             limit = search_start;
 
-            result = moo_edit_search (&start, &search_start, text,
+            result = moo_text_search (&start, &search_start, text,
                                       &match_start, &match_end, options,
                                       NULL);
 
             if (!result) {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
         }
@@ -398,54 +406,55 @@ void        _moo_edit_find_next             (MooEdit            *edit)
         if (backwards)
             gtk_text_iter_order (&match_end, &match_start);
 
-        if (!edit->priv->last_found_start) {
-            edit->priv->last_found_start =
+        if (!view->priv->last_found_start) {
+            view->priv->last_found_start =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_start, TRUE);
-            edit->priv->last_found_end =
+            view->priv->last_found_end =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_end, TRUE);
         }
         else {
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_start,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_start,
                                        &match_start);
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_end,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_end,
                                        &match_end);
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit), insert);
+        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
     }
 }
 
 
-void        _moo_edit_find_previous         (MooEdit            *edit)
+void        
+_moo_text_view_find_previous (MooTextView *view)
 {
     gboolean regex, case_sensitive, whole_words, backwards;
-    MooEditSearchOptions options;
+    MooTextSearchOptions options;
     const char *text;
     GtkTextMark *insert;
     GtkTextBuffer *buffer;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-    if (_moo_edit_search_params->last_search_stamp < 0 ||
-        !_moo_edit_search_params->text)
-            return moo_edit_find (edit);
+    if (_moo_text_search_params->last_search_stamp < 0 ||
+        !_moo_text_search_params->text)
+            return moo_text_view_find (view);
 
-    regex = _moo_edit_search_params->regex;
-    case_sensitive = _moo_edit_search_params->case_sensitive;
-    backwards = _moo_edit_search_params->backwards;
-    whole_words = _moo_edit_search_params->whole_words;
+    regex = _moo_text_search_params->regex;
+    case_sensitive = _moo_text_search_params->case_sensitive;
+    backwards = _moo_text_search_params->backwards;
+    whole_words = _moo_text_search_params->whole_words;
 
-    edit->priv->last_search_stamp = _moo_edit_search_params->last_search_stamp;
+    view->priv->last_search_stamp = _moo_text_search_params->last_search_stamp;
 
-    text = _moo_edit_search_params->text;
+    text = _moo_text_search_params->text;
 
     options = 0;
-    if (regex) options |= MOO_EDIT_SEARCH_REGEX;
-    if (!backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
-    if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
+    if (regex) options |= MOO_TEXT_SEARCH_REGEX;
+    if (!backwards) options |= MOO_TEXT_SEARCH_BACKWARDS;
+    if (!case_sensitive) options |= MOO_TEXT_SEARCH_CASE_INSENSITIVE;
 
     insert = gtk_text_buffer_get_insert (buffer);
 
@@ -461,7 +470,7 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
         else
             gtk_text_buffer_get_end_iter (buffer, &limit);
 
-        result = moo_edit_search (&start, &limit, text,
+        result = moo_text_search (&start, &limit, text,
                                   &match_start, &match_end, options,
                                   NULL);
 
@@ -470,11 +479,11 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
             if ((!backwards && gtk_text_iter_is_end (&start)) ||
                 (backwards && gtk_text_iter_is_start (&start)))
             {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
 
-            if (!moo_edit_search_from_beginning_dialog (edit, !backwards))
+            if (!moo_text_search_from_beginning_dialog (view, !backwards))
             {
                 return;
             }
@@ -486,12 +495,12 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
 
             limit = search_start;
 
-            result = moo_edit_search (&start, &search_start, text,
+            result = moo_text_search (&start, &search_start, text,
                                       &match_start, &match_end, options,
                                       NULL);
 
             if (!result) {
-                moo_edit_nothing_found_dialog (edit, text, regex);
+                moo_text_nothing_found_dialog (view, text, regex);
                 return;
             }
         }
@@ -499,47 +508,48 @@ void        _moo_edit_find_previous         (MooEdit            *edit)
         if (!backwards)
             gtk_text_iter_order (&match_end, &match_start);
 
-        if (!edit->priv->last_found_start) {
-            edit->priv->last_found_start =
+        if (!view->priv->last_found_start) {
+            view->priv->last_found_start =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_start, TRUE);
-            edit->priv->last_found_end =
+            view->priv->last_found_end =
                 gtk_text_buffer_create_mark (buffer, NULL, &match_end, TRUE);
         }
         else {
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_start,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_start,
                                        &match_start);
-            gtk_text_buffer_move_mark (buffer, edit->priv->last_found_end,
+            gtk_text_buffer_move_mark (buffer, view->priv->last_found_end,
                                        &match_end);
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (edit), insert);
+        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
     }
 }
 
 
-void        _moo_edit_replace               (MooEdit            *edit)
+void        
+_moo_text_view_replace (MooTextView *view)
 {
     GtkWidget *dialog;
     gboolean regex, case_sensitive, whole_words, from_cursor,
              backwards, selected, dont_prompt_on_replace;
     GtkTextIter sel_start, sel_end;
     int response;
-    MooEditSearchOptions options;
+    MooTextSearchOptions options;
     const char *text, *replace_with;
     GtkTextMark *insert;
     GtkTextBuffer *buffer;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-    regex = _moo_edit_search_params->regex;
-    case_sensitive = _moo_edit_search_params->case_sensitive;
-    backwards = _moo_edit_search_params->backwards;
-    whole_words = _moo_edit_search_params->whole_words;
-    from_cursor = _moo_edit_search_params->from_cursor;
-    dont_prompt_on_replace = _moo_edit_search_params->dont_prompt_on_replace;
+    regex = _moo_text_search_params->regex;
+    case_sensitive = _moo_text_search_params->case_sensitive;
+    backwards = _moo_text_search_params->backwards;
+    whole_words = _moo_text_search_params->whole_words;
+    from_cursor = _moo_text_search_params->from_cursor;
+    dont_prompt_on_replace = _moo_text_search_params->dont_prompt_on_replace;
 
     selected = FALSE;
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_SELECTED)) &&
@@ -550,13 +560,13 @@ void        _moo_edit_replace               (MooEdit            *edit)
     dialog = _moo_edit_create_find_dialog (TRUE);
     set (dialog, regex, case_sensitive, whole_words,
          from_cursor, backwards, selected, dont_prompt_on_replace);
-    if (_moo_edit_search_params->text)
-        set_text (dialog, _moo_edit_search_params->text);
-    if (_moo_edit_search_params->replace_with)
-        set_replace_with (dialog, _moo_edit_search_params->replace_with);
+    if (_moo_text_search_params->text)
+        set_text (dialog, _moo_text_search_params->text);
+    if (_moo_text_search_params->replace_with)
+        set_replace_with (dialog, _moo_text_search_params->replace_with);
 
     gtk_window_set_transient_for (GTK_WINDOW (dialog),
-                                  GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit))));
+                                  GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))));
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     if (response != GTK_RESPONSE_OK) {
         gtk_widget_destroy (dialog);
@@ -571,28 +581,28 @@ void        _moo_edit_replace               (MooEdit            *edit)
         return;
     }
 
-    _moo_edit_search_params->regex = regex;
-    _moo_edit_search_params->case_sensitive = case_sensitive;
-    _moo_edit_search_params->backwards = backwards;
-    _moo_edit_search_params->whole_words = whole_words;
-    _moo_edit_search_params->from_cursor = from_cursor;
-    _moo_edit_search_params->dont_prompt_on_replace = dont_prompt_on_replace;
+    _moo_text_search_params->regex = regex;
+    _moo_text_search_params->case_sensitive = case_sensitive;
+    _moo_text_search_params->backwards = backwards;
+    _moo_text_search_params->whole_words = whole_words;
+    _moo_text_search_params->from_cursor = from_cursor;
+    _moo_text_search_params->dont_prompt_on_replace = dont_prompt_on_replace;
 
-    _moo_edit_search_params->last_search_stamp++;
-    edit->priv->last_search_stamp = _moo_edit_search_params->last_search_stamp;
+    _moo_text_search_params->last_search_stamp++;
+    view->priv->last_search_stamp = _moo_text_search_params->last_search_stamp;
 
-    g_free (_moo_edit_search_params->text);
-    _moo_edit_search_params->text = g_strdup (get_text (dialog));
-    text = _moo_edit_search_params->text;
-    g_free (_moo_edit_search_params->replace_with);
-    _moo_edit_search_params->replace_with = g_strdup (get_replace_with (dialog));
-    replace_with = _moo_edit_search_params->replace_with;
+    g_free (_moo_text_search_params->text);
+    _moo_text_search_params->text = g_strdup (get_text (dialog));
+    text = _moo_text_search_params->text;
+    g_free (_moo_text_search_params->replace_with);
+    _moo_text_search_params->replace_with = g_strdup (get_replace_with (dialog));
+    replace_with = _moo_text_search_params->replace_with;
     gtk_widget_destroy (dialog);
 
     options = 0;
-    if (regex) options |= MOO_EDIT_SEARCH_REGEX;
-    if (backwards) options |= MOO_EDIT_SEARCH_BACKWARDS;
-    if (!case_sensitive) options |= MOO_EDIT_SEARCH_CASE_INSENSITIVE;
+    if (regex) options |= MOO_TEXT_SEARCH_REGEX;
+    if (backwards) options |= MOO_TEXT_SEARCH_BACKWARDS;
+    if (!case_sensitive) options |= MOO_TEXT_SEARCH_CASE_INSENSITIVE;
 
     insert = gtk_text_buffer_get_insert (buffer);
 
@@ -600,7 +610,7 @@ void        _moo_edit_replace               (MooEdit            *edit)
         GtkTextIter start, limit;
         gboolean result;
         GError *err = NULL;
-        PromptFuncData data = {edit, NULL, MOO_EDIT_REPLACE};
+        PromptFuncData data = {view, NULL, MOO_TEXT_REPLACE};
 
         if (from_cursor) {
             gtk_text_buffer_get_iter_at_mark (buffer, &start, insert);
@@ -618,29 +628,29 @@ void        _moo_edit_replace               (MooEdit            *edit)
             gtk_text_buffer_get_end_iter (buffer, &limit);
 
         if (!dont_prompt_on_replace) {
-            result = moo_edit_replace_all_interactive (&start, &limit, text,
+            result = moo_text_replace_all_interactive (&start, &limit, text,
                                                        replace_with,
                                                        options, &err,
                                                        prompt_on_replace_func,
                                                        &data);
         }
         else
-            result = moo_edit_replace_all_interactive (&start, &limit, text,
+            result = moo_text_replace_all_interactive (&start, &limit, text,
                                                        replace_with, options,
-                                                       &err, moo_edit_replace_func_replace_all,
+                                                       &err, moo_text_replace_func_replace_all,
                                                        NULL);
 
-        g_return_if_fail (result != MOO_EDIT_REPLACE_INVALID_ARGS);
+        g_return_if_fail (result != MOO_TEXT_REPLACE_INVALID_ARGS);
 
-        if (result == MOO_EDIT_REPLACE_REGEX_ERROR || err) {
-            moo_edit_regex_error_dialog (edit, err);
+        if (result == MOO_TEXT_REPLACE_REGEX_ERROR || err) {
+            moo_text_regex_error_dialog (view, err);
             if (err) g_error_free (err);
             return;
         }
 
-        if (!from_cursor || data.response == MOO_EDIT_REPLACE_STOP) {
+        if (!from_cursor || data.response == MOO_TEXT_REPLACE_STOP) {
             if (data.dialog) gtk_widget_destroy (data.dialog);
-            moo_edit_replaced_n_dialog (edit, result);
+            moo_text_replaced_n_dialog (view, result);
             return;
         }
 
@@ -648,14 +658,14 @@ void        _moo_edit_replace               (MooEdit            *edit)
             (!backwards && gtk_text_iter_is_start (&start)))
         {
             if (data.dialog) gtk_widget_destroy (data.dialog);
-            moo_edit_replaced_n_dialog (edit, result);
+            moo_text_replaced_n_dialog (view, result);
             return;
         }
 
-        if (!moo_edit_search_from_beginning_dialog (edit, backwards))
+        if (!moo_text_search_from_beginning_dialog (view, backwards))
         {
             if (data.dialog) gtk_widget_destroy (data.dialog);
-            moo_edit_replaced_n_dialog (edit, result);
+            moo_text_replaced_n_dialog (view, result);
             return;
         }
 
@@ -670,27 +680,27 @@ void        _moo_edit_replace               (MooEdit            *edit)
             gtk_text_buffer_get_iter_at_mark (buffer, &limit, insert);
 
             if (!dont_prompt_on_replace)
-                result2 = moo_edit_replace_all_interactive (&start, &limit, text,
+                result2 = moo_text_replace_all_interactive (&start, &limit, text,
                                                             replace_with,
                                                             options, &err,
                                                             prompt_on_replace_func,
                                                             &data);
             else
-                result2 = moo_edit_replace_all_interactive (&start, &limit, text,
+                result2 = moo_text_replace_all_interactive (&start, &limit, text,
                                                             replace_with, options, &err,
-                                                            moo_edit_replace_func_replace_all,
+                                                            moo_text_replace_func_replace_all,
                                                             NULL);
 
             g_return_if_fail (result2 >= 0);
 
             if (data.dialog) gtk_widget_destroy (data.dialog);
-            moo_edit_replaced_n_dialog (edit, result + result2);
+            moo_text_replaced_n_dialog (view, result + result2);
         }
     }
 }
 
 
-static MooEditReplaceResponseType prompt_on_replace_func
+static MooTextReplaceResponseType prompt_on_replace_func
                                             (G_GNUC_UNUSED const char         *text,
                                              G_GNUC_UNUSED EggRegex           *regex,
                                              G_GNUC_UNUSED const char         *replacement,
@@ -704,19 +714,19 @@ static MooEditReplaceResponseType prompt_on_replace_func
 
     buffer = gtk_text_iter_get_buffer (to_replace_end);
     gtk_text_buffer_select_range (buffer, to_replace_end, to_replace_start);
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (data->edit),
+    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (data->view),
                                         gtk_text_buffer_get_insert (buffer));
 
     if (!data->dialog)
-        data->dialog = moo_edit_prompt_on_replace_dialog (data->edit);
+        data->dialog = moo_text_prompt_on_replace_dialog (data->view);
 
     response = gtk_dialog_run (GTK_DIALOG (data->dialog));
 
     if (response == GTK_RESPONSE_DELETE_EVENT ||
         response == GTK_RESPONSE_CANCEL)
-            data->response = MOO_EDIT_REPLACE_STOP;
+            data->response = MOO_TEXT_REPLACE_STOP;
     else
-        data->response = (MooEditReplaceResponseType)response;
+        data->response = (MooTextReplaceResponseType)response;
 
     return data->response;
 }

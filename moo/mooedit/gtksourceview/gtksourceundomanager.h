@@ -22,23 +22,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, 
  * Boston, MA 02111-1307, USA. * *
  */
-/* Changed by Muntyan
- *
- * 06/13/2005: replaced GTK_SOURCE_TYPE_UNDO_MANAGER with GTK_TYPE_SOURCE_UNDO_MANAGER
- *                      GTK_SOURCE_IS_UNDO_MANAGER with GTK_IS_SOURCE_UNDO_MANAGER
- */
  
 #ifndef __GTK_SOURCE_UNDO_MANAGER_H__
 #define __GTK_SOURCE_UNDO_MANAGER_H__
 
 #include <gtk/gtktextbuffer.h>
 
-#define GTK_TYPE_SOURCE_UNDO_MANAGER             	(gtk_source_undo_manager_get_type ())
-#define GTK_SOURCE_UNDO_MANAGER(obj)			(GTK_CHECK_CAST ((obj), GTK_TYPE_SOURCE_UNDO_MANAGER, GtkSourceUndoManager))
-#define GTK_SOURCE_UNDO_MANAGER_CLASS(klass)		(GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_SOURCE_UNDO_MANAGER, GtkSourceUndoManagerClass))
-#define GTK_IS_SOURCE_UNDO_MANAGER(obj)			(GTK_CHECK_TYPE ((obj), GTK_TYPE_SOURCE_UNDO_MANAGER))
-#define GTK_IS_SOURCE_UNDO_MANAGER_CLASS(klass)  	(GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_SOURCE_UNDO_MANAGER))
-#define GTK_SOURCE_UNDO_MANAGER_GET_CLASS(obj)  	(GTK_CHECK_GET_CLASS ((obj), GTK_TYPE_SOURCE_UNDO_MANAGER, GtkSourceUndoManagerClass))
+#define GTK_SOURCE_TYPE_UNDO_MANAGER             	(gtk_source_undo_manager_get_type ())
+#define GTK_SOURCE_UNDO_MANAGER(obj)			(GTK_CHECK_CAST ((obj), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManager))
+#define GTK_SOURCE_UNDO_MANAGER_CLASS(klass)		(GTK_CHECK_CLASS_CAST ((klass), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManagerClass))
+#define GTK_SOURCE_IS_UNDO_MANAGER(obj)			(GTK_CHECK_TYPE ((obj), GTK_SOURCE_TYPE_UNDO_MANAGER))
+#define GTK_SOURCE_IS_UNDO_MANAGER_CLASS(klass)  	(GTK_CHECK_CLASS_TYPE ((klass), GTK_SOURCE_TYPE_UNDO_MANAGER))
+#define GTK_SOURCE_UNDO_MANAGER_GET_CLASS(obj)  	(GTK_CHECK_GET_CLASS ((obj), GTK_SOURCE_TYPE_UNDO_MANAGER, GtkSourceUndoManagerClass))
 
 
 typedef struct _GtkSourceUndoManager        	GtkSourceUndoManager;

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooedit-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -20,6 +21,7 @@
 
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditsearch.h"
+#include "mooedit/mootextview.h"
 
 G_BEGIN_DECLS
 
@@ -31,27 +33,27 @@ void        _moo_edit_choose_indenter       (MooEdit            *edit);
 /***********************************************************************/
 /* GtkTextView stuff
 /*/
-void        _moo_edit_move_cursor           (GtkTextView        *text_view,
-                                             GtkMovementStep     step,
-                                             gint                count,
-                                             gboolean            extend_selection);
-void        _moo_edit_delete_from_cursor    (GtkTextView        *text_view,
-                                             GtkDeleteType       type,
-                                             gint                count);
-int         _moo_edit_key_press_event       (GtkWidget          *widget,
-                                             GdkEventKey        *event);
-int         _moo_edit_key_release_event     (GtkWidget          *widget,
-                                             GdkEventKey        *event);
-int         _moo_edit_button_press_event    (GtkWidget          *widget,
-                                             GdkEventButton     *event);
-int         _moo_edit_button_release_event  (GtkWidget          *widget,
-                                             GdkEventButton     *event);
-int         _moo_edit_motion_event          (GtkWidget          *widget,
-                                             GdkEventMotion     *event);
-int         _moo_edit_extend_selection      (MooEdit            *edit,
-                                             MooEditSelectionType type,
-                                             GtkTextIter        *insert,
-                                             GtkTextIter        *selection_bound);
+void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
+                                                 GtkMovementStep     step,
+                                                 gint                count,
+                                                 gboolean            extend_selection);
+void        _moo_text_view_delete_from_cursor   (GtkTextView        *text_view,
+                                                 GtkDeleteType       type,
+                                                 gint                count);
+int         _moo_text_view_key_press_event      (GtkWidget          *widget,
+                                                 GdkEventKey        *event);
+int         _moo_text_view_key_release_event    (GtkWidget          *widget,
+                                                 GdkEventKey        *event);
+int         _moo_text_view_button_press_event   (GtkWidget          *widget,
+                                                 GdkEventButton     *event);
+int         _moo_text_view_button_release_event (GtkWidget          *widget,
+                                                 GdkEventButton     *event);
+int         _moo_text_view_motion_event         (GtkWidget          *widget,
+                                                 GdkEventMotion     *event);
+int         _moo_text_view_extend_selection     (MooTextView        *view,
+                                                 MooTextSelectionType type,
+                                                 GtkTextIter        *insert,
+                                                 GtkTextIter        *selection_bound);
 
 /***********************************************************************/
 /* Preferences
@@ -76,10 +78,10 @@ MooEditLangMgr *_moo_edit_get_lang_mgr      (MooEdit    *edit);
 
 
 typedef enum {
-    MOO_EDIT_DRAG_NONE = 0,
-    MOO_EDIT_DRAG_SELECT,
-    MOO_EDIT_DRAG_DRAG
-} MooEditDragType;
+    MOO_TEXT_VIEW_DRAG_NONE = 0,
+    MOO_TEXT_VIEW_DRAG_SELECT,
+    MOO_TEXT_VIEW_DRAG_DRAG
+} MooTextViewDragType;
 
 
 typedef enum {
@@ -99,9 +101,9 @@ typedef struct {
     gboolean     whole_words;
     gboolean     from_cursor;
     gboolean     dont_prompt_on_replace;
-} MooEditSearchParams;
+} MooTextSearchParams;
 
-extern MooEditSearchParams *_moo_edit_search_params;
+extern MooTextSearchParams *_moo_text_search_params;
 
 
 struct _MooEditPrivate {
@@ -109,11 +111,8 @@ struct _MooEditPrivate {
 
     MooEditor *editor;
 
-    gboolean has_selection;
-    gboolean has_text;
-    gulong can_undo_handler_id;
-    gulong can_redo_handler_id;
     gulong modified_changed_handler_id;
+    gboolean enable_indentation;
 
     /***********************************************************************/
     /* Document
@@ -136,21 +135,38 @@ struct _MooEditPrivate {
     guint file_watch_timeout;
 
     /***********************************************************************/
-    /* Search
-    /*/
-    int last_search_stamp;
-    GtkTextMark *last_found_start, *last_found_end;
-
-    /***********************************************************************/
     /* Language stuff
     /*/
     MooEditLang *lang;
     gboolean lang_custom;
 
     /***********************************************************************/
+    /* Preferences
+    /*/
+    guint prefs_notify;
+};
+
+
+struct _MooTextViewPrivate {
+    gboolean constructed;
+
+    gulong can_undo_handler_id;
+    gulong can_redo_handler_id;
+
+    gboolean highlight_current_line;
+    GdkColor current_line_color;
+    GdkGC *current_line_gc;
+    gboolean show_tabs;
+    
+    /***********************************************************************/
+    /* Search
+    /*/
+    int last_search_stamp;
+    GtkTextMark *last_found_start, *last_found_end;
+
+    /***********************************************************************/
     /* Indentation
     /*/
-    gboolean enable_indentation;
     MooIndenter *indenter;
     gboolean tab_indents;
     gboolean shift_tab_unindents;
@@ -159,11 +175,6 @@ struct _MooEditPrivate {
     /* key press handler sets this flag in order to distinguish typed in
        characters in buffer's insert-text signal */
     gboolean in_key_press;
-
-    /***********************************************************************/
-    /* Preferences
-    /*/
-    guint prefs_notify;
 
     /***********************************************************************/
     /* Keyboard
@@ -176,7 +187,7 @@ struct _MooEditPrivate {
     /*/
     guint           drag_scroll_timeout;
     GdkEventType    drag_button;
-    MooEditDragType drag_type;
+    MooTextViewDragType drag_type;
     int             drag_start_x;
     int             drag_start_y;
     guint           drag_moved                      : 1;
@@ -185,7 +196,8 @@ struct _MooEditPrivate {
 };
 
 
-MooEditPrivate *moo_edit_private_new (void);
+MooEditPrivate *_moo_edit_private_new (void);
+MooTextViewPrivate *_moo_text_view_private_new (void);
 
 
 G_END_DECLS

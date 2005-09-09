@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   moogrep.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -301,7 +302,7 @@ init_dialog (MooEditWindow *window,
 
     if (doc)
     {
-        char *sel = moo_edit_get_selection (doc);
+        char *sel = moo_text_view_get_selection (MOO_TEXT_VIEW (doc));
         if (sel && !strchr (sel, '\n'))
             gtk_entry_set_text (GTK_ENTRY (pattern_entry), sel);
         g_free (sel);
@@ -842,7 +843,8 @@ output_click (WindowStuff    *stuff,
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
     if (line_data->line >= 0)
-        moo_edit_move_cursor (doc, line_data->line, -1);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), 
+                                   line_data->line, -1, TRUE);
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8; coding: utf-8 -*-
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8; coding: utf-8 -*- 
  *  gtksourceview.c
  *
  *  Copyright (C) 2001 - Mikael Hermansson <tyan@linux.se> and
@@ -6,7 +6,7 @@
  *
  *  Copyright (C) 2002 - Jeroen Zwartepoorte
  *
- *  Copyright (C) 2003 - Gustavo Giráldez and Paolo Maggi
+ *  Copyright (C) 2003 - Gustavo Giráldez and Paolo Maggi 
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Library General Public License as published by
@@ -22,19 +22,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/*****************************************************************************
- * Changed by Muntyan
- *
- * 04/23/2005: Put gdk_draw_pixbuf inside #if GTK_CHECK_VERSION(2,2,0);
- *             modified color for highlighting current line
- * 04/27/2005: Created style property for current line color
- * 05/03/2005: Added GC for current line color
- * 05/07/2005: added gtk_source_view_set_highlight_current_line_color
- * 06/03/2005: renamed key_press_event_cb to gtk_source_view_key_press_event,
- *             and made it a signal handler instead of callback
- *
- *****************************************************************************/
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: replaced gtksourceview_marshal* with _moo_marshal*
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -47,7 +38,7 @@
 #include <pango/pango-tabs.h>
 
 #include "gtksourceview-i18n.h"
-#include "gtksourceview-marshal.h"
+#include "mooutils/moomarshals.h"
 #include "gtksourceview.h"
 
 /*
@@ -104,14 +95,11 @@ struct _GtkSourceViewPrivate
 	guint		 margin;
 	gint             cached_margin_width;
 	gboolean	 smart_home_end;
-
+	
 	GHashTable 	*pixmap_cache;
 
 	GtkSourceBuffer *source_buffer;
 	gint		 old_lines;
-
-	GdkGC		*current_line_gc;
-	GdkColor	 current_line_color;
 };
 
 /* Implement DnD for application/x-color drops */
@@ -159,10 +147,9 @@ static void 	gtk_source_view_get_lines 		(GtkTextView       *text_view,
 				       			 gint              *countp);
 static gint     gtk_source_view_expose 			(GtkWidget         *widget,
 							 GdkEventExpose    *event);
-
-static gint	gtk_source_view_key_press_event		(GtkWidget         *widget,
+static gboolean	key_press_event				(GtkWidget         *widget, 
 							 GdkEventKey       *event);
-static void 	view_dnd_drop 				(GtkTextView       *view,
+static void 	view_dnd_drop 				(GtkTextView       *view, 
 							 GdkDragContext    *context,
 							 gint               x,
 							 gint               y,
@@ -171,7 +158,7 @@ static void 	view_dnd_drop 				(GtkTextView       *view,
 							 guint              time,
 							 gpointer           data);
 
-static gint	calculate_real_tab_width 		(GtkSourceView     *view,
+static gint	calculate_real_tab_width 		(GtkSourceView     *view, 
 							 guint              tab_size,
 							 gchar              c);
 
@@ -184,14 +171,8 @@ static void	gtk_source_view_get_property		(GObject           *object,
 							 GValue            *value,
 							 GParamSpec        *pspec);
 
-static void	gtk_source_view_style_set               (GtkWidget         *widget,
+static void     gtk_source_view_style_set               (GtkWidget         *widget,
 							 GtkStyle          *previous_style);
-static void	gtk_source_view_create_current_line_gc  (GtkSourceView     *view);
-static void	gtk_source_view_destroy_current_line_gc (GtkSourceView     *view);
-static void	draw_tabs				(GtkSourceView     *view,
-							 GdkEventExpose    *event,
-							 GtkTextIter       *start,
-							 GtkTextIter       *end);
 
 
 /* Private functions. */
@@ -202,23 +183,23 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 	GtkTextViewClass *textview_class;
 	GtkBindingSet    *binding_set;
 	GtkWidgetClass   *widget_class;
-
+	
 	object_class 	= G_OBJECT_CLASS (klass);
 	textview_class 	= GTK_TEXT_VIEW_CLASS (klass);
 	parent_class 	= g_type_class_peek_parent (klass);
 	widget_class 	= GTK_WIDGET_CLASS (klass);
-
+	
 	object_class->finalize = gtk_source_view_finalize;
 	object_class->get_property = gtk_source_view_get_property;
 	object_class->set_property = gtk_source_view_set_property;
 
+	widget_class->key_press_event = key_press_event;
 	widget_class->expose_event = gtk_source_view_expose;
 	widget_class->style_set = gtk_source_view_style_set;
-	widget_class->key_press_event = gtk_source_view_key_press_event;
 
 	textview_class->populate_popup = gtk_source_view_populate_popup;
 	textview_class->move_cursor = gtk_source_view_move_cursor;
-
+	
 	klass->undo = gtk_source_view_undo;
 	klass->redo = gtk_source_view_redo;
 
@@ -229,7 +210,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 							       _("Whether to display line numbers"),
 							       FALSE,
 							       G_PARAM_READWRITE));
-
+	
 	g_object_class_install_property (object_class,
 					 PROP_SHOW_LINE_MARKERS,
 					 g_param_spec_boolean ("show_line_markers",
@@ -247,7 +228,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 							    MAX_TAB_WIDTH,
 							    DEFAULT_TAB_WIDTH,
 							    G_PARAM_READWRITE));
-
+	
 	g_object_class_install_property (object_class,
 					 PROP_AUTO_INDENT,
 					 g_param_spec_boolean ("auto_indent",
@@ -270,7 +251,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 							       _("Whether to display the right margin"),
 							       FALSE,
 							       G_PARAM_READWRITE));
-
+	
 	g_object_class_install_property (object_class,
 					 PROP_MARGIN,
 					 g_param_spec_uint ("margin",
@@ -286,7 +267,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 					 g_param_spec_boolean ("smart_home_end",
 							       _("Use smart home/end"),
 							       _("HOME and END keys move to first/last "
-								 "characters on line first before going "
+								 "non whitespace characters on line before going "
 								 "to the start/end of the line"),
 							       TRUE,
 							       G_PARAM_READWRITE));
@@ -299,13 +280,6 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 							       FALSE,
 							       G_PARAM_READWRITE));
 
-	gtk_widget_class_install_style_property (widget_class,
-						 g_param_spec_boxed ("current-line-color",
-							"Current line color",
-							"Current line color",
-							GDK_TYPE_COLOR,
-							G_PARAM_READABLE));
-
 	signals [UNDO] =
 		g_signal_new ("undo",
 			      G_TYPE_FROM_CLASS (klass),
@@ -313,7 +287,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 			      G_STRUCT_OFFSET (GtkSourceViewClass, undo),
 			      NULL,
 			      NULL,
-			      gtksourceview_marshal_VOID__VOID,
+			      _moo_marshal_VOID__VOID,
 			      G_TYPE_NONE,
 			      0);
 	signals [REDO] =
@@ -323,7 +297,7 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 			      G_STRUCT_OFFSET (GtkSourceViewClass, redo),
 			      NULL,
 			      NULL,
-			      gtksourceview_marshal_VOID__VOID,
+			      _moo_marshal_VOID__VOID,
 			      G_TYPE_NONE,
 			      0);
 
@@ -343,56 +317,56 @@ gtk_source_view_class_init (GtkSourceViewClass *klass)
 				      "undo", 0);
 }
 
-static void
+static void 
 gtk_source_view_set_property (GObject      *object,
 			      guint         prop_id,
 			      const GValue *value,
 			      GParamSpec   *pspec)
 {
 	GtkSourceView *view;
-
+	
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (object));
 
 	view = GTK_SOURCE_VIEW (object);
-
+    
 	switch (prop_id)
 	{
 		case PROP_SHOW_LINE_NUMBERS:
 			gtk_source_view_set_show_line_numbers (view,
 							       g_value_get_boolean (value));
 			break;
-
+			
 		case PROP_SHOW_LINE_MARKERS:
 			gtk_source_view_set_show_line_markers (view,
 							       g_value_get_boolean (value));
 			break;
-
+			
 		case PROP_TABS_WIDTH:
-			gtk_source_view_set_tabs_width (view,
+			gtk_source_view_set_tabs_width (view, 
 							g_value_get_uint (value));
 			break;
-
+			
 		case PROP_AUTO_INDENT:
 			gtk_source_view_set_auto_indent (view,
 							 g_value_get_boolean (value));
 			break;
-
+			
 		case PROP_INSERT_SPACES:
 			gtk_source_view_set_insert_spaces_instead_of_tabs (
 							view,
 							g_value_get_boolean (value));
 			break;
-
+			
 		case PROP_SHOW_MARGIN:
 			gtk_source_view_set_show_margin (view,
 							 g_value_get_boolean (value));
 			break;
-
+			
 		case PROP_MARGIN:
-			gtk_source_view_set_margin (view,
+			gtk_source_view_set_margin (view, 
 						    g_value_get_uint (value));
 			break;
-
+		
 		case PROP_SMART_HOME_END:
 			gtk_source_view_set_smart_home_end (view,
 							    g_value_get_boolean (value));
@@ -403,54 +377,54 @@ gtk_source_view_set_property (GObject      *object,
 								    g_value_get_boolean (value));
 			break;
 
-
+		
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
 	}
 }
 
-static void
+static void 
 gtk_source_view_get_property (GObject    *object,
 			      guint       prop_id,
 			      GValue     *value,
 			      GParamSpec *pspec)
 {
 	GtkSourceView *view;
-
+	
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (object));
 
 	view = GTK_SOURCE_VIEW (object);
-
+    
 	switch (prop_id)
 	{
 		case PROP_SHOW_LINE_NUMBERS:
 			g_value_set_boolean (value,
 					     gtk_source_view_get_show_line_numbers (view));
-
+					     
 			break;
-
+			
 		case PROP_SHOW_LINE_MARKERS:
 			g_value_set_boolean (value,
 					     gtk_source_view_get_show_line_markers (view));
 
 			break;
-
+			
 		case PROP_TABS_WIDTH:
 			g_value_set_uint (value,
 					  gtk_source_view_get_tabs_width (view));
 			break;
-
+			
 		case PROP_AUTO_INDENT:
 			g_value_set_boolean (value,
 					     gtk_source_view_get_auto_indent (view));
 
 			break;
-
+			
 		case PROP_INSERT_SPACES:
 			g_value_set_boolean (value,
 					     gtk_source_view_get_insert_spaces_instead_of_tabs (view));
-
+	
 			break;
 
 		case PROP_SHOW_MARGIN:
@@ -458,7 +432,7 @@ gtk_source_view_get_property (GObject    *object,
 					     gtk_source_view_get_show_margin (view));
 
 			break;
-
+			
 		case PROP_MARGIN:
 			g_value_set_uint (value,
 					  gtk_source_view_get_margin (view));
@@ -468,7 +442,7 @@ gtk_source_view_get_property (GObject    *object,
 			g_value_set_boolean (value,
 					     gtk_source_view_get_smart_home_end (view));
 			break;
-
+			
 		case PROP_HIGHLIGHT_CURRENT_LINE:
 			g_value_set_boolean (value,
 					     gtk_source_view_get_highlight_current_line (view));
@@ -490,7 +464,7 @@ gtk_source_view_init (GtkSourceView *view)
 	view->priv->margin = DEFAULT_MARGIN;
 	view->priv->cached_margin_width = -1;
 	view->priv->smart_home_end = TRUE;
-
+	
 	view->priv->pixmap_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
 							  (GDestroyNotify) g_free,
 							  (GDestroyNotify) g_object_unref);
@@ -502,19 +476,11 @@ gtk_source_view_init (GtkSourceView *view)
 	g_return_if_fail (tl != NULL);
 
 	gtk_target_list_add_table (tl, drop_types, n_drop_types);
-
-	g_signal_connect (G_OBJECT (view),
-			  "drag_data_received",
-			  G_CALLBACK (view_dnd_drop),
+	
+	g_signal_connect (G_OBJECT (view), 
+			  "drag_data_received", 
+			  G_CALLBACK (view_dnd_drop), 
 			  NULL);
-
-	g_signal_connect (view, "realize",
-			  G_CALLBACK (gtk_source_view_create_current_line_gc),
-			  NULL);
-        g_signal_connect (view, "unrealize",
-                          G_CALLBACK (gtk_source_view_destroy_current_line_gc),
-                          NULL);
-        gdk_color_parse ("#EEF6FF", &(view->priv->current_line_color));
 }
 
 static void
@@ -527,12 +493,9 @@ gtk_source_view_finalize (GObject *object)
 
 	view = GTK_SOURCE_VIEW (object);
 
-	if (view->priv->pixmap_cache)
+	if (view->priv->pixmap_cache) 
 		g_hash_table_destroy (view->priv->pixmap_cache);
-
-	if (view->priv->current_line_gc)
-		g_object_unref (view->priv->current_line_gc);
-
+	
 	set_source_buffer (view, NULL);
 
 	g_free (view->priv);
@@ -540,21 +503,21 @@ gtk_source_view_finalize (GObject *object)
 	G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
-static void
+static void 
 highlight_updated_cb (GtkSourceBuffer *buffer,
 		      GtkTextIter     *start,
 		      GtkTextIter     *end,
 		      GtkTextView     *text_view)
 {
 	GdkRectangle visible_rect;
-	GdkRectangle updated_rect;
+	GdkRectangle updated_rect;	
 	GdkRectangle redraw_rect;
 	gint y;
 	gint height;
-
+	
 	/* get visible area */
 	gtk_text_view_get_visible_rect (text_view, &visible_rect);
-
+	
 	/* get updated rectangle */
 	gtk_text_view_get_line_yrange (text_view, start, &y, &height);
 	updated_rect.y = y;
@@ -564,20 +527,20 @@ highlight_updated_cb (GtkSourceBuffer *buffer,
 	updated_rect.width = visible_rect.width;
 
 	/* intersect both rectangles to see whether we need to queue a redraw */
-	if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect))
+	if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect)) 
 	{
 		GdkRectangle widget_rect;
-
+		
 		gtk_text_view_buffer_to_window_coords (text_view,
 						       GTK_TEXT_WINDOW_WIDGET,
 						       redraw_rect.x,
 						       redraw_rect.y,
 						       &widget_rect.x,
 						       &widget_rect.y);
-
+		
 		widget_rect.width = redraw_rect.width;
 		widget_rect.height = redraw_rect.height;
-
+		
 		gtk_widget_queue_draw_area (GTK_WIDGET (text_view),
 					    widget_rect.x,
 					    widget_rect.y,
@@ -586,24 +549,24 @@ highlight_updated_cb (GtkSourceBuffer *buffer,
 	}
 }
 
-static void
+static void 
 marker_updated_cb (GtkSourceBuffer *buffer,
 		   GtkTextIter     *where,
 		   GtkTextView     *text_view)
 {
 	GdkRectangle visible_rect;
-	GdkRectangle updated_rect;
+	GdkRectangle updated_rect;	
 	GdkRectangle redraw_rect;
 	gint y, height;
-
+	
 	g_return_if_fail (text_view != NULL && GTK_IS_SOURCE_VIEW (text_view));
 
 	if (!GTK_SOURCE_VIEW (text_view)->priv->show_line_markers)
 		return;
-
+	
 	/* get visible area */
 	gtk_text_view_get_visible_rect (text_view, &visible_rect);
-
+	
 	/* get updated rectangle */
 	gtk_text_view_get_line_yrange (text_view, where, &y, &height);
 	updated_rect.y = y;
@@ -612,20 +575,20 @@ marker_updated_cb (GtkSourceBuffer *buffer,
 	updated_rect.width = visible_rect.width;
 
 	/* intersect both rectangles to see whether we need to queue a redraw */
-	if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect))
+	if (gdk_rectangle_intersect (&updated_rect, &visible_rect, &redraw_rect)) 
 	{
 		gint y_win, width;
-
+		
 		gtk_text_view_buffer_to_window_coords (text_view,
 						       GTK_TEXT_WINDOW_WIDGET,
 						       0,
 						       redraw_rect.y,
 						       NULL,
 						       &y_win);
-
+		
 		width = gtk_text_view_get_border_window_size (text_view,
 							      GTK_TEXT_WINDOW_LEFT);
-
+		
 		gtk_widget_queue_draw_area (GTK_WIDGET (text_view),
 					    0, y_win, width, height);
 	}
@@ -640,7 +603,7 @@ set_source_buffer (GtkSourceView *view, GtkTextBuffer *buffer)
 	/* FIXME: in gtk 2.3 we have a buffer property so we can
 	 * connect to the notify signal.  Unfortunately we can't
 	 * depend on gtk 2.3 yet (see bug #108353) */
-	if (view->priv->source_buffer)
+	if (view->priv->source_buffer) 
 	{
 		g_signal_handlers_disconnect_by_func (view->priv->source_buffer,
 						      highlight_updated_cb,
@@ -652,7 +615,7 @@ set_source_buffer (GtkSourceView *view, GtkTextBuffer *buffer)
 					      (gpointer *) &view->priv->source_buffer);
 	}
 
-	if (buffer && GTK_IS_SOURCE_BUFFER (buffer))
+	if (buffer && GTK_IS_SOURCE_BUFFER (buffer)) 
 	{
 		view->priv->source_buffer = GTK_SOURCE_BUFFER (buffer);
 		g_object_add_weak_pointer (G_OBJECT (buffer),
@@ -666,7 +629,7 @@ set_source_buffer (GtkSourceView *view, GtkTextBuffer *buffer)
 				  G_CALLBACK (marker_updated_cb),
 				  view);
 	}
-	else
+	else 
 	{
 		view->priv->source_buffer = NULL;
 	}
@@ -738,7 +701,7 @@ gtk_source_view_populate_popup (GtkTextView *text_view,
 	g_signal_connect (G_OBJECT (menu_item), "activate",
 			  G_CALLBACK (menu_item_activate_cb), text_view);
 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	gtk_widget_set_sensitive (menu_item,
+	gtk_widget_set_sensitive (menu_item, 
 				  gtk_source_buffer_can_undo (GTK_SOURCE_BUFFER (buffer)));
 	gtk_widget_show (menu_item);
 
@@ -861,11 +824,11 @@ gtk_source_view_get_lines (GtkTextView  *text_view,
 	GtkTextIter iter;
 	gint count;
 	gint size;
-      	gint last_line_num = -1;
+      	gint last_line_num = -1;	
 
 	g_array_set_size (buffer_coords, 0);
 	g_array_set_size (numbers, 0);
-
+  
 	/* Get iter at first y */
 	gtk_text_view_get_line_at_y (text_view, &iter, first_y, NULL);
 
@@ -878,18 +841,18 @@ gtk_source_view_get_lines (GtkTextView  *text_view,
   	while (!gtk_text_iter_is_end (&iter))
     	{
 		gint y, height;
-
+      
 		gtk_text_view_get_line_yrange (text_view, &iter, &y, &height);
 
 		g_array_append_val (buffer_coords, y);
 		last_line_num = gtk_text_iter_get_line (&iter);
 		g_array_append_val (numbers, last_line_num);
-
+      	
 		++count;
 
 		if ((y + height) >= last_y)
 			break;
-
+      
 		gtk_text_iter_forward_line (&iter);
 	}
 
@@ -897,7 +860,7 @@ gtk_source_view_get_lines (GtkTextView  *text_view,
     	{
 		gint y, height;
 		gint line_num;
-
+      
 		gtk_text_view_get_line_yrange (text_view, &iter, &y, &height);
 
 		line_num = gtk_text_iter_get_line (&iter);
@@ -913,7 +876,7 @@ gtk_source_view_get_lines (GtkTextView  *text_view,
 	*countp = count;
 }
 
-static GSList *
+static GSList * 
 draw_line_markers (GtkSourceView *view,
 		   GSList        *current_marker,
 		   gint          *line_number,
@@ -925,9 +888,9 @@ draw_line_markers (GtkSourceView *view,
 	gint width, height;
 	gint next_line;
 	gchar *marker_type;
-
+	
 	g_assert (current_marker);
-
+	
 	composite = NULL;
 	width = height = 0;
 
@@ -935,14 +898,14 @@ draw_line_markers (GtkSourceView *view,
 	do
 	{
 		marker = current_marker->data;
-
+		
 		next_line = gtk_source_marker_get_line (marker);
 		if (next_line != *line_number)
 			break;
-
+		
 		marker_type = gtk_source_marker_get_marker_type (marker);
 		pixbuf = gtk_source_view_get_marker_pixbuf (view, marker_type);
-
+		
 		if (pixbuf)
 		{
 			if (!composite)
@@ -969,7 +932,7 @@ draw_line_markers (GtkSourceView *view,
 						      COMPOSITE_ALPHA);
 			}
 			g_object_unref (pixbuf);
-
+			
 		} else
 			g_warning ("Unknown marker '%s' used", marker_type);
 
@@ -977,9 +940,9 @@ draw_line_markers (GtkSourceView *view,
 		current_marker = g_slist_next (current_marker);
 	}
 	while (current_marker);
-
+	
 	*line_number = next_line;
-
+	
 	/* render the result to the left window */
 	if (composite)
 	{
@@ -988,12 +951,10 @@ draw_line_markers (GtkSourceView *view,
 		window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
 						   GTK_TEXT_WINDOW_LEFT);
 
-#if GTK_CHECK_VERSION(2,2,0)
 		gdk_draw_pixbuf (GDK_DRAWABLE (window), NULL, composite,
 				 0, 0, x, y,
 				 width, height,
 				 GDK_RGB_DITHER_NORMAL, 0, 0);
-#endif /* GTK_CHECK_VERSION(2,2,0) */
 		g_object_unref (composite);
 	}
 
@@ -1065,7 +1026,7 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 
 	/* A zero-lined document should display a "1"; we don't need to worry about
 	scrolling effects of the text widget in this special case */
-
+	
 	if (count == 0)
 	{
 		gint y = 0;
@@ -1080,14 +1041,14 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 			   g_array_index (numbers, gint, 0),
 			   g_array_index (numbers, gint, count - 1));
 	});
-
+	
 	/* set size. */
 	g_snprintf (str, sizeof (str),
 		    "%d", MAX (99, gtk_text_buffer_get_line_count (text_view->buffer)));
 	layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), str);
 
 	pango_layout_get_pixel_size (layout, &text_width, NULL);
-
+	
 	pango_layout_set_width (layout, text_width);
 	pango_layout_set_alignment (layout, PANGO_ALIGN_RIGHT);
 
@@ -1098,12 +1059,12 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 		margin_width = 0;
 
 	x_pixmap = margin_width;
-
+	
 	if (view->priv->show_line_markers)
 		margin_width += GUTTER_PIXMAP;
 
 	g_return_if_fail (margin_width != 0);
-
+	
 	gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (text_view),
 					      GTK_TEXT_WINDOW_LEFT,
 					      margin_width);
@@ -1133,24 +1094,24 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 				   gtk_text_iter_get_line (&end));
 		});
 	}
-
+	
 	i = 0;
 	current_marker = markers;
 	if (current_marker)
 		marker_line = gtk_source_marker_get_line (
 			GTK_SOURCE_MARKER (current_marker->data));
-
-
-	gtk_text_buffer_get_iter_at_mark (text_view->buffer,
-					  &cur,
+	
+	
+	gtk_text_buffer_get_iter_at_mark (text_view->buffer, 
+					  &cur, 
 					  gtk_text_buffer_get_insert (text_view->buffer));
 
 	cur_line = gtk_text_iter_get_line (&cur) + 1;
-
-	while (i < count)
+	
+	while (i < count) 
 	{
 		gint pos;
-
+		
 		gtk_text_view_buffer_to_window_coords (text_view,
 						       GTK_TEXT_WINDOW_LEFT,
 						       0,
@@ -1158,15 +1119,15 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 						       NULL,
 						       &pos);
 
-		if (view->priv->show_line_numbers)
+		if (view->priv->show_line_numbers) 
 		{
 			gint line_to_paint = g_array_index (numbers, gint, i) + 1;
-
+			
 			if (line_to_paint == cur_line)
 			{
 				gchar *markup;
 				markup = g_strdup_printf ("<b>%d</b>", line_to_paint);
-
+				
 				pango_layout_set_markup (layout, markup, -1);
 
 				g_free (markup);
@@ -1179,20 +1140,19 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 				pango_layout_set_markup (layout, str, -1);
 			}
 
-			/* TODO: I store current line color in style->bg[GTK_STATE_PRELIGHT]. Muntyan */
 			gtk_paint_layout (GTK_WIDGET (view)->style,
 					  win,
-					  GTK_STATE_PRELIGHT,
+					  GTK_WIDGET_STATE (view),
 					  FALSE,
 					  NULL,
 					  GTK_WIDGET (view),
 					  NULL,
-					  text_width + 2,
+					  text_width + 2, 
 					  pos,
 					  layout);
 		}
 
-		if (view->priv->show_line_markers && current_marker)
+		if (view->priv->show_line_markers && current_marker) 
 		{
 			if (marker_line == g_array_index (numbers, gint, i))
 			{
@@ -1210,7 +1170,7 @@ gtk_source_view_paint_margin (GtkSourceView *view,
 
 	/* we should have used all markers */
 	g_assert (current_marker == NULL);
-
+	
 	g_slist_free (markers);
 	g_array_free (pixels, TRUE);
 	g_array_free (numbers, TRUE);
@@ -1225,28 +1185,27 @@ gtk_source_view_expose (GtkWidget      *widget,
 	GtkSourceView *view;
 	GtkTextView *text_view;
 	gboolean event_handled;
-        GtkTextIter start, end;
-
+	
 	view = GTK_SOURCE_VIEW (widget);
 	text_view = GTK_TEXT_VIEW (widget);
 
 	event_handled = FALSE;
-
+	
 	/* maintain the our source_buffer pointer synchronized */
 	if (text_view->buffer != GTK_TEXT_BUFFER (view->priv->source_buffer) &&
-	    GTK_IS_SOURCE_BUFFER (text_view->buffer))
+	    GTK_IS_SOURCE_BUFFER (text_view->buffer)) 
 	{
 		set_source_buffer (view, text_view->buffer);
 	}
-
+	
 	/* check if the expose event is for the text window first, and
 	 * make sure the visible region is highlighted */
 	if (event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT) &&
-	    view->priv->source_buffer != NULL)
+	    view->priv->source_buffer != NULL) 
 	{
 		GdkRectangle visible_rect;
-		GtkTextIter iter1, iter2, iter3, iter4;
-
+		GtkTextIter iter1, iter2;
+		
 		gtk_text_view_get_visible_rect (text_view, &visible_rect);
 		gtk_text_view_get_line_at_y (text_view, &iter1,
 					     visible_rect.y, NULL);
@@ -1256,21 +1215,18 @@ gtk_source_view_expose (GtkWidget      *widget,
 					     + visible_rect.height, NULL);
 		gtk_text_iter_forward_line (&iter2);
 
-                start = iter1;
-                end = iter2;
-
 		_gtk_source_buffer_highlight_region (view->priv->source_buffer,
 						     &iter1, &iter2, FALSE);
 	}
 
 	/* now check for the left window, which contains the margin */
 	if (event->window == gtk_text_view_get_window (text_view,
-						       GTK_TEXT_WINDOW_LEFT))
+						       GTK_TEXT_WINDOW_LEFT)) 
 	{
 		gtk_source_view_paint_margin (view, event);
 		event_handled = TRUE;
-	}
-	else
+	} 
+	else 
 	{
 		gint lines;
 
@@ -1288,7 +1244,7 @@ gtk_source_view_expose (GtkWidget      *widget,
 				gdk_window_invalidate_rect (w, NULL, FALSE);
 		}
 
-		if (view->priv->highlight_current_line &&
+		if (view->priv->highlight_current_line && 
 		    (event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT)))
 		{
 			GdkRectangle visible_rect;
@@ -1297,15 +1253,15 @@ gtk_source_view_expose (GtkWidget      *widget,
 			gint y;
 			gint height;
 			gint win_y;
-
-			gtk_text_buffer_get_iter_at_mark (text_view->buffer,
-							  &cur,
+			
+			gtk_text_buffer_get_iter_at_mark (text_view->buffer, 
+							  &cur, 
 							  gtk_text_buffer_get_insert (text_view->buffer));
 
 			gtk_text_view_get_line_yrange (text_view, &cur, &y, &height);
-
+							
 			gtk_text_view_get_visible_rect (text_view, &visible_rect);
-
+			
 			gtk_text_view_buffer_to_window_coords (text_view,
 						       GTK_TEXT_WINDOW_TEXT,
 						       visible_rect.x,
@@ -1324,7 +1280,7 @@ gtk_source_view_expose (GtkWidget      *widget,
 			redraw_rect.height = visible_rect.height;
 
 			gdk_draw_rectangle (event->window,
-					    view->priv->current_line_gc,
+					    widget->style->bg_gc[GTK_WIDGET_STATE (widget)],
 					    TRUE,
 					    redraw_rect.x + MAX (0, gtk_text_view_get_left_margin (text_view) - 1),
 					    win_y,
@@ -1332,7 +1288,7 @@ gtk_source_view_expose (GtkWidget      *widget,
 					    height);
 		}
 
-		if (view->priv->show_margin &&
+		if (view->priv->show_margin && 
 		    (event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT)))
 		{
 			GdkRectangle visible_rect;
@@ -1341,45 +1297,41 @@ gtk_source_view_expose (GtkWidget      *widget,
 			if (view->priv->cached_margin_width < 0)
 				view->priv->cached_margin_width =
 					calculate_real_tab_width (view, view->priv->margin, '_');
-
+		
 			gtk_text_view_get_visible_rect (text_view, &visible_rect);
-
+			
 			gtk_text_view_buffer_to_window_coords (text_view,
 						       GTK_TEXT_WINDOW_TEXT,
 						       visible_rect.x,
 						       visible_rect.y,
 						       &redraw_rect.x,
 						       &redraw_rect.y);
-
+			
 			redraw_rect.width = visible_rect.width;
 			redraw_rect.height = visible_rect.height;
 
-			/* TODO: I store current line color in style->bg[GTK_STATE_PRELIGHT]. Muntyan */
-			gtk_paint_vline (widget->style,
-					 event->window,
-					 GTK_STATE_PRELIGHT,
-					 &redraw_rect,
+			gtk_paint_vline (widget->style, 
+					 event->window, 
+					 GTK_WIDGET_STATE (widget), 
+					 &redraw_rect, 
 					 widget,
-					 "margin",
-					 redraw_rect.y,
-					 redraw_rect.y + redraw_rect.height,
+					 "margin", 
+					 redraw_rect.y, 
+					 redraw_rect.y + redraw_rect.height, 
 					 view->priv->cached_margin_width -
 					 visible_rect.x + redraw_rect.x +
 					 gtk_text_view_get_left_margin (text_view));
 		}
 
-
+		
 		if (GTK_WIDGET_CLASS (parent_class)->expose_event)
-			event_handled =
+			event_handled = 
 				(* GTK_WIDGET_CLASS (parent_class)->expose_event)
 				(widget, event);
 
-		if (event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT) &&
-		    view->priv->source_buffer != NULL)
-			draw_tabs (GTK_SOURCE_VIEW (text_view), event, &start, &end);
 	}
-
-	return event_handled;
+	
+	return event_handled;	
 }
 
 /*
@@ -1420,7 +1372,7 @@ calculate_real_tab_width (GtkSourceView *view, guint tab_size, gchar c)
 
 
 /* ----------------------------------------------------------------------
- * Public interface
+ * Public interface 
  * ---------------------------------------------------------------------- */
 
 /**
@@ -1459,7 +1411,7 @@ gtk_source_view_new_with_buffer (GtkSourceBuffer *buffer)
 	GtkWidget *view;
 
 	g_return_val_if_fail (buffer != NULL && GTK_IS_SOURCE_BUFFER (buffer), NULL);
-
+	
 	view = g_object_new (GTK_TYPE_SOURCE_VIEW, NULL);
 	gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), GTK_TEXT_BUFFER (buffer));
 
@@ -1526,11 +1478,11 @@ gtk_source_view_set_show_line_numbers (GtkSourceView *view,
 
 	show = (show != FALSE);
 
-	if (show)
+	if (show) 
 	{
-		if (!view->priv->show_line_numbers)
+		if (!view->priv->show_line_numbers) 
 		{
-			/* Set left margin to minimum width if no margin is
+			/* Set left margin to minimum width if no margin is 
 			   visible yet. Otherwise, just queue a redraw, so the
 			   expose handler will automatically adjust the margin. */
 			if (!view->priv->show_line_markers)
@@ -1545,9 +1497,9 @@ gtk_source_view_set_show_line_numbers (GtkSourceView *view,
 			g_object_notify (G_OBJECT (view), "show_line_numbers");
 		}
 	}
-	else
+	else 
 	{
-		if (view->priv->show_line_numbers)
+		if (view->priv->show_line_numbers) 
 		{
 			view->priv->show_line_numbers = show;
 
@@ -1593,11 +1545,11 @@ gtk_source_view_set_show_line_markers (GtkSourceView *view,
 
 	show = (show != FALSE);
 
-	if (show)
+	if (show) 
 	{
-		if (!view->priv->show_line_markers)
+		if (!view->priv->show_line_markers) 
 		{
-			/* Set left margin to minimum width if no margin is
+			/* Set left margin to minimum width if no margin is 
 			   visible yet. Otherwise, just queue a redraw, so the
 			   expose handler will automatically adjust the margin. */
 			if (!view->priv->show_line_numbers)
@@ -1611,10 +1563,10 @@ gtk_source_view_set_show_line_markers (GtkSourceView *view,
 
 			g_object_notify (G_OBJECT (view), "show_line_markers");
 		}
-	}
-	else
+	} 
+	else 
 	{
-		if (view->priv->show_line_markers)
+		if (view->priv->show_line_markers) 
 		{
 			view->priv->show_line_markers = show;
 
@@ -1653,11 +1605,11 @@ set_tab_stops_internal (GtkSourceView *view)
 
 	if (real_tab_width < 0)
 		return FALSE;
-
+	
 	tab_array = pango_tab_array_new (1, TRUE);
 	pango_tab_array_set_tab (tab_array, 0, PANGO_TAB_LEFT, real_tab_width);
 
-	gtk_text_view_set_tabs (GTK_TEXT_VIEW (view),
+	gtk_text_view_set_tabs (GTK_TEXT_VIEW (view), 
 				tab_array);
 
 	pango_tab_array_free (tab_array);
@@ -1678,16 +1630,16 @@ gtk_source_view_set_tabs_width (GtkSourceView *view,
 				guint          width)
 {
 	guint save_width;
-
+	
 	g_return_if_fail (GTK_SOURCE_VIEW (view));
 	g_return_if_fail (width <= MAX_TAB_WIDTH);
 	g_return_if_fail (width > 0);
 
 	if (view->priv->tabs_width == width)
 		return;
-
+	
 	gtk_widget_ensure_style (GTK_WIDGET (view));
-
+	
 	save_width = view->priv->tabs_width;
 	view->priv->tabs_width = width;
 	if (set_tab_stops_internal (view))
@@ -1718,7 +1670,7 @@ gtk_source_view_set_marker_pixbuf (GtkSourceView *view,
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
 	g_return_if_fail (marker_type != NULL);
 	g_return_if_fail (pixbuf == NULL || GDK_IS_PIXBUF (pixbuf));
-
+	
 	if (pixbuf)
 	{
 		gint width;
@@ -1740,7 +1692,7 @@ gtk_source_view_set_marker_pixbuf (GtkSourceView *view,
 			/* we own a reference of the pixbuf */
 			g_object_ref (G_OBJECT (pixbuf));
 		}
-
+		
 		g_hash_table_insert (view->priv->pixmap_cache,
 				     g_strdup (marker_type),
 				     pixbuf);
@@ -1754,13 +1706,13 @@ gtk_source_view_set_marker_pixbuf (GtkSourceView *view,
 /**
  * gtk_source_view_get_marker_pixbuf:
  * @view: a #GtkSourceView.
- * @marker_type: a marker type.
+ * @marker_type: a marker type. 
  *
  * Gets the pixbuf which is associated with the given @marker_type.
  *
  * Return value: a #GdkPixbuf if found, or %NULL if not found.
  **/
-GdkPixbuf *
+GdkPixbuf * 
 gtk_source_view_get_marker_pixbuf (GtkSourceView *view,
 				   const gchar   *marker_type)
 {
@@ -1769,17 +1721,17 @@ gtk_source_view_get_marker_pixbuf (GtkSourceView *view,
 	g_return_val_if_fail (view != NULL, NULL);
 	g_return_val_if_fail (GTK_IS_SOURCE_VIEW (view), NULL);
 	g_return_val_if_fail (marker_type != NULL, NULL);
-
+	
 	pixbuf = g_hash_table_lookup (view->priv->pixmap_cache, marker_type);
 
 	if (pixbuf)
 		g_object_ref (pixbuf);
-
+	
 	return pixbuf;
 }
 
-static gchar*
-compute_indentation (GtkSourceView *view,
+static gchar *
+compute_indentation (GtkSourceView *view, 
 		     GtkTextIter   *cur)
 {
 	GtkTextIter start;
@@ -1790,17 +1742,17 @@ compute_indentation (GtkSourceView *view,
 
 	line = gtk_text_iter_get_line (cur);
 
-	gtk_text_buffer_get_iter_at_line (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)),
-					  &start,
+	gtk_text_buffer_get_iter_at_line (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)), 
+					  &start, 
 					  line);
 
 	end = start;
 
 	ch = gtk_text_iter_get_char (&end);
 
-	while (g_unichar_isspace (ch) &&
-	       (ch != '\n') &&
-	       (ch != '\r') &&
+	while (g_unichar_isspace (ch) && 
+	       (ch != '\n') && 
+	       (ch != '\r') && 
 	       (gtk_text_iter_compare (&end, cur) < 0))
 	{
 		if (!gtk_text_iter_forward_char (&end))
@@ -1815,8 +1767,8 @@ compute_indentation (GtkSourceView *view,
 	return gtk_text_iter_get_slice (&start, &end);
 }
 
-static gint
-gtk_source_view_key_press_event (GtkWidget *widget, GdkEventKey *event)
+static gboolean
+key_press_event (GtkWidget *widget, GdkEventKey *event)
 {
 	GtkSourceView *view;
 	GtkTextBuffer *buf;
@@ -1832,11 +1784,12 @@ gtk_source_view_key_press_event (GtkWidget *widget, GdkEventKey *event)
 	mark = gtk_text_buffer_get_insert (buf);
 	gtk_text_buffer_get_iter_at_mark (buf, &cur, mark);
 
-	if ((key == GDK_Return) && view->priv->auto_indent)
+	if ((key == GDK_Return) && !(event->state & GDK_SHIFT_MASK) && view->priv->auto_indent)
 	{
 		/* Auto-indent means that when you press ENTER at the end of a
 		 * line, the new line is automatically indented at the same
 		 * level as the previous line.
+		 * SHIFT+ENTER allows to avoid autoindentation.
 		 */
 		gchar *indent = NULL;
 
@@ -1845,8 +1798,8 @@ gtk_source_view_key_press_event (GtkWidget *widget, GdkEventKey *event)
 
 		if (indent != NULL)
 		{
-			/* Allow input methods to internally handle a key press event.
-			 * If this function returns TRUE, then no further processing should be done
+			/* Allow input methods to internally handle a key press event. 
+			 * If this function returns TRUE, then no further processing should be done 
 			 * for this keystroke. */
 			if (gtk_im_context_filter_keypress (GTK_TEXT_VIEW(view)->im_context, event))
 				return TRUE;
@@ -1854,7 +1807,7 @@ gtk_source_view_key_press_event (GtkWidget *widget, GdkEventKey *event)
 			/* If an input method has inserted some test while handling the key press event,
 			 * the cur iterm may be invalid, so get the iter again */
 			gtk_text_buffer_get_iter_at_mark (buf, &cur, mark);
-
+	
 			/* Insert new line and auto-indent. */
 			gtk_text_buffer_begin_user_action (buf);
 			gtk_text_buffer_insert (buf, &cur, "\n", 1);
@@ -1874,27 +1827,27 @@ gtk_source_view_key_press_event (GtkWidget *widget, GdkEventKey *event)
 		gint tabs_size;
 		gchar *spaces;
 
-		tabs_size = view->priv->tabs_width;
-
+		tabs_size = view->priv->tabs_width; 
+		
 		cur_pos = gtk_text_iter_get_line_offset (&cur);
 
-		num_of_equivalent_spaces = tabs_size - (cur_pos % tabs_size);
+		num_of_equivalent_spaces = tabs_size - (cur_pos % tabs_size); 
 
 		spaces = g_strnfill (num_of_equivalent_spaces, ' ');
-
+		
 		gtk_text_buffer_begin_user_action (buf);
 		gtk_text_buffer_insert (buf,  &cur, spaces, num_of_equivalent_spaces);
 		gtk_text_buffer_end_user_action (buf);
 
 		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (widget),
 						    gtk_text_buffer_get_insert (buf));
-
+		
 		g_free (spaces);
 
 		return TRUE;
 	}
 
-	return GTK_WIDGET_CLASS(parent_class)->key_press_event (widget, event);
+	return	(* GTK_WIDGET_CLASS (parent_class)->key_press_event) (widget, event);
 }
 
 /**
@@ -1968,17 +1921,17 @@ gtk_source_view_set_insert_spaces_instead_of_tabs (GtkSourceView *view, gboolean
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
 
 	enable = (enable != FALSE);
-
+	
 	if (view->priv->insert_spaces == enable)
 		return;
-
+	
 	view->priv->insert_spaces = enable;
 
 	g_object_notify (G_OBJECT (view), "insert_spaces_instead_of_tabs");
 }
 
-static void
-view_dnd_drop (GtkTextView *view,
+static void 
+view_dnd_drop (GtkTextView *view, 
 	       GdkDragContext *context,
 	       gint x,
 	       gint y,
@@ -1990,17 +1943,17 @@ view_dnd_drop (GtkTextView *view,
 
 	GtkTextIter iter;
 
-	if (info == TARGET_COLOR)
+	if (info == TARGET_COLOR) 
 	{
 		guint16 *vals;
 		gchar string[] = "#000000";
 		gint buffer_x;
 		gint buffer_y;
-
+		
 		if (selection_data->length < 0)
 			return;
 
-		if ((selection_data->format != 16) || (selection_data->length != 8))
+		if ((selection_data->format != 16) || (selection_data->length != 8)) 
 		{
 			g_warning ("Received invalid color data\n");
 			return;
@@ -2011,22 +1964,22 @@ view_dnd_drop (GtkTextView *view,
 		vals[0] /= 256;
 	        vals[1] /= 256;
 		vals[2] /= 256;
-
+		
 		g_snprintf (string, sizeof (string), "#%02X%02X%02X", vals[0], vals[1], vals[2]);
-
-		gtk_text_view_window_to_buffer_coords (view,
-						       GTK_TEXT_WINDOW_TEXT,
-						       x,
-						       y,
-						       &buffer_x,
+		
+		gtk_text_view_window_to_buffer_coords (view, 
+						       GTK_TEXT_WINDOW_TEXT, 
+						       x, 
+						       y, 
+						       &buffer_x, 
 						       &buffer_y);
 		gtk_text_view_get_iter_at_location (view, &iter, buffer_x, buffer_y);
 
 		if (gtk_text_view_get_editable (view))
 		{
-			gtk_text_buffer_insert (gtk_text_view_get_buffer (view),
-						&iter,
-						string,
+			gtk_text_buffer_insert (gtk_text_view_get_buffer (view), 
+						&iter, 
+						string, 
 						strlen (string));
 			gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (view),
 						&iter);
@@ -2050,7 +2003,7 @@ view_dnd_drop (GtkTextView *view,
  *
  * Return value: %TRUE if the margin is showed.
  **/
-gboolean
+gboolean 
 gtk_source_view_get_show_margin (GtkSourceView *view)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_VIEW (view), FALSE);
@@ -2065,7 +2018,7 @@ gtk_source_view_get_show_margin (GtkSourceView *view)
  *
  * If %TRUE a margin is displayed
  **/
-void
+void 
 gtk_source_view_set_show_margin (GtkSourceView *view, gboolean show)
 {
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
@@ -2090,7 +2043,7 @@ gtk_source_view_set_show_margin (GtkSourceView *view, gboolean show)
  *
  * Return value: TRUE if the current line is highlighted
  **/
-gboolean
+gboolean 
 gtk_source_view_get_highlight_current_line (GtkSourceView *view)
 {
 	g_return_val_if_fail (GTK_IS_SOURCE_VIEW (view), FALSE);
@@ -2105,7 +2058,7 @@ gtk_source_view_get_highlight_current_line (GtkSourceView *view)
  *
  * If TRUE the current line is highlighted
  **/
-void
+void 
 gtk_source_view_set_highlight_current_line (GtkSourceView *view, gboolean hl)
 {
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
@@ -2147,7 +2100,7 @@ gtk_source_view_get_margin  (GtkSourceView *view)
  * Sets the position of the right margin in the given @view.
  *
  **/
-void
+void 
 gtk_source_view_set_margin (GtkSourceView *view, guint margin)
 {
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
@@ -2213,13 +2166,13 @@ gtk_source_view_get_smart_home_end (GtkSourceView *view)
  *
  *
  **/
-static void
+static void 
 gtk_source_view_style_set (GtkWidget *widget, GtkStyle *previous_style)
 {
 	GtkSourceView *view;
-
+	
 	g_return_if_fail (GTK_IS_SOURCE_VIEW (widget));
-
+	
 	/* call default handler first */
 	if (GTK_WIDGET_CLASS (parent_class)->style_set)
 		(* GTK_WIDGET_CLASS (parent_class)->style_set) (widget, previous_style);
@@ -2230,7 +2183,7 @@ gtk_source_view_style_set (GtkWidget *widget, GtkStyle *previous_style)
 		/* If previous_style is NULL this is the initial
 		 * emission and we can't set the tab array since the
 		 * text view doesn't have a default style yet */
-
+		
 		/* re-set tab stops */
 		set_tab_stops_internal (view);
 		/* make sure the margin width is recalculated on next expose */
@@ -2238,83 +2191,3 @@ gtk_source_view_style_set (GtkWidget *widget, GtkStyle *previous_style)
 	}
 }
 
-
-static void
-gtk_source_view_create_current_line_gc (GtkSourceView     *view)
-{
-	GtkWidget *widget = GTK_WIDGET (view);
-
-	g_return_if_fail (widget->window != NULL);
-	g_return_if_fail (view->priv->current_line_gc == NULL);
-
-	view->priv->current_line_gc = gdk_gc_new (GDK_DRAWABLE (widget->window));
-
-	g_return_if_fail (gdk_colormap_alloc_color (gdk_colormap_get_system (),
-						    &(view->priv->current_line_color),
-						    TRUE, TRUE));
-
-	gdk_gc_set_foreground (view->priv->current_line_gc,
-			       &(view->priv->current_line_color));
-}
-
-
-static void
-gtk_source_view_destroy_current_line_gc (GtkSourceView *view)
-{
-    if (view->priv->current_line_gc)
-        g_object_unref (view->priv->current_line_gc);
-    view->priv->current_line_gc = NULL;
-}
-
-
-void
-gtk_source_view_set_highlight_current_line_color (GtkSourceView   *view,
-						  GdkColor        *color)
-{
-	g_return_if_fail (GTK_IS_SOURCE_VIEW (view));
-	g_return_if_fail (color != NULL);
-
-	if (view->priv->current_line_gc)
-		gdk_gc_set_foreground (view->priv->current_line_gc, color);
-	else
-		view->priv->current_line_color = *color;
-}
-
-
-static void
-draw_tab_at_iter (GtkTextView    *textview,
-		  GdkEventExpose *event,
-		  GtkTextIter    *iter)
-{
-	GdkRectangle rect;
-	GdkPoint points[3];
-
-	gtk_text_view_get_iter_location (textview, iter, &rect);
-	gtk_text_view_buffer_to_window_coords (textview, GTK_TEXT_WINDOW_TEXT,
-					       rect.x, rect.y + rect.height - 2,
-					       &points[0].x, &points[0].y);
-	points[1] = points[0];
-	points[2] = points[0];
-	points[1].y += 1;
-	points[2].x += 1;
-	points[2].y += 1;
-	gdk_draw_polygon (event->window,
-			  GTK_WIDGET(textview)->style->text_gc[GTK_STATE_NORMAL],
-			  FALSE, points, 3);
-}
-
-
-static void
-draw_tabs (GtkSourceView     *view,
-	   GdkEventExpose    *event,
-	   GtkTextIter       *start,
-	   GtkTextIter       *end)
-{
-	while (gtk_text_iter_compare (start, end) < 0)
-	{
-		if (gtk_text_iter_get_char (start) == '\t')
-			draw_tab_at_iter (GTK_TEXT_VIEW (view), event, start);
-		if (!gtk_text_iter_forward_char (start))
-			break;
-	}
-}

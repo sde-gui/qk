@@ -37,12 +37,7 @@ libgtksourceview_la_SOURCES =   \
     gtksourceundomanager.h      \
     gtksourceview-i18n.c        \
     gtksourceview-i18n.h        \
-    gtksourceview-marshal.c     \
-    gtksourceview-marshal.h     \
     gtksourceview-typebuiltins.c\
     gtksourceview-typebuiltins.h\
     gtktextregion.c             \
     gtktextregion.h
-
-EXTRA_DIST = \
-    gtksourceview-marshal.list

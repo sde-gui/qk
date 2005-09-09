@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooeditfileops.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -539,18 +540,20 @@ static gboolean do_write                (MooEdit        *edit,
 
 static void     block_buffer_signals        (MooEdit        *edit)
 {
+    MooTextView *view = MOO_TEXT_VIEW (edit);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_block (buffer, edit->priv->can_undo_handler_id);
-    g_signal_handler_block (buffer, edit->priv->can_redo_handler_id);
+    g_signal_handler_block (buffer, view->priv->can_undo_handler_id);
+    g_signal_handler_block (buffer, view->priv->can_redo_handler_id);
     g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
 static void     unblock_buffer_signals      (MooEdit        *edit)
 {
+    MooTextView *view = MOO_TEXT_VIEW (edit);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_unblock (buffer, edit->priv->can_undo_handler_id);
-    g_signal_handler_unblock (buffer, edit->priv->can_redo_handler_id);
+    g_signal_handler_unblock (buffer, view->priv->can_undo_handler_id);
+    g_signal_handler_unblock (buffer, view->priv->can_redo_handler_id);
     g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
 }
 

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   moopaneview.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -64,7 +65,7 @@ enum {
 
 
 /* MOO_TYPE_PANE_VIEW */
-G_DEFINE_TYPE (MooPaneView, moo_pane_view, GTK_TYPE_SOURCE_VIEW)
+G_DEFINE_TYPE (MooPaneView, moo_pane_view, MOO_TYPE_TEXT_VIEW)
 
 
 static void moo_pane_view_class_init (MooPaneViewClass *klass)
@@ -93,19 +94,13 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
 
 static void moo_pane_view_init (MooPaneView *view)
 {
-    GtkSourceBuffer *buffer;
-
     view->priv = g_new0 (MooPaneViewPrivate, 1);
-
-    buffer = gtk_source_buffer_new (NULL);
 
     g_object_set (view,
                   "editable", FALSE,
                   "cursor-visible", FALSE,
-                  "buffer", buffer,
+                  "current-line-color", "grey",
                   NULL);
-
-    g_object_unref (buffer);
 }
 
 

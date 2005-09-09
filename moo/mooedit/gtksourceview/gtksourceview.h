@@ -22,13 +22,6 @@
  *  02111-1307, USA.
  */
 
-/*****************************************************************************
- * Changed by Muntyan
- *
- * 05/07/2005: added gtk_source_view_set_highlight_current_line_color
- *
- *****************************************************************************/
-
 #ifndef __GTK_SOURCE_VIEW_H__
 #define __GTK_SOURCE_VIEW_H__
 
@@ -110,9 +103,6 @@ void		 gtk_source_view_set_highlight_current_line
 							 gboolean         show);
 gboolean 	 gtk_source_view_get_highlight_current_line 	
 							(GtkSourceView   *view);
-void		 gtk_source_view_set_highlight_current_line_color
-							(GtkSourceView   *view,
-							 GdkColor        *color);
 
 void		 gtk_source_view_set_margin 		(GtkSourceView   *view,
 							 guint            margin);

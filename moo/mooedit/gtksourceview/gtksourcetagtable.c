@@ -16,10 +16,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: replaced gtksourceview_marshal* with _moo_marshal*
+ */
 
 #include "gtksourcetagtable.h"
 
-#include "gtksourceview-marshal.h"
+#include "mooutils/moomarshals.h"
 #include "gtksourcetag.h"
 
 struct _GtkSourceTagTablePrivate
@@ -87,7 +91,7 @@ gtk_source_tag_table_class_init (GtkSourceTagTableClass *klass)
 				G_STRUCT_OFFSET (GtkSourceTagTableClass, changed),
 				NULL,
 				NULL,
-				gtksourceview_marshal_VOID__VOID,
+				_moo_marshal_VOID__VOID,
 				G_TYPE_NONE,
 				0);
 }

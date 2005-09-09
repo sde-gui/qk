@@ -22,16 +22,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
-/*****************************************************************************
- * Changed by Muntyan
- *
- * 04/23/2005: Removed GtkSourceLanguage and GtkSourceStyleScheme stuff
- * 04/27/2005: added gtk_source_buffer_set_correct_bracket_match_style and
- *                   gtk_source_buffer_set_incorrect_bracket_match_style
- * 05/07/2005: added gtk_source_buffer_set_brackets
- *
- *****************************************************************************/
+/*
+ * This file is from gtksourceview-1.4.1. Modified by muntyan
+ * Sep 08 2005: removed GtkSourceLanguage* stuff;
+ *              made iter_has_syntax_tag global exported function
+ */
 
 #ifndef __GTK_SOURCE_BUFFER_H__
 #define __GTK_SOURCE_BUFFER_H__
@@ -94,16 +89,8 @@ gboolean		 gtk_source_buffer_get_check_brackets   (GtkSourceBuffer        *buffe
 void			 gtk_source_buffer_set_check_brackets	(GtkSourceBuffer        *buffer,
 							       	 gboolean                check_brackets);
 void                     gtk_source_buffer_set_bracket_match_style 
-								(GtkSourceBuffer         *source_buffer,
+                                                                (GtkSourceBuffer         *source_buffer,
 								 const GtkSourceTagStyle *style);
-void                     gtk_source_buffer_set_bracket_correct_match_style
-								(GtkSourceBuffer         *source_buffer,
-								 const GtkSourceTagStyle *style);
-void                     gtk_source_buffer_set_bracket_incorrect_match_style
-								(GtkSourceBuffer         *source_buffer,
-								 const GtkSourceTagStyle *style);
-void			 gtk_source_buffer_set_brackets		(GtkSourceBuffer         *source_buffer,
-								 const gchar             *brackets_string);
 
 gboolean		 gtk_source_buffer_get_highlight	(GtkSourceBuffer        *buffer);
 void			 gtk_source_buffer_set_highlight	(GtkSourceBuffer        *buffer,
@@ -153,6 +140,8 @@ GtkSourceMarker         *gtk_source_buffer_get_next_marker      (GtkSourceBuffer
 								 GtkTextIter            *iter);
 GtkSourceMarker         *gtk_source_buffer_get_prev_marker      (GtkSourceBuffer        *buffer,
 								 GtkTextIter            *iter);
+
+const GtkTextTag 	*gtk_source_iter_has_syntax_tag 	(const GtkTextIter 	*iter);
 
 /* INTERNAL private stuff - not even exported from the library on
  * many platforms

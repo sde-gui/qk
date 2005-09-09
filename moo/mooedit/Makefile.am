@@ -73,7 +73,11 @@ libmooedit_la_SOURCES =     \
     mooplugin.h             \
     moorecentmgr.c          \
     moorecentmgr.h          \
-    mootextiter.h
+    mootextbuffer.c         \
+    mootextbuffer.h         \
+    mootextiter.h           \
+    mootextview.c           \
+    mootextview.h
 
 if MOO_USE_XML
     libmooedit_la_SOURCES += mooeditlang-xml.c

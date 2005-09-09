@@ -14,7 +14,7 @@
 #ifndef __MOO_PANE_VIEW__
 #define __MOO_PANE_VIEW__
 
-#include <gtksourceview/gtksourceview.h>
+#include "mooedit/mootextview.h"
 
 G_BEGIN_DECLS
 
@@ -33,13 +33,13 @@ typedef struct _MooPaneViewClass    MooPaneViewClass;
 
 struct _MooPaneView
 {
-    GtkSourceView  parent;
+    MooTextView parent;
     MooPaneViewPrivate *priv;
 };
 
 struct _MooPaneViewClass
 {
-    GtkSourceViewClass parent_class;
+    MooTextViewClass parent_class;
 
     gboolean (*click) (MooPaneView *view,
                        gpointer     line_data,

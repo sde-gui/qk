@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+ * kate: space-indent on; indent-width 4; replace-tabs on;
  *   mooeditdialogs.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -571,22 +572,23 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 GtkWidget *_moo_edit_create_prompt_on_replace_dialog (void); /* in mooeditfind-glade.c */
 
 
-void             moo_edit_nothing_found_dialog  (MooEdit    *edit,
-                                                 const char *text,
-                                                 gboolean    regex)
+void             
+moo_text_nothing_found_dialog (MooTextView    *view,
+                               const char     *text,
+                               gboolean        regex)
 {
     GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text;
 
-    g_return_if_fail (MOO_IS_EDIT (edit) && text != NULL);
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view) && text != NULL);
 
     if (regex)
         msg_text = g_strdup_printf ("Search pattern '%s' not found!", text);
     else
         msg_text = g_strdup_printf ("Search string '%s' not found!", text);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
@@ -601,15 +603,16 @@ void             moo_edit_nothing_found_dialog  (MooEdit    *edit,
 }
 
 
-gboolean         moo_edit_search_from_beginning_dialog (MooEdit    *edit,
-                                                        gboolean    backwards)
+gboolean         
+moo_text_search_from_beginning_dialog (MooTextView    *view,
+                                       gboolean        backwards)
 {
     GtkWindow *parent_window;
     GtkWidget *dialog;
     int response;
     const char *msg;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
     if (backwards)
         msg = "Beginning of document reached.\n"
@@ -618,7 +621,7 @@ gboolean         moo_edit_search_from_beginning_dialog (MooEdit    *edit,
         msg = "End of document reached.\n"
               "Continue from the beginning?";
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
                                      msg);
@@ -641,14 +644,15 @@ gboolean         moo_edit_search_from_beginning_dialog (MooEdit    *edit,
 }
 
 
-void             moo_edit_regex_error_dialog    (MooEdit    *edit,
-                                                 GError     *err)
+void             
+moo_text_regex_error_dialog (MooTextView *view,
+                             GError      *err)
 {
     GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text = NULL;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
     if (err) {
         if (err->domain != EGG_REGEX_ERROR)
@@ -664,7 +668,7 @@ void             moo_edit_regex_error_dialog    (MooEdit    *edit,
     if (!msg_text)
         msg_text = g_strdup_printf ("Invalid regular expression");
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_ERROR, GTK_BUTTONS_NONE,
                                      msg_text);
@@ -679,14 +683,15 @@ void             moo_edit_regex_error_dialog    (MooEdit    *edit,
 }
 
 
-void             moo_edit_replaced_n_dialog     (MooEdit    *edit,
-                                                 guint       n)
+void             
+moo_text_replaced_n_dialog (MooTextView *view,
+                            guint        n)
 {
     GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
     if (!n)
         msg_text = g_strdup_printf ("No replacement made");
@@ -695,7 +700,7 @@ void             moo_edit_replaced_n_dialog     (MooEdit    *edit,
     else
         msg_text = g_strdup_printf ("%d replacements made", n);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
@@ -710,14 +715,15 @@ void             moo_edit_replaced_n_dialog     (MooEdit    *edit,
 }
 
 
-GtkWidget       *moo_edit_prompt_on_replace_dialog  (MooEdit    *edit)
+GtkWidget*
+moo_text_prompt_on_replace_dialog (MooTextView *view)
 {
     GtkWidget *dialog;
     GtkWindow *parent_window;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (edit)));
+    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     dialog = _moo_edit_create_prompt_on_replace_dialog ();
     gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
 
