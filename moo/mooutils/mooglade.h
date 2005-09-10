@@ -22,18 +22,53 @@ typedef struct _MooGladeXML MooGladeXML;
 
 #define MOO_TYPE_GLADE_XML (moo_glade_xml_get_type ())
 
-GType        moo_glade_xml_get_type  (void);
+typedef GtkWidget* (*MooGladeCreateFunc)(MooGladeXML    *xml,
+                                         const char     *id,
+                                         gpointer        data);
+typedef void       (*MooGladeSignalFunc)(MooGladeXML    *xml,
+                                         const char     *widget_id,
+                                         GtkWidget      *widget,
+                                         const char     *signal,
+                                         const char     *object,
+                                         gpointer        data);
 
-MooGladeXML *moo_glade_xml_parse_file   (const char     *file,
+
+GType        moo_glade_xml_get_type     (void);
+
+MooGladeXML *moo_glade_xml_new_empty    (void);
+
+void         moo_glade_xml_map_type     (MooGladeXML    *xml,
+                                         GType           type,
+                                         GType           use_type);
+void         moo_glade_xml_map_id       (MooGladeXML    *xml,
+                                         const char     *id,
+                                         GType           use_type);
+void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
+                                         const char     *id,
+                                         MooGladeCreateFunc func,
+                                         gpointer        data);
+void         moo_glade_xml_map_signal   (MooGladeXML    *xml,
+                                         MooGladeSignalFunc func,
+                                         gpointer        data);
+
+gboolean     moo_glade_xml_parse_file   (MooGladeXML    *xml,
+                                         const char     *file,
                                          const char     *root);
-MooGladeXML *moo_glade_xml_parse_memory (const char     *buffer,
+gboolean     moo_glade_xml_parse_memory (MooGladeXML    *xml,
+                                         const char     *buffer,
+                                         int             size,
+                                         const char     *root);
+
+MooGladeXML *moo_glade_xml_new          (const char     *file,
+                                         const char     *root);
+MooGladeXML *moo_glade_xml_new_from_buf (const char     *buffer,
                                          int             size,
                                          const char     *root);
 
 MooGladeXML *moo_glade_xml_ref          (MooGladeXML    *xml);
 void         moo_glade_xml_unref        (MooGladeXML    *xml);
 
-GtkWidget   *moo_glade_xml_get_widget   (MooGladeXML    *xml,
+gpointer     moo_glade_xml_get_widget   (MooGladeXML    *xml,
                                          const char     *id);
 
 

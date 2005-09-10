@@ -793,7 +793,7 @@ GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
     if (mgr->priv->editor)
         return mgr->priv->editor;
 
-    xml = moo_glade_xml_parse_file (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL);
+    xml = moo_glade_xml_new (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL);
 
     if (!xml)
         g_error ("Yes, glade is great usually, but not always");

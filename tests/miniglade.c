@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
         file = argv[1];
     }
 
-    my_xml = moo_glade_xml_parse_file (file, NULL);
+    my_xml = moo_glade_xml_new (file, NULL);
 
     if (!my_xml)
     {

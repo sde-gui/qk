@@ -14,7 +14,7 @@ AM_CFLAGS =                             \
     $(XML_CFLAGS)                       \
     -DG_LOG_DOMAIN=\"Moo\"
 
-noinst_LTLIBRARIES   = libmooui.la
+noinst_LTLIBRARIES = libmooui.la
 
 libmooui_la_SOURCES =           \
     mooaccel.c                  \
@@ -25,9 +25,9 @@ libmooui_la_SOURCES =           \
     mooactiongroup.h            \
     moomenuaction.c             \
     moomenuaction.h             \
-    mooshortcutsprefs-glade.c   \
     mooshortcutsprefs.c         \
     mooshortcutsprefs.h         \
+    mooshortcutsprefs-glade.h   \
     mootext.c                   \
     mootext.h                   \
     mootoggleaction.c           \
@@ -44,10 +44,8 @@ EXTRA_DIST =                    \
     moouimanager.cpp            \
     moouimanager.h
 
-BUILT_SOURCES = mooshortcutsprefs-glade.c
+BUILT_SOURCES = mooshortcutsprefs-glade.h
 
-GLADE = $(srcdir)/glade
-SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
-mooshortcutsprefs-glade.c: $(GLADE)/shortcutsprefs.c $(GLADE)/shortcutsprefs.sed $(SUPPORT)
-	cat $(GLADE)/shortcutsprefs.c | sh $(SUPPORT) | \
-		sed -f $(GLADE)/shortcutsprefs.sed > mooshortcutsprefs-glade.c
+mooshortcutsprefs-glade.h: $(srcdir)/glade/shortcutsprefs.glade $(srcdir)/../mooutils/xml2h.sh
+	sh $(srcdir)/../mooutils/xml2h.sh MOO_SHORTCUTS_PREFS_GLADE_UI \
+	   $(srcdir)/glade/shortcutsprefs.glade > mooshortcutsprefs-glade.h

@@ -12,15 +12,14 @@
  */
 
 #include "mooui/mooshortcutsprefs.h"
+#include "mooui/mooshortcutsprefs-glade.h"
 #include "mooui/mooaccel.h"
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
 #include <string.h>
-
-GtkWidget *_moo_create_shortcutsprefs_page (GtkWidget *page);
-GtkWidget *_moo_create_shortcutsprefs_dialog (GtkWidget *page);
 
 
 typedef enum {
@@ -149,13 +148,20 @@ inline static void unblock_radio (Stuff *stuff)
 
 GtkWidget *moo_shortcuts_prefs_page_new (MooActionGroup *actions)
 {
-    GtkWidget *page;
+    GtkWidget *page, *page_content;
     Stuff *stuff;
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
+    MooGladeXML *xml;
+
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_type (xml, GTK_TYPE_BUTTON, MOO_TYPE_ACCEL_BUTTON);
+    moo_glade_xml_parse_memory (xml, MOO_SHORTCUTS_PREFS_GLADE_UI, -1, "page");
 
     page = moo_prefs_dialog_page_new ("Shortcuts", MOO_STOCK_KEYBOARD);
-    _moo_create_shortcutsprefs_page (page);
+
+    page_content = moo_glade_xml_get_widget (xml, "page");
+    gtk_box_pack_start (GTK_BOX (page), page_content, TRUE, TRUE, 0);
 
     stuff = stuff_new ();
     if (actions)
@@ -171,7 +177,7 @@ GtkWidget *moo_shortcuts_prefs_page_new (MooActionGroup *actions)
                               G_CALLBACK (init),
                               stuff);
 
-    stuff->treeview = GTK_TREE_VIEW (g_object_get_data (G_OBJECT (page), "treeview"));
+    stuff->treeview = moo_glade_xml_get_widget (xml, "treeview");
     gtk_tree_view_set_headers_clickable (stuff->treeview, TRUE);
     gtk_tree_view_set_search_column (stuff->treeview, 0);
 
@@ -179,12 +185,14 @@ GtkWidget *moo_shortcuts_prefs_page_new (MooActionGroup *actions)
                               G_CALLBACK (row_activated),
                               stuff);
 
-    stuff->shortcut_frame = GTK_WIDGET (g_object_get_data (G_OBJECT (page), "shortcut_frame"));
-    stuff->shortcut_default = GTK_TOGGLE_BUTTON (g_object_get_data (G_OBJECT (page), "shortcut_default"));
-    stuff->shortcut_none = GTK_TOGGLE_BUTTON (g_object_get_data (G_OBJECT (page), "shortcut_none"));
-    stuff->shortcut_custom = GTK_TOGGLE_BUTTON (g_object_get_data (G_OBJECT (page), "shortcut_custom"));
-    stuff->shortcut = MOO_ACCEL_BUTTON (g_object_get_data (G_OBJECT (page), "shortcut"));
-    stuff->default_label = GTK_LABEL (g_object_get_data (G_OBJECT (page), "default_label"));
+    stuff->shortcut_frame = moo_glade_xml_get_widget (xml, "shortcut_frame");
+    stuff->shortcut_default = moo_glade_xml_get_widget (xml, "shortcut_default");
+    stuff->shortcut_none = moo_glade_xml_get_widget (xml, "shortcut_none");
+    stuff->shortcut_custom = moo_glade_xml_get_widget (xml, "shortcut_custom");
+    stuff->shortcut = moo_glade_xml_get_widget (xml, "shortcut");
+    stuff->default_label = moo_glade_xml_get_widget (xml, "default_label");
+
+    moo_glade_xml_unref (xml);
 
     stuff->store = gtk_tree_store_new (N_COLUMNS,
                                        G_TYPE_STRING,
@@ -628,11 +636,22 @@ static void dialog_response (GObject *page,
 
 GtkWidget   *moo_shortcuts_prefs_dialog_new         (MooActionGroup *group)
 {
-    GtkWidget *page, *dialog;
+    GtkWidget *page, *dialog, *page_holder;
+    MooGladeXML *xml;
+
+    xml = moo_glade_xml_new_from_buf (MOO_SHORTCUTS_PREFS_GLADE_UI,
+                                      -1, "dialog");
+    g_return_val_if_fail (xml != NULL, NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
 
     page = moo_shortcuts_prefs_page_new (group);
     gtk_widget_show (page);
-    dialog = _moo_create_shortcutsprefs_dialog (page);
+    page_holder = moo_glade_xml_get_widget (xml, "page_holder");
+    gtk_container_add (GTK_CONTAINER (page_holder), page);
+
+    moo_glade_xml_unref (xml);
+
 #if GTK_MINOR_VERSION >= 6
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_OK,
@@ -640,9 +659,11 @@ GtkWidget   *moo_shortcuts_prefs_dialog_new         (MooActionGroup *group)
                                              GTK_RESPONSE_REJECT,
                                              -1);
 #endif /* GTK_MINOR_VERSION >= 6 */
+
     g_signal_connect_swapped (dialog, "response",
                               G_CALLBACK (dialog_response), page);
     g_signal_emit_by_name (page, "init", NULL);
+
     return dialog;
 }
 
@@ -652,15 +673,21 @@ void         moo_shortcuts_prefs_dialog_run         (MooActionGroup *group,
 {
     GtkWidget *dialog = moo_shortcuts_prefs_dialog_new (group);
     GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
+
     gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
-    while (TRUE) {
+
+    while (TRUE)
+    {
         int response = gtk_dialog_run (GTK_DIALOG (dialog));
         if (response != GTK_RESPONSE_REJECT)
             break;
     }
+
     gtk_widget_destroy (dialog);
+
 #ifdef __WIN32__ /* TODO */
     gtk_window_present (parent_window);
 #endif /* __WIN32__ */
+
     return;
 }

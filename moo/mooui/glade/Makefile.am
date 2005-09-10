@@ -3,7 +3,4 @@
 #
 
 EXTRA_DIST =              \
-    shortcutsprefs.c      \
-    shortcutsprefs.gladep \
-    shortcutsprefs.glade  \
-    shortcutsprefs.sed
+    shortcutsprefs.glade

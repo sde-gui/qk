@@ -447,7 +447,7 @@
 	  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
 
 	  <child>
-	    <widget class="GtkAlignment" id="alignment30">
+	    <widget class="GtkAlignment" id="page_holder">
 	      <property name="visible">True</property>
 	      <property name="xalign">0.5</property>
 	      <property name="yalign">0.5</property>
@@ -459,15 +459,7 @@
 	      <property name="right_padding">3</property>
 
 	      <child>
-		<widget class="GtkVBox" id="page">
-		  <property name="visible">True</property>
-		  <property name="homogeneous">False</property>
-		  <property name="spacing">0</property>
-
-		  <child>
-		    <placeholder/>
-		  </child>
-		</widget>
+		<placeholder/>
 	      </child>
 	    </widget>
 	  </child>
