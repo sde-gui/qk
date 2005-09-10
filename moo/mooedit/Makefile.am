@@ -43,8 +43,7 @@ libmooedit_la_SOURCES =     \
     mooeditdialogs.h        \
     mooeditfileops.c        \
     mooeditfind.c           \
-    mooeditfind-glade.c     \
-    mooeditgotoline-glade.c \
+    mooeditgotoline-glade.h \
     mooeditkeys.c           \
     mooeditlang.c           \
     mooeditlang.h           \
@@ -55,7 +54,6 @@ libmooedit_la_SOURCES =     \
     mooeditor.h             \
     mooeditprefs.c          \
     mooeditprefs.h          \
-    mooeditprefs-glade.c    \
     mooeditprefspage.c      \
     mooeditsearch.c         \
     mooeditsearch.h         \
@@ -87,22 +85,21 @@ EXTRA_DIST =                \
     mooeditlang-xml.c
 
 BUILT_SOURCES =             \
-    mooeditgotoline-glade.c \
-    mooeditfind-glade.c     \
-    mooeditprefs-glade.c
+    mooeditgotoline-glade.h \
+    mooeditfind-glade.h     \
+    mooeditprefs-glade.h
 
 GLADE = $(srcdir)/glade
-TOOLBAR = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/toolbar.sh
-SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
+XML2H = $(srcdir)/../mooutils/xml2h.sh
 
-mooeditfind-glade.c: $(GLADE)/mooeditfind.c $(GLADE)/mooeditfind.sed $(TOOLBAR) $(SUPPORT)
-	cat $(GLADE)/mooeditfind.c | sh $(SUPPORT) | sed -f $(GLADE)/mooeditfind.sed \
-		> mooeditfind-glade.c
+mooeditgotoline-glade.h: $(GLADE)/mooeditgotoline.glade
+	sh $(XML2H) MOO_EDIT_GOTO_LINE_GLADE_UI $(GLADE)/mooeditgotoline.glade \
+		> mooeditgotoline-glade.h
 
-mooeditgotoline-glade.c: $(GLADE)/mooeditgotoline.c $(GLADE)/mooeditgotoline.sed $(TOOLBAR) $(SUPPORT)
-	cat $(GLADE)/mooeditgotoline.c | sh $(SUPPORT) | sed -f $(GLADE)/mooeditgotoline.sed \
-		> mooeditgotoline-glade.c
+mooeditfind-glade.h: $(GLADE)/mooeditfind.glade
+	sh $(XML2H) MOO_EDIT_FIND_GLADE_UI $(GLADE)/mooeditfind.glade \
+		> mooeditfind-glade.h
 
-mooeditprefs-glade.c: $(GLADE)/mooeditprefs.c $(GLADE)/mooeditprefs.sed $(TOOLBAR) $(SUPPORT)
-	cat  $(GLADE)/mooeditprefs.c | sh $(SUPPORT) | \
-	sed -f $(GLADE)/mooeditprefs.sed > mooeditprefs-glade.c
+mooeditprefs-glade.h: $(GLADE)/mooeditprefs.glade
+	sh $(XML2H) MOO_EDIT_FIND_GLADE_UI $(GLADE)/mooeditprefs.glade \
+		> mooeditprefs-glade.h

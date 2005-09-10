@@ -16,8 +16,10 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooeditfind-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooglade.h"
 
 
 GSList*
@@ -569,9 +571,6 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 /* Search dialogs
  */
 
-GtkWidget *_moo_edit_create_prompt_on_replace_dialog (void); /* in mooeditfind-glade.c */
-
-
 void
 moo_text_nothing_found_dialog (MooTextView    *view,
                                const char     *text,
@@ -720,11 +719,17 @@ moo_text_prompt_on_replace_dialog (MooTextView *view)
 {
     GtkWidget *dialog;
     GtkWindow *parent_window;
+    MooGladeXML *xml;
 
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
 
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1,
+                                      "prompt_on_replace_dialog");
+    dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
+    moo_glade_xml_unref (xml);
+
     parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    dialog = _moo_edit_create_prompt_on_replace_dialog ();
+
     gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
 
     return dialog;

@@ -67,8 +67,9 @@ struct _Child {
 };
 
 typedef enum {
-    PROP_RESPONSE_ID        = 1 << 1,
-    PROP_HAS_DEFAULT        = 1 << 2,
+    PROP_RESPONSE_ID        = 1 << 0,
+    PROP_HAS_DEFAULT        = 1 << 1,
+    PROP_HAS_FOCUS          = 1 << 2,
     PROP_TOOLTIP            = 1 << 3,
     PROP_MNEMONIC_WIDGET    = 1 << 4,
     PROP_RADIO_GROUP        = 1 << 5,
@@ -87,6 +88,7 @@ struct _WidgetProps {
     gboolean    visible;
     int         response_id;
     gboolean    has_default;
+    gboolean    has_focus;
     char       *tooltip;
     char       *mnemonic_widget;
     char       *radio_group;
@@ -214,6 +216,7 @@ moo_glade_xml_build (MooGladeXML    *xml,
     set_special_props (xml, widget, widget_node->props, tooltips);
     set_mnemonics (xml, widget_node);
     set_default (xml, widget_node);
+    set_focus (xml, widget_node);
 
     g_object_unref (tooltips);
     return TRUE;
@@ -281,6 +284,33 @@ set_default (MooGladeXML    *xml,
         Child *child = l->data;
 
         if (!child->empty && set_default (xml, child->widget))
+            break;
+    }
+
+    return FALSE;
+}
+
+
+static gboolean
+set_focus (MooGladeXML    *xml,
+           Widget         *node)
+{
+    GSList *l;
+
+    g_return_val_if_fail (node != NULL, FALSE);
+
+    if ((node->props->mask & PROP_HAS_FOCUS) &&
+         node->props->has_focus)
+    {
+        gtk_widget_grab_focus (node->widget);
+        return TRUE;
+    }
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Child *child = l->data;
+
+        if (!child->empty && set_focus (xml, child->widget))
             break;
     }
 
@@ -970,6 +1000,11 @@ widget_props_new (MooMarkupNode  *node,
             {
                 props->has_default = parse_bool (value);
                 props->mask |= PROP_HAS_DEFAULT;
+            }
+            else if (!strcmp (name, "has_focus"))
+            {
+                props->has_focus = parse_bool (value);
+                props->mask |= PROP_HAS_FOCUS;
             }
             else if (!strcmp (name, "tooltip"))
             {

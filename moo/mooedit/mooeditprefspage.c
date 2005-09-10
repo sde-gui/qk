@@ -33,7 +33,6 @@ static void highlighting_settings_set_style (Settings           *hs,
                                              const char         *style_id);
 
 
-GtkWidget *_create_moo_edit_prefs_notebook  (MooPrefsDialogPage *page);
 static void styles_list_selection_changed   (GtkTreeSelection   *selection,
                                              Settings           *set);
 static void hookup_highlighting_prefs       (MooPrefsDialogPage *page,
