@@ -114,7 +114,7 @@ struct _MooGladeXML {
     MooMarkupNode *root;
     GHashTable *widgets;
 
-    GHashTable *type_to_type;
+    GHashTable *class_to_type;
     GHashTable *id_to_type;
     GHashTable *id_to_func;
 };
@@ -134,14 +134,17 @@ typedef struct {
 static FuncDataPair *func_data_pair_new         (MooGladeCreateFunc func,
                                                  gpointer        data);
 static void          func_data_pair_free        (FuncDataPair   *pair);
-static Widget       *widget_new                 (Child          *parent,
+static Widget       *widget_new                 (MooGladeXML    *xml,
+                                                 Child          *parent,
                                                  MooMarkupNode  *node);
 static void          widget_free                (Widget         *widget);
-static Child        *child_new                  (Widget         *parent,
+static Child        *child_new                  (MooGladeXML    *xml,
+                                                 Widget         *parent,
                                                  MooMarkupNode  *node);
 static void          child_free                 (Child          *child);
 static WidgetProps  *widget_props_new           (MooMarkupNode  *node,
-                                                 GType           widget_type);
+                                                 GType           widget_type,
+                                                 gboolean        ignore_errors);
 static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
                                                  GType           container_type);
@@ -176,6 +179,8 @@ static void          set_special_props          (MooGladeXML    *xml,
 static void          set_mnemonics              (MooGladeXML    *xml,
                                                  Widget         *node);
 static gboolean      set_default                (MooGladeXML    *xml,
+                                                 Widget         *node);
+static gboolean      set_focus                  (MooGladeXML    *xml,
                                                  Widget         *node);
 
 static GtkWidget    *create_widget              (MooGladeXML    *xml,
@@ -414,7 +419,7 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
                              Widget      *node)
 {
     WidgetProps *props;
-    GType type;
+    GType type = 0;
     GtkWidget *widget = NULL;
     FuncDataPair *pair;
 
@@ -428,13 +433,6 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
     }
 
     if (!widget)
-        type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->id_to_type, node->id));
-
-    if (!widget && !type)
-        type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->type_to_type,
-                                                      GSIZE_TO_POINTER (node->type)));
-
-    if (!widget && !type)
         type = node->type;
 
     props = node->props;
@@ -785,29 +783,50 @@ packing_props_free (PackingProps *props)
 
 
 static Widget*
-widget_new (Child          *parent,
+widget_new (MooGladeXML    *xml,
+            Child          *parent,
             MooMarkupNode  *node)
 {
     Widget *widget;
     WidgetProps *props;
     const char *id, *class_name;
     GType type;
+    gboolean ignore_errors = TRUE;
 
     g_return_val_if_fail (NODE_IS_WIDGET (node), NULL);
 
     id = moo_markup_get_prop (node, "id");
-    class_name = moo_markup_get_prop (node, "class");
-    g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
 
-    type = get_type_by_name (class_name);
-
-    if (!type)
+    if (g_hash_table_lookup (xml->id_to_func, id))
     {
-        g_warning ("could not find type of class '%s'", class_name);
-        return NULL;
+        type = GTK_TYPE_WIDGET;
+    }
+    else
+    {
+        type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->id_to_type, id));
+
+        if (!type)
+        {
+            class_name = moo_markup_get_prop (node, "class");
+            g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
+
+            type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->class_to_type, class_name));
+
+            if (!type)
+            {
+                ignore_errors = FALSE;
+                type = get_type_by_name (class_name);
+            }
+        }
+
+        if (!type)
+        {
+            g_warning ("could not find type of class '%s'", class_name);
+            return NULL;
+        }
     }
 
-    props = widget_props_new (node, type);
+    props = widget_props_new (node, type, ignore_errors);
     g_return_val_if_fail (props != NULL, NULL);
 
     widget = g_new0 (Widget, 1);
@@ -821,7 +840,7 @@ widget_new (Child          *parent,
     {
         if (NODE_IS_CHILD (elm))
         {
-            Child *child = child_new (widget, elm);
+            Child *child = child_new (xml, widget, elm);
 
             if (!child)
             {
@@ -839,7 +858,8 @@ widget_new (Child          *parent,
 
 
 static Child*
-child_new (Widget         *parent,
+child_new (MooGladeXML    *xml,
+           Widget         *parent,
            MooMarkupNode  *node)
 {
     Child *child;
@@ -948,7 +968,7 @@ child_new (Widget         *parent,
     child->internal_parent_id = g_strdup (internal_parent_id);
     child->props = props;
 
-    child->widget = widget_new (child, widget_node);
+    child->widget = widget_new (xml, child, widget_node);
 
     if (!child->widget)
     {
@@ -962,7 +982,8 @@ child_new (Widget         *parent,
 
 static WidgetProps*
 widget_props_new (MooMarkupNode  *node,
-                  GType           type)
+                  GType           type,
+                  gboolean        ignore_errors)
 {
     GArray *params;
     GObjectClass *klass;
@@ -1076,15 +1097,17 @@ widget_props_new (MooMarkupNode  *node,
 
                 if (!param_spec)
                 {
-                    g_warning ("could not find property '%s'", name);
-                    moo_param_array_free ((GParameter*) params->data, params->len);
-                    g_array_free (params, FALSE);
-                    g_type_class_unref (klass);
-                    widget_props_free (props);
-                    return FALSE;
+                    if (!ignore_errors)
+                    {
+                        g_warning ("could not find property '%s'", name);
+                        moo_param_array_free ((GParameter*) params->data, params->len);
+                        g_array_free (params, FALSE);
+                        g_type_class_unref (klass);
+                        widget_props_free (props);
+                        return FALSE;
+                    }
                 }
-
-                if (parse_property (param_spec, value, &param))
+                else if (parse_property (param_spec, value, &param))
                 {
                     g_array_append_val (params, param);
                 }
@@ -1521,7 +1544,8 @@ moo_glade_xml_new_empty (void)
 
     xml->widgets = g_hash_table_new_full (g_str_hash, g_str_equal,
                                           g_free, NULL);
-    xml->type_to_type = g_hash_table_new (g_direct_hash, g_direct_equal);
+    xml->class_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                g_free, NULL);
     xml->id_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
                                              g_free, NULL);
     xml->id_to_func = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -1735,7 +1759,7 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
     xml->doc = moo_markup_doc_ref (doc);
     xml->root = root;
 
-    widget = widget_new (NULL, xml->root);
+    widget = widget_new (xml, NULL, xml->root);
 
     if (!widget)
     {
@@ -1816,7 +1840,7 @@ moo_glade_xml_free (MooGladeXML *xml)
         g_hash_table_foreach (xml->widgets,
                               (GHFunc) unref_widget, NULL);
         g_hash_table_destroy (xml->widgets);
-        g_hash_table_destroy (xml->type_to_type);
+        g_hash_table_destroy (xml->class_to_type);
         g_hash_table_destroy (xml->id_to_type);
         g_hash_table_destroy (xml->id_to_func);
         moo_markup_doc_unref (xml->doc);
@@ -1836,19 +1860,20 @@ moo_glade_xml_get_widget (MooGladeXML    *xml,
 
 
 void
-moo_glade_xml_map_type (MooGladeXML    *xml,
-                        GType           type,
-                        GType           use_type)
+moo_glade_xml_map_class (MooGladeXML    *xml,
+                         const char     *class_name,
+                         GType           type)
 {
     g_return_if_fail (xml != NULL);
+    g_return_if_fail (class_name != NULL);
 
-    if (use_type)
-        g_hash_table_insert (xml->type_to_type,
-                             GSIZE_TO_POINTER (type),
-                             GSIZE_TO_POINTER (use_type));
-    else
-        g_hash_table_remove (xml->type_to_type,
+    if (type)
+        g_hash_table_insert (xml->class_to_type,
+                             g_strdup (class_name),
                              GSIZE_TO_POINTER (type));
+    else
+        g_hash_table_remove (xml->class_to_type,
+                             class_name);
 }
 
 

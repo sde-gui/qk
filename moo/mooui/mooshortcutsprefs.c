@@ -155,7 +155,7 @@ GtkWidget *moo_shortcuts_prefs_page_new (MooActionGroup *actions)
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_empty ();
-    moo_glade_xml_map_type (xml, GTK_TYPE_BUTTON, MOO_TYPE_ACCEL_BUTTON);
+    moo_glade_xml_map_class (xml, "GtkButton", MOO_TYPE_ACCEL_BUTTON);
     moo_glade_xml_parse_memory (xml, MOO_SHORTCUTS_PREFS_GLADE_UI, -1, "page");
 
     page = moo_prefs_dialog_page_new ("Shortcuts", MOO_STOCK_KEYBOARD);

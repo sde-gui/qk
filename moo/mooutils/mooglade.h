@@ -37,8 +37,8 @@ GType        moo_glade_xml_get_type     (void);
 
 MooGladeXML *moo_glade_xml_new_empty    (void);
 
-void         moo_glade_xml_map_type     (MooGladeXML    *xml,
-                                         GType           type,
+void         moo_glade_xml_map_class    (MooGladeXML    *xml,
+                                         const char     *class_name,
                                          GType           use_type);
 void         moo_glade_xml_map_id       (MooGladeXML    *xml,
                                          const char     *id,
