@@ -41,6 +41,7 @@ libmooutils_la_SOURCES =        \
     eggregex.h                  \
     mooaccelbutton.c            \
     mooaccelbutton.h            \
+    mooaccelbutton-glade.h      \
     mooclosure.c                \
     mooclosure.h                \
     moocompat.c                 \
@@ -74,7 +75,6 @@ libmooutils_la_SOURCES =        \
     mootypes.h                  \
     moowin.c                    \
     moowin.h                    \
-    shortcutdialog-glade.c      \
     stock-about-16.h            \
     stock-about-24.h            \
     stock-moo.h                 \
@@ -102,9 +102,9 @@ EXTRA_DIST =            \
     xml2h.sh
 
 BUILT_SOURCES =             \
+    mooaccelbutton-glade.h  \
     moomarshals.h           \
     moomarshals.c           \
-    shortcutdialog-glade.c  \
     stock-moo.h
 
 moomarshals.c: moomarshals.list
@@ -114,10 +114,9 @@ moomarshals.h: moomarshals.list
 	glib-genmarshal --prefix=_moo_marshal --header \
 	       $(srcdir)/moomarshals.list > moomarshals.h
 
-GLADE = $(srcdir)/glade
-shortcutdialog-glade.c: $(GLADE)/shortcutdialog.c $(GLADE)/shortcutdialog.sed $(SUPPORT)
-	cat $(GLADE)/shortcutdialog.c | sh $(GLADE)/support.sh | \
-		sed -f $(GLADE)/shortcutdialog.sed > shortcutdialog-glade.c
+mooaccelbutton-glade.h: $(srcdir)/glade/shortcutdialog.glade $(srcdir)/xml2h.sh
+	sh $(srcdir)/xml2h.sh MOO_ACCEL_BUTTON_GLADE_UI \
+	   $(srcdir)/glade/shortcutdialog.glade > mooaccelbutton-glade.h
 
 PIXMAPS =                           \
     $(srcdir)/pixmaps/gap.png       \

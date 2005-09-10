@@ -25,10 +25,10 @@ typedef struct _MooGladeXML MooGladeXML;
 GType        moo_glade_xml_get_type  (void);
 
 MooGladeXML *moo_glade_xml_parse_file   (const char     *file,
-                                         GError        **error);
+                                         const char     *root);
 MooGladeXML *moo_glade_xml_parse_memory (const char     *buffer,
                                          int             size,
-                                         GError        **error);
+                                         const char     *root);
 
 MooGladeXML *moo_glade_xml_ref          (MooGladeXML    *xml);
 void         moo_glade_xml_unref        (MooGladeXML    *xml);

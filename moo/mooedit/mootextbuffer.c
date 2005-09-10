@@ -159,6 +159,9 @@ moo_text_buffer_finalize (GObject *object)
     if (buffer->priv->lang)
         g_object_unref (buffer->priv->lang);
 
+    g_free (buffer->priv->left_brackets);
+    g_free (buffer->priv->right_brackets);
+
     g_free (buffer->priv);
     buffer->priv = NULL;
 

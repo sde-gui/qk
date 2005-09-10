@@ -292,6 +292,7 @@ moo_markup_text_node_new (MooMarkupNodeType   type,
     add_node (doc, parent, MOO_MARKUP_NODE (node));
 
     node->type = type;
+
     if (type == MOO_MARKUP_TEXT_NODE)
         node->name = g_strdup ("TEXT");
     else
@@ -337,12 +338,13 @@ moo_markup_text_node_add_text (MooMarkupText  *node,
                                const char     *text,
                                gsize           text_len)
 {
-    char *tmp = (char*)g_memdup (node->text, node->size + text_len + 1);
-    g_memmove (tmp + node->size, text, text_len);
-    tmp[node->size + text_len] = 0;
+    char *tmp = g_new (char, node->size + text_len + 1);
+    memcpy (tmp, node->text, node->size);
+    memcpy (tmp + node->size, text, text_len);
     g_free (node->text);
     node->text = tmp;
     node->size += text_len;
+    node->text[node->size] = 0;
 }
 
 

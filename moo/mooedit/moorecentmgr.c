@@ -156,7 +156,9 @@ static void moo_recent_mgr_set_property (GObject            *object,
     switch (prop_id)
     {
         case PROP_USER_ID:
+            g_free (mgr->priv->user_id);
             mgr->priv->user_id = g_strdup (g_value_get_string (value));
+            g_object_notify (object, "user-id");
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -192,10 +194,10 @@ moo_recent_mgr_finalize (GObject *object)
 
     for (l = mgr->priv->files; l != NULL; l = l->next)
         recent_entry_free (l->data);
+
     g_slist_free (mgr->priv->files);
-    mgr->priv->files = NULL;
     g_object_unref (mgr->priv->tooltips);
-    mgr->priv->tooltips = NULL;
+    g_free (mgr->priv->user_id);
 
     for (l = mgr->priv->menus; l != NULL; l = l->next)
     {

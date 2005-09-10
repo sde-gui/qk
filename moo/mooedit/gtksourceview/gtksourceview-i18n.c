@@ -37,7 +37,7 @@ gtksourceview_gettext (const char *msgid)
 		initialized = TRUE;
 	}
 
-	return dgettext (GETTEXT_PACKAGE, msgid);
+	return (char*) dgettext (GETTEXT_PACKAGE, msgid);
 }
 
 

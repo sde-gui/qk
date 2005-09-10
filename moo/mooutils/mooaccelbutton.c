@@ -12,15 +12,14 @@
  */
 
 #include "mooutils/mooaccelbutton.h"
+#include "mooutils/mooaccelbutton-glade.h"
+#include "mooutils/mooglade.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtkaccelgroup.h>
 #include <gtk/gtkdialog.h>
 #include <gtk/gtklabel.h>
 #include <gdk/gdkkeysyms.h>
-
-
-GtkWidget *_moo_create_accel_dialog ();
 
 
 enum {
@@ -255,11 +254,15 @@ static gboolean key_event (G_GNUC_UNUSED GtkWidget    *widget,
 
 static void moo_accel_button_clicked       (MooAccelButton *button)
 {
+    MooGladeXML *xml;
     GtkWidget *dialog, *ok_button, *cancel_button, *eventbox, *label;
     Stuff s = {0, 0, NULL};
     int response;
 
-    dialog = _moo_create_accel_dialog ();
+    xml = moo_glade_xml_parse_memory (MOO_ACCEL_BUTTON_GLADE_UI, -1, "dialog");
+    g_return_if_fail (xml != NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
 
 #if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
@@ -273,10 +276,10 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
     gtk_window_set_transient_for (GTK_WINDOW (dialog),
         GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (button))));
 
-    ok_button = GTK_WIDGET (g_object_get_data (G_OBJECT (dialog), "ok"));
-    cancel_button = GTK_WIDGET (g_object_get_data (G_OBJECT (dialog), "cancel"));
-    eventbox = GTK_WIDGET (g_object_get_data (G_OBJECT (dialog), "eventbox"));
-    label = GTK_WIDGET (g_object_get_data (G_OBJECT (dialog), "label"));
+    ok_button = moo_glade_xml_get_widget (xml, "ok");
+    cancel_button = moo_glade_xml_get_widget (xml, "cancel");
+    eventbox = moo_glade_xml_get_widget (xml, "eventbox");
+    label = moo_glade_xml_get_widget (xml, "label");
 
     gtk_button_set_use_underline (GTK_BUTTON (ok_button), FALSE);
     gtk_button_set_use_underline (GTK_BUTTON (cancel_button), FALSE);
@@ -286,15 +289,21 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
     g_signal_connect (eventbox, "key-press-event", G_CALLBACK (key_event), &s);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
 
-    if (response == GTK_RESPONSE_OK) {
-        if (s.key || s.mods) {
+    gtk_widget_destroy (dialog);
+    moo_glade_xml_unref (xml);
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        if (s.key || s.mods)
+        {
             char *accel = gtk_accelerator_name (s.key, s.mods);
             moo_accel_button_set_accel (button, accel);
             g_free (accel);
         }
         else
+        {
             moo_accel_button_set_accel (button, "");
+        }
     }
 }

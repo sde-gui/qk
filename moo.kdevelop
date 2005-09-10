@@ -36,17 +36,17 @@
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
-      <mainprogram>tests/miniglade</mainprogram>
+      <mainprogram>tests/medit</mainprogram>
       <directoryradio>executable</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs>/usr/share/doc/libglade2-dev/examples/first.glade</programargs>
+      <programargs></programargs>
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars/>
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module --without-python --without-mooterm --without-mooapp --without-mooui --without-mooedit</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module --without-python --without-mooterm --without-mooapp --without-mooui</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -54,13 +54,13 @@
         <cflags>-O0 -g3 -pg</cflags>
         <cxxflags>-O0 -g3 -pg</cxxflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
       </debug>
       <optimized>
         <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooapp --without-mooterm --without-python</configargs>
@@ -165,7 +165,7 @@
   <kdevdebugger>
     <general>
       <dbgshell>libtool</dbgshell>
-      <programargs>--g-fatal-warnings /usr/share/mysql-gui/administrator/backup.glade</programargs>
+      <programargs>--g-fatal-warnings</programargs>
       <gdbpath></gdbpath>
       <configGdbScript></configGdbScript>
       <runShellScript></runShellScript>

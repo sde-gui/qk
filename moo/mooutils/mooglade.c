@@ -140,7 +140,8 @@ static gboolean      parse_property             (GParamSpec     *param_spec,
                                                  const char     *value,
                                                  GParameter     *param);
 
-static MooGladeXML  *moo_glade_xml_parse_markup (MooMarkupDoc   *doc);
+static MooGladeXML  *moo_glade_xml_parse_markup (MooMarkupDoc   *doc,
+                                                 const char     *root);
 static MooGladeXML  *moo_glade_xml_new          (MooMarkupDoc   *doc,
                                                  MooMarkupNode  *root);
 static void          moo_glade_xml_free         (MooGladeXML    *xml);
@@ -1442,27 +1443,30 @@ moo_glade_xml_unref (MooGladeXML *xml)
 
 MooGladeXML*
 moo_glade_xml_parse_file (const char     *file,
-                          GError        **error)
+                          const char     *root)
 {
-    GTimer *timer;
     MooGladeXML *xml;
     MooMarkupDoc *doc;
+    GError *error = NULL;
 
-    timer = g_timer_new ();
-    doc = moo_markup_parse_file (file, error);
-    g_print ("moo_markup_parse_file: %f\n", g_timer_elapsed (timer, NULL));
+    g_return_val_if_fail (file != NULL, NULL);
+
+    doc = moo_markup_parse_file (file, &error);
 
     if (!doc)
     {
-        g_timer_destroy (timer);
+        g_warning ("%s: could not parse file '%s'", G_STRLOC, file);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
         return NULL;
     }
 
-    g_timer_start (timer);
-    xml = moo_glade_xml_parse_markup (doc);
-    g_print ("moo_glade_xml_parse_markup: %f\n", g_timer_elapsed (timer, NULL));
-
-    g_timer_destroy (timer);
+    xml = moo_glade_xml_parse_markup (doc, root);
     moo_markup_doc_unref (doc);
     return xml;
 }
@@ -1471,34 +1475,74 @@ moo_glade_xml_parse_file (const char     *file,
 MooGladeXML*
 moo_glade_xml_parse_memory (const char     *buffer,
                             int             size,
-                            GError        **error)
+                            const char     *root)
 {
-    GTimer *timer;
     MooGladeXML *xml;
     MooMarkupDoc *doc;
+    GError *error = NULL;
 
-    timer = g_timer_new ();
-    doc = moo_markup_parse_memory (buffer, size, error);
-    g_print ("moo_markup_parse_memory: %f\n", g_timer_elapsed (timer, NULL));
+    g_return_val_if_fail (buffer != NULL, NULL);
+
+    doc = moo_markup_parse_memory (buffer, size, &error);
 
     if (!doc)
     {
-        g_timer_destroy (timer);
+        g_warning ("%s: could not parse buffer", G_STRLOC);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
         return NULL;
     }
 
-    g_timer_start (timer);
-    xml = moo_glade_xml_parse_markup (doc);
-    g_print ("moo_glade_xml_parse_markup: %f\n", g_timer_elapsed (timer, NULL));
-
-    g_timer_destroy (timer);
+    xml = moo_glade_xml_parse_markup (doc, root);
     moo_markup_doc_unref (doc);
     return xml;
 }
 
 
+static MooMarkupNode*
+find_widget (MooMarkupNode *node,
+             const char    *id)
+{
+    const char *wid_id;
+
+    g_return_val_if_fail (NODE_IS_WIDGET (node), NULL);
+
+    wid_id = moo_markup_get_prop (node, "id");
+    g_return_val_if_fail (wid_id != NULL, NULL);
+
+    if (!strcmp (wid_id, id))
+        return node;
+
+    FOREACH_ELM_START(node, elm)
+    {
+        if (NODE_IS_CHILD (elm))
+        {
+            FOREACH_ELM_START (elm, child)
+            {
+                if (NODE_IS_WIDGET (child))
+                {
+                    MooMarkupNode *wid = find_widget (child, id);
+                    if (wid)
+                        return wid;
+                }
+            }
+            FOREACH_ELM_END;
+        }
+    }
+    FOREACH_ELM_END;
+
+    return NULL;
+}
+
+
 static MooGladeXML*
-moo_glade_xml_parse_markup (MooMarkupDoc   *doc)
+moo_glade_xml_parse_markup (MooMarkupDoc   *doc,
+                            const char     *root_id)
 {
     MooGladeXML *xml;
     MooMarkupNode *glade_elm;
@@ -1512,10 +1556,20 @@ moo_glade_xml_parse_markup (MooMarkupDoc   *doc)
 
     FOREACH_ELM_START(glade_elm, elm)
     {
-        if (!strcmp (elm->name, "widget"))
+        if (NODE_IS_WIDGET (elm))
         {
-            root = elm;
-            break;
+            if (root_id)
+            {
+                root = find_widget (elm, root_id);
+
+                if (root)
+                    break;
+            }
+            else
+            {
+                root = elm;
+                break;
+            }
         }
         else if (!strcmp (elm->name, "requires"))
         {
@@ -1530,7 +1584,12 @@ moo_glade_xml_parse_markup (MooMarkupDoc   *doc)
 
     if (!root)
     {
-        g_warning ("%s: could not find root element", G_STRLOC);
+        if (root_id)
+            g_warning ("%s: could not find root element '%s'",
+                       G_STRLOC, root_id);
+        else
+            g_warning ("%s: could not find root element", G_STRLOC);
+
         return NULL;
     }
 
