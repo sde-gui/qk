@@ -797,7 +797,7 @@ static void process_element (MooMarkupElement *elm)
 gboolean        moo_prefs_load              (const char     *file)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
+    MooMarkupNode *root;
     GError *err = NULL;
     MooPrefs *prefs;
     char *content;
@@ -849,15 +849,15 @@ gboolean        moo_prefs_load              (const char     *file)
         return TRUE;
     }
 
-    process_element (root);
+    process_element (MOO_MARKUP_ELEMENT (root));
 
     return TRUE;
 }
 
 
 typedef struct {
-    MooMarkupDoc     *xml;
-    MooMarkupElement *root;
+    MooMarkupDoc  *xml;
+    MooMarkupNode *root;
 } Stuff;
 
 static void write_item (const char  *key,
@@ -897,7 +897,7 @@ static void write_item (const char  *key,
 
     g_return_if_fail (stuff->root != NULL);
 
-    moo_markup_create_text_element (MOO_MARKUP_NODE (stuff->root), key, string);
+    moo_markup_create_text_element (stuff->root, key, string);
 
 #ifdef DEBUG_READWRITE
     g_print ("writing key: '%s', val: '%s'\n", key, string);
@@ -908,7 +908,7 @@ static void     sync_xml    (void)
 {
     MooPrefs *prefs = instance ();
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
+    MooMarkupNode *root;
     Stuff stuff;
 
     if (!prefs->priv->xml)
@@ -918,7 +918,7 @@ static void     sync_xml    (void)
     root = moo_markup_get_root_element (xml, PREFS_ROOT);
 
     if (root)
-        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+        moo_markup_delete_node (root);
 
     stuff.xml = xml;
     stuff.root = NULL;

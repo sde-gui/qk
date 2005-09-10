@@ -2,7 +2,7 @@
 #   tests/Makefile.am
 #
 
-EXTRA_PROGRAMS = medit mterm markup editor termbuffer testfileview testpaned testpanedfileview
+EXTRA_PROGRAMS = medit mterm markup editor termbuffer testfileview testpaned testpanedfileview miniglade
 bin_PROGRAMS =
 noinst_PROGRAMS =
 
@@ -26,7 +26,7 @@ if BUILD_MOOTERM
 noinst_PROGRAMS += mterm termbuffer
 endif
 if BUILD_MOOUTILS
-noinst_PROGRAMS += markup
+noinst_PROGRAMS += markup miniglade
 endif
 
 
@@ -103,6 +103,18 @@ endif MINGW_BUILD
 
 markup_SOURCES = markup.c
 
+
+##############################################################################
+##  miniglade
+##
+miniglade_LDFLAGS =
+miniglade_LDADD = $(MOO_LIBS) ../moo/libmoo.la
+miniglade_CFLAGS = $(AM_CFLAGS)
+
+miniglade_SOURCES = miniglade.c
+
+
+##############################################################################
 
 testpaned_LDFLAGS =
 testpaned_LDADD = $(MOO_LIBS) ../moo/libmoo.la

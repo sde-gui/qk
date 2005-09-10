@@ -298,33 +298,33 @@ static void erase_container (GtkContainer *container)
 }
 
 
-static GtkWidget *create_widget     (MooMarkupElement   *node,
+static GtkWidget *create_widget     (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
                                      GtkWidget          *widget);
-static GtkWidget *create_menu_bar   (MooMarkupElement   *node,
+static GtkWidget *create_menu_bar   (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
                                      GtkMenuBar         *menubar);
-static GtkWidget *create_menu       (MooMarkupElement   *node,
+static GtkWidget *create_menu       (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
                                      GtkMenu            *menu);
-static gboolean create_menu_item    (MooMarkupElement   *node,
+static gboolean create_menu_item    (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
                                      GtkMenuShell       *menu_shell,
                                      int                 position);
-static GtkWidget *create_toolbar    (MooMarkupElement   *node,
+static GtkWidget *create_toolbar    (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
                                      GtkToolbar         *toolbar);
-static gboolean   create_tool_item  (MooMarkupElement   *node,
+static gboolean   create_tool_item  (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
@@ -337,14 +337,14 @@ GtkWidget       *moo_ui_xml_create_widget       (MooUIXML       *xml,
                                                  GtkAccelGroup  *accel_group,
                                                  GtkTooltips    *tooltips)
 {
-    MooMarkupElement *ui, *node;
+    MooMarkupNode *ui, *node;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, NULL);
     g_return_val_if_fail (xml->doc != NULL, NULL);
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (ui, path);
     g_return_val_if_fail (node != NULL, NULL);
 
     return create_widget (node, actions, accel_group, tooltips, NULL);
@@ -353,7 +353,7 @@ GtkWidget       *moo_ui_xml_create_widget       (MooUIXML       *xml,
 gboolean         moo_ui_xml_has_widget          (MooUIXML       *xml,
                                                  const char     *path)
 {
-    MooMarkupElement *ui, *node;
+    MooMarkupNode *ui, *node;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, FALSE);
 
@@ -361,12 +361,12 @@ gboolean         moo_ui_xml_has_widget          (MooUIXML       *xml,
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, FALSE);
-    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (ui, path);
     return node != NULL;
 }
 
 
-static GtkWidget *create_widget (MooMarkupElement   *node,
+static GtkWidget *create_widget (MooMarkupNode      *node,
                                  MooActionGroup     *actions,
                                  GtkAccelGroup      *accel_group,
                                  GtkTooltips        *tooltips,
@@ -399,21 +399,21 @@ GtkWidget       *moo_ui_xml_update_widget       (MooUIXML       *xml,
                                                  GtkAccelGroup  *accel_group,
                                                  GtkTooltips    *tooltips)
 {
-    MooMarkupElement *ui, *node;
+    MooMarkupNode *ui, *node;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, NULL);
     g_return_val_if_fail (xml->doc != NULL, NULL);
 
     ui = moo_markup_get_root_element (xml->doc, "ui");
     g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element_by_names (MOO_MARKUP_NODE (ui), path);
+    node = moo_markup_get_element_by_names (ui, path);
     g_return_val_if_fail (node != NULL, NULL);
 
     return create_widget (node, actions, accel_group, tooltips, widget);
 }
 
 
-static GtkWidget *create_menu_bar   (MooMarkupElement   *node,
+static GtkWidget *create_menu_bar   (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
@@ -430,8 +430,7 @@ static GtkWidget *create_menu_bar   (MooMarkupElement   *node,
     {
         if (MOO_MARKUP_IS_ELEMENT (child))
         {
-            if (!create_menu_item (MOO_MARKUP_ELEMENT (child),
-                                   actions,
+            if (!create_menu_item (child, actions,
                                    accel_group, tooltips,
                                    GTK_MENU_SHELL (menubar), -1))
             {
@@ -443,7 +442,7 @@ static GtkWidget *create_menu_bar   (MooMarkupElement   *node,
 }
 
 
-static GtkWidget *create_menu       (MooMarkupElement   *node,
+static GtkWidget *create_menu       (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
@@ -451,7 +450,7 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
 {
     gboolean start = TRUE;
     gboolean need_separator = FALSE;
-    MooMarkupNode *ch;
+    MooMarkupNode *child;
 
     if (menu)
         erase_container (GTK_CONTAINER (menu));
@@ -460,11 +459,9 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
 
     gtk_menu_set_accel_group (GTK_MENU (menu), accel_group);
 
-    for (ch = node->children; ch != NULL; ch = ch->next)
-        if (MOO_MARKUP_IS_ELEMENT (ch))
+    for (child = node->children; child != NULL; child = child->next)
+        if (MOO_MARKUP_IS_ELEMENT (child))
         {
-            MooMarkupElement *child = MOO_MARKUP_ELEMENT (ch);
-
             if (!g_ascii_strcasecmp (child->name, "menu") ||
                 !g_ascii_strcasecmp (child->name, "item"))
             {
@@ -520,7 +517,7 @@ static GtkWidget *create_menu       (MooMarkupElement   *node,
 }
 
 
-static gboolean create_menu_item    (MooMarkupElement   *node,
+static gboolean create_menu_item    (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
@@ -547,6 +544,7 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
     else
     {
         const char *stock_id = moo_markup_get_prop (node, "stock");
+
         if (stock_id)
         {
             menuitem = gtk_image_menu_item_new_from_stock (stock_id, NULL);
@@ -554,15 +552,21 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
         else
         {
             const char *label = moo_markup_get_prop (node, "label");
-            if (!label) {
+
+            if (!label)
+            {
                 g_warning ("could not get label for menu");
+
                 label = moo_markup_get_prop (node, "name");
-                if (!label) {
+
+                if (!label)
+                {
                     g_warning ("using node name as label");
                     label = moo_markup_get_prop (node, "name");
                     if (!label) label = "";
                 }
             }
+
             if (!label)
                 menuitem = gtk_menu_item_new ();
             else
@@ -572,6 +576,7 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
         if (menuitem)
         {
             gtk_widget_show (menuitem);
+
             if (position >= 0)
                 gtk_menu_shell_insert (menu_shell, menuitem, position);
             else
@@ -594,7 +599,7 @@ static gboolean create_menu_item    (MooMarkupElement   *node,
 }
 
 
-static GtkWidget *create_toolbar    (MooMarkupElement   *node,
+static GtkWidget *create_toolbar    (MooMarkupNode      *node,
                                      MooActionGroup     *actions,
                                      GtkAccelGroup      *accel_group,
                                      GtkTooltips        *tooltips,
@@ -602,21 +607,17 @@ static GtkWidget *create_toolbar    (MooMarkupElement   *node,
 {
     gboolean start = TRUE;
     gboolean need_separator = FALSE;
-    MooMarkupNode *ch;
+    MooMarkupNode *child;
 
     if (toolbar)
         erase_container (GTK_CONTAINER (toolbar));
     else
         toolbar = GTK_TOOLBAR (gtk_toolbar_new ());
 
-    for (ch = node->children; ch != NULL; ch = ch->next)
+    for (child = node->children; child != NULL; child = child->next)
     {
-        MooMarkupElement *child;
-
-        if (!MOO_MARKUP_IS_ELEMENT (ch))
+        if (!MOO_MARKUP_IS_ELEMENT (child))
             continue;
-
-        child = MOO_MARKUP_ELEMENT (ch);
 
         if (!g_ascii_strcasecmp (child->name, "item"))
         {
@@ -662,7 +663,7 @@ static GtkWidget *create_toolbar    (MooMarkupElement   *node,
 }
 
 
-static gboolean     create_tool_item  (MooMarkupElement             *node,
+static gboolean     create_tool_item  (MooMarkupNode                *node,
                                        MooActionGroup               *actions,
                                        G_GNUC_UNUSED GtkAccelGroup  *accel_group,
                                        G_GNUC_UNUSED GtkTooltips    *tooltips,

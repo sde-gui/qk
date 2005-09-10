@@ -182,6 +182,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
     }
 #endif /* MOO_USE_XDGMIME */
 
+    /* XXX move this to moo_edit_lang_mgr_get_language_for_filename */
     /* check if it's backup file */
     if (!lang && utf8_filename)
     {

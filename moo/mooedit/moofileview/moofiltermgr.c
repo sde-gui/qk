@@ -929,22 +929,18 @@ filter_get_description (Filter *filter)
 static void
 mgr_load_set (MooFilterMgr      *mgr,
               const char        *user_id,
-              MooMarkupElement  *root)
+              MooMarkupNode     *root)
 {
-    MooMarkupNode *node;
+    MooMarkupNode *elm;
 
-    for (node = root->last; node != NULL; node = node->prev)
+    for (elm = root->last; elm != NULL; elm = elm->prev)
     {
-        MooMarkupElement *elm;
-
-        if (!MOO_MARKUP_IS_ELEMENT (node))
+        if (!MOO_MARKUP_IS_ELEMENT (elm))
             continue;
-
-        elm = MOO_MARKUP_ELEMENT (node);
 
         if (!strcmp (elm->name, ELEMENT_FILTER))
         {
-            const char *glob = elm->content;
+            const char *glob = moo_markup_get_content (elm);
 
             if (!glob || !glob[0])
             {
@@ -956,7 +952,7 @@ mgr_load_set (MooFilterMgr      *mgr,
         }
         else if (!strcmp (elm->name, ELEMENT_LAST))
         {
-            const char *glob = elm->content;
+            const char *glob = moo_markup_get_content (elm);
             const char *user_str = moo_markup_get_prop (elm, PROP_USER);
             const char *description = moo_markup_get_prop (elm, PROP_DESCRIPTION);
             gboolean user;
@@ -1004,8 +1000,7 @@ static void
 mgr_load (MooFilterMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
-    MooMarkupNode *node;
+    MooMarkupNode *root, *elm;
 
     if (mgr->priv->loaded)
         return;
@@ -1020,14 +1015,10 @@ mgr_load (MooFilterMgr *mgr)
     if (!root)
         return;
 
-    for (node = root->children; node != NULL; node = node->next)
+    for (elm = root->children; elm != NULL; elm = elm->next)
     {
-        MooMarkupElement *elm;
-
-        if (!MOO_MARKUP_IS_ELEMENT (node))
+        if (!MOO_MARKUP_IS_ELEMENT (elm))
             continue;
-
-        elm = MOO_MARKUP_ELEMENT (node);
 
         if (!strcmp (elm->name, ELEMENT_DEFAULT))
         {
@@ -1057,9 +1048,9 @@ mgr_load (MooFilterMgr *mgr)
 static void
 mgr_save_set (MooFilterMgr      *mgr,
               const char        *user_id,
-              MooMarkupElement  *root)
+              MooMarkupNode     *root)
 {
-    MooMarkupElement *elm;
+    MooMarkupNode *elm;
     GSList *list, *l;
     FilterStore *store;
     Filter *filter;
@@ -1073,8 +1064,7 @@ mgr_save_set (MooFilterMgr      *mgr,
     if (store->last_filter)
     {
         filter = store->last_filter;
-        elm = moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                              ELEMENT_LAST,
+        elm = moo_markup_create_text_element (root, ELEMENT_LAST,
                                               filter_get_glob (filter));
         moo_markup_set_prop (elm, PROP_USER, filter->user ? "TRUE" : "FALSE");
         if (!filter->user)
@@ -1087,8 +1077,7 @@ mgr_save_set (MooFilterMgr      *mgr,
         return;
 
     for (l = list; l != NULL; l = l->next)
-        moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                        ELEMENT_FILTER,
+        moo_markup_create_text_element (root, ELEMENT_FILTER,
                                         filter_get_glob (l->data));
 
     g_slist_free (list);
@@ -1099,7 +1088,7 @@ static gboolean
 mgr_do_save (MooFilterMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root, *elm;
+    MooMarkupNode *root, *elm;
     GSList *user_ids, *l;
 
     mgr->priv->save_idle_id = 0;
@@ -1110,7 +1099,7 @@ mgr_do_save (MooFilterMgr *mgr)
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
 
     if (root)
-        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+        moo_markup_delete_node (root);
 
     root = NULL;
 
@@ -1135,12 +1124,12 @@ mgr_do_save (MooFilterMgr *mgr)
 
             if (l->data)
             {
-                elm = moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_SET);
+                elm = moo_markup_create_element (root, ELEMENT_SET);
                 moo_markup_set_prop (elm, PROP_USER_ID, l->data);
             }
             else
             {
-                elm = moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_DEFAULT);
+                elm = moo_markup_create_element (root, ELEMENT_DEFAULT);
             }
 
             mgr_save_set (mgr, l->data, elm);

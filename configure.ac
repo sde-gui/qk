@@ -96,7 +96,6 @@ AM_CONDITIONAL(CYGWIN_BUILD, test x$cygwin_build = "xyes")
 #  GTK libraries
 #
 PKG_CHECK_GTK_VERSIONS
-PKG_CHECK_MODULES(GLADE, [libglade-2.0])
 
 
 ################################################################################
@@ -324,7 +323,7 @@ AM_CONDITIONAL(BUILD_MOOAPP,    test "x$build_mooapp"    != "xno")
 moo_top_src_dir=`cd $srcdir && pwd`
 moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
 MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS"
-MOO_LIBS="$moo_top_build_dir/moo/libmoo.la $GTK_LIBS $GLADE_LIBS"
+MOO_LIBS="$moo_top_build_dir/moo/libmoo.la $GTK_LIBS"
 
 if test x$has_fam = xyes; then
     MOO_LIBS="$MOO_LIBS $FAM_LIBS"

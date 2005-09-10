@@ -26,7 +26,7 @@
 #include "mooedit/moopaneview.h"
 #include "mooui/moouiobject.h"
 #include "mooutils/moostock.h"
-#include <glade/glade.h>
+#include "mooutils/mooglade.h"
 #include <string.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -37,7 +37,7 @@
 
 typedef struct {
     GtkWidget *dialog;
-    GladeXML *xml;
+    MooGladeXML *xml;
     MooFileEntryCompletion *completion;
     MooEditWindow *window;
     MooPaneView *output;
@@ -78,7 +78,7 @@ static void         init_dialog             (MooEditWindow  *window,
 static void         execute_find            (const char     *pattern,
                                              const char     *glob,
                                              const char     *dir,
-                                             const char     *skip_dirs,
+                                             const char     *skip_files,
                                              gboolean        case_sensitive,
                                              WindowStuff    *stuff);
 static void         stop_find               (WindowStuff    *stuff);
@@ -174,7 +174,7 @@ window_stuff_free (WindowStuff *stuff)
         if (stuff->dialog)
             gtk_widget_destroy (stuff->dialog);
         if (stuff->xml)
-            g_object_unref (stuff->xml);
+            moo_glade_xml_unref (stuff->xml);
         if (stuff->completion)
             g_object_unref (stuff->completion);
         g_free (stuff->current_file);
@@ -254,12 +254,10 @@ create_dialog (MooEditWindow  *window,
 {
     GtkWidget *dir_entry, *pattern_entry;
 
-    stuff->xml = glade_xml_new_from_buffer (MOO_GREP_GLADE_XML,
-                                            strlen (MOO_GREP_GLADE_XML),
-                                            NULL, NULL);
+    stuff->xml = moo_glade_xml_parse_memory (MOO_GREP_GLADE_XML, -1, NULL);
     g_return_if_fail (stuff->xml != NULL);
 
-    stuff->dialog = glade_xml_get_widget (stuff->xml, "dialog");
+    stuff->dialog = moo_glade_xml_get_widget (stuff->xml, "dialog");
     g_return_if_fail (stuff->dialog != NULL);
 
     gtk_dialog_set_default_response (GTK_DIALOG (stuff->dialog),
@@ -272,12 +270,13 @@ create_dialog (MooEditWindow  *window,
     g_signal_connect (stuff->dialog, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    pattern_entry = glade_xml_get_widget (stuff->xml, "pattern_entry");
+    pattern_entry = moo_glade_xml_get_widget (stuff->xml, "pattern_combo");
+    pattern_entry = GTK_BIN(pattern_entry)->child;
     g_signal_connect (pattern_entry, "changed",
                       G_CALLBACK (pattern_entry_changed), stuff->dialog);
 
-    dir_entry = glade_xml_get_widget (stuff->xml, "dir_entry");
-    g_return_if_fail (dir_entry != NULL);
+    dir_entry = moo_glade_xml_get_widget (stuff->xml, "dir_combo");
+    dir_entry = GTK_BIN(dir_entry)->child;
     stuff->completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
                                       "directories-only", TRUE,
                                       "case-sensitive", TRUE,
@@ -294,9 +293,9 @@ init_dialog (MooEditWindow *window,
     MooEdit *doc;
     GtkWidget *dir_entry, *pattern_entry, *glob_entry;
 
-    dir_entry = glade_xml_get_widget (stuff->xml, "dir_entry");
-    pattern_entry = glade_xml_get_widget (stuff->xml, "pattern_entry");
-    glob_entry = glade_xml_get_widget (stuff->xml, "glob_entry");
+    dir_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "dir_combo"))->child;
+    pattern_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "pattern_combo"))->child;
+    glob_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "glob_combo"))->child;
 
     doc = moo_edit_window_get_active_doc (window);
 
@@ -343,12 +342,11 @@ do_find (MooEditWindow  *window,
     pane = moo_edit_window_get_pane (window, GREP_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
-    dir_entry = glade_xml_get_widget (stuff->xml, "dir_entry");
-    pattern_entry = glade_xml_get_widget (stuff->xml, "pattern_entry");
-    glob_entry = glade_xml_get_widget (stuff->xml, "glob_entry");
-    skip_entry = glade_xml_get_widget (stuff->xml, "skip_entry");
-    skip_entry = glade_xml_get_widget (stuff->xml, "skip_entry");
-    case_sensitive_button = glade_xml_get_widget (stuff->xml, "case_sensitive_button");
+    dir_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "dir_combo"))->child;
+    pattern_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "pattern_combo"))->child;
+    glob_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "glob_combo"))->child;
+    skip_entry = GTK_BIN (moo_glade_xml_get_widget (stuff->xml, "skip_combo"))->child;
+    case_sensitive_button = moo_glade_xml_get_widget (stuff->xml, "case_sensitive_button");
 
     dir_utf8 = gtk_entry_get_text (GTK_ENTRY (dir_entry));
     dir = g_filename_from_utf8 (dir_utf8, -1, NULL, NULL, NULL);
@@ -621,7 +619,7 @@ static void
 execute_find (const char     *pattern,
               const char     *glob,
               const char     *dir,
-              const char     *skip_dirs,
+              const char     *skip_files,
               gboolean        case_sensitive,
               WindowStuff    *stuff)
 {
@@ -672,15 +670,15 @@ execute_find (const char     *pattern,
 
     g_string_append_printf (command, " -print -follow");
 
-    if (skip_dirs)
+    if (skip_files)
     {
-        globs = g_strsplit (skip_dirs, ";", 0);
+        globs = g_strsplit (skip_files, ";", 0);
 
         if (globs)
         {
             char **p;
             for (p = globs; *p != NULL; p++)
-                g_string_append_printf (command, " | grep -v \"%s/\"", *p);
+                g_string_append_printf (command, " | grep -v \"%s\"", *p);
         }
 
         g_strfreev (globs);

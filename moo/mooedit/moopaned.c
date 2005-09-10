@@ -1496,7 +1496,7 @@ static void draw_handle             (MooPaned       *paned,
     GtkStateType state;
     GdkRectangle area;
     GtkOrientation orientation = GTK_ORIENTATION_VERTICAL;
-    int shadow_size;
+    int shadow_size = 0;
 
     area.x = 0;
     area.y = 0;
@@ -2171,7 +2171,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                          Pane       *pane,
                                          gboolean    embedded)
 {
-    GtkWidget *vbox, *toolbar, *separator, *handle, *hbox, *child_holder;
+    GtkWidget *vbox, *toolbar, *separator, *handle, *hbox = NULL, *child_holder;
     GtkTooltips *tooltips;
 
     tooltips = gtk_tooltips_new ();

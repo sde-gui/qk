@@ -365,8 +365,7 @@ static void
 mgr_load_recent (MooRecentMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
-    MooMarkupNode *node;
+    MooMarkupNode *root, *node;
     char *root_path;
 
     if (mgr->priv->prefs_loaded)
@@ -393,18 +392,14 @@ mgr_load_recent (MooRecentMgr *mgr)
 
     for (node = root->children; node != NULL; node = node->next)
     {
-        MooMarkupElement *elm;
-
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
 
-        elm = MOO_MARKUP_ELEMENT (node);
-
-        if (!strcmp (elm->name, ELEMENT_ENTRY))
+        if (!strcmp (node->name, ELEMENT_ENTRY))
         {
             MooEditFileInfo *info;
-            const char *encoding = moo_markup_get_prop (elm, PROP_ENCODING);
-            const char *file_utf8 = elm->content;
+            const char *encoding = moo_markup_get_prop (node, PROP_ENCODING);
+            const char *file_utf8 = moo_markup_get_content (node);
             char *file;
 
             if (!file_utf8 || !file_utf8[0])
@@ -431,7 +426,7 @@ mgr_load_recent (MooRecentMgr *mgr)
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
         }
     }
 }
@@ -441,7 +436,7 @@ static void
 mgr_save_recent (MooRecentMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
+    MooMarkupNode *root;
     GSList *l;
     char *root_path;
 
@@ -456,7 +451,7 @@ mgr_save_recent (MooRecentMgr *mgr)
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
 
     if (root)
-        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+        moo_markup_delete_node (root);
 
     if (!mgr->priv->files)
     {
@@ -470,7 +465,7 @@ mgr_save_recent (MooRecentMgr *mgr)
     for (l = mgr->priv->files; l != NULL; l = l->next)
     {
         RecentEntry *entry = l->data;
-        MooMarkupElement *elm;
+        MooMarkupNode *elm;
         char *path_utf8;
 
         g_return_if_fail (entry != NULL && entry->info != NULL);
@@ -478,9 +473,8 @@ mgr_save_recent (MooRecentMgr *mgr)
         path_utf8 = g_filename_display_name (entry->info->filename);
         g_return_if_fail (path_utf8 != NULL);
 
-        elm = moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                              ELEMENT_ENTRY,
-                                              path_utf8);
+        elm = moo_markup_create_text_element (root, ELEMENT_ENTRY, path_utf8);
+
         if (entry->info->encoding)
             moo_markup_set_prop (elm, PROP_ENCODING, entry->info->encoding);
 

@@ -17,11 +17,8 @@ symlink.h: symlink.png symlink-small.png
 real_src_dir = `cd $(srcdir) && pwd`
 
 AM_CFLAGS =                             \
-    -DMOO_FILE_PROPS_GLADE_FILE=\"$(real_src_dir)/glade/fileprops.glade\" \
-    -DMOO_CREATE_FOLDER_GLADE_FILE=\"$(real_src_dir)/glade/create_folder.glade\" \
     -DMOO_BOOKMARK_EDITOR_GLADE_FILE=\"$(real_src_dir)/glade/bookmark_editor.glade\" \
     $(GTHREAD_CFLAGS)                   \
-    $(GLADE_CFLAGS)                     \
     -DXDG_PREFIX=_moo_edit_xdg          \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \

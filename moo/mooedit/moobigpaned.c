@@ -623,7 +623,7 @@ static void     get_drop_area               (MooBigPaned    *paned,
                                              MooPanePosition position,
                                              GdkRectangle   *rect)
 {
-    int width, height, size;
+    int width, height, size = 0;
     MooPanePosition active_position;
 
     width = paned->outer->allocation.width;

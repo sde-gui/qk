@@ -143,42 +143,43 @@ char               *moo_markup_node_get_string      (MooMarkupNode      *node);
 MooMarkupDoc       *moo_markup_doc_ref              (MooMarkupDoc       *doc);
 void                moo_markup_doc_unref            (MooMarkupDoc       *doc);
 
-MooMarkupElement   *moo_markup_get_root_element     (MooMarkupDoc       *doc,
+MooMarkupNode      *moo_markup_get_root_element     (MooMarkupDoc       *doc,
                                                      const char         *name);
 
 /* looks for element by 'name' attribute, e.g. elm2 in
    <elm name="blah"> <elm2 name="blah2"/> ..
    corresponds to "blah/blah2" */
-MooMarkupElement   *moo_markup_get_element_by_names (MooMarkupNode      *node,
+MooMarkupNode      *moo_markup_get_element_by_names (MooMarkupNode      *node,
                                                      const char         *path);
 
-MooMarkupElement   *moo_markup_get_element          (MooMarkupNode      *node,
+MooMarkupNode      *moo_markup_get_element          (MooMarkupNode      *node,
                                                      const char         *path);
 
-const char         *moo_markup_get_prop             (MooMarkupElement   *node,
+const char         *moo_markup_get_prop             (MooMarkupNode      *node,
                                                      const char         *prop_name);
-void                moo_markup_set_prop             (MooMarkupElement   *node,
+void                moo_markup_set_prop             (MooMarkupNode      *node,
                                                      const char         *prop_name,
                                                      const char         *val);
-void                moo_markup_set_content          (MooMarkupElement   *node,
+void                moo_markup_set_content          (MooMarkupNode      *node,
                                                      const char         *text);
+const char         *moo_markup_get_content          (MooMarkupNode      *node);
 
 char               *moo_markup_element_get_path     (MooMarkupElement   *node);
 
 void                moo_markup_delete_node          (MooMarkupNode      *node);
 
-MooMarkupElement   *moo_markup_create_root_element  (MooMarkupDoc       *doc,
+MooMarkupNode      *moo_markup_create_root_element  (MooMarkupDoc       *doc,
                                                      const char         *name);
-MooMarkupElement   *moo_markup_create_element       (MooMarkupNode      *parent,
+MooMarkupNode      *moo_markup_create_element       (MooMarkupNode      *parent,
                                                      const char         *path);
 
-MooMarkupElement   *moo_markup_create_text_element  (MooMarkupNode      *parent,
+MooMarkupNode      *moo_markup_create_text_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *content);
-MooMarkupElement   *moo_markup_create_file_element  (MooMarkupNode      *parent,
+MooMarkupNode      *moo_markup_create_file_element  (MooMarkupNode      *parent,
                                                      const char         *path,
                                                      const char         *filename);
-char               *moo_markup_get_file_content     (MooMarkupElement   *element);
+char               *moo_markup_get_file_content     (MooMarkupNode      *node);
 
 
 G_END_DECLS

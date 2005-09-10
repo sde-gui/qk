@@ -10,7 +10,6 @@ AM_CFLAGS =                             \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
-    $(GLADE_CFLAGS)                     \
     -DG_LOG_DOMAIN=\"Moo\"              \
     -D__MOO__                           \
     -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
@@ -30,4 +29,3 @@ mingw_flags = -no-undefined
 endif MINGW_BUILD
 
 cproject_la_LDFLAGS = -module -avoid-version -export-symbols-regex cproject_init $(mingw_flags)
-cproject_la_LIBADD = $(GLADE_LIBS)

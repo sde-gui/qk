@@ -90,9 +90,8 @@ project_set_file_list (Project    *project,
 Project    *project_load            (const char *file)
 {
     MooMarkupDoc *xml = NULL;
-    MooMarkupElement *root, *name_elm, *project_path_elm, *config_root,
-                     *active_configuration_elm;
-    MooMarkupNode *child;
+    MooMarkupNode *root, *child;
+    MooMarkupNode *name_elm, *project_path_elm, *config_root, *active_configuration_elm;
     Project *project = NULL;
     const char *version, *project_path;
     GError *error = NULL;
@@ -137,7 +136,7 @@ Project    *project_load            (const char *file)
         goto out;
     }
 
-    name_elm = moo_markup_get_element (MOO_MARKUP_NODE (root), ELEMENT_NAME);
+    name_elm = moo_markup_get_element (root, ELEMENT_NAME);
 
     if (!name_elm)
     {
@@ -145,23 +144,23 @@ Project    *project_load            (const char *file)
         goto out;
     }
 
-    if (!name_elm->content || !name_elm->content[0])
+    if (!moo_markup_get_content (name_elm) || !moo_markup_get_content (name_elm)[0])
     {
         g_warning ("%s: empty project name in '%s'", G_STRLOC, file);
         goto out;
     }
 
-    project_path_elm = moo_markup_get_element (MOO_MARKUP_NODE (root), ELEMENT_PATH);
+    project_path_elm = moo_markup_get_element (root, ELEMENT_PATH);
 
     if (project_path_elm)
-        project_path = project_path_elm->content;
+        project_path = moo_markup_get_content (project_path_elm);
     else
         project_path = ".";
 
     if (!project_path || !project_path[0])
         project_path = ".";
 
-    config_root = moo_markup_get_element (MOO_MARKUP_NODE (root), ELEMENT_CONFIGURATIONS);
+    config_root = moo_markup_get_element (root, ELEMENT_CONFIGURATIONS);
 
     if (!config_root)
     {
@@ -169,40 +168,40 @@ Project    *project_load            (const char *file)
         goto out;
     }
 
-    project = project_new (name_elm->content, project_path);
+    project = project_new (moo_markup_get_content (name_elm), project_path);
     project->file = g_strdup (file);
 
     for (child = config_root->children; child != NULL; child = child->next)
     {
-        MooMarkupElement *elm, *build_dir_elm;
+        MooMarkupNode *build_dir_elm;
         Configuration *configuration;
 
         if (!MOO_MARKUP_IS_ELEMENT (child))
             continue;
 
-        elm = MOO_MARKUP_ELEMENT (child);
+        configuration = configuration_new (child->name);
 
-        configuration = configuration_new (elm->name);
+        build_dir_elm = moo_markup_get_element (child, ELEMENT_BUILD_DIR);
 
-        build_dir_elm = moo_markup_get_element (MOO_MARKUP_NODE (elm), ELEMENT_BUILD_DIR);
-
-        if (!build_dir_elm || !build_dir_elm->content || !build_dir_elm->content[0])
-            configuration->build_dir = g_strdup (".");
+        if (!build_dir_elm ||
+             !moo_markup_get_content (build_dir_elm) ||
+             !moo_markup_get_content (build_dir_elm)[0])
+                configuration->build_dir = g_strdup (".");
         else
-            configuration->build_dir = g_strdup (build_dir_elm->content);
+            configuration->build_dir = g_strdup (moo_markup_get_content (build_dir_elm));
 
-        configuration->run_options = get_run_options (MOO_MARKUP_NODE (elm));
-        configuration->make_options = get_make_options (MOO_MARKUP_NODE (elm));
-        configuration->configure_options = get_configure_options (MOO_MARKUP_NODE (elm));
+        configuration->run_options = get_run_options (child);
+        configuration->make_options = get_make_options (child);
+        configuration->configure_options = get_configure_options (child);
 
         project->configurations = g_slist_append (project->configurations, configuration);
     }
 
-    active_configuration_elm = moo_markup_get_element (MOO_MARKUP_NODE (root),
-                                                       ELEMENT_ACTIVE_CONFIGURATION);
+    active_configuration_elm = moo_markup_get_element (root, ELEMENT_ACTIVE_CONFIGURATION);
 
-    if (!active_configuration_elm || !active_configuration_elm->content ||
-         !active_configuration_elm->content[0])
+    if (!active_configuration_elm ||
+         !moo_markup_get_content (active_configuration_elm) ||
+         !moo_markup_get_content (active_configuration_elm)[0])
     {
         if (project->configurations)
             project->active = project->configurations->data;
@@ -210,12 +209,12 @@ Project    *project_load            (const char *file)
     else
     {
         project->active = project_get_configuration (project,
-                                                     active_configuration_elm->content);
+                moo_markup_get_content (active_configuration_elm));
         if (!project->active && project->configurations)
             project->active = project->configurations->data;
     }
 
-    project->file_list = get_file_list (MOO_MARKUP_NODE (root));
+    project->file_list = get_file_list (root);
 
     if (!project_check (project))
     {
@@ -234,7 +233,7 @@ gboolean
 project_save (Project *project)
 {
     MooMarkupDoc *xml = NULL;
-    MooMarkupElement *root, *config_root;
+    MooMarkupNode *root, *config_root;
     GError *error = NULL;
     GSList *l;
 
@@ -246,50 +245,36 @@ project_save (Project *project)
     root = moo_markup_create_root_element (xml, ELEMENT_PROJECT);
     moo_markup_set_prop (root, ATTR_VERSION, CPROJECT_PROJECT_VERSION);
 
-    moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                    ELEMENT_NAME,
-                                    project->name);
-    moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                    ELEMENT_PATH,
-                                    project->project_path);
+    moo_markup_create_text_element (root, ELEMENT_NAME, project->name);
+    moo_markup_create_text_element (root, ELEMENT_PATH, project->project_path);
 
     if (project->run_options)
-        save_run_options (project->run_options,
-                          MOO_MARKUP_NODE (root));
+        save_run_options (project->run_options, root);
     if (project->make_options)
-        save_make_options (project->make_options,
-                           MOO_MARKUP_NODE (root));
+        save_make_options (project->make_options, root);
 
-    moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                    ELEMENT_ACTIVE_CONFIGURATION,
-                                    project->active->name);
+    moo_markup_create_text_element (root, ELEMENT_ACTIVE_CONFIGURATION, project->active->name);
 
-    config_root = moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_CONFIGURATIONS);
+    config_root = moo_markup_create_element (root, ELEMENT_CONFIGURATIONS);
 
     for (l = project->configurations; l != NULL; l = l->next)
     {
-        MooMarkupElement *elm;
+        MooMarkupNode *elm;
         Configuration *configuration = l->data;
 
-        elm = moo_markup_create_element (MOO_MARKUP_NODE (config_root),
-                                         configuration->name);
+        elm = moo_markup_create_element (config_root, configuration->name);
 
-        moo_markup_create_text_element (MOO_MARKUP_NODE (elm),
-                                        ELEMENT_BUILD_DIR,
-                                        configuration->build_dir);
+        moo_markup_create_text_element (elm, ELEMENT_BUILD_DIR, configuration->build_dir);
 
         if (configuration->run_options)
-            save_run_options (configuration->run_options,
-                              MOO_MARKUP_NODE (elm));
+            save_run_options (configuration->run_options, elm);
         if (configuration->make_options)
-            save_make_options (configuration->make_options,
-                               MOO_MARKUP_NODE (elm));
+            save_make_options (configuration->make_options, elm);
         if (configuration->configure_options)
-            save_configure_options (configuration->configure_options,
-                                    MOO_MARKUP_NODE (elm));
+            save_configure_options (configuration->configure_options, elm);
     }
 
-    save_file_list (project->file_list, MOO_MARKUP_NODE (root));
+    save_file_list (project->file_list, root);
 
     if (!moo_markup_save_pretty (xml, project->file, 1, &error))
     {
@@ -313,14 +298,14 @@ project_save (Project *project)
 static RunOptions*
 get_run_options (MooMarkupNode *parent)
 {
-    MooMarkupElement *exec;
+    MooMarkupNode *exec;
 
     exec = moo_markup_get_element (parent, ELEMENT_EXEC);
 
     if (!exec)
         return NULL;
     else
-        return run_options_new (exec->content);
+        return run_options_new (moo_markup_get_content (exec));
 }
 
 
@@ -552,7 +537,7 @@ static void
 save_file_list (GSList             *file_list,
                 MooMarkupNode      *parent)
 {
-    MooMarkupElement *list_elm = NULL;
+    MooMarkupNode *list_elm = NULL;
     GSList *l;
 
     for (l = file_list; l != NULL; l = l->next)
@@ -573,8 +558,7 @@ save_file_list (GSList             *file_list,
 static GSList*
 get_file_list (MooMarkupNode *parent)
 {
-    MooMarkupElement *list_elm, *elm;
-    MooMarkupNode *child;
+    MooMarkupNode *list_elm, *child;
     GSList *files = NULL;
 
     list_elm = moo_markup_get_element (parent, ELEMENT_FILE_LIST);
@@ -589,16 +573,16 @@ get_file_list (MooMarkupNode *parent)
         if (!MOO_MARKUP_IS_ELEMENT (child))
             continue;
 
-        elm = MOO_MARKUP_ELEMENT (child);
-        g_return_val_if_fail (!strcmp (elm->name, ELEMENT_FILE), files);
-        g_return_val_if_fail (elm->content && elm->content[0], files);
+        g_return_val_if_fail (!strcmp (child->name, ELEMENT_FILE), files);
+        g_return_val_if_fail (moo_markup_get_content (child) &&
+                moo_markup_get_content (child)[0], files);
 
-        file = moo_markup_get_file_content (elm);
+        file = moo_markup_get_file_content (child);
 
         if (!file)
         {
             g_warning ("%s: could not convert '%s' to filename encoding",
-                       G_STRLOC, elm->content);
+                       G_STRLOC, moo_markup_get_content (child));
             continue;
         }
 

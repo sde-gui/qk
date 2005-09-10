@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <glib/gstdio.h>
-#include <glade/glade.h>
+#include "mooutils/mooglade.h"
 #ifdef __MOO__
 #include "mooutils/mooprefs.h"
 #endif
@@ -284,8 +284,7 @@ void            moo_bookmark_set_display_path (MooBookmark  *bookmark,
 static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
-    MooMarkupNode *node;
+    MooMarkupNode *root, *node;
 
     xml = moo_prefs_get_markup ();
     g_return_if_fail (xml != NULL);
@@ -299,19 +298,15 @@ static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
 
     for (node = root->children; node != NULL; node = node->next)
     {
-        MooMarkupElement *elm;
-
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
 
-        elm = MOO_MARKUP_ELEMENT (node);
-
-        if (!strcmp (elm->name, ELEMENT_BOOKMARK))
+        if (!strcmp (node->name, ELEMENT_BOOKMARK))
         {
             MooBookmark *bookmark;
-            const char *label = moo_markup_get_prop (elm, PROP_LABEL);
-            const char *icon = moo_markup_get_prop (elm, PROP_ICON);
-            const char *path_utf8 = elm->content;
+            const char *label = moo_markup_get_prop (node, PROP_LABEL);
+            const char *icon = moo_markup_get_prop (node, PROP_ICON);
+            const char *path_utf8 = moo_markup_get_content (node);
             char *path;
 
             if (!path_utf8 || !path_utf8[0])
@@ -335,13 +330,13 @@ static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
             moo_bookmark_free (bookmark);
             g_free (path);
         }
-        else if (!strcmp (elm->name, ELEMENT_SEPARATOR))
+        else if (!strcmp (node->name, ELEMENT_SEPARATOR))
         {
             moo_bookmark_mgr_add_separator (mgr);
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
         }
     }
 
@@ -352,7 +347,7 @@ static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
 static void moo_bookmark_mgr_save       (MooBookmarkMgr *mgr)
 {
     MooMarkupDoc *xml;
-    MooMarkupElement *root;
+    MooMarkupNode *root;
     GtkTreeModel *model;
     GtkTreeIter iter;
 
@@ -364,7 +359,7 @@ static void moo_bookmark_mgr_save       (MooBookmarkMgr *mgr)
     root = moo_markup_get_element (MOO_MARKUP_NODE (xml), BOOKMARKS_ROOT);
 
     if (root)
-        moo_markup_delete_node (MOO_MARKUP_NODE (root));
+        moo_markup_delete_node (root);
 
     if (!gtk_tree_model_get_iter_first (model, &iter))
         return;
@@ -375,19 +370,18 @@ static void moo_bookmark_mgr_save       (MooBookmarkMgr *mgr)
     do
     {
         MooBookmark *bookmark = NULL;
-        MooMarkupElement *elm;
+        MooMarkupNode *elm;
 
         gtk_tree_model_get (model, &iter, COLUMN_BOOKMARK, &bookmark, -1);
 
         if (!bookmark)
         {
-            moo_markup_create_element (MOO_MARKUP_NODE (root), ELEMENT_SEPARATOR);
+            moo_markup_create_element (root, ELEMENT_SEPARATOR);
             continue;
         }
 
         /* XXX validate bookmark */
-        elm = moo_markup_create_text_element (MOO_MARKUP_NODE (root),
-                                              ELEMENT_BOOKMARK,
+        elm = moo_markup_create_text_element (root, ELEMENT_BOOKMARK,
                                               bookmark->display_path);
         moo_markup_set_prop (elm, PROP_LABEL, bookmark->label);
         if (bookmark->icon_stock_id)
@@ -783,7 +777,7 @@ static GtkTreeModel *copy_bookmarks         (GtkListStore   *store);
 static void          copy_bookmarks_back    (GtkListStore   *store,
                                              GtkTreeModel   *model);
 static void          init_editor_dialog     (GtkTreeView    *treeview,
-                                             GladeXML       *xml);
+                                             MooGladeXML    *xml);
 static void          dialog_response        (GtkWidget      *dialog,
                                              int             response,
                                              MooBookmarkMgr *mgr);
@@ -793,26 +787,26 @@ static void          dialog_show            (GtkWidget      *dialog,
 GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
 {
     GtkWidget *dialog;
-    GladeXML *xml;
+    MooGladeXML *xml;
     GtkTreeView *treeview;
 
     if (mgr->priv->editor)
         return mgr->priv->editor;
 
-    xml = glade_xml_new (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL, NULL);
+    xml = moo_glade_xml_parse_file (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL);
 
     if (!xml)
         g_error ("Yes, glade is great usually, but not always");
 
-    dialog = glade_xml_get_widget (xml, "dialog");
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_assert (dialog != NULL);
 
     g_object_set_data_full (G_OBJECT (dialog), "dialog-glade-xml",
-                            xml, g_object_unref);
+                            xml, (GDestroyNotify) moo_glade_xml_unref);
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 
-    treeview = GTK_TREE_VIEW (glade_xml_get_widget (xml, "treeview"));
+    treeview = GTK_TREE_VIEW (moo_glade_xml_get_widget (xml, "treeview"));
     init_editor_dialog (treeview, xml);
 
     g_signal_connect (dialog, "response",
@@ -832,7 +826,7 @@ GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
 static void          dialog_show            (GtkWidget      *dialog,
                                              MooBookmarkMgr *mgr)
 {
-    GladeXML *xml;
+    MooGladeXML *xml;
     GtkTreeView *treeview;
     GtkTreeModel *model;
 
@@ -840,7 +834,7 @@ static void          dialog_show            (GtkWidget      *dialog,
     g_return_if_fail (xml != NULL);
 
     model = copy_bookmarks (mgr->priv->store);
-    treeview = GTK_TREE_VIEW (glade_xml_get_widget (xml, "treeview"));
+    treeview = GTK_TREE_VIEW (moo_glade_xml_get_widget (xml, "treeview"));
     gtk_tree_view_set_model (treeview, model);
     g_object_unref (model);
 }
@@ -850,7 +844,7 @@ static void          dialog_response        (GtkWidget      *dialog,
                                              int             response,
                                              MooBookmarkMgr *mgr)
 {
-    GladeXML *xml;
+    MooGladeXML *xml;
     GtkTreeView *treeview;
     GtkTreeModel *model;
 
@@ -863,7 +857,7 @@ static void          dialog_response        (GtkWidget      *dialog,
     xml = g_object_get_data (G_OBJECT (dialog), "dialog-glade-xml");
     g_return_if_fail (xml != NULL);
 
-    treeview = GTK_TREE_VIEW (glade_xml_get_widget (xml, "treeview"));
+    treeview = GTK_TREE_VIEW (moo_glade_xml_get_widget (xml, "treeview"));
     model = gtk_tree_view_get_model (treeview);
     copy_bookmarks_back (mgr->priv->store, model);
     gtk_widget_hide (dialog);
@@ -921,32 +915,32 @@ static void     path_data_func      (GtkTreeViewColumn  *column,
                                      GtkTreeIter        *iter);
 
 static void     selection_changed   (GtkTreeSelection   *selection,
-                                     GladeXML           *xml);
-static void     new_clicked         (GladeXML           *xml);
-static void     delete_clicked      (GladeXML           *xml);
-static void     separator_clicked   (GladeXML           *xml);
+                                     MooGladeXML        *xml);
+static void     new_clicked         (MooGladeXML        *xml);
+static void     delete_clicked      (MooGladeXML        *xml);
+static void     separator_clicked   (MooGladeXML        *xml);
 
 static void     label_edited        (GtkCellRenderer    *cell,
                                      char               *path,
                                      char               *text,
-                                     GladeXML           *xml);
+                                     MooGladeXML        *xml);
 static void     path_edited         (GtkCellRenderer    *cell,
                                      char               *path,
                                      char               *text,
-                                     GladeXML           *xml);
+                                     MooGladeXML        *xml);
 static void     path_editing_started(GtkCellRenderer    *cell,
                                      GtkCellEditable    *editable);
 static void     path_entry_realize  (GtkWidget          *entry);
 static void     path_entry_unrealize(GtkWidget          *entry);
 
 static void     init_icon_combo     (GtkComboBox        *combo,
-                                     GladeXML           *xml);
+                                     MooGladeXML        *xml);
 static void     combo_update_icon   (GtkComboBox        *combo,
-                                     GladeXML           *xml);
+                                     MooGladeXML        *xml);
 
 
 static void          init_editor_dialog     (GtkTreeView    *treeview,
-                                             GladeXML       *xml)
+                                             MooGladeXML    *xml)
 {
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
@@ -954,7 +948,7 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
     GtkWidget *button, *icon_combo;
     MooFileEntryCompletion *completion;
 
-    icon_combo = glade_xml_get_widget (xml, "icon_combo");
+    icon_combo = moo_glade_xml_get_widget (xml, "icon_combo");
     init_icon_combo (GTK_COMBO_BOX (icon_combo), xml);
 
     selection = gtk_tree_view_get_selection (treeview);
@@ -963,15 +957,15 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
                       G_CALLBACK (selection_changed), xml);
     selection_changed (selection, xml);
 
-    button = glade_xml_get_widget (xml, "delete_button");
+    button = moo_glade_xml_get_widget (xml, "delete_button");
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (delete_clicked), xml);
 
-    button = glade_xml_get_widget (xml, "new_button");
+    button = moo_glade_xml_get_widget (xml, "new_button");
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (new_clicked), xml);
 
-    button = glade_xml_get_widget (xml, "separator_button");
+    button = moo_glade_xml_get_widget (xml, "separator_button");
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (separator_clicked), xml);
 
@@ -1112,13 +1106,13 @@ static void     path_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
 
 
 static void     selection_changed   (GtkTreeSelection   *selection,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     GtkWidget *button, *selected_hbox;
     int selected;
 
-    button = glade_xml_get_widget (xml, "delete_button");
-    selected_hbox = glade_xml_get_widget (xml, "selected_hbox");
+    button = moo_glade_xml_get_widget (xml, "delete_button");
+    selected_hbox = moo_glade_xml_get_widget (xml, "selected_hbox");
 
     selected = gtk_tree_selection_count_selected_rows (selection);
 
@@ -1137,7 +1131,7 @@ static void     selection_changed   (GtkTreeSelection   *selection,
         {
             GtkWidget *icon_combo;
             gtk_widget_set_sensitive (selected_hbox, TRUE);
-            icon_combo = glade_xml_get_widget (xml, "icon_combo");
+            icon_combo = moo_glade_xml_get_widget (xml, "icon_combo");
             combo_update_icon (GTK_COMBO_BOX (icon_combo), xml);
             moo_bookmark_free (bookmark);
         }
@@ -1153,7 +1147,7 @@ static void     selection_changed   (GtkTreeSelection   *selection,
 }
 
 
-static void     new_clicked         (GladeXML           *xml)
+static void     new_clicked         (MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1162,7 +1156,7 @@ static void     new_clicked         (GladeXML           *xml)
     GtkListStore *store;
     MooBookmark *bookmark;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     bookmark = moo_bookmark_new ("New bookmark", NULL,
@@ -1184,7 +1178,7 @@ static void     new_clicked         (GladeXML           *xml)
 }
 
 
-static void     delete_clicked      (GladeXML           *xml)
+static void     delete_clicked      (MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1193,7 +1187,7 @@ static void     delete_clicked      (GladeXML           *xml)
     GtkListStore *store;
     GList *paths, *rows = NULL, *l;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
@@ -1229,13 +1223,13 @@ static void     delete_clicked      (GladeXML           *xml)
 }
 
 
-static void     separator_clicked   (GladeXML           *xml)
+static void     separator_clicked   (MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkWidget *treeview;
     GtkListStore *store;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
     gtk_list_store_append (store, &iter);
 }
@@ -1244,7 +1238,7 @@ static void     separator_clicked   (GladeXML           *xml)
 static void     label_edited        (G_GNUC_UNUSED GtkCellRenderer *cell,
                                      char               *path_string,
                                      char               *text,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1252,7 +1246,7 @@ static void     label_edited        (G_GNUC_UNUSED GtkCellRenderer *cell,
     GtkListStore *store;
     MooBookmark *bookmark;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     path = gtk_tree_path_new_from_string (path_string);
@@ -1284,7 +1278,7 @@ static void     label_edited        (G_GNUC_UNUSED GtkCellRenderer *cell,
 static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
                                      char               *path_string,
                                      char               *text,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1293,7 +1287,7 @@ static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
     MooBookmark *bookmark;
     MooFileEntryCompletion *cmpl;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     path = gtk_tree_path_new_from_string (path_string);
@@ -1418,17 +1412,17 @@ static void icon_store_find_stock   (GtkListStore       *store,
 static void icon_store_find_empty   (GtkListStore       *store,
                                      GtkTreeIter        *iter);
 static void icon_combo_changed      (GtkComboBox        *combo,
-                                     GladeXML           *xml);
+                                     MooGladeXML        *xml);
 
 static void     init_icon_combo     (GtkComboBox        *combo,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     static GtkListStore *icon_store;
     GtkCellRenderer *cell;
 
     if (!icon_store)
     {
-        GtkWidget *dialog = glade_xml_get_widget (xml, "dialog");
+        GtkWidget *dialog = moo_glade_xml_get_widget (xml, "dialog");
         gtk_widget_ensure_style (dialog);
         icon_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF,
                                          G_TYPE_STRING, G_TYPE_STRING);
@@ -1457,7 +1451,7 @@ static void     init_icon_combo     (GtkComboBox        *combo,
 
 
 static void     combo_update_icon   (GtkComboBox        *combo,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -1467,7 +1461,7 @@ static void     combo_update_icon   (GtkComboBox        *combo,
     MooBookmark *bookmark;
     GtkListStore *icon_store;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
     rows = gtk_tree_selection_get_selected_rows (selection, &model);
     g_return_if_fail (rows != NULL && rows->next == NULL);
@@ -1595,7 +1589,7 @@ static void fill_icon_store         (GtkListStore       *store,
 
 
 static void icon_combo_changed      (GtkComboBox        *combo,
-                                     GladeXML           *xml)
+                                     MooGladeXML        *xml)
 {
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -1607,7 +1601,7 @@ static void icon_combo_changed      (GtkComboBox        *combo,
     GdkPixbuf *pixbuf = NULL;
     char *stock = NULL;
 
-    treeview = glade_xml_get_widget (xml, "treeview");
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
     rows = gtk_tree_selection_get_selected_rows (selection, &model);
     g_return_if_fail (rows != NULL && rows->next == NULL);
