@@ -63,11 +63,8 @@ static void show_about_dialog (GtkWidget *dialog,
 {
     g_return_if_fail (dialog != NULL);
 
-    if (!GTK_WIDGET_VISIBLE (dialog) && parent)
-    {
+    if (parent)
         gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
-        gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
-    }
 
     gtk_window_present (GTK_WINDOW (dialog));
 }
@@ -126,19 +123,19 @@ void             moo_app_about_dialog           (GtkWidget  *parent)
     if (!dialog)
     {
         dialog = g_object_new (GTK_TYPE_ABOUT_DIALOG,
-                                     "authors", authors,
-                                     "comments", info->description,
-                                     "copyright", copyright,
-                                     "license", gpl,
-                                     "logo-icon-name", MOO_STOCK_APP,
-                                     "name", info->full_name,
-                                     "version", info->version,
-                                     "website", info->website,
-                                     "website-label", info->website_label,
-                                     NULL);
-        g_object_set_data (G_OBJECT (moo_app_get_instance()),
-                           "moo-app-about-dialog",
-                           dialog);
+                               "authors", authors,
+                               "comments", info->description,
+                               "copyright", copyright,
+                               "license", gpl,
+                               "logo-icon-name", MOO_STOCK_APP,
+                               "name", info->full_name,
+                               "version", info->version,
+                               "website", info->website,
+                               "website-label", info->website_label,
+                               NULL);
+        g_object_set_data_full (G_OBJECT (moo_app_get_instance()),
+                                "moo-app-about-dialog", dialog,
+                                g_object_unref);
         g_signal_connect (dialog, "delete-event",
                           G_CALLBACK (gtk_widget_hide_on_delete),
                           NULL);
