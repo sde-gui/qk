@@ -67,6 +67,7 @@ static void    moo_ui_object_iface_init    (G_GNUC_UNUSED gpointer g_iface)
     if (done) return;
     done = TRUE;
 
+#if GLIB_CHECK_VERSION(2,4,0)
     g_object_interface_install_property (g_iface,
                                          g_param_spec_string ("ui-object-name",
                                                  "ui-object-name",
@@ -94,6 +95,7 @@ static void    moo_ui_object_iface_init    (G_GNUC_UNUSED gpointer g_iface)
                                                  "ui-object-xml",
                                                  MOO_TYPE_UI_XML,
                                                  G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+#endif /* GLIB_CHECK_VERSION(2,4,0) */
 }
 
 

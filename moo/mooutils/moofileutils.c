@@ -45,7 +45,7 @@ int         moo_unlink              (const char *filename)
 #if GLIB_CHECK_VERSION(2,6,0)
     return g_unlink (filename);
 #elif HAVE_UNLINK
-    return unlink (filenane);
+    return unlink (filename);
 #else
 #error "unlink() is absent"
 #endif

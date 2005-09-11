@@ -196,8 +196,12 @@ GtkWidget *file_chooser_dialog_new (const char              *title,
     return dialog;
 }
 
+#define file_chooser_set_select_multiple(dialog,multiple) \
+    gtk_file_selection_set_select_multiple (GTK_FILE_SELECTION (dialog), multiple)
 #define file_chooser_get_filename(dialog) \
     g_strdup (gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog)))
+#define file_chooser_get_filenames(dialog)  \
+    (gtk_file_selection_get_selections (GTK_FILE_SELECTION (dialog)))
 
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 

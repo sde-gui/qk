@@ -32,7 +32,7 @@ typedef struct _GMappedFile GMappedFile;
 
 GMappedFile *g_mapped_file_new          (const gchar  *filename,
 				         gboolean      writable,
-				         GError      **error) G_GNUC_MALLOC;
+				         GError      **error);
 gsize        g_mapped_file_get_length   (GMappedFile  *file);
 gchar       *g_mapped_file_get_contents (GMappedFile  *file);
 void         g_mapped_file_free         (GMappedFile  *file);

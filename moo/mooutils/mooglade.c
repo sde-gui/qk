@@ -14,6 +14,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooparam.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
@@ -35,15 +36,14 @@ G_STMT_START {                                                  \
     for (elm = parent->children; elm != NULL; elm = elm->next)  \
     {                                                           \
         if (MOO_MARKUP_IS_ELEMENT (elm))                        \
-        {                                                       \
 
 #define FOREACH_ELM_END \
-        }               \
     }                   \
 } G_STMT_END
 
 
 typedef struct _Widget Widget;
+typedef struct _Signal Signal;
 typedef struct _WidgetProps WidgetProps;
 typedef struct _PackingProps PackingProps;
 typedef struct _Child Child;
@@ -55,6 +55,13 @@ struct _Widget {
     GType type;
     WidgetProps *props;
     GSList *children; /* Child* */
+    GSList *signals; /* Signal* */
+};
+
+struct _Signal {
+    char *name;
+    char *handler;
+    char *object;
 };
 
 struct _Child {
@@ -126,6 +133,7 @@ typedef struct {
 
 
 #define NODE_IS_WIDGET(node) (!strcmp (node->name, "widget"))
+#define NODE_IS_SIGNAL(node) (!strcmp (node->name, "signal"))
 #define NODE_IS_PROPERTY(node) (!strcmp (node->name, "property"))
 #define NODE_IS_CHILD(node) (!strcmp (node->name, "child"))
 #define NODE_IS_PACKING(node) (!strcmp (node->name, "packing"))
@@ -149,6 +157,12 @@ static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
                                                  GType           container_type);
 static void          packing_props_free         (PackingProps   *props);
+static Signal       *signal_new                 (const char     *id,
+                                                 const char     *handler,
+                                                 const char     *object);
+static void          signal_free                (Signal         *signal);
+static void          collect_signals            (MooMarkupNode  *node,
+                                                 Widget         *widget);
 
 static GType         get_type_by_name           (const char     *name);
 static gboolean      parse_bool                 (const char     *value);
@@ -726,6 +740,56 @@ pack_children (MooGladeXML    *xml,
 }
 
 
+static Signal*
+signal_new (const char     *name,
+            const char     *handler,
+            const char     *object)
+{
+    Signal *signal = g_new (Signal, 1);
+    signal->name = g_strdup (name);
+    signal->handler = g_strdup (handler);
+    signal->object = g_strdup (object);
+    return signal;
+}
+
+
+static void
+signal_free (Signal *signal)
+{
+    if (signal)
+    {
+        g_free (signal->name);
+        g_free (signal->handler);
+        g_free (signal->object);
+        g_free (signal);
+    }
+}
+
+
+static void
+collect_signals (MooMarkupNode  *node,
+                 Widget         *widget)
+{
+    g_return_if_fail (node != NULL && NODE_IS_WIDGET (node));
+    g_return_if_fail (widget != NULL);
+
+    FOREACH_ELM_START (node, elm)
+    {
+        if (NODE_IS_SIGNAL (elm))
+        {
+            const char *name, *handler, *object;
+            name = moo_markup_get_prop (elm, "name");
+            handler = moo_markup_get_prop (elm, "handler");
+            object = moo_markup_get_prop (elm, "object");
+            g_return_if_fail (name != NULL && handler != NULL);
+            widget->signals = g_slist_append (widget->signals,
+                                              signal_new (name, handler, object));
+        }
+    }
+    FOREACH_ELM_END;
+}
+
+
 static void
 widget_free (Widget *widget)
 {
@@ -735,6 +799,8 @@ widget_free (Widget *widget)
         widget_props_free (widget->props);
         g_slist_foreach (widget->children, (GFunc) child_free, NULL);
         g_slist_free (widget->children);
+        g_slist_foreach (widget->signals, (GFunc) signal_free, NULL);
+        g_slist_free (widget->signals);
         g_free (widget);
     }
 }
@@ -835,6 +901,8 @@ widget_new (MooGladeXML    *xml,
     widget->type = type;
     widget->props = props;
     widget->children = NULL;
+
+    collect_signals (node, widget);
 
     FOREACH_ELM_START (node, elm)
     {
@@ -1038,12 +1106,6 @@ widget_props_new (MooMarkupNode  *node,
                 props->mnemonic_widget = g_strdup (value);
                 props->mask |= PROP_MNEMONIC_WIDGET;
             }
-            else if (!strcmp (name, "items") &&
-                      GTK_IS_COMBO_BOX_CLASS (klass))
-            {
-                if (value && value[0])
-                    g_message ("%s: ignoring ComboBox items property", G_STRLOC);
-            }
             else if (!strcmp (name, "text") &&
                       GTK_IS_TEXT_VIEW_CLASS (klass))
             {
@@ -1086,6 +1148,14 @@ widget_props_new (MooMarkupNode  *node,
                 props->mask |= PROP_HISTORY;
                 props->history = parse_int (value);
             }
+#if GTK_CHECK_VERSION(2,4,0)
+            else if (!strcmp (name, "items") &&
+                      GTK_IS_COMBO_BOX_CLASS (klass))
+            {
+                if (value && value[0])
+                    g_message ("%s: ignoring ComboBox items property", G_STRLOC);
+            }
+#endif /* GTK_CHECK_VERSION(2,4,0) */
             else
             {
                 special = FALSE;
@@ -1350,7 +1420,6 @@ parse_property (GParamSpec     *param_spec,
         else
         {
             GFlagsClass *flags_class;
-            GFlagsValue *val;
             char **pieces;
             guint i, len;
             int result = 0;
@@ -1362,6 +1431,8 @@ parse_property (GParamSpec     *param_spec,
 
             for (i = 0; i < len; ++i)
             {
+                GFlagsValue *val;
+
                 val = g_flags_get_value_by_name (flags_class, pieces[i]);
 
                 if (!val)
@@ -1381,7 +1452,7 @@ parse_property (GParamSpec     *param_spec,
                 }
             }
 
-            g_value_set_flags (&param->value, val->value);
+            g_value_set_flags (&param->value, result);
             g_type_class_unref (flags_class);
             g_strfreev (pieces);
         }
@@ -1947,14 +2018,48 @@ get_type_by_name (const char *name)
     if (type)
         return type;
 
+#if GTK_CHECK_VERSION(2,4,0)
     REGISTER_TYPE ("GtkAboutDialog", GTK_TYPE_ABOUT_DIALOG);
+    REGISTER_TYPE ("GtkAccelMap", GTK_TYPE_ACCEL_MAP);
+    REGISTER_TYPE ("GtkAction", GTK_TYPE_ACTION);
+    REGISTER_TYPE ("GtkActionGroup", GTK_TYPE_ACTION_GROUP);
+    REGISTER_TYPE ("GtkCellLayout", GTK_TYPE_CELL_LAYOUT);
+    REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);
+    REGISTER_TYPE ("GtkCellRendererProgress", GTK_TYPE_CELL_RENDERER_PROGRESS);
+    REGISTER_TYPE ("GtkCellView", GTK_TYPE_CELL_VIEW);
+    REGISTER_TYPE ("GtkComboBox", GTK_TYPE_COMBO_BOX);
+    REGISTER_TYPE ("GtkComboBoxEntry", GTK_TYPE_COMBO_BOX_ENTRY);
+    REGISTER_TYPE ("GtkEntryCompletion", GTK_TYPE_ENTRY_COMPLETION);
+    REGISTER_TYPE ("GtkExpander", GTK_TYPE_EXPANDER);
+    REGISTER_TYPE ("GtkFileChooser", GTK_TYPE_FILE_CHOOSER);
+    REGISTER_TYPE ("GtkFileChooserAction", GTK_TYPE_FILE_CHOOSER_ACTION);
+    REGISTER_TYPE ("GtkFileChooserDialog", GTK_TYPE_FILE_CHOOSER_DIALOG);
+    REGISTER_TYPE ("GtkFileChooserError", GTK_TYPE_FILE_CHOOSER_ERROR);
+    REGISTER_TYPE ("GtkFileChooserWidget", GTK_TYPE_FILE_CHOOSER_WIDGET);
+    REGISTER_TYPE ("GtkFileFilter", GTK_TYPE_FILE_FILTER);
+    REGISTER_TYPE ("GtkFileFilterFlags", GTK_TYPE_FILE_FILTER_FLAGS);
+    REGISTER_TYPE ("GtkIconInfo", GTK_TYPE_ICON_INFO);
+    REGISTER_TYPE ("GtkIconLookupFlags", GTK_TYPE_ICON_LOOKUP_FLAGS);
+    REGISTER_TYPE ("GtkIconTheme", GTK_TYPE_ICON_THEME);
+    REGISTER_TYPE ("GtkIconThemeError", GTK_TYPE_ICON_THEME_ERROR);
+    REGISTER_TYPE ("GtkIconView", GTK_TYPE_ICON_VIEW);
+    REGISTER_TYPE ("GtkMenuToolButton", GTK_TYPE_MENU_TOOL_BUTTON);
+    REGISTER_TYPE ("GtkRadioAction", GTK_TYPE_RADIO_ACTION);
+    REGISTER_TYPE ("GtkRadioToolButton", GTK_TYPE_RADIO_TOOL_BUTTON);
+    REGISTER_TYPE ("GtkScrollStep", GTK_TYPE_SCROLL_STEP);
+    REGISTER_TYPE ("GtkSeparatorToolItem", GTK_TYPE_SEPARATOR_TOOL_ITEM);
+    REGISTER_TYPE ("GtkToggleAction", GTK_TYPE_TOGGLE_ACTION);
+    REGISTER_TYPE ("GtkToggleToolButton", GTK_TYPE_TOGGLE_TOOL_BUTTON);
+    REGISTER_TYPE ("GtkToolButton", GTK_TYPE_TOOL_BUTTON);
+    REGISTER_TYPE ("GtkToolItem", GTK_TYPE_TOOL_ITEM);
+    REGISTER_TYPE ("GtkTreeModelFilter", GTK_TYPE_TREE_MODEL_FILTER);
+    REGISTER_TYPE ("GtkUiManager", GTK_TYPE_UI_MANAGER);
+    REGISTER_TYPE ("GtkUiManagerItemType", GTK_TYPE_UI_MANAGER_ITEM_TYPE);
+#endif /* GTK_CHECK_VERSION(2,4,0) */
     REGISTER_TYPE ("GtkAccelFlags", GTK_TYPE_ACCEL_FLAGS);
     REGISTER_TYPE ("GtkAccelGroup", GTK_TYPE_ACCEL_GROUP);
     REGISTER_TYPE ("GtkAccelLabel", GTK_TYPE_ACCEL_LABEL);
-    REGISTER_TYPE ("GtkAccelMap", GTK_TYPE_ACCEL_MAP);
     REGISTER_TYPE ("GtkAccessible", GTK_TYPE_ACCESSIBLE);
-    REGISTER_TYPE ("GtkAction", GTK_TYPE_ACTION);
-    REGISTER_TYPE ("GtkActionGroup", GTK_TYPE_ACTION_GROUP);
     REGISTER_TYPE ("GtkAdjustment", GTK_TYPE_ADJUSTMENT);
     REGISTER_TYPE ("GtkAlignment", GTK_TYPE_ALIGNMENT);
     REGISTER_TYPE ("GtkAnchorType", GTK_TYPE_ANCHOR_TYPE);
@@ -1974,17 +2079,13 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkCalendar", GTK_TYPE_CALENDAR);
     REGISTER_TYPE ("GtkCalendarDisplayOptions", GTK_TYPE_CALENDAR_DISPLAY_OPTIONS);
     REGISTER_TYPE ("GtkCellEditable", GTK_TYPE_CELL_EDITABLE);
-    REGISTER_TYPE ("GtkCellLayout", GTK_TYPE_CELL_LAYOUT);
     REGISTER_TYPE ("GtkCellRenderer", GTK_TYPE_CELL_RENDERER);
-    REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);
     REGISTER_TYPE ("GtkCellRendererMode", GTK_TYPE_CELL_RENDERER_MODE);
     REGISTER_TYPE ("GtkCellRendererPixbuf", GTK_TYPE_CELL_RENDERER_PIXBUF);
-    REGISTER_TYPE ("GtkCellRendererProgress", GTK_TYPE_CELL_RENDERER_PROGRESS);
     REGISTER_TYPE ("GtkCellRendererState", GTK_TYPE_CELL_RENDERER_STATE);
     REGISTER_TYPE ("GtkCellRendererText", GTK_TYPE_CELL_RENDERER_TEXT);
     REGISTER_TYPE ("GtkCellRendererToggle", GTK_TYPE_CELL_RENDERER_TOGGLE);
     REGISTER_TYPE ("GtkCellType", GTK_TYPE_CELL_TYPE);
-    REGISTER_TYPE ("GtkCellView", GTK_TYPE_CELL_VIEW);
     REGISTER_TYPE ("GtkCheckButton", GTK_TYPE_CHECK_BUTTON);
     REGISTER_TYPE ("GtkCheckMenuItem", GTK_TYPE_CHECK_MENU_ITEM);
     REGISTER_TYPE ("GtkClipboard", GTK_TYPE_CLIPBOARD);
@@ -1992,8 +2093,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkColorSelection", GTK_TYPE_COLOR_SELECTION);
     REGISTER_TYPE ("GtkColorSelectionDialog", GTK_TYPE_COLOR_SELECTION_DIALOG);
     REGISTER_TYPE ("GtkCombo", GTK_TYPE_COMBO);
-    REGISTER_TYPE ("GtkComboBox", GTK_TYPE_COMBO_BOX);
-    REGISTER_TYPE ("GtkComboBoxEntry", GTK_TYPE_COMBO_BOX_ENTRY);
     REGISTER_TYPE ("GtkContainer", GTK_TYPE_CONTAINER);
     REGISTER_TYPE ("GtkCornerType", GTK_TYPE_CORNER_TYPE);
     REGISTER_TYPE ("GtkCurve", GTK_TYPE_CURVE);
@@ -2007,17 +2106,8 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkDrawingArea", GTK_TYPE_DRAWING_AREA);
     REGISTER_TYPE ("GtkEditable", GTK_TYPE_EDITABLE);
     REGISTER_TYPE ("GtkEntry", GTK_TYPE_ENTRY);
-    REGISTER_TYPE ("GtkEntryCompletion", GTK_TYPE_ENTRY_COMPLETION);
     REGISTER_TYPE ("GtkEventBox", GTK_TYPE_EVENT_BOX);
-    REGISTER_TYPE ("GtkExpander", GTK_TYPE_EXPANDER);
     REGISTER_TYPE ("GtkExpanderStyle", GTK_TYPE_EXPANDER_STYLE);
-    REGISTER_TYPE ("GtkFileChooser", GTK_TYPE_FILE_CHOOSER);
-    REGISTER_TYPE ("GtkFileChooserAction", GTK_TYPE_FILE_CHOOSER_ACTION);
-    REGISTER_TYPE ("GtkFileChooserDialog", GTK_TYPE_FILE_CHOOSER_DIALOG);
-    REGISTER_TYPE ("GtkFileChooserError", GTK_TYPE_FILE_CHOOSER_ERROR);
-    REGISTER_TYPE ("GtkFileChooserWidget", GTK_TYPE_FILE_CHOOSER_WIDGET);
-    REGISTER_TYPE ("GtkFileFilter", GTK_TYPE_FILE_FILTER);
-    REGISTER_TYPE ("GtkFileFilterFlags", GTK_TYPE_FILE_FILTER_FLAGS);
     REGISTER_TYPE ("GtkFixed", GTK_TYPE_FIXED);
     REGISTER_TYPE ("GtkFontButton", GTK_TYPE_FONT_BUTTON);
     REGISTER_TYPE ("GtkFontSelection", GTK_TYPE_FONT_SELECTION);
@@ -2033,14 +2123,9 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkHSeparator", GTK_TYPE_HSEPARATOR);
     REGISTER_TYPE ("GtkHandleBox", GTK_TYPE_HANDLE_BOX);
     REGISTER_TYPE ("GtkIconFactory", GTK_TYPE_ICON_FACTORY);
-    REGISTER_TYPE ("GtkIconInfo", GTK_TYPE_ICON_INFO);
-    REGISTER_TYPE ("GtkIconLookupFlags", GTK_TYPE_ICON_LOOKUP_FLAGS);
     REGISTER_TYPE ("GtkIconSet", GTK_TYPE_ICON_SET);
     REGISTER_TYPE ("GtkIconSize", GTK_TYPE_ICON_SIZE);
     REGISTER_TYPE ("GtkIconSource", GTK_TYPE_ICON_SOURCE);
-    REGISTER_TYPE ("GtkIconTheme", GTK_TYPE_ICON_THEME);
-    REGISTER_TYPE ("GtkIconThemeError", GTK_TYPE_ICON_THEME_ERROR);
-    REGISTER_TYPE ("GtkIconView", GTK_TYPE_ICON_VIEW);
     REGISTER_TYPE ("GtkIdentifier", GTK_TYPE_IDENTIFIER);
     REGISTER_TYPE ("GtkImContext", GTK_TYPE_IM_CONTEXT);
     REGISTER_TYPE ("GtkImContextSimple", GTK_TYPE_IM_CONTEXT_SIMPLE);
@@ -2065,7 +2150,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkMenuDirectionType", GTK_TYPE_MENU_DIRECTION_TYPE);
     REGISTER_TYPE ("GtkMenuItem", GTK_TYPE_MENU_ITEM);
     REGISTER_TYPE ("GtkMenuShell", GTK_TYPE_MENU_SHELL);
-    REGISTER_TYPE ("GtkMenuToolButton", GTK_TYPE_MENU_TOOL_BUTTON);
     REGISTER_TYPE ("GtkMessageDialog", GTK_TYPE_MESSAGE_DIALOG);
     REGISTER_TYPE ("GtkMessageType", GTK_TYPE_MESSAGE_TYPE);
     REGISTER_TYPE ("GtkMetricType", GTK_TYPE_METRIC_TYPE);
@@ -2088,10 +2172,8 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkProgressBar", GTK_TYPE_PROGRESS_BAR);
     REGISTER_TYPE ("GtkProgressBarOrientation", GTK_TYPE_PROGRESS_BAR_ORIENTATION);
     REGISTER_TYPE ("GtkProgressBarStyle", GTK_TYPE_PROGRESS_BAR_STYLE);
-    REGISTER_TYPE ("GtkRadioAction", GTK_TYPE_RADIO_ACTION);
     REGISTER_TYPE ("GtkRadioButton", GTK_TYPE_RADIO_BUTTON);
     REGISTER_TYPE ("GtkRadioMenuItem", GTK_TYPE_RADIO_MENU_ITEM);
-    REGISTER_TYPE ("GtkRadioToolButton", GTK_TYPE_RADIO_TOOL_BUTTON);
     REGISTER_TYPE ("GtkRange", GTK_TYPE_RANGE);
     REGISTER_TYPE ("GtkRcFlags", GTK_TYPE_RC_FLAGS);
     REGISTER_TYPE ("GtkRcStyle", GTK_TYPE_RC_STYLE);
@@ -2102,7 +2184,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkResponseType", GTK_TYPE_RESPONSE_TYPE);
     REGISTER_TYPE ("GtkRuler", GTK_TYPE_RULER);
     REGISTER_TYPE ("GtkScale", GTK_TYPE_SCALE);
-    REGISTER_TYPE ("GtkScrollStep", GTK_TYPE_SCROLL_STEP);
     REGISTER_TYPE ("GtkScrollType", GTK_TYPE_SCROLL_TYPE);
     REGISTER_TYPE ("GtkScrollbar", GTK_TYPE_SCROLLBAR);
     REGISTER_TYPE ("GtkScrolledWindow", GTK_TYPE_SCROLLED_WINDOW);
@@ -2110,7 +2191,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkSelectionMode", GTK_TYPE_SELECTION_MODE);
     REGISTER_TYPE ("GtkSeparator", GTK_TYPE_SEPARATOR);
     REGISTER_TYPE ("GtkSeparatorMenuItem", GTK_TYPE_SEPARATOR_MENU_ITEM);
-    REGISTER_TYPE ("GtkSeparatorToolItem", GTK_TYPE_SEPARATOR_TOOL_ITEM);
     REGISTER_TYPE ("GtkSettings", GTK_TYPE_SETTINGS);
     REGISTER_TYPE ("GtkShadowType", GTK_TYPE_SHADOW_TYPE);
     REGISTER_TYPE ("GtkSideType", GTK_TYPE_SIDE_TYPE);
@@ -2141,11 +2221,7 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkTextTagTable", GTK_TYPE_TEXT_TAG_TABLE);
     REGISTER_TYPE ("GtkTextView", GTK_TYPE_TEXT_VIEW);
     REGISTER_TYPE ("GtkTextWindowType", GTK_TYPE_TEXT_WINDOW_TYPE);
-    REGISTER_TYPE ("GtkToggleAction", GTK_TYPE_TOGGLE_ACTION);
     REGISTER_TYPE ("GtkToggleButton", GTK_TYPE_TOGGLE_BUTTON);
-    REGISTER_TYPE ("GtkToggleToolButton", GTK_TYPE_TOGGLE_TOOL_BUTTON);
-    REGISTER_TYPE ("GtkToolButton", GTK_TYPE_TOOL_BUTTON);
-    REGISTER_TYPE ("GtkToolItem", GTK_TYPE_TOOL_ITEM);
     REGISTER_TYPE ("GtkToolbar", GTK_TYPE_TOOLBAR);
     REGISTER_TYPE ("GtkToolbarChildType", GTK_TYPE_TOOLBAR_CHILD_TYPE);
     REGISTER_TYPE ("GtkToolbarSpaceStyle", GTK_TYPE_TOOLBAR_SPACE_STYLE);
@@ -2155,7 +2231,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkTreeDragSource", GTK_TYPE_TREE_DRAG_SOURCE);
     REGISTER_TYPE ("GtkTreeIter", GTK_TYPE_TREE_ITER);
     REGISTER_TYPE ("GtkTreeModel", GTK_TYPE_TREE_MODEL);
-    REGISTER_TYPE ("GtkTreeModelFilter", GTK_TYPE_TREE_MODEL_FILTER);
     REGISTER_TYPE ("GtkTreeModelFlags", GTK_TYPE_TREE_MODEL_FLAGS);
     REGISTER_TYPE ("GtkTreeModelSort", GTK_TYPE_TREE_MODEL_SORT);
     REGISTER_TYPE ("GtkTreePath", GTK_TYPE_TREE_PATH);
@@ -2168,8 +2243,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkTreeViewColumnSizing", GTK_TYPE_TREE_VIEW_COLUMN_SIZING);
     REGISTER_TYPE ("GtkTreeViewDropPosition", GTK_TYPE_TREE_VIEW_DROP_POSITION);
     REGISTER_TYPE ("GtkTreeViewMode", GTK_TYPE_TREE_VIEW_MODE);
-    REGISTER_TYPE ("GtkUiManager", GTK_TYPE_UI_MANAGER);
-    REGISTER_TYPE ("GtkUiManagerItemType", GTK_TYPE_UI_MANAGER_ITEM_TYPE);
     REGISTER_TYPE ("GtkUpdateType", GTK_TYPE_UPDATE_TYPE);
     REGISTER_TYPE ("GtkVBox", GTK_TYPE_VBOX);
     REGISTER_TYPE ("GtkVButtonBox", GTK_TYPE_VBUTTON_BOX);

@@ -27,6 +27,10 @@
 #define PREFS_ROOT "Prefs"
 /* #define DEBUG_READWRITE 1 */
 
+#if !GLIB_CHECK_VERSION(2,4,0)
+#define g_value_take_string g_value_set_string_take_ownership
+#endif
+
 
 static MooPrefs *instance (void)
 {

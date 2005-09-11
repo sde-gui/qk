@@ -39,6 +39,9 @@ AC_CHECK_FUNCS(memmove bcopy strerror)
 AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_FUNCS(mmap)
 
+#for moofileutils.c
+AC_CHECK_FUNCS(unlink)
+
 
 ################################################################################
 #  Terminal stuff
