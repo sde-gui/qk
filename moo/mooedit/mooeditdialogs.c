@@ -724,7 +724,7 @@ moo_text_prompt_on_replace_dialog (MooTextView *view)
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
 
     xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1,
-                                      "prompt_on_replace_dialog");
+                                      "prompt_on_replace_dialog", NULL);
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     moo_glade_xml_unref (xml);
 

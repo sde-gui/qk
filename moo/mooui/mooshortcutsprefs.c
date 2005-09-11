@@ -640,7 +640,7 @@ GtkWidget   *moo_shortcuts_prefs_dialog_new         (MooActionGroup *group)
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_SHORTCUTS_PREFS_GLADE_UI,
-                                      -1, "dialog");
+                                      -1, "dialog", NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

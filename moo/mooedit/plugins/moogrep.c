@@ -254,7 +254,7 @@ create_dialog (MooEditWindow  *window,
 {
     GtkWidget *dir_entry, *pattern_entry;
 
-    stuff->xml = moo_glade_xml_new_from_buf (MOO_GREP_GLADE_XML, -1, NULL);
+    stuff->xml = moo_glade_xml_new_from_buf (MOO_GREP_GLADE_XML, -1, NULL, NULL);
     g_return_if_fail (stuff->xml != NULL);
 
     stuff->dialog = moo_glade_xml_get_widget (stuff->xml, "dialog");

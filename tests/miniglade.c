@@ -9,6 +9,7 @@ int main (int argc, char *argv[])
     MooGladeXML *my_xml;
     gboolean check = FALSE;
     const char *file;
+    GtkWidget *root;
 
     gtk_init (&argc, &argv);
 
@@ -36,7 +37,7 @@ int main (int argc, char *argv[])
         file = argv[1];
     }
 
-    my_xml = moo_glade_xml_new (file, NULL);
+    my_xml = moo_glade_xml_new (file, NULL, NULL);
 
     if (!my_xml)
     {
@@ -48,7 +49,15 @@ int main (int argc, char *argv[])
     g_print ("*** Success ***\n");
 
     if (!check)
-        gtk_main ();
+    {
+        root = moo_glade_xml_get_root (my_xml);
+
+        if (GTK_IS_WINDOW (root))
+        {
+            gtk_widget_show (root);
+            gtk_main ();
+        }
+    }
 
     return 0;
 }

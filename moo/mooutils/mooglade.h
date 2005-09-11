@@ -25,10 +25,11 @@ typedef struct _MooGladeXML MooGladeXML;
 typedef GtkWidget* (*MooGladeCreateFunc)(MooGladeXML    *xml,
                                          const char     *id,
                                          gpointer        data);
-typedef void       (*MooGladeSignalFunc)(MooGladeXML    *xml,
+typedef gboolean   (*MooGladeSignalFunc)(MooGladeXML    *xml,
                                          const char     *widget_id,
                                          GtkWidget      *widget,
                                          const char     *signal,
+                                         const char     *handler,
                                          const char     *object,
                                          gpointer        data);
 
@@ -60,16 +61,19 @@ gboolean     moo_glade_xml_parse_memory (MooGladeXML    *xml,
                                          const char     *root);
 
 MooGladeXML *moo_glade_xml_new          (const char     *file,
-                                         const char     *root);
+                                         const char     *root,
+                                         const char     *unused);
 MooGladeXML *moo_glade_xml_new_from_buf (const char     *buffer,
                                          int             size,
-                                         const char     *root);
+                                         const char     *root,
+                                         const char     *unused);
 
 MooGladeXML *moo_glade_xml_ref          (MooGladeXML    *xml);
 void         moo_glade_xml_unref        (MooGladeXML    *xml);
 
 gpointer     moo_glade_xml_get_widget   (MooGladeXML    *xml,
                                          const char     *id);
+GtkWidget   *moo_glade_xml_get_root     (MooGladeXML    *xml);
 
 
 G_END_DECLS

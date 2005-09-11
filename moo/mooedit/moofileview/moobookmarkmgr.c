@@ -18,9 +18,15 @@
 #include <errno.h>
 #include <unistd.h>
 #include <glib/gstdio.h>
-#include "mooutils/mooglade.h"
 #ifdef __MOO__
+#include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
+#else
+#include <glade/glade.h>
+#define MooGladeXML GladeXML
+#define moo_glade_xml_new glade_xml_new
+#define moo_glade_xml_unref g_object_unref
+#define moo_glade_xml_get_widget glade_xml_get_widget
 #endif
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
@@ -793,7 +799,7 @@ GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
     if (mgr->priv->editor)
         return mgr->priv->editor;
 
-    xml = moo_glade_xml_new (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL);
+    xml = moo_glade_xml_new (MOO_BOOKMARK_EDITOR_GLADE_FILE, NULL, NULL);
 
     if (!xml)
         g_error ("Yes, glade is great usually, but not always");

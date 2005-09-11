@@ -15,6 +15,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooplugin.h"
 #include <string.h>
+#include <gmodule.h>
 
 
 #define PLUGIN_PREFS_ENABLED "enabled"

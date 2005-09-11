@@ -259,7 +259,8 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
     Stuff s = {0, 0, NULL};
     int response;
 
-    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_BUTTON_GLADE_UI, -1, "dialog");
+    xml = moo_glade_xml_new_from_buf (MOO_ACCEL_BUTTON_GLADE_UI, -1,
+                                      "dialog", NULL);
     g_return_if_fail (xml != NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

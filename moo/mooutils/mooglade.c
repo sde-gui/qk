@@ -120,10 +120,14 @@ struct _MooGladeXML {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
     GHashTable *widgets;
+    char *root_id;
 
     GHashTable *class_to_type;
     GHashTable *id_to_type;
     GHashTable *id_to_func;
+
+    MooGladeSignalFunc signal_func;
+    gpointer signal_func_data;
 };
 
 typedef struct {
@@ -196,6 +200,8 @@ static gboolean      set_default                (MooGladeXML    *xml,
                                                  Widget         *node);
 static gboolean      set_focus                  (MooGladeXML    *xml,
                                                  Widget         *node);
+static void          connect_signals            (MooGladeXML    *xml,
+                                                 Widget         *node);
 
 static GtkWidget    *create_widget              (MooGladeXML    *xml,
                                                  Widget         *widget,
@@ -236,6 +242,7 @@ moo_glade_xml_build (MooGladeXML    *xml,
     set_mnemonics (xml, widget_node);
     set_default (xml, widget_node);
     set_focus (xml, widget_node);
+    connect_signals (xml, widget_node);
 
     g_object_unref (tooltips);
     return TRUE;
@@ -334,6 +341,71 @@ set_focus (MooGladeXML    *xml,
     }
 
     return FALSE;
+}
+
+
+static void
+connect_signals (MooGladeXML    *xml,
+                 Widget         *node)
+{
+    GSList *l;
+
+    g_return_if_fail (node != NULL);
+
+    for (l = node->signals; l != NULL; l = l->next)
+    {
+        Signal *signal = l->data;
+        gboolean connected = FALSE;
+        gpointer object = NULL;
+
+        if (!signal->name || !signal->name[0])
+        {
+            g_warning ("%s: empty signal name in widget %s",
+                       G_STRLOC, node->id);
+            continue;
+        }
+
+        if (!signal->handler || !signal->handler[0])
+        {
+            g_warning ("%s: empty handler of signal '%s' in widget %s",
+                       G_STRLOC, signal->name, node->id);
+            continue;
+        }
+
+        if (xml->signal_func)
+        {
+            connected = xml->signal_func (xml, node->id,
+                                          node->widget,
+                                          signal->name,
+                                          signal->handler,
+                                          signal->object,
+                                          xml->signal_func_data);
+            if (connected)
+                continue;
+        }
+
+        if (signal->object)
+        {
+            object = moo_glade_xml_get_widget (xml, signal->object);
+
+            if (!object)
+            {
+                g_warning ("%s: could not find object '%s' for signal '%s' of widget '%s'",
+                           G_STRLOC, signal->object, signal->name, node->id);
+                continue;
+            }
+        }
+
+        /* connect some signals here */
+    }
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Child *child = l->data;
+
+        if (child && child->widget)
+            connect_signals (xml, child->widget);
+    }
 }
 
 
@@ -1698,7 +1770,8 @@ moo_glade_xml_parse_memory (MooGladeXML    *xml,
 
 MooGladeXML*
 moo_glade_xml_new (const char     *file,
-                   const char     *root)
+                   const char     *root,
+                   G_GNUC_UNUSED const char *unused)
 {
     MooGladeXML *xml;
 
@@ -1719,7 +1792,8 @@ moo_glade_xml_new (const char     *file,
 MooGladeXML*
 moo_glade_xml_new_from_buf (const char     *buffer,
                             int             size,
-                            const char     *root)
+                            const char     *root,
+                            G_GNUC_UNUSED const char *unused)
 {
     MooGladeXML *xml;
 
@@ -1834,7 +1908,9 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
 
     if (!widget)
     {
-        moo_glade_xml_free (xml);
+        moo_markup_doc_unref (xml->doc);
+        xml->doc = NULL;
+        xml->root = NULL;
         return FALSE;
     }
 
@@ -1842,7 +1918,9 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
 
     if (!moo_glade_xml_build (xml, widget))
     {
-        moo_glade_xml_free (xml);
+        moo_markup_doc_unref (xml->doc);
+        xml->doc = NULL;
+        xml->root = NULL;
         widget_free (widget);
         return FALSE;
     }
@@ -1850,6 +1928,8 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
 #if 0
     gtk_widget_show_all (widget->widget);
 #endif
+
+    xml->root_id = g_strdup (widget->id);
 
     return TRUE;
 }
@@ -1870,6 +1950,14 @@ get_widget_id (MooGladeXML    *xml,
     return g_hash_table_find (xml->widgets,
                               (GHRFunc) cmp_widget,
                               widget);
+}
+
+
+GtkWidget*
+moo_glade_xml_get_root (MooGladeXML *xml)
+{
+    g_return_val_if_fail (xml != NULL, NULL);
+    return moo_glade_xml_get_widget (xml, xml->root_id);
 }
 
 
@@ -1915,6 +2003,7 @@ moo_glade_xml_free (MooGladeXML *xml)
         g_hash_table_destroy (xml->id_to_type);
         g_hash_table_destroy (xml->id_to_func);
         moo_markup_doc_unref (xml->doc);
+        g_free (xml->root_id);
         g_free (xml);
     }
 }
@@ -1982,6 +2071,17 @@ void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
 }
 
 
+void
+moo_glade_xml_map_signal (MooGladeXML    *xml,
+                          MooGladeSignalFunc func,
+                          gpointer        data)
+{
+    g_return_if_fail (xml != NULL);
+    xml->signal_func = func;
+    xml->signal_func_data = data;
+}
+
+
 static FuncDataPair*
 func_data_pair_new (MooGladeCreateFunc func,
                     gpointer        data)
@@ -2018,15 +2118,20 @@ get_type_by_name (const char *name)
     if (type)
         return type;
 
-#if GTK_CHECK_VERSION(2,4,0)
+#if GTK_CHECK_VERSION(2,6,0)
     REGISTER_TYPE ("GtkAboutDialog", GTK_TYPE_ABOUT_DIALOG);
+    REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);
+    REGISTER_TYPE ("GtkCellRendererProgress", GTK_TYPE_CELL_RENDERER_PROGRESS);
+    REGISTER_TYPE ("GtkCellView", GTK_TYPE_CELL_VIEW);
+    REGISTER_TYPE ("GtkIconView", GTK_TYPE_ICON_VIEW);
+    REGISTER_TYPE ("GtkMenuToolButton", GTK_TYPE_MENU_TOOL_BUTTON);
+#endif
+
+#if GTK_CHECK_VERSION(2,4,0)
     REGISTER_TYPE ("GtkAccelMap", GTK_TYPE_ACCEL_MAP);
     REGISTER_TYPE ("GtkAction", GTK_TYPE_ACTION);
     REGISTER_TYPE ("GtkActionGroup", GTK_TYPE_ACTION_GROUP);
     REGISTER_TYPE ("GtkCellLayout", GTK_TYPE_CELL_LAYOUT);
-    REGISTER_TYPE ("GtkCellRendererCombo", GTK_TYPE_CELL_RENDERER_COMBO);
-    REGISTER_TYPE ("GtkCellRendererProgress", GTK_TYPE_CELL_RENDERER_PROGRESS);
-    REGISTER_TYPE ("GtkCellView", GTK_TYPE_CELL_VIEW);
     REGISTER_TYPE ("GtkComboBox", GTK_TYPE_COMBO_BOX);
     REGISTER_TYPE ("GtkComboBoxEntry", GTK_TYPE_COMBO_BOX_ENTRY);
     REGISTER_TYPE ("GtkEntryCompletion", GTK_TYPE_ENTRY_COMPLETION);
@@ -2042,8 +2147,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkIconLookupFlags", GTK_TYPE_ICON_LOOKUP_FLAGS);
     REGISTER_TYPE ("GtkIconTheme", GTK_TYPE_ICON_THEME);
     REGISTER_TYPE ("GtkIconThemeError", GTK_TYPE_ICON_THEME_ERROR);
-    REGISTER_TYPE ("GtkIconView", GTK_TYPE_ICON_VIEW);
-    REGISTER_TYPE ("GtkMenuToolButton", GTK_TYPE_MENU_TOOL_BUTTON);
     REGISTER_TYPE ("GtkRadioAction", GTK_TYPE_RADIO_ACTION);
     REGISTER_TYPE ("GtkRadioToolButton", GTK_TYPE_RADIO_TOOL_BUTTON);
     REGISTER_TYPE ("GtkScrollStep", GTK_TYPE_SCROLL_STEP);

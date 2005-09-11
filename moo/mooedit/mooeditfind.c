@@ -77,7 +77,7 @@ moo_text_view_goto_line (MooTextView *view,
         MooGladeXML *xml;
 
         xml = moo_glade_xml_new_from_buf (MOO_EDIT_GOTO_LINE_GLADE_UI,
-                                          -1, NULL);
+                                          -1, NULL, NULL);
         g_return_if_fail (xml != NULL);
 
         dialog = moo_glade_xml_get_widget (xml, "dialog");
@@ -178,7 +178,7 @@ create_find_dialog (gboolean replace)
     GtkWidget *dialog, *replace_frame, *dont_prompt_on_replace;
     GtkButton *ok_btn;
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1, "dialog");
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1, "dialog", NULL);
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

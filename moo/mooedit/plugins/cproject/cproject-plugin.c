@@ -11,10 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "cproject.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include "cproject.h"
+#include <gmodule.h>
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
