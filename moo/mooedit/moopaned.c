@@ -61,6 +61,7 @@ struct _MooPanedPrivate {
 
     GdkWindow   *handle_window;
     GdkWindow   *pane_window;
+    gboolean     raise_pane;  /* need to raise pane window in size_allocate */
 
     /* XXX weak pointer */
     GtkWidget   *focus_child; /* focused grandchild of bin->child */
@@ -424,8 +425,6 @@ static void moo_paned_init      (MooPaned *paned)
     paned->priv->handle_prelit = FALSE;
     paned->priv->in_drag = FALSE;
     paned->priv->drag_start = -1;
-
-    gtk_widget_set_redraw_on_allocate (GTK_WIDGET (paned), FALSE);
 }
 
 
@@ -462,8 +461,6 @@ static GObject *moo_paned_constructor   (GType                  type,
             paned->button_box = gtk_vbox_new (FALSE, button_spacing);
             break;
     }
-
-    gtk_widget_set_redraw_on_allocate (paned->button_box, FALSE);
 
     gtk_object_sink (GTK_OBJECT (g_object_ref (paned->button_box)));
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
@@ -1304,31 +1301,11 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
     }
 
     if (GTK_WIDGET_REALIZED (widget))
-    {
-        GdkRectangle rect;
-
         gdk_window_move_resize (widget->window,
                                 allocation->x,
                                 allocation->y,
                                 allocation->width,
                                 allocation->height);
-
-        if (paned->priv->pane_widget_visible)
-        {
-            get_pane_window_rect (paned, &rect);
-            gdk_window_move_resize (paned->priv->pane_window,
-                                    rect.x, rect.y,
-                                    rect.width, rect.height);
-        }
-
-        if (paned->priv->handle_visible)
-        {
-            get_handle_window_rect (paned, &rect);
-            gdk_window_move_resize (paned->priv->handle_window,
-                                    rect.x, rect.y,
-                                    rect.width, rect.height);
-        }
-    }
 
     if (paned->priv->button_box_visible)
     {
@@ -1340,6 +1317,33 @@ static void moo_paned_size_allocate (GtkWidget     *widget,
     {
         get_bin_child_allocation (paned, &child_allocation);
         gtk_widget_size_allocate (bin->child, &child_allocation);
+    }
+
+    if (GTK_WIDGET_REALIZED (widget))
+    {
+        GdkRectangle rect;
+
+        if (paned->priv->pane_widget_visible)
+        {
+            get_pane_window_rect (paned, &rect);
+            gdk_window_move_resize (paned->priv->pane_window,
+                                    rect.x, rect.y,
+                                    rect.width, rect.height);
+
+            if (paned->priv->raise_pane)
+            {
+                gdk_window_raise (paned->priv->pane_window);
+                paned->priv->raise_pane = FALSE;
+            }
+        }
+
+        if (paned->priv->handle_visible)
+        {
+            get_handle_window_rect (paned, &rect);
+            gdk_window_move_resize (paned->priv->handle_window,
+                                    rect.x, rect.y,
+                                    rect.width, rect.height);
+        }
     }
 
     if (paned->priv->pane_widget_visible)
@@ -1667,13 +1671,20 @@ void         moo_paned_set_sticky_pane  (MooPaned   *paned,
         sticky = TRUE;
 
     g_return_if_fail (MOO_IS_PANED (paned));
+
     if (paned->priv->sticky != sticky && GTK_WIDGET_REALIZED (paned))
         gtk_widget_queue_resize (GTK_WIDGET (paned));
+
     paned->priv->sticky = sticky;
 
     for (l = paned->priv->panes; l != NULL; l = l->next)
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (((Pane*)l->data)->sticky_button),
                                       sticky);
+
+    /* this is needed because bin child may
+       move its window on top of the pane window */
+    if (!sticky && paned->priv->current_pane)
+        paned->priv->raise_pane = TRUE;
 
     g_object_notify (G_OBJECT (paned), "sticky-pane");
 }
@@ -2318,7 +2329,6 @@ int         moo_paned_insert_pane       (MooPaned       *paned,
 
     button = gtk_toggle_button_new ();
     gtk_widget_show (button);
-    gtk_widget_set_redraw_on_allocate (button, FALSE);
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
 
     label_widget = moo_pane_label_get_widget (pane_label,
