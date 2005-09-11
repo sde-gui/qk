@@ -18,7 +18,7 @@
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
 
   <child>
-    <widget class="GtkVBox" id="notebook">
+    <widget class="GtkVBox" id="page">
       <property name="visible">True</property>
       <property name="homogeneous">False</property>
       <property name="spacing">0</property>

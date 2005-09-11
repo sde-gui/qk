@@ -15,16 +15,18 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooeditprefs-glade.h"
 #include "mooedit/mooeditlangmgr.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooglade.h"
 #include <string.h>
 
 
 typedef struct _Settings Settings;
 static Settings *highlighting_settings_new  (MooPrefsDialogPage *page,
-                                             GObject            *notebook,
+                                             MooGladeXML        *xml,
                                              GtkListStore       *styles_list);
 static void highighting_settings_free       (Settings           *hs);
 static void highlighting_settings_set_lang  (Settings           *hs,
@@ -36,7 +38,7 @@ static void highlighting_settings_set_style (Settings           *hs,
 static void styles_list_selection_changed   (GtkTreeSelection   *selection,
                                              Settings           *set);
 static void hookup_highlighting_prefs       (MooPrefsDialogPage *page,
-                                             GtkWidget          *notebook);
+                                             MooGladeXML        *xml);
 static void setup_language_combo            (GtkWidget          *combo,
                                              Settings           *set);
 #if GTK_CHECK_VERSION(2,4,0)
@@ -48,46 +50,196 @@ static void language_menu_changed           (GtkOptionMenu      *menu,
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 static Settings *setup_styles_list          (GtkTreeView        *list,
                                              MooPrefsDialogPage *page,
-                                             GObject            *notebook);
+                                             MooGladeXML        *xml);
 static void styles_list_selection_changed   (GtkTreeSelection   *selection,
                                              Settings           *set);
 static void moo_edit_prefs_page_init        (MooPrefsDialogPage *page,
-                                             GtkNotebook        *notebook);
+                                             MooGladeXML        *xml);
+
+
+static gboolean
+connect_prefs (G_GNUC_UNUSED MooGladeXML    *xml,
+               G_GNUC_UNUSED const char     *widget_id,
+               G_GNUC_UNUSED GtkWidget      *widget,
+               const char     *signal,
+               G_GNUC_UNUSED const char     *handler,
+               G_GNUC_UNUSED const char     *object,
+               G_GNUC_UNUSED gpointer        data)
+{
+    g_warning ("%s: not bound signal '%s'", G_STRLOC, signal);
+    return TRUE;
+}
+
+
+static char*
+map_prefs (G_GNUC_UNUSED MooGladeXML *xml,
+           const char     *key,
+           G_GNUC_UNUSED gpointer data)
+{
+    static GHashTable *map = NULL;
+    const char *real_key;
+
+    if (!map)
+    {
+        map = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                     g_free, g_free);
+
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SEARCH_SELECTED"),
+                             g_strdup (MOO_EDIT_PREFS_SEARCH_SELECTED));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES"),
+                             g_strdup (MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_AUTO_SAVE"),
+                             g_strdup (MOO_EDIT_PREFS_AUTO_SAVE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL"),
+                             g_strdup (MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SMART_HOME_END"),
+                             g_strdup (MOO_EDIT_PREFS_SMART_HOME_END));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_TABS_WIDTH"),
+                             g_strdup (MOO_EDIT_PREFS_TABS_WIDTH));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_AUTO_INDENT"),
+                             g_strdup (MOO_EDIT_PREFS_AUTO_INDENT));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_TAB_INDENTS"),
+                             g_strdup (MOO_EDIT_PREFS_TAB_INDENTS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BACKSPACE_INDENTS"),
+                             g_strdup (MOO_EDIT_PREFS_BACKSPACE_INDENTS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SPACES_NO_TABS"),
+                             g_strdup (MOO_EDIT_PREFS_SPACES_NO_TABS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_LIMIT_UNDO"),
+                             g_strdup (MOO_EDIT_PREFS_LIMIT_UNDO));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_LIMIT_UNDO_NUM"),
+                             g_strdup (MOO_EDIT_PREFS_LIMIT_UNDO_NUM));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_WRAP_ENABLE"),
+                             g_strdup (MOO_EDIT_PREFS_WRAP_ENABLE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS"),
+                             g_strdup (MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SHOW_LINE_NUMBERS"),
+                             g_strdup (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SHOW_MARGIN"),
+                             g_strdup (MOO_EDIT_PREFS_SHOW_MARGIN));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_MARGIN"),
+                             g_strdup (MOO_EDIT_PREFS_MARGIN));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_CHECK_BRACKETS"),
+                             g_strdup (MOO_EDIT_PREFS_CHECK_BRACKETS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_MATCHING_BRACKETS_CORRECT"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_MATCHING_BRACKETS_INCORRECT"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_USE_DEFAULT_FONT"),
+                             g_strdup (MOO_EDIT_PREFS_USE_DEFAULT_FONT));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_FONT"),
+                             g_strdup (MOO_EDIT_PREFS_FONT));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_USE_DEFAULT_COLORS"),
+                             g_strdup (MOO_EDIT_PREFS_USE_DEFAULT_COLORS));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_FOREGROUND"),
+                             g_strdup (MOO_EDIT_PREFS_FOREGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BACKGROUND"),
+                             g_strdup (MOO_EDIT_PREFS_BACKGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SELECTED_FOREGROUND"),
+                             g_strdup (MOO_EDIT_PREFS_SELECTED_FOREGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_SELECTED_BACKGROUND"),
+                             g_strdup (MOO_EDIT_PREFS_SELECTED_BACKGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE"),
+                             g_strdup (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR"),
+                             g_strdup (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING"),
+                             g_strdup (MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING));
+
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BOLD"),
+                             g_strdup (MOO_EDIT_PREFS_BOLD));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_ITALIC"),
+                             g_strdup (MOO_EDIT_PREFS_ITALIC));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_UNDERLINE"),
+                             g_strdup (MOO_EDIT_PREFS_UNDERLINE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_STRIKETHROUGH"),
+                             g_strdup (MOO_EDIT_PREFS_STRIKETHROUGH));
+
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_DIALOGS_SAVE"),
+                             g_strdup (MOO_EDIT_PREFS_DIALOGS_SAVE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_DIALOGS_OPEN"),
+                             g_strdup (MOO_EDIT_PREFS_DIALOGS_OPEN));
+
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_FOREGROUND"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_FOREGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_BACKGROUND"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BACKGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_ITALIC"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_ITALIC));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_STRIKETHROUGH"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_UNDERLINE"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_UNDERLINE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_BOLD"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_CORRECT "/" MOO_EDIT_PREFS_BOLD));
+
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_FOREGROUND"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_FOREGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_BACKGROUND"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BACKGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_ITALIC"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_ITALIC));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_STRIKETHROUGH"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_STRIKETHROUGH));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_UNDERLINE"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_UNDERLINE));
+        g_hash_table_insert (map, g_strdup ("MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_BOLD"),
+                             g_strdup (MOO_EDIT_MATCHING_BRACKETS_INCORRECT "/" MOO_EDIT_PREFS_BOLD));
+    }
+
+    real_key = g_hash_table_lookup (map, key);
+
+    if (!real_key)
+    {
+        g_warning ("%s: uknown key '%s'", G_STRLOC, key);
+        real_key = key;
+    }
+
+    return moo_prefs_make_key (MOO_EDIT_PREFS_PREFIX, real_key, NULL);
+}
 
 
 GtkWidget  *moo_edit_prefs_page_new         (MooEditor      *editor)
 {
     MooPrefsDialogPage *page;
-    GtkWidget *notebook;
+    MooGladeXML *xml;
 
-    page = MOO_PREFS_DIALOG_PAGE (moo_prefs_dialog_page_new ("Editor", GTK_STOCK_EDIT));
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "page", MOO_TYPE_PREFS_DIALOG_PAGE);
+    moo_glade_xml_map_signal (xml, connect_prefs, NULL);
+    moo_glade_xml_set_prefs (xml, "page", NULL);
+    moo_glade_xml_set_prefs_map (xml, map_prefs, NULL);
 
+    moo_glade_xml_parse_memory (xml, MOO_EDIT_PREFS_GLADE_UI,
+                                -1, "page");
+
+    page = moo_glade_xml_get_widget (xml, "page");
     g_object_set_data (G_OBJECT (page), "editor", editor);
+    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml,
+                            (GDestroyNotify) moo_glade_xml_unref);
+    g_object_set (page, "label", "Editor",
+                  "icon-stock-id", GTK_STOCK_EDIT, NULL);
 
-    notebook = _create_moo_edit_prefs_notebook (page);
-    gtk_box_pack_start (GTK_BOX (page), notebook, TRUE, TRUE, 0);
-
-    hookup_highlighting_prefs (page, notebook);
+    hookup_highlighting_prefs (page, xml);
 
     return GTK_WIDGET (page);
 }
 
 
 static void hookup_highlighting_prefs (MooPrefsDialogPage *page,
-                                       GtkWidget          *notebook)
+                                       MooGladeXML        *xml)
 {
-    GtkWidget *styles_list, *language_combo;
+    GtkTreeView *styles_list;
     Settings *set;
 
-    styles_list = GTK_WIDGET (g_object_get_data (G_OBJECT (notebook), "styles_list"));
-    set = setup_styles_list (GTK_TREE_VIEW (styles_list), page, G_OBJECT (notebook));
+    styles_list = moo_glade_xml_get_widget (xml, "styles_list");
+    set = setup_styles_list (styles_list, page, xml);
     g_return_if_fail (set != NULL);
 
-    language_combo = GTK_WIDGET (g_object_get_data (G_OBJECT (notebook), "language_combo"));
-    setup_language_combo (language_combo, set);
+    setup_language_combo (moo_glade_xml_get_widget (xml, "language_combo"), set);
 
-    g_signal_connect (G_OBJECT (page), "init",
-                      G_CALLBACK (moo_edit_prefs_page_init), notebook);
+    g_signal_connect (page, "init",
+                      G_CALLBACK (moo_edit_prefs_page_init),
+                      xml);
 }
 
 
@@ -188,7 +340,7 @@ static void language_menu_changed   (GtkOptionMenu      *menu,
 
 static Settings *setup_styles_list (GtkTreeView        *list,
                                     MooPrefsDialogPage *page,
-                                    GObject            *notebook)
+                                    MooGladeXML        *xml)
 {
     GtkListStore *store;
     GtkCellRenderer *renderer;
@@ -213,7 +365,7 @@ static Settings *setup_styles_list (GtkTreeView        *list,
     selection = gtk_tree_view_get_selection (list);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
-    set = highlighting_settings_new (page, notebook, store);
+    set = highlighting_settings_new (page, xml, store);
 
     g_signal_connect (G_OBJECT (selection), "changed",
                       G_CALLBACK (styles_list_selection_changed),
@@ -250,13 +402,13 @@ static void styles_list_selection_changed    (GtkTreeSelection  *selection,
 
 
 static void moo_edit_prefs_page_init        (G_GNUC_UNUSED MooPrefsDialogPage *page,
-                                             GtkNotebook        *notebook)
+                                             MooGladeXML        *xml)
 {
     MooEditor *editor;
     GtkListStore *store;
     const GSList *langs, *l;
     GtkTreeIter iter;
-    GtkWidget *language_combo = GTK_WIDGET (g_object_get_data (G_OBJECT (notebook), "language_combo"));
+    GtkWidget *language_combo = moo_glade_xml_get_widget (xml, "language_combo");
     g_return_if_fail (language_combo != NULL);
 
 #if GTK_CHECK_VERSION(2,4,0)
@@ -357,30 +509,29 @@ struct _Settings {
 
 
 static Settings *highlighting_settings_new  (MooPrefsDialogPage *page,
-                                             GObject            *notebook,
+                                             MooGladeXML        *xml,
                                              GtkListStore       *styles_list)
 {
     Settings *hs = g_new0 (Settings, 1);
 
     hs->page = page;
     hs->styles_list = styles_list;
-    hs->styles_selection = gtk_tree_view_get_selection (
-        GTK_TREE_VIEW (g_object_get_data (notebook, "styles_list")));
-    hs->style_vbox = GTK_WIDGET (g_object_get_data (notebook, "style_vbox"));
+    hs->styles_selection = gtk_tree_view_get_selection (moo_glade_xml_get_widget (xml, "styles_list"));
+    hs->style_vbox = moo_glade_xml_get_widget (xml, "style_vbox");
     g_assert (GTK_IS_LIST_STORE (hs->styles_list));
 
-    hs->bold = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "bold")),
-    hs->italic = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "italic")),
-    hs->underline = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "underline")),
-    hs->strikethrough = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "strikethrough")),
-    hs->foreground_toggle = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "foreground_toggle")),
-    hs->foreground_color = GTK_COLOR_BUTTON (g_object_get_data (notebook, "foreground_color")),
-    hs->background_toggle = GTK_TOGGLE_BUTTON (g_object_get_data (notebook, "background_toggle")),
-    hs->background_color = GTK_COLOR_BUTTON (g_object_get_data (notebook, "background_color")),
+    hs->bold = moo_glade_xml_get_widget (xml, "bold");
+    hs->italic = moo_glade_xml_get_widget (xml, "italic");
+    hs->underline = moo_glade_xml_get_widget (xml, "underline");
+    hs->strikethrough = moo_glade_xml_get_widget (xml, "strikethrough");
+    hs->foreground_toggle = moo_glade_xml_get_widget (xml, "foreground_toggle");
+    hs->foreground_color = moo_glade_xml_get_widget (xml, "foreground_color");
+    hs->background_toggle = moo_glade_xml_get_widget (xml, "background_toggle");
+    hs->background_color = moo_glade_xml_get_widget (xml, "background_color");
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (highlighting_settings_apply), hs);
     g_signal_connect_swapped (page, "init", G_CALLBACK (highlighting_settings_init), hs);
-    g_signal_connect_swapped (notebook, "destroy", G_CALLBACK (highighting_settings_free), hs);
+    g_signal_connect_swapped (page, "destroy", G_CALLBACK (highighting_settings_free), hs);
 
     hs->styles = g_hash_table_new_full ((GHashFunc) lang_style_pair_hash,
                                         (GEqualFunc) lang_style_pair_compare,

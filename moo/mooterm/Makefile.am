@@ -72,24 +72,22 @@ BUILT_SOURCES =
 
 
 if UNIX_BUILD
-libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources) mootermprefs-glade.c
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.c
+libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources) mootermprefs-glade.h
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.h
 endif UNIX_BUILD
 
 
 if MINGW_BUILD
-libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources) mootermprefs-glade.c
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.c
+libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources) mootermprefs-glade.h
+BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.h
 endif MINGW_BUILD
 
 
 GLADE = $(srcdir)/glade
-TOOLBAR = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/toolbar.sh
-SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
-
-mootermprefs-glade.c: $(GLADE)/mootermprefs.c $(GLADE)/mootermprefs.sed $(TOOLBAR) $(SUPPORT)
-	cat $(GLADE)/mootermprefs.c | sh $(SUPPORT) | sed -f $(GLADE)/mootermprefs.sed \
-		> mootermprefs-glade.c
+XML2H = $(srcdir)/../mooutils/xml2h.sh
+mootermprefs-glade.h: $(GLADE)/mootermprefs.glade
+	sh $(XML2H) MOO_TERM_PREFS_GLADE_UI $(GLADE)/mootermprefs.glade \
+		> mootermprefs-glade.h
 
 
 ############################################################################

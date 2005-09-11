@@ -49,11 +49,11 @@ EXTRA_DIST =            \
 
 
 if !GTK_2_6
-libmooapp_la_SOURCES += mooappabout-glade.c
-BUILT_SOURCES += mooappabout-glade.c
+libmooapp_la_SOURCES += mooappabout-glade.h
+BUILT_SOURCES += mooappabout-glade.h
 GLADE = $(srcdir)/glade
+XML2SH = $(srcdir)/../mooutils/xml2h.sh
 SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
-mooappabout-glade.c: $(GLADE)/mooappabout.c $(GLADE)/mooappabout.sed $(SUPPORT)
-	cat $(GLADE)/mooappabout.c | sh $(SUPPORT) | sed -f $(GLADE)/mooappabout.sed \
-		> mooappabout-glade.c
+mooappabout-glade.h: $(GLADE)/mooappabout.glade
+	sh $(XML2SH) MOO_APP_ABOUT_GLADE_UI $(GLADE)/mooappabout.glade > mooappabout-glade.h
 endif

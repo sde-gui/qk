@@ -20,28 +20,26 @@
 
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mooterm-prefs.h"
+#include "mooterm/mootermprefs-glade.h"
 #include "mooterm/mooterm.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooglade.h"
 #include <string.h>
 
 
-/* mootermprefs-glade.c */
-GtkWidget  *_create_moo_term_prefs_notebook (MooPrefsDialogPage *page);
+#define MOO_TERM_PREFS_PREFIX "Terminal"
 
+#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (MOO_TERM_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (MOO_TERM_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (MOO_TERM_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (MOO_TERM_PREFS_PREFIX "/" s, v)
 
-#define PREFS_PREFIX        "Terminal"
-
-#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (PREFS_PREFIX "/" s, v)
-#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (PREFS_PREFIX "/" s, v)
-#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (PREFS_PREFIX "/" s, v)
-#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (PREFS_PREFIX "/" s, v)
-
-#define GET_STRING(s)   moo_prefs_get_string (PREFS_PREFIX "/" s)
-#define GET_INT(s)      moo_prefs_get_int (PREFS_PREFIX "/" s)
-#define GET_BOOL(s)     moo_prefs_get_bool (PREFS_PREFIX "/" s)
-#define GET_COLOR(s)    moo_prefs_get_color (PREFS_PREFIX "/" s)
+#define GET_STRING(s)   moo_prefs_get_string (MOO_TERM_PREFS_PREFIX "/" s)
+#define GET_INT(s)      moo_prefs_get_int (MOO_TERM_PREFS_PREFIX "/" s)
+#define GET_BOOL(s)     moo_prefs_get_bool (MOO_TERM_PREFS_PREFIX "/" s)
+#define GET_COLOR(s)    moo_prefs_get_color (MOO_TERM_PREFS_PREFIX "/" s)
 
 
 #ifdef __WIN32__
@@ -106,17 +104,82 @@ void moo_term_apply_settings (MooTerm *term)
 }
 
 
+static gboolean
+connect_prefs (G_GNUC_UNUSED MooGladeXML    *xml,
+               G_GNUC_UNUSED const char     *widget_id,
+               G_GNUC_UNUSED GtkWidget      *widget,
+               const char     *signal,
+               G_GNUC_UNUSED const char     *handler,
+               G_GNUC_UNUSED const char     *object,
+               G_GNUC_UNUSED gpointer        data)
+{
+    g_warning ("%s: not bound signal '%s'", G_STRLOC, signal);
+    return TRUE;
+}
+
+
+static char*
+map_prefs (G_GNUC_UNUSED MooGladeXML *xml,
+           const char     *key,
+           G_GNUC_UNUSED gpointer data)
+{
+    static GHashTable *map = NULL;
+    const char *real_key;
+
+    if (!map)
+    {
+        map = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                     g_free, g_free);
+
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_FONT"),
+                             g_strdup (MOO_TERM_PREFS_FONT));
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_FOREGROUND"),
+                             g_strdup (MOO_TERM_PREFS_FOREGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_BACKGROUND"),
+                             g_strdup (MOO_TERM_PREFS_BACKGROUND));
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_CURSOR_BLINKS"),
+                             g_strdup (MOO_TERM_PREFS_CURSOR_BLINKS));
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_CURSOR_BLINK_TIME"),
+                             g_strdup (MOO_TERM_PREFS_CURSOR_BLINK_TIME));
+        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_SAVE_SELECTION_DIR"),
+                             g_strdup (MOO_TERM_PREFS_SAVE_SELECTION_DIR));
+    }
+
+    real_key = g_hash_table_lookup (map, key);
+
+    if (!real_key)
+    {
+        g_warning ("%s: uknown key '%s'", G_STRLOC, key);
+        real_key = key;
+    }
+
+    return moo_prefs_make_key (MOO_TERM_PREFS_PREFIX, real_key, NULL);
+}
+
+
 GtkWidget  *moo_term_prefs_page_new   (void)
 {
-    GtkWidget *page, *notebook;
+    MooPrefsDialogPage *page;
+    MooGladeXML *xml;
 
-    page = moo_prefs_dialog_page_new ("Terminal", MOO_STOCK_TERMINAL);
-    notebook = _create_moo_term_prefs_notebook (MOO_PREFS_DIALOG_PAGE (page));
-    gtk_box_pack_start (GTK_BOX (page), notebook, TRUE, TRUE, 0);
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "page", MOO_TYPE_PREFS_DIALOG_PAGE);
+    moo_glade_xml_map_signal (xml, connect_prefs, NULL);
+    moo_glade_xml_set_prefs (xml, "page", NULL);
+    moo_glade_xml_set_prefs_map (xml, map_prefs, NULL);
+
+    moo_glade_xml_parse_memory (xml, MOO_TERM_PREFS_GLADE_UI,
+                                -1, "page");
+
+    page = moo_glade_xml_get_widget (xml, "page");
+    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml,
+                            (GDestroyNotify) moo_glade_xml_unref);
+    g_object_set (page, "label", "Terminal",
+                  "icon-stock-id", MOO_STOCK_TERMINAL, NULL);
 
     set_defaults ();
 
-    return page;
+    return GTK_WIDGET (page);
 }
 
 
@@ -141,6 +204,6 @@ const char     *moo_term_setting           (const char  *setting_name)
     else
         p++;
 
-    g_string_printf (stack[p], PREFS_PREFIX "/%s", setting_name);
+    g_string_printf (stack[p], MOO_TERM_PREFS_PREFIX "/%s", setting_name);
     return stack[p]->str;
 }

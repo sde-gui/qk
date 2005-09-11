@@ -43,7 +43,6 @@ libmooedit_la_SOURCES =     \
     mooeditdialogs.h        \
     mooeditfileops.c        \
     mooeditfind.c           \
-    mooeditgotoline-glade.h \
     mooeditkeys.c           \
     mooeditlang.c           \
     mooeditlang.h           \
@@ -75,7 +74,10 @@ libmooedit_la_SOURCES =     \
     mootextbuffer.h         \
     mootextiter.h           \
     mootextview.c           \
-    mootextview.h
+    mootextview.h           \
+    mooeditgotoline-glade.h \
+    mooeditfind-glade.h     \
+    mooeditprefs-glade.h
 
 if MOO_USE_XML
     libmooedit_la_SOURCES += mooeditlang-xml.c
@@ -101,5 +103,5 @@ mooeditfind-glade.h: $(GLADE)/mooeditfind.glade
 		> mooeditfind-glade.h
 
 mooeditprefs-glade.h: $(GLADE)/mooeditprefs.glade
-	sh $(XML2H) MOO_EDIT_FIND_GLADE_UI $(GLADE)/mooeditprefs.glade \
+	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(GLADE)/mooeditprefs.glade \
 		> mooeditprefs-glade.h

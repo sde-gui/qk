@@ -31,15 +31,15 @@ int main (int argc, char *argv[])
     init_terminal ();
     init_editor ();
 
-    app = MOO_APP (g_object_new (MOO_TYPE_APP,
-                   "argv", argv,
-                   "short-name", "medit",
-                   "full-name", "MEdit",
-                   "window-policy",
-                   MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
-                           MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
-                   "description", "MEdit is a text editor",
-                   NULL));
+    app = g_object_new (MOO_TYPE_APP,
+                        "argv", argv,
+                        "short-name", "medit",
+                        "full-name", "medit",
+                        "window-policy",
+                        MOO_APP_MANY_EDITORS | MOO_APP_ONE_TERMINAL |
+                                MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
+                        "description", "medit is a text editor",
+                        NULL);
 
     xml = moo_app_get_ui_xml (app);
 
@@ -49,6 +49,8 @@ int main (int argc, char *argv[])
     moo_app_init (app);
 
     editor = moo_app_get_editor (app);
+    g_object_set (editor, "allow-empty-window", TRUE, NULL);
+
     win = moo_editor_new_window (editor);
 
     if (argc > 1)
@@ -93,9 +95,9 @@ static void editor_send_to_terminal (MooEditWindow *win)
 
     edit = moo_edit_window_get_active_doc (win);
 
-    text = moo_edit_get_selection (edit);
+    text = moo_text_view_get_selection (MOO_TEXT_VIEW (edit));
     if (!text)
-        text = moo_edit_get_text (edit);
+        text = moo_text_view_get_text (MOO_TEXT_VIEW (edit));
 
     if (text)
     {

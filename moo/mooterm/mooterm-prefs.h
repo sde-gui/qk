@@ -24,6 +24,7 @@ void            moo_term_set_prefs_prefix   (const char  *prefix);
 const char     *moo_term_get_prefs_prefix   (void);
 const char     *moo_term_setting            (const char  *setting_name);
 
+/* keep in sync with list in mooterm-prefs.c */
 
 #define MOO_TERM_PREFS_FONT                 "font"
 #define MOO_TERM_PREFS_FOREGROUND           "foreground"

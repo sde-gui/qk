@@ -13,7 +13,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
+#endif
 
 #ifdef USE_PYTHON
 #include <Python.h>
@@ -26,6 +26,8 @@
 #include "mooapp/mooapp-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
+#include "mooedit/mooplugin.h"
+#include "mooedit/plugins/mooeditplugins.h"
 #include "mooui/moouiobject.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
@@ -646,7 +648,6 @@ static gboolean moo_app_init_real       (MooApp         *app)
 {
     G_GNUC_UNUSED const char *app_dir;
     const char *rc_file;
-    char *lang_files_dir;
     MooEditLangMgr *mgr;
     MooUIXML *ui_xml;
     MooAppWindowPolicy policy = app->priv->window_policy;
@@ -664,17 +665,40 @@ static gboolean moo_app_init_real       (MooApp         *app)
 
     if (policy & MOO_APP_USE_EDITOR)
     {
+        char *plugin_dir, *user_plugin_dir = NULL;
+        char *lang_dir, *user_lang_dir = NULL;
+        char *user_data_dir = NULL;
+
 #ifdef __WIN32__
+
+        const char *data_dir;
+
         if (app_dir[0])
-            lang_files_dir = g_strdup_printf ("%s\\language-specs", app_dir);
+            data_dir = app_dir;
         else
-            lang_files_dir = g_strdup ("./language-specs");
+            data_dir = ".";
+
+        lang_dir = g_build_filename (data_dir, "language-specs", NULL);
+        plugin_dir = g_build_filename (data_dir, "plugins", NULL);
+
 #else /* !__WIN32__ */
-# ifdef MOO_EDIT_LANG_FILES_DIR
-        lang_files_dir = g_strdup (MOO_EDIT_LANG_FILES_DIR);
-# else /* !MOO_EDIT_LANG_FILES_DIR */
-        lang_files_dir = g_strdup (".");
-# endif /* !MOO_EDIT_LANG_FILES_DIR */
+
+#ifdef MOO_EDIT_LANG_FILES_DIR
+        lang_dir = g_strdup (MOO_EDIT_LANG_FILES_DIR);
+#else
+        lang_dir = g_build_filename (".", "language-specs", NULL);
+#endif
+
+#ifdef MOO_PLUGINS_DIR
+        plugin_dir = g_strdup (MOO_PLUGINS_DIR);
+#else
+        plugin_dir = g_build_filename (".", "plugins", NULL);
+#endif
+
+        user_data_dir = g_strdup_printf (".%s", app->priv->info->short_name);
+        user_plugin_dir = g_build_filename (user_data_dir, "plugins", NULL);
+        user_lang_dir = g_build_filename (user_data_dir, "language-specs", NULL);
+
 #endif /* !__WIN32__ */
 
         app->priv->editor = moo_editor_new ();
@@ -683,13 +707,29 @@ static gboolean moo_app_init_real       (MooApp         *app)
                                  app->priv->info->short_name);
 
         mgr = moo_editor_get_lang_mgr (app->priv->editor);
-        moo_edit_lang_mgr_add_lang_files_dir (mgr, lang_files_dir);
-        g_free (lang_files_dir);
+        moo_edit_lang_mgr_add_lang_files_dir (mgr, lang_dir);
+
+        if (user_lang_dir)
+            moo_edit_lang_mgr_add_lang_files_dir (mgr, user_lang_dir);
 
         g_signal_connect_swapped (app->priv->editor,
                                   "all-windows-closed",
                                   G_CALLBACK (all_editors_closed),
                                   app);
+
+        moo_grep_init ();
+        moo_file_selector_init ();
+
+        moo_plugin_read_dir (plugin_dir);
+
+        if (user_plugin_dir)
+            moo_plugin_read_dir (user_plugin_dir);
+
+        g_free (lang_dir);
+        g_free (plugin_dir);
+        g_free (user_lang_dir);
+        g_free (user_plugin_dir);
+        g_free (user_data_dir);
     }
 
 #ifdef __WIN32__

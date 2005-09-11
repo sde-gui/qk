@@ -62,6 +62,11 @@ const GValue   *moo_prefs_get       (const char     *key);
 void            moo_prefs_set       (const char     *key,
                                      const GValue   *value);
 
+char   *moo_prefs_make_key          (const char     *first_comp,
+                                     ...);
+char   *moo_prefs_make_keyv         (const char     *first_comp,
+                                     va_list         var_args);
+
 void    moo_prefs_new_key_bool      (const char     *key,
                                      gboolean        default_val);
 void    moo_prefs_new_key_int       (const char     *key,

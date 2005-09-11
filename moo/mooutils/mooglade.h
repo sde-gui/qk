@@ -22,58 +22,68 @@ typedef struct _MooGladeXML MooGladeXML;
 
 #define MOO_TYPE_GLADE_XML (moo_glade_xml_get_type ())
 
-typedef GtkWidget* (*MooGladeCreateFunc)(MooGladeXML    *xml,
-                                         const char     *id,
-                                         gpointer        data);
-typedef gboolean   (*MooGladeSignalFunc)(MooGladeXML    *xml,
-                                         const char     *widget_id,
-                                         GtkWidget      *widget,
-                                         const char     *signal,
-                                         const char     *handler,
-                                         const char     *object,
-                                         gpointer        data);
+typedef GtkWidget* (*MooGladeCreateFunc)    (MooGladeXML    *xml,
+                                             const char     *id,
+                                             gpointer        data);
+typedef gboolean   (*MooGladeSignalFunc)    (MooGladeXML    *xml,
+                                             const char     *widget_id,
+                                             GtkWidget      *widget,
+                                             const char     *signal,
+                                             const char     *handler,
+                                             const char     *object,
+                                             gpointer        data);
+typedef char*      (*MooGladePrefsMapFunc)  (MooGladeXML    *xml,
+                                             const char     *key,
+                                             gpointer        data);
 
 
-GType        moo_glade_xml_get_type     (void);
+GType        moo_glade_xml_get_type         (void);
 
-MooGladeXML *moo_glade_xml_new_empty    (void);
+MooGladeXML *moo_glade_xml_new_empty        (void);
 
-void         moo_glade_xml_map_class    (MooGladeXML    *xml,
-                                         const char     *class_name,
-                                         GType           use_type);
-void         moo_glade_xml_map_id       (MooGladeXML    *xml,
-                                         const char     *id,
-                                         GType           use_type);
-void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
-                                         const char     *id,
-                                         MooGladeCreateFunc func,
-                                         gpointer        data);
-void         moo_glade_xml_map_signal   (MooGladeXML    *xml,
-                                         MooGladeSignalFunc func,
-                                         gpointer        data);
+void         moo_glade_xml_map_class        (MooGladeXML    *xml,
+                                             const char     *class_name,
+                                             GType           use_type);
+void         moo_glade_xml_map_id           (MooGladeXML    *xml,
+                                             const char     *id,
+                                             GType           use_type);
+void         moo_glade_xml_map_custom       (MooGladeXML    *xml,
+                                             const char     *id,
+                                             MooGladeCreateFunc func,
+                                             gpointer        data);
+void         moo_glade_xml_map_signal       (MooGladeXML    *xml,
+                                             MooGladeSignalFunc func,
+                                             gpointer        data);
 
-gboolean     moo_glade_xml_parse_file   (MooGladeXML    *xml,
-                                         const char     *file,
-                                         const char     *root);
-gboolean     moo_glade_xml_parse_memory (MooGladeXML    *xml,
-                                         const char     *buffer,
-                                         int             size,
-                                         const char     *root);
+void         moo_glade_xml_set_prefs        (MooGladeXML    *xml,
+                                             const char     *page,
+                                             const char     *prefs_root);
+void         moo_glade_xml_set_prefs_map    (MooGladeXML    *xml,
+                                             MooGladePrefsMapFunc func,
+                                             gpointer        data);
 
-MooGladeXML *moo_glade_xml_new          (const char     *file,
-                                         const char     *root,
-                                         const char     *unused);
-MooGladeXML *moo_glade_xml_new_from_buf (const char     *buffer,
-                                         int             size,
-                                         const char     *root,
-                                         const char     *unused);
+gboolean     moo_glade_xml_parse_file       (MooGladeXML    *xml,
+                                             const char     *file,
+                                             const char     *root);
+gboolean     moo_glade_xml_parse_memory     (MooGladeXML    *xml,
+                                             const char     *buffer,
+                                             int             size,
+                                             const char     *root);
 
-MooGladeXML *moo_glade_xml_ref          (MooGladeXML    *xml);
-void         moo_glade_xml_unref        (MooGladeXML    *xml);
+MooGladeXML *moo_glade_xml_new              (const char     *file,
+                                             const char     *root,
+                                             const char     *unused);
+MooGladeXML *moo_glade_xml_new_from_buf     (const char     *buffer,
+                                             int             size,
+                                             const char     *root,
+                                             const char     *unused);
 
-gpointer     moo_glade_xml_get_widget   (MooGladeXML    *xml,
-                                         const char     *id);
-GtkWidget   *moo_glade_xml_get_root     (MooGladeXML    *xml);
+MooGladeXML *moo_glade_xml_ref              (MooGladeXML    *xml);
+void         moo_glade_xml_unref            (MooGladeXML    *xml);
+
+gpointer     moo_glade_xml_get_widget       (MooGladeXML    *xml,
+                                             const char     *id);
+GtkWidget   *moo_glade_xml_get_root         (MooGladeXML    *xml);
 
 
 G_END_DECLS

@@ -334,15 +334,10 @@ void             moo_edit_lang_mgr_add_lang_files_dir           (MooEditLangMgr 
     g_return_if_fail (!g_slist_find_custom (mgr->priv->lang_dirs, dirname,
                                             (GCompareFunc)strcmp));
 
-    dir = g_dir_open (dirname, 0, &err);
-    if (!dir) {
-        g_critical ("%s: could not open directory '%s'", G_STRLOC, dirname);
-        if (err) {
-            g_critical ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
+    dir = g_dir_open (dirname, 0, NULL);
+
+    if (!dir)
         return;
-    }
 
     for (entry = g_dir_read_name (dir); entry != NULL; entry = g_dir_read_name (dir))
     {

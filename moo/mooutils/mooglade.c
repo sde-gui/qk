@@ -15,6 +15,9 @@
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooparam.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/bind.h"
+#include "mooutils/mooprefsdialog.h"
+#include "mooutils/mooprefs.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
@@ -128,6 +131,11 @@ struct _MooGladeXML {
 
     MooGladeSignalFunc signal_func;
     gpointer signal_func_data;
+
+    char *prefs_page;
+    char *prefs_root;
+    MooGladePrefsMapFunc prefs_map_func;
+    gpointer prefs_map_func_data;
 };
 
 typedef struct {
@@ -344,6 +352,67 @@ set_focus (MooGladeXML    *xml,
 }
 
 
+static gboolean
+connect_special_signal (MooGladeXML    *xml,
+                        Widget         *node,
+                        Signal         *signal)
+{
+    if (!strcmp (signal->name, "moo-sensitive"))
+    {
+        GtkToggleButton *btn;
+        gboolean invert = FALSE;
+
+        btn = moo_glade_xml_get_widget (xml, signal->handler);
+        g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (btn), FALSE);
+
+        if (signal->object)
+        {
+            if (!strcmp (signal->object, "invert"))
+                invert = TRUE;
+            else
+                g_warning ("%s: invalid string '%s'",
+                           G_STRLOC, signal->object);
+        }
+
+        moo_bind_sensitive (btn, &node->widget, 1, invert);
+
+        return TRUE;
+    }
+
+    if (!strcmp (signal->name, "moo-prefs-key"))
+    {
+        MooPrefsDialogPage *page;
+        char *key;
+        GtkToggleButton *set_or_not = NULL;
+
+        page = moo_glade_xml_get_widget (xml, xml->prefs_page);
+        g_return_val_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page), FALSE);
+
+        if (signal->object)
+        {
+            set_or_not = moo_glade_xml_get_widget (xml, signal->object);
+            g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (set_or_not), FALSE);
+        }
+
+        if (xml->prefs_map_func)
+            key = xml->prefs_map_func (xml, signal->handler, xml->prefs_map_func_data);
+        else if (xml->prefs_root)
+            key = moo_prefs_make_key (xml->prefs_root, signal->handler, NULL);
+        else
+            key = g_strdup (signal->handler);
+
+        g_return_val_if_fail (key != NULL, FALSE);
+
+        moo_prefs_dialog_page_bind_setting (page, node->widget, key, set_or_not);
+
+        g_free (key);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 static void
 connect_signals (MooGladeXML    *xml,
                  Widget         *node)
@@ -372,6 +441,9 @@ connect_signals (MooGladeXML    *xml,
             continue;
         }
 
+        if (connect_special_signal (xml, node, signal))
+            continue;
+
         if (xml->signal_func)
         {
             connected = xml->signal_func (xml, node->id,
@@ -396,7 +468,8 @@ connect_signals (MooGladeXML    *xml,
             }
         }
 
-        /* connect some signals here */
+        g_warning ("%s: unconnected signal '%s' of widget '%s'",
+                   G_STRLOC, signal->name, node->id);
     }
 
     for (l = node->children; l != NULL; l = l->next)
@@ -821,6 +894,10 @@ signal_new (const char     *name,
     signal->name = g_strdup (name);
     signal->handler = g_strdup (handler);
     signal->object = g_strdup (object);
+
+    if (signal->name)
+        g_strdelimit (signal->name, "-_", '-');
+
     return signal;
 }
 
@@ -2004,6 +2081,8 @@ moo_glade_xml_free (MooGladeXML *xml)
         g_hash_table_destroy (xml->id_to_func);
         moo_markup_doc_unref (xml->doc);
         g_free (xml->root_id);
+        g_free (xml->prefs_page);
+        g_free (xml->prefs_root);
         g_free (xml);
     }
 }
@@ -2079,6 +2158,42 @@ moo_glade_xml_map_signal (MooGladeXML    *xml,
     g_return_if_fail (xml != NULL);
     xml->signal_func = func;
     xml->signal_func_data = data;
+}
+
+
+void
+moo_glade_xml_set_prefs (MooGladeXML    *xml,
+                         const char     *page,
+                         const char     *prefs_root)
+{
+    g_return_if_fail (xml != NULL);
+    g_return_if_fail (!page || page[0]);
+
+    g_free (xml->prefs_page);
+    g_free (xml->prefs_root);
+
+    if (page)
+    {
+        xml->prefs_page = g_strdup (page);
+        xml->prefs_root = g_strdup (prefs_root);
+    }
+    else
+    {
+        xml->prefs_page = NULL;
+        xml->prefs_root = NULL;
+    }
+}
+
+
+void
+moo_glade_xml_set_prefs_map (MooGladeXML    *xml,
+                             MooGladePrefsMapFunc func,
+                             gpointer        data)
+{
+    g_return_if_fail (xml != NULL);
+
+    xml->prefs_map_func = func;
+    xml->prefs_map_func_data = data;
 }
 
 

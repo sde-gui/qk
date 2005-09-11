@@ -36,6 +36,8 @@ void        moo_edit_style_load             (const char     *lang_id,
                                              const char     *style_id,
                                              GtkSourceTagStyle *style);
 
+/* keep in sync with list in mooeditprefspage.c */
+
 #define MOO_EDIT_PREFS_SEARCH_SELECTED              "search/search_selected"
 
 #define MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES          "on_external_changes"

@@ -404,6 +404,53 @@ static void      prefs_new_key  (MooPrefs       *prefs,
 }
 
 
+char*
+moo_prefs_make_key (const char     *first_comp,
+                    ...)
+{
+    char *key;
+    va_list var_args;
+
+    g_return_val_if_fail (first_comp != NULL, NULL);
+
+    va_start (var_args, first_comp);
+    key = moo_prefs_make_keyv (first_comp, var_args);
+    va_end (var_args);
+
+    return key;
+}
+
+
+char*
+moo_prefs_make_keyv (const char     *first_comp,
+                     va_list         var_args)
+{
+    const char *comp;
+    GString *key = NULL;
+
+    g_return_val_if_fail (first_comp != NULL, NULL);
+
+    comp = first_comp;
+
+    while (comp)
+    {
+        if (!key)
+        {
+            key = g_string_new (comp);
+        }
+        else
+        {
+            g_string_append_c (key, '/');
+            g_string_append (key, comp);
+        }
+
+        comp = va_arg (var_args, const char*);
+    }
+
+    return g_string_free (key, FALSE);
+}
+
+
 static PrefsItem    *prefs_get_item (MooPrefs   *prefs,
                                      const char *key)
 {
