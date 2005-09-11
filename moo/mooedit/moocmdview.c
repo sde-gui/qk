@@ -250,13 +250,15 @@ command_out_or_err (MooCmdView     *view,
                     gboolean        stdout)
 {
     char *line;
+    gsize line_end;
     GError *error = NULL;
     GIOStatus status;
 
-    status = g_io_channel_read_line (channel, &line, NULL, NULL, &error);
+    status = g_io_channel_read_line (channel, &line, NULL, &line_end, &error);
 
     if (line)
     {
+        line[line_end] = 0;
         process_line (view, line, !stdout);
         g_free (line);
     }

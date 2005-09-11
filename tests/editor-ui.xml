@@ -47,9 +47,10 @@
             <item name="FindPrevious" action="FindPrevious"/>
             <item name="Replace" action="Replace"/>
             <separator/>
-            <item name="FindInFiles" action="FindInFiles"/>
-            <separator/>
             <item name="GoToLine" action="GoToLine"/>
+            <separator/>
+            <item name="FindInFiles" action="FindInFiles"/>
+            <item name="FindFile" action="FindFile"/>
             <separator/>
         </menu>
 
