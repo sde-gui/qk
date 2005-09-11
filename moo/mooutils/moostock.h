@@ -49,7 +49,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_COMPILE               "moo-compile"
 #define MOO_STOCK_EXECUTE               "moo-execute"
 
-#define MOO_STOCK_GREP                  "moo-grep"
+#define MOO_STOCK_FIND_IN_FILES         "moo-find-in-files"
+#define MOO_STOCK_FIND_FILE             "moo-find-file"
 
 
 void        moo_create_stock_items          (void);

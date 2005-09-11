@@ -14,6 +14,8 @@
 
 #include "mooedit/moopaneview.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moosignal.h"
+#include <gdk/gdkkeysyms.h>
 
 
 struct _MooPaneViewPrivate {
@@ -47,12 +49,23 @@ static void      moo_pane_view_realize      (GtkWidget      *widget);
 static gboolean  moo_pane_view_button_press (GtkWidget      *widget,
                                              GdkEventButton *event);
 
+static void      moo_pane_view_move_cursor  (GtkTextView    *text_view,
+                                             GtkMovementStep step,
+                                             gint            count,
+                                             gboolean        extend_selection);
+
+static gboolean  activate                   (MooPaneView    *view,
+                                             int             line);
+static void      activate_current_line      (MooPaneView    *view);
+
+
 static GtkTextBuffer *get_buffer            (MooPaneView    *view);
 static GHashTable *get_hash_table           (MooPaneView    *view);
 
 
 enum {
-    CLICK,
+    ACTIVATE,
+    ACTIVATE_CURRENT_LINE,
     LAST_SIGNAL
 };
 
@@ -72,6 +85,8 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    GtkTextViewClass *textview_class = GTK_TEXT_VIEW_CLASS (klass);
+    GtkBindingSet *binding_set;
 
 //     gobject_class->set_property = moo_pane_view_set_property;
 //     gobject_class->get_property = moo_pane_view_get_property;
@@ -80,15 +95,31 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
     widget_class->realize = moo_pane_view_realize;
     widget_class->button_press_event = moo_pane_view_button_press;
 
-    signals[CLICK] =
-            g_signal_new ("click",
+    textview_class->move_cursor = moo_pane_view_move_cursor;
+
+    signals[ACTIVATE] =
+            g_signal_new ("activate",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooPaneViewClass, click),
+                          G_STRUCT_OFFSET (MooPaneViewClass, activate),
                           g_signal_accumulator_true_handled, NULL,
                           _moo_marshal_BOOL__POINTER_INT,
                           G_TYPE_BOOLEAN, 2,
                           G_TYPE_POINTER, G_TYPE_INT);
+
+    signals[ACTIVATE_CURRENT_LINE] =
+            moo_signal_new_cb ("activate-current-line",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (activate_current_line),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
+    binding_set = gtk_binding_set_by_class (klass);
+
+    gtk_binding_entry_add_signal (binding_set, GDK_Return, 0,
+                                  "activate-current-line", 0);
 }
 
 
@@ -197,9 +228,8 @@ moo_pane_view_button_press (GtkWidget      *widget,
 {
     GtkTextView *textview = GTK_TEXT_VIEW (widget);
     MooPaneView *view = MOO_PANE_VIEW (widget);
-    int buffer_x, buffer_y, line;
+    int buffer_x, buffer_y;
     GtkTextIter iter;
-    gpointer data;
     gboolean handled = FALSE;
 
     if (gtk_text_view_get_window_type (textview, event->window) == GTK_TEXT_WINDOW_TEXT)
@@ -211,10 +241,7 @@ moo_pane_view_button_press (GtkWidget      *widget,
         /* XXX */
         gtk_text_view_get_line_at_y (textview, &iter, buffer_y, NULL);
 
-        line = gtk_text_iter_get_line (&iter);
-        data = moo_pane_view_get_line_data (view, line);
-
-        g_signal_emit (view, signals[CLICK], 0, data, line, &handled);
+        handled = activate (view, gtk_text_iter_get_line (&iter));
 
         if (handled)
             gtk_text_buffer_place_cursor (get_buffer (view), &iter);
@@ -225,6 +252,134 @@ moo_pane_view_button_press (GtkWidget      *widget,
     else
         return TRUE;
 }
+
+
+static gboolean
+activate (MooPaneView *view,
+          int          line)
+{
+    gboolean handled = FALSE;
+    gpointer data = moo_pane_view_get_line_data (view, line);
+
+    g_signal_emit (view, signals[ACTIVATE], 0, data, line, &handled);
+
+    return handled;
+}
+
+
+static int
+get_current_line (MooPaneView *view)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+    return gtk_text_iter_get_line (&iter);
+}
+
+
+static void
+activate_current_line (MooPaneView *view)
+{
+    activate (view, get_current_line (view));
+}
+
+
+static int
+get_visible_height (GtkTextView *text_view)
+{
+    GdkRectangle rect;
+    GtkTextIter iter;
+    int start, end;
+
+    gtk_text_view_get_visible_rect (text_view, &rect);
+    gtk_text_view_get_line_at_y (text_view, &iter, rect.y, NULL);
+    start = gtk_text_iter_get_line (&iter);
+    gtk_text_view_get_line_at_y (text_view, &iter, rect.y + rect.height - 1, NULL);
+    end = gtk_text_iter_get_line (&iter);
+
+    return end - start + 1;
+}
+
+
+static void
+moo_pane_view_move_cursor (GtkTextView    *text_view,
+                           GtkMovementStep step,
+                           gint            count,
+                           gboolean        extend_selection)
+{
+    gboolean handle;
+    MooPaneView *view;
+    GtkTextBuffer *buffer;
+    int current_line, new_line, height, total;
+    GtkTextIter iter;
+
+    switch (step)
+    {
+        case GTK_MOVEMENT_LOGICAL_POSITIONS:
+        case GTK_MOVEMENT_VISUAL_POSITIONS:
+        case GTK_MOVEMENT_WORDS:
+        case GTK_MOVEMENT_PARAGRAPH_ENDS:
+        case GTK_MOVEMENT_HORIZONTAL_PAGES:
+            handle = FALSE;
+            break;
+
+        default:
+            handle = TRUE;
+    }
+
+    if (extend_selection)
+        handle = FALSE;
+
+    if (!handle)
+        return GTK_TEXT_VIEW_CLASS(moo_pane_view_parent_class)->move_cursor (text_view, step, count, extend_selection);
+
+    view = MOO_PANE_VIEW (text_view);
+    buffer = gtk_text_view_get_buffer (text_view);
+
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+    current_line = get_current_line (view);
+
+    height = get_visible_height (text_view);
+    total = gtk_text_buffer_get_line_count (buffer);
+
+    switch (step)
+    {
+        case GTK_MOVEMENT_DISPLAY_LINES:
+        case GTK_MOVEMENT_PARAGRAPHS:
+            new_line = current_line + count;
+            break;
+
+        case GTK_MOVEMENT_PAGES:
+            new_line = current_line + count * (height - 1);
+            break;
+
+        case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
+        case GTK_MOVEMENT_BUFFER_ENDS:
+            if (count < 0)
+                new_line = 0;
+            else
+                new_line = total - 1;
+            break;
+
+        case GTK_MOVEMENT_LOGICAL_POSITIONS:
+        case GTK_MOVEMENT_VISUAL_POSITIONS:
+        case GTK_MOVEMENT_WORDS:
+        case GTK_MOVEMENT_PARAGRAPH_ENDS:
+        case GTK_MOVEMENT_HORIZONTAL_PAGES:
+            g_return_if_reached ();
+    }
+
+    new_line = CLAMP (new_line, 0, total - 1);
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, new_line);
+    gtk_text_buffer_place_cursor (buffer, &iter);
+    gtk_text_view_scroll_to_mark (text_view,
+                                  gtk_text_buffer_get_insert (buffer),
+                                  0, FALSE, 0, 0);
+}
+
+
+static gboolean  activate                   (MooPaneView    *view,
+                                             int             line);
 
 
 static void

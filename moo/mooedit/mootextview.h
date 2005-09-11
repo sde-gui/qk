@@ -130,6 +130,9 @@ void         moo_text_view_set_current_line_color   (MooTextView    *view,
 void         moo_text_view_set_show_tabs            (MooTextView    *view,
                                                      gboolean        show);
 
+GtkTextTag  *moo_text_view_lookup_tag               (MooTextView    *view,
+                                                     const char     *name);
+
 
 G_END_DECLS
 

@@ -44,7 +44,7 @@ int main (int argc, char **argv)
     moo_plugin_read_dir (plugin_dir);
     g_free (plugin_dir);
 
-    moo_grep_init ();
+    moo_find_init ();
     moo_file_selector_init ();
 
     editor = moo_editor_new ();

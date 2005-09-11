@@ -31,12 +31,12 @@ noinst_LTLIBRARIES = libplugins.la
 libplugins_la_SOURCES = \
     mooeditplugins.h    \
     fileselector.c      \
-    moogrep.c           \
-    moogrep-glade.h
+    moofind.c           \
+    moofind-glade.h
 
-BUILT_SOURCES = moogrep-glade.h
-EXTRA_DIST = moogrep.glade
+BUILT_SOURCES = moofind-glade.h
+EXTRA_DIST = moofind.glade
 
-moogrep-glade.h: moogrep.glade
-	sh $(srcdir)/../../mooutils/xml2h.sh MOO_GREP_GLADE_XML $(srcdir)/moogrep.glade > \
-	   moogrep-glade.h
+moofind-glade.h: moofind.glade
+	sh $(srcdir)/../../mooutils/xml2h.sh MOO_FIND_GLADE_XML $(srcdir)/moofind.glade > \
+	   moofind-glade.h

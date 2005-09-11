@@ -717,7 +717,7 @@ static gboolean moo_app_init_real       (MooApp         *app)
                                   G_CALLBACK (all_editors_closed),
                                   app);
 
-        moo_grep_init ();
+        moo_find_init ();
         moo_file_selector_init ();
 
         moo_plugin_read_dir (plugin_dir);

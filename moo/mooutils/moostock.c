@@ -202,7 +202,8 @@ void moo_create_stock_items (void)
     register_stock_icon_alias (factory, GTK_STOCK_GO_DOWN, MOO_STOCK_COMPILE);
     register_stock_icon_alias (factory, GTK_STOCK_EXECUTE, MOO_STOCK_EXECUTE);
 
-    register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_GREP);
+    register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_IN_FILES);
+    register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_FILE);
 
     g_object_unref (G_OBJECT (factory));
 }

@@ -35,6 +35,8 @@ libmooedit_la_LIBADD =                  \
 libmooedit_la_SOURCES =     \
     moobigpaned.c           \
     moobigpaned.h           \
+    moocmdview.c            \
+    moocmdview.h            \
     mooedit.c               \
     mooedit.h               \
     mooedit-private.h       \

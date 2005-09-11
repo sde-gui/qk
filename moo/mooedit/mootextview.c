@@ -1042,3 +1042,20 @@ moo_text_view_set_show_tabs (MooTextView    *view,
     if (GTK_WIDGET_DRAWABLE (view))
         gtk_widget_queue_draw (GTK_WIDGET (view));
 }
+
+
+GtkTextTag*
+moo_text_view_lookup_tag (MooTextView    *view,
+                          const char     *name)
+{
+    GtkTextBuffer *buffer;
+    GtkTextTagTable *table;
+
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    buffer = get_buffer (view);
+    table = gtk_text_buffer_get_tag_table (buffer);
+
+    return gtk_text_tag_table_lookup (table, name);
+}

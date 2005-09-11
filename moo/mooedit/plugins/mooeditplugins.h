@@ -17,7 +17,7 @@
 G_BEGIN_DECLS
 
 
-gboolean moo_grep_init          (void);
+gboolean moo_find_init          (void);
 gboolean moo_file_selector_init (void);
 
 
