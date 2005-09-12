@@ -15,6 +15,7 @@
 #include "mooedit/moopaneview.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moosignal.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 
 
@@ -45,22 +46,24 @@ static void      moo_pane_view_finalize     (GObject        *object);
 //                                              GValue         *value,
 //                                              GParamSpec     *pspec);
 
-static void      moo_pane_view_realize      (GtkWidget      *widget);
-static gboolean  moo_pane_view_button_release (GtkWidget    *widget,
-                                             GdkEventButton *event);
+static void      moo_pane_view_realize          (GtkWidget      *widget);
+static gboolean  moo_pane_view_button_release   (GtkWidget      *widget,
+                                                 GdkEventButton *event);
 
-static void      moo_pane_view_move_cursor  (GtkTextView    *text_view,
-                                             GtkMovementStep step,
-                                             gint            count,
-                                             gboolean        extend_selection);
+static void      moo_pane_view_move_cursor      (GtkTextView    *text_view,
+                                                 GtkMovementStep step,
+                                                 gint            count,
+                                                 gboolean        extend_selection);
+static void      moo_pane_view_populate_popup   (GtkTextView    *text_view,
+                                                 GtkMenu        *menu);
 
-static void      activate                   (MooPaneView    *view,
-                                             int             line);
-static void      activate_current_line      (MooPaneView    *view);
+static void      activate                       (MooPaneView    *view,
+                                                 int             line);
+static void      activate_current_line          (MooPaneView    *view);
 
 
-static GtkTextBuffer *get_buffer            (MooPaneView    *view);
-static GHashTable *get_hash_table           (MooPaneView    *view);
+static GtkTextBuffer *get_buffer                (MooPaneView    *view);
+static GHashTable *get_hash_table               (MooPaneView    *view);
 
 
 enum {
@@ -96,6 +99,7 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
     widget_class->button_release_event = moo_pane_view_button_release;
 
     textview_class->move_cursor = moo_pane_view_move_cursor;
+    textview_class->populate_popup = moo_pane_view_populate_popup;
 
     signals[ACTIVATE] =
             g_signal_new ("activate",
@@ -230,8 +234,12 @@ moo_pane_view_button_release (GtkWidget      *widget,
     MooPaneView *view = MOO_PANE_VIEW (widget);
     int buffer_x, buffer_y;
     GtkTextIter iter;
+    gboolean result;
 
-    if (gtk_text_view_get_window_type (textview, event->window) == GTK_TEXT_WINDOW_TEXT)
+    result = GTK_WIDGET_CLASS(moo_pane_view_parent_class)->button_release_event (widget, event);
+
+    if (gtk_text_view_get_window_type (textview, event->window) == GTK_TEXT_WINDOW_TEXT &&
+        !moo_text_view_has_selection (MOO_TEXT_VIEW (widget)))
     {
         gtk_text_view_window_to_buffer_coords (textview,
                                                GTK_TEXT_WINDOW_TEXT,
@@ -242,7 +250,7 @@ moo_pane_view_button_release (GtkWidget      *widget,
         activate (view, gtk_text_iter_get_line (&iter));
     }
 
-    return GTK_WIDGET_CLASS(moo_pane_view_parent_class)->button_release_event (widget, event);
+    return result;
 }
 
 
@@ -603,4 +611,41 @@ moo_pane_view_end_line (MooPaneView    *view)
     if (!view->priv->scrolled)
         gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
                                             get_end_mark (view));
+}
+
+
+static void
+copy_clipboard (GtkTextView *text_view)
+{
+    g_signal_emit_by_name (text_view, "copy-clipboard");
+}
+
+
+static void
+moo_pane_view_populate_popup (GtkTextView *text_view,
+                              GtkMenu     *menu)
+{
+    GtkWidget *item;
+    gboolean has_selection, has_text;
+
+    gtk_container_foreach (GTK_CONTAINER (menu),
+                           (GtkCallback) gtk_widget_destroy,
+                           NULL);
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
+    g_signal_connect_swapped (item, "activate",
+                              G_CALLBACK (copy_clipboard), text_view);
+    has_selection = moo_text_view_has_selection (MOO_TEXT_VIEW (text_view));
+    gtk_widget_set_sensitive (item, has_selection);
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_SELECT_ALL, NULL);
+    g_signal_connect_swapped (item, "activate",
+                              G_CALLBACK (moo_text_view_select_all),
+                              text_view);
+    has_text = moo_text_view_has_text (MOO_TEXT_VIEW (text_view));
+    gtk_widget_set_sensitive (item, has_text);
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 }
