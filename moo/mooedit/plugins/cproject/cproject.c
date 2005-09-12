@@ -38,7 +38,7 @@ static void     unblock_window_signals      (CProjectPlugin *plugin);
 static void
 new_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_new_project (plugin);
 }
@@ -47,7 +47,7 @@ new_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 open_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_open_project (plugin, NULL);
 }
@@ -56,7 +56,7 @@ open_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 close_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_close_project (plugin);
 }
@@ -65,7 +65,7 @@ close_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 project_options_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_project_options (plugin);
 }
@@ -74,7 +74,7 @@ project_options_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 build_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_build_project (plugin);
 }
@@ -83,7 +83,7 @@ build_project_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 compile_file_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_compile_file (plugin);
 }
@@ -92,7 +92,7 @@ compile_file_cb (G_GNUC_UNUSED MooEditWindow *window)
 static void
 execute_cb (G_GNUC_UNUSED MooEditWindow *window)
 {
-    CProjectPlugin *plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    CProjectPlugin *plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_if_fail (plugin != NULL && plugin->window != NULL);
     cproject_execute (plugin);
 }
@@ -106,7 +106,7 @@ create_build_configuration_menu (MooEditWindow  *window,
     CProjectPlugin *plugin;
     GtkWidget *item;
 
-    plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
@@ -142,7 +142,7 @@ create_recent_menu (MooEditWindow  *window,
     CProjectPlugin *plugin;
     GtkMenuItem *item;
 
-    plugin = moo_plugin_get_data (CPROJECT_PLUGIN_ID);
+    plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
@@ -254,8 +254,8 @@ cproject_plugin_deinit (G_GNUC_UNUSED CProjectPlugin *plugin)
 
 
 void
-cproject_plugin_attach (MooEditWindow              *window,
-                        CProjectPlugin             *plugin)
+cproject_plugin_attach (CProjectPlugin             *plugin,
+                        MooEditWindow              *window)
 {
     MooPaneLabel *label;
     GtkWidget *widget, *swin;
@@ -303,8 +303,8 @@ cproject_plugin_attach (MooEditWindow              *window,
 
 
 void
-cproject_plugin_detach (MooEditWindow              *window,
-                        CProjectPlugin             *plugin)
+cproject_plugin_detach (CProjectPlugin             *plugin,
+                        MooEditWindow              *window)
 {
     g_return_if_fail (plugin->window == window);
 

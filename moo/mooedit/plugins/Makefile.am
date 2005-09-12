@@ -20,11 +20,10 @@ if MINGW_BUILD
 mingw_flags = -no-undefined
 endif MINGW_BUILD
 
-pluginsdir = ${MOO_PLUGINS_DIR}
-plugins_LTLIBRARIES = dummy.la
-
-dummy_la_SOURCES = dummy.c
-dummy_la_LDFLAGS = -module -avoid-version -export-symbols-regex dummy_init $(mingw_flags)
+# pluginsdir = ${MOO_PLUGINS_DIR}
+# plugins_LTLIBRARIES = dummy.la
+# dummy_la_SOURCES = dummy.c
+# dummy_la_LDFLAGS = -module -avoid-version -export-symbols-regex dummy_init $(mingw_flags)
 
 noinst_LTLIBRARIES = libplugins.la
 

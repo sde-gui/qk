@@ -19,7 +19,7 @@
 #define MOO_VERSION NULL
 #endif
 
-#include "mooedit/mooplugin.h"
+#include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/moofind-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/moofileview/moofileentry.h"
@@ -40,6 +40,12 @@ enum {
 };
 
 typedef struct {
+    MooPlugin parent;
+} FindPlugin;
+
+typedef struct {
+    MooWindowPlugin parent;
+
     GtkWidget *grep_dialog;
     MooGladeXML *grep_xml;
     MooFileEntryCompletion *grep_completion;
@@ -58,18 +64,15 @@ typedef struct {
     GtkTextTag *message_tag;
     guint match_count;
     int cmd;
-} WindowStuff;
+} FindWindowPlugin;
+
+#define WindowStuff FindWindowPlugin
+
 
 typedef struct {
     char *filename;
     int line;
 } FileLinePair;
-
-static WindowStuff *window_stuff_new        (MooEditWindow  *window);
-static void         window_stuff_free       (WindowStuff    *stuff);
-
-static void         find_plugin_attach      (MooEditWindow  *window);
-static void         find_plugin_detach      (MooEditWindow  *window);
 
 static void         do_grep                 (MooEditWindow  *window,
                                              WindowStuff    *stuff);
@@ -111,7 +114,7 @@ find_in_files_cb (MooEditWindow *window)
     WindowStuff *stuff;
     int response;
 
-    stuff = moo_plugin_get_window_data (FIND_PLUGIN_ID, window);
+    stuff = moo_window_plugin_lookup (FIND_PLUGIN_ID, window);
     g_return_if_fail (stuff != NULL);
 
     if (!stuff->grep_dialog)
@@ -136,7 +139,7 @@ find_file_cb (MooEditWindow *window)
     WindowStuff *stuff;
     int response;
 
-    stuff = moo_plugin_get_window_data (FIND_PLUGIN_ID, window);
+    stuff = moo_window_plugin_lookup (FIND_PLUGIN_ID, window);
     g_return_if_fail (stuff != NULL);
 
     if (!stuff->find_dialog)
@@ -156,11 +159,13 @@ find_file_cb (MooEditWindow *window)
 
 
 static void
-find_plugin_attach (MooEditWindow *window)
+find_window_plugin_create (WindowStuff *stuff)
 {
     GtkWidget *swin;
     MooPaneLabel *label;
-    WindowStuff *stuff = window_stuff_new (window);
+    MooEditWindow *window = MOO_WINDOW_PLUGIN(stuff)->window;
+
+    stuff->window = window;
 
     label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL, NULL, "Find");
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
@@ -200,41 +205,6 @@ find_plugin_attach (MooEditWindow *window)
 
     moo_edit_window_add_pane (window, FIND_PLUGIN_ID,
                               swin, label, MOO_PANE_POS_BOTTOM);
-
-    moo_plugin_set_window_data (FIND_PLUGIN_ID, window, stuff,
-                                (GDestroyNotify) window_stuff_free);
-}
-
-
-static WindowStuff*
-window_stuff_new (MooEditWindow  *window)
-{
-    WindowStuff *stuff = g_new0 (WindowStuff, 1);
-    stuff->window = window;
-    return stuff;
-}
-
-
-static void
-window_stuff_free (WindowStuff *stuff)
-{
-    if (stuff)
-    {
-        if (stuff->grep_dialog)
-            gtk_widget_destroy (stuff->grep_dialog);
-        if (stuff->find_dialog)
-            gtk_widget_destroy (stuff->find_dialog);
-        if (stuff->grep_xml)
-            moo_glade_xml_unref (stuff->grep_xml);
-        if (stuff->find_xml)
-            moo_glade_xml_unref (stuff->find_xml);
-        if (stuff->grep_completion)
-            g_object_unref (stuff->grep_completion);
-        if (stuff->find_completion)
-            g_object_unref (stuff->find_completion);
-        g_free (stuff->current_file);
-        g_free (stuff);
-    }
 }
 
 
@@ -271,34 +241,6 @@ static void
 find_plugin_deinit (void)
 {
     /* XXX remove action */
-}
-
-
-gboolean
-moo_find_init (void)
-{
-    MooPluginParams params = { TRUE };
-    MooPluginPrefsParams prefs_params;
-
-    MooPluginInfo info = {
-        MOO_PLUGIN_CURRENT_VERSION,
-
-        FIND_PLUGIN_ID,
-        FIND_PLUGIN_ID,
-        FIND_PLUGIN_ID,
-        "Yevgen Muntyan <muntyan@tamu.edu>",
-        MOO_VERSION,
-
-        (MooPluginInitFunc) find_plugin_init,
-        (MooPluginDeinitFunc) find_plugin_deinit,
-        (MooPluginWindowAttachFunc) find_plugin_attach,
-        (MooPluginWindowDetachFunc) find_plugin_detach,
-
-        &params,
-        &prefs_params
-    };
-
-    return moo_plugin_register (&info, NULL);
 }
 
 
@@ -805,11 +747,8 @@ execute_find (const char     *pattern,
 
 
 static void
-find_plugin_detach (MooEditWindow *window)
+find_window_plugin_destroy (WindowStuff *stuff)
 {
-    WindowStuff *stuff = moo_plugin_get_window_data (FIND_PLUGIN_ID, window);
-    g_return_if_fail (stuff != NULL);
-
     g_signal_handlers_disconnect_by_func (stuff->output,
                                           (gpointer) command_exit,
                                           stuff);
@@ -817,6 +756,20 @@ find_plugin_detach (MooEditWindow *window)
                                           (gpointer) process_line,
                                           stuff);
     moo_cmd_view_abort (stuff->output);
+
+    if (stuff->grep_dialog)
+        gtk_widget_destroy (stuff->grep_dialog);
+    if (stuff->find_dialog)
+        gtk_widget_destroy (stuff->find_dialog);
+    if (stuff->grep_xml)
+        moo_glade_xml_unref (stuff->grep_xml);
+    if (stuff->find_xml)
+        moo_glade_xml_unref (stuff->find_xml);
+    if (stuff->grep_completion)
+        g_object_unref (stuff->grep_completion);
+    if (stuff->find_completion)
+        g_object_unref (stuff->find_completion);
+    g_free (stuff->current_file);
 }
 
 
@@ -883,4 +836,24 @@ output_activate (WindowStuff    *stuff,
                                    line_data->line, -1, TRUE);
 
     return TRUE;
+}
+
+
+MOO_WINDOW_PLUGIN_DEFINE (FindWindowPlugin, find_window_plugin,
+                          find_window_plugin_create,
+                          find_window_plugin_destroy);
+MOO_PLUGIN_DEFINE_PARAMS (info, TRUE, FIND_PLUGIN_ID,
+                          FIND_PLUGIN_ID, FIND_PLUGIN_ID,
+                          "Yevgen Muntyan <muntyan@tamu.edu>",
+                          MOO_VERSION);
+MOO_PLUGIN_DEFINE (FindPlugin, find_plugin,
+                   find_plugin_init, find_plugin_deinit,
+                   NULL, NULL, info,
+                   find_window_plugin_get_type ());
+
+
+gboolean
+moo_find_init (void)
+{
+    return moo_plugin_register (find_plugin_get_type ());
 }

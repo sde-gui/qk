@@ -606,7 +606,7 @@ static MooEditWindow *create_window         (MooEditor      *editor)
     MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
                                           "editor", editor, NULL);
     window_list_add (editor, window);
-    _moo_plugin_window_attach (window);
+    _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
     return window;
 }
@@ -916,7 +916,7 @@ static void          do_close_window        (MooEditor      *editor,
 
     window_list_delete (editor, info);
 
-    _moo_plugin_window_detach (window);
+    _moo_plugin_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
 
     if (!editor->priv->windows)

@@ -16,40 +16,62 @@
 #define __MOO_PLUGIN_H__
 
 #include "mooedit/mooeditor.h"
-#include "mooedit/moobigpaned.h"
 #include "mooutils/mooprefsdialog.h"
 
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 5
+#define MOO_PLUGIN_CURRENT_VERSION 6
 
 
-typedef struct _MooPluginInfo           MooPluginInfo;
-typedef struct _MooPluginParams         MooPluginParams;
-typedef struct _MooPluginPrefsParams    MooPluginPrefsParams;
+#define MOO_TYPE_PLUGIN              (moo_plugin_get_type ())
+#define MOO_PLUGIN(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PLUGIN, MooPlugin))
+#define MOO_PLUGIN_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PLUGIN, MooPluginClass))
+#define MOO_IS_PLUGIN(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PLUGIN))
+#define MOO_IS_PLUGIN_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PLUGIN))
+#define MOO_PLUGIN_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PLUGIN, MooPluginClass))
+
+#define MOO_TYPE_WINDOW_PLUGIN              (moo_window_plugin_get_type ())
+#define MOO_WINDOW_PLUGIN(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_WINDOW_PLUGIN, MooWindowPlugin))
+#define MOO_WINDOW_PLUGIN_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_WINDOW_PLUGIN, MooWindowPluginClass))
+#define MOO_IS_WINDOW_PLUGIN(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_WINDOW_PLUGIN))
+#define MOO_IS_WINDOW_PLUGIN_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_WINDOW_PLUGIN))
+#define MOO_WINDOW_PLUGIN_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_WINDOW_PLUGIN, MooWindowPluginClass))
 
 
-typedef gboolean    (*MooPluginInitFunc)            (gpointer        plugin_data,
-                                                     MooPluginInfo  *info);
-typedef void        (*MooPluginDeinitFunc)          (gpointer        plugin_data,
-                                                     MooPluginInfo  *info);
-
-typedef void        (*MooPluginWindowAttachFunc)    (MooEditWindow  *window,
-                                                     gpointer        plugin_data,
-                                                     MooPluginInfo  *info);
-typedef void        (*MooPluginWindowDetachFunc)    (MooEditWindow  *window,
-                                                     gpointer        plugin_data,
-                                                     MooPluginInfo  *info);
-
-typedef gboolean    (*MooPluginModuleInitFunc)      (void);
+typedef struct _MooPlugin            MooPlugin;
+typedef struct _MooPluginInfo        MooPluginInfo;
+typedef struct _MooPluginParams      MooPluginParams;
+typedef struct _MooPluginPrefsParams MooPluginPrefsParams;
+typedef struct _MooPluginClass       MooPluginClass;
+typedef struct _MooWindowPlugin      MooWindowPlugin;
+typedef struct _MooWindowPluginClass MooWindowPluginClass;
 
 
-/* keep plugin_new() in sync */
+typedef gboolean (*MooPluginModuleInitFunc)     (void);
+
+typedef gboolean (*MooPluginInitFunc)           (MooPlugin      *plugin);
+typedef void     (*MooPluginDeinitFunc)         (MooPlugin      *plugin);
+typedef void     (*MooPluginAttachFunc)         (MooPlugin      *plugin,
+                                                 MooEditWindow  *window);
+typedef void     (*MooPluginDetachFunc)         (MooPlugin      *plugin,
+                                                 MooEditWindow  *window);
+
+typedef gboolean (*MooWindowPluginCreateFunc)   (MooWindowPlugin *wplugin);
+typedef void     (*MooWindowPluginDestroyFunc)  (MooWindowPlugin *wplugin);
+
+
+struct _MooPluginParams
+{
+    gboolean enabled;
+};
+
+struct _MooPluginPrefsParams
+{
+};
+
 struct _MooPluginInfo
 {
-    guint plugin_system_version;
-
     const char *id;
 
     const char *name;
@@ -57,56 +79,74 @@ struct _MooPluginInfo
     const char *author;
     const char *version;
 
-    MooPluginInitFunc init;
-    MooPluginDeinitFunc deinit;
-    MooPluginWindowAttachFunc attach;
-    MooPluginWindowDetachFunc detach;
-
     MooPluginParams *params;
     MooPluginPrefsParams *prefs_params;
 };
 
-
-/* keep plugin_params_copy() in sync */
-struct _MooPluginParams
+struct _MooPlugin
 {
-    gboolean enabled;
+    GObject parent;
+
+    gboolean initialized;
+    GModule *module;
+
+    MooPluginInfo *info;
+    GType window_plugin_type;
+};
+
+struct _MooWindowPlugin
+{
+    GObject parent;
+    MooEditWindow *window;
+    MooPlugin *plugin;
+};
+
+struct _MooPluginClass
+{
+    GObjectClass parent_class;
+
+    guint plugin_system_version;
+
+    MooPluginInitFunc init;
+    MooPluginDeinitFunc deinit;
+    MooPluginAttachFunc attach;
+    MooPluginDetachFunc detach;
+};
+
+struct _MooWindowPluginClass
+{
+    GObjectClass parent_class;
+
+    MooWindowPluginCreateFunc create;
+    MooWindowPluginDestroyFunc destroy;
 };
 
 
+GType       moo_plugin_get_type         (void) G_GNUC_CONST;
+GType       moo_window_plugin_get_type  (void) G_GNUC_CONST;
 
-/* keep plugin_prefs_params_copy() in sync */
-struct _MooPluginPrefsParams
-{
-};
+gboolean    moo_plugin_register         (GType           type);
 
+gboolean    moo_plugin_initialized      (MooPlugin      *plugin);
+gboolean    moo_plugin_enabled          (MooPlugin      *plugin);
+gboolean    moo_plugin_set_enabled      (MooPlugin      *plugin,
+                                         gboolean        enabled);
 
-gboolean        moo_plugin_register         (MooPluginInfo  *info,
-                                             gpointer        plugin_data);
-void            moo_plugin_unregister       (const char     *plugin_id);
+MooPlugin  *moo_plugin_get              (GType           type);
+gboolean    moo_plugin_registered       (GType           type);
 
-MooPluginInfo  *moo_plugin_lookup           (const char     *plugin_id);
-/* returns list of strings which should be freed */
-GSList         *moo_list_plugins            (void);
+gpointer    moo_plugin_lookup           (const char     *plugin_id);
+GSList     *moo_list_plugins            (void);
 
-gpointer        moo_plugin_get_data         (const char     *plugin_id);
+const char *moo_plugin_get_id           (MooPlugin      *plugin);
 
-gpointer        moo_plugin_get_window_data  (const char     *plugin_id,
-                                             MooEditWindow  *window);
-void            moo_plugin_set_window_data  (const char     *plugin_id,
-                                             MooEditWindow  *window,
-                                             gpointer        data,
-                                             GDestroyNotify  free_func);
+gpointer    moo_window_plugin_lookup    (const char     *plugin_id,
+                                         MooEditWindow  *window);
 
-// void            moo_plugin_attach_prefs     (MooPrefsDialog *dialog);
+void        moo_plugin_read_dir         (const char     *dir);
 
-void            moo_plugin_read_dir         (const char     *dir);
-
-
-#ifdef MOOEDIT_COMPILATION
-void            _moo_plugin_window_attach   (MooEditWindow  *window);
-void            _moo_plugin_window_detach   (MooEditWindow  *window);
-#endif
+void        _moo_window_attach_plugins  (MooEditWindow  *window);
+void        _moo_plugin_detach_plugins  (MooEditWindow  *window);
 
 
 G_END_DECLS

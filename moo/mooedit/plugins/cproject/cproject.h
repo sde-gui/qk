@@ -20,14 +20,16 @@
 
 G_BEGIN_DECLS
 
-#define CPROJECT_PLUGIN_ID "CProject"
+#define CPROJECT_PLUGIN_ID   "CProject"
+#define CPROJECT_PLUGIN_TYPE (cproject_plugin_get_type ())
 
 typedef struct _CProjectPlugin CProjectPlugin;
-typedef struct _CProjectPluginWindowData CProjectPluginWindowData;
 
 
 struct _CProjectPlugin
 {
+    MooPlugin parent;
+
     Project *project;
     MooEditWindow *window;
     GtkWidget *build_configuration_menu;
@@ -45,17 +47,15 @@ struct _CProjectPlugin
     GString *command_err_buf;
 };
 
-struct _CProjectPluginWindowData
-{
-};
 
+GType       cproject_plugin_get_type    (void);
 
 gboolean    cproject_plugin_init        (CProjectPlugin             *plugin);
 void        cproject_plugin_deinit      (CProjectPlugin             *plugin);
-void        cproject_plugin_attach      (MooEditWindow              *window,
-                                         CProjectPlugin             *plugin);
-void        cproject_plugin_detach      (MooEditWindow              *window,
-                                         CProjectPlugin             *plugin);
+void        cproject_plugin_attach      (CProjectPlugin             *plugin,
+                                         MooEditWindow              *window);
+void        cproject_plugin_detach      (CProjectPlugin             *plugin,
+                                         MooEditWindow              *window);
 
 void        cproject_load_prefs         (CProjectPlugin             *plugin);
 void        cproject_save_prefs         (CProjectPlugin             *plugin);

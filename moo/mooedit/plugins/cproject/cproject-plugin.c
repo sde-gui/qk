@@ -16,6 +16,7 @@
 #endif
 
 #include "cproject.h"
+#include "mooedit/mooplugin-macro.h"
 #include <gmodule.h>
 
 #ifndef MOO_VERSION
@@ -23,33 +24,20 @@
 #endif
 
 
-gboolean    cproject_init           (void);
+MOO_PLUGIN_DEFINE_PARAMS(info, TRUE, CPROJECT_PLUGIN_ID,
+                         "CProject", "CProject",
+                         "Yevgen Muntyan <muntyan@tamu.edu>",
+                         MOO_VERSION);
+MOO_PLUGIN_DEFINE(CProjectPlugin, cproject_plugin,
+                  cproject_plugin_init, cproject_plugin_deinit,
+                  cproject_plugin_attach, cproject_plugin_detach,
+                  info, G_TYPE_NONE);
+
+
+gboolean cproject_init (void);
 
 G_MODULE_EXPORT gboolean
 cproject_init (void)
 {
-    MooPluginParams params = {
-        TRUE
-    };
-
-    MooPluginPrefsParams prefs_params;
-
-    MooPluginInfo info = {
-        MOO_PLUGIN_CURRENT_VERSION,
-        CPROJECT_PLUGIN_ID,
-        "CProject",
-        "CProject",
-        "Yevgen Muntyan <muntyan@tamu.edu>",
-        MOO_VERSION,
-        (MooPluginInitFunc) cproject_plugin_init,
-        (MooPluginDeinitFunc) cproject_plugin_deinit,
-        (MooPluginWindowAttachFunc) cproject_plugin_attach,
-        (MooPluginWindowDetachFunc) cproject_plugin_detach,
-        &params,
-        &prefs_params
-    };
-
-    static CProjectPlugin plugin;
-
-    return moo_plugin_register (&info, &plugin);
+    return moo_plugin_register (CPROJECT_PLUGIN_TYPE);
 }

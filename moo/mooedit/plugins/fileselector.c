@@ -16,7 +16,7 @@
 #endif
 
 #include <gmodule.h>
-#include "mooedit/mooplugin.h"
+#include "mooedit/mooplugin-macro.h"
 #include "mooedit/moofileview/moofileview.h"
 #include "mooedit/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
@@ -32,8 +32,11 @@
 
 
 typedef struct {
+    MooPlugin parent;
     MooBookmarkMgr *bookmark_mgr;
-} Plugin;
+} FileSelectorPlugin;
+
+#define Plugin FileSelectorPlugin
 
 
 static void
@@ -132,8 +135,8 @@ fileview_activate (MooEditWindow    *window,
 
 
 static void
-file_selector_plugin_attach (MooEditWindow *window,
-                             Plugin        *plugin)
+file_selector_plugin_attach (Plugin        *plugin,
+                             MooEditWindow *window)
 {
     GtkWidget *fileview;
     MooEditor *editor;
@@ -164,7 +167,8 @@ file_selector_plugin_attach (MooEditWindow *window,
 
 
 static void
-file_selector_plugin_detach (MooEditWindow *window)
+file_selector_plugin_detach (G_GNUC_UNUSED Plugin *plugin,
+                             MooEditWindow *window)
 {
     GtkWidget *fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
 
@@ -181,31 +185,18 @@ file_selector_plugin_detach (MooEditWindow *window)
 }
 
 
+MOO_PLUGIN_DEFINE_PARAMS (info, TRUE, PLUGIN_ID,
+                          "File Selector", "File Selector",
+                          "Yevgen Muntyan <muntyan@tamu.edu>",
+                          MOO_VERSION);
+MOO_PLUGIN_DEFINE (FileSelectorPlugin, file_selector_plugin,
+                   file_selector_plugin_init, file_selector_plugin_deinit,
+                   file_selector_plugin_attach, file_selector_plugin_detach,
+                   info, G_TYPE_NONE);
+
+
 gboolean
 moo_file_selector_init (void)
 {
-    MooPluginParams params = { TRUE };
-    MooPluginPrefsParams prefs_params;
-
-    MooPluginInfo info = {
-        MOO_PLUGIN_CURRENT_VERSION,
-
-        PLUGIN_ID,
-        "File Selector",
-        "File Selector",
-        "Yevgen Muntyan <muntyan@tamu.edu>",
-        MOO_VERSION,
-
-        (MooPluginInitFunc) file_selector_plugin_init,
-        (MooPluginDeinitFunc) file_selector_plugin_deinit,
-        (MooPluginWindowAttachFunc) file_selector_plugin_attach,
-        (MooPluginWindowDetachFunc) file_selector_plugin_detach,
-
-        &params,
-        &prefs_params
-    };
-
-    static Plugin plugin;
-
-    return moo_plugin_register (&info, &plugin);
+    return moo_plugin_register (file_selector_plugin_get_type ());
 }
