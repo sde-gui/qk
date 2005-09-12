@@ -294,7 +294,7 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter)
             if (bracket == buffer->priv->right_brackets[to_find])
     {
         bracket_to_find = buffer->priv->left_brackets[to_find];
-        addition =1;
+        addition = -1;
         same_direction = buffer->priv->right_brackets;
         inverse_direction = buffer->priv->left_brackets;
         break;
