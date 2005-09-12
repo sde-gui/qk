@@ -46,7 +46,7 @@ static void      moo_pane_view_finalize     (GObject        *object);
 //                                              GParamSpec     *pspec);
 
 static void      moo_pane_view_realize      (GtkWidget      *widget);
-static gboolean  moo_pane_view_button_press (GtkWidget      *widget,
+static gboolean  moo_pane_view_button_release (GtkWidget    *widget,
                                              GdkEventButton *event);
 
 static void      moo_pane_view_move_cursor  (GtkTextView    *text_view,
@@ -54,7 +54,7 @@ static void      moo_pane_view_move_cursor  (GtkTextView    *text_view,
                                              gint            count,
                                              gboolean        extend_selection);
 
-static gboolean  activate                   (MooPaneView    *view,
+static void      activate                   (MooPaneView    *view,
                                              int             line);
 static void      activate_current_line      (MooPaneView    *view);
 
@@ -93,7 +93,7 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
     gobject_class->finalize = moo_pane_view_finalize;
 
     widget_class->realize = moo_pane_view_realize;
-    widget_class->button_press_event = moo_pane_view_button_press;
+    widget_class->button_release_event = moo_pane_view_button_release;
 
     textview_class->move_cursor = moo_pane_view_move_cursor;
 
@@ -102,9 +102,9 @@ static void moo_pane_view_class_init (MooPaneViewClass *klass)
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooPaneViewClass, activate),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOL__POINTER_INT,
-                          G_TYPE_BOOLEAN, 2,
+                          NULL, NULL,
+                          _moo_marshal_VOID__POINTER_INT,
+                          G_TYPE_NONE, 2,
                           G_TYPE_POINTER, G_TYPE_INT);
 
     signals[ACTIVATE_CURRENT_LINE] =
@@ -223,14 +223,13 @@ get_hash_table (MooPaneView *view)
 
 
 static gboolean
-moo_pane_view_button_press (GtkWidget      *widget,
-                            GdkEventButton *event)
+moo_pane_view_button_release (GtkWidget      *widget,
+                              GdkEventButton *event)
 {
     GtkTextView *textview = GTK_TEXT_VIEW (widget);
     MooPaneView *view = MOO_PANE_VIEW (widget);
     int buffer_x, buffer_y;
     GtkTextIter iter;
-    gboolean handled = FALSE;
 
     if (gtk_text_view_get_window_type (textview, event->window) == GTK_TEXT_WINDOW_TEXT)
     {
@@ -240,30 +239,20 @@ moo_pane_view_button_press (GtkWidget      *widget,
                                                &buffer_x, &buffer_y);
         /* XXX */
         gtk_text_view_get_line_at_y (textview, &iter, buffer_y, NULL);
-
-        handled = activate (view, gtk_text_iter_get_line (&iter));
-
-        if (handled)
-            gtk_text_buffer_place_cursor (get_buffer (view), &iter);
+        activate (view, gtk_text_iter_get_line (&iter));
     }
 
-    if (!handled)
-        return GTK_WIDGET_CLASS(moo_pane_view_parent_class)->button_press_event (widget, event);
-    else
-        return TRUE;
+    return GTK_WIDGET_CLASS(moo_pane_view_parent_class)->button_release_event (widget, event);
 }
 
 
-static gboolean
+static void
 activate (MooPaneView *view,
           int          line)
 {
-    gboolean handled = FALSE;
-    gpointer data = moo_pane_view_get_line_data (view, line);
-
-    g_signal_emit (view, signals[ACTIVATE], 0, data, line, &handled);
-
-    return handled;
+    g_signal_emit (view, signals[ACTIVATE], 0,
+                   moo_pane_view_get_line_data (view, line),
+                   line);
 }
 
 
@@ -376,10 +365,6 @@ moo_pane_view_move_cursor (GtkTextView    *text_view,
                                   gtk_text_buffer_get_insert (buffer),
                                   0, FALSE, 0, 0);
 }
-
-
-static gboolean  activate                   (MooPaneView    *view,
-                                             int             line);
 
 
 static void

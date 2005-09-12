@@ -42,7 +42,7 @@ struct _MooPaneViewClass
 {
     MooTextViewClass parent_class;
 
-    gboolean (*activate) (MooPaneView *view,
+    void     (*activate) (MooPaneView *view,
                           gpointer     line_data,
                           int          line);
 };
