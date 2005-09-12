@@ -587,14 +587,17 @@ moo_pane_view_write (MooPaneView    *view,
 static GtkTextMark*
 get_end_mark (MooPaneView *view)
 {
+    GtkTextIter iter;
+    GtkTextBuffer *buffer = get_buffer (view);
+
+    gtk_text_buffer_get_end_iter (buffer, &iter);
+    gtk_text_iter_set_line_offset (&iter, 0);
+
     if (!view->priv->end_mark)
-    {
-        GtkTextIter end;
-        GtkTextBuffer *buffer = get_buffer (view);
-        gtk_text_buffer_get_end_iter (buffer, &end);
         view->priv->end_mark =
-                gtk_text_buffer_create_mark (buffer, NULL, &end, FALSE);
-    }
+                gtk_text_buffer_create_mark (buffer, NULL, &iter, FALSE);
+    else
+        gtk_text_buffer_move_mark (buffer, view->priv->end_mark, &iter);
 
     return view->priv->end_mark;
 }
