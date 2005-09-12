@@ -140,6 +140,15 @@ GtkWidget *gtk_label_new_with_markup (const char *markup);
 #endif /* !GTK_CHECK_VERSION(2,6,0) */
 
 
+#if !GTK_CHECK_VERSION(2,8,0)
+
+#ifndef GTK_STOCK_SELECT_ALL
+#define GTK_STOCK_SELECT_ALL  "gtk-select-all"
+#endif
+
+#endif /* !GTK_CHECK_VERSION(2,8,0) */
+
+
 G_END_DECLS
 
 #endif /* MOOUTILS_COMPAT_H */

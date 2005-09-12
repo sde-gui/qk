@@ -321,7 +321,6 @@ const GSList    *moo_edit_lang_mgr_get_lang_files_dirs          (MooEditLangMgr 
 void             moo_edit_lang_mgr_add_lang_files_dir           (MooEditLangMgr *mgr,
                                                                  const char     *dirname)
 {
-    GError *err = NULL;
     GDir *dir;
     const char *entry;
 

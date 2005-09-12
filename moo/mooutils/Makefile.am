@@ -80,6 +80,8 @@ libmooutils_la_SOURCES =        \
     stock-moo.h                 \
     stock-edit-16.h             \
     stock-edit-24.h             \
+    stock-select-all-16.h       \
+    stock-select-all-24.h       \
     stock-terminal-24.h
 
 python_sources =                \
