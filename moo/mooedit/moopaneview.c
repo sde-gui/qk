@@ -135,6 +135,7 @@ static void moo_pane_view_init (MooPaneView *view)
                   "editable", FALSE,
                   "cursor-visible", FALSE,
                   "current-line-color", "grey",
+                  "check-brackets", FALSE,
                   NULL);
 }
 

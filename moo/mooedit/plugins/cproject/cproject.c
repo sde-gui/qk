@@ -289,7 +289,11 @@ cproject_plugin_attach (CProjectPlugin             *plugin,
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
                                          GTK_SHADOW_ETCHED_IN);
 
-    widget = moo_pane_view_new ();
+    widget = g_object_new (MOO_TYPE_CMD_VIEW,
+                           "wrap-mode", GTK_WRAP_WORD,
+                           "highlight-current-line", FALSE,
+                           NULL);
+
     gtk_container_add (GTK_CONTAINER (swin), widget);
     gtk_widget_show_all (swin);
 
@@ -298,7 +302,7 @@ cproject_plugin_attach (CProjectPlugin             *plugin,
     moo_edit_window_add_pane (window, CPROJECT_PLUGIN_ID,
                               swin, label, MOO_PANE_POS_BOTTOM);
 
-    plugin->output = MOO_PANE_VIEW (widget);
+    plugin->output = MOO_CMD_VIEW (widget);
 }
 
 
@@ -576,167 +580,34 @@ window_close (CProjectPlugin *plugin)
 
 
 static void
-command_exit (GPid            pid,
-              gint            status,
-              CProjectPlugin *plugin)
+run_command (CProjectPlugin *plugin,
+             char           *command)
 {
-    g_return_if_fail (pid == plugin->command_pid);
+    GtkWidget *pane;
 
-    if (plugin->command_out_watch)
-        g_source_remove (plugin->command_out_watch);
-    if (plugin->command_err_watch)
-        g_source_remove (plugin->command_err_watch);
-
-    command_free (plugin->running);
-    plugin->running = NULL;
-
-    g_spawn_close_pid (pid);
-
-    g_return_if_fail (WIFEXITED (status));
-
-    if (!WEXITSTATUS (status))
-    {
-        moo_pane_view_write_line (plugin->output, "*** Success ***", -1, NULL);
-    }
-    else
-    {
-        char *msg = g_strdup_printf ("Command failed with status %d",
-                                     WEXITSTATUS (status));
-        moo_pane_view_write_line (plugin->output, msg, -1, NULL);
-        g_free (msg);
-    }
-}
-
-
-static gboolean
-command_out_or_err (GIOChannel     *channel,
-                    GIOCondition    condition,
-                    gboolean        stdout,
-                    CProjectPlugin *plugin)
-{
-    char *line = NULL;
-    gsize length;
-    GError *error = NULL;
-
-    if (condition & (G_IO_ERR | G_IO_HUP))
-        goto end;
-
-    g_io_channel_read_line (channel, &line, &length,
-                            NULL, &error);
-
-    if (error)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-        goto end;
-    }
-
-    if (line)
-    {
-        moo_pane_view_write_line (plugin->output, line, length, NULL);
-        g_free (line);
-    }
-
-    return TRUE;
-
-end:
-    if (stdout)
-        plugin->command_out_watch = 0;
-    else
-        plugin->command_err_watch = 0;
-    return FALSE;
-}
-
-static gboolean
-command_out (GIOChannel     *channel,
-             GIOCondition    condition,
-             CProjectPlugin *plugin)
-{
-    return command_out_or_err (channel, condition, TRUE, plugin);
-}
-
-
-static gboolean
-command_err (GIOChannel     *channel,
-             GIOCondition    condition,
-             CProjectPlugin *plugin)
-{
-    return command_out_or_err (channel, condition, FALSE, plugin);
-}
-
-
-void
-cproject_run_command (CProjectPlugin *plugin,
-                      Command        *command)
-{
-    GError *error = NULL;
-    GIOChannel *command_out_chan, *command_err_chan;
-
-    g_return_if_fail (plugin->output != NULL);
+    g_return_if_fail (plugin->window != NULL);
     g_return_if_fail (command != NULL);
 
-    if (plugin->running)
-        return;
+    pane = moo_edit_window_get_pane (plugin->window, CPROJECT_PLUGIN_ID);
+    g_return_if_fail (pane != NULL);
 
-    g_spawn_async_with_pipes (command->working_dir,
-                              command->argv, command->envp,
-                              G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                              NULL, NULL,
-                              &plugin->command_pid,
-                              NULL,
-                              &plugin->command_stdout,
-                              &plugin->command_stderr,
-                              &error);
+    moo_pane_view_clear (MOO_PANE_VIEW (plugin->output));
+    moo_big_paned_present_pane (plugin->window->paned, pane);
 
-    if (error)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-        command_free (command);
-        return;
-    }
-
-    plugin->running = command;
-
-    plugin->command_watch =
-            g_child_watch_add (plugin->command_pid,
-                               (GChildWatchFunc) command_exit,
-                               plugin);
-
-    command_out_chan = g_io_channel_unix_new (plugin->command_stdout);
-    g_io_channel_set_encoding (command_out_chan, NULL, NULL);
-    g_io_channel_set_buffered (command_out_chan, TRUE);
-    g_io_channel_set_flags (command_out_chan, G_IO_FLAG_NONBLOCK, NULL);
-    plugin->command_out_watch =
-            g_io_add_watch_full (command_out_chan,
-                                 G_PRIORITY_DEFAULT_IDLE,
-                                 G_IO_IN | G_IO_PRI,
-                                 (GIOFunc) command_out, plugin, NULL);
-    g_io_channel_unref (command_out_chan);
-
-    command_err_chan = g_io_channel_unix_new (plugin->command_stderr);
-    g_io_channel_set_encoding (command_err_chan, NULL, NULL);
-    g_io_channel_set_buffered (command_err_chan, TRUE);
-    g_io_channel_set_flags (command_err_chan, G_IO_FLAG_NONBLOCK, NULL);
-    plugin->command_err_watch =
-            g_io_add_watch_full (command_err_chan,
-                                 G_PRIORITY_DEFAULT_IDLE,
-                                 G_IO_IN | G_IO_PRI,
-                                 (GIOFunc) command_err, plugin, NULL);
-    g_io_channel_unref (command_err_chan);
+    moo_cmd_view_run_command (plugin->output, command);
 }
 
 
 void
 cproject_build_project (CProjectPlugin *plugin)
 {
-    Command *command;
+    char *command;
 
     g_return_if_fail (plugin->project != NULL);
+    g_return_if_fail (plugin->window != NULL);
 
     command = project_get_command (plugin->project,
                                    COMMAND_BUILD_PROJECT);
-    g_return_if_fail (command != NULL);
-
-    cproject_run_command (plugin, command);
+    run_command (plugin, command);
+    g_free (command);
 }

@@ -15,7 +15,7 @@
 #define __C_PROJECT_H__
 
 #include "mooedit/mooplugin.h"
-#include "mooedit/moopaneview.h"
+#include "mooedit/moocmdview.h"
 #include "cproject-project.h"
 
 G_BEGIN_DECLS
@@ -34,45 +34,34 @@ struct _CProjectPlugin
     MooEditWindow *window;
     GtkWidget *build_configuration_menu;
     MooRecentMgr *recent_mgr;
-    MooPaneView *output;
+    MooCmdView *output;
 
-    Command *running;
-    int command_stdout;
-    int command_stderr;
-    GPid command_pid;
-    guint command_watch;
-    guint command_out_watch;
-    guint command_err_watch;
-    GString *command_out_buf;
-    GString *command_err_buf;
+    char *running;
 };
 
 
 GType       cproject_plugin_get_type    (void);
 
-gboolean    cproject_plugin_init        (CProjectPlugin             *plugin);
-void        cproject_plugin_deinit      (CProjectPlugin             *plugin);
-void        cproject_plugin_attach      (CProjectPlugin             *plugin,
-                                         MooEditWindow              *window);
-void        cproject_plugin_detach      (CProjectPlugin             *plugin,
-                                         MooEditWindow              *window);
+gboolean    cproject_plugin_init        (CProjectPlugin *plugin);
+void        cproject_plugin_deinit      (CProjectPlugin *plugin);
+void        cproject_plugin_attach      (CProjectPlugin *plugin,
+                                         MooEditWindow  *window);
+void        cproject_plugin_detach      (CProjectPlugin *plugin,
+                                         MooEditWindow  *window);
 
-void        cproject_load_prefs         (CProjectPlugin             *plugin);
-void        cproject_save_prefs         (CProjectPlugin             *plugin);
-void        cproject_update_project_ui  (CProjectPlugin             *plugin);
-void        cproject_update_file_ui     (CProjectPlugin             *plugin);
+void        cproject_load_prefs         (CProjectPlugin *plugin);
+void        cproject_save_prefs         (CProjectPlugin *plugin);
+void        cproject_update_project_ui  (CProjectPlugin *plugin);
+void        cproject_update_file_ui     (CProjectPlugin *plugin);
 
-gboolean    cproject_close_project      (CProjectPlugin             *plugin);
-void        cproject_new_project        (CProjectPlugin             *plugin);
-void        cproject_open_project       (CProjectPlugin             *plugin,
-                                         const char                 *path);
-void        cproject_project_options    (CProjectPlugin             *plugin);
-void        cproject_build_project      (CProjectPlugin             *plugin);
-void        cproject_compile_file       (CProjectPlugin             *plugin);
-void        cproject_execute            (CProjectPlugin             *plugin);
-
-void        cproject_run_command        (CProjectPlugin             *plugin,
-                                         Command                    *command);
+gboolean    cproject_close_project      (CProjectPlugin *plugin);
+void        cproject_new_project        (CProjectPlugin *plugin);
+void        cproject_open_project       (CProjectPlugin *plugin,
+                                         const char     *path);
+void        cproject_project_options    (CProjectPlugin *plugin);
+void        cproject_build_project      (CProjectPlugin *plugin);
+void        cproject_compile_file       (CProjectPlugin *plugin);
+void        cproject_execute            (CProjectPlugin *plugin);
 
 
 G_END_DECLS

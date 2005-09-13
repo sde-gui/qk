@@ -593,47 +593,39 @@ get_file_list (MooMarkupNode *parent)
 }
 
 
-void
-command_free (Command *command)
-{
-    if (command)
-    {
-        g_free (command->working_dir);
-        g_strfreev (command->argv);
-        g_strfreev (command->envp);
-        g_free (command);
-    }
-}
-
-
-Command*
+char*
 project_get_command (Project    *project,
                      CommandType command_type)
 {
-    Command *command;
+    GString *command;
 
     g_return_val_if_fail (project != NULL, NULL);
 
-    command = g_new0 (Command, 1);
+    command = g_string_new ("");
 
     switch (command_type)
     {
         case COMMAND_BUILD_PROJECT:
-            command->argv = g_new0 (char*, 2);
-            command->argv[0] = g_strdup ("make");
-
             if (g_path_is_absolute (project->active->build_dir))
-                command->working_dir = g_strdup (project->active->build_dir);
+            {
+                g_string_printf (command, "cd '%s' && make",
+                                 project->active->build_dir);
+            }
             else
-                command->working_dir = g_build_filename (project->project_dir,
-                                                         project->active->build_dir,
-                                                         NULL);
+            {
+                char *working_dir =
+                        g_build_filename (project->project_dir,
+                                          project->active->build_dir,
+                                          NULL);
+                g_string_printf (command, "cd '%s' && make",
+                                 working_dir);
+            }
             break;
 
         default:
-            g_free (command);
+            g_string_free (command, TRUE);
             g_return_val_if_reached (NULL);
     }
 
-    return command;
+    return g_string_free (command, FALSE);
 }

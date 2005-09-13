@@ -92,6 +92,7 @@ enum {
     PROP_BUFFER,
     PROP_INDENTER,
     PROP_HIGHLIGHT_CURRENT_LINE,
+    PROP_CHECK_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
     PROP_CURRENT_LINE_COLOR_GDK,
     PROP_SHOW_TABS,
@@ -151,6 +152,14 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "highlight-current-line",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CHECK_BRACKETS,
+                                     g_param_spec_boolean ("check-brackets",
+                                             "check-brackets",
+                                             "check-brackets",
+                                             TRUE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURRENT_LINE_COLOR_GDK,
@@ -512,6 +521,11 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_indenter (view, g_value_get_object (value));
             break;
 
+        case PROP_CHECK_BRACKETS:
+            g_object_set (get_buffer (view), "check-brackets",
+                          g_value_get_boolean (value), NULL);
+            break;
+
         case PROP_HIGHLIGHT_CURRENT_LINE:
             moo_text_view_set_highlight_current_line (view, g_value_get_boolean (value));
             break;
@@ -543,6 +557,7 @@ moo_text_view_get_property (GObject        *object,
                             GParamSpec     *pspec)
 {
     MooTextView *view = MOO_TEXT_VIEW (object);
+    gboolean val;
 
     switch (prop_id)
     {
@@ -556,6 +571,11 @@ moo_text_view_get_property (GObject        *object,
 
         case PROP_HIGHLIGHT_CURRENT_LINE:
             g_value_set_boolean (value, view->priv->highlight_current_line);
+            break;
+
+        case PROP_CHECK_BRACKETS:
+            g_object_get (get_buffer (view), "check-brackets", &val, NULL);
+            g_value_set_boolean (value, val);
             break;
 
         case PROP_CURRENT_LINE_COLOR_GDK:

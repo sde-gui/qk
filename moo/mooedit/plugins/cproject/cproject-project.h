@@ -24,7 +24,6 @@ typedef struct _Configuration Configuration;
 typedef struct _RunOptions RunOptions;
 typedef struct _MakeOptions MakeOptions;
 typedef struct _ConfigureOptions ConfigureOptions;
-typedef struct _Command Command;
 
 
 struct _Project
@@ -65,13 +64,6 @@ struct _ConfigureOptions
 {
 };
 
-struct _Command
-{
-    char *working_dir;
-    char **argv;
-    char **envp;
-};
-
 typedef enum {
     COMMAND_BUILD_PROJECT
 } CommandType;
@@ -88,10 +80,8 @@ Configuration  *project_get_configuration   (Project    *project,
                                              const char *name);
 
 /* must be freed */
-Command        *project_get_command         (Project    *project,
+char           *project_get_command         (Project    *project,
                                              CommandType command_type);
-
-void            command_free                (Command    *command);
 
 
 G_END_DECLS
