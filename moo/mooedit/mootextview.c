@@ -322,7 +322,8 @@ moo_text_view_constructor (GType                  type,
                                       G_CALLBACK (can_redo_cb),
                                       view);
 
-    g_object_set (get_buffer (view), "check-brackets", TRUE, NULL);
+    g_object_set (get_buffer (view), "check-brackets",
+                  view->priv->check_brackets, NULL);
 
     g_signal_connect_swapped (get_buffer (view), "cursor_moved",
                               G_CALLBACK (cursor_moved), view);

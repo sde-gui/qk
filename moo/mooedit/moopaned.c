@@ -328,7 +328,7 @@ static void moo_paned_class_init (MooPanedClass *klass)
                                      g_param_spec_boolean ("enable-border",
                                              "enable-border",
                                              "enable-border",
-                                             FALSE,
+                                             TRUE,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 
     gtk_widget_class_install_style_property (widget_class,

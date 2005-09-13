@@ -590,7 +590,7 @@ moo_text_buffer_set_bracket_match_style (MooTextBuffer           *buffer,
     if (style->mask & GTK_SOURCE_TAG_STYLE_USE_BACKGROUND)
         bg = &style->background;
     if (style->mask & GTK_SOURCE_TAG_STYLE_USE_FOREGROUND)
-        bg = &style->foreground;
+        fg = &style->foreground;
     if (style->italic)
         italic = PANGO_STYLE_ITALIC;
     if (style->bold)
