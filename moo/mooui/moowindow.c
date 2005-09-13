@@ -622,8 +622,7 @@ static void toolbar_style_toggled (GtkCheckMenuItem *item,
     style = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item),
                                                 "moo_window_toolbar_style"));
     gtk_toolbar_set_style (GTK_TOOLBAR (window->toolbar), style);
-    moo_prefs_set_enum (setting (window, PREFS_TOOLBAR_STYLE),
-                        GTK_TYPE_TOOLBAR_STYLE, style);
+    moo_prefs_set_enum (setting (window, PREFS_TOOLBAR_STYLE), style);
 }
 
 
@@ -669,6 +668,22 @@ static GtkMenuItem *moo_window_create_toolbar_style_menu (MooWindow *window)
 }
 
 
+static GtkToolbarStyle get_toolbar_style_gtk (MooWindow *window)
+{
+    GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (window));
+    GtkToolbarStyle style = GTK_TOOLBAR_ICONS;
+    gpointer toolbar_class;
+
+    g_return_val_if_fail (settings != NULL, style);
+
+    toolbar_class = g_type_class_ref (GTK_TYPE_TOOLBAR);
+    g_object_get (settings, "gtk-toolbar-style", &style, NULL);
+    g_type_class_unref (toolbar_class);
+
+    return style;
+}
+
+
 static void init_prefs (MooWindow *window)
 {
     moo_prefs_new_key_bool (setting (window, PREFS_REMEMBER_SIZE), TRUE);
@@ -677,21 +692,13 @@ static void init_prefs (MooWindow *window)
     moo_prefs_new_key_int (setting (window, PREFS_HEIGHT), -1);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
-    moo_prefs_new_key (setting (window, PREFS_TOOLBAR_STYLE),
-                       GTK_TYPE_TOOLBAR_STYLE, NULL);
+    moo_prefs_new_key_enum (setting (window, PREFS_TOOLBAR_STYLE),
+                            GTK_TYPE_TOOLBAR_STYLE,
+                            get_toolbar_style_gtk (window));
 }
 
 
 static GtkToolbarStyle get_toolbar_style (MooWindow *window)
 {
-    GtkSettings *settings = gtk_widget_get_settings (GTK_WIDGET (window));
-    GtkToolbarStyle style;
-
-    g_return_val_if_fail (settings != NULL, 0);
-
-    g_object_get (settings, "gtk-toolbar-style", &style, NULL);
-    if (moo_prefs_get (setting (window, PREFS_TOOLBAR_STYLE)))
-        style = moo_prefs_get_int (setting (window, PREFS_TOOLBAR_STYLE));
-
-    return style;
+    return moo_prefs_get_enum (setting (window, PREFS_TOOLBAR_STYLE));
 }

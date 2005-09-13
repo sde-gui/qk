@@ -12,7 +12,7 @@
  */
 
 #include "mooutils/mooobjectfactory.h"
-#include "mooutils/mootypes.h"
+#include "mooutils/moovalue.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooparam.h"
 #include <string.h>

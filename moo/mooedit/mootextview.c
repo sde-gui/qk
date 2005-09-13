@@ -322,6 +322,8 @@ moo_text_view_constructor (GType                  type,
                                       G_CALLBACK (can_redo_cb),
                                       view);
 
+    g_object_set (get_buffer (view), "check-brackets", TRUE, NULL);
+
     g_signal_connect_swapped (get_buffer (view), "cursor_moved",
                               G_CALLBACK (cursor_moved), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-selection",
@@ -401,6 +403,8 @@ _moo_text_view_private_new (void)
     priv->enter_indents = TRUE;
     priv->ctrl_up_down_scrolls = TRUE;
     priv->ctrl_page_up_down_scrolls = TRUE;
+
+    priv->check_brackets = TRUE;
 
     return priv;
 }
@@ -522,8 +526,10 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_CHECK_BRACKETS:
-            g_object_set (get_buffer (view), "check-brackets",
-                          g_value_get_boolean (value), NULL);
+            view->priv->check_brackets = g_value_get_boolean (value);
+            if (view->priv->constructed)
+                g_object_set (get_buffer (view), "check-brackets",
+                              view->priv->check_brackets, NULL);
             break;
 
         case PROP_HIGHLIGHT_CURRENT_LINE:

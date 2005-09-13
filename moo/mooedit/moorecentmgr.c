@@ -369,14 +369,17 @@ mgr_load_recent (MooRecentMgr *mgr)
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
     char *root_path;
+    char *key;
 
     if (mgr->priv->prefs_loaded)
         return;
     else
         mgr->priv->prefs_loaded = TRUE;
 
-    mgr->priv->display_full_name =
-            moo_prefs_get_bool (moo_edit_setting (PREFS_SHOW_FULL_NAME));
+    key = moo_prefs_make_key (mgr->priv->user_id, PREFS_SHOW_FULL_NAME, NULL);
+    if (moo_prefs_key_registered (key))
+        mgr->priv->display_full_name = moo_prefs_get_bool (key);
+    g_free (key);
 
     xml = moo_prefs_get_markup ();
     g_return_if_fail (xml != NULL);

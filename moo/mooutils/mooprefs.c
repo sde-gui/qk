@@ -21,6 +21,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/moofileutils.h"
+#include "mooutils/moovalue.h"
 #include <string.h>
 #include <errno.h>
 
@@ -32,17 +33,13 @@
 #endif
 
 
-static MooPrefs *instance (void)
-{
-    static MooPrefs *p = NULL;
-    if (!p)
-        p = MOO_PREFS (g_object_new (MOO_TYPE_PREFS, NULL));
-    return p;
-}
-
-
-/* MOO_TYPE_PREFS */
-G_DEFINE_TYPE (MooPrefs, moo_prefs, G_TYPE_OBJECT)
+struct _MooPrefsPrivate {
+    GHashTable      *data; /* char* -> Item* */
+    MooMarkupDoc    *xml;
+    GList           *closures;
+    GHashTable      *closures_map; /* guint -> closures list link */
+    guint            last_notify_id;
+};
 
 
 typedef struct {
@@ -52,254 +49,82 @@ typedef struct {
 } PrefsItem;
 
 
-static gboolean type_is_supported   (GType           type);
-static gboolean convert_value       (const GValue   *src,
-                                     GValue         *dest);
-static gboolean value_equal         (const GValue   *a,
-                                     const GValue   *b);
+static void          prefs_new_key      (MooPrefs       *prefs,
+                                         const char     *key,
+                                         GType           value_type,
+                                         const GValue   *default_value);
+static void          prefs_new_key_from_string (MooPrefs *prefs,
+                                         const char     *key,
+                                         const char     *value);
+static void          prefs_delete_key   (MooPrefs       *prefs,
+                                         const char     *key);
+static GType         prefs_get_key_type (MooPrefs       *prefs,
+                                         const char     *key);
 
-static gboolean convert_to_bool         (const GValue   *val);
-static int      convert_to_int          (const GValue   *val);
-static int      convert_to_enum         (const GValue   *val,
-                                         GType           enum_type);
-static double   convert_to_double       (const GValue   *val);
-static const GdkColor *convert_to_color (const GValue   *val);
-static const char *convert_to_string    (const GValue   *val);
+static const GValue *prefs_get          (MooPrefs       *prefs,
+                                         const char     *key);
+static const GValue *prefs_get_default  (MooPrefs       *prefs,
+                                         const char     *key);
+static void          prefs_set          (MooPrefs       *prefs,
+                                         const char     *key,
+                                         const GValue   *value);
+static void          prefs_set_default  (MooPrefs       *prefs,
+                                         const char     *key,
+                                         const GValue   *value);
+static PrefsItem    *prefs_get_item     (MooPrefs       *prefs,
+                                         const char     *key);
+static void          prefs_emit_notify  (MooPrefs       *prefs,
+                                         const char     *key,
+                                         const GValue   *value);
 
-static PrefsItem   *item_new            (GType           type,
+static PrefsItem    *item_new           (GType           type,
                                          const GValue   *value,
-                                         const GValue   *default_value)
+                                         const GValue   *default_value);
+static void          item_free          (PrefsItem      *item);
+static void          item_set_type      (PrefsItem      *item,
+                                         GType           type);
+static const GValue *item_value         (PrefsItem      *item);
+static const GValue *item_default_value (PrefsItem      *item);
+static void          item_set           (PrefsItem      *item,
+                                         const GValue   *value);
+static void          item_set_default   (PrefsItem      *item,
+                                         const GValue   *value);
+
+static void          moo_prefs_finalize (GObject        *object);
+static void          moo_prefs_new_key_from_string (const char     *key,
+                                         const char     *value);
+
+
+/* MOO_TYPE_PREFS */
+G_DEFINE_TYPE (MooPrefs, moo_prefs, G_TYPE_OBJECT)
+
+
+static MooPrefs*
+instance (void)
 {
-    PrefsItem *item;
+    static MooPrefs *p = NULL;
 
-    g_return_val_if_fail (type_is_supported (type), NULL);
-    g_return_val_if_fail (!G_IS_VALUE (value) ||
-            G_VALUE_TYPE (value) == type, NULL);
-    g_return_val_if_fail (!G_IS_VALUE (default_value) ||
-            G_VALUE_TYPE (default_value) == type, NULL);
+    if (!p)
+        p = g_object_new (MOO_TYPE_PREFS, NULL);
 
-    item = g_new0 (PrefsItem, 1);
-    item->type = type;
-
-    if (value)
-    {
-        g_value_init (&item->value, type);
-        g_value_copy (value, &item->value);
-    }
-    if (default_value)
-    {
-        g_value_init (&item->default_value, type);
-        g_value_copy (default_value, &item->default_value);
-    }
-
-    return item;
+    return p;
 }
 
 
-static const GValue *item_value         (PrefsItem      *item)
-{
-    g_return_val_if_fail (item != NULL, NULL);
-    if (G_IS_VALUE (&item->value))
-        return &item->value;
-    else
-        return NULL;
-}
+/***************************************************************************/
+/* MooPrefs
+ */
 
-static const GValue *item_default_value (PrefsItem      *item)
-{
-    g_return_val_if_fail (item != NULL, NULL);
-    if (G_IS_VALUE (&item->default_value))
-        return &item->default_value;
-    else
-        return NULL;
-}
-
-
-#define CONVERT_VALUE_TYPE(val,type)                \
-G_STMT_START {                                      \
-    if (G_IS_VALUE (val))                           \
-    {                                               \
-        GValue tmp__;                               \
-        tmp__.g_type = 0;                           \
-        g_value_init (&tmp__, (type));              \
-        if (!convert_value (val, &tmp__))           \
-        {                                           \
-            g_warning ("%s: could not convert "     \
-                       "old value", G_STRLOC);      \
-            g_value_unset (val);                    \
-        }                                           \
-        else                                        \
-        {                                           \
-            g_value_unset (val);                    \
-            g_value_init (val, type);               \
-            g_value_copy (&tmp__, val);             \
-            g_value_unset (&tmp__);                 \
-        }                                           \
-    }                                               \
-} G_STMT_END
-
-
-static void         item_set_type       (PrefsItem      *item,
-                                         GType           type)
-{
-    g_return_if_fail (item != NULL);
-    g_return_if_fail (type_is_supported (type));
-
-    if (type != item->type)
-    {
-        item->type = type;
-        CONVERT_VALUE_TYPE (&item->value, type);
-        CONVERT_VALUE_TYPE (&item->default_value, type);
-    }
-}
-
-
-static void set_val (PrefsItem      *item,
-                     GValue         *dest,
-                     const GValue   *val)
-{
-    g_return_if_fail (item != NULL);
-    g_return_if_fail (!val || G_IS_VALUE (val));
-
-    if (val)
-    {
-        if (G_VALUE_TYPE (val) == item->type)
-        {
-            if (!G_IS_VALUE (dest))
-                g_value_init (dest, item->type);
-            g_value_copy (val, dest);
-        }
-        else
-        {
-            g_return_if_fail (type_is_supported (G_VALUE_TYPE (val)));
-            if (!G_IS_VALUE (dest))
-                g_value_init (dest, item->type);
-            g_return_if_fail (convert_value (val, dest));
-        }
-    }
-    else
-    {
-        if (G_IS_VALUE (dest))
-            g_value_unset (dest);
-    }
-}
-
-
-static void         item_set            (PrefsItem      *item,
-                                         const GValue   *new_value)
-{
-    set_val (item, &item->value, new_value);
-}
-
-static void         item_set_default    (PrefsItem      *item,
-                                         const GValue   *new_value)
-{
-    set_val (item, &item->default_value, new_value);
-}
-
-
-static void         item_unset_value    (PrefsItem      *item)
-{
-    if (G_IS_VALUE (&item->value))
-        g_value_unset (&item->value);
-}
-
-
-static void         item_free           (PrefsItem      *item)
-{
-    if (item)
-    {
-        item->type = 0;
-        if (G_IS_VALUE (&item->value))
-            g_value_unset (&item->value);
-        if (G_IS_VALUE (&item->default_value))
-            g_value_unset (&item->default_value);
-        g_free (item);
-    }
-}
-
-
-typedef union {
-    char        *key;
-    EggRegex    *regex;
-} Pattern;
-
-static void      pattern_free   (Pattern             p,
-                                 MooPrefsMatchType   type);
-
-
-typedef struct {
-    guint               id;
-    MooPrefsMatchType   type;
-    Pattern             pattern;
-    guint               prefix_len;
-    MooPrefsNotify      callback;
-    gpointer            data;
-    guint               blocked : 1;
-} Closure;
-
-static Closure  *closure_new    (MooPrefs           *prefs,
-                                 const char         *pattern,
-                                 MooPrefsMatchType   match_type,
-                                 MooPrefsNotify      callback,
-                                 gpointer            data);
-static void      closure_free   (Closure            *closure);
-static gboolean  closure_match  (Closure            *closure,
-                                 const char         *key);
-static void      closure_invoke (Closure            *closure,
-                                 const char         *key,
-                                 const GValue       *value);
-
-
-struct _MooPrefsPrivate {
-    GHashTable      *data;              /* char* -> Item* */
-    guint            last_notify_id;
-    GList           *closures;
-    GHashTable      *closures_map;      /* guint -> closures list link */
-    MooMarkupDoc    *xml;
-};
-
-
-static void         prefs_set       (MooPrefs       *prefs,
-                                     const char     *key,
-                                     const GValue   *value);
-
-static const GValue *prefs_get      (MooPrefs   *prefs,
-                                     const char *key);
-static PrefsItem   *prefs_get_item  (MooPrefs   *prefs,
-                                     const char *key);
-
-static void         prefs_change    (MooPrefs       *prefs,
-                                     const char     *key,
-                                     PrefsItem      *item,
-                                     const GValue   *value);
-static void         prefs_create    (MooPrefs       *prefs,
-                                     const char     *key,
-                                     const GValue   *value,
-                                     const GValue   *default_value);
-static void       prefs_create_type (MooPrefs      *prefs,
-                                     const char    *key,
-                                     GType          type);
-static void         prefs_remove    (MooPrefs       *prefs,
-                                     const char     *key);
-
-static void         emit_notify     (MooPrefs       *prefs,
-                                     const char     *key,
-                                     const GValue   *value);
-
-
-static void      moo_prefs_finalize (GObject *object);
-
-
-static void moo_prefs_class_init (MooPrefsClass *klass)
+static void
+moo_prefs_class_init (MooPrefsClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
     gobject_class->finalize = moo_prefs_finalize;
 }
 
 
-static void moo_prefs_init (MooPrefs *prefs)
+static void
+moo_prefs_init (MooPrefs *prefs)
 {
     prefs->priv = g_new0 (MooPrefsPrivate, 1);
 
@@ -307,100 +132,21 @@ static void moo_prefs_init (MooPrefs *prefs)
             g_hash_table_new_full (g_str_hash, g_str_equal,
                                    (GDestroyNotify) g_free,
                                    (GDestroyNotify) item_free);
-    prefs->priv->last_notify_id = 0;
-    prefs->priv->closures = NULL;
+
     prefs->priv->closures_map = g_hash_table_new (g_direct_hash, NULL);
 }
 
 
-static void moo_prefs_finalize (GObject *obj)
+static void
+moo_prefs_finalize (GObject *obj)
 {
     MooPrefs *prefs = MOO_PREFS (obj);
 
     g_hash_table_destroy (prefs->priv->data);
-    prefs->priv->data = NULL;
-
-    g_hash_table_destroy (prefs->priv->closures_map);
-    prefs->priv->closures_map = NULL;
-
-    g_list_foreach (prefs->priv->closures,
-                    (GFunc) closure_free,
-                    NULL);
-    g_list_free (prefs->priv->closures);
-    prefs->priv->closures = NULL;
-
-    if (prefs->priv->xml)
-        moo_markup_doc_unref (prefs->priv->xml);
-    prefs->priv->xml = NULL;
-
     g_free (prefs->priv);
     prefs->priv = NULL;
 
     G_OBJECT_CLASS(moo_prefs_parent_class)->finalize (obj);
-}
-
-
-static void      prefs_set      (MooPrefs       *prefs,
-                                 const char     *key,
-                                 const GValue   *val)
-{
-    g_return_if_fail (MOO_IS_PREFS (prefs));
-    g_return_if_fail (key && key[0]);
-
-    if (val)
-    {
-        PrefsItem *item = prefs_get_item (prefs, key);
-
-        if (item)
-            prefs_change (prefs, key, item, val);
-        else
-            prefs_create (prefs, key, val, NULL);
-    }
-    else
-    {
-        prefs_remove (prefs, key);
-    }
-}
-
-
-static void      prefs_new_key  (MooPrefs       *prefs,
-                                 const char     *key,
-                                 GType           type,
-                                 const GValue   *default_value)
-{
-    PrefsItem *item;
-
-    g_return_if_fail (MOO_IS_PREFS (prefs));
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (type_is_supported (type));
-    g_return_if_fail (!G_IS_VALUE (default_value) ||
-            G_VALUE_TYPE (default_value) == type);
-
-    item = prefs_get_item (prefs, key);
-
-    if (item)
-    {
-        item_set_type (item, type);
-        if (default_value)
-            item_set_default (item, default_value);
-        if (!item_value (item) && item_default_value (item))
-            item_set (item, item_default_value (item));
-        emit_notify (prefs, key, item_value (item));
-    }
-    else
-    {
-        prefs_create_type (prefs, key, type);
-        if (default_value)
-        {
-            item = prefs_get_item (prefs, key);
-            g_assert (item != NULL);
-            if (default_value)
-            {
-                item_set_default (item, default_value);
-                item_set (item, default_value);
-            }
-        }
-    }
 }
 
 
@@ -451,92 +197,412 @@ moo_prefs_make_keyv (const char     *first_comp,
 }
 
 
-static PrefsItem    *prefs_get_item (MooPrefs   *prefs,
-                                     const char *key)
+MooMarkupDoc*
+moo_prefs_get_markup (void)
 {
+    MooPrefs *prefs = instance ();
+    return prefs->priv->xml;
+}
+
+
+void
+moo_prefs_new_key (const char     *key,
+                   GType           value_type,
+                   const GValue   *default_value)
+{
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (moo_value_type_supported (value_type));
+    g_return_if_fail (default_value != NULL);
+    g_return_if_fail (G_VALUE_TYPE (default_value) == value_type);
+
+    prefs_new_key (instance(), key, value_type, default_value);
+}
+
+
+GType
+moo_prefs_get_key_type (const char *key)
+{
+    g_return_val_if_fail (key != NULL, G_TYPE_NONE);
+    return prefs_get_key_type (instance(), key);
+}
+
+
+gboolean
+moo_prefs_key_registered (const char *key)
+{
+    g_return_val_if_fail (key != NULL, FALSE);
+    return prefs_get_item (instance(), key) != NULL;
+}
+
+
+const GValue*
+moo_prefs_get (const char *key)
+{
+    g_return_val_if_fail (key != NULL, NULL);
+    return prefs_get (instance(), key);
+}
+
+
+const GValue*
+moo_prefs_get_default (const char *key)
+{
+    g_return_val_if_fail (key != NULL, NULL);
+    return prefs_get_default (instance(), key);
+}
+
+
+void
+moo_prefs_set (const char     *key,
+               const GValue   *value)
+{
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (value != NULL);
+    prefs_set (instance(), key, value);
+}
+
+
+void
+moo_prefs_set_default (const char     *key,
+                       const GValue   *value)
+{
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (value != NULL);
+    prefs_set_default (instance(), key, value);
+}
+
+
+void
+moo_prefs_delete_key (const char     *key)
+{
+    g_return_if_fail (key != NULL);
+    prefs_delete_key (instance(), key);
+}
+
+
+static void
+moo_prefs_new_key_from_string (const char     *key,
+                               const char     *value)
+{
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (value != NULL);
+    prefs_new_key_from_string (instance(), key, value);
+}
+
+
+/***************************************************************************/
+/* Prefs
+ */
+
+
+static void
+prefs_new_key (MooPrefs       *prefs,
+               const char     *key,
+               GType           type,
+               const GValue   *default_value)
+{
+    PrefsItem *item;
+
+    g_return_if_fail (key && key[0]);
+    g_return_if_fail (g_utf8_validate (key, -1, NULL));
+    g_return_if_fail (moo_value_type_supported (type));
+    g_return_if_fail (G_IS_VALUE (default_value));
+    g_return_if_fail (G_VALUE_TYPE (default_value) == type);
+
+    item = prefs_get_item (prefs, key);
+
+    if (!item)
+    {
+        item = item_new (type, default_value, default_value);
+        g_hash_table_insert (prefs->priv->data, g_strdup (key), item);
+    }
+    else
+    {
+        item_set_type (item, type);
+        item_set_default (item, default_value);
+    }
+
+    prefs_emit_notify (prefs, key, item_value (item));
+}
+
+
+static void
+prefs_new_key_from_string (MooPrefs     *prefs,
+                           const char   *key,
+                           const char   *value)
+{
+    PrefsItem *item;
+    GValue gval;
+
+    g_return_if_fail (key && key[0]);
+    g_return_if_fail (g_utf8_validate (key, -1, NULL));
+
+    item = prefs_get_item (prefs, key);
+
+    gval.g_type = 0;
+    g_value_init (&gval, G_TYPE_STRING);
+    g_value_set_string (&gval, value);
+
+    if (!item)
+    {
+        prefs_new_key (prefs, key, G_TYPE_STRING, &gval);
+        item = prefs_get_item (prefs, key);
+    }
+    else
+    {
+        moo_value_convert (&gval, &item->value);
+    }
+
+    g_value_unset (&gval);
+    prefs_emit_notify (prefs, key, item_value (item));
+}
+
+
+static GType
+prefs_get_key_type (MooPrefs       *prefs,
+                    const char     *key)
+{
+    PrefsItem *item;
+
+    g_return_val_if_fail (key != NULL, G_TYPE_NONE);
+
+    item = prefs_get_item (prefs, key);
+    g_return_val_if_fail (item != NULL, G_TYPE_NONE);
+
+    return item->type;
+}
+
+
+static const GValue*
+prefs_get (MooPrefs       *prefs,
+           const char     *key)
+{
+    PrefsItem *item;
+
+    g_return_val_if_fail (key != NULL, NULL);
+
+    item = prefs_get_item (prefs, key);
+    return item ? item_value (item) : NULL;
+}
+
+
+static const GValue*
+prefs_get_default (MooPrefs       *prefs,
+                   const char     *key)
+{
+    PrefsItem *item;
+
+    g_return_val_if_fail (key != NULL, NULL);
+
+    item = prefs_get_item (prefs, key);
+    g_return_val_if_fail (item != NULL, NULL);
+
+    return item_default_value (item);
+}
+
+
+static void
+prefs_set (MooPrefs       *prefs,
+           const char     *key,
+           const GValue   *value)
+{
+    PrefsItem *item;
+
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (G_IS_VALUE (value));
+
+    item = prefs_get_item (prefs, key);
+
+    if (!item)
+    {
+        g_warning ("key '%s' not registered", key);
+        return;
+    }
+
+    item_set (item, value);
+    prefs_emit_notify (prefs, key, item_value (item));
+}
+
+
+static void
+prefs_set_default (MooPrefs       *prefs,
+                   const char     *key,
+                   const GValue   *value)
+{
+    PrefsItem *item;
+
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (G_IS_VALUE (value));
+
+    item = prefs_get_item (prefs, key);
+    g_return_if_fail (item != NULL);
+
+    item_set_default (item, value);
+}
+
+
+static void
+prefs_delete_key (MooPrefs       *prefs,
+                  const char     *key)
+{
+    PrefsItem *item;
+
+    g_return_if_fail (key != NULL);
+
+    item = prefs_get_item (prefs, key);
+
+    if (!item)
+        return;
+
+    g_hash_table_remove (prefs->priv->data, key);
+    prefs_emit_notify (prefs, key, NULL);
+}
+
+
+
+static PrefsItem*
+prefs_get_item (MooPrefs       *prefs,
+                const char     *key)
+{
+    g_return_val_if_fail (key != NULL, NULL);
     return g_hash_table_lookup (prefs->priv->data, key);
 }
 
 
-static const GValue *prefs_get  (MooPrefs   *prefs,
-                                 const char *key)
-{
-    PrefsItem *item = prefs_get_item (prefs, key);
+/***************************************************************************/
+/* PrefsItem
+ */
 
-    if (item)
-        return item_value (item);
-    else
-        return NULL;
-}
-
-
-static void      prefs_change   (MooPrefs      *prefs,
-                                 const char    *key,
-                                 PrefsItem     *item,
-                                 const GValue  *val)
-{
-    item_set (item, val);
-    emit_notify (prefs, key, val);
-}
-
-
-static void      prefs_create   (MooPrefs      *prefs,
-                                 const char    *key,
-                                 const GValue  *value,
-                                 const GValue  *default_value)
-{
-    PrefsItem *item;
-    GType type;
-
-    if (G_IS_VALUE (value))
-        type = G_VALUE_TYPE (value);
-    else if (G_IS_VALUE (default_value))
-        type = G_VALUE_TYPE (default_value);
-    else
-        g_return_if_reached ();
-
-    item = item_new (type, value, default_value);
-    g_hash_table_insert (prefs->priv->data,
-                         g_strdup (key), item);
-    emit_notify (prefs, key, value);
-}
-
-
-static void   prefs_create_type (MooPrefs      *prefs,
-                                 const char    *key,
-                                 GType          type)
+static PrefsItem*
+item_new (GType           type,
+          const GValue   *value,
+          const GValue   *default_value)
 {
     PrefsItem *item;
 
-    item = item_new (type, NULL, NULL);
-    g_hash_table_insert (prefs->priv->data,
-                         g_strdup (key), item);
-    emit_notify (prefs, key, NULL);
+    g_return_val_if_fail (moo_value_type_supported (type), NULL);
+    g_return_val_if_fail (value && default_value, NULL);
+    g_return_val_if_fail (G_VALUE_TYPE (value) == type, NULL);
+    g_return_val_if_fail (G_VALUE_TYPE (default_value) == type, NULL);
+
+    item = g_new0 (PrefsItem, 1);
+
+    item->type = type;
+
+    g_value_init (&item->value, type);
+    g_value_copy (value, &item->value);
+    g_value_init (&item->default_value, type);
+    g_value_copy (default_value, &item->default_value);
+
+    return item;
 }
 
 
-static void      prefs_remove   (MooPrefs   *prefs,
-                                 const char *key)
+static void
+item_set_type (PrefsItem      *item,
+               GType           type)
 {
-    PrefsItem *item;
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (moo_value_type_supported (type));
 
-    item = g_hash_table_lookup (prefs->priv->data, key);
-
-    if (item)
+    if (type != item->type)
     {
-        if (item_default_value (item))
-            item_unset_value (item);
-        else
-            g_hash_table_remove (prefs->priv->data, key);
-
-        emit_notify (prefs, key, NULL);
+        item->type = type;
+        moo_value_change_type (&item->value, type);
+        moo_value_change_type (&item->default_value, type);
     }
 }
 
 
-static void      emit_notify    (MooPrefs       *prefs,
-                                 const char     *key,
-                                 const GValue   *value)
+static void
+item_free (PrefsItem *item)
+{
+    if (item)
+    {
+        item->type = 0;
+        g_value_unset (&item->value);
+        g_value_unset (&item->default_value);
+        g_free (item);
+    }
+}
+
+
+static const GValue*
+item_value (PrefsItem *item)
+{
+    g_return_val_if_fail (item != NULL, NULL);
+    return &item->value;
+}
+
+
+static const GValue*
+item_default_value (PrefsItem *item)
+{
+    g_return_val_if_fail (item != NULL, NULL);
+    return &item->default_value;
+}
+
+
+static void
+item_set (PrefsItem      *item,
+          const GValue   *value)
+{
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (G_IS_VALUE (value));
+    g_return_if_fail (item->type == G_VALUE_TYPE (value));
+    g_value_copy (value, &item->value);
+}
+
+
+static void
+item_set_default (PrefsItem      *item,
+                  const GValue   *value)
+{
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (G_IS_VALUE (value));
+    g_return_if_fail (item->type == G_VALUE_TYPE (value));
+    g_value_copy (value, &item->default_value);
+}
+
+
+/***************************************************************************/
+/* PrefsNotify
+ */
+
+typedef union {
+    char        *key;
+    EggRegex    *regex;
+} Pattern;
+
+typedef struct {
+    guint               id;
+    MooPrefsMatchType   type;
+    Pattern             pattern;
+    guint               prefix_len;
+    MooPrefsNotify      callback;
+    gpointer            data;
+    guint               blocked : 1;
+} Closure;
+
+static void      pattern_free   (Pattern             p,
+                                 MooPrefsMatchType   type);
+
+static Closure  *closure_new    (MooPrefs           *prefs,
+                                 const char         *pattern,
+                                 MooPrefsMatchType   match_type,
+                                 MooPrefsNotify      callback,
+                                 gpointer            data);
+static void      closure_free   (Closure            *closure);
+static gboolean  closure_match  (Closure            *closure,
+                                 const char         *key);
+static void      closure_invoke (Closure            *closure,
+                                 const char         *key,
+                                 const GValue       *value);
+
+
+static void
+prefs_emit_notify (MooPrefs       *prefs,
+                   const char     *key,
+                   const GValue   *value)
 {
     GList *l;
 
@@ -553,15 +619,39 @@ static void      emit_notify    (MooPrefs       *prefs,
 }
 
 
-/***************************************************************************/
-/* Closure
- */
+guint
+moo_prefs_notify_connect (const char         *pattern,
+                          MooPrefsMatchType   match_type,
+                          MooPrefsNotify      callback,
+                          gpointer            data)
+{
+    Closure *closure;
+    MooPrefs *prefs = instance ();
 
-static Closure  *closure_new    (MooPrefs           *prefs,
-                                 const char         *pattern,
-                                 MooPrefsMatchType   match_type,
-                                 MooPrefsNotify      callback,
-                                 gpointer            data)
+    g_return_val_if_fail (pattern != NULL, 0);
+    g_return_val_if_fail (match_type == MOO_PREFS_MATCH_KEY ||
+                          match_type == MOO_PREFS_MATCH_PREFIX ||
+                          match_type == MOO_PREFS_MATCH_REGEX, 0);
+    g_return_val_if_fail (callback != NULL, 0);
+
+    closure = closure_new (prefs, pattern, match_type, callback, data);
+    g_return_val_if_fail (closure != NULL, 0);
+
+    prefs->priv->closures = g_list_prepend (prefs->priv->closures, closure);
+    g_hash_table_insert (prefs->priv->closures_map,
+                         GUINT_TO_POINTER (closure->id),
+                         prefs->priv->closures);
+
+    return closure->id;
+}
+
+
+static Closure*
+closure_new (MooPrefs           *prefs,
+             const char         *pattern,
+             MooPrefsMatchType   match_type,
+             MooPrefsNotify      callback,
+             gpointer            data)
 {
     EggRegex *regex;
     Closure *closure;
@@ -613,7 +703,8 @@ static Closure  *closure_new    (MooPrefs           *prefs,
 }
 
 
-static void      closure_free   (Closure            *closure)
+static void
+closure_free (Closure *closure)
 {
     if (closure)
     {
@@ -623,8 +714,9 @@ static void      closure_free   (Closure            *closure)
 }
 
 
-static gboolean  closure_match  (Closure            *closure,
-                                 const char         *key)
+static gboolean
+closure_match (Closure            *closure,
+               const char         *key)
 {
     switch (closure->type) {
         case MOO_PREFS_MATCH_KEY:
@@ -648,16 +740,18 @@ static gboolean  closure_match  (Closure            *closure,
 }
 
 
-static void      closure_invoke (Closure            *closure,
-                                 const char         *key,
-                                 const GValue       *value)
+static void
+closure_invoke (Closure            *closure,
+                const char         *key,
+                const GValue       *value)
 {
     closure->callback (key, value, closure->data);
 }
 
 
-static void      pattern_free   (Pattern             p,
-                                 MooPrefsMatchType   type)
+static void
+pattern_free (Pattern             p,
+              MooPrefsMatchType   type)
 {
     if (!p.key) return;
     if (type == MOO_PREFS_MATCH_REGEX)
@@ -667,45 +761,9 @@ static void      pattern_free   (Pattern             p,
 }
 
 
-/***************************************************************************/
-/* MooPrefs
- */
-
-MooMarkupDoc   *moo_prefs_get_markup        (void)
-{
-    MooPrefs *prefs = instance ();
-    return prefs->priv->xml;
-}
-
-
-guint           moo_prefs_notify_connect        (const char         *pattern,
-                                                 MooPrefsMatchType   match_type,
-                                                 MooPrefsNotify      callback,
-                                                 gpointer            data)
-{
-    Closure *closure;
-    MooPrefs *prefs = instance ();
-
-    g_return_val_if_fail (pattern != NULL, 0);
-    g_return_val_if_fail (match_type == MOO_PREFS_MATCH_KEY ||
-                          match_type == MOO_PREFS_MATCH_PREFIX ||
-                          match_type == MOO_PREFS_MATCH_REGEX, 0);
-    g_return_val_if_fail (callback != NULL, 0);
-
-    closure = closure_new (prefs, pattern, match_type, callback, data);
-    g_return_val_if_fail (closure != NULL, 0);
-
-    prefs->priv->closures = g_list_prepend (prefs->priv->closures, closure);
-    g_hash_table_insert (prefs->priv->closures_map,
-                         GUINT_TO_POINTER (closure->id),
-                         prefs->priv->closures);
-
-    return closure->id;
-}
-
-
-static Closure *find_closure                    (MooPrefs           *prefs,
-                                                 guint               id)
+static Closure*
+find_closure (MooPrefs           *prefs,
+              guint               id)
 {
     GList *l;
 
@@ -718,7 +776,8 @@ static Closure *find_closure                    (MooPrefs           *prefs,
 }
 
 
-gboolean        moo_prefs_notify_block          (guint               id)
+gboolean
+moo_prefs_notify_block (guint id)
 {
     Closure *c;
 
@@ -732,7 +791,8 @@ gboolean        moo_prefs_notify_block          (guint               id)
 }
 
 
-gboolean        moo_prefs_notify_unblock        (guint               id)
+gboolean
+moo_prefs_notify_unblock (guint id)
 {
     Closure *c;
 
@@ -746,7 +806,8 @@ gboolean        moo_prefs_notify_unblock        (guint               id)
 }
 
 
-gboolean        moo_prefs_notify_disconnect     (guint               id)
+gboolean
+moo_prefs_notify_disconnect (guint id)
 {
     GList *l;
     MooPrefs *prefs = instance ();
@@ -768,37 +829,12 @@ gboolean        moo_prefs_notify_disconnect     (guint               id)
 }
 
 
-void            moo_prefs_new_key   (const char     *key,
-                                     GType           value_type,
-                                     const GValue   *default_value)
-{
-    g_return_if_fail (key != NULL);
-    prefs_new_key (instance(), key, value_type, default_value);
-}
-
-
-const GValue   *moo_prefs_get       (const char     *key)
-{
-    const GValue *val;
-    g_return_val_if_fail (key != NULL, NULL);
-    val = prefs_get (instance(), key);
-    return val;
-}
-
-
-void            moo_prefs_set       (const char     *key,
-                                     const GValue   *value)
-{
-    g_return_if_fail (key != NULL);
-    prefs_set (instance(), key, value);
-}
-
-
 /***************************************************************************/
 /* Loading abd saving
  */
 
-static void process_element (MooMarkupElement *elm)
+static void
+process_element (MooMarkupElement *elm)
 {
     MooMarkupNode *child;
     gboolean dir = FALSE;
@@ -828,7 +864,7 @@ static void process_element (MooMarkupElement *elm)
         else
         {
             const char *key = path + strlen (PREFS_ROOT) + 1;
-            moo_prefs_set_string (key, elm->content);
+            moo_prefs_new_key_from_string (key, elm->content);
 
 #ifdef DEBUG_READWRITE
             g_print ("key: '%s', val: '%s'\n", key, elm->content);
@@ -845,13 +881,13 @@ static void process_element (MooMarkupElement *elm)
 }
 
 
-gboolean        moo_prefs_load              (const char     *file)
+gboolean
+moo_prefs_load (const char     *file,
+                GError        **error)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root;
-    GError *err = NULL;
     MooPrefs *prefs;
-    char *content;
 
     prefs = instance ();
 
@@ -860,29 +896,10 @@ gboolean        moo_prefs_load              (const char     *file)
     if (!g_file_test (file, G_FILE_TEST_EXISTS))
         return TRUE;
 
-    if (!g_file_get_contents (file, &content, NULL, &err))
-    {
-        g_warning ("%s: could not load file '%s'", G_STRLOC, file);
-        g_warning ("%s: %s", G_STRLOC, err->message);
-        g_error_free (err);
-        return FALSE;
-    }
-
-    xml = moo_markup_parse_memory (content, -1, &err);
-    g_free (content);
+    xml = moo_markup_parse_file (file, error);
 
     if (!xml)
-    {
-        g_warning ("%s: parse error", G_STRLOC);
-
-        if (err)
-        {
-            g_warning ("%s: %s", G_STRLOC, err->message);
-            g_error_free (err);
-        }
-
         return FALSE;
-    }
 
     if (prefs->priv->xml)
     {
@@ -895,10 +912,7 @@ gboolean        moo_prefs_load              (const char     *file)
     root = moo_markup_get_root_element (xml, PREFS_ROOT);
 
     if (!root)
-    {
-        g_warning ("%s: no " PREFS_ROOT " element", G_STRLOC);
         return TRUE;
-    }
 
     process_element (MOO_MARKUP_ELEMENT (root));
 
@@ -911,27 +925,19 @@ typedef struct {
     MooMarkupNode *root;
 } Stuff;
 
-static void write_item (const char  *key,
-                        PrefsItem   *item,
-                        Stuff       *stuff)
+
+static void
+write_item (const char  *key,
+            PrefsItem   *item,
+            Stuff       *stuff)
 {
-    gboolean save = FALSE;
     const char *string = NULL;
 
     g_return_if_fail (key != NULL && key[0] != 0);
     g_return_if_fail (item != NULL && stuff != NULL);
-    g_return_if_fail (type_is_supported (item->type));
+    g_return_if_fail (moo_value_type_supported (item->type));
 
-    if (item_value (item))
-    {
-        if (!item_default_value (item))
-            save = TRUE;
-        else
-            save = !value_equal (item_value (item),
-                                 item_default_value (item));
-    }
-
-    if (!save)
+    if (moo_value_equal (item_value (item), item_default_value (item)))
     {
 #ifdef DEBUG_READWRITE
         g_print ("skipping '%s'\n", key);
@@ -939,7 +945,7 @@ static void write_item (const char  *key,
         return;
     }
 
-    string = convert_to_string (item_value (item));
+    string = moo_value_convert_to_string (item_value (item));
     g_return_if_fail (string != NULL);
 
     if (!stuff->root)
@@ -955,7 +961,9 @@ static void write_item (const char  *key,
 #endif
 }
 
-static void     sync_xml    (void)
+
+static void
+sync_xml (void)
 {
     MooPrefs *prefs = instance ();
     MooMarkupDoc *xml;
@@ -980,14 +988,14 @@ static void     sync_xml    (void)
 }
 
 
-gboolean        moo_prefs_save              (const char     *file)
+gboolean
+moo_prefs_save (const char     *file,
+                GError        **error)
 {
     MooPrefs *prefs = instance ();
     MooMarkupDoc *xml;
     MooMarkupNode *node;
     gboolean empty;
-    GError *err = NULL;
-    gboolean result = TRUE;
 
     g_return_val_if_fail (file != NULL, FALSE);
 
@@ -1011,19 +1019,7 @@ gboolean        moo_prefs_save              (const char     *file)
         return TRUE;
     }
 
-    result = moo_markup_save_pretty (xml, file, 2, &err);
-
-    if (!result)
-        g_critical ("%s: could not save preferences to '%s'",
-                        G_STRLOC, file);
-
-    if (err)
-    {
-        g_critical ("%s: %s", G_STRLOC, err->message);
-        g_error_free (err);
-    }
-
-    return result;
+    return moo_markup_save_pretty (xml, file, 2, error);
 }
 
 
@@ -1031,9 +1027,9 @@ gboolean        moo_prefs_save              (const char     *file)
 /* Helpers
  */
 
-
-void    moo_prefs_new_key_bool      (const char     *key,
-                                     gboolean        default_val)
+void
+moo_prefs_new_key_bool (const char     *key,
+                        gboolean        default_val)
 {
     GValue val;
 
@@ -1047,8 +1043,9 @@ void    moo_prefs_new_key_bool      (const char     *key,
 }
 
 
-void    moo_prefs_new_key_int       (const char     *key,
-                                     int             default_val)
+void
+moo_prefs_new_key_int (const char     *key,
+                       int             default_val)
 {
     GValue val;
 
@@ -1062,9 +1059,10 @@ void    moo_prefs_new_key_int       (const char     *key,
 }
 
 
-void    moo_prefs_new_key_enum      (const char     *key,
-                                     GType           enum_type,
-                                     int             default_val)
+void
+moo_prefs_new_key_enum (const char     *key,
+                        GType           enum_type,
+                        int             default_val)
 {
     GValue val;
 
@@ -1078,68 +1076,52 @@ void    moo_prefs_new_key_enum      (const char     *key,
 }
 
 
-void    moo_prefs_new_key_string    (const char     *key,
-                                     const char     *default_val)
+void
+moo_prefs_new_key_string (const char     *key,
+                          const char     *default_val)
 {
+    static GValue val;
+
     g_return_if_fail (key != NULL);
 
-    if (default_val)
-    {
-        GValue val;
-
-        val.g_type = 0;
+    if (!G_IS_VALUE (&val))
         g_value_init (&val, G_TYPE_STRING);
-        g_value_set_static_string (&val, default_val);
 
-        moo_prefs_new_key (key, G_TYPE_STRING, &val);
-    }
-    else
-    {
-        moo_prefs_new_key (key, G_TYPE_STRING, NULL);
-    }
+    g_value_set_string (&val, default_val);
+    moo_prefs_new_key (key, G_TYPE_STRING, &val);
 }
 
 
-void    moo_prefs_new_key_color     (const char     *key,
-                                     const GdkColor *default_val)
+void
+moo_prefs_new_key_color (const char     *key,
+                         const GdkColor *default_val)
 {
+    static GValue val;
+
     g_return_if_fail (key != NULL);
 
-    if (default_val)
-    {
-        GValue val;
-
-        val.g_type = 0;
+    if (!G_IS_VALUE (&val))
         g_value_init (&val, GDK_TYPE_COLOR);
-        g_value_set_boxed (&val, default_val);
 
-        moo_prefs_new_key (key, GDK_TYPE_COLOR, &val);
-    }
-    else
-    {
-        moo_prefs_new_key (key, GDK_TYPE_COLOR, NULL);
-    }
+    g_value_set_boxed (&val, default_val);
+    moo_prefs_new_key (key, GDK_TYPE_COLOR, &val);
 }
 
 
-const char     *moo_prefs_get_string        (const char     *key)
+const char*
+moo_prefs_get_string (const char *key)
 {
     const GValue *val;
-    g_return_val_if_fail (key != NULL, NULL);
+
     val = moo_prefs_get (key);
-    if (val)
-    {
-        g_return_val_if_fail (G_VALUE_HOLDS (val, G_TYPE_STRING), NULL);
-        return g_value_get_string (val);
-    }
-    else
-    {
-        return NULL;
-    }
+    g_return_val_if_fail (val != NULL, NULL);
+
+    return g_value_get_string (val);
 }
 
 
-const char     *moo_prefs_get_filename      (const char     *key)
+const char*
+moo_prefs_get_filename (const char *key)
 {
     const char *utf8_val;
     static char *val = NULL;
@@ -1165,90 +1147,96 @@ const char     *moo_prefs_get_filename      (const char     *key)
 }
 
 
-gboolean        moo_prefs_get_bool          (const char     *key)
+gboolean
+moo_prefs_get_bool (const char *key)
 {
-    const GValue *val;
+    const GValue *value;
+
     g_return_val_if_fail (key != NULL, FALSE);
-    val = moo_prefs_get (key);
-    if (val)
-        return convert_to_bool (val);
-    else
-        return FALSE;
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, FALSE);
+
+    return g_value_get_boolean (value);
 }
 
 
-gdouble         moo_prefs_get_double        (const char     *key)
+gdouble
+moo_prefs_get_double (const char *key)
 {
-    const GValue *val;
-    g_return_val_if_fail (key != NULL, FALSE);
-    val = moo_prefs_get (key);
-    if (val)
-        return convert_to_double (val);
-    else
-        return 0;
+    const GValue *value;
+
+    g_return_val_if_fail (key != NULL, 0);
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, 0);
+
+    return g_value_get_double (value);
 }
 
 
-const GdkColor *moo_prefs_get_color         (const char     *key)
+const GdkColor*
+moo_prefs_get_color (const char *key)
 {
-    const GValue *val;
-    g_return_val_if_fail (key != NULL, FALSE);
-    val = moo_prefs_get (key);
-    if (val)
-        return convert_to_color (val);
-    else
-        return NULL;
+    const GValue *value;
+
+    g_return_val_if_fail (key != NULL, NULL);
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, NULL);
+
+    g_return_val_if_fail (G_VALUE_TYPE (value) == GDK_TYPE_COLOR, NULL);
+    return g_value_get_boxed (value);
 }
 
 
-int             moo_prefs_get_int           (const char     *key)
+int
+moo_prefs_get_int (const char *key)
 {
-    const GValue *val;
-    g_return_val_if_fail (key != NULL, FALSE);
-    val = moo_prefs_get (key);
-    if (val)
-        return convert_to_int (val);
-    else
-        return 0;
+    const GValue *value;
+
+    g_return_val_if_fail (key != NULL, 0);
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, 0);
+
+    return g_value_get_int (value);
 }
 
 
-int             moo_prefs_get_enum          (const char     *key,
-                                             GType           enum_type)
+int
+moo_prefs_get_enum (const char *key)
 {
-    const GValue *val;
-    g_return_val_if_fail (key != NULL, FALSE);
-    val = moo_prefs_get (key);
-    if (val)
-        return convert_to_enum (val, enum_type);
-    else
-        g_return_val_if_reached (0);
+    const GValue *value;
+
+    g_return_val_if_fail (key != NULL, 0);
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, 0);
+
+    return g_value_get_enum (value);
 }
 
 
-void            moo_prefs_set_string        (const char     *key,
-                                             const char     *val)
+void
+moo_prefs_set_string (const char     *key,
+                      const char     *val)
 {
+    GValue gval;
+
     g_return_if_fail (key != NULL);
 
-    if (val)
-    {
-        GValue gval;
-        gval.g_type = 0;
-        g_value_init (&gval, G_TYPE_STRING);
-        g_value_set_string (&gval, val);
-        moo_prefs_set (key, &gval);
-        g_value_unset (&gval);
-    }
-    else
-    {
-        moo_prefs_set (key, NULL);
-    }
+    gval.g_type = 0;
+    g_value_init (&gval, G_TYPE_STRING);
+    g_value_set_string (&gval, val);
+    moo_prefs_set (key, &gval);
+    g_value_unset (&gval);
 }
 
 
-void            moo_prefs_set_filename      (const char     *key,
-                                             const char     *val)
+void
+moo_prefs_set_filename (const char     *key,
+                        const char     *val)
 {
     char *utf8_val;
 
@@ -1269,70 +1257,92 @@ void            moo_prefs_set_filename      (const char     *key,
 }
 
 
-void            moo_prefs_set_double        (const char     *key,
-                                             double          val)
+void
+moo_prefs_set_double (const char     *key,
+                      double          val)
 {
     static GValue gval;
+
     g_return_if_fail (key != NULL);
+
     if (!G_IS_VALUE (&gval))
         g_value_init (&gval, G_TYPE_DOUBLE);
+
     g_value_set_double (&gval, val);
     moo_prefs_set (key, &gval);
 }
 
 
-void            moo_prefs_set_int           (const char     *key,
-                                             int             val)
+void
+moo_prefs_set_int (const char     *key,
+                   int             val)
 {
     static GValue gval;
+
     g_return_if_fail (key != NULL);
+
     if (!G_IS_VALUE (&gval))
         g_value_init (&gval, G_TYPE_INT);
+
     g_value_set_int (&gval, val);
     moo_prefs_set (key, &gval);
 }
 
 
-void            moo_prefs_set_bool          (const char     *key,
-                                             gboolean        val)
+void
+moo_prefs_set_bool (const char     *key,
+                    gboolean        val)
 {
     static GValue gval;
+
     g_return_if_fail (key != NULL);
+
     if (!G_IS_VALUE (&gval))
         g_value_init (&gval, G_TYPE_BOOLEAN);
+
     g_value_set_boolean (&gval, val);
     moo_prefs_set (key, &gval);
 }
 
 
-void            moo_prefs_set_color         (const char     *key,
-                                             const GdkColor *val)
+void
+moo_prefs_set_color (const char     *key,
+                     const GdkColor *val)
 {
     static GValue gval;
+
     g_return_if_fail (key != NULL);
-    gval.g_type = 0;
+
     if (!G_IS_VALUE (&gval))
         g_value_init (&gval, GDK_TYPE_COLOR);
+
     g_value_set_boxed (&gval, val);
     moo_prefs_set (key, &gval);
 }
 
 
-void            moo_prefs_set_enum          (const char     *key,
-                                             GType           type,
-                                             int             value)
+void
+moo_prefs_set_enum (const char     *key,
+                    int             value)
 {
     GValue gval;
+    GType type;
+
     g_return_if_fail (key != NULL);
+
+    type = moo_prefs_get_key_type (key);
     g_return_if_fail (G_TYPE_IS_ENUM (type));
+
     gval.g_type = 0;
     g_value_init (&gval, type);
     g_value_set_enum (&gval, value);
+
     moo_prefs_set (key, &gval);
 }
 
 
-GType           moo_prefs_match_type_get_type   (void)
+GType
+moo_prefs_match_type_get_type (void)
 {
     static GType type = 0;
 
@@ -1348,360 +1358,4 @@ GType           moo_prefs_match_type_get_type   (void)
     }
 
     return type;
-}
-
-
-static gboolean convert_to_bool         (const GValue   *val)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, G_TYPE_BOOLEAN);
-    g_return_val_if_fail (convert_value (val, &result), FALSE);
-    return g_value_get_boolean (&result);
-}
-
-
-static int      convert_to_int          (const GValue   *val)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, G_TYPE_INT);
-    g_return_val_if_fail (convert_value (val, &result), 0);
-    return g_value_get_int (&result);
-}
-
-
-static int      convert_to_enum         (const GValue   *val,
-                                         GType           enum_type)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, enum_type);
-    g_return_val_if_fail (convert_value (val, &result), 0);
-    return g_value_get_enum (&result);
-}
-
-
-static double   convert_to_double       (const GValue   *val)
-{
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, G_TYPE_DOUBLE);
-    g_return_val_if_fail (convert_value (val, &result), 0);
-    return g_value_get_double (&result);
-}
-
-
-static const GdkColor *convert_to_color (const GValue   *val)
-{
-    static GdkColor color;
-    GdkColor *c_result;
-    GValue result;
-    result.g_type = 0;
-    g_value_init (&result, GDK_TYPE_COLOR);
-    g_return_val_if_fail (convert_value (val, &result), NULL);
-    c_result = g_value_get_boxed (&result);
-    g_return_val_if_fail (c_result != NULL, NULL);
-    color = *c_result;
-    g_value_unset (&result);
-    return &color;
-}
-
-
-static const char *convert_to_string    (const GValue   *val)
-{
-    static GValue result;
-    if (G_IS_VALUE (&result))
-        g_value_unset (&result);
-    g_value_init (&result, G_TYPE_STRING);
-    g_return_val_if_fail (convert_value (val, &result), NULL);
-    return g_value_get_string (&result);
-}
-
-
-static gboolean type_is_supported   (GType           type)
-{
-    if (!type)
-        return FALSE;
-
-    return type == G_TYPE_BOOLEAN ||
-            type == G_TYPE_INT ||
-            type == G_TYPE_DOUBLE ||
-            type == G_TYPE_STRING ||
-            type == GDK_TYPE_COLOR ||
-            G_TYPE_IS_ENUM (type);
-}
-
-
-static int      value_equal         (const GValue   *a,
-                                     const GValue   *b)
-{
-    GType type;
-
-    g_return_val_if_fail (G_IS_VALUE (a) && G_IS_VALUE (b), a == b);
-    g_return_val_if_fail (G_VALUE_TYPE (a) == G_VALUE_TYPE (b), a == b);
-    g_return_val_if_fail (G_VALUE_TYPE (a) == G_VALUE_TYPE (b), a == b);
-
-    type = G_VALUE_TYPE (a);
-
-    if (type == G_TYPE_BOOLEAN)
-    {
-        gboolean ba = g_value_get_boolean (a);
-        gboolean bb = g_value_get_boolean (b);
-        return (ba && bb) || (!ba && !bb);
-    }
-
-    if (type == G_TYPE_INT)
-        return g_value_get_int (a) == g_value_get_int (b);
-
-    if (type == G_TYPE_DOUBLE)
-        return g_value_get_double (a) == g_value_get_double (b);
-
-    if (type == G_TYPE_STRING)
-    {
-        const char *sa, *sb;
-        sa = g_value_get_string (a);
-        sb = g_value_get_string (b);
-        if (!sa || !sb)
-            return sa == sb;
-        else
-            return !strcmp (sa, sb);
-    }
-
-    if (type == GDK_TYPE_COLOR)
-    {
-        const GdkColor *ca, *cb;
-        ca = g_value_get_boxed (a);
-        cb = g_value_get_boxed (b);
-        if (!ca || !cb)
-            return ca == cb;
-        else
-            return ca->red == cb->red &&
-                    ca->green == cb->green &&
-                    ca->blue == cb->blue;
-    }
-
-    if (G_TYPE_IS_ENUM (type))
-        return g_value_get_enum (a) == g_value_get_enum (b);
-
-    g_return_val_if_reached (a == b);
-}
-
-
-static gboolean convert_value       (const GValue   *src,
-                                     GValue         *dest)
-{
-    GType src_type, dest_type;
-
-    g_return_val_if_fail (G_IS_VALUE (src) && G_IS_VALUE (dest), FALSE);
-
-    src_type = G_VALUE_TYPE (src);
-    dest_type = G_VALUE_TYPE (dest);
-
-    g_return_val_if_fail (type_is_supported (src_type), FALSE);
-    g_return_val_if_fail (type_is_supported (dest_type), FALSE);
-
-    if (src_type == dest_type)
-    {
-        g_value_copy (src, dest);
-        return TRUE;
-    }
-
-    if (dest_type == G_TYPE_STRING)
-    {
-        if (src_type == G_TYPE_BOOLEAN)
-        {
-            const char *string =
-                    g_value_get_boolean (src) ? "TRUE" : "FALSE";
-            g_value_set_static_string (dest, string);
-            return TRUE;
-        }
-
-        if (src_type == G_TYPE_DOUBLE)
-        {
-            char *string =
-                    g_strdup_printf ("%f", g_value_get_double (src));
-            g_value_take_string (dest, string);
-            return TRUE;
-        }
-
-        if (src_type == G_TYPE_INT)
-        {
-            char *string =
-                    g_strdup_printf ("%d", g_value_get_int (src));
-            g_value_take_string (dest, string);
-            return TRUE;
-        }
-
-        if (src_type == GDK_TYPE_COLOR)
-        {
-            char string[14];
-            const GdkColor *color = g_value_get_boxed (src);
-
-            if (!color)
-            {
-                g_value_set_string (dest, NULL);
-                return TRUE;
-            }
-            else
-            {
-                g_snprintf (string, 8, "#%02x%02x%02x",
-                            color->red >> 8,
-                            color->green >> 8,
-                            color->blue >> 8);
-                g_value_set_string (dest, string);
-                return TRUE;
-            }
-        }
-
-        if (G_TYPE_IS_ENUM (src_type))
-        {
-            gpointer klass;
-            GEnumClass *enum_class;
-            GEnumValue *enum_value;
-
-            klass = g_type_class_ref (src_type);
-            g_return_val_if_fail (G_IS_ENUM_CLASS (klass), FALSE);
-            enum_class = G_ENUM_CLASS (klass);
-
-            enum_value = g_enum_get_value (enum_class,
-                                           g_value_get_enum (src));
-
-            if (!enum_value)
-            {
-                char *string = g_strdup_printf ("%d", g_value_get_enum (src));
-                g_value_take_string (dest, string);
-                g_type_class_unref (klass);
-                g_return_val_if_reached (TRUE);
-            }
-
-            g_value_set_static_string (dest, enum_value->value_nick);
-            g_type_class_unref (klass);
-            return TRUE;
-        }
-
-        g_return_val_if_reached (FALSE);
-    }
-
-    if (src_type == G_TYPE_STRING)
-    {
-        const char *string = g_value_get_string (src);
-
-        if (dest_type == G_TYPE_BOOLEAN)
-        {
-            if (!string)
-                g_value_set_boolean (dest, FALSE);
-            else
-                g_value_set_boolean (dest,
-                                     ! g_ascii_strcasecmp (string, "1") ||
-                                             ! g_ascii_strcasecmp (string, "yes") ||
-                                             ! g_ascii_strcasecmp (string, "true"));
-            return TRUE;
-        }
-
-        if (dest_type == G_TYPE_DOUBLE)
-        {
-            if (!string)
-                g_value_set_double (dest, 0);
-            else
-                g_value_set_double (dest, g_ascii_strtod (string, NULL));
-            return TRUE;
-        }
-
-        if (dest_type == G_TYPE_INT)
-        {
-            if (!string)
-                g_value_set_int (dest, 0);
-            else
-                g_value_set_int (dest, g_ascii_strtod (string, NULL));
-            return TRUE;
-        }
-
-        if (dest_type == GDK_TYPE_COLOR)
-        {
-            GdkColor color;
-
-            if (!string)
-            {
-                g_value_set_boxed (dest, NULL);
-                return TRUE;
-            }
-
-            g_return_val_if_fail (gdk_color_parse (string, &color),
-                                  FALSE);
-
-            g_value_set_boxed (dest, &color);
-            return TRUE;
-        }
-
-        if (G_TYPE_IS_ENUM (dest_type))
-        {
-            gpointer klass;
-            GEnumClass *enum_class;
-            GEnumValue *enum_value;
-            int ival;
-
-            if (!string || !string[0])
-            {
-                g_value_set_enum (dest, 0);
-                g_return_val_if_reached (TRUE);
-            }
-
-            klass = g_type_class_ref (dest_type);
-            g_return_val_if_fail (G_IS_ENUM_CLASS (klass), FALSE);
-            enum_class = G_ENUM_CLASS (klass);
-
-            enum_value = g_enum_get_value_by_name (enum_class, string);
-            if (!enum_value)
-                enum_value = g_enum_get_value_by_nick (enum_class, string);
-
-            if (enum_value)
-            {
-                ival = enum_value->value;
-            }
-            else
-            {
-                ival = g_ascii_strtod (string, NULL);
-
-                if (ival < enum_class->minimum || ival > enum_class->maximum)
-                {
-                    g_value_set_enum (dest, ival);
-                    g_type_class_unref (klass);
-                    g_return_val_if_reached (TRUE);
-                }
-            }
-
-            g_value_set_enum (dest, ival);
-            g_type_class_unref (klass);
-            return TRUE;
-        }
-
-        g_return_val_if_reached (FALSE);
-    }
-
-    if (G_TYPE_IS_ENUM (src_type) && dest_type == G_TYPE_INT)
-    {
-        g_value_set_int (dest, g_value_get_enum (src));
-        return TRUE;
-    }
-
-    if (G_TYPE_IS_ENUM (dest_type) && src_type == G_TYPE_INT)
-    {
-        g_value_set_enum (dest, g_value_get_int (src));
-        return TRUE;
-    }
-
-    if (src_type == G_TYPE_DOUBLE && dest_type == G_TYPE_INT)
-    {
-        g_value_set_int (dest, g_value_get_double (src));
-        return TRUE;
-    }
-
-    if (dest_type == G_TYPE_DOUBLE && src_type == G_TYPE_INT)
-    {
-        g_value_set_double (dest, g_value_get_int (src));
-        return TRUE;
-    }
-
-    g_return_val_if_reached (FALSE);
 }

@@ -652,42 +652,42 @@ void        moo_edit_style_load             (const char     *lang_id,
                                              const char     *style_id,
                                              GtkSourceTagStyle *style)
 {
-    const char *s;
+    const char *key;
     const GdkColor *color;
 
     g_return_if_fail (lang_id != NULL && style_id != NULL && style != NULL);
 
     create_default_styles ();
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_FOREGROUND);
-    color = moo_prefs_get_color (s);
-    if (color) {
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_FOREGROUND);
+    if (moo_prefs_key_registered (key) && (color = moo_prefs_get_color (key)))
+    {
         style->foreground = *color;
         style->mask |= GTK_SOURCE_TAG_STYLE_USE_FOREGROUND;
     }
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_BACKGROUND);
-    color = moo_prefs_get_color (s);
-    if (color) {
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_BACKGROUND);
+    if (moo_prefs_key_registered (key) && (color = moo_prefs_get_color (key)))
+    {
         style->background = *color;
         style->mask |= GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
     }
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_BOLD);
-    if (moo_prefs_get (s))
-        style->bold = moo_prefs_get_bool (s);
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_BOLD);
+    if (moo_prefs_key_registered (key))
+        style->bold = moo_prefs_get_bool (key);
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_ITALIC);
-    if (moo_prefs_get (s))
-        style->italic = moo_prefs_get_bool (s);
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_ITALIC);
+    if (moo_prefs_key_registered (key))
+        style->italic = moo_prefs_get_bool (key);
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_UNDERLINE);
-    if (moo_prefs_get (s))
-        style->underline = moo_prefs_get_bool (s);
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_UNDERLINE);
+    if (moo_prefs_key_registered (key))
+        style->underline = moo_prefs_get_bool (key);
 
-    s = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_STRIKETHROUGH);
-    if (moo_prefs_get (s))
-        style->strikethrough = moo_prefs_get_bool (s);
+    key = moo_edit_style_setting (lang_id, style_id, MOO_EDIT_PREFS_STRIKETHROUGH);
+    if (moo_prefs_key_registered (key))
+        style->strikethrough = moo_prefs_get_bool (key);
 }
 
 

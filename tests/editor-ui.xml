@@ -65,7 +65,6 @@
             <separator/>
         </menu>
 
-        <!--
         <menu name="Project" label="_Project">
             <separator/>
             <item name="NewProject" action="NewProject"/>
@@ -87,7 +86,6 @@
             <item name="Execute" action="Execute"/>
             <separator/>
         </menu>
-        -->
 
         <menu name="Python" action="PythonMenu">
             <separator/>

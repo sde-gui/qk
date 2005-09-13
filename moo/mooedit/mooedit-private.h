@@ -157,6 +157,7 @@ struct _MooTextViewPrivate {
     GdkColor current_line_color;
     GdkGC *current_line_gc;
     gboolean show_tabs;
+    gboolean check_brackets;
 
     /***********************************************************************/
     /* Search

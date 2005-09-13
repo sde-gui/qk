@@ -71,8 +71,8 @@ libmooutils_la_SOURCES =        \
     moosignal.h                 \
     moostock.c                  \
     moostock.h                  \
-    mootypes.c                  \
-    mootypes.h                  \
+    moovalue.c                  \
+    moovalue.h                  \
     moowin.c                    \
     moowin.h                    \
     stock-about-16.h            \

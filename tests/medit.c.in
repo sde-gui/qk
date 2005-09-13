@@ -34,7 +34,7 @@ int main (int argc, char **argv)
     gtk_init (&argc, &argv);
 
     rcfile = g_build_filename (g_get_home_dir (), ".meditrc", NULL);
-    moo_prefs_load (rcfile);
+    moo_prefs_load (rcfile, NULL);
 
     init_actions ();
     ref_types ();
@@ -49,7 +49,6 @@ int main (int argc, char **argv)
 
     editor = moo_editor_new ();
     mgr = moo_editor_get_lang_mgr (editor);
-    moo_edit_lang_mgr_add_lang_files_dir (mgr, "/usr/share/gtksourceview-1.0/language-specs");
     moo_edit_lang_mgr_add_lang_files_dir (mgr, "@MOO_EDIT_LANG_FILES_DIR@");
 
     g_signal_connect (editor, "all-windows-closed", G_CALLBACK (gtk_main_quit), NULL);
@@ -66,7 +65,7 @@ int main (int argc, char **argv)
 
     gtk_main ();
 
-    moo_prefs_save (rcfile);
+    moo_prefs_save (rcfile, NULL);
 
     g_object_unref (editor);
     g_free (rcfile);

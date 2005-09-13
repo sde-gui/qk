@@ -81,7 +81,10 @@ const char  *moo_prefs_get_accel            (const char     *accel_path)
     const char *accel;
     char *key = accel_path_to_prefs_key (accel_path);
     g_return_val_if_fail (key != NULL, NULL);
+
+    moo_prefs_new_key_string (key, NULL);
     accel = moo_prefs_get_string (key);
+
     g_free (key);
     return accel;
 }
