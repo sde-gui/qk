@@ -131,11 +131,6 @@ struct _MooGladeXML {
 
     MooGladeSignalFunc signal_func;
     gpointer signal_func_data;
-
-    char *prefs_page;
-    char *prefs_root;
-    MooGladePrefsMapFunc prefs_map_func;
-    gpointer prefs_map_func_data;
 };
 
 typedef struct {
@@ -376,36 +371,6 @@ connect_special_signal (MooGladeXML    *xml,
 
         moo_bind_sensitive (btn, &node->widget, 1, invert);
 
-        return TRUE;
-    }
-
-    if (!strcmp (signal->name, "moo-prefs-key"))
-    {
-        MooPrefsDialogPage *page;
-        char *key;
-        GtkToggleButton *set_or_not = NULL;
-
-        page = moo_glade_xml_get_widget (xml, xml->prefs_page);
-        g_return_val_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page), FALSE);
-
-        if (signal->object)
-        {
-            set_or_not = moo_glade_xml_get_widget (xml, signal->object);
-            g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (set_or_not), FALSE);
-        }
-
-        if (xml->prefs_map_func)
-            key = xml->prefs_map_func (xml, signal->handler, xml->prefs_map_func_data);
-        else if (xml->prefs_root)
-            key = moo_prefs_make_key (xml->prefs_root, signal->handler, NULL);
-        else
-            key = g_strdup (signal->handler);
-
-        g_return_val_if_fail (key != NULL, FALSE);
-
-        moo_prefs_dialog_page_bind_setting (page, node->widget, key, set_or_not);
-
-        g_free (key);
         return TRUE;
     }
 
@@ -2081,8 +2046,6 @@ moo_glade_xml_free (MooGladeXML *xml)
         g_hash_table_destroy (xml->id_to_func);
         moo_markup_doc_unref (xml->doc);
         g_free (xml->root_id);
-        g_free (xml->prefs_page);
-        g_free (xml->prefs_root);
         g_free (xml);
     }
 }
@@ -2158,42 +2121,6 @@ moo_glade_xml_map_signal (MooGladeXML    *xml,
     g_return_if_fail (xml != NULL);
     xml->signal_func = func;
     xml->signal_func_data = data;
-}
-
-
-void
-moo_glade_xml_set_prefs (MooGladeXML    *xml,
-                         const char     *page,
-                         const char     *prefs_root)
-{
-    g_return_if_fail (xml != NULL);
-    g_return_if_fail (!page || page[0]);
-
-    g_free (xml->prefs_page);
-    g_free (xml->prefs_root);
-
-    if (page)
-    {
-        xml->prefs_page = g_strdup (page);
-        xml->prefs_root = g_strdup (prefs_root);
-    }
-    else
-    {
-        xml->prefs_page = NULL;
-        xml->prefs_root = NULL;
-    }
-}
-
-
-void
-moo_glade_xml_set_prefs_map (MooGladeXML    *xml,
-                             MooGladePrefsMapFunc func,
-                             gpointer        data)
-{
-    g_return_if_fail (xml != NULL);
-
-    xml->prefs_map_func = func;
-    xml->prefs_map_func_data = data;
 }
 
 

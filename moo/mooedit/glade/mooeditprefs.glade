@@ -75,7 +75,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SMART_HOME_END" last_modification_time="Thu, 17 Mar 2005 18:02:45 GMT"/>
+			      <signal name="moo_prefs_key" handler="smart_home_end" last_modification_time="Wed, 14 Sep 2005 09:40:47 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -123,7 +123,7 @@
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
 				  <property name="adjustment">6 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_TABS_WIDTH" last_modification_time="Thu, 17 Mar 2005 18:03:12 GMT"/>
+				  <signal name="moo_prefs_key" handler="tabs_width" last_modification_time="Wed, 14 Sep 2005 09:41:03 GMT"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -154,7 +154,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SPACES_NO_TABS" last_modification_time="Thu, 17 Mar 2005 18:03:34 GMT"/>
+			      <signal name="moo_prefs_key" handler="spaces_instead_of_tabs" last_modification_time="Wed, 14 Sep 2005 09:41:18 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -229,7 +229,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_AUTO_INDENT" last_modification_time="Thu, 17 Mar 2005 18:03:53 GMT"/>
+			      <signal name="moo_prefs_key" handler="auto_indent" last_modification_time="Wed, 14 Sep 2005 09:41:42 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -250,7 +250,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_TAB_INDENTS" last_modification_time="Thu, 17 Mar 2005 18:04:10 GMT"/>
+			      <signal name="moo_prefs_key" handler="tab_indents" last_modification_time="Wed, 14 Sep 2005 09:41:52 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -271,7 +271,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BACKSPACE_INDENTS" last_modification_time="Thu, 17 Mar 2005 18:04:28 GMT"/>
+			      <signal name="moo_prefs_key" handler="backspace_indents" last_modification_time="Wed, 14 Sep 2005 09:41:59 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -352,7 +352,7 @@
 				  <property name="active">False</property>
 				  <property name="inconsistent">False</property>
 				  <property name="draw_indicator">True</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_LIMIT_UNDO" last_modification_time="Thu, 17 Mar 2005 18:04:45 GMT"/>
+				  <signal name="moo_prefs_key" handler="limit_undo" last_modification_time="Wed, 14 Sep 2005 09:42:15 GMT"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -372,7 +372,7 @@
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
 				  <property name="adjustment">1 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_LIMIT_UNDO_NUM" last_modification_time="Thu, 17 Mar 2005 18:05:01 GMT"/>
+				  <signal name="moo_prefs_key" handler="limit_undo_num" last_modification_time="Wed, 14 Sep 2005 09:42:33 GMT"/>
 				  <signal name="moo_sensitive" handler="limit_undo" last_modification_time="Sat, 19 Mar 2005 05:28:44 GMT"/>
 				</widget>
 				<packing>
@@ -483,7 +483,7 @@
 				  <property name="active">False</property>
 				  <property name="inconsistent">False</property>
 				  <property name="draw_indicator">True</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_AUTO_SAVE" last_modification_time="Thu, 17 Mar 2005 18:05:24 GMT"/>
+				  <signal name="moo_prefs_key" handler="auto_save" last_modification_time="Wed, 14 Sep 2005 09:42:58 GMT"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -503,7 +503,7 @@
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
 				  <property name="adjustment">1 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL" last_modification_time="Thu, 17 Mar 2005 18:05:41 GMT"/>
+				  <signal name="moo_prefs_key" handler="auto_save_interval" last_modification_time="Wed, 14 Sep 2005 09:43:08 GMT"/>
 				  <signal name="moo_sensitive" handler="auto_save" last_modification_time="Sat, 19 Mar 2005 05:29:04 GMT"/>
 				</widget>
 				<packing>
@@ -640,7 +640,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_WRAP_ENABLE" last_modification_time="Thu, 17 Mar 2005 18:06:06 GMT"/>
+			      <signal name="moo_prefs_key" handler="wrapping_enable" last_modification_time="Wed, 14 Sep 2005 09:43:32 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -660,7 +660,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_WRAP_DONT_SPLIT_WORDS" last_modification_time="Thu, 17 Mar 2005 18:07:55 GMT"/>
+			      <signal name="moo_prefs_key" handler="wrapping_dont_split_words" last_modification_time="Wed, 14 Sep 2005 09:43:46 GMT"/>
 			      <signal name="moo_sensitive" handler="enable_wrapping" last_modification_time="Sat, 19 Mar 2005 05:45:36 GMT"/>
 			    </widget>
 			    <packing>
@@ -737,7 +737,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SHOW_LINE_NUMBERS" last_modification_time="Thu, 17 Mar 2005 18:08:17 GMT"/>
+			      <signal name="moo_prefs_key" handler="show_line_numbers" last_modification_time="Wed, 14 Sep 2005 09:44:01 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -763,7 +763,7 @@
 				  <property name="active">False</property>
 				  <property name="inconsistent">False</property>
 				  <property name="draw_indicator">True</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SHOW_MARGIN" last_modification_time="Thu, 17 Mar 2005 18:08:34 GMT"/>
+				  <signal name="moo_prefs_key" handler="show_right_margin" last_modification_time="Wed, 14 Sep 2005 09:44:19 GMT"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -783,7 +783,7 @@
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
 				  <property name="adjustment">1 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_MARGIN" last_modification_time="Thu, 17 Mar 2005 18:08:51 GMT"/>
+				  <signal name="moo_prefs_key" handler="right_margin" last_modification_time="Wed, 14 Sep 2005 09:44:33 GMT"/>
 				  <signal name="moo_sensitive" handler="show_right_margin" last_modification_time="Sat, 19 Mar 2005 05:38:11 GMT"/>
 				</widget>
 				<packing>
@@ -797,6 +797,26 @@
 			      <property name="padding">0</property>
 			      <property name="expand">True</property>
 			      <property name="fill">True</property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckButton" id="check_brackets">
+			      <property name="visible">True</property>
+			      <property name="can_focus">True</property>
+			      <property name="label" translatable="yes">Highlight matching brackets</property>
+			      <property name="use_underline">True</property>
+			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">False</property>
+			      <property name="active">False</property>
+			      <property name="inconsistent">False</property>
+			      <property name="draw_indicator">True</property>
+			      <signal name="moo_prefs_key" handler="check_brackets" last_modification_time="Wed, 14 Sep 2005 09:46:48 GMT"/>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">False</property>
+			      <property name="fill">False</property>
 			    </packing>
 			  </child>
 			</widget>
@@ -817,618 +837,6 @@
 		      <property name="yalign">0.5</property>
 		      <property name="xpad">0</property>
 		      <property name="ypad">0</property>
-		    </widget>
-		    <packing>
-		      <property name="type">label_item</property>
-		    </packing>
-		  </child>
-		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">False</property>
-		  <property name="fill">False</property>
-		</packing>
-	      </child>
-
-	      <child>
-		<widget class="GtkFrame" id="frame26">
-		  <property name="visible">True</property>
-		  <property name="label_xalign">0</property>
-		  <property name="label_yalign">0.5</property>
-		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
-
-		  <child>
-		    <widget class="GtkAlignment" id="alignment38">
-		      <property name="visible">True</property>
-		      <property name="xalign">0.5</property>
-		      <property name="yalign">0.5</property>
-		      <property name="xscale">1</property>
-		      <property name="yscale">1</property>
-		      <property name="top_padding">0</property>
-		      <property name="bottom_padding">3</property>
-		      <property name="left_padding">3</property>
-		      <property name="right_padding">3</property>
-
-		      <child>
-			<widget class="GtkVBox" id="vbox20">
-			  <property name="visible">True</property>
-			  <property name="homogeneous">False</property>
-			  <property name="spacing">3</property>
-
-			  <child>
-			    <widget class="GtkNotebook" id="bracket_styles_notebook">
-			      <property name="visible">True</property>
-			      <property name="can_focus">True</property>
-			      <property name="show_tabs">True</property>
-			      <property name="show_border">True</property>
-			      <property name="tab_pos">GTK_POS_TOP</property>
-			      <property name="scrollable">False</property>
-			      <property name="enable_popup">False</property>
-			      <signal name="moo_sensitive" handler="check_brackets" last_modification_time="Fri, 06 May 2005 23:35:45 GMT"/>
-
-			      <child>
-				<widget class="GtkVBox" id="vbox21">
-				  <property name="visible">True</property>
-				  <property name="homogeneous">False</property>
-				  <property name="spacing">0</property>
-
-				  <child>
-				    <widget class="GtkAlignment" id="alignment40">
-				      <property name="visible">True</property>
-				      <property name="xalign">0.5</property>
-				      <property name="yalign">0.5</property>
-				      <property name="xscale">1</property>
-				      <property name="yscale">1</property>
-				      <property name="top_padding">0</property>
-				      <property name="bottom_padding">0</property>
-				      <property name="left_padding">0</property>
-				      <property name="right_padding">0</property>
-
-				      <child>
-					<widget class="GtkTable" id="table13">
-					  <property name="visible">True</property>
-					  <property name="n_rows">2</property>
-					  <property name="n_columns">4</property>
-					  <property name="homogeneous">False</property>
-					  <property name="row_spacing">0</property>
-					  <property name="column_spacing">0</property>
-
-					  <child>
-					    <widget class="GtkColorButton" id="bracket_correct_foreground">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="use_alpha">False</property>
-					      <property name="focus_on_click">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_FOREGROUND" object="bracket_correct_use_foreground" last_modification_time="Sat, 07 May 2005 14:16:48 GMT"/>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">1</property>
-					      <property name="right_attach">2</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkColorButton" id="bracket_correct_background">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="use_alpha">False</property>
-					      <property name="focus_on_click">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_BACKGROUND" object="bracket_correct_use_background" last_modification_time="Sat, 07 May 2005 14:16:57 GMT"/>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">1</property>
-					      <property name="right_attach">2</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkCheckButton" id="bracket_correct_use_foreground">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="label" translatable="yes">Foreground: </property>
-					      <property name="use_underline">True</property>
-					      <property name="relief">GTK_RELIEF_NORMAL</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <property name="draw_indicator">True</property>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">0</property>
-					      <property name="right_attach">1</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkCheckButton" id="bracket_correct_use_background">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="label" translatable="yes">Background: </property>
-					      <property name="use_underline">True</property>
-					      <property name="relief">GTK_RELIEF_NORMAL</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <property name="draw_indicator">True</property>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">0</property>
-					      <property name="right_attach">1</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_correct_italic">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_ITALIC" last_modification_time="Fri, 06 May 2005 23:30:20 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image6">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-italic</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">3</property>
-					      <property name="right_attach">4</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_correct_strikethrough">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_STRIKETHROUGH" last_modification_time="Fri, 06 May 2005 23:30:56 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image8">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-strikethrough</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">3</property>
-					      <property name="right_attach">4</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_correct_underline">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_UNDERLINE" last_modification_time="Fri, 06 May 2005 23:30:37 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image7">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-underline</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">2</property>
-					      <property name="right_attach">3</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_correct_bold">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_CORRECT_MATCH_BOLD" last_modification_time="Fri, 06 May 2005 23:30:02 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image_9">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-bold</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">2</property>
-					      <property name="right_attach">3</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_padding">12</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-					</widget>
-				      </child>
-				    </widget>
-				    <packing>
-				      <property name="padding">0</property>
-				      <property name="expand">False</property>
-				      <property name="fill">False</property>
-				    </packing>
-				  </child>
-				</widget>
-				<packing>
-				  <property name="tab_expand">False</property>
-				  <property name="tab_fill">False</property>
-				</packing>
-			      </child>
-
-			      <child>
-				<widget class="GtkLabel" id="label99">
-				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">Correct Match</property>
-				  <property name="use_underline">False</property>
-				  <property name="use_markup">False</property>
-				  <property name="justify">GTK_JUSTIFY_LEFT</property>
-				  <property name="wrap">False</property>
-				  <property name="selectable">False</property>
-				  <property name="xalign">0.5</property>
-				  <property name="yalign">0.5</property>
-				  <property name="xpad">0</property>
-				  <property name="ypad">0</property>
-				</widget>
-				<packing>
-				  <property name="type">tab</property>
-				</packing>
-			      </child>
-
-			      <child>
-				<widget class="GtkVBox" id="vbox22">
-				  <property name="visible">True</property>
-				  <property name="homogeneous">False</property>
-				  <property name="spacing">0</property>
-
-				  <child>
-				    <widget class="GtkAlignment" id="alignment41">
-				      <property name="visible">True</property>
-				      <property name="xalign">0.5</property>
-				      <property name="yalign">0.5</property>
-				      <property name="xscale">1</property>
-				      <property name="yscale">1</property>
-				      <property name="top_padding">0</property>
-				      <property name="bottom_padding">0</property>
-				      <property name="left_padding">0</property>
-				      <property name="right_padding">0</property>
-
-				      <child>
-					<widget class="GtkTable" id="table14">
-					  <property name="visible">True</property>
-					  <property name="n_rows">2</property>
-					  <property name="n_columns">4</property>
-					  <property name="homogeneous">False</property>
-					  <property name="row_spacing">0</property>
-					  <property name="column_spacing">0</property>
-
-					  <child>
-					    <widget class="GtkColorButton" id="bracket_incorrect_foreground">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="use_alpha">False</property>
-					      <property name="focus_on_click">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_FOREGROUND" object="bracket_incorrect_use_foreground" last_modification_time="Sat, 07 May 2005 14:16:30 GMT"/>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">1</property>
-					      <property name="right_attach">2</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkColorButton" id="bracket_incorrect_background">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="use_alpha">False</property>
-					      <property name="focus_on_click">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_BACKGROUND" object="bracket_incorrect_use_background" last_modification_time="Sat, 07 May 2005 14:16:38 GMT"/>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">1</property>
-					      <property name="right_attach">2</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkCheckButton" id="bracket_incorrect_use_foreground">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="label" translatable="yes">Foreground: </property>
-					      <property name="use_underline">True</property>
-					      <property name="relief">GTK_RELIEF_NORMAL</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <property name="draw_indicator">True</property>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">0</property>
-					      <property name="right_attach">1</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkCheckButton" id="bracket_incorrect_use_background">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="label" translatable="yes">Background: </property>
-					      <property name="use_underline">True</property>
-					      <property name="relief">GTK_RELIEF_NORMAL</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <property name="draw_indicator">True</property>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">0</property>
-					      <property name="right_attach">1</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_incorrect_italic">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_ITALIC" last_modification_time="Fri, 06 May 2005 23:31:43 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image10">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-italic</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">3</property>
-					      <property name="right_attach">4</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_incorrect_strikethrough">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_STRIKETHROUGH" last_modification_time="Fri, 06 May 2005 23:32:15 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image12">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-strikethrough</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">3</property>
-					      <property name="right_attach">4</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_incorrect_bold">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_BOLD" last_modification_time="Fri, 06 May 2005 23:31:27 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image9">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-bold</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">2</property>
-					      <property name="right_attach">3</property>
-					      <property name="top_attach">0</property>
-					      <property name="bottom_attach">1</property>
-					      <property name="x_padding">12</property>
-					      <property name="x_options">fill</property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-
-					  <child>
-					    <widget class="GtkToggleButton" id="bracket_incorrect_underline">
-					      <property name="visible">True</property>
-					      <property name="can_focus">True</property>
-					      <property name="relief">GTK_RELIEF_NONE</property>
-					      <property name="focus_on_click">False</property>
-					      <property name="active">False</property>
-					      <property name="inconsistent">False</property>
-					      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BRACKET_INCORRECT_MATCH_UNDERLINE" last_modification_time="Fri, 06 May 2005 23:31:58 GMT"/>
-
-					      <child>
-						<widget class="GtkImage" id="image11">
-						  <property name="visible">True</property>
-						  <property name="stock">gtk-underline</property>
-						  <property name="icon_size">4</property>
-						  <property name="xalign">0.5</property>
-						  <property name="yalign">0.5</property>
-						  <property name="xpad">0</property>
-						  <property name="ypad">0</property>
-						</widget>
-					      </child>
-					    </widget>
-					    <packing>
-					      <property name="left_attach">2</property>
-					      <property name="right_attach">3</property>
-					      <property name="top_attach">1</property>
-					      <property name="bottom_attach">2</property>
-					      <property name="x_options"></property>
-					      <property name="y_options"></property>
-					    </packing>
-					  </child>
-					</widget>
-				      </child>
-				    </widget>
-				    <packing>
-				      <property name="padding">0</property>
-				      <property name="expand">True</property>
-				      <property name="fill">True</property>
-				    </packing>
-				  </child>
-				</widget>
-				<packing>
-				  <property name="tab_expand">False</property>
-				  <property name="tab_fill">True</property>
-				</packing>
-			      </child>
-
-			      <child>
-				<widget class="GtkLabel" id="label100">
-				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">Incorrect Match</property>
-				  <property name="use_underline">False</property>
-				  <property name="use_markup">False</property>
-				  <property name="justify">GTK_JUSTIFY_LEFT</property>
-				  <property name="wrap">False</property>
-				  <property name="selectable">False</property>
-				  <property name="xalign">0.5</property>
-				  <property name="yalign">0.5</property>
-				  <property name="xpad">0</property>
-				  <property name="ypad">0</property>
-				</widget>
-				<packing>
-				  <property name="type">tab</property>
-				</packing>
-			      </child>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">False</property>
-			      <property name="fill">False</property>
-			    </packing>
-			  </child>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkCheckButton" id="check_brackets">
-		      <property name="visible">True</property>
-		      <property name="can_focus">True</property>
-		      <property name="label" translatable="yes">Highlight matching brackets</property>
-		      <property name="use_underline">True</property>
-		      <property name="relief">GTK_RELIEF_NORMAL</property>
-		      <property name="focus_on_click">False</property>
-		      <property name="active">False</property>
-		      <property name="inconsistent">False</property>
-		      <property name="draw_indicator">True</property>
-		      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_CHECK_BRACKETS" last_modification_time="Thu, 17 Mar 2005 18:09:15 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="type">label_item</property>
@@ -1510,7 +918,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_USE_DEFAULT_FONT" last_modification_time="Thu, 17 Mar 2005 18:09:47 GMT"/>
+			      <signal name="moo_prefs_key" handler="use_default_font" last_modification_time="Wed, 14 Sep 2005 09:52:14 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -1557,7 +965,7 @@
 				  <property name="use_font">True</property>
 				  <property name="use_size">True</property>
 				  <property name="focus_on_click">False</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_FONT" last_modification_time="Thu, 17 Mar 2005 18:10:06 GMT"/>
+				  <signal name="moo_prefs_key" handler="font" last_modification_time="Wed, 14 Sep 2005 09:47:15 GMT"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -1640,7 +1048,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_USE_DEFAULT_COLORS" last_modification_time="Thu, 17 Mar 2005 18:10:24 GMT"/>
+			      <signal name="moo_prefs_key" handler="use_default_colors" last_modification_time="Wed, 14 Sep 2005 09:47:28 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -1715,7 +1123,7 @@
 				  <property name="can_focus">True</property>
 				  <property name="use_alpha">False</property>
 				  <property name="focus_on_click">False</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_FOREGROUND" last_modification_time="Thu, 17 Mar 2005 18:10:49 GMT"/>
+				  <signal name="moo_prefs_key" handler="foreground" last_modification_time="Wed, 14 Sep 2005 09:47:45 GMT"/>
 				  <signal name="moo_sensitive" handler="use_default_colors" object="invert" last_modification_time="Sat, 19 Mar 2005 06:38:57 GMT"/>
 				</widget>
 				<packing>
@@ -1733,7 +1141,7 @@
 				  <property name="can_focus">True</property>
 				  <property name="use_alpha">False</property>
 				  <property name="focus_on_click">False</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_BACKGROUND" last_modification_time="Thu, 17 Mar 2005 18:11:04 GMT"/>
+				  <signal name="moo_prefs_key" handler="background" last_modification_time="Wed, 14 Sep 2005 09:47:57 GMT"/>
 				  <signal name="moo_sensitive" handler="use_default_colors" object="invert" last_modification_time="Sat, 19 Mar 2005 06:39:16 GMT"/>
 				</widget>
 				<packing>
@@ -1801,7 +1209,7 @@
 				  <property name="can_focus">True</property>
 				  <property name="use_alpha">False</property>
 				  <property name="focus_on_click">False</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SELECTED_FOREGROUND" last_modification_time="Thu, 17 Mar 2005 18:11:40 GMT"/>
+				  <signal name="moo_prefs_key" handler="selected_foreground" last_modification_time="Wed, 14 Sep 2005 09:48:10 GMT"/>
 				  <signal name="moo_sensitive" handler="use_default_colors" object="invert" last_modification_time="Sat, 19 Mar 2005 06:39:28 GMT"/>
 				</widget>
 				<packing>
@@ -1820,7 +1228,7 @@
 				  <property name="can_focus">True</property>
 				  <property name="use_alpha">False</property>
 				  <property name="focus_on_click">False</property>
-				  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_SELECTED_BACKGROUND" last_modification_time="Thu, 17 Mar 2005 18:12:01 GMT"/>
+				  <signal name="moo_prefs_key" handler="selected_background" last_modification_time="Wed, 14 Sep 2005 09:48:21 GMT"/>
 				  <signal name="moo_sensitive" handler="use_default_colors" object="invert" last_modification_time="Sat, 19 Mar 2005 06:39:40 GMT"/>
 				</widget>
 				<packing>
@@ -1907,7 +1315,7 @@
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE" last_modification_time="Thu, 17 Mar 2005 18:12:26 GMT"/>
+			      <signal name="moo_prefs_key" handler="highlight_current_line" last_modification_time="Wed, 14 Sep 2005 09:48:35 GMT"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -1922,7 +1330,7 @@
 			      <property name="can_focus">True</property>
 			      <property name="use_alpha">False</property>
 			      <property name="focus_on_click">False</property>
-			      <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR" last_modification_time="Thu, 17 Mar 2005 18:12:45 GMT"/>
+			      <signal name="moo_prefs_key" handler="highlight_current_line_color" last_modification_time="Wed, 14 Sep 2005 09:48:44 GMT"/>
 			      <signal name="moo_sensitive" handler="highlight_current_line" last_modification_time="Sat, 19 Mar 2005 06:42:58 GMT"/>
 			    </widget>
 			    <packing>
@@ -2406,7 +1814,7 @@
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
-		  <signal name="moo_prefs_key" handler="MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING" last_modification_time="Thu, 17 Mar 2005 18:13:24 GMT"/>
+		  <signal name="moo_prefs_key" handler="use_syntax_highlighting" last_modification_time="Wed, 14 Sep 2005 09:49:04 GMT"/>
 		</widget>
 		<packing>
 		  <property name="type">label_item</property>

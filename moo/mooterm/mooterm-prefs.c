@@ -104,82 +104,20 @@ void moo_term_apply_settings (MooTerm *term)
 }
 
 
-static gboolean
-connect_prefs (G_GNUC_UNUSED MooGladeXML    *xml,
-               G_GNUC_UNUSED const char     *widget_id,
-               G_GNUC_UNUSED GtkWidget      *widget,
-               const char     *signal,
-               G_GNUC_UNUSED const char     *handler,
-               G_GNUC_UNUSED const char     *object,
-               G_GNUC_UNUSED gpointer        data)
-{
-    g_warning ("%s: not bound signal '%s'", G_STRLOC, signal);
-    return TRUE;
-}
-
-
-static char*
-map_prefs (G_GNUC_UNUSED MooGladeXML *xml,
-           const char     *key,
-           G_GNUC_UNUSED gpointer data)
-{
-    static GHashTable *map = NULL;
-    const char *real_key;
-
-    if (!map)
-    {
-        map = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                     g_free, g_free);
-
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_FONT"),
-                             g_strdup (MOO_TERM_PREFS_FONT));
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_FOREGROUND"),
-                             g_strdup (MOO_TERM_PREFS_FOREGROUND));
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_BACKGROUND"),
-                             g_strdup (MOO_TERM_PREFS_BACKGROUND));
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_CURSOR_BLINKS"),
-                             g_strdup (MOO_TERM_PREFS_CURSOR_BLINKS));
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_CURSOR_BLINK_TIME"),
-                             g_strdup (MOO_TERM_PREFS_CURSOR_BLINK_TIME));
-        g_hash_table_insert (map, g_strdup ("MOO_TERM_PREFS_SAVE_SELECTION_DIR"),
-                             g_strdup (MOO_TERM_PREFS_SAVE_SELECTION_DIR));
-    }
-
-    real_key = g_hash_table_lookup (map, key);
-
-    if (!real_key)
-    {
-        g_warning ("%s: uknown key '%s'", G_STRLOC, key);
-        real_key = key;
-    }
-
-    return moo_prefs_make_key (MOO_TERM_PREFS_PREFIX, real_key, NULL);
-}
-
-
 GtkWidget  *moo_term_prefs_page_new   (void)
 {
-    MooPrefsDialogPage *page;
-    MooGladeXML *xml;
+    GtkWidget *page;
 
-    xml = moo_glade_xml_new_empty ();
-    moo_glade_xml_map_id (xml, "page", MOO_TYPE_PREFS_DIALOG_PAGE);
-    moo_glade_xml_map_signal (xml, connect_prefs, NULL);
-    moo_glade_xml_set_prefs (xml, "page", NULL);
-    moo_glade_xml_set_prefs_map (xml, map_prefs, NULL);
-
-    moo_glade_xml_parse_memory (xml, MOO_TERM_PREFS_GLADE_UI,
-                                -1, "page");
-
-    page = moo_glade_xml_get_widget (xml, "page");
-    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml,
-                            (GDestroyNotify) moo_glade_xml_unref);
-    g_object_set (page, "label", "Terminal",
-                  "icon-stock-id", MOO_STOCK_TERMINAL, NULL);
+    page = moo_prefs_dialog_page_new_from_xml ("Terminal",
+                                               MOO_STOCK_TERMINAL,
+                                               MOO_TERM_PREFS_GLADE_UI,
+                                               -1,
+                                               "page",
+                                               MOO_TERM_PREFS_PREFIX);
 
     set_defaults ();
 
-    return GTK_WIDGET (page);
+    return page;
 }
 
 

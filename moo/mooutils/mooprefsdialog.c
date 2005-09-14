@@ -14,13 +14,6 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
-#include <gtk/gtkstock.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtkscrolledwindow.h>
-#include <gtk/gtkcellrenderertext.h>
-#include <gtk/gtkcellrendererpixbuf.h>
-#include <gtk/gtktreeselection.h>
-#include <gtk/gtkliststore.h>
 
 
 /**************************************************************************/

@@ -15,10 +15,10 @@
 #error "Do not include this file"
 #endif
 
-#ifndef MOOPREFS_MOOPREFSDIALOG_SETTINGS_H
-#define MOOPREFS_MOOPREFSDIALOG_SETTINGS_H
+#ifndef __MOO_PREFS_DIALOG_SETTTING_H__
+#define __MOO_PREFS_DIALOG_SETTTING_H__
 
-#include "mooutils/mooprefsdialog.h"
+#include "mooutils/mooprefsdialogpage.h"
 #include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 
@@ -29,7 +29,7 @@ void _moo_prefs_dialog_page_init_sig      (MooPrefsDialogPage *page);
 void _moo_prefs_dialog_page_apply         (MooPrefsDialogPage *page);
 
 
-#ifdef INSIDE_MOOPREFSDIALOG_SETTINGS_C
+#ifdef __INSIDE_MOO_PREFS_DIALOG_SETTINGS_C__
 
 
 #define MOO_PREFS_DIALOG_SETTINGS_QUARK (settings_quark ())
@@ -175,9 +175,9 @@ static void            radio_setting_init_sig       (RadioSetting   *s);
 static void            radio_setting_apply_sig      (RadioSetting   *s);
 
 
-#endif /* INSIDE_MOOPREFSDIALOG_SETTINGS_C */
+#endif /* __INSIDE_MOO_PREFS_DIALOG_SETTINGS_C__ */
 
 
 G_END_DECLS
 
-#endif /* MOOPREFS_MOOPREFSDIALOG_SETTINGS_H */
+#endif /* __MOO_PREFS_DIALOG_SETTTING_H__ */

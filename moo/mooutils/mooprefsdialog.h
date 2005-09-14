@@ -11,62 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOEDIT_MOOPREFSDIALOG_H
-#define MOOEDIT_MOOPREFSDIALOG_H
+#ifndef __MOO_PREFS_DIALOG_H__
+#define __MOO_PREFS_DIALOG_H__
 
-#include <gtk/gtk.h>
-#include "mooutils/bind.h"
+#include "mooutils/mooprefsdialogpage.h"
 
 G_BEGIN_DECLS
-
-
-#define MOO_TYPE_PREFS_DIALOG_PAGE              (moo_prefs_dialog_page_get_type ())
-#define MOO_PREFS_DIALOG_PAGE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PREFS_DIALOG_PAGE, MooPrefsDialogPage))
-#define MOO_PREFS_DIALOG_PAGE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PREFS_DIALOG_PAGE, MooPrefsDialogPageClass))
-#define MOO_IS_PREFS_DIALOG_PAGE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PREFS_DIALOG_PAGE))
-#define MOO_IS_PREFS_DIALOG_PAGE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PREFS_DIALOG_PAGE))
-#define MOO_PREFS_DIALOG_PAGE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PREFS_DIALOG_PAGE, MooPrefsDialogPageClass))
-
-
-typedef struct _MooPrefsDialogPage        MooPrefsDialogPage;
-typedef struct _MooPrefsDialogPageClass   MooPrefsDialogPageClass;
-
-struct _MooPrefsDialogPage
-{
-    GtkVBox     vbox;
-
-    char       *label;
-    GdkPixbuf  *icon;
-    char       *icon_stock_id;
-};
-
-struct _MooPrefsDialogPageClass
-{
-    GtkVBoxClass    parent_class;
-
-    void (* init)           (MooPrefsDialogPage *page);
-    void (* apply)          (MooPrefsDialogPage *page);
-    void (* set_defaults)   (MooPrefsDialogPage *page);
-};
-
-GType       moo_prefs_dialog_page_get_type      (void) G_GNUC_CONST;
-GtkWidget*  moo_prefs_dialog_page_new           (const char         *label,
-                                                 const char         *stock_icon_id);
-
-void        moo_prefs_dialog_page_bind_setting  (MooPrefsDialogPage *page,
-                                                 GtkWidget          *widget,
-                                                 const char         *setting,
-                                                 GtkToggleButton    *set_or_not);
-
-void        moo_prefs_dialog_page_bind_radio_setting
-                                                (MooPrefsDialogPage *page,
-                                                 const char         *setting,
-                                                 GtkToggleButton   **btns,
-                                                 const char        **cvals);
-void        moo_prefs_dialog_page_bind_radio    (MooPrefsDialogPage *page,
-                                                 const char         *setting,
-                                                 GtkToggleButton    *btn,
-                                                 const char         *cval);
 
 
 #define MOO_TYPE_PREFS_DIALOG              (moo_prefs_dialog_get_type ())
@@ -115,5 +65,5 @@ void        moo_prefs_dialog_insert_page    (MooPrefsDialog     *dialog,
 
 G_END_DECLS
 
-#endif // MOOEDIT_MOOPREFSDIALOG_H
+#endif /* __MOO_PREFS_DIALOG_H__ */
 

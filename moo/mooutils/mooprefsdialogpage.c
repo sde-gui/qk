@@ -16,6 +16,8 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooprefs.h"
+#include <string.h>
 
 
 /**************************************************************************/
@@ -131,6 +133,7 @@ static void moo_prefs_dialog_page_init (MooPrefsDialogPage *page)
     page->label = NULL;
     page->icon = NULL;
     page->icon_stock_id = NULL;
+    page->xml = NULL;
 }
 
 
@@ -141,6 +144,8 @@ static void moo_prefs_dialog_page_finalize       (GObject      *object)
     g_free (page->icon_stock_id);
     if (page->icon)
         g_object_unref (page->icon);
+    if (page->xml)
+        moo_glade_xml_unref (page->xml);
 
     G_OBJECT_CLASS (moo_prefs_dialog_page_parent_class)->finalize (object);
 }
@@ -212,13 +217,117 @@ static void moo_prefs_dialog_page_get_property  (GObject            *object,
 /* MooPrefsDialogPage methods
  */
 
-GtkWidget*  moo_prefs_dialog_page_new           (const char         *label,
-                                                 const char         *icon_id)
+GtkWidget*
+moo_prefs_dialog_page_new (const char         *label,
+                           const char         *icon_stock_id)
 {
-    GtkWidget *page = GTK_WIDGET (g_object_new (MOO_TYPE_PREFS_DIALOG_PAGE,
-                                                "label", label, NULL));
+    return g_object_new (MOO_TYPE_PREFS_DIALOG_PAGE,
+                         "label", label,
+                         "icon-stock-id", icon_stock_id,
+                         NULL);
+}
 
-    g_object_set (page, "icon-stock-id", icon_id, NULL);
 
-    return page;
+static gboolean
+connect_prefs_key (MooGladeXML    *xml,
+                   GtkWidget      *widget,
+                   const char     *handler,
+                   const char     *object,
+                   gpointer        user_data)
+{
+    char *key = NULL;
+    GtkToggleButton *set_or_not = NULL;
+    MooPrefsDialogPage *page;
+
+    struct {
+        const char *prefs_root;
+        const char *page_id;
+    } *data = user_data;
+
+    page = moo_glade_xml_get_widget (xml, data->page_id);
+    g_return_val_if_fail (page != NULL, FALSE);
+
+    key = data->prefs_root ?
+            moo_prefs_make_key (data->prefs_root, handler, NULL) :
+            g_strdup (handler);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    if (!moo_prefs_key_registered (key))
+    {
+        g_warning ("%s: key '%s' is not registered", G_STRLOC, key);
+        g_free (key);
+        return FALSE;
+    }
+
+    if (object)
+    {
+        set_or_not = moo_glade_xml_get_widget (xml, object);
+        if (!set_or_not)
+        {
+            g_warning ("%s: could not find widget '%s'", G_STRLOC, object);
+            g_free (key);
+            return FALSE;
+        }
+    }
+
+    moo_prefs_dialog_page_bind_setting (page, widget, key, set_or_not);
+
+    g_free (key);
+    return TRUE;
+}
+
+
+static gboolean
+connect_signals (MooGladeXML    *xml,
+                 G_GNUC_UNUSED const char *widget_id,
+                 GtkWidget      *widget,
+                 const char     *signal,
+                 const char     *handler,
+                 const char     *object,
+                 gpointer        user_data)
+{
+    if (!strcmp (signal, "moo-prefs-key"))
+        return connect_prefs_key (xml, widget, handler, object, user_data);
+    else
+        return FALSE;
+}
+
+
+GtkWidget*
+moo_prefs_dialog_page_new_from_xml (const char         *label,
+                                    const char         *icon_stock_id,
+                                    const char         *buffer,
+                                    int                 buffer_size,
+                                    const char         *page_id,
+                                    const char         *prefs_root)
+{
+    MooPrefsDialogPage *page;
+    MooGladeXML *xml;
+    struct {
+        const char *prefs_root;
+        const char *page_id;
+    } data = {prefs_root, page_id};
+
+    g_return_val_if_fail (buffer != NULL && page_id != NULL, NULL);
+
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, page_id, MOO_TYPE_PREFS_DIALOG_PAGE);
+    moo_glade_xml_map_signal (xml, connect_signals, &data);
+
+    if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id))
+    {
+        g_critical ("%s: could not parse xml", G_STRLOC);
+        moo_glade_xml_unref (xml);
+        return NULL;
+    }
+
+    page = moo_glade_xml_get_widget (xml, page_id);
+    page->xml = xml;
+
+    g_object_set (page,
+                  "label", label,
+                  "icon-stock-id", icon_stock_id,
+                  NULL);
+
+    return GTK_WIDGET (page);
 }
