@@ -650,6 +650,7 @@ static gboolean moo_app_init_real       (MooApp         *app)
     const char *rc_file;
     MooEditLangMgr *mgr;
     MooUIXML *ui_xml;
+    GError *error = NULL;
     MooAppWindowPolicy policy = app->priv->window_policy;
 
 #ifdef __WIN32__
@@ -658,8 +659,15 @@ static gboolean moo_app_init_real       (MooApp         *app)
 
     rc_file = moo_app_get_rc_file_name (app);
 
-    if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
-        moo_prefs_load (rc_file);
+    if (!moo_prefs_load (rc_file, &error))
+    {
+        g_warning ("%s: could not read config file", G_STRLOC);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+    }
 
     ui_xml = moo_app_get_ui_xml (app);
 
@@ -822,6 +830,7 @@ static gboolean moo_app_try_quit_real   (MooApp         *app)
 static void     moo_app_quit_real       (MooApp         *app)
 {
     GSList *l, *list;
+    GError *error = NULL;
 
     if (!app->priv->running)
         return;
@@ -856,7 +865,15 @@ static void     moo_app_quit_real       (MooApp         *app)
     g_object_unref (app->priv->editor);
     app->priv->editor = NULL;
 
-    moo_prefs_save (moo_app_get_rc_file_name (app));
+    if (!moo_prefs_save (moo_app_get_rc_file_name (app), &error))
+    {
+        g_warning ("%s: could not save config file", G_STRLOC);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+    }
 
     if (app->priv->quit_handler_id)
         gtk_quit_remove (app->priv->quit_handler_id);

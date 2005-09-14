@@ -571,15 +571,15 @@ static void             double_setting_free         (G_GNUC_UNUSED DoubleSetting
 static void             double_setting_init_sig     (DoubleSetting  *s)
 {
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (SETTING (s)->widget),
-                               moo_prefs_get_double (SETTING_NAME (s)));
+                               moo_prefs_get_number (SETTING_NAME (s)));
 }
 
 
 static void             double_setting_apply_sig    (DoubleSetting  *s)
 {
     double val = gtk_spin_button_get_value (GTK_SPIN_BUTTON (SETTING (s)->widget));
-    if (val != moo_prefs_get_double (SETTING_NAME (s)))
-        moo_prefs_set_double (SETTING_NAME (s), val);
+    if (val != moo_prefs_get_number (SETTING_NAME (s)))
+        moo_prefs_set_number (SETTING_NAME (s), val);
 }
 
 

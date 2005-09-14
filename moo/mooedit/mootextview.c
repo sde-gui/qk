@@ -752,6 +752,12 @@ moo_text_view_set_indenter (MooTextView *view,
     if (view->priv->indenter)
         g_object_ref (view->priv->indenter);
 
+    if (view->priv->indenter)
+        gtk_source_view_set_tabs_width (GTK_SOURCE_VIEW (view),
+                                        view->priv->indenter->tab_width);
+    else
+        gtk_source_view_set_tabs_width (GTK_SOURCE_VIEW (view), 8);
+
     g_object_notify (G_OBJECT (view), "indenter");
 }
 

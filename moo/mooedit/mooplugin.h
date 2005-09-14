@@ -16,7 +16,6 @@
 #define __MOO_PLUGIN_H__
 
 #include "mooedit/mooeditor.h"
-#include "mooutils/mooprefsdialog.h"
 
 G_BEGIN_DECLS
 

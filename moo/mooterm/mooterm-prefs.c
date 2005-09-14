@@ -43,9 +43,9 @@
 
 
 #ifdef __WIN32__
-#define DEFAULT_BLINK_TIME ((double)GetCaretBlinkTime())
+#define DEFAULT_BLINK_TIME ((int)GetCaretBlinkTime())
 #else /* ! __WIN32__ */
-#define DEFAULT_BLINK_TIME ((double)530)
+#define DEFAULT_BLINK_TIME ((int)530)
 #endif /* ! __WIN32__ */
 
 

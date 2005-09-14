@@ -1162,7 +1162,7 @@ moo_prefs_get_bool (const char *key)
 
 
 gdouble
-moo_prefs_get_double (const char *key)
+moo_prefs_get_number (const char *key)
 {
     const GValue *value;
 
@@ -1171,7 +1171,7 @@ moo_prefs_get_double (const char *key)
     value = moo_prefs_get (key);
     g_return_val_if_fail (value != NULL, 0);
 
-    return g_value_get_double (value);
+    return moo_value_convert_to_double (value);
 }
 
 
@@ -1258,17 +1258,24 @@ moo_prefs_set_filename (const char     *key,
 
 
 void
-moo_prefs_set_double (const char     *key,
+moo_prefs_set_number (const char     *key,
                       double          val)
 {
-    static GValue gval;
+    GValue gval, double_val;
+    GType type;
 
     g_return_if_fail (key != NULL);
+    g_return_if_fail (moo_prefs_key_registered (key));
 
-    if (!G_IS_VALUE (&gval))
-        g_value_init (&gval, G_TYPE_DOUBLE);
+    type = moo_prefs_get_key_type (key);
 
-    g_value_set_double (&gval, val);
+    gval.g_type = 0;
+    double_val.g_type = 0;
+    g_value_init (&gval, type);
+    g_value_init (&double_val, G_TYPE_DOUBLE);
+
+    g_value_set_double (&double_val, val);
+    moo_value_convert (&double_val, &gval);
     moo_prefs_set (key, &gval);
 }
 

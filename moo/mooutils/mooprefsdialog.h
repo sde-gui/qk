@@ -14,10 +14,7 @@
 #ifndef MOOEDIT_MOOPREFSDIALOG_H
 #define MOOEDIT_MOOPREFSDIALOG_H
 
-#include <gtk/gtkdialog.h>
-#include <gtk/gtknotebook.h>
-#include <gtk/gtktreeview.h>
-#include <gtk/gtkvbox.h>
+#include <gtk/gtk.h>
 #include "mooutils/bind.h"
 
 G_BEGIN_DECLS
@@ -81,16 +78,15 @@ void        moo_prefs_dialog_page_bind_radio    (MooPrefsDialogPage *page,
 
 
 typedef struct _MooPrefsDialog        MooPrefsDialog;
-// typedef struct _MooPrefsDialogPrivate MooPrefsDialogPrivate;
 typedef struct _MooPrefsDialogClass   MooPrefsDialogClass;
 
 struct _MooPrefsDialog
 {
-    GtkDialog               dialog;
-    GtkNotebook            *notebook;
-    GtkTreeView            *pages_list;
-    gboolean                hide_on_delete;
-//     MooPrefsDialogPrivate  *priv;
+    GtkDialog     dialog;
+    GtkNotebook  *notebook;
+    GtkTreeStore *store;
+    GtkTreeView  *pages_list;
+    gboolean      hide_on_delete;
 };
 
 struct _MooPrefsDialogClass
@@ -109,8 +105,12 @@ GtkWidget*  moo_prefs_dialog_new            (const char         *title);
 void        moo_prefs_dialog_run            (MooPrefsDialog     *dialog,
                                              GtkWidget          *parent);
 
-int         moo_prefs_dialog_append_page    (MooPrefsDialog     *dialog,
+void        moo_prefs_dialog_append_page    (MooPrefsDialog     *dialog,
                                              GtkWidget          *page);
+void        moo_prefs_dialog_insert_page    (MooPrefsDialog     *dialog,
+                                             GtkWidget          *page,
+                                             GtkWidget          *parent_page,
+                                             int                 position);
 
 
 G_END_DECLS

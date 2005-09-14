@@ -26,9 +26,6 @@
 /**************************************************************************/
 /* MooPrefsDialog class implementation
  */
-static void moo_prefs_dialog_class_init     (MooPrefsDialogClass *klass);
-
-static void moo_prefs_dialog_init           (MooPrefsDialog *dialog);
 
 static void moo_prefs_dialog_set_property   (GObject        *object,
                                              guint           prop_id,
@@ -38,6 +35,8 @@ static void moo_prefs_dialog_get_property   (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
+
+static void moo_prefs_dialog_destroy        (GtkObject      *object);
 
 static void moo_prefs_dialog_init_sig       (MooPrefsDialog *dialog);
 static void moo_prefs_dialog_apply          (MooPrefsDialog *dialog);
@@ -50,7 +49,6 @@ static void pages_list_selection_changed    (MooPrefsDialog *dialog,
 
 enum {
     PROP_0,
-    PROP_NOTEBOOK,
     PROP_HIDE_ON_DELETE
 };
 
@@ -71,21 +69,15 @@ G_DEFINE_TYPE (MooPrefsDialog, moo_prefs_dialog, GTK_TYPE_DIALOG)
 static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
 
     gobject_class->set_property = moo_prefs_dialog_set_property;
     gobject_class->get_property = moo_prefs_dialog_get_property;
 
+    gtkobject_class->destroy = moo_prefs_dialog_destroy;
+
     klass->init = moo_prefs_dialog_init_sig;
     klass->apply = moo_prefs_dialog_apply;
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_NOTEBOOK,
-                                     g_param_spec_object
-                                           ("notebook",
-                                            "notebook",
-                                            "Notebook",
-                                            GTK_TYPE_NOTEBOOK,
-                                            (GParamFlags) (G_PARAM_READABLE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIDE_ON_DELETE,
@@ -94,9 +86,7 @@ static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
                                             "hide_on_delete",
                                             "Hide on delete",
                                             FALSE,
-                                            (GParamFlags) (G_PARAM_READABLE |
-                                                           G_PARAM_WRITABLE |
-                                                           G_PARAM_CONSTRUCT)));
+                                            G_PARAM_READWRITE));
 
     prefs_dialog_signals[APPLY] =
         g_signal_new ("apply",
@@ -163,6 +153,23 @@ static void moo_prefs_dialog_init (MooPrefsDialog *dialog)
 }
 
 
+static void
+moo_prefs_dialog_destroy (GtkObject *object)
+{
+    MooPrefsDialog *dialog = MOO_PREFS_DIALOG (object);
+
+    if (dialog->store)
+    {
+        dialog->notebook = NULL;
+        dialog->pages_list = NULL;
+        g_object_unref (dialog->store);
+        dialog->store = NULL;
+    }
+
+    GTK_OBJECT_CLASS(moo_prefs_dialog_parent_class)->destroy (object);
+}
+
+
 enum {
     ICON_COLUMN,
     ICON_ID_COLUMN,
@@ -171,20 +178,20 @@ enum {
     N_COLUMNS
 };
 
-static void setup_pages_list                (MooPrefsDialog *dialog)
+static void
+setup_pages_list (MooPrefsDialog *dialog)
 {
-    GtkListStore *store;
     GtkWidget *tree;
     GtkCellRenderer *icon_renderer, *label_renderer;
     GtkTreeViewColumn *icon_column, *label_column;
     GtkTreeSelection *selection;
 
-    store = gtk_list_store_new (N_COLUMNS,
-                                GDK_TYPE_PIXBUF,
-                                G_TYPE_STRING,
-                                G_TYPE_STRING,
-                                G_TYPE_POINTER);
-    tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store));
+    dialog->store = gtk_tree_store_new (N_COLUMNS,
+                                        GDK_TYPE_PIXBUF,
+                                        G_TYPE_STRING,
+                                        G_TYPE_STRING,
+                                        MOO_TYPE_PREFS_DIALOG_PAGE);
+    tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (dialog->store));
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree), FALSE);
     gtk_tree_view_set_enable_search (GTK_TREE_VIEW (tree), FALSE);
 
@@ -214,8 +221,10 @@ static void setup_pages_list                (MooPrefsDialog *dialog)
     dialog->pages_list = GTK_TREE_VIEW (tree);
 }
 
-static void pages_list_selection_changed    (MooPrefsDialog *dialog,
-                                             GtkTreeSelection *selection)
+
+static void
+pages_list_selection_changed (MooPrefsDialog *dialog,
+                              GtkTreeSelection *selection)
 {
     GtkTreeIter iter;
     GtkTreeModel *model;
@@ -227,23 +236,25 @@ static void pages_list_selection_changed    (MooPrefsDialog *dialog,
         g_return_if_fail (page != NULL);
         gtk_notebook_set_current_page (dialog->notebook,
             gtk_notebook_page_num (dialog->notebook, GTK_WIDGET (page)));
+        g_object_unref (page);
     }
-    else {
+    else
+    {
         g_critical ("%s: nothing selected", G_STRLOC);
-        if (gtk_tree_model_get_iter_first (model, &iter)) {
+
+        if (gtk_tree_model_get_iter_first (model, &iter))
             gtk_tree_selection_select_iter (selection, &iter);
-        }
-        else {
+        else
             g_critical ("%s: list is empty", G_STRLOC);
-        }
     }
 }
 
 
-static void moo_prefs_dialog_set_property   (GObject      *object,
-                                             guint         prop_id,
-                                             const GValue *value,
-                                             GParamSpec   *pspec)
+static void
+moo_prefs_dialog_set_property (GObject      *object,
+                               guint         prop_id,
+                               const GValue *value,
+                               GParamSpec   *pspec)
 {
     MooPrefsDialog *dialog = MOO_PREFS_DIALOG (object);
     g_return_if_fail (dialog != NULL);
@@ -252,6 +263,7 @@ static void moo_prefs_dialog_set_property   (GObject      *object,
     {
         case PROP_HIDE_ON_DELETE:
             dialog->hide_on_delete = g_value_get_boolean (value);
+            g_object_notify (object, "hide-on-delete");
             break;
 
         default:
@@ -270,10 +282,6 @@ static void moo_prefs_dialog_get_property   (GObject      *object,
 
     switch (prop_id)
     {
-        case PROP_NOTEBOOK:
-            g_value_set_object (value, dialog->notebook);
-            break;
-
         case PROP_HIDE_ON_DELETE:
             g_value_set_boolean (value, dialog->hide_on_delete);
             break;
@@ -302,18 +310,23 @@ void        moo_prefs_dialog_run            (MooPrefsDialog *dialog,
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    if (parent) {
-	parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
+    if (parent)
+    {
+        parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
         gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
     }
 
     g_signal_emit_by_name (dialog, "init");
 
-    while (TRUE) {
+    while (TRUE)
+    {
         int res = gtk_dialog_run (GTK_DIALOG (dialog));
+
         if (res == GTK_RESPONSE_OK || res == GTK_RESPONSE_APPLY)
             g_signal_emit_by_name (dialog, "apply");
-        if (res != GTK_RESPONSE_APPLY) {
+
+        if (res != GTK_RESPONSE_APPLY)
+        {
             if (dialog->hide_on_delete)
                 gtk_widget_hide (GTK_WIDGET (dialog));
             else
@@ -329,68 +342,100 @@ void        moo_prefs_dialog_run            (MooPrefsDialog *dialog,
 }
 
 
-static void moo_prefs_dialog_init_sig       (MooPrefsDialog     *dialog)
+static void
+moo_prefs_dialog_init_sig (MooPrefsDialog *dialog)
 {
     int n, i;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
     n = gtk_notebook_get_n_pages (dialog->notebook);
+
     for (i = 0; i < n; ++i)
         g_signal_emit_by_name (gtk_notebook_get_nth_page (dialog->notebook, i),
                                "init", NULL);
 }
 
 
-static void moo_prefs_dialog_apply          (MooPrefsDialog     *dialog)
+static void
+moo_prefs_dialog_apply (MooPrefsDialog *dialog)
 {
     int n, i;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
     n = gtk_notebook_get_n_pages (dialog->notebook);
+
     for (i = 0; i < n; ++i)
         g_signal_emit_by_name (gtk_notebook_get_nth_page (dialog->notebook, i),
                                "apply", NULL);
 }
 
 
-int         moo_prefs_dialog_append_page    (MooPrefsDialog     *dialog,
-                                             GtkWidget          *page)
+void
+moo_prefs_dialog_append_page (MooPrefsDialog     *dialog,
+                              GtkWidget          *page)
+{
+    moo_prefs_dialog_insert_page (dialog, page, NULL, -1);
+}
+
+
+void
+moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
+                              GtkWidget          *page,
+                              GtkWidget          *parent_page,
+                              int                 position)
 {
     char *label = NULL, *icon_id = NULL;
-    GObject *icon;
-    GtkTreeIter iter;
-    GtkListStore *store;
+    GdkPixbuf *icon = NULL;
+    GtkTreeIter iter, parent_iter;
+    GtkTreeRowReference *ref;
+    GtkTreePath *path = NULL;
 
-    g_return_val_if_fail (MOO_IS_PREFS_DIALOG (dialog), -1);
-    g_return_val_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page), -1);
+    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
+    g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
+    g_return_if_fail (page->parent == NULL);
+    g_return_if_fail (!parent_page || MOO_IS_PREFS_DIALOG_PAGE (parent_page));
+    g_return_if_fail (!parent_page || parent_page->parent == GTK_WIDGET (dialog->notebook));
 
-    gtk_widget_show (GTK_WIDGET (page));
+    if (parent_page)
+    {
+        ref = g_object_get_data (G_OBJECT (parent_page), "moo-prefs-dialog-row");
+        g_return_if_fail (ref && gtk_tree_row_reference_valid (ref));
+        path = gtk_tree_row_reference_get_path (ref);
+        gtk_tree_model_get_iter (GTK_TREE_MODEL (dialog->store), &parent_iter, path);
+        gtk_tree_store_insert (dialog->store, &iter, &parent_iter, position);
+    }
+    else
+    {
+        gtk_tree_store_insert (dialog->store, &iter, NULL, position);
+    }
+
+    gtk_widget_show (page);
+    gtk_notebook_append_page (dialog->notebook, page, NULL);
+
     g_object_get (page,
                   "label", &label,
                   "icon", &icon,
                   "icon-stock-id", &icon_id,
                   NULL);
 
-    store = GTK_LIST_STORE (gtk_tree_view_get_model (dialog->pages_list));
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
+    gtk_tree_store_set (dialog->store, &iter,
                         ICON_ID_COLUMN, icon_id,
                         ICON_COLUMN, icon,
                         LABEL_COLUMN, label,
                         PAGE_COLUMN, page,
                         -1);
+
+    gtk_tree_path_free (path);
+    path = gtk_tree_model_get_path (GTK_TREE_MODEL (dialog->store), &iter);
+    ref = gtk_tree_row_reference_new (GTK_TREE_MODEL (dialog->store), path);
+    g_object_set_data_full (G_OBJECT (page), "moo-prefs-dialog-row",
+                            ref, (GDestroyNotify) gtk_tree_row_reference_free);
+
     g_free (label);
     g_free (icon_id);
+
     if (icon)
         g_object_unref (icon);
-
-#if GTK_CHECK_VERSION(2,4,0)
-    return gtk_notebook_append_page (dialog->notebook, page, NULL);
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    gtk_notebook_append_page (dialog->notebook, page, NULL);
-    return gtk_notebook_page_num (dialog->notebook, page);
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
 }
-
