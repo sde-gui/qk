@@ -40,10 +40,6 @@ libmooui_la_SOURCES =           \
     moowindow.c                 \
     moowindow.h
 
-EXTRA_DIST =                    \
-    moouimanager.cpp            \
-    moouimanager.h
-
 BUILT_SOURCES = mooshortcutsprefs-glade.h
 
 mooshortcutsprefs-glade.h: $(srcdir)/glade/shortcutsprefs.glade $(srcdir)/../mooutils/xml2h.sh

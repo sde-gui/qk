@@ -40,12 +40,11 @@ libmooedit_la_SOURCES =     \
     mooedit.c               \
     mooedit.h               \
     mooedit-private.h       \
-    mooeditcursor.c         \
     mooeditdialogs.c        \
     mooeditdialogs.h        \
     mooeditfileops.c        \
     mooeditfind.c           \
-    mooeditkeys.c           \
+    mooeditinput.c          \
     mooeditlang.c           \
     mooeditlang.h           \
     mooeditlang-private.h   \
