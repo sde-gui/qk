@@ -21,7 +21,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/moofileutils.h"
-#include "mooutils/moovalue.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <errno.h>
 

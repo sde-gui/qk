@@ -17,7 +17,7 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moosignal.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 #define LIGHT_BLUE "#EEF6FF"

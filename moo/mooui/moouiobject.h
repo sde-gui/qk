@@ -17,7 +17,7 @@
 #include "mooui/mooactiongroup.h"
 #include "mooui/mooaction.h"
 #include "mooui/moouixml.h"
-#include "mooutils/mooobjectfactory.h"
+#include "mooutils/mooutils-gobject.h"
 
 G_BEGIN_DECLS
 

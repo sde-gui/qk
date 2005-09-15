@@ -13,7 +13,7 @@
 
 #include "mooutils/mooglade.h"
 #include "mooutils/moomarkup.h"
-#include "mooutils/mooparam.h"
+#include "mooutils/mooutils-gobject.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/bind.h"
 #include "mooutils/mooprefsdialog.h"

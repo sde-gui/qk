@@ -26,7 +26,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moofileutils.h"
-#include "mooutils/moosignal.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 

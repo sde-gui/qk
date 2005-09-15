@@ -14,7 +14,7 @@
 
 #include "mooedit/moopaneview.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moosignal.h"
+#include "mooutils/mooutils-gobject.h"
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 

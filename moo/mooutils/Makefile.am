@@ -56,10 +56,6 @@ libmooutils_la_SOURCES =        \
     moolog.h                    \
     moomarkup.c                 \
     moomarkup.h                 \
-    mooobjectfactory.c          \
-    mooobjectfactory.h          \
-    mooparam.c                  \
-    mooparam.h                  \
     mooprefs.c                  \
     mooprefs.h                  \
     mooprefsdialog.c            \
@@ -67,12 +63,10 @@ libmooutils_la_SOURCES =        \
     mooprefsdialogpage.c        \
     mooprefsdialog-settings.c   \
     mooprefsdialog-settings.h   \
-    moosignal.c                 \
-    moosignal.h                 \
     moostock.c                  \
     moostock.h                  \
-    moovalue.c                  \
-    moovalue.h                  \
+    mooutils-gobject.c          \
+    mooutils-gobject.h          \
     moowin.c                    \
     moowin.h                    \
     stock-about-16.h            \
