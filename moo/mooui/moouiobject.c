@@ -20,11 +20,14 @@
 #include <string.h>
 
 
+static GSList *ui_object_instances = NULL;
+
 static const GQuark *get_quark (void) G_GNUC_CONST;
-#define MOO_UI_OBJECT_NAME_QUARK    (get_quark()[0])
-#define MOO_UI_OBJECT_ID_QUARK      (get_quark()[1])
-#define MOO_UI_OBJECT_ACTIONS_QUARK (get_quark()[2])
-#define MOO_UI_OBJECT_UI_XML_QUARK  (get_quark()[3])
+#define MOO_UI_OBJECT_NAME_QUARK        (get_quark()[0])
+#define MOO_UI_OBJECT_ID_QUARK          (get_quark()[1])
+#define MOO_UI_OBJECT_ACTIONS_QUARK     (get_quark()[2])
+#define MOO_UI_OBJECT_UI_XML_QUARK      (get_quark()[3])
+#define MOO_UI_OBJECT_INSTANCES_QUARK   (get_quark()[4])
 
 
 static void     moo_ui_object_iface_init        (gpointer        g_iface);
@@ -60,8 +63,11 @@ GType moo_ui_object_get_type (void)
 static void    moo_ui_object_iface_init    (G_GNUC_UNUSED gpointer g_iface)
 {
     static gboolean done = FALSE;
-    if (done) return;
-    done = TRUE;
+
+    if (done)
+        return;
+    else
+        done = TRUE;
 
 #if GLIB_CHECK_VERSION(2,4,0)
     g_object_interface_install_property (g_iface,
@@ -95,45 +101,48 @@ static void    moo_ui_object_iface_init    (G_GNUC_UNUSED gpointer g_iface)
 }
 
 
-const char      *_moo_ui_object_get_name_impl   (MooUIObject        *object)
+const char*
+_moo_ui_object_get_name_impl (MooUIObject *object)
 {
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
     return g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_NAME_QUARK);
 }
 
 
-const char      *_moo_ui_object_get_id_impl     (MooUIObject        *object)
+const char*
+_moo_ui_object_get_id_impl (MooUIObject *object)
 {
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
     return g_object_get_qdata (G_OBJECT (object), MOO_UI_OBJECT_ID_QUARK);
 }
 
 
-void             _moo_ui_object_set_name_impl   (MooUIObject        *object,
-                                                 const char         *name)
+void
+_moo_ui_object_set_name_impl (MooUIObject        *object,
+                              const char         *name)
 {
     g_return_if_fail (MOO_IS_UI_OBJECT (object) && name != NULL);
     g_object_set_qdata_full (G_OBJECT (object),
                              MOO_UI_OBJECT_NAME_QUARK,
-                             g_strdup (name),
-                             (GDestroyNotify) g_free);
+                             g_strdup (name), g_free);
     moo_action_group_set_name (moo_ui_object_get_actions (object), name);
     g_object_notify (G_OBJECT (object), "ui-object-name");
 }
 
 
-static void     moo_ui_object_set_id            (MooUIObject    *object,
-                                                 const char     *id)
+static void
+moo_ui_object_set_id (MooUIObject    *object,
+                      const char     *id)
 {
     g_return_if_fail (MOO_IS_UI_OBJECT (object) && id != NULL);
     g_object_set_qdata_full (G_OBJECT (object),
                              MOO_UI_OBJECT_ID_QUARK,
-                             g_strdup (id),
-                             (GDestroyNotify) g_free);
+                             g_strdup (id), g_free);
 }
 
 
-MooActionGroup  *_moo_ui_object_get_actions_impl(MooUIObject        *object)
+MooActionGroup*
+_moo_ui_object_get_actions_impl (MooUIObject *object)
 {
     MooActionGroup *group;
 
@@ -143,19 +152,22 @@ MooActionGroup  *_moo_ui_object_get_actions_impl(MooUIObject        *object)
 
     if (!group)
     {
-        group = moo_action_group_new (moo_ui_object_get_name (object));
+        char *name = moo_ui_object_get_name (object);
+        group = moo_action_group_new (name);
         g_object_set_qdata_full (G_OBJECT (object),
                                  MOO_UI_OBJECT_ACTIONS_QUARK,
                                  group,
                                  (GDestroyNotify) g_object_unref);
         g_object_notify (G_OBJECT (object), "ui-object-actions");
+        g_free (name);
     }
 
     return group;
 }
 
 
-MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object)
+MooUIXML*
+_moo_ui_object_get_ui_xml_impl (MooUIObject *object)
 {
     MooUIXML *xml;
 
@@ -176,8 +188,9 @@ MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object)
 }
 
 
-void             _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
-                                                 MooUIXML           *xml)
+void
+_moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
+                                MooUIXML           *xml)
 {
     MooUIXML *old;
 
@@ -211,33 +224,71 @@ typedef struct {
 } FactoryData;
 
 
-static MooAction *create_action (FactoryData *data,
-                                 MooUIObject *object)
+static FactoryData*
+factory_data_new (MooObjectFactory *action,
+                  MooObjectFactory *closure)
+{
+    FactoryData *data;
+
+    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (action), NULL);
+    g_return_val_if_fail (!closure || MOO_IS_OBJECT_FACTORY (closure), NULL);
+
+    data = g_new0 (FactoryData, 1);
+    data->action = g_object_ref (action);
+    data->closure = closure ? g_object_ref (closure) : NULL;
+
+    return data;
+}
+
+
+static void
+factory_data_free (FactoryData *data)
+{
+    if (data)
+    {
+        g_object_unref (data->action);
+        if (data->closure)
+            g_object_unref (data->closure);
+        g_free (data);
+    }
+}
+
+
+static MooAction*
+create_action (const char  *action_id,
+               FactoryData *data,
+               MooUIObject *object)
 {
     MooClosure *closure = NULL;
     MooAction *action;
     const char *class_id;
 
-    g_return_val_if_fail (data != NULL && data->action != NULL, NULL);
+    g_return_val_if_fail (data != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (data->action), NULL);
+    g_return_val_if_fail (action_id && action_id[0], NULL);
 
     class_id = moo_ui_object_class_get_id (G_OBJECT_GET_CLASS (object));
     action = MOO_ACTION (moo_object_factory_create_object (data->action, object,
+                         "id", action_id,
                          "group-id", class_id,
                          NULL));
     g_return_val_if_fail (action != NULL, NULL);
 
-    if (g_type_is_a (data->action->object_type, MOO_TYPE_TOGGLE_ACTION)) {
+    if (g_type_is_a (data->action->object_type, MOO_TYPE_TOGGLE_ACTION))
+    {
         g_object_set (action, "toggled-data", object, NULL);
     }
 
-    if (g_type_is_a (data->action->object_type, MOO_TYPE_MENU_ACTION)) {
+    if (g_type_is_a (data->action->object_type, MOO_TYPE_MENU_ACTION))
+    {
         g_object_set (action,
                       "create-menu-data", object,
                       "no-accel", TRUE,
                       NULL);
     }
 
-    if (data->closure) {
+    if (data->closure)
+    {
         closure = MOO_CLOSURE (moo_object_factory_create_object (data->closure, NULL, NULL));
         g_return_val_if_fail (closure != NULL, action);
         g_object_set (closure, "data", object, NULL);
@@ -248,9 +299,10 @@ static MooAction *create_action (FactoryData *data,
 }
 
 
-void        moo_ui_object_class_init        (GObjectClass   *klass,
-                                             const char     *id,
-                                             const char     *name)
+void
+moo_ui_object_class_init (GObjectClass   *klass,
+                          const char     *id,
+                          const char     *name)
 {
     GType type;
 
@@ -265,7 +317,8 @@ void        moo_ui_object_class_init        (GObjectClass   *klass,
 }
 
 
-const char      *moo_ui_object_class_get_id     (GObjectClass       *klass)
+const char*
+moo_ui_object_class_get_id (GObjectClass *klass)
 {
     GType type;
     g_return_val_if_fail (G_IS_OBJECT_CLASS (klass), NULL);
@@ -274,7 +327,8 @@ const char      *moo_ui_object_class_get_id     (GObjectClass       *klass)
 }
 
 
-const char      *moo_ui_object_class_get_name   (GObjectClass       *klass)
+const char*
+moo_ui_object_class_get_name (GObjectClass *klass)
 {
     GType type;
     g_return_val_if_fail (G_IS_OBJECT_CLASS (klass), NULL);
@@ -283,31 +337,73 @@ const char      *moo_ui_object_class_get_name   (GObjectClass       *klass)
 }
 
 
-/* XXX check existing instances */
-void             moo_ui_object_class_install_action
-                                                (GObjectClass       *klass,
-                                                 MooObjectFactory   *action,
-                                                 MooObjectFactory   *closure)
+void
+moo_ui_object_class_install_action (GObjectClass       *klass,
+                                    const char         *action_id,
+                                    MooObjectFactory   *action,
+                                    MooObjectFactory   *closure)
 {
-    GArray *array;
-    FactoryData d = {action, closure};
+    GHashTable *actions;
+    FactoryData *data;
     GType type;
+    GSList *l;
 
     g_return_if_fail (G_IS_OBJECT_CLASS (klass));
     g_return_if_fail (MOO_IS_OBJECT_FACTORY (action));
     g_return_if_fail (closure == NULL || MOO_IS_OBJECT_FACTORY (closure));
+    g_return_if_fail (action_id && action_id[0]);
+
+    /* XXX check if action with this id exists */
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    array = g_type_get_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK);
-    if (!array) {
-        array = g_array_new (FALSE, FALSE, sizeof (FactoryData));
-        g_type_set_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK, array);
+    actions = g_type_get_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK);
+
+    if (!actions)
+    {
+        actions = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                         g_free, (GDestroyNotify) factory_data_free);
+        g_type_set_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK, actions);
     }
-    g_array_append_val (array, d);
+
+    data = factory_data_new (action, closure);
+    g_hash_table_insert (actions, g_strdup (action_id), data);
+
+    for (l = ui_object_instances; l != NULL; l = l->next)
+    {
+        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
+        {
+            MooAction *action = create_action (action_id, data, l->data);
+            if (action)
+                moo_ui_object_add_action (l->data, action);
+        }
+    }
 }
 
 
-void        moo_ui_object_init              (MooUIObject    *object)
+void
+moo_ui_object_class_remove_action (GObjectClass       *klass,
+                                   const char         *action_id)
+{
+    GHashTable *actions;
+    GType type;
+    GSList *l;
+
+    g_return_if_fail (G_IS_OBJECT_CLASS (klass));
+
+    type = G_OBJECT_CLASS_TYPE (klass);
+    actions = g_type_get_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK);
+
+    if (actions)
+        g_hash_table_remove (actions, action_id);
+
+    for (l = ui_object_instances; l != NULL; l = l->next)
+        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
+            moo_ui_object_remove_action (l->data, action_id);
+}
+
+
+void
+moo_ui_object_init (MooUIObject *object)
 {
     GType type;
     GObjectClass *klass;
@@ -323,30 +419,46 @@ void        moo_ui_object_init              (MooUIObject    *object)
                             moo_ui_object_class_get_name (klass));
 
     moo_ui_object_add_class_actions (object);
+
+    ui_object_instances = g_slist_prepend (ui_object_instances, object);
 }
 
 
-static void     moo_ui_object_add_class_actions (MooUIObject    *object)
+void
+moo_ui_object_finalize (MooUIObject *object)
+{
+    ui_object_instances = g_slist_remove (ui_object_instances, object);
+}
+
+
+static void
+add_action (const char  *id,
+            FactoryData *data,
+            MooUIObject *object)
+{
+    MooAction *action = create_action (id, data, object);
+
+    if (action)
+        moo_ui_object_add_action (object, action);
+}
+
+static void
+moo_ui_object_add_class_actions (MooUIObject *object)
 {
     GType type;
 
     g_return_if_fail (G_IS_OBJECT (object));
 
     type = G_OBJECT_TYPE (object);
+
     do
     {
-        GArray *array;
-        guint i;
+        GHashTable *actions;
 
-        array = g_type_get_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK);
-        if (array)
-            for (i = 0; i < array->len; ++i)
-        {
-            FactoryData *d = &g_array_index (array, FactoryData, i);
-            MooAction *action = create_action (d, object);
-            if (action)
-                moo_ui_object_add_action (object, action);
-        }
+        actions = g_type_get_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK);
+
+        if (actions)
+            g_hash_table_foreach (actions, (GHFunc) add_action, object);
 
         type = g_type_parent (type);
         g_return_if_fail (type != 0);
@@ -355,8 +467,9 @@ static void     moo_ui_object_add_class_actions (MooUIObject    *object)
 }
 
 
-void             moo_ui_object_add_action       (MooUIObject    *object,
-                                                 MooAction      *action)
+void
+moo_ui_object_add_action (MooUIObject    *object,
+                          MooAction      *action)
 {
     MooActionGroup *group;
 
@@ -375,20 +488,38 @@ void             moo_ui_object_add_action       (MooUIObject    *object,
 }
 
 
-void             moo_ui_object_class_new_action (GObjectClass   *klass,
-                                                 const char     *first_prop_name,
-                                                 ...)
+void
+moo_ui_object_remove_action (MooUIObject    *object,
+                             const char     *action_id)
+{
+    MooActionGroup *group;
+
+    g_return_if_fail (MOO_IS_UI_OBJECT (object));
+    g_return_if_fail (action_id != NULL);
+
+    group = moo_ui_object_get_actions (object);
+    moo_action_group_remove_action (group, action_id);
+}
+
+
+void
+moo_ui_object_class_new_action (GObjectClass   *klass,
+                                const char     *action_id,
+                                const char     *first_prop_name,
+                                ...)
 {
     va_list args;
     va_start (args, first_prop_name);
-    moo_ui_object_class_new_actionv (klass, first_prop_name, args);
+    moo_ui_object_class_new_actionv (klass, action_id, first_prop_name, args);
     va_end (args);
 }
 
 
-void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
-                                                 const char     *first_prop_name,
-                                                 va_list         var_args)
+void
+moo_ui_object_class_new_actionv (GObjectClass   *object_class,
+                                 const char     *action_id,
+                                 const char     *first_prop_name,
+                                 va_list         var_args)
 {
     const char *name;
     GType action_type = 0, closure_type = 0;
@@ -410,38 +541,57 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
         GParamSpec *pspec;
         char *err = NULL;
 
+        /* ignore id property */
+        if (!strcmp (name, "id"))
+        {
+            g_critical ("%s: id property specified", G_STRLOC);
+            goto error;
+        }
+
         if (strstr (name, "::") && strncmp (name, "closure::", strlen ("closure::")))
         {
             if (!strcmp (name, "action-type::") || !strcmp (name, "action_type::"))
             {
                 g_value_init (&param.value, G_TYPE_POINTER);
                 G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-                if (err) {
+
+                if (err)
+                {
                     g_warning ("%s: %s", G_STRLOC, err);
                     g_free (err);
                     goto error;
                 }
+
                 action_type = (GType) param.value.data[0].v_pointer;
-                if (!g_type_is_a (action_type, MOO_TYPE_ACTION)) {
+
+                if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
+                {
                     g_warning ("%s: invalid action type", G_STRLOC);
                     goto error;
                 }
+
                 action_class = g_type_class_ref (action_type);
             }
             else if (!strcmp (name, "closure-type::") || !strcmp (name, "closure_type::"))
             {
                 g_value_init (&param.value, G_TYPE_POINTER);
                 G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-                if (err) {
+
+                if (err)
+                {
                     g_warning ("%s: %s", G_STRLOC, err);
                     g_free (err);
                     goto error;
                 }
+
                 closure_type = (GType) param.value.data[0].v_pointer;
-                if (!g_type_is_a (closure_type, MOO_TYPE_CLOSURE)) {
+
+                if (!g_type_is_a (closure_type, MOO_TYPE_CLOSURE))
+                {
                     g_warning ("%s: invalid closure type", G_STRLOC);
                     goto error;
                 }
+
                 closure_class = g_type_class_ref (closure_type);
             }
             else
@@ -451,14 +601,18 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
             }
         }
         else if (!strstr (name, "::"))
-        {   /* action property */
-            if (!action_class) {
+        {
+            if (!action_class)
+            {
                 if (!action_type)
                     action_type = MOO_TYPE_ACTION;
                 action_class = g_type_class_ref (action_type);
             }
+
             pspec = g_object_class_find_property (action_class, name);
-            if (!pspec) {
+
+            if (!pspec)
+            {
                 g_warning ("%s: object class `%s' has no property named `%s'",
                            G_STRLOC, g_type_name (action_type), name);
                 goto error;
@@ -466,7 +620,9 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
 
             g_value_init (&param.value, G_PARAM_SPEC_VALUE_TYPE (pspec));
             G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-            if (err) {
+
+            if (err)
+            {
                 g_warning ("%s: %s", G_STRLOC, err);
                 g_free (err);
                 g_value_unset (&param.value);
@@ -479,10 +635,13 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
         else
         {   /* closure property */
             const char *suffix = strstr (name, "::");
-            if (!suffix || !suffix[1] || !suffix[2]) {
+
+            if (!suffix || !suffix[1] || !suffix[2])
+            {
                 g_warning ("%s: invalid property name '%s'", G_STRLOC, name);
                 goto error;
             }
+
             name = suffix + 2;
 
             if (!closure_class) {
@@ -490,8 +649,11 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
                     closure_type = MOO_TYPE_CLOSURE;
                 closure_class = g_type_class_ref (closure_type);
             }
+
             pspec = g_object_class_find_property (closure_class, name);
-            if (!pspec) {
+
+            if (!pspec)
+            {
                 g_warning ("%s: object class `%s' has no property named `%s'",
                            G_STRLOC, g_type_name (closure_type), name);
                 goto error;
@@ -513,23 +675,29 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
         name = va_arg (var_args, gchar*);
     }
 
+    G_STMT_START
     {
         MooObjectFactory *action_factory = NULL;
         MooObjectFactory *closure_factory = NULL;
 
-        if (closure_params->len) {
+        if (closure_params->len)
+        {
             closure_factory =
                     moo_object_factory_new_a (closure_type,
                                               (GParameter*) closure_params->data,
                                               closure_params->len);
-            if (!closure_factory) {
+
+            if (!closure_factory)
+            {
                 g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
                 goto error;
             }
+
             g_array_free (closure_params, FALSE);
             closure_params = NULL;
         }
-        else {
+        else
+        {
             g_array_free (closure_params, TRUE);
             closure_params = NULL;
         }
@@ -537,15 +705,19 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
         action_factory = moo_object_factory_new_a (action_type,
                                                    (GParameter*) action_params->data,
                                                    action_params->len);
-        if (!action_factory) {
+
+        if (!action_factory)
+        {
             g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
             g_object_unref (closure_factory);
             goto error;
         }
+
         g_array_free (action_params, FALSE);
         action_params = NULL;
 
         moo_ui_object_class_install_action (object_class,
+                                            action_id,
                                             action_factory,
                                             closure_factory);
 
@@ -553,20 +725,32 @@ void             moo_ui_object_class_new_actionv(GObjectClass   *object_class,
             g_type_class_unref (action_class);
         if (closure_class)
             g_type_class_unref (closure_class);
+        if (action_factory)
+            g_object_unref (action_factory);
+        if (closure_factory)
+            g_object_unref (closure_factory);
+
         return;
     }
+    G_STMT_END;
 
 error:
-    if (action_params) {
+    if (action_params)
+    {
         guint i;
         GParameter *params = (GParameter*) action_params->data;
-        for (i = 0; i < action_params->len; ++i) {
+
+        for (i = 0; i < action_params->len; ++i)
+        {
             g_value_unset (&params[i].value);
             g_free ((char*) params[i].name);
         }
+
         g_array_free (action_params, TRUE);
     }
-    if (closure_params) {
+
+    if (closure_params)
+    {
         guint i;
         GParameter *params = (GParameter*) closure_params->data;
         for (i = 0; i < closure_params->len; ++i) {
@@ -575,6 +759,7 @@ error:
         }
         g_array_free (closure_params, TRUE);
     }
+
     if (action_class)
         g_type_class_unref (action_class);
     if (closure_class)
@@ -582,7 +767,8 @@ error:
 }
 
 
-static const GQuark *get_quark (void)
+static const GQuark*
+get_quark (void)
 {
     static GQuark q[4] = {0, 0, 0, 0};
     if (!q[0]) {
@@ -590,23 +776,31 @@ static const GQuark *get_quark (void)
         q[1] = g_quark_from_static_string ("moo_ui_object_ui_xml");
         q[2] = g_quark_from_static_string ("moo_ui_object_id");
         q[3] = g_quark_from_static_string ("moo_ui_object_name");
+        q[4] = g_quark_from_static_string ("moo_ui_object_instances");
     }
     return q;
 }
 
 
-MooUIXML        *moo_ui_object_get_ui_xml       (MooUIObject        *object)
+MooUIXML*
+moo_ui_object_get_ui_xml (MooUIObject        *object)
 {
     MooUIXML *xml;
+
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+
     g_object_get (G_OBJECT (object), "ui-object-xml", &xml, NULL);
-    if (xml) g_object_unref (xml);
+
+    if (xml)
+        g_object_unref (xml);
+
     return xml;
 }
 
 
-void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
-                                                 MooUIXML           *xml)
+void
+moo_ui_object_set_ui_xml (MooUIObject        *object,
+                          MooUIXML           *xml)
 {
     g_return_if_fail (MOO_IS_UI_OBJECT (object));
     g_return_if_fail (!xml || MOO_IS_UI_XML (xml));
@@ -614,38 +808,49 @@ void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
 }
 
 
-MooActionGroup  *moo_ui_object_get_actions      (MooUIObject        *object)
+MooActionGroup*
+moo_ui_object_get_actions (MooUIObject *object)
 {
     MooActionGroup *actions;
+
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+
     g_object_get (G_OBJECT (object), "ui-object-actions", &actions, NULL);
-    if (actions) g_object_unref (actions);
+
+    if (actions)
+        g_object_unref (actions);
+
     return actions;
 }
 
 
-const char      *moo_ui_object_get_name         (MooUIObject        *object)
+char*
+moo_ui_object_get_name (MooUIObject *object)
 {
-    static char *name = NULL;
-    g_free (name);
+    char *name = NULL;
+
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+
     g_object_get (G_OBJECT (object), "ui-object-name", &name, NULL);
     return name;
 }
 
 
-const char      *moo_ui_object_get_id           (MooUIObject        *object)
+char*
+moo_ui_object_get_id (MooUIObject *object)
 {
-    static char *id = NULL;
-    g_free (id);
+    char *id = NULL;
+
     g_return_val_if_fail (MOO_IS_UI_OBJECT (object), NULL);
+
     g_object_get (G_OBJECT (object), "ui-object-id", &id, NULL);
     return id;
 }
 
 
-void             moo_ui_object_set_name         (MooUIObject        *object,
-                                                 const char         *name)
+void
+moo_ui_object_set_name (MooUIObject        *object,
+                        const char         *name)
 {
     g_return_if_fail (MOO_IS_UI_OBJECT (object));
     g_object_set (G_OBJECT (object), "ui-object-name", name, NULL);

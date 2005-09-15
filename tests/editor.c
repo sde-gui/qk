@@ -75,8 +75,7 @@ static void init_terminal (void)
 
     g_return_if_fail (klass != NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Restart",
+    moo_ui_object_class_new_action (klass, "Restart",
                                     "name", "Restart",
                                     "label", "_Restart",
                                     "tooltip", "Restart",
@@ -116,8 +115,7 @@ static void init_editor (void)
 
     g_return_if_fail (klass != NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "SendToTerminal",
+    moo_ui_object_class_new_action (klass, "SendToTerminal",
                                     "name", "Send to Terminal",
                                     "label", "_Send to Terminal",
                                     "tooltip", "Send to Terminal",

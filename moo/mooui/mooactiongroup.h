@@ -51,6 +51,8 @@ void             moo_action_group_add_action    (MooActionGroup *group,
                                                  MooAction      *action);
 MooAction       *moo_action_group_get_action    (MooActionGroup *group,
                                                  const char     *action_id);
+void             moo_action_group_remove_action (MooActionGroup *group,
+                                                 const char     *action_id);
 
 const char      *moo_action_group_get_name      (MooActionGroup *group);
 void             moo_action_group_set_name      (MooActionGroup *group,

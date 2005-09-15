@@ -56,8 +56,7 @@ static void moo_action_group_init (MooActionGroup *group)
     group->priv = g_new0 (MooActionGroupPrivate, 1);
     group->priv->actions =
         g_hash_table_new_full (g_str_hash, g_str_equal,
-                               (GDestroyNotify) g_free,
-                               (GDestroyNotify) g_object_unref);
+                               g_free, g_object_unref);
     group->priv->accel_group = NULL;
     group->priv->name = NULL;
 }
@@ -227,8 +226,20 @@ static void moo_action_group_add_action_priv (MooActionGroup    *group,
         g_warning ("action with id '%s' already exists in action group '%s'\n",
                    id, group->priv->name);
     }
+
     g_hash_table_insert (group->priv->actions, g_strdup (id),
                          g_object_ref (action));
     /*TODO???*/
     action->group = group;
+}
+
+
+void
+moo_action_group_remove_action (MooActionGroup *group,
+                                const char     *action_id)
+{
+    g_return_if_fail (MOO_IS_ACTION_GROUP (group));
+    g_return_if_fail (action_id != NULL);
+
+    g_hash_table_remove (group->priv->actions, action_id);
 }

@@ -35,14 +35,17 @@
 inline static const char *setting (MooWindow *window, const char *s)
 {
     static char *string = NULL;
-    const char *id = moo_ui_object_get_id (MOO_UI_OBJECT (window));
+    char *id = moo_ui_object_get_id (MOO_UI_OBJECT (window));
 
     g_free (string);
 
     if (id)
-        return string = g_strdup_printf ("%s/%s", id, s);
+        string = g_strdup_printf ("%s/%s", id, s);
     else
-        return string = g_strdup (s);
+        string = g_strdup (s);
+
+    g_free (id);
+    return s;
 }
 
 static void init_prefs (MooWindow *window);
@@ -165,8 +168,7 @@ static void moo_window_class_init (MooWindowClass *klass)
 
     moo_ui_object_class_init (gobject_class, "MooWindow", "Window");
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "ConfigureShortcuts",
+    moo_ui_object_class_new_action (gobject_class, "ConfigureShortcuts",
                                     "name", "Configure Shortcuts",
                                     "label", "Configure _Shortcuts...",
                                     "tooltip", "Configure _Shortcuts...",
@@ -174,27 +176,24 @@ static void moo_window_class_init (MooWindowClass *klass)
                                     "closure::callback", moo_window_shortcuts_prefs_dialog,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
+    moo_ui_object_class_new_action (gobject_class, "ShowToolbar",
                                     "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                    "id", "ShowToolbar",
                                     "name", "Show Toolbar",
                                     "label", "Show Toolbar",
                                     "tooltip", "Show Toolbar",
                                     "toggled-callback", moo_window_show_toolbar_toggled,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
+    moo_ui_object_class_new_action (gobject_class, "ShowMenubar",
                                     "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                    "id", "ShowMenubar",
                                     "name", "Show Menubar",
                                     "label", "Show Menubar",
                                     "tooltip", "Show Menubar",
                                     "toggled-callback", moo_window_show_menubar_toggled,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
+    moo_ui_object_class_new_action (gobject_class, "ToolbarStyle",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "id", "ToolbarStyle",
                                     "name", "Toolbar Style",
                                     "create-menu-func", moo_window_create_toolbar_style_menu,
                                     NULL);

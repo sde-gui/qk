@@ -192,8 +192,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_ui_object_class_init (gobject_class, "Editor", "Editor");
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "NewWindow",
+    moo_ui_object_class_new_action (gobject_class, "NewWindow",
                                     "name", "New Window",
                                     "label", "_New Window",
                                     "tooltip", "Open new editor window",
@@ -202,8 +201,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_new,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "NewTab",
+    moo_ui_object_class_new_action (gobject_class, "NewTab",
                                     "name", "New Tab",
                                     "label", "New _Tab",
                                     "tooltip", "Create new document tab",
@@ -212,8 +210,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_new_tab,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Open",
+    moo_ui_object_class_new_action (gobject_class, "Open",
                                     "name", "Open",
                                     "label", "_Open...",
                                     "tooltip", "Open...",
@@ -222,8 +219,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_open,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Reload",
+    moo_ui_object_class_new_action (gobject_class, "Reload",
                                     "name", "Reload",
                                     "label", "_Reload",
                                     "tooltip", "Reload document",
@@ -232,8 +228,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_reload,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Save",
+    moo_ui_object_class_new_action (gobject_class, "Save",
                                     "name", "Save",
                                     "label", "_Save",
                                     "tooltip", "Save document",
@@ -242,8 +237,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_save,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "SaveAs",
+    moo_ui_object_class_new_action (gobject_class, "SaveAs",
                                     "name", "Save As",
                                     "label", "Save _As...",
                                     "tooltip", "Save as...",
@@ -252,8 +246,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_save_as,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Close",
+    moo_ui_object_class_new_action (gobject_class, "Close",
                                     "name", "Close",
                                     "label", "_Close",
                                     "tooltip", "Close document",
@@ -262,8 +255,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_close_tab,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "CloseAll",
+    moo_ui_object_class_new_action (gobject_class, "CloseAll",
                                     "name", "Close All",
                                     "label", "Close _All",
                                     "tooltip", "Close all documents",
@@ -271,8 +263,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_close_all,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Undo",
+    moo_ui_object_class_new_action (gobject_class, "Undo",
                                     "name", "Undo",
                                     "label", "_Undo",
                                     "tooltip", "Undo",
@@ -282,8 +273,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Redo",
+    moo_ui_object_class_new_action (gobject_class, "Redo",
                                     "name", "Redo",
                                     "label", "_Redo",
                                     "tooltip", "Redo",
@@ -293,8 +283,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Cut",
+    moo_ui_object_class_new_action (gobject_class, "Cut",
                                     "name", "Cut",
                                     "label", "Cu_t",
                                     "tooltip", "Cut",
@@ -304,8 +293,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Copy",
+    moo_ui_object_class_new_action (gobject_class, "Copy",
                                     "name", "Copy",
                                     "label", "_Copy",
                                     "tooltip", "Copy",
@@ -315,8 +303,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Paste",
+    moo_ui_object_class_new_action (gobject_class, "Paste",
                                     "name", "Paste",
                                     "label", "_Paste",
                                     "tooltip", "Paste",
@@ -326,8 +313,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Delete",
+    moo_ui_object_class_new_action (gobject_class, "Delete",
                                     "name", "Delete",
                                     "label", "_Delete",
                                     "tooltip", "Delete",
@@ -336,8 +322,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "SelectAll",
+    moo_ui_object_class_new_action (gobject_class, "SelectAll",
                                     "name", "Select All",
                                     "label", "Select _All",
                                     "tooltip", "Select all",
@@ -346,8 +331,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "PreviousTab",
+    moo_ui_object_class_new_action (gobject_class, "PreviousTab",
                                     "name", "Previous Tab",
                                     "label", "_Previous Tab",
                                     "tooltip", "Previous tab",
@@ -356,8 +340,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_previous_tab,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "NextTab",
+    moo_ui_object_class_new_action (gobject_class, "NextTab",
                                     "name", "Next Tab",
                                     "label", "_Next Tab",
                                     "tooltip", "Next tab",
@@ -366,8 +349,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::callback", moo_edit_window_next_tab,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Find",
+    moo_ui_object_class_new_action (gobject_class, "Find",
                                     "name", "Find",
                                     "label", "_Find",
                                     "tooltip", "Find",
@@ -377,8 +359,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "FindNext",
+    moo_ui_object_class_new_action (gobject_class, "FindNext",
                                     "name", "Find Next",
                                     "label", "Find _Next",
                                     "tooltip", "Find next",
@@ -388,8 +369,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "FindPrevious",
+    moo_ui_object_class_new_action (gobject_class, "FindPrevious",
                                     "name", "Find Previous",
                                     "label", "Find _Previous",
                                     "tooltip", "Find previous",
@@ -399,8 +379,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Replace",
+    moo_ui_object_class_new_action (gobject_class, "Replace",
                                     "name", "Replace",
                                     "label", "_Replace",
                                     "tooltip", "Replace",
@@ -410,8 +389,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "GoToLine",
+    moo_ui_object_class_new_action (gobject_class, "GoToLine",
                                     "name", "Go to Line",
                                     "label", "_Go to Line",
                                     "tooltip", "Go to line",
@@ -420,9 +398,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
+    moo_ui_object_class_new_action (gobject_class, "SyntaxMenu",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "id", "SyntaxMenu",
                                     "create-menu-func", create_lang_menu,
                                     NULL);
 }

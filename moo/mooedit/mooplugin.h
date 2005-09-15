@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 6
+#define MOO_PLUGIN_CURRENT_VERSION 7
 
 
 #define MOO_TYPE_PLUGIN              (moo_plugin_get_type ())

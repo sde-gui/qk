@@ -54,8 +54,7 @@ file_selector_plugin_init (void)
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_val_if_fail (klass != NULL, FALSE);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ShowFileSelector",
+    moo_ui_object_class_new_action (klass, "ShowFileSelector",
                                     "name", "Show File Selector",
                                     "label", "Show File Selector",
                                     "tooltip", "Show file selector",
@@ -67,16 +66,25 @@ file_selector_plugin_init (void)
 
     g_type_class_unref (klass);
     return TRUE;
+
+    /* XXX merge ui */
 }
 
 
 static void
 file_selector_plugin_deinit (Plugin *plugin)
 {
-    /* XXX remove action */
+    GObjectClass *klass;
+
     if (plugin->bookmark_mgr)
         g_object_unref (plugin->bookmark_mgr);
     plugin->bookmark_mgr = NULL;
+
+    klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    moo_ui_object_class_remove_action (klass, "ShowFileSelector");
+    g_type_class_unref (klass);
+
+    /* XXX remove ui */
 }
 
 

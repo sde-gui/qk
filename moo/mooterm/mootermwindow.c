@@ -46,8 +46,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
 
     moo_ui_object_class_init (gobject_class, "Terminal", "Terminal");
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "SaveSelection",
+    moo_ui_object_class_new_action (gobject_class, "SaveSelection",
                                     "name", "Save Selection",
                                     "label", "_Save Selection",
                                     "tooltip", "Save selected text to a file",
@@ -56,8 +55,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                     "closure::callback", moo_term_window_save_selection,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Copy",
+    moo_ui_object_class_new_action (gobject_class, "Copy",
                                     "name", "Copy",
                                     "label", "_Copy",
                                     "tooltip", "Copy",
@@ -68,8 +66,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                     "closure::proxy-func", moo_term_window_get_term,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "Paste",
+    moo_ui_object_class_new_action (gobject_class, "Paste",
                                     "name", "Paste",
                                     "label", "_Paste",
                                     "tooltip", "Paste",
@@ -80,8 +77,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                     "closure::proxy-func", moo_term_window_get_term,
                                     NULL);
 
-    moo_ui_object_class_new_action (gobject_class,
-                                    "id", "SelectAll",
+    moo_ui_object_class_new_action (gobject_class, "SelectAll",
                                     "name", "Select All",
                                     "label", "Select _All",
                                     "tooltip", "Select all",

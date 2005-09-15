@@ -169,9 +169,8 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                G_TYPE_NONE, 0);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_ui_object_class_new_action (edit_window_class,
+    moo_ui_object_class_new_action (edit_window_class, "OpenRecent",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "id", "OpenRecent",
                                     "create-menu-func", create_recent_menu,
                                     NULL);
     g_type_class_unref (edit_window_class);

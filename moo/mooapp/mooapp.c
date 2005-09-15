@@ -957,8 +957,7 @@ static void install_actions (MooApp *app, GType  type)
     about = g_strdup_printf ("About %s", app->priv->info->full_name);
     _about = g_strdup_printf ("_About %s", app->priv->info->full_name);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Quit",
+    moo_ui_object_class_new_action (klass, "Quit",
                                     "name", "Quit",
                                     "label", "_Quit",
                                     "tooltip", "Quit",
@@ -968,8 +967,7 @@ static void install_actions (MooApp *app, GType  type)
                                     "closure::proxy-func", moo_app_get_instance,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Preferences",
+    moo_ui_object_class_new_action (klass, "Preferences",
                                     "name", "Preferences",
                                     "label", "Pre_ferences",
                                     "tooltip", "Preferences",
@@ -978,8 +976,7 @@ static void install_actions (MooApp *app, GType  type)
                                     "closure::callback", moo_app_prefs_dialog,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "About",
+    moo_ui_object_class_new_action (klass, "About",
                                     "name", "About",
                                     "label", _about,
                                     "tooltip", about,
@@ -988,16 +985,14 @@ static void install_actions (MooApp *app, GType  type)
                                     NULL);
 
 #ifdef USE_PYTHON
-    moo_ui_object_class_new_action (klass,
-                                    "id", "PythonMenu",
+    moo_ui_object_class_new_action (klass, "PythonMenu",
                                     "name", "Python Menu",
                                     "label", "P_ython",
                                     "visible", TRUE,
                                     "no-accel", TRUE,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ExecuteScript",
+    moo_ui_object_class_new_action (klass, "ExecuteScript",
                                     "name", "Execute Script",
                                     "label", "_Execute Script",
                                     "tooltip", "Execute Script",
@@ -1005,8 +1000,7 @@ static void install_actions (MooApp *app, GType  type)
                                     "closure::callback", moo_app_python_execute_file,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ShowConsole",
+    moo_ui_object_class_new_action (klass, "ShowConsole",
                                     "name", "Show Console",
                                     "label", "Show Conso_le",
                                     "tooltip", "Show Console",
@@ -1015,8 +1009,7 @@ static void install_actions (MooApp *app, GType  type)
                                     "closure::proxy-func", moo_app_get_instance,
                                     NULL);
 #else /* !USE_PYTHON */
-    moo_ui_object_class_new_action (klass,
-                                    "id", "PythonMenu",
+    moo_ui_object_class_new_action (klass, "PythonMenu",
                                     "dead", TRUE,
                                     NULL);
 #endif /* USE_PYTHON */
@@ -1105,8 +1098,7 @@ static void install_editor_actions  (void)
     g_return_if_fail (klass != NULL);
 
 #ifdef USE_PYTHON
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ExecuteSelection",
+    moo_ui_object_class_new_action (klass, "ExecuteSelection",
                                     "name", "Execute Selection",
                                     "label", "_Execute Selection",
                                     "tooltip", "Execute Selection",
@@ -1116,8 +1108,7 @@ static void install_editor_actions  (void)
                                     NULL);
 #endif /* !USE_PYTHON */
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Terminal",
+    moo_ui_object_class_new_action (klass, "Terminal",
                                     "name", "Terminal",
                                     "label", "_Terminal",
                                     "tooltip", "Terminal",
@@ -1149,8 +1140,7 @@ static void install_terminal_actions (void)
 
     g_return_if_fail (klass != NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "NewEditor",
+    moo_ui_object_class_new_action (klass, "NewEditor",
                                     "name", "New Editor",
                                     "label", "_New Editor",
                                     "tooltip", "New Editor",
@@ -1160,8 +1150,7 @@ static void install_terminal_actions (void)
                                     "closure::proxy-func", moo_app_get_instance,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "OpenInEditor",
+    moo_ui_object_class_new_action (klass, "OpenInEditor",
                                     "name", "Open In Editor",
                                     "label", "_Open In Editor",
                                     "tooltip", "Open In Editor",

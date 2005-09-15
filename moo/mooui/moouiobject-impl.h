@@ -24,9 +24,12 @@ void        moo_ui_object_class_init        (GObjectClass   *klass,
                                              const char     *name);
 
 void        moo_ui_object_init              (MooUIObject    *object);
+void        moo_ui_object_finalize          (MooUIObject    *object);
 
 void        moo_ui_object_add_action        (MooUIObject    *object,
                                              MooAction      *action);
+void        moo_ui_object_remove_action     (MooUIObject    *object,
+                                             const char     *action_id);
 
 MooUIXML        *_moo_ui_object_get_ui_xml_impl (MooUIObject        *object);
 void             _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,

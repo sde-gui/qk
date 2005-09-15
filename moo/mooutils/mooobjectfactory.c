@@ -149,24 +149,28 @@ static void moo_object_factory_finalize        (GObject               *object)
 }
 
 
-GObject     *moo_object_factory_create_object   (MooObjectFactory   *factory,
+gpointer     moo_object_factory_create_object   (MooObjectFactory   *factory,
                                                  gpointer            data,
                                                  const char         *prop_name,
                                                  ...)
 {
     g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (factory), NULL);
 
-    if (factory->factory_func) {
+    if (factory->factory_func)
+    {
         if (factory->factory_func_data)
             data = factory->factory_func_data;
         return factory->factory_func (data, factory);
     }
 
     if (!prop_name)
+    {
         return g_object_newv (factory->object_type,
                               factory->n_params,
                               factory->params);
-    else {
+    }
+    else
+    {
         GObject *object;
         GParameter *params;
         guint n_params;

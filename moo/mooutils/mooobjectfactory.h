@@ -66,7 +66,7 @@ MooObjectFactory *moo_object_factory_new_a      (GType               object_type
                                                  GParameter         *params,
                                                  guint               n_params);
 
-GObject     *moo_object_factory_create_object   (MooObjectFactory   *factory,
+gpointer     moo_object_factory_create_object   (MooObjectFactory   *factory,
                                                  gpointer            data,
                                                  const char         *additional_prop_name,
                                                  ...);

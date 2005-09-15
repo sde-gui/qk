@@ -98,24 +98,21 @@ static void init_actions (void)
 
     g_return_if_fail (klass != NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Preferences",
+    moo_ui_object_class_new_action (klass, "Preferences",
                                     "name", "Preferences",
                                     "label", "Preferences",
                                     "tooltip", "Preferences",
                                     "icon-stock-id", GTK_STOCK_PREFERENCES,
                                     "closure::callback", show_preferences,
                                     NULL);
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Quit",
+    moo_ui_object_class_new_action (klass, "Quit",
                                     "name", "Quit",
                                     "label", "_Quit",
                                     "tooltip", "Quit",
                                     "icon-stock-id", GTK_STOCK_QUIT,
                                     "closure::callback", quit,
                                     NULL);
-    moo_ui_object_class_new_action (klass,
-                                    "id", "About",
+    moo_ui_object_class_new_action (klass, "About",
                                     "name", "About",
                                     "label", "About",
                                     "tooltip", "About",

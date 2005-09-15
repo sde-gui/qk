@@ -43,14 +43,20 @@ const char      *moo_ui_object_class_get_name   (GObjectClass       *klass);
 
 void             moo_ui_object_class_install_action
                                                 (GObjectClass       *klass,
+                                                 const char         *id,
                                                  MooObjectFactory   *action,
                                                  MooObjectFactory   *closure);
 void             moo_ui_object_class_new_action (GObjectClass       *klass,
+                                                 const char         *id,
                                                  const char         *first_prop_name,
                                                  ...);
 void             moo_ui_object_class_new_actionv(GObjectClass       *klass,
+                                                 const char         *id,
                                                  const char         *first_prop_name,
                                                  va_list             props);
+
+void             moo_ui_object_class_remove_action (GObjectClass    *klass,
+                                                 const char         *id);
 
 MooUIXML        *moo_ui_object_get_ui_xml       (MooUIObject        *object);
 void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
@@ -58,8 +64,8 @@ void             moo_ui_object_set_ui_xml       (MooUIObject        *object,
 
 MooActionGroup  *moo_ui_object_get_actions      (MooUIObject        *object);
 
-const char      *moo_ui_object_get_name         (MooUIObject        *object);
-const char      *moo_ui_object_get_id           (MooUIObject        *object);
+char            *moo_ui_object_get_name         (MooUIObject        *object);
+char            *moo_ui_object_get_id           (MooUIObject        *object);
 void             moo_ui_object_set_name         (MooUIObject        *object,
                                                  const char         *name);
 

@@ -214,8 +214,7 @@ find_plugin_init (void)
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_val_if_fail (klass != NULL, FALSE);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "FindInFiles",
+    moo_ui_object_class_new_action (klass, "FindInFiles",
                                     "name", "Find In Files",
                                     "label", "Find In Files",
                                     "tooltip", "Find In Files",
@@ -223,8 +222,7 @@ find_plugin_init (void)
                                     "closure::callback", find_in_files_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "FindFile",
+    moo_ui_object_class_new_action (klass, "FindFile",
                                     "name", "Find File",
                                     "label", "Find File",
                                     "tooltip", "Find File",
@@ -234,13 +232,22 @@ find_plugin_init (void)
 
     g_type_class_unref (klass);
     return TRUE;
+
+    /* XXX merge ui */
 }
 
 
 static void
 find_plugin_deinit (void)
 {
-    /* XXX remove action */
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+
+    moo_ui_object_class_remove_action (klass, "FindInFiles");
+    moo_ui_object_class_remove_action (klass, "FindFile");
+
+    g_type_class_unref (klass);
+
+    /* XXX remove ui */
 }
 
 

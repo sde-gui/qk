@@ -163,8 +163,7 @@ cproject_plugin_init (CProjectPlugin *plugin)
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_val_if_fail (klass != NULL, FALSE);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "NewProject",
+    moo_ui_object_class_new_action (klass, "NewProject",
                                     "name", "New Project",
                                     "label", "New Project",
                                     "tooltip", "New Project",
@@ -172,8 +171,7 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", new_project_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "OpenProject",
+    moo_ui_object_class_new_action (klass, "OpenProject",
                                     "name", "Open Project",
                                     "label", "Open Project",
                                     "tooltip", "Open Project",
@@ -181,14 +179,12 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", open_project_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
+    moo_ui_object_class_new_action (klass, "OpenRecentProject",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "id", "OpenRecentProject",
                                     "create-menu-func", create_recent_menu,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "CloseProject",
+    moo_ui_object_class_new_action (klass, "CloseProject",
                                     "name", "Close Project",
                                     "label", "Close Project",
                                     "tooltip", "Close Project",
@@ -196,8 +192,7 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", close_project_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "ProjectOptions",
+    moo_ui_object_class_new_action (klass, "ProjectOptions",
                                     "name", "Project Options",
                                     "label", "Project Options",
                                     "tooltip", "Project Options",
@@ -205,14 +200,12 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", project_options_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
+    moo_ui_object_class_new_action (klass, "BuildConfiguration",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "id", "BuildConfiguration",
                                     "create-menu-func", create_build_configuration_menu,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "BuildProject",
+    moo_ui_object_class_new_action (klass, "BuildProject",
                                     "name", "Build Project",
                                     "label", "Build Project",
                                     "tooltip", "Build Project",
@@ -220,8 +213,7 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", build_project_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "CompileFile",
+    moo_ui_object_class_new_action (klass, "CompileFile",
                                     "name", "Compile File",
                                     "label", "Compile File",
                                     "tooltip", "Compile File",
@@ -229,8 +221,7 @@ cproject_plugin_init (CProjectPlugin *plugin)
                                     "closure::callback", compile_file_cb,
                                     NULL);
 
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Execute",
+    moo_ui_object_class_new_action (klass, "Execute",
                                     "name", "Execute",
                                     "label", "Execute",
                                     "tooltip", "Execute",
