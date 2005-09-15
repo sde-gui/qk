@@ -35,10 +35,8 @@ static void moo_menu_action_get_property    (GObject            *object,
 static void moo_menu_action_add_proxy       (MooAction          *action,
                                              GtkWidget          *proxy);
 
-static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action,
-                                                         GtkMenuShell   *menushell,
-                                                         int             position);
-static gboolean     moo_menu_action_create_tool_item    (MooAction      *action,
+static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action);
+static GtkWidget   *moo_menu_action_create_tool_item    (MooAction      *action,
                                                          GtkToolbar     *toolbar,
                                                          int             position);
 
@@ -145,9 +143,7 @@ static void moo_menu_action_add_proxy       (MooAction          *action,
 }
 
 
-static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action,
-                                                         GtkMenuShell   *menushell,
-                                                         int             position)
+static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action)
 {
     MooMenuAction *menu_action;
     GtkMenuItem *item;
@@ -159,18 +155,17 @@ static GtkWidget   *moo_menu_action_create_menu_item    (MooAction      *action,
                                           action);
     g_return_val_if_fail (item != NULL, NULL);
 
-    gtk_menu_shell_insert (menushell, GTK_WIDGET (item), position);
     moo_menu_action_add_proxy (action, GTK_WIDGET (item));
     return GTK_WIDGET (item);
 }
 
 
-static gboolean     moo_menu_action_create_tool_item    (G_GNUC_UNUSED MooAction      *action,
+static GtkWidget   *moo_menu_action_create_tool_item    (G_GNUC_UNUSED MooAction      *action,
                                                          G_GNUC_UNUSED GtkToolbar     *toolbar,
                                                          G_GNUC_UNUSED int             position)
 {
     g_warning ("%s: should not be called", G_STRLOC);
-    return FALSE;
+    return NULL;
 }
 
 

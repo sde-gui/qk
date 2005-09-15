@@ -146,12 +146,6 @@ void                moo_markup_doc_unref            (MooMarkupDoc       *doc);
 MooMarkupNode      *moo_markup_get_root_element     (MooMarkupDoc       *doc,
                                                      const char         *name);
 
-/* looks for element by 'name' attribute, e.g. elm2 in
-   <elm name="blah"> <elm2 name="blah2"/> ..
-   corresponds to "blah/blah2" */
-MooMarkupNode      *moo_markup_get_element_by_names (MooMarkupNode      *node,
-                                                     const char         *path);
-
 MooMarkupNode      *moo_markup_get_element          (MooMarkupNode      *node,
                                                      const char         *path);
 

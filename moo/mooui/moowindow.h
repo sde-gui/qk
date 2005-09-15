@@ -37,7 +37,6 @@ struct _MooWindow
     GtkWindow            gtkwindow;
 
     GtkAccelGroup       *accel_group;
-    GtkTooltips         *tooltips;
     MooWindowPrivate    *priv;
 
     GtkWidget           *menubar;

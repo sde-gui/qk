@@ -15,767 +15,1579 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include <gtk/gtk.h>
+#include <string.h>
 
 
-static void moo_ui_xml_class_init       (MooUIXMLClass  *klass);
+typedef MooUINodeType NodeType;
+typedef MooUINode Node;
+typedef MooUIWidgetNode Widget;
+typedef MooUIItemNode Item;
+typedef MooUISeparatorNode Separator;
+typedef MooUIPlaceholderNode Placeholder;
 
-static void moo_ui_xml_init             (MooUIXML       *xml);
-static void moo_ui_xml_finalize         (GObject        *object);
+#define CONTAINER MOO_UI_NODE_CONTAINER
+#define WIDGET MOO_UI_NODE_WIDGET
+#define TOOLBAR MOO_UI_NODE_TOOLBAR
+#define ITEM MOO_UI_NODE_ITEM
+#define SEPARATOR MOO_UI_NODE_SEPARATOR
+#define PLACEHOLDER MOO_UI_NODE_PLACEHOLDER
 
-static void moo_ui_xml_set_property     (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec);
-static void moo_ui_xml_get_property     (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec);
-
-static void moo_ui_xml_set_ui           (MooUIXML       *xml,
-                                         const char     *ui);
-static void moo_ui_xml_set_markup       (MooUIXML       *xml,
-                                         MooMarkupDoc   *doc);
-
-
-enum {
-    PROP_0,
-    PROP_UI,
-    PROP_MARKUP
+static const char *NODE_TYPE_NAME[] = {
+    NULL,
+    "MOO_UI_NODE_CONTAINER",
+    "MOO_UI_NODE_WIDGET",
+    "MOO_UI_NODE_ITEM",
+    "MOO_UI_NODE_SEPARATOR",
+    "MOO_UI_NODE_PLACEHOLDER"
 };
 
-enum {
-    CHANGED,
-    LAST_SIGNAL
+struct _MooUIXMLPrivate {
+    Node *ui;
+    GSList *toplevels;  /* Toplevel* */
+    guint last_merge_id;
+    GSList *merged_ui; /* Merge* */
 };
 
+typedef struct {
+    Node *node;
+    GtkWidget *widget;
+    GHashTable *children; /* Node* -> GtkWidget* */
+} Toplevel;
 
-static guint signals[LAST_SIGNAL] = {0};
+typedef struct {
+    guint id;
+    GSList *nodes;
+} Merge;
+
+typedef enum {
+    UPDATE_ADD_NODE,
+    UPDATE_REMOVE_NODE,
+    UPDATE_CHANGE_NODE
+} UpdateType;
+
+
+static void     moo_ui_xml_finalize     (GObject        *object);
+
+static void     moo_ui_xml_add_markup   (MooUIXML       *xml,
+                                         MooMarkupNode  *mnode);
+static Node    *parse_markup            (MooMarkupNode  *mnode);
+static void     node_free               (Node           *node);
+static void     update_widgets          (MooUIXML       *xml,
+                                         UpdateType      type,
+                                         Node           *node);
+
+static Merge   *lookup_merge            (MooUIXML       *xml,
+                                         guint           id);
+
+static gboolean node_is_ancestor        (Node           *node,
+                                         Node           *ancestor);
+
+static void     merge_add_node          (Merge          *merge,
+                                         Node           *node);
+static void     merge_remove_node       (Merge          *merge,
+                                         Node           *node);
 
 
 /* MOO_TYPE_UI_XML */
 G_DEFINE_TYPE (MooUIXML, moo_ui_xml, G_TYPE_OBJECT)
 
 
-static void moo_ui_xml_class_init (MooUIXMLClass *klass)
+static void
+moo_ui_xml_class_init (MooUIXMLClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
     gobject_class->finalize = moo_ui_xml_finalize;
-    gobject_class->set_property = moo_ui_xml_set_property;
-    gobject_class->get_property = moo_ui_xml_get_property;
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_UI,
-                                     g_param_spec_string ("ui",
-                                                          "ui",
-                                                          "ui",
-                                                          NULL,
-                                                          (GParamFlags) (
-                                                            G_PARAM_READWRITE |
-                                                            G_PARAM_CONSTRUCT)));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_MARKUP,
-                                     g_param_spec_boxed ("markup",
-                                                         "markup",
-                                                         "markup",
-                                                         MOO_TYPE_MARKUP_DOC,
-                                                         (GParamFlags) (
-                                                            G_PARAM_READWRITE |
-                                                            G_PARAM_CONSTRUCT)));
-
-    signals[CHANGED] =
-        g_signal_new ("changed",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                      G_STRUCT_OFFSET (MooUIXMLClass, changed),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
 }
 
 
-static void moo_ui_xml_init (MooUIXML *xml)
+static Node*
+node_new (gsize size, NodeType type, const char *name)
 {
-    xml->doc = NULL;
+    Node *node = g_malloc0 (size);
+    node->type = type;
+    node->name = g_strdup (name);
+    return node;
+}
+
+#define NODE_NEW(typename, type, name) (node_new (sizeof(typename), type, name))
+
+
+static void
+moo_ui_xml_init (MooUIXML *xml)
+{
+    xml->priv = g_new0 (MooUIXMLPrivate, 1);
+    xml->priv->ui = NODE_NEW (Node, CONTAINER, "ui");
 }
 
 
-static void moo_ui_xml_finalize       (GObject      *object)
+MooUIXML*
+moo_ui_xml_new (void)
 {
-    MooUIXML *xml = MOO_UI_XML (object);
-
-    if (xml->doc)
-        moo_markup_doc_unref (xml->doc);
-    xml->doc = NULL;
-
-    G_OBJECT_CLASS (moo_ui_xml_parent_class)->finalize (object);
+    return g_object_new (MOO_TYPE_UI_XML, NULL);
 }
 
 
-static void moo_ui_xml_get_property     (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec)
+static Node*
+parse_object (MooMarkupNode *mnode)
 {
-    MooUIXML *xml = MOO_UI_XML (object);
+    Node *node;
+    const char *name;
+    MooMarkupNode *mchild;
 
-    switch (prop_id)
+    name = moo_markup_get_prop (mnode, "name");
+
+    if (!name || !name[0])
     {
-        case PROP_UI:
-            g_value_set_string (value,
-                                moo_ui_xml_get_ui (xml));
-            break;
-
-        case PROP_MARKUP:
-            g_value_set_boxed (value,
-                               moo_ui_xml_get_markup (xml));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        g_warning ("%s: object name missing", G_STRLOC);
+        return NULL;
     }
-}
 
+    node = NODE_NEW (Node, CONTAINER, name);
 
-static void moo_ui_xml_set_property     (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec)
-{
-    MooUIXML *xml = MOO_UI_XML (object);
-
-    switch (prop_id)
+    for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
     {
-        case PROP_UI:
-            moo_ui_xml_set_ui (xml, g_value_get_string (value));
-            break;
-
-        case PROP_MARKUP:
-            if (g_value_get_boxed (value))
-                moo_ui_xml_set_markup (xml, MOO_MARKUP_DOC (g_value_get_boxed (value)));
-            else
-                moo_ui_xml_set_markup (xml, NULL);
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-static void moo_ui_xml_set_ui           (MooUIXML       *xml,
-                                         const char     *ui)
-{
-    if (!ui)
-    {
-        if (xml->doc)
-            moo_markup_doc_unref (xml->doc);
-        xml->doc = NULL;
-    }
-    else
-    {
-        if (!xml->doc)
+        if (MOO_MARKUP_IS_ELEMENT (mchild))
         {
-            GError *err = NULL;
-            xml->doc = moo_markup_parse_memory (ui, -1, &err);
-            if (!xml->doc)
+            Node *child = parse_markup (mchild);
+
+            if (!child)
             {
-                g_critical ("moo_ui_xml_set_ui: could not parse markup\n%s", ui);
-                if (err)
-                {
-                    g_critical ("%s", err->message);
-                    g_error_free (err);
-                }
+                node_free (node);
+                return NULL;
+            }
+            else
+            {
+                child->parent = node;
+                node->children = g_slist_append (node->children, child);
             }
         }
-        else
+    }
+
+    return node;
+}
+
+
+static Node*
+parse_widget (MooMarkupNode *mnode)
+{
+    Node *node;
+    const char *name;
+    MooMarkupNode *mchild;
+
+    name = moo_markup_get_prop (mnode, "name");
+
+    if (!name || !name[0])
+    {
+        g_warning ("%s: widget name missing", G_STRLOC);
+        return NULL;
+    }
+
+    node = NODE_NEW (Widget, WIDGET, name);
+
+    for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
+    {
+        if (MOO_MARKUP_IS_ELEMENT (mchild))
         {
-            g_critical ("%s: implement me", G_STRLOC);
+            Node *child = parse_markup (mchild);
+
+            if (!child)
+            {
+                node_free (node);
+                return NULL;
+            }
+            else
+            {
+                child->parent = node;
+                node->children = g_slist_append (node->children, child);
+            }
         }
     }
+
+    return node;
 }
 
 
-static void moo_ui_xml_set_markup       (MooUIXML       *xml,
-                                         MooMarkupDoc   *doc)
+static Node*
+parse_placeholder (MooMarkupNode *mnode)
 {
-    if (doc == xml->doc)
+    Node *node;
+    const char *name;
+    MooMarkupNode *mchild;
+
+    name = moo_markup_get_prop (mnode, "name");
+
+    if (!name || !name[0])
+    {
+        g_warning ("%s: placeholder name missing", G_STRLOC);
+        return NULL;
+    }
+
+    node = NODE_NEW (Placeholder, PLACEHOLDER, name);
+
+    for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
+    {
+        if (MOO_MARKUP_IS_ELEMENT (mchild))
+        {
+            Node *child = parse_markup (mchild);
+
+            if (!child)
+            {
+                node_free (node);
+                return NULL;
+            }
+            else
+            {
+                child->parent = node;
+                node->children = g_slist_append (node->children, child);
+            }
+        }
+    }
+
+    return node;
+}
+
+
+static Item*
+item_new (const char *name,
+          const char *action,
+          const char *stock_id,
+          const char *label,
+          const char *icon_stock_id)
+{
+    Item *item;
+
+    g_return_val_if_fail (name && name[0], NULL);
+
+    item = (Item*) NODE_NEW (Item, ITEM, name);
+
+    item->action = g_strdup (action);
+    item->stock_id = g_strdup (stock_id);
+    item->label = g_strdup (label);
+    item->icon_stock_id = g_strdup (icon_stock_id);
+
+    return item;
+}
+
+
+static Node*
+parse_item (MooMarkupNode *mnode)
+{
+    Item *item;
+    const char *name;
+    MooMarkupNode *mchild;
+
+    name = moo_markup_get_prop (mnode, "name");
+
+    if (!name || !name[0])
+    {
+        g_warning ("%s: item name missing", G_STRLOC);
+        return NULL;
+    }
+
+    item = item_new (name,
+                     moo_markup_get_prop (mnode, "action"),
+                     moo_markup_get_prop (mnode, "stock_id"),
+                     moo_markup_get_prop (mnode, "label"),
+                     moo_markup_get_prop (mnode, "icon_stock_id"));
+
+    for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
+    {
+        if (MOO_MARKUP_IS_ELEMENT (mchild))
+        {
+            Node *child = parse_markup (mchild);
+
+            if (!child)
+            {
+                node_free ((Node*) item);
+                return NULL;
+            }
+            else
+            {
+                child->parent = (Node*) item;
+                item->children = g_slist_append (item->children, child);
+            }
+        }
+    }
+
+    return (Node*) item;
+}
+
+
+static Node*
+parse_separator (G_GNUC_UNUSED MooMarkupNode *mnode)
+{
+    return NODE_NEW (Separator, SEPARATOR, NULL);
+}
+
+
+static Node*
+parse_markup (MooMarkupNode *mnode)
+{
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (mnode), NULL);
+    g_return_val_if_fail (mnode->name != NULL, NULL);
+
+    if (!strcmp (mnode->name, "object"))
+        return parse_object (mnode);
+    else if (!strcmp (mnode->name, "widget"))
+        return parse_widget (mnode);
+    else if (!strcmp (mnode->name, "item"))
+        return parse_item (mnode);
+    else if (!strcmp (mnode->name, "separator"))
+        return parse_separator (mnode);
+    else if (!strcmp (mnode->name, "placeholder"))
+        return parse_placeholder (mnode);
+
+    g_warning ("%s: unknown element '%s'", G_STRLOC, mnode->name);
+    return NULL;
+}
+
+
+static void
+container_free (G_GNUC_UNUSED Node *node)
+{
+}
+
+static void
+widget_free (G_GNUC_UNUSED Node *node)
+{
+}
+
+static void
+separator_free (G_GNUC_UNUSED Node *node)
+{
+}
+
+static void
+placeholder_free (G_GNUC_UNUSED Node *node)
+{
+}
+
+static void
+item_free (Item *item)
+{
+    g_free (item->action);
+    g_free (item->stock_id);
+    g_free (item->label);
+    g_free (item->icon_stock_id);
+}
+
+
+static void
+node_free (Node *node)
+{
+    if (node)
+    {
+        g_slist_foreach (node->children, (GFunc) node_free, NULL);
+        g_slist_free (node->children);
+        node->children = NULL;
+
+        switch (node->type)
+        {
+            case CONTAINER:
+                container_free (node);
+                break;
+            case WIDGET:
+                widget_free (node);
+                break;
+            case ITEM:
+                item_free ((Item*) node);
+                break;
+            case SEPARATOR:
+                separator_free (node);
+                break;
+            case PLACEHOLDER:
+                placeholder_free (node);
+                break;
+        }
+
+        g_free (node->name);
+        g_free (node);
+    }
+}
+
+
+void
+moo_ui_xml_add_ui_from_string (MooUIXML       *xml,
+                               const char     *buffer,
+                               gssize          length)
+{
+    MooMarkupDoc *doc;
+    MooMarkupNode *ui_node, *child;
+    GError *error = NULL;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (buffer != NULL);
+
+    doc = moo_markup_parse_memory (buffer, length, &error);
+
+    if (!doc)
+    {
+        g_critical ("%s: could not parse markup", G_STRLOC);
+        if (error)
+        {
+            g_critical ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        return;
+    }
+
+    ui_node = moo_markup_get_root_element (doc, "ui");
+
+    if (!ui_node)
+        ui_node = MOO_MARKUP_NODE (doc);
+
+    for (child = ui_node->children; child != NULL; child = child->next)
+        if (MOO_MARKUP_IS_ELEMENT (child))
+            moo_ui_xml_add_markup (xml, child);
+
+    moo_markup_doc_unref (doc);
+}
+
+
+static gboolean
+placeholder_check (Node *node)
+{
+    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node->type == PLACEHOLDER, FALSE);
+    g_return_val_if_fail (node->name && node->name[0], FALSE);
+    return TRUE;
+}
+
+
+static gboolean
+item_check (Node *node)
+{
+    GSList *l;
+
+    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node->type == ITEM, FALSE);
+    g_return_val_if_fail (node->name && node->name[0], FALSE);
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Node *child = l->data;
+
+        switch (child->type)
+        {
+            case SEPARATOR:
+                break;
+            case ITEM:
+                if (!item_check (child))
+                    return FALSE;
+                break;
+            case PLACEHOLDER:
+                if (!placeholder_check (child))
+                    return FALSE;
+                break;
+            default:
+                g_warning ("%s: invalid menu item type %s",
+                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+static gboolean
+widget_check (Node *node)
+{
+    GSList *l;
+
+    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node->type == WIDGET, FALSE);
+    g_return_val_if_fail (node->name && node->name[0], FALSE);
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Node *child = l->data;
+
+        switch (child->type)
+        {
+            case ITEM:
+                if (!item_check (child))
+                    return FALSE;
+                break;
+            case PLACEHOLDER:
+                if (!placeholder_check (child))
+                    return FALSE;
+                break;
+            case SEPARATOR:
+                break;
+            default:
+                g_warning ("%s: invalid widget item type %s",
+                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+static gboolean
+container_check (Node *node)
+{
+    GSList *l;
+
+    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (node->type == CONTAINER, FALSE);
+    g_return_val_if_fail (node->name && node->name[0], FALSE);
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Node *child = l->data;
+
+        switch (child->type)
+        {
+            case CONTAINER:
+                if (!container_check (child))
+                    return FALSE;
+                break;
+            case WIDGET:
+                if (!widget_check (child))
+                    return FALSE;
+                break;
+            default:
+                g_warning ("%s: invalid toplevel type %s",
+                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+static void
+moo_ui_xml_add_markup (MooUIXML       *xml,
+                       MooMarkupNode  *mnode)
+{
+    Node *node = parse_markup (mnode);
+
+    if (!node)
         return;
 
-    if (xml->doc)
-        moo_markup_doc_unref (xml->doc);
+    switch (node->type)
+    {
+        case CONTAINER:
+            if (!container_check (node))
+            {
+                node_free (node);
+                return;
+            }
+            break;
 
-    xml->doc = doc;
+        case WIDGET:
+            if (!widget_check (node))
+            {
+                node_free (node);
+                return;
+            }
+            break;
 
-    if (xml->doc)
-        moo_markup_doc_ref (xml->doc);
+        case ITEM:
+        case SEPARATOR:
+        case PLACEHOLDER:
+            g_warning ("%s: invalid toplevel type %s",
+                       G_STRLOC, NODE_TYPE_NAME[node->type]);
+            node_free (node);
+            return;
+    }
+
+    if (moo_ui_xml_get_node (xml, node->name))
+    {
+        g_warning ("%s: implement me?", G_STRLOC);
+        node_free (node);
+        return;
+    }
+
+    node->parent = xml->priv->ui;
+    xml->priv->ui->children = g_slist_append (xml->priv->ui->children, node);
 }
 
 
-char            *moo_ui_xml_get_ui              (MooUIXML       *xml)
+guint
+moo_ui_xml_new_merge_id (MooUIXML *xml)
 {
+    Merge *merge;
+
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), 0);
+
+    xml->priv->last_merge_id++;
+    merge = g_new0 (Merge, 1);
+    merge->id = xml->priv->last_merge_id;
+    merge->nodes = NULL;
+
+    return merge->id;
+}
+
+
+static Merge*
+lookup_merge (MooUIXML *xml,
+              guint     merge_id)
+{
+    GSList *l;
+
+    for (l = xml->priv->merged_ui; l != NULL; l = l->next)
+    {
+        Merge *merge = l->data;
+        if (merge->id == merge_id)
+            return merge;
+    }
+
+    return NULL;
+}
+
+
+MooUINode*
+moo_ui_xml_add_item (MooUIXML       *xml,
+                     guint           merge_id,
+                     const char     *parent_path,
+                     const char     *name,
+                     const char     *action,
+                     int             position)
+{
+    Merge *merge;
+    MooUINode *parent;
+    Item *item;
+
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (parent_path != NULL, NULL);
+    g_return_val_if_fail (name && name[0], NULL);
 
-    if (!xml->doc)
-        return NULL;
-    else
-        return moo_markup_node_get_string (MOO_MARKUP_NODE (xml->doc));
+    merge = lookup_merge (xml, merge_id);
+    g_return_val_if_fail (merge != NULL, NULL);
+
+    parent = moo_ui_xml_get_node (xml, parent_path);
+    g_return_val_if_fail (parent != NULL, NULL);
+
+    switch (parent->type)
+    {
+        case MOO_UI_NODE_WIDGET:
+        case MOO_UI_NODE_ITEM:
+        case MOO_UI_NODE_PLACEHOLDER:
+            break;
+
+        case MOO_UI_NODE_CONTAINER:
+        case MOO_UI_NODE_SEPARATOR:
+            g_warning ("%s: can't add item to node of type %s",
+                       G_STRLOC, NODE_TYPE_NAME[parent->type]);
+    }
+
+    item = item_new (name, action, NULL, NULL, NULL);
+    item->parent = parent;
+    parent->children = g_slist_insert (parent->children, item, position);
+
+    merge_add_node (merge, (Node*) item);
+    update_widgets (xml, UPDATE_ADD_NODE, (Node*) item);
+
+    return (Node*) item;
 }
 
 
-const MooMarkupDoc *moo_ui_xml_get_markup       (MooUIXML       *xml)
+#define SLIST_FOREACH(list,var)                     \
+G_STMT_START {                                      \
+    GSList *var;                                    \
+    for (var = list; var != NULL; var = var->next)  \
+
+#define SLIST_FOREACH_END                           \
+} G_STMT_END
+
+
+static gboolean
+node_is_ancestor (Node           *node,
+                  Node           *ancestor)
 {
-    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
-    return xml->doc;
-}
+    Node *n;
 
+    g_return_val_if_fail (node != NULL, FALSE);
+    g_return_val_if_fail (ancestor != NULL, FALSE);
 
-gboolean         moo_ui_xml_add_ui_from_string  (MooUIXML       *xml,
-                                                 const char     *ui,
-                                                 int             len,
-                                                 GError        **error)
-{
-    GError *err = NULL;
-
-    g_return_val_if_fail (MOO_IS_UI_XML (xml) && ui != NULL, FALSE);
-
-    if (xml->doc)
-    {
-        g_critical ("%s: implement me", G_STRLOC);
-        return FALSE;
-    }
-
-    xml->doc = moo_markup_parse_memory (ui, len, &err);
-
-    if (xml->doc)
-    {
-        g_clear_error (error);
-        g_signal_emit (xml, signals[CHANGED], 0);
-        return TRUE;
-    }
-    else
-    {
-        if (err)
-            g_propagate_error (error, err);
-
-        return FALSE;
-    }
-}
-
-
-gboolean         moo_ui_xml_add_ui_from_file    (MooUIXML       *xml,
-                                                 const char     *file,
-                                                 GError        **error)
-{
-    g_return_val_if_fail (MOO_IS_UI_XML (xml) && file != NULL, FALSE);
-
-    if (xml->doc)
-    {
-        g_critical ("%s: implement me", G_STRLOC);
-        return FALSE;
-    }
-
-    xml->doc = moo_markup_parse_file (file, error);
-
-    if (xml->doc)
-    {
-        g_signal_emit (xml, signals[CHANGED], 0);
-        return TRUE;
-    }
+    for (n = node; n != NULL; n = n->parent)
+        if (n == ancestor)
+            return TRUE;
 
     return FALSE;
 }
 
 
-static void erase_container (GtkContainer *container)
+void
+moo_ui_xml_remove_ui (MooUIXML       *xml,
+                      guint           merge_id)
 {
-    GList *children = gtk_container_get_children (container);
-    GList *l;
-    for (l = children; l; l = l->next)
-        gtk_container_remove (container, GTK_WIDGET (l->data));
-    g_list_free (children);
-}
+    Merge *merge;
+    GSList *nodes;
 
+    g_return_if_fail (MOO_IS_UI_XML (xml));
 
-static GtkWidget *create_widget     (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkWidget          *widget);
-static GtkWidget *create_menu_bar   (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenuBar         *menubar);
-static GtkWidget *create_menu       (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenu            *menu);
-static gboolean create_menu_item    (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenuShell       *menu_shell,
-                                     int                 position);
-static GtkWidget *create_toolbar    (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkToolbar         *toolbar);
-static gboolean   create_tool_item  (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkToolbar         *toolbar,
-                                     int                 position);
+    merge = lookup_merge (xml, merge_id);
+    g_return_if_fail (merge != NULL);
 
-GtkWidget       *moo_ui_xml_create_widget       (MooUIXML       *xml,
-                                                 const char     *path,
-                                                 MooActionGroup *actions,
-                                                 GtkAccelGroup  *accel_group,
-                                                 GtkTooltips    *tooltips)
-{
-    MooMarkupNode *ui, *node;
+    nodes = g_slist_copy (merge->nodes);
 
-    g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, NULL);
-    g_return_val_if_fail (xml->doc != NULL, NULL);
-
-    ui = moo_markup_get_root_element (xml->doc, "ui");
-    g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element_by_names (ui, path);
-    g_return_val_if_fail (node != NULL, NULL);
-
-    return create_widget (node, actions, accel_group, tooltips, NULL);
-}
-
-gboolean         moo_ui_xml_has_widget          (MooUIXML       *xml,
-                                                 const char     *path)
-{
-    MooMarkupNode *ui, *node;
-
-    g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, FALSE);
-
-    if (!xml->doc) return FALSE;
-
-    ui = moo_markup_get_root_element (xml->doc, "ui");
-    g_return_val_if_fail (ui != NULL, FALSE);
-    node = moo_markup_get_element_by_names (ui, path);
-    return node != NULL;
-}
-
-
-static GtkWidget *create_widget (MooMarkupNode      *node,
-                                 MooActionGroup     *actions,
-                                 GtkAccelGroup      *accel_group,
-                                 GtkTooltips        *tooltips,
-                                 GtkWidget          *widget)
-{
-    if (!g_ascii_strcasecmp (node->name, "menubar")) {
-        g_return_val_if_fail (!widget || GTK_IS_MENU_BAR (widget), NULL);
-        return create_menu_bar (node, actions, accel_group, tooltips, GTK_MENU_BAR (widget));
-    }
-    else if (!g_ascii_strcasecmp (node->name, "menu")) {
-        g_return_val_if_fail (!widget || GTK_IS_MENU (widget), NULL);
-        return create_menu (node, actions, accel_group, tooltips, GTK_MENU (widget));
-    }
-    else if (!g_ascii_strcasecmp (node->name, "toolbar")) {
-        g_return_val_if_fail (!widget || GTK_IS_TOOLBAR (widget), NULL);
-        return create_toolbar (node, actions, accel_group, tooltips, GTK_TOOLBAR (widget));
-    }
-    else
+    SLIST_FOREACH (nodes, l)
     {
-        g_critical ("cannot create widget '%s'", node->name);
-        return NULL;
+        moo_ui_xml_remove_node (xml, l->data);
     }
+    SLIST_FOREACH_END;
+
+    g_return_if_fail (merge->nodes == NULL);
+    xml->priv->merged_ui = g_slist_remove (xml->priv->merged_ui, merge);
+    g_free (merge);
 }
 
 
-GtkWidget       *moo_ui_xml_update_widget       (MooUIXML       *xml,
-                                                 GtkWidget      *widget,
-                                                 const char     *path,
-                                                 MooActionGroup *actions,
-                                                 GtkAccelGroup  *accel_group,
-                                                 GtkTooltips    *tooltips)
+void
+moo_ui_xml_remove_node (MooUIXML       *xml,
+                        MooUINode      *node)
 {
-    MooMarkupNode *ui, *node;
+    Node *parent;
 
-    g_return_val_if_fail (MOO_IS_UI_XML (xml) && path != NULL, NULL);
-    g_return_val_if_fail (xml->doc != NULL, NULL);
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (node != NULL);
+    g_return_if_fail (node_is_ancestor (node, xml->priv->ui));
 
-    ui = moo_markup_get_root_element (xml->doc, "ui");
-    g_return_val_if_fail (ui != NULL, NULL);
-    node = moo_markup_get_element_by_names (ui, path);
-    g_return_val_if_fail (node != NULL, NULL);
-
-    return create_widget (node, actions, accel_group, tooltips, widget);
-}
-
-
-static GtkWidget *create_menu_bar   (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenuBar         *menubar)
-{
-    MooMarkupNode *child;
-
-    if (menubar)
-        erase_container (GTK_CONTAINER (menubar));
-    else
-        menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
-
-    for (child = node->children; child != NULL; child = child->next)
+    SLIST_FOREACH (xml->priv->merged_ui, l)
     {
-        if (MOO_MARKUP_IS_ELEMENT (child))
+        Merge *merge = l->data;
+        GSList *merge_nodes = g_slist_copy (merge->nodes);
+
+        SLIST_FOREACH (merge_nodes, n)
         {
-            if (!create_menu_item (child, actions,
-                                   accel_group, tooltips,
-                                   GTK_MENU_SHELL (menubar), -1))
-            {
-                g_return_val_if_reached (GTK_WIDGET (menubar));
-            }
+            Node *merge_node = n->data;
+            if (node_is_ancestor (merge_node, node))
+                merge_remove_node (merge, merge_node);
         }
+        SLIST_FOREACH_END;
+
+        g_slist_free (merge_nodes);
     }
-    return GTK_WIDGET (menubar);
+    SLIST_FOREACH_END;
+
+    update_widgets (xml, UPDATE_REMOVE_NODE, node);
+
+    parent = node->parent;
+    parent->children = g_slist_remove (parent->children, node);
+    node->parent = NULL;
+    node_free (node);
 }
 
 
-static GtkWidget *create_menu       (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenu            *menu)
+static void
+merge_add_node (Merge *merge,
+                Node  *added)
 {
-    gboolean start = TRUE;
-    gboolean need_separator = FALSE;
-    MooMarkupNode *child;
+    g_return_if_fail (merge != NULL);
+    g_return_if_fail (added != NULL);
 
-    if (menu)
-        erase_container (GTK_CONTAINER (menu));
-    else
-        menu = GTK_MENU (gtk_menu_new ());
+    SLIST_FOREACH (merge->nodes, l)
+    {
+        Node *node = l->data;
 
-    gtk_menu_set_accel_group (GTK_MENU (menu), accel_group);
+        if (node_is_ancestor (added, node))
+            return;
+    }
+    SLIST_FOREACH_END;
 
-    for (child = node->children; child != NULL; child = child->next)
-        if (MOO_MARKUP_IS_ELEMENT (child))
+    merge->nodes = g_slist_prepend (merge->nodes, added);
+}
+
+
+static void
+merge_remove_node (Merge          *merge,
+                   Node           *removed)
+{
+    g_return_if_fail (merge != NULL);
+    g_return_if_fail (removed != NULL);
+
+    merge->nodes = g_slist_remove (merge->nodes, removed);
+}
+
+
+MooUINode*
+moo_ui_xml_get_node (MooUIXML       *xml,
+                     const char     *path)
+{
+    char **pieces, **p;
+    MooUINode *node;
+
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    pieces = g_strsplit (path, "/", 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    node = xml->priv->ui;
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        Node *child = NULL;
+
+        SLIST_FOREACH (node->children, l)
         {
-            if (!g_ascii_strcasecmp (child->name, "menu") ||
-                !g_ascii_strcasecmp (child->name, "item"))
-            {
-                const char *action_name = moo_markup_get_prop (child, "action");
-
-                if (action_name)
-                {
-                    MooAction *action = moo_action_group_get_action (actions, action_name);
-
-                    if (!action)
-                    {
-                        g_critical ("could not find action '%s'", action_name);
-                        continue;
-                    }
-
-                    if (action->dead)
-                        continue;
-                }
-
-                if (need_separator)
-                {
-                    GtkWidget *sep = gtk_separator_menu_item_new ();
-                    gtk_widget_show (sep);
-                    gtk_menu_shell_append (GTK_MENU_SHELL (menu), sep);
-                    need_separator = FALSE;
-                }
-
-                if (!create_menu_item (child, actions,
-                                       accel_group, tooltips,
-                                       GTK_MENU_SHELL (menu), -1))
-                {
-                    g_return_val_if_reached (GTK_WIDGET (menu));
-                }
-
-                start = FALSE;
-            }
-            else if (!g_ascii_strcasecmp (child->name, "placeholder"))
-            {
-            }
-            else if (!g_ascii_strcasecmp (child->name, "separator"))
-            {
-                if (!start)
-                    need_separator = TRUE;
-            }
+            child = l->data;
+            if (!strcmp (child->name, *p))
+                break;
             else
-            {
-                g_critical ("unknown node %s\n", child->name);
-                return GTK_WIDGET (menu);
-            }
+                child = NULL;
         }
+        SLIST_FOREACH_END;
 
-    return GTK_WIDGET (menu);
+        if (child)
+            node = child;
+        else
+            return NULL;
+    }
+
+    return node;
 }
 
 
-static gboolean create_menu_item    (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkMenuShell       *menu_shell,
-                                     int                 position)
+static Toplevel*
+toplevel_new (Node *node)
 {
-    GtkWidget *menuitem = NULL;
-    const char *action_name = moo_markup_get_prop (node, "action");
-    MooAction *action = NULL;
+    Toplevel *top;
 
-    if (action_name)
+    g_return_val_if_fail (node != NULL, NULL);
+
+    top = g_new0 (Toplevel, 1);
+    top->node = node;
+    top->widget = NULL;
+    top->children = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+    return top;
+}
+
+
+static void
+toplevel_free (Toplevel *toplevel)
+{
+    if (toplevel)
     {
-        action = moo_action_group_get_action (actions, action_name);
-        if (!action) g_critical ("could not find action '%s'", action_name);
+        g_hash_table_destroy (toplevel->children);
+        g_free (toplevel);
+    }
+}
+
+
+#define TOPLEVEL_QUARK (toplevel_quark ())
+#define NODE_QUARK (node_quark ())
+
+static GQuark toplevel_quark (void)
+{
+    static GQuark q = 0;
+    if (!q)
+        q = g_quark_from_static_string ("moo-ui-xml-toplevel");
+    return q;
+}
+
+static GQuark node_quark (void)
+{
+    static GQuark q = 0;
+    if (!q)
+        q = g_quark_from_static_string ("moo-ui-xml-node");
+    return q;
+}
+
+
+static void     disconnect_widget   (gpointer        dummy,
+                                     GtkWidget      *widget,
+                                     MooUIXML       *xml);
+static void     check_separators    (Toplevel       *toplevel,
+                                     Node           *parent);
+static gboolean fill_menu_shell     (MooUIXML       *xml,
+                                     Toplevel       *toplevel,
+                                     Node           *menu_node,
+                                     GtkMenuShell   *menu,
+                                     MooActionGroup *actions,
+                                     GtkAccelGroup  *accel_group);
+
+
+static void
+visibility_notify (GtkWidget *widget,
+                   G_GNUC_UNUSED gpointer whatever,
+                   MooUIXML  *xml)
+{
+    Toplevel *toplevel;
+    Node *node, *parent;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    g_return_if_fail (toplevel != NULL);
+
+    node = g_object_get_qdata (G_OBJECT (widget), NODE_QUARK);
+    g_return_if_fail (node != NULL && node->parent != NULL);
+    g_return_if_fail (node->type == ITEM);
+
+    parent = node->parent;
+    while (parent->type == PLACEHOLDER)
+        parent = parent->parent;
+
+    /* XXX submenu */
+    check_separators (toplevel, parent);
+}
+
+static void
+connect_item (GtkWidget *widget,
+              MooUIXML  *xml)
+{
+    g_signal_connect (widget, "notify::visibility",
+                      G_CALLBACK (visibility_notify), xml);
+}
+
+
+static void
+widget_destroyed (GtkWidget *widget,
+                  MooUIXML  *xml)
+{
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    disconnect_widget (NULL, widget, xml);
+}
+
+
+static void
+disconnect_widget (G_GNUC_UNUSED gpointer dummy,
+                   GtkWidget *widget,
+                   MooUIXML  *xml)
+{
+    Toplevel *toplevel;
+    Node *node;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    g_return_if_fail (toplevel != NULL);
+    g_return_if_fail (toplevel->widget != widget);
+
+    node = g_object_get_qdata (G_OBJECT (widget), NODE_QUARK);
+    g_hash_table_remove (toplevel->children, node);
+
+    g_object_set_qdata (G_OBJECT (widget), NODE_QUARK, NULL);
+    g_object_set_qdata (G_OBJECT (widget), TOPLEVEL_QUARK, NULL);
+    g_signal_handlers_disconnect_by_func (widget,
+                                          (gpointer) widget_destroyed,
+                                          xml);
+    g_signal_handlers_disconnect_by_func (widget,
+                                          (gpointer) visibility_notify,
+                                          xml);
+}
+
+
+static void
+connect_widget (GtkWidget *widget,
+                MooUIXML  *xml,
+                Toplevel  *toplevel,
+                Node      *node)
+{
+    g_signal_connect (widget, "destroy",
+                      G_CALLBACK (widget_destroyed), xml);
+    g_object_set_qdata (G_OBJECT (widget), TOPLEVEL_QUARK, toplevel);
+    g_object_set_qdata (G_OBJECT (widget), NODE_QUARK, node);
+    g_hash_table_insert (toplevel->children, node, widget);
+}
+
+
+static void
+prepend_value (G_GNUC_UNUSED gpointer key,
+               gpointer value,
+               GSList **list)
+{
+    *list = g_slist_prepend (*list, value);
+}
+
+static GSList*
+hash_table_list_values (GHashTable *hash_table)
+{
+    GSList *list = NULL;
+    g_hash_table_foreach (hash_table, (GHFunc) prepend_value, &list);
+    return list;
+}
+
+
+static void toplevel_destroyed (GtkWidget *widget,
+                                MooUIXML  *xml);
+
+static void
+toplevel_delete (MooUIXML *xml,
+                 Toplevel *toplevel)
+{
+    GSList *children, *l;
+
+    children = hash_table_list_values (toplevel->children);
+
+    for (l = children; l != NULL; l = l->next)
+    {
+        GtkWidget *child = GTK_WIDGET (l->data);
+        if (child != toplevel->widget)
+            disconnect_widget (NULL, child, xml);
     }
 
-    if (action)
+    g_signal_handlers_disconnect_by_func (toplevel->widget,
+                                          (gpointer) toplevel_destroyed,
+                                          xml);
+    g_object_set_qdata (G_OBJECT (toplevel->widget), TOPLEVEL_QUARK, NULL);
+    g_object_set_qdata (G_OBJECT (toplevel->widget), NODE_QUARK, NULL);
+    xml->priv->toplevels = g_slist_remove (xml->priv->toplevels, toplevel);
+
+    g_slist_free (children);
+    toplevel_free (toplevel);
+}
+
+
+static void
+toplevel_destroyed (GtkWidget *widget,
+                    MooUIXML  *xml)
+{
+    Toplevel *toplevel;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    g_return_if_fail (toplevel != NULL);
+    g_return_if_fail (toplevel->widget == widget);
+
+    toplevel_delete (xml, toplevel);
+}
+
+
+static void
+connect_toplevel (MooUIXML  *xml,
+                  Toplevel  *toplevel)
+{
+    g_signal_connect (toplevel->widget, "destroy",
+                      G_CALLBACK (toplevel_destroyed), xml);
+    g_object_set_qdata (G_OBJECT (toplevel->widget), TOPLEVEL_QUARK, toplevel);
+    g_object_set_qdata (G_OBJECT (toplevel->widget), NODE_QUARK, toplevel->node);
+    g_hash_table_insert (toplevel->children, toplevel->node, toplevel->widget);
+}
+
+
+static gboolean
+create_menu_separator (MooUIXML       *xml,
+                       Toplevel       *toplevel,
+                       GtkMenuShell   *menu,
+                       Node           *node)
+{
+    GtkWidget *item = gtk_separator_menu_item_new ();
+    gtk_menu_shell_append (menu, item);
+    connect_widget (item, xml, toplevel, node);
+    return TRUE;
+}
+
+
+static gboolean node_is_empty (Node *node)
+{
+    SLIST_FOREACH (node->children, l)
     {
+        Node *child = l->data;
+
+        if (child->type == SEPARATOR)
+            continue;
+
+        if (child->type == PLACEHOLDER)
+        {
+            if (!node_is_empty (child))
+                return FALSE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+    SLIST_FOREACH_END;
+
+    return TRUE;
+}
+
+
+static gboolean
+create_menu_item (MooUIXML       *xml,
+                  Toplevel       *toplevel,
+                  GtkMenuShell   *menu,
+                  MooActionGroup *actions,
+                  GtkAccelGroup  *accel_group,
+                  Node           *node)
+{
+    GtkWidget *menu_item = NULL;
+    Item *item;
+
+    g_return_val_if_fail (node != NULL && node->type == ITEM, FALSE);
+
+    item = (Item*) node;
+
+    if (item->action)
+    {
+        MooAction *action;
+
+        g_return_val_if_fail (actions != NULL, FALSE);
+
+        action = moo_action_group_get_action (actions, item->action);
+        g_return_val_if_fail (action != NULL, FALSE);
+
         if (action->dead)
             return TRUE;
 
-        menuitem = moo_action_create_menu_item (action, menu_shell, position);
+        menu_item = moo_action_create_menu_item (action);
     }
     else
     {
-        const char *stock_id = moo_markup_get_prop (node, "stock");
-
-        if (stock_id)
+        if (item->stock_id)
         {
-            menuitem = gtk_image_menu_item_new_from_stock (stock_id, NULL);
+            menu_item = gtk_image_menu_item_new_from_stock (item->stock_id, NULL);
         }
-        else
+        else if (item->label)
         {
-            const char *label = moo_markup_get_prop (node, "label");
-
-            if (!label)
+            if (item->icon_stock_id)
             {
-                g_warning ("could not get label for menu");
-
-                label = moo_markup_get_prop (node, "name");
-
-                if (!label)
-                {
-                    g_warning ("using node name as label");
-                    label = moo_markup_get_prop (node, "name");
-                    if (!label) label = "";
-                }
+                GtkWidget *icon = gtk_image_new_from_stock (item->icon_stock_id,
+                                                            GTK_ICON_SIZE_MENU);
+                menu_item = gtk_image_menu_item_new_with_mnemonic (item->label);
+                gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menu_item), icon);
             }
-
-            if (!label)
-                menuitem = gtk_menu_item_new ();
             else
-                menuitem = gtk_menu_item_new_with_mnemonic (label);
+            {
+                menu_item = gtk_menu_item_new_with_mnemonic (item->label);
+            }
         }
 
-        if (menuitem)
-        {
-            gtk_widget_show (menuitem);
+        if (menu_item)
+            gtk_widget_show (menu_item);
+    }
 
-            if (position >= 0)
-                gtk_menu_shell_insert (menu_shell, menuitem, position);
-            else
-                gtk_menu_shell_append (menu_shell, menuitem);
+    g_return_val_if_fail (menu_item != NULL, FALSE);
+
+    gtk_menu_shell_append (menu, menu_item);
+    connect_widget (menu_item, xml, toplevel, node);
+    connect_item (menu_item, xml);
+
+    if (!node_is_empty (node))
+    {
+        GtkWidget *submenu = gtk_menu_new ();
+        /* XXX empty menu */
+        gtk_widget_show (submenu);
+        gtk_menu_set_accel_group (GTK_MENU (submenu), accel_group);
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
+        return fill_menu_shell (xml, toplevel, node, GTK_MENU_SHELL (submenu),
+                                actions, accel_group);
+    }
+
+    return TRUE;
+}
+
+
+static GSList*
+node_list_children (Node *parent)
+{
+    GSList *list = NULL, *l;
+
+    for (l = parent->children; l != NULL; l = l->next)
+    {
+        GSList *tmp, *t;
+        Node *node = l->data;
+
+        switch (node->type)
+        {
+            case MOO_UI_NODE_ITEM:
+            case MOO_UI_NODE_SEPARATOR:
+                list = g_slist_prepend (list, node);
+                break;
+            case MOO_UI_NODE_PLACEHOLDER:
+                tmp = node_list_children (node);
+                for (t = tmp; t != NULL; t = t->next)
+                    list = g_slist_prepend (list, t->data);
+                g_slist_free (tmp);
+                break;
+            default:
+                g_return_val_if_reached (g_slist_reverse (list));
         }
     }
 
-    if (!menuitem)
+    return g_slist_reverse (list);
+}
+
+
+static GtkWidget*
+toplevel_get_widget (Toplevel  *toplevel,
+                     Node      *node)
+{
+    return g_hash_table_lookup (toplevel->children, node);
+}
+
+
+static void
+check_separators (Toplevel       *toplevel,
+                  Node           *parent)
+{
+    GSList *children, *l;
+    Node *separator = NULL;
+    gboolean first = TRUE;
+    GtkWidget *widget;
+
+    children = node_list_children (parent);
+
+    for (l = children; l != NULL; l = l->next)
+    {
+        Node *node = l->data;
+
+        switch (node->type)
+        {
+            case MOO_UI_NODE_ITEM:
+                widget = toplevel_get_widget (toplevel, node);
+
+                if (!widget || !GTK_WIDGET_VISIBLE (widget))
+                    continue;
+
+                if (!first)
+                {
+                    if (separator)
+                    {
+                        GtkWidget *sep_widget = toplevel_get_widget (toplevel, separator);
+                        g_return_if_fail (sep_widget != NULL);
+                        gtk_widget_show (sep_widget);
+                    }
+                }
+                else
+                {
+                    first = FALSE;
+                    separator = NULL;
+                }
+                break;
+
+            case MOO_UI_NODE_SEPARATOR:
+                widget = toplevel_get_widget (toplevel, node);
+                g_return_if_fail (widget != NULL);
+                gtk_widget_hide (widget);
+                if (!first)
+                    separator = node;
+                break;
+
+            default:
+                g_return_if_reached ();
+        }
+    }
+
+    g_slist_free (children);
+}
+
+
+static gboolean
+fill_menu_shell (MooUIXML       *xml,
+                 Toplevel       *toplevel,
+                 Node           *menu_node,
+                 GtkMenuShell   *menu,
+                 MooActionGroup *actions,
+                 GtkAccelGroup  *accel_group)
+{
+    gboolean result = TRUE;
+    GSList *children;
+
+    children = node_list_children (menu_node);
+
+    SLIST_FOREACH (children, l)
+    {
+        Node *node = l->data;
+
+        switch (node->type)
+        {
+            case MOO_UI_NODE_ITEM:
+                result = create_menu_item (xml, toplevel, menu,
+                                           actions, accel_group, node);
+                break;
+            case MOO_UI_NODE_SEPARATOR:
+                create_menu_separator (xml, toplevel, menu, node);
+                break;
+
+            default:
+                g_warning ("%s: invalid menu item type %s",
+                           G_STRLOC, NODE_TYPE_NAME[node->type]);
+                return FALSE;
+        }
+
+        if (!result)
+            return FALSE;
+    }
+    SLIST_FOREACH_END;
+
+    check_separators (toplevel, menu_node);
+
+    return TRUE;
+}
+
+
+static gboolean
+create_menu_shell (MooUIXML       *xml,
+                   Toplevel       *toplevel,
+                   MooUIWidgetType type,
+                   MooActionGroup *actions,
+                   GtkAccelGroup  *accel_group)
+{
+    g_return_val_if_fail (toplevel != NULL, FALSE);
+    g_return_val_if_fail (toplevel->widget == NULL, FALSE);
+    g_return_val_if_fail (toplevel->node != NULL, FALSE);
+
+    if (type == MOO_UI_MENUBAR)
+        toplevel->widget = gtk_menu_bar_new ();
+    else
+    {
+        toplevel->widget = gtk_menu_new ();
+        gtk_menu_set_accel_group (GTK_MENU (toplevel->widget), accel_group);
+    }
+
+    connect_toplevel (xml, toplevel);
+
+    return fill_menu_shell (xml, toplevel,
+                            toplevel->node,
+                            GTK_MENU_SHELL (toplevel->widget),
+                            actions, accel_group);
+}
+
+
+static gboolean
+create_tool_separator (MooUIXML       *xml,
+                       Toplevel       *toplevel,
+                       GtkToolbar     *toolbar,
+                       Node           *node)
+{
+    GtkToolItem *item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    connect_widget (GTK_WIDGET (item), xml, toplevel, node);
+    return TRUE;
+}
+
+
+static gboolean
+create_tool_item (MooUIXML       *xml,
+                  Toplevel       *toplevel,
+                  GtkToolbar     *toolbar,
+                  MooActionGroup *actions,
+                  Node           *node)
+{
+    GtkWidget *tool_item = NULL;
+    Item *item;
+
+    g_return_val_if_fail (node != NULL && node->type == ITEM, FALSE);
+
+    item = (Item*) node;
+
+    if (item->action)
+    {
+        MooAction *action;
+
+        g_return_val_if_fail (actions != NULL, FALSE);
+
+        action = moo_action_group_get_action (actions, item->action);
+        g_return_val_if_fail (action != NULL, FALSE);
+
+        if (action->dead)
+            return TRUE;
+
+        tool_item = moo_action_create_tool_item (action, toolbar, -1);
+    }
+    else
+    {
+        g_warning ("%s: implement me", G_STRLOC);
         return FALSE;
-
-    if (!g_ascii_strcasecmp (node->name, "menu"))
-    {
-        GtkWidget *menu = create_menu (node, actions, accel_group, tooltips, NULL);
-        gtk_widget_show (menu);
-        g_return_val_if_fail (menu != NULL, FALSE);
-        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), menu);
     }
+
+    g_return_val_if_fail (tool_item != NULL, FALSE);
+
+    connect_widget (tool_item, xml, toplevel, node);
+    connect_item (tool_item, xml);
 
     return TRUE;
 }
 
 
-static GtkWidget *create_toolbar    (MooMarkupNode      *node,
-                                     MooActionGroup     *actions,
-                                     GtkAccelGroup      *accel_group,
-                                     GtkTooltips        *tooltips,
-                                     GtkToolbar         *toolbar)
+static gboolean
+fill_toolbar (MooUIXML       *xml,
+              Toplevel       *toplevel,
+              Node           *toolbar_node,
+              GtkToolbar     *toolbar,
+              MooActionGroup *actions)
 {
-    gboolean start = TRUE;
-    gboolean need_separator = FALSE;
-    MooMarkupNode *child;
+    gboolean result = TRUE;
+    GSList *children;
 
-    if (toolbar)
-        erase_container (GTK_CONTAINER (toolbar));
-    else
-        toolbar = GTK_TOOLBAR (gtk_toolbar_new ());
+    children = node_list_children (toolbar_node);
 
-    for (child = node->children; child != NULL; child = child->next)
+    SLIST_FOREACH (children, l)
     {
-        if (!MOO_MARKUP_IS_ELEMENT (child))
-            continue;
+        Node *node = l->data;
 
-        if (!g_ascii_strcasecmp (child->name, "item"))
+        switch (node->type)
         {
-            const char *action_name = moo_markup_get_prop (child, "action");
+            case MOO_UI_NODE_ITEM:
+                result = create_tool_item (xml, toplevel, toolbar,
+                                           actions, node);
+                break;
+            case MOO_UI_NODE_SEPARATOR:
+                create_tool_separator (xml, toplevel, toolbar, node);
+                break;
 
-            if (action_name)
-            {
-                MooAction *action = moo_action_group_get_action (actions, action_name);
-
-                if (!action)
-                {
-                    g_critical ("could not find action '%s'", action_name);
-                    continue;
-                }
-
-                if (action->dead)
-                    continue;
-            }
-
-            if (need_separator)
-            {
-#if GTK_CHECK_VERSION(2,4,0)
-                GtkToolItem *sep = gtk_separator_tool_item_new ();
-                gtk_widget_show (GTK_WIDGET (sep));
-                gtk_toolbar_insert (toolbar, sep, -1);
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-                gtk_toolbar_append_space (toolbar);
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-                need_separator = FALSE;
-            }
-            create_tool_item (child, actions, accel_group, tooltips, toolbar, -1);
-            start = FALSE;
+            default:
+                g_warning ("%s: invalid tool item type %s",
+                           G_STRLOC, NODE_TYPE_NAME[node->type]);
+                return FALSE;
         }
-        else if (!g_ascii_strcasecmp (child->name, "separator"))
-        {
-            if (!start) need_separator = TRUE;
-        }
-        else
-            g_critical ("unknown toolbar item '%s'", child->name);
+
+        if (!result)
+            return FALSE;
     }
+    SLIST_FOREACH_END;
 
-    return GTK_WIDGET (toolbar);
-}
-
-
-static gboolean     create_tool_item  (MooMarkupNode                *node,
-                                       MooActionGroup               *actions,
-                                       G_GNUC_UNUSED GtkAccelGroup  *accel_group,
-                                       G_GNUC_UNUSED GtkTooltips    *tooltips,
-                                       GtkToolbar                   *toolbar,
-                                       int                           position)
-{
-    const char *action_name = moo_markup_get_prop (node, "action");
-    const char *label, *tip;
-#if GTK_CHECK_VERSION(2,4,0)
-    GtkToolItem *item;
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    GtkWidget *item;
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
-
-    if (action_name)
-    {
-        MooAction *action = moo_action_group_get_action (actions, action_name);
-        if (!action)
-        {
-            g_critical ("could not find action '%s'", action_name);
-        }
-        else
-        {
-            if (action->dead) return TRUE;
-            if (!moo_action_create_tool_item (action, toolbar, position))
-                g_critical ("could not create tool item for action %s", action_name);
-            else
-                return TRUE;
-        }
-    }
-
-    label = moo_markup_get_prop (node, "label");
-    if (!label) {
-        g_warning ("could not get label for toolbar button");
-        label = moo_markup_get_prop (node, "name");
-        if (!label) {
-            g_warning ("using node name as label");
-            label = moo_markup_get_prop (node, "name");
-            if (!label) label = "";
-        }
-    }
-
-    tip = moo_markup_get_prop (node, "tooltip");
-
-#if GTK_CHECK_VERSION(2,4,0)
-    item = gtk_tool_button_new (NULL, label ? label : "");
-    if (tip) gtk_tool_item_set_tooltip (item, tooltips, tip, tip);
-    gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (item), TRUE);
-    gtk_widget_show (GTK_WIDGET (item));
-    gtk_toolbar_insert (toolbar, item, position);
-    gtk_container_child_set (GTK_CONTAINER (toolbar), GTK_WIDGET (item),
-                             "homogeneous", FALSE, NULL);
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    item = gtk_toolbar_insert_item (toolbar, label ? label : "",
-                                    tip, tip,
-                                    NULL, NULL, NULL, position);
-    gtk_button_set_use_underline (GTK_BUTTON (item), TRUE);
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
+    check_separators (toplevel, toolbar_node);
 
     return TRUE;
 }
 
 
-MooUIXML        *moo_ui_xml_new                 (void)
+static gboolean
+create_toolbar (MooUIXML       *xml,
+                Toplevel       *toplevel,
+                MooActionGroup *actions)
 {
-    return MOO_UI_XML (g_object_new (MOO_TYPE_UI_XML, NULL));
+    g_return_val_if_fail (toplevel != NULL, FALSE);
+    g_return_val_if_fail (toplevel->widget == NULL, FALSE);
+    g_return_val_if_fail (toplevel->node != NULL, FALSE);
+
+    toplevel->widget = gtk_toolbar_new ();
+    connect_toplevel (xml, toplevel);
+
+    return fill_toolbar (xml, toplevel,
+                         toplevel->node,
+                         GTK_TOOLBAR (toplevel->widget),
+                         actions);
 }
 
 
-MooUIXML        *moo_ui_xml_new_from_string     (const char     *xml,
-                                                 GError        **error)
+GtkWidget*
+moo_ui_xml_create_widget (MooUIXML       *xml,
+                          MooUIWidgetType type,
+                          const char     *path,
+                          MooActionGroup *actions,
+                          GtkAccelGroup  *accel_group)
 {
-    GError *err = NULL;
-    MooMarkupDoc *doc;
+    Node *node;
+    Toplevel *toplevel;
+    gboolean result;
 
-    g_return_val_if_fail (xml != NULL, NULL);
-    doc = moo_markup_parse_memory (xml, -1, &err);
-    if (!doc) {
-        if (err) {
-            if (error) *error = err;
-            else g_error_free (err);
-        }
-        else if (error)
-            *error = NULL;
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (!actions || MOO_IS_ACTION_GROUP (actions), NULL);
+
+    node = moo_ui_xml_get_node (xml, path);
+    g_return_val_if_fail (node != NULL, NULL);
+
+    if (node->type != WIDGET)
+    {
+        g_warning ("%s: can create widgets only for nodes of type %s",
+                   G_STRLOC, NODE_TYPE_NAME[WIDGET]);
         return NULL;
     }
 
-    return MOO_UI_XML (g_object_new (MOO_TYPE_UI_XML,
-                                     "markup", doc,
-                                     NULL));
+    if (type < 1 || type > 3)
+    {
+        g_warning ("%s: invalid widget type %d", G_STRLOC, type);
+        return NULL;
+    }
+
+    toplevel = toplevel_new (node);
+    xml->priv->toplevels = g_slist_append (xml->priv->toplevels, toplevel);
+
+    switch (type)
+    {
+        case MOO_UI_MENUBAR:
+            result = create_menu_shell (xml, toplevel, MOO_UI_MENUBAR,
+                                        actions, accel_group);
+            break;
+        case MOO_UI_MENU:
+            result = create_menu_shell (xml, toplevel, MOO_UI_MENU,
+                                        actions, accel_group);
+            break;
+        case MOO_UI_TOOLBAR:
+            result = create_toolbar (xml, toplevel, actions);
+            break;
+    }
+
+    if (!result)
+    {
+        toplevel_delete (xml, toplevel);
+        return NULL;
+    }
+
+    return toplevel->widget;
 }
 
 
-MooUIXML        *moo_ui_xml_new_from_file       (const char     *file,
-                                                 GError        **error)
+static void
+toplevel_add_node (G_GNUC_UNUSED MooUIXML *xml,
+                   G_GNUC_UNUSED Toplevel *toplevel,
+                   G_GNUC_UNUSED Node     *node)
 {
-    GError *err = NULL;
-    MooMarkupDoc *doc;
+    g_message ("%s: implement me", G_STRLOC);
+}
 
-    g_return_val_if_fail (file != NULL, NULL);
+static void
+toplevel_remove_node (G_GNUC_UNUSED MooUIXML *xml,
+                      G_GNUC_UNUSED Toplevel *toplevel,
+                      G_GNUC_UNUSED Node     *node)
+{
+    g_message ("%s: implement me", G_STRLOC);
+}
 
-    doc = moo_markup_parse_file (file, &err);
-    if (!doc) {
-        if (err) {
-            if (error) *error = err;
-            else g_error_free (err);
-        }
-        else if (error)
-            *error = NULL;
-        return NULL;
+
+static void
+update_widgets (MooUIXML       *xml,
+                UpdateType      type,
+                Node           *node)
+{
+    switch (type)
+    {
+        case UPDATE_ADD_NODE:
+            SLIST_FOREACH (xml->priv->toplevels, l)
+            {
+                Toplevel *toplevel = l->data;
+
+                if (node_is_ancestor (node, toplevel->node))
+                    toplevel_add_node (xml, toplevel, node);
+            }
+            SLIST_FOREACH_END;
+            break;
+
+        case UPDATE_REMOVE_NODE:
+            SLIST_FOREACH (xml->priv->toplevels, l)
+            {
+                Toplevel *toplevel = l->data;
+
+                if (node_is_ancestor (toplevel->node, node))
+                    toplevel_delete (xml, toplevel);
+                else if (node_is_ancestor (node, toplevel->node))
+                    toplevel_remove_node (xml, toplevel, node);
+            }
+            SLIST_FOREACH_END;
+            break;
+
+        case UPDATE_CHANGE_NODE:
+            g_warning ("%s: implement me", G_STRLOC);
+            break;
+
+        default:
+            g_return_if_reached ();
     }
-    return MOO_UI_XML (g_object_new (MOO_TYPE_UI_XML,
-                                     "markup", doc,
-                                     NULL));
+}
+
+
+static void
+moo_ui_xml_finalize (GObject *object)
+{
+    g_message ("%s: implement me", G_STRLOC);
+    G_OBJECT_CLASS(moo_ui_xml_parent_class)->finalize (object);
 }

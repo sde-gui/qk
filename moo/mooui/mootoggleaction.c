@@ -32,10 +32,8 @@ static void moo_toggle_action_get_property      (GObject                *object,
                                                  GValue                 *value,
                                                  GParamSpec             *pspec);
 
-static GtkWidget *moo_toggle_action_create_menu_item (MooAction      *action,
-                                                      GtkMenuShell   *menushell,
-                                                      int             position);
-static gboolean   moo_toggle_action_create_tool_item (MooAction      *action,
+static GtkWidget *moo_toggle_action_create_menu_item (MooAction      *action);
+static GtkWidget *moo_toggle_action_create_tool_item (MooAction      *action,
                                                       GtkToolbar     *toolbar,
                                                       int             position);
 
@@ -186,9 +184,8 @@ void        moo_toggle_action_set_active        (MooToggleAction     *action,
 }
 
 
-static GtkWidget *moo_toggle_action_create_menu_item (MooAction         *action,
-                                                      GtkMenuShell      *menu_shell,
-                                                      int                position)
+static GtkWidget*
+moo_toggle_action_create_menu_item (MooAction         *action)
 {
     GtkWidget *item = NULL;
 
@@ -209,22 +206,17 @@ static GtkWidget *moo_toggle_action_create_menu_item (MooAction         *action,
 
     moo_toggle_action_add_proxy (action, item);
 
-    if (position >= 0)
-        gtk_menu_shell_insert (menu_shell, item, position);
-    else
-        gtk_menu_shell_append (menu_shell, item);
-
     return item;
 }
 
 
-static gboolean moo_toggle_action_create_tool_item (MooAction      *action,
-                                                    GtkToolbar     *toolbar,
-                                                    int             position)
+static GtkWidget*
+moo_toggle_action_create_tool_item (MooAction      *action,
+                                    GtkToolbar     *toolbar,
+                                    int             position)
 {
 #if GTK_CHECK_VERSION(2,4,0)
     GtkToolItem *item = NULL;
-    GtkTooltips *tooltips = NULL;
 
     if (action->stock_id)
     {
@@ -246,13 +238,16 @@ static gboolean moo_toggle_action_create_tool_item (MooAction      *action,
         gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (item), TRUE);
     }
 
-    if (action->group)
-        tooltips = moo_action_group_get_tooltips (MOO_ACTION_GROUP (action->group));
-    if (tooltips && action->tooltip)
+    if (action->tooltip)
+    {
+        GtkTooltips *tooltips = gtk_tooltips_new ();
         gtk_tool_item_set_tooltip (item,
                                    tooltips,
                                    action->tooltip,
                                    action->tooltip);
+        g_object_set_data_full (G_OBJECT (item), "moo-tooltips",
+                                tooltips, g_object_unref);
+    }
 
     gtk_toolbar_insert (toolbar, item, position);
     gtk_container_child_set (GTK_CONTAINER (toolbar), GTK_WIDGET (item),
@@ -287,7 +282,7 @@ static gboolean moo_toggle_action_create_tool_item (MooAction      *action,
 
     moo_toggle_action_add_proxy (action, GTK_WIDGET (item));
 
-    return TRUE;
+    return GTK_WIDGET (item);
 }
 
 

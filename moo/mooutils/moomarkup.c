@@ -550,53 +550,6 @@ moo_markup_get_content (MooMarkupNode *node)
 
 
 static MooMarkupElement*
-get_element_by_names (MooMarkupNode *node,
-                      char         **path)
-{
-    MooMarkupNode *child;
-
-    if (!path || !path[0] || !path[0][0])
-        return MOO_MARKUP_ELEMENT (node);
-
-    for (child = node->children; child; child = child->next)
-    {
-        if (MOO_MARKUP_IS_ELEMENT (child))
-        {
-            const char *name;
-
-            name = moo_markup_get_prop (child, "name");
-
-            if (name && !strcmp (path[0], name))
-                return get_element_by_names (child, ++path);
-        }
-    }
-
-    return NULL;
-}
-
-
-MooMarkupNode*
-moo_markup_get_element_by_names (MooMarkupNode      *node,
-                                 const char         *path)
-{
-    char **p;
-    MooMarkupElement *elm;
-
-    g_return_val_if_fail (path != NULL, NULL);
-    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node) ||
-                          MOO_MARKUP_IS_DOC (node), NULL);
-
-    p = g_strsplit (path, "/", 0);
-    g_return_val_if_fail (p != NULL, NULL);
-
-    elm = get_element_by_names (node, p);
-
-    g_strfreev (p);
-    return (MooMarkupNode*) elm;
-}
-
-
-static MooMarkupElement*
 get_element (MooMarkupNode *node,
              char         **path)
 {

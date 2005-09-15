@@ -604,7 +604,10 @@ static void             open_recent         (MooEditor       *editor,
 static MooEditWindow *create_window         (MooEditor      *editor)
 {
     MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
-                                          "editor", editor, NULL);
+                                          "editor", editor,
+                                          "ui-object-xml",
+                                          moo_editor_get_ui_xml (editor),
+                                          NULL);
     window_list_add (editor, window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));

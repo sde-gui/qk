@@ -68,10 +68,8 @@ struct _MooActionClass
     GObjectClass parent_class;
 
     /* methods */
-    GtkWidget   *(*create_menu_item)    (MooAction      *action,
-                                         GtkMenuShell   *menushell,
-                                         int             position);
-    gboolean     (*create_tool_item)    (MooAction      *action,
+    GtkWidget   *(*create_menu_item)    (MooAction      *action);
+    GtkWidget   *(*create_tool_item)    (MooAction      *action,
                                          GtkToolbar     *toolbar,
                                          int             position);
 
@@ -121,10 +119,8 @@ const char  *moo_action_get_default_accel   (MooAction      *action);
 char        *moo_action_get_accel_label     (MooAction      *action);
 char        *moo_action_get_default_accel_label (MooAction      *action);
 
-GtkWidget   *moo_action_create_menu_item    (MooAction      *action,
-                                             GtkMenuShell   *menushell,
-                                             int             position);
-gboolean     moo_action_create_tool_item    (MooAction      *action,
+GtkWidget   *moo_action_create_menu_item    (MooAction      *action);
+GtkWidget   *moo_action_create_tool_item    (MooAction      *action,
                                              GtkToolbar     *toolbar,
                                              int             position);
 

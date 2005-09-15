@@ -1,5 +1,5 @@
 /*
- *   mooui/moouixml.h
+ *   moouixml.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,14 +11,77 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUI_MOOUIXML_H
-#define MOOUI_MOOUIXML_H
+#ifndef __MOO_UI_XML_H__
+#define __MOO_UI_XML_H__
 
 #include "mooutils/moomarkup.h"
 #include "mooui/mooactiongroup.h"
 #include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
+
+
+typedef enum {
+    MOO_UI_NODE_CONTAINER = 1,
+    MOO_UI_NODE_WIDGET,
+    MOO_UI_NODE_ITEM,
+    MOO_UI_NODE_SEPARATOR,
+    MOO_UI_NODE_PLACEHOLDER
+} MooUINodeType;
+
+typedef struct _MooUINode            MooUINode;
+typedef struct _MooUIWidgetNode      MooUIWidgetNode;
+typedef struct _MooUIItemNode        MooUIItemNode;
+typedef struct _MooUISeparatorNode   MooUISeparatorNode;
+typedef struct _MooUIPlaceholderNode MooUIPlaceholderNode;
+
+
+struct _MooUINode {
+    MooUINodeType type;
+    char *name;
+    MooUINode *parent;
+    GSList *children;
+};
+
+struct _MooUIWidgetNode {
+    MooUINodeType type;
+    char *name;
+    MooUINode *parent;
+    GSList *children;
+};
+
+struct _MooUISeparatorNode {
+    MooUINodeType type;
+    char *name;
+    MooUINode *parent;
+    GSList *children;
+};
+
+struct _MooUIPlaceholderNode {
+    MooUINodeType type;
+    char *name;
+    MooUINode *parent;
+    GSList *children;
+};
+
+struct _MooUIItemNode {
+    MooUINodeType type;
+    char *name;
+    MooUINode *parent;
+    GSList *children;
+
+    char *action;
+
+    char *stock_id;
+    char *label;
+    char *icon_stock_id;
+};
+
+typedef enum {
+    MOO_UI_MENUBAR = 1,
+    MOO_UI_MENU,
+    MOO_UI_TOOLBAR
+} MooUIWidgetType;
 
 
 #define MOO_TYPE_UI_XML              (moo_ui_xml_get_type ())
@@ -36,53 +99,47 @@ typedef struct _MooUIXMLClass   MooUIXMLClass;
 struct _MooUIXML
 {
     GObject          object;
-    MooMarkupDoc    *doc;
+    MooUIXMLPrivate *priv;
 };
 
 struct _MooUIXMLClass
 {
     GObjectClass parent_class;
-
-    void    (*changed)  (MooUIXML *xml);
 };
 
 
-GType            moo_ui_xml_get_type            (void) G_GNUC_CONST;
+GType       moo_ui_xml_get_type             (void) G_GNUC_CONST;
 
-MooUIXML        *moo_ui_xml_new                 (void);
-MooUIXML        *moo_ui_xml_new_from_string     (const char     *xml,
-                                                 GError        **error);
-MooUIXML        *moo_ui_xml_new_from_file       (const char     *file,
-                                                 GError        **error);
+MooUIXML   *moo_ui_xml_new                  (void);
 
-gboolean         moo_ui_xml_add_ui_from_string  (MooUIXML       *xml,
-                                                 const char     *ui,
-                                                 int             len,
-                                                 GError        **error);
-gboolean         moo_ui_xml_add_ui_from_file    (MooUIXML       *xml,
-                                                 const char     *file,
-                                                 GError        **error);
+void        moo_ui_xml_add_ui_from_string   (MooUIXML       *xml,
+                                             const char     *buffer,
+                                             gssize          length);
 
-char            *moo_ui_xml_get_ui              (MooUIXML       *xml);
-const MooMarkupDoc *moo_ui_xml_get_markup       (MooUIXML       *xml);
+MooUINode  *moo_ui_xml_get_node             (MooUIXML       *xml,
+                                             const char     *path);
 
-gboolean         moo_ui_xml_has_widget          (MooUIXML       *xml,
-                                                 const char     *path);
+GtkWidget  *moo_ui_xml_create_widget        (MooUIXML       *xml,
+                                             MooUIWidgetType type,
+                                             const char     *path,
+                                             MooActionGroup *actions,
+                                             GtkAccelGroup  *accel_group);
 
-GtkWidget       *moo_ui_xml_create_widget       (MooUIXML       *xml,
-                                                 const char     *path,
-                                                 MooActionGroup *actions,
-                                                 GtkAccelGroup  *accel_group,
-                                                 GtkTooltips    *tooltips);
-GtkWidget       *moo_ui_xml_update_widget       (MooUIXML       *xml,
-                                                 GtkWidget      *widget,
-                                                 const char     *path,
-                                                 MooActionGroup *actions,
-                                                 GtkAccelGroup  *accel_group,
-                                                 GtkTooltips    *tooltips);
+guint       moo_ui_xml_new_merge_id         (MooUIXML       *xml);
+MooUINode  *moo_ui_xml_add_item             (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             const char     *parent_path,
+                                             const char     *name,
+                                             const char     *action,
+                                             int             position);
+void        moo_ui_xml_remove_ui            (MooUIXML       *xml,
+                                             guint           merge_id);
+
+void        moo_ui_xml_remove_node          (MooUIXML       *xml,
+                                             MooUINode      *node);
 
 
 G_END_DECLS
 
-#endif /* MOOUI_MOOUIXML_H */
+#endif /* __MOO_UI_XML_H__ */
 

@@ -18,7 +18,6 @@
 struct _MooActionGroupPrivate {
     GHashTable      *actions;       /* char* -> MooAction* */
     GtkAccelGroup   *accel_group;
-    GtkTooltips     *tooltips;
     char            *name;
 };
 
@@ -60,7 +59,6 @@ static void moo_action_group_init (MooActionGroup *group)
                                (GDestroyNotify) g_free,
                                (GDestroyNotify) g_object_unref);
     group->priv->accel_group = NULL;
-    group->priv->tooltips = NULL;
     group->priv->name = NULL;
 }
 
@@ -173,31 +171,6 @@ void             moo_action_group_set_accel_group (MooActionGroup *group,
     group->priv->accel_group = accel_group;
     if (accel_group)
         g_object_ref (G_OBJECT (accel_group));
-}
-
-
-void             moo_action_group_set_tooltips  (MooActionGroup *group,
-                                                 GtkTooltips    *tips)
-{
-    g_return_if_fail (MOO_IS_ACTION_GROUP (group) && group->priv != NULL);
-    g_return_if_fail (GTK_IS_TOOLTIPS (tips));
-
-    if (group->priv->tooltips == tips)
-        return;
-    if (group->priv->tooltips)
-        g_object_unref (G_OBJECT (group->priv->tooltips));
-    group->priv->tooltips = tips;
-    if (group->priv->tooltips)
-        g_object_ref (G_OBJECT (group->priv->tooltips));
-}
-
-
-GtkTooltips     *moo_action_group_get_tooltips  (MooActionGroup *group)
-{
-    g_return_val_if_fail (MOO_IS_ACTION_GROUP (group) && group->priv != NULL, NULL);
-    if (!group->priv->tooltips)
-        group->priv->tooltips = gtk_tooltips_new ();
-    return group->priv->tooltips;
 }
 
 

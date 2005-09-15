@@ -531,16 +531,12 @@ GObject        *moo_edit_window_constructor (GType                  type,
 {
     GtkWidget *notebook, *paned;
     MooEditWindow *window;
-    MooUIXML *xml;
 
     GObject *object =
             G_OBJECT_CLASS(moo_edit_window_parent_class)->constructor (type, n_props, props);
 
     window = MOO_EDIT_WINDOW (object);
     g_return_val_if_fail (window->priv->editor != NULL, object);
-
-    xml = moo_editor_get_ui_xml (window->priv->editor);
-    moo_ui_object_set_ui_xml (MOO_UI_OBJECT (window), xml);
 
     window->priv->statusbar = GTK_STATUSBAR (MOO_WINDOW(window)->statusbar);
     gtk_widget_show (MOO_WINDOW(window)->statusbar);

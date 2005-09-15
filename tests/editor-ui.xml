@@ -2,9 +2,9 @@
 
 <object name="Editor">
 
-    <menubar name="Menubar">
+    <widget name="Menubar">
 
-        <menu name="File" label="_File">
+        <item name="File" label="_File">
             <separator/>
             <item name="NewWindow" action="NewWindow"/>
             <item name="NewTab" action="NewTab"/>
@@ -23,9 +23,9 @@
             <separator/>
             <item name="Quit" action="Quit"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Edit" label="_Edit">
+        <item name="Edit" label="_Edit">
             <separator/>
             <item name="Undo" action="Undo"/>
             <item name="Redo" action="Redo"/>
@@ -38,9 +38,9 @@
             <item name="SelectAll" action="SelectAll"/>
             <separator/>
             <item name="SendToTerminal" action="SendToTerminal"/>
-        </menu>
+        </item>
 
-        <menu name="Search" label="_Search">
+        <item name="Search" label="_Search">
             <separator/>
             <item name="Find" action="Find"/>
             <item name="FindNext" action="FindNext"/>
@@ -52,9 +52,9 @@
             <item name="FindInFiles" action="FindInFiles"/>
             <item name="FindFile" action="FindFile"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="View" label="_View">
+        <item name="View" label="_View">
             <separator/>
             <item name="PreviousTab" action="PreviousTab"/>
             <item name="NextTab" action="NextTab"/>
@@ -63,9 +63,9 @@
             <separator/>
             <item name="ShowFileSelector" action="ShowFileSelector"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Project" label="_Project">
+        <item name="Project" label="_Project">
             <separator/>
             <item name="NewProject" action="NewProject"/>
             <item name="OpenProject" action="OpenProject"/>
@@ -76,27 +76,27 @@
             <separator/>
             <item name="CloseProject" action="CloseProject"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Build" label="_Build">
+        <item name="Build" label="_Build">
             <separator/>
             <item name="BuildProject" action="BuildProject"/>
             <item name="CompileFile" action="CompileFile"/>
             <separator/>
             <item name="Execute" action="Execute"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Python" action="PythonMenu">
+        <item name="Python" action="PythonMenu">
             <separator/>
             <item name="ExecuteSelection" action="ExecuteSelection"/>
             <item name="ExecuteScript" action="ExecuteScript"/>
             <separator/>
             <item name="ShowConsole" action="ShowConsole"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Settings" label="_Settings">
+        <item name="Settings" label="_Settings">
             <separator/>
             <item name="ShowToolbar" action="ShowToolbar"/>
             <item name="ToolbarStyle" action="ToolbarStyle"/>
@@ -105,17 +105,17 @@
             <separator/>
             <item name="Preferences" action="Preferences"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Help" label="_Help">
+        <item name="Help" label="_Help">
             <separator/>
             <item name="About" action="About"/>
             <separator/>
-        </menu>
+        </item>
 
-    </menubar> <!-- Menubar -->
+    </widget> <!-- Menubar -->
 
-    <toolbar name="Toolbar">
+    <widget name="Toolbar">
         <separator/>
         <item name="NewTab" action="NewTab"/>
         <separator/>
@@ -134,15 +134,15 @@
         <item name="Replace" action="Replace"/>
 
         <separator/>
-    </toolbar> <!-- Toolbar -->
+    </widget> <!-- Toolbar -->
 
 </object> <!-- Editor -->
 
 <object name="Terminal">
 
-    <menubar name="Menubar">
+    <widget name="Menubar">
 
-        <menu name="File" label="_File">
+        <item name="File" label="_File">
             <separator/>
             <item name="Editor" action="NewEditor"/>
             <item name="Open" action="OpenInEditor"/>
@@ -153,9 +153,9 @@
             <separator/>
             <item name="Quit" action="Quit"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Edit" label="E_dit">
+        <item name="Edit" label="E_dit">
             <separator/>
             <!--
             <item name="CopyLastOutput" action="CopyLastOutput"/>
@@ -165,26 +165,26 @@
             <separator/>
             <item name="SelectAll" action="SelectAll"/>
             <separator/>
-        </menu>
+        </item>
 
         <!--
-        <menu name="GAP" label="_GAP">
+        <item name="GAP" label="_GAP">
             <separator/>
             <item name="Read" action="GAPRead"/>
             <separator/>
             <item name="Restart" action="Restart"/>
             <separator/>
-        </menu>
+        </item>
         -->
 
-        <menu name="Python" action="PythonMenu">
+        <item name="Python" action="PythonMenu">
             <separator/>
             <item name="Execute" action="ExecuteScript"/>
             <item name="ShowConsole" action="ShowConsole"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Settings" label="_Settings">
+        <item name="Settings" label="_Settings">
             <separator/>
             <item name="ShowToolbar" action="ShowToolbar"/>
             <item name="ToolbarStyle" action="ToolbarStyle"/>
@@ -193,17 +193,17 @@
             <separator/>
             <item name="Preferences" action="Preferences"/>
             <separator/>
-        </menu>
+        </item>
 
-        <menu name="Help" label="_Help">
+        <item name="Help" label="_Help">
             <separator/>
             <item name="About" action="About"/>
             <separator/>
-        </menu>
+        </item>
 
-    </menubar> <!-- Menubar -->
+    </widget> <!-- Menubar -->
 
-    <toolbar name="Toolbar">
+    <widget name="Toolbar">
         <separator/>
         <item name="Editor" action="NewEditor"/>
         <item name="Open" action="OpenInEditor"/>
@@ -215,16 +215,16 @@
         <separator/>
         <item name="Preferences" action="Preferences"/>
         <separator/>
-    </toolbar> <!-- Toolbar -->
+    </widget> <!-- Toolbar -->
 
-    <menu name="Popup">
+    <widget name="Popup">
         <separator/>
         <item name="Copy" action="Copy"/>
         <item name="Paste" action="Paste"/>
         <separator/>
         <item name="SelectAll" action="SelectAll"/>
         <separator/>
-    </menu>
+    </widget>
 
 </object> <!-- Terminal -->
 

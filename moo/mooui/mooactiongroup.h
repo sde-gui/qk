@@ -59,11 +59,6 @@ void             moo_action_group_set_name      (MooActionGroup *group,
 void             moo_action_group_set_accel_group (MooActionGroup *group,
                                                    GtkAccelGroup  *accel_group);
 
-void             moo_action_group_set_tooltips  (MooActionGroup *group,
-                                                 GtkTooltips    *tips);
-GtkTooltips     *moo_action_group_get_tooltips  (MooActionGroup *group);
-
-
 typedef gboolean (*MooActionGroupForeachFunc)   (MooActionGroup *group,
                                                  MooAction      *action,
                                                  gpointer        data);
