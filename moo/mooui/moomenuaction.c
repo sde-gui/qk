@@ -174,11 +174,11 @@ MooAction       *moo_menu_action_new      (const char         *id,
                                            MooMenuCreationFunc create_menu,
                                            gpointer            data)
 {
-    return MOO_ACTION (g_object_new (MOO_TYPE_MENU_ACTION,
-                                     "id", id,
-                                     "group-id", group_id,
-                                     "create-menu-func", create_menu,
-                                     "create-menu-data", data,
-                                     "no-accel", TRUE,
-                                     NULL));
+    return g_object_new (MOO_TYPE_MENU_ACTION,
+                         "id", id,
+                         "group-id", group_id,
+                         "create-menu-func", create_menu,
+                         "create-menu-data", data,
+                         "no-accel", TRUE,
+                         NULL);
 }

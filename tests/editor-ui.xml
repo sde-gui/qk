@@ -6,10 +6,7 @@
 
         <item name="File" label="_File">
             <separator/>
-            <item name="NewWindow" action="NewWindow"/>
             <item name="NewTab" action="NewTab"/>
-            <separator/>
-            <item name="Terminal" action="Terminal"/>
             <separator/>
             <item name="Open" action="Open"/>
             <item name="OpenRecent" action="OpenRecent"/>
@@ -37,7 +34,6 @@
             <separator/>
             <item name="SelectAll" action="SelectAll"/>
             <separator/>
-            <item name="SendToTerminal" action="SendToTerminal"/>
         </item>
 
         <item name="Search" label="_Search">
@@ -49,9 +45,6 @@
             <separator/>
             <item name="GoToLine" action="GoToLine"/>
             <separator/>
-            <item name="FindInFiles" action="FindInFiles"/>
-            <item name="FindFile" action="FindFile"/>
-            <separator/>
         </item>
 
         <item name="View" label="_View">
@@ -60,39 +53,6 @@
             <item name="NextTab" action="NextTab"/>
             <separator/>
             <item name="SyntaxMenu" action="SyntaxMenu"/>
-            <separator/>
-            <item name="ShowFileSelector" action="ShowFileSelector"/>
-            <separator/>
-        </item>
-
-        <item name="Project" label="_Project">
-            <separator/>
-            <item name="NewProject" action="NewProject"/>
-            <item name="OpenProject" action="OpenProject"/>
-            <item name="OpenRecentProject" action="OpenRecentProject"/>
-            <separator/>
-            <item name="BuildConfiguration" action="BuildConfiguration"/>
-            <item name="ProjectOptions" action="ProjectOptions"/>
-            <separator/>
-            <item name="CloseProject" action="CloseProject"/>
-            <separator/>
-        </item>
-
-        <item name="Build" label="_Build">
-            <separator/>
-            <item name="BuildProject" action="BuildProject"/>
-            <item name="CompileFile" action="CompileFile"/>
-            <separator/>
-            <item name="Execute" action="Execute"/>
-            <separator/>
-        </item>
-
-        <item name="Python" action="PythonMenu">
-            <separator/>
-            <item name="ExecuteSelection" action="ExecuteSelection"/>
-            <item name="ExecuteScript" action="ExecuteScript"/>
-            <separator/>
-            <item name="ShowConsole" action="ShowConsole"/>
             <separator/>
         </item>
 

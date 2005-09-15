@@ -17,6 +17,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/moopaneview.h"
+#include "mooutils/mooprefsdialog.h"
 #include "editor-ui.h"
 
 
@@ -74,25 +75,21 @@ int main (int argc, char **argv)
 }
 
 
-// static void show_preferences (MooEditWindow *window)
-// {
-//     GtkWidget *dialog = moo_prefs_dialog_new ("Preferences");
-//     moo_edit_plugin_attach_prefs (MOO_PREFS_DIALOG (dialog));
-//     moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (window));
-// }
-//
-//
-// static void init_prefs_action (GObjectClass *klass)
-// {
-//     moo_ui_object_class_new_action (klass,
-//                                     "id", "Preferences",
-//                                     "name", "Preferences",
-//                                     "label", "Preferences",
-//                                     "tooltip", "Preferences",
-//                                     "icon-stock-id", GTK_STOCK_PREFERENCES,
-//                                     "closure::callback", show_preferences,
-//                                     NULL);
-// }
+static void show_preferences (MooEditWindow *window)
+{
+    GtkWidget *dialog = moo_prefs_dialog_new ("Preferences");
+    moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (window));
+}
+
+
+static void quit (MooEditWindow *window)
+{
+    moo_editor_close_all (moo_edit_window_get_editor (window));
+}
+
+static void about (void)
+{
+}
 
 
 static void init_actions (void)
@@ -102,30 +99,29 @@ static void init_actions (void)
     g_return_if_fail (klass != NULL);
 
     moo_ui_object_class_new_action (klass,
-                                    "id", "SendToTerminal",
-                                    "dead", TRUE,
-                                    NULL);
-    moo_ui_object_class_new_action (klass,
-                                    "id", "Terminal",
-                                    "dead", TRUE,
-                                    NULL);
-    moo_ui_object_class_new_action (klass,
-                                    "id", "PythonMenu",
-                                    "dead", TRUE,
-                                    NULL);
-    moo_ui_object_class_new_action (klass,
-                                    "id", "About",
-                                    "dead", TRUE,
+                                    "id", "Preferences",
+                                    "name", "Preferences",
+                                    "label", "Preferences",
+                                    "tooltip", "Preferences",
+                                    "icon-stock-id", GTK_STOCK_PREFERENCES,
+                                    "closure::callback", show_preferences,
                                     NULL);
     moo_ui_object_class_new_action (klass,
                                     "id", "Quit",
-                                    "dead", TRUE,
+                                    "name", "Quit",
+                                    "label", "_Quit",
+                                    "tooltip", "Quit",
+                                    "icon-stock-id", GTK_STOCK_QUIT,
+                                    "closure::callback", quit,
                                     NULL);
     moo_ui_object_class_new_action (klass,
-                                    "id", "Preferences",
-                                    "dead", TRUE,
+                                    "id", "About",
+                                    "name", "About",
+                                    "label", "About",
+                                    "tooltip", "About",
+                                    "icon-stock-id", GTK_STOCK_ABOUT,
+                                    "closure::callback", about,
                                     NULL);
-//     init_prefs_action (klass);
 
     g_type_class_unref (klass);
 }

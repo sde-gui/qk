@@ -18,6 +18,8 @@
 #include <string.h>
 
 
+/* XXX weak ref actions */
+
 typedef MooUINodeType NodeType;
 typedef MooUINode Node;
 typedef MooUIWidgetNode Widget;
@@ -52,6 +54,8 @@ typedef struct {
     Node *node;
     GtkWidget *widget;
     GHashTable *children; /* Node* -> GtkWidget* */
+    MooActionGroup *actions;
+    GtkAccelGroup *accel_group;
 } Toplevel;
 
 typedef struct {
@@ -65,27 +69,110 @@ typedef enum {
     UPDATE_CHANGE_NODE
 } UpdateType;
 
+#define TOPLEVEL_QUARK (toplevel_quark ())
+#define NODE_QUARK (node_quark ())
+
 
 static void     moo_ui_xml_finalize     (GObject        *object);
 
 static void     moo_ui_xml_add_markup   (MooUIXML       *xml,
                                          MooMarkupNode  *mnode);
-static Node    *parse_markup            (MooMarkupNode  *mnode);
-static void     node_free               (Node           *node);
+
 static void     update_widgets          (MooUIXML       *xml,
                                          UpdateType      type,
                                          Node           *node);
 
+static Node    *parse_markup            (MooMarkupNode  *mnode);
+static Node    *parse_object            (MooMarkupNode  *mnode);
+static Node    *parse_widget            (MooMarkupNode  *mnode);
+static Node    *parse_placeholder       (MooMarkupNode  *mnode);
+static Node    *parse_item              (MooMarkupNode  *mnode);
+static Node    *parse_separator         (MooMarkupNode  *mnode);
+static gboolean placeholder_check       (Node           *node);
+static gboolean item_check              (Node           *node);
+static gboolean widget_check            (Node           *node);
+static gboolean container_check         (Node           *node);
+
 static Merge   *lookup_merge            (MooUIXML       *xml,
                                          guint           id);
 
+static Node    *node_new                (gsize           size,
+                                         NodeType        type,
+                                         const char     *name);
+static Item    *item_new                (const char     *name,
+                                         const char     *action,
+                                         const char     *stock_id,
+                                         const char     *label,
+                                         const char     *icon_stock_id);
 static gboolean node_is_ancestor        (Node           *node,
                                          Node           *ancestor);
+static gboolean node_is_empty           (Node           *node);
+static GSList  *node_list_children      (Node           *ndoe);
+static void     node_free               (Node           *node);
 
 static void     merge_add_node          (Merge          *merge,
                                          Node           *node);
 static void     merge_remove_node       (Merge          *merge,
                                          Node           *node);
+
+static Toplevel *toplevel_new           (Node           *node,
+                                         MooActionGroup *actions,
+                                         GtkAccelGroup  *accel_group);
+static void     toplevel_free           (Toplevel       *toplevel);
+static GtkWidget *toplevel_get_widget   (Toplevel       *toplevel,
+                                         Node           *node);
+
+static GQuark   toplevel_quark          (void);
+static GQuark   node_quark              (void);
+
+static void     xml_add_item_widget     (MooUIXML       *xml,
+                                         GtkWidget      *widget);
+static void     xml_add_widget          (MooUIXML       *xml,
+                                         GtkWidget      *widget,
+                                         Toplevel       *toplevel,
+                                         Node           *node);
+static void     xml_remove_widget       (MooUIXML       *xml,
+                                         GtkWidget      *widget);
+static void     xml_delete_toplevel     (MooUIXML       *xml,
+                                         Toplevel       *toplevel);
+static void     xml_connect_toplevel    (MooUIXML       *xml,
+                                         Toplevel       *toplevel);
+
+static gboolean create_menu_separator   (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         GtkMenuShell   *menu,
+                                         Node           *node,
+                                         int             index);
+static void     create_menu_item        (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         GtkMenuShell   *menu,
+                                         Node           *node,
+                                         int             index);
+static gboolean create_menu_shell       (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         MooUIWidgetType type);
+static gboolean fill_menu_shell         (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         Node           *menu_node,
+                                         GtkMenuShell   *menu);
+static void     update_separators       (Node           *parent,
+                                         Toplevel       *toplevel);
+static gboolean create_tool_separator   (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         GtkToolbar     *toolbar,
+                                         Node           *node,
+                                         int             index);
+static gboolean create_tool_item        (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         GtkToolbar     *toolbar,
+                                         Node           *node,
+                                         int             index);
+static gboolean fill_toolbar            (MooUIXML       *xml,
+                                         Toplevel       *toplevel,
+                                         Node           *toolbar_node,
+                                         GtkToolbar     *toolbar);
+static gboolean create_toolbar          (MooUIXML       *xml,
+                                         Toplevel       *toplevel);
 
 
 /* MOO_TYPE_UI_XML */
@@ -372,7 +459,6 @@ item_free (Item *item)
     g_free (item->icon_stock_id);
 }
 
-
 static void
 node_free (Node *node)
 {
@@ -506,6 +592,8 @@ widget_check (Node *node)
 
         switch (child->type)
         {
+            case SEPARATOR:
+                break;
             case ITEM:
                 if (!item_check (child))
                     return FALSE;
@@ -513,8 +601,6 @@ widget_check (Node *node)
             case PLACEHOLDER:
                 if (!placeholder_check (child))
                     return FALSE;
-                break;
-            case SEPARATOR:
                 break;
             default:
                 g_warning ("%s: invalid widget item type %s",
@@ -561,7 +647,7 @@ container_check (Node *node)
 }
 
 
-static void
+ void
 moo_ui_xml_add_markup (MooUIXML       *xml,
                        MooMarkupNode  *mnode)
 {
@@ -625,7 +711,7 @@ moo_ui_xml_new_merge_id (MooUIXML *xml)
 }
 
 
-static Merge*
+ Merge*
 lookup_merge (MooUIXML *xml,
               guint     merge_id)
 {
@@ -697,7 +783,7 @@ G_STMT_START {                                      \
 } G_STMT_END
 
 
-static gboolean
+ gboolean
 node_is_ancestor (Node           *node,
                   Node           *ancestor)
 {
@@ -776,7 +862,7 @@ moo_ui_xml_remove_node (MooUIXML       *xml,
 }
 
 
-static void
+ void
 merge_add_node (Merge *merge,
                 Node  *added)
 {
@@ -796,7 +882,7 @@ merge_add_node (Merge *merge,
 }
 
 
-static void
+ void
 merge_remove_node (Merge          *merge,
                    Node           *removed)
 {
@@ -847,7 +933,9 @@ moo_ui_xml_get_node (MooUIXML       *xml,
 
 
 static Toplevel*
-toplevel_new (Node *node)
+toplevel_new (Node           *node,
+              MooActionGroup *actions,
+              GtkAccelGroup  *accel_group)
 {
     Toplevel *top;
 
@@ -857,6 +945,8 @@ toplevel_new (Node *node)
     top->node = node;
     top->widget = NULL;
     top->children = g_hash_table_new (g_direct_hash, g_direct_equal);
+    top->actions = actions;
+    top->accel_group = accel_group;
 
     return top;
 }
@@ -873,9 +963,6 @@ toplevel_free (Toplevel *toplevel)
 }
 
 
-#define TOPLEVEL_QUARK (toplevel_quark ())
-#define NODE_QUARK (node_quark ())
-
 static GQuark toplevel_quark (void)
 {
     static GQuark q = 0;
@@ -891,19 +978,6 @@ static GQuark node_quark (void)
         q = g_quark_from_static_string ("moo-ui-xml-node");
     return q;
 }
-
-
-static void     disconnect_widget   (gpointer        dummy,
-                                     GtkWidget      *widget,
-                                     MooUIXML       *xml);
-static void     check_separators    (Toplevel       *toplevel,
-                                     Node           *parent);
-static gboolean fill_menu_shell     (MooUIXML       *xml,
-                                     Toplevel       *toplevel,
-                                     Node           *menu_node,
-                                     GtkMenuShell   *menu,
-                                     MooActionGroup *actions,
-                                     GtkAccelGroup  *accel_group);
 
 
 static void
@@ -929,12 +1003,12 @@ visibility_notify (GtkWidget *widget,
         parent = parent->parent;
 
     /* XXX submenu */
-    check_separators (toplevel, parent);
+    update_separators (parent, toplevel);
 }
 
 static void
-connect_item (GtkWidget *widget,
-              MooUIXML  *xml)
+xml_add_item_widget (MooUIXML       *xml,
+                     GtkWidget      *widget)
 {
     g_signal_connect (widget, "notify::visibility",
                       G_CALLBACK (visibility_notify), xml);
@@ -947,14 +1021,13 @@ widget_destroyed (GtkWidget *widget,
 {
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
-    disconnect_widget (NULL, widget, xml);
+    xml_remove_widget (xml, widget);
 }
 
 
 static void
-disconnect_widget (G_GNUC_UNUSED gpointer dummy,
-                   GtkWidget *widget,
-                   MooUIXML  *xml)
+xml_remove_widget (MooUIXML  *xml,
+                   GtkWidget *widget)
 {
     Toplevel *toplevel;
     Node *node;
@@ -981,8 +1054,8 @@ disconnect_widget (G_GNUC_UNUSED gpointer dummy,
 
 
 static void
-connect_widget (GtkWidget *widget,
-                MooUIXML  *xml,
+xml_add_widget (MooUIXML  *xml,
+                GtkWidget *widget,
                 Toplevel  *toplevel,
                 Node      *node)
 {
@@ -1011,12 +1084,26 @@ hash_table_list_values (GHashTable *hash_table)
 }
 
 
-static void toplevel_destroyed (GtkWidget *widget,
-                                MooUIXML  *xml);
+static void
+toplevel_destroyed (GtkWidget *widget,
+                    MooUIXML  *xml)
+{
+    Toplevel *toplevel;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    g_return_if_fail (toplevel != NULL);
+    g_return_if_fail (toplevel->widget == widget);
+
+    xml_delete_toplevel (xml, toplevel);
+}
+
 
 static void
-toplevel_delete (MooUIXML *xml,
-                 Toplevel *toplevel)
+xml_delete_toplevel (MooUIXML *xml,
+                     Toplevel *toplevel)
 {
     GSList *children, *l;
 
@@ -1026,7 +1113,7 @@ toplevel_delete (MooUIXML *xml,
     {
         GtkWidget *child = GTK_WIDGET (l->data);
         if (child != toplevel->widget)
-            disconnect_widget (NULL, child, xml);
+            xml_remove_widget (xml, child);
     }
 
     g_signal_handlers_disconnect_by_func (toplevel->widget,
@@ -1042,25 +1129,8 @@ toplevel_delete (MooUIXML *xml,
 
 
 static void
-toplevel_destroyed (GtkWidget *widget,
-                    MooUIXML  *xml)
-{
-    Toplevel *toplevel;
-
-    g_return_if_fail (GTK_IS_WIDGET (widget));
-    g_return_if_fail (MOO_IS_UI_XML (xml));
-
-    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
-    g_return_if_fail (toplevel != NULL);
-    g_return_if_fail (toplevel->widget == widget);
-
-    toplevel_delete (xml, toplevel);
-}
-
-
-static void
-connect_toplevel (MooUIXML  *xml,
-                  Toplevel  *toplevel)
+xml_connect_toplevel (MooUIXML  *xml,
+                      Toplevel  *toplevel)
 {
     g_signal_connect (toplevel->widget, "destroy",
                       G_CALLBACK (toplevel_destroyed), xml);
@@ -1074,11 +1144,12 @@ static gboolean
 create_menu_separator (MooUIXML       *xml,
                        Toplevel       *toplevel,
                        GtkMenuShell   *menu,
-                       Node           *node)
+                       Node           *node,
+                       int             index)
 {
     GtkWidget *item = gtk_separator_menu_item_new ();
-    gtk_menu_shell_append (menu, item);
-    connect_widget (item, xml, toplevel, node);
+    gtk_menu_shell_insert (menu, item, index);
+    xml_add_widget (xml, item, toplevel, node);
     return TRUE;
 }
 
@@ -1108,18 +1179,17 @@ static gboolean node_is_empty (Node *node)
 }
 
 
-static gboolean
+static void
 create_menu_item (MooUIXML       *xml,
                   Toplevel       *toplevel,
                   GtkMenuShell   *menu,
-                  MooActionGroup *actions,
-                  GtkAccelGroup  *accel_group,
-                  Node           *node)
+                  Node           *node,
+                  int             index)
 {
     GtkWidget *menu_item = NULL;
     Item *item;
 
-    g_return_val_if_fail (node != NULL && node->type == ITEM, FALSE);
+    g_return_if_fail (node != NULL && node->type == ITEM);
 
     item = (Item*) node;
 
@@ -1127,13 +1197,19 @@ create_menu_item (MooUIXML       *xml,
     {
         MooAction *action;
 
-        g_return_val_if_fail (actions != NULL, FALSE);
+        g_return_if_fail (toplevel->actions != NULL);
 
-        action = moo_action_group_get_action (actions, item->action);
-        g_return_val_if_fail (action != NULL, FALSE);
+        action = moo_action_group_get_action (toplevel->actions, item->action);
+
+        if (!action)
+        {
+            g_critical ("%s: could not find action '%s'",
+                        G_STRLOC, item->action);
+            return;
+        }
 
         if (action->dead)
-            return TRUE;
+            return;
 
         menu_item = moo_action_create_menu_item (action);
     }
@@ -1162,24 +1238,22 @@ create_menu_item (MooUIXML       *xml,
             gtk_widget_show (menu_item);
     }
 
-    g_return_val_if_fail (menu_item != NULL, FALSE);
+    g_return_if_fail (menu_item != NULL);
 
-    gtk_menu_shell_append (menu, menu_item);
-    connect_widget (menu_item, xml, toplevel, node);
-    connect_item (menu_item, xml);
+    gtk_menu_shell_insert (menu, menu_item, index);
+    xml_add_widget (xml, menu_item, toplevel, node);
+    xml_add_item_widget (xml, menu_item);
 
     if (!node_is_empty (node))
     {
         GtkWidget *submenu = gtk_menu_new ();
         /* XXX empty menu */
         gtk_widget_show (submenu);
-        gtk_menu_set_accel_group (GTK_MENU (submenu), accel_group);
+        gtk_menu_set_accel_group (GTK_MENU (submenu), toplevel->accel_group);
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
-        return fill_menu_shell (xml, toplevel, node, GTK_MENU_SHELL (submenu),
-                                actions, accel_group);
+        fill_menu_shell (xml, toplevel, node,
+                         GTK_MENU_SHELL (submenu));
     }
-
-    return TRUE;
 }
 
 
@@ -1223,8 +1297,8 @@ toplevel_get_widget (Toplevel  *toplevel,
 
 
 static void
-check_separators (Toplevel       *toplevel,
-                  Node           *parent)
+update_separators (Node           *parent,
+                   Toplevel       *toplevel)
 {
     GSList *children, *l;
     Node *separator = NULL;
@@ -1282,11 +1356,8 @@ static gboolean
 fill_menu_shell (MooUIXML       *xml,
                  Toplevel       *toplevel,
                  Node           *menu_node,
-                 GtkMenuShell   *menu,
-                 MooActionGroup *actions,
-                 GtkAccelGroup  *accel_group)
+                 GtkMenuShell   *menu)
 {
-    gboolean result = TRUE;
     GSList *children;
 
     children = node_list_children (menu_node);
@@ -1298,11 +1369,10 @@ fill_menu_shell (MooUIXML       *xml,
         switch (node->type)
         {
             case MOO_UI_NODE_ITEM:
-                result = create_menu_item (xml, toplevel, menu,
-                                           actions, accel_group, node);
+                create_menu_item (xml, toplevel, menu, node, -1);
                 break;
             case MOO_UI_NODE_SEPARATOR:
-                create_menu_separator (xml, toplevel, menu, node);
+                create_menu_separator (xml, toplevel, menu, node, -1);
                 break;
 
             default:
@@ -1310,13 +1380,10 @@ fill_menu_shell (MooUIXML       *xml,
                            G_STRLOC, NODE_TYPE_NAME[node->type]);
                 return FALSE;
         }
-
-        if (!result)
-            return FALSE;
     }
     SLIST_FOREACH_END;
 
-    check_separators (toplevel, menu_node);
+    update_separators (menu_node, toplevel);
 
     return TRUE;
 }
@@ -1325,28 +1392,28 @@ fill_menu_shell (MooUIXML       *xml,
 static gboolean
 create_menu_shell (MooUIXML       *xml,
                    Toplevel       *toplevel,
-                   MooUIWidgetType type,
-                   MooActionGroup *actions,
-                   GtkAccelGroup  *accel_group)
+                   MooUIWidgetType type)
 {
     g_return_val_if_fail (toplevel != NULL, FALSE);
     g_return_val_if_fail (toplevel->widget == NULL, FALSE);
     g_return_val_if_fail (toplevel->node != NULL, FALSE);
 
     if (type == MOO_UI_MENUBAR)
+    {
         toplevel->widget = gtk_menu_bar_new ();
+    }
     else
     {
         toplevel->widget = gtk_menu_new ();
-        gtk_menu_set_accel_group (GTK_MENU (toplevel->widget), accel_group);
+        gtk_menu_set_accel_group (GTK_MENU (toplevel->widget),
+                                  toplevel->accel_group);
     }
 
-    connect_toplevel (xml, toplevel);
+    xml_connect_toplevel (xml, toplevel);
 
     return fill_menu_shell (xml, toplevel,
                             toplevel->node,
-                            GTK_MENU_SHELL (toplevel->widget),
-                            actions, accel_group);
+                            GTK_MENU_SHELL (toplevel->widget));
 }
 
 
@@ -1354,11 +1421,12 @@ static gboolean
 create_tool_separator (MooUIXML       *xml,
                        Toplevel       *toplevel,
                        GtkToolbar     *toolbar,
-                       Node           *node)
+                       Node           *node,
+                       int             index)
 {
     GtkToolItem *item = gtk_separator_tool_item_new ();
-    gtk_toolbar_insert (toolbar, item, -1);
-    connect_widget (GTK_WIDGET (item), xml, toplevel, node);
+    gtk_toolbar_insert (toolbar, item, index);
+    xml_add_widget (xml, GTK_WIDGET (item), toplevel, node);
     return TRUE;
 }
 
@@ -1367,8 +1435,8 @@ static gboolean
 create_tool_item (MooUIXML       *xml,
                   Toplevel       *toplevel,
                   GtkToolbar     *toolbar,
-                  MooActionGroup *actions,
-                  Node           *node)
+                  Node           *node,
+                  int             index)
 {
     GtkWidget *tool_item = NULL;
     Item *item;
@@ -1381,15 +1449,15 @@ create_tool_item (MooUIXML       *xml,
     {
         MooAction *action;
 
-        g_return_val_if_fail (actions != NULL, FALSE);
+        g_return_val_if_fail (toplevel->actions != NULL, FALSE);
 
-        action = moo_action_group_get_action (actions, item->action);
+        action = moo_action_group_get_action (toplevel->actions, item->action);
         g_return_val_if_fail (action != NULL, FALSE);
 
         if (action->dead)
             return TRUE;
 
-        tool_item = moo_action_create_tool_item (action, toolbar, -1);
+        tool_item = moo_action_create_tool_item (action, toolbar, index);
     }
     else
     {
@@ -1399,8 +1467,8 @@ create_tool_item (MooUIXML       *xml,
 
     g_return_val_if_fail (tool_item != NULL, FALSE);
 
-    connect_widget (tool_item, xml, toplevel, node);
-    connect_item (tool_item, xml);
+    xml_add_widget (xml, tool_item, toplevel, node);
+    xml_add_item_widget (xml, tool_item);
 
     return TRUE;
 }
@@ -1410,8 +1478,7 @@ static gboolean
 fill_toolbar (MooUIXML       *xml,
               Toplevel       *toplevel,
               Node           *toolbar_node,
-              GtkToolbar     *toolbar,
-              MooActionGroup *actions)
+              GtkToolbar     *toolbar)
 {
     gboolean result = TRUE;
     GSList *children;
@@ -1425,11 +1492,10 @@ fill_toolbar (MooUIXML       *xml,
         switch (node->type)
         {
             case MOO_UI_NODE_ITEM:
-                result = create_tool_item (xml, toplevel, toolbar,
-                                           actions, node);
+                result = create_tool_item (xml, toplevel, toolbar, node, -1);
                 break;
             case MOO_UI_NODE_SEPARATOR:
-                create_tool_separator (xml, toplevel, toolbar, node);
+                create_tool_separator (xml, toplevel, toolbar, node, -1);
                 break;
 
             default:
@@ -1443,7 +1509,7 @@ fill_toolbar (MooUIXML       *xml,
     }
     SLIST_FOREACH_END;
 
-    check_separators (toplevel, toolbar_node);
+    update_separators (toolbar_node, toplevel);
 
     return TRUE;
 }
@@ -1451,20 +1517,18 @@ fill_toolbar (MooUIXML       *xml,
 
 static gboolean
 create_toolbar (MooUIXML       *xml,
-                Toplevel       *toplevel,
-                MooActionGroup *actions)
+                Toplevel       *toplevel)
 {
     g_return_val_if_fail (toplevel != NULL, FALSE);
     g_return_val_if_fail (toplevel->widget == NULL, FALSE);
     g_return_val_if_fail (toplevel->node != NULL, FALSE);
 
     toplevel->widget = gtk_toolbar_new ();
-    connect_toplevel (xml, toplevel);
+    xml_connect_toplevel (xml, toplevel);
 
     return fill_toolbar (xml, toplevel,
                          toplevel->node,
-                         GTK_TOOLBAR (toplevel->widget),
-                         actions);
+                         GTK_TOOLBAR (toplevel->widget));
 }
 
 
@@ -1499,27 +1563,25 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
         return NULL;
     }
 
-    toplevel = toplevel_new (node);
+    toplevel = toplevel_new (node, actions, accel_group);
     xml->priv->toplevels = g_slist_append (xml->priv->toplevels, toplevel);
 
     switch (type)
     {
         case MOO_UI_MENUBAR:
-            result = create_menu_shell (xml, toplevel, MOO_UI_MENUBAR,
-                                        actions, accel_group);
+            result = create_menu_shell (xml, toplevel, MOO_UI_MENUBAR);
             break;
         case MOO_UI_MENU:
-            result = create_menu_shell (xml, toplevel, MOO_UI_MENU,
-                                        actions, accel_group);
+            result = create_menu_shell (xml, toplevel, MOO_UI_MENU);
             break;
         case MOO_UI_TOOLBAR:
-            result = create_toolbar (xml, toplevel, actions);
+            result = create_toolbar (xml, toplevel);
             break;
     }
 
     if (!result)
     {
-        toplevel_delete (xml, toplevel);
+        xml_delete_toplevel (xml, toplevel);
         return NULL;
     }
 
@@ -1527,13 +1589,84 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
 }
 
 
-static void
-toplevel_add_node (G_GNUC_UNUSED MooUIXML *xml,
-                   G_GNUC_UNUSED Toplevel *toplevel,
-                   G_GNUC_UNUSED Node     *node)
+static Node*
+effective_parent (Node *node)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    Node *parent;
+    g_return_val_if_fail (node != NULL, NULL);
+    parent = node->parent;
+    while (parent && parent->type == PLACEHOLDER)
+        parent = parent->parent;
+    return parent;
 }
+
+
+static int
+effective_index (Node *parent,
+                 Node *node)
+{
+    GSList *children;
+    int index;
+    g_return_val_if_fail (effective_parent (node) == parent, -1);
+    children = node_list_children (parent);
+    index = g_slist_index (children, node);
+    g_slist_free (children);
+    g_return_val_if_fail (index >= 0, -1);
+    return index;
+}
+
+
+static void
+toplevel_add_node (MooUIXML *xml,
+                   Toplevel *toplevel,
+                   Node     *node)
+{
+    g_return_if_fail (GTK_IS_WIDGET (toplevel->widget));
+    g_return_if_fail (node->type == ITEM);
+    g_return_if_fail (node_is_ancestor (node, toplevel->node));
+
+    if (GTK_IS_TOOLBAR (toplevel->widget))
+    {
+        g_return_if_fail (effective_parent (node) == toplevel->node);
+        create_tool_item (xml, toplevel,
+                          GTK_TOOLBAR (toplevel->widget),
+                          node, effective_index (toplevel->node, node));
+        update_separators (toplevel->node, toplevel);
+    }
+    else if (GTK_IS_MENU_SHELL (toplevel->widget))
+    {
+        GtkWidget *parent_widget, *menu_shell;
+        Node *parent = effective_parent (node);
+
+        g_return_if_fail (parent != NULL);
+        parent_widget = toplevel_get_widget (toplevel, parent);
+        g_return_if_fail (parent_widget != NULL);
+
+        if (GTK_IS_MENU_SHELL (parent_widget))
+        {
+            menu_shell = parent_widget;
+        }
+        else
+        {
+            g_return_if_fail (GTK_IS_MENU_ITEM (parent_widget));
+            menu_shell = gtk_menu_item_get_submenu (GTK_MENU_ITEM (parent_widget));
+            if (!menu_shell)
+            {
+                menu_shell = gtk_menu_new ();
+                gtk_widget_show (menu_shell);
+                gtk_menu_item_set_submenu (GTK_MENU_ITEM (parent_widget), menu_shell);
+            }
+        }
+
+        create_menu_item (xml, toplevel, GTK_MENU_SHELL (menu_shell),
+                          node, effective_index (toplevel->node, node));
+    }
+    else
+    {
+        g_return_if_reached ();
+    }
+}
+
 
 static void
 toplevel_remove_node (G_GNUC_UNUSED MooUIXML *xml,
@@ -1568,7 +1701,7 @@ update_widgets (MooUIXML       *xml,
                 Toplevel *toplevel = l->data;
 
                 if (node_is_ancestor (toplevel->node, node))
-                    toplevel_delete (xml, toplevel);
+                    xml_delete_toplevel (xml, toplevel);
                 else if (node_is_ancestor (node, toplevel->node))
                     toplevel_remove_node (xml, toplevel, node);
             }
