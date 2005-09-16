@@ -2160,6 +2160,40 @@ update_widgets (MooUIXML       *xml,
 static void
 moo_ui_xml_finalize (GObject *object)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    MooUIXML *xml = MOO_UI_XML (object);
+
+    SLIST_FOREACH (xml->priv->toplevels, t)
+    {
+        Toplevel *toplevel = t->data;
+        GSList *widgets = hash_table_list_values (toplevel->children);
+
+        SLIST_FOREACH (widgets, w)
+        {
+            GObject *widget = G_OBJECT (w->data);
+
+            g_object_set_qdata (widget, NODE_QUARK, NULL);
+            g_object_set_qdata (widget, TOPLEVEL_QUARK, NULL);
+            g_signal_handlers_disconnect_by_func (widget, (gpointer) widget_destroyed, xml);
+            g_signal_handlers_disconnect_by_func (widget, (gpointer) visibility_notify, xml);
+        }
+        SLIST_FOREACH_END;
+
+        g_slist_free (widgets);
+        toplevel_free (toplevel);
+    }
+    SLIST_FOREACH_END;
+
+    SLIST_FOREACH (xml->priv->merged_ui, m)
+    {
+        Merge *merge = m->data;
+        g_slist_free (merge->nodes);
+        g_free (merge);
+    }
+    SLIST_FOREACH_END;
+
+    g_slist_free (xml->priv->toplevels);
+    g_slist_free (xml->priv->merged_ui);
+    node_free (xml->priv->ui);
+
     G_OBJECT_CLASS(moo_ui_xml_parent_class)->finalize (object);
 }
