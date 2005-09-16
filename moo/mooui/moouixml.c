@@ -1668,12 +1668,43 @@ toplevel_add_node (MooUIXML *xml,
 }
 
 
+static GSList*
+node_list_all_children (Node *node)
+{
+    GSList *list, *l;
+
+    g_return_val_if_fail (node != NULL, NULL);
+
+    list = g_slist_append (NULL, node);
+
+    for (l = node->children; l != NULL; l = l->next)
+        list = g_slist_append (list, node_list_all_children (l->data));
+
+    return list;
+}
+
+
 static void
 toplevel_remove_node (G_GNUC_UNUSED MooUIXML *xml,
-                      G_GNUC_UNUSED Toplevel *toplevel,
-                      G_GNUC_UNUSED Node     *node)
+                      Toplevel *toplevel,
+                      Node     *node)
 {
-    g_message ("%s: implement me", G_STRLOC);
+    GSList *children, *l;
+
+    g_return_if_fail (node != toplevel->node);
+    g_return_if_fail (node_is_ancestor (node, toplevel->node));
+
+    children = node_list_all_children (node);
+
+    for (l = children; l != NULL; l = l->next)
+    {
+        GtkWidget *widget = g_hash_table_lookup (toplevel->children, node);
+
+        if (widget)
+            gtk_widget_destroy (widget);
+    }
+
+    g_slist_free (children);
 }
 
 
