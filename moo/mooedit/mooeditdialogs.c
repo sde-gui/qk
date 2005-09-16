@@ -31,7 +31,8 @@ moo_edit_open_dialog (GtkWidget      *widget,
     GtkWidget *dialog;
     GSList *filenames, *infos = NULL, *l;
 
-    start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), NULL);
+    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
     dialog = moo_file_dialog_create (widget, MOO_DIALOG_FILE_OPEN_EXISTING,
                                      TRUE, "Open", start);
 
@@ -52,7 +53,7 @@ moo_edit_open_dialog (GtkWidget      *widget,
     infos = g_slist_reverse (infos);
 
     new_start = g_path_get_dirname (filenames->data);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
+    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
     g_free (new_start);
 
     gtk_widget_destroy (dialog);
@@ -72,10 +73,11 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     GtkWidget *dialog;
     MooEditFileInfo *file_info;
 
-    start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), NULL);
+    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
 
     if (!start)
-        start = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+        start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
 
     dialog = moo_file_dialog_create (GTK_WIDGET (edit), MOO_DIALOG_FILE_SAVE,
                                      FALSE, title, start);
@@ -94,7 +96,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     file_info = moo_edit_file_info_new (filename, NULL);
 
     new_start = g_path_get_dirname (filename);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
+    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
     g_free (new_start);
 
     gtk_widget_destroy (dialog);
