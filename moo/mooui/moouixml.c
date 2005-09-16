@@ -1144,11 +1144,20 @@ moo_ui_xml_remove_node (MooUIXML       *xml,
     parent = node->parent;
     parent->children = g_slist_remove (parent->children, node);
     node->parent = NULL;
+
+    SLIST_FOREACH (xml->priv->toplevels, l)
+    {
+        Toplevel *toplevel = l->data;
+        if (node_is_ancestor (parent, toplevel->node))
+            update_separators (parent, toplevel);
+    }
+    SLIST_FOREACH_END;
+
     node_free (node);
 }
 
 
- void
+static void
 merge_add_node (Merge *merge,
                 Node  *added)
 {
@@ -1168,7 +1177,7 @@ merge_add_node (Merge *merge,
 }
 
 
- void
+static void
 merge_remove_node (Merge          *merge,
                    Node           *removed)
 {
@@ -2076,7 +2085,8 @@ toplevel_add_node (MooUIXML *xml,
         }
 
         create_menu_item (xml, toplevel, GTK_MENU_SHELL (menu_shell),
-                          node, effective_index (toplevel->node, node));
+                          node, effective_index (parent, node));
+        update_separators (parent, toplevel);
     }
     else
     {

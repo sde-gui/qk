@@ -14,6 +14,7 @@
 #include "cproject.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/mooprefsdialog.h"
 #include "mooui/moouiobject.h"
 #include "mooui/moomenuaction.h"
 #include <string.h>
@@ -278,10 +279,23 @@ cproject_plugin_deinit (CProjectPlugin *plugin)
 {
     MooEditor *editor = moo_editor_instance ();
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
     if (plugin->ui_merge_id)
         moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
     plugin->ui_merge_id = 0;
+
+    moo_ui_object_class_remove_action (klass, "NewProject");
+    moo_ui_object_class_remove_action (klass, "OpenProject");
+    moo_ui_object_class_remove_action (klass, "OpenRecentProject");
+    moo_ui_object_class_remove_action (klass, "CloseProject");
+    moo_ui_object_class_remove_action (klass, "ProjectOptions");
+    moo_ui_object_class_remove_action (klass, "BuildConfiguration");
+    moo_ui_object_class_remove_action (klass, "BuildProject");
+    moo_ui_object_class_remove_action (klass, "CompileFile");
+    moo_ui_object_class_remove_action (klass, "Execute");
+
+    g_type_class_unref (klass);
 }
 
 
@@ -344,12 +358,16 @@ cproject_plugin_detach (CProjectPlugin             *plugin,
 {
     g_return_if_fail (plugin->window == window);
 
+    cproject_close_project (plugin);
+
     g_signal_handlers_disconnect_by_func (plugin->window,
                                           (gpointer) new_doc,
                                           plugin);
     g_signal_handlers_disconnect_by_func (plugin->window,
                                           (gpointer) cproject_update_filelist,
                                           plugin);
+
+    moo_edit_window_remove_pane (window, CPROJECT_PLUGIN_ID);
 
     plugin->window = NULL;
     plugin->output = NULL;
@@ -642,4 +660,11 @@ cproject_build_project (CProjectPlugin *plugin)
                                    COMMAND_BUILD_PROJECT);
     run_command (plugin, command);
     g_free (command);
+}
+
+
+GtkWidget*
+cproject_plugin_create_prefs_page (G_GNUC_UNUSED CProjectPlugin *plugin)
+{
+    return moo_prefs_dialog_page_new ("CProject", GTK_STOCK_PREFERENCES);
 }

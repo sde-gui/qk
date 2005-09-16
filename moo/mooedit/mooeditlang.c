@@ -354,7 +354,13 @@ void                 moo_edit_lang_set_style        (MooEditLang    *lang,
     /* 'master copies' of tags are not stored in lang->priv->style_id_to_tags
         because of weak_ref issues */
     m = g_slist_find_custom (lang->priv->tags, style_id, (GCompareFunc) strcmp);
-    g_return_if_fail (m != NULL);
+
+    if (!m)
+    {
+        g_message ("%s: fixeme fixme", G_STRLOC);
+        return;
+    }
+
     gtk_source_tag_set_style (GTK_SOURCE_TAG (m->data), style);
 }
 

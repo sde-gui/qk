@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 7
+#define MOO_PLUGIN_CURRENT_VERSION 9
 
 
 #define MOO_TYPE_PLUGIN              (moo_plugin_get_type ())
@@ -47,17 +47,19 @@ typedef struct _MooWindowPlugin      MooWindowPlugin;
 typedef struct _MooWindowPluginClass MooWindowPluginClass;
 
 
-typedef gboolean (*MooPluginModuleInitFunc)     (void);
+typedef gboolean    (*MooPluginModuleInitFunc)     (void);
 
-typedef gboolean (*MooPluginInitFunc)           (MooPlugin      *plugin);
-typedef void     (*MooPluginDeinitFunc)         (MooPlugin      *plugin);
-typedef void     (*MooPluginAttachFunc)         (MooPlugin      *plugin,
-                                                 MooEditWindow  *window);
-typedef void     (*MooPluginDetachFunc)         (MooPlugin      *plugin,
-                                                 MooEditWindow  *window);
+typedef gboolean    (*MooPluginInitFunc)           (MooPlugin      *plugin);
+typedef void        (*MooPluginDeinitFunc)         (MooPlugin      *plugin);
+typedef void        (*MooPluginAttachFunc)         (MooPlugin      *plugin,
+                                                    MooEditWindow  *window);
+typedef void        (*MooPluginDetachFunc)         (MooPlugin      *plugin,
+                                                    MooEditWindow  *window);
 
-typedef gboolean (*MooWindowPluginCreateFunc)   (MooWindowPlugin *wplugin);
-typedef void     (*MooWindowPluginDestroyFunc)  (MooWindowPlugin *wplugin);
+typedef GtkWidget  *(*MooPluginPrefsPageFunc)      (MooPlugin      *plugin);
+
+typedef gboolean    (*MooWindowPluginCreateFunc)   (MooWindowPlugin *wplugin);
+typedef void        (*MooWindowPluginDestroyFunc)  (MooWindowPlugin *wplugin);
 
 
 struct _MooPluginParams
@@ -110,6 +112,7 @@ struct _MooPluginClass
     MooPluginDeinitFunc deinit;
     MooPluginAttachFunc attach;
     MooPluginDetachFunc detach;
+    MooPluginPrefsPageFunc create_prefs_page;
 };
 
 struct _MooWindowPluginClass
@@ -135,9 +138,15 @@ MooPlugin  *moo_plugin_get              (GType           type);
 gboolean    moo_plugin_registered       (GType           type);
 
 gpointer    moo_plugin_lookup           (const char     *plugin_id);
+/* list of MooPlugin*; list must be freed */
 GSList     *moo_list_plugins            (void);
 
-const char *moo_plugin_get_id           (MooPlugin      *plugin);
+const char *moo_plugin_id               (MooPlugin      *plugin);
+
+const char *moo_plugin_name             (MooPlugin      *plugin);
+const char *moo_plugin_description      (MooPlugin      *plugin);
+const char *moo_plugin_author           (MooPlugin      *plugin);
+const char *moo_plugin_version          (MooPlugin      *plugin);
 
 gpointer    moo_window_plugin_lookup    (const char     *plugin_id,
                                          MooEditWindow  *window);
@@ -146,6 +155,8 @@ void        moo_plugin_read_dir         (const char     *dir);
 
 void        _moo_window_attach_plugins  (MooEditWindow  *window);
 void        _moo_plugin_detach_plugins  (MooEditWindow  *window);
+
+void        _moo_plugin_attach_prefs    (GtkWidget      *prefs_dialog);
 
 
 G_END_DECLS

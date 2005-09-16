@@ -78,6 +78,7 @@ libmooedit_la_SOURCES =     \
     mootextview.h           \
     mooeditgotoline-glade.h \
     mooeditfind-glade.h     \
+    moopluginprefs-glade.h  \
     mooeditprefs-glade.h
 
 if MOO_USE_XML
@@ -90,6 +91,7 @@ EXTRA_DIST =                \
 BUILT_SOURCES =             \
     mooeditgotoline-glade.h \
     mooeditfind-glade.h     \
+    moopluginprefs-glade.h  \
     mooeditprefs-glade.h
 
 GLADE = $(srcdir)/glade
@@ -106,3 +108,7 @@ mooeditfind-glade.h: $(GLADE)/mooeditfind.glade
 mooeditprefs-glade.h: $(GLADE)/mooeditprefs.glade
 	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(GLADE)/mooeditprefs.glade \
 		> mooeditprefs-glade.h
+
+moopluginprefs-glade.h: $(GLADE)/moopluginprefs.glade
+	sh $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(GLADE)/moopluginprefs.glade \
+		> moopluginprefs-glade.h

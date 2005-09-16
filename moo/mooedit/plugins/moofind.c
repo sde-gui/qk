@@ -772,6 +772,8 @@ execute_find (const char     *pattern,
 static void
 find_window_plugin_destroy (WindowStuff *stuff)
 {
+    MooEditWindow *window = MOO_WINDOW_PLUGIN(stuff)->window;
+
     g_signal_handlers_disconnect_by_func (stuff->output,
                                           (gpointer) command_exit,
                                           stuff);
@@ -793,6 +795,8 @@ find_window_plugin_destroy (WindowStuff *stuff)
     if (stuff->find_completion)
         g_object_unref (stuff->find_completion);
     g_free (stuff->current_file);
+
+    moo_edit_window_remove_pane (window, FIND_PLUGIN_ID);
 }
 
 
@@ -866,12 +870,12 @@ MOO_WINDOW_PLUGIN_DEFINE (FindWindowPlugin, find_window_plugin,
                           find_window_plugin_create,
                           find_window_plugin_destroy);
 MOO_PLUGIN_DEFINE_PARAMS (info, TRUE, FIND_PLUGIN_ID,
-                          FIND_PLUGIN_ID, FIND_PLUGIN_ID,
+                          "Find", "Finds everything",
                           "Yevgen Muntyan <muntyan@tamu.edu>",
                           MOO_VERSION);
 MOO_PLUGIN_DEFINE (FindPlugin, find_plugin,
                    find_plugin_init, find_plugin_deinit,
-                   NULL, NULL, info,
+                   NULL, NULL, NULL, info,
                    find_window_plugin_get_type ());
 
 

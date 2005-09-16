@@ -23,7 +23,7 @@ static MooPluginParams params__ = {                 \
     enabled__                                       \
 };                                                  \
                                                     \
-static MooPluginPrefsParams prefs_params__;         \
+static MooPluginPrefsParams prefs_params__ = {};    \
                                                     \
 static MooPluginInfo info = {                       \
     id__,                                           \
@@ -36,7 +36,7 @@ static MooPluginInfo info = {                       \
 };
 
 
-#define MOO_PLUGIN_DEFINE(PluginName,plugin_name,init__,deinit__,attach__,detach__,info__,WINDOW_PLUGIN_TYPE)   \
+#define MOO_PLUGIN_DEFINE(PluginName,plugin_name,init__,deinit__,attach__,detach__,prefs__,info__,WINDOW_PLUGIN_TYPE) \
                                                                     \
 static gpointer plugin_name##_parent_class;                         \
                                                                     \
@@ -55,6 +55,7 @@ plugin_name##_class_init (MooPluginClass *klass)                    \
     klass->deinit = (MooPluginDeinitFunc) deinit__;                 \
     klass->attach = (MooPluginAttachFunc) attach__;                 \
     klass->detach = (MooPluginDetachFunc) detach__;                 \
+    klass->create_prefs_page = (MooPluginPrefsPageFunc) prefs__;    \
 }                                                                   \
                                                                     \
 static void                                                         \

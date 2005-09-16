@@ -15,6 +15,7 @@
 #include "mooui/moouiobject.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/mooeditprefs.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/moopaneview.h"
 #include "mooutils/mooprefsdialog.h"
@@ -78,6 +79,11 @@ int main (int argc, char **argv)
 static void show_preferences (MooEditWindow *window)
 {
     GtkWidget *dialog = moo_prefs_dialog_new ("Preferences");
+
+    moo_prefs_dialog_append_page (MOO_PREFS_DIALOG (dialog),
+                                  moo_edit_prefs_page_new (moo_editor_instance()));
+    _moo_plugin_attach_prefs (dialog);
+
     moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (window));
 }
 

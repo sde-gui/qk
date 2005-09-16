@@ -52,6 +52,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_FIND_IN_FILES         "moo-find-in-files"
 #define MOO_STOCK_FIND_FILE             "moo-find-file"
 
+#define MOO_STOCK_PLUGINS               GTK_STOCK_PREFERENCES
+
 
 void        moo_create_stock_items          (void);
 GtkIconSize moo_get_icon_size_real_small    (void) G_GNUC_CONST;

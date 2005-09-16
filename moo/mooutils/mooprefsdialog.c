@@ -84,7 +84,7 @@ static void moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
     prefs_dialog_signals[APPLY] =
         g_signal_new ("apply",
                       G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION),
+                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                       G_STRUCT_OFFSET (MooPrefsDialogClass, apply),
                       NULL, NULL,
                       _moo_marshal_VOID__VOID,
@@ -398,6 +398,7 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
         path = gtk_tree_row_reference_get_path (ref);
         gtk_tree_model_get_iter (GTK_TREE_MODEL (dialog->store), &parent_iter, path);
         gtk_tree_store_insert (dialog->store, &iter, &parent_iter, position);
+        gtk_tree_path_free (path);
     }
     else
     {
@@ -420,15 +421,42 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
                         PAGE_COLUMN, page,
                         -1);
 
-    gtk_tree_path_free (path);
     path = gtk_tree_model_get_path (GTK_TREE_MODEL (dialog->store), &iter);
     ref = gtk_tree_row_reference_new (GTK_TREE_MODEL (dialog->store), path);
     g_object_set_data_full (G_OBJECT (page), "moo-prefs-dialog-row",
                             ref, (GDestroyNotify) gtk_tree_row_reference_free);
+
+    gtk_tree_path_free (path);
 
     g_free (label);
     g_free (icon_id);
 
     if (icon)
         g_object_unref (icon);
+}
+
+
+void
+moo_prefs_dialog_remove_page (MooPrefsDialog     *dialog,
+                              GtkWidget          *page)
+{
+    GtkTreeRowReference *ref;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+
+    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
+    g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
+
+    ref = g_object_get_data (G_OBJECT (page), "moo-prefs-dialog-row");
+    g_return_if_fail (ref && gtk_tree_row_reference_valid (ref));
+
+    path = gtk_tree_row_reference_get_path (ref);
+    gtk_tree_model_get_iter (GTK_TREE_MODEL (dialog->store), &iter, path);
+    gtk_tree_store_remove (dialog->store, &iter);
+
+    g_object_set_data (G_OBJECT (page), "moo-prefs-dialog-row", NULL);
+    gtk_tree_path_free (path);
+
+    gtk_notebook_remove_page (dialog->notebook,
+                              gtk_notebook_page_num (dialog->notebook, page));
 }

@@ -62,6 +62,8 @@ moo_edit_prefs_page_new (MooEditor *editor)
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
+    _moo_edit_set_default_settings ();
+
     page = moo_prefs_dialog_page_new_from_xml ("Editor",
                                                GTK_STOCK_EDIT,
                                                MOO_EDIT_PREFS_GLADE_UI,

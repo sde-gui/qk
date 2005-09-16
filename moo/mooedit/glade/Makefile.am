@@ -5,4 +5,5 @@
 EXTRA_DIST =                \
     mooeditgotoline.glade   \
     mooeditfind.glade       \
-    mooeditprefs.glade
+    mooeditprefs.glade      \
+    moopluginprefs.glade

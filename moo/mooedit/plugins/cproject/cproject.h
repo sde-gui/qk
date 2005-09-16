@@ -49,6 +49,7 @@ void        cproject_plugin_attach      (CProjectPlugin *plugin,
                                          MooEditWindow  *window);
 void        cproject_plugin_detach      (CProjectPlugin *plugin,
                                          MooEditWindow  *window);
+GtkWidget  *cproject_plugin_create_prefs_page (CProjectPlugin *plugin);
 
 void        cproject_load_prefs         (CProjectPlugin *plugin);
 void        cproject_save_prefs         (CProjectPlugin *plugin);

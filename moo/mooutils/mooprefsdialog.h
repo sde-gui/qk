@@ -57,6 +57,8 @@ void        moo_prefs_dialog_run            (MooPrefsDialog     *dialog,
 
 void        moo_prefs_dialog_append_page    (MooPrefsDialog     *dialog,
                                              GtkWidget          *page);
+void        moo_prefs_dialog_remove_page    (MooPrefsDialog     *dialog,
+                                             GtkWidget          *page);
 void        moo_prefs_dialog_insert_page    (MooPrefsDialog     *dialog,
                                              GtkWidget          *page,
                                              GtkWidget          *parent_page,
@@ -66,4 +68,3 @@ void        moo_prefs_dialog_insert_page    (MooPrefsDialog     *dialog,
 G_END_DECLS
 
 #endif /* __MOO_PREFS_DIALOG_H__ */
-
