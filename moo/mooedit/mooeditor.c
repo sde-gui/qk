@@ -754,6 +754,8 @@ void             moo_editor_open            (MooEditor      *editor,
         if (!moo_edit_load (loader, doc, info->filename, info->encoding, &error))
         {
             moo_edit_open_error_dialog (parent, error ? error->message : NULL);
+            if (error)
+                g_error_free (error);
         }
         else
         {
