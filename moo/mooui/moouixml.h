@@ -118,6 +118,11 @@ void        moo_ui_xml_add_ui_from_string   (MooUIXML       *xml,
 
 MooUINode  *moo_ui_xml_get_node             (MooUIXML       *xml,
                                              const char     *path);
+MooUINode  *moo_ui_xml_find_placeholder     (MooUIXML       *xml,
+                                             const char     *name);
+char       *moo_ui_node_get_path            (MooUINode      *node);
+MooUINode  *moo_ui_node_get_child           (MooUINode      *node,
+                                             const char     *path);
 
 GtkWidget  *moo_ui_xml_create_widget        (MooUIXML       *xml,
                                              MooUIWidgetType type,
@@ -126,12 +131,46 @@ GtkWidget  *moo_ui_xml_create_widget        (MooUIXML       *xml,
                                              GtkAccelGroup  *accel_group);
 
 guint       moo_ui_xml_new_merge_id         (MooUIXML       *xml);
+
 MooUINode  *moo_ui_xml_add_item             (MooUIXML       *xml,
                                              guint           merge_id,
                                              const char     *parent_path,
                                              const char     *name,
                                              const char     *action,
                                              int             position);
+
+void        moo_ui_xml_insert_after         (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             MooUINode      *parent,
+                                             MooUINode      *after,
+                                             const char     *markup);
+void        moo_ui_xml_insert_before        (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             MooUINode      *parent,
+                                             MooUINode      *before,
+                                             const char     *markup);
+void        moo_ui_xml_insert               (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             MooUINode      *parent,
+                                             int             position,
+                                             const char     *markup);
+
+void        moo_ui_xml_insert_markup_after  (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             const char     *parent_path,
+                                             const char     *after,
+                                             const char     *markup);
+void        moo_ui_xml_insert_markup_before (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             const char     *parent_path,
+                                             const char     *before,
+                                             const char     *markup);
+void        moo_ui_xml_insert_markup        (MooUIXML       *xml,
+                                             guint           merge_id,
+                                             const char     *parent_path,
+                                             int             position,
+                                             const char     *markup);
+
 void        moo_ui_xml_remove_ui            (MooUIXML       *xml,
                                              guint           merge_id);
 

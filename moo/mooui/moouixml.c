@@ -72,10 +72,22 @@ typedef enum {
 #define TOPLEVEL_QUARK (toplevel_quark ())
 #define NODE_QUARK (node_quark ())
 
+#define SLIST_FOREACH(list,var)                     \
+G_STMT_START {                                      \
+    GSList *var;                                    \
+    for (var = list; var != NULL; var = var->next)  \
+
+#define SLIST_FOREACH_END                           \
+} G_STMT_END
+
+
+/* walking nodes stops when func returns FALSE */
+typedef gboolean (*NodeForeachFunc) (Node       *node,
+                                     gpointer    data);
 
 static void     moo_ui_xml_finalize     (GObject        *object);
 
-static void     moo_ui_xml_add_markup   (MooUIXML       *xml,
+static void     xml_add_markup          (MooUIXML       *xml,
                                          MooMarkupNode  *mnode);
 
 static void     update_widgets          (MooUIXML       *xml,
@@ -88,6 +100,7 @@ static Node    *parse_widget            (MooMarkupNode  *mnode);
 static Node    *parse_placeholder       (MooMarkupNode  *mnode);
 static Node    *parse_item              (MooMarkupNode  *mnode);
 static Node    *parse_separator         (MooMarkupNode  *mnode);
+static gboolean node_check              (Node           *node);
 static gboolean placeholder_check       (Node           *node);
 static gboolean item_check              (Node           *node);
 static gboolean widget_check            (Node           *node);
@@ -108,7 +121,11 @@ static gboolean node_is_ancestor        (Node           *node,
                                          Node           *ancestor);
 static gboolean node_is_empty           (Node           *node);
 static GSList  *node_list_children      (Node           *ndoe);
+static GSList  *node_list_all_children  (Node           *ndoe);
 static void     node_free               (Node           *node);
+static void     node_foreach            (Node           *node,
+                                         NodeForeachFunc func,
+                                         gpointer        data);
 
 static void     merge_add_node          (Merge          *merge,
                                          Node           *node);
@@ -193,7 +210,7 @@ node_new (gsize size, NodeType type, const char *name)
 {
     Node *node = g_malloc0 (size);
     node->type = type;
-    node->name = g_strdup (name);
+    node->name = name ? g_strdup (name) : g_strdup ("");
     return node;
 }
 
@@ -344,8 +361,6 @@ item_new (const char *name,
 {
     Item *item;
 
-    g_return_val_if_fail (name && name[0], NULL);
-
     item = (Item*) NODE_NEW (Item, ITEM, name);
 
     item->action = g_strdup (action);
@@ -366,11 +381,8 @@ parse_item (MooMarkupNode *mnode)
 
     name = moo_markup_get_prop (mnode, "name");
 
-    if (!name || !name[0])
-    {
-        g_warning ("%s: item name missing", G_STRLOC);
-        return NULL;
-    }
+    if (!name)
+        name = moo_markup_get_prop (mnode, "action");
 
     item = item_new (name,
                      moo_markup_get_prop (mnode, "action"),
@@ -525,9 +537,32 @@ moo_ui_xml_add_ui_from_string (MooUIXML       *xml,
 
     for (child = ui_node->children; child != NULL; child = child->next)
         if (MOO_MARKUP_IS_ELEMENT (child))
-            moo_ui_xml_add_markup (xml, child);
+            xml_add_markup (xml, child);
 
     moo_markup_doc_unref (doc);
+}
+
+
+static gboolean
+node_check (Node *node)
+{
+    g_return_val_if_fail (node != NULL, FALSE);
+
+    switch (node->type)
+    {
+        case CONTAINER:
+            return container_check (node);
+        case WIDGET:
+            return widget_check (node);
+        case ITEM:
+            return item_check (node);
+        case SEPARATOR:
+            return TRUE;
+        case PLACEHOLDER:
+            return placeholder_check (node);
+    }
+
+    g_return_val_if_reached (FALSE);
 }
 
 
@@ -537,6 +572,28 @@ placeholder_check (Node *node)
     g_return_val_if_fail (node != NULL, FALSE);
     g_return_val_if_fail (node->type == PLACEHOLDER, FALSE);
     g_return_val_if_fail (node->name && node->name[0], FALSE);
+
+    SLIST_FOREACH (node->children, l)
+    {
+        Node *child = l->data;
+
+        switch (child->type)
+        {
+            case SEPARATOR:
+            case ITEM:
+            case PLACEHOLDER:
+                if (!node_check (child))
+                    return FALSE;
+                break;
+
+            default:
+                g_warning ("%s: invalid placeholder child type %s",
+                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                return FALSE;
+        }
+    }
+    SLIST_FOREACH_END;
+
     return TRUE;
 }
 
@@ -544,34 +601,30 @@ placeholder_check (Node *node)
 static gboolean
 item_check (Node *node)
 {
-    GSList *l;
-
     g_return_val_if_fail (node != NULL, FALSE);
     g_return_val_if_fail (node->type == ITEM, FALSE);
-    g_return_val_if_fail (node->name && node->name[0], FALSE);
+    g_return_val_if_fail (node->name != NULL, FALSE);
 
-    for (l = node->children; l != NULL; l = l->next)
+    SLIST_FOREACH (node->children, l)
     {
         Node *child = l->data;
 
         switch (child->type)
         {
             case SEPARATOR:
-                break;
             case ITEM:
-                if (!item_check (child))
-                    return FALSE;
-                break;
             case PLACEHOLDER:
-                if (!placeholder_check (child))
+                if (!node_check (child))
                     return FALSE;
                 break;
+
             default:
-                g_warning ("%s: invalid menu item type %s",
+                g_warning ("%s: invalid item child type %s",
                            G_STRLOC, NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
+    SLIST_FOREACH_END;
 
     return TRUE;
 }
@@ -580,34 +633,30 @@ item_check (Node *node)
 static gboolean
 widget_check (Node *node)
 {
-    GSList *l;
-
     g_return_val_if_fail (node != NULL, FALSE);
     g_return_val_if_fail (node->type == WIDGET, FALSE);
     g_return_val_if_fail (node->name && node->name[0], FALSE);
 
-    for (l = node->children; l != NULL; l = l->next)
+    SLIST_FOREACH (node->children, l)
     {
         Node *child = l->data;
 
         switch (child->type)
         {
             case SEPARATOR:
-                break;
             case ITEM:
-                if (!item_check (child))
-                    return FALSE;
-                break;
             case PLACEHOLDER:
-                if (!placeholder_check (child))
+                if (!node_check (child))
                     return FALSE;
                 break;
+
             default:
-                g_warning ("%s: invalid widget item type %s",
+                g_warning ("%s: invalid widget child type %s",
                            G_STRLOC, NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
+    SLIST_FOREACH_END;
 
     return TRUE;
 }
@@ -616,40 +665,37 @@ widget_check (Node *node)
 static gboolean
 container_check (Node *node)
 {
-    GSList *l;
-
     g_return_val_if_fail (node != NULL, FALSE);
     g_return_val_if_fail (node->type == CONTAINER, FALSE);
     g_return_val_if_fail (node->name && node->name[0], FALSE);
 
-    for (l = node->children; l != NULL; l = l->next)
+    SLIST_FOREACH (node->children, l)
     {
         Node *child = l->data;
 
         switch (child->type)
         {
             case CONTAINER:
-                if (!container_check (child))
-                    return FALSE;
-                break;
             case WIDGET:
-                if (!widget_check (child))
+                if (!node_check (child))
                     return FALSE;
                 break;
+
             default:
-                g_warning ("%s: invalid toplevel type %s",
+                g_warning ("%s: invalid widget child type %s",
                            G_STRLOC, NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
+    SLIST_FOREACH_END;
 
     return TRUE;
 }
 
 
- void
-moo_ui_xml_add_markup (MooUIXML       *xml,
-                       MooMarkupNode  *mnode)
+static void
+xml_add_markup (MooUIXML       *xml,
+                MooMarkupNode  *mnode)
 {
     Node *node = parse_markup (mnode);
 
@@ -707,11 +753,13 @@ moo_ui_xml_new_merge_id (MooUIXML *xml)
     merge->id = xml->priv->last_merge_id;
     merge->nodes = NULL;
 
+    xml->priv->merged_ui = g_slist_prepend (xml->priv->merged_ui, merge);
+
     return merge->id;
 }
 
 
- Merge*
+static Merge*
 lookup_merge (MooUIXML *xml,
               guint     merge_id)
 {
@@ -742,7 +790,9 @@ moo_ui_xml_add_item (MooUIXML       *xml,
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (parent_path != NULL, NULL);
-    g_return_val_if_fail (name && name[0], NULL);
+
+    if (!name || !name[0])
+        name = action;
 
     merge = lookup_merge (xml, merge_id);
     g_return_val_if_fail (merge != NULL, NULL);
@@ -774,16 +824,250 @@ moo_ui_xml_add_item (MooUIXML       *xml,
 }
 
 
-#define SLIST_FOREACH(list,var)                     \
-G_STMT_START {                                      \
-    GSList *var;                                    \
-    for (var = list; var != NULL; var = var->next)  \
+void
+moo_ui_xml_insert (MooUIXML       *xml,
+                   guint           merge_id,
+                   MooUINode      *parent,
+                   int             position,
+                   const char     *markup)
+{
+    Merge *merge;
+    GError *error = NULL;
+    MooMarkupDoc *doc;
+    MooMarkupNode *mchild;
+    int children_length;
 
-#define SLIST_FOREACH_END                           \
-} G_STMT_END
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (markup != NULL);
+    g_return_if_fail (!parent || node_is_ancestor (parent, xml->priv->ui));
+
+    merge = lookup_merge (xml, merge_id);
+    g_return_if_fail (merge != NULL);
+
+    if (!parent)
+        parent = xml->priv->ui;
+
+    if (parent->type == MOO_UI_NODE_SEPARATOR)
+    {
+        g_warning ("%s: can't add stuff to node of type %s",
+                   G_STRLOC, NODE_TYPE_NAME[parent->type]);
+        return;
+    }
+
+    doc = moo_markup_parse_memory (markup, -1, &error);
+
+    if (!doc)
+    {
+        g_warning ("%s: could not parse markup", G_STRLOC);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        return;
+    }
+
+    children_length = g_slist_length (parent->children);
+    if (position < 0 || position > children_length)
+        position = children_length;
+
+    for (mchild = doc->last; mchild != NULL; mchild = mchild->prev)
+    {
+        Node *node;
+
+        if (!MOO_MARKUP_IS_ELEMENT (mchild))
+            continue;
+
+        node = parse_markup (mchild);
+
+        if (!node)
+            continue;
+
+        if (!node_check (node))
+        {
+            node_free (node);
+            continue;
+        }
+
+        switch (node->type)
+        {
+            case WIDGET:
+            case CONTAINER:
+                if (parent->type != CONTAINER)
+                {
+                    g_warning ("%s: can not add node of type %s to node of type %s",
+                               G_STRLOC, NODE_TYPE_NAME[node->type],
+                               NODE_TYPE_NAME[parent->type]);
+                    node_free (node);
+                    continue;
+                }
+                break;
+
+            case ITEM:
+            case PLACEHOLDER:
+            case SEPARATOR:
+                if (parent->type == SEPARATOR || parent->type == CONTAINER)
+                {
+                    g_warning ("%s: can not add node of type %s to node of type %s",
+                               G_STRLOC, NODE_TYPE_NAME[node->type],
+                               NODE_TYPE_NAME[parent->type]);
+                    node_free (node);
+                    continue;
+                }
+                break;
+        }
+
+        /* XXX check names? */
+        node->parent = parent;
+        parent->children = g_slist_insert (parent->children, node, position);
+
+        merge_add_node (merge, node);
+        update_widgets (xml, UPDATE_ADD_NODE, node);
+    }
+}
 
 
- gboolean
+void
+moo_ui_xml_insert_after (MooUIXML       *xml,
+                         guint           merge_id,
+                         MooUINode      *parent,
+                         MooUINode      *after,
+                         const char     *markup)
+{
+    int position;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    if (!parent)
+        parent = xml->priv->ui;
+
+    g_return_if_fail (!after || after->parent == parent);
+
+    if (!after)
+        position = 0;
+    else
+        position = g_slist_index (parent->children, after) + 1;
+
+    moo_ui_xml_insert (xml, merge_id, parent, position, markup);
+}
+
+
+void
+moo_ui_xml_insert_before (MooUIXML       *xml,
+                          guint           merge_id,
+                          MooUINode      *parent,
+                          MooUINode      *before,
+                          const char     *markup)
+{
+    int position;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+
+    if (!parent)
+        parent = xml->priv->ui;
+
+    g_return_if_fail (!before || before->parent == parent);
+
+    if (!before)
+        position = g_slist_length (parent->children);
+    else
+        position = g_slist_index (parent->children, before);
+
+    moo_ui_xml_insert (xml, merge_id, parent, position, markup);
+}
+
+
+void
+moo_ui_xml_insert_markup_after (MooUIXML       *xml,
+                                guint           merge_id,
+                                const char     *parent_path,
+                                const char     *after_name,
+                                const char     *markup)
+{
+    Node *parent = NULL, *after = NULL;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (markup != NULL);
+
+    if (parent_path)
+    {
+        parent = moo_ui_xml_get_node (xml, parent_path);
+        g_return_if_fail (parent != NULL);
+    }
+    else
+    {
+        parent = xml->priv->ui;
+    }
+
+    if (after_name)
+    {
+        after = moo_ui_node_get_child (parent, after_name);
+        g_return_if_fail (after != NULL);
+    }
+
+    moo_ui_xml_insert_after (xml, merge_id, parent, after, markup);
+}
+
+
+void
+moo_ui_xml_insert_markup_before (MooUIXML       *xml,
+                                 guint           merge_id,
+                                 const char     *parent_path,
+                                 const char     *before_name,
+                                 const char     *markup)
+{
+    Node *parent = NULL, *before = NULL;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (markup != NULL);
+
+    if (parent_path)
+    {
+        parent = moo_ui_xml_get_node (xml, parent_path);
+        g_return_if_fail (parent != NULL);
+    }
+    else
+    {
+        parent = xml->priv->ui;
+    }
+
+    if (before_name)
+    {
+        before = moo_ui_node_get_child (parent, before_name);
+        g_return_if_fail (before != NULL);
+    }
+
+    moo_ui_xml_insert_after (xml, merge_id, parent, before, markup);
+}
+
+
+void
+moo_ui_xml_insert_markup (MooUIXML       *xml,
+                          guint           merge_id,
+                          const char     *parent_path,
+                          int             position,
+                          const char     *markup)
+{
+    Node *parent = NULL;
+
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (markup != NULL);
+
+    if (parent_path)
+    {
+        parent = moo_ui_xml_get_node (xml, parent_path);
+        g_return_if_fail (parent != NULL);
+    }
+    else
+    {
+        parent = xml->priv->ui;
+    }
+
+    moo_ui_xml_insert (xml, merge_id, parent, position, markup);
+}
+
+
+static gboolean
 node_is_ancestor (Node           *node,
                   Node           *ancestor)
 {
@@ -897,20 +1181,95 @@ MooUINode*
 moo_ui_xml_get_node (MooUIXML       *xml,
                      const char     *path)
 {
-    char **pieces, **p;
-    MooUINode *node;
-
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path != NULL, NULL);
 
-    pieces = g_strsplit (path, "/", 0);
-    g_return_val_if_fail (pieces != NULL, NULL);
+    return moo_ui_node_get_child (xml->priv->ui, path);
+}
 
-    node = xml->priv->ui;
+
+static gboolean
+find_placeholder_func (Node    *node,
+                       gpointer user_data)
+{
+    struct {
+        Node *found;
+        const char *name;
+    } *data = user_data;
+
+    if (node->type != PLACEHOLDER)
+        return TRUE;
+
+    if (!strcmp (node->name, data->name))
+    {
+        data->found = node;
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+MooUINode*
+moo_ui_xml_find_placeholder (MooUIXML       *xml,
+                             const char     *name)
+{
+    struct {
+        Node *found;
+        const char *name;
+    } data;
+
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    data.found = NULL;
+    data.name = name;
+    node_foreach (xml->priv->ui, find_placeholder_func, &data);
+
+    return data.found;
+}
+
+
+char*
+moo_ui_node_get_path (MooUINode *node)
+{
+    GString *path;
+
+    g_return_val_if_fail (node != NULL, NULL);
+
+    path = g_string_new (node->name);
+
+    while (node->parent && node->parent->parent)
+    {
+        node = node->parent;
+        g_string_prepend_c (path, '/');
+        g_string_prepend (path, node->name);
+    }
+
+    g_print ("path: %s\n", path->str);
+    return g_string_free (path, FALSE);
+}
+
+
+MooUINode*
+moo_ui_node_get_child (MooUINode      *node,
+                       const char     *path)
+{
+    char **pieces, **p;
+
+    g_return_val_if_fail (node != NULL, NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    pieces = g_strsplit (path, "/", 0);
+
+    if (!pieces)
+        return node;
 
     for (p = pieces; *p != NULL; ++p)
     {
         Node *child = NULL;
+
+        if (!**p)
+            continue;
 
         SLIST_FOREACH (node->children, l)
         {
@@ -1285,6 +1644,55 @@ node_list_children (Node *parent)
     }
 
     return g_slist_reverse (list);
+}
+
+
+static void
+real_foreach (Node    *node,
+              gpointer data)
+{
+    GSList *l;
+    struct {
+        NodeForeachFunc func;
+        gpointer func_data;
+        gboolean stop;
+    } *foreach_data = data;
+
+    if (foreach_data->stop)
+        return;
+
+    if (foreach_data->func (node, foreach_data->func_data))
+    {
+        foreach_data->stop = TRUE;
+        return;
+    }
+
+    for (l = node->children; l != NULL; l = l->next)
+    {
+        Node *child = l->data;
+
+        real_foreach (child, data);
+
+        if (foreach_data->stop)
+            return;
+    }
+}
+
+static void
+node_foreach (Node           *node,
+              NodeForeachFunc func,
+              gpointer        data)
+{
+    struct {
+        NodeForeachFunc func;
+        gpointer func_data;
+        gboolean stop;
+    } foreach_data = {func, data, FALSE};
+
+    g_return_if_fail (node != NULL);
+    g_return_if_fail (func != NULL);
+
+    real_foreach (node, &foreach_data);
 }
 
 

@@ -6,70 +6,70 @@
 
         <item name="File" label="_File">
             <separator/>
-            <item name="NewTab" action="NewTab"/>
+            <item action="NewTab"/>
             <separator/>
-            <item name="Open" action="Open"/>
-            <item name="OpenRecent" action="OpenRecent"/>
-            <item name="Save" action="Save"/>
-            <item name="SaveAs" action="SaveAs"/>
+            <item action="Open"/>
+            <item action="OpenRecent"/>
+            <item action="Save"/>
+            <item action="SaveAs"/>
             <separator/>
-            <item name="Reload" action="Reload"/>
+            <item action="Reload"/>
             <separator/>
-            <item name="Close" action="Close"/>
-            <item name="CloseAll" action="CloseAll"/>
+            <item action="Close"/>
+            <item action="CloseAll"/>
             <separator/>
-            <item name="Quit" action="Quit"/>
+            <item action="Quit"/>
             <separator/>
         </item>
 
         <item name="Edit" label="_Edit">
             <separator/>
-            <item name="Undo" action="Undo"/>
-            <item name="Redo" action="Redo"/>
+            <item action="Undo"/>
+            <item action="Redo"/>
             <separator/>
-            <item name="Cut" action="Cut"/>
-            <item name="Copy" action="Copy"/>
-            <item name="Paste" action="Paste"/>
-            <item name="Delete" action="Delete"/>
+            <item action="Cut"/>
+            <item action="Copy"/>
+            <item action="Paste"/>
+            <item action="Delete"/>
             <separator/>
-            <item name="SelectAll" action="SelectAll"/>
+            <item action="SelectAll"/>
             <separator/>
         </item>
 
         <item name="Search" label="_Search">
             <separator/>
-            <item name="Find" action="Find"/>
-            <item name="FindNext" action="FindNext"/>
-            <item name="FindPrevious" action="FindPrevious"/>
-            <item name="Replace" action="Replace"/>
+            <item action="Find"/>
+            <item action="FindNext"/>
+            <item action="FindPrevious"/>
+            <item action="Replace"/>
             <separator/>
-            <item name="GoToLine" action="GoToLine"/>
+            <item action="GoToLine"/>
             <separator/>
         </item>
 
         <item name="View" label="_View">
             <separator/>
-            <item name="PreviousTab" action="PreviousTab"/>
-            <item name="NextTab" action="NextTab"/>
+            <item action="PreviousTab"/>
+            <item action="NextTab"/>
             <separator/>
-            <item name="SyntaxMenu" action="SyntaxMenu"/>
+            <item action="SyntaxMenu"/>
             <separator/>
         </item>
 
         <item name="Settings" label="_Settings">
             <separator/>
-            <item name="ShowToolbar" action="ShowToolbar"/>
-            <item name="ToolbarStyle" action="ToolbarStyle"/>
+            <item action="ShowToolbar"/>
+            <item action="ToolbarStyle"/>
             <separator/>
-            <item name="ConfigureShortcuts" action="ConfigureShortcuts"/>
+            <item action="ConfigureShortcuts"/>
             <separator/>
-            <item name="Preferences" action="Preferences"/>
+            <item action="Preferences"/>
             <separator/>
         </item>
 
         <item name="Help" label="_Help">
             <separator/>
-            <item name="About" action="About"/>
+            <item action="About"/>
             <separator/>
         </item>
 
@@ -77,21 +77,21 @@
 
     <widget name="Toolbar">
         <separator/>
-        <item name="NewTab" action="NewTab"/>
+        <item action="NewTab"/>
         <separator/>
-        <item name="Open" action="Open"/>
-        <item name="Save" action="Save"/>
+        <item action="Open"/>
+        <item action="Save"/>
         <separator/>
-        <item name="Undo" action="Undo"/>
-        <item name="Redo" action="Redo"/>
+        <item action="Undo"/>
+        <item action="Redo"/>
         <separator/>
-        <item name="Cut" action="Cut"/>
-        <item name="Copy" action="Copy"/>
-        <item name="Paste" action="Paste"/>
+        <item action="Cut"/>
+        <item action="Copy"/>
+        <item action="Paste"/>
         <separator/>
 
-        <item name="Find" action="Find"/>
-        <item name="Replace" action="Replace"/>
+        <item action="Find"/>
+        <item action="Replace"/>
 
         <separator/>
     </widget> <!-- Toolbar -->
@@ -104,14 +104,14 @@
 
         <item name="File" label="_File">
             <separator/>
-            <item name="Editor" action="NewEditor"/>
-            <item name="Open" action="OpenInEditor"/>
+            <item action="NewEditor"/>
+            <item action="OpenInEditor"/>
             <separator/>
-            <item name="Restart" action="Restart"/>
+            <item action="Restart"/>
             <separator/>
-            <item name="Save" action="SaveSelection"/>
+            <item action="SaveSelection"/>
             <separator/>
-            <item name="Quit" action="Quit"/>
+            <item action="Quit"/>
             <separator/>
         </item>
 
@@ -120,44 +120,44 @@
             <!--
             <item name="CopyLastOutput" action="CopyLastOutput"/>
             -->
-            <item name="Copy" action="Copy"/>
-            <item name="Paste" action="Paste"/>
+            <item action="Copy"/>
+            <item action="Paste"/>
             <separator/>
-            <item name="SelectAll" action="SelectAll"/>
+            <item action="SelectAll"/>
             <separator/>
         </item>
 
         <!--
         <item name="GAP" label="_GAP">
             <separator/>
-            <item name="Read" action="GAPRead"/>
+            <item action="GAPRead"/>
             <separator/>
-            <item name="Restart" action="Restart"/>
+            <item action="Restart"/>
             <separator/>
         </item>
         -->
 
         <item name="Python" action="PythonMenu">
             <separator/>
-            <item name="Execute" action="ExecuteScript"/>
-            <item name="ShowConsole" action="ShowConsole"/>
+            <item action="ExecuteScript"/>
+            <item action="ShowConsole"/>
             <separator/>
         </item>
 
         <item name="Settings" label="_Settings">
             <separator/>
-            <item name="ShowToolbar" action="ShowToolbar"/>
-            <item name="ToolbarStyle" action="ToolbarStyle"/>
+            <item action="ShowToolbar"/>
+            <item action="ToolbarStyle"/>
             <separator/>
-            <item name="ConfigureShortcuts" action="ConfigureShortcuts"/>
+            <item action="ConfigureShortcuts"/>
             <separator/>
-            <item name="Preferences" action="Preferences"/>
+            <item action="Preferences"/>
             <separator/>
         </item>
 
         <item name="Help" label="_Help">
             <separator/>
-            <item name="About" action="About"/>
+            <item action="About"/>
             <separator/>
         </item>
 
@@ -165,24 +165,24 @@
 
     <widget name="Toolbar">
         <separator/>
-        <item name="Editor" action="NewEditor"/>
-        <item name="Open" action="OpenInEditor"/>
+        <item action="NewEditor"/>
+        <item action="OpenInEditor"/>
         <separator/>
-        <item name="Copy" action="Copy"/>
-        <item name="Paste" action="Paste"/>
+        <item action="Copy"/>
+        <item action="Paste"/>
         <separator/>
-        <item name="Restart" action="Restart"/>
+        <item action="Restart"/>
         <separator/>
-        <item name="Preferences" action="Preferences"/>
+        <item action="Preferences"/>
         <separator/>
     </widget> <!-- Toolbar -->
 
     <widget name="Popup">
         <separator/>
-        <item name="Copy" action="Copy"/>
-        <item name="Paste" action="Paste"/>
+        <item action="Copy"/>
+        <item action="Paste"/>
         <separator/>
-        <item name="SelectAll" action="SelectAll"/>
+        <item action="SelectAll"/>
         <separator/>
     </widget>
 

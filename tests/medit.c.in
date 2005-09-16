@@ -41,15 +41,7 @@ int main (int argc, char **argv)
     if (argc > 1000)
         ref_stuff ();
 
-    plugin_dir = g_build_filename (g_get_home_dir (), ".medit", "plugins", NULL);
-    moo_plugin_read_dir ("@MOO_PLUGINS_DIR@");
-    moo_plugin_read_dir (plugin_dir);
-    g_free (plugin_dir);
-
-    moo_find_init ();
-    moo_file_selector_init ();
-
-    editor = moo_editor_new ();
+    editor = moo_editor_instance ();
     mgr = moo_editor_get_lang_mgr (editor);
     moo_edit_lang_mgr_add_lang_files_dir (mgr, "@MOO_EDIT_LANG_FILES_DIR@");
 
@@ -57,6 +49,14 @@ int main (int argc, char **argv)
 
     xml = moo_editor_get_ui_xml (editor);
     moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1);
+
+    plugin_dir = g_build_filename (g_get_home_dir (), ".medit", "plugins", NULL);
+    moo_plugin_read_dir ("@MOO_PLUGINS_DIR@");
+    moo_plugin_read_dir (plugin_dir);
+    g_free (plugin_dir);
+
+    moo_find_init ();
+    moo_file_selector_init ();
 
     win = moo_editor_new_window (editor);
 

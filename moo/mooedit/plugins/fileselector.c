@@ -34,6 +34,7 @@
 typedef struct {
     MooPlugin parent;
     MooBookmarkMgr *bookmark_mgr;
+    guint ui_merge_id;
 } FileSelectorPlugin;
 
 #define Plugin FileSelectorPlugin
@@ -49,10 +50,14 @@ show_file_selector (MooEditWindow *window)
 
 
 static gboolean
-file_selector_plugin_init (void)
+file_selector_plugin_init (Plugin *plugin)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+
     g_return_val_if_fail (klass != NULL, FALSE);
+    g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_ui_object_class_new_action (klass, "ShowFileSelector",
                                     "name", "Show File Selector",
@@ -62,12 +67,17 @@ file_selector_plugin_init (void)
                                     "closure::callback", show_file_selector,
                                     NULL);
 
+    plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
+
+    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                         "Editor/Menubar/View",
+                         "ShowFileSelector",
+                         "ShowFileSelector", -1);
+
     moo_prefs_new_key_string (DIR_PREFS, NULL);
 
     g_type_class_unref (klass);
     return TRUE;
-
-    /* XXX merge ui */
 }
 
 
@@ -75,6 +85,8 @@ static void
 file_selector_plugin_deinit (Plugin *plugin)
 {
     GObjectClass *klass;
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
 
     if (plugin->bookmark_mgr)
         g_object_unref (plugin->bookmark_mgr);
@@ -82,9 +94,12 @@ file_selector_plugin_deinit (Plugin *plugin)
 
     klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_ui_object_class_remove_action (klass, "ShowFileSelector");
-    g_type_class_unref (klass);
 
-    /* XXX remove ui */
+    if (plugin->ui_merge_id)
+        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
+    plugin->ui_merge_id = 0;
+
+    g_type_class_unref (klass);
 }
 
 

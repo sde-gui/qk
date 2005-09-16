@@ -35,6 +35,7 @@ struct _CProjectPlugin
     GtkWidget *build_configuration_menu;
     MooRecentMgr *recent_mgr;
     MooCmdView *output;
+    guint ui_merge_id;
 
     char *running;
 };

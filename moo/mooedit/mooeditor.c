@@ -26,6 +26,9 @@
 #include <string.h>
 
 
+static MooEditor *editor_instance = NULL;
+
+
 typedef struct {
     MooEditWindow *window;
     GSList        *docs;
@@ -283,9 +286,17 @@ static void moo_editor_finalize       (GObject      *object)
 }
 
 
-MooEditor       *moo_editor_new                 (void)
+MooEditor*
+moo_editor_instance (void)
 {
-    return MOO_EDITOR (g_object_new (MOO_TYPE_EDITOR, NULL));
+    if (!editor_instance)
+    {
+        editor_instance = g_object_new (MOO_TYPE_EDITOR, NULL);
+        g_object_add_weak_pointer (G_OBJECT (editor_instance),
+                                   (gpointer*) &editor_instance);
+    }
+
+    return editor_instance;
 }
 
 

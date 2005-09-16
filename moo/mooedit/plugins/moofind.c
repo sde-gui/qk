@@ -41,6 +41,7 @@ enum {
 
 typedef struct {
     MooPlugin parent;
+    guint ui_merge_id;
 } FindPlugin;
 
 typedef struct {
@@ -209,10 +210,14 @@ find_window_plugin_create (WindowStuff *stuff)
 
 
 static gboolean
-find_plugin_init (void)
+find_plugin_init (FindPlugin *plugin)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+
     g_return_val_if_fail (klass != NULL, FALSE);
+    g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_ui_object_class_new_action (klass, "FindInFiles",
                                     "name", "Find In Files",
@@ -230,24 +235,35 @@ find_plugin_init (void)
                                     "closure::callback", find_file_cb,
                                     NULL);
 
+    plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
+
+    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                         "Editor/Menubar/Search",
+                         "FindInFiles", "FindInFiles", -1);
+    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                         "Editor/Menubar/Search",
+                         "FindFile", "FindFile", -1);
+
     g_type_class_unref (klass);
     return TRUE;
-
-    /* XXX merge ui */
 }
 
 
 static void
-find_plugin_deinit (void)
+find_plugin_deinit (FindPlugin *plugin)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
 
     moo_ui_object_class_remove_action (klass, "FindInFiles");
     moo_ui_object_class_remove_action (klass, "FindFile");
 
-    g_type_class_unref (klass);
+    if (plugin->ui_merge_id)
+        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
+    plugin->ui_merge_id = 0;
 
-    /* XXX remove ui */
+    g_type_class_unref (klass);
 }
 
 

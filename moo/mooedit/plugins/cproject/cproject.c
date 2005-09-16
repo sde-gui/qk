@@ -161,7 +161,12 @@ gboolean
 cproject_plugin_init (CProjectPlugin *plugin)
 {
     GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+    const char *markup;
+
     g_return_val_if_fail (klass != NULL, FALSE);
+    g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_ui_object_class_new_action (klass, "NewProject",
                                     "name", "New Project",
@@ -233,14 +238,50 @@ cproject_plugin_init (CProjectPlugin *plugin)
     g_signal_connect_swapped (plugin->recent_mgr, "open_recent",
                               G_CALLBACK (open_recent_project), plugin);
 
+    plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
+
+    markup =
+    "<item name=\"Project\" label=\"Project\">"
+    "    <separator/>"
+    "    <item name=\"NewProject\" action=\"NewProject\"/>"
+    "    <item name=\"OpenProject\" action=\"OpenProject\"/>"
+    "    <item name=\"OpenRecentProject\" action=\"OpenRecentProject\"/>"
+    "    <separator/>"
+    "    <item name=\"ProjectOptions\" action=\"ProjectOptions\"/>"
+    "    <item name=\"BuildConfiguration\" action=\"BuildConfiguration\"/>"
+    "    <separator/>"
+    "    <item name=\"CloseProject\" action=\"CloseProject\"/>"
+    "    <separator/>"
+    "</item>"
+    ""
+    "<item name=\"Build\" label=\"Build\">"
+    "    <separator/>"
+    "    <item name=\"BuildProject\" action=\"BuildProject\"/>"
+    "    <item name=\"CompileFile\" action=\"CompileFile\"/>"
+    "    <separator/>"
+    "    <item name=\"Execute\" action=\"Execute\"/>"
+    "    <separator/>"
+    "</item>"
+    ;
+
+    moo_ui_xml_insert_markup_after (xml, plugin->ui_merge_id,
+                                    "Editor/Menubar",
+                                    "View", markup);
+
     g_type_class_unref (klass);
     return TRUE;
 }
 
 
 void
-cproject_plugin_deinit (G_GNUC_UNUSED CProjectPlugin *plugin)
+cproject_plugin_deinit (CProjectPlugin *plugin)
 {
+    MooEditor *editor = moo_editor_instance ();
+    MooUIXML *xml = moo_editor_get_ui_xml (editor);
+
+    if (plugin->ui_merge_id)
+        moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
+    plugin->ui_merge_id = 0;
 }
 
 
