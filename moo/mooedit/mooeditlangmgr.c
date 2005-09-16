@@ -133,15 +133,19 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
     g_return_val_if_fail (MOO_IS_EDIT_LANG_MGR (mgr) && filename != NULL, NULL);
 
     utf8_filename = g_filename_to_utf8 (filename, -1, NULL, NULL, &err);
-    if (!utf8_filename) {
+
+    if (!utf8_filename)
+    {
         g_critical ("%s: could not convert filename to UTF8", G_STRLOC);
-        if (err) {
+        if (err)
+        {
             g_critical ("%s: %s", G_STRLOC, err->message);
             g_error_free (err);
         }
     }
 
-    if (utf8_filename) {
+    if (utf8_filename)
+    {
         GSList *l;
         gboolean found = FALSE;
 
@@ -214,6 +218,7 @@ MooEditLang     *moo_edit_lang_mgr_get_language_for_file        (MooEditLangMgr 
         g_message ("%s: could not find lang for file '%s'", G_STRLOC, filename);
 #endif
 
+    g_free (utf8_filename);
     return lang;
 }
 

@@ -924,6 +924,8 @@ moo_ui_xml_insert (MooUIXML       *xml,
         merge_add_node (merge, node);
         update_widgets (xml, UPDATE_ADD_NODE, node);
     }
+
+    moo_markup_doc_unref (doc);
 }
 
 
@@ -1282,11 +1284,18 @@ moo_ui_node_get_child (MooUINode      *node,
         SLIST_FOREACH_END;
 
         if (child)
+        {
             node = child;
+        }
         else
-            return NULL;
+        {
+            node = NULL;
+            goto out;
+        }
     }
 
+out:
+    g_strfreev (pieces);
     return node;
 }
 
@@ -2194,6 +2203,9 @@ moo_ui_xml_finalize (GObject *object)
     g_slist_free (xml->priv->toplevels);
     g_slist_free (xml->priv->merged_ui);
     node_free (xml->priv->ui);
+
+    g_free (xml->priv);
+    xml->priv = NULL;
 
     G_OBJECT_CLASS(moo_ui_xml_parent_class)->finalize (object);
 }
