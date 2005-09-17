@@ -14,7 +14,7 @@
 #ifndef __MOO_UTILS_GOBJECT_H__
 #define __MOO_UTILS_GOBJECT_H__
 
-#include <gdk/gdkcolor.h>
+#include <gtk/gtktogglebutton.h>
 
 G_BEGIN_DECLS
 
@@ -165,6 +165,49 @@ gpointer            moo_object_factory_create_object    (MooObjectFactory   *fac
                                                          gpointer            data,
                                                          const char         *additional_prop_name,
                                                          ...);
+
+
+/*****************************************************************************/
+/* Property watch
+ */
+
+void        moo_bind_sensitive      (GtkToggleButton    *btn,
+                                     GtkWidget         **dependent,
+                                     int                 num_dependent,
+                                     gboolean            invert);
+
+guint       moo_bind_bool_property  (GObject            *target,
+                                     const char         *target_prop,
+                                     GObject            *source,
+                                     const char         *source_prop,
+                                     gboolean            invert);
+
+typedef void (*MooTransformPropFunc)(GValue             *target,
+                                     const GValue       *source,
+                                     gpointer            data);
+typedef void (*MooGetPropFunc)      (GObject            *source,
+                                     GValue             *target,
+                                     gpointer            data);
+
+void        moo_copy_boolean        (GValue             *target,
+                                     const GValue       *source,
+                                     gpointer            dummy);
+void        moo_invert_boolean      (GValue             *target,
+                                     const GValue       *source,
+                                     gpointer            dummy);
+
+guint       moo_add_property_watch  (GObject            *target,
+                                     const char         *target_prop,
+                                     GObject            *source,
+                                     const char         *source_prop,
+                                     MooTransformPropFunc transform,
+                                     gpointer            transform_data,
+                                     GDestroyNotify      destroy_notify);
+void        moo_watch_add_signal    (guint               watch_id,
+                                     const char         *source_signal);
+void        moo_watch_add_property  (guint               watch_id,
+                                     const char         *source_prop);
+gboolean    moo_watch_remove        (guint               watch_id);
 
 
 G_END_DECLS

@@ -15,7 +15,6 @@
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moocompat.h"
-#include "mooutils/bind.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooprefs.h"
 #include <gtk/gtk.h>

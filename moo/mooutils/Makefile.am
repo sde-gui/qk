@@ -35,8 +35,6 @@ libmooutils_la_LIBADD = \
 libmooutils_la_SOURCES =        \
     $(pcre_src)                 \
     $(unrtf_src)                \
-    bind.c                      \
-    bind.h                      \
     eggregex.c                  \
     eggregex.h                  \
     mooaccelbutton.c            \

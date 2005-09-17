@@ -15,6 +15,7 @@
 #define __INSIDE_MOO_PREFS_DIALOG_SETTINGS_C__
 #include "mooutils/mooprefsdialog-settings.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 

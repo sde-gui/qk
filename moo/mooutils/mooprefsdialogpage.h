@@ -15,7 +15,6 @@
 #define __MOO_PREFS_DIALOG_PAGE_H__
 
 #include <gtk/gtk.h>
-#include "mooutils/bind.h"
 #include "mooutils/mooglade.h"
 
 G_BEGIN_DECLS
