@@ -221,12 +221,14 @@ _moo_ui_object_set_ui_xml_impl (MooUIObject        *object,
 typedef struct {
     MooObjectFactory *action;
     MooObjectFactory *closure;
+    char            **conditions;
 } FactoryData;
 
 
 static FactoryData*
 factory_data_new (MooObjectFactory *action,
-                  MooObjectFactory *closure)
+                  MooObjectFactory *closure,
+                  char            **conditions)
 {
     FactoryData *data;
 
@@ -236,6 +238,7 @@ factory_data_new (MooObjectFactory *action,
     data = g_new0 (FactoryData, 1);
     data->action = g_object_ref (action);
     data->closure = closure ? g_object_ref (closure) : NULL;
+    data->conditions = g_strdupv (conditions);
 
     return data;
 }
@@ -249,6 +252,7 @@ factory_data_free (FactoryData *data)
         g_object_unref (data->action);
         if (data->closure)
             g_object_unref (data->closure);
+        g_strfreev (data->conditions);
         g_free (data);
     }
 }
@@ -293,6 +297,13 @@ create_action (const char  *action_id,
         g_return_val_if_fail (closure != NULL, action);
         g_object_set (closure, "data", object, NULL);
         g_object_set (action, "closure", closure, NULL);
+    }
+
+    if (data->conditions)
+    {
+        char **p;
+        for (p = data->conditions; *p != NULL; p += 2)
+            moo_bind_bool_property (action, p[0], object, p[1], FALSE);
     }
 
     return action;
@@ -341,7 +352,8 @@ void
 moo_ui_object_class_install_action (GObjectClass       *klass,
                                     const char         *action_id,
                                     MooObjectFactory   *action,
-                                    MooObjectFactory   *closure)
+                                    MooObjectFactory   *closure,
+                                    char              **conditions)
 {
     GHashTable *actions;
     FactoryData *data;
@@ -365,7 +377,7 @@ moo_ui_object_class_install_action (GObjectClass       *klass,
         g_type_set_qdata (type, MOO_UI_OBJECT_ACTIONS_QUARK, actions);
     }
 
-    data = factory_data_new (action, closure);
+    data = factory_data_new (action, closure, conditions);
     g_hash_table_insert (actions, g_strdup (action_id), data);
 
     for (l = ui_object_instances; l != NULL; l = l->next)
@@ -527,12 +539,14 @@ moo_ui_object_class_new_actionv (GObjectClass   *object_class,
     GObjectClass *closure_class = NULL;
     GArray *action_params = NULL;
     GArray *closure_params = NULL;
+    GPtrArray *conditions = NULL;
 
     g_return_if_fail (G_IS_OBJECT_CLASS (object_class));
     g_return_if_fail (first_prop_name != NULL);
 
     action_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
     closure_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
+    conditions = g_ptr_array_new ();
 
     name = first_prop_name;
     while (name)
@@ -548,92 +562,52 @@ moo_ui_object_class_new_actionv (GObjectClass   *object_class,
             goto error;
         }
 
-        if (strstr (name, "::") && strncmp (name, "closure::", strlen ("closure::")))
+        if (!strcmp (name, "action-type::") || !strcmp (name, "action_type::"))
         {
-            if (!strcmp (name, "action-type::") || !strcmp (name, "action_type::"))
-            {
-                g_value_init (&param.value, G_TYPE_POINTER);
-                G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-
-                if (err)
-                {
-                    g_warning ("%s: %s", G_STRLOC, err);
-                    g_free (err);
-                    goto error;
-                }
-
-                action_type = (GType) param.value.data[0].v_pointer;
-
-                if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
-                {
-                    g_warning ("%s: invalid action type", G_STRLOC);
-                    goto error;
-                }
-
-                action_class = g_type_class_ref (action_type);
-            }
-            else if (!strcmp (name, "closure-type::") || !strcmp (name, "closure_type::"))
-            {
-                g_value_init (&param.value, G_TYPE_POINTER);
-                G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-
-                if (err)
-                {
-                    g_warning ("%s: %s", G_STRLOC, err);
-                    g_free (err);
-                    goto error;
-                }
-
-                closure_type = (GType) param.value.data[0].v_pointer;
-
-                if (!g_type_is_a (closure_type, MOO_TYPE_CLOSURE))
-                {
-                    g_warning ("%s: invalid closure type", G_STRLOC);
-                    goto error;
-                }
-
-                closure_class = g_type_class_ref (closure_type);
-            }
-            else
-            {
-                g_warning ("%s: invalid argument %s", G_STRLOC, name);
-                goto error;
-            }
-        }
-        else if (!strstr (name, "::"))
-        {
-            if (!action_class)
-            {
-                if (!action_type)
-                    action_type = MOO_TYPE_ACTION;
-                action_class = g_type_class_ref (action_type);
-            }
-
-            pspec = g_object_class_find_property (action_class, name);
-
-            if (!pspec)
-            {
-                g_warning ("%s: object class `%s' has no property named `%s'",
-                           G_STRLOC, g_type_name (action_type), name);
-                goto error;
-            }
-
-            g_value_init (&param.value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+            g_value_init (&param.value, G_TYPE_POINTER);
             G_VALUE_COLLECT (&param.value, var_args, 0, &err);
 
             if (err)
             {
                 g_warning ("%s: %s", G_STRLOC, err);
                 g_free (err);
-                g_value_unset (&param.value);
                 goto error;
             }
 
-            param.name = g_strdup (name);
-            g_array_append_val (action_params, param);
+            action_type = (GType) param.value.data[0].v_pointer;
+
+            if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
+            {
+                g_warning ("%s: invalid action type", G_STRLOC);
+                goto error;
+            }
+
+            action_class = g_type_class_ref (action_type);
         }
-        else
-        {   /* closure property */
+        else if (!strcmp (name, "closure-type::") || !strcmp (name, "closure_type::"))
+        {
+            g_value_init (&param.value, G_TYPE_POINTER);
+            G_VALUE_COLLECT (&param.value, var_args, 0, &err);
+
+            if (err)
+            {
+                g_warning ("%s: %s", G_STRLOC, err);
+                g_free (err);
+                goto error;
+            }
+
+            closure_type = (GType) param.value.data[0].v_pointer;
+
+            if (!g_type_is_a (closure_type, MOO_TYPE_CLOSURE))
+            {
+                g_warning ("%s: invalid closure type", G_STRLOC);
+                goto error;
+            }
+
+            closure_class = g_type_class_ref (closure_type);
+        }
+        else if (!strncmp (name, "closure::", strlen ("closure::")))
+        {
             const char *suffix = strstr (name, "::");
 
             if (!suffix || !suffix[1] || !suffix[2])
@@ -670,6 +644,67 @@ moo_ui_object_class_new_actionv (GObjectClass   *object_class,
 
             param.name = g_strdup (name);
             g_array_append_val (closure_params, param);
+        }
+        else if (!strncmp (name, "condition::", strlen ("condition::")))
+        {
+            const char *suffix = strstr (name, "::");
+
+            if (!suffix || !suffix[1] || !suffix[2])
+            {
+                g_warning ("%s: invalid condition name '%s'", G_STRLOC, name);
+                goto error;
+            }
+
+            g_ptr_array_add (conditions, g_strdup (suffix + 2));
+
+            name = va_arg (var_args, gchar*);
+
+            if (!name)
+            {
+                g_warning ("%s: unterminated '%s' property",
+                           G_STRLOC,
+                           (char*) g_ptr_array_index (conditions, conditions->len - 1));
+                goto error;
+            }
+
+            g_ptr_array_add (conditions, g_strdup (name));
+        }
+        else if (!strstr (name, "::"))
+        {
+            if (!action_class)
+            {
+                if (!action_type)
+                    action_type = MOO_TYPE_ACTION;
+                action_class = g_type_class_ref (action_type);
+            }
+
+            pspec = g_object_class_find_property (action_class, name);
+
+            if (!pspec)
+            {
+                g_warning ("%s: object class `%s' has no property named `%s'",
+                           G_STRLOC, g_type_name (action_type), name);
+                goto error;
+            }
+
+            g_value_init (&param.value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+            G_VALUE_COLLECT (&param.value, var_args, 0, &err);
+
+            if (err)
+            {
+                g_warning ("%s: %s", G_STRLOC, err);
+                g_free (err);
+                g_value_unset (&param.value);
+                goto error;
+            }
+
+            param.name = g_strdup (name);
+            g_array_append_val (action_params, param);
+        }
+        else
+        {
+            g_warning ("%s: invalid property '%s'", G_STRLOC, name);
+            goto error;
         }
 
         name = va_arg (var_args, gchar*);
@@ -716,10 +751,16 @@ moo_ui_object_class_new_actionv (GObjectClass   *object_class,
         g_array_free (action_params, FALSE);
         action_params = NULL;
 
+        g_ptr_array_add (conditions, NULL);
+
         moo_ui_object_class_install_action (object_class,
                                             action_id,
                                             action_factory,
-                                            closure_factory);
+                                            closure_factory,
+                                            (char**) conditions->pdata);
+
+        g_strfreev ((char**) conditions->pdata);
+        g_ptr_array_free (conditions, FALSE);
 
         if (action_class)
             g_type_class_unref (action_class);
@@ -758,6 +799,14 @@ error:
             g_free ((char*) params[i].name);
         }
         g_array_free (closure_params, TRUE);
+    }
+
+    if (conditions)
+    {
+        guint i;
+        for (i = 0; i < conditions->len; ++i)
+            g_free (g_ptr_array_index (conditions, i));
+        g_ptr_array_free (conditions, TRUE);
     }
 
     if (action_class)

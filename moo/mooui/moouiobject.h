@@ -45,7 +45,8 @@ void             moo_ui_object_class_install_action
                                                 (GObjectClass       *klass,
                                                  const char         *id,
                                                  MooObjectFactory   *action,
-                                                 MooObjectFactory   *closure);
+                                                 MooObjectFactory   *closure,
+                                                 char              **conditions);
 void             moo_ui_object_class_new_action (GObjectClass       *klass,
                                                  const char         *id,
                                                  const char         *first_prop_name,

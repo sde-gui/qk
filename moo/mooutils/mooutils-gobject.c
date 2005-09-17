@@ -1191,9 +1191,9 @@ watch_die (ObjectWatch *watch)
 
 
 guint
-moo_add_property_watch (GObject            *target,
+moo_add_property_watch (gpointer            target,
                         const char         *target_prop,
-                        GObject            *source,
+                        gpointer            source,
                         const char         *source_prop,
                         MooTransformPropFunc transform,
                         gpointer            transform_data,
@@ -1287,9 +1287,9 @@ moo_invert_boolean (GValue             *target,
 
 
 guint
-moo_bind_bool_property (GObject            *target,
+moo_bind_bool_property (gpointer            target,
                         const char         *target_prop,
-                        GObject            *source,
+                        gpointer            source,
                         const char         *source_prop,
                         gboolean            invert)
 {

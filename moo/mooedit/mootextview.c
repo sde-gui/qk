@@ -59,10 +59,8 @@ static void has_text_notify         (MooTextView    *view);
 
 static void goto_line               (MooTextView    *view);
 
-static void can_redo_cb             (MooTextView    *view,
-                                     gboolean        arg);
-static void can_undo_cb             (MooTextView    *view,
-                                     gboolean        arg);
+static void proxy_can_undo_redo     (MooTextView    *view,
+                                     GParamSpec     *prop);
 
 static void insert_text_cb          (GtkTextBuffer  *buffer,
                                      GtkTextIter    *iter,
@@ -73,8 +71,6 @@ static void insert_text_cb          (GtkTextBuffer  *buffer,
 
 enum {
     DELETE_SELECTION,
-    CAN_UNDO,
-    CAN_REDO,
     FIND,
     FIND_NEXT,
     FIND_PREVIOUS,
@@ -97,7 +93,9 @@ enum {
     PROP_CURRENT_LINE_COLOR_GDK,
     PROP_SHOW_TABS,
     PROP_HAS_TEXT,
-    PROP_HAS_SELECTION
+    PROP_HAS_SELECTION,
+    PROP_CAN_UNDO,
+    PROP_CAN_REDO
 };
 
 
@@ -209,6 +207,22 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              FALSE,
                                              G_PARAM_READABLE));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_CAN_UNDO,
+                                     g_param_spec_boolean ("can-undo",
+                                             "can-undo",
+                                             "can-undo",
+                                             FALSE,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CAN_REDO,
+                                     g_param_spec_boolean ("can-redo",
+                                             "can-redo",
+                                             "can-redo",
+                                             FALSE,
+                                             G_PARAM_READABLE));
+
     signals[DELETE_SELECTION] =
             g_signal_new ("delete-selection",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -217,24 +231,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
-
-    signals[CAN_UNDO] =
-            g_signal_new ("can-undo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTextViewClass, can_undo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__BOOLEAN,
-                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-
-    signals[CAN_REDO] =
-            g_signal_new ("can-redo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTextViewClass, can_redo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__BOOLEAN,
-                          G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
     signals[FIND] =
             g_signal_new ("find",
@@ -315,11 +311,11 @@ moo_text_view_constructor (GType                  type,
 
     view->priv->can_undo_handler_id =
             g_signal_connect_swapped (get_buffer (view), "can-undo",
-                                      G_CALLBACK (can_undo_cb),
+                                      G_CALLBACK (proxy_can_undo_redo),
                                       view);
     view->priv->can_redo_handler_id =
             g_signal_connect_swapped (get_buffer (view), "can-redo",
-                                      G_CALLBACK (can_redo_cb),
+                                      G_CALLBACK (proxy_can_undo_redo),
                                       view);
 
     g_object_set (get_buffer (view), "check-brackets",
@@ -370,17 +366,10 @@ moo_text_view_delete_selection (MooTextView *view)
 
 
 static void
-can_redo_cb (MooTextView *view,
-             gboolean     arg)
+proxy_can_undo_redo (MooTextView *view,
+                     GParamSpec  *prop)
 {
-    g_signal_emit (view, signals[CAN_REDO], 0, arg, NULL);
-}
-
-static void
-can_undo_cb (MooTextView *view,
-             gboolean     arg)
-{
-    g_signal_emit (view, signals[CAN_UNDO], 0, arg, NULL);
+    g_object_notify (G_OBJECT (view), prop->name);
 }
 
 
@@ -468,7 +457,11 @@ gboolean
 moo_text_view_can_redo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return gtk_source_buffer_can_redo (get_source_buffer (view));
+
+    if (!view->priv->constructed)
+        return FALSE;
+    else
+        return gtk_source_buffer_can_redo (get_source_buffer (view));
 }
 
 
@@ -476,7 +469,11 @@ gboolean
 moo_text_view_can_undo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return gtk_source_buffer_can_undo (get_source_buffer (view));
+
+    if (!view->priv->constructed)
+        return FALSE;
+    else
+        return gtk_source_buffer_can_undo (get_source_buffer (view));
 }
 
 
@@ -594,13 +591,19 @@ moo_text_view_get_property (GObject        *object,
             break;
 
         case PROP_HAS_TEXT:
-            g_value_set_boolean (value,
-                                 moo_text_view_has_text (view));
+            g_value_set_boolean (value, moo_text_view_has_text (view));
             break;
 
         case PROP_HAS_SELECTION:
-            g_value_set_boolean (value,
-                                 moo_text_view_has_selection (view));
+            g_value_set_boolean (value, moo_text_view_has_selection (view));
+            break;
+
+        case PROP_CAN_UNDO:
+            g_value_set_boolean (value, moo_text_view_can_undo (view));
+            break;
+
+        case PROP_CAN_REDO:
+            g_value_set_boolean (value, moo_text_view_can_redo (view));
             break;
 
         default:

@@ -55,17 +55,6 @@ struct _MooTextViewClass
 
     void (* delete_selection)       (MooTextView    *view);
 
-    /* these two are buffer signals */
-    void (* can_redo)               (MooTextView    *view,
-                                     gboolean        arg);
-    void (* can_undo)               (MooTextView    *view,
-                                     gboolean        arg);
-
-    void (* has_selection)          (MooTextView    *view,
-                                     gboolean        arg);
-    void (* has_text)               (MooTextView    *view,
-                                     gboolean        arg);
-
     /* these are made signals for convenience */
     void (* find)                   (MooTextView    *view);
     void (* replace)                (MooTextView    *view);

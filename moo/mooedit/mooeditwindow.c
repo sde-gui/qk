@@ -79,12 +79,11 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
                                          GtkMenu            *menu,
                                          MooEditWindow      *window);
 
+static void     proxy_boolean_property  (MooEditWindow      *window,
+                                         GParamSpec         *prop,
+                                         MooEdit            *doc);
 static void     edit_changed            (MooEditWindow      *window,
                                          MooEdit            *doc);
-static void     edit_filename_changed   (MooEditWindow      *window);
-static void     edit_can_undo_redo      (MooEditWindow      *window);
-static void     edit_has_selection      (MooEditWindow      *window);
-static void     edit_has_text           (MooEditWindow      *window);
 static GtkWidget *create_tab_label      (MooEdit            *edit);
 static void     update_tab_label        (MooEditWindow      *window,
                                          MooEdit            *doc);
@@ -120,7 +119,17 @@ G_DEFINE_TYPE (MooEditWindow, moo_edit_window, MOO_TYPE_WINDOW)
 enum {
     PROP_0,
     PROP_EDITOR,
-    PROP_ACTIVE_DOC
+    PROP_ACTIVE_DOC,
+
+    /* aux properties */
+    PROP_CAN_RELOAD,
+    PROP_HAS_OPEN_DOCUMENT,
+    PROP_CAN_UNDO,
+    PROP_CAN_REDO,
+    PROP_HAS_SELECTION,
+    PROP_HAS_TEXT,
+    PROP_CAN_SWITCH_TAB_RIGHT,
+    PROP_CAN_SWITCH_TAB_LEFT
 };
 
 enum {
@@ -131,6 +140,11 @@ enum {
 };
 
 static guint signals[NUM_SIGNALS];
+
+
+#define INSTALL_PROP(prop_id,name)                                          \
+    g_object_class_install_property (gobject_class, prop_id,                \
+        g_param_spec_boolean (name, name, name, FALSE, G_PARAM_READABLE))
 
 
 static void moo_edit_window_class_init (MooEditWindowClass *klass)
@@ -190,6 +204,15 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
+    INSTALL_PROP (PROP_CAN_RELOAD, "can-reload");
+    INSTALL_PROP (PROP_HAS_OPEN_DOCUMENT, "has-open-document");
+    INSTALL_PROP (PROP_CAN_UNDO, "can-undo");
+    INSTALL_PROP (PROP_CAN_REDO, "can-redo");
+    INSTALL_PROP (PROP_HAS_SELECTION, "has-selection");
+    INSTALL_PROP (PROP_HAS_TEXT, "has-text");
+    INSTALL_PROP (PROP_CAN_SWITCH_TAB_RIGHT, "can-switch-tab-right");
+    INSTALL_PROP (PROP_CAN_SWITCH_TAB_LEFT, "can-switch-tab-left");
+
     moo_ui_object_class_init (gobject_class, "Editor", "Editor");
 
     moo_ui_object_class_new_action (gobject_class, "NewWindow",
@@ -226,6 +249,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_REFRESH,
                                     "accel", "F5",
                                     "closure::callback", moo_edit_window_reload,
+                                    "condition::sensitive", "can-reload",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Save",
@@ -235,6 +259,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_SAVE,
                                     "accel", "<ctrl>S",
                                     "closure::callback", moo_edit_window_save,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "SaveAs",
@@ -244,6 +269,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_SAVE_AS,
                                     "accel", "<ctrl><shift>S",
                                     "closure::callback", moo_edit_window_save_as,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Close",
@@ -253,6 +279,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_CLOSE,
                                     "accel", "<ctrl>W",
                                     "closure::callback", moo_edit_window_close_tab,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "CloseAll",
@@ -261,6 +288,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "tooltip", "Close all documents",
                                     "accel", "<shift><ctrl>W",
                                     "closure::callback", moo_edit_window_close_all,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Undo",
@@ -271,6 +299,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>Z",
                                     "closure::signal", "undo",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "can-undo",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Redo",
@@ -281,6 +310,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<shift><ctrl>Z",
                                     "closure::signal", "redo",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "can-redo",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Cut",
@@ -291,6 +321,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>X",
                                     "closure::signal", "cut-clipboard",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-selection",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Copy",
@@ -301,6 +332,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>C",
                                     "closure::signal", "copy-clipboard",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-selection",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Paste",
@@ -311,6 +343,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>V",
                                     "closure::signal", "paste-clipboard",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Delete",
@@ -320,6 +353,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_DELETE,
                                     "closure::signal", "delete-selection",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-selection",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "SelectAll",
@@ -329,6 +363,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>A",
                                     "closure::callback", moo_text_view_select_all,
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-text",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "PreviousTab",
@@ -338,6 +373,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_GO_BACK,
                                     "accel", "<alt>Left",
                                     "closure::callback", moo_edit_window_previous_tab,
+                                    "condition::sensitive", "can-switch-tab-left",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "NextTab",
@@ -347,6 +383,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                     "accel", "<alt>Right",
                                     "closure::callback", moo_edit_window_next_tab,
+                                    "condition::sensitive", "can-switch-tab-right",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Find",
@@ -357,6 +394,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>F",
                                     "closure::signal", "find",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "FindNext",
@@ -367,6 +405,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "F3",
                                     "closure::signal", "find-next",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "FindPrevious",
@@ -377,6 +416,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<shift>F3",
                                     "closure::signal", "find-previous",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "Replace",
@@ -387,6 +427,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>R",
                                     "closure::signal", "replace",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "GoToLine",
@@ -396,11 +437,13 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                     "accel", "<ctrl>G",
                                     "closure::signal", "goto-line",
                                     "closure::proxy-func", moo_edit_window_get_active_doc,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 
     moo_ui_object_class_new_action (gobject_class, "SyntaxMenu",
                                     "action-type::", MOO_TYPE_MENU_ACTION,
                                     "create-menu-func", create_lang_menu,
+                                    "condition::sensitive", "has-open-document",
                                     NULL);
 }
 
@@ -447,7 +490,8 @@ static void     moo_edit_window_set_property(GObject        *object,
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
 
-    switch (prop_id) {
+    switch (prop_id)
+    {
         case PROP_EDITOR:
             window->priv->editor = g_value_get_object (value);
             break;
@@ -468,14 +512,49 @@ static void     moo_edit_window_get_property(GObject        *object,
                                              GParamSpec     *pspec)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
+    MooEdit *doc;
+    int num;
 
-    switch (prop_id) {
+    switch (prop_id)
+    {
         case PROP_EDITOR:
             g_value_set_object (value, window->priv->editor);
             break;
 
         case PROP_ACTIVE_DOC:
             g_value_set_object (value, moo_edit_window_get_active_doc (window));
+            break;
+
+        case PROP_CAN_RELOAD:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && moo_edit_get_filename (doc));
+            break;
+        case PROP_HAS_OPEN_DOCUMENT:
+            g_value_set_boolean (value, ACTIVE_DOC (window) != NULL);
+            break;
+        case PROP_CAN_UNDO:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && moo_text_view_can_undo (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_CAN_REDO:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && moo_text_view_can_redo (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_HAS_SELECTION:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && moo_text_view_has_selection (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_HAS_TEXT:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && moo_text_view_has_text (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_CAN_SWITCH_TAB_RIGHT:
+            num = moo_edit_window_num_docs (window);
+            g_value_set_boolean (value, num && ACTIVE_PAGE (window) < num - 1);
+            break;
+        case PROP_CAN_SWITCH_TAB_LEFT:
+            num = moo_edit_window_num_docs (window);
+            g_value_set_boolean (value, num && ACTIVE_PAGE (window) > 0);
             break;
 
         default:
@@ -726,87 +805,38 @@ static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
 }
 
 
-static void     update_close_and_save   (MooEditWindow      *window,
-                                         MooEdit            *doc)
-{
-    GtkWidget *close_button;
-    MooActionGroup *actions;
-    MooAction *close, *close_all, *save, *save_as, *paste;
-    MooAction *find, *replace, *find_next, *find_prev, *goto_line;
-
-    close_button = moo_notebook_get_action_widget (window->priv->notebook, TRUE);
-    gtk_widget_set_sensitive (close_button, doc != NULL);
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-
-    close = moo_action_group_get_action (actions, "Close");
-    close_all = moo_action_group_get_action (actions, "CloseAll");
-    save = moo_action_group_get_action (actions, "Save");
-    save_as = moo_action_group_get_action (actions, "SaveAs");
-    paste = moo_action_group_get_action (actions, "Paste");
-    find = moo_action_group_get_action (actions, "Find");
-    replace = moo_action_group_get_action (actions, "Replace");
-    find_next = moo_action_group_get_action (actions, "FindNext");
-    find_prev = moo_action_group_get_action (actions, "FindPrevious");
-    goto_line = moo_action_group_get_action (actions, "GoToLine");
-
-    moo_action_set_sensitive (close, doc != NULL);
-    moo_action_set_sensitive (close_all, doc != NULL);
-    moo_action_set_sensitive (save, doc != NULL);
-    moo_action_set_sensitive (save_as, doc != NULL);
-    moo_action_set_sensitive (paste, doc != NULL);
-    moo_action_set_sensitive (find, doc != NULL);
-    moo_action_set_sensitive (replace, doc != NULL);
-    moo_action_set_sensitive (find_next, doc != NULL);
-    moo_action_set_sensitive (find_prev, doc != NULL);
-    moo_action_set_sensitive (goto_line, doc != NULL);
-}
-
-
-static void     update_next_prev_tab    (MooEditWindow      *window)
-{
-    MooActionGroup *actions;
-    MooAction *next, *prev;
-    gboolean has_next = FALSE, has_prev = FALSE;
-    int num, current;
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-
-    next = moo_action_group_get_action (actions, "NextTab");
-    prev = moo_action_group_get_action (actions, "PreviousTab");
-
-    num = moo_edit_window_num_docs (window);
-
-    if (num)
-    {
-        current = ACTIVE_PAGE (window);
-        has_prev = (current > 0);
-        has_next = (current < num - 1);
-    }
-
-    moo_action_set_sensitive (next, has_next);
-    moo_action_set_sensitive (prev, has_prev);
-}
-
-
 static void     edit_changed            (MooEditWindow      *window,
                                          MooEdit            *doc)
 {
     if (doc == ACTIVE_DOC (window))
     {
-        update_close_and_save (window, doc);
-        update_next_prev_tab (window);
-        update_window_title (window);
-        edit_can_undo_redo (window);
+        g_object_freeze_notify (G_OBJECT (window));
+        g_object_notify (G_OBJECT (window), "can-reload");
+        g_object_notify (G_OBJECT (window), "has-open-document");
+        g_object_notify (G_OBJECT (window), "can-undo");
+        g_object_notify (G_OBJECT (window), "can-redo");
+        g_object_notify (G_OBJECT (window), "has-selection");
+        g_object_notify (G_OBJECT (window), "has-text");
+        g_object_notify (G_OBJECT (window), "can-switch-tab-right");
+        g_object_notify (G_OBJECT (window), "can-switch-tab-left");
+        g_object_thaw_notify (G_OBJECT (window));
+
         active_tab_lang_changed (window);
+        update_window_title (window);
         update_statusbar (window);
-        edit_has_selection (window);
-        edit_has_text (window);
-        edit_filename_changed (window);
     }
 
     if (doc)
         update_tab_label (window, doc);
+}
+
+
+static void     proxy_boolean_property  (MooEditWindow      *window,
+                                         GParamSpec         *prop,
+                                         MooEdit            *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        g_object_notify (G_OBJECT (window), prop->name);
 }
 
 
@@ -818,116 +848,15 @@ static void     edit_lang_changed       (MooEditWindow      *window,
 }
 
 
-/* XXX do not recheck for non-active doc */
-static void     edit_can_undo_redo      (MooEditWindow      *window)
-{
-    MooEdit *edit;
-    gboolean can_redo, can_undo;
-    MooActionGroup *actions;
-    MooAction *undo, *redo;
-
-    edit = ACTIVE_DOC (window);
-
-    if (edit)
-    {
-        can_redo = moo_text_view_can_redo (MOO_TEXT_VIEW (edit));
-        can_undo = moo_text_view_can_undo (MOO_TEXT_VIEW (edit));
-    }
-    else
-    {
-        can_redo = FALSE;
-        can_undo = FALSE;
-    }
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-    undo = moo_action_group_get_action (actions, "Undo");
-    redo = moo_action_group_get_action (actions, "Redo");
-    g_return_if_fail (undo != NULL && redo != NULL);
-
-    moo_action_set_sensitive (undo, can_undo);
-    moo_action_set_sensitive (redo, can_redo);
-}
-
-
-/* XXX do not recheck for non-active doc */
-static void     edit_filename_changed   (MooEditWindow      *window)
-{
-    MooEdit *edit;
-    gboolean has_name;
-    MooActionGroup *actions;
-    MooAction *reload;
-
-    edit = ACTIVE_DOC (window);
-
-    if (edit)
-        has_name = (moo_edit_get_filename (edit) != NULL);
-    else
-        has_name = FALSE;
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-    reload = moo_action_group_get_action (actions, "Reload");
-    g_return_if_fail (reload != NULL);
-
-    moo_action_set_sensitive (reload, has_name);
-}
-
-
-/* XXX do not recheck for non-active doc */
-static void     edit_has_selection      (MooEditWindow      *window)
-{
-    MooEdit *edit;
-    gboolean has_selection;
-    MooActionGroup *actions;
-    MooAction *cut, *copy, *delete;
-
-    edit = ACTIVE_DOC (window);
-
-    if (edit)
-        has_selection = moo_text_view_has_selection (MOO_TEXT_VIEW (edit));
-    else
-        has_selection = FALSE;
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-    cut = moo_action_group_get_action (actions, "Cut");
-    copy = moo_action_group_get_action (actions, "Copy");
-    delete = moo_action_group_get_action (actions, "Delete");
-    g_return_if_fail (cut != NULL && copy != NULL && delete != NULL);
-
-    moo_action_set_sensitive (cut, has_selection);
-    moo_action_set_sensitive (copy, has_selection);
-    moo_action_set_sensitive (delete, has_selection);
-}
-
-
-/* XXX do not recheck for non-active doc */
-static void     edit_has_text           (MooEditWindow      *window)
-{
-    MooEdit *edit;
-    gboolean has_text;
-    MooActionGroup *actions;
-    MooAction *select_all;
-
-    edit = ACTIVE_DOC (window);
-
-    if (edit)
-        has_text = moo_text_view_has_text (MOO_TEXT_VIEW (edit));
-    else
-        has_text = FALSE;
-
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (window));
-    select_all = moo_action_group_get_action (actions, "SelectAll");
-    g_return_if_fail (select_all != NULL);
-
-    moo_action_set_sensitive (select_all, has_text);
-}
-
-
 MooEdit *moo_edit_window_get_active_doc (MooEditWindow  *window)
 {
     GtkWidget *swin;
     int page;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    if (!window->priv->notebook)
+        return NULL;
 
     page = moo_notebook_get_current_page (window->priv->notebook);
 
@@ -975,7 +904,11 @@ GSList  *moo_edit_window_list_docs      (MooEditWindow  *window)
 guint    moo_edit_window_num_docs       (MooEditWindow  *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);
-    return moo_notebook_get_n_pages (window->priv->notebook);
+
+    if (!window->priv->notebook)
+        return 0;
+    else
+        return moo_notebook_get_n_pages (window->priv->notebook);
 }
 
 
@@ -1033,15 +966,15 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
-                              G_CALLBACK (edit_filename_changed), window);
-    g_signal_connect_swapped (edit, "can-undo",
-                              G_CALLBACK (edit_can_undo_redo), window);
-    g_signal_connect_swapped (edit, "can-redo",
-                              G_CALLBACK (edit_can_undo_redo), window);
+                              G_CALLBACK (edit_changed), window);
+    g_signal_connect_swapped (edit, "notify::can-undo",
+                              G_CALLBACK (proxy_boolean_property), window);
+    g_signal_connect_swapped (edit, "notify::can-redo",
+                              G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-selection",
-                              G_CALLBACK (edit_has_selection), window);
+                              G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-text",
-                              G_CALLBACK (edit_has_text), window);
+                              G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "lang-changed",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (edit, "cursor-moved",
@@ -1072,7 +1005,7 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
                                           (gpointer) edit_changed,
                                           window);
     g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_can_undo_redo,
+                                          (gpointer) proxy_boolean_property,
                                           window);
     g_signal_handlers_disconnect_by_func (doc,
                                           (gpointer) edit_lang_changed,
