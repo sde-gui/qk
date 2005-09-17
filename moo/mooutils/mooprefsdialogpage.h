@@ -34,12 +34,11 @@ typedef struct _MooPrefsDialogPageClass   MooPrefsDialogPageClass;
 struct _MooPrefsDialogPage
 {
     GtkVBox     vbox;
-
-    char       *label;
-    GdkPixbuf  *icon;
-    char       *icon_stock_id;
-
+    char        *label;
+    GdkPixbuf   *icon;
+    char        *icon_stock_id;
     MooGladeXML *xml;
+    GSList      *widgets;
 };
 
 struct _MooPrefsDialogPageClass

@@ -12,11 +12,11 @@
  */
 
 #define MOOPREFS_COMPILATION
-#include "mooutils/mooprefsdialog-settings.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooprefsdialogpage.h"
 #include <string.h>
 
 
@@ -36,6 +36,9 @@ static void moo_prefs_dialog_page_get_property  (GObject            *object,
                                                  guint               prop_id,
                                                  GValue             *value,
                                                  GParamSpec         *pspec);
+
+static void moo_prefs_dialog_page_init_sig      (MooPrefsDialogPage *page);
+static void moo_prefs_dialog_page_apply         (MooPrefsDialogPage *page);
 
 
 enum {
@@ -68,8 +71,8 @@ static void moo_prefs_dialog_page_class_init (MooPrefsDialogPageClass *klass)
     gobject_class->get_property = moo_prefs_dialog_page_get_property;
     gobject_class->finalize = moo_prefs_dialog_page_finalize;
 
-    klass->init = _moo_prefs_dialog_page_init_sig;
-    klass->apply = _moo_prefs_dialog_page_apply;
+    klass->init = moo_prefs_dialog_page_init_sig;
+    klass->apply = moo_prefs_dialog_page_apply;
     klass->set_defaults = NULL;
 
     g_object_class_install_property (gobject_class,
@@ -134,6 +137,7 @@ static void moo_prefs_dialog_page_init (MooPrefsDialogPage *page)
     page->icon = NULL;
     page->icon_stock_id = NULL;
     page->xml = NULL;
+    page->widgets = NULL;
 }
 
 
@@ -146,6 +150,7 @@ static void moo_prefs_dialog_page_finalize       (GObject      *object)
         g_object_unref (page->icon);
     if (page->xml)
         moo_glade_xml_unref (page->xml);
+    g_slist_free (page->widgets);
 
     G_OBJECT_CLASS (moo_prefs_dialog_page_parent_class)->finalize (object);
 }
@@ -330,4 +335,232 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
                   NULL);
 
     return GTK_WIDGET (page);
+}
+
+
+/**************************************************************************/
+/* Settings
+ */
+
+static void     setting_init        (GtkWidget      *widget);
+static void     setting_apply       (GtkWidget      *widget);
+static gboolean setting_get_value   (GtkWidget      *widget,
+                                     GValue         *value);
+static void     setting_set_value   (GtkWidget      *widget,
+                                     const GValue   *value);
+
+
+static void
+moo_prefs_dialog_page_init_sig (MooPrefsDialogPage *page)
+{
+    g_slist_foreach (page->widgets, (GFunc) setting_init, NULL);
+}
+
+
+static void
+moo_prefs_dialog_page_apply (MooPrefsDialogPage *page)
+{
+    g_slist_foreach (page->widgets, (GFunc) setting_apply, NULL);
+}
+
+
+static void
+setting_init (GtkWidget *widget)
+{
+    const GValue *value;
+    const char *prefs_key = g_object_get_data (G_OBJECT (widget), "moo-prefs-key");
+
+    g_return_if_fail (prefs_key != NULL);
+
+    value = moo_prefs_get (prefs_key);
+    g_return_if_fail (value != NULL);
+
+    setting_set_value (widget, value);
+}
+
+
+static void
+setting_apply (GtkWidget *widget)
+{
+    const char *prefs_key = g_object_get_data (G_OBJECT (widget), "moo-prefs-key");
+    GtkWidget *set_or_not = g_object_get_data (G_OBJECT (widget), "moo-prefs-set-or-not");
+    GValue value;
+    GType type;
+
+    g_return_if_fail (prefs_key != NULL);
+
+    if (!GTK_WIDGET_SENSITIVE (widget))
+        return;
+
+    if (set_or_not)
+    {
+        gboolean unset;
+
+        if (!GTK_WIDGET_SENSITIVE (set_or_not))
+            return;
+
+        unset = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (set_or_not));
+
+        if (unset)
+            return;
+    }
+
+    type = moo_prefs_get_key_type (prefs_key);
+    g_return_if_fail (type != G_TYPE_NONE);
+
+    value.g_type = 0;
+    g_value_init (&value, type);
+    if (setting_get_value (widget, &value))
+        moo_prefs_set (prefs_key, &value);
+    g_value_unset (&value);
+}
+
+
+static gboolean
+setting_get_value (GtkWidget      *widget,
+                   GValue         *value)
+{
+    if (GTK_IS_SPIN_BUTTON (widget))
+    {
+        GtkSpinButton *spin = GTK_SPIN_BUTTON (widget);
+
+        if (value->g_type == G_TYPE_INT)
+        {
+            int val = gtk_spin_button_get_value_as_int (spin);
+            g_value_set_int (value, val);
+            return TRUE;
+        }
+        else if (value->g_type == G_TYPE_DOUBLE)
+        {
+            double val = gtk_spin_button_get_value (spin);
+            g_value_set_double (value, val);
+            return TRUE;
+        }
+    }
+    else if (GTK_IS_ENTRY (widget))
+    {
+        if (value->g_type == G_TYPE_STRING)
+        {
+            const char *val = gtk_entry_get_text (GTK_ENTRY (widget));
+            g_value_set_string (value, val);
+            return TRUE;
+        }
+    }
+    else if (GTK_IS_FONT_BUTTON (widget))
+    {
+        if (value->g_type == G_TYPE_STRING)
+        {
+            const char *val = gtk_font_button_get_font_name (GTK_FONT_BUTTON (widget));
+            g_value_set_string (value, val);
+            return TRUE;
+        }
+    }
+    else if (GTK_IS_COLOR_BUTTON (widget))
+    {
+        if (value->g_type == GDK_TYPE_COLOR)
+        {
+            GdkColor val;
+            gtk_color_button_get_color (GTK_COLOR_BUTTON (widget), &val);
+            g_value_set_boxed (value, &val);
+            return TRUE;
+        }
+    }
+    else if (GTK_IS_TOGGLE_BUTTON (widget))
+    {
+        if (value->g_type == G_TYPE_BOOLEAN)
+        {
+            gboolean val = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+            g_value_set_boolean (value, val);
+            return TRUE;
+        }
+    }
+
+    g_warning ("%s: could not get value of type '%s' from widget '%s'",
+               G_STRLOC, g_type_name (value->g_type),
+               g_type_name (G_OBJECT_TYPE (widget)));
+    return FALSE;
+}
+
+
+static void setting_set_value   (GtkWidget      *widget,
+                                 const GValue   *value)
+{
+    if (GTK_IS_SPIN_BUTTON (widget))
+    {
+        GtkSpinButton *spin = GTK_SPIN_BUTTON (widget);
+
+        if (value->g_type == G_TYPE_INT)
+        {
+            gtk_spin_button_set_value (spin, g_value_get_int (value));
+            return;
+        }
+        else if (value->g_type == G_TYPE_DOUBLE)
+        {
+            gtk_spin_button_set_value (spin, g_value_get_double (value));
+            return;
+        }
+    }
+    else if (GTK_IS_ENTRY (widget))
+    {
+        if (value->g_type == G_TYPE_STRING)
+        {
+            const char *val = g_value_get_string (value);
+            if (!val)
+                val = "";
+            gtk_entry_set_text (GTK_ENTRY (widget), val);
+            return;
+        }
+    }
+    else if (GTK_IS_FONT_BUTTON (widget))
+    {
+        if (value->g_type == G_TYPE_STRING)
+        {
+            const char *val = g_value_get_string (value);
+            if (!val)
+                val = "";
+            gtk_font_button_set_font_name (GTK_FONT_BUTTON (widget), val);
+            return;
+        }
+    }
+    else if (GTK_IS_COLOR_BUTTON (widget))
+    {
+        if (value->g_type == GDK_TYPE_COLOR)
+        {
+            GdkColor *val = g_value_get_boxed (value);
+            gtk_color_button_set_color (GTK_COLOR_BUTTON (widget), val);
+            return;
+        }
+    }
+    else if (GTK_IS_TOGGLE_BUTTON (widget))
+    {
+        if (value->g_type == G_TYPE_BOOLEAN)
+        {
+            gboolean val = g_value_get_boolean (value);
+            gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), val);
+            return;
+        }
+    }
+
+    g_warning ("%s: could not set value of type '%s' to widget '%s'",
+               G_STRLOC, g_type_name (value->g_type),
+               g_type_name (G_OBJECT_TYPE (widget)));
+}
+
+
+void
+moo_prefs_dialog_page_bind_setting (MooPrefsDialogPage *page,
+                                    GtkWidget          *widget,
+                                    const char         *setting,
+                                    GtkToggleButton    *set_or_not)
+{
+    g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (setting != NULL);
+    g_return_if_fail (!set_or_not || GTK_IS_TOGGLE_BUTTON (set_or_not));
+
+    g_object_set_data_full (G_OBJECT (widget), "moo-prefs-key",
+                            g_strdup (setting), g_free);
+    g_object_set_data (G_OBJECT (widget), "moo-prefs-set-or-not", set_or_not);
+
+    page->widgets = g_slist_prepend (page->widgets, widget);
 }
