@@ -59,8 +59,8 @@ static void has_text_notify         (MooTextView    *view);
 
 static void goto_line               (MooTextView    *view);
 
-static void proxy_can_undo_redo     (MooTextView    *view,
-                                     GParamSpec     *prop);
+static void can_undo                (MooTextView    *view);
+static void can_redo                (MooTextView    *view);
 
 static void insert_text_cb          (GtkTextBuffer  *buffer,
                                      GtkTextIter    *iter,
@@ -311,12 +311,10 @@ moo_text_view_constructor (GType                  type,
 
     view->priv->can_undo_handler_id =
             g_signal_connect_swapped (get_buffer (view), "can-undo",
-                                      G_CALLBACK (proxy_can_undo_redo),
-                                      view);
+                                      G_CALLBACK (can_undo), view);
     view->priv->can_redo_handler_id =
             g_signal_connect_swapped (get_buffer (view), "can-redo",
-                                      G_CALLBACK (proxy_can_undo_redo),
-                                      view);
+                                      G_CALLBACK (can_redo), view);
 
     g_object_set (get_buffer (view), "check-brackets",
                   view->priv->check_brackets, NULL);
@@ -366,10 +364,15 @@ moo_text_view_delete_selection (MooTextView *view)
 
 
 static void
-proxy_can_undo_redo (MooTextView *view,
-                     GParamSpec  *prop)
+can_undo (MooTextView *view)
 {
-    g_object_notify (G_OBJECT (view), prop->name);
+    g_object_notify (G_OBJECT (view), "can-undo");
+}
+
+static void
+can_redo (MooTextView *view)
+{
+    g_object_notify (G_OBJECT (view), "can-redo");
 }
 
 

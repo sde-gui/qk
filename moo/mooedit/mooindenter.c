@@ -32,15 +32,6 @@ static void     character_default           (MooIndenter    *indenter,
                                              GtkTextBuffer  *buffer,
                                              gunichar        inserted_char,
                                              GtkTextIter    *where);
-static gboolean backspace_default           (MooIndenter    *indenter,
-                                             GtkTextBuffer  *buffer);
-static void     tab_default                 (MooIndenter    *indenter,
-                                             GtkTextBuffer  *buffer);
-static void     shift_lines_default         (MooIndenter    *indenter,
-                                             GtkTextBuffer  *buffer,
-                                             guint           first_line,
-                                             guint           last_line,
-                                             int             direction);
 static void     set_value_default           (MooIndenter    *indenter,
                                              const char     *var,
                                              const char     *value);
@@ -73,9 +64,6 @@ moo_indenter_class_init (MooIndenterClass *klass)
     gobject_class->get_property = moo_indenter_get_property;
 
     klass->character = character_default;
-    klass->backspace = backspace_default;
-    klass->tab = tab_default;
-    klass->shift_lines = shift_lines_default;
     klass->set_value = set_value_default;
 
     g_object_class_install_property (gobject_class,
@@ -184,36 +172,6 @@ moo_indenter_character (MooIndenter    *indenter,
 }
 
 
-gboolean
-moo_indenter_backspace (MooIndenter    *indenter,
-                        GtkTextBuffer  *buffer)
-{
-    g_return_val_if_fail (MOO_IS_INDENTER (indenter), FALSE);
-    return MOO_INDENTER_GET_CLASS(indenter)->backspace (indenter, buffer);
-}
-
-
-void
-moo_indenter_tab (MooIndenter    *indenter,
-                  GtkTextBuffer  *buffer)
-{
-    g_return_if_fail (MOO_IS_INDENTER (indenter));
-    MOO_INDENTER_GET_CLASS(indenter)->tab (indenter, buffer);
-}
-
-
-void
-moo_indenter_shift_lines (MooIndenter    *indenter,
-                          GtkTextBuffer  *buffer,
-                          guint           first_line,
-                          guint           last_line,
-                          int             direction)
-{
-    g_return_if_fail (MOO_IS_INDENTER (indenter));
-    MOO_INDENTER_GET_CLASS(indenter)->shift_lines (indenter, buffer, first_line, last_line, direction);
-}
-
-
 void
 moo_indenter_set_value (MooIndenter    *indenter,
                         const char     *var,
@@ -265,12 +223,32 @@ moo_indenter_make_space (MooIndenter    *indenter,
     if (!len)
         return NULL;
 
-    if (!indenter->use_tabs || len < tab_width)
+    if (!indenter->use_tabs)
         return g_strnfill (len, ' ');
 
     delta = start % tab_width;
-    tabs = (len - delta) / tab_width + (delta ? 1 : 0);
-    spaces = (len - delta) % tab_width;
+
+    if (!delta)
+    {
+        tabs = len / tab_width;
+        spaces = len % tab_width;
+    }
+    else if (len < tab_width - delta)
+    {
+        tabs = 0;
+        spaces = len;
+    }
+    else if (len == tab_width - delta)
+    {
+        tabs = 1;
+        spaces = 0;
+    }
+    else
+    {
+        len -= tab_width - delta;
+        tabs = len / tab_width + 1;
+        spaces = len % tab_width;
+    }
 
     string = g_new (char, tabs + spaces + 1);
     string[tabs + spaces] = 0;
@@ -356,9 +334,9 @@ character_default (MooIndenter    *indenter,
 
 /* computes offset of start and returns offset or -1 if there are
    non-whitespace characters before start */
-static int
-compute_offset (const GtkTextIter *start,
-                guint              tab_width)
+int
+moo_iter_get_blank_offset (const GtkTextIter  *start,
+                           guint               tab_width)
 {
     GtkTextIter iter;
     guint offset;
@@ -402,11 +380,11 @@ compute_offset (const GtkTextIter *start,
                       blah
                      | offset
 */
-static guint
-compute_next_stop (const GtkTextIter *start,
-                   guint              tab_width,
-                   guint              offset,
-                   gboolean           same_line)
+guint
+moo_text_iter_get_prev_stop (const GtkTextIter *start,
+                             guint              tab_width,
+                             guint              offset,
+                             gboolean           same_line)
 {
     GtkTextIter iter;
     guint indent;
@@ -429,44 +407,6 @@ compute_next_stop (const GtkTextIter *start,
         if (!gtk_text_iter_backward_line (&iter))
             return 0;
     }
-}
-
-
-static gboolean
-backspace_default (MooIndenter    *indenter,
-                   GtkTextBuffer  *buffer)
-{
-    GtkTextIter start, end;
-    int offset;
-    guint new_offset;
-    guint tab_width;
-    char *insert = NULL;
-
-    gtk_text_buffer_get_iter_at_mark (buffer, &end, gtk_text_buffer_get_insert (buffer));
-
-    tab_width = indenter->tab_width;
-    offset = compute_offset (&end, tab_width);
-
-    if (offset < 0)
-        return FALSE;
-
-    if (!offset)
-        new_offset = 0;
-    else
-        new_offset = compute_next_stop (&end, tab_width, offset - 1, FALSE);
-
-    start = end;
-    gtk_text_iter_set_line_offset (&start, 0);
-    gtk_text_buffer_delete (buffer, &start, &end);
-    insert = moo_indenter_make_space (indenter, new_offset, 0);
-
-    if (insert)
-    {
-        gtk_text_buffer_insert (buffer, &start, insert, -1);
-        g_free (insert);
-    }
-
-    return TRUE;
 }
 
 
@@ -531,9 +471,9 @@ iter_get_visual_offset (GtkTextIter *iter,
 }
 
 
-static void
-tab_default (MooIndenter    *indenter,
-             GtkTextBuffer  *buffer)
+void
+moo_indenter_tab (MooIndenter    *indenter,
+                  GtkTextBuffer  *buffer)
 {
     GtkTextIter insert, start;
     int offset, new_offset, white_space;
@@ -568,7 +508,7 @@ shift_line_forward (MooIndenter   *indenter,
     GtkTextIter start;
 
     if (!compute_line_offset (iter, indenter->tab_width, &offset))
-        return;
+        return moo_indenter_tab (indenter, buffer);
 
     if (offset)
     {
@@ -638,12 +578,12 @@ shift_line_backward (MooIndenter   *indenter,
 }
 
 
-static void
-shift_lines_default (MooIndenter    *indenter,
-                     GtkTextBuffer  *buffer,
-                     guint           first_line,
-                     guint           last_line,
-                     int             direction)
+void
+moo_indenter_shift_lines (MooIndenter    *indenter,
+                          GtkTextBuffer  *buffer,
+                          guint           first_line,
+                          guint           last_line,
+                          int             direction)
 {
     guint i;
     GtkTextIter iter;

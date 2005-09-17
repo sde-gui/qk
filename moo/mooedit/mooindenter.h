@@ -53,16 +53,6 @@ struct _MooIndenterClass
                                          GtkTextBuffer  *buffer,
                                          gunichar        inserted_char,
                                          GtkTextIter    *where);
-    void        (*tab)                  (MooIndenter    *indenter,
-                                         GtkTextBuffer  *buffer);
-    gboolean    (*backspace)            (MooIndenter    *indenter,
-                                         GtkTextBuffer  *buffer);
-
-    void        (*shift_lines)          (MooIndenter    *indenter,
-                                         GtkTextBuffer  *buffer,
-                                         guint           first_line,
-                                         guint           last_line,
-                                         int             direction);
 };
 
 
@@ -87,13 +77,28 @@ void         moo_indenter_character             (MooIndenter    *indenter,
                                                  GtkTextIter    *where);
 void         moo_indenter_tab                   (MooIndenter    *indenter,
                                                  GtkTextBuffer  *buffer);
-gboolean     moo_indenter_backspace             (MooIndenter    *indenter,
-                                                 GtkTextBuffer  *buffer);
 void         moo_indenter_shift_lines           (MooIndenter    *indenter,
                                                  GtkTextBuffer  *buffer,
                                                  guint           first_line,
                                                  guint           last_line,
                                                  int             direction);
+
+/* computes offset of start and returns offset or -1 if there are
+   non-whitespace characters before start */
+int          moo_iter_get_blank_offset          (const GtkTextIter  *iter,
+                                                 guint               tab_width);
+
+/* computes where cursor should jump when backspace is pressed
+
+<-- result -->
+              blah blah blah
+                      blah
+                     | offset
+*/
+guint        moo_text_iter_get_prev_stop        (const GtkTextIter *start,
+                                                 guint              tab_width,
+                                                 guint              offset,
+                                                 gboolean           same_line);
 
 
 G_END_DECLS
