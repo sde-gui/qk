@@ -709,7 +709,7 @@ static gboolean moo_app_init_real       (MooApp         *app)
 
 #endif /* !__WIN32__ */
 
-        app->priv->editor = moo_editor_new ();
+        app->priv->editor = moo_editor_instance ();
         moo_editor_set_ui_xml (app->priv->editor, ui_xml);
         moo_editor_set_app_name (app->priv->editor,
                                  app->priv->info->short_name);

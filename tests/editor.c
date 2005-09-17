@@ -43,8 +43,7 @@ int main (int argc, char *argv[])
 
     xml = moo_app_get_ui_xml (app);
 
-    if (!moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1, NULL))
-        g_error ("%s", G_STRLOC);
+    moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1);
 
     moo_app_init (app);
 
