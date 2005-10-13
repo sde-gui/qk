@@ -23,7 +23,6 @@
 
 void        initmoo             (void);
 void        moo_utils_mod_init  (PyObject   *moo_mod);
-void        moo_ui_mod_init     (PyObject   *moo_mod);
 void        moo_edit_mod_init   (PyObject   *moo_mod);
 void        moo_term_mod_init   (PyObject   *moo_mod);
 void        moo_app_mod_init    (PyObject   *moo_mod);
@@ -39,7 +38,8 @@ static PyObject *moo_detailed_version (void)
     PyObject *res = PyDict_New ();
     g_return_val_if_fail (res != NULL, NULL);
 
-    PyDict_SetItemString (res, "version", PyString_FromString (MOO_VERSION));
+    PyDict_SetItemString (res, "full", PyString_FromString (MOO_VERSION));
+    PyDict_SetItemString (res, "api", PyString_FromString (MOO_API_VERSION));
     PyDict_SetItemString (res, "major", PyInt_FromLong (MOO_VERSION_MAJOR));
     PyDict_SetItemString (res, "minor", PyInt_FromLong (MOO_VERSION_MINOR));
     PyDict_SetItemString (res, "micro", PyInt_FromLong (MOO_VERSION_MICRO));
@@ -86,19 +86,16 @@ void        initmoo                     (void)
     PyModule_AddObject (moo_module, (char*)"version", moo_version());
     PyModule_AddObject (moo_module, (char*)"detailed_version", moo_detailed_version());
 
-#ifdef BUILD_MOOUTILS
+#ifdef MOO_BUILD_UTILS
     mod_init (moo_utils);
 #endif
-#ifdef BUILD_MOOUI
-    mod_init (moo_ui);
-#endif
-#ifdef BUILD_MOOEDIT
+#ifdef MOO_BUILD_EDIT
     mod_init (moo_edit);
 #endif
-#ifdef BUILD_MOOTERM
+#ifdef MOO_BUILD_TERM
     mod_init (moo_term);
 #endif
-#ifdef BUILD_MOOAPP
+#ifdef MOO_BUILD_APP
     mod_init (moo_app);
 #endif
 }

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<!DOCTYPE language SYSTEM "language.dtd"
+[
+    <!ENTITY func_pattern "\b[_\w][_\w\d]*(?=[\s]*[(])">
+    <!ENTITY preproc "ifdef|ifndef|include|import|else|elif|define|endif|undef|error|pragma|line">
+]>
+<language name="C" version="1.0" section="Sources"
+          mimetypes="text/x-c;text/x-chdr;text/x-csrc"
+          extensions="*.c;*.xbm">
+
+  <syntax>
+    <context name="Normal" style="Normal Text">
+      <TwoChars char1="/" char2="/" include-into-next="TRUE" context="LineComment" style="Comment"/>
+      <TwoChars char1="/" char2="*" include-into-next="TRUE" context="BlockComment" style="Comment"/>
+      <Regex pattern="^\s*#\s*if\s*0" context="If0Comment" style="Preprocessor"/>
+      <Char char="&quot;" context="String" style="String"/>
+      <Regex pattern="^\s*#\s*(if(?!\s*0\b)|&preproc;)\b"
+             include-into-next="TRUE" context="Preprocessor" style="Preprocessor"/>
+      <Regex pattern="^\s*#" include-into-next="TRUE" context="PreprocessorError" style="Error"/>
+      <Keyword keyword="Keywords" style="Keyword"/>
+      <Keyword keyword="Types" style="Data Type"/>
+      <Keyword keyword="CommonMacro" style="Common Macro"/>
+      <Regex pattern="&func_pattern;" style="Function"/>
+      <Regex pattern="\b\d+" style="Decimal">
+        <String string="ULL" caseless="TRUE"/>
+        <String string="LUL" caseless="TRUE"/>
+        <String string="LLU" caseless="TRUE"/>
+        <String string="UL" caseless="TRUE"/>
+        <String string="LU" caseless="TRUE"/>
+        <String string="LL" caseless="TRUE"/>
+        <Range chars="LUlu"/>
+      </Regex>
+    </context>
+    <context name="LineComment" style="Comment" end-of-line-context="#pop">
+      <IncludeRules from="##Misc##AlertRules"/>
+    </context>
+    <context name="BlockComment" style="Comment">
+      <TwoChars char1="*" char2="/" context="#pop"/>
+      <IncludeRules from="##Misc##AlertRules"/>
+    </context>
+    <context name="If0Comment" style="Comment">
+      <Regex pattern="^\s*#\s*(elif|else|endif)\b" include-into-next="TRUE" context="Preprocessor" style="Preprocessor"/>
+      <IncludeRules from="##Misc##AlertRules"/>
+    </context>
+    <context name="Preprocessor" style="Preprocessor" end-of-line-context="#pop#pop">
+      <Regex pattern="\\$" context="PreprocessorMultiline"/>
+      <TwoChars char1="/" char2="/" include-into-next="TRUE" context="LineComment" style="Comment"/>
+      <TwoChars char1="/" char2="*" include-into-next="TRUE" context="BlockComment" style="Comment"/>
+    </context>
+    <context name="PreprocessorMultiline" style="Preprocessor">
+      <Regex pattern="[^\\]$" context="#pop#pop"/>
+    </context>
+    <context name="PreprocessorError" style="Error">
+      <Regex pattern="[^\\]$" context="#pop#pop"/>
+    </context>
+    <context name="String" style="String">
+      <Char char="\" context="EscapedChar" style="Char"/>
+      <Char char="&quot;" context="#pop"/>
+    </context>
+    <context name="EscapedChar" style="Char">
+      <Regex pattern="." context="#pop" style="Char"/>
+    </context>
+
+    <keyword-list name="CommonMacro">
+      <keyword>NULL</keyword>
+      <keyword>TRUE</keyword>
+      <keyword>FALSE</keyword>
+      <keyword>MAX</keyword>
+      <keyword>MIN</keyword>
+      <keyword>__LINE__</keyword>
+      <keyword>__DATA__</keyword>
+      <keyword>__FILE__</keyword>
+      <keyword>__func__</keyword>
+      <keyword>__TIME__</keyword>
+      <keyword>__STDC__</keyword>
+    </keyword-list>
+
+    <keyword-list name="Keywords">
+      <keyword>asm</keyword>
+      <keyword>break</keyword>
+      <keyword>case</keyword>
+      <keyword>continue</keyword>
+      <keyword>default</keyword>
+      <keyword>do</keyword>
+      <keyword>else</keyword>
+      <keyword>for</keyword>
+      <keyword>fortran</keyword>
+      <keyword>goto</keyword>
+      <keyword>if</keyword>
+      <keyword>return</keyword>
+      <keyword>sizeof</keyword>
+      <keyword>switch</keyword>
+      <keyword>while</keyword>
+    </keyword-list>
+
+    <keyword-list name="Types">
+      <keyword>static</keyword>
+      <keyword>struct</keyword>
+      <keyword>enum</keyword>
+      <keyword>typedef</keyword>
+      <keyword>_Bool</keyword>
+      <keyword>_Complex</keyword>
+      <keyword>_Imaginary</keyword>
+      <keyword>auto</keyword>
+      <keyword>char</keyword>
+      <keyword>const</keyword>
+      <keyword>double</keyword>
+      <keyword>extern</keyword>
+      <keyword>float</keyword>
+      <keyword>int</keyword>
+      <keyword>inline</keyword>
+      <keyword>long</keyword>
+      <keyword>register</keyword>
+      <keyword>restrict</keyword>
+      <keyword>short</keyword>
+      <keyword>signed</keyword>
+      <keyword>union</keyword>
+      <keyword>unsigned</keyword>
+      <keyword>void</keyword>
+      <keyword>volatile</keyword>
+      <keyword>gboolean</keyword>
+      <keyword>gpointer</keyword>
+      <keyword>gconstpointer</keyword>
+      <keyword>gchar</keyword>
+      <keyword>guchar</keyword>
+      <keyword>gint</keyword>
+      <keyword>guint</keyword>
+      <keyword>gshort</keyword>
+      <keyword>gushort</keyword>
+      <keyword>glong</keyword>
+      <keyword>gulong</keyword>
+      <keyword>gint8</keyword>
+      <keyword>guint8</keyword>
+      <keyword>gint16</keyword>
+      <keyword>guint16</keyword>
+      <keyword>gint32</keyword>
+      <keyword>guint32</keyword>
+      <keyword>gint64</keyword>
+      <keyword>guint64</keyword>
+      <keyword>gfloat</keyword>
+      <keyword>gdouble</keyword>
+      <keyword>gsize</keyword>
+      <keyword>gssize</keyword>
+    </keyword-list>
+
+  </syntax>
+
+  <styles>
+    <style name="Normal Text"  default-style="Normal"/>
+    <style name="Data Type"    default-style="DataType"/>
+    <style name="Preprocessor" default-style="Preprocessor"/>
+    <style name="Common Macro" default-style="Keyword" foreground="#0095ff" bold="1" italic="0"/>
+    <style name="Comment"      default-style="Comment"/>
+    <style name="String"       default-style="String"/>
+    <style name="Error"        default-style="Error"/>
+    <style name="Keyword"      default-style="Keyword"/>
+    <style name="Function"     default-style="Function"/>
+    <style name="Decimal"      default-style="Decimal"/>
+    <style name="Char"         default-style="Char"/>
+  </styles>
+
+  <general>
+    <comments>
+      <single-line start="//"/>
+      <multi-line start="/*" end="*/"/>
+    </comments>
+  </general>
+</language>

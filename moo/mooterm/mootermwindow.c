@@ -11,13 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "mooterm/mootermwindow.h"
 #include "mooterm/mooterm-prefs.h"
-#include "mooui/moouiobject-impl.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moofileutils.h"
@@ -41,50 +36,49 @@ G_DEFINE_TYPE (MooTermWindow, moo_term_window, MOO_TYPE_WINDOW)
 static void moo_term_window_class_init (MooTermWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
 
     gobject_class->constructor = moo_term_window_constructor;
 
-    moo_ui_object_class_init (gobject_class, "Terminal", "Terminal");
+    moo_window_class_set_id (window_class, "Terminal", "Terminal");
 
-    moo_ui_object_class_new_action (gobject_class, "SaveSelection",
-                                    "name", "Save Selection",
-                                    "label", "_Save Selection",
-                                    "tooltip", "Save selected text to a file",
-                                    "icon-stock-id", GTK_STOCK_SAVE,
-                                    "accel", "<alt>S",
-                                    "closure::callback", moo_term_window_save_selection,
-                                    NULL);
+    moo_window_class_new_action (window_class, "SaveSelection",
+                                 "name", "Save Selection",
+                                 "label", "_Save Selection",
+                                 "tooltip", "Save selected text to a file",
+                                 "icon-stock-id", GTK_STOCK_SAVE,
+                                 "accel", "<alt>S",
+                                 "closure::callback", moo_term_window_save_selection,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Copy",
-                                    "name", "Copy",
-                                    "label", "_Copy",
-                                    "tooltip", "Copy",
-                                    "icon-stock-id", GTK_STOCK_COPY,
-                                    "accel", "<alt>C",
-                                    "default-accel", "<alt>C",
-                                    "closure::callback", moo_term_copy_clipboard,
-                                    "closure::proxy-func", moo_term_window_get_term,
-                                    NULL);
+    moo_window_class_new_action (window_class, "Copy",
+                                 "name", "Copy",
+                                 "label", "_Copy",
+                                 "tooltip", "Copy",
+                                 "icon-stock-id", GTK_STOCK_COPY,
+                                 "accel", "<alt>C",
+                                 "closure::callback", moo_term_copy_clipboard,
+                                 "closure::proxy-func", moo_term_window_get_term,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Paste",
-                                    "name", "Paste",
-                                    "label", "_Paste",
-                                    "tooltip", "Paste",
-                                    "icon-stock-id", GTK_STOCK_PASTE,
-                                    "accel", "<alt>V",
-                                    "default-accel", "<alt>V",
-                                    "closure::callback", moo_term_paste_clipboard,
-                                    "closure::proxy-func", moo_term_window_get_term,
-                                    NULL);
+    moo_window_class_new_action (window_class, "Paste",
+                                 "name", "Paste",
+                                 "label", "_Paste",
+                                 "tooltip", "Paste",
+                                 "icon-stock-id", GTK_STOCK_PASTE,
+                                 "accel", "<alt>V",
+                                 "closure::callback", moo_term_paste_clipboard,
+                                 "closure::proxy-func", moo_term_window_get_term,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "SelectAll",
-                                    "name", "Select All",
-                                    "label", "Select _All",
-                                    "tooltip", "Select all",
-                                    "accel", "<alt>A",
-                                    "closure::callback", moo_term_select_all,
-                                    "closure::proxy-func", moo_term_window_get_term,
-                                    NULL);
+    moo_window_class_new_action (window_class, "SelectAll",
+                                 "name", "Select All",
+                                 "label", "Select _All",
+                                 "tooltip", "Select all",
+                                 "accel", "<alt>A",
+                                 "closure::callback", moo_term_select_all,
+                                 "closure::proxy-func", moo_term_window_get_term,
+                                 NULL);
 }
 
 

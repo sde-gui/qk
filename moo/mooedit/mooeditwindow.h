@@ -15,9 +15,9 @@
 #ifndef __MOO_EDIT_WINDOW_H__
 #define __MOO_EDIT_WINDOW_H__
 
-#include "mooedit/mooedit.h"
-#include "mooedit/moobigpaned.h"
-#include "mooui/moowindow.h"
+#include <mooedit/mooedit.h>
+#include <mooutils/moowindow.h>
+#include <mooutils/moobigpaned.h>
 
 G_BEGIN_DECLS
 

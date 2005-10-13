@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-prefs.h
+ *   mooterm-prefs.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTREMPREFS_H
-#define MOOTERM_MOOTREMPREFS_H
+#ifndef __MOO_TERM_PREFS_H__
+#define __MOO_TERM_PREFS_H__
 
 #include <gtk/gtkwidget.h>
 
@@ -37,4 +37,4 @@ const char     *moo_term_setting            (const char  *setting_name);
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTREMPREFS_H */
+#endif /* __MOO_TERM_PREFS_H__ */

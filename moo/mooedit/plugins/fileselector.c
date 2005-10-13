@@ -17,10 +17,9 @@
 
 #include <gmodule.h>
 #include "mooedit/mooplugin-macro.h"
-#include "mooedit/moofileview/moofileview.h"
-#include "mooedit/moofileview/moobookmarkmgr.h"
+#include "mooutils/moofileview/moofileview.h"
+#include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "mooui/moouiobject.h"
 #include "mooutils/moostock.h"
 
 #ifndef MOO_VERSION
@@ -52,20 +51,20 @@ show_file_selector (MooEditWindow *window)
 static gboolean
 file_selector_plugin_init (Plugin *plugin)
 {
-    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
 
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_ui_object_class_new_action (klass, "ShowFileSelector",
-                                    "name", "Show File Selector",
-                                    "label", "Show File Selector",
-                                    "tooltip", "Show file selector",
-                                    "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
-                                    "closure::callback", show_file_selector,
-                                    NULL);
+    moo_window_class_new_action (klass, "ShowFileSelector",
+                                 "name", "Show File Selector",
+                                 "label", "Show File Selector",
+                                 "tooltip", "Show file selector",
+                                 "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
+                                 "closure::callback", show_file_selector,
+                                 NULL);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
 
@@ -84,7 +83,7 @@ file_selector_plugin_init (Plugin *plugin)
 static void
 file_selector_plugin_deinit (Plugin *plugin)
 {
-    GObjectClass *klass;
+    MooWindowClass *klass;
     MooEditor *editor = moo_editor_instance ();
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
 
@@ -93,7 +92,7 @@ file_selector_plugin_deinit (Plugin *plugin)
     plugin->bookmark_mgr = NULL;
 
     klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_ui_object_class_remove_action (klass, "ShowFileSelector");
+    moo_window_class_remove_action (klass, "ShowFileSelector");
 
     if (plugin->ui_merge_id)
         moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
@@ -152,8 +151,9 @@ static void
 fileview_activate (MooEditWindow    *window,
                    const char       *path)
 {
+    GtkWidget *fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
     moo_editor_open_file (moo_edit_window_get_editor (window),
-                          window, NULL, path, NULL);
+                          window, fileview, path, NULL);
 }
 
 
@@ -208,18 +208,18 @@ file_selector_plugin_detach (G_GNUC_UNUSED Plugin *plugin,
 }
 
 
-MOO_PLUGIN_DEFINE_PARAMS (info, TRUE, PLUGIN_ID,
-                          "File Selector", "Selects files",
-                          "Yevgen Muntyan <muntyan@tamu.edu>",
-                          MOO_VERSION);
-MOO_PLUGIN_DEFINE (FileSelectorPlugin, file_selector_plugin,
-                   file_selector_plugin_init, file_selector_plugin_deinit,
-                   file_selector_plugin_attach, file_selector_plugin_detach,
-                   NULL, info, G_TYPE_NONE);
+MOO_PLUGIN_DEFINE_INFO (file_selector, PLUGIN_ID,
+                        "File Selector", "Selects files",
+                        "Yevgen Muntyan <muntyan@tamu.edu>",
+                        MOO_VERSION);
+MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
+                        file_selector_plugin_init, file_selector_plugin_deinit,
+                        file_selector_plugin_attach, file_selector_plugin_detach,
+                        NULL, NULL, NULL, 0, 0);
 
 
 gboolean
-moo_file_selector_init (void)
+moo_file_selector_plugin_init (void)
 {
     return moo_plugin_register (file_selector_plugin_get_type ());
 }

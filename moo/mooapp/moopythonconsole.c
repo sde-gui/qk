@@ -11,12 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif /* HAVE_CONFIG_H */
-
-#ifdef USE_PYTHON
-
 #include <Python.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -25,6 +19,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moowin.h"
+#include "mooutils/mooentry.h"
 
 
 #define MAX_HISTORY 500
@@ -388,7 +383,7 @@ static void     create_gui      (MooPythonConsole  *self)
     gtk_widget_show (hseparator1);
     gtk_container_add (GTK_CONTAINER (alignment1), hseparator1);
 
-    self->entry = gtk_entry_new ();
+    self->entry = moo_entry_new ();
     gtk_widget_show (self->entry);
     gtk_box_pack_start (GTK_BOX (vbox1), self->entry, FALSE, FALSE, 0);
     GTK_WIDGET_SET_FLAGS (self->entry, GTK_CAN_DEFAULT);
@@ -435,6 +430,3 @@ static gpointer queue_nth       (GQueue             *que,
     for (i = 0, l = que->head; i < n; ++i, l = l->next) ;
     return l->data;
 }
-
-
-#endif /* USE_PYTHON */

@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooprefs.h
+ *   mooprefs.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOPREFS_MOOPREFS_H
-#define MOOPREFS_MOOPREFS_H
+#ifndef __MOO_PREFS_H__
+#define __MOO_PREFS_H__
 
 #include <glib-object.h>
 #include <gdk/gdkcolor.h>
-#include "mooutils/moomarkup.h"
+#include <mooutils/moomarkup.h>
 
 G_BEGIN_DECLS
 
@@ -134,4 +134,4 @@ gboolean        moo_prefs_notify_disconnect (guint           id);
 
 G_END_DECLS
 
-#endif /* MOOPREFS_MOOPREFS_H */
+#endif /* __MOO_PREFS_H__ */

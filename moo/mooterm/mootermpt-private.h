@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermpt-private.h
+ *   mootermpt-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMPT_PRIVATE_H
-#define MOOTERM_MOOTERMPT_PRIVATE_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_PT_PRIVATE_H__
+#define __MOO_TERM_PT_PRIVATE_H__
 
 #include "mooterm/mootermpt.h"
 #include <string.h>
@@ -68,4 +72,4 @@ inline static void pt_add_data (GSList **list, const char *data, gssize len)
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERMPT_PRIVATE_H */
+#endif /* __MOO_TERM_PT_PRIVATE_H__ */

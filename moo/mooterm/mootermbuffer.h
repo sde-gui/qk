@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermbuffer.h
+ *   mootermbuffer.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMBUFFER_H
-#define MOOTERM_MOOTERMBUFFER_H
+#ifndef __MOO_TERM_BUFFER_H__
+#define __MOO_TERM_BUFFER_H__
 
 #include <gdk/gdkcolor.h>
 
@@ -92,4 +92,4 @@ void    moo_term_buffer_print_unichar       (MooTermBuffer  *buf,
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERMBUFFER_H */
+#endif /* __MOO_TERM_BUFFER_H__ */

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<!DOCTYPE language SYSTEM "language.dtd"
+[
+	<!ENTITY name    "[A-Za-z_:][\w.:_-]*">
+	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
+]>
+<language name="XML" version="1.93" section="Markup"
+          extensions="*.docbook;*.xml;*.rc;*.daml;*.rdf"
+          mimetypes="text/xml;text/book;text/daml;text/rdf"
+          author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
+
+<syntax>
+  <context name="Start" style="Normal Text" end-of-line-context="#stay">
+    <IncludeRules from="FindXML" />
+  </context>
+
+  <context name="FindXML" style="Normal Text" end-of-line-context="#stay">
+    <String style="Comment" context="Comment" string="&lt;!--" beginRegion="comment" />
+    <String style="CDATA" context="CDATA" string="&lt;![CDATA[" beginRegion="cdata" />
+    <Regex style="Doctype" context="Doctype" pattern="&lt;!DOCTYPE\s+" beginRegion="doctype" />
+    <Regex style="Processing Instruction" context="PI" pattern="&lt;\?[\w:_-]*" beginRegion="pi" />
+    <Regex style="Element" context="Element" pattern="&lt;&name;" include-into-next="TRUE" beginRegion="element" />
+    <IncludeRules from="FindEntityRefs" />
+  </context>
+
+  <context name="FindEntityRefs" style="Normal Text" end-of-line-context="#stay">
+    <Regex style="EntityRef" context="#stay" pattern="&entref;" />
+    <Range style="Error" context="#stay" chars="&amp;&lt;" />
+  </context>
+
+  <context name="FindPEntityRefs" style="Normal Text" end-of-line-context="#stay">
+    <Regex style="EntityRef" context="#stay" pattern="&entref;" />
+    <Regex style="PEntityRef" context="#stay" pattern="%&name;;" />
+    <Range style="Error" context="#stay" chars="&amp;%" />
+  </context>
+
+
+  <context name="Comment" style="Comment" end-of-line-context="#stay">
+    <String style="Comment" context="#pop" string="--&gt;" endRegion="comment" />
+    <Regex style="Error" context="#stay" pattern="-(-(?!-&gt;))+" />
+    <Regex style="Alert" context="#stay" pattern="(FIXME|TODO)" />
+  </context>
+
+  <context name="CDATA" style="Normal Text" end-of-line-context="#stay">
+    <String style="CDATA" context="#pop" string="]]&gt;" endRegion="cdata" />
+    <String style="EntityRef" context="#stay" string="]]&amp;gt;" />
+  </context>
+
+  <context name="PI" style="Normal Text" end-of-line-context="#stay">
+    <TwoChars style="Processing Instruction" context="#pop" char1="?" char2="&gt;" endRegion="pi" />
+  </context>
+
+  <context name="Doctype" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Doctype" context="#pop" char="&gt;" endRegion="doctype" />
+    <Char style="Doctype" context="Doctype Internal Subset" char="[" beginRegion="int_subset" />
+  </context>
+
+  <context name="Doctype Internal Subset" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Doctype" context="#pop" char="]" endRegion="int_subset" />
+    <Regex style="Doctype" context="Doctype Markupdecl" pattern="&lt;!(ELEMENT|ENTITY|ATTLIST|NOTATION)\b" />
+    <String style="Comment" context="Comment" string="&lt;!--" beginRegion="comment" />
+    <Regex style="Processing Instruction" context="PI" pattern="&lt;\?[\w:_-]*" beginRegion="pi" />
+    <IncludeRules from="FindPEntityRefs" />
+  </context>
+
+  <context name="Doctype Markupdecl" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Doctype" context="#pop" char="&gt;" />
+    <Char style="Value" context="Doctype Markupdecl DQ" char="&quot;" />
+    <Char style="Value" context="Doctype Markupdecl SQ" char="&apos;" />
+  </context>
+
+  <context name="Doctype Markupdecl DQ" style="Value" end-of-line-context="#stay">
+    <Char style="Value" context="#pop" char="&quot;" />
+    <IncludeRules from="FindPEntityRefs" />
+  </context>
+
+  <context name="Doctype Markupdecl SQ" style="Value" end-of-line-context="#stay">
+    <Char style="Value" context="#pop" char="&apos;" />
+    <IncludeRules from="FindPEntityRefs" />
+  </context>
+
+  <context name="Element" style="Normal Text" end-of-line-context="#stay">
+    <TwoChars style="Element" context="#pop" char1="/" char2="&gt;" endRegion="element" />
+    <Char style="Element" context="El Content" char="&gt;" />
+    <Regex style="Attribute" context="Attribute" pattern="^&name;" />
+    <Regex style="Attribute" context="Attribute" pattern="\s+&name;" />
+    <Regex style="Error" context="#stay" pattern="\S" />
+  </context>
+
+  <context name="El Content" style="Normal Text" end-of-line-context="#stay">
+    <Regex style="Element" context="El End" include-into-next="TRUE" pattern="&lt;/&name;" />
+    <IncludeRules from="FindXML" />
+  </context>
+
+  <context name="El End" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Element" context="#pop#pop#pop" char="&gt;" endRegion="element" />
+    <Regex style="Error" context="#stay" pattern="\S" />
+  </context>
+
+  <context name="Attribute" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Attribute" context="Value" char="=" />
+    <Regex style="Error" context="#stay" pattern="\S" />
+  </context>
+
+  <context name="Value" style="Normal Text" end-of-line-context="#stay">
+    <Char style="Value" context="Value DQ" char="&quot;" />
+    <Char style="Value" context="Value SQ" char="&apos;" />
+    <Regex style="Error" context="#stay" pattern="\S" />
+  </context>
+
+  <context name="Value DQ" style="Value" end-of-line-context="#stay">
+    <Char style="Value" context="#pop#pop#pop" char="&quot;" />
+    <IncludeRules from="FindEntityRefs" />
+  </context>
+
+  <context name="Value SQ" style="Value" end-of-line-context="#stay">
+    <Char style="Value" context="#pop#pop#pop" char="&apos;" />
+    <IncludeRules from="FindEntityRefs" />
+  </context>
+
+</syntax>
+
+<styles>
+  <style name="Normal Text" default-style="Normal"/>
+  <style name="Comment" default-style="Comment"/>
+  <style name="CDATA" default-style="BaseN" bold="TRUE"/>
+  <style name="Processing Instruction" default-style="Keyword"/>
+  <style name="Doctype" default-style="DataType" bold="TRUE"/>
+  <style name="Element" default-style="Keyword"/>
+  <style name="Attribute" default-style="Others"/>
+  <style name="Value" default-style="String" foreground="#a00"/>
+  <style name="EntityRef" default-style="Decimal" />
+  <style name="PEntityRef" default-style="Decimal" />
+  <style name="Error" default-style="Error"/>
+  <style name="Alert" default-style="Alert"/>
+</styles>
+
+<general>
+  <brackets>&lt;&gt;</brackets>
+  <comments>
+    <multi-line start="&lt;!--" end="--&gt;"/>
+  </comments>
+</general>
+
+</language>

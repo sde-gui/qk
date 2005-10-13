@@ -1,97 +1,59 @@
-;;
-;;  mooterm/mooterm-pygtk.defs
-;;
-
+;; -*- scheme -*-
 ; object definitions ...
-
 (define-object Term
-
   (in-module "Moo")
   (parent "GtkWidget")
   (c-name "MooTerm")
   (gtype-id "MOO_TYPE_TERM")
 )
 
-(define-boxed TermCommand
+(define-object TermWindow
   (in-module "Moo")
-  (c-name "MooTermCommand")
-  (gtype-id "MOO_TYPE_TERM_COMMAND")
-  (copy-func "moo_term_command_copy")
-  (release-func "moo_term_command_free")
-  (fields
-    '("char*" "cmd_line")
-    '("char**" "argv")
-  )
+  (parent "MooWindow")
+  (c-name "MooTermWindow")
+  (gtype-id "MOO_TYPE_TERM_WINDOW")
 )
 
-(define-boxed TermProfile
-  (in-module "Moo")
-  (c-name "MooTermProfile")
-  (gtype-id "MOO_TYPE_TERM_PROFILE")
-  (copy-func "moo_term_profile_copy")
-  (release-func "moo_term_profile_free")
-  (fields
-    '("char*" "name")
-    '("MooTermCommand*" "cmd")
-    '("char**" "envp")
-    '("char*" "working_dir")
-  )
+;; Enumerations and flags ...
+
+;; From ../mooterm/mooterm.h
+
+(define-function moo_term_error_quark
+  (c-name "moo_term_error_quark")
+  (return-type "GQuark")
 )
 
-
-;; MooTerm methods
-
-(define-function moo_term_new
-  (c-name "moo_term_new")
-  (is-constructor-of "MooTerm")
-  (return-type "MooTerm*")
-  (parameters
-    '("guint" "width")
-    '("guint" "height")
-  )
+(define-function moo_term_get_type
+  (c-name "moo_term_get_type")
+  (return-type "GType")
 )
 
-(define-method feed
+(define-function moo_term_command_get_type
+  (c-name "moo_term_command_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_term_profile_get_type
+  (c-name "moo_term_profile_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_term_profile_array_get_type
+  (c-name "moo_term_profile_array_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_term_erase_binding_get_type
+  (c-name "moo_term_erase_binding_get_type")
+  (return-type "GType")
+)
+
+(define-method set_adjustment
   (of-object "MooTerm")
-  (c-name "moo_term_feed")
+  (c-name "moo_term_set_adjustment")
   (return-type "none")
   (parameters
-    '("const-gchar*" "data")
-    '("int" "len" (default "-1"))
-  )
-)
-
-(define-method feed_child
-  (of-object "MooTerm")
-  (c-name "moo_term_feed_child")
-  (return-type "none")
-  (parameters
-    '("const-gchar*" "data")
-    '("int" "len" (default "-1"))
-  )
-)
-
-(define-method fork_command_line
-  (of-object "MooTerm")
-  (c-name "moo_term_fork_command_line")
-  (return-type "gboolean")
-  (parameters
-    '("const-gchar*" "cmd_line")
-    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
-    '("char**" "envp" (null-ok) (default "NULL"))
-    '("GError**" "error" (null-ok) (default "NULL"))
-  )
-)
-
-(define-method fork_argv
-  (of-object "MooTerm")
-  (c-name "moo_term_fork_argv")
-  (return-type "gboolean")
-  (parameters
-    '("char**" "argv")
-    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
-    '("char**" "envp" (null-ok) (default "NULL"))
-    '("GError**" "error" (null-ok) (default "NULL"))
+    '("GtkAdjustment*" "vadj")
   )
 )
 
@@ -101,24 +63,300 @@
   (return-type "gboolean")
   (parameters
     '("const-MooTermCommand*" "cmd")
-    '("const-gchar*" "working_dir" (null-ok) (default "NULL"))
-    '("char**" "envp" (null-ok) (default "NULL"))
-    '("GError**" "error" (null-ok) (default "NULL"))
+    '("const-char*" "working_dir")
+    '("char**" "envp")
+    '("GError**" "error")
   )
 )
 
+(define-method fork_command_line
+  (of-object "MooTerm")
+  (c-name "moo_term_fork_command_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "cmd_line")
+    '("const-char*" "working_dir")
+    '("char**" "envp")
+    '("GError**" "error")
+  )
+)
 
-;; MooTermProfile
+(define-method fork_argv
+  (of-object "MooTerm")
+  (c-name "moo_term_fork_argv")
+  (return-type "gboolean")
+  (parameters
+    '("char**" "argv")
+    '("const-char*" "working_dir")
+    '("char**" "envp")
+    '("GError**" "error")
+  )
+)
+
+(define-method child_alive
+  (of-object "MooTerm")
+  (c-name "moo_term_child_alive")
+  (return-type "gboolean")
+)
+
+(define-method kill_child
+  (of-object "MooTerm")
+  (c-name "moo_term_kill_child")
+  (return-type "none")
+)
+
+(define-function moo_term_set_helper_directory
+  (c-name "moo_term_set_helper_directory")
+  (return-type "none")
+  (parameters
+    '("const-char*" "dir")
+  )
+)
+
+(define-method feed
+  (of-object "MooTerm")
+  (c-name "moo_term_feed")
+  (return-type "none")
+  (parameters
+    '("const-char*" "data")
+    '("int" "len")
+  )
+)
+
+(define-method feed_child
+  (of-object "MooTerm")
+  (c-name "moo_term_feed_child")
+  (return-type "none")
+  (parameters
+    '("const-char*" "string")
+    '("int" "len")
+  )
+)
+
+(define-method scroll_to_top
+  (of-object "MooTerm")
+  (c-name "moo_term_scroll_to_top")
+  (return-type "none")
+)
+
+(define-method scroll_to_bottom
+  (of-object "MooTerm")
+  (c-name "moo_term_scroll_to_bottom")
+  (return-type "none")
+)
+
+(define-method scroll_lines
+  (of-object "MooTerm")
+  (c-name "moo_term_scroll_lines")
+  (return-type "none")
+  (parameters
+    '("int" "lines")
+  )
+)
+
+(define-method scroll_pages
+  (of-object "MooTerm")
+  (c-name "moo_term_scroll_pages")
+  (return-type "none")
+  (parameters
+    '("int" "pages")
+  )
+)
+
+(define-method copy_clipboard
+  (of-object "MooTerm")
+  (c-name "moo_term_copy_clipboard")
+  (return-type "none")
+  (parameters
+    '("GdkAtom" "selection")
+  )
+)
+
+(define-method paste_clipboard
+  (of-object "MooTerm")
+  (c-name "moo_term_paste_clipboard")
+  (return-type "none")
+  (parameters
+    '("GdkAtom" "selection")
+  )
+)
+
+(define-method select_all
+  (of-object "MooTerm")
+  (c-name "moo_term_select_all")
+  (return-type "none")
+)
+
+(define-method get_selection
+  (of-object "MooTerm")
+  (c-name "moo_term_get_selection")
+  (return-type "char*")
+)
+
+(define-method get_content
+  (of-object "MooTerm")
+  (c-name "moo_term_get_content")
+  (return-type "char*")
+)
+
+(define-method ctrl_c
+  (of-object "MooTerm")
+  (c-name "moo_term_ctrl_c")
+  (return-type "none")
+)
+
+(define-method set_pointer_visible
+  (of-object "MooTerm")
+  (c-name "moo_term_set_pointer_visible")
+  (return-type "none")
+  (parameters
+    '("gboolean" "visible")
+  )
+)
+
+(define-method set_font_from_string
+  (of-object "MooTerm")
+  (c-name "moo_term_set_font_from_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "font")
+  )
+)
+
+(define-method set_cursor_blink_time
+  (of-object "MooTerm")
+  (c-name "moo_term_set_cursor_blink_time")
+  (return-type "none")
+  (parameters
+    '("guint" "ms")
+  )
+)
 
 (define-function moo_term_profile_new
   (c-name "moo_term_profile_new")
   (is-constructor-of "MooTermProfile")
   (return-type "MooTermProfile*")
   (parameters
-    '("char*" "name" (null-ok) (default "NULL"))
-    '("const-MooTermCommand*" "cmd" (null-ok) (default "NULL"))
-    '("char**" "envp" (null-ok) (default "NULL"))
-    '("char*" "working_dir" (null-ok) (default "NULL"))
+    '("const-char*" "name")
+    '("const-MooTermCommand*" "cmd")
+    '("char**" "envp")
+    '("const-char*" "working_dir")
+  )
+)
+
+(define-method copy
+  (of-object "MooTermProfile")
+  (c-name "moo_term_profile_copy")
+  (return-type "MooTermProfile*")
+)
+
+(define-method free
+  (of-object "MooTermProfile")
+  (c-name "moo_term_profile_free")
+  (return-type "none")
+)
+
+(define-function moo_term_profile_array_new
+  (c-name "moo_term_profile_array_new")
+  (is-constructor-of "MooTermProfileArray")
+  (return-type "MooTermProfileArray*")
+)
+
+(define-method add
+  (of-object "MooTermProfileArray")
+  (c-name "moo_term_profile_array_add")
+  (return-type "none")
+  (parameters
+    '("const-MooTermProfile*" "profile")
+  )
+)
+
+(define-method copy
+  (of-object "MooTermProfileArray")
+  (c-name "moo_term_profile_array_copy")
+  (return-type "MooTermProfileArray*")
+)
+
+(define-method free
+  (of-object "MooTermProfileArray")
+  (c-name "moo_term_profile_array_free")
+  (return-type "none")
+)
+
+(define-method get_profiles
+  (of-object "MooTerm")
+  (c-name "moo_term_get_profiles")
+  (return-type "MooTermProfileArray*")
+)
+
+(define-method get_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_get_profile")
+  (return-type "MooTermProfile*")
+  (parameters
+    '("guint" "index")
+  )
+)
+
+(define-method set_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_set_profile")
+  (return-type "none")
+  (parameters
+    '("guint" "index")
+    '("const-MooTermProfile*" "profile")
+  )
+)
+
+(define-method add_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_add_profile")
+  (return-type "none")
+  (parameters
+    '("const-MooTermProfile*" "profile")
+  )
+)
+
+(define-method remove_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_remove_profile")
+  (return-type "none")
+  (parameters
+    '("guint" "index")
+  )
+)
+
+(define-method set_default_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_set_default_profile")
+  (return-type "none")
+  (parameters
+    '("int" "profile")
+  )
+)
+
+(define-method get_default_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_get_default_profile")
+  (return-type "int")
+)
+
+(define-method start_default_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_start_default_profile")
+  (return-type "none")
+  (parameters
+    '("GError**" "error")
+  )
+)
+
+(define-method start_profile
+  (of-object "MooTerm")
+  (c-name "moo_term_start_profile")
+  (return-type "none")
+  (parameters
+    '("int" "profile")
+    '("GError**" "error")
   )
 )
 
@@ -127,7 +365,46 @@
   (is-constructor-of "MooTermCommand")
   (return-type "MooTermCommand*")
   (parameters
-    '("char*" "cmd_line" (null-ok) (default "NULL"))
-    '("char**" "argv" (null-ok) (default "NULL"))
+    '("const-char*" "cmd_line")
+    '("char**" "argv")
   )
+)
+
+(define-method copy
+  (of-object "MooTermCommand")
+  (c-name "moo_term_command_copy")
+  (return-type "MooTermCommand*")
+)
+
+(define-method free
+  (of-object "MooTermCommand")
+  (c-name "moo_term_command_free")
+  (return-type "none")
+)
+
+
+
+;; From ../mooterm/mootermwindow.h
+
+(define-function moo_term_window_get_type
+  (c-name "moo_term_window_get_type")
+  (return-type "GType")
+)
+
+(define-function moo_term_window_new
+  (c-name "moo_term_window_new")
+  (is-constructor-of "MooTermWindow")
+  (return-type "GtkWidget*")
+)
+
+(define-method apply_settings
+  (of-object "MooTermWindow")
+  (c-name "moo_term_window_apply_settings")
+  (return-type "none")
+)
+
+(define-method get_term
+  (of-object "MooTermWindow")
+  (c-name "moo_term_window_get_term")
+  (return-type "MooTerm*")
 )

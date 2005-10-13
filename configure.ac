@@ -3,8 +3,9 @@
 #
 
 m4_define([moo_major_version], [0])
-m4_define([moo_minor_version], [5])
-m4_define([moo_micro_version], [93])
+m4_define([moo_minor_version], [6])
+m4_define([moo_micro_version], [0])
+m4_define([moo_api_version], [1.0])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
 AC_INIT(libmoo, [moo_version], [muntyan@math.tamu.edu], libmoo)
@@ -12,15 +13,24 @@ AM_INIT_AUTOMAKE(libmoo, [moo_version])
 
 AC_CONFIG_HEADERS(config.h)
 
-AC_DEFINE(MOO_VERSION, ["moo_version"], "libmoo version")
 MOO_VERSION=\"moo_version\"
+MOO_VERSION_UNQUOTED=moo_version
+MOO_API_VERSION=moo_api_version
 MOO_VERSION_MAJOR=moo_major_version
 MOO_VERSION_MINOR=moo_minor_version
 MOO_VERSION_MICRO=moo_micro_version
 AC_SUBST(MOO_VERSION)
+AC_SUBST(MOO_VERSION_UNQUOTED)
+AC_SUBST(MOO_API_VERSION)
 AC_SUBST(MOO_VERSION_MAJOR)
 AC_SUBST(MOO_VERSION_MINOR)
 AC_SUBST(MOO_VERSION_MICRO)
+
+AC_DEFINE(MOO_VERSION, ["moo_version"], "libmoo version")
+AC_DEFINE(MOO_API_VERSION, ["moo_api_version"], "libmoo api version")
+AC_DEFINE(MOO_VERSION_MAJOR, [moo_major_version], "libmoo major version")
+AC_DEFINE(MOO_VERSION_MINOR, [moo_minor_version], "libmoo minor version")
+AC_DEFINE(MOO_VERSION_MICRO, [moo_micro_version], "libmoo micro version")
 
 AC_PROG_CC
 AC_PROG_CC_STDC
@@ -29,7 +39,6 @@ AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_WINDRES
-AC_PROG_YACC
 
 
 # for pcre
@@ -83,16 +92,16 @@ case $host in
     ;;
   *-*-darwin*)
     echo "++++ building for DARWIN ++++"
-    AC_DEFINE(OS_DARWIN, 1, [darwin])
+    AC_DEFINE(MOO_OS_DARWIN, 1, [darwin])
     unix_build=yes
     ;;
   *)
     unix_build=yes
     ;;
 esac
-AM_CONDITIONAL(UNIX_BUILD, test x$unix_build = "xyes")
-AM_CONDITIONAL(MINGW_BUILD, test x$mingw_build = "xyes")
-AM_CONDITIONAL(CYGWIN_BUILD, test x$cygwin_build = "xyes")
+AM_CONDITIONAL(MOO_OS_UNIX, test x$unix_build = "xyes")
+AM_CONDITIONAL(MOO_OS_MINGW, test x$mingw_build = "xyes")
+AM_CONDITIONAL(MOO_OS_CYGWIN, test x$cygwin_build = "xyes")
 
 
 ################################################################################
@@ -117,7 +126,10 @@ fi
 if test x$mingw_build = xyes; then
     AC_DEFINE(MOO_NEED_THREAD, 1, [enable glib thread support])
     PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
+    MOO_GTHREAD_PKG_NAME=gthread-2.0
 fi
+
+AC_SUBST(MOO_GTHREAD_PKG_NAME)
 
 
 ################################################################################
@@ -189,9 +201,9 @@ if test x$cygwin_build != "xyes" -a x$build_python != "xno"; then
     ])
 fi
 
-AM_CONDITIONAL(USE_PYTHON, test x$build_python = "xyes")
+AM_CONDITIONAL(MOO_USE_PYTHON, test x$build_python = "xyes")
 if test x$build_python = "xyes"; then
-    AC_DEFINE(USE_PYTHON,, [USE_PYTHON])
+    AC_DEFINE(MOO_USE_PYTHON,, [MOO_USE_PYTHON])
 fi
 
 
@@ -211,9 +223,9 @@ if test x$cygwin_build != "xyes"; then
 fi
 
 
-AM_CONDITIONAL(USE_PYGTK, test x$build_pygtk = "xyes")
+AM_CONDITIONAL(MOO_USE_PYGTK, test x$build_pygtk = "xyes")
 if test x$build_pygtk = "xyes"; then
-    AC_DEFINE(USE_PYGTK,, [USE_PYGTK])
+    AC_DEFINE(MOO_USE_PYGTK,, [MOO_USE_PYGTK])
 fi
 
 if test x$build_pygtk = "xyes"; then
@@ -282,11 +294,6 @@ AC_ARG_WITH([mooutils],
     [build_mooutils=$withval],
     [build_mooutils=yes]
 )
-AC_ARG_WITH([mooui],
-    AC_HELP_STRING([--without-mooui], [disable building mooui]),
-    [build_mooui=$withval],
-    [build_mooui=yes]
-)
 AC_ARG_WITH([mooterm],
     AC_HELP_STRING([--without-mooterm], [disable building mooterm]),
     [build_mooterm=$withval],
@@ -296,43 +303,57 @@ AC_ARG_WITH([mooterm],
 
 if test x$cygwin_build = "xyes"; then
     build_mooutils="no"
-    build_mooui="no"
     build_mooedit="no"
     build_mooapp="no"
 fi
 
 if test "x$build_mooapp" != "xno"; then
     build_mooedit="yes"
-    build_mooterm="yes"
 fi
 if test "x$build_mooedit" != "xno"; then
-    build_mooui="yes"
+    build_mooutils="yes"
 fi
 if test "x$build_mooterm" != "xno" -a x$cygwin_build != "xyes"; then
     build_mooutils="yes"
 fi
-if test "x$build_mooui" != "xno"; then
-    build_mooutils="yes"
+
+
+AM_CONDITIONAL(MOO_BUILD_UTILS,     test "x$build_mooutils"  != "xno")
+AM_CONDITIONAL(MOO_BUILD_EDIT,      test "x$build_mooedit"   != "xno")
+AM_CONDITIONAL(MOO_BUILD_TERM,      test "x$build_mooterm"   != "xno")
+AM_CONDITIONAL(MOO_BUILD_APP,       test "x$build_mooapp"    != "xno")
+AM_CONDITIONAL(MOO_BUILD_PLUGINS,   true)
+
+if test "x$build_mooutils" != "xno"; then
+    AC_DEFINE(MOO_BUILD_UTILS,, [build mooutils])
+    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_UTILS"
+fi
+if test "x$build_mooedit" != "xno"; then
+    AC_DEFINE(MOO_BUILD_EDIT,, [build mooedit])
+    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_EDIT"
+fi
+if test "x$build_mooterm" != "xno"; then
+    AC_DEFINE(MOO_BUILD_TERM,, [build mooterm])
+    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_TERM"
+fi
+if test "x$build_mooapp" != "xno"; then
+    AC_DEFINE(MOO_BUILD_APP,, [build mooapp])
+    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_APP"
 fi
 
-
-AM_CONDITIONAL(BUILD_MOOUTILS,  test "x$build_mooutils"  != "xno")
-AM_CONDITIONAL(BUILD_MOOUI,     test "x$build_mooui"     != "xno")
-AM_CONDITIONAL(BUILD_MOOEDIT,   test "x$build_mooedit"   != "xno")
-AM_CONDITIONAL(BUILD_MOOTERM,   test "x$build_mooterm"   != "xno")
-AM_CONDITIONAL(BUILD_MOOAPP,    test "x$build_mooapp"    != "xno")
 
 
 moo_top_src_dir=`cd $srcdir && pwd`
 moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
-MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS"
-MOO_LIBS="$moo_top_build_dir/moo/libmoo.la $GTK_LIBS"
+MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
+MOO_LIBS="$GTK_LIBS"
 
 if test x$has_fam = xyes; then
     MOO_LIBS="$MOO_LIBS $FAM_LIBS"
 fi
 
 AC_SUBST(MOO_CFLAGS)
+AC_SUBST(MOO_COMPONENTS_CFLAGS)
 AC_SUBST(MOO_LIBS)
 
 
@@ -340,7 +361,7 @@ AC_SUBST(MOO_LIBS)
 #  MooEdit stuff
 #
 if test "x$build_mooedit" != "xno"; then
-    MOO_CFLAGS="$MOO_CFLAGS $XML_CFLAGS -I$moo_top_src_dir/moo/mooedit"
+    MOO_CFLAGS="$MOO_CFLAGS $XML_CFLAGS"
     MOO_LIBS="$MOO_LIBS $XML_LIBS"
 fi
 
@@ -359,7 +380,7 @@ fi
 
 moodatadir=share
 
-moorootdir=${moodatadir}/moo
+moorootdir=${moodatadir}/moo-1.0
 NO_PREFIX_MOO_ROOT_DIR="${moorootdir}"
 AC_SUBST(NO_PREFIX_MOO_ROOT_DIR)
 MOO_ROOT_DIR="${mooprefix}/${moorootdir}"
@@ -367,12 +388,12 @@ AC_SUBST(MOO_ROOT_DIR)
 
 AC_DEFINE_UNQUOTED(MOO_ROOT_DIR, "${mooprefix}/${moorootdir}", [data files go to MOO_ROOT_DIR])
 
-MOO_EDIT_LANG_FILES_DIR="${mooprefix}/${moorootdir}/language-specs"
-AC_SUBST(MOO_EDIT_LANG_FILES_DIR)
-AC_DEFINE_UNQUOTED(MOO_EDIT_LANG_FILES_DIR, "${mooprefix}/${moorootdir}/language-specs", [lang files dir])
+MOO_TEXT_LANG_FILES_DIR="${mooprefix}/${moorootdir}/syntax"
+AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
+AC_DEFINE_UNQUOTED(MOO_TEXT_LANG_FILES_DIR, "${mooprefix}/${moorootdir}/syntax", [lang files dir])
 
 
-moolibdir=lib/moo
+moolibdir=lib/moo-1.0
 NO_PREFIX_MOO_LIB_DIR="${moolibdir}"
 AC_SUBST(NO_PREFIX_MOO_LIB_DIR)
 MOO_LIB_DIR="${mooprefix}/${moolibdir}"
@@ -388,33 +409,30 @@ AC_DEFINE_UNQUOTED(MOO_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugin
 #
 AC_OUTPUT([
 Makefile
+moo/moo-config.h
 moo/Makefile
 moo/mooapp/Makefile
 moo/mooapp/glade/Makefile
 moo/mooedit/Makefile
-moo/mooedit/gtksourceview/Makefile
-moo/mooedit/xdgmime/Makefile
 moo/mooedit/glade/Makefile
-moo/mooedit/language-specs/Makefile
-moo/mooedit/moofileview/Makefile
-moo/mooedit/moofileview/glade/Makefile
+moo/mooedit/syntax/Makefile
 moo/mooedit/plugins/Makefile
 moo/mooedit/plugins/cproject/Makefile
 moo/mooterm/Makefile
 moo/mooterm/termhelper_res.rc
 moo/mooterm/glade/Makefile
-moo/mooui/Makefile
-moo/mooui/glade/Makefile
 moo/mooutils/Makefile
 moo/mooutils/glade/Makefile
 moo/mooutils/newgtk/Makefile
 moo/mooutils/pcre/Makefile
 moo/mooutils/pixmaps/Makefile
-moo/mooutils/unrtf/Makefile
+moo/mooutils/moofileview/Makefile
+moo/mooutils/moofileview/glade/Makefile
+moo/mooutils/xdgmime/Makefile
 moo/moopython/Makefile
 tests/Makefile
-tests/medit.c
 tests/pyapp.py
+moo.pc
 ])
 
 
@@ -442,7 +460,7 @@ if test x$cygwin_build != "xyes"; then
     echo "    standalone 'moo' python module            = $build_pymoo"
     echo "    xml support                               = $use_xml"
     echo
-    echo "    editor lang files go to                   = $MOO_EDIT_LANG_FILES_DIR"
+    echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
     echo
 else
     echo

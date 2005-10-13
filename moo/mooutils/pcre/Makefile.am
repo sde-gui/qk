@@ -7,8 +7,7 @@ AM_CFLAGS =                             \
     $(PYTHON_INCLUDES)                  \
     $(PYGTK_CFLAGS)                     \
     $(MOO_CFLAGS)                       \
-    $(CFLAGS)                           \
-    -DG_LOG_DOMAIN=\"pcre\"
+    $(CFLAGS)
 
 libpcre_la_SOURCES =    \
     get.c               \

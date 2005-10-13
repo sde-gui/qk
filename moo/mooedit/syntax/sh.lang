@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="sh" version="1.0" section="Scripts"
+          mimetypes="text/x-shellscript;application/x-shellscript;text/x-sh"
+          extensions="*.sh" author="Silian Della Ragione (silian87@gechi.it)">
+<!--
+    Author:   Silian Della Ragione (silian87@gechi.it)
+    Contribs: Paolo Maggi (paolo@gnome.org)
+    Contribs: Muntyan :-)
+-->
+
+  <syntax>
+
+    <context name="Normal">
+        <IncludeRules from="##Misc##ShebangRules"/>
+        <Char char="#" include-into-next="TRUE" context="Comment" style="Comment"/>
+        <Char char="&quot;" context="String1" style="String"/>
+        <Char char="&apos;" context="String2" style="String"/>
+        <Char char="`" context="BacktickString" style="Function"/>
+        <Regex pattern="\b[a-zA-Z_][a-zA-Z0-9_]+[ \t]*\(\)" style="Function"/>
+        <Keyword keyword="Redirections" style="Redirections"/>
+        <Keyword keyword="Operators" style="Function"/>
+        <Regex pattern="[$]+[@?*{a-zA-Z0-9_][}a-zA-Z0-9_]*" style="Variable"/>
+        <Regex pattern="[a-zA-Z_][a-zA-Z0-9_]*(?=\=)" style="Variable"/>
+        <Keyword keyword="Built-in Commands" style="Keyword"/>
+        <Keyword keyword="Common Commands" style="Common Commands"/>
+    </context>
+    <context name="Comment" style="Comment" end-of-line-context="#pop">
+        <IncludeRules from="##Misc##AlertRules"/>
+    </context>
+    <context name="String1" style="String" end-of-line-context="#pop">
+        <Char char="&quot;" context="#pop" style="String"/>
+    </context>
+    <context name="String2" style="String" end-of-line-context="#pop">
+        <Char char="&apos;" context="#pop" style="String"/>
+    </context>
+    <context name="BacktickString" style="Function" end-of-line-context="#pop">
+        <Char char="`" context="#pop" style="Function"/>
+    </context>
+
+    <keyword-list name="Redirections">
+        <keyword>&gt;&amp;+[0-9]</keyword>
+        <keyword>[0-9]+&gt;&amp;</keyword>
+        <keyword>[0-9]+&gt;&amp;+[0-9]</keyword>
+        <keyword>[0-9]+&gt;</keyword>
+        <keyword>&gt;&gt;</keyword>
+        <keyword>[0-9]+&gt;&gt;</keyword>
+        <keyword>&lt;&amp;[0-9]</keyword>
+        <keyword>[0-9]+&lt;&amp;</keyword>
+        <keyword>[0-9]+&lt;&amp;[0-9]</keyword>
+        <keyword>[0-9]+&lt;</keyword>
+        <keyword>&lt;&lt;+[0-9]</keyword>
+        <keyword>[0-9]+&lt;&lt;</keyword>
+    </keyword-list>
+
+    <keyword-list name="Operators">
+        <keyword>\-a</keyword>
+        <keyword>\-b</keyword>
+        <keyword>\-c</keyword>
+        <keyword>\-d</keyword>
+        <keyword>\-e</keyword>
+        <keyword>\-f</keyword>
+        <keyword>\-g</keyword>
+        <keyword>\-h</keyword>
+        <keyword>\-k</keyword>
+        <keyword>\-p</keyword>
+        <keyword>\-r</keyword>
+        <keyword>\-s</keyword>
+        <keyword>\-t</keyword>
+        <keyword>\-u</keyword>
+        <keyword>\-w</keyword>
+        <keyword>\-x</keyword>
+        <keyword>\-O</keyword>
+        <keyword>\-G</keyword>
+        <keyword>\-L</keyword>
+        <keyword>\-S</keyword>
+        <keyword>\-N</keyword>
+        <keyword>\-nt</keyword>
+        <keyword>\-ot</keyword>
+        <keyword>\-ef</keyword>
+        <keyword>\-o</keyword>
+        <keyword>\-z</keyword>
+        <keyword>\-n</keyword>
+        <keyword>&lt;</keyword>
+        <keyword>&gt;</keyword>
+        <keyword>\!=</keyword>
+        <keyword>\-eq</keyword>
+        <keyword>\-ne</keyword>
+        <keyword>\-lt</keyword>
+        <keyword>\-le</keyword>
+        <keyword>\-gt</keyword>
+        <keyword>\-ge</keyword>
+    </keyword-list>
+
+    <keyword-list name="Built-in Commands">
+        <keyword>\!</keyword>
+        <keyword>\{</keyword>
+        <keyword>\}</keyword>
+        <keyword>case</keyword>
+        <keyword>do</keyword>
+        <keyword>done</keyword>
+        <keyword>elif</keyword>
+        <keyword>else</keyword>
+        <keyword>else</keyword>
+        <keyword>esac</keyword>
+        <keyword>fi</keyword>
+        <keyword>for</keyword>
+        <keyword>function</keyword>
+        <keyword>if</keyword>
+        <keyword>in</keyword>
+        <keyword>select</keyword>
+        <keyword>then</keyword>
+        <keyword>until</keyword>
+        <keyword>while</keyword>
+        <keyword>bash</keyword>
+        <keyword>\:</keyword>
+        <keyword>\.</keyword>
+        <keyword>\[</keyword>
+        <keyword>\]</keyword>
+        <keyword>[$]+\[</keyword>
+        <keyword>alias</keyword>
+        <keyword>bg</keyword>
+        <keyword>bind</keyword>
+        <keyword>break</keyword>
+        <keyword>builtin</keyword>
+        <keyword>cd</keyword>
+        <keyword>command</keyword>
+        <keyword>compgen</keyword>
+        <keyword>complete</keyword>
+        <keyword>continue</keyword>
+        <keyword>declare</keyword>
+        <keyword>dirs</keyword>
+        <keyword>disown</keyword>
+        <keyword>echo</keyword>
+        <keyword>enable</keyword>
+        <keyword>eval</keyword>
+        <keyword>exec</keyword>
+        <keyword>exit</keyword>
+        <keyword>export</keyword>
+        <keyword>fc</keyword>
+        <keyword>fg</keyword>
+        <keyword>getopts</keyword>
+        <keyword>hash</keyword>
+        <keyword>help</keyword>
+        <keyword>history</keyword>
+        <keyword>jobs</keyword>
+        <keyword>kill</keyword>
+        <keyword>let</keyword>
+        <keyword>local</keyword>
+        <keyword>logout</keyword>
+        <keyword>podp</keyword>
+        <keyword>printf</keyword>
+        <keyword>pushd</keyword>
+        <keyword>pwd</keyword>
+        <keyword>read</keyword>
+        <keyword>readonly</keyword>
+        <keyword>return</keyword>
+        <keyword>set</keyword>
+        <keyword>shift</keyword>
+        <keyword>shopt</keyword>
+        <keyword>source</keyword>
+        <keyword>suspend</keyword>
+        <keyword>test</keyword>
+        <keyword>times</keyword>
+        <keyword>trap</keyword>
+        <keyword>type</keyword>
+        <keyword>typeset</keyword>
+        <keyword>ulimit</keyword>
+        <keyword>umask</keyword>
+        <keyword>unalias</keyword>
+        <keyword>unset</keyword>
+        <keyword>wait</keyword>
+    </keyword-list>
+
+    <keyword-list name="Common Commands">
+        <keyword>cp</keyword>
+        <keyword>rm</keyword>
+        <keyword>mv</keyword>
+        <keyword>which</keyword>
+        <keyword>cat</keyword>
+        <keyword>grep</keyword>
+        <keyword>sed</keyword>
+        <keyword>awk</keyword>
+        <keyword>mkdir</keyword>
+        <keyword>rmdir</keyword>
+        <keyword>ls</keyword>
+        <keyword>ps</keyword>
+        <keyword>killall</keyword>
+        <keyword>pidof</keyword>
+        <keyword>diff</keyword>
+        <keyword>head</keyword>
+        <keyword>tail</keyword>
+        <keyword>chown</keyword>
+        <keyword>chmod</keyword>
+        <keyword>dd</keyword>
+        <keyword>find</keyword>
+        <keyword>locate</keyword>
+        <keyword>tar</keyword>
+        <keyword>gunzip</keyword>
+        <keyword>gzip</keyword>
+        <keyword>bunzip2</keyword>
+        <keyword>bzip2</keyword>
+        <keyword>zip</keyword>
+        <keyword>unzip</keyword>
+        <keyword>mount</keyword>
+        <keyword>umount</keyword>
+        <keyword>sh</keyword>
+        <keyword>clear</keyword>
+        <keyword>wget</keyword>
+        <keyword>date</keyword>
+        <keyword>dir</keyword>
+        <keyword>du</keyword>
+        <keyword>expr</keyword>
+        <keyword>su</keyword>
+        <keyword>passwd</keyword>
+        <keyword>man</keyword>
+        <keyword>info</keyword>
+        <keyword>id</keyword>
+        <keyword>ifconfig</keyword>
+        <keyword>gcc</keyword>
+        <keyword>make</keyword>
+        <keyword>ld</keyword>
+        <keyword>ln</keyword>
+        <keyword>lsmod</keyword>
+        <keyword>insmod</keyword>
+        <keyword>modprobe</keyword>
+        <keyword>less</keyword>
+        <keyword>more</keyword>
+        <keyword>patch</keyword>
+        <keyword>ping</keyword>
+        <keyword>nice</keyword>
+        <keyword>renice</keyword>
+        <keyword>file</keyword>
+        <keyword>sudo</keyword>
+        <keyword>beep</keyword>
+        <keyword>tempfile</keyword>
+        <keyword>touch</keyword>
+        <keyword>eject</keyword>
+        <keyword>uname</keyword>
+        <keyword>uptime</keyword>
+        <keyword>whoami</keyword>
+        <keyword>who</keyword>
+        <keyword>whereis</keyword>
+        <keyword>sleep</keyword>
+        <keyword>dialog</keyword>
+        <keyword>xdialog</keyword>
+        <keyword>zenity</keyword>
+    </keyword-list>
+
+  </syntax>
+
+  <styles>
+    <style name="Variable" default-style="Float"/>
+    <style name="Comment" default-style="Comment"/>
+    <style name="String" default-style="String"/>
+    <style name="Function" default-style="Function"/>
+    <style name="Common Commands" default-style="Others"/>
+    <style name="Redirections" default-style="Others"/>
+    <style name="Keyword"     default-style="Keyword"/>
+  </styles>
+
+  <general>
+    <comments>
+      <single-line start="#"/>
+    </comments>
+  </general>
+</language>

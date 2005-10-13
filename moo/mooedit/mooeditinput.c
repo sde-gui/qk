@@ -13,8 +13,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mootextview-private.h"
 #include "mooedit/mootextiter.h"
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
@@ -23,12 +22,12 @@
 inline static GtkWidgetClass*
 parent_class (void)
 {
-    static gpointer sourceview_class = NULL;
+    static gpointer textview_class = NULL;
 
-    if (!sourceview_class)
-        sourceview_class = GTK_WIDGET_CLASS (gtk_type_class (GTK_TYPE_SOURCE_VIEW));
+    if (!textview_class)
+        textview_class = GTK_WIDGET_CLASS (gtk_type_class (GTK_TYPE_TEXT_VIEW));
 
-    return GTK_WIDGET_CLASS (sourceview_class);
+    return GTK_WIDGET_CLASS (textview_class);
 }
 
 
@@ -241,9 +240,7 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
 
     if (!gtk_text_iter_equal (&start, &end))
     {
-        gtk_text_buffer_begin_user_action (buf);
         gtk_text_buffer_delete_interactive (buf, &start, &end, text_view->editable);
-        gtk_text_buffer_end_user_action (buf);
         gtk_text_view_scroll_mark_onscreen (text_view, insert_mark);
     }
 }
@@ -576,6 +573,8 @@ char_class (const GtkTextIter *iter)
     else return 2;
 }
 
+#define FIND_BRACKET_LIMIT 2000
+
 int
 _moo_text_view_extend_selection (MooTextView        *view,
                                  MooTextSelectionType type,
@@ -599,7 +598,8 @@ _moo_text_view_extend_selection (MooTextView        *view,
                 !(order == 1 && gtk_text_iter_compare (&rstart, start) == -1))  /* this means (...)| */
             {
                 GtkTextIter rend = rstart;
-                if (moo_text_iter_find_matching_bracket (&rend) == MOO_BRACKET_MATCH_CORRECT)
+                if (moo_text_iter_find_matching_bracket (&rend,FIND_BRACKET_LIMIT) ==
+                    MOO_BRACKET_MATCH_CORRECT)
                 {
                     if (gtk_text_iter_compare (&rstart, &rend) > 0)
                     {   /*  <rend>(     <rstart>) */
@@ -661,7 +661,7 @@ _moo_text_view_extend_selection (MooTextView        *view,
         return gtk_text_iter_compare (start, end);
     }
 
-    g_assert_not_reached ();
+    g_return_val_if_reached (FALSE);
 }
 
 
@@ -837,6 +837,8 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     view->priv->in_key_press = TRUE;
     handled = parent_class()->key_press_event (widget, event);
     view->priv->in_key_press = FALSE;
+
+    _moo_text_view_check_char_inserted (view);
 
     return handled;
 }
@@ -1027,7 +1029,7 @@ handle_backspace (MooTextView        *view,
         g_free (insert);
     }
 
-    gtk_text_buffer_begin_user_action (buffer);
+    gtk_text_buffer_end_user_action (buffer);
 
     gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
                                         gtk_text_buffer_get_insert (buffer));

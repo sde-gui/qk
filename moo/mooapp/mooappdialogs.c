@@ -18,6 +18,7 @@
 #include "mooapp/mooapp-private.h"
 #include "mooterm/mooterm-prefs.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/mooplugin.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moofileutils.h"
@@ -48,14 +49,22 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
 
+#ifdef MOO_BUILD_TERM
     moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
+#endif
+
+#ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
+//     moo_prefs_dialog_append_page (dialog, moo_edit_colors_prefs_page_new (moo_app_get_editor (app)));
+    _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
+#endif
 
     return GTK_WIDGET (dialog);
 }
 
 
-static const char *copyright = "\302\251 2004-2005 Yevgen Muntyan";
+#define COPYRIGHT_SYMBOL "\302\251"
+static const char *copyright = COPYRIGHT_SYMBOL " 2004-2005 Yevgen Muntyan";
 
 
 static void show_about_dialog (GtkWidget *dialog,

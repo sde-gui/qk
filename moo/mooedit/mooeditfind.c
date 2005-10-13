@@ -13,14 +13,23 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mootextview-private.h"
 #include "mooedit/mooeditsearch.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditgotoline-glade.h"
 #include "mooedit/mooeditfind-glade.h"
+#include "mooutils/moohistoryentry.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
+
+
+static void
+scroll_to_mark (MooTextView *view,
+                GtkTextMark *mark)
+{
+    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view), mark, 0.2, FALSE, 0, 0);
+}
 
 
 /****************************************************************************/
@@ -121,8 +130,7 @@ moo_text_view_goto_line (MooTextView *view,
 
     gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
     gtk_text_buffer_place_cursor (buffer, &iter);
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
-                                        gtk_text_buffer_get_insert (buffer));
+    scroll_to_mark (view, gtk_text_buffer_get_insert (buffer));
 }
 
 
@@ -156,7 +164,6 @@ static void          set_replace_with   (GtkWidget  *dialog,
 static GtkWidget    *create_find_dialog (gboolean    replace);
 
 
-
 typedef struct {
     MooTextView *view;
     GtkWidget *dialog;
@@ -177,9 +184,12 @@ create_find_dialog (gboolean replace)
     MooGladeXML *xml;
     GtkWidget *dialog, *replace_frame, *dont_prompt_on_replace;
     GtkButton *ok_btn;
+    MooHistoryEntry *text_to_find, *replacement_text;
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1, "dialog", NULL);
-    g_return_val_if_fail (xml != NULL, NULL);
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "text_to_find", MOO_TYPE_HISTORY_ENTRY);
+    moo_glade_xml_map_id (xml, "replacement_text", MOO_TYPE_HISTORY_ENTRY);
+    moo_glade_xml_parse_memory (xml, MOO_EDIT_FIND_GLADE_UI, -1, "dialog");
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
@@ -190,6 +200,11 @@ create_find_dialog (gboolean replace)
     replace_frame = moo_glade_xml_get_widget (xml, "replace_frame");
     dont_prompt_on_replace = moo_glade_xml_get_widget (xml, "dont_prompt_on_replace");
     ok_btn = moo_glade_xml_get_widget (xml, "ok_btn");
+
+    text_to_find = moo_glade_xml_get_widget (xml, "text_to_find");
+    replacement_text = moo_glade_xml_get_widget (xml, "replacement_text");
+    moo_history_entry_set_list (text_to_find, _moo_text_search_params->text_to_find_history);
+    moo_history_entry_set_list (replacement_text, _moo_text_search_params->replacement_history);
 
     if (replace)
     {
@@ -241,13 +256,25 @@ _moo_text_view_find (MooTextView *view)
     dialog = create_find_dialog (FALSE);
     set (dialog, regex, case_sensitive, whole_words,
          from_cursor, backwards, selected, FALSE);
-    if (_moo_text_search_params->text)
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
+        gtk_text_iter_get_line (&sel_start) == gtk_text_iter_get_line (&sel_end))
+    {
+        char *selection = gtk_text_buffer_get_text (buffer, &sel_start, &sel_end, TRUE);
+        set_text (dialog, selection);
+        g_free (selection);
+    }
+    else if (_moo_text_search_params->text)
+    {
         set_text (dialog, _moo_text_search_params->text);
+    }
 
     gtk_window_set_transient_for (GTK_WINDOW (dialog),
                                   GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))));
     response = gtk_dialog_run (GTK_DIALOG (dialog));
-    if (response != GTK_RESPONSE_OK) {
+
+    if (response != GTK_RESPONSE_OK)
+    {
         gtk_widget_destroy (dialog);
         return;
     }
@@ -255,7 +282,8 @@ _moo_text_view_find (MooTextView *view)
     get (dialog, &regex, &case_sensitive, &whole_words,
          &from_cursor, &backwards, &selected, NULL);
 
-    if (selected) {
+    if (selected)
+    {
         g_warning ("%s: searching in selected not imlemented\n", G_STRLOC);
         gtk_widget_destroy (dialog);
         return;
@@ -274,6 +302,9 @@ _moo_text_view_find (MooTextView *view)
     _moo_text_search_params->text = g_strdup (get_text (dialog));
     text = _moo_text_search_params->text;
     gtk_widget_destroy (dialog);
+
+    if (text && text[0])
+        moo_history_list_add (_moo_text_search_params->text_to_find_history, text);
 
     options = 0;
 
@@ -369,7 +400,7 @@ _moo_text_view_find (MooTextView *view)
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
+        scroll_to_mark (view, insert);
     }
 }
 
@@ -389,7 +420,7 @@ _moo_text_view_find_next (MooTextView *view)
 
     if (_moo_text_search_params->last_search_stamp < 0 ||
         !_moo_text_search_params->text)
-            return moo_text_view_find (view);
+            return moo_text_view_find_interactive (view);
 
     regex = _moo_text_search_params->regex;
     case_sensitive = _moo_text_search_params->case_sensitive;
@@ -470,7 +501,7 @@ _moo_text_view_find_next (MooTextView *view)
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
+        scroll_to_mark (view, insert);
     }
 }
 
@@ -490,7 +521,7 @@ _moo_text_view_find_previous (MooTextView *view)
 
     if (_moo_text_search_params->last_search_stamp < 0 ||
         !_moo_text_search_params->text)
-            return moo_text_view_find (view);
+            return moo_text_view_find_interactive (view);
 
     regex = _moo_text_search_params->regex;
     case_sensitive = _moo_text_search_params->case_sensitive;
@@ -572,7 +603,7 @@ _moo_text_view_find_previous (MooTextView *view)
         }
 
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);
+        scroll_to_mark (view, insert);
     }
 }
 
@@ -609,8 +640,19 @@ _moo_text_view_replace (MooTextView *view)
     dialog = create_find_dialog (TRUE);
     set (dialog, regex, case_sensitive, whole_words,
          from_cursor, backwards, selected, dont_prompt_on_replace);
-    if (_moo_text_search_params->text)
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
+        gtk_text_iter_get_line (&sel_start) == gtk_text_iter_get_line (&sel_end))
+    {
+        char *selection = gtk_text_buffer_get_text (buffer, &sel_start, &sel_end, TRUE);
+        set_text (dialog, selection);
+        g_free (selection);
+    }
+    else if (_moo_text_search_params->text)
+    {
         set_text (dialog, _moo_text_search_params->text);
+    }
+
     if (_moo_text_search_params->replace_with)
         set_replace_with (dialog, _moo_text_search_params->replace_with);
 
@@ -649,6 +691,11 @@ _moo_text_view_replace (MooTextView *view)
     _moo_text_search_params->replace_with = g_strdup (get_replace_with (dialog));
     replace_with = _moo_text_search_params->replace_with;
     gtk_widget_destroy (dialog);
+
+    if (text && text[0])
+        moo_history_list_add (_moo_text_search_params->text_to_find_history, text);
+    if (replace_with && replace_with[0])
+        moo_history_list_add (_moo_text_search_params->replacement_history, replace_with);
 
     options = 0;
     if (regex) options |= MOO_TEXT_SEARCH_REGEX;
@@ -765,8 +812,7 @@ static MooTextReplaceResponseType prompt_on_replace_func
 
     buffer = gtk_text_iter_get_buffer (to_replace_end);
     gtk_text_buffer_select_range (buffer, to_replace_end, to_replace_start);
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (data->view),
-                                        gtk_text_buffer_get_insert (buffer));
+    scroll_to_mark (data->view, gtk_text_buffer_get_insert (buffer));
 
     if (!data->dialog)
         data->dialog = moo_text_prompt_on_replace_dialog (data->view);
@@ -849,8 +895,8 @@ static void          set_text           (GtkWidget  *dialog,
 {
     MooGladeXML *xml = g_object_get_data (G_OBJECT (dialog), "moo-dialog-xml");
     GET_WIDGET (text_to_find);
-    gtk_entry_set_text (GTK_ENTRY (text_to_find), text);
-    gtk_editable_select_region (GTK_EDITABLE (text_to_find), 0, -1);
+    moo_combo_entry_set_text (MOO_COMBO (text_to_find), text);
+    moo_combo_select_region (MOO_COMBO (text_to_find), 0, -1);
 }
 
 static void          set_replace_with   (GtkWidget  *dialog,
@@ -858,19 +904,19 @@ static void          set_replace_with   (GtkWidget  *dialog,
 {
     MooGladeXML *xml = g_object_get_data (G_OBJECT (dialog), "moo-dialog-xml");
     GET_WIDGET (replacement_text);
-    gtk_entry_set_text (GTK_ENTRY (replacement_text), text);
+    moo_combo_entry_set_text (MOO_COMBO (replacement_text), text);
 }
 
 static const char   *get_text           (GtkWidget *dialog)
 {
     MooGladeXML *xml = g_object_get_data (G_OBJECT (dialog), "moo-dialog-xml");
     GET_WIDGET (text_to_find);
-    return gtk_entry_get_text (GTK_ENTRY (text_to_find));
+    return moo_combo_entry_get_text (MOO_COMBO (text_to_find));
 }
 
 static const char   *get_replace_with   (GtkWidget *dialog)
 {
     MooGladeXML *xml = g_object_get_data (G_OBJECT (dialog), "moo-dialog-xml");
     GET_WIDGET (replacement_text);
-    return gtk_entry_get_text (GTK_ENTRY (replacement_text));
+    return moo_combo_entry_get_text (MOO_COMBO (replacement_text));
 }

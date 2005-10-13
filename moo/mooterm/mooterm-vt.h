@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-vt.h
+ *   mooterm-vt.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERM_VT_H
-#define MOOTERM_MOOTERM_VT_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_VT_H__
+#define __MOO_TERM_VT_H__
 
 enum {
     MODE_IRM,       /*  Insert/Replace Mode
@@ -374,4 +378,4 @@ typedef enum {
 #define FINAL_DECSTBM   "r"
 
 
-#endif /* MOOTERM_MOOTERM_VT_H */
+#endif /* __MOO_TERM_VT_H__ */

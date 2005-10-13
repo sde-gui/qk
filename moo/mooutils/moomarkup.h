@@ -1,5 +1,5 @@
 /*
- *   mooutils/moomarkup.h
+ *   moomarkup.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOMARKUP_H
-#define MOOUTILS_MOOMARKUP_H
+#ifndef __MOO_MARKUP_H__
+#define __MOO_MARKUP_H__
 
 #include <glib/gerror.h>
 #include <glib-object.h>
@@ -154,6 +154,21 @@ const char         *moo_markup_get_prop             (MooMarkupNode      *node,
 void                moo_markup_set_prop             (MooMarkupNode      *node,
                                                      const char         *prop_name,
                                                      const char         *val);
+
+int                 moo_markup_get_int_prop         (MooMarkupNode      *node,
+                                                     const char         *prop_name,
+                                                     int                 default_val);
+void                moo_markup_set_int_prop         (MooMarkupNode      *node,
+                                                     const char         *prop_name,
+                                                     int                 val);
+gboolean            moo_markup_get_bool_prop        (MooMarkupNode      *node,
+                                                     const char         *prop_name,
+                                                     gboolean            default_val);
+void                moo_markup_set_bool_prop        (MooMarkupNode      *node,
+                                                     const char         *prop_name,
+                                                     gboolean            val);
+
+
 void                moo_markup_set_content          (MooMarkupNode      *node,
                                                      const char         *text);
 const char         *moo_markup_get_content          (MooMarkupNode      *node);
@@ -178,4 +193,4 @@ char               *moo_markup_get_file_content     (MooMarkupNode      *node);
 
 G_END_DECLS
 
-#endif /* MOOUTILS_MOOMARKUP_H */
+#endif /* __MOO_MARKUP_H__ */

@@ -15,19 +15,23 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit-private.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/moobigpaned.h"
-#include "mooedit/moonotebook.h"
-#include "mooedit/moofileview/moofileview.h"
-#include "mooedit/moofileview/moobookmarkmgr.h"
+#include "mooedit/mootextbuffer.h"
+#include "mooedit/mooeditprefs.h"
+#include "mooedit/mooplugin.h"
+#include "mooutils/moonotebook.h"
+#include "mooutils/moofileview/moofileview.h"
+#include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
-#include "mooui/moomenuaction.h"
-#include "mooui/moouiobject-impl.h"
+#include "mooutils/moomenuaction.h"
 #include <string.h>
+#include <gtk/gtk.h>
 
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
+
+#define LANG_ACTION_ID "LanguageMenu"
 
 
 struct _MooEditWindowPrivate {
@@ -38,9 +42,8 @@ struct _MooEditWindowPrivate {
     char *prefix;
     gboolean use_fullname;
     GHashTable *panes;
-    GtkWidget *languages_menu_item;
-    GHashTable *lang_menu_items;
-    GtkWidget *none_lang_item;
+    GHashTable *panes_to_save; /* char* */
+    guint save_params_idle;
 };
 
 
@@ -61,12 +64,6 @@ static void     moo_edit_window_get_property(GObject        *object,
 
 static gboolean moo_edit_window_close       (MooEditWindow  *window);
 
-
-static GtkMenuItem *create_lang_menu    (MooEditWindow      *window);
-static void     lang_menu_item_toggled  (GtkCheckMenuItem   *item,
-                                         MooEditWindow      *window);
-static void     active_tab_lang_changed (MooEditWindow      *window);
-
 static void     setup_notebook          (MooEditWindow      *window);
 static void     update_window_title     (MooEditWindow      *window);
 
@@ -84,20 +81,39 @@ static void     proxy_boolean_property  (MooEditWindow      *window,
                                          MooEdit            *doc);
 static void     edit_changed            (MooEditWindow      *window,
                                          MooEdit            *doc);
+static void     edit_filename_changed   (MooEditWindow      *window,
+                                         const char         *filename,
+                                         MooEdit            *doc);
+static void     edit_lang_changed       (MooEditWindow      *window,
+                                         GParamSpec         *pspec,
+                                         MooEdit            *doc);
 static GtkWidget *create_tab_label      (MooEdit            *edit);
 static void     update_tab_label        (MooEditWindow      *window,
                                          MooEdit            *doc);
 static void     edit_cursor_moved       (MooEditWindow      *window,
                                          GtkTextIter        *iter,
                                          MooEdit            *edit);
-static void     edit_lang_changed       (MooEditWindow      *window,
-                                         MooEdit            *edit);
+static void     update_lang_menu        (MooEditWindow      *window);
 
 static void     update_statusbar        (MooEditWindow      *window);
 static MooEdit *get_nth_tab             (MooEditWindow      *window,
                                          guint               n);
 static int      get_page_num            (MooEditWindow      *window,
                                          MooEdit            *doc);
+static void     apply_styles            (MooEditWindow      *window,
+                                         MooEdit            *edit);
+
+static MooAction *create_lang_action    (MooEditWindow      *window);
+
+static void     create_paned            (MooEditWindow      *window);
+static MooPaneParams *load_pane_params  (const char         *pane_id);
+static gboolean save_pane_params        (const char         *pane_id,
+                                         MooPaneParams      *params);
+static void     pane_params_changed     (MooEditWindow      *window,
+                                         MooPanePosition     position,
+                                         guint               index);
+static void     pane_size_changed       (MooEditWindow      *window,
+                                         MooPanePosition     position);
 
 
 /* actions */
@@ -213,238 +229,236 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_CAN_SWITCH_TAB_RIGHT, "can-switch-tab-right");
     INSTALL_PROP (PROP_CAN_SWITCH_TAB_LEFT, "can-switch-tab-left");
 
-    moo_ui_object_class_init (gobject_class, "Editor", "Editor");
+    moo_window_class_set_id (window_class, "Editor", "Editor");
 
-    moo_ui_object_class_new_action (gobject_class, "NewWindow",
-                                    "name", "New Window",
-                                    "label", "_New Window",
-                                    "tooltip", "Open new editor window",
-                                    "icon-stock-id", GTK_STOCK_NEW,
-                                    "accel", "<ctrl>N",
-                                    "closure::callback", moo_edit_window_new,
-                                    NULL);
+    moo_window_class_new_action (window_class, "NewWindow",
+                                 "name", "New Window",
+                                 "label", "_New Window",
+                                 "tooltip", "Open new editor window",
+                                 "icon-stock-id", GTK_STOCK_NEW,
+                                 "accel", "<ctrl>N",
+                                 "closure::callback", moo_edit_window_new,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "NewTab",
-                                    "name", "New Tab",
-                                    "label", "New _Tab",
-                                    "tooltip", "Create new document tab",
-                                    "icon-stock-id", GTK_STOCK_NEW,
-                                    "accel", "<ctrl>T",
-                                    "closure::callback", moo_edit_window_new_tab,
-                                    NULL);
+    moo_window_class_new_action (window_class, "NewTab",
+                                 "name", "New Tab",
+                                 "label", "New _Tab",
+                                 "tooltip", "Create new document tab",
+                                 "icon-stock-id", GTK_STOCK_NEW,
+                                 "accel", "<ctrl>T",
+                                 "closure::callback", moo_edit_window_new_tab,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Open",
-                                    "name", "Open",
-                                    "label", "_Open...",
-                                    "tooltip", "Open...",
-                                    "icon-stock-id", GTK_STOCK_OPEN,
-                                    "accel", "<ctrl>O",
-                                    "closure::callback", moo_edit_window_open,
-                                    NULL);
+    moo_window_class_new_action (window_class, "Open",
+                                 "name", "Open",
+                                 "label", "_Open...",
+                                 "tooltip", "Open...",
+                                 "icon-stock-id", GTK_STOCK_OPEN,
+                                 "accel", "<ctrl>O",
+                                 "closure::callback", moo_edit_window_open,
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Reload",
-                                    "name", "Reload",
-                                    "label", "_Reload",
-                                    "tooltip", "Reload document",
-                                    "icon-stock-id", GTK_STOCK_REFRESH,
-                                    "accel", "F5",
-                                    "closure::callback", moo_edit_window_reload,
-                                    "condition::sensitive", "can-reload",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Reload",
+                                 "name", "Reload",
+                                 "label", "_Reload",
+                                 "tooltip", "Reload document",
+                                 "icon-stock-id", GTK_STOCK_REFRESH,
+                                 "accel", "F5",
+                                 "closure::callback", moo_edit_window_reload,
+                                 "condition::sensitive", "can-reload",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Save",
-                                    "name", "Save",
-                                    "label", "_Save",
-                                    "tooltip", "Save document",
-                                    "icon-stock-id", GTK_STOCK_SAVE,
-                                    "accel", "<ctrl>S",
-                                    "closure::callback", moo_edit_window_save,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Save",
+                                 "name", "Save",
+                                 "label", "_Save",
+                                 "tooltip", "Save document",
+                                 "icon-stock-id", GTK_STOCK_SAVE,
+                                 "accel", "<ctrl>S",
+                                 "closure::callback", moo_edit_window_save,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "SaveAs",
-                                    "name", "Save As",
-                                    "label", "Save _As...",
-                                    "tooltip", "Save as...",
-                                    "icon-stock-id", GTK_STOCK_SAVE_AS,
-                                    "accel", "<ctrl><shift>S",
-                                    "closure::callback", moo_edit_window_save_as,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "SaveAs",
+                                 "name", "Save As",
+                                 "label", "Save _As...",
+                                 "tooltip", "Save as...",
+                                 "icon-stock-id", GTK_STOCK_SAVE_AS,
+                                 "accel", "<ctrl><shift>S",
+                                 "closure::callback", moo_edit_window_save_as,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Close",
-                                    "name", "Close",
-                                    "label", "_Close",
-                                    "tooltip", "Close document",
-                                    "icon-stock-id", GTK_STOCK_CLOSE,
-                                    "accel", "<ctrl>W",
-                                    "closure::callback", moo_edit_window_close_tab,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Close",
+                                 "name", "Close",
+                                 "label", "_Close",
+                                 "tooltip", "Close document",
+                                 "icon-stock-id", GTK_STOCK_CLOSE,
+                                 "accel", "<ctrl>W",
+                                 "closure::callback", moo_edit_window_close_tab,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "CloseAll",
-                                    "name", "Close All",
-                                    "label", "Close _All",
-                                    "tooltip", "Close all documents",
-                                    "accel", "<shift><ctrl>W",
-                                    "closure::callback", moo_edit_window_close_all,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "CloseAll",
+                                 "name", "Close All",
+                                 "label", "Close _All",
+                                 "tooltip", "Close all documents",
+                                 "accel", "<shift><ctrl>W",
+                                 "closure::callback", moo_edit_window_close_all,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Undo",
-                                    "name", "Undo",
-                                    "label", "_Undo",
-                                    "tooltip", "Undo",
-                                    "icon-stock-id", GTK_STOCK_UNDO,
-                                    "accel", "<ctrl>Z",
-                                    "closure::signal", "undo",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "can-undo",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Undo",
+                                 "name", "Undo",
+                                 "label", "_Undo",
+                                 "tooltip", "Undo",
+                                 "icon-stock-id", GTK_STOCK_UNDO,
+                                 "accel", "<ctrl>Z",
+                                 "closure::signal", "undo",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "can-undo",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Redo",
-                                    "name", "Redo",
-                                    "label", "_Redo",
-                                    "tooltip", "Redo",
-                                    "icon-stock-id", GTK_STOCK_REDO,
-                                    "accel", "<shift><ctrl>Z",
-                                    "closure::signal", "redo",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "can-redo",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Redo",
+                                 "name", "Redo",
+                                 "label", "_Redo",
+                                 "tooltip", "Redo",
+                                 "icon-stock-id", GTK_STOCK_REDO,
+                                 "accel", "<shift><ctrl>Z",
+                                 "closure::signal", "redo",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "can-redo",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Cut",
-                                    "name", "Cut",
-                                    "label", "Cu_t",
-                                    "tooltip", "Cut",
-                                    "icon-stock-id", GTK_STOCK_CUT,
-                                    "accel", "<ctrl>X",
-                                    "closure::signal", "cut-clipboard",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-selection",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Cut",
+                                 "name", "Cut",
+                                 "label", "Cu_t",
+                                 "tooltip", "Cut",
+                                 "icon-stock-id", GTK_STOCK_CUT,
+                                 "accel", "<ctrl>X",
+                                 "closure::signal", "cut-clipboard",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-selection",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Copy",
-                                    "name", "Copy",
-                                    "label", "_Copy",
-                                    "tooltip", "Copy",
-                                    "icon-stock-id", GTK_STOCK_COPY,
-                                    "accel", "<ctrl>C",
-                                    "closure::signal", "copy-clipboard",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-selection",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Copy",
+                                 "name", "Copy",
+                                 "label", "_Copy",
+                                 "tooltip", "Copy",
+                                 "icon-stock-id", GTK_STOCK_COPY,
+                                 "accel", "<ctrl>C",
+                                 "closure::signal", "copy-clipboard",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-selection",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Paste",
-                                    "name", "Paste",
-                                    "label", "_Paste",
-                                    "tooltip", "Paste",
-                                    "icon-stock-id", GTK_STOCK_PASTE,
-                                    "accel", "<ctrl>V",
-                                    "closure::signal", "paste-clipboard",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Paste",
+                                 "name", "Paste",
+                                 "label", "_Paste",
+                                 "tooltip", "Paste",
+                                 "icon-stock-id", GTK_STOCK_PASTE,
+                                 "accel", "<ctrl>V",
+                                 "closure::signal", "paste-clipboard",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Delete",
-                                    "name", "Delete",
-                                    "label", "_Delete",
-                                    "tooltip", "Delete",
-                                    "icon-stock-id", GTK_STOCK_DELETE,
-                                    "closure::signal", "delete-selection",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-selection",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Delete",
+                                 "name", "Delete",
+                                 "label", "_Delete",
+                                 "tooltip", "Delete",
+                                 "icon-stock-id", GTK_STOCK_DELETE,
+                                 "closure::signal", "delete-selection",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-selection",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "SelectAll",
-                                    "name", "Select All",
-                                    "label", "Select _All",
-                                    "tooltip", "Select all",
-                                    "accel", "<ctrl>A",
-                                    "closure::callback", moo_text_view_select_all,
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-text",
-                                    NULL);
+    moo_window_class_new_action (window_class, "SelectAll",
+                                 "name", "Select All",
+                                 "label", "Select _All",
+                                 "tooltip", "Select all",
+                                 "accel", "<ctrl>A",
+                                 "closure::callback", moo_text_view_select_all,
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-text",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "PreviousTab",
-                                    "name", "Previous Tab",
-                                    "label", "_Previous Tab",
-                                    "tooltip", "Previous tab",
-                                    "icon-stock-id", GTK_STOCK_GO_BACK,
-                                    "accel", "<alt>Left",
-                                    "closure::callback", moo_edit_window_previous_tab,
-                                    "condition::sensitive", "can-switch-tab-left",
-                                    NULL);
+    moo_window_class_new_action (window_class, "PreviousTab",
+                                 "name", "Previous Tab",
+                                 "label", "_Previous Tab",
+                                 "tooltip", "Previous tab",
+                                 "icon-stock-id", GTK_STOCK_GO_BACK,
+                                 "accel", "<alt>Left",
+                                 "closure::callback", moo_edit_window_previous_tab,
+                                 "condition::sensitive", "can-switch-tab-left",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "NextTab",
-                                    "name", "Next Tab",
-                                    "label", "_Next Tab",
-                                    "tooltip", "Next tab",
-                                    "icon-stock-id", GTK_STOCK_GO_FORWARD,
-                                    "accel", "<alt>Right",
-                                    "closure::callback", moo_edit_window_next_tab,
-                                    "condition::sensitive", "can-switch-tab-right",
-                                    NULL);
+    moo_window_class_new_action (window_class, "NextTab",
+                                 "name", "Next Tab",
+                                 "label", "_Next Tab",
+                                 "tooltip", "Next tab",
+                                 "icon-stock-id", GTK_STOCK_GO_FORWARD,
+                                 "accel", "<alt>Right",
+                                 "closure::callback", moo_edit_window_next_tab,
+                                 "condition::sensitive", "can-switch-tab-right",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Find",
-                                    "name", "Find",
-                                    "label", "_Find",
-                                    "tooltip", "Find",
-                                    "icon-stock-id", GTK_STOCK_FIND,
-                                    "accel", "<ctrl>F",
-                                    "closure::signal", "find",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Find",
+                                 "name", "Find",
+                                 "label", "_Find",
+                                 "tooltip", "Find",
+                                 "icon-stock-id", GTK_STOCK_FIND,
+                                 "accel", "<ctrl>F",
+                                 "closure::signal", "find-interactive",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "FindNext",
-                                    "name", "Find Next",
-                                    "label", "Find _Next",
-                                    "tooltip", "Find next",
-                                    "icon-stock-id", GTK_STOCK_GO_FORWARD,
-                                    "accel", "F3",
-                                    "closure::signal", "find-next",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "FindNext",
+                                 "name", "Find Next",
+                                 "label", "Find _Next",
+                                 "tooltip", "Find next",
+                                 "icon-stock-id", GTK_STOCK_GO_FORWARD,
+                                 "accel", "F3",
+                                 "closure::signal", "find-next-interactive",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "FindPrevious",
-                                    "name", "Find Previous",
-                                    "label", "Find _Previous",
-                                    "tooltip", "Find previous",
-                                    "icon-stock-id", GTK_STOCK_GO_BACK,
-                                    "accel", "<shift>F3",
-                                    "closure::signal", "find-previous",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "FindPrevious",
+                                 "name", "Find Previous",
+                                 "label", "Find _Previous",
+                                 "tooltip", "Find previous",
+                                 "icon-stock-id", GTK_STOCK_GO_BACK,
+                                 "accel", "<shift>F3",
+                                 "closure::signal", "find-prev-interactive",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "Replace",
-                                    "name", "Replace",
-                                    "label", "_Replace",
-                                    "tooltip", "Replace",
-                                    "icon-stock-id", GTK_STOCK_FIND_AND_REPLACE,
-                                    "accel", "<ctrl>R",
-                                    "closure::signal", "replace",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "Replace",
+                                 "name", "Replace",
+                                 "label", "_Replace",
+                                 "tooltip", "Replace",
+                                 "icon-stock-id", GTK_STOCK_FIND_AND_REPLACE,
+                                 "accel", "<ctrl>R",
+                                 "closure::signal", "replace-interactive",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "GoToLine",
-                                    "name", "Go to Line",
-                                    "label", "_Go to Line",
-                                    "tooltip", "Go to line",
-                                    "accel", "<ctrl>G",
-                                    "closure::signal", "goto-line",
-                                    "closure::proxy-func", moo_edit_window_get_active_doc,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action (window_class, "GoToLine",
+                                 "name", "Go to Line",
+                                 "label", "_Go to Line",
+                                 "tooltip", "Go to line",
+                                 "accel", "<ctrl>G",
+                                 "closure::signal", "goto-line",
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
 
-    moo_ui_object_class_new_action (gobject_class, "SyntaxMenu",
-                                    "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "create-menu-func", create_lang_menu,
-                                    "condition::sensitive", "has-open-document",
-                                    NULL);
+    moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
+                                        (MooWindowActionFunc) create_lang_action,
+                                        NULL);
 }
 
 
@@ -452,11 +466,9 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
 {
     window->priv = g_new0 (MooEditWindowPrivate, 1);
     window->priv->prefix = g_strdup ("medit");
-    window->priv->lang_menu_items =
-            g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
     window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
+    window->priv->panes_to_save = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                                        (GDestroyNotify) moo_pane_params_free);
     g_object_set (G_OBJECT (window),
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
@@ -475,8 +487,17 @@ static void moo_edit_window_finalize       (GObject      *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     /* XXX */
-    g_hash_table_destroy (window->priv->lang_menu_items);
-       g_hash_table_destroy (window->priv->panes);
+    g_hash_table_destroy (window->priv->panes);
+
+    if (window->priv->panes_to_save)
+        g_hash_table_destroy (window->priv->panes_to_save);
+
+    if (window->priv->save_params_idle)
+    {
+        g_warning ("%s: oops", G_STRLOC);
+        g_source_remove (window->priv->save_params_idle);
+    }
+
     g_free (window->priv->prefix);
     g_free (window->priv);
     G_OBJECT_CLASS (moo_edit_window_parent_class)->finalize (object);
@@ -585,7 +606,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
                                              GObjectConstructParam *props)
 {
-    GtkWidget *notebook, *paned;
+    GtkWidget *notebook;
     MooEditWindow *window;
 
     GObject *object =
@@ -603,13 +624,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
 
     gtk_widget_show (MOO_WINDOW(window)->vbox);
 
-    paned = g_object_new (MOO_TYPE_BIG_PANED,
-                          "handle-cursor-type", GDK_FLEUR,
-                          "enable-detaching", TRUE,
-                          NULL);
-    gtk_widget_show (paned);
-    gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox), paned, TRUE, TRUE, 0);
-    window->paned = MOO_BIG_PANED (paned);
+    create_paned (window);
 
     notebook = g_object_new (MOO_TYPE_NOTEBOOK,
                              "show-tabs", TRUE,
@@ -673,6 +688,21 @@ static void     update_window_title     (MooEditWindow      *window)
 
     gtk_window_set_title (GTK_WINDOW (window), title->str);
     g_string_free (title, TRUE);
+}
+
+
+static void
+apply_styles (MooEditWindow      *window,
+              MooEdit            *edit)
+{
+    MooLangTable *table;
+    MooTextStyleScheme *scheme;
+
+    table = moo_editor_get_lang_table (window->priv->editor);
+    scheme = moo_lang_table_get_active_scheme (table);
+    g_return_if_fail (scheme != NULL);
+
+    _moo_text_style_scheme_apply (scheme, edit);
 }
 
 
@@ -821,13 +851,21 @@ static void     edit_changed            (MooEditWindow      *window,
         g_object_notify (G_OBJECT (window), "can-switch-tab-left");
         g_object_thaw_notify (G_OBJECT (window));
 
-        active_tab_lang_changed (window);
         update_window_title (window);
         update_statusbar (window);
+        update_lang_menu (window);
     }
 
     if (doc)
         update_tab_label (window, doc);
+}
+
+
+static void     edit_filename_changed   (MooEditWindow      *window,
+                                         G_GNUC_UNUSED const char *filename,
+                                         MooEdit            *doc)
+{
+    edit_changed (window, doc);
 }
 
 
@@ -837,14 +875,6 @@ static void     proxy_boolean_property  (MooEditWindow      *window,
 {
     if (doc == ACTIVE_DOC (window))
         g_object_notify (G_OBJECT (window), prop->name);
-}
-
-
-static void     edit_lang_changed       (MooEditWindow      *window,
-                                         MooEdit            *edit)
-{
-    if (edit == ACTIVE_DOC (window))
-        active_tab_lang_changed (window);
 }
 
 
@@ -966,7 +996,7 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
-                              G_CALLBACK (edit_changed), window);
+                              G_CALLBACK (edit_filename_changed), window);
     g_signal_connect_swapped (edit, "notify::can-undo",
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::can-redo",
@@ -975,12 +1005,16 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-text",
                               G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "lang-changed",
+    g_signal_connect_swapped (edit, "notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (edit, "cursor-moved",
                               G_CALLBACK (edit_cursor_moved), window);
 
     g_signal_emit (window, signals[NEW_DOC], 0, edit);
+
+    apply_styles (window, edit);
+
+    _moo_doc_attach_plugins (window, edit);
 
     moo_edit_window_set_active_doc (window, edit);
     edit_changed (window, edit);
@@ -1005,14 +1039,19 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
                                           (gpointer) edit_changed,
                                           window);
     g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) proxy_boolean_property,
+                                          (gpointer) edit_filename_changed,
                                           window);
     g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) edit_lang_changed,
+                                          (gpointer) proxy_boolean_property,
                                           window);
     g_signal_handlers_disconnect_by_func (doc,
                                           (gpointer) edit_cursor_moved,
                                           window);
+    g_signal_handlers_disconnect_by_func (doc,
+                                          (gpointer) edit_lang_changed,
+                                          window);
+
+    _moo_doc_detach_plugins (window, doc);
 
     moo_notebook_remove_page (window->priv->notebook, page);
     edit_changed (window, NULL);
@@ -1177,6 +1216,54 @@ static gboolean notebook_populate_popup (MooNotebook        *notebook,
 /* Panes
  */
 
+static const char *PANE_POSITIONS[4] = {
+    "left",
+    "right",
+    "top",
+    "bottom"
+};
+
+
+static void
+create_paned (MooEditWindow *window)
+{
+    MooBigPaned *paned;
+    guint i;
+
+    paned = g_object_new (MOO_TYPE_BIG_PANED,
+                          "handle-cursor-type", GDK_FLEUR,
+                          "enable-detaching", TRUE,
+                          NULL);
+    gtk_widget_show (GTK_WIDGET (paned));
+    gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox),
+                        GTK_WIDGET (paned), TRUE, TRUE, 0);
+
+    window->paned = paned;
+
+    for (i = 0; i < 4; ++i)
+    {
+        int size;
+        char *key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
+                                     PANE_POSITIONS[i]);
+
+        moo_prefs_new_key_int (key, -1);
+        size = moo_prefs_get_int (key);
+
+        if (size > 0)
+            moo_paned_set_pane_size (MOO_PANED (paned->paned[i]), size);
+
+        g_free (key);
+    }
+
+    g_signal_connect_swapped (paned, "pane-params-changed",
+                              G_CALLBACK (pane_params_changed),
+                              window);
+    g_signal_connect_swapped (paned, "set-pane-size",
+                              G_CALLBACK (pane_size_changed),
+                              window);
+}
+
+
 gboolean
 moo_edit_window_add_pane (MooEditWindow  *window,
                           const char     *user_id,
@@ -1184,7 +1271,7 @@ moo_edit_window_add_pane (MooEditWindow  *window,
                           MooPaneLabel   *label,
                           MooPanePosition position)
 {
-    gboolean result;
+    int result;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (user_id != NULL, FALSE);
@@ -1197,16 +1284,29 @@ moo_edit_window_add_pane (MooEditWindow  *window,
 
     result = moo_big_paned_insert_pane (window->paned, widget, label,
                                         position, -1);
-    result = (result < 0 ? FALSE : TRUE);
 
-    if (result)
+    if (result >= 0)
+    {
+        MooPaneParams *params;
+
         g_hash_table_insert (window->priv->panes,
                              g_strdup (user_id), widget);
+        g_object_set_data_full (G_OBJECT (widget), "moo-edit-window-pane-user-id",
+                                g_strdup (user_id), g_free);
+
+        params = load_pane_params (user_id);
+
+        if (params)
+        {
+            moo_big_paned_set_pane_params (window->paned, position, result, params);
+            moo_pane_params_free (params);
+        }
+    }
 
     g_object_unref (widget);
     moo_pane_label_free (label);
 
-    return result;
+    return result >= 0;
 }
 
 
@@ -1243,170 +1343,210 @@ moo_edit_window_get_pane (MooEditWindow  *window,
 }
 
 
-/****************************************************************************/
-/* Languages menu
- */
+#define PANE_PREFS_ROOT                 MOO_EDIT_PREFS_PREFIX "/panes"
+#define ELEMENT_PANE                    "pane"
+#define PROP_PANE_ID                    "id"
+#define PROP_PANE_WINDOW_X              "x"
+#define PROP_PANE_WINDOW_Y              "y"
+#define PROP_PANE_WINDOW_WIDTH          "width"
+#define PROP_PANE_WINDOW_HEIGHT         "height"
+#define PROP_PANE_WINDOW_DETACHED       "detached"
+#define PROP_PANE_WINDOW_MAXIMIZED      "maximized"
+#define PROP_PANE_WINDOW_KEEP_ON_TOP    "keep-on-top"
 
-/* XXX what does this action do? */
-static GtkMenuItem *create_lang_menu        (MooEditWindow      *window)
+
+static MooMarkupNode*
+get_pane_element (const char *pane_id,
+                  gboolean    create)
 {
-    GSList *sections;
-    GSList *section_items = NULL, *section_menus = NULL;
-    GSList *l;
-    MooEditLangMgr *mgr;
-    const GSList *langs, *cl;
-    GtkWidget *main_item, *main_menu, *none;
-    GSList *group = NULL;
+    MooMarkupDoc *xml;
+    MooMarkupNode *root, *node;
 
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-    g_return_val_if_fail (window->priv->editor != NULL, NULL);
+    xml = moo_prefs_get_markup ();
 
-    main_item = gtk_menu_item_new_with_label ("Language");
-    window->priv->languages_menu_item = main_item;
-    main_menu = gtk_menu_new ();
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (main_item), main_menu);
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), PANE_PREFS_ROOT);
 
-    none = gtk_radio_menu_item_new_with_label (group, "None");
-    group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (none));
-    gtk_menu_shell_append (GTK_MENU_SHELL (main_menu), none);
-    g_signal_connect (none, "toggled",
-                      G_CALLBACK (lang_menu_item_toggled),
-                      window);
-    g_object_set_data (G_OBJECT (none), "moo_edit_window_lang_id", NULL);
-    window->priv->none_lang_item = none;
-
-    mgr = moo_editor_get_lang_mgr (window->priv->editor);
-    sections = moo_edit_lang_mgr_get_sections (mgr);
-
-    for (l = sections; l != NULL; l = l->next)
+    if (!root)
     {
-        GtkWidget *item, *menu;
-
-        item = gtk_menu_item_new_with_label (l->data);
-        gtk_menu_shell_append (GTK_MENU_SHELL (main_menu), item);
-        menu = gtk_menu_new ();
-        gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
-
-        section_items = g_slist_append (section_items, item);
-        section_menus = g_slist_append (section_menus, menu);
-    }
-
-    langs = moo_edit_lang_mgr_get_available_languages (mgr);
-
-    for (cl = langs; cl != NULL; cl = cl->next)
-    {
-        MooEditLang *lang;
-        const char *section, *name;
-        GtkWidget *item;
-        GSList *link;
-        int pos;
-
-        lang = MOO_EDIT_LANG (cl->data);
-        section = moo_edit_lang_get_section (lang);
-        name = moo_edit_lang_get_name (lang);
-
-        link = g_slist_find_custom (sections, section, (GCompareFunc) strcmp);
-        pos = g_slist_position (sections, link);
-        g_assert (pos >= 0);
-
-        item = gtk_radio_menu_item_new_with_label (group, name);
-        group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (item));
-
-        g_object_set_data_full (G_OBJECT (item), "moo_edit_window_lang_id",
-                                g_strdup (moo_edit_lang_get_id (lang)),
-                                (GDestroyNotify) g_free);
-        g_signal_connect (item, "toggled",
-                          G_CALLBACK (lang_menu_item_toggled),
-                          window);
-        g_hash_table_insert (window->priv->lang_menu_items,
-                             g_strdup (moo_edit_lang_get_id (lang)),
-                             item);
-
-        link = g_slist_nth (section_menus, pos);
-        g_assert (link != NULL);
-        gtk_menu_shell_append (GTK_MENU_SHELL (link->data), item);
-    }
-
-    gtk_widget_show_all (main_item);
-    active_tab_lang_changed (window);
-
-    g_slist_foreach (sections, (GFunc) g_free, NULL);
-    g_slist_free (sections);
-    g_slist_free (section_items);
-    g_slist_free (section_menus);
-
-    /* XXX watch lang_mgr for changes */
-    return GTK_MENU_ITEM (main_item);
-}
-
-
-static void     lang_menu_item_toggled      (GtkCheckMenuItem   *item,
-                                             MooEditWindow      *window)
-{
-    const char *lang_id;
-    MooEditLang *lang = NULL;
-    MooEdit *edit;
-    MooEditor *editor;
-
-    if (!gtk_check_menu_item_get_active (item))
-        return;
-
-    editor = window->priv->editor;
-    edit = ACTIVE_DOC (window);
-
-    g_return_if_fail (edit != NULL);
-
-    lang_id = g_object_get_data (G_OBJECT (item), "moo_edit_window_lang_id");
-
-    if (lang_id)
-        lang = moo_edit_lang_mgr_get_language_by_id (moo_editor_get_lang_mgr (editor),
-                                                     lang_id);
-
-    g_signal_handlers_block_by_func (edit, active_tab_lang_changed, window);
-    moo_edit_set_lang (edit, lang);
-    edit->priv->lang_custom = TRUE;
-    g_signal_handlers_unblock_by_func (edit, active_tab_lang_changed, window);
-}
-
-
-static void     active_tab_lang_changed     (MooEditWindow      *window)
-{
-    const char *lang_id = NULL;
-    MooEditLang *lang = NULL;
-    MooEdit *edit;
-    GtkCheckMenuItem *item;
-
-    edit = ACTIVE_DOC (window);
-
-    if (!window->priv->languages_menu_item)
-        return;
-
-    gtk_widget_set_sensitive (window->priv->languages_menu_item, edit != NULL);
-
-    if (!edit)
-    {
-        item = GTK_CHECK_MENU_ITEM (window->priv->none_lang_item);
-    }
-    else
-    {
-        lang = moo_edit_get_lang (edit);
-
-        if (lang)
+        if (create)
         {
-            lang_id = moo_edit_lang_get_id (lang);
-            item = g_hash_table_lookup (window->priv->lang_menu_items, lang_id);
+            node = moo_markup_create_element (MOO_MARKUP_NODE (xml),
+                                              PANE_PREFS_ROOT "/" ELEMENT_PANE);
+            moo_markup_set_prop (node, PROP_PANE_ID, pane_id);
+            return node;
         }
         else
         {
-            item = GTK_CHECK_MENU_ITEM (window->priv->none_lang_item);
+            return NULL;
         }
     }
 
-    g_return_if_fail (item != NULL);
+    for (node = root->children; node != NULL; node = node->next)
+    {
+        const char *id;
 
-    g_signal_handlers_block_by_func (item, lang_menu_item_toggled, window);
-    gtk_check_menu_item_set_active (item, TRUE);
-    g_signal_handlers_unblock_by_func (item, lang_menu_item_toggled, window);
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        if (strcmp (node->name, ELEMENT_PANE))
+        {
+            g_warning ("%s: invalid element '%s'", G_STRLOC, node->name);
+            continue;
+        }
+
+        id = moo_markup_get_prop (node, PROP_PANE_ID);
+
+        if (!id || !id[0])
+        {
+            g_warning ("%s: id missing", G_STRLOC);
+            continue;
+        }
+
+        if (strcmp (id, pane_id))
+            continue;
+
+        return node;
+    }
+
+    if (create)
+    {
+        node = moo_markup_create_element (MOO_MARKUP_NODE (xml),
+                                          PANE_PREFS_ROOT "/" ELEMENT_PANE);
+        moo_markup_set_prop (node, PROP_PANE_ID, pane_id);
+        return node;
+    }
+
+    return NULL;
+}
+
+
+static MooPaneParams*
+load_pane_params (const char         *pane_id)
+{
+    MooMarkupNode *node;
+    MooPaneParams *params;
+
+    node = get_pane_element (pane_id, FALSE);
+
+    if (!node)
+        return NULL;
+
+    params = moo_pane_params_new ();
+
+    params->window_position.x = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_X, 0);
+    params->window_position.y = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_Y, 0);
+    params->window_position.width = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_WIDTH, 0);
+    params->window_position.height = moo_markup_get_int_prop (node, PROP_PANE_WINDOW_HEIGHT, 0);
+    params->detached = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_DETACHED, FALSE);
+    params->maximized = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_MAXIMIZED, FALSE);
+    params->keep_on_top = moo_markup_get_bool_prop (node, PROP_PANE_WINDOW_KEEP_ON_TOP, FALSE);
+
+    return params;
+}
+
+
+static void
+set_if_not_zero (MooMarkupNode *node,
+                 const char    *attr,
+                 int            val)
+{
+    if (val)
+        moo_markup_set_int_prop (node, attr, val);
+    else
+        moo_markup_set_prop (node, attr, NULL);
+}
+
+
+static void
+set_if_not_false (MooMarkupNode *node,
+                  const char    *attr,
+                  gboolean       val)
+{
+    if (val)
+        moo_markup_set_bool_prop (node, attr, val);
+    else
+        moo_markup_set_prop (node, attr, NULL);
+}
+
+
+static gboolean
+save_pane_params (const char         *pane_id,
+                  MooPaneParams      *params)
+{
+    MooMarkupNode *node;
+
+    if (!params)
+    {
+        node = get_pane_element (pane_id, FALSE);
+        if (node)
+            moo_markup_delete_node (node);
+        return TRUE;
+    }
+
+    node = get_pane_element (pane_id, TRUE);
+    g_return_val_if_fail (node != NULL, TRUE);
+
+    set_if_not_zero (node, PROP_PANE_WINDOW_X, params->window_position.x);
+    set_if_not_zero (node, PROP_PANE_WINDOW_Y, params->window_position.y);
+    set_if_not_zero (node, PROP_PANE_WINDOW_WIDTH, params->window_position.width);
+    set_if_not_zero (node, PROP_PANE_WINDOW_HEIGHT, params->window_position.height);
+    set_if_not_false (node, PROP_PANE_WINDOW_DETACHED, params->detached);
+    set_if_not_false (node, PROP_PANE_WINDOW_MAXIMIZED, params->maximized);
+    set_if_not_false (node, PROP_PANE_WINDOW_KEEP_ON_TOP, params->keep_on_top);
+
+    return TRUE;
+}
+
+
+static gboolean
+do_save_panes (MooEditWindow *window)
+{
+    g_hash_table_foreach_remove (window->priv->panes_to_save,
+                                 (GHRFunc) save_pane_params, NULL);
+    window->priv->save_params_idle = 0;
+    return FALSE;
+}
+
+
+static void
+pane_params_changed (MooEditWindow      *window,
+                     MooPanePosition     position,
+                     guint               index)
+{
+    GtkWidget *widget;
+    const char *id;
+    MooPaneParams *params;
+
+    widget = moo_big_paned_get_pane (window->paned, position, index);
+    g_return_if_fail (widget != NULL);
+    id = g_object_get_data (G_OBJECT (widget), "moo-edit-window-pane-user-id");
+
+    if (id)
+    {
+        params = moo_big_paned_get_pane_params (window->paned, position, index);
+        g_hash_table_insert (window->priv->panes_to_save,
+                             g_strdup (id), params);
+        if (!window->priv->save_params_idle)
+            window->priv->save_params_idle =
+                    g_idle_add ((GSourceFunc) do_save_panes, window);
+    }
+}
+
+
+static void
+pane_size_changed (MooEditWindow      *window,
+                   MooPanePosition     pos)
+{
+    GtkWidget *paned = window->paned->paned[pos];
+    char *key;
+
+    g_return_if_fail (MOO_IS_PANED (paned));
+    g_return_if_fail (pos < 4);
+
+    key = g_strdup_printf (MOO_EDIT_PREFS_PREFIX "/window/panes/%s",
+                           PANE_POSITIONS[pos]);
+    moo_prefs_set_int (key, moo_paned_get_pane_size (MOO_PANED (paned)));
+    g_free (key);
 }
 
 
@@ -1414,9 +1554,10 @@ static void     active_tab_lang_changed     (MooEditWindow      *window)
 /* Statusbar
  */
 
-static void set_statusbar_numbers (MooEditWindow *window,
-                                   int            line,
-                                   int            column)
+static void
+set_statusbar_numbers (MooEditWindow *window,
+                       int            line,
+                       int            column)
 {
     char *text = g_strdup_printf ("Line: %d Col: %d", line, column);
     gtk_statusbar_pop (window->priv->statusbar,
@@ -1429,7 +1570,8 @@ static void set_statusbar_numbers (MooEditWindow *window,
 
 
 /* XXX */
-static void update_statusbar (MooEditWindow *window)
+static void
+update_statusbar (MooEditWindow *window)
 {
     MooEdit *edit;
     int line, column;
@@ -1456,9 +1598,10 @@ static void update_statusbar (MooEditWindow *window)
 
 
 /* XXX */
-static void     edit_cursor_moved       (MooEditWindow      *window,
-                                         GtkTextIter        *iter,
-                                         MooEdit            *edit)
+static void
+edit_cursor_moved (MooEditWindow      *window,
+                   GtkTextIter        *iter,
+                   MooEdit            *edit)
 {
     if (edit == ACTIVE_DOC (window))
     {
@@ -1466,4 +1609,129 @@ static void     edit_cursor_moved       (MooEditWindow      *window,
         int column = gtk_text_iter_get_line_offset (iter) + 1;
         set_statusbar_numbers (window, line, column);
     }
+}
+
+
+/*****************************************************************************/
+/* Language menu
+ */
+
+#define NONE_LANGUAGE_NAME "moo-lang-none"
+
+static int
+cmp_langs (MooLang *lang1,
+           MooLang *lang2)
+{
+    int result;
+
+    result = strcmp (lang1->section, lang2->section);
+
+    if (result)
+        return result;
+    else
+        return strcmp (lang1->name, lang2->name);
+}
+
+
+static void
+lang_item_activated (MooEditWindow *window,
+                     const char    *lang_name)
+{
+    MooLangTable *table;
+    MooLang *lang = NULL;
+    MooEdit *doc = ACTIVE_DOC (window);
+
+    g_return_if_fail (doc != NULL);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    table = moo_editor_get_lang_table (window->priv->editor);
+
+    if (lang_name)
+    {
+        lang = moo_lang_table_get_lang (table, lang_name);
+        g_return_if_fail (lang != NULL);
+    }
+
+    moo_edit_set_lang (doc, lang);
+}
+
+
+static MooAction*
+create_lang_action (MooEditWindow      *window)
+{
+    MooAction *action;
+    MooMenuMgr *menu_mgr;
+    MooLangTable *table;
+    GSList *langs, *sections, *l;
+
+    table = moo_editor_get_lang_table (window->priv->editor);
+
+    /* TODO display names, etc. */
+    sections = moo_lang_table_get_sections (table);
+    sections = g_slist_sort (sections, (GCompareFunc) strcmp);
+
+    langs = moo_lang_table_get_available_langs (table);
+    langs = g_slist_sort (langs, (GCompareFunc) cmp_langs);
+
+    action = moo_menu_action_new (LANG_ACTION_ID);
+    menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
+
+    moo_menu_mgr_append (menu_mgr, NULL, LANG_ACTION_ID,
+                         "Language", 0, NULL, NULL);
+
+    moo_menu_mgr_append (menu_mgr, LANG_ACTION_ID,
+                         NONE_LANGUAGE_NAME, "None",
+                         MOO_MENU_ITEM_RADIO, NULL, NULL);
+
+    for (l = sections; l != NULL; l = l->next)
+        moo_menu_mgr_append (menu_mgr, LANG_ACTION_ID,
+                             l->data, l->data, 0, NULL, NULL);
+
+    for (l = langs; l != NULL; l = l->next)
+    {
+        MooLang *lang = l->data;
+        moo_menu_mgr_append (menu_mgr, lang->section,
+                             lang->name, lang->name, MOO_MENU_ITEM_RADIO,
+                             g_strdup (lang->name), g_free);
+    }
+
+    g_signal_connect_swapped (menu_mgr, "radio-set-active",
+                              G_CALLBACK (lang_item_activated), window);
+
+    g_slist_free (langs);
+    g_slist_foreach (sections, (GFunc) g_free, NULL);
+    g_slist_free (sections);
+
+    moo_bind_bool_property (action, "sensitive", window, "has-open-document", FALSE);
+    return action;
+}
+
+
+static void
+update_lang_menu (MooEditWindow      *window)
+{
+    MooEdit *doc;
+    MooAction *action;
+    MooLang *lang;
+
+    doc = ACTIVE_DOC (window);
+    if (!doc)
+        return;
+
+    lang = moo_edit_get_lang (doc);
+    action = moo_window_get_action_by_id (MOO_WINDOW (window), LANG_ACTION_ID);
+    g_return_if_fail (action != NULL);
+
+    moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
+                             lang ? lang->name : NONE_LANGUAGE_NAME, TRUE);
+}
+
+
+static void
+edit_lang_changed (MooEditWindow      *window,
+                   G_GNUC_UNUSED GParamSpec *pspec,
+                   MooEdit            *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        update_lang_menu (window);
 }

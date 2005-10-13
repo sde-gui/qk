@@ -12,51 +12,63 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#define MOOTEXT_BUFFER_COMPILATION
-#include "mooedit/mootextbuffer.h"
+#define MOOEDIT_COMPILATION
+#include "mooedit/moolinebuffer.h"
 #include "mooedit/mootextiter.h"
+#include "mooedit/moohighlighter.h"
 #include "mooutils/moomarshals.h"
 
 
 struct _MooTextBufferPrivate {
-    MooEditLang           *lang;
+    gboolean has_selection;
+    gboolean has_text;
 
-    gboolean               has_selection;
-    gboolean               has_text;
+    MooHighlighter *hl;
+    MooLang *lang;
+    gboolean may_apply_tag;
+    gboolean do_highlight;
 
-    gboolean               check_brackets;
-    guint                  num_brackets;
-    gunichar              *left_brackets, *right_brackets;
-    GtkTextTag            *correct_match_tag;
-    GtkTextTag            *incorrect_match_tag;
-    GtkTextMark           *bracket_mark[4];
-    MooBracketMatchType    bracket_found;
+    gboolean check_brackets;
+    guint num_brackets;
+    gunichar *left_brackets, *right_brackets;
+    GtkTextTag *correct_match_tag;
+    GtkTextTag *incorrect_match_tag;
+    GtkTextMark *bracket_mark[4];
+    MooBracketMatchType bracket_found;
+
+    LineBuffer *line_buf;
 };
 
 
-static void     moo_text_buffer_finalize        (GObject        *object);
+static void     moo_text_buffer_finalize            (GObject        *object);
 
-static void     moo_text_buffer_set_property    (GObject        *object,
-                                                 guint           prop_id,
-                                                 const GValue   *value,
-                                                 GParamSpec     *pspec);
-static void     moo_text_buffer_get_property    (GObject        *object,
-                                                 guint           prop_id,
-                                                 GValue         *value,
-                                                 GParamSpec     *pspec);
+static void     moo_text_buffer_set_property        (GObject        *object,
+                                                     guint           prop_id,
+                                                     const GValue   *value,
+                                                     GParamSpec     *pspec);
+static void     moo_text_buffer_get_property        (GObject        *object,
+                                                     guint           prop_id,
+                                                     GValue         *value,
+                                                     GParamSpec     *pspec);
 
-static void     moo_text_buffer_cursor_moved    (MooTextBuffer      *buffer,
-                                                 const GtkTextIter  *iter);
-static void     moo_text_buffer_mark_set        (GtkTextBuffer      *buffer,
-                                                 const GtkTextIter  *iter,
-                                                 GtkTextMark        *mark);
-static void     moo_text_buffer_insert_text     (GtkTextBuffer      *buffer,
-                                                 GtkTextIter        *pos,
-                                                 const gchar        *text,
-                                                 gint                length);
-static void     moo_text_buffer_delete_range    (GtkTextBuffer      *buffer,
-                                                 GtkTextIter        *start,
-                                                 GtkTextIter        *end);
+static void     moo_text_buffer_cursor_moved        (MooTextBuffer      *buffer,
+                                                     const GtkTextIter  *iter);
+static void     moo_text_buffer_mark_set            (GtkTextBuffer      *buffer,
+                                                     const GtkTextIter  *iter,
+                                                     GtkTextMark        *mark);
+static void     moo_text_buffer_insert_text         (GtkTextBuffer      *buffer,
+                                                     GtkTextIter        *pos,
+                                                     const gchar        *text,
+                                                     gint                length);
+static void     moo_text_buffer_apply_tag           (GtkTextBuffer      *buffer,
+                                                     GtkTextTag         *tag,
+                                                     const GtkTextIter  *start,
+                                                     const GtkTextIter  *end);
+static void     moo_text_buffer_delete_range        (GtkTextBuffer      *buffer,
+                                                     GtkTextIter        *start,
+                                                     GtkTextIter        *end);
+
+static void     moo_text_buffer_queue_highlight     (MooTextBuffer      *buffer);
 
 
 enum {
@@ -71,13 +83,15 @@ enum {
     PROP_0,
     PROP_CHECK_BRACKETS,
     PROP_BRACKET_MATCH_STYLE,
+    PROP_BRACKET_MISMATCH_STYLE,
     PROP_HAS_TEXT,
-    PROP_HAS_SELECTION
+    PROP_HAS_SELECTION,
+    PROP_LANG
 };
 
 
 /* MOO_TYPE_TEXT_BUFFER */
-G_DEFINE_TYPE (MooTextBuffer, moo_text_buffer, GTK_TYPE_SOURCE_BUFFER)
+G_DEFINE_TYPE (MooTextBuffer, moo_text_buffer, GTK_TYPE_TEXT_BUFFER)
 
 
 static void
@@ -93,6 +107,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     buffer_class->mark_set = moo_text_buffer_mark_set;
     buffer_class->insert_text = moo_text_buffer_insert_text;
     buffer_class->delete_range = moo_text_buffer_delete_range;
+    buffer_class->apply_tag = moo_text_buffer_apply_tag;
 
     klass->cursor_moved = moo_text_buffer_cursor_moved;
 
@@ -109,7 +124,15 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                      g_param_spec_boxed ("bracket-match-style",
                                              "bracket-match-style",
                                              "bracket-match-style",
-                                             GTK_TYPE_SOURCE_TAG_STYLE,
+                                             MOO_TYPE_TEXT_STYLE,
+                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_BRACKET_MISMATCH_STYLE,
+                                     g_param_spec_boxed ("bracket-mismatch-style",
+                                             "bracket-mismatch-style",
+                                             "bracket-mismatch-style",
+                                             MOO_TYPE_TEXT_STYLE,
                                              G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
 
     g_object_class_install_property (gobject_class,
@@ -128,6 +151,14 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              FALSE,
                                              G_PARAM_READABLE));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_LANG,
+                                     g_param_spec_boxed ("lang",
+                                             "lang",
+                                             "lang",
+                                             MOO_TYPE_LANG,
+                                             G_PARAM_READWRITE));
+
     signals[CURSOR_MOVED] =
             g_signal_new ("cursor-moved",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -144,10 +175,11 @@ static void
 moo_text_buffer_init (MooTextBuffer *buffer)
 {
     buffer->priv = g_new0 (MooTextBufferPrivate, 1);
-    buffer->priv->check_brackets = TRUE;
+    buffer->priv->line_buf = moo_line_buffer_new ();
+    buffer->priv->do_highlight = TRUE;
+    buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                            buffer->priv->line_buf, NULL);
     buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
-    moo_text_buffer_set_brackets (buffer, NULL);
-    gtk_source_buffer_set_check_brackets (GTK_SOURCE_BUFFER (buffer), FALSE);
 }
 
 
@@ -156,8 +188,8 @@ moo_text_buffer_finalize (GObject *object)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (object);
 
-    if (buffer->priv->lang)
-        g_object_unref (buffer->priv->lang);
+    moo_highlighter_destroy (buffer->priv->hl, FALSE);
+    moo_line_buffer_free (buffer->priv->line_buf);
 
     g_free (buffer->priv->left_brackets);
     g_free (buffer->priv->right_brackets);
@@ -169,256 +201,11 @@ moo_text_buffer_finalize (GObject *object)
 }
 
 
-void
-moo_text_buffer_set_lang (MooTextBuffer *buffer,
-                          MooEditLang   *lang)
+GtkTextBuffer*
+moo_text_buffer_new (GtkTextTagTable *table)
 {
-    GtkTextTagTable *table;
-
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-
-    if (lang == buffer->priv->lang)
-        return;
-
-    table = gtk_text_buffer_get_tag_table (GTK_TEXT_BUFFER (buffer));
-    gtk_source_tag_table_remove_source_tags (GTK_SOURCE_TAG_TABLE (table));
-
-    if (buffer->priv->lang)
-    {
-        g_object_unref (buffer->priv->lang);
-        buffer->priv->lang = NULL;
-    }
-
-    if (lang)
-    {
-        GSList *tags;
-        gunichar escape_char;
-
-        buffer->priv->lang = lang;
-        g_object_ref (buffer->priv->lang);
-
-        tags = moo_edit_lang_get_tags (lang);
-        gtk_source_tag_table_add_tags (GTK_SOURCE_TAG_TABLE (table), tags);
-        g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
-        g_slist_free (tags);
-
-        escape_char = moo_edit_lang_get_escape_char (lang);
-        gtk_source_buffer_set_escape_char (GTK_SOURCE_BUFFER (buffer),
-                                           escape_char);
-
-        moo_text_buffer_set_brackets (buffer, moo_edit_lang_get_brackets (lang));
-    }
-    else
-    {
-        gtk_source_buffer_set_escape_char (GTK_SOURCE_BUFFER (buffer), '\\');
-        moo_text_buffer_set_brackets (buffer, "{}()[]");
-    }
-}
-
-
-static gboolean
-find (gunichar *vec, guint size, gunichar c)
-{
-    guint i;
-
-    for (i = 0; i < size; ++i)
-        if (c == vec[i])
-            return TRUE;
-
-    return FALSE;
-}
-
-gboolean
-moo_text_iter_at_bracket (GtkTextIter *iter)
-{
-    gunichar c;
-    GtkTextIter b;
-    MooTextBuffer *buffer;
-
-    buffer = MOO_TEXT_BUFFER (gtk_text_iter_get_buffer (iter));
-    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
-
-    c = gtk_text_iter_get_char (iter);
-
-    if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-        find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
-    {
-        return TRUE;
-    }
-
-    b = *iter;
-
-    if (!gtk_text_iter_starts_line (&b) && gtk_text_iter_backward_char (&b))
-    {
-        c = gtk_text_iter_get_char (&b);
-
-        if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-            find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
-        {
-            *iter = b;
-            return TRUE;
-        }
-    }
-
-    return FALSE;
-}
-
-
-MooBracketMatchType
-moo_text_iter_find_matching_bracket (GtkTextIter *iter)
-{
-    int addition = 0;
-    gunichar *same_direction = NULL, *inverse_direction = NULL;
-    guint to_find;
-    gunichar bracket = gtk_text_iter_get_char (iter);
-    gunichar bracket_to_find = 0;
-    const GtkTextTag *tag;
-    guint stack = 0;
-    GtkTextIter b;
-
-    MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_iter_get_buffer (iter));
-    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), MOO_BRACKET_MATCH_NOT_AT_BRACKET);
-
-    for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
-        if (bracket == buffer->priv->left_brackets[to_find])
-    {
-        bracket_to_find = buffer->priv->right_brackets[to_find];
-        addition = 1;
-        inverse_direction = buffer->priv->right_brackets;
-        same_direction = buffer->priv->left_brackets;
-        break;
-    }
-
-    if (to_find == buffer->priv->num_brackets)
-        for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
-            if (bracket == buffer->priv->right_brackets[to_find])
-    {
-        bracket_to_find = buffer->priv->left_brackets[to_find];
-        addition = -1;
-        same_direction = buffer->priv->right_brackets;
-        inverse_direction = buffer->priv->left_brackets;
-        break;
-    }
-
-    if (to_find == buffer->priv->num_brackets)
-        return MOO_BRACKET_MATCH_NOT_AT_BRACKET;
-
-    tag = gtk_source_iter_has_syntax_tag (iter);
-    stack = 0;
-    b = *iter;
-
-    while (gtk_text_iter_forward_chars (&b, addition))
-    {
-        if (tag == gtk_source_iter_has_syntax_tag (&b))
-        {
-            gunichar c = gtk_text_iter_get_char (&b);
-            if (c == bracket_to_find && !stack)
-            {
-                *iter = b;
-                return MOO_BRACKET_MATCH_CORRECT;
-            }
-
-            if (find (same_direction, buffer->priv->num_brackets, c))
-            {
-                ++stack;
-            }
-            else if (find (inverse_direction, buffer->priv->num_brackets, c))
-            {
-                if (stack)
-                {
-                    --stack;
-                }
-                else
-                {
-                    *iter = b;
-                    return MOO_BRACKET_MATCH_INCORRECT;
-                }
-            }
-        }
-    }
-
-    return MOO_BRACKET_MATCH_NONE;
-}
-
-
-static void
-moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
-                              const GtkTextIter  *where)
-{
-    GtkTextIter iter[4];
-    MooBracketMatchType bracket_match;
-    GtkTextTag *tag;
-    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
-    int i;
-
-    g_return_if_fail (where != NULL);
-
-    switch (buffer->priv->bracket_found)
-    {
-        case MOO_BRACKET_MATCH_CORRECT:
-            tag = buffer->priv->correct_match_tag;
-            break;
-        case MOO_BRACKET_MATCH_INCORRECT:
-            tag = buffer->priv->incorrect_match_tag;
-            break;
-        default:
-            tag = NULL;
-    }
-
-    if (tag)
-    {
-        for (i = 0; i < 4; ++i)
-            gtk_text_buffer_get_iter_at_mark (text_buffer, &iter[i],
-                                              buffer->priv->bracket_mark[i]);
-        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[0], &iter[1]);
-        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[2], &iter[3]);
-    }
-
-    if (!buffer->priv->check_brackets)
-        return;
-
-    iter[0] = *where;
-
-    buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
-
-    if (!moo_text_iter_at_bracket (&iter[0]))
-        return;
-
-    iter[2] = iter[0];
-    bracket_match = moo_text_iter_find_matching_bracket (&iter[2]); /* TODO: max chars*/
-
-    buffer->priv->bracket_found = bracket_match;
-
-    switch (bracket_match)
-    {
-        case MOO_BRACKET_MATCH_CORRECT:
-            tag = buffer->priv->correct_match_tag;
-            break;
-        case MOO_BRACKET_MATCH_INCORRECT:
-            tag = buffer->priv->incorrect_match_tag;
-            break;
-        default:
-            tag = NULL;
-    }
-
-    if (tag != NULL)
-    {
-        iter[1] = iter[0];
-        gtk_text_iter_forward_char (&iter[1]);
-        iter[3] = iter[2];
-        gtk_text_iter_forward_char (&iter[3]);
-
-        if (!buffer->priv->bracket_mark[0])
-            for (i = 0; i < 4; ++i)
-                buffer->priv->bracket_mark[i] =
-                        gtk_text_buffer_create_mark (text_buffer, NULL, &iter[i], FALSE);
-        else
-            for (i = 0; i < 4; ++i)
-                gtk_text_buffer_move_mark (text_buffer, buffer->priv->bracket_mark[i], &iter[i]);
-
-        gtk_text_buffer_apply_tag (text_buffer, tag, &iter[0], &iter[1]);
-        gtk_text_buffer_apply_tag (text_buffer, tag, &iter[2], &iter[3]);
-    }
+    return g_object_new (MOO_TYPE_TEXT_BUFFER,
+                         "tag-table", table, NULL);
 }
 
 
@@ -466,9 +253,34 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
                              gint                length)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
+    int first_line, last_line;
+    gboolean starts_line, ins_line;
 
-    if (GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text)
-        GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
+    if (!text[0])
+        return;
+
+    first_line = gtk_text_iter_get_line (pos);
+    starts_line = gtk_text_iter_starts_line (pos);
+    ins_line = (text[0] == '\n' || text[0] == '\r');
+
+    GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
+
+    last_line = gtk_text_iter_get_line (pos);
+
+    if (last_line == first_line)
+    {
+        moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
+    }
+    else
+    {
+        moo_line_buffer_insert_range (buffer->priv->line_buf,
+                                      first_line + 1,
+                                      last_line - first_line);
+        moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
+        moo_line_buffer_invalidate (buffer->priv->line_buf, last_line);
+    }
+
+    moo_text_buffer_queue_highlight (buffer);
 
     g_signal_emit (buffer, signals[CURSOR_MOVED], 0, pos);
 
@@ -486,9 +298,22 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                               GtkTextIter        *end)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
+    int first_line, last_line;
 
-    if (GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range)
-        GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
+    gtk_text_buffer_remove_all_tags (text_buffer, start, end);
+
+    first_line = gtk_text_iter_get_line (start);
+    last_line = gtk_text_iter_get_line (end);
+
+    GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
+
+    if (first_line < last_line)
+        moo_line_buffer_delete_range (buffer->priv->line_buf,
+                                      first_line + 1,
+                                      last_line - first_line);
+
+    moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
+    moo_text_buffer_queue_highlight (buffer);
 
     g_signal_emit (buffer, signals[CURSOR_MOVED], 0, start);
 
@@ -498,6 +323,97 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
         if (!buffer->priv->has_text)
             g_object_notify (G_OBJECT (buffer), "has-text");
     }
+}
+
+
+void
+moo_text_buffer_set_lang (MooTextBuffer  *buffer,
+                          MooLang        *lang)
+{
+    MooLang *old_lang;
+
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+
+    if (buffer->priv->lang == lang)
+        return;
+
+    old_lang = buffer->priv->lang;
+
+    if (old_lang)
+        moo_lang_unref (old_lang);
+
+    moo_highlighter_destroy (buffer->priv->hl, TRUE);
+
+    buffer->priv->lang = lang;
+
+    if (lang)
+        moo_lang_ref (lang);
+
+    buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                            buffer->priv->line_buf, lang);
+
+    if (old_lang)
+        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+
+    moo_text_buffer_queue_highlight (buffer);
+
+    moo_text_buffer_set_brackets (buffer, lang ? lang->brackets : NULL);
+}
+
+
+MooLang*
+moo_text_buffer_get_lang (MooTextBuffer  *buffer)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    return buffer->priv->lang;
+}
+
+
+static void
+moo_text_buffer_queue_highlight (MooTextBuffer *buffer)
+{
+    if (buffer->priv->lang && buffer->priv->do_highlight)
+        moo_highlighter_queue_compute (buffer->priv->hl, FALSE);
+}
+
+
+void
+moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
+                               gboolean            highlight)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+
+    if ((highlight && buffer->priv->do_highlight) || (!highlight && !buffer->priv->do_highlight))
+        return;
+
+    if (buffer->priv->do_highlight && buffer->priv->lang)
+        moo_highlighter_destroy (buffer->priv->hl, TRUE);
+    else
+        moo_highlighter_destroy (buffer->priv->hl, FALSE);
+
+    buffer->priv->do_highlight = highlight;
+
+    if (!highlight || !buffer->priv->lang)
+    {
+        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                buffer->priv->line_buf, NULL);
+    }
+    else
+    {
+        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                buffer->priv->line_buf,
+                                                buffer->priv->lang);
+        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+        moo_text_buffer_queue_highlight (buffer);
+    }
+}
+
+
+gboolean
+moo_text_buffer_get_highlight (MooTextBuffer      *buffer)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
+    return buffer->priv->do_highlight ? TRUE : FALSE;
 }
 
 
@@ -511,14 +427,20 @@ moo_text_buffer_set_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_BRACKET_MATCH_STYLE:
-            moo_text_buffer_set_bracket_match_style (buffer,
-                                                     g_value_get_boxed (value));
+        case PROP_CHECK_BRACKETS:
+            moo_text_buffer_set_check_brackets (buffer, g_value_get_boolean (value));
             break;
 
-        case PROP_CHECK_BRACKETS:
-            moo_text_buffer_set_check_brackets (buffer,
-                                                g_value_get_boolean (value));
+        case PROP_BRACKET_MATCH_STYLE:
+            moo_text_buffer_set_bracket_match_style (buffer, g_value_get_boxed (value));
+            break;
+
+        case PROP_BRACKET_MISMATCH_STYLE:
+            moo_text_buffer_set_bracket_mismatch_style (buffer, g_value_get_boxed (value));
+            break;
+
+        case PROP_LANG:
+            moo_text_buffer_set_lang (buffer, g_value_get_boxed (value));
             break;
 
         default:
@@ -542,6 +464,10 @@ moo_text_buffer_get_property (GObject        *object,
             g_value_set_boolean (value, buffer->priv->check_brackets);
             break;
 
+        case PROP_LANG:
+            g_value_set_boxed (value, buffer->priv->lang);
+            break;
+
         case PROP_HAS_TEXT:
             g_value_set_boolean (value, moo_text_buffer_has_text (buffer));
             break;
@@ -557,60 +483,185 @@ moo_text_buffer_get_property (GObject        *object,
 }
 
 
-void
-moo_text_buffer_set_bracket_match_style (MooTextBuffer           *buffer,
-                                         const GtkSourceTagStyle *style)
+gboolean
+moo_text_buffer_has_text (MooTextBuffer *buffer)
 {
-    GtkSourceTagStyle *freeme = NULL;
-    const GdkColor *bg = NULL, *fg = NULL;
-    int weight = PANGO_WEIGHT_NORMAL;
-    PangoUnderline underline = PANGO_UNDERLINE_NONE;
-    PangoStyle italic = PANGO_STYLE_NORMAL;
+    GtkTextIter start, end;
+
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), TRUE);
+
+    gtk_text_buffer_get_bounds (GTK_TEXT_BUFFER (buffer), &start, &end);
+    return gtk_text_iter_compare (&start, &end) ? TRUE : FALSE;
+}
+
+
+gboolean
+moo_text_buffer_has_selection (MooTextBuffer *buffer)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
+    return gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer), NULL, NULL);
+}
+
+
+void
+_moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
+                                   int                 first_line,
+                                   int                 last_line)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    moo_highlighter_apply_tags (buffer->priv->hl, first_line, last_line);
+}
+
+
+static void
+moo_text_buffer_apply_tag (GtkTextBuffer      *buffer,
+                           GtkTextTag         *tag,
+                           const GtkTextIter  *start,
+                           const GtkTextIter  *end)
+{
+    if (MOO_IS_SYNTAX_TAG (tag) && !MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
+        return;
+
+    GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->apply_tag (buffer, tag, start, end);
+}
+
+
+void
+_moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
+                                   GtkTextTag         *tag,
+                                   const GtkTextIter  *start,
+                                   const GtkTextIter  *end)
+{
+    buffer->priv->may_apply_tag = TRUE;
+    gtk_text_buffer_apply_tag (GTK_TEXT_BUFFER (buffer), tag, start, end);
+    buffer->priv->may_apply_tag = FALSE;
+}
+
+
+/*****************************************************************************/
+/* Matching brackets
+ */
+
+#define FIND_BRACKETS_LIMIT 10000
+
+static void
+moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
+                              const GtkTextIter  *where)
+{
+    GtkTextIter iter[4];
+    MooBracketMatchType bracket_match;
+    GtkTextTag *tag;
+    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
+    int i;
+
+    g_return_if_fail (where != NULL);
+
+    switch (buffer->priv->bracket_found)
+    {
+        case MOO_BRACKET_MATCH_CORRECT:
+            tag = buffer->priv->correct_match_tag;
+            break;
+        case MOO_BRACKET_MATCH_INCORRECT:
+            tag = buffer->priv->incorrect_match_tag;
+            break;
+        default:
+            tag = NULL;
+    }
+
+    if (tag)
+    {
+        for (i = 0; i < 4; ++i)
+            gtk_text_buffer_get_iter_at_mark (text_buffer, &iter[i],
+                                              buffer->priv->bracket_mark[i]);
+        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[0], &iter[1]);
+        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[2], &iter[3]);
+    }
+
+    if (!buffer->priv->check_brackets)
+        return;
+
+    iter[0] = *where;
+
+    buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
+
+    if (!moo_text_iter_at_bracket (&iter[0]))
+        return;
+
+    iter[2] = iter[0];
+    bracket_match = moo_text_iter_find_matching_bracket (&iter[2], FIND_BRACKETS_LIMIT);
+
+    buffer->priv->bracket_found = bracket_match;
+
+    switch (bracket_match)
+    {
+        case MOO_BRACKET_MATCH_CORRECT:
+            tag = buffer->priv->correct_match_tag;
+            break;
+        case MOO_BRACKET_MATCH_INCORRECT:
+            tag = buffer->priv->incorrect_match_tag;
+            break;
+        default:
+            tag = NULL;
+    }
+
+    if (tag != NULL)
+    {
+        iter[1] = iter[0];
+        gtk_text_iter_forward_char (&iter[1]);
+        iter[3] = iter[2];
+        gtk_text_iter_forward_char (&iter[3]);
+
+        if (!buffer->priv->bracket_mark[0])
+            for (i = 0; i < 4; ++i)
+                buffer->priv->bracket_mark[i] =
+                        gtk_text_buffer_create_mark (text_buffer, NULL, &iter[i], FALSE);
+        else
+            for (i = 0; i < 4; ++i)
+                gtk_text_buffer_move_mark (text_buffer, buffer->priv->bracket_mark[i], &iter[i]);
+
+        gtk_text_buffer_apply_tag (text_buffer, tag, &iter[0], &iter[1]);
+        gtk_text_buffer_apply_tag (text_buffer, tag, &iter[2], &iter[3]);
+    }
+}
+
+
+void
+moo_text_buffer_set_bracket_match_style (MooTextBuffer      *buffer,
+                                         const MooTextStyle *style)
+{
+    static MooTextStyle empty;
 
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
     if (!style)
-    {
-        freeme = gtk_source_tag_style_new ();
-        freeme->is_default = FALSE;
-        freeme->mask = GTK_SOURCE_TAG_STYLE_USE_BACKGROUND;
-        gdk_color_parse ("yellow", &freeme->background);
-        freeme->italic = FALSE;
-        freeme->bold = FALSE;
-        freeme->underline = FALSE;
-        freeme->strikethrough = FALSE;
-
-        style = freeme;
-    }
+        style = &empty;
 
     if (!buffer->priv->correct_match_tag)
         buffer->priv->correct_match_tag =
                 gtk_text_buffer_create_tag (GTK_TEXT_BUFFER (buffer), NULL, NULL);
 
-    if (style->mask & GTK_SOURCE_TAG_STYLE_USE_BACKGROUND)
-        bg = &style->background;
-    if (style->mask & GTK_SOURCE_TAG_STYLE_USE_FOREGROUND)
-        fg = &style->foreground;
-    if (style->italic)
-        italic = PANGO_STYLE_ITALIC;
-    if (style->bold)
-        weight = PANGO_WEIGHT_BOLD;
-    if (style->underline)
-        underline = PANGO_UNDERLINE_SINGLE;
-
-    g_object_set (buffer->priv->correct_match_tag,
-                  "foreground-gdk", fg,
-                  "background-gdk", bg,
-                  "style", italic,
-                  "weight", weight,
-                  "underline", underline,
-                  "strikethrough", style->strikethrough,
-                  NULL);
-
+    _moo_style_set_tag_style (style, buffer->priv->correct_match_tag);
     g_object_notify (G_OBJECT (buffer), "bracket-match-style");
+}
 
-    if (freeme)
-        gtk_source_tag_style_free (freeme);
+
+void
+moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
+                                            const MooTextStyle *style)
+{
+    static MooTextStyle empty;
+
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+
+    if (!style)
+        style = &empty;
+
+    if (!buffer->priv->incorrect_match_tag)
+        buffer->priv->incorrect_match_tag =
+                gtk_text_buffer_create_tag (GTK_TEXT_BUFFER (buffer), NULL, NULL);
+
+    _moo_style_set_tag_style (style, buffer->priv->incorrect_match_tag);
+    g_object_notify (G_OBJECT (buffer), "bracket-mismatch-style");
 }
 
 
@@ -696,21 +747,141 @@ moo_text_buffer_set_check_brackets (MooTextBuffer  *buffer,
 }
 
 
-gboolean
-moo_text_buffer_has_text (MooTextBuffer *buffer)
+inline static gboolean
+find (gunichar *vec, guint size, gunichar c)
 {
-    GtkTextIter start, end;
+    guint i;
 
-    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), TRUE);
+    for (i = 0; i < size; ++i)
+        if (c == vec[i])
+            return TRUE;
 
-    gtk_text_buffer_get_bounds (GTK_TEXT_BUFFER (buffer), &start, &end);
-    return gtk_text_iter_compare (&start, &end) ? TRUE : FALSE;
+    return FALSE;
 }
 
 
 gboolean
-moo_text_buffer_has_selection (MooTextBuffer *buffer)
+moo_text_iter_at_bracket (GtkTextIter *iter)
 {
+    gunichar c;
+    GtkTextIter b;
+    MooTextBuffer *buffer;
+
+    buffer = MOO_TEXT_BUFFER (gtk_text_iter_get_buffer (iter));
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
-    return gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer), NULL, NULL);
+
+    c = gtk_text_iter_get_char (iter);
+
+    if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
+        find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
+    {
+        return TRUE;
+    }
+
+    b = *iter;
+
+    if (!gtk_text_iter_starts_line (&b) && gtk_text_iter_backward_char (&b))
+    {
+        c = gtk_text_iter_get_char (&b);
+
+        if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
+            find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
+        {
+            *iter = b;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+MooBracketMatchType
+moo_text_iter_find_matching_bracket (GtkTextIter *iter,
+                                     int          limit)
+{
+    int addition = 0;
+    int count;
+    gunichar *same_direction = NULL, *inverse_direction = NULL;
+    guint to_find;
+    gunichar bracket = gtk_text_iter_get_char (iter);
+    gunichar bracket_to_find = 0;
+    MooContext *ctx;
+    guint stack = 0;
+    GtkTextIter b;
+    MooTextBuffer *buffer;
+
+    buffer = MOO_TEXT_BUFFER (gtk_text_iter_get_buffer (iter));
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), MOO_BRACKET_MATCH_NOT_AT_BRACKET);
+
+    for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
+    {
+        if (bracket == buffer->priv->left_brackets[to_find])
+        {
+            bracket_to_find = buffer->priv->right_brackets[to_find];
+            addition = 1;
+            inverse_direction = buffer->priv->right_brackets;
+            same_direction = buffer->priv->left_brackets;
+            break;
+        }
+    }
+
+    if (to_find == buffer->priv->num_brackets)
+    {
+        for (to_find = 0; to_find < buffer->priv->num_brackets; ++to_find)
+        {
+            if (bracket == buffer->priv->right_brackets[to_find])
+            {
+                bracket_to_find = buffer->priv->left_brackets[to_find];
+                addition = -1;
+                same_direction = buffer->priv->right_brackets;
+                inverse_direction = buffer->priv->left_brackets;
+                break;
+            }
+        }
+    }
+
+    if (to_find == buffer->priv->num_brackets)
+        return MOO_BRACKET_MATCH_NOT_AT_BRACKET;
+
+    ctx = _moo_text_iter_get_context (iter);
+    stack = 0;
+    b = *iter;
+
+    if (limit < 0)
+        limit = G_MAXINT;
+    count = 0;
+
+    while (gtk_text_iter_forward_chars (&b, addition) && count++ < limit)
+    {
+        if (ctx == _moo_text_iter_get_context (&b))
+        {
+            gunichar c = gtk_text_iter_get_char (&b);
+
+            if (c == bracket_to_find && !stack)
+            {
+                *iter = b;
+                return MOO_BRACKET_MATCH_CORRECT;
+            }
+
+            if (find (same_direction, buffer->priv->num_brackets, c))
+            {
+                ++stack;
+            }
+            else if (find (inverse_direction, buffer->priv->num_brackets, c))
+            {
+                if (stack)
+                {
+                    --stack;
+                }
+                else
+                {
+                    *iter = b;
+                    return MOO_BRACKET_MATCH_INCORRECT;
+                }
+            }
+        }
+    }
+
+    return MOO_BRACKET_MATCH_NONE;
 }

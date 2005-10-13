@@ -2,7 +2,17 @@
 #   mooutils/Makefile.am
 #
 
-DIST_SUBDIRS = newgtk glade pcre unrtf pixmaps
+DIST_SUBDIRS = newgtk glade pcre pixmaps moofileview xdgmime
+
+if MOO_USE_XDGMIME
+    xdgmime = xdgmime
+    xdgmime_lib = xdgmime/libxdgmime.la
+endif MOO_USE_XDGMIME
+
+if !MOO_OS_MINGW
+    moofileview = moofileview
+    moofileview_lib = moofileview/libmoofileview.la
+endif !MOO_OS_MINGW
 
 DEFAULT_INCLUDES =
 AM_CFLAGS =                             \
@@ -11,60 +21,97 @@ AM_CFLAGS =                             \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
     $(CFLAGS)                           \
-    $(GTK_CFLAGS)                       \
     $(PYTHON_INCLUDES)                  \
-    $(PYGTK_CFLAGS)                     \
-    -DG_LOG_DOMAIN=\"Moo\"              \
-    -D__MOO__
+    $(PYGTK_CFLAGS)
 
-# if USE_UNRTF
-#     unrtf = unrtf
-#     unrtf_lib = unrtf/libunrtf.la
-#     unrtf_src = moortf.h moortf.c
-# endif USE_UNRTF
-
-SUBDIRS = pixmaps glade newgtk pcre $(unrtf) .
+SUBDIRS = pixmaps glade newgtk pcre $(moofileview) $(xdgmime) .
 
 noinst_LTLIBRARIES = libmooutils.la
 
-libmooutils_la_LIBADD = \
-    pcre/libpcre.la     \
-    $(unrtf_lib)        \
-    newgtk/libnewgtk.la
+libmooutils_la_LIBADD =             \
+    pcre/libpcre.la                 \
+    newgtk/libnewgtk.la             \
+    $(moofileview_lib)              \
+    $(xdgmime_lib)
+
+utilsincludedir = $(includedir)/moo-1.0/mooutils
+utilsinclude_HEADERS =          \
+    eggregex.h                  \
+    mooaccelbutton.h            \
+    moobigpaned.h               \
+    mooclosure.h                \
+    moocombo.h                  \
+    mooentry.h                  \
+    moofiltermgr.h              \
+    mooglade.h                  \
+    moohistoryentry.h           \
+    moohistorylist.h            \
+    moolog.h                    \
+    moomarkup.h                 \
+    moomenumgr.h                \
+    moonotebook.h               \
+    moopaned.h                  \
+    mooprefs.h                  \
+    mooprefsdialog.h            \
+    mooprefsdialogpage.h        \
+    moostock.h                  \
+    mooutils-gobject.h          \
+    moowin.h                    \
+    mooaccel.h                  \
+    mooaction.h                 \
+    mooactiongroup.h            \
+    moomenuaction.h             \
+    mootoggleaction.h           \
+    moouixml.h                  \
+    moowindow.h                 \
+    mooutils-python.h
+
+win32_sources =                 \
+    moohandlewatch.h            \
+    moohandlewatch.c
 
 libmooutils_la_SOURCES =        \
-    $(pcre_src)                 \
-    $(unrtf_src)                \
+    $(utilsinclude_HEADERS)     \
     eggregex.c                  \
-    eggregex.h                  \
     mooaccelbutton.c            \
-    mooaccelbutton.h            \
     mooaccelbutton-glade.h      \
+    moobigpaned.c               \
     mooclosure.c                \
-    mooclosure.h                \
+    moocombo.c                  \
     moocompat.c                 \
     moocompat.h                 \
     moodialogs.c                \
     moodialogs.h                \
+    mooentry.c                  \
     moofileutils.c              \
     moofileutils.h              \
+    moofilewatch.c              \
+    moofilewatch.h              \
+    moofiltermgr.c              \
     mooglade.c                  \
-    mooglade.h                  \
+    moohistoryentry.c           \
+    moohistorylist.c            \
     moolog.c                    \
-    moolog.h                    \
     moomarkup.c                 \
-    moomarkup.h                 \
+    moomenumgr.c                \
+    moonotebook.c               \
+    moopaned.c                  \
     mooprefs.c                  \
-    mooprefs.h                  \
     mooprefsdialog.c            \
-    mooprefsdialog.h            \
     mooprefsdialogpage.c        \
     moostock.c                  \
-    moostock.h                  \
     mooutils-gobject.c          \
-    mooutils-gobject.h          \
     moowin.c                    \
-    moowin.h                    \
+    mooaccel.c                  \
+    mooaccelprefs-glade.h       \
+    mooaction.c                 \
+    mooactiongroup.c            \
+    moomenuaction.c             \
+    mootoggleaction.c           \
+    moouixml.c                  \
+    moowindow.c                 \
+    gtksourceundomanager.c      \
+    gtksourceundomanager.h      \
     stock-about-16.h            \
     stock-about-24.h            \
     stock-moo.h                 \
@@ -78,8 +125,12 @@ python_sources =                \
     mooutils-python.c           \
     mooutils-python.h
 
-if USE_PYTHON
+if MOO_USE_PYTHON
 libmooutils_la_SOURCES += $(python_sources)
+endif
+
+if MOO_OS_MINGW
+libmooutils_la_SOURCES += $(win32_sources)
 endif
 
 nodist_libmooutils_la_SOURCES = \
@@ -88,13 +139,14 @@ nodist_libmooutils_la_SOURCES = \
 CLEANFILES = $(nodist_libmooutils_la_SOURCES)
 
 EXTRA_DIST =            \
-    $(unrtf_src)        \
     $(python_sources)   \
+    $(win32_sources)    \
     moomarshals.list    \
     xml2h.sh
 
 BUILT_SOURCES =             \
     mooaccelbutton-glade.h  \
+    mooaccelprefs-glade.h   \
     moomarshals.h           \
     moomarshals.c           \
     stock-moo.h
@@ -109,6 +161,9 @@ moomarshals.h: moomarshals.list
 mooaccelbutton-glade.h: $(srcdir)/glade/shortcutdialog.glade $(srcdir)/xml2h.sh
 	sh $(srcdir)/xml2h.sh MOO_ACCEL_BUTTON_GLADE_UI \
 	   $(srcdir)/glade/shortcutdialog.glade > mooaccelbutton-glade.h
+mooaccelprefs-glade.h: $(srcdir)/glade/shortcutsprefs.glade $(srcdir)/../mooutils/xml2h.sh
+	sh $(srcdir)/xml2h.sh MOO_SHORTCUTS_PREFS_GLADE_UI \
+	   $(srcdir)/glade/shortcutsprefs.glade > mooaccelprefs-glade.h
 
 PIXMAPS =                           \
     $(srcdir)/pixmaps/gap.png       \

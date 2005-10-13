@@ -17,17 +17,17 @@
 #include "mooterm/mootermbuffer-private.h"
 #include <string.h>
 
-#define CHAR_WIDTH(term)    ((term)->priv->font->width)
-#define CHAR_HEIGHT(term)   ((term)->priv->font->height)
-#define CHAR_ASCENT(term)   ((term)->priv->font->ascent)
-#define PIXEL_WIDTH(term)   (CHAR_WIDTH (term) * (term)->priv->width)
-#define PIXEL_HEIGHT(term)  (CHAR_HEIGHT (term) * (term)->priv->height)
+#define CHAR_WIDTH(term__)    ((term__)->priv->font->width)
+#define CHAR_HEIGHT(term__)   ((term__)->priv->font->height)
+#define CHAR_ASCENT(term__)   ((term__)->priv->font->ascent)
+#define PIXEL_WIDTH(term__)   (CHAR_WIDTH (term__) * (term__)->priv->width)
+#define PIXEL_HEIGHT(term__)  (CHAR_HEIGHT (term__) * (term__)->priv->height)
 
 #define CHARS \
 "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\QWERTYUIOP"\
 "{}|asdfghjkl;'ASDFGHJKL:\"zxcvbnm,./ZXCVBNM<>?"
 
-#define HOW_MANY(x, y) (((x) + (y) - 1) / (y))
+#define HOW_MANY(x__,y__) (((x__) + (y__) - 1) / (y__))
 
 
 static void moo_term_invalidate_content_all (MooTerm        *term);
@@ -35,7 +35,8 @@ static void moo_term_invalidate_content_rect(MooTerm        *term,
                                              GdkRectangle   *rect);
 
 
-static void font_calculate  (MooTermFont *font)
+static void
+font_calculate (MooTermFont *font)
 {
     PangoRectangle logical;
     PangoLayout *layout;
@@ -59,7 +60,8 @@ static void font_calculate  (MooTermFont *font)
 }
 
 
-static MooTermFont  *moo_term_font_new  (PangoContext   *ctx)
+static MooTermFont*
+moo_term_font_new  (PangoContext   *ctx)
 {
     MooTermFont *font = g_new0 (MooTermFont, 1);
 
@@ -72,8 +74,9 @@ static MooTermFont  *moo_term_font_new  (PangoContext   *ctx)
 }
 
 
-void        moo_term_set_font_from_string   (MooTerm        *term,
-                                             const char     *font)
+void
+moo_term_set_font_from_string (MooTerm        *term,
+                               const char     *font)
 {
     PangoFontDescription *font_desc;
 
@@ -104,18 +107,19 @@ void        moo_term_set_font_from_string   (MooTerm        *term,
     font_calculate (term->priv->font);
 
     if (GTK_WIDGET_REALIZED (term))
-        moo_term_size_changed (term);
+        _moo_term_size_changed (term);
 
     pango_font_description_free (font_desc);
 }
 
 
-void        moo_term_init_font_stuff    (MooTerm        *term)
+void
+_moo_term_init_font_stuff (MooTerm        *term)
 {
     PangoContext *ctx;
 
     if (term->priv->font)
-        moo_term_font_free (term->priv->font);
+        _moo_term_font_free (term->priv->font);
 
     gtk_widget_ensure_style (GTK_WIDGET (term));
 
@@ -133,7 +137,8 @@ void        moo_term_init_font_stuff    (MooTerm        *term)
 }
 
 
-void    moo_term_font_free  (MooTermFont    *font)
+void
+_moo_term_font_free (MooTermFont    *font)
 {
     if (font)
     {
@@ -144,14 +149,16 @@ void    moo_term_font_free  (MooTermFont    *font)
 }
 
 
-static gboolean process_updates     (MooTerm    *term)
+static gboolean
+process_updates (MooTerm    *term)
 {
     gdk_window_process_updates (GTK_WIDGET(term)->window, FALSE);
     term->priv->pending_expose = 0;
     return FALSE;
 }
 
-static void     add_update_timeout  (MooTerm    *term)
+static void
+add_update_timeout (MooTerm    *term)
 {
     if (!term->priv->pending_expose)
     {
@@ -164,7 +171,8 @@ static void     add_update_timeout  (MooTerm    *term)
     }
 }
 
-static void     remove_update_timeout   (MooTerm    *term)
+static void
+remove_update_timeout (MooTerm    *term)
 {
     if (term->priv->pending_expose)
         g_source_remove (term->priv->pending_expose);
@@ -173,15 +181,17 @@ static void     remove_update_timeout   (MooTerm    *term)
 }
 
 
-void        moo_term_invalidate_all         (MooTerm        *term)
+void
+_moo_term_invalidate_all (MooTerm        *term)
 {
     GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
-    moo_term_invalidate_rect (term, &rec);
+    _moo_term_invalidate_rect (term, &rec);
 }
 
 
-void        moo_term_invalidate_rect    (MooTerm        *term,
-                                         GdkRectangle   *rect)
+void
+_moo_term_invalidate_rect (MooTerm        *term,
+                           GdkRectangle   *rect)
 {
     if (GTK_WIDGET_REALIZED (term))
     {
@@ -200,7 +210,8 @@ void        moo_term_invalidate_rect    (MooTerm        *term,
 }
 
 
-void        moo_term_init_palette       (MooTerm        *term)
+void
+_moo_term_init_palette (MooTerm        *term)
 {
     int i;
     GtkWidget *widget = GTK_WIDGET (term);
@@ -225,7 +236,8 @@ void        moo_term_init_palette       (MooTerm        *term)
 }
 
 
-void        moo_term_setup_palette      (MooTerm        *term)
+void
+_moo_term_setup_palette (MooTerm        *term)
 {
     int i, j;
     GtkWidget *widget = GTK_WIDGET (term);
@@ -275,9 +287,10 @@ void        moo_term_setup_palette      (MooTerm        *term)
 }
 
 
-static void invalidate_screen_cell      (MooTerm        *term,
-                                         guint           row,
-                                         guint           column)
+static void
+invalidate_screen_cell (MooTerm        *term,
+                        guint           row,
+                        guint           column)
 {
     int scrollback, top_line;
     GdkRectangle small_rect = {0, 0, 1, 1};
@@ -288,12 +301,13 @@ static void invalidate_screen_cell      (MooTerm        *term,
     small_rect.x = column;
     small_rect.y = row + scrollback - top_line;
 
-    moo_term_invalidate_rect (term, &small_rect);
+    _moo_term_invalidate_rect (term, &small_rect);
 }
 
 
-void        moo_term_cursor_moved       (MooTerm        *term,
-                                         MooTermBuffer  *buf)
+void
+_moo_term_cursor_moved (MooTerm        *term,
+                        MooTermBuffer  *buf)
 {
     int new_row, new_col;
 
@@ -316,7 +330,8 @@ void        moo_term_cursor_moved       (MooTerm        *term,
 }
 
 
-void        moo_term_init_back_pixmap       (MooTerm        *term)
+void
+_moo_term_init_back_pixmap (MooTerm        *term)
 {
     if (term->priv->back_pixmap)
         return;
@@ -332,7 +347,8 @@ void        moo_term_init_back_pixmap       (MooTerm        *term)
 }
 
 
-void        moo_term_resize_back_pixmap     (MooTerm        *term)
+void
+_moo_term_resize_back_pixmap (MooTerm        *term)
 {
     if (term->priv->font_changed)
     {
@@ -410,7 +426,8 @@ static void term_draw_range                 (MooTerm        *term,
                                              guint           start,
                                              guint           len);
 
-void        moo_term_update_back_pixmap     (MooTerm        *term)
+void
+_moo_term_update_back_pixmap (MooTerm        *term)
 {
     GdkRectangle *rects = NULL;
     int n_rects;
@@ -442,15 +459,17 @@ void        moo_term_update_back_pixmap     (MooTerm        *term)
 }
 
 
-static void moo_term_invalidate_content_all (MooTerm        *term)
+static void
+moo_term_invalidate_content_all (MooTerm        *term)
 {
     GdkRectangle rect = {0, 0, term->priv->width, term->priv->height};
     moo_term_invalidate_content_rect (term, &rect);
 }
 
 
-static void moo_term_invalidate_content_rect(MooTerm        *term,
-                                             GdkRectangle   *rect)
+static void
+moo_term_invalidate_content_rect (MooTerm        *term,
+                                  GdkRectangle   *rect)
 {
     if (term->priv->changed_content)
         gdk_region_union_with_rect (term->priv->changed_content, rect);
@@ -459,8 +478,9 @@ static void moo_term_invalidate_content_rect(MooTerm        *term,
 }
 
 
-gboolean    moo_term_expose_event       (GtkWidget      *widget,
-                                         GdkEventExpose *event)
+gboolean
+_moo_term_expose_event (GtkWidget      *widget,
+                        GdkEventExpose *event)
 {
     GdkRectangle text_rec = {0, 0, 0, 0};
     GdkRegion *text_reg;
@@ -498,7 +518,7 @@ gboolean    moo_term_expose_event       (GtkWidget      *widget,
 
     if (!gdk_region_empty (event->region))
     {
-        moo_term_update_back_pixmap (term);
+        _moo_term_update_back_pixmap (term);
         gdk_gc_set_clip_region (term->priv->clip,
                                 event->region);
         gdk_draw_drawable (event->window,
@@ -530,10 +550,11 @@ static void term_draw_cells                 (MooTerm        *term,
                                              int             selected);
 static void term_draw_cursor                (MooTerm        *term);
 
-static void term_draw_range                 (MooTerm        *term,
-                                             guint           abs_row,
-                                             guint           start,
-                                             guint           len)
+static void
+term_draw_range (MooTerm        *term,
+                 guint           abs_row,
+                 guint           start,
+                 guint           len)
 {
     int selected;
     guint first = start;
@@ -564,7 +585,7 @@ static void term_draw_range                 (MooTerm        *term,
         }
     }
 
-    selected = moo_term_row_selected (term, abs_row);
+    selected = _moo_term_row_selected (term, abs_row);
 
     switch (selected)
     {
@@ -577,8 +598,8 @@ static void term_draw_range                 (MooTerm        *term,
         {
             guint l_row, l_col, r_row, r_col;
 
-            moo_term_get_selection_bounds (term, &l_row, &l_col,
-                                           &r_row, &r_col);
+            _moo_term_get_selected_cells (term, &l_row, &l_col,
+                                          &r_row, &r_col);
 
             if (l_row == r_row)
             {
@@ -665,11 +686,12 @@ static void term_draw_range                 (MooTerm        *term,
 }
 
 
-static void term_draw_range_simple          (MooTerm        *term,
-                                             guint           abs_row,
-                                             guint           start,
-                                             guint           len,
-                                             gboolean        selected)
+static void
+term_draw_range_simple (MooTerm        *term,
+                        guint           abs_row,
+                        guint           start,
+                        guint           len,
+                        gboolean        selected)
 {
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     int y = (abs_row - term_top_line (term)) * CHAR_HEIGHT(term);
@@ -686,7 +708,7 @@ static void term_draw_range_simple          (MooTerm        *term,
     else
         bg = term->priv->fg[COLOR_NORMAL];
 
-    if (start >= moo_term_line_len (line))
+    if (start >= _moo_term_line_len (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
@@ -698,27 +720,27 @@ static void term_draw_range_simple          (MooTerm        *term,
 
         return;
     }
-    else if (start + len > moo_term_line_len (line))
+    else if (start + len > _moo_term_line_len (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
                             TRUE,
-                            moo_term_line_len (line) * CHAR_WIDTH(term),
+                            _moo_term_line_len (line) * CHAR_WIDTH(term),
                             y,
-                            (start + len - moo_term_line_len (line)) * CHAR_WIDTH(term),
+                            (start + len - _moo_term_line_len (line)) * CHAR_WIDTH(term),
                             CHAR_HEIGHT(term));
 
-        len = moo_term_line_len (line) - start;
+        len = _moo_term_line_len (line) - start;
     }
 
-    g_assert (start + len <= moo_term_line_len (line));
+    g_assert (start + len <= _moo_term_line_len (line));
 
     while (len)
     {
         guint i;
-        MooTermTextAttr *attr = moo_term_line_attr (line, start);
+        MooTermTextAttr *attr = _moo_term_line_attr (line, start);
 
-        for (i = 1; i < len && !ATTR_CMP (attr, moo_term_line_attr (line, start + i)); ++i) ;
+        for (i = 1; i < len && !ATTR_CMP (attr, _moo_term_line_attr (line, start + i)); ++i) ;
 
         term_draw_cells (term, abs_row, start, i, attr, selected);
 
@@ -728,12 +750,13 @@ static void term_draw_range_simple          (MooTerm        *term,
 }
 
 
-static void term_draw_cells                 (MooTerm        *term,
-                                             guint           abs_row,
-                                             guint           start,
-                                             guint           len,
-                                             MooTermTextAttr *attr,
-                                             gboolean        selected)
+static void
+term_draw_cells (MooTerm        *term,
+                 guint           abs_row,
+                 guint           start,
+                 guint           len,
+                 MooTermTextAttr *attr,
+                 gboolean        selected)
 {
     static char buf[8 * MAX_TERMINAL_WIDTH];
     guint buf_len;
@@ -745,9 +768,9 @@ static void term_draw_cells                 (MooTerm        *term,
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
     g_assert (len != 0);
-    g_assert (start + len <= moo_term_line_len (line));
+    g_assert (start + len <= _moo_term_line_len (line));
 
-    buf_len = moo_term_line_get_chars (line, buf, start, len);
+    buf_len = _moo_term_line_get_chars (line, buf, start, len);
     g_return_if_fail (buf_len != 0);
 
     pango_layout_set_text (term->priv->layout, buf, buf_len);
@@ -816,25 +839,26 @@ static void term_draw_cells                 (MooTerm        *term,
 }
 
 
-static void term_draw_cursor                (MooTerm        *term)
+static void
+term_draw_cursor (MooTerm        *term)
 {
     guint scrollback = buf_scrollback (term->priv->buffer);
     guint abs_row = term->priv->cursor_row + scrollback;
     guint column = term->priv->cursor_col;
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
-    if (moo_term_line_len (line) > column)
+    if (_moo_term_line_len (line) > column)
     {
         return term_draw_cells (term, abs_row, column, 1,
-                                moo_term_line_attr (line, column),
-                                !moo_term_cell_selected (term, abs_row, column));
+                                _moo_term_line_attr (line, column),
+                                !_moo_term_cell_selected (term, abs_row, column));
     }
     else
     {
         GdkGC *color;
         guint invert;
 
-        invert = 1 + (moo_term_cell_selected (term, abs_row, column) ? 1 : 0) +
+        invert = 1 + (_moo_term_cell_selected (term, abs_row, column) ? 1 : 0) +
                 (term->priv->colors_inverted ? 1 : 0);
         invert %= 2;
 
@@ -854,14 +878,18 @@ static void term_draw_cursor                (MooTerm        *term)
 }
 
 
-void        moo_term_buf_content_changed(MooTerm        *term,
-                                         MooTermBuffer  *buf)
+void
+_moo_term_buf_content_changed (MooTerm        *term,
+                               MooTermBuffer  *buf)
 {
     GdkRectangle *rect = NULL;
     GdkRegion *dirty, *changed;
     int n_rect, i;
     guint top_line, scrollback;
     int height;
+
+    if (!GTK_WIDGET_DRAWABLE (term))
+        return;
 
     changed = buf_get_changed (buf);
 
@@ -923,7 +951,8 @@ void        moo_term_buf_content_changed(MooTerm        *term,
 }
 
 
-void        moo_term_force_update           (MooTerm        *term)
+void
+_moo_term_force_update (MooTerm        *term)
 {
     GdkRegion *region;
     GdkWindow *window = GTK_WIDGET (term)->window;
@@ -943,19 +972,21 @@ void        moo_term_force_update           (MooTerm        *term)
 }
 
 
-void        moo_term_invert_colors          (MooTerm    *term,
-                                             gboolean    invert)
+void
+_moo_term_invert_colors (MooTerm    *term,
+                         gboolean    invert)
 {
     if (invert != term->priv->colors_inverted)
     {
-        moo_term_invalidate_all (term);
+        _moo_term_invalidate_all (term);
         term->priv->colors_inverted = invert;
     }
 }
 
 
-void        moo_term_set_cursor_visible     (MooTerm    *term,
-                                             gboolean    visible)
+void
+_moo_term_set_cursor_visible (MooTerm    *term,
+                              gboolean    visible)
 {
     term->priv->cursor_visible = visible;
     invalidate_screen_cell (term,
@@ -964,7 +995,8 @@ void        moo_term_set_cursor_visible     (MooTerm    *term,
 }
 
 
-static gboolean blink (MooTerm *term)
+static gboolean
+blink (MooTerm *term)
 {
     term->priv->blink_cursor_visible =
             !term->priv->blink_cursor_visible;
@@ -975,7 +1007,8 @@ static gboolean blink (MooTerm *term)
 }
 
 
-static void start_cursor_blinking  (MooTerm        *term)
+static void
+start_cursor_blinking (MooTerm        *term)
 {
     if (!term->priv->cursor_blink_timeout_id && term->priv->cursor_blinks)
         term->priv->cursor_blink_timeout_id =
@@ -985,7 +1018,8 @@ static void start_cursor_blinking  (MooTerm        *term)
 }
 
 
-static void stop_cursor_blinking   (MooTerm        *term)
+static void
+stop_cursor_blinking (MooTerm        *term)
 {
     if (term->priv->cursor_blink_timeout_id)
     {
@@ -999,7 +1033,8 @@ static void stop_cursor_blinking   (MooTerm        *term)
 }
 
 
-void        moo_term_pause_cursor_blinking  (MooTerm        *term)
+void
+_moo_term_pause_cursor_blinking (MooTerm        *term)
 {
     if (term->priv->cursor_blinks)
     {
@@ -1009,8 +1044,9 @@ void        moo_term_pause_cursor_blinking  (MooTerm        *term)
 }
 
 
-void        moo_term_set_cursor_blinks      (MooTerm        *term,
-                                             gboolean        blinks)
+void
+_moo_term_set_cursor_blinks (MooTerm        *term,
+                             gboolean        blinks)
 {
     term->priv->cursor_blinks = blinks;
     if (blinks)
@@ -1021,17 +1057,18 @@ void        moo_term_set_cursor_blinks      (MooTerm        *term,
 }
 
 
-void        moo_term_set_cursor_blink_time  (MooTerm        *term,
-                                             guint           ms)
+void
+moo_term_set_cursor_blink_time (MooTerm        *term,
+                                guint           ms)
 {
     if (ms)
     {
         term->priv->cursor_blink_time = ms;
-        moo_term_set_cursor_blinks (term, TRUE);
-        moo_term_pause_cursor_blinking (term);
+        _moo_term_set_cursor_blinks (term, TRUE);
+        _moo_term_pause_cursor_blinking (term);
     }
     else
     {
-        moo_term_set_cursor_blinks (term, FALSE);
+        _moo_term_set_cursor_blinks (term, FALSE);
     }
 }

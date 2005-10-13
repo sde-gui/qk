@@ -32,8 +32,7 @@ struct _CProjectPlugin
 
     Project *project;
     MooEditWindow *window;
-    GtkWidget *build_configuration_menu;
-    MooRecentMgr *recent_mgr;
+    MooHistoryList *recent_list;
     MooCmdView *output;
     guint ui_merge_id;
 

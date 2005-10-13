@@ -3,16 +3,34 @@ headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
+#include "pygtk/pygtk.h"
 #include "mooterm/mooterm.h"
+#include "mooterm/mootermwindow.h"
 #include "mooutils/mooutils-python.h"
 
 void moo_term_register_classes(PyObject *d);
+
+static GdkAtom
+atom_from_pyobject(PyObject *object)
+{
+    if (object == NULL)
+        return NULL;
+    if (PyString_Check(object))
+        return gdk_atom_intern(PyString_AsString(object), FALSE);
+    if (PyGdkAtom_Check(object))
+        return PyGdkAtom_Get(object);
+    PyErr_SetString(PyExc_TypeError, "unable to convert argument to GdkAtom");
+    return NULL;
+}
+
 
 %%
 modulename moo
 %%
 import gtk.Widget as PyGtkWidget_Type
+import gtk.Adjustment as PyGtkAdjustment_Type
 import gobject.GObject as PyGObject_Type
+import moo.Window as PyMooWindow_Type
 %%
 ignore-glob
   *_get_type
@@ -49,4 +67,40 @@ _wrap_moo_term_fork_command_line (PyGObject *self, PyObject *args, PyObject *kwa
                                          working_dir, NULL, NULL);
 
     return_Bool (result);
+}
+%%
+override moo_term_copy_clipboard kwargs
+static PyObject *
+_wrap_moo_term_copy_clipboard (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "selection", NULL };
+    PyObject *py_selection = NULL;
+    GdkAtom selection;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:MooTerm.copy_clipboard", kwlist, &py_selection))
+        return NULL;
+    selection = atom_from_pyobject(py_selection);
+    if (PyErr_Occurred())
+        return NULL;
+    moo_term_copy_clipboard(MOO_TERM(self->obj), selection);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+%%
+override moo_term_paste_clipboard kwargs
+static PyObject *
+_wrap_moo_term_paste_clipboard(PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "selection", NULL };
+    PyObject *py_selection = NULL;
+    GdkAtom selection;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:MooTerm.paste_clipboard", kwlist, &py_selection))
+        return NULL;
+    selection = atom_from_pyobject(py_selection);
+    if (PyErr_Occurred())
+        return NULL;
+    moo_term_paste_clipboard(MOO_TERM(self->obj), selection);
+    Py_INCREF(Py_None);
+    return Py_None;
 }

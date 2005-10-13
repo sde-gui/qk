@@ -12,10 +12,10 @@
  */
 
 #define MOOTERM_COMPILATION
+#include "mooterm/mooterm-text.h"
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-selection.h"
-#include "mooui/mootext.h"
 
 
 typedef struct {
@@ -23,23 +23,23 @@ typedef struct {
     GtkTextIter end;
 } Segment;
 
-#define GET_SELECTION(term) ((Segment*)(term)->priv->selection)
+#define GET_SELECTION(term__) ((Segment*)(term__)->priv->selection)
 
-#define ITER_ROW(iter)              ((iter)->dummy3)
-#define ITER_COL(iter)              ((iter)->dummy4)
-#define ITER_WIDTH(iter)            ((iter)->dummy5)
-#define ITER_TERM(iter)             ((MooTerm*)(iter)->dummy1)
-#define ITER_SET_TERM(iter, term)   (iter)->dummy1 = term
-#define ITER_BUF(iter)              (ITER_TERM(iter)->priv->buffer)
-#define ITER_TOTAL_HEIGHT(iter)     ((int)(ITER_TERM(iter)->priv->height + \
-                                     buf_scrollback (ITER_BUF(iter))))
+#define ITER_ROW(iter__)              ((iter__)->dummy3)
+#define ITER_COL(iter__)              ((iter__)->dummy4)
+#define ITER_WIDTH(iter__)            ((iter__)->dummy5)
+#define ITER_TERM(iter__)             ((MooTerm*)(iter__)->dummy1)
+#define ITER_SET_TERM(iter__,term__)  (iter__)->dummy1 = term
+#define ITER_BUF(iter__)              (ITER_TERM(iter__)->priv->buffer)
+#define ITER_TOTAL_HEIGHT(iter__)     ((int)(ITER_TERM(iter__)->priv->height + \
+                                       buf_scrollback (ITER_BUF(iter__))))
 
-#define FILL_ITER(iter, term, row, col)     \
-    (iter)->dummy1 = term;                  \
-    ITER_ROW(iter) = row;                   \
-    ITER_COL(iter) = col;                   \
-    ITER_WIDTH(iter) = term->priv->width;   \
-    CHECK_ITER(iter);
+#define FILL_ITER(iter__,term__,row__,col__)    \
+    (iter__)->dummy1 = term__;                  \
+    ITER_ROW(iter__) = row__;                   \
+    ITER_COL(iter__) = col__;                   \
+    ITER_WIDTH(iter__) = term__->priv->width;   \
+    CHECK_ITER(iter__);
 
 
 #ifdef DEBUG
@@ -59,8 +59,8 @@ static void CHECK_SEGMENT (const Segment *segment)
     CHECK_ITER (&segment->end);
 }
 #else
-#define CHECK_ITER(iter)
-#define CHECK_SEGMENT(segment)
+#define CHECK_ITER(iter__)
+#define CHECK_SEGMENT(segment__)
 #endif
 
 
@@ -78,8 +78,14 @@ static char    *segment_get_text    (Segment            *segment);
 static void     invalidate_segment  (Segment            *segments,
                                      guint               num);
 
+static void     middle_button_click (MooTerm            *term);
+static void     right_button_click  (MooTerm            *term,
+                                     GdkEventButton     *event);
+#define MOUSE_STUFF(term__) (&(term__)->priv->mouse_stuff)
 
-gpointer    moo_term_selection_new  (MooTerm    *term)
+
+gpointer
+_moo_term_selection_new  (MooTerm    *term)
 {
     Segment *sel = g_new0 (Segment, 1);
 
@@ -90,7 +96,8 @@ gpointer    moo_term_selection_new  (MooTerm    *term)
 }
 
 
-void        moo_term_selection_invalidate   (MooTerm    *term)
+void
+_moo_term_selection_invalidate (MooTerm    *term)
 {
     Segment *sel = term->priv->selection;
 
@@ -98,7 +105,7 @@ void        moo_term_selection_invalidate   (MooTerm    *term)
     FILL_ITER (&sel->start, term, 0, 0);
     FILL_ITER (&sel->end, term, 0, 0);
 
-    moo_term_release_selection (term);
+    _moo_term_release_selection (term);
 }
 
 
@@ -228,7 +235,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = term->priv->width - rect.x;
                 rect.y = ITER_ROW (&start) - top_line;
                 rect.height = 1;
-                moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_rect (term, &rect);
             }
 
             if (ITER_ROW (&start) + 1 < ITER_ROW (&end))
@@ -237,7 +244,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = term->priv->width;
                 rect.y = ITER_ROW (&start) + 1 - top_line;
                 rect.height = ITER_ROW (&end) - ITER_ROW (&start) - 1;
-                moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_rect (term, &rect);
             }
 
             if (ITER_COL (&end) > 0)
@@ -246,7 +253,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = ITER_COL (&end);
                 rect.y = ITER_ROW (&end) - top_line;
                 rect.height = 1;
-                moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_rect (term, &rect);
             }
         }
         else
@@ -257,21 +264,22 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = ITER_COL (&end) - ITER_COL (&start);
                 rect.y = ITER_ROW (&start) - top_line;
                 rect.height = 1;
-                moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_rect (term, &rect);
             }
         }
     }
 }
 
 
-static void term_select_range (const GtkTextIter *start,
-                               const GtkTextIter *end)
+void
+_moo_term_select_range (MooTerm            *term,
+                        const GtkTextIter  *start,
+                        const GtkTextIter  *end)
 {
     Segment diff[2];
     Segment new_sel;
     Segment old_selection;
     gboolean inv = FALSE;
-    MooTerm *term = ITER_TERM (start);
 
     CHECK_ITER (start);
     CHECK_ITER (end);
@@ -324,10 +332,10 @@ static void term_select_range (const GtkTextIter *start,
                                            &old_selection,
                                            diff));
 
-    if (moo_term_selection_empty (term))
-        moo_term_release_selection (term);
+    if (_moo_term_selection_empty (term))
+        _moo_term_release_selection (term);
     else
-        moo_term_grab_selection (term);
+        _moo_term_grab_selection (term);
 }
 
 
@@ -347,42 +355,385 @@ static void     get_end_iter        (MooTerm            *term,
 }
 
 
-gboolean    moo_term_button_press           (GtkWidget      *widget,
-                                             GdkEventButton *event)
+/**************************************************************************/
+/* mouse functionality
+ */
+
+static void     start_drag_scroll               (MooTerm    *term);
+static void     stop_drag_scroll                (MooTerm    *term);
+static gboolean drag_scroll_timeout_func        (MooTerm    *term);
+static void     scroll_selection_end_onscreen   (MooTerm    *term);
+static void     start_selection_dnd             (MooTerm    *term,
+                                                 const GtkTextIter *iter,
+                                                 GdkEventMotion *event);
+
+#define SCROLL_TIMEOUT 100
+
+
+gboolean
+_moo_term_button_press (GtkWidget      *widget,
+                        GdkEventButton *event)
 {
-    moo_term_set_pointer_visible (MOO_TERM (widget), TRUE);
-    return moo_text_button_press_event (widget, event);
+    GtkTextIter iter;
+    int x, y;
+    MooTerm *term = MOO_TERM (widget);
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    if (!GTK_WIDGET_HAS_FOCUS (widget))
+        gtk_widget_grab_focus (widget);
+
+    _moo_term_window_to_buffer_coords (term, event->x, event->y, &x, &y);
+    _moo_term_get_iter_at_location (term, &iter, x, y);
+
+    if (event->type == GDK_BUTTON_PRESS)
+    {
+        if (event->button == 1)
+        {
+#if 0
+            GtkTextIter sel_start, sel_end;
+#endif
+
+            MOUSE_STUFF(term)->drag_button = GDK_BUTTON_PRESS;
+            MOUSE_STUFF(term)->drag_start_x = x;
+            MOUSE_STUFF(term)->drag_start_y = y;
+
+#if 0
+            /* TODO: implement drag'n'drop */
+            /* if clicked in selected, start drag */
+            if (_moo_term_get_selection_bounds (term, &sel_start, &sel_end))
+            {
+                moo_term_iter_order (&sel_start, &sel_end);
+                if (_moo_term_iter_in_range (&iter, &sel_start, &sel_end)
+                    && FALSE)
+                {
+                    /* clicked inside of selection,
+                    * set up drag and return */
+                    MOUSE_STUFF(term)->drag_type = DRAG_DRAG;
+                    return TRUE;
+                }
+            }
+#endif
+
+            /* otherwise, clear selection, and position cursor at clicked point */
+            if (event->state & GDK_SHIFT_MASK)
+                _moo_term_place_selection_end (term, &iter);
+            else
+                _moo_term_select_range (term, &iter, &iter);
+
+            MOUSE_STUFF(term)->drag_type = DRAG_SELECT;
+        }
+        else if (event->button == 2)
+        {
+            middle_button_click (term);
+        }
+        else if (event->button == 3)
+        {
+            right_button_click (term, event);
+        }
+        else
+        {
+            g_warning ("got button %d in button_press callback", event->button);
+        }
+    }
+    else if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
+    {
+        GtkTextIter bound;
+
+        if (_moo_term_get_selection_bounds (term, NULL, NULL))
+        {
+            /* it may happen sometimes, if you click fast enough */
+            _moo_term_select_range (term, &iter, &iter);
+        }
+
+        MOUSE_STUFF(term)->drag_button = GDK_2BUTTON_PRESS;
+        MOUSE_STUFF(term)->drag_start_x = x;
+        MOUSE_STUFF(term)->drag_start_y = y;
+        MOUSE_STUFF(term)->drag_type = DRAG_SELECT;
+
+        bound = iter;
+
+        if (_moo_term_extend_selection (term, MOO_TEXT_SELECT_WORDS, &iter, &bound))
+            _moo_term_select_range (term, &bound, &iter);
+    }
+    else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
+    {
+        GtkTextIter bound;
+
+        MOUSE_STUFF(term)->drag_button = GDK_3BUTTON_PRESS;
+        MOUSE_STUFF(term)->drag_start_x = x;
+        MOUSE_STUFF(term)->drag_start_y = y;
+        MOUSE_STUFF(term)->drag_type = DRAG_SELECT;
+
+        bound = iter;
+
+        if (_moo_term_extend_selection (term, MOO_TEXT_SELECT_LINES, &iter, &bound))
+            _moo_term_select_range (term, &bound, &iter);
+    }
+
+    return TRUE;
 }
 
 
-gboolean    moo_term_button_release         (GtkWidget      *widget,
-                                             GdkEventButton *event)
+gboolean
+_moo_term_button_release (GtkWidget      *widget,
+                          G_GNUC_UNUSED GdkEventButton *event)
 {
-    moo_term_set_pointer_visible (MOO_TERM (widget), TRUE);
-    return moo_text_button_release_event (widget, event);
+    MooTerm *term = MOO_TERM (widget);
+    GtkTextIter iter;
+
+    moo_term_set_pointer_visible (term, TRUE);
+
+    switch (MOUSE_STUFF(term)->drag_type)
+    {
+        case DRAG_NONE:
+            /* it may happen after right-click, or clicking outside
+            * of widget or something like that
+            * everything has been taken care of, so do nothing */
+            break;
+
+        case DRAG_SELECT:
+            /* everything should be done already in button_press and
+            * motion_notify handlers */
+            stop_drag_scroll (term);
+            break;
+
+        case DRAG_DRAG:
+            /* if we were really dragging, drop it
+            * otherwise, it was just a single click in selected text */
+            g_assert (!MOUSE_STUFF(term)->drag_moved); /* parent should handle drag */ /* TODO ??? */
+
+            _moo_term_get_iter_at_location (term, &iter,
+                                           MOUSE_STUFF(term)->drag_start_x,
+                                           MOUSE_STUFF(term)->drag_start_y);
+            _moo_term_select_range (term, &iter, &iter);
+            break;
+
+        default:
+            g_assert_not_reached ();
+    }
+
+    MOUSE_STUFF(term)->drag_moved = FALSE;
+    MOUSE_STUFF(term)->drag_type = DRAG_NONE;
+    MOUSE_STUFF(term)->drag_start_x = -1;
+    MOUSE_STUFF(term)->drag_start_y = -1;
+    MOUSE_STUFF(term)->drag_button = GDK_BUTTON_RELEASE;
+
+    return TRUE;
 }
 
 
-gboolean    moo_term_motion_notify          (GtkWidget      *widget,
-                                             GdkEventMotion *event)
+#define OUTSIDE(x,y,rect)               \
+    ((x) < (rect).x ||                  \
+     (y) < (rect).y ||                  \
+     (x) >= (rect).x + (rect).width ||  \
+     (y) >= (rect).y + (rect).height)
+
+
+gboolean
+_moo_term_motion_notify (GtkWidget      *widget,
+                         GdkEventMotion *event)
 {
+    MooTerm *term = MOO_TERM (widget);
+    int x, y, event_x, event_y;
+    GtkTextIter iter;
+
     moo_term_set_pointer_visible (MOO_TERM (widget), TRUE);
-    return moo_text_motion_event (widget, event);
+
+    if (!MOUSE_STUFF(term)->drag_type)
+        return FALSE;
+
+    if (event->is_hint)
+    {
+        gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
+    }
+    else {
+        event_x = (int)event->x;
+        event_y = (int)event->y;
+    }
+
+    _moo_term_window_to_buffer_coords (term, event_x, event_y, &x, &y);
+    _moo_term_get_iter_at_location (term, &iter, x, y);
+
+    if (MOUSE_STUFF(term)->drag_type == DRAG_SELECT)
+    {
+        GdkRectangle rect;
+        GtkTextIter start;
+        MooTextSelectionType t;
+
+        MOUSE_STUFF(term)->drag_moved = TRUE;
+        _moo_term_get_visible_rect (term, &rect);
+
+        if (OUTSIDE (x, y, rect))
+        {
+            start_drag_scroll (term);
+            return TRUE;
+        }
+        else
+        {
+            stop_drag_scroll (term);
+        }
+
+        _moo_term_get_iter_at_location (term, &start,
+                                       MOUSE_STUFF(term)->drag_start_x,
+                                       MOUSE_STUFF(term)->drag_start_y);
+
+        switch (MOUSE_STUFF(term)->drag_button)
+        {
+            case GDK_BUTTON_PRESS:
+                t = MOO_TEXT_SELECT_CHARS;
+                break;
+            case GDK_2BUTTON_PRESS:
+                t = MOO_TEXT_SELECT_WORDS;
+                break;
+            default:
+                t = MOO_TEXT_SELECT_LINES;
+        }
+
+        if (_moo_term_extend_selection (term, t, &iter, &start))
+            _moo_term_select_range (term, &start, &iter);
+        else
+            _moo_term_select_range (term, &iter, &iter);
+    }
+    else
+    {
+        /* this piece is from gtktextview.c */
+        int x, y;
+
+        gdk_window_get_pointer (widget->window, &x, &y, NULL);
+
+        if (gtk_drag_check_threshold (widget, MOUSE_STUFF(term)->drag_start_x,
+                                      MOUSE_STUFF(term)->drag_start_y, x, y))
+        {
+            GtkTextIter iter;
+            int buffer_x, buffer_y;
+
+            _moo_term_window_to_buffer_coords (term,
+                                              MOUSE_STUFF(term)->drag_start_x,
+                                              MOUSE_STUFF(term)->drag_start_y,
+                                              &buffer_x, &buffer_y);
+
+            _moo_term_get_iter_at_location (term, &iter, buffer_x, buffer_y);
+
+            MOUSE_STUFF(term)->drag_type = DRAG_NONE;
+            start_selection_dnd (term, &iter, event);
+        }
+    }
+
+    return TRUE;
+}
+
+
+static void
+start_drag_scroll (MooTerm *term)
+{
+    if (!MOUSE_STUFF(term)->drag_scroll_timeout)
+        MOUSE_STUFF(term)->drag_scroll_timeout =
+                g_timeout_add (SCROLL_TIMEOUT,
+                               (GSourceFunc) drag_scroll_timeout_func,
+                               term);
+
+    drag_scroll_timeout_func (term);
+}
+
+
+static void
+stop_drag_scroll (MooTerm *term)
+{
+    if (MOUSE_STUFF(term)->drag_scroll_timeout)
+        g_source_remove (MOUSE_STUFF(term)->drag_scroll_timeout);
+    MOUSE_STUFF(term)->drag_scroll_timeout = 0;
+}
+
+
+static gboolean
+drag_scroll_timeout_func (MooTerm *term)
+{
+    int x, y, px, py;
+    GtkTextIter iter;
+    GtkTextIter start;
+    MooTextSelectionType t;
+
+    g_assert (MOUSE_STUFF(term)->drag_type == DRAG_SELECT);
+
+    gdk_window_get_pointer (GTK_WIDGET(term)->window, &px, &py, NULL);
+    _moo_term_window_to_buffer_coords (term, px, py, &x, &y);
+    _moo_term_get_iter_at_location (term, &iter, x, y);
+
+    _moo_term_get_iter_at_location (term, &start,
+                                   MOUSE_STUFF(term)->drag_start_x,
+                                   MOUSE_STUFF(term)->drag_start_y);
+
+    switch (MOUSE_STUFF(term)->drag_button)
+    {
+        case GDK_BUTTON_PRESS:
+            t = MOO_TEXT_SELECT_CHARS;
+            break;
+        case GDK_2BUTTON_PRESS:
+            t = MOO_TEXT_SELECT_WORDS;
+            break;
+        default:
+            t = MOO_TEXT_SELECT_LINES;
+    }
+
+    if (_moo_term_extend_selection (term, t, &iter, &start))
+        _moo_term_select_range (term, &start, &iter);
+    else
+        _moo_term_select_range (term, &iter, &iter);
+
+    scroll_selection_end_onscreen (term);
+
+    return TRUE;
+}
+
+
+static void
+scroll_selection_end_onscreen (MooTerm *term)
+{
+    GtkTextIter iter = GET_SELECTION(term)->end;
+    guint top_line = term_top_line (term);
+
+    if (ITER_ROW(&iter) < (int)top_line)
+        moo_term_scroll_lines (term, ITER_ROW(&iter) - (int)top_line);
+    else if (ITER_ROW(&iter) >= (int)top_line + (int)term->priv->height)
+        moo_term_scroll_lines (term, ITER_ROW(&iter) + 1 - (int)top_line -
+                (int)term->priv->height);
+}
+
+
+static void
+start_selection_dnd (G_GNUC_UNUSED MooTerm    *term,
+                     G_GNUC_UNUSED const GtkTextIter *iter,
+                     G_GNUC_UNUSED GdkEventMotion *event)
+{
+    g_return_if_reached ();
 }
 
 
 
-gboolean    moo_term_selection_empty    (MooTerm    *term)
+
+
+
+
+
+
+
+
+
+
+gboolean
+_moo_term_selection_empty (MooTerm    *term)
 {
     return segment_empty (GET_SELECTION (term));
 }
 
 
-gboolean    moo_term_get_selection_bounds   (MooTerm    *term,
-                                             guint      *left_row,
-                                             guint      *left_col,
-                                             guint      *right_row,
-                                             guint      *right_col)
+gboolean
+_moo_term_get_selected_cells (MooTerm    *term,
+                              guint      *left_row,
+                              guint      *left_col,
+                              guint      *right_row,
+                              guint      *right_col)
 {
     Segment *selection = GET_SELECTION (term);
 
@@ -411,46 +762,48 @@ gboolean    moo_term_get_selection_bounds   (MooTerm    *term,
 }
 
 
-void        moo_term_selection_clear    (MooTerm    *term)
+void
+_moo_term_selection_clear (MooTerm    *term)
 {
     GtkTextIter i;
     FILL_ITER (&i, term, 0, 0);
-    term_select_range (&i, &i);
+    _moo_term_select_range (term, &i, &i);
 }
 
 
-static void     middle_button_click     (MooText        *obj,
-                                         G_GNUC_UNUSED GdkEventButton *event)
+static void
+middle_button_click (MooTerm *term)
 {
-    moo_term_paste_clipboard (MOO_TERM (obj), GDK_SELECTION_PRIMARY);
+    moo_term_paste_clipboard (term, GDK_SELECTION_PRIMARY);
 }
 
 
-static void     right_button_click      (MooText        *obj,
-                                         GdkEventButton *event)
+static void
+right_button_click (MooTerm        *term,
+                    GdkEventButton *event)
 {
-    moo_term_do_popup_menu (MOO_TERM (obj), event);
+    _moo_term_do_popup_menu (term, event);
 }
 
 
-static void     window_to_buffer_coords (MooText        *obj,
-                                         int             window_x,
-                                         int             window_y,
-                                         int            *buffer_x,
-                                         int            *buffer_y)
+void
+_moo_term_window_to_buffer_coords (MooTerm            *term,
+                                  int                 window_x,
+                                  int                 window_y,
+                                  int                *buffer_x,
+                                  int                *buffer_y)
 {
-    MooTerm *term = MOO_TERM (obj);
     *buffer_x = window_x;
     *buffer_y = window_y + (term_top_line (term) * term_char_height (term));
 }
 
 
-static void     get_iter_at_location    (MooText        *obj,
-                                         GtkTextIter    *iter,
-                                         int             x,
-                                         int             y)
+void
+_moo_term_get_iter_at_location (MooTerm            *term,
+                               GtkTextIter        *iter,
+                               int                 x,
+                               int                 y)
 {
-    MooTerm *term = MOO_TERM (obj);
     int char_width = term_char_width (term);
     int char_height = term_char_height (term);
     int scrollback = buf_scrollback (term->priv->buffer);
@@ -479,11 +832,11 @@ static void     get_iter_at_location    (MooText        *obj,
 }
 
 
-static gboolean get_selection_bounds    (MooText        *obj,
-                                         GtkTextIter    *sel_start,
-                                         GtkTextIter    *sel_end)
+gboolean
+_moo_term_get_selection_bounds (MooTerm            *term,
+                               GtkTextIter        *sel_start,
+                               GtkTextIter        *sel_end)
 {
-    MooTerm *term = MOO_TERM (obj);
     Segment *selection = term->priv->selection;
 
     if (sel_start)
@@ -492,7 +845,7 @@ static gboolean get_selection_bounds    (MooText        *obj,
     if (sel_end)
         *sel_end = selection->end;
 
-    return !moo_term_selection_empty (term);
+    return !_moo_term_selection_empty (term);
 }
 
 
@@ -521,8 +874,9 @@ static void iter_set_start  (GtkTextIter        *iter)
 }
 
 
-static void     iter_order              (GtkTextIter    *first,
-                                         GtkTextIter    *second)
+static void
+iter_order (GtkTextIter    *first,
+            GtkTextIter    *second)
 {
     if (iter_cmp (first, second) > 0)
     {
@@ -533,9 +887,10 @@ static void     iter_order              (GtkTextIter    *first,
 }
 
 
-static gboolean iter_in_range           (const GtkTextIter  *iter,
-                                         const GtkTextIter  *start,
-                                         const GtkTextIter  *end)
+gboolean
+_moo_term_iter_in_range (const GtkTextIter  *iter,
+                         const GtkTextIter  *start,
+                         const GtkTextIter  *end)
 {
     CHECK_ITER (iter);
     CHECK_ITER (start);
@@ -544,49 +899,19 @@ static gboolean iter_in_range           (const GtkTextIter  *iter,
 }
 
 
-static void     select_range            (G_GNUC_UNUSED MooText *obj,
-                                         const GtkTextIter  *start,
-                                         const GtkTextIter  *end)
+void
+_moo_term_place_selection_end (MooTerm            *term,
+                              const GtkTextIter  *where)
 {
-    CHECK_ITER (start);
-    CHECK_ITER (end);
-    term_select_range (start, end);
-}
-
-
-static void     place_selection_end     (MooText            *obj,
-                                         const GtkTextIter  *where)
-{
-    MooTerm *term = MOO_TERM (obj);
     CHECK_ITER (where);
-    term_select_range (&GET_SELECTION(term)->start, where);
+    _moo_term_select_range (term, &GET_SELECTION(term)->start, where);
 }
 
 
-static void     scroll_selection_end_onscreen   (MooText    *obj)
+void
+_moo_term_get_visible_rect (MooTerm            *term,
+                           GdkRectangle       *rect)
 {
-    MooTerm *term = MOO_TERM (obj);
-    GtkTextIter iter = GET_SELECTION(term)->end;
-    guint top_line = term_top_line (term);
-
-    if (ITER_ROW(&iter) < (int)top_line)
-        moo_term_scroll_lines (term, ITER_ROW(&iter) - (int)top_line);
-    else if (ITER_ROW(&iter) >= (int)top_line + (int)term->priv->height)
-        moo_term_scroll_lines (term, ITER_ROW(&iter) + 1 -
-                               (int)top_line - (int)term->priv->height);
-}
-
-
-static GdkWindow* get_window            (MooText            *obj)
-{
-    return GTK_WIDGET(obj)->window;
-}
-
-
-static void     get_visible_rect        (MooText            *obj,
-                                         GdkRectangle       *rect)
-{
-    MooTerm *term = MOO_TERM (obj);
     int char_height = term_char_height (term);
     rect->x = 0;
     rect->width = term->priv->width * term_char_width (term);
@@ -595,13 +920,14 @@ static void     get_visible_rect        (MooText            *obj,
 }
 
 
-gboolean    moo_term_cell_selected      (MooTerm    *term,
-                                         guint       row,
-                                         guint       col)
+gboolean
+_moo_term_cell_selected (MooTerm    *term,
+                         guint       row,
+                         guint       col)
 {
     GtkTextIter start, end, iter;
 
-    if (get_selection_bounds (MOO_TEXT (term), &start, &end))
+    if (_moo_term_get_selection_bounds (term, &start, &end))
     {
         iter_order (&start, &end);
         FILL_ITER (&iter, term, row, col);
@@ -614,13 +940,13 @@ gboolean    moo_term_cell_selected      (MooTerm    *term,
 }
 
 
-int         moo_term_row_selected           (MooTerm    *term,
-                                             guint       row)
+int
+_moo_term_row_selected (MooTerm    *term,
+                        guint       row)
 {
     guint l_row, l_col, r_row, r_col;
 
-    if (moo_term_get_selection_bounds (term, &l_row, &l_col,
-                                        &r_row, &r_col))
+    if (_moo_term_get_selected_cells (term, &l_row, &l_col, &r_row, &r_col))
     {
         if (row < l_row || row > r_row)
             return NOT_SELECTED;
@@ -636,32 +962,10 @@ int         moo_term_row_selected           (MooTerm    *term,
 }
 
 
-static gboolean extend_selection        (MooText        *obj,
-                                         MooTextSelectionType type,
-                                         GtkTextIter    *end,
-                                         GtkTextIter    *start);
-
-void        moo_term_text_iface_init        (gpointer        g_iface)
+void
+_moo_term_text_iface_init (gpointer g_iface)
 {
-    MooTextIface *iface = (MooTextIface*) g_iface;
-
-    iface->start_selection_dnd = NULL;
-
-    iface->middle_button_click = middle_button_click;
-    iface->right_button_click = right_button_click;
-
-    iface->extend_selection = extend_selection;
-    iface->window_to_buffer_coords = window_to_buffer_coords;
-    iface->get_iter_at_location = get_iter_at_location;
-    iface->get_selection_bounds = get_selection_bounds;
-    iface->iter_order = iter_order;
-    iface->iter_in_range = iter_in_range;
-    iface->place_selection_end = place_selection_end;
-    iface->select_range = select_range;
-    iface->scroll_selection_end_onscreen = scroll_selection_end_onscreen;
-
-    iface->get_window = get_window;
-    iface->get_visible_rect = get_visible_rect;
+    g_return_if_fail (g_iface != NULL);
 }
 
 
@@ -685,12 +989,12 @@ static gboolean is_word_char            (const GtkTextIter  *iter);
 static gunichar iter_get_char           (const GtkTextIter  *iter);
 
 
-static gboolean extend_selection        (MooText        *obj,
-                                         MooTextSelectionType type,
-                                         GtkTextIter    *end,
-                                         GtkTextIter    *start)
+gboolean
+_moo_term_extend_selection (MooTerm            *term,
+                           MooTextSelectionType type,
+                           GtkTextIter        *end,
+                           GtkTextIter        *start)
 {
-    MooTerm *term = MOO_TERM (obj);
     int order = iter_cmp (start, end);
 
     CHECK_ITER (start);
@@ -745,8 +1049,9 @@ static gboolean extend_selection        (MooText        *obj,
 
 
 /* TODO */
-static int      char_class              (MooTerm            *term,
-                                         const GtkTextIter  *iter)
+static int
+char_class (MooTerm            *term,
+            const GtkTextIter  *iter)
 {
     if (iter_ends_line (iter))
         return -1;
@@ -759,7 +1064,8 @@ static int      char_class              (MooTerm            *term,
 }
 
 
-static gboolean iter_ends_line          (const GtkTextIter  *iter)
+static gboolean
+iter_ends_line (const GtkTextIter  *iter)
 {
     return ITER_COL(iter) == (int)ITER_TERM(iter)->priv->width;
 }
@@ -866,7 +1172,7 @@ static gunichar iter_get_char           (const GtkTextIter  *iter)
 {
     MooTermLine *line = buf_line (ITER_TERM(iter)->priv->buffer,
                                   ITER_ROW(iter));
-    return moo_term_line_get_unichar (line, ITER_COL(iter));
+    return _moo_term_line_get_unichar (line, ITER_COL(iter));
 }
 
 
@@ -892,7 +1198,7 @@ static char    *segment_get_text    (Segment            *segment)
     {
         line = buf_line (buf, ITER_ROW(&start));
         for (i = ITER_COL(&start); i < ITER_COL(&end); ++i)
-            g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+            g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
     }
     else
     {
@@ -900,7 +1206,7 @@ static char    *segment_get_text    (Segment            *segment)
         {
             line = buf_line (buf, ITER_ROW(&start));
             for (i = ITER_COL(&start); i < width; ++i)
-                g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+                g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
             g_string_append_c (text, '\n');
         }
 
@@ -911,7 +1217,7 @@ static char    *segment_get_text    (Segment            *segment)
                 int j;
                 line = buf_line (buf, i);
                 for (j = 0; j < width; ++j)
-                    g_string_append_unichar (text, moo_term_line_get_unichar (line, j));
+                    g_string_append_unichar (text, _moo_term_line_get_unichar (line, j));
                 g_string_append_c (text, '\n');
             }
         }
@@ -920,7 +1226,7 @@ static char    *segment_get_text    (Segment            *segment)
         {
             line = buf_line (buf, ITER_ROW(&end));
             for (i = 0; i < ITER_COL(&start); ++i)
-                g_string_append_unichar (text, moo_term_line_get_unichar (line, i));
+                g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
         }
     }
 
@@ -928,14 +1234,15 @@ static char    *segment_get_text    (Segment            *segment)
 }
 
 
-void        moo_term_select_all             (MooTerm        *term)
+void
+moo_term_select_all (MooTerm        *term)
 {
     GtkTextIter start, end;
 
     get_start_iter (term, &start);
     get_end_iter (term, &end);
 
-    term_select_range (&start, &end);
+    _moo_term_select_range (term, &start, &end);
 }
 
 

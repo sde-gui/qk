@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermpt.h
+ *   mootermpt.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMPT_H
-#define MOOTERM_MOOTERMPT_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_PT_H__
+#define __MOO_TERM_PT_H__
 
 #include <glib-object.h>
 
@@ -67,35 +71,35 @@ GType           moo_term_pt_unix_get_type   (void) G_GNUC_CONST;
 GType           moo_term_pt_win_get_type    (void) G_GNUC_CONST;
 
 /* creates MooTermPtWin or MooTermPtUnix instance, depending on platform */
-MooTermPt      *moo_term_pt_new             (struct _MooTerm *term);
+MooTermPt      *_moo_term_pt_new            (struct _MooTerm *term);
 
-void            moo_term_pt_set_size        (MooTermPt      *pt,
+void            _moo_term_pt_set_size       (MooTermPt      *pt,
                                              guint           width,
                                              guint           height);
-void            moo_term_pt_set_helper_directory
+void            _moo_term_pt_set_helper_directory
                                             (MooTermPt      *pt,
                                              const char     *dir);
-char            moo_term_pt_get_erase_char  (MooTermPt      *pt);
-void            moo_term_pt_send_intr       (MooTermPt      *pt);
+char            _moo_term_pt_get_erase_char (MooTermPt      *pt);
+void            _moo_term_pt_send_intr      (MooTermPt      *pt);
 
-gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
+gboolean        _moo_term_pt_fork_command   (MooTermPt      *pt,
                                              const struct _MooTermCommand *cmd,
                                              const char     *working_dir,
                                              char          **envp,
                                              GError        **error);
-void            moo_term_pt_kill_child      (MooTermPt      *pt);
+void            _moo_term_pt_kill_child     (MooTermPt      *pt);
 
-gboolean        moo_term_pt_child_alive     (MooTermPt      *pt);
+gboolean        _moo_term_pt_child_alive    (MooTermPt      *pt);
 
-void            moo_term_pt_write           (MooTermPt      *pt,
+void            _moo_term_pt_write          (MooTermPt      *pt,
                                              const char     *data,
                                              gssize          len);
 
-struct _MooTermCommand *moo_term_get_default_shell (void);
-gboolean        moo_term_check_cmd          (struct _MooTermCommand *cmd,
+struct _MooTermCommand *_moo_term_get_default_shell(void);
+gboolean        _moo_term_check_cmd         (struct _MooTermCommand *cmd,
                                              GError     **error);
 
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERMPT_H */
+#endif /* __MOO_TERM_PT_H__ */

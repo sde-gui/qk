@@ -16,10 +16,10 @@
 #endif
 
 #include <Python.h>
-#ifdef USE_PYGTK
+#ifdef MOO_USE_PYGTK
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
-#endif /* USE_PYGTK */
+#endif /* MOO_USE_PYGTK */
 #include <glib.h>
 #include "mooapp/moopython.h"
 #include "mooapp/moopythonconsole.h"
@@ -119,8 +119,10 @@ void        moo_python_shutdown            (MooPython *python)
 
     Py_XDECREF ((PyObject*) python->main_mod);
     /* TODO: Py_Finalize is crash if shutdown() was initiated from python,
-               like with app.quit() */
-#if 1
+               like with app.quit()
+        It also aborts nobody knows why
+    */
+#if 0
     Py_Finalize ();
 #endif
 

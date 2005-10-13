@@ -422,10 +422,10 @@ const char *moo_file_dialogp(GtkWidget          *parent,
 
     if (!title) title = "Choose File";
 
-    if (prefs_key)
+    if (prefs_key && moo_prefs_get (prefs_key))
         start = moo_prefs_get_string (prefs_key);
 
-    if (!start && alternate_prefs_key)
+    if (!start && alternate_prefs_key && moo_prefs_get (alternate_prefs_key))
         start = moo_prefs_get_string (alternate_prefs_key);
 
     filename = moo_file_dialog (parent, type, title, start);
@@ -433,7 +433,8 @@ const char *moo_file_dialogp(GtkWidget          *parent,
     if (filename && prefs_key)
     {
         char *new_start = g_path_get_dirname (filename);
-        moo_prefs_set_string (prefs_key, new_start);
+        moo_prefs_new_key_string (prefs_key, NULL);
+        moo_prefs_set_filename (prefs_key, new_start);
         g_free (new_start);
     }
 

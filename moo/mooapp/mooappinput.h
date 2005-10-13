@@ -1,5 +1,5 @@
 /*
- *   mooapp/mooappinput.h
+ *   mooappinput.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,18 +11,26 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOAPP_MOOAPPINPUT_H
-#define MOOAPP_MOOAPPINPUT_H
+#ifndef __MOO_APP_INPUT__
+#define __MOO_APP_INPUT__
 
 #ifdef __WIN32__
 #include <windows.h>
 #endif /* __WIN32__ */
-#include "mooapp/moopython.h"
+
+#include <glib.h>
 
 G_BEGIN_DECLS
 
 
-typedef struct _MooAppInput        MooAppInput;
+#define MOO_APP_PYTHON_STRING   's'
+#define MOO_APP_PYTHON_FILE     'p'
+#define MOO_APP_OPEN_FILE       'f'
+#define MOO_APP_QUIT            'q'
+#define MOO_APP_DIE             'd'
+
+
+typedef struct _MooAppInput MooAppInput;
 
 struct _MooAppInput
 {
@@ -33,7 +41,6 @@ struct _MooAppInput
     char        *pipe_name;
     GIOChannel  *io;
     guint        io_watch;
-    MooPython   *python;
     GByteArray  *buffer;
     gboolean     ready;
 
@@ -43,8 +50,7 @@ struct _MooAppInput
 };
 
 
-MooAppInput *moo_app_input_new      (MooPython      *python,
-                                     const char     *pipe_basename);
+MooAppInput *moo_app_input_new      (const char     *pipe_basename);
 
 MooAppInput *moo_app_input_ref      (MooAppInput    *ch);
 void         moo_app_input_unref    (MooAppInput    *ch);
@@ -58,4 +64,4 @@ const char  *moo_app_input_get_name (MooAppInput    *ch);
 
 G_END_DECLS
 
-#endif /* MOOAPP_MOOAPPINPUT_H */
+#endif /* __MOO_APP_INPUT__ */

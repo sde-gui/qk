@@ -17,7 +17,6 @@
 #include "mooterm/mootermparser.h"
 #include "mooterm/mootermpt.h"
 #include "mooterm/mootermbuffer-private.h"
-#include "mooui/mootext.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
@@ -79,6 +78,8 @@ static void     clear_saved_cursor              (MooTerm        *term);
 static void     moo_term_set_alternate_buffer   (MooTerm        *term,
                                                  gboolean        alternate);
 
+static void     emit_new_line                   (MooTerm        *term);
+
 
 enum {
     SET_SCROLL_ADJUSTMENTS,
@@ -89,6 +90,7 @@ enum {
     POPULATE_POPUP,
     SET_WIDTH,
     APPLY_SETTINGS,
+    NEW_LINE,
     LAST_SIGNAL
 };
 
@@ -120,18 +122,22 @@ GType moo_term_get_type (void)
             NULL    /* value_table */
         };
 
+#if 0
         static const GInterfaceInfo iface_info = {
-            (GInterfaceInitFunc) moo_term_text_iface_init,
+            (GInterfaceInitFunc) _moo_term_text_iface_init,
             NULL,
             NULL
         };
+#endif
 
         type = g_type_register_static (GTK_TYPE_WIDGET, "MooTerm",
                                        &info, (GTypeFlags) 0);
 
+#if 0
         g_type_add_interface_static (type,
                                      MOO_TYPE_TEXT,
                                      &iface_info);
+#endif
     }
 
     return type;
@@ -154,17 +160,17 @@ static void moo_term_class_init (MooTermClass *klass)
 
     widget_class->realize = moo_term_realize;
     widget_class->size_allocate = moo_term_size_allocate;
-    widget_class->expose_event = moo_term_expose_event;
-    widget_class->key_press_event = moo_term_key_press;
-    widget_class->key_release_event = moo_term_key_release;
+    widget_class->expose_event = _moo_term_expose_event;
+    widget_class->key_press_event = _moo_term_key_press;
+    widget_class->key_release_event = _moo_term_key_release;
     widget_class->popup_menu = moo_term_popup_menu;
     widget_class->scroll_event = moo_term_scroll;
-    widget_class->button_press_event = moo_term_button_press;
-    widget_class->button_release_event = moo_term_button_release;
-    widget_class->motion_notify_event = moo_term_motion_notify;
+    widget_class->button_press_event = _moo_term_button_press;
+    widget_class->button_release_event = _moo_term_button_release;
+    widget_class->motion_notify_event = _moo_term_motion_notify;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
-    klass->apply_settings = moo_term_apply_settings;
+    klass->apply_settings = _moo_term_apply_settings;
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURSOR_BLINKS,
@@ -260,6 +266,15 @@ static void moo_term_class_init (MooTermClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE,0);
+
+    signals[NEW_LINE] =
+            g_signal_new ("new-line",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermClass, new_line),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE,0);
 }
 
 
@@ -267,14 +282,14 @@ static void moo_term_init                   (MooTerm        *term)
 {
     term->priv = g_new0 (MooTermPrivate, 1);
 
-    term->priv->pt = moo_term_pt_new (term);
+    term->priv->pt = _moo_term_pt_new (term);
     g_signal_connect_swapped (term->priv->pt, "child-died",
                               G_CALLBACK (child_died), term);
 
-    term->priv->parser = moo_term_parser_new (term);
+    term->priv->parser = _moo_term_parser_new (term);
 
-    moo_term_init_font_stuff (term);
-    moo_term_init_palette (term);
+    _moo_term_init_font_stuff (term);
+    _moo_term_init_palette (term);
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
     term->priv->alternate_buffer = moo_term_buffer_new (80, 24);
@@ -285,7 +300,7 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->width = 80;
     term->priv->height = 24;
 
-    term->priv->selection = moo_term_selection_new (term);
+    term->priv->selection = _moo_term_selection_new (term);
 
     term->priv->cursor_visible = TRUE;
     term->priv->blink_cursor_visible = TRUE;
@@ -308,6 +323,11 @@ static void moo_term_init                   (MooTerm        *term)
     term->priv->default_profile = -1;
 
     g_signal_connect_swapped (term->priv->primary_buffer,
+                              "new-line",
+                              G_CALLBACK (emit_new_line),
+                              term);
+
+    g_signal_connect_swapped (term->priv->primary_buffer,
                               "notify::scrollback",
                               G_CALLBACK (scrollback_changed),
                               term);
@@ -327,20 +347,20 @@ static void moo_term_init                   (MooTerm        *term)
 
     g_signal_connect_swapped (term->priv->primary_buffer,
                               "changed",
-                              G_CALLBACK (moo_term_buf_content_changed),
+                              G_CALLBACK (_moo_term_buf_content_changed),
                               term);
     g_signal_connect_swapped (term->priv->alternate_buffer,
                               "changed",
-                              G_CALLBACK (moo_term_buf_content_changed),
+                              G_CALLBACK (_moo_term_buf_content_changed),
                               term);
 
     g_signal_connect_swapped (term->priv->primary_buffer,
                               "cursor-moved",
-                              G_CALLBACK (moo_term_cursor_moved),
+                              G_CALLBACK (_moo_term_cursor_moved),
                               term);
     g_signal_connect_swapped (term->priv->alternate_buffer,
                               "cursor-moved",
-                              G_CALLBACK (moo_term_cursor_moved),
+                              G_CALLBACK (_moo_term_cursor_moved),
                               term);
 
     g_signal_connect_swapped (term->priv->primary_buffer,
@@ -354,6 +374,8 @@ static void moo_term_init                   (MooTerm        *term)
 }
 
 
+#define OBJECT_UNREF(obj__) if (obj__) g_object_unref (obj__)
+
 static void moo_term_finalize               (GObject        *object)
 {
     guint i, j;
@@ -362,18 +384,18 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->cursor_blink_timeout_id)
         g_source_remove (term->priv->cursor_blink_timeout_id);
 
-    moo_term_release_selection (term);
+    _moo_term_release_selection (term);
 
-    g_object_unref (term->priv->pt);
-    moo_term_parser_free (term->priv->parser);
+    OBJECT_UNREF (term->priv->pt);
+    _moo_term_parser_free (term->priv->parser);
 
-    g_object_unref (term->priv->primary_buffer);
-    g_object_unref (term->priv->alternate_buffer);
+    OBJECT_UNREF (term->priv->primary_buffer);
+    OBJECT_UNREF (term->priv->alternate_buffer);
 
     g_free (term->priv->selection);
-    moo_term_font_free (term->priv->font);
+    _moo_term_font_free (term->priv->font);
 
-    g_object_unref (term->priv->back_pixmap);
+    OBJECT_UNREF (term->priv->back_pixmap);
 
     if (term->priv->changed_content)
         gdk_region_destroy (term->priv->changed_content);
@@ -381,28 +403,24 @@ static void moo_term_finalize               (GObject        *object)
     if (term->priv->pending_expose)
         g_source_remove (term->priv->pending_expose);
 
-    g_object_unref (term->priv->clip);
-    g_object_unref (term->priv->layout);
+    OBJECT_UNREF (term->priv->clip);
+    OBJECT_UNREF (term->priv->layout);
 
-    g_object_unref (term->priv->im);
+    OBJECT_UNREF (term->priv->im);
 
-    if (term->priv->adjustment)
-        g_object_unref (term->priv->adjustment);
+    OBJECT_UNREF (term->priv->adjustment);
 
     for (i = 0; i < POINTERS_NUM; ++i)
         if (term->priv->pointer[i])
             gdk_cursor_unref (term->priv->pointer[i]);
 
     for (j = 0; j < COLOR_MAX; ++j)
-        if (term->priv->color[j])
-            g_object_unref (term->priv->color[j]);
+        OBJECT_UNREF (term->priv->color[j]);
 
     for (i = 0; i < 1; ++i)
-        if (term->priv->fg[i])
-            g_object_unref (term->priv->fg[i]);
+        OBJECT_UNREF (term->priv->fg[i]);
 
-    if (term->priv->bg)
-        g_object_unref (term->priv->bg);
+    OBJECT_UNREF (term->priv->bg);
 
     moo_term_profile_array_free (term->priv->profiles);
     moo_term_profile_free (term->priv->default_shell);
@@ -426,7 +444,7 @@ static void moo_term_set_property   (GObject        *object,
 
     switch (prop_id) {
         case PROP_CURSOR_BLINKS:
-            moo_term_set_cursor_blinks (term, g_value_get_boolean (value));
+            _moo_term_set_cursor_blinks (term, g_value_get_boolean (value));
             break;
 
         case PROP_FONT_NAME:
@@ -484,7 +502,7 @@ static void moo_term_size_allocate          (GtkWidget          *widget,
             old_height / term_char_height(term) !=
             allocation->height / term_char_height(term))
         {
-            moo_term_size_changed (term);
+            _moo_term_size_changed (term);
         }
     }
 }
@@ -544,17 +562,17 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     gtk_widget_set_double_buffered (widget, FALSE);
 
-    moo_term_setup_palette (term);
-    moo_term_init_back_pixmap (term);
-    moo_term_size_changed (term);
+    _moo_term_setup_palette (term);
+    _moo_term_init_back_pixmap (term);
+    _moo_term_size_changed (term);
 
-    moo_term_apply_settings (term);
+    _moo_term_apply_settings (term);
 
     term->priv->im = gtk_im_multicontext_new ();
     gtk_im_context_set_client_window (term->priv->im, widget->window);
     gtk_im_context_set_use_preedit (term->priv->im, FALSE);
     g_signal_connect (term->priv->im, "commit",
-                      G_CALLBACK (moo_term_im_commit), term);
+                      G_CALLBACK (_moo_term_im_commit), term);
     g_signal_connect_swapped (term->priv->im, "preedit-start",
                               G_CALLBACK (im_preedit_start), term);
     g_signal_connect_swapped (term->priv->im, "preedit-end",
@@ -631,7 +649,7 @@ static void     scrollback_changed              (MooTerm        *term,
 
         if (term->priv->scrolled && term->priv->top_line > scrollback)
         {
-            moo_term_selection_invalidate (term);
+            _moo_term_selection_invalidate (term);
             scroll_to_bottom (term, TRUE);
         }
         else
@@ -653,14 +671,14 @@ static void     buf_size_changed                (MooTerm        *term,
         term->priv->height = buf_screen_height (buf);
 
         if (GTK_WIDGET_REALIZED (term))
-            moo_term_resize_back_pixmap (term);
+            _moo_term_resize_back_pixmap (term);
 
         if (!term->priv->scrolled || term->priv->top_line > scrollback)
             scroll_to_bottom (term, TRUE);
         else
             update_adjustment (term);
 
-        moo_term_selection_invalidate (term);
+        _moo_term_selection_invalidate (term);
     }
 }
 
@@ -820,7 +838,7 @@ static void     scroll_abs                      (MooTerm        *term,
     term->priv->top_line = line;
     term->priv->scrolled = TRUE;
 
-    moo_term_invalidate_all (term);
+    _moo_term_invalidate_all (term);
 
     if (update_adj)
         update_adjustment_value (term);
@@ -848,7 +866,7 @@ static void     scroll_to_bottom                (MooTerm        *term,
 
     term->priv->scrolled = FALSE;
 
-    moo_term_invalidate_all (term);
+    _moo_term_invalidate_all (term);
 
     if (update_full)
         update_adjustment (term);
@@ -857,7 +875,8 @@ static void     scroll_to_bottom                (MooTerm        *term,
 }
 
 
-void        moo_term_size_changed       (MooTerm        *term)
+void
+_moo_term_size_changed (MooTerm        *term)
 {
     GtkWidget *widget = GTK_WIDGET (term);
     MooTermFont *font = term->priv->font;
@@ -875,7 +894,7 @@ void        moo_term_size_changed       (MooTerm        *term)
     width = CLAMP (width, MIN_TERMINAL_WIDTH, MAX_TERMINAL_WIDTH);
     height = height < MIN_TERMINAL_HEIGHT ? MIN_TERMINAL_HEIGHT : height;
 
-    moo_term_pt_set_size (term->priv->pt, width, height);
+    _moo_term_pt_set_size (term->priv->pt, width, height);
     moo_term_buffer_set_screen_size (term->priv->primary_buffer,
                                      width, height);
     moo_term_buffer_set_screen_size (term->priv->alternate_buffer,
@@ -896,7 +915,7 @@ gboolean    moo_term_fork_command           (MooTerm        *term,
     g_return_val_if_fail (cmd != NULL, FALSE);
 
     copy = moo_term_command_copy (cmd);
-    result = moo_term_check_cmd (copy, error);
+    result = _moo_term_check_cmd (copy, error);
 
     if (!result)
     {
@@ -904,9 +923,9 @@ gboolean    moo_term_fork_command           (MooTerm        *term,
         return FALSE;
     }
 
-    result = moo_term_pt_fork_command (term->priv->pt, copy,
-                                       working_dir, envp,
-                                       error);
+    result = _moo_term_pt_fork_command (term->priv->pt, copy,
+                                        working_dir, envp,
+                                        error);
     moo_term_command_free (copy);
     return result;
 }
@@ -957,8 +976,8 @@ void             moo_term_feed_child        (MooTerm        *term,
                                              int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
-    if (moo_term_pt_child_alive (term->priv->pt))
-        moo_term_pt_write (term->priv->pt, string, len);
+    if (_moo_term_pt_child_alive (term->priv->pt))
+        _moo_term_pt_write (term->priv->pt, string, len);
 }
 
 
@@ -994,14 +1013,16 @@ void             moo_term_copy_clipboard    (MooTerm        *term,
 }
 
 
-void             moo_term_ctrl_c            (MooTerm        *term)
+void
+moo_term_ctrl_c (MooTerm        *term)
 {
-    moo_term_pt_send_intr (term->priv->pt);
+    _moo_term_pt_send_intr (term->priv->pt);
 }
 
 
-void             moo_term_paste_clipboard   (MooTerm        *term,
-                                             GdkAtom         selection)
+void
+moo_term_paste_clipboard (MooTerm        *term,
+                          GdkAtom         selection)
 {
     GtkClipboard *cb;
     char *text;
@@ -1019,9 +1040,10 @@ void             moo_term_paste_clipboard   (MooTerm        *term,
 }
 
 
-void            moo_term_feed               (MooTerm        *term,
-                                             const char     *data,
-                                             int             len)
+void
+moo_term_feed (MooTerm        *term,
+               const char     *data,
+               int             len)
 {
     if (!len)
         return;
@@ -1031,22 +1053,25 @@ void            moo_term_feed               (MooTerm        *term,
     if (len < 0)
         len = strlen (data);
 
-    moo_term_parser_parse (term->priv->parser, data, len);
+    _moo_term_parser_parse (term->priv->parser, data, len);
 }
 
 
-void             moo_term_scroll_to_top     (MooTerm        *term)
+void
+moo_term_scroll_to_top (MooTerm        *term)
 {
     scroll_abs (term, 0, TRUE);
 }
 
-void             moo_term_scroll_to_bottom  (MooTerm        *term)
+void
+moo_term_scroll_to_bottom (MooTerm        *term)
 {
     scroll_to_bottom (term, TRUE);
 }
 
-void             moo_term_scroll_lines      (MooTerm        *term,
-                                             int             lines)
+void
+moo_term_scroll_lines (MooTerm        *term,
+                       int             lines)
 {
     int top = term_top_line (term);
 
@@ -1058,8 +1083,9 @@ void             moo_term_scroll_lines      (MooTerm        *term,
     scroll_abs (term, top, TRUE);
 }
 
-void             moo_term_scroll_pages      (MooTerm        *term,
-                                             int             pages)
+void
+moo_term_scroll_pages (MooTerm        *term,
+                       int             pages)
 {
     int top = term_top_line (term);
 
@@ -1072,34 +1098,39 @@ void             moo_term_scroll_pages      (MooTerm        *term,
 }
 
 
-void        moo_term_set_window_title       (MooTerm        *term,
-                                             const char     *title)
+void
+_moo_term_set_window_title (MooTerm        *term,
+                            const char     *title)
 {
     g_signal_emit (term, signals[SET_WINDOW_TITLE], 0, title);
 }
 
 
-void        moo_term_set_icon_name          (MooTerm        *term,
-                                             const char     *title)
+void
+_moo_term_set_icon_name (MooTerm        *term,
+                         const char     *title)
 {
     g_signal_emit (term, signals[SET_ICON_NAME], 0, title);
 }
 
 
-void        moo_term_bell                   (MooTerm    *term)
+void
+_moo_term_bell (MooTerm    *term)
 {
     g_signal_emit (term, signals[BELL], 0);
 }
 
 
-void        moo_term_decid                  (MooTerm    *term)
+void
+_moo_term_decid (MooTerm    *term)
 {
     moo_term_feed_child (term, VT_DECID_, -1);
 }
 
 
-static void set_deccolm (MooTerm    *term,
-                         gboolean    set)
+static void
+set_deccolm (MooTerm    *term,
+             gboolean    set)
 {
     MooTermBuffer *buf;
     guint width = set ? 132 : 80;
@@ -1107,17 +1138,18 @@ static void set_deccolm (MooTerm    *term,
     g_signal_emit (term, signals[SET_WIDTH], 0, width);
 
     buf = term->priv->buffer;
-    moo_term_buffer_set_scrolling_region (buf, 0,
-                                          term->priv->height - 1);
-    moo_term_buffer_erase_in_display (buf, ERASE_ALL);
-    moo_term_buffer_cursor_move_to (buf, 0, 0);
+    _moo_term_buffer_set_scrolling_region (buf, 0,
+                                           term->priv->height - 1);
+    _moo_term_buffer_erase_in_display (buf, ERASE_ALL);
+    _moo_term_buffer_cursor_move_to (buf, 0, 0);
 }
 
 
-void        moo_term_set_dec_modes          (MooTerm    *term,
-                                             int        *modes,
-                                             guint       n_modes,
-                                             gboolean    set)
+void
+_moo_term_set_dec_modes (MooTerm    *term,
+                         int        *modes,
+                         guint       n_modes,
+                         gboolean    set)
 {
     guint i;
 
@@ -1141,15 +1173,16 @@ void        moo_term_set_dec_modes          (MooTerm    *term,
                 GET_DEC_MODE (modes[i], mode);
 
                 if (mode >= 0)
-                    moo_term_set_mode (term, mode, set);
+                    _moo_term_set_mode (term, mode, set);
         }
     }
 }
 
 
-void        moo_term_save_dec_modes         (MooTerm    *term,
-                                             int        *modes,
-                                             guint       n_modes)
+void
+_moo_term_save_dec_modes (MooTerm    *term,
+                          int        *modes,
+                          guint       n_modes)
 {
     guint i;
 
@@ -1167,9 +1200,10 @@ void        moo_term_save_dec_modes         (MooTerm    *term,
 }
 
 
-void        moo_term_restore_dec_modes      (MooTerm    *term,
-                                             int        *modes,
-                                             guint       n_modes)
+void
+_moo_term_restore_dec_modes (MooTerm    *term,
+                             int        *modes,
+                             guint       n_modes)
 {
     guint i;
 
@@ -1182,15 +1216,16 @@ void        moo_term_restore_dec_modes      (MooTerm    *term,
         GET_DEC_MODE (modes[i], mode);
 
         if (mode >= 0)
-            moo_term_set_mode (term, mode, term->priv->saved_modes[mode]);
+            _moo_term_set_mode (term, mode, term->priv->saved_modes[mode]);
     }
 }
 
 
-void        moo_term_set_ansi_modes         (MooTerm    *term,
-                                             int        *modes,
-                                             guint       n_modes,
-                                             gboolean    set)
+void
+_moo_term_set_ansi_modes (MooTerm    *term,
+                          int        *modes,
+                          guint       n_modes,
+                          gboolean    set)
 {
     guint i;
 
@@ -1203,14 +1238,15 @@ void        moo_term_set_ansi_modes         (MooTerm    *term,
         GET_ANSI_MODE (modes[i], mode);
 
         if (mode >= 0)
-            moo_term_set_mode (term, mode, set);
+            _moo_term_set_mode (term, mode, set);
     }
 }
 
 
-void        moo_term_set_mode               (MooTerm    *term,
-                                             int         mode,
-                                             gboolean    set)
+void
+_moo_term_set_mode (MooTerm    *term,
+                    int         mode,
+                    gboolean    set)
 {
 #if 0
     switch (mode)
@@ -1278,28 +1314,28 @@ void        moo_term_set_mode               (MooTerm    *term,
         case MODE_DECSCNM:
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
-            moo_term_invert_colors (term, set);
+            _moo_term_invert_colors (term, set);
             break;
 
         case MODE_DECTCEM:
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
-            moo_term_set_cursor_visible (term, set);
+            _moo_term_set_cursor_visible (term, set);
             break;
 
         case MODE_CA:
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
-            moo_term_set_ca_mode (term, set);
+            _moo_term_set_ca_mode (term, set);
             break;
 
         case MODE_PRESS_TRACKING:
         case MODE_PRESS_AND_RELEASE_TRACKING:
         case MODE_HILITE_MOUSE_TRACKING:
             if (set)
-                moo_term_set_mouse_tracking (term, mode);
+                _moo_term_set_mouse_tracking (term, mode);
             else
-                moo_term_set_mouse_tracking (term, -1);
+                _moo_term_set_mouse_tracking (term, -1);
             term->priv->modes[mode] = set;
             moo_term_buffer_set_mode (term->priv->buffer, mode, set);
             break;
@@ -1331,7 +1367,8 @@ void        moo_term_set_mode               (MooTerm    *term,
 }
 
 
-static void clear_saved_cursor              (MooTerm        *term)
+static void
+clear_saved_cursor (MooTerm        *term)
 {
     term->priv->saved_cursor.cursor_row = 0;
     term->priv->saved_cursor.cursor_col = 0;
@@ -1346,7 +1383,8 @@ static void clear_saved_cursor              (MooTerm        *term)
 }
 
 
-void        moo_term_decsc                  (MooTerm    *term)
+void
+_moo_term_decsc (MooTerm    *term)
 {
     MooTermBuffer *buf = term->priv->buffer;
 
@@ -1363,46 +1401,49 @@ void        moo_term_decsc                  (MooTerm    *term)
 }
 
 
-void        moo_term_decrc                  (MooTerm    *term)
+void
+_moo_term_decrc (MooTerm    *term)
 {
     MooTermBuffer *buf = term->priv->buffer;
 
-    moo_term_buffer_cursor_move_to (term->priv->buffer,
-                                    term->priv->saved_cursor.cursor_row,
-                                    term->priv->saved_cursor.cursor_col);
+    _moo_term_buffer_cursor_move_to (term->priv->buffer,
+                                     term->priv->saved_cursor.cursor_row,
+                                     term->priv->saved_cursor.cursor_col);
     buf->priv->current_attr = term->priv->saved_cursor.attr;
     buf->priv->GL[0] = term->priv->saved_cursor.GL;
     buf->priv->GL[1] = term->priv->saved_cursor.GR;
-    moo_term_set_mode (term, MODE_DECAWM, term->priv->saved_cursor.autowrap);
-    moo_term_set_mode (term, MODE_DECOM, term->priv->saved_cursor.decom);
-    moo_term_buffer_set_scrolling_region (buf,
-                                          term->priv->saved_cursor.top_margin,
-                                          term->priv->saved_cursor.bottom_margin);
+    _moo_term_set_mode (term, MODE_DECAWM, term->priv->saved_cursor.autowrap);
+    _moo_term_set_mode (term, MODE_DECOM, term->priv->saved_cursor.decom);
+    _moo_term_buffer_set_scrolling_region (buf,
+                                           term->priv->saved_cursor.top_margin,
+                                           term->priv->saved_cursor.bottom_margin);
     buf->priv->single_shift = term->priv->saved_cursor.single_shift;
 }
 
 
-void        moo_term_set_ca_mode            (MooTerm    *term,
-                                             gboolean    set)
+void
+_moo_term_set_ca_mode (MooTerm    *term,
+                       gboolean    set)
 {
     if (set)
     {
-        moo_term_decsc (term);
+        _moo_term_decsc (term);
         moo_term_set_alternate_buffer (term, TRUE);
-        moo_term_buffer_erase_in_display (term->priv->buffer, ERASE_ALL);
-        moo_term_buffer_set_ca_mode (term->priv->buffer, TRUE);
+        _moo_term_buffer_erase_in_display (term->priv->buffer, ERASE_ALL);
+        _moo_term_buffer_set_ca_mode (term->priv->buffer, TRUE);
     }
     else
     {
         moo_term_set_alternate_buffer (term, FALSE);
-        moo_term_buffer_set_ca_mode (term->priv->buffer, FALSE);
-        moo_term_decrc (term);
+        _moo_term_buffer_set_ca_mode (term->priv->buffer, FALSE);
+        _moo_term_decrc (term);
     }
 }
 
 
-static void moo_term_set_alternate_buffer   (MooTerm        *term,
-                                             gboolean        alternate)
+static void
+moo_term_set_alternate_buffer (MooTerm        *term,
+                               gboolean        alternate)
 {
     if ((alternate && term->priv->buffer == term->priv->alternate_buffer) ||
          (!alternate && term->priv->buffer == term->priv->primary_buffer))
@@ -1413,23 +1454,26 @@ static void moo_term_set_alternate_buffer   (MooTerm        *term,
     else
         term->priv->buffer = term->priv->primary_buffer;
 
-    moo_term_invalidate_all (term);
-    moo_term_buffer_scrollback_changed (term->priv->buffer);
+    _moo_term_invalidate_all (term);
+    _moo_term_buffer_scrollback_changed (term->priv->buffer);
 }
 
 
-void        moo_term_da1                    (MooTerm    *term)
+void
+_moo_term_da1 (MooTerm    *term)
 {
     moo_term_feed_child (term, VT_DA1_, -1);
 }
 
-void        moo_term_da2                    (MooTerm    *term)
+void
+_moo_term_da2 (MooTerm    *term)
 {
     /* TODO */
     moo_term_feed_child (term, VT_DA2_, -1);
 }
 
-void        moo_term_da3                    (MooTerm    *term)
+void
+_moo_term_da3 (MooTerm    *term)
 {
     /* TODO */
     moo_term_feed_child (term, VT_DA3_, -1);
@@ -1439,8 +1483,9 @@ void        moo_term_da3                    (MooTerm    *term)
 #define make_DECRQSS(c)                                  \
     answer = g_strdup_printf (VT_DCS_ "%s$r" FINAL_##c VT_ST_, ps)
 
-void        moo_term_setting_request        (MooTerm    *term,
-                                             int         setting)
+void
+_moo_term_setting_request (MooTerm    *term,
+                           int         setting)
 {
     DECRQSSCode code = setting;
     char *ps = NULL, *answer = NULL;
@@ -1481,45 +1526,48 @@ void        moo_term_setting_request        (MooTerm    *term,
 }
 
 
-void        moo_term_reset                  (MooTerm    *term)
+void
+moo_term_reset (MooTerm    *term)
 {
-    moo_term_buffer_freeze_changed_notify (term->priv->primary_buffer);
-    moo_term_buffer_freeze_cursor_notify (term->priv->primary_buffer);
+    _moo_term_buffer_freeze_changed_notify (term->priv->primary_buffer);
+    _moo_term_buffer_freeze_cursor_notify (term->priv->primary_buffer);
 
     term->priv->buffer = term->priv->primary_buffer;
-    moo_term_buffer_reset (term->priv->primary_buffer);
-    moo_term_buffer_reset (term->priv->alternate_buffer);
+    _moo_term_buffer_reset (term->priv->primary_buffer);
+    _moo_term_buffer_reset (term->priv->alternate_buffer);
     set_default_modes (term->priv->modes);
     set_default_modes (term->priv->saved_modes);
     clear_saved_cursor (term);
 
-    moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
-    moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
-    moo_term_buffer_changed (term->priv->primary_buffer);
-    moo_term_buffer_cursor_moved (term->priv->primary_buffer);
+    _moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
+    _moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
+    _moo_term_buffer_changed (term->priv->primary_buffer);
+    _moo_term_buffer_cursor_moved (term->priv->primary_buffer);
 }
 
 
-void        moo_term_soft_reset             (MooTerm    *term)
+void
+moo_term_soft_reset (MooTerm    *term)
 {
-    moo_term_buffer_freeze_changed_notify (term->priv->buffer);
-    moo_term_buffer_freeze_cursor_notify (term->priv->buffer);
+    _moo_term_buffer_freeze_changed_notify (term->priv->buffer);
+    _moo_term_buffer_freeze_cursor_notify (term->priv->buffer);
 
-    moo_term_buffer_soft_reset (term->priv->buffer);
+    _moo_term_buffer_soft_reset (term->priv->buffer);
     set_default_modes (term->priv->modes);
     set_default_modes (term->priv->saved_modes);
 
-    moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
-    moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
-    moo_term_buffer_changed (term->priv->primary_buffer);
-    moo_term_buffer_cursor_moved (term->priv->primary_buffer);
+    _moo_term_buffer_thaw_changed_notify (term->priv->primary_buffer);
+    _moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
+    _moo_term_buffer_changed (term->priv->primary_buffer);
+    _moo_term_buffer_cursor_moved (term->priv->primary_buffer);
 }
 
 
-void        moo_term_dsr                    (MooTerm    *term,
-                                             int         type,
-                                             int         arg,
-                                             gboolean    extended)
+void
+_moo_term_dsr (MooTerm    *term,
+               int         type,
+               int         arg,
+               gboolean    extended)
 {
     char *answer = NULL;
     MooTermBuffer *buf = term->priv->buffer;
@@ -1573,7 +1621,8 @@ void        moo_term_dsr                    (MooTerm    *term,
 }
 
 
-void        moo_term_update_pointer         (MooTerm        *term)
+void
+_moo_term_update_pointer (MooTerm        *term)
 {
     if (term->priv->pointer_visible)
     {
@@ -1592,31 +1641,34 @@ void        moo_term_update_pointer         (MooTerm        *term)
 }
 
 
-void        moo_term_set_pointer_visible    (MooTerm        *term,
-                                             gboolean        visible)
+void
+moo_term_set_pointer_visible (MooTerm        *term,
+                              gboolean        visible)
 {
     g_return_if_fail (GTK_WIDGET_REALIZED (term));
 
     if (visible != term->priv->pointer_visible)
     {
         term->priv->pointer_visible = visible;
-        moo_term_update_pointer (term);
+        _moo_term_update_pointer (term);
     }
 }
 
 
-static gboolean moo_term_popup_menu         (GtkWidget      *widget)
+static gboolean
+moo_term_popup_menu (GtkWidget      *widget)
 {
-    moo_term_do_popup_menu (MOO_TERM (widget), NULL);
+    _moo_term_do_popup_menu (MOO_TERM (widget), NULL);
     return TRUE;
 }
 
 
-static void menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
-                                gint        *px,
-                                gint        *py,
-                                gboolean    *push_in,
-                                MooTerm     *term)
+static void
+menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
+                    gint        *px,
+                    gint        *py,
+                    gboolean    *push_in,
+                    MooTerm     *term)
 {
     guint cursor_row, cursor_col;
     GdkWindow *window;
@@ -1648,23 +1700,27 @@ static void menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
 }
 
 
-static void menu_copy (MooTerm *term)
+static void
+menu_copy (MooTerm *term)
 {
     moo_term_copy_clipboard (term, GDK_SELECTION_CLIPBOARD);
 }
 
-static void menu_paste (MooTerm *term)
+static void
+menu_paste (MooTerm *term)
 {
     moo_term_paste_clipboard (term, GDK_SELECTION_CLIPBOARD);
 }
 
-static void destroy_menu (GtkWidget *menu)
+static void
+destroy_menu (GtkWidget *menu)
 {
     g_idle_add ((GSourceFunc)gtk_widget_destroy, menu);
 }
 
-void        moo_term_do_popup_menu          (MooTerm        *term,
-                                             GdkEventButton *event)
+void
+_moo_term_do_popup_menu (MooTerm        *term,
+                         GdkEventButton *event)
 {
     GtkWidget *menu;
     GtkWidget *item;
@@ -1698,8 +1754,9 @@ void        moo_term_do_popup_menu          (MooTerm        *term,
 }
 
 
-static gboolean moo_term_scroll             (GtkWidget      *widget,
-                                             GdkEventScroll *event)
+static gboolean
+moo_term_scroll (GtkWidget      *widget,
+                 GdkEventScroll *event)
 {
     switch (event->direction)
     {
@@ -1725,10 +1782,11 @@ static const GtkTargetEntry target_table[] = {
 };
 
 
-static void clipboard_get   (GtkClipboard       *clipboard,
-                             G_GNUC_UNUSED GtkSelectionData *selection_data,
-                             G_GNUC_UNUSED guint info,
-                             MooTerm            *term)
+static void
+clipboard_get (GtkClipboard       *clipboard,
+               G_GNUC_UNUSED GtkSelectionData *selection_data,
+               G_GNUC_UNUSED guint info,
+               MooTerm            *term)
 {
     char *text = moo_term_get_selection (term);
 
@@ -1739,14 +1797,16 @@ static void clipboard_get   (GtkClipboard       *clipboard,
     }
 }
 
-static void clipboard_clear (G_GNUC_UNUSED GtkClipboard *clipboard,
-                             MooTerm            *term)
+static void
+clipboard_clear (G_GNUC_UNUSED GtkClipboard *clipboard,
+                 MooTerm            *term)
 {
     term->priv->owns_selection = FALSE;
 }
 
 
-void        moo_term_grab_selection         (MooTerm        *term)
+void
+_moo_term_grab_selection (MooTerm        *term)
 {
     if (!term->priv->owns_selection)
     {
@@ -1763,7 +1823,8 @@ void        moo_term_grab_selection         (MooTerm        *term)
 }
 
 
-void        moo_term_release_selection      (MooTerm        *term)
+void
+_moo_term_release_selection (MooTerm        *term)
 {
     if (term->priv->owns_selection)
     {
@@ -1775,25 +1836,28 @@ void        moo_term_release_selection      (MooTerm        *term)
 }
 
 
-gboolean    moo_term_child_alive            (MooTerm        *term)
+gboolean
+moo_term_child_alive (MooTerm        *term)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
-    return moo_term_pt_child_alive (term->priv->pt);
+    return _moo_term_pt_child_alive (term->priv->pt);
 }
 
 
-void        moo_term_kill_child             (MooTerm        *term)
+void
+moo_term_kill_child (MooTerm        *term)
 {
     g_return_if_fail (MOO_IS_TERM (term));
-    if (moo_term_pt_child_alive (term->priv->pt))
-        moo_term_pt_kill_child (term->priv->pt);
+    if (_moo_term_pt_child_alive (term->priv->pt))
+        _moo_term_pt_kill_child (term->priv->pt);
 }
 
 
-MooTermProfile *moo_term_profile_new        (const char     *name,
-                                             const MooTermCommand *cmd,
-                                             char          **envp,
-                                             const char     *working_dir)
+MooTermProfile*
+moo_term_profile_new (const char     *name,
+                      const MooTermCommand *cmd,
+                      char          **envp,
+                      const char     *working_dir)
 {
     MooTermProfile *profile = g_new (MooTermProfile, 1);
 
@@ -1806,7 +1870,8 @@ MooTermProfile *moo_term_profile_new        (const char     *name,
 }
 
 
-MooTermProfile *moo_term_profile_copy       (const MooTermProfile *profile)
+MooTermProfile*
+moo_term_profile_copy (const MooTermProfile *profile)
 {
     MooTermProfile *copy;
 
@@ -1823,7 +1888,8 @@ MooTermProfile *moo_term_profile_copy       (const MooTermProfile *profile)
 }
 
 
-void        moo_term_profile_free           (MooTermProfile *profile)
+void
+moo_term_profile_free (MooTermProfile *profile)
 {
     if (profile)
     {
@@ -1836,7 +1902,8 @@ void        moo_term_profile_free           (MooTermProfile *profile)
 }
 
 
-GType       moo_term_profile_get_type       (void)
+GType
+moo_term_profile_get_type (void)
 {
     static GType type = 0;
     if (!type)
@@ -1847,7 +1914,8 @@ GType       moo_term_profile_get_type       (void)
 }
 
 
-GType       moo_term_command_get_type       (void)
+GType
+moo_term_command_get_type (void)
 {
     static GType type = 0;
     if (!type)
@@ -1858,15 +1926,17 @@ GType       moo_term_command_get_type       (void)
 }
 
 
-MooTermProfileArray *moo_term_get_profiles  (MooTerm        *term)
+MooTermProfileArray*
+moo_term_get_profiles (MooTerm        *term)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), NULL);
     return moo_term_profile_array_copy (term->priv->profiles);
 }
 
 
-MooTermProfile      *moo_term_get_profile   (MooTerm        *term,
-                                             guint           index)
+MooTermProfile*
+moo_term_get_profile (MooTerm        *term,
+                      guint           index)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), NULL);
     g_return_val_if_fail (index < term->priv->profiles->len, NULL);
@@ -1874,8 +1944,9 @@ MooTermProfile      *moo_term_get_profile   (MooTerm        *term,
 }
 
 
-static gboolean check_profile (MooTermProfile *profile,
-                               char          **err_msg)
+static gboolean
+check_profile (MooTermProfile *profile,
+               char          **err_msg)
 {
     GError *err = NULL;
     gboolean result;
@@ -1885,7 +1956,7 @@ static gboolean check_profile (MooTermProfile *profile,
     if (!profile->name)
         profile->name = g_strdup ("");
 
-    result = moo_term_check_cmd (profile->cmd, &err);
+    result = _moo_term_check_cmd (profile->cmd, &err);
     g_return_val_if_fail (result || err, FALSE);
 
     if (err)
@@ -1898,22 +1969,23 @@ static gboolean check_profile (MooTermProfile *profile,
 }
 
 
-static MooTermProfile *get_default_shell (MooTerm *term)
+static MooTermProfile*
+get_default_shell (MooTerm *term)
 {
     if (!term->priv->default_shell)
-    {
         term->priv->default_shell =
                 moo_term_profile_new ("Default",
-                                      moo_term_get_default_shell (),
+                                      _moo_term_get_default_shell (),
                                       NULL, g_get_home_dir ());
-    }
+
     return term->priv->default_shell;
 }
 
 
-void        moo_term_set_profile            (MooTerm        *term,
-                                             guint           index,
-                                             const MooTermProfile *profile)
+void
+moo_term_set_profile (MooTerm        *term,
+                      guint           index,
+                      const MooTermProfile *profile)
 {
     MooTermProfile *copy;
     char *err = NULL;
@@ -1939,8 +2011,9 @@ void        moo_term_set_profile            (MooTerm        *term,
 }
 
 
-void        moo_term_add_profile            (MooTerm        *term,
-                                             const MooTermProfile *profile)
+void
+moo_term_add_profile (MooTerm        *term,
+                      const MooTermProfile *profile)
 {
     MooTermProfile *copy;
     char *err = NULL;
@@ -1964,8 +2037,9 @@ void        moo_term_add_profile            (MooTerm        *term,
 }
 
 
-void        moo_term_remove_profile         (MooTerm        *term,
-                                             guint           index)
+void
+moo_term_remove_profile (MooTerm        *term,
+                         guint           index)
 {
     g_return_if_fail (MOO_IS_TERM (term));
     g_return_if_fail (index < term->priv->profiles->len);
@@ -1982,8 +2056,9 @@ void        moo_term_remove_profile         (MooTerm        *term,
 }
 
 
-void        moo_term_set_default_profile    (MooTerm        *term,
-                                             int             profile)
+void
+moo_term_set_default_profile (MooTerm        *term,
+                              int             profile)
 {
     g_return_if_fail (MOO_IS_TERM (term));
     g_return_if_fail (profile < (int)term->priv->profiles->len);
@@ -1992,60 +2067,66 @@ void        moo_term_set_default_profile    (MooTerm        *term,
 }
 
 
-int         moo_term_get_default_profile    (MooTerm        *term)
+int
+moo_term_get_default_profile (MooTerm        *term)
 {
     g_return_val_if_fail (MOO_IS_TERM (term), -1);
     return term->priv->default_profile;
 }
 
 
-void        moo_term_start_default_profile  (MooTerm        *term,
-                                             GError        **error)
+gboolean
+moo_term_start_default_profile (MooTerm        *term,
+                                GError        **error)
 {
-    moo_term_start_profile (term ,
-                            moo_term_get_default_profile (term),
-                            error);
+    return moo_term_start_profile (term ,
+                                   moo_term_get_default_profile (term),
+                                   error);
 }
 
 
-void        moo_term_start_profile          (MooTerm        *term,
-                                             int             n,
-                                             GError        **error)
+gboolean
+moo_term_start_profile (MooTerm        *term,
+                        int             n,
+                        GError        **error)
 {
     MooTermProfile *profile;
 
-    g_return_if_fail (MOO_IS_TERM (term));
-    g_return_if_fail (n < (int)term->priv->profiles->len);
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+    g_return_val_if_fail (n < (int)term->priv->profiles->len, FALSE);
 
     if (n < 0)
         profile = get_default_shell (term);
     else
         profile = term->priv->profiles->data[n];
 
-    g_return_if_fail (profile != NULL);
+    g_return_val_if_fail (profile != NULL, FALSE);
 
     moo_term_kill_child (term);
-    moo_term_fork_command (term, profile->cmd,
-                           profile->working_dir,
-                           profile->envp, error);
+    return moo_term_fork_command (term, profile->cmd,
+                                  profile->working_dir,
+                                  profile->envp, error);
 }
 
 
-MooTermProfileArray *moo_term_profile_array_new (void)
+MooTermProfileArray*
+moo_term_profile_array_new (void)
 {
     return (MooTermProfileArray*) g_ptr_array_new ();
 }
 
 
-void moo_term_profile_array_add (MooTermProfileArray *array,
-                                 const MooTermProfile *profile)
+void
+moo_term_profile_array_add (MooTermProfileArray *array,
+                            const MooTermProfile *profile)
 {
     g_return_if_fail (array != NULL && profile != NULL);
     g_ptr_array_add ((GPtrArray*) array, moo_term_profile_copy (profile));
 }
 
 
-MooTermProfileArray *moo_term_profile_array_copy (MooTermProfileArray *array)
+MooTermProfileArray*
+moo_term_profile_array_copy (MooTermProfileArray *array)
 {
     MooTermProfileArray *copy;
     guint i;
@@ -2062,7 +2143,8 @@ MooTermProfileArray *moo_term_profile_array_copy (MooTermProfileArray *array)
 }
 
 
-void moo_term_profile_array_free (MooTermProfileArray *array)
+void
+moo_term_profile_array_free (MooTermProfileArray *array)
 {
     if (array)
     {
@@ -2074,8 +2156,9 @@ void moo_term_profile_array_free (MooTermProfileArray *array)
 }
 
 
-MooTermCommand  *moo_term_command_new       (const char     *cmd_line,
-                                             char          **argv)
+MooTermCommand*
+moo_term_command_new (const char     *cmd_line,
+                      char          **argv)
 {
     MooTermCommand *cmd = g_new0 (MooTermCommand, 1);
     cmd->cmd_line = g_strdup (cmd_line);
@@ -2084,7 +2167,8 @@ MooTermCommand  *moo_term_command_new       (const char     *cmd_line,
 }
 
 
-MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd)
+MooTermCommand*
+moo_term_command_copy (const MooTermCommand *cmd)
 {
     MooTermCommand *copy = g_new0 (MooTermCommand, 1);
     copy->cmd_line = g_strdup (cmd->cmd_line);
@@ -2093,7 +2177,8 @@ MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd)
 }
 
 
-void             moo_term_command_free      (MooTermCommand *cmd)
+void
+moo_term_command_free (MooTermCommand *cmd)
 {
     if (cmd)
     {
@@ -2104,9 +2189,17 @@ void             moo_term_command_free      (MooTermCommand *cmd)
 }
 
 
-GQuark      moo_term_error_quark            (void)
+GQuark
+moo_term_error_quark (void)
 {
     static GQuark q = 0;
     if (!q) q = g_quark_from_static_string ("moo-term-error-quark");
     return q;
+}
+
+
+static void
+emit_new_line (MooTerm *term)
+{
+    g_signal_emit (term, signals[NEW_LINE], 0);
 }

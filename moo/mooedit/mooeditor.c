@@ -17,14 +17,16 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooplugin.h"
-#include "mooui/moouiobject.h"
-#include "mooui/moomenuaction.h"
+#include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moowin.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/moofilewatch.h"
 #include <string.h>
 
+
+#define RECENT_ACTION_ID "OpenRecent"
 
 static MooEditor *editor_instance = NULL;
 
@@ -59,8 +61,7 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
 static void          set_single_window      (MooEditor      *editor,
                                              gboolean        single);
 
-static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
-                                             MooAction      *action);
+static MooAction    *create_recent_action   (MooEditWindow  *window);
 
 static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
@@ -80,8 +81,8 @@ static MooEditLoader*get_loader             (MooEditor      *editor,
 static MooEditSaver *get_saver              (MooEditor      *editor,
                                              MooEdit        *doc);
 
-static void          open_recent            (MooEditor      *editor,
-                                             MooEditFileInfo *info,
+static void          activate_history_item  (MooEditor      *editor,
+                                             MooHistoryListItem *item,
                                              MooEditWindow  *window);
 
 
@@ -90,10 +91,11 @@ struct _MooEditorPrivate {
     GHashTable      *loaders;
     GHashTable      *savers;
     char            *app_name;
-    MooEditLangMgr  *lang_mgr;
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
-    MooRecentMgr    *recent_mgr;
+    MooHistoryList  *history;
+    MooLangTable    *lang_table;
+    MooFileWatch    *file_watch;
     gboolean         open_single;
     gboolean         allow_empty_window;
     gboolean         single_window;
@@ -133,7 +135,7 @@ G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 static void moo_editor_class_init (MooEditorClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    GObjectClass *edit_window_class;
+    MooWindowClass *edit_window_class;
 
     gobject_class->finalize = moo_editor_finalize;
     gobject_class->set_property = moo_editor_set_property;
@@ -172,10 +174,9 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                G_TYPE_NONE, 0);
 
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_ui_object_class_new_action (edit_window_class, "OpenRecent",
-                                    "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "create-menu-func", create_recent_menu,
-                                    NULL);
+    moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID,
+                                        (MooWindowActionFunc) create_recent_action,
+                                        NULL);
     g_type_class_unref (edit_window_class);
 }
 
@@ -184,11 +185,16 @@ static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
 
-    editor->priv->lang_mgr = moo_edit_lang_mgr_new ();
+    editor->priv->lang_table = moo_lang_table_new ();
     editor->priv->filter_mgr = moo_filter_mgr_new ();
-    editor->priv->recent_mgr = moo_recent_mgr_new ("Editor");
-    g_signal_connect_swapped (editor->priv->recent_mgr, "open-recent",
-                              G_CALLBACK (open_recent), editor);
+
+    editor->priv->history = moo_history_list_new ("Editor");
+    moo_history_list_set_display_func (editor->priv->history,
+                                       moo_history_list_display_basename,
+                                       NULL);
+    g_signal_connect_swapped (editor->priv->history, "activate-item",
+                              G_CALLBACK (activate_history_item), editor);
+
     editor->priv->windows = NULL;
 
     editor->priv->loaders =
@@ -262,14 +268,28 @@ static void moo_editor_finalize       (GObject      *object)
 
     g_free (editor->priv->app_name);
 
-    if (editor->priv->lang_mgr)
-        g_object_unref (editor->priv->lang_mgr);
     if (editor->priv->ui_xml)
         g_object_unref (editor->priv->ui_xml);
     if (editor->priv->filter_mgr)
         g_object_unref (editor->priv->filter_mgr);
-    if (editor->priv->recent_mgr)
-        g_object_unref (editor->priv->recent_mgr);
+    if (editor->priv->history)
+        g_object_unref (editor->priv->history);
+    g_object_unref (editor->priv->lang_table);
+
+    if (editor->priv->file_watch)
+    {
+        GError *error = NULL;
+        if (!moo_file_watch_close (editor->priv->file_watch, &error))
+        {
+            g_warning ("%s: error in moo_file_watch_close", G_STRLOC);
+            if (error)
+            {
+                g_warning ("%s: %s", G_STRLOC, error->message);
+                g_error_free (error);
+            }
+        }
+        g_object_unref (editor->priv->file_watch);
+    }
 
     if (editor->priv->windows)
     {
@@ -283,6 +303,18 @@ static void moo_editor_finalize       (GObject      *object)
     g_free (editor->priv);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
+}
+
+
+gpointer
+_moo_editor_get_file_watch (MooEditor      *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    if (!editor->priv->file_watch)
+        editor->priv->file_watch = moo_file_watch_new (NULL);
+
+    return editor->priv->file_watch;
 }
 
 
@@ -353,30 +385,24 @@ void             moo_editor_set_app_name        (MooEditor      *editor,
 }
 
 
-MooEditLangMgr  *moo_editor_get_lang_mgr        (MooEditor      *editor)
-{
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    if (!editor->priv->lang_mgr)
-        editor->priv->lang_mgr = moo_edit_lang_mgr_new ();
-    return editor->priv->lang_mgr;
-}
-
-
-MooFilterMgr    *moo_editor_get_filter_mgr      (MooEditor      *editor)
+MooFilterMgr*
+moo_editor_get_filter_mgr (MooEditor      *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->filter_mgr;
 }
 
 
-MooRecentMgr    *moo_editor_get_recent_mgr      (MooEditor      *editor)
+MooHistoryList*
+moo_editor_get_history (MooEditor      *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return editor->priv->recent_mgr;
+    return editor->priv->history;
 }
 
 
-MooUIXML        *moo_editor_get_ui_xml          (MooEditor      *editor)
+MooUIXML*
+moo_editor_get_ui_xml (MooEditor      *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
@@ -387,8 +413,9 @@ MooUIXML        *moo_editor_get_ui_xml          (MooEditor      *editor)
 }
 
 
-void             moo_editor_set_ui_xml          (MooEditor      *editor,
-                                                 MooUIXML       *xml)
+void
+moo_editor_set_ui_xml (MooEditor      *editor,
+                       MooUIXML       *xml)
 {
     GSList *l;
 
@@ -406,19 +433,20 @@ void             moo_editor_set_ui_xml          (MooEditor      *editor,
         g_object_ref (editor->priv->ui_xml);
 
     for (l = editor->priv->windows; l != NULL; l = l->next)
-        moo_ui_object_set_ui_xml (MOO_UI_OBJECT (l->data),
-                                  editor->priv->ui_xml);
+        moo_window_set_ui_xml (l->data, editor->priv->ui_xml);
 }
 
 
-static WindowInfo   *window_info_new    (MooEditWindow  *win)
+static WindowInfo*
+window_info_new (MooEditWindow  *win)
 {
     WindowInfo *w = g_new0 (WindowInfo, 1);
     w->window = win;
     return w;
 }
 
-static void          window_info_free   (WindowInfo     *win)
+static void
+window_info_free (WindowInfo     *win)
 {
     if (win)
     {
@@ -427,22 +455,25 @@ static void          window_info_free   (WindowInfo     *win)
     }
 }
 
-static void          window_info_add        (WindowInfo     *win,
-                                             MooEdit        *edit)
+static void
+window_info_add (WindowInfo     *win,
+                 MooEdit        *edit)
 {
     g_return_if_fail (!g_slist_find (win->docs, edit));
     win->docs = g_slist_append (win->docs, edit);
 }
 
-static void          window_info_remove     (WindowInfo     *win,
-                                             MooEdit        *edit)
+static void
+window_info_remove (WindowInfo     *win,
+                    MooEdit        *edit)
 {
     g_return_if_fail (g_slist_find (win->docs, edit));
     win->docs = g_slist_remove (win->docs, edit);
 }
 
 
-static int edit_and_file_cmp (MooEdit *edit, const char *filename)
+static int
+edit_and_file_cmp (MooEdit *edit, const char *filename)
 {
     const char *edit_filename;
     g_return_val_if_fail (MOO_IS_EDIT (edit) && filename != NULL, TRUE);
@@ -453,8 +484,9 @@ static int edit_and_file_cmp (MooEdit *edit, const char *filename)
         return TRUE;
 }
 
-static MooEdit      *window_info_find       (WindowInfo     *win,
-                                             const char     *filename)
+static MooEdit*
+window_info_find (WindowInfo     *win,
+                  const char     *filename)
 {
     GSList *l;
     g_return_val_if_fail (win != NULL && filename != NULL, NULL);
@@ -464,7 +496,8 @@ static MooEdit      *window_info_find       (WindowInfo     *win,
 }
 
 
-static void          window_list_free   (MooEditor      *editor)
+static void
+window_list_free (MooEditor      *editor)
 {
     g_slist_foreach (editor->priv->windows,
                      (GFunc) window_info_free, NULL);
@@ -472,8 +505,9 @@ static void          window_list_free   (MooEditor      *editor)
     editor->priv->windows = NULL;
 }
 
-static void          window_list_delete (MooEditor      *editor,
-                                         WindowInfo     *win)
+static void
+window_list_delete (MooEditor      *editor,
+                    WindowInfo     *win)
 {
     g_return_if_fail (g_slist_find (editor->priv->windows, win));
     window_info_free (win);
@@ -481,8 +515,9 @@ static void          window_list_delete (MooEditor      *editor,
             g_slist_remove (editor->priv->windows, win);
 }
 
-static WindowInfo   *window_list_add    (MooEditor      *editor,
-                                         MooEditWindow  *win)
+static WindowInfo*
+window_list_add (MooEditor      *editor,
+                 MooEditWindow  *win)
 {
     WindowInfo *w = window_info_new (win);
     editor->priv->windows =
@@ -490,14 +525,16 @@ static WindowInfo   *window_list_add    (MooEditor      *editor,
     return w;
 }
 
-static int window_cmp (WindowInfo *w, MooEditWindow *e)
+static int
+window_cmp (WindowInfo *w, MooEditWindow *e)
 {
     g_return_val_if_fail (w != NULL, TRUE);
     return !(w->window == e);
 }
 
-static WindowInfo   *window_list_find   (MooEditor      *editor,
-                                         MooEditWindow  *win)
+static WindowInfo*
+window_list_find (MooEditor      *editor,
+                  MooEditWindow  *win)
 {
     GSList *l = g_slist_find_custom (editor->priv->windows, win,
                                      (GCompareFunc) window_cmp);
@@ -507,14 +544,16 @@ static WindowInfo   *window_list_find   (MooEditor      *editor,
         return NULL;
 }
 
-static int doc_cmp (WindowInfo *w, MooEdit *e)
+static int
+doc_cmp (WindowInfo *w, MooEdit *e)
 {
     g_return_val_if_fail (w != NULL, 1);
     return !g_slist_find (w->docs, e);
 }
 
-static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
-                                             MooEdit        *edit)
+static WindowInfo*
+window_list_find_doc (MooEditor      *editor,
+                      MooEdit        *edit)
 {
     GSList *l = g_slist_find_custom (editor->priv->windows, edit,
                                      (GCompareFunc) doc_cmp);
@@ -525,7 +564,8 @@ static WindowInfo   *window_list_find_doc   (MooEditor      *editor,
 }
 
 
-static int filename_and_doc_cmp (WindowInfo *w, gpointer user_data)
+static int
+filename_and_doc_cmp (WindowInfo *w, gpointer user_data)
 {
     struct {
         const char *filename;
@@ -538,9 +578,10 @@ static int filename_and_doc_cmp (WindowInfo *w, gpointer user_data)
     return data->edit == NULL;
 }
 
-static WindowInfo   *window_list_find_filename (MooEditor   *editor,
-                                                const char     *filename,
-                                                MooEdit       **edit)
+static WindowInfo*
+window_list_find_filename (MooEditor   *editor,
+                           const char     *filename,
+                           MooEdit       **edit)
 {
     struct {
         const char *filename;
@@ -562,50 +603,44 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
 }
 
 
-static void          recent_item_added      (MooRecentMgr   *mgr,
-                                             MooAction      *action)
+static MooAction*
+create_recent_action (MooEditWindow  *window)
 {
-    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
-}
-
-
-static GtkMenuItem  *create_recent_menu     (MooEditWindow  *window,
-                                             MooAction      *action)
-{
-    GtkMenuItem *item;
-    MooRecentMgr *mgr;
     MooEditor *editor = moo_edit_window_get_editor (window);
+    MooAction *action;
+    MooMenuMgr *mgr;
 
     g_return_val_if_fail (editor != NULL, NULL);
 
-    mgr = editor->priv->recent_mgr;
-    item = moo_recent_mgr_create_menu (mgr, window, "Open Recent");
-    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
-    /* XXX */
-    g_signal_connect (mgr, "item-added",
-                      G_CALLBACK (recent_item_added), action);
+    action = moo_menu_action_new (RECENT_ACTION_ID);
+    mgr = moo_history_list_get_menu_mgr (editor->priv->history);
+    moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
+    moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);
+    moo_menu_action_set_menu_label (MOO_MENU_ACTION (action), "Open Recent");
 
-    return item;
+    moo_bind_bool_property (action, "sensitive",
+                            editor->priv->history, "empty", TRUE);
+
+    return action;
 }
 
 
-static void             open_recent         (MooEditor       *editor,
-                                             MooEditFileInfo *info,
-                                             MooEditWindow   *window)
+static void
+activate_history_item (MooEditor           *editor,
+                       MooHistoryListItem  *item,
+                       MooEditWindow       *window)
 {
     WindowInfo *win_info;
-    GSList *files;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (info != NULL);
+    g_return_if_fail (item != NULL && item->data != NULL);
 
     win_info = window_list_find (editor, window);
     g_return_if_fail (win_info != NULL);
 
-    files = g_slist_prepend (NULL, info);
-    moo_editor_open (editor, window, GTK_WIDGET (window), files);
-    g_slist_free (files);
+    moo_editor_open_file (editor, window, GTK_WIDGET (window),
+                          item->data, NULL);
 }
 
 
@@ -615,9 +650,10 @@ static MooEditWindow *create_window         (MooEditor      *editor)
 {
     MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
                                           "editor", editor,
-                                          "ui-object-xml",
+                                          "ui-xml",
                                           moo_editor_get_ui_xml (editor),
                                           NULL);
+    moo_edit_window_set_title_prefix (window, editor->priv->app_name);
     window_list_add (editor, window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
@@ -726,7 +762,7 @@ void             moo_editor_open            (MooEditor      *editor,
 
         if (window_list_find_filename (editor, info->filename, &bring_to_front))
         {
-            moo_recent_mgr_add_recent (editor->priv->recent_mgr, info);
+            moo_history_list_add_filename (editor->priv->history, info->filename);
             continue;
         }
         else
@@ -774,7 +810,7 @@ void             moo_editor_open            (MooEditor      *editor,
                 bring_to_front = doc;
             }
 
-            moo_recent_mgr_add_recent (editor->priv->recent_mgr, info);
+            moo_history_list_add_filename (editor->priv->history, info->filename);
 
             parent = GTK_WIDGET (window);
         }
@@ -931,7 +967,7 @@ static void          do_close_window        (MooEditor      *editor,
 
     window_list_delete (editor, info);
 
-    _moo_plugin_detach_plugins (window);
+    _moo_window_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
 
     if (!editor->priv->windows)
@@ -1201,7 +1237,8 @@ _moo_editor_save (MooEditor      *editor,
     WindowInfo *info;
     MooEditSaver *saver;
     GError *error = NULL;
-    MooEditFileInfo *file_info;
+    char *filename;
+    char *encoding;
     gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
@@ -1215,15 +1252,14 @@ _moo_editor_save (MooEditor      *editor,
     if (!moo_edit_get_filename (doc))
         return _moo_editor_save_as (editor, doc, NULL, NULL);
 
-    file_info = moo_edit_file_info_new (moo_edit_get_filename (doc),
-                                        moo_edit_get_encoding (doc));
+    filename = g_strdup (moo_edit_get_filename (doc));
+    encoding = g_strdup (moo_edit_get_encoding (doc));
 
     if ((moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
          !moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!moo_edit_save (saver, doc, file_info->filename,
-                        file_info->encoding, &error))
+    if (!moo_edit_save (saver, doc, filename, encoding, &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
@@ -1232,12 +1268,13 @@ _moo_editor_save (MooEditor      *editor,
         goto out;
     }
 
-    moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
+    moo_history_list_add_filename (editor->priv->history, filename);
     result = TRUE;
 
     /* fall through */
 out:
-    moo_edit_file_info_free (file_info);
+    g_free (filename);
+    g_free (encoding);
     return result;
 }
 
@@ -1283,7 +1320,7 @@ _moo_editor_save_as (MooEditor      *editor,
         goto out;
     }
 
-    moo_recent_mgr_add_recent (editor->priv->recent_mgr, file_info);
+    moo_history_list_add_filename (editor->priv->history, file_info->filename);
     result = TRUE;
 
     /* fall through */
@@ -1320,4 +1357,12 @@ moo_editor_get_doc (MooEditor      *editor,
 
     window_list_find_filename (editor, filename, &doc);
     return doc;
+}
+
+
+MooLangTable*
+moo_editor_get_lang_table (MooEditor *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    return editor->priv->lang_table;
 }

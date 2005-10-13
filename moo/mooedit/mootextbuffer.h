@@ -15,8 +15,8 @@
 #ifndef __MOO_TEXT_BUFFER_H__
 #define __MOO_TEXT_BUFFER_H__
 
-#include <gtksourceview/gtksourcebuffer.h>
-#include "mooedit/mooeditlang.h"
+#include <gtk/gtktextbuffer.h>
+#include <mooedit/moolang.h>
 
 G_BEGIN_DECLS
 
@@ -35,38 +35,53 @@ typedef struct _MooTextBufferClass    MooTextBufferClass;
 
 struct _MooTextBuffer
 {
-    GtkSourceBuffer  parent;
+    GtkTextBuffer  parent;
 
     MooTextBufferPrivate *priv;
 };
 
 struct _MooTextBufferClass
 {
-    GtkSourceBufferClass parent_class;
+    GtkTextBufferClass parent_class;
 
     void (*cursor_moved) (MooTextBuffer      *buffer,
                           const GtkTextIter  *iter);
 };
 
 
-GType           moo_text_buffer_get_type        (void) G_GNUC_CONST;
+GType       moo_text_buffer_get_type                    (void) G_GNUC_CONST;
 
-MooTextBuffer  *moo_text_buffer_new             (void);
+GtkTextBuffer *moo_text_buffer_new                      (GtkTextTagTable    *table);
 
-void            moo_text_buffer_set_lang        (MooTextBuffer  *buffer,
-                                                 MooEditLang    *lang);
+void        moo_text_buffer_set_lang                    (MooTextBuffer      *buffer,
+                                                         MooLang            *lang);
+MooLang    *moo_text_buffer_get_lang                    (MooTextBuffer      *buffer);
 
-void            moo_text_buffer_set_bracket_match_style
-                                                (MooTextBuffer  *buffer,
-                                                 const GtkSourceTagStyle *style);
-void            moo_text_buffer_set_brackets    (MooTextBuffer  *buffer,
-                                                 const char     *brackets);
-void            moo_text_buffer_set_check_brackets
-                                                (MooTextBuffer  *buffer,
-                                                 gboolean        check);
+void        moo_text_buffer_set_highlight               (MooTextBuffer      *buffer,
+                                                         gboolean            highlight);
+gboolean    moo_text_buffer_get_highlight               (MooTextBuffer      *buffer);
 
-gboolean        moo_text_buffer_has_text        (MooTextBuffer  *buffer);
-gboolean        moo_text_buffer_has_selection   (MooTextBuffer  *buffer);
+void        moo_text_buffer_set_bracket_match_style     (MooTextBuffer      *buffer,
+                                                         const MooTextStyle *style);
+void        moo_text_buffer_set_bracket_mismatch_style  (MooTextBuffer      *buffer,
+                                                         const MooTextStyle *style);
+void        moo_text_buffer_set_brackets                (MooTextBuffer      *buffer,
+                                                         const char         *brackets);
+void        moo_text_buffer_set_check_brackets          (MooTextBuffer      *buffer,
+                                                         gboolean            check);
+
+gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
+gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);
+
+
+void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
+                                                         int                 first_line,
+                                                         int                 last_line);
+void        _moo_text_buffer_apply_syntax_tag           (MooTextBuffer      *buffer,
+                                                         GtkTextTag         *tag,
+                                                         const GtkTextIter  *start,
+                                                         const GtkTextIter  *end);
+
 
 G_END_DECLS
 

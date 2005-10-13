@@ -16,7 +16,7 @@
 #define __MOO_EDIT_DIALOGS_H__
 
 #include "mooedit/mooedit.h"
-#include "mooedit/moofileview/moofiltermgr.h"
+#include "mooutils/moofiltermgr.h"
 
 G_BEGIN_DECLS
 

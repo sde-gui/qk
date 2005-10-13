@@ -15,7 +15,7 @@
 #ifndef __MOO_CMD_VIEW__
 #define __MOO_CMD_VIEW__
 
-#include "mooedit/moopaneview.h"
+#include <mooedit/moolineview.h>
 
 G_BEGIN_DECLS
 
@@ -34,13 +34,13 @@ typedef struct _MooCmdViewClass    MooCmdViewClass;
 
 struct _MooCmdView
 {
-    MooPaneView parent;
+    MooLineView parent;
     MooCmdViewPrivate *priv;
 };
 
 struct _MooCmdViewClass
 {
-    MooPaneViewClass parent_class;
+    MooLineViewClass parent_class;
 
     /* action signal */
     gboolean (*abort)       (MooCmdView *view);

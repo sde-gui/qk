@@ -4,9 +4,14 @@
 
 SUBDIRS = glade
 
-widget_sources =                \
-    mooterm.c                   \
+mootermincludedir = $(includedir)/moo-1.0/mooterm
+mooterminclude_HEADERS =        \
     mooterm.h                   \
+    mootermwindow.h
+
+widget_sources =                \
+    $(mooterminclude_HEADERS)   \
+    mooterm.c                   \
     mooterm-input.c             \
     mooterm-keymap.h            \
     mooterm-prefs.c             \
@@ -14,6 +19,7 @@ widget_sources =                \
     mooterm-private.h           \
     mooterm-selection.h         \
     mooterm-text.c              \
+    mooterm-text.h              \
     mooterm-vt.h                \
     mooterm-vtctls.h            \
     mooterm-draw.c              \
@@ -25,12 +31,13 @@ widget_sources =                \
     mootermline.h               \
     mootermparser.c             \
     mootermparser.h             \
-    mootermparser-yacc.y        \
+    mootermparser-yacc.c        \
+    mootermparser-yacc.h        \
     mootermpt.c                 \
     mootermpt.h                 \
     mootermpt-private.h         \
     mootermwindow.c             \
-    mootermwindow.h
+    mootermprefs-glade.h
 
 widget_unix_sources =       \
     mootermpt-unix.c        \
@@ -52,14 +59,12 @@ common_cflags =                         \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
-    $(GTK_CFLAGS)                       \
-    -DG_LOG_DOMAIN=\"Moo\"              \
-    -D__MOO__
+    $(GTK_CFLAGS)
 
 AM_CFLAGS = $(common_cflags) $(DEBUG_CFLAGS) $(CFLAGS)
-AM_YFLAGS = -d
 
 EXTRA_DIST =                \
+    mootermparser-yacc.y    \
     $(widget_sources)       \
     $(widget_unix_sources)  \
     $(widget_win32_sources) \
@@ -71,16 +76,20 @@ libmooterm_la_SOURCES =
 BUILT_SOURCES =
 
 
-if UNIX_BUILD
+if MOO_OS_UNIX
 libmooterm_la_SOURCES += $(widget_sources) $(widget_unix_sources) mootermprefs-glade.h
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.h
-endif UNIX_BUILD
+BUILT_SOURCES += mootermprefs-glade.h
+endif MOO_OS_UNIX
 
 
-if MINGW_BUILD
+if MOO_OS_MINGW
 libmooterm_la_SOURCES += $(widget_sources) $(widget_win32_sources) mootermprefs-glade.h
-BUILT_SOURCES += mootermparser-yacc.c mootermparser-yacc.h mootermprefs-glade.h
-endif MINGW_BUILD
+BUILT_SOURCES +=  mootermprefs-glade.h
+endif MOO_OS_MINGW
+
+# XXX this should be removed too
+mootermparser-yacc.c: mootermparser-yacc.y
+	bison -o $(srcdir)/mootermparser-yacc.c -d $(srcdir)/mootermparser-yacc.y
 
 
 GLADE = $(srcdir)/glade
@@ -93,7 +102,7 @@ mootermprefs-glade.h: $(GLADE)/mootermprefs.glade
 ############################################################################
 #   CYGWIN
 #
-if CYGWIN_BUILD
+if MOO_OS_CYGWIN
 
 noinst_PROGRAMS = termhelper
 
@@ -107,4 +116,4 @@ termhelper_LDADD = $(CYGWIN_LDFLAGS) termhelper_res.res
 termhelper_res.res: termhelper_res.rc
 	$(WINDRES) -i termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
 
-endif CYGWIN_BUILD
+endif MOO_OS_CYGWIN

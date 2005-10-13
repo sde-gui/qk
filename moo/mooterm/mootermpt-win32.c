@@ -43,8 +43,8 @@ void        moo_term_set_helper_directory   (const char *dir)
 }
 
 
-#define TERM_WIDTH(pt)  (MOO_TERM_PT(pt)->priv->term->priv->width)
-#define TERM_HEIGHT(pt) (MOO_TERM_PT(pt)->priv->term->priv->height)
+#define TERM_WIDTH(pt__)  (MOO_TERM_PT(pt__)->priv->term->priv->width)
+#define TERM_HEIGHT(pt__) (MOO_TERM_PT(pt__)->priv->term->priv->height)
 
 
 #define MOO_TERM_PT_WIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_PT_WIN, MooTermPtWin))

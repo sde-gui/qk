@@ -14,7 +14,7 @@
 #ifndef __MOO_PREFS_DIALOG_H__
 #define __MOO_PREFS_DIALOG_H__
 
-#include "mooutils/mooprefsdialogpage.h"
+#include <mooutils/mooprefsdialogpage.h>
 
 G_BEGIN_DECLS
 

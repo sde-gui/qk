@@ -15,11 +15,10 @@
 #ifndef __MOO_EDITOR_H__
 #define __MOO_EDITOR_H__
 
-#include "mooedit/mooeditwindow.h"
-#include "mooedit/mooeditlangmgr.h"
-#include "mooedit/moorecentmgr.h"
-#include "mooedit/moofileview/moofiltermgr.h"
-#include "mooui/moouixml.h"
+#include <mooedit/mooeditwindow.h>
+#include <mooutils/moouixml.h>
+#include <mooutils/moohistorylist.h>
+#include <mooutils/moofiltermgr.h>
 
 G_BEGIN_DECLS
 
@@ -89,8 +88,7 @@ gboolean         moo_editor_close_all       (MooEditor      *editor);
 void             moo_editor_set_app_name    (MooEditor      *editor,
                                              const char     *name);
 
-MooEditLangMgr  *moo_editor_get_lang_mgr    (MooEditor      *editor);
-MooRecentMgr    *moo_editor_get_recent_mgr  (MooEditor      *editor);
+MooHistoryList  *moo_editor_get_history     (MooEditor      *editor);
 MooFilterMgr    *moo_editor_get_filter_mgr  (MooEditor      *editor);
 
 MooUIXML        *moo_editor_get_ui_xml      (MooEditor      *editor);
@@ -98,6 +96,8 @@ void             moo_editor_set_ui_xml      (MooEditor      *editor,
                                              MooUIXML       *xml);
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
+
+MooLangTable    *moo_editor_get_lang_table  (MooEditor      *editor);
 
 
 #ifdef MOOEDIT_COMPILATION
@@ -107,6 +107,7 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
 void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc);
 
+gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
 void             _moo_editor_reload             (MooEditor      *editor,
                                                  MooEdit        *doc);
 gboolean         _moo_editor_save               (MooEditor      *editor,

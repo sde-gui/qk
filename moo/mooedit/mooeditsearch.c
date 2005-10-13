@@ -15,7 +15,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextiter.h"
-#include <gtksourceview/gtksourceiter.h>
+#include "mooedit/gtksourceiter.h"
 #include <string.h>
 
 

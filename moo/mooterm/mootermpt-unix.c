@@ -223,7 +223,9 @@ static gboolean fork_argv       (MooTermPt      *pt_gen,
     }
     else
     {
+#if 0
         g_message ("%s: forked child pid %d", G_STRLOC, pt->child_pid);
+#endif
     }
 
     if (waitpid (-1, &status, WNOHANG) == -1)
@@ -629,7 +631,8 @@ static void     pt_write        (MooTermPt      *pt,
 }
 
 
-char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
+char
+_moo_term_pt_get_erase_char (MooTermPt      *pt_gen)
 {
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
     struct termios tio;
@@ -649,7 +652,8 @@ char            moo_term_pt_get_erase_char  (MooTermPt      *pt_gen)
 }
 
 
-void            moo_term_pt_send_intr       (MooTermPt      *pt)
+void
+_moo_term_pt_send_intr (MooTermPt      *pt)
 {
     g_return_if_fail (pt->priv->child_alive);
     pt_flush_pending_write (pt);
@@ -658,7 +662,8 @@ void            moo_term_pt_send_intr       (MooTermPt      *pt)
 
 
 /* TODO: it should be in glib */
-MooTermCommand *moo_term_get_default_shell (void)
+MooTermCommand*
+_moo_term_get_default_shell (void)
 {
     static char *argv[2] = {NULL, NULL};
 
@@ -673,7 +678,8 @@ MooTermCommand *moo_term_get_default_shell (void)
 
 
 /* it's a win32 function */
-void        moo_term_set_helper_directory   (G_GNUC_UNUSED const char *dir)
+void
+moo_term_set_helper_directory (G_GNUC_UNUSED const char *dir)
 {
     g_return_if_reached ();
 }
@@ -714,8 +720,9 @@ static char **cmd_line_to_argv (const char  *cmd_line,
 }
 
 
-gboolean        moo_term_check_cmd          (MooTermCommand *cmd,
-                                             GError     **error)
+gboolean
+_moo_term_check_cmd (MooTermCommand *cmd,
+                     GError     **error)
 {
     g_return_val_if_fail (cmd != NULL, FALSE);
     g_return_val_if_fail (cmd->cmd_line != NULL || cmd->argv != NULL, FALSE);

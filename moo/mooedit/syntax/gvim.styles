@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<!DOCTYPE scheme SYSTEM "scheme.dtd">
+<scheme name="gvim">
+  <default-style name="Normal"/>
+  <default-style name="Keyword" foreground="#A52A2A" bold="TRUE"/>
+  <default-style name="Function" foreground="#008A8C"/>
+  <default-style name="DataType" foreground="#2E8B57" bold="TRUE"/>
+  <default-style name="Comment" foreground="#0000FF"/>
+  <default-style name="Alert" foreground="darkblue" background="yellow"/>
+  <default-style name="Error" background="#FF0000" bold="TRUE"/>
+  <default-style name="Others" foreground="#A020F0"/>
+  <default-style name="Preprocessor" foreground="#A020F0"/>
+  <default-style name="String" foreground="#FF00FF"/>
+  <default-style name="Char" foreground="#FF00FF"/>
+  <default-style name="Float" foreground="#FF00FF"/>
+  <default-style name="Decimal" foreground="#FF00FF"/>
+  <default-style name="BaseN" foreground="#FF00FF"/>
+</scheme>

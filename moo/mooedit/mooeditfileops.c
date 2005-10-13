@@ -16,8 +16,10 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditdialogs.h"
+#include "mooedit/mootextbuffer.h"
 #include "mooutils/moofileutils.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/moofilewatch.h"
 #include <string.h>
 
 
@@ -43,16 +45,11 @@ static gboolean moo_edit_save_default   (MooEditSaver   *saver,
 
 static void     block_buffer_signals        (MooEdit        *edit);
 static void     unblock_buffer_signals      (MooEdit        *edit);
-static void     start_file_watch            (MooEdit        *edit);
-static void     stop_file_watch             (MooEdit        *edit);
-static gboolean file_watch_timeout_func     (MooEdit        *edit);
 static gboolean focus_in_cb                 (MooEdit        *edit);
-static gboolean check_file_status           (MooEdit        *edit,
+static void     check_file_status           (MooEdit        *edit,
                                              gboolean        in_focus_only);
 static void     file_modified_on_disk       (MooEdit        *edit);
 static void     file_deleted                (MooEdit        *edit);
-static void     file_watch_error            (MooEdit        *edit);
-static void     file_watch_access_denied    (MooEdit        *edit);
 static void     add_status                  (MooEdit        *edit,
                                              MooEditStatus   s);
 
@@ -230,25 +227,27 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
 {
     GtkTextIter start;
     GtkTextBuffer *buffer;
+    MooTextView *view;
     gboolean undo;
     gboolean success = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (file && file[0], FALSE);
 
-    block_buffer_signals (edit);
-
     if (moo_edit_is_empty (edit))
         undo = FALSE;
     else
         undo = TRUE;
 
+    view = MOO_TEXT_VIEW (edit);
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    block_buffer_signals (edit);
 
     if (undo)
         gtk_text_buffer_begin_user_action (buffer);
     else
-        gtk_source_buffer_begin_not_undoable_action (GTK_SOURCE_BUFFER (buffer));
+        moo_text_view_start_not_undoable_action (view);
 
     if (!encoding)
     {
@@ -286,20 +285,22 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
         gtk_text_buffer_get_start_iter (buffer, &start);
         gtk_text_buffer_place_cursor (buffer, &start);
         _moo_edit_set_filename (edit, file, encoding);
-        start_file_watch (edit);
+        _moo_edit_start_file_watch (edit);
     }
     else
     {
-        stop_file_watch (edit);
+        _moo_edit_stop_file_watch (edit);
     }
 
     if (undo)
         gtk_text_buffer_end_user_action (buffer);
     else
-        gtk_source_buffer_end_not_undoable_action (GTK_SOURCE_BUFFER (buffer));
+        moo_text_view_end_not_undoable_action (view);
 
     edit->priv->status = 0;
     moo_edit_set_modified (edit, FALSE);
+
+//     _moo_text_buffer_dump (buffer, "/tmp/dump.c");
 
     return success;
 }
@@ -340,7 +341,8 @@ do_load (MooEdit        *edit,
                 return FALSE;
             }
 
-            gtk_text_buffer_insert_at_cursor (buffer, contents, len);
+            if (len)
+                gtk_text_buffer_insert_at_cursor (buffer, contents, len);
 
             g_mapped_file_free (mapped_file);
             return TRUE;
@@ -416,6 +418,7 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
+    gboolean result;
 
     g_return_val_if_fail (edit->priv->filename != NULL, FALSE);
 
@@ -427,23 +430,21 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
 
-    if (!moo_edit_load (loader, edit, edit->priv->filename,
-                        edit->priv->encoding, error))
+    result = moo_edit_load (loader, edit, edit->priv->filename,
+                            edit->priv->encoding, error);
+
+    gtk_text_buffer_end_user_action (buffer);
+    unblock_buffer_signals (edit);
+
+    if (result)
     {
-        gtk_text_buffer_end_user_action (buffer);
-        unblock_buffer_signals (edit);
-        return FALSE;
-    }
-    else
-    {
-        gtk_text_buffer_end_user_action (buffer);
         edit->priv->status = 0;
-        unblock_buffer_signals (edit);
         moo_edit_set_modified (edit, FALSE);
-        start_file_watch (edit);
+        _moo_edit_start_file_watch (edit);
         g_clear_error (error);
-        return TRUE;
     }
+
+    return result;
 }
 
 
@@ -479,7 +480,7 @@ static gboolean moo_edit_save_default   (G_GNUC_UNUSED MooEditSaver *saver,
     edit->priv->status = 0;
     _moo_edit_set_filename (edit, filename, encoding);
     moo_edit_set_modified (edit, FALSE);
-    start_file_watch (edit);
+    _moo_edit_start_file_watch (edit);
 
     return TRUE;
 }
@@ -581,45 +582,85 @@ static gboolean do_write                (MooEdit        *edit,
 
 static void     block_buffer_signals        (MooEdit        *edit)
 {
-    MooTextView *view = MOO_TEXT_VIEW (edit);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_block (buffer, view->priv->can_undo_handler_id);
-    g_signal_handler_block (buffer, view->priv->can_redo_handler_id);
     g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
 static void     unblock_buffer_signals      (MooEdit        *edit)
 {
-    MooTextView *view = MOO_TEXT_VIEW (edit);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_unblock (buffer, view->priv->can_undo_handler_id);
-    g_signal_handler_unblock (buffer, view->priv->can_redo_handler_id);
     g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
 }
 
 
-/* XXX use MooFileWatch */
-static void     start_file_watch            (MooEdit        *edit)
+static void
+file_watch_event (G_GNUC_UNUSED MooFileWatch *watch,
+                  MooFileWatchEvent  *event,
+                  MooEdit            *edit)
 {
-    GTime timestamp;
+    if (event->monitor_id != edit->priv->file_monitor_id)
+        return;
 
-    if (edit->priv->file_watch_id)
-        g_source_remove (edit->priv->file_watch_id);
-    edit->priv->file_watch_id = 0;
+    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+
+    switch (event->code)
+    {
+        case MOO_FILE_WATCH_CHANGED:
+            edit->priv->modified_on_disk = TRUE;
+            break;
+
+        case MOO_FILE_WATCH_DELETED:
+            edit->priv->deleted_from_disk = TRUE;
+            break;
+
+        case MOO_FILE_WATCH_CREATED:
+        case MOO_FILE_WATCH_MOVED:
+            g_return_if_reached ();
+    }
+
+    check_file_status (edit, TRUE);
+}
+
+
+void
+_moo_edit_start_file_watch (MooEdit        *edit)
+{
+    MooFileWatch *watch;
+    GError *error = NULL;
+
+    watch = _moo_editor_get_file_watch (edit->priv->editor);
+    g_return_if_fail (MOO_IS_FILE_WATCH (watch));
+
+    if (edit->priv->file_monitor_id)
+        moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
+    edit->priv->file_monitor_id = 0;
 
     g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
     g_return_if_fail (edit->priv->filename != NULL);
 
-    timestamp = moo_get_file_mtime (edit->priv->filename);
-    g_return_if_fail (timestamp > 0); /* TODO TODO */
-    edit->priv->timestamp = timestamp;
+    moo_file_watch_monitor_file (watch, edit->priv->filename, edit,
+                                 &edit->priv->file_monitor_id,
+                                 &error);
 
-    if (edit->priv->file_watch_timeout)
-        edit->priv->file_watch_id =
-                g_timeout_add (edit->priv->file_watch_timeout,
-                               (GSourceFunc) file_watch_timeout_func,
-                               edit);
+    if (!edit->priv->file_monitor_id)
+    {
+        g_warning ("%s: could not start watch", G_STRLOC);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        return;
+    }
+
+    /* XXX watch errors too */
+    if (!edit->priv->file_watch_event_handler_id)
+        edit->priv->file_watch_event_handler_id =
+                g_signal_connect (watch, "event",
+                                  G_CALLBACK (file_watch_event), edit);
+
     if (!edit->priv->focus_in_handler_id)
         edit->priv->focus_in_handler_id =
                 g_signal_connect (edit, "focus-in-event",
@@ -628,24 +669,29 @@ static void     start_file_watch            (MooEdit        *edit)
 }
 
 
-static void     stop_file_watch             (MooEdit        *edit)
+void
+_moo_edit_stop_file_watch (MooEdit        *edit)
 {
-    if (edit->priv->file_watch_id)
-        g_source_remove (edit->priv->file_watch_id);
+    MooFileWatch *watch;
 
-    edit->priv->file_watch_id = 0;
+    watch = _moo_editor_get_file_watch (edit->priv->editor);
+    g_return_if_fail (MOO_IS_FILE_WATCH (watch));
+
+    if (edit->priv->file_monitor_id)
+        moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
+    edit->priv->file_monitor_id = 0;
+
+    if (edit->priv->file_watch_event_handler_id)
+    {
+        g_signal_handler_disconnect (watch, edit->priv->file_watch_event_handler_id);
+        edit->priv->file_watch_event_handler_id = 0;
+    }
 
     if (edit->priv->focus_in_handler_id)
     {
         g_signal_handler_disconnect (edit, edit->priv->focus_in_handler_id);
         edit->priv->focus_in_handler_id = 0;
     }
-}
-
-
-static gboolean file_watch_timeout_func     (MooEdit        *edit)
-{
-    return check_file_status (edit, TRUE);
 }
 
 
@@ -656,61 +702,29 @@ static gboolean focus_in_cb                 (MooEdit        *edit)
 }
 
 
-static gboolean check_file_status           (MooEdit        *edit,
-                                             gboolean        in_focus_only)
+static void
+check_file_status (MooEdit        *edit,
+                   gboolean        in_focus_only)
 {
-    GTime stamp;
-
     if (in_focus_only && !GTK_WIDGET_HAS_FOCUS (edit))
-        return TRUE;
+        return;
 
-    g_return_val_if_fail (edit->priv->filename != NULL, FALSE);
+    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
-    g_return_val_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK), FALSE);
-    g_return_val_if_fail (edit->priv->timestamp > 0, FALSE);
-    g_return_val_if_fail (edit->priv->filename != NULL, FALSE);
-
-    stamp = moo_get_file_mtime (edit->priv->filename);
-
-    if (stamp < 0)
-    {
-        switch (stamp)
-        {
-            case MOO_EACCESS:
-                file_watch_access_denied (edit);
-                return FALSE;
-
-            case MOO_ENOENT:
-                file_deleted (edit);
-                return FALSE;
-
-            case MOO_EIO:
-            default:
-                g_critical ("%s: error in moo_get_file_mtime", G_STRLOC);
-                file_watch_error (edit);
-                return FALSE;
-        }
-    }
-
-    if (stamp == edit->priv->timestamp)
-        return TRUE;
-
-    if (stamp < edit->priv->timestamp)
-    {
-        g_warning ("%s: mtime of file on disk is less than timestamp", G_STRLOC);
-        file_watch_error (edit);
-        return FALSE;
-    }
-
-    file_modified_on_disk (edit);
-    return FALSE;
+    if (edit->priv->deleted_from_disk)
+        file_deleted (edit);
+    else if (edit->priv->modified_on_disk)
+        file_modified_on_disk (edit);
 }
 
 
 static void     file_modified_on_disk       (MooEdit        *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
-    stop_file_watch (edit);
+    edit->priv->modified_on_disk = FALSE;
+    edit->priv->deleted_from_disk = FALSE;
+    _moo_edit_stop_file_watch (edit);
     add_status (edit, MOO_EDIT_MODIFIED_ON_DISK);
 }
 
@@ -718,24 +732,9 @@ static void     file_modified_on_disk       (MooEdit        *edit)
 static void     file_deleted                (MooEdit        *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
-    stop_file_watch (edit);
-    add_status (edit, MOO_EDIT_DELETED);
-}
-
-
-static void     file_watch_error            (MooEdit        *edit)
-{
-    g_critical ("%s", G_STRLOC);
-    stop_file_watch (edit);
-    add_status (edit, MOO_EDIT_DELETED);
-}
-
-
-static void     file_watch_access_denied    (MooEdit        *edit)
-{
-    g_critical ("%s", G_STRLOC);
-    stop_file_watch (edit);
-    /* XXX */
+    edit->priv->modified_on_disk = FALSE;
+    edit->priv->deleted_from_disk = FALSE;
+    _moo_edit_stop_file_watch (edit);
     add_status (edit, MOO_EDIT_DELETED);
 }
 
@@ -794,8 +793,6 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
                                          const char *file,
                                          const char *encoding)
 {
-    MooEditLang *lang;
-
     g_free (edit->priv->filename);
     g_free (edit->priv->basename);
     g_free (edit->priv->display_filename);
@@ -831,18 +828,11 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
                 _moo_edit_filename_to_utf8 (edit->priv->basename);
     }
 
-    if (!edit->priv->lang_custom)
-    {
-        if (file)
-            lang = moo_edit_lang_mgr_get_language_for_file (_moo_edit_get_lang_mgr (edit), file);
-        else
-            lang = moo_edit_lang_mgr_get_default_language (_moo_edit_get_lang_mgr (edit));
-        moo_edit_set_lang (edit, lang);
-    }
-
     g_free (edit->priv->encoding);
     edit->priv->encoding = g_strdup (encoding);
 
+    _moo_edit_reload_vars (edit);
+    _moo_edit_choose_lang (edit);
     _moo_edit_choose_indenter (edit);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);

@@ -15,9 +15,9 @@
 #ifndef __MOO_EDIT_SEARCH_H__
 #define __MOO_EDIT_SEARCH_H__
 
-#include "mooedit/mooedit.h"
-#include "mooedit/mootextview.h"
-#include "mooutils/eggregex.h"
+#include <mooedit/mooedit.h>
+#include <mooedit/mootextview.h>
+#include <mooutils/eggregex.h>
 
 G_BEGIN_DECLS
 

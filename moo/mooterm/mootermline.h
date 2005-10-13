@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermline.h
+ *   mootermline.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMLINE_H
-#define MOOTERM_MOOTERMLINE_H
-
 #ifndef MOOTERM_COMPILATION
-#error "This file may not be included directly"
+#error "This file may not be included"
 #endif
+
+#ifndef __MOO_TERM_LINE_H__
+#define __MOO_TERM_LINE_H__
 
 #include "mooterm/mootermbuffer.h"
 
@@ -30,7 +30,7 @@ typedef struct _MooTermLine         MooTermLine;
 #define EMPTY_CHAR  ' '
 #define DECALN_CHAR 'S'
 
-extern MooTermTextAttr MOO_TERM_ZERO_ATTR;
+extern MooTermTextAttr _MOO_TERM_ZERO_ATTR;
 
 
 /* FALSE if equal */
@@ -54,46 +54,45 @@ struct _MooTermCellArray {
 
 struct _MooTermLine {
     MooTermCellArray *cells;
-    guint             wrapped : 1;
 };
 
 
-MooTermLine *moo_term_line_new              (guint           len);
-void         moo_term_line_free             (MooTermLine    *line);
+MooTermLine *_moo_term_line_new             (guint           len);
+void         _moo_term_line_free            (MooTermLine    *line);
 
-guint        moo_term_line_len              (MooTermLine    *line);
+guint        _moo_term_line_len             (MooTermLine    *line);
 
-MooTermTextAttr *moo_term_line_attr         (MooTermLine    *line,
+MooTermTextAttr *_moo_term_line_attr        (MooTermLine    *line,
                                              guint           index);
-MooTermCell *moo_term_line_cell             (MooTermLine    *line,
+MooTermCell *_moo_term_line_cell            (MooTermLine    *line,
                                              guint           index);
-gunichar     moo_term_line_get_unichar      (MooTermLine    *line,
+gunichar     _moo_term_line_get_unichar     (MooTermLine    *line,
                                              guint           col);
 
-void         moo_term_line_set_len          (MooTermLine    *line,
+void         _moo_term_line_set_len         (MooTermLine    *line,
                                              guint           len);
 
-void         moo_term_line_erase            (MooTermLine    *line);
-void         moo_term_line_erase_range      (MooTermLine    *line,
+void         _moo_term_line_erase           (MooTermLine    *line);
+void         _moo_term_line_erase_range     (MooTermLine    *line,
                                              guint           pos,
                                              guint           len,
                                              MooTermTextAttr *attr);
-void         moo_term_line_delete_range     (MooTermLine    *line,
+void         _moo_term_line_delete_range    (MooTermLine    *line,
                                              guint           pos,
                                              guint           len);
-void         moo_term_line_set_unichar      (MooTermLine    *line,
+void         _moo_term_line_set_unichar     (MooTermLine    *line,
                                              guint           pos,
                                              gunichar        c,
                                              guint           num,
                                              MooTermTextAttr *attr,
                                              guint           width);
-void         moo_term_line_insert_unichar   (MooTermLine    *line,
+void         _moo_term_line_insert_unichar  (MooTermLine    *line,
                                              guint           pos,
                                              gunichar        c,
                                              guint           num,
                                              MooTermTextAttr *attr,
                                              guint           width);
-guint        moo_term_line_get_chars        (MooTermLine    *line,
+guint        _moo_term_line_get_chars       (MooTermLine    *line,
                                              char           *buf,
                                              guint           first,
                                              int             len);
@@ -101,4 +100,4 @@ guint        moo_term_line_get_chars        (MooTermLine    *line,
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERMLINE_H */
+#endif /* __MOO_TERM_LINE_H__ */

@@ -13,6 +13,7 @@
 
 #include "mooutils/moomarkup.h"
 #include "mooutils/moofileutils.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <glib.h>
 
@@ -713,6 +714,50 @@ moo_markup_set_prop (MooMarkupNode      *elm,
 }
 
 
+int
+moo_markup_get_int_prop (MooMarkupNode      *node,
+                         const char         *prop_name,
+                         int                 default_val)
+{
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
+    g_return_val_if_fail (prop_name != NULL, default_val);
+    return moo_convert_string_to_int (moo_markup_get_prop (node, prop_name),
+                                      default_val);
+}
+
+
+void
+moo_markup_set_int_prop (MooMarkupNode      *node,
+                         const char         *prop_name,
+                         int                 val)
+{
+    moo_markup_set_prop (node, prop_name,
+                         moo_convert_int_to_string (val));
+}
+
+
+gboolean
+moo_markup_get_bool_prop (MooMarkupNode      *node,
+                          const char         *prop_name,
+                          gboolean            default_val)
+{
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
+    g_return_val_if_fail (prop_name != NULL, default_val);
+    return moo_convert_string_to_bool (moo_markup_get_prop (node, prop_name),
+                                       default_val);
+}
+
+
+void
+moo_markup_set_bool_prop (MooMarkupNode      *node,
+                          const char         *prop_name,
+                          gboolean            val)
+{
+    moo_markup_set_prop (node, prop_name,
+                         moo_convert_bool_to_string (val));
+}
+
+
 MooMarkupNode*
 moo_markup_get_root_element (MooMarkupDoc       *doc,
                              const char         *name)
@@ -954,7 +999,7 @@ moo_markup_save (MooMarkupDoc       *doc,
 #define INDENT_CHAR ' '
 #ifdef __WIN32__
 #define LINE_SEPARATOR "\r\n"
-#elif defined(OS_DARWIN)
+#elif defined(MOO_OS_DARWIN)
 #define LINE_SEPARATOR "\r"
 #else
 #define LINE_SEPARATOR "\n"

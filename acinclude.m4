@@ -48,7 +48,9 @@ AC_DEFUN([_AC_CHECK_PYTHON_MINGW],[
         $2
     ],[
         AC_MSG_RESULT([Not found])
-        $3
+        PYTHON_INCLUDES=""
+        PYTHON_LDFLAGS=""
+        PYTHON_EXTRA_LIBS=""
     ])
 
     LDFLAGS="$save_LDFLAGS"
@@ -175,6 +177,9 @@ AC_DEFUN([_AC_CHECK_PYTHON_UNIX],[
     if test x$python_found = xyes; then
         $2
     else
+        PYTHON_INCLUDES=""
+        PYTHON_LDFLAGS=""
+        PYTHON_EXTRA_LIBS=""
         $3
     fi
 ])
@@ -367,10 +372,15 @@ AC_DEFUN([AC_CHECK_XML_STUFF],[
         CFLAGS="$save_CFLAGS"
         CPPFLAGS="$save_CPPFLAGS"
 
+        MOO_XML_PKG_NAME=libxml-2.0
+
         $1
     ],[
+        MOO_XML_PKG_NAME=
         $2
     ])
+
+    AC_SUBST(MOO_XML_PKG_NAME)
 ])
 
 
@@ -566,13 +576,16 @@ AC_DEFUN([AC_CHECK_FAM],[
             AC_MSG_RESULT($FAM_LIBS)
         fi
 
+        MOO_FAM_LIBS=$FAM_LIBS
         ifelse([$1], , :, [$1])
     else
         unset FAM_CFLAGS
         unset FAM_LIBS
+        MOO_FAM_LIBS=
         ifelse([$2], , [AC_MSG_ERROR(libfam not found)], [$2])
     fi
 
+    AC_SUBST(MOO_FAM_LIBS)
     CFLAGS="$save_CFLAGS"
     LDFLAGS="$save_LDFLAGS"
 ])

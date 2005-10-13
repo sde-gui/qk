@@ -1,0 +1,74 @@
+Here's what I gather about colors in various editors:
+
+libmoo got highlighting styles and colors from kde text editor, Kate.
+Apparently it's different from any other text editor out there.
+
+gvim:
+
+    "Normal" - "Normal"
+        Normal vimUserFunc
+    "Comment" - "Comment"
+        Comment vimComment vimMtchComment vimLineComment perlComment perlDATA perlPOD
+            vimScriptDelim rubyComment rubyDocumentation rubyData pythonComment tclComment
+    "Constant" - maps to kde "Decimal", "BaseN", "Float", "Char", "String"
+        Constant String Character Number Boolean Float vimNumber vimMark vimString vimSetString
+            vimCommentString vimPatSepZone vimNotPatSep vimStringCont vimSubstTwoBS vimMarkNumber
+            vimPlainMark vimAddress vimSynRegPat vimSynPatRange vimInsert vimSynNotPatRange
+            vimHiGuiRgb perlFloat perlNumber perlString perlQQ perlVarSimpleMemberName perlMatch
+            perlSubstitutionSQ perlSubstitutionDQ perlSubstitutionSlash perlSubstitutionHash
+            perlSubstitutionBracket perlSubstitutionCurly perlSubstitutionPling perlTranslationSlash
+            perlTranslationHash perlTranslationBracket perlTranslationCurly perlStringStartEnd
+            perlHereDoc perlFormatField perlShellCommand perlStringUnexpanded perlCharacter rubyNumber
+            rubyString rubyBoolean pythonString pythonRawString tclString tclNumber
+    "Special" - ???
+        Special Tag SpecialChar Delimiter SpecialComment Debug vimRegister vimCmplxRepeat
+            vimNotation vimCtrlChar vimContinue vimFuncSID vimPatSep vimPatSepErr vimSubstSubstr
+            vimSubstDelim vimSubstFlags vimPlainRegister vimMapModKey vimBracket vimMapMod vimMenuMod
+            vimGroupSpecial vimSep perlSpecial perlSpecialAscii perlSpecialDollar perlSpecialString
+            perlSpecialStringU perlSpecialMatch perlSpecialBEOM rubyExprSubst rubyStringDelimit
+            rubyDataDirective pythonEscape tcltkSwitch tcltkWidgetSwitch tcltkPackConfSwitch
+            tcltkNamespaceSwitch tcltkMaths tcltkPackSwitch tcltkStringSwitch tcltkArraySwitch
+            tcltkLsortSwitch tclSpecial vimSynOption vimSynContains vimSynKeyContainedin
+            vimSynNextgroup vimGroupAdd vimGroupRem vimSynKeyOpt vimSynMtchOpt vimSynRegOpt
+            vimSynMtchGrp
+    "Identifier" - "Function", ??? - I should have some 'Variable'
+        Identifier Function vimFuncName vimSpecFile vimFuncVar vimSpecFileMod perlFunction
+            perlFunctionPrototype perlIdentifier perlVarPlain perlVarNotInMatches perlVarSlash
+            perlVarSimpleMember perlMethod perlFunctionName perlFiledescRead perlFiledescStatement
+            perlFormatName rubyFunction rubyIdentifier rubyPredefinedIdentifier rubyConstant
+            rubyClassVariable rubyInstanceVariable rubyGlobalVariable rubySymbol rubyIterator
+            rubyPredefinedVariable rubyPredefinedConstant pythonFunction tclVarRef tcltkPackConfColor
+            vimKeyCode
+    "Statement" - "Keyword", ???
+        Statement Conditional Repeat Label Operator Keyword Exception vimCommand vimAutoCmd vimLet
+            vimMap vimSyntax vimBehave vimBehaveModel vimFTCmd vimOper vimSubst vimAugroupKey
+            vimFuncKey vimHighlight vimUserCommand vimSubst1 vimSetSep vimEchoHL vimMapBang
+            perlConditional perlRepeat perlOperator perlLabel perlStatement perlList perlMisc
+            perlStatementStorage perlStatementControl perlStatementScalar perlStatementRegexp
+            perlStatementNumeric perlStatementList perlStatementHash perlStatementIOfunc
+            perlStatementFiledesc perlStatementVector perlStatementFiles perlStatementFlow
+            perlStatementInclude perlStatementScope perlStatementProc perlStatementSocket
+            perlStatementIPC perlStatementNetwork perlStatementPword perlStatementTime
+            perlStatementMisc perlStatementNew perlMatchStartEnd perlStatementPackage perlStatementSub
+            rubyControl rubyKeyword rubyException rubyBeginEnd pythonStatement pythonRepeat
+            pythonConditional pythonOperator tclStatement tclLabel tclConditional tclRepeat
+            tcltkCommandColor vimAuHighlight vimAutoSet vimCondHL vimElseif vimNotFunc vimKeyword
+            vimStatement
+    "PreProc" - "Preprocessor"
+        PreProc Include Define Macro PreCondit vimOption vimUserAttrbKey vimEnvvar vimSetMod
+            vimMenuName vimMenuNameMore vimHiAttrib vimFgBgAttrib vimCommentTitle perlControl
+            perlSharpBang perlInclude rubyDefine rubyInclude rubySharpBang pythonPreCondit
+            vimAutoCmdOpt vimHLMod
+    "Type" - "DataType"
+        Type StorageClass Structure Typedef vimAutoEvent vimGroup vimHLGroup vimPattern
+            vimEchoHLNone vimSynCase vimSynReg vimSyncC vimSyncKey vimSyncNone vimHiTerm vimHiCTerm
+            vimHiStartStop vimHiCtermFgBg vimHiGui vimHiGuiFont vimHiGuiFgBg perlType perlStorageClass
+            perlPackageRef perlPackageDecl perlFunctionPRef rubyClassOrModule tcltkWidgetColor
+            vimSpecial vimUserAttrb vimUserAttrbCmplt vimSynType vimFTOption
+    "Error" - "Error"
+        Error vimOperError vimUserCmdError vimElseIfErr vimSynError vimSyncError perlElseIfError
+            perlNotEmptyLine perlBrackets tclError vimError vimKeyCodeError vimErrSetting
+            vimBehaveError vimFTError vimFunctionError vimFunc vimSubstFlagErr vimCollClassErr
+            vimMapModErr vimSynCaseError vimHiAttribList vimHiCtermError vimHiKeyError
+    "Todo" - "Alert"
+        Todo vimTodo perlTodo rubyTodo pythonTodo tclTodo

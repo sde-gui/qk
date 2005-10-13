@@ -24,20 +24,20 @@
 
 
 #if 0
-#define DEBUG_ONE_CHAR(c)                                   \
-G_STMT_START {                                              \
-    char *s = _moo_term_nice_char (c);                      \
-    g_message ("got one-char '%s'", s);                     \
-    g_free (s);                                             \
+#define DEBUG_ONE_CHAR(c__)                                     \
+G_STMT_START {                                                  \
+    char *s = _moo_term_nice_char (c__);                        \
+    g_message ("got one-char '%s'", s);                         \
+    g_free (s);                                                 \
 } G_STMT_END
-#define DEBUG_CONTROL                                       \
-G_STMT_START {                                              \
-    char *s = _moo_term_current_ctl (parser);               \
-    g_message ("got sequence '%s'", s);                     \
-    g_free (s);                                             \
+#define DEBUG_CONTROL                                           \
+G_STMT_START {                                                  \
+    char *s = _moo_term_current_ctl (parser);                   \
+    g_message ("got sequence '%s'", s);                         \
+    g_free (s);                                                 \
 } G_STMT_END
 #else
-#define DEBUG_ONE_CHAR(c)
+#define DEBUG_ONE_CHAR(c__)
 #define DEBUG_CONTROL
 #endif
 
@@ -384,7 +384,8 @@ static void parser_finish (MooTermParser  *parser)
 }
 
 
-MooTermParser  *moo_term_parser_new     (MooTerm        *term)
+MooTermParser*
+_moo_term_parser_new (MooTerm        *term)
 {
     MooTermParser *p = g_new0 (MooTermParser, 1);
 
@@ -407,7 +408,8 @@ MooTermParser  *moo_term_parser_new     (MooTerm        *term)
 }
 
 
-void            moo_term_parser_reset   (MooTermParser  *parser)
+void
+_moo_term_parser_reset (MooTermParser  *parser)
 {
     g_string_truncate (parser->character, 0);
     g_string_truncate (parser->intermediate, 0);
@@ -417,7 +419,8 @@ void            moo_term_parser_reset   (MooTermParser  *parser)
 }
 
 
-void            moo_term_parser_free    (MooTermParser  *parser)
+void
+_moo_term_parser_free (MooTermParser  *parser)
 {
     if (parser)
     {
@@ -434,9 +437,10 @@ void            moo_term_parser_free    (MooTermParser  *parser)
 }
 
 
-void            moo_term_parser_parse   (MooTermParser  *parser,
-                                         const char     *string,
-                                         guint           len)
+void
+_moo_term_parser_parse (MooTermParser  *parser,
+                        const char     *string,
+                        guint           len)
 {
     guchar c;
 

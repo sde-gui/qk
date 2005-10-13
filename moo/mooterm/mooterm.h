@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm.h
+ *   mooterm.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERM_H
-#define MOOTERM_MOOTERM_H
+#ifndef __MOO_TERM_H__
+#define __MOO_TERM_H__
 
 #include <gtk/gtk.h>
 
@@ -61,6 +61,8 @@ struct _MooTermClass
                                      GtkMenu        *menu);
 
     void (*apply_settings)          (MooTerm        *term);
+
+    void (*new_line)                (MooTerm        *term);
 };
 
 typedef enum {
@@ -150,6 +152,9 @@ void        moo_term_set_font_from_string   (MooTerm        *term,
 void        moo_term_set_cursor_blink_time  (MooTerm        *term,
                                              guint           ms);
 
+void        moo_term_reset                  (MooTerm        *term);
+void        moo_term_soft_reset             (MooTerm        *term);
+
 
 MooTermProfile      *moo_term_profile_new       (const char     *name,
                                                  const MooTermCommand *cmd,
@@ -179,9 +184,9 @@ void        moo_term_remove_profile         (MooTerm        *term,
 void        moo_term_set_default_profile    (MooTerm        *term,
                                              int             profile);
 int         moo_term_get_default_profile    (MooTerm        *term);
-void        moo_term_start_default_profile  (MooTerm        *term,
+gboolean    moo_term_start_default_profile  (MooTerm        *term,
                                              GError        **error);
-void        moo_term_start_profile          (MooTerm        *term,
+gboolean    moo_term_start_profile          (MooTerm        *term,
                                              int             profile,
                                              GError        **error);
 
@@ -193,4 +198,4 @@ void             moo_term_command_free      (MooTermCommand *cmd);
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERM_H */
+#endif /* __MOO_TERM_H__ */

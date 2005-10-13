@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-private.h
+ *   mooterm-private.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERM_PRIVATE_H
-#define MOOTERM_MOOTERM_PRIVATE_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_PRIVATE_H__
+#define __MOO_TERM_PRIVATE_H__
 
 #include "mooterm/mooterm.h"
 #include "mooterm/mootermbuffer.h"
@@ -58,6 +62,12 @@ enum {
     COLOR_BOLD      = 1,
     COLOR_MAX       = 16
 };
+
+typedef enum {
+    DRAG_NONE = 0,
+    DRAG_SELECT,
+    DRAG_DRAG
+} DragType;
 
 typedef struct _MooTermFont MooTermFont;
 
@@ -144,6 +154,15 @@ struct _MooTermPrivate {
     MooTermProfileArray *profiles;
     MooTermProfile      *default_shell;
     int                  default_profile;
+
+    struct {
+        guint           drag_scroll_timeout;
+        GdkEventType    drag_button;
+        DragType        drag_type;
+        int             drag_start_x;
+        int             drag_start_y;
+        guint           drag_moved                      : 1;
+    } mouse_stuff;
 };
 
 #define term_top_line(term)                     \
@@ -151,61 +170,61 @@ struct _MooTermPrivate {
         (term)->priv->top_line :                \
         buf_scrollback ((term)->priv->buffer))
 
-void        moo_term_text_iface_init        (gpointer        iface);
-void        moo_term_apply_settings         (MooTerm        *term);
-void        moo_term_set_window_title       (MooTerm        *term,
+void        _moo_term_text_iface_init       (gpointer        iface);
+void        _moo_term_apply_settings        (MooTerm        *term);
+void        _moo_term_set_window_title      (MooTerm        *term,
                                              const char     *title);
-void        moo_term_set_icon_name          (MooTerm        *term,
+void        _moo_term_set_icon_name         (MooTerm        *term,
                                              const char     *title);
 
-void        moo_term_buf_content_changed    (MooTerm        *term,
+void        _moo_term_buf_content_changed   (MooTerm        *term,
                                              MooTermBuffer  *buf);
-void        moo_term_cursor_moved           (MooTerm        *term,
+void        _moo_term_cursor_moved          (MooTerm        *term,
                                              MooTermBuffer  *buf);
 
-void        moo_term_size_changed           (MooTerm        *term);
+void        _moo_term_size_changed          (MooTerm        *term);
 
-void        moo_term_init_font_stuff        (MooTerm        *term);
-void        moo_term_init_palette           (MooTerm        *term);
-void        moo_term_setup_palette          (MooTerm        *term);
+void        _moo_term_init_font_stuff       (MooTerm        *term);
+void        _moo_term_init_palette          (MooTerm        *term);
+void        _moo_term_setup_palette         (MooTerm        *term);
 
-void        moo_term_update_pointer         (MooTerm        *term);
-void        moo_term_set_pointer_visible    (MooTerm        *term,
+void        _moo_term_update_pointer        (MooTerm        *term);
+void        _moo_term_set_pointer_visible   (MooTerm        *term,
                                              gboolean        visible);
-gboolean    moo_term_button_press           (GtkWidget      *widget,
+gboolean    _moo_term_button_press          (GtkWidget      *widget,
                                              GdkEventButton *event);
-gboolean    moo_term_button_release         (GtkWidget      *widget,
+gboolean    _moo_term_button_release        (GtkWidget      *widget,
                                              GdkEventButton *event);
-gboolean    moo_term_motion_notify          (GtkWidget      *widget,
+gboolean    _moo_term_motion_notify         (GtkWidget      *widget,
                                              GdkEventMotion *event);
-void        moo_term_do_popup_menu          (MooTerm        *term,
+void        _moo_term_do_popup_menu         (MooTerm        *term,
                                              GdkEventButton *event);
 
-gboolean    moo_term_key_press              (GtkWidget      *widget,
+gboolean    _moo_term_key_press             (GtkWidget      *widget,
                                              GdkEventKey    *event);
-gboolean    moo_term_key_release            (GtkWidget      *widget,
+gboolean    _moo_term_key_release           (GtkWidget      *widget,
                                              GdkEventKey    *event);
-void        moo_term_im_commit              (GtkIMContext   *imcontext,
+void        _moo_term_im_commit             (GtkIMContext   *imcontext,
                                              gchar          *arg,
                                              MooTerm        *term);
 
-void        moo_term_init_back_pixmap       (MooTerm        *term);
-void        moo_term_resize_back_pixmap     (MooTerm        *term);
-void        moo_term_update_back_pixmap     (MooTerm        *term);
+void        _moo_term_init_back_pixmap      (MooTerm        *term);
+void        _moo_term_resize_back_pixmap    (MooTerm        *term);
+void        _moo_term_update_back_pixmap    (MooTerm        *term);
 
-gboolean    moo_term_expose_event           (GtkWidget      *widget,
+gboolean    _moo_term_expose_event          (GtkWidget      *widget,
                                              GdkEventExpose *event);
-void        moo_term_invalidate_rect        (MooTerm        *term,
+void        _moo_term_invalidate_rect       (MooTerm        *term,
                                              GdkRectangle   *rect);
-void        moo_term_invalidate_all         (MooTerm        *term);
-void        moo_term_force_update           (MooTerm        *term);
+void        _moo_term_invalidate_all        (MooTerm        *term);
+void        _moo_term_force_update          (MooTerm        *term);
 
-void        moo_term_release_selection      (MooTerm        *term);
-void        moo_term_grab_selection         (MooTerm        *term);
+void        _moo_term_release_selection     (MooTerm        *term);
+void        _moo_term_grab_selection        (MooTerm        *term);
 
 /* in mooterm-draw.c */
-void        moo_term_pause_cursor_blinking  (MooTerm        *term);
-void        moo_term_set_cursor_blinks      (MooTerm        *term,
+void        _moo_term_pause_cursor_blinking (MooTerm        *term);
+void        _moo_term_set_cursor_blinks     (MooTerm        *term,
                                              gboolean        blinks);
 
 
@@ -213,49 +232,46 @@ void        moo_term_set_cursor_blinks      (MooTerm        *term,
 /* vt commands
  */
 
-void        moo_term_reset                  (MooTerm    *term);
-void        moo_term_soft_reset             (MooTerm    *term);
-
-void        moo_term_bell                   (MooTerm    *term);
-void        moo_term_decid                  (MooTerm    *term);
-void        moo_term_set_dec_modes          (MooTerm    *term,
+void        _moo_term_bell                  (MooTerm    *term);
+void        _moo_term_decid                 (MooTerm    *term);
+void        _moo_term_set_dec_modes         (MooTerm    *term,
                                              int        *modes,
                                              guint       n_modes,
                                              gboolean    set);
-void        moo_term_save_dec_modes         (MooTerm    *term,
+void        _moo_term_save_dec_modes        (MooTerm    *term,
                                              int        *modes,
                                              guint       n_modes);
-void        moo_term_restore_dec_modes      (MooTerm    *term,
+void        _moo_term_restore_dec_modes     (MooTerm    *term,
                                              int        *modes,
                                              guint       n_modes);
-void        moo_term_set_ansi_modes         (MooTerm    *term,
+void        _moo_term_set_ansi_modes        (MooTerm    *term,
                                              int        *modes,
                                              guint       n_modes,
                                              gboolean    set);
-void        moo_term_set_mode               (MooTerm    *term,
+void        _moo_term_set_mode              (MooTerm    *term,
                                              int         mode,
                                              gboolean    set);
-void        moo_term_set_ca_mode            (MooTerm    *term,
+void        _moo_term_set_ca_mode           (MooTerm    *term,
                                              gboolean    set);
-void        moo_term_decsc                  (MooTerm    *term);
-void        moo_term_decrc                  (MooTerm    *term);
+void        _moo_term_decsc                 (MooTerm    *term);
+void        _moo_term_decrc                 (MooTerm    *term);
 
 /* these two are in mootermdraw.c */
-void        moo_term_invert_colors          (MooTerm    *term,
+void        _moo_term_invert_colors         (MooTerm    *term,
                                              gboolean    invert);
-void        moo_term_set_cursor_visible      (MooTerm    *term,
+void        _moo_term_set_cursor_visible    (MooTerm    *term,
                                              gboolean    visible);
 /* this one is in mooterminput.c, tracking_type == -1 means turn it off */
-void        moo_term_set_mouse_tracking     (MooTerm    *term,
+void        _moo_term_set_mouse_tracking    (MooTerm    *term,
                                              int         tracking_type);
 
-void        moo_term_da1                    (MooTerm    *term);
-void        moo_term_da2                    (MooTerm    *term);
-void        moo_term_da3                    (MooTerm    *term);
+void        _moo_term_da1                   (MooTerm    *term);
+void        _moo_term_da2                   (MooTerm    *term);
+void        _moo_term_da3                   (MooTerm    *term);
 
-void        moo_term_setting_request        (MooTerm    *term,
+void        _moo_term_setting_request       (MooTerm    *term,
                                              int         setting);
-void        moo_term_dsr                    (MooTerm    *term,
+void        _moo_term_dsr                   (MooTerm    *term,
                                              int         type,
                                              int         arg,
                                              gboolean    extended);
@@ -273,7 +289,7 @@ struct _MooTermFont {
     guint           ascent;
 };
 
-void            moo_term_font_free          (MooTermFont            *info);
+void            _moo_term_font_free         (MooTermFont            *info);
 
 #define term_char_width(term)   ((term)->priv->font->width)
 #define term_char_height(term)  ((term)->priv->font->height)
@@ -281,4 +297,4 @@ void            moo_term_font_free          (MooTermFont            *info);
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERM_PRIVATE_H */
+#endif /* __MOO_TERM_PRIVATE_H__ */

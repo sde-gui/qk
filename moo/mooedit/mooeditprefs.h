@@ -15,7 +15,7 @@
 #ifndef __MOO_EDIT_PREFS_H__
 #define __MOO_EDIT_PREFS_H__
 
-#include "mooedit/mooeditor.h"
+#include <mooedit/mooeditor.h>
 
 G_BEGIN_DECLS
 
@@ -23,18 +23,11 @@ G_BEGIN_DECLS
 #define MOO_EDIT_PREFS_PREFIX "Editor"
 
 GtkWidget  *moo_edit_prefs_page_new         (MooEditor      *editor);
+GtkWidget  *moo_edit_colors_prefs_page_new  (MooEditor      *editor);
 
 /* defined in mooeditprefs.c */
 const char *moo_edit_setting                (const char     *setting_name);
 
-/* defined in mooeditlang.c */
-const char *moo_edit_style_setting          (const char     *lang_id,
-                                             const char     *style_id,
-                                             const char     *setting);
-/* defined in mooeditlang.c */
-void        moo_edit_style_load             (const char     *lang_id,
-                                             const char     *style_id,
-                                             GtkSourceTagStyle *style);
 
 /* keep in sync with list in mooeditprefspage.c */
 
@@ -56,18 +49,9 @@ void        moo_edit_style_load             (const char     *lang_id,
 #define MOO_EDIT_PREFS_SHOW_LINE_NUMBERS            "show_line_numbers"
 #define MOO_EDIT_PREFS_SHOW_MARGIN                  "show_right_margin"
 #define MOO_EDIT_PREFS_MARGIN                       "right_margin"
-#define MOO_EDIT_PREFS_CHECK_BRACKETS               "check_brackets"
-#define MOO_EDIT_MATCHING_BRACKETS_CORRECT          "matching_brackets/correct"
-#define MOO_EDIT_MATCHING_BRACKETS_INCORRECT        "matching_brackets/incorrect"
 #define MOO_EDIT_PREFS_USE_DEFAULT_FONT             "use_default_font"
 #define MOO_EDIT_PREFS_FONT                         "font"
-#define MOO_EDIT_PREFS_USE_DEFAULT_COLORS           "use_default_colors"
-#define MOO_EDIT_PREFS_FOREGROUND                   "foreground"
-#define MOO_EDIT_PREFS_BACKGROUND                   "background"
-#define MOO_EDIT_PREFS_SELECTED_FOREGROUND          "selected_foreground"
-#define MOO_EDIT_PREFS_SELECTED_BACKGROUND          "selected_background"
 #define MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE       "highlight_current_line"
-#define MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE_COLOR "highlight_current_line_color"
 #define MOO_EDIT_PREFS_USE_SYNTAX_HIGHLIGHTING      "use_syntax_highlighting"
 
 #define MOO_EDIT_STYLE_ALERT                        "Alert"

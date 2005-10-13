@@ -19,6 +19,7 @@
 G_BEGIN_DECLS
 
 
+#if 0
 /* TODO */
 /* st_mtime can't be negative, so error indicator is
    moo_get_file_mtime(file) < 0 */
@@ -29,6 +30,7 @@ G_BEGIN_DECLS
 #define MOO_ENOENT  ((GTime) -4)
 
 GTime       moo_get_file_mtime      (const char *filename);
+#endif
 
 
 gboolean    moo_save_file_utf8      (const char *name,

@@ -15,8 +15,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefsdialog.h"
-#include "mooui/moouiobject.h"
-#include "mooui/moomenuaction.h"
+#include "mooutils/moomenuaction.h"
 #include <string.h>
 #include <sys/wait.h>
 
@@ -100,68 +99,64 @@ execute_cb (G_GNUC_UNUSED MooEditWindow *window)
 
 
 /* XXX */
-static GtkMenuItem*
-create_build_configuration_menu (MooEditWindow  *window,
-                                 G_GNUC_UNUSED MooAction *action)
+static MooAction*
+create_build_configuration_action (MooEditWindow  *window)
 {
     CProjectPlugin *plugin;
-    GtkWidget *item;
+    MooMenuMgr *mgr;
+    MooAction *action;
 
     plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
-    plugin->build_configuration_menu = gtk_menu_new ();
-    gtk_widget_show (plugin->build_configuration_menu);
-    item = gtk_menu_item_new_with_label ("Build Configuration");
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (item),
-                               plugin->build_configuration_menu);
-    return GTK_MENU_ITEM (item);
-}
+    action = moo_menu_action_new ("BuildConfiguration");
+    mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
+    moo_menu_mgr_append (mgr, NULL, "BuildConfiguration",
+                         "Build Configuration", 0,
+                         NULL, NULL);
 
-static void
-recent_item_added (MooRecentMgr   *mgr,
-                   MooAction      *action)
-{
-    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (mgr));
+    return action;
 }
 
 
 static void
 open_recent_project (CProjectPlugin     *plugin,
-                     MooEditFileInfo    *file)
+                     MooHistoryListItem *item)
 {
-    cproject_open_project (plugin, file->filename);
+    g_return_if_fail (item != NULL);
+    cproject_open_project (plugin, item->data);
 }
 
 
-static GtkMenuItem*
-create_recent_menu (MooEditWindow  *window,
-                    MooAction      *action)
+static MooAction*
+create_recent_action (MooEditWindow  *window)
 {
     CProjectPlugin *plugin;
-    GtkMenuItem *item;
+    MooAction *action;
+    MooMenuMgr *mgr;
 
     plugin = moo_plugin_lookup (CPROJECT_PLUGIN_ID);
     g_return_val_if_fail (plugin != NULL, NULL);
     g_return_val_if_fail (!plugin->window || plugin->window == window, NULL);
 
-    item = moo_recent_mgr_create_menu (plugin->recent_mgr, NULL, "Open Recent Project");
-    moo_action_set_sensitive (action, moo_recent_mgr_get_num_items (plugin->recent_mgr));
+    action = moo_menu_action_new ("OpenRecentProject");
+    mgr = moo_history_list_get_menu_mgr (plugin->recent_list);
+    moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
+    moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);
+    moo_menu_action_set_menu_label (MOO_MENU_ACTION (action), "Open Recent Project");
 
-    /* XXX */
-    g_signal_connect (plugin->recent_mgr, "item-added",
-                      G_CALLBACK (recent_item_added), action);
+    moo_bind_bool_property (action, "sensitive", plugin->recent_list, "empty", TRUE);
 
-    return item;
+    return action;
 }
 
 
 gboolean
 cproject_plugin_init (CProjectPlugin *plugin)
 {
-    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     MooEditor *editor = moo_editor_instance ();
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
     const char *markup;
@@ -169,74 +164,72 @@ cproject_plugin_init (CProjectPlugin *plugin)
     g_return_val_if_fail (klass != NULL, FALSE);
     g_return_val_if_fail (editor != NULL, FALSE);
 
-    moo_ui_object_class_new_action (klass, "NewProject",
-                                    "name", "New Project",
-                                    "label", "New Project",
-                                    "tooltip", "New Project",
-                                    "icon-stock-id", MOO_STOCK_NEW_PROJECT,
-                                    "closure::callback", new_project_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "NewProject",
+                                 "name", "New Project",
+                                 "label", "New Project",
+                                 "tooltip", "New Project",
+                                 "icon-stock-id", MOO_STOCK_NEW_PROJECT,
+                                 "closure::callback", new_project_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "OpenProject",
-                                    "name", "Open Project",
-                                    "label", "Open Project",
-                                    "tooltip", "Open Project",
-                                    "icon-stock-id", MOO_STOCK_OPEN_PROJECT,
-                                    "closure::callback", open_project_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "OpenProject",
+                                 "name", "Open Project",
+                                 "label", "Open Project",
+                                 "tooltip", "Open Project",
+                                 "icon-stock-id", MOO_STOCK_OPEN_PROJECT,
+                                 "closure::callback", open_project_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "OpenRecentProject",
-                                    "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "create-menu-func", create_recent_menu,
-                                    NULL);
+    moo_window_class_new_action_custom (klass, "OpenRecentProject",
+                                        (MooWindowActionFunc) create_recent_action,
+                                        NULL);
 
-    moo_ui_object_class_new_action (klass, "CloseProject",
-                                    "name", "Close Project",
-                                    "label", "Close Project",
-                                    "tooltip", "Close Project",
-                                    "icon-stock-id", MOO_STOCK_CLOSE_PROJECT,
-                                    "closure::callback", close_project_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "CloseProject",
+                                 "name", "Close Project",
+                                 "label", "Close Project",
+                                 "tooltip", "Close Project",
+                                 "icon-stock-id", MOO_STOCK_CLOSE_PROJECT,
+                                 "closure::callback", close_project_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "ProjectOptions",
-                                    "name", "Project Options",
-                                    "label", "Project Options",
-                                    "tooltip", "Project Options",
-                                    "icon-stock-id", MOO_STOCK_PROJECT_OPTIONS,
-                                    "closure::callback", project_options_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "ProjectOptions",
+                                 "name", "Project Options",
+                                 "label", "Project Options",
+                                 "tooltip", "Project Options",
+                                 "icon-stock-id", MOO_STOCK_PROJECT_OPTIONS,
+                                 "closure::callback", project_options_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "BuildConfiguration",
-                                    "action-type::", MOO_TYPE_MENU_ACTION,
-                                    "create-menu-func", create_build_configuration_menu,
-                                    NULL);
+    moo_window_class_new_action_custom (klass, "BuildConfiguration",
+                                        (MooWindowActionFunc) create_build_configuration_action,
+                                        NULL);
 
-    moo_ui_object_class_new_action (klass, "BuildProject",
-                                    "name", "Build Project",
-                                    "label", "Build Project",
-                                    "tooltip", "Build Project",
-                                    "icon-stock-id", MOO_STOCK_BUILD,
-                                    "closure::callback", build_project_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "BuildProject",
+                                 "name", "Build Project",
+                                 "label", "Build Project",
+                                 "tooltip", "Build Project",
+                                 "icon-stock-id", MOO_STOCK_BUILD,
+                                 "closure::callback", build_project_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "CompileFile",
-                                    "name", "Compile File",
-                                    "label", "Compile File",
-                                    "tooltip", "Compile File",
-                                    "icon-stock-id", MOO_STOCK_COMPILE,
-                                    "closure::callback", compile_file_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "CompileFile",
+                                 "name", "Compile File",
+                                 "label", "Compile File",
+                                 "tooltip", "Compile File",
+                                 "icon-stock-id", MOO_STOCK_COMPILE,
+                                 "closure::callback", compile_file_cb,
+                                 NULL);
 
-    moo_ui_object_class_new_action (klass, "Execute",
-                                    "name", "Execute",
-                                    "label", "Execute",
-                                    "tooltip", "Execute",
-                                    "icon-stock-id", MOO_STOCK_EXECUTE,
-                                    "closure::callback", execute_cb,
-                                    NULL);
+    moo_window_class_new_action (klass, "Execute",
+                                 "name", "Execute",
+                                 "label", "Execute",
+                                 "tooltip", "Execute",
+                                 "icon-stock-id", MOO_STOCK_EXECUTE,
+                                 "closure::callback", execute_cb,
+                                 NULL);
 
-    plugin->recent_mgr = moo_recent_mgr_new (CPROJECT_PLUGIN_ID);
-    g_signal_connect_swapped (plugin->recent_mgr, "open_recent",
+    plugin->recent_list = moo_history_list_new (CPROJECT_PLUGIN_ID);
+    g_signal_connect_swapped (plugin->recent_list, "activate_item",
                               G_CALLBACK (open_recent_project), plugin);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
@@ -279,21 +272,21 @@ cproject_plugin_deinit (CProjectPlugin *plugin)
 {
     MooEditor *editor = moo_editor_instance ();
     MooUIXML *xml = moo_editor_get_ui_xml (editor);
-    GObjectClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
     if (plugin->ui_merge_id)
         moo_ui_xml_remove_ui (xml, plugin->ui_merge_id);
     plugin->ui_merge_id = 0;
 
-    moo_ui_object_class_remove_action (klass, "NewProject");
-    moo_ui_object_class_remove_action (klass, "OpenProject");
-    moo_ui_object_class_remove_action (klass, "OpenRecentProject");
-    moo_ui_object_class_remove_action (klass, "CloseProject");
-    moo_ui_object_class_remove_action (klass, "ProjectOptions");
-    moo_ui_object_class_remove_action (klass, "BuildConfiguration");
-    moo_ui_object_class_remove_action (klass, "BuildProject");
-    moo_ui_object_class_remove_action (klass, "CompileFile");
-    moo_ui_object_class_remove_action (klass, "Execute");
+    moo_window_class_remove_action (klass, "NewProject");
+    moo_window_class_remove_action (klass, "OpenProject");
+    moo_window_class_remove_action (klass, "OpenRecentProject");
+    moo_window_class_remove_action (klass, "CloseProject");
+    moo_window_class_remove_action (klass, "ProjectOptions");
+    moo_window_class_remove_action (klass, "BuildConfiguration");
+    moo_window_class_remove_action (klass, "BuildProject");
+    moo_window_class_remove_action (klass, "CompileFile");
+    moo_window_class_remove_action (klass, "Execute");
 
     g_type_class_unref (klass);
 }
@@ -432,7 +425,6 @@ cproject_open_project (CProjectPlugin *plugin,
 {
     GSList *list;
     MooEditor *editor;
-    MooEditFileInfo *info;
 
     if (!path)
         path = moo_file_dialog (GTK_WIDGET (plugin->window),
@@ -470,9 +462,7 @@ cproject_open_project (CProjectPlugin *plugin,
     cproject_save_prefs (plugin);
     cproject_update_project_ui (plugin);
 
-    info = moo_edit_file_info_new (path, NULL);
-    moo_recent_mgr_add_recent (plugin->recent_mgr, info);
-    moo_edit_file_info_free (info);
+    moo_history_list_add_filename (plugin->recent_list, path);
 }
 
 
@@ -513,7 +503,8 @@ cproject_update_project_ui (CProjectPlugin *plugin)
     else
         moo_edit_window_set_title_prefix (plugin->window, NULL);
 
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (plugin->window));
+    actions = moo_window_get_actions (MOO_WINDOW (plugin->window));
+
     build_configuration = moo_action_group_get_action (actions, "BuildConfiguration");
     project_options = moo_action_group_get_action (actions, "ProjectOptions");
     close_project = moo_action_group_get_action (actions, "CloseProject");
@@ -544,7 +535,7 @@ cproject_update_file_ui (CProjectPlugin *plugin)
 
     doc = moo_edit_window_get_active_doc (plugin->window);
 
-    actions = moo_ui_object_get_actions (MOO_UI_OBJECT (plugin->window));
+    actions = moo_window_get_actions (MOO_WINDOW (plugin->window));
     compile_file = moo_action_group_get_action (actions, "CompileFile");
 
     sensitive = (plugin->project != NULL && doc != NULL);
@@ -641,7 +632,7 @@ run_command (CProjectPlugin *plugin,
     pane = moo_edit_window_get_pane (plugin->window, CPROJECT_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
-    moo_pane_view_clear (MOO_PANE_VIEW (plugin->output));
+    moo_line_view_clear (MOO_LINE_VIEW (plugin->output));
     moo_big_paned_present_pane (plugin->window->paned, pane);
 
     moo_cmd_view_run_command (plugin->output, command);

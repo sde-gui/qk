@@ -439,6 +439,80 @@ moo_value_convert_to_string (const GValue *val)
 }
 
 
+int
+moo_convert_string_to_int (const char     *string,
+                           int             default_val)
+{
+    int int_val;
+
+    if (string)
+    {
+        GValue str_val;
+        str_val.g_type = 0;
+        g_value_init (&str_val, G_TYPE_STRING);
+        g_value_set_static_string (&str_val, string);
+        int_val = moo_value_convert_to_int (&str_val);
+        g_value_unset (&str_val);
+    }
+    else
+    {
+        int_val = default_val;
+    }
+
+    return int_val;
+}
+
+
+gboolean
+moo_convert_string_to_bool (const char     *string,
+                            gboolean        default_val)
+{
+    gboolean bool_val;
+
+    if (string)
+    {
+        GValue str_val;
+        str_val.g_type = 0;
+        g_value_init (&str_val, G_TYPE_STRING);
+        g_value_set_static_string (&str_val, string);
+        bool_val = moo_value_convert_to_bool (&str_val);
+        g_value_unset (&str_val);
+    }
+    else
+    {
+        bool_val = default_val;
+    }
+
+    return bool_val;
+}
+
+
+const char*
+moo_convert_bool_to_string (gboolean        value)
+{
+    GValue bool_val;
+
+    bool_val.g_type = 0;
+    g_value_init (&bool_val, G_TYPE_BOOLEAN);
+    g_value_set_boolean (&bool_val, value);
+
+    return moo_value_convert_to_string (&bool_val);
+}
+
+
+const char*
+moo_convert_int_to_string (int             value)
+{
+    GValue int_val;
+
+    int_val.g_type = 0;
+    g_value_init (&int_val, G_TYPE_INT);
+    g_value_set_int (&int_val, value);
+
+    return moo_value_convert_to_string (&int_val);
+}
+
+
 gboolean
 moo_value_change_type (GValue         *val,
                        GType           new_type)
@@ -550,7 +624,7 @@ moo_param_array_add_valist (GType       type,
 
     for (i = 0; i < len; ++i)
     {
-        GParameter param = {0};
+        GParameter param = {NULL, {0, {{0}, {0}}}};
         copy_param (&param, &src[i]);
         g_array_append_val (copy, param);
     }
@@ -559,7 +633,7 @@ moo_param_array_add_valist (GType       type,
     while (name)
     {
         char *error = NULL;
-        GParameter param = {0};
+        GParameter param = {NULL, {0, {{0}, {0}}}};
         GParamSpec *pspec = g_object_class_find_property (klass, name);
 
         if (!pspec) {
@@ -609,7 +683,7 @@ moo_param_array_add_type_valist (GParameter *src,
 
     copy = g_array_new (FALSE, TRUE, sizeof (GParameter));
     for (i = 0; i < len; ++i) {
-        GParameter param = {0};
+        GParameter param = {NULL, {0, {{0}, {0}}}};
         copy_param (&param, &src[i]);
         g_array_append_val (copy, param);
     }
@@ -618,7 +692,7 @@ moo_param_array_add_type_valist (GParameter *src,
     while (name)
     {
         char *error = NULL;
-        GParameter param = {0};
+        GParameter param = {NULL, {0, {{0}, {0}}}};
         GType type;
 
         type = va_arg (var_args, GType);
@@ -1303,7 +1377,7 @@ moo_bind_bool_property (gpointer            target,
 
 
 void
-moo_bind_sensitive (GtkToggleButton    *btn,
+moo_bind_sensitive (GtkWidget          *btn,
                     GtkWidget         **dependent,
                     int                 num_dependent,
                     gboolean            invert)

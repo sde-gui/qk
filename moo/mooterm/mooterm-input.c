@@ -30,17 +30,19 @@ static GtkWidgetClass *widget_class (void)
 }
 
 
-void        moo_term_im_commit          (G_GNUC_UNUSED GtkIMContext   *imcontext,
-                                         gchar          *arg,
-                                         MooTerm        *term)
+void
+_moo_term_im_commit (G_GNUC_UNUSED GtkIMContext   *imcontext,
+                     gchar          *arg,
+                     MooTerm        *term)
 {
     moo_term_feed_child (term, arg, -1);
 }
 
 
 /* shamelessly taken from vte.c */
-gboolean    moo_term_key_press          (GtkWidget      *widget,
-                                         GdkEventKey    *event)
+gboolean
+_moo_term_key_press (GtkWidget      *widget,
+                     GdkEventKey    *event)
 {
     MooTerm *term;
     char *string = NULL;
@@ -57,7 +59,7 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
     GdkModifierType modifiers;
 
     term = MOO_TERM (widget);
-    moo_term_pause_cursor_blinking (term);
+    _moo_term_pause_cursor_blinking (term);
 
     /* First, check if GtkWidget's behavior already does something with
      * this key. */
@@ -291,18 +293,16 @@ gboolean    moo_term_key_press          (GtkWidget      *widget,
         g_free(string);
     }
 
-    return TRUE;
+    return handled || string;
 }
 
 
-gboolean    moo_term_key_release        (GtkWidget      *widget,
-                                         GdkEventKey    *event)
+gboolean
+_moo_term_key_release (GtkWidget      *widget,
+                       GdkEventKey    *event)
 {
-    MooTerm *term = MOO_TERM (widget);
-    if (!gtk_im_context_filter_keypress (term->priv->im, event))
-        return widget_class()->key_release_event (widget, event);
-    else
-        return TRUE;
+    return gtk_im_context_filter_keypress (MOO_TERM(widget)->priv->im, event) ||
+            widget_class()->key_release_event (widget, event);
 }
 
 
@@ -322,15 +322,16 @@ static gboolean scroll_event            (MooTerm        *term,
                                          GdkEventScroll *event);
 
 
-void        moo_term_set_mouse_tracking (MooTerm        *term,
-                                         int             tracking_type)
+void
+_moo_term_set_mouse_tracking (MooTerm        *term,
+                              int             tracking_type)
 {
     if (tracking_type != term->priv->tracking_mouse)
     {
         term->priv->tracking_mouse = tracking_type;
-        moo_term_update_pointer (term);
+        _moo_term_update_pointer (term);
         stop_mouse_tracking (term);
-        moo_term_selection_clear (term);
+        _moo_term_selection_clear (term);
 
         switch (tracking_type)
         {
@@ -352,7 +353,8 @@ void        moo_term_set_mouse_tracking (MooTerm        *term,
 }
 
 
-static void stop_mouse_tracking         (MooTerm    *term)
+static void
+stop_mouse_tracking (MooTerm    *term)
 {
     if (term->priv->track_press_id)
         g_signal_handler_disconnect (term, term->priv->track_press_id);
@@ -366,7 +368,8 @@ static void stop_mouse_tracking         (MooTerm    *term)
 }
 
 
-static void start_press_tracking        (MooTerm    *term)
+static void
+start_press_tracking (MooTerm    *term)
 {
     term->priv->track_press_id =
             g_signal_connect (term, "button-press-event",
@@ -374,7 +377,8 @@ static void start_press_tracking        (MooTerm    *term)
 }
 
 
-static void start_button_tracking       (MooTerm    *term)
+static void
+start_button_tracking (MooTerm    *term)
 {
     term->priv->track_press_id =
             g_signal_connect (term, "button-press-event",
@@ -388,10 +392,11 @@ static void start_button_tracking       (MooTerm    *term)
 }
 
 
-static void     get_mouse_coordinates   (MooTerm        *term,
-                                         GdkEventButton *event,
-                                         int            *x,
-                                         int            *y)
+static void
+get_mouse_coordinates (MooTerm        *term,
+                       GdkEventButton *event,
+                       int            *x,
+                       int            *y)
 {
     guint char_width = term_char_width (term);
     guint char_height = term_char_height (term);
@@ -404,8 +409,9 @@ static void     get_mouse_coordinates   (MooTerm        *term,
 }
 
 
-static gboolean button_press            (MooTerm        *term,
-                                         GdkEventButton *event)
+static gboolean
+button_press (MooTerm        *term,
+              GdkEventButton *event)
 {
     int x, y;
     guchar button;
@@ -435,8 +441,9 @@ static gboolean button_press            (MooTerm        *term,
 }
 
 
-static gboolean button_press_or_release (MooTerm        *term,
-                                         GdkEventButton *event)
+static gboolean
+button_press_or_release (MooTerm        *term,
+                         GdkEventButton *event)
 {
     int x, y;
     guint button;
@@ -481,8 +488,9 @@ static gboolean button_press_or_release (MooTerm        *term,
 }
 
 
-static gboolean scroll_event            (MooTerm        *term,
-                                         GdkEventScroll *event)
+static gboolean
+scroll_event (MooTerm        *term,
+              GdkEventScroll *event)
 {
     int x, y;
     guchar button;

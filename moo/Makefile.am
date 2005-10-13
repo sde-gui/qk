@@ -2,54 +2,65 @@
 #   moo/Makefile.am
 #
 
+LTVERSION = 0:1:0
+
 DIST_SUBDIRS =  \
     mooapp      \
     mooutils    \
     mooedit     \
     moopython   \
-    mooterm     \
-    mooui
+    mooterm
 
+mooincludedir = $(includedir)/moo-1.0
+mooinclude_HEADERS = moo.h
+moolibincludedir = $(libdir)/moo-1.0/include
+moolibinclude_HEADERS = moo-config.h
+
+EXTRA_DIST = $(mooinclude_HEADERS) $(moolibinclude_HEADERS)
+
+
+# lib_LTLIBRARIES = libmoo-1.0.la
+noinst_LTLIBRARIES = libmoo-1.0.la
+
+libmoo_1_0_la_SOURCES = \
+    dummy.c
+
+all-am: moo-config.h
+
+moo_libadd =
 subdirs =
 
-noinst_LTLIBRARIES = libmoo.la
-libmoo_la_LIBADD =
-libmoo_la_SOURCES = dummy.c
-
-if BUILD_MOOUTILS
+if MOO_BUILD_UTILS
 subdirs += mooutils
-libmoo_la_LIBADD += mooutils/libmooutils.la
+moo_libadd += mooutils/libmooutils.la
 endif
 
-if BUILD_MOOUI
-subdirs += mooui
-libmoo_la_LIBADD += mooui/libmooui.la
-endif
-
-if BUILD_MOOEDIT
+if MOO_BUILD_EDIT
 subdirs += mooedit
-libmoo_la_LIBADD += mooedit/libmooedit.la
+moo_libadd += mooedit/libmooedit.la
 endif
 
-if BUILD_MOOTERM
+if MOO_BUILD_TERM
 subdirs += mooterm
-if !CYGWIN_BUILD
-libmoo_la_LIBADD += mooterm/libmooterm.la
-endif !CYGWIN_BUILD
+if !MOO_OS_CYGWIN
+moo_libadd += mooterm/libmooterm.la
+endif !MOO_OS_CYGWIN
 endif
 
-if BUILD_MOOAPP
+if MOO_BUILD_APP
 subdirs += mooapp
-if !CYGWIN_BUILD
-libmoo_la_LIBADD += mooapp/libmooapp.la
-endif !CYGWIN_BUILD
+if !MOO_OS_CYGWIN
+moo_libadd += mooapp/libmooapp.la
+endif !MOO_OS_CYGWIN
 endif
 
-if USE_PYGTK
+if MOO_USE_PYGTK
 subdirs += moopython
-libmoo_la_LIBADD += moopython/libmoopython.la
+moo_libadd += moopython/libmoopython.la
 endif
 
+libmoo_1_0_la_LIBADD = $(moo_libadd)
+libmoo_1_0_la_LDFLAGS  = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
 
 SUBDIRS = $(subdirs) .
 
@@ -70,11 +81,11 @@ if BUILD_PYMOO
 
 pyexec_LTLIBRARIES = moo.la
 
-moo_la_SOURCES = $(libmoo_la_SOURCES)
+moo_la_SOURCES = $(libmoo_1_0_SOURCES)
 
-if MINGW_BUILD
+if MOO_OS_MINGW
 mingw_flags = -no-undefined
-endif MINGW_BUILD
+endif MOO_OS_MINGW
 
 moo_la_LDFLAGS = -module -avoid-version -export-symbols-regex initmoo $(mingw_flags)
 

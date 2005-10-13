@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   moopaneview.c
+ *   moocmdview.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -73,7 +73,7 @@ enum {
 
 
 /* MOO_TYPE_CMD_VIEW */
-G_DEFINE_TYPE (MooCmdView, moo_cmd_view, MOO_TYPE_PANE_VIEW)
+G_DEFINE_TYPE (MooCmdView, moo_cmd_view, MOO_TYPE_LINE_VIEW)
 
 
 static void
@@ -369,7 +369,7 @@ moo_cmd_view_run_command (MooCmdView *view,
 
     g_return_val_if_fail (!view->priv->running, FALSE);
 
-    moo_pane_view_write_line (MOO_PANE_VIEW (view), cmd, -1,
+    moo_line_view_write_line (MOO_LINE_VIEW (view), cmd, -1,
                               view->priv->message_tag);
 
     argv = g_new (char*, 4);
@@ -390,7 +390,7 @@ moo_cmd_view_run_command (MooCmdView *view,
 
     if (error)
     {
-        moo_pane_view_write_line (MOO_PANE_VIEW (view),
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
                                   error->message, -1,
                                   view->priv->error_tag);
         g_error_free (error);
@@ -461,7 +461,7 @@ moo_cmd_view_cmd_exit (MooCmdView *view,
 
         if (!exit_code)
         {
-            moo_pane_view_write_line (MOO_PANE_VIEW (view),
+            moo_line_view_write_line (MOO_LINE_VIEW (view),
                                       "*** Done ***", -1,
                                       view->priv->message_tag);
         }
@@ -469,7 +469,7 @@ moo_cmd_view_cmd_exit (MooCmdView *view,
         {
             char *msg = g_strdup_printf ("*** Failed with code %d ***",
                                          exit_code);
-            moo_pane_view_write_line (MOO_PANE_VIEW (view),
+            moo_line_view_write_line (MOO_LINE_VIEW (view),
                                       msg, -1,
                                       view->priv->error_tag);
             g_free (msg);
@@ -478,20 +478,20 @@ moo_cmd_view_cmd_exit (MooCmdView *view,
 #ifdef WCOREDUMP
     else if (WCOREDUMP (status))
     {
-        moo_pane_view_write_line (MOO_PANE_VIEW (view),
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
                                   "*** Dumped core ***", -1,
                                   view->priv->error_tag);
     }
 #endif
     else if (WIFSIGNALED (status))
     {
-        moo_pane_view_write_line (MOO_PANE_VIEW (view),
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
                                   "*** Killed ***", -1,
                                   view->priv->error_tag);
     }
     else
     {
-        moo_pane_view_write_line (MOO_PANE_VIEW (view),
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
                                   "*** ??? ***", -1,
                                   view->priv->error_tag);
     }
@@ -565,7 +565,7 @@ static gboolean
 moo_cmd_view_stdout_line (MooCmdView *view,
                           const char *line)
 {
-    moo_pane_view_write_line (MOO_PANE_VIEW (view), line, -1,
+    moo_line_view_write_line (MOO_LINE_VIEW (view), line, -1,
                               view->priv->stdout_tag);
     return FALSE;
 }
@@ -575,7 +575,7 @@ static gboolean
 moo_cmd_view_stderr_line (MooCmdView *view,
                           const char *line)
 {
-    moo_pane_view_write_line (MOO_PANE_VIEW (view), line, -1,
+    moo_line_view_write_line (MOO_LINE_VIEW (view), line, -1,
                               view->priv->stderr_tag);
     return FALSE;
 }

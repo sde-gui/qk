@@ -15,7 +15,7 @@
 #ifndef __MOO_TEXT_ITER_H__
 #define __MOO_TEXT_ITER_H__
 
-#include "mooedit/gtksourceview/gtksourcebuffer.h"
+#include <gtk/gtktextbuffer.h>
 
 G_BEGIN_DECLS
 
@@ -29,7 +29,8 @@ typedef enum _MooBracketMatchType {
 
 
 /* it assumes that iter points to a bracket */
-MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter);
+MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter,
+                                                         int          limit);
 
 /* tries to find bracket near the iter, i.e. like |( or (|,
  *   and chooses right one in the case )|(                  */

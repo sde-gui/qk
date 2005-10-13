@@ -24,15 +24,16 @@
 #endif
 
 
-MOO_PLUGIN_DEFINE_PARAMS(info, TRUE, CPROJECT_PLUGIN_ID,
-                         "CProject", "C Project",
-                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                         MOO_VERSION);
-MOO_PLUGIN_DEFINE(CProjectPlugin, cproject_plugin,
-                  cproject_plugin_init, cproject_plugin_deinit,
-                  cproject_plugin_attach, cproject_plugin_detach,
-                  NULL,
-                  info, G_TYPE_NONE);
+MOO_PLUGIN_DEFINE_INFO (cproject, CPROJECT_PLUGIN_ID,
+                        "CProject", "C Project",
+                        "Yevgen Muntyan <muntyan@tamu.edu>",
+                        MOO_VERSION);
+
+MOO_PLUGIN_DEFINE_FULL (CProject, cproject,
+                        cproject_plugin_init, cproject_plugin_deinit,
+                        cproject_plugin_attach, cproject_plugin_detach,
+                        NULL, NULL, NULL,
+                        G_TYPE_NONE, G_TYPE_NONE);
 
 
 gboolean cproject_init (void);

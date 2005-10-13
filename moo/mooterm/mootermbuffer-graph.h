@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermbuffer-graph.h
+ *   mootermbuffer-graph.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMBUFFER_GRAPH_H
-#define MOOTERM_MOOTERMBUFFER_GRAPH_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_BUFFER_GRAPH_H__
+#define __MOO_TERM_BUFFER_GRAPH_H__
 
 
 #define ACS_STERLING    "\302\243"      /* U+00A3 POUND SIGN */
@@ -142,4 +146,4 @@ static void init_drawing_sets (void)
 }
 
 
-#endif /* MOOTERM_MOOTERMBUFFER_GRAPH_H */
+#endif /* __MOO_TERM_BUFFER_GRAPH_H__ */

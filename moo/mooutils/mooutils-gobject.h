@@ -14,7 +14,7 @@
 #ifndef __MOO_UTILS_GOBJECT_H__
 #define __MOO_UTILS_GOBJECT_H__
 
-#include <gtk/gtktogglebutton.h>
+#include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
 
@@ -52,6 +52,13 @@ int             moo_value_convert_to_enum   (const GValue   *val,
 double          moo_value_convert_to_double (const GValue   *val);
 const GdkColor *moo_value_convert_to_color  (const GValue   *val);
 const char     *moo_value_convert_to_string (const GValue   *val);
+
+gboolean        moo_convert_string_to_bool  (const char     *string,
+                                             gboolean        default_val);
+int             moo_convert_string_to_int   (const char     *string,
+                                             int             default_val);
+const char     *moo_convert_bool_to_string  (gboolean        value);
+const char     *moo_convert_int_to_string   (int             value);
 
 
 /*****************************************************************************/
@@ -171,7 +178,7 @@ gpointer            moo_object_factory_create_object    (MooObjectFactory   *fac
 /* Property watch
  */
 
-void        moo_bind_sensitive      (GtkToggleButton    *btn,
+void        moo_bind_sensitive      (GtkWidget          *toggle_btn,
                                      GtkWidget         **dependent,
                                      int                 num_dependent,
                                      gboolean            invert);

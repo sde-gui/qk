@@ -20,6 +20,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
+#include <gtk/gtk.h>
 
 
 GSList*
@@ -74,6 +75,8 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     MooEditFileInfo *file_info;
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), NULL);
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), NULL);
+
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
 
     if (!start)

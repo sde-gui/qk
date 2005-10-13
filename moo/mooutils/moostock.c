@@ -24,7 +24,7 @@
 #include "mooutils/stock-edit-24.h"
 #endif
 
-#if !GTK_CHECK_VERSION(2,8,0)
+#if !GTK_CHECK_VERSION(2,10,0)
 #include "mooutils/stock-select-all-16.h"
 #include "mooutils/stock-select-all-24.h"
 #endif
@@ -37,8 +37,8 @@ static GtkStockItem stock_items[] = {
     {(char*) MOO_STOCK_SAVE_SELECTED, (char*) "Save _Selected", 0, 0, NULL}
 };
 
-#if !GTK_CHECK_VERSION(2,8,0)
-static GtkStockItem stock_items_2_8[] = {
+#if !GTK_CHECK_VERSION(2,10,0)
+static GtkStockItem stock_items_2_10[] = {
     {(char*) GTK_STOCK_SELECT_ALL, (char*) "Select All", 0, 0, NULL},
 };
 #endif
@@ -83,7 +83,7 @@ static void add_icon    (GtkIconFactory *factory,
     register_stock_icon (factory, stock_id);
 }
 
-#if !GTK_CHECK_VERSION(2,8,0)
+#if !GTK_CHECK_VERSION(2,10,0)
 static void add_icon2   (GtkIconFactory *factory,
                          const gchar    *stock_id,
                          gint            size1,
@@ -95,7 +95,7 @@ static void add_icon2   (GtkIconFactory *factory,
     add_default_image (stock_id, size2, data2);
     register_stock_icon (factory, stock_id);
 }
-#endif /* !GTK_CHECK_VERSION(2,8,0) */
+#endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
 #else /* !GTK_CHECK_VERSION(2,4,0) */
@@ -201,11 +201,11 @@ void moo_create_stock_items (void)
                16, STOCK_EDIT_16);
 #endif
 
-#if !GTK_CHECK_VERSION(2,8,0)
+#if !GTK_CHECK_VERSION(2,10,0)
     add_icon2 (factory, GTK_STOCK_SELECT_ALL,
                24, STOCK_SELECT_ALL_24,
                16, STOCK_SELECT_ALL_16);
-    gtk_stock_add_static (stock_items_2_8, G_N_ELEMENTS (stock_items_2_8));
+    gtk_stock_add_static (stock_items_2_10, G_N_ELEMENTS (stock_items_2_10));
 #endif
 
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));

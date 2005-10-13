@@ -42,11 +42,11 @@
  * 04/30/2005: added egg_regex_eval_replacement and egg_regex_check_replacement
  * 05/31/2005: changed expand_escape: \0 means whole match
  * 07/25/2005: silent gcc
+ * 10/03/2005: removed #include "config.h", removed odd 'break' after 'goto' to
+ *             avoid warning
  *
  * mooutils/eggregex.c
  *****************************************************************************/
-
-#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -897,7 +897,6 @@ expand_escape (const gchar        *replacement,
     case 0:
       error_detail = _("stray final '\\'");
       goto error;
-      break;
     default:
       data->type = REPL_TYPE_STRING;
       data->text = g_new0 (gchar, 8);

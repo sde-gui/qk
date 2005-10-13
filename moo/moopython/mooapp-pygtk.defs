@@ -1,7 +1,4 @@
-;;
-;;  mooapp/mooapp-pygtk.defs
-;;
-
+;; -*- scheme -*-
 ; object definitions ...
 (define-object App
   (in-module "Moo")
@@ -12,22 +9,8 @@
 
 ;; Enumerations and flags ...
 
-(define-flags AppWindowPolicy
-  (in-module "Moo")
-  (c-name "MooAppWindowPolicy")
-  (gtype-id "MOO_TYPE_APP_WINDOW_POLICY")
-  (values
-    '("one-editor" "MOO_APP_ONE_EDITOR")
-    '("many-editors" "MOO_APP_MANY_EDITORS")
-    '("one-terminal" "MOO_APP_ONE_TERMINAL")
-    '("many-terminals" "MOO_APP_MANY_TERMINALS")
-    '("quit-on-close-all-editors" "MOO_APP_QUIT_ON_CLOSE_ALL_EDITORS")
-    '("quit-on-close-all-terminals" "MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS")
-    '("quit-on-close-all-windows" "MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS")
-  )
-)
 
-;; From mooapp.h
+;; From ../mooapp/mooapp.h
 
 (define-function moo_app_get_type
   (c-name "moo_app_get_type")
@@ -44,7 +27,7 @@
   (return-type "GType")
 )
 
-(define-function get_instance
+(define-function moo_app_get_instance
   (c-name "moo_app_get_instance")
   (return-type "MooApp*")
 )
@@ -106,69 +89,31 @@
   (return-type "const-char*")
 )
 
-(define-function python_execute_file
-  (c-name "moo_app_python_execute_file")
-  (return-type "none")
-  (parameters
-    '("GtkWindow*" "parent")
-  )
-)
-
-(define-method python_run_string
-  (of-object "MooApp")
-  (c-name "moo_app_python_run_string")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "string")
-  )
-)
-
-(define-method python_run_file
-  (of-object "MooApp")
-  (c-name "moo_app_python_run_file")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "filename")
-  )
-)
-
-(define-method get_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_get_python_console")
-  (return-type "GtkWidget*")
-)
-
-(define-method show_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_show_python_console")
-  (return-type "none")
-)
-
-(define-method hide_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_hide_python_console")
-  (return-type "none")
-)
-
 (define-method get_editor
   (of-object "MooApp")
   (c-name "moo_app_get_editor")
   (return-type "MooEditor*")
 )
 
-(define-function prefs_dialog
+(define-method get_terminal
+  (of-object "MooApp")
+  (c-name "moo_app_get_terminal")
+  (return-type "MooTermWindow*")
+)
+
+(define-function moo_app_prefs_dialog
   (c-name "moo_app_prefs_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("GtkWidget*" "parent")
   )
 )
 
-(define-function about_dialog
+(define-function moo_app_about_dialog
   (c-name "moo_app_about_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("GtkWidget*" "parent")
   )
 )
 
@@ -185,56 +130,6 @@
   (parameters
     '("MooUIXML*" "xml")
   )
-)
-
-
-
-;; From mooappinput.h
-
-(define-function input_new
-  (c-name "moo_app_input_new")
-  (is-constructor-of "MooAppInput")
-  (return-type "MooAppInput*")
-  (parameters
-    '("MooPython*" "python")
-    '("const-char*" "pipe_basename")
-  )
-)
-
-(define-method ref
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_ref")
-  (return-type "MooAppInput*")
-)
-
-(define-method unref
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_unref")
-  (return-type "none")
-)
-
-(define-method start
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_start")
-  (return-type "gboolean")
-)
-
-(define-method shutdown
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_shutdown")
-  (return-type "none")
-)
-
-(define-method ready
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_ready")
-  (return-type "gboolean")
-)
-
-(define-method get_name
-  (of-object "MooAppInput")
-  (c-name "moo_app_input_get_name")
-  (return-type "const-char*")
 )
 
 

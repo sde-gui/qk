@@ -14,7 +14,8 @@
 #ifndef MOOUTILS_STOCK_H
 #define MOOUTILS_STOCK_H
 
-#include <gtk/gtk.h>
+#include <gtk/gtkstock.h>
+#include <gtk/gtkiconfactory.h>
 
 G_BEGIN_DECLS
 
@@ -22,8 +23,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_APP                   "moo-app"
 #define MOO_STOCK_GAP                   "moo-gap"
 #define MOO_STOCK_TERMINAL              "moo-terminal"
-#define MOO_STOCK_TERMINAL              "moo-terminal"
 #define MOO_STOCK_KEYBOARD              GTK_STOCK_SELECT_FONT
+#define MOO_STOCK_RESTART               GTK_STOCK_REFRESH
 #define MOO_STOCK_CLOSE                 "moo-close"
 #define MOO_STOCK_STICKY                "moo-sticky"
 #define MOO_STOCK_DETACH                "moo-detach"

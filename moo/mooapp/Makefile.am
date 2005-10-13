@@ -12,48 +12,47 @@ AM_CFLAGS =                             \
     $(PYGTK_CFLAGS)                     \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
-    $(CFLAGS)                           \
-    -DG_LOG_DOMAIN=\"Moo\"              \
-    -D__MOO__
+    $(CFLAGS)
 
 noinst_LTLIBRARIES   = libmooapp.la
 
-BUILT_SOURCES =
+BUILT_SOURCES = mooappabout-glade.h
+
 libmooapp_la_SOURCES =      \
+    mooappabout-glade.h     \
     mooappdialogs.c         \
     mooapp-prefs.c          \
     mooapp-private.h        \
     mooapp.c                \
-    mooapp.h
+    mooapp.h                \
+    mooappinput.c           \
+    mooappinput.h           \
+    mooappoutput.c          \
+    mooappoutput.h
 
-if USE_PYTHON
+if MOO_USE_PYTHON
 libmooapp_la_SOURCES += \
     mooapp-python.h     \
-    mooappinput.c       \
-    mooappinput.h       \
     moopythonconsole.c  \
     moopythonconsole.h  \
     moopython.c         \
     moopython.h
-endif USE_PYTHON
+endif MOO_USE_PYTHON
 
 
 EXTRA_DIST =            \
     gpl                 \
-    mooappinput.c       \
-    mooappinput.h       \
     moopython.c         \
     moopython.h         \
     moopythonconsole.c  \
     moopythonconsole.h
 
+mooappincludedir = $(includedir)/moo-1.0/mooapp
+mooappinclude_HEADERS = mooapp.h
 
-if !GTK_2_6
-libmooapp_la_SOURCES += mooappabout-glade.h
-BUILT_SOURCES += mooappabout-glade.h
+
 GLADE = $(srcdir)/glade
 XML2SH = $(srcdir)/../mooutils/xml2h.sh
 SUPPORT = $(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils/glade/support.sh
 mooappabout-glade.h: $(GLADE)/mooappabout.glade
 	sh $(XML2SH) MOO_APP_ABOUT_GLADE_UI $(GLADE)/mooappabout.glade > mooappabout-glade.h
-endif

@@ -3,6 +3,9 @@ EXTRA_DIST = makewin mingw-configure
 DIST_SUBDIRS = moo tests
 SUBDIRS = moo
 
-if ! CYGWIN_BUILD
+if !MOO_OS_CYGWIN
 SUBDIRS += tests
-endif ! CYGWIN_BUILD
+endif
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = moo.pc

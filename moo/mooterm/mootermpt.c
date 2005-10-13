@@ -73,7 +73,8 @@ static void     moo_term_pt_finalize        (GObject            *object)
 }
 
 
-MooTermPt      *moo_term_pt_new             (MooTerm    *term)
+MooTermPt*
+_moo_term_pt_new (MooTerm    *term)
 {
     MooTermPt *pt;
 #ifdef __WIN32__
@@ -86,43 +87,48 @@ MooTermPt      *moo_term_pt_new             (MooTerm    *term)
 }
 
 
-void            moo_term_pt_set_size        (MooTermPt      *pt,
-                                             guint           width,
-                                             guint           height)
+void
+_moo_term_pt_set_size (MooTermPt      *pt,
+                       guint           width,
+                       guint           height)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
     MOO_TERM_PT_GET_CLASS(pt)->set_size (pt, width, height);
 }
 
 
-gboolean        moo_term_pt_fork_command    (MooTermPt      *pt,
-                                             const MooTermCommand *cmd,
-                                             const char     *working_dir,
-                                             char          **envp,
-                                             GError        **error)
+gboolean
+_moo_term_pt_fork_command (MooTermPt      *pt,
+                           const MooTermCommand *cmd,
+                           const char     *working_dir,
+                           char          **envp,
+                           GError        **error)
 {
     g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
     return MOO_TERM_PT_GET_CLASS(pt)->fork_command (pt, cmd, working_dir, envp, error);
 }
 
 
-void            moo_term_pt_kill_child      (MooTermPt      *pt)
+void
+_moo_term_pt_kill_child (MooTermPt      *pt)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
     MOO_TERM_PT_GET_CLASS(pt)->kill_child (pt);
 }
 
 
-void            moo_term_pt_write           (MooTermPt      *pt,
-                                             const char     *data,
-                                             gssize          len)
+void
+_moo_term_pt_write (MooTermPt      *pt,
+                    const char     *data,
+                    gssize          len)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
     MOO_TERM_PT_GET_CLASS(pt)->write (pt, data, len);
 }
 
 
-gboolean        moo_term_pt_child_alive     (MooTermPt      *pt)
+gboolean
+_moo_term_pt_child_alive (MooTermPt      *pt)
 {
     return pt->priv->child_alive;
 }

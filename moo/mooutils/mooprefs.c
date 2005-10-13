@@ -11,10 +11,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "mooutils/mooprefs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/eggregex.h"
@@ -201,6 +197,10 @@ MooMarkupDoc*
 moo_prefs_get_markup (void)
 {
     MooPrefs *prefs = instance ();
+
+    if (!prefs->priv->xml)
+        prefs->priv->xml = moo_markup_doc_new ("Prefs");
+
     return prefs->priv->xml;
 }
 

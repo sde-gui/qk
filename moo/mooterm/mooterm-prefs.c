@@ -31,15 +31,15 @@
 
 #define MOO_TERM_PREFS_PREFIX "Terminal"
 
-#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (MOO_TERM_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (MOO_TERM_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (MOO_TERM_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (MOO_TERM_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_BOOL(s__,v__)   moo_prefs_new_key_bool (MOO_TERM_PREFS_PREFIX "/" s__, v__)
+#define NEW_KEY_INT(s__,v__)    moo_prefs_new_key_int (MOO_TERM_PREFS_PREFIX "/" s__, v__)
+#define NEW_KEY_STRING(s__,v__) moo_prefs_new_key_string (MOO_TERM_PREFS_PREFIX "/" s__, v__)
+#define NEW_KEY_COLOR(s__,v__)  moo_prefs_new_key_color (MOO_TERM_PREFS_PREFIX "/" s__, v__)
 
-#define GET_STRING(s)   moo_prefs_get_string (MOO_TERM_PREFS_PREFIX "/" s)
-#define GET_INT(s)      moo_prefs_get_int (MOO_TERM_PREFS_PREFIX "/" s)
-#define GET_BOOL(s)     moo_prefs_get_bool (MOO_TERM_PREFS_PREFIX "/" s)
-#define GET_COLOR(s)    moo_prefs_get_color (MOO_TERM_PREFS_PREFIX "/" s)
+#define GET_STRING(s__)   moo_prefs_get_string (MOO_TERM_PREFS_PREFIX "/" s__)
+#define GET_INT(s__)      moo_prefs_get_int (MOO_TERM_PREFS_PREFIX "/" s__)
+#define GET_BOOL(s__)     moo_prefs_get_bool (MOO_TERM_PREFS_PREFIX "/" s__)
+#define GET_COLOR(s__)    moo_prefs_get_color (MOO_TERM_PREFS_PREFIX "/" s__)
 
 
 #ifdef __WIN32__
@@ -75,7 +75,8 @@ static void set_defaults (void)
 }
 
 
-void moo_term_apply_settings (MooTerm *term)
+void
+_moo_term_apply_settings (MooTerm *term)
 {
     set_defaults ();
 

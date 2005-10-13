@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooaccelbutton.h
+ *   mooaccelbutton.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOACCELBUTTON_H
-#define MOOUTILS_MOOACCELBUTTON_H
+#ifndef __MOO_ACCEL_BUTTON_H__
+#define __MOO_ACCEL_BUTTON_H__
 
 #include <gtk/gtkbutton.h>
 
@@ -59,4 +59,4 @@ gboolean     moo_accel_button_set_accel         (MooAccelButton     *button,
 G_END_DECLS
 
 
-#endif /* MOOUTILS_MOOACCELBUTTON_H */
+#endif /* __MOO_ACCEL_BUTTON_H__ */

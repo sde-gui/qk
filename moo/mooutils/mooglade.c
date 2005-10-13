@@ -353,7 +353,7 @@ connect_special_signal (MooGladeXML    *xml,
 {
     if (!strcmp (signal->name, "moo-sensitive"))
     {
-        GtkToggleButton *btn;
+        GtkWidget *btn;
         gboolean invert = FALSE;
 
         btn = moo_glade_xml_get_widget (xml, signal->handler);
@@ -1184,7 +1184,7 @@ widget_props_new (MooMarkupNode  *node,
     {
         if (NODE_IS_PROPERTY (elm))
         {
-            GParameter param = {NULL};
+            GParameter param = {NULL, {0, {{0}, {0}}}};
             const char *name = moo_markup_get_prop (elm, "name");
             const char *value = moo_markup_get_content (elm);
             gboolean special = TRUE;
@@ -1339,7 +1339,7 @@ static PackingProps *packing_props_new          (MooMarkupNode  *node,
     {
         if (NODE_IS_PROPERTY (elm))
         {
-            GParameter param = {NULL};
+            GParameter param = {NULL, {0, {{0}, {0}}}};
             const char *name = moo_markup_get_prop (elm, "name");
             const char *value = moo_markup_get_content (elm);
             gboolean special = FALSE;
@@ -2309,7 +2309,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkPaned", GTK_TYPE_PANED);
     REGISTER_TYPE ("GtkPathPriorityType", GTK_TYPE_PATH_PRIORITY_TYPE);
     REGISTER_TYPE ("GtkPathType", GTK_TYPE_PATH_TYPE);
-    REGISTER_TYPE ("GtkPlug", GTK_TYPE_PLUG);
     REGISTER_TYPE ("GtkPolicyType", GTK_TYPE_POLICY_TYPE);
     REGISTER_TYPE ("GtkPositionType", GTK_TYPE_POSITION_TYPE);
     REGISTER_TYPE ("GtkPrivateFlags", GTK_TYPE_PRIVATE_FLAGS);
@@ -2341,7 +2340,6 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkSignalRunType", GTK_TYPE_SIGNAL_RUN_TYPE);
     REGISTER_TYPE ("GtkSizeGroup", GTK_TYPE_SIZE_GROUP);
     REGISTER_TYPE ("GtkSizeGroupMode", GTK_TYPE_SIZE_GROUP_MODE);
-    REGISTER_TYPE ("GtkSocket", GTK_TYPE_SOCKET);
     REGISTER_TYPE ("GtkSortType", GTK_TYPE_SORT_TYPE);
     REGISTER_TYPE ("GtkSpinButton", GTK_TYPE_SPIN_BUTTON);
     REGISTER_TYPE ("GtkSpinButtonUpdatePolicy", GTK_TYPE_SPIN_BUTTON_UPDATE_POLICY);
@@ -2405,6 +2403,11 @@ get_type_by_name (const char *name)
     REGISTER_TYPE ("GtkWindowPosition", GTK_TYPE_WINDOW_POSITION);
     REGISTER_TYPE ("GtkWindowType", GTK_TYPE_WINDOW_TYPE);
     REGISTER_TYPE ("GtkWrapMode", GTK_TYPE_WRAP_MODE);
+
+#ifndef __WIN32__
+    REGISTER_TYPE ("GtkPlug", GTK_TYPE_PLUG);
+    REGISTER_TYPE ("GtkSocket", GTK_TYPE_SOCKET);
+#endif
 
     return 0;
 }

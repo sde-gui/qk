@@ -15,16 +15,16 @@
 #ifndef __MOO_EDIT_H__
 #define __MOO_EDIT_H__
 
-#include "mooedit/mootextview.h"
-#include "mooutils/mooprefs.h"
-#include "mooedit/mooeditlang.h"
+#include <mooedit/mootextview.h>
+#include <mooedit/moolang.h>
+#include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
 
 
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES   (moo_edit_on_external_changes_get_type ())
-#define MOO_TYPE_EDIT_DOC_STATUS            (moo_edit_doc_status_get_type ())
+#define MOO_TYPE_EDIT_STATUS                (moo_edit_status_get_type ())
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
 #define MOO_EDIT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
@@ -86,7 +86,7 @@ struct _MooEditClass
 
 
 GType            moo_edit_get_type                       (void) G_GNUC_CONST;
-GType            moo_edit_doc_status_get_type            (void) G_GNUC_CONST;
+GType            moo_edit_status_get_type                (void) G_GNUC_CONST;
 GType            moo_edit_on_external_changes_get_type   (void) G_GNUC_CONST;
 GType            moo_edit_file_info_get_type             (void) G_GNUC_CONST;
 
@@ -119,9 +119,17 @@ void             moo_edit_file_info_free        (MooEditFileInfo       *info);
 
 void             moo_edit_set_highlight         (MooEdit        *edit,
                                                  gboolean        highlight);
-MooEditLang     *moo_edit_get_lang              (MooEdit        *edit);
+gboolean         moo_edit_get_highlight         (MooEdit        *edit);
+
 void             moo_edit_set_lang              (MooEdit        *edit,
-                                                 MooEditLang    *lang);
+                                                 MooLang        *lang);
+MooLang         *moo_edit_get_lang              (MooEdit        *edit);
+
+void             moo_edit_set_var               (MooEdit        *edit,
+                                                 const char     *name,
+                                                 const char     *value);
+const char      *moo_edit_get_var               (MooEdit        *edit,
+                                                 const char     *name);
 
 
 G_END_DECLS

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="Diff" version="1.01" section="Others" extensions="*.diff;*patch" mimetypes="text/x-diff">
+  <syntax>
+    <context style="Normal Text" end-of-line-context="#stay" name="Normal">
+      <Regex style="Keyword" context="Keyword" pattern="^(\+\+\+|\-\-\-|\*\*\*|diff|\d)" />
+      <Regex style="Added line" context="Added" pattern="^(\+|&gt;|!)" />
+      <Regex style="Removed line" context="Removed" pattern="^(\-|&lt;)" />
+      <Regex style="Data Type" context="Data" pattern="^\@\@" />
+    </context>
+
+    <context style="Keyword" end-of-line-context="#pop" name="Keyword"/>
+    <context style="Removed line" end-of-line-context="#pop" name="Removed"/>
+    <context style="Added line" end-of-line-context="#pop" name="Added"/>
+    <context style="Data Type" end-of-line-context="#pop" name="Data"/>
+  </syntax>
+
+  <styles>
+    <style name="Normal Text" default-style="Normal"/>
+    <style name="Keyword"  default-style="Keyword"/>
+    <style name="Data Type"  default-style="DataType"/>
+    <style name="Removed line"  default-style="Others"/>
+    <style name="Added line"  default-style="String"/>
+    <style name="Comment"  default-style="Comment"/>
+  </styles>
+</language>

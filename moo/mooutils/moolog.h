@@ -14,7 +14,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <gtk/gtkwidget.h>
+#include <glib/gmessages.h>
 
 G_BEGIN_DECLS
 

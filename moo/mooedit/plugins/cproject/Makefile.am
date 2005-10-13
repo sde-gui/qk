@@ -4,15 +4,11 @@
 
 DEFAULT_INCLUDES =
 AM_CFLAGS =                             \
-    -DXDG_PREFIX=_moo_edit_xdg          \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
     $(DEBUG_CFLAGS)                     \
-    $(CFLAGS)                           \
-    -DG_LOG_DOMAIN=\"Moo\"              \
-    -D__MOO__                           \
-    -DMOO_MARSHALS_H=\"mooutils/moomarshals.h\"
+    $(CFLAGS)
 
 pluginsdir = ${MOO_PLUGINS_DIR}
 plugins_LTLIBRARIES = cproject.la
@@ -24,8 +20,8 @@ cproject_la_SOURCES =   \
     cproject-project.c  \
     cproject-project.h
 
-if MINGW_BUILD
+if MOO_OS_MINGW
 mingw_flags = -no-undefined
-endif MINGW_BUILD
+endif MOO_OS_MINGW
 
 cproject_la_LDFLAGS = -module -avoid-version -export-symbols-regex cproject_init $(mingw_flags)

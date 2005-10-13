@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-keymap.h
+ *   mooterm-keymap.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERM_KEYMAP_H
-#define MOOTERM_MOOTERM_KEYMAP_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_KEYMAP_H__
+#define __MOO_TERM_KEYMAP_H__
 
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -483,7 +487,7 @@ static void get_backspace_key   (MooTerm  *term,
             /* Use the tty's erase character. */
         case MOO_TERM_ERASE_AUTO:
         default:
-            c = moo_term_pt_get_erase_char (term->priv->pt);
+            c = _moo_term_pt_get_erase_char (term->priv->pt);
             if (c)
             {
                 *normal = g_strdup_printf("%c", c);
@@ -733,4 +737,4 @@ static gboolean key_is_modifier (guint  keyval)
 }
 
 
-#endif /* MOOTERM_MOOTERM_KEYMAP_H */
+#endif /* __MOO_TERM_KEYMAP_H__ */

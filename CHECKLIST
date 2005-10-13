@@ -1,0 +1,2 @@
+mooedit/mootextbtree.c: CHECK_INTEGRITY
+mooutils/moofileview/moofoldermodel-private.h: DEFINE_CHECK_FILE_LIST_INTEGRITY

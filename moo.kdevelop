@@ -24,7 +24,7 @@
     </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
+    <description/>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
@@ -46,7 +46,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module --without-python --without-mooterm --without-mooapp</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --disable-moo-module </configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -54,13 +54,13 @@
         <cflags>-O0 -g3 -pg</cflags>
         <cxxflags>-O0 -g3 -pg</cxxflags>
         <envvars/>
-        <topsourcedir></topsourcedir>
-        <cppflags></cppflags>
-        <ldflags></ldflags>
-        <ccompilerbinary></ccompilerbinary>
-        <cxxcompilerbinary></cxxcompilerbinary>
-        <f77compilerbinary></f77compilerbinary>
-        <f77flags></f77flags>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
+        <f77compilerbinary/>
+        <f77flags/>
       </debug>
       <gtk-cvs>
         <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module --without-python --without-mooterm --without-mooapp</configargs>
@@ -80,7 +80,7 @@
         <f77flags/>
       </gtk-cvs>
       <optimized>
-        <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooapp --without-mooterm --without-python</configargs>
+        <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooterm --without-python</configargs>
         <builddir>build/optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -97,12 +97,12 @@
         <f77flags/>
       </optimized>
       <gcc-4.0>
-        <configargs>--enable-all-gcc-warnings=fatal</configargs>
+        <configargs>--enable-all-gcc-warnings=fatal  --enable-debug=full </configargs>
         <builddir>build/gcc-4.0</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cflags>-O3 -g0</cflags>
+        <cflags>-O0 -g3</cflags>
         <cxxflags>-O3 -g0</cxxflags>
         <envvars/>
         <topsourcedir/>
@@ -190,7 +190,7 @@
     <make>
       <envvars/>
       <abortonerror>true</abortonerror>
-      <numberofjobs>1</numberofjobs>
+      <numberofjobs>3</numberofjobs>
       <dontact>false</dontact>
       <makebin/>
       <prio>0</prio>
@@ -200,10 +200,10 @@
     <general>
       <dbgshell>libtool</dbgshell>
       <programargs>--g-fatal-warnings</programargs>
-      <gdbpath></gdbpath>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <gdbpath/>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>
@@ -304,7 +304,7 @@
     </codecompletion>
     <references/>
     <creategettersetter>
-      <prefixGet></prefixGet>
+      <prefixGet/>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>

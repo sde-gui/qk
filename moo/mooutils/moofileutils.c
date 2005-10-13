@@ -15,6 +15,8 @@
 # include "config.h"
 #endif
 
+/* XXX remove all this junk */
+
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
@@ -252,7 +254,6 @@ int      moo_gtimeval_compare   (GTimeVal   *val1,
     else
         return 0;
 }
-#endif
 
 
 GTime       moo_get_file_mtime      (const char *filename)
@@ -287,3 +288,4 @@ GTime       moo_get_file_mtime      (const char *filename)
 
     return buf.st_mtime;
 }
+#endif

@@ -119,8 +119,6 @@
 		      <child>
 			<widget class="GtkEntry" id="text_to_find">
 			  <property name="visible">True</property>
-			  <property name="can_focus">True</property>
-			  <property name="has_focus">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>
 			  <property name="max_length">0</property>
@@ -262,7 +260,6 @@
 		      <child>
 			<widget class="GtkEntry" id="replacement_text">
 			  <property name="visible">True</property>
-			  <property name="can_focus">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>
 			  <property name="max_length">0</property>

@@ -1,0 +1,54 @@
+<!-- boolean
+  Boolean attributes are case-insensitive and may be the following:
+  "TRUE", "YES", "1" mean true,
+  "FALSE", "NO", "0" mean false.
+-->
+<!ENTITY % boolean "true|false|TRUE|FALSE|0|1">
+
+<!ENTITY % common_style_attrs
+" foreground    CDATA       #IMPLIED
+  background    CDATA       #IMPLIED
+  italic        (%boolean;) #IMPLIED
+  bold          (%boolean;) #IMPLIED
+  underline     (%boolean;) #IMPLIED
+  strikethrough (%boolean;) #IMPLIED"
+>
+
+<!ELEMENT scheme (bracket-match?, bracket-mismatch?, default-style*, language*)>
+<!ATTLIST scheme
+  name                  CDATA   #REQUIRED
+  use-scheme            CDATA   #IMPLIED
+  foreground            CDATA   #IMPLIED
+  background            CDATA   #IMPLIED
+  selected-foreground   CDATA   #IMPLIED
+  selected-background   CDATA   #IMPLIED
+  current-line          CDATA   #IMPLIED
+>
+
+<!ELEMENT default-style EMPTY>
+<!ATTLIST default-style
+  name CDATA #REQUIRED
+  %common_style_attrs;
+>
+
+<!ELEMENT bracket-match EMPTY>
+<!ATTLIST bracket-match
+  %common_style_attrs;
+>
+
+<!ELEMENT bracket-mismatch EMPTY>
+<!ATTLIST bracket-mismatch
+  %common_style_attrs;
+>
+
+<!ELEMENT language (style*)>
+<!ATTLIST language
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT style EMPTY>
+<!ATTLIST style
+  name          CDATA #REQUIRED
+  default-style CDATA #IMPLIED
+  %common_style_attrs;
+>

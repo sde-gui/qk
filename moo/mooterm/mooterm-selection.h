@@ -1,5 +1,5 @@
 /*
- *   mooterm/mooterm-selection.h
+ *   mooterm-selection.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERM_SELECTION_H
-#define MOOTERM_MOOTERM_SELECTION_H
+#ifndef MOOTERM_COMPILATION
+#error "This file may not be included"
+#endif
+
+#ifndef __MOO_TERM_SELECTION_H__
+#define __MOO_TERM_SELECTION_H__
 
 #include <mooterm/mooterm.h>
 
@@ -26,19 +30,19 @@ enum {
 };
 
 
-gboolean    moo_term_selection_empty        (MooTerm    *term);
+gboolean    _moo_term_selection_empty       (MooTerm    *term);
 
-gpointer    moo_term_selection_new          (MooTerm    *term);
+gpointer    _moo_term_selection_new         (MooTerm    *term);
 
 
-void        moo_term_selection_invalidate   (MooTerm    *term);
-void        moo_term_selection_clear        (MooTerm    *term);
-int         moo_term_row_selected           (MooTerm    *term,
+void        _moo_term_selection_invalidate  (MooTerm    *term);
+void        _moo_term_selection_clear       (MooTerm    *term);
+int         _moo_term_row_selected          (MooTerm    *term,
                                              guint       row);
-gboolean    moo_term_cell_selected          (MooTerm    *term,
+gboolean    _moo_term_cell_selected         (MooTerm    *term,
                                              guint       row,
                                              guint       col);
-gboolean    moo_term_get_selection_bounds   (MooTerm    *term,
+gboolean    _moo_term_get_selected_cells    (MooTerm    *term,
                                              guint      *left_row,
                                              guint      *left_col,
                                              guint      *right_row,
@@ -47,4 +51,4 @@ gboolean    moo_term_get_selection_bounds   (MooTerm    *term,
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERM_SELECTION_H */
+#endif /* __MOO_TERM_SELECTION_H__ */

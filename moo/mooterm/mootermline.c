@@ -15,17 +15,18 @@
 #include "mooterm/mootermline.h"
 #include <string.h>
 
-#define CELLS(ar)               ((MooTermCellArray*) (ar))
-#define CELLS_ARRAY(cells)      ((GArray*) (cells))
+#define CELLS(ar__)               ((MooTermCellArray*) (ar__))
+#define CELLS_ARRAY(cells__)      ((GArray*) (cells__))
 
 
 /* TODO: midnight commander wants erased chars to have current attributes
            but VT510 manual says: "EL clears all character attributes from erased
            character positions. EL works inside or outside the scrolling margins." */
-void moo_term_line_erase_range  (MooTermLine     *line,
-                                 guint            pos,
-                                 guint            len,
-                                 MooTermTextAttr *attr)
+void
+_moo_term_line_erase_range (MooTermLine     *line,
+                            guint            pos,
+                            guint            len,
+                            MooTermTextAttr *attr)
 {
     guint i;
 
@@ -44,20 +45,20 @@ void moo_term_line_erase_range  (MooTermLine     *line,
 }
 
 
-MooTermLine *moo_term_line_new (guint len)
+MooTermLine*
+_moo_term_line_new (guint len)
 {
     MooTermLine *line = g_new (MooTermLine, 1);
 
     line->cells = CELLS (g_array_sized_new (FALSE, FALSE,
                                             sizeof (MooTermCell),
                                             len));
-    line->wrapped = FALSE;
-
     return line;
 }
 
 
-void moo_term_line_free (MooTermLine *line)
+void
+_moo_term_line_free (MooTermLine *line)
 {
     if (line)
     {
@@ -67,31 +68,35 @@ void moo_term_line_free (MooTermLine *line)
 }
 
 
-guint moo_term_line_len (MooTermLine *line)
+guint
+_moo_term_line_len (MooTermLine *line)
 {
     return line->cells->len;
 }
 
 
-void moo_term_line_set_len (MooTermLine *line, guint len)
+void
+_moo_term_line_set_len (MooTermLine *line, guint len)
 {
     if (line->cells->len > len)
         g_array_set_size (CELLS_ARRAY (line->cells), len);
 }
 
 
-void moo_term_line_erase (MooTermLine *line)
+void
+_moo_term_line_erase (MooTermLine *line)
 {
-    moo_term_line_set_len (line, 0);
+    _moo_term_line_set_len (line, 0);
 }
 
 
 #if GLIB_CHECK_VERSION(2,4,0)
 #define array_remove_range(ar,pos,len) g_array_remove_range (CELLS_ARRAY (ar), pos, len)
 #else
-static void array_remove_range (MooTermCellArray *array,
-                                guint             index,
-                                guint             length)
+static void
+array_remove_range (MooTermCellArray *array,
+                    guint             index,
+                    guint             length)
 {
     g_return_if_fail (array);
     g_return_if_fail (index < array->len);
@@ -107,21 +112,23 @@ static void array_remove_range (MooTermCellArray *array,
 #endif
 
 
-void moo_term_line_delete_range (MooTermLine   *line,
-                                 guint          pos,
-                                 guint          len)
+void
+_moo_term_line_delete_range (MooTermLine   *line,
+                             guint          pos,
+                             guint          len)
 {
     if (pos >= line->cells->len)
         return;
     else if (pos + len >= line->cells->len)
-        return moo_term_line_set_len (line, pos);
+        return _moo_term_line_set_len (line, pos);
     else
         array_remove_range (line->cells, pos, len);
 }
 
 
-gunichar moo_term_line_get_unichar  (MooTermLine   *line,
-                                     guint          col)
+gunichar
+_moo_term_line_get_unichar (MooTermLine   *line,
+                            guint          col)
 {
     if (col >= line->cells->len)
         return EMPTY_CHAR;
@@ -130,32 +137,33 @@ gunichar moo_term_line_get_unichar  (MooTermLine   *line,
 }
 
 
-void moo_term_line_set_unichar  (MooTermLine   *line,
-                                 guint          pos,
-                                 gunichar       c,
-                                 guint          num,
-                                 MooTermTextAttr *attr,
-                                 guint          width)
+void
+_moo_term_line_set_unichar (MooTermLine   *line,
+                            guint          pos,
+                            gunichar       c,
+                            guint          num,
+                            MooTermTextAttr *attr,
+                            guint          width)
 {
     guint i;
 
     if (pos >= width)
-        return moo_term_line_set_len (line, width);
+        return _moo_term_line_set_len (line, width);
 
     if (pos + num >= width)
         num = width - pos;
 
     if (!attr || !attr->mask)
-        attr = &MOO_TERM_ZERO_ATTR;
+        attr = &_MOO_TERM_ZERO_ATTR;
 
     if (!c)
         c = EMPTY_CHAR;
 
-    moo_term_line_set_len (line, width);
+    _moo_term_line_set_len (line, width);
 
     if (pos >= line->cells->len)
     {
-        MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+        MooTermCell cell = {EMPTY_CHAR, _MOO_TERM_ZERO_ATTR};
         guint len = line->cells->len;
 
         for (i = 0; i < pos - len; ++i)
@@ -187,10 +195,11 @@ void moo_term_line_set_unichar  (MooTermLine   *line,
 }
 
 
-guint moo_term_line_get_chars   (MooTermLine    *line,
-                                 char           *buf,
-                                 guint           first,
-                                 int             len)
+guint
+_moo_term_line_get_chars (MooTermLine    *line,
+                          char           *buf,
+                          guint           first,
+                          int             len)
 {
     guint i;
     guint res = 0;
@@ -203,7 +212,7 @@ guint moo_term_line_get_chars   (MooTermLine    *line,
 
     for (i = first; i < first + len; ++i)
     {
-        gunichar c = moo_term_line_get_unichar (line, i);
+        gunichar c = _moo_term_line_get_unichar (line, i);
         guint l = g_unichar_to_utf8 (c, buf);
         buf += l;
         res += l;
@@ -213,29 +222,30 @@ guint moo_term_line_get_chars   (MooTermLine    *line,
 }
 
 
-void moo_term_line_insert_unichar   (MooTermLine   *line,
-                                     guint          pos,
-                                     gunichar       c,
-                                     guint          num,
-                                     MooTermTextAttr *attr,
-                                     guint          width)
+void
+_moo_term_line_insert_unichar (MooTermLine   *line,
+                               guint          pos,
+                               gunichar       c,
+                               guint          num,
+                               MooTermTextAttr *attr,
+                               guint          width)
 {
     guint i;
 
     if (pos >= width)
-        return moo_term_line_set_len (line, width);
+        return _moo_term_line_set_len (line, width);
 
     if (pos + num >= width)
-        return moo_term_line_set_unichar (line, pos, c, num,
-                                          attr, width);
+        return _moo_term_line_set_unichar (line, pos, c, num,
+                                           attr, width);
 
     if (!attr || !attr->mask)
-        attr = &MOO_TERM_ZERO_ATTR;
+        attr = &_MOO_TERM_ZERO_ATTR;
 
     if (!c)
         c = EMPTY_CHAR;
 
-    moo_term_line_set_len (line, width);
+    _moo_term_line_set_len (line, width);
 
     if (pos > line->cells->len)
     {
@@ -243,7 +253,7 @@ void moo_term_line_insert_unichar   (MooTermLine   *line,
 
         for (i = len; i < pos; ++i)
         {
-            MooTermCell cell = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+            MooTermCell cell = {EMPTY_CHAR, _MOO_TERM_ZERO_ATTR};
             g_array_append_val (CELLS_ARRAY (line->cells), cell);
         }
     }
@@ -256,8 +266,9 @@ void moo_term_line_insert_unichar   (MooTermLine   *line,
 }
 
 
-MooTermTextAttr *moo_term_line_attr         (MooTermLine    *line,
-                                             guint           index)
+MooTermTextAttr*
+_moo_term_line_attr (MooTermLine    *line,
+                     guint           index)
 {
     g_assert (index < line->cells->len);
     return &line->cells->data[index].attr;

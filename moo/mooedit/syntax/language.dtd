@@ -1,0 +1,152 @@
+<!-- boolean
+  Boolean attributes are case-insensitive and may be the following:
+  "TRUE", "YES", "1" mean true,
+  "FALSE", "NO", "0" mean false.
+-->
+<!ENTITY % boolean "true|false|TRUE|FALSE|0|1">
+
+<!-- rule_type -->
+<!ENTITY % rule_type "String|Regex|Char|TwoChars|Range|Keyword">
+
+<!ELEMENT language (syntax, styles?, general?)>
+<!ATTLIST language
+  name          CDATA       #REQUIRED
+  hidden        (%boolean;) #IMPLIED
+  section       CDATA       #IMPLIED
+  extensions    CDATA       #IMPLIED
+  mimetypes     CDATA       #IMPLIED
+  version       CDATA       #IMPLIED
+  author        CDATA       #IMPLIED
+  license       CDATA       #IMPLIED
+>
+
+<!-- Syntax -->
+<!ELEMENT syntax (keyword-list*, context+, keyword-list*)>
+<!ATTLIST syntax>
+
+
+<!-- Context -->
+<!ELEMENT context (%rule_type;|IncludeRules)*>
+<!ATTLIST context
+  name                  CDATA       #REQUIRED
+  style                 CDATA       #IMPLIED
+  end-of-line-context   CDATA       #IMPLIED
+>
+
+<!-- Keywords list -->
+<!ELEMENT keyword-list (keyword+)>
+<!ATTLIST keyword-list
+  name              CDATA       #REQUIRED
+>
+
+<!-- keyword -->
+<!ELEMENT keyword (#PCDATA)>
+
+
+<!-- Common rule attributes -->
+<!ENTITY % common_rule_attrs
+" style                 CDATA       #IMPLIED
+  context               CDATA       #IMPLIED
+  include-into-next     (%boolean;) #IMPLIED
+  caseless              (%boolean;) #IMPLIED
+  bol-only              (%boolean;) #IMPLIED
+  first-non-blank-only  (%boolean;) #IMPLIED
+  first-line-only       (%boolean;) #IMPLIED
+  endRegion             CDATA       #IMPLIED
+  beginRegion           CDATA       #IMPLIED"
+>
+
+
+<!-- Single character -->
+<!ELEMENT Char (%rule_type;)*>
+<!ATTLIST Char
+  %common_rule_attrs;
+  char      CDATA   #REQUIRED
+>
+
+<!-- Two characters -->
+<!ELEMENT TwoChars (%rule_type;)*>
+<!ATTLIST TwoChars
+  %common_rule_attrs;
+  char1     CDATA   #REQUIRED
+  char2     CDATA   #REQUIRED
+>
+
+<!-- Range of characters -->
+<!ELEMENT Range (%rule_type;)*>
+<!ATTLIST Range
+  %common_rule_attrs;
+  chars     CDATA   #REQUIRED
+>
+
+<!-- String -->
+<!ELEMENT String (%rule_type;)*>
+<!ATTLIST String
+  %common_rule_attrs;
+  string    CDATA   #REQUIRED
+>
+
+<!-- Regular expression -->
+<!ELEMENT Regex (%rule_type;)*>
+<!ATTLIST Regex
+  %common_rule_attrs;
+  pattern   CDATA       #REQUIRED
+  non-empty (%boolean;) #IMPLIED
+>
+
+<!-- Keyword -->
+<!ELEMENT Keyword (%rule_type;)*>
+<!ATTLIST Keyword
+  %common_rule_attrs;
+  keyword   CDATA   #REQUIRED
+>
+
+<!-- IncludeRules -->
+<!ELEMENT IncludeRules EMPTY>
+<!ATTLIST IncludeRules
+  from      CDATA   #REQUIRED
+>
+
+
+<!-- General -->
+<!ELEMENT general (brackets?,comments?)>
+<!ATTLIST general>
+
+<!-- brackets -->
+<!ELEMENT brackets (#PCDATA)>
+
+<!-- comments -->
+<!ELEMENT comments (single-line?,multi-line?)>
+<!ATTLIST comments>
+
+<!-- single-line comment -->
+<!ELEMENT single-line (#PCDATA)>
+<!ATTLIST single-line
+  start      CDATA   #REQUIRED
+>
+
+<!-- multi-line comment -->
+<!ELEMENT multi-line (#PCDATA)>
+<!ATTLIST multi-line
+  start      CDATA   #REQUIRED
+  end        CDATA   #REQUIRED
+>
+
+
+<!-- Styles list -->
+<!ELEMENT styles (style+)>
+<!ATTLIST styles
+>
+
+<!-- Style -->
+<!ELEMENT style EMPTY>
+<!ATTLIST style
+  name          CDATA       #REQUIRED
+  default-style CDATA       #IMPLIED
+  foreground    CDATA       #IMPLIED
+  background    CDATA       #IMPLIED
+  italic        (%boolean;) #IMPLIED
+  bold          (%boolean;) #IMPLIED
+  underline     (%boolean;) #IMPLIED
+  strikethrough (%boolean;) #IMPLIED
+>

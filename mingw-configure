@@ -52,8 +52,8 @@ export STRINGS="/usr/bin/i586-mingw32msvc-strings"
 export STRIP="/usr/bin/i586-mingw32msvc-strip"
 export WINDRES="/usr/bin/i586-mingw32msvc-windres"
 
-export CFLAGS="-O3 -g0 -I$GTK_PREFIX/include"
-export CXXFLAGS="-O3 -g0 -I$GTK_PREFIX/include"
+export CFLAGS="-O0 -g3 -I$GTK_PREFIX/include"
+export CXXFLAGS="-O0 -g3 -I$GTK_PREFIX/include"
 export LDFLAGS="$LDFLAGS -L$GTK_PREFIX/lib"
 
 export PATH=$MINGW_BIN:/usr/i586-mingw32msvc/bin:$PATH

@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermparser.h
+ *   mootermparser.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMPARSER_H
-#define MOOTERM_MOOTERMPARSER_H
-
 #ifndef MOOTERM_COMPILATION
-#error "Don't include this file"
+#error "This file may not be included"
 #endif
+
+#ifndef __MOO_TERM_PARSER_H__
+#define __MOO_TERM_PARSER_H__
 
 #include "mooterm/mooterm-private.h"
 
@@ -87,27 +87,27 @@ typedef struct _MooTermParser {
 } MooTermParser;
 
 
-MooTermParser  *moo_term_parser_new     (MooTerm        *term);
-void            moo_term_parser_free    (MooTermParser  *parser);
+MooTermParser  *_moo_term_parser_new    (MooTerm        *term);
+void            _moo_term_parser_free   (MooTermParser  *parser);
 
-void            moo_term_parser_parse   (MooTermParser  *parser,
+void            _moo_term_parser_parse  (MooTermParser  *parser,
                                          const char     *string,
                                          guint           len);
-void            moo_term_parser_reset   (MooTermParser  *parser);
+void            _moo_term_parser_reset  (MooTermParser  *parser);
 
 int             _moo_term_yylex         (MooTermParser  *parser);
 void            _moo_term_yyerror       (MooTermParser  *parser,
                                          const char     *string);
-
-/* defined in generated mootermparser-yacc.c */
-int             _moo_term_yyparse       (MooTermParser  *parser);
 
 char           *_moo_term_current_ctl   (MooTermParser  *parser);
 char           *_moo_term_nice_char     (guchar          c);
 char           *_moo_term_nice_bytes    (const char     *string,
                                          int             len);
 
+/* defined in generated mootermparser-yacc.c */
+int             _moo_term_yyparse       (MooTermParser  *parser);
+
 
 G_END_DECLS
 
-#endif /* MOOTERM_MOOTERMPARSER_H */
+#endif /* __MOO_TERM_PARSER_H__ */

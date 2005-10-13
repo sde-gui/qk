@@ -508,7 +508,7 @@ shift_line_forward (MooIndenter   *indenter,
     GtkTextIter start;
 
     if (!compute_line_offset (iter, indenter->tab_width, &offset))
-        return moo_indenter_tab (indenter, buffer);
+        return;
 
     if (offset)
     {

@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermhelper.h
+ *   mootermhelper.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOTERM_MOOTERMHELPER_H
-#define MOOTERM_MOOTERMHELPER_H
-
 #ifndef MOOTERM_COMPILATION
-#error "Do not include this file"
+#error "This file may not be included"
 #endif
+
+#ifndef __MOO_TERM_HELPER_H__
+#define __MOO_TERM_HELPER_H__
 
 
 #define MOO_TERM_HELPER_ENV "MOO_TERM_HELPER_WORKING_DIR"
@@ -92,4 +92,4 @@ inline static const char *set_size_cmd (unsigned width, unsigned height)
 }
 
 
-#endif /* MOOTERM_MOOTERMHELPER_H */
+#endif /* __MOO_TERM_HELPER_H__ */

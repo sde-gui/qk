@@ -12,8 +12,13 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "mooedit/mooplugin.h"
 #include "mooedit/moopluginprefs-glade.h"
+#include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include <string.h>
@@ -23,51 +28,50 @@
 
 
 typedef struct {
-    MooPlugin *plugin;
-    MooWindowPlugin *wplugin;
-} PluginWindowData;
-
-typedef struct {
-    GSList *plugins; /* PluginWindowData* */
-    MooEditWindow *window;
-} WindowInfo;
-
-typedef struct {
-    GSList *plugins;   /* MooPlugin* */
-    GSList *windows;         /* WindowInfo* */
+    MooEditor *editor;
+    GSList *list; /* MooPlugin* */
+    GHashTable *names;
 } PluginStore;
 
 static PluginStore *plugin_store = NULL;
-static void         plugin_store_init   (void);
 
-static void         moo_plugin_class_init (MooPluginClass *klass);
-static void         moo_window_plugin_class_init (MooWindowPluginClass *klass);
+static void     plugin_store_init       (void);
+static void     plugin_store_add        (MooPlugin      *plugin);
 
-static gboolean     moo_window_plugin_create_default (MooWindowPlugin *wplugin);
+static void     some_plugin_class_init  (gpointer        klass);
 
-static WindowInfo  *window_info_new     (MooEditWindow  *window);
-static void         window_info_free    (WindowInfo     *window_info);
-static WindowInfo  *window_info_lookup  (MooEditWindow  *window);
+static gboolean plugin_init             (MooPlugin      *plugin);
+static void     plugin_deinit           (MooPlugin      *plugin);
+static void     plugin_attach_win       (MooPlugin      *plugin,
+                                         MooEditWindow  *window);
+static void     plugin_detach_win       (MooPlugin      *plugin,
+                                         MooEditWindow  *window);
+static void     plugin_attach_doc       (MooPlugin      *plugin,
+                                         MooEditWindow  *window,
+                                         MooEdit        *doc);
+static void     plugin_detach_doc       (MooPlugin      *plugin,
+                                         MooEditWindow  *window,
+                                         MooEdit        *doc);
 
-static gboolean     init_plugin         (MooPlugin      *plugin);
-static void         deinit_plugin       (MooPlugin      *plugin);
-static void         attach_plugin       (WindowInfo     *window_info,
-                                         MooPlugin      *plugin);
-static void         detach_plugin       (WindowInfo     *window_info,
-                                         MooPlugin      *plugin);
+static gboolean plugin_info_check       (MooPluginInfo  *info);
 
-static gboolean     check_info          (MooPluginInfo  *info);
-
-static char        *make_prefs_key      (MooPlugin      *plugin,
+static char    *make_prefs_key          (MooPlugin      *plugin,
                                          const char     *key);
+static GQuark   make_id_quark           (MooPlugin      *plugin);
 
+static MooWinPlugin *window_get_plugin  (MooEditWindow  *window,
+                                         MooPlugin      *plugin);
+static MooDocPlugin *doc_get_plugin     (MooEdit        *doc,
+                                         MooPlugin      *plugin);
+static void     window_set_plugin       (MooEditWindow  *window,
+                                         MooPlugin      *plugin,
+                                         MooWinPlugin   *win_plugin);
+static void     doc_set_plugin          (MooEdit        *doc,
+                                         MooPlugin      *plugin,
+                                         MooDocPlugin   *doc_plugin);
 
 static gpointer parent_class = NULL;
 
-enum {
-    WPROP_0,
-    WPROP_PLUGIN
-};
 
 GType
 moo_plugin_get_type (void)
@@ -80,7 +84,7 @@ moo_plugin_get_type (void)
             sizeof (MooPluginClass),
             (GBaseInitFunc) NULL,
             (GBaseFinalizeFunc) NULL,
-            (GClassInitFunc) moo_plugin_class_init,
+            (GClassInitFunc) some_plugin_class_init,
             (GClassFinalizeFunc) NULL,
             NULL,   /* class_data */
             sizeof (MooPlugin),
@@ -97,26 +101,53 @@ moo_plugin_get_type (void)
 
 
 GType
-moo_window_plugin_get_type (void)
+moo_win_plugin_get_type (void)
 {
     static GType type = 0;
 
     if (G_UNLIKELY (type == 0))
     {
         static const GTypeInfo info = {
-            sizeof (MooWindowPluginClass),
+            sizeof (MooWinPluginClass),
             (GBaseInitFunc) NULL,
             (GBaseFinalizeFunc) NULL,
-            (GClassInitFunc) moo_window_plugin_class_init,
+            (GClassInitFunc) some_plugin_class_init,
             (GClassFinalizeFunc) NULL,
             NULL,   /* class_data */
-            sizeof (MooWindowPlugin),
+            sizeof (MooWinPlugin),
             0,      /* n_preallocs */
             NULL,
             NULL    /* value_table */
         };
 
-        type = g_type_register_static (G_TYPE_OBJECT, "MooWindowPlugin", &info, 0);
+        type = g_type_register_static (G_TYPE_OBJECT, "MooWinPlugin", &info, 0);
+    }
+
+    return type;
+}
+
+
+GType
+moo_doc_plugin_get_type (void)
+{
+    static GType type = 0;
+
+    if (G_UNLIKELY (type == 0))
+    {
+        static const GTypeInfo info = {
+            sizeof (MooDocPluginClass),
+            (GBaseInitFunc) NULL,
+            (GBaseFinalizeFunc) NULL,
+            (GClassInitFunc) some_plugin_class_init,
+            (GClassFinalizeFunc) NULL,
+            NULL,   /* class_data */
+            sizeof (MooDocPlugin),
+            0,      /* n_preallocs */
+            NULL,
+            NULL    /* value_table */
+        };
+
+        type = g_type_register_static (G_TYPE_OBJECT, "MooDocPlugin", &info, 0);
     }
 
     return type;
@@ -124,24 +155,9 @@ moo_window_plugin_get_type (void)
 
 
 static void
-moo_plugin_class_init (MooPluginClass *klass)
+some_plugin_class_init (gpointer klass)
 {
     parent_class = g_type_class_peek_parent (klass);
-}
-
-
-static void
-moo_window_plugin_class_init (MooWindowPluginClass *klass)
-{
-    parent_class = g_type_class_peek_parent (klass);
-    klass->create = moo_window_plugin_create_default;
-}
-
-
-static gboolean
-moo_window_plugin_create_default (G_GNUC_UNUSED MooWindowPlugin *wplugin)
-{
-    g_return_val_if_reached (FALSE);
 }
 
 
@@ -151,7 +167,7 @@ moo_plugin_register (GType type)
     MooPluginClass *klass;
     MooPlugin *plugin;
     char *prefs_key;
-    GSList *l;
+    GSList *l, *windows;
 
     g_return_val_if_fail (g_type_is_a (type, MOO_TYPE_PLUGIN), FALSE);
 
@@ -160,7 +176,7 @@ moo_plugin_register (GType type)
 
     if (klass->plugin_system_version != MOO_PLUGIN_CURRENT_VERSION)
     {
-        g_warning ("%s: plugin %s of version %d is incompatible with "
+        g_message ("%s: plugin %s of version %d is incompatible with "
                    "current version %d", G_STRLOC, g_type_name (type),
                    klass->plugin_system_version, MOO_PLUGIN_CURRENT_VERSION);
         return FALSE;
@@ -176,38 +192,39 @@ moo_plugin_register (GType type)
     plugin = g_object_new (type, NULL);
     g_return_val_if_fail (plugin != NULL, FALSE);
 
-    if (!check_info (plugin->info))
+    if (!plugin_info_check (plugin->info))
     {
         g_warning ("%s: invalid info in plugin %s",
                    G_STRLOC, g_type_name (type));
         return FALSE;
     }
 
+    plugin->id_quark = make_id_quark (plugin);
+
     prefs_key = make_prefs_key (plugin, PLUGIN_PREFS_ENABLED);
     moo_prefs_new_key_bool (prefs_key, moo_plugin_enabled (plugin));
     plugin->info->params->enabled = moo_prefs_get_bool (prefs_key);
     g_free (prefs_key);
 
-    if (!init_plugin (plugin))
+    if (!plugin_init (plugin))
     {
         g_object_unref (plugin);
         return FALSE;
     }
 
-    plugin_store->plugins = g_slist_append (plugin_store->plugins, plugin);
+    plugin_store_add (plugin);
 
-    for (l = plugin_store->windows; l != NULL; l = l->next)
-    {
-        WindowInfo *window_info = l->data;
-        attach_plugin (window_info, plugin);
-    }
+    windows = moo_editor_list_windows (plugin_store->editor);
+    for (l = windows; l != NULL; l = l->next)
+        plugin_attach_win (plugin, l->data);
+    g_slist_free (windows);
 
     return TRUE;
 }
 
 
 static gboolean
-init_plugin (MooPlugin *plugin)
+plugin_init (MooPlugin *plugin)
 {
     MooPluginClass *klass;
 
@@ -231,7 +248,7 @@ init_plugin (MooPlugin *plugin)
 
 
 static void
-deinit_plugin (MooPlugin *plugin)
+plugin_deinit (MooPlugin *plugin)
 {
     MooPluginClass *klass;
 
@@ -249,126 +266,210 @@ deinit_plugin (MooPlugin *plugin)
 }
 
 
-static PluginWindowData*
-plugin_window_data_new (WindowInfo *window_info,
-                        MooPlugin  *plugin)
-{
-    PluginWindowData *window_data;
-
-    g_return_val_if_fail (window_info != NULL, NULL);
-    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
-
-    window_data = g_new0 (PluginWindowData, 1);
-    window_data->plugin = plugin;
-
-    return window_data;
-}
-
-
 static void
-plugin_window_data_free (PluginWindowData *window_data)
+plugin_attach_win (MooPlugin      *plugin,
+                   MooEditWindow  *window)
 {
-    g_free (window_data);
-}
-
-
-static void
-attach_plugin (WindowInfo     *window_info,
-               MooPlugin      *plugin)
-{
-    PluginWindowData *window_data;
     MooPluginClass *klass;
-    MooWindowPluginClass *wklass;
-    MooWindowPlugin *wplugin;
+    MooWinPluginClass *wklass;
+    MooWinPlugin *win_plugin;
     GType wtype;
+    GSList *l, *docs;
 
-    g_return_if_fail (window_info != NULL);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
 
     if (!moo_plugin_enabled (plugin))
         return;
 
-    window_data = plugin_window_data_new (window_info, plugin);
-    window_info->plugins = g_slist_append (window_info->plugins, window_data);
-
     klass = MOO_PLUGIN_GET_CLASS (plugin);
 
-    if (klass->attach)
-        klass->attach (plugin, window_info->window);
+    if (klass->attach_win)
+        klass->attach_win (plugin, window);
 
-    wtype = plugin->window_plugin_type;
+    wtype = plugin->win_plugin_type;
 
-    if (wtype == G_TYPE_NONE)
-        return;
-
-    g_return_if_fail (g_type_is_a (wtype, MOO_TYPE_WINDOW_PLUGIN));
-
-    wplugin = g_object_new (wtype, NULL);
-    g_return_if_fail (wplugin != NULL);
-
-    wplugin->plugin = plugin;
-    wplugin->window = window_info->window;
-    wklass = MOO_WINDOW_PLUGIN_GET_CLASS (wplugin);
-
-    if (wklass->create (wplugin))
-        window_data->wplugin = wplugin;
-    else
-        g_object_unref (wplugin);
-}
-
-
-static PluginWindowData*
-window_info_lookup_plugin (WindowInfo *window_info,
-                           MooPlugin  *plugin)
-{
-    GSList *l;
-
-    g_return_val_if_fail (window_info != NULL, NULL);
-    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
-
-    for (l = window_info->plugins; l != NULL; l = l->next)
+    if (wtype && g_type_is_a (wtype, MOO_TYPE_WIN_PLUGIN))
     {
-        PluginWindowData *window_data = l->data;
-        if (window_data->plugin == plugin)
-            return window_data;
+        win_plugin = g_object_new (wtype, NULL);
+        g_return_if_fail (win_plugin != NULL);
+
+        win_plugin->plugin = plugin;
+        win_plugin->window = window;
+        wklass = MOO_WIN_PLUGIN_GET_CLASS (win_plugin);
+
+        if (!wklass->create || wklass->create (win_plugin))
+            window_set_plugin (window, plugin, win_plugin);
+        else
+            g_object_unref (win_plugin);
     }
 
-    return NULL;
+    docs = moo_edit_window_list_docs (window);
+    for (l = docs; l != NULL; l = l->next)
+        plugin_attach_doc (plugin, window, l->data);
+    g_slist_free (docs);
 }
 
 
 static void
-detach_plugin (WindowInfo   *window_info,
-               MooPlugin    *plugin)
+plugin_detach_win (MooPlugin      *plugin,
+                   MooEditWindow  *window)
 {
-    PluginWindowData *window_data;
     MooPluginClass *klass;
-    MooWindowPluginClass *wklass;
+    MooWinPluginClass *wklass;
+    MooWinPlugin *win_plugin;
+    GSList *l, *docs;
 
-    g_return_if_fail (window_info != NULL);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
 
-    window_data = window_info_lookup_plugin (window_info, plugin);
-
-    if (!window_data)
+    if (!moo_plugin_enabled (plugin))
         return;
 
-    if (window_data->wplugin)
+    docs = moo_edit_window_list_docs (window);
+    for (l = docs; l != NULL; l = l->next)
+        plugin_detach_doc (plugin, window, l->data);
+    g_slist_free (docs);
+
+    win_plugin = window_get_plugin (window, plugin);
+
+    if (win_plugin)
     {
-        wklass = MOO_WINDOW_PLUGIN_GET_CLASS (window_data->wplugin);
+        wklass = MOO_WIN_PLUGIN_GET_CLASS (win_plugin);
+
         if (wklass->destroy)
-            wklass->destroy (window_data->wplugin);
-        g_object_unref (window_data->wplugin);
-        window_data->wplugin = NULL;
+            wklass->destroy (win_plugin);
+
+        g_object_unref (win_plugin);
+        window_set_plugin (window, plugin, NULL);
     }
 
     klass = MOO_PLUGIN_GET_CLASS (plugin);
 
-    if (klass->detach)
-        klass->detach (plugin, window_info->window);
+    if (klass->detach_win)
+        klass->detach_win (plugin, window);
+}
 
-    window_info->plugins = g_slist_remove (window_info->plugins, window_data);
-    plugin_window_data_free (window_data);
+
+static void
+plugin_attach_doc (MooPlugin      *plugin,
+                   MooEditWindow  *window,
+                   MooEdit        *doc)
+{
+    MooPluginClass *klass;
+    MooDocPluginClass *dklass;
+    MooDocPlugin *doc_plugin;
+    GType dtype;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+
+    if (!moo_plugin_enabled (plugin))
+        return;
+
+    klass = MOO_PLUGIN_GET_CLASS (plugin);
+
+    if (klass->attach_doc)
+        klass->attach_doc (plugin, doc, window);
+
+    dtype = plugin->doc_plugin_type;
+
+    if (dtype && g_type_is_a (dtype, MOO_TYPE_DOC_PLUGIN))
+    {
+        doc_plugin = g_object_new (dtype, NULL);
+        g_return_if_fail (doc_plugin != NULL);
+
+        doc_plugin->plugin = plugin;
+        doc_plugin->window = window;
+        doc_plugin->doc = doc;
+        dklass = MOO_DOC_PLUGIN_GET_CLASS (doc_plugin);
+
+        if (!dklass->create || dklass->create (doc_plugin))
+            doc_set_plugin (doc, plugin, doc_plugin);
+        else
+            g_object_unref (doc_plugin);
+    }
+}
+
+
+static void
+plugin_detach_doc (MooPlugin      *plugin,
+                   MooEditWindow  *window,
+                   MooEdit        *doc)
+{
+    MooPluginClass *klass;
+    MooDocPluginClass *dklass;
+    MooDocPlugin *doc_plugin;
+
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    if (!moo_plugin_enabled (plugin))
+        return;
+
+    doc_plugin = doc_get_plugin (doc, plugin);
+
+    if (doc_plugin)
+    {
+        dklass = MOO_DOC_PLUGIN_GET_CLASS (doc_plugin);
+
+        if (dklass->destroy)
+            dklass->destroy (doc_plugin);
+
+        g_object_unref (doc_plugin);
+        doc_set_plugin (doc, plugin, NULL);
+    }
+
+    klass = MOO_PLUGIN_GET_CLASS (plugin);
+
+    if (klass->detach_doc)
+        klass->detach_doc (plugin, doc, window);
+}
+
+
+static MooWinPlugin*
+window_get_plugin (MooEditWindow  *window,
+                   MooPlugin      *plugin)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
+    return g_object_get_qdata (G_OBJECT (window), plugin->id_quark);
+}
+
+
+static MooDocPlugin*
+doc_get_plugin (MooEdit        *doc,
+                MooPlugin      *plugin)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
+    return g_object_get_qdata (G_OBJECT (doc), plugin->id_quark);
+}
+
+
+static void
+window_set_plugin (MooEditWindow  *window,
+                   MooPlugin      *plugin,
+                   MooWinPlugin   *win_plugin)
+{
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (!win_plugin || MOO_IS_WIN_PLUGIN (win_plugin));
+    g_object_set_qdata (G_OBJECT (window), plugin->id_quark, win_plugin);
+}
+
+
+static void
+doc_set_plugin (MooEdit        *doc,
+                MooPlugin      *plugin,
+                MooDocPlugin   *doc_plugin)
+{
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (!doc_plugin || MOO_IS_DOC_PLUGIN (doc_plugin));
+    g_object_set_qdata (G_OBJECT (doc), plugin->id_quark, doc_plugin);
 }
 
 
@@ -379,11 +480,28 @@ plugin_store_init (void)
     {
         static PluginStore store;
 
-        store.plugins = NULL;
-        store.windows = NULL;
+        store.editor = moo_editor_instance ();
+        store.list = NULL;
+        store.names = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
         plugin_store = &store;
     }
+}
+
+
+static void
+plugin_store_add (MooPlugin      *plugin)
+{
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+
+    plugin_store_init ();
+
+    g_return_if_fail (!g_hash_table_lookup (plugin_store->names, moo_plugin_id (plugin)));
+
+    plugin_store->list = g_slist_append (plugin_store->list, plugin);
+    g_hash_table_insert (plugin_store->names,
+                         g_strdup (moo_plugin_id (plugin)),
+                         plugin);
 }
 
 
@@ -396,12 +514,9 @@ moo_plugin_get (GType type)
 
     plugin_store_init ();
 
-    for (l = plugin_store->plugins; l != NULL; l = l->next)
-    {
-        MooPlugin *plugin = l->data;
-        if (G_OBJECT_TYPE (plugin) == type)
-            return plugin;
-    }
+    for (l = plugin_store->list; l != NULL; l = l->next)
+        if (G_OBJECT_TYPE (l->data) == type)
+            return l->data;
 
     return NULL;
 }
@@ -414,73 +529,36 @@ moo_plugin_registered (GType type)
 }
 
 
-static WindowInfo*
-window_info_new (MooEditWindow *window)
+gpointer
+moo_win_plugin_lookup (const char     *plugin_id,
+                       MooEditWindow  *window)
 {
-    WindowInfo *window_info;
+    MooPlugin *plugin;
 
+    g_return_val_if_fail (plugin_id != NULL, NULL);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
-    window_info = g_new0 (WindowInfo, 1);
-
-    window_info->window = window;
-    window_info->plugins = NULL;
-
-    return window_info;
-}
-
-
-static void
-window_info_free (WindowInfo *window_info)
-{
-    if (window_info)
-    {
-        g_assert (window_info->plugins == NULL);
-        g_free (window_info);
-    }
-}
-
-
-static WindowInfo*
-window_info_lookup (MooEditWindow *window)
-{
-    GSList *l;
-
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-
-    plugin_store_init ();
-
-    for (l = plugin_store->windows; l != NULL; l = l->next)
-    {
-        WindowInfo *window_info = l->data;
-        if (window_info->window == window)
-            return window_info;
-    }
-
-    return NULL;
+    plugin = moo_plugin_lookup (plugin_id);
+    return plugin ? window_get_plugin (window, plugin) : NULL;
 }
 
 
 gpointer
-moo_window_plugin_lookup (const char     *plugin_id,
-                          MooEditWindow  *window)
+moo_doc_plugin_lookup (const char     *plugin_id,
+                       MooEdit        *doc)
 {
-    PluginWindowData *window_data;
-    WindowInfo *window_info = window_info_lookup (window);
-    MooPlugin *plugin = moo_plugin_lookup (plugin_id);
-    MooWindowPlugin *wplugin = NULL;
+    MooPlugin *plugin;
 
-    g_return_val_if_fail (window_info != NULL && plugin != NULL, NULL);
+    g_return_val_if_fail (plugin_id != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
-    window_data = window_info_lookup_plugin (window_info, plugin);
-
-    wplugin = window_data ? window_data->wplugin : NULL;
-    return wplugin;
+    plugin = moo_plugin_lookup (plugin_id);
+    return plugin ? doc_get_plugin (doc, plugin) : NULL;
 }
 
 
 static gboolean
-check_info (MooPluginInfo *info)
+plugin_info_check (MooPluginInfo *info)
 {
     return info->id && info->id[0] &&
             g_utf8_validate (info->id, -1, NULL) &&
@@ -504,6 +582,22 @@ make_prefs_key (MooPlugin      *plugin,
 }
 
 
+static GQuark
+make_id_quark (MooPlugin      *plugin)
+{
+    char *string;
+    GQuark quark;
+
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), 0);
+
+    string = g_strdup_printf ("MooPlugin::%s", moo_plugin_id (plugin));
+    quark = g_quark_from_string (string);
+
+    g_free (string);
+    return quark;
+}
+
+
 gboolean
 moo_plugin_initialized (MooPlugin *plugin)
 {
@@ -520,53 +614,70 @@ moo_plugin_enabled (MooPlugin *plugin)
 }
 
 
-gboolean
-moo_plugin_set_enabled (MooPlugin  *plugin,
-                        gboolean    enabled)
+static gboolean
+plugin_enable (MooPlugin  *plugin)
 {
-    GSList *l;
+    GSList *l, *windows;
 
     g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
 
     if (moo_plugin_enabled (plugin))
-    {
-        if (enabled)
-            return TRUE;
-
-        g_assert (plugin->initialized);
-
-        for (l = plugin_store->windows; l != NULL; l = l->next)
-        {
-            WindowInfo *window_info = l->data;
-            detach_plugin (window_info, plugin);
-        }
-
-        deinit_plugin (plugin);
-        plugin->info->params->enabled = FALSE;
-
         return TRUE;
+
+    g_assert (!plugin->initialized);
+
+    plugin->info->params->enabled = TRUE;
+
+    if (!plugin_init (plugin))
+    {
+        plugin->info->params->enabled = FALSE;
+        return FALSE;
+    }
+
+    windows = moo_editor_list_windows (plugin_store->editor);
+    for (l = windows; l != NULL; l = l->next)
+        plugin_attach_win (plugin, l->data);
+    g_slist_free (windows);
+
+    return TRUE;
+}
+
+
+static void
+plugin_disable (MooPlugin  *plugin)
+{
+    GSList *l, *windows;
+
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+
+    if (!moo_plugin_enabled (plugin))
+        return;
+
+    g_assert (plugin->initialized);
+
+    windows = moo_editor_list_windows (plugin_store->editor);
+    for (l = windows; l != NULL; l = l->next)
+        plugin_detach_win (plugin, l->data);
+    g_slist_free (windows);
+
+    plugin_deinit (plugin);
+    plugin->info->params->enabled = FALSE;
+}
+
+
+gboolean
+moo_plugin_set_enabled (MooPlugin  *plugin,
+                        gboolean    enabled)
+{
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
+
+    if (enabled)
+    {
+        return plugin_enable (plugin);
     }
     else
     {
-        if (!enabled)
-            return TRUE;
-
-        g_assert (!plugin->initialized);
-
-        plugin->info->params->enabled = TRUE;
-
-        if (!init_plugin (plugin))
-        {
-            plugin->info->params->enabled = FALSE;
-            return FALSE;
-        }
-
-        for (l = plugin_store->windows; l != NULL; l = l->next)
-        {
-            WindowInfo *window_info = l->data;
-            attach_plugin (window_info, plugin);
-        }
-
+        plugin_disable (plugin);
         return TRUE;
     }
 }
@@ -575,20 +686,9 @@ moo_plugin_set_enabled (MooPlugin  *plugin,
 gpointer
 moo_plugin_lookup (const char *plugin_id)
 {
-    GSList *l;
-
     g_return_val_if_fail (plugin_id != NULL, NULL);
-
     plugin_store_init ();
-
-    for (l = plugin_store->plugins; l != NULL; l = l->next)
-    {
-        MooPlugin *plugin = l->data;
-        if (!strcmp (plugin_id, moo_plugin_id (plugin)))
-            return plugin;
-    }
-
-    return NULL;
+    return g_hash_table_lookup (plugin_store->names, plugin_id);
 }
 
 
@@ -596,7 +696,7 @@ GSList*
 moo_list_plugins (void)
 {
     plugin_store_init ();
-    return g_slist_copy (plugin_store->plugins);
+    return g_slist_copy (plugin_store->list);
 }
 
 
@@ -693,47 +793,73 @@ void
 _moo_window_attach_plugins (MooEditWindow *window)
 {
     GSList *l;
-    WindowInfo *window_info;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
     plugin_store_init ();
 
-    window_info = window_info_new (window);
-    plugin_store->windows = g_slist_append (plugin_store->windows, window_info);
-
-    for (l = plugin_store->plugins; l != NULL; l = l->next)
-    {
-        MooPlugin *plugin = l->data;
-        attach_plugin (window_info, plugin);
-    }
+    for (l = plugin_store->list; l != NULL; l = l->next)
+        plugin_attach_win (l->data, window);
 }
 
 
 void
-_moo_plugin_detach_plugins (MooEditWindow *window)
+_moo_window_detach_plugins (MooEditWindow *window)
 {
-    WindowInfo *window_info;
-    GSList *plugins, *l;
+    GSList *l;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    window_info = window_info_lookup (window);
-    g_return_if_fail (window_info != NULL);
+    plugin_store_init ();
 
-    plugins = g_slist_copy (window_info->plugins);
-    plugins = g_slist_reverse (plugins);
+    for (l = plugin_store->list; l != NULL; l = l->next)
+        plugin_detach_win (l->data, window);
+}
 
-    for (l = plugins; l != NULL; l = l->next)
-    {
-        PluginWindowData *window_data = l->data;
-        detach_plugin (window_info, window_data->plugin);
-    }
 
-    plugin_store->windows = g_slist_remove (plugin_store->windows, window_info);
-    window_info_free (window_info);
+void
+_moo_doc_attach_plugins (MooEditWindow *window,
+                         MooEdit       *doc)
+{
+    GSList *l;
 
-    g_slist_free (plugins);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    plugin_store_init ();
+
+    for (l = plugin_store->list; l != NULL; l = l->next)
+        plugin_attach_doc (l->data, window, doc);
+}
+
+
+void
+_moo_doc_detach_plugins (MooEditWindow *window,
+                         MooEdit       *doc)
+{
+    GSList *l;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    plugin_store_init ();
+
+    for (l = plugin_store->list; l != NULL; l = l->next)
+        plugin_detach_doc (l->data, window, doc);
+}
+
+
+void
+moo_plugin_init_builtin (void)
+{
+#ifndef __WIN32__
+    moo_find_plugin_init ();
+    moo_file_selector_plugin_init ();
+#ifdef MOO_BUILD_TERM
+    moo_console_plugin_init ();
+#endif
+#endif
+    moo_active_strings_plugin_init ();
 }
 
 

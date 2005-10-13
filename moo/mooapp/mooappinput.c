@@ -15,37 +15,23 @@
 #include "config.h"
 #endif
 
-#include <Python.h>
-
 #ifdef __WIN32__
 #include <windows.h>
 #include <io.h>
-#endif /* __WIN32__ */
-
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#endif /* HAVE_FCNTL_H */
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif /* HAVE_ERRNO_H */
-#ifdef HAVE_SYS_TYPES_H
+#else /* !__WIN32__ */
+#include <fcntl.h>
 #include <sys/types.h>
-#endif /* HAVE_SYS_TYPES_H */
-#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
-#endif /* HAVE_SYS_STAT_H */
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif /* HAVE_STDLIB_H */
-#ifdef HAVE_SYS_POLL_H
 #include <sys/poll.h>
-#endif /* HAVE_SYS_POLL_H */
+#endif /* !__WIN32__ */
 
+#include <errno.h>
 #include <stdio.h>
 #include "mooapp/mooappinput.h"
+#include "mooapp/mooapp.h"
 
 
 #define MAX_BUFFER_SIZE 4096
@@ -60,16 +46,15 @@ static gboolean read_input              (GIOChannel     *source,
 static void     commit                  (MooAppInput      *ch);
 
 
-MooAppInput *moo_app_input_new      (MooPython      *python,
-                                     const char     *pipe_basename)
+MooAppInput *moo_app_input_new      (const char     *pipe_basename)
 {
     MooAppInput *ch;
 
-    g_return_val_if_fail (python != NULL && pipe_basename != NULL, NULL);
+    g_return_val_if_fail (pipe_basename != NULL, NULL);
 
     ch = g_new0 (MooAppInput, 1);
+    ch->ref_count = 1;
 
-    ch->python = python;
     ch->pipe_basename = g_strdup (pipe_basename);
 
 #ifdef __WIN32__
@@ -80,7 +65,6 @@ MooAppInput *moo_app_input_new      (MooPython      *python,
     ch->pipe_name = NULL;
     ch->io = NULL;
     ch->io_watch = 0;
-    ch->python = NULL;
     ch->ready = FALSE;
     ch->buffer = g_byte_array_new ();
 
@@ -111,22 +95,28 @@ void         moo_app_input_unref        (MooAppInput    *ch)
 }
 
 
-void         moo_app_input_shutdown     (MooAppInput *ch)
+void
+moo_app_input_shutdown (MooAppInput *ch)
 {
     g_return_if_fail (ch != NULL);
 
 #ifdef __WIN32__
-    if (ch->listener) {
+    if (ch->listener)
+    {
         CloseHandle (ch->listener);
         ch->listener = NULL;
     }
 #endif /* __WIN32__ */
-    if (ch->io) {
+
+    if (ch->io)
+    {
         g_io_channel_shutdown (ch->io, TRUE, NULL);
         g_io_channel_unref (ch->io);
         ch->io = NULL;
     }
-    if (ch->pipe_name) {
+
+    if (ch->pipe_name)
+    {
 #ifndef __WIN32__
         ch->pipe  = -1;
         unlink (ch->pipe_name);
@@ -134,27 +124,43 @@ void         moo_app_input_shutdown     (MooAppInput *ch)
         g_free (ch->pipe_name);
         ch->pipe_name = NULL;
     }
-    if (ch->io_watch) {
+
+    if (ch->io_watch)
+    {
         g_source_remove (ch->io_watch);
         ch->io_watch = 0;
     }
+
     ch->ready = FALSE;
 }
 
 
-static void     commit                  (MooAppInput      *ch)
+static void
+commit (MooAppInput *self)
 {
-    PyObject *res;
+    g_assert (self->buffer->len > 0 && self->buffer->data[self->buffer->len-1] == 0);
 
-    g_byte_array_append (ch->buffer, "0", 1);
-    res = moo_python_run_string (ch->python,
-                                 ch->buffer->data,
-                                 strlen (ch->buffer->data));
+    moo_app_input_ref (self);
 
-    if (res)
-        Py_DECREF (res);
+    if (self->buffer->len <= 1)
+        g_warning ("%s: got empty command", G_STRLOC);
     else
-        PyErr_Print ();
+        _moo_app_exec_cmd (moo_app_get_instance (),
+                           self->buffer->data[0],
+                           (char*) self->buffer->data + 1,
+                           self->buffer->len - 2);
+
+    if (self->buffer->len > MAX_BUFFER_SIZE)
+    {
+        g_byte_array_free (self->buffer, TRUE);
+        self->buffer = g_byte_array_new ();
+    }
+    else
+    {
+        g_byte_array_set_size (self->buffer, 0);
+    }
+
+    moo_app_input_unref (self);
 }
 
 
@@ -227,7 +233,7 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
     ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
     g_io_channel_set_encoding (ch->io, NULL, NULL);
     g_io_channel_set_buffered (ch->io, FALSE);
-    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI,
+    ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
                                    (GIOFunc) read_input, ch);
 
     ch->ready = TRUE;
@@ -242,7 +248,7 @@ static gboolean read_input              (GIOChannel     *source,
     gboolean error_occured = FALSE;
     GError *err = NULL;
     gboolean again = TRUE;
-    gboolean endline = FALSE;
+    gboolean got_zero = FALSE;
     char c;
     guint bytes_read;
 
@@ -251,14 +257,15 @@ static gboolean read_input              (GIOChannel     *source,
             error_occured = TRUE;
 
     g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
+
     if (bytes_read == 1)
     {
         if (c != '\r')
             g_byte_array_append (self->buffer, &c, 1);
 
-        if (c == '\n')
+        if (!c)
         {
-            endline = TRUE;
+            got_zero = TRUE;
             again = FALSE;
         }
     }
@@ -276,8 +283,9 @@ static gboolean read_input              (GIOChannel     *source,
                 if (c != '\r')
                     g_byte_array_append (self->buffer, &c, 1);
 
-                if (c == '\n') {
-                    endline = TRUE;
+                if (!c)
+                {
+                    got_zero = TRUE;
                     again = FALSE;
                 }
             }
@@ -299,17 +307,9 @@ static gboolean read_input              (GIOChannel     *source,
         return FALSE;
     }
 
-    if (endline)
-    {
+    if (got_zero)
         commit (self);
 
-        if (self->buffer->len > MAX_BUFFER_SIZE) {
-            g_byte_array_free (self->buffer, TRUE);
-            self->buffer = g_byte_array_new ();
-        }
-        else
-            g_byte_array_set_size (self->buffer, 0);
-    }
     return TRUE;
 }
 
@@ -398,6 +398,7 @@ static DWORD WINAPI listener_main (ListenerInfo *info)
  */
 #ifndef __WIN32__
 
+/* TODO: could you finally learn non-blocking io? */
 gboolean     moo_app_input_start       (MooAppInput *ch)
 {
     g_return_val_if_fail (!ch->ready, FALSE);
@@ -440,14 +441,15 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
 }
 
 
-static gboolean read_input              (G_GNUC_UNUSED GIOChannel     *source,
-                                         GIOCondition    condition,
-                                         MooAppInput      *self)
+static gboolean
+read_input (G_GNUC_UNUSED GIOChannel     *source,
+            GIOCondition    condition,
+            MooAppInput      *self)
 {
     gboolean error_occured = FALSE;
     GError *err = NULL;
     gboolean again = TRUE;
-    gboolean endline = FALSE;
+    gboolean got_zero = FALSE;
 
     if (condition & (G_IO_ERR | G_IO_HUP))
         if (errno != EINTR && errno != EAGAIN)
@@ -459,82 +461,77 @@ static gboolean read_input              (G_GNUC_UNUSED GIOChannel     *source,
         int bytes_read;
 
         struct pollfd fd = {self->pipe, POLLIN | POLLPRI, 0};
+
         int res = poll (&fd, 1, 0);
 
-        switch (res) {
-        case -1:
-            if (errno != EINTR && errno != EAGAIN)
-                error_occured = TRUE;
-            perror ("poll");
-            break;
-
-        case 0:
-            again = FALSE;
-            break;
-
-        case 1:
-            if (fd.revents & (POLLERR))
-            {
+        switch (res)
+        {
+            case -1:
                 if (errno != EINTR && errno != EAGAIN)
                     error_occured = TRUE;
                 perror ("poll");
-            }
-            else
-            {
-                bytes_read = read (self->pipe, &c, 1);
-                if (bytes_read == 1)
+                break;
+
+            case 0:
+                again = FALSE;
+                break;
+
+            case 1:
+                if (fd.revents & (POLLERR))
                 {
-                    g_byte_array_append (self->buffer, &c, 1);
-                    if (c == '\n')
-                    {
-                        endline = TRUE;
-                        again = FALSE;
-                    }
-                }
-                else if (bytes_read == -1)
-                {
-                    perror ("read");
                     if (errno != EINTR && errno != EAGAIN)
                         error_occured = TRUE;
+                    perror ("poll");
                 }
                 else
                 {
-                    again = FALSE;
-                }
-            }
-            break;
+                    bytes_read = read (self->pipe, &c, 1);
 
-        default:
-            g_assert_not_reached ();
+                    if (bytes_read == 1)
+                    {
+                        g_byte_array_append (self->buffer, (guint8*) &c, 1);
+
+                        if (!c)
+                        {
+                            got_zero = TRUE;
+                            again = FALSE;
+                        }
+                    }
+                    else if (bytes_read == -1)
+                    {
+                        perror ("read");
+                        if (errno != EINTR && errno != EAGAIN)
+                            error_occured = TRUE;
+                    }
+                    else
+                    {
+                        again = FALSE;
+                    }
+                }
+                break;
+
+            default:
+                g_assert_not_reached ();
         }
     }
 
     if (error_occured || err)
     {
         g_critical ("%s: error", G_STRLOC);
+
         if (err)
         {
             g_critical ("%s: %s", G_STRLOC, err->message);
             g_error_free (err);
         }
+
         moo_app_input_shutdown (self);
         return FALSE;
     }
 
-    if (endline)
-    {
+    if (got_zero)
         commit (self);
 
-        if (self->buffer->len > MAX_BUFFER_SIZE)
-        {
-            g_byte_array_free (self->buffer, TRUE);
-            self->buffer = g_byte_array_new ();
-        }
-        else
-        {
-            g_byte_array_set_size (self->buffer, 0);
-        }
-    }
     return TRUE;
 }
 
