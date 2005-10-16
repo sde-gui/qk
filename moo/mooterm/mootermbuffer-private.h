@@ -39,6 +39,8 @@ struct _MooTermBufferPrivate {
     gboolean        constructed;
 
     GPtrArray      *lines; /* array of MooTermLine* */
+    MooTermTagTable *tag_table;
+    GHashTable     *data_sets; /* MooTermLine* -> MooTermLine* */
 
     guint8          modes[MODE_MAX];
     MooTermTextAttr current_attr;
@@ -77,6 +79,24 @@ typedef enum {
     CLEAR_ALL_TABS      = 3
 } ClearTabType;
 
+
+struct _MooTermTagTable {
+    GHashTable *named_tags;
+    GSList *tags;
+};
+
+
+MooTermTagTable *_moo_term_tag_table_new        (void);
+void    _moo_term_tag_table_free                (MooTermTagTable *table);
+
+void    _moo_term_buffer_set_line_data          (MooTermBuffer  *buf,
+                                                 MooTermLine    *line,
+                                                 const char     *key,
+                                                 gpointer        data,
+                                                 GDestroyNotify  destroy);
+gpointer _moo_term_buffer_get_line_data         (MooTermBuffer  *buf,
+                                                 MooTermLine    *line,
+                                                 const char     *key);
 
 void    _moo_term_buffer_changed                (MooTermBuffer  *buf);
 void    _moo_term_buffer_scrollback_changed     (MooTermBuffer  *buf);

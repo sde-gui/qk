@@ -12,185 +12,317 @@
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mootermline.h"
+#include "mooterm/mootermline-private.h"
 #include <string.h>
 
-#define CELLS(ar__)               ((MooTermCellArray*) (ar__))
-#define CELLS_ARRAY(cells__)      ((GArray*) (cells__))
+
+#define EMPTY_CHAR MOO_TERM_EMPTY_CHAR
+static MooTermTextAttr ZERO_ATTR = MOO_TERM_ZERO_ATTR;
+static MooTermCell EMPTY_CELL = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+
+#define CELLMOVE(dest__,src__,n__) memmove (dest__, src__, (n__) * sizeof (MooTermCell))
+#define CELLCPY(dest__,src__,n__)  memcpy (dest__, src__, (n__) * sizeof (MooTermCell))
+#define PTRCPY(dest__,src__,n__) memcpy (dest__, src__, (n__) * sizeof (gpointer))
+#define PTRSET(s__,c__,n__) memset (s__, c__, (n__) * sizeof (gpointer))
+
+static GMemChunk *LINE_MEM_CHUNK__ = NULL;
 
 
-/* TODO: midnight commander wants erased chars to have current attributes
-           but VT510 manual says: "EL clears all character attributes from erased
-           character positions. EL works inside or outside the scrolling margins." */
-void
-_moo_term_line_erase_range (MooTermLine     *line,
-                            guint            pos,
-                            guint            len,
-                            MooTermTextAttr *attr)
+static gboolean line_has_tag_in_range   (MooTermLine    *line,
+                                         MooTermTag     *tag,
+                                         guint           start,
+                                         guint           len);
+static gboolean line_has_tag            (MooTermLine    *line,
+                                         MooTermTag     *tag);
+
+static int ptr_cmp (gconstpointer a,
+                    gconstpointer b)
 {
-    guint i;
+    return a < b ? -1 : (a > b ? 1 : 0);
+}
 
-    if (!len || pos >= line->cells->len)
-        return;
 
-    for (i = pos; i < pos + len && i < line->cells->len; ++i)
-    {
-        line->cells->data[i].ch = EMPTY_CHAR;
-
-        if (attr && attr->mask)
-            line->cells->data[i].attr = *attr;
-        else
-            line->cells->data[i].attr.mask = 0;
-    }
+void
+_moo_term_line_mem_init (void)
+{
+    if (!LINE_MEM_CHUNK__)
+        LINE_MEM_CHUNK__ = g_mem_chunk_create (MooTermLine, 512, G_ALLOC_AND_FREE);
 }
 
 
 MooTermLine*
-_moo_term_line_new (guint len)
+_moo_term_line_new (guint            len,
+                    MooTermTextAttr  attr)
 {
-    MooTermLine *line = g_new (MooTermLine, 1);
+    MooTermLine *line;
+    guint i;
 
-    line->cells = CELLS (g_array_sized_new (FALSE, FALSE,
-                                            sizeof (MooTermCell),
-                                            len));
+    g_assert (len != 0);
+    g_assert (len <= MOO_TERM_LINE_MAX_LEN);
+
+    line = g_chunk_new (MooTermLine, LINE_MEM_CHUNK__);
+    line->cells = g_new (MooTermCell, len);
+    line->tags = NULL;
+    line->n_cells = line->n_cells_allocd__ = len;
+
+    for (i = 0; i < len; ++i)
+    {
+        line->cells[i].ch = EMPTY_CHAR;
+        line->cells[i].attr = attr;
+    }
+
     return line;
 }
 
 
 void
-_moo_term_line_free (MooTermLine *line)
+_moo_term_line_free (MooTermLine *line,
+                     gboolean     remove_tags)
 {
     if (line)
     {
-        g_array_free (CELLS_ARRAY (line->cells), TRUE);
-        g_free (line);
+        if (line->tags)
+        {
+            guint i;
+
+            if (remove_tags)
+            {
+                GSList *tags = NULL, *l;
+                MooTermTag *tag;
+
+                for (i = 0; i < line->n_cells; ++i)
+                {
+                    if (line->tags[i])
+                    {
+                        for (l = line->tags[i]; l != NULL; l = l->next)
+                            tags = g_slist_prepend (tags, l->data);
+                        g_slist_free (line->tags[i]);
+                    }
+                }
+
+                tags = g_slist_sort (tags, ptr_cmp);
+
+                for (tag = NULL, l = tags; l != NULL; l = l->next)
+                {
+                    if (tag != l->data)
+                    {
+                        tag = l->data;
+                        _moo_term_tag_remove_line (tag, line);
+                    }
+                }
+
+                g_slist_free (tags);
+            }
+            else
+            {
+                for (i = 0; i < line->n_cells; ++i)
+                    g_slist_free (line->tags[i]);
+            }
+
+            g_free (line->tags);
+        }
+
+        g_free (line->cells);
+        g_chunk_free (line, LINE_MEM_CHUNK__);
     }
 }
 
 
-guint
-_moo_term_line_len (MooTermLine *line)
-{
-    return line->cells->len;
-}
-
-
 void
-_moo_term_line_set_len (MooTermLine *line, guint len)
-{
-    if (line->cells->len > len)
-        g_array_set_size (CELLS_ARRAY (line->cells), len);
-}
-
-
-void
-_moo_term_line_erase (MooTermLine *line)
-{
-    _moo_term_line_set_len (line, 0);
-}
-
-
-#if GLIB_CHECK_VERSION(2,4,0)
-#define array_remove_range(ar,pos,len) g_array_remove_range (CELLS_ARRAY (ar), pos, len)
-#else
-static void
-array_remove_range (MooTermCellArray *array,
-                    guint             index,
-                    guint             length)
-{
-    g_return_if_fail (array);
-    g_return_if_fail (index < array->len);
-    g_return_if_fail (index + length <= array->len);
-
-    if (index + length != array->len)
-        g_memmove (&array->data[index],
-                    &array->data[index + length],
-                    (array->len - (index + length)) * sizeof (MooTermCell));
-
-    g_array_set_size (CELLS_ARRAY(array), array->len - length);
-}
-#endif
-
-
-void
-_moo_term_line_delete_range (MooTermLine   *line,
-                             guint          pos,
-                             guint          len)
-{
-    if (pos >= line->cells->len)
-        return;
-    else if (pos + len >= line->cells->len)
-        return _moo_term_line_set_len (line, pos);
-    else
-        array_remove_range (line->cells, pos, len);
-}
-
-
-gunichar
-_moo_term_line_get_unichar (MooTermLine   *line,
-                            guint          col)
-{
-    if (col >= line->cells->len)
-        return EMPTY_CHAR;
-    else
-        return line->cells->data[col].ch;
-}
-
-
-void
-_moo_term_line_set_unichar (MooTermLine   *line,
-                            guint          pos,
-                            gunichar       c,
-                            guint          num,
-                            MooTermTextAttr *attr,
-                            guint          width)
+_moo_term_line_resize (MooTermLine    *line,
+                       guint           len,
+                       MooTermTextAttr attr)
 {
     guint i;
 
-    if (pos >= width)
-        return _moo_term_line_set_len (line, width);
+    g_assert (line != NULL);
+    g_assert (len != 0);
+    g_assert (len <= MOO_TERM_LINE_MAX_LEN);
 
-    if (pos + num >= width)
-        num = width - pos;
+    if (len <= line->n_cells)
+    {
+        if (line->tags)
+        {
+            GSList *removed = NULL, *l;
+            MooTermTag *tag;
 
-    if (!attr || !attr->mask)
-        attr = &_MOO_TERM_ZERO_ATTR;
+            for (i = len; i < line->n_cells; ++i)
+            {
+                if (line->tags[i])
+                {
+                    for (l = line->tags[i]; l != NULL; l = l->next)
+                        removed = g_slist_prepend (removed, l->data);
+                    g_slist_free (line->tags[i]);
+                }
+            }
+
+            removed = g_slist_sort (removed, ptr_cmp);
+
+            for (tag = NULL, l = removed; l != NULL; l = l->next)
+            {
+                if (tag != l->data)
+                {
+                    tag = l->data;
+
+                    if (!line_has_tag_in_range (line, tag, 0, len))
+                        _moo_term_tag_remove_line (tag, line);
+                }
+            }
+
+            if (!line_has_tag_in_range (line, NULL, 0, len))
+            {
+                g_free (line->tags);
+                line->tags = NULL;
+            }
+
+            g_slist_free (removed);
+        }
+    }
+    else
+    {
+        if (line->n_cells_allocd__ < len)
+        {
+            MooTermCell *tmp = g_new (MooTermCell, len);
+            CELLCPY (tmp, line->cells, line->n_cells);
+            g_free (line->cells);
+            line->cells = tmp;
+
+            if (line->tags)
+            {
+                GSList **tmp2 = g_new (GSList*, len);
+                PTRCPY (tmp2, line->tags, line->n_cells);
+                g_free (line->tags);
+                line->tags = tmp2;
+            }
+
+            line->n_cells_allocd__ = len;
+        }
+
+        for (i = line->n_cells; i < len; ++i)
+        {
+            line->cells[i].ch = EMPTY_CHAR;
+            line->cells[i].attr = attr;
+        }
+
+        if (line->tags)
+            PTRSET (&line->tags[line->n_cells], 0,
+                    len - line->n_cells);
+    }
+
+    line->n_cells = len;
+}
+
+
+void
+_moo_term_line_erase_range (MooTermLine    *line,
+                            guint           pos,
+                            guint           len,
+                            MooTermTextAttr attr)
+{
+    guint i;
+    guint last = MIN ((guint) (line->n_cells - 1), pos + len);
+
+    for (i = pos; i < last; ++i)
+    {
+        line->cells[i].ch = EMPTY_CHAR;
+        line->cells[i].attr = attr;
+    }
+}
+
+
+void
+_moo_term_line_delete_range (MooTermLine    *line,
+                             guint           pos,
+                             guint           len,
+                             MooTermTextAttr attr)
+{
+    guint i;
+
+    g_assert (line != NULL);
+    g_assert (len != 0);
+    g_assert (pos < line->n_cells);
+
+    if (len + pos >= line->n_cells)
+    {
+        for (i = pos; i < line->n_cells; ++i)
+        {
+            line->cells[i].ch = EMPTY_CHAR;
+            line->cells[i].attr = attr;
+        }
+    }
+    else
+    {
+        CELLMOVE (&line->cells[pos], &line->cells[pos+len],
+                  line->n_cells - (pos + len));
+        for (i = line->n_cells - len; i < line->n_cells; ++i)
+        {
+            line->cells[i].ch = EMPTY_CHAR;
+            line->cells[i].attr = attr;
+        }
+    }
+}
+
+
+void
+_moo_term_line_set_unichar (MooTermLine    *line,
+                            guint           pos,
+                            gunichar        c,
+                            guint           num,
+                            MooTermTextAttr attr)
+{
+    guint i;
+
+    g_assert (line != NULL);
+    g_assert (num != 0);
+    g_assert (pos < line->n_cells);
+
+    if (pos + num > line->n_cells)
+        num = line->n_cells - pos;
 
     if (!c)
         c = EMPTY_CHAR;
 
-    _moo_term_line_set_len (line, width);
-
-    if (pos >= line->cells->len)
+    for (i = pos; i < pos + num; ++i)
     {
-        MooTermCell cell = {EMPTY_CHAR, _MOO_TERM_ZERO_ATTR};
-        guint len = line->cells->len;
-
-        for (i = 0; i < pos - len; ++i)
-            g_array_append_val (CELLS_ARRAY (line->cells), cell);
-
-        cell.ch = c;
-        cell.attr = *attr;
-
-        for (i = 0; i < num; ++i)
-            g_array_append_val (CELLS_ARRAY (line->cells), cell);
+        line->cells[i].ch = c;
+        line->cells[i].attr = attr;
     }
-    else if (pos + num > line->cells->len)
-    {
-        MooTermCell cell = {c, *attr};
-        guint len = line->cells->len;
+}
 
-        for (i = pos; i < len; ++i)
-            line->cells->data[i] = cell;
-        for (i = 0; i < pos + num - len; ++i)
-            g_array_append_val (CELLS_ARRAY (line->cells), cell);
+
+void
+_moo_term_line_insert_unichar (MooTermLine    *line,
+                               guint           pos,
+                               gunichar        c,
+                               guint           num,
+                               MooTermTextAttr attr)
+{
+    guint i;
+
+    g_assert (line != NULL);
+    g_assert (num != 0);
+    g_assert (pos < line->n_cells);
+
+    if (!c)
+        c = EMPTY_CHAR;
+
+    if (pos + num >= line->n_cells)
+    {
+        for (i = pos; i < line->n_cells; ++i)
+        {
+            line->cells[i].ch = c;
+            line->cells[i].attr = attr;
+        }
     }
     else
     {
-        MooTermCell cell = {c, *attr};
-
-        for (i = pos; i < pos + num; ++i)
-            line->cells->data[i] = cell;
+        CELLMOVE (&line->cells[pos+num], &line->cells[pos],
+                  line->n_cells - (pos+num));
+        for (i = pos; i < pos+num; ++i)
+        {
+            line->cells[i].ch = c;
+            line->cells[i].attr = attr;
+        }
     }
 }
 
@@ -204,15 +336,17 @@ _moo_term_line_get_chars (MooTermLine    *line,
     guint i;
     guint res = 0;
 
-    if (!len || first >= line->cells->len)
+    g_assert (line != NULL);
+
+    if (!len || first >= line->n_cells)
         return 0;
 
-    if (len < 0 || first + len > line->cells->len)
-        len = line->cells->len - first;
+    if (len < 0 || first + len > line->n_cells)
+        len = line->n_cells - first;
 
     for (i = first; i < first + len; ++i)
     {
-        gunichar c = _moo_term_line_get_unichar (line, i);
+        gunichar c = _moo_term_line_get_char (line, i);
         guint l = g_unichar_to_utf8 (c, buf);
         buf += l;
         res += l;
@@ -222,54 +356,292 @@ _moo_term_line_get_chars (MooTermLine    *line,
 }
 
 
-void
-_moo_term_line_insert_unichar (MooTermLine   *line,
-                               guint          pos,
-                               gunichar       c,
-                               guint          num,
-                               MooTermTextAttr *attr,
-                               guint          width)
+guint
+_moo_term_line_len_chk (MooTermLine *line)
 {
-    guint i;
+    g_assert (line != NULL);
+    return _MOO_TERM_LINE_LEN (line);
+}
 
-    if (pos >= width)
-        return _moo_term_line_set_len (line, width);
 
-    if (pos + num >= width)
-        return _moo_term_line_set_unichar (line, pos, c, num,
-                                           attr, width);
+guint
+moo_term_line_len (MooTermLine    *line)
+{
+    g_return_val_if_fail (line != NULL, 0);
+    return _MOO_TERM_LINE_LEN (line);
+}
 
-    if (!attr || !attr->mask)
-        attr = &_MOO_TERM_ZERO_ATTR;
 
-    if (!c)
-        c = EMPTY_CHAR;
+gunichar
+_moo_term_line_get_char_chk (MooTermLine   *line,
+                             guint          index_)
+{
+    g_assert (line != NULL);
+    g_assert (index_ < line->n_cells);
+    return _MOO_TERM_LINE_CHAR (line, index_);
+}
 
-    _moo_term_line_set_len (line, width);
 
-    if (pos > line->cells->len)
+gunichar
+moo_term_line_get_char (MooTermLine    *line,
+                        guint           index_)
+{
+    g_return_val_if_fail (line != NULL, 0);
+    return index_ < line->n_cells ? _MOO_TERM_LINE_CHAR (line, index_) : EMPTY_CHAR;
+}
+
+
+MooTermTextAttr
+_moo_term_line_get_attr (MooTermLine    *line,
+                         guint           index_)
+{
+    MooTermTextAttr attr;
+    GSList *tags, *l;
+
+    g_assert (line != NULL);
+    g_assert (index_ < line->n_cells);
+
+    if (!line->tags || !line->tags[index_])
+        return line->cells[index_].attr;
+
+    attr = line->cells[index_].attr;
+    tags = line->tags[index_];
+
+    for (l = tags; l != NULL; l = l->next)
     {
-        guint len = line->cells->len;
+        MooTermTag *tag = l->data;
+        MooTermTextAttr tag_attr = tag->attr;
 
-        for (i = len; i < pos; ++i)
+        if (tag_attr.mask & MOO_TERM_TEXT_REVERSE)
         {
-            MooTermCell cell = {EMPTY_CHAR, _MOO_TERM_ZERO_ATTR};
-            g_array_append_val (CELLS_ARRAY (line->cells), cell);
+            if (attr.mask & MOO_TERM_TEXT_REVERSE)
+                attr.mask &= ~MOO_TERM_TEXT_REVERSE;
+            else
+                attr.mask |= MOO_TERM_TEXT_REVERSE;
+        }
+
+        if (tag_attr.mask & MOO_TERM_TEXT_BLINK)
+            attr.mask |= MOO_TERM_TEXT_BLINK;
+        if (tag_attr.mask & MOO_TERM_TEXT_BOLD)
+            attr.mask |= MOO_TERM_TEXT_BOLD;
+        if (tag_attr.mask & MOO_TERM_TEXT_UNDERLINE)
+            attr.mask |= MOO_TERM_TEXT_UNDERLINE;
+
+        if (tag_attr.mask & MOO_TERM_TEXT_FOREGROUND)
+        {
+            attr.mask |= MOO_TERM_TEXT_FOREGROUND;
+            attr.foreground = tag_attr.foreground;
+        }
+
+        if (tag_attr.mask & MOO_TERM_TEXT_BACKGROUND)
+        {
+            attr.mask |= MOO_TERM_TEXT_BACKGROUND;
+            attr.background = tag_attr.background;
         }
     }
 
-    for (i = 0; i < num; ++i)
+    return attr;
+}
+
+
+MooTermCell*
+_moo_term_line_get_cell_chk (MooTermLine    *line,
+                             guint           index_)
+{
+    g_assert (line != NULL);
+    g_assert (index_ < line->n_cells);
+    return _MOO_TERM_LINE_CELL (line, index_);
+}
+
+
+GSList*
+_moo_term_line_get_tags_chk (MooTermLine    *line,
+                             guint           index_)
+{
+    g_assert (line != NULL);
+    g_assert (index_ < line->n_cells);
+    return _MOO_TERM_LINE_TAGS (line, index_);
+}
+
+
+void
+_moo_term_line_apply_tag (MooTermLine    *line,
+                          MooTermTag     *tag,
+                          guint           start,
+                          guint           len)
+{
+    guint i;
+
+    g_assert (line != NULL);
+    g_assert (start < line->n_cells);
+    g_assert (len > 0);
+    g_assert (start + len <= line->n_cells);
+    g_assert (MOO_IS_TERM_TAG (tag));
+
+    if (!line->tags)
+        line->tags = g_new0 (GSList*, line->n_cells_allocd__);
+
+    for (i = start; i < start + len; ++i)
+        line->tags[i] = g_slist_append (line->tags[i], tag);
+
+    _moo_term_tag_add_line (tag, line);
+}
+
+
+static gboolean
+line_has_tag (MooTermLine    *line,
+              MooTermTag     *tag)
+{
+    guint i;
+
+    if (!line->tags)
+        return FALSE;
+
+    if (tag)
     {
-        MooTermCell cell = {c, *attr};
-        g_array_insert_val (CELLS_ARRAY (line->cells), pos, cell);
+        for (i = 0; i < line->n_cells; ++i)
+            if (g_slist_find (line->tags[i], tag))
+                return TRUE;
+    }
+    else
+    {
+        for (i = 0; i < line->n_cells; ++i)
+            if (line->tags[i])
+                return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+static gboolean
+line_has_tag_in_range (MooTermLine    *line,
+                       MooTermTag     *tag,
+                       guint           start,
+                       guint           len)
+{
+    guint i;
+
+    if (!line->tags)
+        return FALSE;
+
+    if (tag)
+    {
+        for (i = start; i < start + len; ++i)
+            if (g_slist_find (line->tags[i], tag))
+                return TRUE;
+    }
+    else
+    {
+        for (i = start; i < start + len; ++i)
+            if (line->tags[i])
+                return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+gboolean
+_moo_term_line_has_tag (MooTermLine    *line,
+                        MooTermTag     *tag,
+                        guint           index_)
+{
+    if (!line->tags || index_ >= line->n_cells || !line->tags[index_])
+        return FALSE;
+
+    if (tag)
+        return g_slist_find (line->tags[index_], tag) != NULL;
+    else
+        return line->tags[index_] != NULL;
+}
+
+
+gboolean
+_moo_term_line_get_tag_start (MooTermLine    *line,
+                              MooTermTag     *tag,
+                              guint          *index_)
+{
+    if (!_moo_term_line_has_tag (line, tag, *index_))
+        return FALSE;
+
+    for ( ; *index_ > 0; (*index_)--)
+        if (!_moo_term_line_has_tag (line, tag, *index_ - 1))
+            return TRUE;
+
+    return TRUE;
+}
+
+
+gboolean
+_moo_term_line_get_tag_end (MooTermLine    *line,
+                            MooTermTag     *tag,
+                            guint          *index_)
+{
+    if (*index_ >= line->n_cells || !_moo_term_line_has_tag (line, tag, *index_))
+        return FALSE;
+
+    for ( ; *index_ < line->n_cells; (*index_)++)
+        if (!_moo_term_line_has_tag (line, tag, *index_))
+            return TRUE;
+
+    return TRUE;
+}
+
+
+void
+_moo_term_line_remove_tag (MooTermLine    *line,
+                           MooTermTag     *tag,
+                           guint           start,
+                           guint           len)
+{
+    guint i;
+
+    g_assert (line != NULL);
+    g_assert (start < line->n_cells);
+    g_assert (len > 0);
+    g_assert (start + len <= line->n_cells);
+    g_assert (MOO_IS_TERM_TAG (tag));
+
+    if (!line->tags)
+        return;
+
+    for (i = start; i < start + len; ++i)
+        line->tags[i] = g_slist_remove (line->tags[i], tag);
+
+    if (!line_has_tag (line, tag))
+    {
+        _moo_term_tag_remove_line (tag, line);
+
+        if (!line_has_tag (line, NULL))
+        {
+            g_free (line->tags);
+            line->tags = NULL;
+        }
     }
 }
 
 
-MooTermTextAttr*
-_moo_term_line_attr (MooTermLine    *line,
-                     guint           index)
+char*
+moo_term_line_get_text (MooTermLine    *line,
+                        guint           start,
+                        int             len)
 {
-    g_assert (index < line->cells->len);
-    return &line->cells->data[index].attr;
+    GString *text;
+    guint i;
+
+    g_return_val_if_fail (line != NULL, NULL);
+
+    if (!len || start >= line->n_cells)
+        return g_strdup ("");
+
+    text = g_string_new (NULL);
+
+    if (start + len > line->n_cells)
+        len = line->n_cells - start;
+
+    for (i = start; i < start + len; ++i)
+        g_string_append_unichar (text, _moo_term_line_get_char (line, i));
+
+    return g_string_free (text, FALSE);
 }

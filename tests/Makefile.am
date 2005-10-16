@@ -23,7 +23,7 @@ if MOO_BUILD_EDIT
 medit = medit
 endif
 if MOO_BUILD_TERM
-# noinst_PROGRAMS += mterm termbuffer
+noinst_PROGRAMS += mterm #termbuffer
 endif
 if MOO_BUILD_UTILS
 # noinst_PROGRAMS += markup miniglade
@@ -39,21 +39,23 @@ AM_CFLAGS =                     \
     $(CFLAGS)                   \
     $(GTK_CFLAGS)
 
-
-##############################################################################
-##  medit
-##
-medit_LDFLAGS = -export-dynamic
-medit_LDADD =               \
+ldflags = -export-dynamic
+ldadd =                     \
     ../moo/libmoo-1.0.la    \
     $(MOO_LIBS)             \
     $(PYTHON_LDFLAGS)       \
     $(PYTHON_EXTRA_LIBS)
 
-
 if MOO_OS_MINGW
-medit_LDFLAGS += -mwindows
+ldflags += -mwindows
 endif MOO_OS_MINGW
+
+
+##############################################################################
+##  medit
+##
+medit_LDFLAGS = $(ldflags)
+medit_LDADD = $(ldadd)
 
 medit_SOURCES = medit-ui.h
 
@@ -67,13 +69,8 @@ endif
 ##############################################################################
 ##  langparser
 ##
-langparser_LDFLAGS =
-langparser_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-
-
-if MOO_OS_MINGW
-langparser_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
+langparser_LDFLAGS = $(ldflags)
+langparser_LDADD = $(ldadd)
 
 langparser_SOURCES = testparser.c
 
@@ -81,16 +78,10 @@ langparser_SOURCES = testparser.c
 ##############################################################################
 ##  mterm
 ##
-mterm_LDFLAGS =
-mterm_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-termbuffer_LDADD = $(mterm_LDADD)
-
-
-if MOO_OS_MINGW
-mterm_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
-
-termbuffer_LDFLAGS = $(mterm_LDFLAGS)
+mterm_LDFLAGS = $(ldflags)
+mterm_LDADD = $(ldadd)
+termbuffer_LDFLAGS = $(ldflags)
+termbuffer_LDADD = $(ldadd)
 
 mterm_SOURCES = mterm.c
 termbuffer_SOURCES = termbuffer.c
@@ -99,13 +90,8 @@ termbuffer_SOURCES = termbuffer.c
 ##############################################################################
 ##  markup
 ##
-markup_LDFLAGS =
-markup_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-
-
-if MOO_OS_MINGW
-markup_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
+markup_LDFLAGS = $(ldflags)
+markup_LDADD = $(ldadd)
 
 markup_SOURCES = markup.c
 
@@ -113,32 +99,22 @@ markup_SOURCES = markup.c
 ##############################################################################
 ##  miniglade
 ##
-miniglade_LDFLAGS =
-miniglade_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-miniglade_CFLAGS = $(AM_CFLAGS)
+miniglade_LDFLAGS = $(ldflags)
+miniglade_LDADD = $(ldadd)
 
 miniglade_SOURCES = miniglade.c
 
 
 ##############################################################################
 
-testpaned_LDFLAGS =
-testpaned_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-if MOO_OS_MINGW
-testpaned_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
+testpaned_LDFLAGS = $(ldflags)
+testpaned_LDADD = $(ldadd)
 testpaned_SOURCES = testpaned.c
 
-testfileview_LDFLAGS =
-testfileview_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-if MOO_OS_MINGW
-testfileview_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
+testfileview_LDFLAGS = $(ldflags)
+testfileview_LDADD = $(ldadd)
 testfileview_SOURCES = testfileview.c
 
-testpanedfileview_LDFLAGS =
-testpanedfileview_LDADD = $(MOO_LIBS) ../moo/libmoo-1.0.la
-if MOO_OS_MINGW
-testpanedfileview_LDFLAGS += -mwindows
-endif MOO_OS_MINGW
+testpanedfileview_LDFLAGS = $(ldflags)
+testpanedfileview_LDADD = $(ldadd)
 testpanedfileview_SOURCES = testpanedfileview.c

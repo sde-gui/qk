@@ -122,22 +122,8 @@ GType moo_term_get_type (void)
             NULL    /* value_table */
         };
 
-#if 0
-        static const GInterfaceInfo iface_info = {
-            (GInterfaceInitFunc) _moo_term_text_iface_init,
-            NULL,
-            NULL
-        };
-#endif
-
         type = g_type_register_static (GTK_TYPE_WIDGET, "MooTerm",
                                        &info, (GTypeFlags) 0);
-
-#if 0
-        g_type_add_interface_static (type,
-                                     MOO_TYPE_TEXT,
-                                     &iface_info);
-#endif
     }
 
     return type;

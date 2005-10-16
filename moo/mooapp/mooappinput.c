@@ -418,6 +418,7 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
         return FALSE;
     }
 
+    /* XXX posix man page says results of this are undefined */
     ch->pipe = open (ch->pipe_name, O_RDWR | O_NONBLOCK);
     if (ch->pipe == -1)
     {

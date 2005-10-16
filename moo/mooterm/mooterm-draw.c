@@ -15,6 +15,7 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mooterm-selection.h"
 #include "mooterm/mootermbuffer-private.h"
+#include "mooterm/mootermline-private.h"
 #include <string.h>
 
 #define CHAR_WIDTH(term__)    ((term__)->priv->font->width)
@@ -546,7 +547,7 @@ static void term_draw_cells                 (MooTerm        *term,
                                              guint           abs_row,
                                              guint           start,
                                              guint           len,
-                                             MooTermTextAttr *attr,
+                                             MooTermTextAttr attr,
                                              int             selected);
 static void term_draw_cursor                (MooTerm        *term);
 
@@ -738,9 +739,11 @@ term_draw_range_simple (MooTerm        *term,
     while (len)
     {
         guint i;
-        MooTermTextAttr *attr = _moo_term_line_attr (line, start);
+        MooTermTextAttr attr = _moo_term_line_get_attr (line, start);
 
-        for (i = 1; i < len && !ATTR_CMP (attr, _moo_term_line_attr (line, start + i)); ++i) ;
+        for (i = 1; i < len &&
+             MOO_TERM_TEXT_ATTR_EQUAL (attr, _moo_term_line_get_attr (line, start + i));
+             ++i) ;
 
         term_draw_cells (term, abs_row, start, i, attr, selected);
 
@@ -755,7 +758,7 @@ term_draw_cells (MooTerm        *term,
                  guint           abs_row,
                  guint           start,
                  guint           len,
-                 MooTermTextAttr *attr,
+                 MooTermTextAttr attr,
                  gboolean        selected)
 {
     static char buf[8 * MAX_TERMINAL_WIDTH];
@@ -775,22 +778,22 @@ term_draw_cells (MooTerm        *term,
 
     pango_layout_set_text (term->priv->layout, buf, buf_len);
 
-    bold = (attr->mask & MOO_TERM_TEXT_BOLD) ? COLOR_BOLD : COLOR_NORMAL;
+    bold = (attr.mask & MOO_TERM_TEXT_BOLD) ? COLOR_BOLD : COLOR_NORMAL;
 
-    if (attr->mask & MOO_TERM_TEXT_FOREGROUND)
+    if (attr.mask & MOO_TERM_TEXT_FOREGROUND)
     {
-        g_return_if_fail (attr->foreground < MOO_TERM_COLOR_MAX);
-        fg = term->priv->color[8*bold + attr->foreground];
+        g_return_if_fail (attr.foreground < MOO_TERM_COLOR_MAX);
+        fg = term->priv->color[8*bold + attr.foreground];
     }
     else
     {
         fg = term->priv->fg[bold];
     }
 
-    if (attr->mask & MOO_TERM_TEXT_BACKGROUND)
+    if (attr.mask & MOO_TERM_TEXT_BACKGROUND)
     {
-        g_return_if_fail (attr->foreground < MOO_TERM_COLOR_MAX);
-        bg = term->priv->color[8*bold + attr->background];
+        g_return_if_fail (attr.foreground < MOO_TERM_COLOR_MAX);
+        bg = term->priv->color[8*bold + attr.background];
     }
     else
     {
@@ -798,7 +801,7 @@ term_draw_cells (MooTerm        *term,
     }
 
     invert = (selected ? 1 : 0) + (term->priv->colors_inverted ? 1 : 0) +
-            (attr->mask & MOO_TERM_TEXT_REVERSE ? 1 : 0);
+            (attr.mask & MOO_TERM_TEXT_REVERSE ? 1 : 0);
     invert %= 2;
 
     if (invert)
@@ -822,14 +825,14 @@ term_draw_cells (MooTerm        *term,
                      (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
                      term->priv->layout);
 
-    if ((attr->mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.allow_bold)
+    if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.allow_bold)
         gdk_draw_layout (term->priv->back_pixmap,
                          fg,
                          start * CHAR_WIDTH(term) + 1,
                          (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
                          term->priv->layout);
 
-    if (attr->mask & MOO_TERM_TEXT_UNDERLINE)
+    if (attr.mask & MOO_TERM_TEXT_UNDERLINE)
         gdk_draw_line (term->priv->back_pixmap,
                        fg,
                        start * CHAR_WIDTH(term),
@@ -850,7 +853,7 @@ term_draw_cursor (MooTerm        *term)
     if (_moo_term_line_len (line) > column)
     {
         return term_draw_cells (term, abs_row, column, 1,
-                                _moo_term_line_attr (line, column),
+                                _moo_term_line_get_attr (line, column),
                                 !_moo_term_cell_selected (term, abs_row, column));
     }
     else

@@ -19,8 +19,10 @@
 #define __MOO_TERM_PRIVATE_H__
 
 #include "mooterm/mooterm.h"
+#include "mooterm/mootermtag.h"
 #include "mooterm/mootermbuffer.h"
 #include "mooterm/mooterm-vt.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -170,7 +172,6 @@ struct _MooTermPrivate {
         (term)->priv->top_line :                \
         buf_scrollback ((term)->priv->buffer))
 
-void        _moo_term_text_iface_init       (gpointer        iface);
 void        _moo_term_apply_settings        (MooTerm        *term);
 void        _moo_term_set_window_title      (MooTerm        *term,
                                              const char     *title);

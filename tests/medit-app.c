@@ -13,6 +13,7 @@
 
 #include "mooapp/mooapp.h"
 #include "medit-ui.h"
+#include <gtk/gtk.h>
 
 
 int main (int argc, char *argv[])

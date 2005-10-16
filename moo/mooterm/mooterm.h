@@ -14,7 +14,7 @@
 #ifndef __MOO_TERM_H__
 #define __MOO_TERM_H__
 
-#include <gtk/gtk.h>
+#include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
 
@@ -58,7 +58,7 @@ struct _MooTermClass
     void (*child_died)              (MooTerm        *term);
 
     void (*populate_popup)          (MooTerm        *term,
-                                     GtkMenu        *menu);
+                                     GtkWidget      *menu);
 
     void (*apply_settings)          (MooTerm        *term);
 

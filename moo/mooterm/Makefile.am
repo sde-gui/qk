@@ -7,7 +7,10 @@ SUBDIRS = glade
 mootermincludedir = $(includedir)/moo-1.0/mooterm
 mooterminclude_HEADERS =        \
     mooterm.h                   \
-    mootermwindow.h
+    mootermwindow.h             \
+    mooterm-text.h              \
+    mootermline.h               \
+    mootermtag.h
 
 widget_sources =                \
     $(mooterminclude_HEADERS)   \
@@ -19,16 +22,16 @@ widget_sources =                \
     mooterm-private.h           \
     mooterm-selection.h         \
     mooterm-text.c              \
-    mooterm-text.h              \
+    mooterm-text-private.h      \
     mooterm-vt.h                \
     mooterm-vtctls.h            \
     mooterm-draw.c              \
     mootermbuffer.c             \
-    mootermbuffer-graph.h       \
     mootermbuffer.h             \
+    mootermbuffer-graph.h       \
     mootermbuffer-private.h     \
     mootermline.c               \
-    mootermline.h               \
+    mootermline-private.h       \
     mootermparser.c             \
     mootermparser.h             \
     mootermparser-yacc.c        \
@@ -36,6 +39,7 @@ widget_sources =                \
     mootermpt.c                 \
     mootermpt.h                 \
     mootermpt-private.h         \
+    mootermtag.c                \
     mootermwindow.c             \
     mootermprefs-glade.h
 

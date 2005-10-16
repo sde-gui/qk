@@ -34,7 +34,7 @@ static void moo_toggle_action_get_property      (GObject                *object,
 
 static GtkWidget *moo_toggle_action_create_menu_item (MooAction      *action);
 static GtkWidget *moo_toggle_action_create_tool_item (MooAction      *action,
-                                                      GtkToolbar     *toolbar,
+                                                      GtkWidget      *toolbar,
                                                       int             position);
 
 static void moo_action_toggled                  (MooToggleAction     *action,
@@ -212,7 +212,7 @@ moo_toggle_action_create_menu_item (MooAction         *action)
 
 static GtkWidget*
 moo_toggle_action_create_tool_item (MooAction      *action,
-                                    GtkToolbar     *toolbar,
+                                    GtkWidget      *toolbar,
                                     int             position)
 {
 #if GTK_CHECK_VERSION(2,4,0)
@@ -228,7 +228,7 @@ moo_toggle_action_create_tool_item (MooAction      *action,
         if (action->icon_stock_id)
         {
             icon = gtk_image_new_from_stock (action->icon_stock_id,
-                                             gtk_toolbar_get_icon_size (toolbar));
+                                             gtk_toolbar_get_icon_size (GTK_TOOLBAR (toolbar)));
             if (!icon) g_warning ("could not create stock icon '%s'",
                                   action->icon_stock_id);
             else gtk_widget_show (icon);
@@ -249,7 +249,7 @@ moo_toggle_action_create_tool_item (MooAction      *action,
                                 tooltips, g_object_unref);
     }
 
-    gtk_toolbar_insert (toolbar, item, position);
+    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, position);
     gtk_container_child_set (GTK_CONTAINER (toolbar), GTK_WIDGET (item),
                              "homogeneous", FALSE, NULL);
 

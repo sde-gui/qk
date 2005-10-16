@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <signal.h>
+#include <gtk/gtk.h>
 
 #define CONSOLE_PLUGIN_ID "Console"
 

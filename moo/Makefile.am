@@ -74,26 +74,26 @@ AM_CFLAGS =                                 \
     $(CFLAGS)
 
 
-##############################################################################
-# moo module
+# ##############################################################################
+# # moo module
+# #
+# if BUILD_PYMOO
 #
-if BUILD_PYMOO
-
-pyexec_LTLIBRARIES = moo.la
-
-moo_la_SOURCES = $(libmoo_1_0_SOURCES)
-
-if MOO_OS_MINGW
-mingw_flags = -no-undefined
-endif MOO_OS_MINGW
-
-moo_la_LDFLAGS = -module -avoid-version -export-symbols-regex initmoo $(mingw_flags)
-
-moo_la_LIBADD =         \
-    $(libmoo_la_LIBADD) \
-    $(GTK_LIBS)         \
-    $(XML_LIBS)         \
-    $(PYTHON_LDFLAGS)   \
-    $(PYTHON_EXTRA_LIBS)
-
-endif BUILD_PYMOO
+# pyexec_LTLIBRARIES = moo.la
+#
+# moo_la_SOURCES = $(libmoo_1_0_SOURCES)
+#
+# if MOO_OS_MINGW
+# mingw_flags = -no-undefined
+# endif MOO_OS_MINGW
+#
+# moo_la_LDFLAGS = -module -avoid-version -export-symbols-regex initmoo $(mingw_flags)
+#
+# moo_la_LIBADD =         \
+#     $(libmoo_la_LIBADD) \
+#     $(GTK_LIBS)         \
+#     $(XML_LIBS)         \
+#     $(PYTHON_LDFLAGS)   \
+#     $(PYTHON_EXTRA_LIBS)
+#
+# endif BUILD_PYMOO

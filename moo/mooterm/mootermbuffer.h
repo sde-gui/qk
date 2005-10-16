@@ -14,53 +14,21 @@
 #ifndef __MOO_TERM_BUFFER_H__
 #define __MOO_TERM_BUFFER_H__
 
-#include <gdk/gdkcolor.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TERM_TEXT_ATTR_MASK    (moo_term_text_attr_mask_get_type ())
-#define MOO_TYPE_TERM_TEXT_ATTR         (moo_term_text_attr_get_type ())
 #define MOO_TYPE_TERM_BUFFER            (moo_term_buffer_get_type ())
-
 #define MOO_TERM_BUFFER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_BUFFER, MooTermBuffer))
 #define MOO_TERM_BUFFER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_BUFFER, MooTermBufferClass))
 #define MOO_IS_TERM_BUFFER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TERM_BUFFER))
 #define MOO_IS_TERM_BUFFER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOO_TYPE_TERM_BUFFER))
 #define MOO_TERM_BUFFER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_BUFFER, MooTermBufferClass))
 
-typedef struct _MooTermTextAttr         MooTermTextAttr;
 typedef struct _MooTermBuffer           MooTermBuffer;
 typedef struct _MooTermBufferPrivate    MooTermBufferPrivate;
 typedef struct _MooTermBufferClass      MooTermBufferClass;
-
-typedef enum {
-    MOO_TERM_TEXT_REVERSE       = 1 << 0,
-    MOO_TERM_TEXT_BLINK         = 1 << 1,
-    MOO_TERM_TEXT_FOREGROUND    = 1 << 2,
-    MOO_TERM_TEXT_BACKGROUND    = 1 << 3,
-    MOO_TERM_TEXT_BOLD          = 1 << 4,
-    MOO_TERM_TEXT_UNDERLINE     = 1 << 5
-} MooTermTextAttrMask;
-
-typedef enum {
-    MOO_TERM_BLACK      = 0,
-    MOO_TERM_RED        = 1,
-    MOO_TERM_GREEN      = 2,
-    MOO_TERM_YELLOW     = 3,
-    MOO_TERM_BLUE       = 4,
-    MOO_TERM_MAGENTA    = 5,
-    MOO_TERM_CYAN       = 6,
-    MOO_TERM_WHITE      = 7
-} MooTermBufferColor;
-
-#define MOO_TERM_COLOR_MAX 8
-
-struct _MooTermTextAttr {
-    MooTermTextAttrMask mask        : 6;
-    MooTermBufferColor  foreground  : 3;
-    MooTermBufferColor  background  : 3;
-};
 
 struct _MooTermBuffer {
     GObject     parent;
@@ -75,8 +43,6 @@ struct _MooTermBufferClass {
 };
 
 
-GType   moo_term_text_attr_mask_get_type    (void) G_GNUC_CONST;
-GType   moo_term_text_attr_get_type         (void) G_GNUC_CONST;
 GType   moo_term_buffer_get_type            (void) G_GNUC_CONST;
 
 MooTermBuffer  *moo_term_buffer_new         (guint width,

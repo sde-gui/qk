@@ -12,45 +12,45 @@
  */
 
 #define MOOTERM_COMPILATION
-#include "mooterm/mooterm-text.h"
+#include "mooterm/mooterm-text-private.h"
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermbuffer-private.h"
 #include "mooterm/mooterm-selection.h"
+#include "mooterm/mootermline-private.h"
 
 
 typedef struct {
-    GtkTextIter start;
-    GtkTextIter end;
+    MooTermIter start;
+    MooTermIter end;
 } Segment;
 
 #define GET_SELECTION(term__) ((Segment*)(term__)->priv->selection)
 
-#define ITER_ROW(iter__)              ((iter__)->dummy3)
-#define ITER_COL(iter__)              ((iter__)->dummy4)
-#define ITER_WIDTH(iter__)            ((iter__)->dummy5)
-#define ITER_TERM(iter__)             ((MooTerm*)(iter__)->dummy1)
-#define ITER_SET_TERM(iter__,term__)  (iter__)->dummy1 = term
-#define ITER_BUF(iter__)              (ITER_TERM(iter__)->priv->buffer)
-#define ITER_TOTAL_HEIGHT(iter__)     ((int)(ITER_TERM(iter__)->priv->height + \
-                                       buf_scrollback (ITER_BUF(iter__))))
+#define ITER_TOTAL_HEIGHT(iter__) ((int)((iter__)->term->priv->height + buf_scrollback ((iter__)->buffer)))
+#define ITER_TERM(iter__)   ((iter__)->term)
+#define ITER_ROW(iter__)    ((iter__)->row)
+#define ITER_COL(iter__)    ((iter__)->col)
+#define ITER_WIDTH(iter__)  ((iter__)->width)
 
-#define FILL_ITER(iter__,term__,row__,col__)    \
-    (iter__)->dummy1 = term__;                  \
-    ITER_ROW(iter__) = row__;                   \
-    ITER_COL(iter__) = col__;                   \
-    ITER_WIDTH(iter__) = term__->priv->width;   \
-    CHECK_ITER(iter__);
+#define FILL_ITER(iter__,term__,row__,col__)                \
+    (iter__)->term = term__;                                \
+    (iter__)->buffer = term__->priv->buffer;                \
+    (iter__)->line = buf_line ((iter__)->buffer, row__);    \
+    (iter__)->row = row__;                                  \
+    (iter__)->col = col__;                                  \
+    (iter__)->width = term__->priv->width;                  \
+    CHECK_ITER(iter__)
 
 
 #ifdef DEBUG
-static void CHECK_ITER (const GtkTextIter *iter)
+static void CHECK_ITER (const MooTermIter *iter)
 {
-    g_assert (ITER_TERM(iter) != NULL);
-    g_assert ((int)ITER_TERM(iter)->priv->width == ITER_WIDTH(iter));
-    g_assert (ITER_ROW(iter) >= 0);
-    g_assert (ITER_ROW(iter) < ITER_TOTAL_HEIGHT(iter));
-    g_assert (ITER_COL(iter) >= 0);
-    g_assert (ITER_COL(iter) <= ITER_WIDTH(iter));
+    g_assert (iter->term != NULL);
+    g_assert ((int)iter->term->priv->width == iter->width);
+    g_assert (iter->row >= 0);
+    g_assert (iter->row < ITER_TOTAL_HEIGHT(iter));
+    g_assert (iter->col >= 0);
+    g_assert (iter->col <= iter->width);
 }
 
 static void CHECK_SEGMENT (const Segment *segment)
@@ -65,14 +65,12 @@ static void CHECK_SEGMENT (const Segment *segment)
 
 
 static void     get_start_iter      (MooTerm            *term,
-                                     GtkTextIter        *iter);
+                                     MooTermIter        *iter);
 static void     get_end_iter        (MooTerm            *term,
-                                     GtkTextIter        *iter);
-static int      iter_cmp            (const GtkTextIter  *first,
-                                     const GtkTextIter  *second);
-static void     iter_order          (GtkTextIter        *first,
-                                     GtkTextIter        *second);
-static void     iter_set_start      (GtkTextIter        *iter);
+                                     MooTermIter        *iter);
+static int      iter_cmp            (const MooTermIter  *first,
+                                     const MooTermIter  *second);
+static void     iter_set_start      (MooTermIter        *iter);
 
 static char    *segment_get_text    (Segment            *segment);
 static void     invalidate_segment  (Segment            *segments,
@@ -147,12 +145,12 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
     else
     {
         Segment tmp;
-        GtkTextIter itmp;
+        MooTermIter itmp;
 
         *left = *s1;
         *right = *s2;
-        iter_order (&left->start, &left->end);
-        iter_order (&right->start, &right->end);
+        _moo_term_iter_order (&left->start, &left->end);
+        _moo_term_iter_order  (&right->start, &right->end);
 
         switch (iter_cmp (&left->start, &right->start))
         {
@@ -221,11 +219,11 @@ static void invalidate_segment (Segment *segm, guint num)
 
     for (i = 0; i < num; ++i)
     {
-        GtkTextIter start = segm[i].start;
-        GtkTextIter end = segm[i].end;
+        MooTermIter start = segm[i].start;
+        MooTermIter end = segm[i].end;
         GdkRectangle rect;
 
-        iter_order (&start, &end);
+        _moo_term_iter_order  (&start, &end);
 
         if (ITER_ROW (&start) < ITER_ROW (&end))
         {
@@ -273,8 +271,8 @@ static void invalidate_segment (Segment *segm, guint num)
 
 void
 _moo_term_select_range (MooTerm            *term,
-                        const GtkTextIter  *start,
-                        const GtkTextIter  *end)
+                        const MooTermIter  *start,
+                        const MooTermIter  *end)
 {
     Segment diff[2];
     Segment new_sel;
@@ -302,7 +300,7 @@ _moo_term_select_range (MooTerm            *term,
             break;
     }
 
-    iter_order (&new_sel.start, &new_sel.end);
+    _moo_term_iter_order  (&new_sel.start, &new_sel.end);
 
     if (ITER_COL(&new_sel.start) == ITER_WIDTH(&new_sel.start))
     {
@@ -321,7 +319,7 @@ _moo_term_select_range (MooTerm            *term,
     }
 
     if (inv)
-        iter_order (&new_sel.end, &new_sel.start);
+        _moo_term_iter_order  (&new_sel.end, &new_sel.start);
 
     CHECK_SEGMENT (&new_sel);
 
@@ -340,14 +338,14 @@ _moo_term_select_range (MooTerm            *term,
 
 
 static void     get_start_iter      (MooTerm            *term,
-                                     GtkTextIter        *iter)
+                                     MooTermIter        *iter)
 {
     FILL_ITER (iter, term, 0, 0);
 }
 
 
 static void     get_end_iter        (MooTerm            *term,
-                                     GtkTextIter        *iter)
+                                     MooTermIter        *iter)
 {
     int width = term->priv->width;
     int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
@@ -364,7 +362,7 @@ static void     stop_drag_scroll                (MooTerm    *term);
 static gboolean drag_scroll_timeout_func        (MooTerm    *term);
 static void     scroll_selection_end_onscreen   (MooTerm    *term);
 static void     start_selection_dnd             (MooTerm    *term,
-                                                 const GtkTextIter *iter,
+                                                 const MooTermIter *iter,
                                                  GdkEventMotion *event);
 
 #define SCROLL_TIMEOUT 100
@@ -374,7 +372,7 @@ gboolean
 _moo_term_button_press (GtkWidget      *widget,
                         GdkEventButton *event)
 {
-    GtkTextIter iter;
+    MooTermIter iter;
     int x, y;
     MooTerm *term = MOO_TERM (widget);
 
@@ -383,15 +381,15 @@ _moo_term_button_press (GtkWidget      *widget,
     if (!GTK_WIDGET_HAS_FOCUS (widget))
         gtk_widget_grab_focus (widget);
 
-    _moo_term_window_to_buffer_coords (term, event->x, event->y, &x, &y);
-    _moo_term_get_iter_at_location (term, &iter, x, y);
+    moo_term_window_to_buffer_coords (term, event->x, event->y, &x, &y);
+    moo_term_get_iter_at_location (term, &iter, x, y);
 
     if (event->type == GDK_BUTTON_PRESS)
     {
         if (event->button == 1)
         {
 #if 0
-            GtkTextIter sel_start, sel_end;
+            MooTermIter sel_start, sel_end;
 #endif
 
             MOUSE_STUFF(term)->drag_button = GDK_BUTTON_PRESS;
@@ -438,7 +436,7 @@ _moo_term_button_press (GtkWidget      *widget,
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
     {
-        GtkTextIter bound;
+        MooTermIter bound;
 
         if (_moo_term_get_selection_bounds (term, NULL, NULL))
         {
@@ -458,7 +456,7 @@ _moo_term_button_press (GtkWidget      *widget,
     }
     else if (event->type == GDK_3BUTTON_PRESS && event->button == 1)
     {
-        GtkTextIter bound;
+        MooTermIter bound;
 
         MOUSE_STUFF(term)->drag_button = GDK_3BUTTON_PRESS;
         MOUSE_STUFF(term)->drag_start_x = x;
@@ -480,7 +478,7 @@ _moo_term_button_release (GtkWidget      *widget,
                           G_GNUC_UNUSED GdkEventButton *event)
 {
     MooTerm *term = MOO_TERM (widget);
-    GtkTextIter iter;
+    MooTermIter iter;
 
     moo_term_set_pointer_visible (term, TRUE);
 
@@ -503,7 +501,7 @@ _moo_term_button_release (GtkWidget      *widget,
             * otherwise, it was just a single click in selected text */
             g_assert (!MOUSE_STUFF(term)->drag_moved); /* parent should handle drag */ /* TODO ??? */
 
-            _moo_term_get_iter_at_location (term, &iter,
+            moo_term_get_iter_at_location (term, &iter,
                                            MOUSE_STUFF(term)->drag_start_x,
                                            MOUSE_STUFF(term)->drag_start_y);
             _moo_term_select_range (term, &iter, &iter);
@@ -536,7 +534,7 @@ _moo_term_motion_notify (GtkWidget      *widget,
 {
     MooTerm *term = MOO_TERM (widget);
     int x, y, event_x, event_y;
-    GtkTextIter iter;
+    MooTermIter iter;
 
     moo_term_set_pointer_visible (MOO_TERM (widget), TRUE);
 
@@ -552,13 +550,13 @@ _moo_term_motion_notify (GtkWidget      *widget,
         event_y = (int)event->y;
     }
 
-    _moo_term_window_to_buffer_coords (term, event_x, event_y, &x, &y);
-    _moo_term_get_iter_at_location (term, &iter, x, y);
+    moo_term_window_to_buffer_coords (term, event_x, event_y, &x, &y);
+    moo_term_get_iter_at_location (term, &iter, x, y);
 
     if (MOUSE_STUFF(term)->drag_type == DRAG_SELECT)
     {
         GdkRectangle rect;
-        GtkTextIter start;
+        MooTermIter start;
         MooTextSelectionType t;
 
         MOUSE_STUFF(term)->drag_moved = TRUE;
@@ -574,7 +572,7 @@ _moo_term_motion_notify (GtkWidget      *widget,
             stop_drag_scroll (term);
         }
 
-        _moo_term_get_iter_at_location (term, &start,
+        moo_term_get_iter_at_location (term, &start,
                                        MOUSE_STUFF(term)->drag_start_x,
                                        MOUSE_STUFF(term)->drag_start_y);
 
@@ -605,15 +603,15 @@ _moo_term_motion_notify (GtkWidget      *widget,
         if (gtk_drag_check_threshold (widget, MOUSE_STUFF(term)->drag_start_x,
                                       MOUSE_STUFF(term)->drag_start_y, x, y))
         {
-            GtkTextIter iter;
+            MooTermIter iter;
             int buffer_x, buffer_y;
 
-            _moo_term_window_to_buffer_coords (term,
+            moo_term_window_to_buffer_coords (term,
                                               MOUSE_STUFF(term)->drag_start_x,
                                               MOUSE_STUFF(term)->drag_start_y,
                                               &buffer_x, &buffer_y);
 
-            _moo_term_get_iter_at_location (term, &iter, buffer_x, buffer_y);
+            moo_term_get_iter_at_location (term, &iter, buffer_x, buffer_y);
 
             MOUSE_STUFF(term)->drag_type = DRAG_NONE;
             start_selection_dnd (term, &iter, event);
@@ -650,17 +648,17 @@ static gboolean
 drag_scroll_timeout_func (MooTerm *term)
 {
     int x, y, px, py;
-    GtkTextIter iter;
-    GtkTextIter start;
+    MooTermIter iter;
+    MooTermIter start;
     MooTextSelectionType t;
 
     g_assert (MOUSE_STUFF(term)->drag_type == DRAG_SELECT);
 
     gdk_window_get_pointer (GTK_WIDGET(term)->window, &px, &py, NULL);
-    _moo_term_window_to_buffer_coords (term, px, py, &x, &y);
-    _moo_term_get_iter_at_location (term, &iter, x, y);
+    moo_term_window_to_buffer_coords (term, px, py, &x, &y);
+    moo_term_get_iter_at_location (term, &iter, x, y);
 
-    _moo_term_get_iter_at_location (term, &start,
+    moo_term_get_iter_at_location (term, &start,
                                    MOUSE_STUFF(term)->drag_start_x,
                                    MOUSE_STUFF(term)->drag_start_y);
 
@@ -690,7 +688,7 @@ drag_scroll_timeout_func (MooTerm *term)
 static void
 scroll_selection_end_onscreen (MooTerm *term)
 {
-    GtkTextIter iter = GET_SELECTION(term)->end;
+    MooTermIter iter = GET_SELECTION(term)->end;
     guint top_line = term_top_line (term);
 
     if (ITER_ROW(&iter) < (int)top_line)
@@ -703,7 +701,7 @@ scroll_selection_end_onscreen (MooTerm *term)
 
 static void
 start_selection_dnd (G_GNUC_UNUSED MooTerm    *term,
-                     G_GNUC_UNUSED const GtkTextIter *iter,
+                     G_GNUC_UNUSED const MooTermIter *iter,
                      G_GNUC_UNUSED GdkEventMotion *event)
 {
     g_return_if_reached ();
@@ -743,10 +741,10 @@ _moo_term_get_selected_cells (MooTerm    *term,
     }
     else
     {
-        GtkTextIter start = selection->start;
-        GtkTextIter end = selection->end;
+        MooTermIter start = selection->start;
+        MooTermIter end = selection->end;
 
-        iter_order (&start, &end);
+        _moo_term_iter_order  (&start, &end);
 
         if (left_row)
             *left_row = ITER_ROW (&start);
@@ -765,7 +763,7 @@ _moo_term_get_selected_cells (MooTerm    *term,
 void
 _moo_term_selection_clear (MooTerm    *term)
 {
-    GtkTextIter i;
+    MooTermIter i;
     FILL_ITER (&i, term, 0, 0);
     _moo_term_select_range (term, &i, &i);
 }
@@ -787,20 +785,22 @@ right_button_click (MooTerm        *term,
 
 
 void
-_moo_term_window_to_buffer_coords (MooTerm            *term,
+moo_term_window_to_buffer_coords (MooTerm            *term,
                                   int                 window_x,
                                   int                 window_y,
                                   int                *buffer_x,
                                   int                *buffer_y)
 {
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (buffer_x != NULL && buffer_y != NULL);
     *buffer_x = window_x;
     *buffer_y = window_y + (term_top_line (term) * term_char_height (term));
 }
 
 
 void
-_moo_term_get_iter_at_location (MooTerm            *term,
-                               GtkTextIter        *iter,
+moo_term_get_iter_at_location (MooTerm            *term,
+                               MooTermIter        *iter,
                                int                 x,
                                int                 y)
 {
@@ -832,10 +832,41 @@ _moo_term_get_iter_at_location (MooTerm            *term,
 }
 
 
+void
+moo_term_get_iter_at_pos (MooTerm            *term,
+                          MooTermIter        *iter,
+                          int                 x,
+                          int                 y)
+{
+    int char_width = term_char_width (term);
+    int char_height = term_char_height (term);
+    int scrollback = buf_scrollback (term->priv->buffer);
+
+    g_return_if_fail (iter != NULL);
+
+    y /= char_height;
+    x /= char_width;
+    x = CLAMP (x, 0, (int)term->priv->width);
+
+    if (y < 0)
+    {
+        y = 0;
+        x = 0;
+    }
+    else if (y > scrollback + (int)term->priv->height - 1)
+    {
+        y = scrollback + (int)term->priv->height - 1;
+        x = term->priv->width;
+    }
+
+    FILL_ITER (iter, term, y, x);
+}
+
+
 gboolean
 _moo_term_get_selection_bounds (MooTerm            *term,
-                               GtkTextIter        *sel_start,
-                               GtkTextIter        *sel_end)
+                                MooTermIter        *sel_start,
+                                MooTermIter        *sel_end)
 {
     Segment *selection = term->priv->selection;
 
@@ -849,8 +880,8 @@ _moo_term_get_selection_bounds (MooTerm            *term,
 }
 
 
-static int      iter_cmp                (const GtkTextIter  *first,
-                                         const GtkTextIter  *second)
+static int      iter_cmp                (const MooTermIter  *first,
+                                         const MooTermIter  *second)
 {
     g_assert (ITER_TERM (first) == ITER_TERM (second));
 
@@ -867,20 +898,20 @@ static int      iter_cmp                (const GtkTextIter  *first,
 }
 
 
-static void iter_set_start  (GtkTextIter        *iter)
+static void iter_set_start  (MooTermIter        *iter)
 {
     ITER_ROW (iter) = ITER_COL (iter) = 0;
     CHECK_ITER (iter);
 }
 
 
-static void
-iter_order (GtkTextIter    *first,
-            GtkTextIter    *second)
+void
+_moo_term_iter_order (MooTermIter    *first,
+                      MooTermIter    *second)
 {
     if (iter_cmp (first, second) > 0)
     {
-        GtkTextIter tmp = *first;
+        MooTermIter tmp = *first;
         *first = *second;
         *second = tmp;
     }
@@ -888,9 +919,9 @@ iter_order (GtkTextIter    *first,
 
 
 gboolean
-_moo_term_iter_in_range (const GtkTextIter  *iter,
-                         const GtkTextIter  *start,
-                         const GtkTextIter  *end)
+_moo_term_iter_in_range (const MooTermIter  *iter,
+                         const MooTermIter  *start,
+                         const MooTermIter  *end)
 {
     CHECK_ITER (iter);
     CHECK_ITER (start);
@@ -901,7 +932,7 @@ _moo_term_iter_in_range (const GtkTextIter  *iter,
 
 void
 _moo_term_place_selection_end (MooTerm            *term,
-                              const GtkTextIter  *where)
+                               const MooTermIter  *where)
 {
     CHECK_ITER (where);
     _moo_term_select_range (term, &GET_SELECTION(term)->start, where);
@@ -925,11 +956,11 @@ _moo_term_cell_selected (MooTerm    *term,
                          guint       row,
                          guint       col)
 {
-    GtkTextIter start, end, iter;
+    MooTermIter start, end, iter;
 
     if (_moo_term_get_selection_bounds (term, &start, &end))
     {
-        iter_order (&start, &end);
+        _moo_term_iter_order  (&start, &end);
         FILL_ITER (&iter, term, row, col);
         return iter_cmp (&start, &iter) <= 0 && iter_cmp (&iter, &end) < 0;
     }
@@ -962,13 +993,6 @@ _moo_term_row_selected (MooTerm    *term,
 }
 
 
-void
-_moo_term_text_iface_init (gpointer g_iface)
-{
-    g_return_if_fail (g_iface != NULL);
-}
-
-
 char       *moo_term_get_selection (MooTerm    *term)
 {
     return segment_get_text (term->priv->selection);
@@ -976,24 +1000,24 @@ char       *moo_term_get_selection (MooTerm    *term)
 
 
 static int      char_class              (MooTerm            *term,
-                                         const GtkTextIter  *iter);
-static gboolean iter_ends_line          (const GtkTextIter  *iter);
-static gboolean iter_starts_line        (const GtkTextIter  *iter);
-static void     iter_forward_char       (GtkTextIter        *iter);
-static void     iter_backward_char      (GtkTextIter        *iter);
-static void     iter_set_line_offset    (GtkTextIter        *iter,
+                                         const MooTermIter  *iter);
+static gboolean iter_ends_line          (const MooTermIter  *iter);
+static gboolean iter_starts_line        (const MooTermIter  *iter);
+static void     iter_forward_char       (MooTermIter        *iter);
+static void     iter_backward_char      (MooTermIter        *iter);
+static void     iter_set_line_offset    (MooTermIter        *iter,
                                          guint               offset);
-static gboolean iter_forward_line       (GtkTextIter        *iter);
-static gboolean is_space                (const GtkTextIter  *iter);
-static gboolean is_word_char            (const GtkTextIter  *iter);
-static gunichar iter_get_char           (const GtkTextIter  *iter);
+static gboolean iter_forward_line       (MooTermIter        *iter);
+static gboolean is_space                (const MooTermIter  *iter);
+static gboolean is_word_char            (const MooTermIter  *iter);
+static gunichar iter_get_char           (const MooTermIter  *iter);
 
 
 gboolean
 _moo_term_extend_selection (MooTerm            *term,
-                           MooTextSelectionType type,
-                           GtkTextIter        *end,
-                           GtkTextIter        *start)
+                            MooTextSelectionType type,
+                            MooTermIter        *end,
+                            MooTermIter        *start)
 {
     int order = iter_cmp (start, end);
 
@@ -1007,7 +1031,7 @@ _moo_term_extend_selection (MooTerm            *term,
 
     if (order > 0)
     {
-        GtkTextIter *tmp = start;
+        MooTermIter *tmp = start;
         start = end; end = tmp;
     }
 
@@ -1051,7 +1075,7 @@ _moo_term_extend_selection (MooTerm            *term,
 /* TODO */
 static int
 char_class (MooTerm            *term,
-            const GtkTextIter  *iter)
+            const MooTermIter  *iter)
 {
     if (iter_ends_line (iter))
         return -1;
@@ -1065,94 +1089,94 @@ char_class (MooTerm            *term,
 
 
 static gboolean
-iter_ends_line (const GtkTextIter  *iter)
+iter_ends_line (const MooTermIter  *iter)
 {
-    return ITER_COL(iter) == (int)ITER_TERM(iter)->priv->width;
+    return iter->col == (int)iter->term->priv->width;
 }
 
 
-static gboolean iter_starts_line        (const GtkTextIter  *iter)
+static gboolean iter_starts_line        (const MooTermIter  *iter)
 {
     CHECK_ITER (iter);
-    return ITER_COL(iter) == 0;
+    return iter->col == 0;
 }
 
 
-static void     iter_forward_char       (GtkTextIter        *iter)
+static void     iter_forward_char       (MooTermIter        *iter)
 {
-    MooTerm *term = ITER_TERM(iter);
+    MooTerm *term = iter->term;
     int width = term->priv->width;
     int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
 
-    g_return_if_fail (ITER_ROW(iter) < total_height || ITER_COL(iter) < width);
+    g_return_if_fail (iter->row < total_height || iter->col < width);
 
-    if (ITER_COL(iter) < width)
+    if (iter->col < width)
     {
-        ITER_COL(iter)++;
+        iter->col++;
     }
     else
     {
-        ITER_COL(iter) = 0;
-        ITER_ROW(iter)++;
+        iter->col = 0;
+        iter->row++;
     }
 
     CHECK_ITER (iter);
 }
 
 
-static void     iter_backward_char      (GtkTextIter        *iter)
+static void     iter_backward_char      (MooTermIter        *iter)
 {
-    MooTerm *term = ITER_TERM(iter);
+    MooTerm *term = iter->term;
     int width = term->priv->width;
 
-    g_return_if_fail (ITER_ROW(iter) > 0 || ITER_COL(iter) > 0);
+    g_return_if_fail (iter->row > 0 || iter->col > 0);
 
-    if (ITER_COL(iter) > 0)
+    if (iter->col > 0)
     {
-        ITER_COL(iter)--;
+        iter->col--;
     }
     else
     {
-        ITER_ROW(iter)--;
-        ITER_COL(iter) = width;
+        iter->row--;
+        iter->col = width;
     }
 
     CHECK_ITER (iter);
 }
 
 
-static void     iter_set_line_offset    (GtkTextIter        *iter,
+static void     iter_set_line_offset    (MooTermIter        *iter,
                                          guint               offset)
 {
-    g_return_if_fail (offset <= ITER_TERM(iter)->priv->width);
-    ITER_COL(iter) = offset;
+    g_return_if_fail (offset <= iter->term->priv->width);
+    iter->col = offset;
     CHECK_ITER (iter);
 }
 
 
-static gboolean iter_forward_line       (GtkTextIter        *iter)
+static gboolean iter_forward_line       (MooTermIter        *iter)
 {
-    MooTerm *term = ITER_TERM(iter);
+    MooTerm *term = iter->term;
     int width = term->priv->width;
     int total_height = term->priv->height + buf_scrollback (term->priv->buffer);
 
-    if (ITER_ROW(iter) == total_height - 1)
+    if (iter->row == total_height - 1)
     {
-        ITER_COL(iter) = width;
+        iter->col = width;
         CHECK_ITER (iter);
         return FALSE;
     }
     else
     {
-        ITER_COL(iter) = 0;
-        ITER_ROW(iter)++;
+        iter->col = 0;
+        iter->row++;
         CHECK_ITER (iter);
         return TRUE;
     }
 }
 
 
-static gboolean is_space                (const GtkTextIter  *iter)
+static gboolean is_space                (const MooTermIter  *iter)
 {
     gunichar c = iter_get_char (iter);
     g_return_val_if_fail (c != 0, FALSE);
@@ -1160,7 +1184,7 @@ static gboolean is_space                (const GtkTextIter  *iter)
 }
 
 
-static gboolean is_word_char            (const GtkTextIter  *iter)
+static gboolean is_word_char            (const MooTermIter  *iter)
 {
     gunichar c = iter_get_char (iter);
     g_return_val_if_fail (c != 0, FALSE);
@@ -1168,11 +1192,10 @@ static gboolean is_word_char            (const GtkTextIter  *iter)
 }
 
 
-static gunichar iter_get_char           (const GtkTextIter  *iter)
+static gunichar iter_get_char           (const MooTermIter  *iter)
 {
-    MooTermLine *line = buf_line (ITER_TERM(iter)->priv->buffer,
-                                  ITER_ROW(iter));
-    return _moo_term_line_get_unichar (line, ITER_COL(iter));
+    MooTermLine *line = buf_line (iter->term->priv->buffer, iter->row);
+    return _moo_term_line_get_char (line, iter->col);
 }
 
 
@@ -1180,14 +1203,14 @@ static char    *segment_get_text    (Segment            *segment)
 {
     MooTerm *term = ITER_TERM (&segment->start);
     MooTermBuffer *buf = term->priv->buffer;
-    GtkTextIter start = segment->start;
-    GtkTextIter end = segment->end;
+    MooTermIter start = segment->start;
+    MooTermIter end = segment->end;
     GString *text;
     MooTermLine *line;
     int width = term->priv->width;
     int i;
 
-    iter_order (&start, &end);
+    _moo_term_iter_order  (&start, &end);
 
     if (!iter_cmp (&start, &end))
         return NULL;
@@ -1198,7 +1221,7 @@ static char    *segment_get_text    (Segment            *segment)
     {
         line = buf_line (buf, ITER_ROW(&start));
         for (i = ITER_COL(&start); i < ITER_COL(&end); ++i)
-            g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
+            g_string_append_unichar (text, _moo_term_line_get_char (line, i));
     }
     else
     {
@@ -1206,7 +1229,7 @@ static char    *segment_get_text    (Segment            *segment)
         {
             line = buf_line (buf, ITER_ROW(&start));
             for (i = ITER_COL(&start); i < width; ++i)
-                g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
+                g_string_append_unichar (text, _moo_term_line_get_char (line, i));
             g_string_append_c (text, '\n');
         }
 
@@ -1217,7 +1240,7 @@ static char    *segment_get_text    (Segment            *segment)
                 int j;
                 line = buf_line (buf, i);
                 for (j = 0; j < width; ++j)
-                    g_string_append_unichar (text, _moo_term_line_get_unichar (line, j));
+                    g_string_append_unichar (text, _moo_term_line_get_char (line, j));
                 g_string_append_c (text, '\n');
             }
         }
@@ -1226,7 +1249,7 @@ static char    *segment_get_text    (Segment            *segment)
         {
             line = buf_line (buf, ITER_ROW(&end));
             for (i = 0; i < ITER_COL(&start); ++i)
-                g_string_append_unichar (text, _moo_term_line_get_unichar (line, i));
+                g_string_append_unichar (text, _moo_term_line_get_char (line, i));
         }
     }
 
@@ -1237,7 +1260,7 @@ static char    *segment_get_text    (Segment            *segment)
 void
 moo_term_select_all (MooTerm        *term)
 {
-    GtkTextIter start, end;
+    MooTermIter start, end;
 
     get_start_iter (term, &start);
     get_end_iter (term, &end);
@@ -1254,4 +1277,310 @@ char       *moo_term_get_content            (MooTerm        *term)
     get_end_iter (term, &segm.end);
 
     return segment_get_text (&segm);
+}
+
+
+char*
+moo_term_get_text (MooTermIter    *start,
+                   MooTermIter    *end)
+{
+    /* XXX check iters */
+    Segment segm = {*start, *end};
+    return segment_get_text (&segm);
+}
+
+
+guint
+moo_term_get_line_count (MooTerm *term)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), 0);
+    return term->priv->height + buf_scrollback (term->priv->primary_buffer);
+}
+
+
+MooTermLine*
+moo_term_get_line (MooTerm            *term,
+                   guint               line_no)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), NULL);
+    g_return_val_if_fail (line_no < moo_term_get_line_count (term), NULL);
+    return buf_line (term->priv->primary_buffer, line_no);
+}
+
+
+gboolean
+moo_term_get_iter_at_line (MooTerm            *term,
+                           MooTermIter        *iter,
+                           guint               line)
+{
+    g_return_val_if_fail (iter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+
+    if (line >= moo_term_get_line_count (term))
+        return FALSE;
+
+    FILL_ITER (iter, term, line, 0);
+    return TRUE;
+}
+
+
+gboolean
+moo_term_get_iter_at_line_offset (MooTerm            *term,
+                                  MooTermIter        *iter,
+                                  guint               line_no,
+                                  guint               offset)
+{
+    MooTermLine *line;
+
+    g_return_val_if_fail (iter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+
+    if (line_no >= moo_term_get_line_count (term))
+        return FALSE;
+
+    line = buf_line (term->priv->buffer, line_no);
+
+    if (offset > _moo_term_line_len (line))
+        return FALSE;
+
+    FILL_ITER (iter, term, line_no, offset);
+    return TRUE;
+}
+
+
+void
+moo_term_get_iter_at_cursor (MooTerm            *term,
+                             MooTermIter        *iter)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (iter != NULL);
+
+    FILL_ITER (iter, term, buf_cursor_row_abs (term->priv->buffer),
+               buf_cursor_col (term->priv->buffer));
+}
+
+
+void
+moo_term_iter_forward_to_line_end (MooTermIter *iter)
+{
+    MooTerm *term;
+
+    g_return_if_fail (iter != NULL);
+
+    term = ITER_TERM (iter);
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    ITER_COL (iter) = term->priv->width;
+}
+
+
+void
+moo_term_apply_tag (MooTerm            *term,
+                    MooTermTag         *tag,
+                    MooTermIter        *start,
+                    MooTermIter        *end)
+{
+    MooTermBuffer *buf;
+    MooTermLine *line;
+    int i;
+
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (MOO_IS_TERM_TAG (tag));
+    g_return_if_fail (start != NULL && end != NULL);
+    g_return_if_fail (ITER_TERM(start) == term && ITER_TERM(end) == term);
+
+    _moo_term_iter_order (start, end);
+    buf = term->priv->primary_buffer;
+
+    if (ITER_ROW (start) == ITER_ROW (end))
+    {
+        line = buf_line (buf, ITER_ROW (start));
+        _moo_term_line_apply_tag (line, tag, ITER_COL (start),
+                                  ITER_COL (end) - ITER_COL (start));
+    }
+    else
+    {
+        line = buf_line (buf, ITER_ROW (start));
+        _moo_term_line_apply_tag (line, tag, ITER_COL (start),
+                                  _moo_term_line_len (line) - ITER_COL (start));
+        line = buf_line (buf, ITER_ROW (end));
+        _moo_term_line_apply_tag (line, tag, 0, ITER_COL (end));
+        if (ITER_ROW (start) + 1 < ITER_ROW (end))
+        {
+            for (i = ITER_ROW (start) + 1; i < ITER_ROW (end); ++i)
+            {
+                line = buf_line (buf, i);
+                _moo_term_line_apply_tag (line, tag, 0,
+                                          _moo_term_line_len (line));
+            }
+        }
+    }
+
+    /* XXX invalidate */
+}
+
+
+void
+moo_term_remove_tag (MooTerm            *term,
+                     MooTermTag         *tag,
+                     MooTermIter        *start,
+                     MooTermIter        *end)
+{
+    MooTermBuffer *buf;
+    MooTermLine *line;
+    int i;
+
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (MOO_IS_TERM_TAG (tag));
+    g_return_if_fail (start != NULL && end != NULL);
+    g_return_if_fail (ITER_TERM(start) == term && ITER_TERM(end) == term);
+
+    _moo_term_iter_order (start, end);
+    buf = term->priv->primary_buffer;
+
+    if (ITER_ROW (start) == ITER_ROW (end))
+    {
+        line = buf_line (buf, ITER_ROW (start));
+        _moo_term_line_remove_tag (line, tag, ITER_COL (start),
+                                   ITER_COL (end) - ITER_COL (start));
+    }
+    else
+    {
+        line = buf_line (buf, ITER_ROW (start));
+        _moo_term_line_remove_tag (line, tag, ITER_COL (start),
+                                   _moo_term_line_len (line) - ITER_COL (start));
+        line = buf_line (buf, ITER_ROW (end));
+        _moo_term_line_remove_tag (line, tag, 0, ITER_COL (end));
+        if (ITER_ROW (start) + 1 < ITER_ROW (end))
+        {
+            for (i = ITER_ROW (start) + 1; i < ITER_ROW (end); ++i)
+            {
+                line = buf_line (buf, i);
+                _moo_term_line_remove_tag (line, tag, 0,
+                                           _moo_term_line_len (line));
+            }
+        }
+    }
+
+    /* XXX invalidate */
+}
+
+
+gboolean
+moo_term_iter_has_tag (MooTermIter        *iter,
+                       MooTermTag         *tag)
+{
+    MooTermBuffer *buf;
+    MooTerm *term;
+
+    g_return_val_if_fail (iter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM (ITER_TERM (iter)), FALSE);
+    g_return_val_if_fail (MOO_IS_TERM_TAG (tag), FALSE);
+
+    term = ITER_TERM (iter);
+    buf = term->priv->primary_buffer;
+
+    return _moo_term_line_has_tag (buf_line (buf, ITER_ROW (iter)),
+                                   tag, ITER_COL (iter));
+}
+
+
+gboolean
+moo_term_iter_get_tag_start (MooTermIter        *iter,
+                             MooTermTag         *tag)
+{
+    MooTermBuffer *buf;
+    MooTermLine *line;
+    MooTerm *term;
+    guint col;
+
+    g_return_val_if_fail (iter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM (ITER_TERM (iter)), FALSE);
+    g_return_val_if_fail (MOO_IS_TERM_TAG (tag), FALSE);
+
+    term = ITER_TERM (iter);
+    buf = term->priv->primary_buffer;
+    line = buf_line (buf, ITER_ROW (iter));
+
+    col = ITER_COL (iter);
+
+    if (_moo_term_line_get_tag_start (line, tag, &col))
+    {
+        ITER_COL (iter) = col;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
+gboolean
+moo_term_iter_get_tag_end (MooTermIter        *iter,
+                           MooTermTag         *tag)
+{
+    MooTermBuffer *buf;
+    MooTermLine *line;
+    MooTerm *term;
+    guint col;
+
+    g_return_val_if_fail (iter != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_TERM (ITER_TERM (iter)), FALSE);
+    g_return_val_if_fail (MOO_IS_TERM_TAG (tag), FALSE);
+
+    term = ITER_TERM (iter);
+    buf = term->priv->primary_buffer;
+    line = buf_line (buf, ITER_ROW (iter));
+
+    col = ITER_COL (iter);
+
+    if (_moo_term_line_get_tag_end (line, tag, &col))
+    {
+        ITER_COL (iter) = col;
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
+void
+moo_term_set_line_data (MooTerm            *term,
+                        MooTermLine        *line,
+                        const char         *key,
+                        gpointer            data)
+{
+    moo_term_set_line_data_full (term, line, key, data, NULL);
+}
+
+
+void
+moo_term_set_line_data_full (MooTerm            *term,
+                             MooTermLine        *line,
+                             const char         *key,
+                             gpointer            data,
+                             GDestroyNotify      destroy)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (line != NULL);
+
+    _moo_term_buffer_set_line_data (term->priv->primary_buffer,
+                                    line, key, data, destroy);
+}
+
+
+gpointer
+moo_term_get_line_data (MooTerm            *term,
+                        MooTermLine        *line,
+                        const char         *key)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+    g_return_val_if_fail (line != NULL, NULL);
+
+    return _moo_term_buffer_get_line_data (term->priv->primary_buffer, line, key);
 }
