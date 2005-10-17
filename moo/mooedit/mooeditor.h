@@ -16,6 +16,7 @@
 #define __MOO_EDITOR_H__
 
 #include <mooedit/mooeditwindow.h>
+#include <mooedit/moolangmgr.h>
 #include <mooutils/moouixml.h>
 #include <mooutils/moohistorylist.h>
 #include <mooutils/moofiltermgr.h>
@@ -97,7 +98,7 @@ void             moo_editor_set_ui_xml      (MooEditor      *editor,
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 
-MooLangTable    *moo_editor_get_lang_table  (MooEditor      *editor);
+MooLangMgr      *moo_editor_get_lang_mgr    (MooEditor      *editor);
 
 
 #ifdef MOOEDIT_COMPILATION

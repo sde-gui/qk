@@ -766,7 +766,7 @@ static gboolean moo_app_init_real       (MooApp         *app)
 {
     G_GNUC_UNUSED const char *app_dir;
     const char *rc_file;
-    MooLangTable *lang_table;
+    MooLangMgr *lang_mgr;
     MooUIXML *ui_xml;
     GError *error = NULL;
 
@@ -831,13 +831,13 @@ static gboolean moo_app_init_real       (MooApp         *app)
         moo_editor_set_app_name (app->priv->editor,
                                  app->priv->info->short_name);
 
-        lang_table = moo_editor_get_lang_table (app->priv->editor);
-        moo_lang_table_add_dir (lang_table, lang_dir);
+        lang_mgr = moo_editor_get_lang_mgr (app->priv->editor);
+        moo_lang_mgr_add_dir (lang_mgr, lang_dir);
 
         if (user_lang_dir)
-            moo_lang_table_add_dir (lang_table, user_lang_dir);
+            moo_lang_mgr_add_dir (lang_mgr, user_lang_dir);
 
-        moo_lang_table_read_dirs (lang_table);
+        moo_lang_mgr_read_dirs (lang_mgr);
 
         g_signal_connect_swapped (app->priv->editor,
                                   "all-windows-closed",

@@ -94,7 +94,7 @@ struct _MooEditorPrivate {
     MooUIXML        *ui_xml;
     MooFilterMgr    *filter_mgr;
     MooHistoryList  *history;
-    MooLangTable    *lang_table;
+    MooLangMgr      *lang_mgr;
     MooFileWatch    *file_watch;
     gboolean         open_single;
     gboolean         allow_empty_window;
@@ -185,7 +185,7 @@ static void     moo_editor_init        (MooEditor  *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
 
-    editor->priv->lang_table = moo_lang_table_new ();
+    editor->priv->lang_mgr = moo_lang_mgr_new ();
     editor->priv->filter_mgr = moo_filter_mgr_new ();
 
     editor->priv->history = moo_history_list_new ("Editor");
@@ -274,7 +274,7 @@ static void moo_editor_finalize       (GObject      *object)
         g_object_unref (editor->priv->filter_mgr);
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
-    g_object_unref (editor->priv->lang_table);
+    g_object_unref (editor->priv->lang_mgr);
 
     if (editor->priv->file_watch)
     {
@@ -1360,9 +1360,9 @@ moo_editor_get_doc (MooEditor      *editor,
 }
 
 
-MooLangTable*
-moo_editor_get_lang_table (MooEditor *editor)
+MooLangMgr*
+moo_editor_get_lang_mgr (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return editor->priv->lang_table;
+    return editor->priv->lang_mgr;
 }

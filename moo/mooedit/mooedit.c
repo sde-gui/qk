@@ -520,7 +520,7 @@ moo_edit_set_lang (MooEdit        *edit,
                    MooLang        *lang)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_text_buffer_set_lang (get_moo_buffer (edit), lang);
+    moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
 }
 
 
@@ -698,8 +698,8 @@ _moo_edit_choose_lang (MooEdit *edit)
 
     if (edit->priv->filename)
     {
-        MooLangTable *table = moo_editor_get_lang_table (edit->priv->editor);
-        lang = moo_lang_table_get_lang_for_file (table, edit->priv->filename);
+        MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+        lang = moo_lang_mgr_get_lang_for_file (mgr, edit->priv->filename);
     }
 
     moo_edit_set_lang (edit, lang);

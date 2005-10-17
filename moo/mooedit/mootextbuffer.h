@@ -73,6 +73,8 @@ void        moo_text_buffer_set_check_brackets          (MooTextBuffer      *buf
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);
 
+void        moo_text_buffer_apply_scheme                (MooTextBuffer      *buffer,
+                                                         MooTextStyleScheme *scheme);
 
 void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
                                                          int                 first_line,

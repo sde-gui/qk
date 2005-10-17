@@ -16,7 +16,7 @@
 #define __MOO_LANG_H__
 
 #include <gtk/gtktexttag.h>
-#include <mooedit/mootextstyle.h>
+#include <mooedit/mootextstylescheme.h>
 
 G_BEGIN_DECLS
 
@@ -25,18 +25,9 @@ G_BEGIN_DECLS
 #define MOO_STYLES_PREFS_PREFIX MOO_EDIT_PREFS_PREFIX "/styles"
 
 #define MOO_TYPE_LANG       (moo_lang_get_type ())
-#define MOO_TYPE_LANG_TABLE (moo_lang_table_get_type ())
-
-#define MOO_LANG_TABLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LANG_TABLE, MooLangTable))
-#define MOO_LANG_TABLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_LANG_TABLE, MooLangTableClass))
-#define MOO_IS_LANG_TABLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_LANG_TABLE))
-#define MOO_IS_LANG_TABLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_LANG_TABLE))
-#define MOO_LANG_TABLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LANG_TABLE, MooLangTableClass))
 
 
 typedef struct _MooLang MooLang;
-typedef struct _MooLangTable MooLangTable;
-typedef struct _MooLangTableClass MooLangTableClass;
 typedef struct _MooContext MooContext;
 typedef struct _MooContextArray MooContextArray;
 typedef struct _MooCtxSwitch MooCtxSwitch;
@@ -44,14 +35,14 @@ typedef struct _MooRule MooRule;
 typedef struct _MooRuleArray MooRuleArray;
 
 struct _MooLang {
-    MooLangTable *table;
+    struct _MooLangMgr *mgr;
 
     GHashTable *context_names; /* char* -> MooContext* */
     MooContextArray *contexts;
 
     GHashTable *style_names; /* char* -> MooStyle* */
     MooTextStyleArray *styles;
-    GHashTable *style_cache; /* char* -> MooStyle* */
+    GHashTable *style_cache;
 
     char *name;         /* not NULL */
     char *section;      /* not NULL; "Others" by default */
@@ -65,31 +56,10 @@ struct _MooLang {
     char *multi_line_comment_start;
     char *multi_line_comment_end;
 
+    char *sample;
+
     guint hidden : 1;
 };
-
-
-struct _MooLangTable {
-    GObject base;
-
-    GSList *lang_dirs;
-    GSList *langs;
-    GHashTable *lang_names;
-    GHashTable *schemes;
-    MooTextStyleScheme *active_scheme;
-    guint dirs_read : 1;
-};
-
-struct _MooLangTableClass
-{
-    GObjectClass base_class;
-
-    void (*lang_added)   (MooLangTable *table,
-                          const char   *lang_name);
-    void (*lang_removed) (MooLangTable *table,
-                          const char   *lang_name);
-};
-
 
 
 typedef enum {
@@ -201,7 +171,6 @@ struct _MooRule
 
 
 GType       moo_lang_get_type       (void) G_GNUC_CONST;
-GType       moo_lang_table_get_type (void) G_GNUC_CONST;
 
 
 /*****************************************************************************/
@@ -221,7 +190,7 @@ void        moo_context_set_line_end_switch     (MooContext     *ctx,
 /* MooLang
  */
 
-MooLang    *moo_lang_new                        (MooLangTable       *table,
+MooLang    *moo_lang_new                        (struct _MooLangMgr *mgr,
                                                  const char         *name,
                                                  const char         *section,
                                                  const char         *version,
@@ -245,50 +214,21 @@ void        moo_lang_add_style                  (MooLang            *lang,
 
 
 /*****************************************************************************/
-/* MooLangTable
- */
-
-MooLangTable   *moo_lang_table_new                      (void);
-
-GSList         *moo_lang_table_get_available_langs      (MooLangTable       *table);
-GSList         *moo_lang_table_get_sections             (MooLangTable       *table);
-
-MooLang        *moo_lang_table_get_lang_for_file        (MooLangTable       *table,
-                                                         const char         *filename);
-MooLang        *moo_lang_table_get_lang_for_filename    (MooLangTable       *table,
-                                                         const char         *filename);
-MooLang        *moo_lang_table_get_lang_for_mime_type   (MooLangTable       *table,
-                                                         const char         *mime_type);
-MooLang        *moo_lang_table_get_lang                 (MooLangTable       *table,
-                                                         const char         *name);
-MooContext     *moo_lang_table_get_context              (MooLangTable       *table,
-                                                         const char         *lang_name,
-                                                         const char         *ctx_name);
-
-void            moo_lang_table_add_dir                  (MooLangTable       *table,
-                                                         const char         *dir);
-void            moo_lang_table_read_dirs                (MooLangTable       *table);
-
-MooTextStyle   *moo_lang_table_get_style                (MooLangTable       *table,
-                                                         const char         *lang_name, /* default style if NULL */
-                                                         const char         *style_name);
-void            moo_lang_table_set_style                (MooLangTable       *table,
-                                                         const char         *lang_name, /* default style if NULL */
-                                                         const char         *style_name,
-                                                         const MooTextStyle *style);
-MooTextStyleScheme *moo_lang_table_get_active_scheme    (MooLangTable       *table);
-
-
-/*****************************************************************************/
 /* Auxiliary private methods
  */
 
+void        _moo_lang_free                      (MooLang            *lang);
+
+void        _moo_lang_scheme_changed            (MooLang            *lang);
 void        _moo_lang_set_tag_style             (MooLang            *lang,
                                                  GtkTextTag         *tag,
                                                  MooContext         *ctx,
-                                                 MooRule            *rule);
+                                                 MooRule            *rule,
+                                                 MooTextStyleScheme *scheme);
 void        _moo_style_set_tag_style            (const MooTextStyle *style,
                                                  GtkTextTag         *tag);
+void        _moo_lang_erase_tag_style           (GtkTextTag         *tag);
+
 /* implemented in moohighlighter.c */
 MooContext *_moo_text_iter_get_context          (const GtkTextIter  *iter);
 

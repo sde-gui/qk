@@ -538,6 +538,19 @@ _moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
 }
 
 
+void
+moo_text_buffer_apply_scheme (MooTextBuffer      *buffer,
+                              MooTextStyleScheme *scheme)
+{
+    g_return_if_fail (scheme != NULL);
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+
+    moo_text_buffer_set_bracket_match_style (buffer, scheme->bracket_match);
+    moo_text_buffer_set_bracket_mismatch_style (buffer, scheme->bracket_mismatch);
+    moo_highlighter_apply_scheme (buffer->priv->hl, scheme);
+}
+
+
 /*****************************************************************************/
 /* Matching brackets
  */

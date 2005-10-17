@@ -519,13 +519,17 @@ char*
 moo_history_list_display_basename (const char     *filename,
                                    G_GNUC_UNUSED gpointer data)
 {
-    char *basename;
+    char *basename, *display;
 
     g_return_val_if_fail (filename != NULL, NULL);
 
     basename = g_path_get_basename (filename);
     g_return_val_if_fail (basename != NULL, NULL);
-    return g_filename_display_name (basename);
+
+    display = g_filename_display_name (basename);
+
+    g_free (basename);
+    return display;
 }
 
 

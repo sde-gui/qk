@@ -41,7 +41,7 @@
 #define DEFAULT_STYLE_ELM           "default-style"
 #define SCHEME_NAME_PROP            "name"
 #define DEFAULT_SCHEME_PROP         "default-scheme"
-#define SCHEME_USE_SCHEME_PROP      "use-scheme"
+#define SCHEME_BASE_SCHEME_PROP     "base"
 #define SCHEME_FOREGROUND_PROP      "foreground"
 #define SCHEME_BACKGROUND_PROP      "background"
 #define SCHEME_SEL_FOREGROUND_PROP  "selected-foreground"
@@ -62,6 +62,7 @@
 #define COMMENTS_ELM            "comments"
 #define SINGLE_LINE_ELM         "single-line"
 #define MULTI_LINE_ELM          "multi-line"
+#define SAMPLE_CODE_ELM         "sample-code"
 
 #define LANG_NAME_PROP          "name"
 #define LANG_VERSION_PROP       "version"

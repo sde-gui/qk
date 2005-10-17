@@ -1168,8 +1168,9 @@ moo_text_view_expose (GtkWidget      *widget,
     GtkTextIter start, end;
     int first_line, last_line;
 
-    if (view->priv->highlight_current_line && event->window == text_window)
-        moo_text_view_draw_current_line (text_view, event);
+    if (view->priv->highlight_current_line &&
+        event->window == text_window && view->priv->current_line_gc)
+            moo_text_view_draw_current_line (text_view, event);
 
     if (event->window == text_window)
     {
@@ -1267,4 +1268,96 @@ moo_text_view_set_cursor_color (MooTextView    *view,
     gtk_rc_parse_string (rc_string);
 
     g_free (rc_string);
+}
+
+
+void
+moo_text_view_set_lang (MooTextView    *view,
+                        MooLang        *lang)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    moo_text_buffer_set_lang (get_moo_buffer (view), lang);
+}
+
+
+void
+moo_text_view_apply_scheme (MooTextView        *view,
+                            MooTextStyleScheme *scheme)
+{
+    GdkColor color;
+    GdkColor *color_ptr;
+    MooTextBuffer *buffer;
+    GtkWidget *widget;
+
+    g_return_if_fail (scheme != NULL);
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    widget = GTK_WIDGET (view);
+    buffer = get_moo_buffer (view);
+    gtk_widget_ensure_style (widget);
+
+    color_ptr = NULL;
+    if (scheme->text_colors[MOO_TEXT_COLOR_FG])
+    {
+        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_FG], &color))
+            color_ptr = &color;
+        else
+            g_warning ("%s: could not parse color '%s'", G_STRLOC,
+                       scheme->text_colors[MOO_TEXT_COLOR_FG]);
+    }
+    gtk_widget_modify_text (widget, GTK_STATE_NORMAL, color_ptr);
+    gtk_widget_modify_text (widget, GTK_STATE_ACTIVE, color_ptr);
+    gtk_widget_modify_text (widget, GTK_STATE_PRELIGHT, color_ptr);
+    gtk_widget_modify_text (widget, GTK_STATE_INSENSITIVE, color_ptr);
+    moo_text_view_set_cursor_color (view, color_ptr);
+
+    color_ptr = NULL;
+    if (scheme->text_colors[MOO_TEXT_COLOR_BG])
+    {
+        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_BG], &color))
+            color_ptr = &color;
+        else
+            g_warning ("%s: could not parse color '%s'", G_STRLOC,
+                       scheme->text_colors[MOO_TEXT_COLOR_BG]);
+    }
+    gtk_widget_modify_base (widget, GTK_STATE_NORMAL, color_ptr);
+    gtk_widget_modify_base (widget, GTK_STATE_ACTIVE, color_ptr);
+    gtk_widget_modify_base (widget, GTK_STATE_PRELIGHT, color_ptr);
+    gtk_widget_modify_base (widget, GTK_STATE_INSENSITIVE, color_ptr);
+
+    color_ptr = NULL;
+    if (scheme->text_colors[MOO_TEXT_COLOR_SEL_FG])
+    {
+        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_SEL_FG], &color))
+            color_ptr = &color;
+        else
+            g_warning ("%s: could not parse color '%s'", G_STRLOC,
+                       scheme->text_colors[MOO_TEXT_COLOR_SEL_FG]);
+    }
+    gtk_widget_modify_text (widget, GTK_STATE_SELECTED, color_ptr);
+
+    color_ptr = NULL;
+    if (scheme->text_colors[MOO_TEXT_COLOR_SEL_BG])
+    {
+        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_SEL_BG], &color))
+            color_ptr = &color;
+        else
+            g_warning ("%s: could not parse color '%s'", G_STRLOC,
+                       scheme->text_colors[MOO_TEXT_COLOR_SEL_BG]);
+    }
+    gtk_widget_modify_base (widget, GTK_STATE_SELECTED, color_ptr);
+
+    color_ptr = NULL;
+    if (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE])
+    {
+        if (gdk_color_parse (scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE], &color))
+            color_ptr = &color;
+        else
+            g_warning ("%s: could not parse color '%s'", G_STRLOC,
+                       scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE]);
+    }
+    moo_text_view_set_current_line_color (view, color_ptr);
+    moo_text_view_set_highlight_current_line (view, color_ptr != NULL);
+
+    moo_text_buffer_apply_scheme (buffer, scheme);
 }

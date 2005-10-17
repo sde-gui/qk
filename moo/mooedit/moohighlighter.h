@@ -87,6 +87,8 @@ void    moo_highlighter_apply_tags          (MooHighlighter     *highlight,
                                              int                 first_line,
                                              int                 last_line);
 
+void    moo_highlighter_apply_scheme        (MooHighlighter     *highlight,
+                                             MooTextStyleScheme *scheme);
 
 
 G_END_DECLS

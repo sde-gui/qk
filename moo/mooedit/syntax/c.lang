@@ -165,4 +165,17 @@
       <multi-line start="/*" end="*/"/>
     </comments>
   </general>
+
+  <sample-code>/* This is a comment
+ * TODO: do something
+ */
+
+#include &lt;stdio.h&gt;
+
+int main (int argc, char **argv)
+{
+    printf ("Hello world!");
+    return 0;
+}
+</sample-code>
 </language>

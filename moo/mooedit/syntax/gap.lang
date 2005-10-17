@@ -9161,4 +9161,18 @@
       <single-line start="#"/>
     </comments>
   </general>
+
+  <sample-code>## This is a comment
+## TODO: do something
+
+InstallGlobalFunction("func",
+func(arg)
+  local i;
+
+  for i in [1..100] do
+    Print("Hello world!");
+  od;
+end);
+</sample-code>
+
 </language>

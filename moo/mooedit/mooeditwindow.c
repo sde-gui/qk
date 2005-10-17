@@ -695,14 +695,14 @@ static void
 apply_styles (MooEditWindow      *window,
               MooEdit            *edit)
 {
-    MooLangTable *table;
+    MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
 
-    table = moo_editor_get_lang_table (window->priv->editor);
-    scheme = moo_lang_table_get_active_scheme (table);
+    mgr = moo_editor_get_lang_mgr (window->priv->editor);
+    scheme = moo_lang_mgr_get_active_scheme (mgr);
     g_return_if_fail (scheme != NULL);
 
-    _moo_text_style_scheme_apply (scheme, edit);
+    moo_text_view_apply_scheme (MOO_TEXT_VIEW (edit), scheme);
 }
 
 
@@ -1637,18 +1637,18 @@ static void
 lang_item_activated (MooEditWindow *window,
                      const char    *lang_name)
 {
-    MooLangTable *table;
+    MooLangMgr *mgr;
     MooLang *lang = NULL;
     MooEdit *doc = ACTIVE_DOC (window);
 
     g_return_if_fail (doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    table = moo_editor_get_lang_table (window->priv->editor);
+    mgr = moo_editor_get_lang_mgr (window->priv->editor);
 
     if (lang_name)
     {
-        lang = moo_lang_table_get_lang (table, lang_name);
+        lang = moo_lang_mgr_get_lang (mgr, lang_name);
         g_return_if_fail (lang != NULL);
     }
 
@@ -1661,16 +1661,16 @@ create_lang_action (MooEditWindow      *window)
 {
     MooAction *action;
     MooMenuMgr *menu_mgr;
-    MooLangTable *table;
+    MooLangMgr *lang_mgr;
     GSList *langs, *sections, *l;
 
-    table = moo_editor_get_lang_table (window->priv->editor);
+    lang_mgr = moo_editor_get_lang_mgr (window->priv->editor);
 
     /* TODO display names, etc. */
-    sections = moo_lang_table_get_sections (table);
+    sections = moo_lang_mgr_get_sections (lang_mgr);
     sections = g_slist_sort (sections, (GCompareFunc) strcmp);
 
-    langs = moo_lang_table_get_available_langs (table);
+    langs = moo_lang_mgr_get_available_langs (lang_mgr);
     langs = g_slist_sort (langs, (GCompareFunc) cmp_langs);
 
     action = moo_menu_action_new (LANG_ACTION_ID);

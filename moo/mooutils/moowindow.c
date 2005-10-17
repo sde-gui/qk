@@ -350,6 +350,13 @@ static void moo_window_finalize       (GObject      *object)
 {
     MooWindow *window = MOO_WINDOW(object);
 
+    if (window->priv->ui_xml)
+        g_object_unref (window->priv->ui_xml);
+    if (window->priv->actions)
+        g_object_unref (window->priv->actions);
+
+    g_free (window->priv->name);
+    g_free (window->priv->id);
     g_free (window->priv->menubar_ui_name);
     g_free (window->priv->toolbar_ui_name);
 

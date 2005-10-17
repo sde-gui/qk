@@ -277,7 +277,7 @@ create_tag (MooHighlighter *hl,
     _moo_lang_set_tag_style (rule ? rule->context->lang : ctx_node->ctx->lang,
                              tag,
                              rule ? rule->context : ctx_node->ctx,
-                             rule);
+                             rule, NULL);
     ctx_node->child_tags = g_slist_prepend (ctx_node->child_tags, tag);
 
     return tag;
@@ -749,4 +749,36 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
 
         LINE_SET_TAGS_APPLIED (line);
     }
+}
+
+
+static void
+tag_set_scheme (G_GNUC_UNUSED gpointer whatever,
+                MooSyntaxTag       *tag,
+                MooTextStyleScheme *scheme)
+{
+    if (tag)
+    {
+        _moo_lang_erase_tag_style (GTK_TEXT_TAG (tag));
+        _moo_lang_set_tag_style (tag->rule ? tag->rule->context->lang : tag->ctx_node->ctx->lang,
+                                 GTK_TEXT_TAG (tag),
+                                 tag->rule ? tag->rule->context : tag->ctx_node->ctx,
+                                 tag->rule, scheme);
+    }
+}
+
+static void
+ctx_node_set_scheme (CtxNode            *node,
+                     MooTextStyleScheme *scheme)
+{
+    g_hash_table_foreach (node->match_tags, (GHFunc) tag_set_scheme, scheme);
+    tag_set_scheme (NULL, MOO_SYNTAX_TAG (node->context_tag), scheme);
+}
+
+void
+moo_highlighter_apply_scheme (MooHighlighter     *hl,
+                              MooTextStyleScheme *scheme)
+{
+    g_return_if_fail (hl != NULL && scheme != NULL);
+    g_slist_foreach (hl->nodes, (GFunc) ctx_node_set_scheme, scheme);
 }

@@ -8,7 +8,7 @@
 <!-- rule_type -->
 <!ENTITY % rule_type "String|Regex|Char|TwoChars|Range|Keyword">
 
-<!ELEMENT language (syntax, styles?, general?)>
+<!ELEMENT language (syntax, styles?, general?, sample-code?)>
 <!ATTLIST language
   name          CDATA       #REQUIRED
   hidden        (%boolean;) #IMPLIED
@@ -150,3 +150,7 @@
   underline     (%boolean;) #IMPLIED
   strikethrough (%boolean;) #IMPLIED
 >
+
+
+<!-- Sample code -->
+<!ELEMENT sample-code (#PCDATA)>

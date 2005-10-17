@@ -61,6 +61,7 @@ struct _LangXML {
     char *mimetypes;
     char *extensions;
     char *author;
+    char *sample;
     guint hidden : 1;
     GeneralXML *general;
     SyntaxXML *syntax;
@@ -185,9 +186,11 @@ LangXML             *moo_lang_parse_memory              (const char     *buffer,
                                                          int             size);
 void                 moo_lang_xml_free                  (LangXML        *xml);
 
-MooTextStyleScheme  *moo_text_style_scheme_parse_file   (const char     *file);
+MooTextStyleScheme  *moo_text_style_scheme_parse_file   (const char     *file,
+                                                         char          **base_scheme);
 MooTextStyleScheme  *moo_text_style_scheme_parse_memory (const char     *buffer,
-                                                         int             size);
+                                                         int             size,
+                                                         char          **base_scheme);
 
 MooRule             *moo_rule_new_from_xml              (RuleXML        *xml,
                                                          LangXML        *lang_xml,

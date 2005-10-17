@@ -326,6 +326,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
         return NULL;
     }
 
+    /*XXX*/
     page = moo_glade_xml_get_widget (xml, page_id);
     page->xml = xml;
 

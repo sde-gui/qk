@@ -15,6 +15,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/moolang-parser.h"
 #include "mooedit/moolang-strings.h"
+#include "mooedit/moolangmgr.h"
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <string.h>
@@ -162,6 +163,7 @@ inline static void STRING_FREE (xmlChar *s)
 #define IS_DEFAULT_STYLE_NODE(node_)    (IS_ELEMENT_NODE(node_) && NODE_NAME_IS_(node_, DEFAULT_STYLE_ELM))
 #define IS_BRACKET_MATCH_NODE(node_)    (IS_ELEMENT_NODE(node_) && NODE_NAME_IS_(node_, BRACKET_MATCH_ELM))
 #define IS_BRACKET_MISMATCH_NODE(node_) (IS_ELEMENT_NODE(node_) && NODE_NAME_IS_(node_, BRACKET_MISMATCH_ELM))
+#define IS_SAMPLE_CODE_NODE(node_)      (IS_ELEMENT_NODE(node_) && NODE_NAME_IS_(node_, SAMPLE_CODE_ELM))
 
 
 #if VERBOSE
@@ -449,6 +451,21 @@ lang_xml_parse (xmlNode *node)
             if (!xml->general)
                 goto error;
         }
+        else if (IS_SAMPLE_CODE_NODE (child))
+        {
+            xmlChar *content;
+
+            if (xml->sample)
+            {
+                g_warning ("%s: duplicated '" SAMPLE_CODE_ELM "' element", G_STRLOC);
+                goto error;
+            }
+
+            content = xmlNodeGetContent (child);
+            xml->sample = STRDUP (content);
+
+            STRING_FREE (content);
+        }
         else
         {
             g_warning ("%s: unknown tag '%s'", G_STRLOC, child->name);
@@ -499,6 +516,7 @@ moo_lang_xml_free (LangXML *xml)
         g_free (xml->mimetypes);
         g_free (xml->extensions);
         g_free (xml->author);
+        g_free (xml->sample);
         general_xml_free (xml->general);
         syntax_xml_free (xml->syntax);
         style_list_xml_free (xml->style_list);
@@ -1480,9 +1498,9 @@ moo_rule_new_from_xml (RuleXML    *xml,
             break;
         case MOO_CONTEXT_SWITCH:
             if (xml->end_switch_info.ref.lang)
-                switch_to = moo_lang_table_get_context (lang->table,
-                                                        xml->end_switch_info.ref.lang,
-                                                        xml->end_switch_info.ref.name);
+                switch_to = moo_lang_mgr_get_context (lang->mgr,
+                                                      xml->end_switch_info.ref.lang,
+                                                      xml->end_switch_info.ref.name);
             else
                 switch_to = moo_lang_get_context (lang, xml->end_switch_info.ref.name);
 
@@ -1884,7 +1902,7 @@ rule_include_xml_create_rule (RuleIncludeXML *xml,
     MooContext *ctx;
 
     if (xml->from_lang)
-        ctx = moo_lang_table_get_context (lang->table, xml->from_lang, xml->from_context);
+        ctx = moo_lang_mgr_get_context (lang->mgr, xml->from_lang, xml->from_context);
     else
         ctx = moo_lang_get_context (lang, xml->from_context);
 
@@ -2059,10 +2077,11 @@ error:
 
 
 static MooTextStyleScheme*
-style_scheme_xml_parse (xmlNode *node)
+style_scheme_xml_parse (xmlNode *node,
+                        char   **base_scheme)
 {
     MooTextStyleScheme *scheme;
-    xmlChar *name = NULL, *foreground = NULL, *background = NULL;
+    xmlChar *name = NULL, *foreground = NULL, *background = NULL, *base = NULL;
     xmlChar *selected_foreground = NULL, *selected_background = NULL, *current_line = NULL;
 
     g_return_val_if_fail (IS_SCHEME_NODE (node), NULL);
@@ -2073,6 +2092,7 @@ style_scheme_xml_parse (xmlNode *node)
     selected_foreground = GET_PROP (node, SCHEME_SEL_FOREGROUND_PROP);
     selected_background = GET_PROP (node, SCHEME_SEL_BACKGROUND_PROP);
     current_line = GET_PROP (node, SCHEME_CURRENT_LINE_PROP);
+    base = GET_PROP (node, SCHEME_BASE_SCHEME_PROP);
 
     if (!name || !name[0])
     {
@@ -2080,13 +2100,13 @@ style_scheme_xml_parse (xmlNode *node)
         goto error;
     }
 
-    scheme = moo_text_style_scheme_new_empty (name);
+    scheme = moo_text_style_scheme_new_empty (name, NULL);
 
-    scheme->foreground = STRDUP (foreground);
-    scheme->background = STRDUP (background);
-    scheme->selected_foreground = STRDUP (selected_foreground);
-    scheme->selected_background = STRDUP (selected_background);
-    scheme->current_line = STRDUP (current_line);
+    scheme->text_colors[MOO_TEXT_COLOR_FG] = STRDUP (foreground);
+    scheme->text_colors[MOO_TEXT_COLOR_BG] = STRDUP (background);
+    scheme->text_colors[MOO_TEXT_COLOR_SEL_FG] = STRDUP (selected_foreground);
+    scheme->text_colors[MOO_TEXT_COLOR_SEL_BG] = STRDUP (selected_background);
+    scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE] = STRDUP (current_line);
 
     ELM_FOREACH (node, child)
     {
@@ -2153,12 +2173,16 @@ style_scheme_xml_parse (xmlNode *node)
     }
     ELM_FOREACH_END;
 
+    if (base_scheme)
+        *base_scheme = STRDUP (base);
+
     STRING_FREE (name);
     STRING_FREE (foreground);
     STRING_FREE (background);
     STRING_FREE (selected_foreground);
     STRING_FREE (selected_background);
     STRING_FREE (current_line);
+    STRING_FREE (base);
     return scheme;
 
 error:
@@ -2168,13 +2192,15 @@ error:
     STRING_FREE (selected_foreground);
     STRING_FREE (selected_background);
     STRING_FREE (current_line);
-    moo_text_style_scheme_unref (scheme);
+    STRING_FREE (base);
+    g_object_unref (scheme);
     return NULL;
 }
 
 
 MooTextStyleScheme*
-moo_text_style_scheme_parse_file (const char *file)
+moo_text_style_scheme_parse_file (const char *file,
+                                  char      **base_scheme)
 {
     xmlDoc *doc;
     xmlNode *root;
@@ -2187,7 +2213,7 @@ moo_text_style_scheme_parse_file (const char *file)
     g_return_val_if_fail (doc != NULL, NULL);
 
     root = xmlDocGetRootElement (doc);
-    scheme = style_scheme_xml_parse (root);
+    scheme = style_scheme_xml_parse (root, base_scheme);
 
     xmlFreeDoc (doc);
     xmlCleanupParser ();
@@ -2198,7 +2224,8 @@ moo_text_style_scheme_parse_file (const char *file)
 
 MooTextStyleScheme*
 moo_text_style_scheme_parse_memory (const char     *buffer,
-                                    int             size)
+                                    int             size,
+                                    char          **base_scheme)
 {
     xmlDoc *doc;
     xmlNode *root;
@@ -2214,7 +2241,7 @@ moo_text_style_scheme_parse_memory (const char     *buffer,
     g_return_val_if_fail (doc != NULL, NULL);
 
     root = xmlDocGetRootElement (doc);
-    scheme = style_scheme_xml_parse (root);
+    scheme = style_scheme_xml_parse (root, base_scheme);
 
     xmlFreeDoc (doc);
     xmlCleanupParser ();

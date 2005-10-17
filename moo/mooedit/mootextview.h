@@ -17,6 +17,7 @@
 
 #include <gtk/gtktextview.h>
 #include <mooedit/mooindenter.h>
+#include <mooedit/moolang.h>
 
 G_BEGIN_DECLS
 
@@ -83,55 +84,60 @@ GType        moo_text_selection_type_get_type       (void) G_GNUC_CONST;
 
 MooTextView *moo_text_view_new                      (void);
 
-void         moo_text_view_select_all               (MooTextView    *view);
+void         moo_text_view_select_all               (MooTextView        *view);
 
-gboolean     moo_text_view_is_empty                 (MooTextView    *view);
+gboolean     moo_text_view_is_empty                 (MooTextView        *view);
 
-char        *moo_text_view_get_selection            (MooTextView    *view);
-char        *moo_text_view_get_text                 (MooTextView    *view);
-gboolean     moo_text_view_has_selection            (MooTextView    *view);
-gboolean     moo_text_view_has_text                 (MooTextView    *view);
+char        *moo_text_view_get_selection            (MooTextView        *view);
+char        *moo_text_view_get_text                 (MooTextView        *view);
+gboolean     moo_text_view_has_selection            (MooTextView        *view);
+gboolean     moo_text_view_has_text                 (MooTextView        *view);
 
-void         moo_text_view_delete_selection         (MooTextView    *view);
+void         moo_text_view_delete_selection         (MooTextView        *view);
 
-gboolean     moo_text_view_can_redo                 (MooTextView    *view);
-gboolean     moo_text_view_can_undo                 (MooTextView    *view);
-void         moo_text_view_redo                     (MooTextView    *view);
-void         moo_text_view_undo                     (MooTextView    *view);
-void         moo_text_view_start_not_undoable_action(MooTextView    *view);
-void         moo_text_view_end_not_undoable_action  (MooTextView    *view);
+gboolean     moo_text_view_can_redo                 (MooTextView        *view);
+gboolean     moo_text_view_can_undo                 (MooTextView        *view);
+void         moo_text_view_redo                     (MooTextView        *view);
+void         moo_text_view_undo                     (MooTextView        *view);
+void         moo_text_view_start_not_undoable_action(MooTextView        *view);
+void         moo_text_view_end_not_undoable_action  (MooTextView        *view);
 
-void         moo_text_view_find_interactive         (MooTextView    *view);
-void         moo_text_view_replace_interactive      (MooTextView    *view);
-void         moo_text_view_find_next_interactive    (MooTextView    *view);
-void         moo_text_view_find_prev_interactive    (MooTextView    *view);
-void         moo_text_view_goto_line                (MooTextView    *view,
-                                                     int             line);
+void         moo_text_view_find_interactive         (MooTextView        *view);
+void         moo_text_view_replace_interactive      (MooTextView        *view);
+void         moo_text_view_find_next_interactive    (MooTextView        *view);
+void         moo_text_view_find_prev_interactive    (MooTextView        *view);
+void         moo_text_view_goto_line                (MooTextView        *view,
+                                                     int                 line);
 
-void         moo_text_view_set_font_from_string     (MooTextView    *view,
-                                                     const char     *font);
+void         moo_text_view_set_font_from_string     (MooTextView        *view,
+                                                     const char         *font);
 
-MooIndenter *moo_text_view_get_indenter             (MooTextView    *view);
-void         moo_text_view_set_indenter             (MooTextView    *view,
-                                                     MooIndenter    *indenter);
+MooIndenter *moo_text_view_get_indenter             (MooTextView        *view);
+void         moo_text_view_set_indenter             (MooTextView        *view,
+                                                     MooIndenter        *indenter);
 
-void         moo_text_view_move_cursor              (MooTextView    *view,
-                                                     int             line,
-                                                     int             character,
-                                                     gboolean        in_idle);
+void         moo_text_view_move_cursor              (MooTextView        *view,
+                                                     int                 line,
+                                                     int                 character,
+                                                     gboolean            in_idle);
 
 void         moo_text_view_set_highlight_current_line
-                                                    (MooTextView    *view,
-                                                     gboolean        highlight);
-void         moo_text_view_set_current_line_color   (MooTextView    *view,
-                                                     const GdkColor *color);
-void         moo_text_view_set_cursor_color         (MooTextView    *view,
-                                                     const GdkColor *color);
-void         moo_text_view_set_show_tabs            (MooTextView    *view,
-                                                     gboolean        show);
+                                                    (MooTextView        *view,
+                                                     gboolean            highlight);
+void         moo_text_view_set_current_line_color   (MooTextView        *view,
+                                                     const GdkColor     *color);
+void         moo_text_view_set_cursor_color         (MooTextView        *view,
+                                                     const GdkColor     *color);
+void         moo_text_view_set_show_tabs            (MooTextView        *view,
+                                                     gboolean            show);
+void         moo_text_view_apply_scheme             (MooTextView        *view,
+                                                     MooTextStyleScheme *scheme);
 
-GtkTextTag  *moo_text_view_lookup_tag               (MooTextView    *view,
-                                                     const char     *name);
+GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
+                                                     const char         *name);
+
+void         moo_text_view_set_lang                 (MooTextView        *view,
+                                                     MooLang            *lang);
 
 
 G_END_DECLS

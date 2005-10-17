@@ -39,6 +39,7 @@ utilsinclude_HEADERS =          \
     eggregex.h                  \
     mooaccelbutton.h            \
     moobigpaned.h               \
+    moocellrenderercolor.h      \
     mooclosure.h                \
     moocombo.h                  \
     mooentry.h                  \
@@ -76,6 +77,7 @@ libmooutils_la_SOURCES =        \
     mooaccelbutton.c            \
     mooaccelbutton-glade.h      \
     moobigpaned.c               \
+    moocellrenderercolor.c      \
     mooclosure.c                \
     moocombo.c                  \
     moocompat.c                 \

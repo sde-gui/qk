@@ -978,24 +978,26 @@ static void     moo_notebook_map            (GtkWidget      *widget)
     GTK_WIDGET_SET_FLAGS (widget, GTK_MAPPED);
 
     if (nb->priv->tabs_visible)
+    {
         gdk_window_show (nb->priv->tab_window);
 
-    if (nb->priv->action_widgets[LEFT] &&
-        GTK_WIDGET_VISIBLE (nb->priv->action_widgets[LEFT]))
+        if (nb->priv->action_widgets[LEFT] &&
+            GTK_WIDGET_VISIBLE (nb->priv->action_widgets[LEFT]))
             gtk_widget_map (nb->priv->action_widgets[LEFT]);
 
-    if (nb->priv->action_widgets[RIGHT] &&
-        GTK_WIDGET_VISIBLE (nb->priv->action_widgets[RIGHT]))
+        if (nb->priv->action_widgets[RIGHT] &&
+            GTK_WIDGET_VISIBLE (nb->priv->action_widgets[RIGHT]))
             gtk_widget_map (nb->priv->action_widgets[RIGHT]);
 
-    if (nb->priv->arrows_visible)
-        gtk_widget_map (nb->priv->arrows);
+        if (nb->priv->arrows_visible)
+            gtk_widget_map (nb->priv->arrows);
 
-    VISIBLE_FOREACH_START (nb, page)
-    {
-        gtk_widget_map (page->label->widget);
+        VISIBLE_FOREACH_START (nb, page)
+        {
+            gtk_widget_map (page->label->widget);
+        }
+        VISIBLE_FOREACH_END;
     }
-    VISIBLE_FOREACH_END;
 
     if (nb->priv->current_page)
         gtk_widget_map (nb->priv->current_page->child);
@@ -1250,7 +1252,7 @@ static void     child_visible_notify        (GtkWidget      *child,
         }
         else
         {
-            gtk_widget_show (page->label->widget);
+            gtk_widget_hide (page->label->widget);
             if (nb->priv->current_page == page)
             {
                 int n;

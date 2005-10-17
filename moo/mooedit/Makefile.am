@@ -24,77 +24,70 @@ mooeditinclude_HEADERS =        \
     mooeditwindow.h             \
     mooindenter.h               \
     moolang.h                   \
+    moolangmgr.h                \
     moolineview.h               \
-    mooplugin.h                 \
     mooplugin-macro.h           \
+    mooplugin.h                 \
     mootextbuffer.h             \
     mootextiter.h               \
     mootextstyle.h              \
+    mootextstylescheme.h        \
     mootextview.h
+
+noinst_HEADERS =                \
+    gtksourceiter.h             \
+    mooedit-private.h           \
+    mooeditcolorsprefs-glade.h  \
+    mooeditdialogs.h            \
+    mooeditfileops.h            \
+    mooeditfind-glade.h         \
+    mooeditgotoline-glade.h     \
+    mooeditprefs-glade.h        \
+    moohighlighter.h            \
+    moolang-aux.h               \
+    moolang-parser.h            \
+    moolang-rules.h             \
+    moolang-strings.h           \
+    moolinebuffer.h             \
+    moopluginprefs-glade.h      \
+    mootextbtree.h              \
+    mootextview-private.h
 
 
 if !MOO_OS_MINGW
-unix_sources =              \
-    moocmdview.c            \
-    moocmdview.h
+unix_sources = moocmdview.c
 mooeditinclude_HEADERS += moocmdview.h
 endif
 
 libmooedit_la_SOURCES =         \
     $(unix_sources)             \
     $(mooeditinclude_HEADERS)   \
+    $(noinst_HEADERS)           \
     gtksourceiter.c             \
-    gtksourceiter.h             \
     mooedit.c                   \
-    mooedit-private.h           \
     mooeditdialogs.c            \
-    mooeditdialogs.h            \
     mooeditfileops.c            \
-    mooeditfileops.h            \
     mooeditfind.c               \
     mooeditinput.c              \
     mooeditor.c                 \
     mooeditprefs.c              \
-    mooeditprefs.h              \
     mooeditprefspage.c          \
     mooeditsearch.c             \
-    mooeditsearch.h             \
     mooeditwindow.c             \
-    mooeditwindow.h             \
     moohighlighter.c            \
-    moohighlighter.h            \
     mooindenter.c               \
-    mooindenter.h               \
     moolang.c                   \
-    moolang.h                   \
+    moolangmgr.c                \
     moolang-parser.c            \
-    moolang-parser.h            \
     moolang-rules.c             \
-    moolang-rules.h             \
-    moolang-aux.h               \
-    moolang-strings.h           \
     moolinebuffer.c             \
-    moolinebuffer.h             \
     moolineview.c               \
-    moolineview.h               \
     mooplugin.c                 \
-    mooplugin.h                 \
-    mooplugin-macro.h           \
     mootextbtree.c              \
-    mootextbtree.h              \
     mootextbuffer.c             \
-    mootextbuffer.h             \
-    mootextiter.h               \
     mootextstyle.c              \
-    mootextstyle.h              \
-    mootextview.c               \
-    mootextview.h               \
-    mootextview-private.h       \
-    mooeditgotoline-glade.h     \
-    mooeditfind-glade.h         \
-    moopluginprefs-glade.h      \
-    mooeditprefs-glade.h        \
-    mooeditcolorsprefs-glade.h
+    mootextstylescheme.c        \
+    mootextview.c
 
 libmooedit_la_LIBADD =      \
     plugins/libplugins.la
