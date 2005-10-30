@@ -1,6 +1,7 @@
 EXTRA_DIST =        \
     moo-debug.m4    \
     moo-fam.m4      \
+    moo-funcs.m4    \
     moo-gtk.m4      \
     moo-os.m4       \
     moo-pygtk.m4    \
