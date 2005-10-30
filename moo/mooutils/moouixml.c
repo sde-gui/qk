@@ -1907,7 +1907,7 @@ create_tool_item (MooUIXML       *xml,
         if (action->dead)
             return TRUE;
 
-        tool_item = moo_action_create_tool_item (action, toolbar, index);
+        tool_item = moo_action_create_tool_item (action, GTK_WIDGET (toolbar), index);
     }
     else
     {
