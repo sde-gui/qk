@@ -11,12 +11,17 @@ DIST_SUBDIRS =  \
     moopython   \
     mooterm
 
-mooincludedir = $(includedir)/moo-1.0
-mooinclude_HEADERS = moo.h
-moolibincludedir = $(libdir)/moo-1.0/include
-moolibinclude_HEADERS = moo-config.h
+mooinclude_headers = moo.h
+moolibinclude_headers = moo-config.h
 
-EXTRA_DIST = $(mooinclude_HEADERS) $(moolibinclude_HEADERS)
+if MOO_STANDALONE
+mooincludedir = $(includedir)/moo-1.0
+mooinclude_HEADERS = $(mooinclude_headers)
+moolibincludedir = $(libdir)/moo-1.0/include
+moolibinclude_HEADERS = $(moolibinclude_headers)
+endif MOO_STANDALONE
+
+EXTRA_DIST = $(mooinclude_headers) $(moolibinclude_headers)
 
 
 # lib_LTLIBRARIES = libmoo-1.0.la

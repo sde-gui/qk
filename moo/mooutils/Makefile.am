@@ -34,8 +34,7 @@ libmooutils_la_LIBADD =             \
     $(moofileview_lib)              \
     $(xdgmime_lib)
 
-utilsincludedir = $(includedir)/moo-1.0/mooutils
-utilsinclude_HEADERS =          \
+utilsinclude_headers =          \
     eggregex.h                  \
     mooaccelbutton.h            \
     moobigpaned.h               \
@@ -71,8 +70,13 @@ win32_sources =                 \
     moohandlewatch.h            \
     moohandlewatch.c
 
+if MOO_STANDALONE
+utilsincludedir = $(includedir)/moo-1.0/mooutils
+utilsinclude_HEADERS = $(utilsinclude_headers)
+endif MOO_STANDALONE
+
 libmooutils_la_SOURCES =        \
-    $(utilsinclude_HEADERS)     \
+    $(utilsinclude_headers)     \
     eggregex.c                  \
     mooaccelbutton.c            \
     mooaccelbutton-glade.h      \

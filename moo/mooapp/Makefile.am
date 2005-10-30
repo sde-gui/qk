@@ -47,8 +47,10 @@ EXTRA_DIST =            \
     moopythonconsole.c  \
     moopythonconsole.h
 
+if MOO_STANDALONE
 mooappincludedir = $(includedir)/moo-1.0/mooapp
 mooappinclude_HEADERS = mooapp.h
+endif MOO_STANDALONE
 
 
 GLADE = $(srcdir)/glade

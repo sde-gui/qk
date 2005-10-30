@@ -15,8 +15,7 @@ AM_CFLAGS =                             \
 
 noinst_LTLIBRARIES = libmooedit.la
 
-mooeditincludedir = $(includedir)/moo-1.0/mooedit
-mooeditinclude_HEADERS =        \
+mooeditinclude_headers =        \
     mooedit.h                   \
     mooeditor.h                 \
     mooeditprefs.h              \
@@ -56,12 +55,12 @@ noinst_HEADERS =                \
 
 if !MOO_OS_MINGW
 unix_sources = moocmdview.c
-mooeditinclude_HEADERS += moocmdview.h
+mooeditinclude_headers += moocmdview.h
 endif
 
 libmooedit_la_SOURCES =         \
     $(unix_sources)             \
-    $(mooeditinclude_HEADERS)   \
+    $(mooeditinclude_headers)   \
     $(noinst_HEADERS)           \
     gtksourceiter.c             \
     mooedit.c                   \
@@ -98,6 +97,11 @@ BUILT_SOURCES =             \
     moopluginprefs-glade.h  \
     mooeditprefs-glade.h    \
     mooeditcolorsprefs-glade.h
+
+if MOO_STANDALONE
+mooeditincludedir = $(includedir)/moo-1.0/mooedit
+mooeditinclude_HEADERS = $(mooeditinclude_headers)
+endif MOO_STANDALONE
 
 
 GLADE = $(srcdir)/glade

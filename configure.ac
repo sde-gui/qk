@@ -170,22 +170,16 @@ AM_CONDITIONAL(MOO_BUILD_PLUGINS,   true)
 
 if test "x$build_mooutils" != "xno"; then
     AC_DEFINE(MOO_BUILD_UTILS,, [build mooutils])
-    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_UTILS"
 fi
 if test "x$build_mooedit" != "xno"; then
     AC_DEFINE(MOO_BUILD_EDIT,, [build mooedit])
-    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_EDIT"
 fi
 if test "x$build_mooterm" != "xno"; then
     AC_DEFINE(MOO_BUILD_TERM,, [build mooterm])
-    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_TERM"
 fi
 if test "x$build_mooapp" != "xno"; then
     AC_DEFINE(MOO_BUILD_APP,, [build mooapp])
-    MOO_COMPONENTS_CFLAGS="$MOO_COMPONENTS_CFLAGS -DMOO_BUILD_APP"
 fi
-
-
 
 moo_top_src_dir=`cd $srcdir && pwd`
 moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
@@ -197,7 +191,6 @@ if test x$MOO_USE_FAM = xyes; then
 fi
 
 AC_SUBST(MOO_CFLAGS)
-AC_SUBST(MOO_COMPONENTS_CFLAGS)
 AC_SUBST(MOO_LIBS)
 
 
@@ -246,6 +239,9 @@ AC_DEFINE_UNQUOTED(MOO_LIB_DIR, "${mooprefix}/${moolibdir}", [plugins and stuff 
 MOO_PLUGINS_DIR="${mooprefix}/${moolibdir}/plugins"
 AC_SUBST(MOO_PLUGINS_DIR)
 AC_DEFINE_UNQUOTED(MOO_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugins dir])
+
+
+AM_CONDITIONAL(MOO_STANDALONE, true)
 
 
 ################################################################################

@@ -4,16 +4,20 @@
 
 SUBDIRS = glade
 
-mootermincludedir = $(includedir)/moo-1.0/mooterm
-mooterminclude_HEADERS =        \
+mooterminclude_headers =        \
     mooterm.h                   \
     mootermwindow.h             \
     mooterm-text.h              \
     mootermline.h               \
     mootermtag.h
 
+if MOO_STANDALONE
+mootermincludedir = $(includedir)/moo-1.0/mooterm
+mooterminclude_HEADERS = $(mooterminclude_headers)
+endif MOO_STANDALONE
+
 widget_sources =                \
-    $(mooterminclude_HEADERS)   \
+    $(mooterminclude_headers)   \
     mooterm.c                   \
     mooterm-input.c             \
     mooterm-keymap.h            \
