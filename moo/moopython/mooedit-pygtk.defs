@@ -21,11 +21,11 @@
   (gtype-id "MOO_TYPE_INDENTER")
 )
 
-(define-object LangTable
+(define-object LangMgr
   (in-module "Moo")
   (parent "GObject")
-  (c-name "MooLangTable")
-  (gtype-id "MOO_TYPE_LANG_TABLE")
+  (c-name "MooLangMgr")
+  (gtype-id "MOO_TYPE_LANG_MGR")
 )
 
 (define-object Plugin
@@ -531,10 +531,10 @@
   (return-type "MooEditor*")
 )
 
-(define-method get_lang_table
+(define-method get_lang_mgr
   (of-object "MooEditor")
-  (c-name "moo_editor_get_lang_table")
-  (return-type "MooLangTable*")
+  (c-name "moo_editor_get_lang_mgr")
+  (return-type "MooLangMgr*")
 )
 
 
@@ -982,8 +982,8 @@
   (return-type "GType")
 )
 
-(define-function moo_lang_table_get_type
-  (c-name "moo_lang_table_get_type")
+(define-function moo_lang_mgr_get_type
+  (c-name "moo_lang_mgr_get_type")
   (return-type "GType")
 )
 
@@ -1025,7 +1025,7 @@
   (is-constructor-of "MooLang")
   (return-type "MooLang*")
   (parameters
-    '("MooLangTable*" "table")
+    '("MooLangMgr*" "mgr")
     '("const-char*" "name")
     '("const-char*" "section")
     '("const-char*" "version")
@@ -1092,27 +1092,27 @@
   )
 )
 
-(define-function moo_lang_table_new
-  (c-name "moo_lang_table_new")
-  (is-constructor-of "MooLangTable")
-  (return-type "MooLangTable*")
+(define-function moo_lang_mgr_new
+  (c-name "moo_lang_mgr_new")
+  (is-constructor-of "MooLangMgr")
+  (return-type "MooLangMgr*")
 )
 
 (define-method get_available_langs
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_available_langs")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_available_langs")
   (return-type "GSList*")
 )
 
 (define-method get_sections
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_sections")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_sections")
   (return-type "GSList*")
 )
 
 (define-method get_lang_for_file
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_lang_for_file")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_file")
   (return-type "MooLang*")
   (parameters
     '("const-char*" "filename")
@@ -1120,8 +1120,8 @@
 )
 
 (define-method get_lang_for_filename
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_lang_for_filename")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_filename")
   (return-type "MooLang*")
   (parameters
     '("const-char*" "filename")
@@ -1129,8 +1129,8 @@
 )
 
 (define-method get_lang_for_mime_type
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_lang_for_mime_type")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_mime_type")
   (return-type "MooLang*")
   (parameters
     '("const-char*" "mime_type")
@@ -1138,8 +1138,8 @@
 )
 
 (define-method get_lang
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_lang")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang")
   (return-type "MooLang*")
   (parameters
     '("const-char*" "name")
@@ -1147,8 +1147,8 @@
 )
 
 (define-method get_context
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_context")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_context")
   (return-type "MooContext*")
   (parameters
     '("const-char*" "lang_name")
@@ -1157,8 +1157,8 @@
 )
 
 (define-method add_dir
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_add_dir")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_add_dir")
   (return-type "none")
   (parameters
     '("const-char*" "dir")
@@ -1166,14 +1166,14 @@
 )
 
 (define-method read_dirs
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_read_dirs")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_read_dirs")
   (return-type "none")
 )
 
 (define-method get_style
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_style")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_style")
   (return-type "MooTextStyle*")
   (parameters
     '("const-char*" "lang_name")
@@ -1182,8 +1182,8 @@
 )
 
 (define-method set_style
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_set_style")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_set_style")
   (return-type "none")
   (parameters
     '("const-char*" "lang_name")
@@ -1193,8 +1193,8 @@
 )
 
 (define-method get_active_scheme
-  (of-object "MooLangTable")
-  (c-name "moo_lang_table_get_active_scheme")
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_active_scheme")
   (return-type "MooTextStyleScheme*")
 )
 
