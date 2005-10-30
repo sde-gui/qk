@@ -11,7 +11,7 @@ AM_CFLAGS =                             \
     $(PYTHON_INCLUDES)                  \
     $(PYGTK_CFLAGS)                     \
     $(MOO_CFLAGS)                       \
-    $(DEBUG_CFLAGS)                     \
+    $(MOO_DEBUG_CFLAGS)                 \
     $(CFLAGS)
 
 noinst_LTLIBRARIES   = libmooapp.la

@@ -65,7 +65,7 @@ common_cflags =                         \
     $(MOO_CFLAGS)                       \
     $(GTK_CFLAGS)
 
-AM_CFLAGS = $(common_cflags) $(DEBUG_CFLAGS) $(CFLAGS)
+AM_CFLAGS = $(common_cflags) $(MOO_DEBUG_CFLAGS) $(CFLAGS)
 
 EXTRA_DIST =                \
     mootermparser-yacc.y    \

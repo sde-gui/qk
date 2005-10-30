@@ -35,7 +35,7 @@ bin_PROGRAMS += $(medit)
 AM_CFLAGS =                     \
     -I$(top_builddir)           \
     $(MOO_CFLAGS)               \
-    $(DEBUG_CFLAGS)             \
+    $(MOO_DEBUG_CFLAGS)         \
     $(CFLAGS)                   \
     $(GTK_CFLAGS)
 

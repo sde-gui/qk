@@ -1,6 +1,6 @@
 EXTRA_DIST = makewin mingw-configure
 
-DIST_SUBDIRS = moo tests
+DIST_SUBDIRS = moo tests m4
 SUBDIRS = moo
 
 if !MOO_OS_CYGWIN
@@ -9,3 +9,5 @@ endif
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = moo.pc
+
+ACLOCAL_AMFLAGS = -I m4

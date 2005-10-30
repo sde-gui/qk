@@ -39,11 +39,15 @@ if test x$LIBTOOLIZE = x; then
     export LIBTOOLIZE=libtoolize$lt_version
 fi
 
+if test -d $srcdir/m4 ; then
+    aclocal_extra="-I $srcdir/m4"
+fi
+
 echo $LIBTOOLIZE --automake --copy      && \
 $LIBTOOLIZE --automake --copy           && \
                                            \
-echo $ACLOCAL                           && \
-$ACLOCAL                                && \
+echo $ACLOCAL $aclocal_extra            && \
+$ACLOCAL $aclocal_extra                 && \
                                            \
 echo $AUTOHEADER                        && \
 $AUTOHEADER                             && \

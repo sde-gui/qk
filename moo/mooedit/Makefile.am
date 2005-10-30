@@ -10,7 +10,7 @@ AM_CFLAGS =                             \
     -I$(top_builddir)                   \
     -I$(top_builddir)/$(MOO_SRC_PREFIX) \
     $(MOO_CFLAGS)                       \
-    $(DEBUG_CFLAGS)                     \
+    $(MOO_DEBUG_CFLAGS)                 \
     $(CFLAGS)
 
 noinst_LTLIBRARIES = libmooedit.la

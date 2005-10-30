@@ -38,7 +38,7 @@ AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
-AC_PROG_WINDRES
+MOO_AC_PROG_WINDRES
 
 
 # for pcre
@@ -67,112 +67,36 @@ AC_HEADER_TIOCGWINSZ
 
 # Check for PTY handling functions.
 AC_CHECK_FUNCS(cfmakeraw getpgid getpt grantpt unlockpt ptsname ptsname_r recvmsg)
-
-
+#
 ################################################################################
+
+
 #  Check debug options
-#
 # TODO TODO check gcc
-AC_CHECK_DEBUG_STUFF([-Wall])
+MOO_AC_CHECK_DEBUG_STUFF([-Wall])
 
-
-################################################################################
 #  Check operating system
-#
-cygwin_build="no"
-mingw_build="no"
-case $host in
-  *-*-mingw32*)
-    echo "++++ building for MINGW32 ++++"
-    mingw_build="yes"
-    ;;
-  *-*-cygwin*)
-    echo "++++ building for CYGWIN ++++"
-    cygwin_build="yes"
-    ;;
-  *-*-darwin*)
-    echo "++++ building for DARWIN ++++"
-    AC_DEFINE(MOO_OS_DARWIN, 1, [darwin])
-    unix_build=yes
-    ;;
-  *)
-    unix_build=yes
-    ;;
-esac
-AM_CONDITIONAL(MOO_OS_UNIX, test x$unix_build = "xyes")
-AM_CONDITIONAL(MOO_OS_MINGW, test x$mingw_build = "xyes")
-AM_CONDITIONAL(MOO_OS_CYGWIN, test x$cygwin_build = "xyes")
+MOO_AC_CHECK_OS
 
-
-################################################################################
 #  GTK libraries
-#
-PKG_CHECK_GTK_VERSIONS
+MOO_PKG_CHECK_GTK_VERSIONS
 
-
-################################################################################
 #  File monitoring
-#
-if test x$unix_build = xyes; then
-    AC_CHECK_FAM([has_fam=yes],[has_fam=no])
-    if test x$has_fam = xyes; then
-        AC_DEFINE(MOO_USE_FAM, 1, [use libfam for monitoring files])
-    else
-        AC_MSG_WARN([FAM or gamin not found. It is not required, everything will work but maybe not as well as with FAM.])
-    fi
-fi
+MOO_AC_FAM
 
-# Win32 file watch needs a thread for WaitForMultipleObjects
-if test x$mingw_build = xyes; then
-    AC_DEFINE(MOO_NEED_THREAD, 1, [enable glib thread support])
-    PKG_CHECK_MODULES(GTHREAD, [gthread-2.0])
-    MOO_GTHREAD_PKG_NAME=gthread-2.0
-fi
+#  libxml2
+MOO_AC_XML
 
-AC_SUBST(MOO_GTHREAD_PKG_NAME)
+#  xdgmime
+MOO_AC_XDGMIME
+
+#  Python stuff
+MOO_AC_PYGTK
 
 
 ################################################################################
-#  Python stuff
+#  Python module
 #
-AC_ARG_WITH([pygtk],
-  AC_HELP_STRING([--with-pygtk], [whether to compile pygtk support (default = autodetect)]),
-  [
-    if test x$with_pygtk = "xno"; then
-        build_pygtk="no"
-    else
-        build_pygtk="yes"
-    fi
-  ], [
-    build_pygtk="yes"
-])
-
-
-AC_ARG_WITH([python],
-  AC_HELP_STRING([--with-python], [whether to compile python support (default = AUTO)]),
-  [
-    if test x$with_python = "xno"; then
-        build_python="no"
-        build_pygtk="no"
-    else
-        if test x$with_python = "xyes"; then
-            python_version=2.2
-        else
-            python_version=$with_python
-        fi
-        build_python="yes"
-    fi
-  ], [
-    if test x$build_pygtk = xyes; then
-        build_python="yes"
-    else
-        build_python="auto"
-        build_pygtk="no"
-    fi
-    python_version=2.2
-])
-
-
 AC_ARG_ENABLE([moo-module],
   AC_HELP_STRING([--enable-moo-module], [create standalone python module 'moo' (default = YES)]),
   [
@@ -185,50 +109,7 @@ AC_ARG_ENABLE([moo-module],
     build_pymoo="yes"
 ])
 
-
-if test x$cygwin_build != "xyes" -a x$build_python != "xno"; then
-    AC_CHECK_PYTHON($python_version,[
-        build_python="yes"
-        AC_MSG_NOTICE([compiling python support])
-    ],[
-        build_python="no"
-        build_pygtk="no"
-        if test x$build_python = "xyes"; then
-            AC_MSG_ERROR([Python not found])
-        else
-            AC_MSG_WARN([Python support will be disabled])
-        fi
-    ])
-fi
-
-AM_CONDITIONAL(MOO_USE_PYTHON, test x$build_python = "xyes")
-if test x$build_python = "xyes"; then
-    AC_DEFINE(MOO_USE_PYTHON,, [MOO_USE_PYTHON])
-fi
-
-
-################################################################################
-#  pygtk
-#
-if test x$cygwin_build != "xyes"; then
-    if test x$build_pygtk = xyes; then
-        AC_CHECK_PYGTK([$python_version],[
-            build_pygtk="yes"
-            AC_MSG_NOTICE([compiling pygtk support])
-        ],[
-            build_pygtk="no"
-            AC_MSG_NOTICE([usable pygtk not found])
-        ])
-    fi
-fi
-
-
-AM_CONDITIONAL(MOO_USE_PYGTK, test x$build_pygtk = "xyes")
-if test x$build_pygtk = "xyes"; then
-    AC_DEFINE(MOO_USE_PYGTK,, [MOO_USE_PYGTK])
-fi
-
-if test x$build_pygtk = "xyes"; then
+if test x$MOO_USE_PYGTK = "xyes"; then
     if test x$build_pymoo != "xno"; then
         build_pymoo="yes"
     fi
@@ -237,43 +118,6 @@ else
 fi
 
 AM_CONDITIONAL(BUILD_PYMOO, test x$build_pymoo = "xyes")
-
-
-################################################################################
-#  libxml2
-#
-AC_ARG_WITH([xml],
-    AC_HELP_STRING([--with-xml], [enable xml]),
-    [use_xml=$withval],
-    [use_xml=auto]
-)
-
-if test x$cygwin_build != "xyes" -a x$use_xml != "xno"; then
-    AC_CHECK_XML_STUFF([found_xml=yes],[found_xml=no])
-fi
-
-if test x$use_xml = "xyes" -a x$found_xml = "xno"; then
-    AC_MSG_ERROR([libxml2 library not found])
-fi
-if test x$found_xml = "xyes"; then
-    use_xml=yes
-    AC_MSG_NOTICE([compiling with xml support])
-    AC_DEFINE(MOO_USE_XML,, [use libxml])
-else
-    use_xml=no
-    AC_MSG_NOTICE([compiling without xml support])
-fi
-
-AM_CONDITIONAL(MOO_USE_XML, test x$use_xml = xyes)
-
-
-################################################################################
-#  xdgmime
-#
-if test x$unix_build = "xyes"; then
-    AC_DEFINE(MOO_USE_XDGMIME,, [use xdgmime])
-fi
-AM_CONDITIONAL(MOO_USE_XDGMIME, test x$unix_build = "xyes")
 
 
 ################################################################################
@@ -301,7 +145,7 @@ AC_ARG_WITH([mooterm],
 )
 
 
-if test x$cygwin_build = "xyes"; then
+if test x$MOO_OS_CYGWIN = "xyes"; then
     build_mooutils="no"
     build_mooedit="no"
     build_mooapp="no"
@@ -313,7 +157,7 @@ fi
 if test "x$build_mooedit" != "xno"; then
     build_mooutils="yes"
 fi
-if test "x$build_mooterm" != "xno" -a x$cygwin_build != "xyes"; then
+if test "x$build_mooterm" != "xno" -a x$MOO_OS_CYGWIN != "xyes"; then
     build_mooutils="yes"
 fi
 
@@ -348,7 +192,7 @@ moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
 MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
 MOO_LIBS="$GTK_LIBS"
 
-if test x$has_fam = xyes; then
+if test x$MOO_USE_FAM = xyes; then
     MOO_LIBS="$MOO_LIBS $FAM_LIBS"
 fi
 
@@ -417,7 +261,6 @@ moo/mooedit/Makefile
 moo/mooedit/glade/Makefile
 moo/mooedit/syntax/Makefile
 moo/mooedit/plugins/Makefile
-moo/mooedit/plugins/cproject/Makefile
 moo/mooterm/Makefile
 moo/mooterm/termhelper_res.rc
 moo/mooterm/glade/Makefile
@@ -432,6 +275,7 @@ moo/mooutils/xdgmime/Makefile
 moo/moopython/Makefile
 tests/Makefile
 tests/pyapp.py
+m4/Makefile
 moo.pc
 ])
 
@@ -439,10 +283,10 @@ moo.pc
 ################################################################################
 #  Configuration info
 #
-if test x$cygwin_build != "xyes"; then
-    if test "x$mingw_build" = "xyes"; then
+if test x$MOO_OS_CYGWIN != "xyes"; then
+    if test "x$MOO_OS_MINGW" = "xyes"; then
         system="MINGW"
-    elif test "x$darwin_build" = "xyes"; then
+    elif test "x$MOO_OS_DARWIN" = "xyes"; then
         system="DARWIN"
     else
         system="UNIX"
