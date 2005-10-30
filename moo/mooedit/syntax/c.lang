@@ -2,7 +2,7 @@
 <!DOCTYPE language SYSTEM "language.dtd"
 [
     <!ENTITY func_pattern "\b[_\w][_\w\d]*(?=[\s]*[(])">
-    <!ENTITY preproc "ifdef|ifndef|include|import|else|elif|define|endif|undef|error|pragma|line">
+    <!ENTITY preproc "ifdef|ifndef|ident|include|import|else|elif|define|endif|undef|error|pragma|line">
 ]>
 <language name="C" version="1.0" section="Sources"
           mimetypes="text/x-c;text/x-chdr;text/x-csrc"
