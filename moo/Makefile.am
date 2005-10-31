@@ -21,8 +21,10 @@ moolibincludedir = $(libdir)/moo-1.0/include
 moolibinclude_HEADERS = $(moolibinclude_headers)
 endif MOO_STANDALONE
 
-EXTRA_DIST = $(mooinclude_headers) $(moolibinclude_headers)
-
+EXTRA_DIST =                    \
+    $(mooinclude_headers)       \
+    $(moolibinclude_headers)    \
+    TODO
 
 # lib_LTLIBRARIES = libmoo-1.0.la
 noinst_LTLIBRARIES = libmoo-1.0.la
