@@ -188,7 +188,8 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 
-static void moo_app_class_init (MooAppClass *klass)
+static void
+moo_app_class_init (MooAppClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -367,9 +368,10 @@ moo_app_instance_init (MooApp *app)
 }
 
 
-static GObject *moo_app_constructor     (GType           type,
-                                         guint           n_params,
-                                         GObjectConstructParam *params)
+static GObject*
+moo_app_constructor (GType           type,
+                     guint           n_params,
+                     GObjectConstructParam *params)
 {
     GObject *object;
     MooApp *app;
@@ -394,7 +396,8 @@ static GObject *moo_app_constructor     (GType           type,
 }
 
 
-static void moo_app_finalize       (GObject      *object)
+static void
+moo_app_finalize (GObject *object)
 {
     MooApp *app = MOO_APP(object);
 
@@ -421,10 +424,11 @@ static void moo_app_finalize       (GObject      *object)
 }
 
 
-static void moo_app_set_property    (GObject        *object,
-                                     guint           prop_id,
-                                     const GValue   *value,
-                                     GParamSpec     *pspec)
+static void
+moo_app_set_property (GObject        *object,
+                      guint           prop_id,
+                      const GValue   *value,
+                      GParamSpec     *pspec)
 {
     MooApp *app = MOO_APP (object);
 
@@ -476,10 +480,11 @@ static void moo_app_set_property    (GObject        *object,
     }
 }
 
-static void moo_app_get_property    (GObject        *object,
-                                     guint           prop_id,
-                                     GValue         *value,
-                                     GParamSpec     *pspec)
+static void
+moo_app_get_property (GObject        *object,
+                      guint           prop_id,
+                      GValue         *value,
+                      GParamSpec     *pspec)
 {
     MooApp *app = MOO_APP (object);
 
@@ -527,7 +532,8 @@ static void moo_app_get_property    (GObject        *object,
 }
 
 
-MooApp          *moo_app_get_instance          (void)
+MooApp*
+moo_app_get_instance (void)
 {
     return moo_app_instance;
 }
@@ -730,6 +736,7 @@ void             moo_app_hide_python_console   (G_GNUC_UNUSED MooApp *app)
     g_return_if_fail (moo_app_python != NULL);
     gtk_widget_hide (GTK_WIDGET (moo_app_python->console));
 }
+#endif /* !MOO_USE_PYTHON */
 
 
 static guint strv_length (char **argv)
@@ -745,7 +752,6 @@ static guint strv_length (char **argv)
 
     return len;
 }
-#endif /* !MOO_USE_PYTHON */
 
 
 MooEditor       *moo_app_get_editor            (MooApp          *app)
@@ -762,13 +768,44 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app)
 }
 
 
-static gboolean moo_app_init_real       (MooApp         *app)
+static gboolean
+moo_app_init_real (MooApp *app)
 {
     G_GNUC_UNUSED const char *app_dir;
     const char *rc_file;
     MooLangMgr *lang_mgr;
     MooUIXML *ui_xml;
     GError *error = NULL;
+
+#if 0
+    if (app->priv->enable_options)
+    {
+        int argc = strv_length (app->priv->argv);
+
+        g_option_context_add_group (app->priv->option_ctx,
+                                    gtk_get_option_group (TRUE));
+        g_option_context_parse (app->priv->option_ctx, &argc,
+                                &app->priv->argv, &error);
+
+        if (error || argc > 1)
+        {
+            if (error)
+            {
+                g_print ("%s\n", error->message);
+                g_error_free (error);
+                error = NULL;
+            }
+            else
+            {
+                g_print ("Unknown option %s\n", app->priv->argv[1]);
+            }
+
+            g_print ("Type '%s --help' for usage\n", g_get_prgname ());
+
+            exit (1);
+        }
+    }
+#endif
 
 #ifdef __WIN32__
     app_dir = moo_app_get_application_dir (app);
