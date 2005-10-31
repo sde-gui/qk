@@ -17,7 +17,6 @@
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooutils/moofileutils.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moofilewatch.h"
 #include <string.h>

@@ -12,7 +12,7 @@
  */
 
 #include "mooutils/moomarkup.h"
-#include "mooutils/moofileutils.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <glib.h>

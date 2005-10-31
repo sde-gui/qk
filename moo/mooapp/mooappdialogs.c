@@ -21,7 +21,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
-#include "mooutils/moofileutils.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 
 

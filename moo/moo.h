@@ -24,7 +24,7 @@
 #include <mooutils/moocombo.h>
 #include <mooutils/moodialogs.h>
 #include <mooutils/mooentry.h>
-#include <mooutils/moofileutils.h>
+#include <mooutils/mooutils-misc.h>
 #include <mooutils/moofilewatch.h>
 #include <mooutils/moofiltermgr.h>
 #include <mooutils/mooglade.h>
@@ -44,7 +44,6 @@
 #include <mooutils/mootoggleaction.h>
 #include <mooutils/moouixml.h>
 #include <mooutils/mooutils-gobject.h>
-#include <mooutils/moowin.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moofileview/moobookmarkmgr.h>
 #include <mooutils/moofileview/moofile.h>

@@ -15,7 +15,7 @@
 #include "mooterm/mooterm-prefs.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
-#include "mooutils/moofileutils.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
 

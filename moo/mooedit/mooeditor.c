@@ -20,7 +20,7 @@
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moowin.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moofilewatch.h"
 #include <string.h>

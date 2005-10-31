@@ -34,7 +34,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
-#include "mooutils/moowin.h"
+#include "mooutils/mooutils-misc.h"
 
 
 #ifdef VERSION

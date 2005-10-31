@@ -597,25 +597,6 @@
 
 ;; From ../mooutils/moofileutils.h
 
-(define-function moo_save_file_utf8
-  (c-name "moo_save_file_utf8")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "name")
-    '("const-char*" "text")
-    '("gssize" "len")
-    '("GError**" "error")
-  )
-)
-
-(define-function moo_unlink
-  (c-name "moo_unlink")
-  (return-type "int")
-  (parameters
-    '("const-char*" "filename")
-  )
-)
-
 (define-function moo_open_url
   (c-name "moo_open_url")
   (return-type "gboolean")

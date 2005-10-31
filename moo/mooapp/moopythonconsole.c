@@ -18,7 +18,7 @@
 #include "mooapp/moopythonconsole.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moocompat.h"
-#include "mooutils/moowin.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooentry.h"
 
 

@@ -41,35 +41,8 @@ AC_PROG_INSTALL
 MOO_AC_PROG_WINDRES
 
 
-# for pcre
-AC_CHECK_FUNCS(memmove bcopy strerror)
-
-#for GMappedFile
-AC_CHECK_HEADERS(unistd.h)
-AC_CHECK_FUNCS(mmap)
-
-#for moofileutils.c
-AC_CHECK_FUNCS(unlink)
-
-
-################################################################################
-#  Terminal stuff
-#
-AC_CHECK_HEADERS(poll.h errno.h io.h fcntl.h sys/types.h sys/wait.h signal.h)
-AC_CHECK_FUNCS([poll pipe _pipe kill signal posix_openpt])
-AC_TYPE_SIGNAL
-AC_TYPE_SIZE_T
-AC_TYPE_PID_T
-
-# Check for headers.
-AC_CHECK_HEADERS(sys/select.h sys/termios.h sys/un.h stropts.h termios.h wchar.h)
-AC_HEADER_TIOCGWINSZ
-
-# Check for PTY handling functions.
-AC_CHECK_FUNCS(cfmakeraw getpgid getpt grantpt unlockpt ptsname ptsname_r recvmsg)
-#
-################################################################################
-
+#  Misc stuff
+MOO_AC_FUNCS
 
 #  Check debug options
 # TODO TODO check gcc

@@ -46,7 +46,6 @@ utilsinclude_headers =          \
     mooglade.h                  \
     moohistoryentry.h           \
     moohistorylist.h            \
-    moolog.h                    \
     moomarkup.h                 \
     moomenumgr.h                \
     moonotebook.h               \
@@ -56,13 +55,13 @@ utilsinclude_headers =          \
     mooprefsdialogpage.h        \
     moostock.h                  \
     mooutils-gobject.h          \
-    moowin.h                    \
     mooaccel.h                  \
     mooaction.h                 \
     mooactiongroup.h            \
     moomenuaction.h             \
     mootoggleaction.h           \
     moouixml.h                  \
+    mooutils-misc.h             \
     moowindow.h                 \
     mooutils-python.h
 
@@ -89,15 +88,12 @@ libmooutils_la_SOURCES =        \
     moodialogs.c                \
     moodialogs.h                \
     mooentry.c                  \
-    moofileutils.c              \
-    moofileutils.h              \
     moofilewatch.c              \
     moofilewatch.h              \
     moofiltermgr.c              \
     mooglade.c                  \
     moohistoryentry.c           \
     moohistorylist.c            \
-    moolog.c                    \
     moomarkup.c                 \
     moomenumgr.c                \
     moonotebook.c               \
@@ -107,7 +103,7 @@ libmooutils_la_SOURCES =        \
     mooprefsdialogpage.c        \
     moostock.c                  \
     mooutils-gobject.c          \
-    moowin.c                    \
+    mooutils-misc.c             \
     mooaccel.c                  \
     mooaccelprefs-glade.h       \
     mooaction.c                 \
