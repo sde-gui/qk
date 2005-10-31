@@ -22,6 +22,7 @@
 #include "mooapp/moopython.h"
 #endif
 
+#define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooapp-private.h"
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooappoutput.h"
@@ -33,6 +34,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moowin.h"
 
 
 #ifdef VERSION
@@ -1547,32 +1549,65 @@ moo_app_open_file (MooApp       *app,
 
 
 static void
+moo_app_present (MooApp *app)
+{
+    gpointer window = app->priv->term_window;
+
+    if (!window && app->priv->editor)
+        window = moo_editor_get_active_window (app->priv->editor);
+
+    g_return_if_fail (window != NULL);
+
+    moo_window_present (window);
+}
+
+
+static MooAppCmdCode get_cmd_code (char cmd)
+{
+    guint i;
+
+    for (i = 1; i < MOO_APP_CMD_LAST; ++i)
+        if (cmd == moo_app_cmd_chars[i])
+            return i;
+
+    return MOO_APP_CMD_ZERO;
+}
+
+static void
 moo_app_exec_cmd_real (MooApp             *app,
                        char                cmd,
                        const char         *data,
                        G_GNUC_UNUSED guint len)
 {
+    MooAppCmdCode code;
+
     g_return_if_fail (MOO_IS_APP (app));
 
-    switch (cmd)
+    code = get_cmd_code (cmd);
+
+    switch (code)
     {
 #ifdef MOO_USE_PYTHON
-        case MOO_APP_PYTHON_STRING:
+        case MOO_APP_CMD_PYTHON_STRING:
             moo_app_python_run_string (app, data);
             break;
-        case MOO_APP_PYTHON_FILE:
+        case MOO_APP_CMD_PYTHON_FILE:
             moo_app_python_run_file (app, data);
             break;
 #endif
 
-        case MOO_APP_OPEN_FILE:
+        case MOO_APP_CMD_OPEN_FILE:
             moo_app_open_file (app, data);
             break;
-        case MOO_APP_QUIT:
+        case MOO_APP_CMD_QUIT:
             moo_app_quit (app);
             break;
-        case MOO_APP_DIE:
+        case MOO_APP_CMD_DIE:
             MOO_APP_GET_CLASS(app)->quit (app);
+            break;
+
+        case MOO_APP_CMD_PRESENT:
+            moo_app_present (app);
             break;
 
         default:

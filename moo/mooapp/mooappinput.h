@@ -23,11 +23,40 @@
 G_BEGIN_DECLS
 
 
-#define MOO_APP_PYTHON_STRING   's'
-#define MOO_APP_PYTHON_FILE     'p'
-#define MOO_APP_OPEN_FILE       'f'
-#define MOO_APP_QUIT            'q'
-#define MOO_APP_DIE             'd'
+typedef enum
+{
+    MOO_APP_CMD_ZERO = 0,
+    MOO_APP_CMD_PYTHON_STRING,
+    MOO_APP_CMD_PYTHON_FILE,
+    MOO_APP_CMD_OPEN_FILE,
+    MOO_APP_CMD_QUIT,
+    MOO_APP_CMD_DIE,
+    MOO_APP_CMD_PRESENT,
+    MOO_APP_CMD_LAST
+} MooAppCmdCode;
+
+
+#ifdef WANT_MOO_APP_CMD_CHARS
+
+#define CMD_ZERO            "\0"
+#define CMD_PYTHON_STRING   "s"
+#define CMD_PYTHON_FILE     "p"
+#define CMD_OPEN_FILE       "f"
+#define CMD_QUIT            "q"
+#define CMD_DIE             "d"
+#define CMD_PRESENT         "r"
+
+static const char *moo_app_cmd_chars =
+    CMD_ZERO
+    CMD_PYTHON_STRING
+    CMD_PYTHON_FILE
+    CMD_OPEN_FILE
+    CMD_QUIT
+    CMD_DIE
+    CMD_PRESENT
+;
+
+#endif /* WANT_MOO_APP_CMD_CHARS */
 
 
 typedef struct _MooAppInput MooAppInput;

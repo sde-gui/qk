@@ -276,6 +276,14 @@ GtkWindow *moo_get_top_window (GSList *windows)
 #endif
 
 
+/* TODO use gtk_window_present_with_time(), use Xlib? */
+void
+moo_window_present (GtkWindow  *window)
+{
+    g_return_if_fail (GTK_IS_WINDOW (window));
+    gtk_window_present (window);
+}
+
 
 gboolean    moo_window_set_icon_from_stock  (GtkWindow      *window,
                                              const char     *stock_id)

@@ -20,6 +20,7 @@ G_BEGIN_DECLS
 
 
 gboolean     moo_window_is_hidden           (GtkWindow  *window);
+void         moo_window_present             (GtkWindow  *window);
 GtkWindow   *moo_get_top_window             (GSList     *windows);
 GtkWindow   *moo_get_toplevel_window        (void);
 

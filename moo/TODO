@@ -17,3 +17,10 @@ App
 ========
 
 1. Command line options
+
+
+Misc
+========
+
+1. Make MooNotebook subclass GtkContainer; apparently dogtail doesn't like it to be
+a GtkNotebook.
