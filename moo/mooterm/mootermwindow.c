@@ -117,7 +117,20 @@ static GObject     *moo_term_window_constructor         (GType                  
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
                                          GTK_SHADOW_ETCHED_OUT);
 
-    terminal = g_object_new (MOO_TYPE_TERM, NULL);
+    if (window->term_type)
+    {
+        if (!g_type_is_a (window->term_type, MOO_TYPE_TERM))
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            window->term_type = MOO_TYPE_TERM;
+        }
+    }
+    else
+    {
+        window->term_type = MOO_TYPE_TERM;
+    }
+
+    terminal = g_object_new (window->term_type, NULL);
     gtk_widget_show (terminal);
     gtk_container_add (GTK_CONTAINER (scrolledwindow), terminal);
     GTK_WIDGET_SET_FLAGS (terminal, GTK_CAN_FOCUS);
@@ -192,4 +205,15 @@ MooTerm         *moo_term_window_get_term       (MooTermWindow  *window)
 {
     g_return_val_if_fail (MOO_IS_TERM_WINDOW (window), NULL);
     return window->terminal;
+}
+
+
+void
+moo_term_window_set_term_type (MooTermWindow  *window,
+                               GType           type)
+{
+    g_return_if_fail (MOO_IS_TERM_WINDOW (window));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_TERM));
+    g_return_if_fail (window->terminal == NULL);
+    window->term_type = type;
 }

@@ -36,6 +36,7 @@ struct _MooTermWindow
 {
     MooWindow       parent;
 
+    GType           term_type;
     MooTerm        *terminal;
 };
 
@@ -51,6 +52,9 @@ GtkWidget       *moo_term_window_new            (void);
 void             moo_term_window_apply_settings (MooTermWindow  *window);
 
 MooTerm         *moo_term_window_get_term       (MooTermWindow  *window);
+
+void             moo_term_window_set_term_type  (MooTermWindow  *window,
+                                                 GType           type);
 
 
 G_END_DECLS

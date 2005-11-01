@@ -42,18 +42,19 @@ typedef struct _MooMarkupText MooMarkupComment;
 
 
 #ifndef ENABLE_DEBUG
-#define MOO_MARKUP_NODE(n)      ((MooMarkupNode*)(n))
+#define MOO_MARKUP_NODE(n)      ((MooMarkupNode*)n)
 #define MOO_MARKUP_DOC(n)       ((MooMarkupDoc*)(n))
 #define MOO_MARKUP_ELEMENT(n)   ((MooMarkupElement*)(n))
 #define MOO_MARKUP_TEXT(n)      ((MooMarkupText*)(n))
 #define MOO_MARKUP_COMMENT(n)   ((MooMarkupComment*)(n))
 #else /* ENABLE_DEBUG */
-MooMarkupNode      *MOO_MARKUP_NODE    (gpointer node);
-MooMarkupDoc       *MOO_MARKUP_DOC     (gpointer node);
-MooMarkupElement   *MOO_MARKUP_ELEMENT (gpointer node);
-MooMarkupText      *MOO_MARKUP_TEXT    (gpointer node);
-MooMarkupComment   *MOO_MARKUP_COMMENT (gpointer node);
+#define MOO_MARKUP_NODE(n)      (MOO_MARKUP_NODE_CHECK_CAST(n))
+#define MOO_MARKUP_DOC(n)       (MOO_MARKUP_DOC_CHECK_CAST(n))
+#define MOO_MARKUP_ELEMENT(n)   (MOO_MARKUP_ELEMENT_CHECK_CAST(n))
+#define MOO_MARKUP_TEXT(n)      (MOO_MARKUP_TEXT_CHECK_CAST(n))
+#define MOO_MARKUP_COMMENT(n)   (MOO_MARKUP_COMMENT_CHECK_CAST(n))
 #endif /* ENABLE_DEBUG */
+
 #define MOO_MARKUP_IS_DOC(n)        ((n) != NULL && MOO_MARKUP_NODE(n)->type == MOO_MARKUP_DOC_NODE)
 #define MOO_MARKUP_IS_ELEMENT(n)    ((n) != NULL && MOO_MARKUP_NODE(n)->type == MOO_MARKUP_ELEMENT_NODE)
 #define MOO_MARKUP_IS_TEXT(n)       ((n) != NULL && MOO_MARKUP_NODE(n)->type == MOO_MARKUP_TEXT_NODE)
@@ -122,6 +123,12 @@ struct _MooMarkupText {
 
 
 GType               moo_markup_doc_get_type         (void);
+
+MooMarkupNode      *MOO_MARKUP_NODE_CHECK_CAST     (gpointer node);
+MooMarkupDoc       *MOO_MARKUP_DOC_CHECK_CAST      (gpointer node);
+MooMarkupElement   *MOO_MARKUP_ELEMENT_CHECK_CAST  (gpointer node);
+MooMarkupText      *MOO_MARKUP_TEXT_CHECK_CAST     (gpointer node);
+MooMarkupComment   *MOO_MARKUP_COMMENT_CHECK_CAST  (gpointer node);
 
 MooMarkupDoc       *moo_markup_doc_new              (const char         *name);
 

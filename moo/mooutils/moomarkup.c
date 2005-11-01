@@ -1097,25 +1097,8 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
 }
 
 
-#ifdef MOO_MARKUP_NODE
-#undef MOO_MARKUP_NODE
-#endif
-#ifdef MOO_MARKUP_DOC
-#undef MOO_MARKUP_DOC
-#endif
-#ifdef MOO_MARKUP_ELEMENT
-#undef MOO_MARKUP_ELEMENT
-#endif
-#ifdef MOO_MARKUP_TEXT
-#undef MOO_MARKUP_TEXT
-#endif
-#ifdef MOO_MARKUP_COMMENT
-#undef MOO_MARKUP_COMMENT
-#endif
-
-
 MooMarkupNode*
-MOO_MARKUP_NODE (gpointer n)
+MOO_MARKUP_NODE_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1128,7 +1111,7 @@ MOO_MARKUP_NODE (gpointer n)
 }
 
 MooMarkupDoc*
-MOO_MARKUP_DOC (gpointer n)
+MOO_MARKUP_DOC_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1137,7 +1120,7 @@ MOO_MARKUP_DOC (gpointer n)
 }
 
 MooMarkupElement*
-MOO_MARKUP_ELEMENT (gpointer n)
+MOO_MARKUP_ELEMENT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1146,7 +1129,7 @@ MOO_MARKUP_ELEMENT (gpointer n)
 }
 
 MooMarkupText*
-MOO_MARKUP_TEXT (gpointer n)
+MOO_MARKUP_TEXT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
@@ -1155,7 +1138,7 @@ MOO_MARKUP_TEXT (gpointer n)
 }
 
 MooMarkupComment*
-MOO_MARKUP_COMMENT (gpointer n)
+MOO_MARKUP_COMMENT_CHECK_CAST (gpointer n)
 {
     MooMarkupNode *node = (MooMarkupNode*) n;
     g_return_val_if_fail (n != NULL, NULL);
