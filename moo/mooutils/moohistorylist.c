@@ -488,7 +488,36 @@ void
 moo_history_list_remove (MooHistoryList *list,
                          const char     *entry)
 {
-#warning "Implement me"
+    Item *item;
+    GtkTreeIter iter;
+    int separator;
+
+    g_return_if_fail (MOO_IS_HISTORY_LIST (list));
+    g_return_if_fail (entry != NULL);
+
+    if (!list_find_item (list, entry, &iter))
+        return;
+
+    item = list_get_item (list, &iter);
+    _list_remove (list, &iter);
+
+    separator = list->priv->num_builtin;
+
+    if (item->builtin)
+        list->priv->num_builtin--;
+    else
+        list->priv->num_user--;
+
+    if (list->priv->has_separator &&
+        (!list->priv->num_builtin || !list->priv->num_user))
+    {
+        gtk_tree_model_iter_nth_child (list->priv->model, &iter, NULL, separator);
+        _list_remove (list, &iter);
+        list->priv->has_separator = FALSE;
+    }
+
+    moo_history_list_item_free (item);
+    return;
 }
 
 
