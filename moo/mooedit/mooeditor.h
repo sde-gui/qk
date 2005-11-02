@@ -55,11 +55,11 @@ MooEditWindow   *moo_editor_new_window      (MooEditor      *editor);
 MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
                                              MooEditWindow  *window);
 
-void             moo_editor_open            (MooEditor      *editor,
+gboolean         moo_editor_open            (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              GSList         *files); /* list of MooEditFileInfo* */
-void             moo_editor_open_file       (MooEditor      *editor,
+gboolean         moo_editor_open_file       (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              const char     *filename,
@@ -101,6 +101,9 @@ void             moo_editor_set_ui_xml      (MooEditor      *editor,
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 
 MooLangMgr      *moo_editor_get_lang_mgr    (MooEditor      *editor);
+void             moo_editor_set_default_lang(MooEditor      *editor,
+                                             const char     *name);
+const char      *moo_editor_get_default_lang(MooEditor      *editor);
 
 void             moo_editor_set_window_type (MooEditor      *editor,
                                              GType           type);

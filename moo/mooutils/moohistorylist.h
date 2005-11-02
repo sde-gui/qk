@@ -81,6 +81,9 @@ void             moo_history_list_add_full          (MooHistoryList *list,
                                                      const char     *item,
                                                      const char     *display_item);
 
+void             moo_history_list_remove            (MooHistoryList *list,
+                                                     const char     *item);
+
 void             moo_history_list_set_display_func  (MooHistoryList *list,
                                                      MooHistoryDisplayFunc func,
                                                      gpointer        data);

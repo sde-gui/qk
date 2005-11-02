@@ -102,6 +102,8 @@ struct _MooEditorPrivate {
 
     GType            window_type;
     GType            doc_type;
+
+    char            *default_lang;
 };
 
 
@@ -302,6 +304,8 @@ static void moo_editor_finalize       (GObject      *object)
 
     g_hash_table_destroy (editor->priv->loaders);
     g_hash_table_destroy (editor->priv->savers);
+
+    g_free (editor->priv->default_lang);
 
     g_free (editor->priv);
 
@@ -660,8 +664,8 @@ activate_history_item (MooEditor           *editor,
     win_info = window_list_find (editor, window);
     g_return_if_fail (win_info != NULL);
 
-    moo_editor_open_file (editor, window, GTK_WIDGET (window),
-                          item->data, NULL);
+    if (!moo_editor_open_file (editor, window, GTK_WIDGET (window), item->data, NULL))
+        moo_history_list_remove (editor->priv->history, item->data);
 }
 
 
@@ -699,6 +703,14 @@ moo_editor_add_doc (MooEditor      *editor,
 
     g_hash_table_insert (editor->priv->loaders, doc, moo_edit_loader_ref (loader));
     g_hash_table_insert (editor->priv->savers, doc, moo_edit_saver_ref (saver));
+
+    if (!moo_edit_get_lang (doc) && editor->priv->default_lang)
+    {
+        MooLang *lang = moo_lang_mgr_get_lang (editor->priv->lang_mgr,
+                                               editor->priv->default_lang);
+        if (lang)
+            moo_edit_set_lang (doc, lang);
+    }
 }
 
 
@@ -743,20 +755,22 @@ MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
 }
 
 
-void             moo_editor_open            (MooEditor      *editor,
-                                             MooEditWindow  *window,
-                                             GtkWidget      *parent,
-                                             GSList         *files)
+gboolean
+moo_editor_open (MooEditor      *editor,
+                 MooEditWindow  *window,
+                 GtkWidget      *parent,
+                 GSList         *files)
 {
     GSList *l;
     MooEditLoader *loader;
     MooEditSaver *saver;
     MooEdit *bring_to_front = NULL;
+    gboolean result = TRUE;
 
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (!parent || GTK_IS_WIDGET (parent));
-    g_return_if_fail (!window || window_list_find (editor, window) != NULL);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+    g_return_val_if_fail (!window || window_list_find (editor, window) != NULL, FALSE);
 
     if (window && !parent)
         parent = GTK_WIDGET (window);
@@ -766,11 +780,12 @@ void             moo_editor_open            (MooEditor      *editor,
         files = moo_edit_open_dialog (parent, editor->priv->filter_mgr);
 
         if (!files)
-            return;
+            return FALSE;
 
-        moo_editor_open (editor, window, parent, files);
+        result = moo_editor_open (editor, window, parent, files);
         file_info_list_free (files);
-        return;
+
+        return result;
     }
 
     loader = moo_edit_loader_get_default ();
@@ -815,6 +830,7 @@ void             moo_editor_open            (MooEditor      *editor,
             moo_edit_open_error_dialog (parent, error ? error->message : NULL);
             if (error)
                 g_error_free (error);
+            result = FALSE;
         }
         else
         {
@@ -846,6 +862,8 @@ void             moo_editor_open            (MooEditor      *editor,
         moo_editor_set_active_doc (editor, bring_to_front);
         gtk_widget_grab_focus (GTK_WIDGET (bring_to_front));
     }
+
+    return result;
 }
 
 
@@ -1223,7 +1241,7 @@ moo_editor_list_windows (MooEditor *editor)
 }
 
 
-void
+gboolean
 moo_editor_open_file (MooEditor      *editor,
                       MooEditWindow  *window,
                       GtkWidget      *parent,
@@ -1232,15 +1250,18 @@ moo_editor_open_file (MooEditor      *editor,
 {
     MooEditFileInfo *info;
     GSList *list;
+    gboolean result;
 
     if (!filename)
         return moo_editor_open (editor, window, parent, NULL);
 
     info = moo_edit_file_info_new (filename, encoding);
     list = g_slist_prepend (NULL, info);
-    moo_editor_open (editor, window, parent, list);
+    result = moo_editor_open (editor, window, parent, list);
+
     moo_edit_file_info_free (info);
     g_slist_free (list);
+    return result;
 }
 
 
@@ -1455,4 +1476,22 @@ moo_editor_set_edit_type (MooEditor      *editor,
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT));
     editor->priv->doc_type = type;
+}
+
+
+void
+moo_editor_set_default_lang (MooEditor      *editor,
+                             const char     *name)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_free (editor->priv->default_lang);
+    editor->priv->default_lang = g_strdup (name);
+}
+
+
+const char*
+moo_editor_get_default_lang (MooEditor      *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    return editor->priv->default_lang;
 }
