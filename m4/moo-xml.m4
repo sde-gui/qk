@@ -67,6 +67,8 @@ AC_DEFUN([MOO_AC_XML],[
 
         if test x$MOO_USE_XML = "xyes" -a x$moo_found_xml = "xno"; then
             AC_MSG_ERROR([libxml2 library not found])
+        elif test x$MOO_USE_XML != "xno" -a x$moo_found_xml = "xno"; then
+            AC_MSG_WARN([libxml2 library not found, syntax highlighting in the editor will be disabled])
         fi
 
         if test x$moo_found_xml = "xyes"; then
