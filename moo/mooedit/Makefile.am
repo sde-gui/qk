@@ -53,13 +53,20 @@ noinst_HEADERS =                \
     mootextview-private.h
 
 
-if !MOO_OS_MINGW
 unix_sources = moocmdview.c
-mooeditinclude_headers += moocmdview.h
+unix_headers = moocmdview.h
+
+if !MOO_OS_MINGW
+use_unix_sources = $(unix_sources)
+mooeditinclude_headers += $(unix_headers)
 endif
 
-libmooedit_la_SOURCES =         \
+EXTRA_DIST =                    \
     $(unix_sources)             \
+    $(unix_headers)
+
+libmooedit_la_SOURCES =         \
+    $(use_unix_sources)         \
     $(mooeditinclude_headers)   \
     $(noinst_HEADERS)           \
     gtksourceiter.c             \

@@ -12,15 +12,23 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/moolang-parser.h"
 #include "mooedit/moolang-strings.h"
 #include "mooedit/moolangmgr.h"
+#include "mooutils/moomarkup.h"
+#include <string.h>
+#ifdef MOO_USE_XML
 #include <libxml/tree.h>
 #include <libxml/parser.h>
-#include <string.h>
+#endif
 
 
+#ifdef MOO_USE_XML
 static LangXML      *lang_xml_parse         (xmlNode        *node);
 static GeneralXML   *general_xml_parse      (xmlNode        *node);
 static SyntaxXML    *syntax_xml_parse       (LangXML        *lang_xml,
@@ -47,19 +55,22 @@ static CrossRef     *cross_ref_new          (const char     *lang,
 static void          cross_ref_free         (CrossRef       *ref);
 static void          ctx_switch_info_destroy(CtxSwitchInfo  *switch_info);
 
-static void          lang_xml_add_cross_ref         (LangXML        *xml,
-                                                     const char     *lang,
-                                                     const char     *name);
-static void          lang_xml_add_keyword_ref       (LangXML        *xml,
-                                                     const xmlChar  *keyword);
-static void          lang_xml_add_style_ref         (LangXML        *xml,
-                                                     const char     *style);
-static gboolean      lang_xml_check_internal_refs   (LangXML        *xml);
+static void          lang_xml_add_cross_ref     (LangXML        *xml,
+                                                 const char     *lang,
+                                                 const char     *name);
+static void          lang_xml_add_keyword_ref   (LangXML        *xml,
+                                                 const xmlChar  *keyword);
+static void          lang_xml_add_style_ref     (LangXML        *xml,
+                                                 const char     *style);
+static gboolean      lang_xml_check_internal_refs (LangXML      *xml);
+#endif /* MOO_USE_XML */
+
 
 
 LangXML*
 moo_lang_parse_file (const char *file)
 {
+#ifdef MOO_USE_XML
     xmlDoc *doc;
     xmlNode *root;
     LangXML *xml;
@@ -78,13 +89,18 @@ moo_lang_parse_file (const char *file)
     xmlCleanupParser ();
 
     return xml;
+#else
+    g_return_val_if_fail (file != NULL, NULL);
+    return NULL;
+#endif
 }
 
 
 LangXML*
 moo_lang_parse_memory (const char *buffer,
-                            int         size)
+                       int         size)
 {
+#ifdef MOO_USE_XML
     xmlDoc *doc;
     xmlNode *root;
     LangXML *xml;
@@ -105,8 +121,32 @@ moo_lang_parse_memory (const char *buffer,
     xmlCleanupParser ();
 
     return xml;
+#else
+    g_return_val_if_fail (buffer != NULL, NULL);
+    g_return_val_if_fail (size != 0, NULL);
+    return NULL;
+#endif
 }
 
+
+#ifndef MOO_USE_XML
+
+/* Stubs for functions used elsewhere */
+void
+moo_lang_xml_free (G_GNUC_UNUSED LangXML *xml)
+{
+    g_return_if_reached ();
+}
+
+MooRule*
+moo_rule_new_from_xml (G_GNUC_UNUSED RuleXML    *xml,
+                       G_GNUC_UNUSED LangXML    *lang_xml,
+                       G_GNUC_UNUSED MooLang    *lang)
+{
+    g_return_val_if_reached (NULL);
+}
+
+#else /* MOO_USE_XML */
 
 /****************************************************************************/
 /* Auxiliary stuff
@@ -1920,9 +1960,13 @@ rule_include_xml_free (RuleIncludeXML    *xml)
     g_free (xml);
 }
 
+#endif /* MOO_USE_XML */
+
 
 /****************************************************************************/
 /* Style schemes
+ * Style schemes are stored in simplish XML files without fancy entities or
+ * something, so GMarkup will do fine
  */
 
 static gboolean
@@ -1969,25 +2013,25 @@ parse_color_check (const char *string,
 
 
 static MooTextStyle*
-style_from_xml (xmlNode *node)
+style_from_xml (MooMarkupNode *node)
 {
-    xmlChar *default_style_prop = NULL;
-    xmlChar *bold_prop = NULL, *italic_prop = NULL;
-    xmlChar *underline_prop = NULL, *strikethrough_prop = NULL;
-    xmlChar *foreground_prop = NULL, *background_prop = NULL;
+    const char *default_style_prop = NULL;
+    const char *bold_prop = NULL, *italic_prop = NULL;
+    const char *underline_prop = NULL, *strikethrough_prop = NULL;
+    const char *foreground_prop = NULL, *background_prop = NULL;
     GdkColor foreground, background;
     gboolean bold, italic, underline, strikethrough;
     MooTextStyleMask mask = 0;
 
     g_return_val_if_fail (node != NULL, NULL);
 
-    default_style_prop = GET_PROP (node, STYLE_DEF_STYLE_PROP);
-    bold_prop = GET_PROP (node, STYLE_BOLD_PROP);
-    italic_prop = GET_PROP (node, STYLE_ITALIC_PROP);
-    underline_prop = GET_PROP (node, STYLE_UNDERLINE_PROP);
-    strikethrough_prop = GET_PROP (node, STYLE_STRIKETHROUGH_PROP);
-    foreground_prop = GET_PROP (node, STYLE_FOREGROUND_PROP);
-    background_prop = GET_PROP (node, STYLE_BACKGROUND_PROP);
+    default_style_prop = moo_markup_get_prop (node, STYLE_DEF_STYLE_PROP);
+    bold_prop = moo_markup_get_prop (node, STYLE_BOLD_PROP);
+    italic_prop = moo_markup_get_prop (node, STYLE_ITALIC_PROP);
+    underline_prop = moo_markup_get_prop (node, STYLE_UNDERLINE_PROP);
+    strikethrough_prop = moo_markup_get_prop (node, STYLE_STRIKETHROUGH_PROP);
+    foreground_prop = moo_markup_get_prop (node, STYLE_FOREGROUND_PROP);
+    background_prop = moo_markup_get_prop (node, STYLE_BACKGROUND_PROP);
 
     if (bold_prop && parse_bool_check (bold_prop, &bold))
         mask |= MOO_TEXT_STYLE_BOLD;
@@ -2002,14 +2046,6 @@ style_from_xml (xmlNode *node)
     if (background_prop && parse_color_check (background_prop, &background))
         mask |= MOO_TEXT_STYLE_BACKGROUND;
 
-    STRING_FREE (default_style_prop);
-    STRING_FREE (bold_prop);
-    STRING_FREE (italic_prop);
-    STRING_FREE (underline_prop);
-    STRING_FREE (strikethrough_prop);
-    STRING_FREE (foreground_prop);
-    STRING_FREE (background_prop);
-
     return moo_text_style_new (default_style_prop,
                                &foreground, &background,
                                bold, italic, underline,
@@ -2017,15 +2053,24 @@ style_from_xml (xmlNode *node)
 }
 
 
+#define M_NODE_NAME_IS_(node_, name_)       (node_->name && !strcmp (node_->name, name_))
+#define M_IS_LANGUAGE_NODE(node_)           (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, LANGUAGE_ELM))
+#define M_IS_STYLE_NODE(node_)              (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, STYLE_ELM))
+#define M_IS_SCHEME_NODE(node_)             (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, SCHEME_ELM))
+#define M_IS_DEFAULT_STYLE_NODE(node_)      (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, DEFAULT_STYLE_ELM))
+#define M_IS_BRACKET_MATCH_NODE(node_)      (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, BRACKET_MATCH_ELM))
+#define M_IS_BRACKET_MISMATCH_NODE(node_)   (MOO_MARKUP_IS_ELEMENT(node_) && M_NODE_NAME_IS_(node_, BRACKET_MISMATCH_ELM))
+
 static gboolean
 style_scheme_xml_parse_lang (MooTextStyleScheme *scheme,
-                             xmlNode            *node)
+                             MooMarkupNode      *node)
 {
-    xmlChar *lang_name = NULL;
+    const char *lang_name = NULL;
+    MooMarkupNode *child;
 
-    g_return_val_if_fail (IS_LANGUAGE_NODE (node), FALSE);
+    g_return_val_if_fail (M_IS_LANGUAGE_NODE (node), FALSE);
 
-    lang_name = GET_PROP (node, LANG_NAME_PROP);
+    lang_name = moo_markup_get_prop (node, LANG_NAME_PROP);
 
     if (!lang_name || !lang_name[0])
     {
@@ -2033,11 +2078,14 @@ style_scheme_xml_parse_lang (MooTextStyleScheme *scheme,
         goto error;
     }
 
-    ELM_FOREACH (node, child)
+    for (child = node->children; child != NULL; child = child->next)
     {
-        if (IS_STYLE_NODE (child))
+        if (!MOO_MARKUP_IS_ELEMENT (child))
+            continue;
+
+        if (M_IS_STYLE_NODE (child))
         {
-            xmlChar *style_name = GET_PROP (child, STYLE_NAME_PROP);
+            const char *style_name = moo_markup_get_prop (child, STYLE_NAME_PROP);
             MooTextStyle *style;
 
             if (!style_name)
@@ -2050,14 +2098,10 @@ style_scheme_xml_parse_lang (MooTextStyleScheme *scheme,
             style = style_from_xml (child);
 
             if (!style)
-            {
-                STRING_FREE (style_name);
                 goto error;
-            }
 
             moo_text_style_scheme_set (scheme, lang_name, style_name, style);
             moo_text_style_free (style);
-            STRING_FREE (style_name);
         }
         else
         {
@@ -2065,34 +2109,32 @@ style_scheme_xml_parse_lang (MooTextStyleScheme *scheme,
             goto error;
         }
     }
-    ELM_FOREACH_END;
 
-    STRING_FREE (lang_name);
     return TRUE;
 
 error:
-    STRING_FREE (lang_name);
     return FALSE;
 }
 
 
 static MooTextStyleScheme*
-style_scheme_xml_parse (xmlNode *node,
-                        char   **base_scheme)
+style_scheme_xml_parse (MooMarkupNode  *node,
+                        char          **base_scheme)
 {
     MooTextStyleScheme *scheme;
-    xmlChar *name = NULL, *foreground = NULL, *background = NULL, *base = NULL;
-    xmlChar *selected_foreground = NULL, *selected_background = NULL, *current_line = NULL;
+    MooMarkupNode *child;
+    const char *name = NULL, *foreground = NULL, *background = NULL, *base = NULL;
+    const char *selected_foreground = NULL, *selected_background = NULL, *current_line = NULL;
 
-    g_return_val_if_fail (IS_SCHEME_NODE (node), NULL);
+    g_return_val_if_fail (M_IS_SCHEME_NODE (node), NULL);
 
-    name = GET_PROP (node, SCHEME_NAME_PROP);
-    foreground = GET_PROP (node, SCHEME_FOREGROUND_PROP);
-    background = GET_PROP (node, SCHEME_BACKGROUND_PROP);
-    selected_foreground = GET_PROP (node, SCHEME_SEL_FOREGROUND_PROP);
-    selected_background = GET_PROP (node, SCHEME_SEL_BACKGROUND_PROP);
-    current_line = GET_PROP (node, SCHEME_CURRENT_LINE_PROP);
-    base = GET_PROP (node, SCHEME_BASE_SCHEME_PROP);
+    name = moo_markup_get_prop (node, SCHEME_NAME_PROP);
+    foreground = moo_markup_get_prop (node, SCHEME_FOREGROUND_PROP);
+    background = moo_markup_get_prop (node, SCHEME_BACKGROUND_PROP);
+    selected_foreground = moo_markup_get_prop (node, SCHEME_SEL_FOREGROUND_PROP);
+    selected_background = moo_markup_get_prop (node, SCHEME_SEL_BACKGROUND_PROP);
+    current_line = moo_markup_get_prop (node, SCHEME_CURRENT_LINE_PROP);
+    base = moo_markup_get_prop (node, SCHEME_BASE_SCHEME_PROP);
 
     if (!name || !name[0])
     {
@@ -2102,17 +2144,20 @@ style_scheme_xml_parse (xmlNode *node,
 
     scheme = moo_text_style_scheme_new_empty (name, NULL);
 
-    scheme->text_colors[MOO_TEXT_COLOR_FG] = STRDUP (foreground);
-    scheme->text_colors[MOO_TEXT_COLOR_BG] = STRDUP (background);
-    scheme->text_colors[MOO_TEXT_COLOR_SEL_FG] = STRDUP (selected_foreground);
-    scheme->text_colors[MOO_TEXT_COLOR_SEL_BG] = STRDUP (selected_background);
-    scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE] = STRDUP (current_line);
+    scheme->text_colors[MOO_TEXT_COLOR_FG] = g_strdup (foreground);
+    scheme->text_colors[MOO_TEXT_COLOR_BG] = g_strdup (background);
+    scheme->text_colors[MOO_TEXT_COLOR_SEL_FG] = g_strdup (selected_foreground);
+    scheme->text_colors[MOO_TEXT_COLOR_SEL_BG] = g_strdup (selected_background);
+    scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE] = g_strdup (current_line);
 
-    ELM_FOREACH (node, child)
+    for (child = node->children; child != NULL; child = child->next)
     {
-        if (IS_DEFAULT_STYLE_NODE (child))
+        if (!MOO_MARKUP_IS_ELEMENT (child))
+            continue;
+
+        if (M_IS_DEFAULT_STYLE_NODE (child))
         {
-            xmlChar *style_name = GET_PROP (child, STYLE_NAME_PROP);
+            const char *style_name = moo_markup_get_prop (child, STYLE_NAME_PROP);
             MooTextStyle *style;
 
             if (!style_name)
@@ -2125,21 +2170,17 @@ style_scheme_xml_parse (xmlNode *node,
             style = style_from_xml (child);
 
             if (!style)
-            {
-                STRING_FREE (style_name);
                 goto error;
-            }
 
             moo_text_style_scheme_set (scheme, NULL, style_name, style);
             moo_text_style_free (style);
-            STRING_FREE (style_name);
         }
-        else if (IS_LANGUAGE_NODE (child))
+        else if (M_IS_LANGUAGE_NODE (child))
         {
             if (!style_scheme_xml_parse_lang (scheme, child))
                 goto error;
         }
-        else if (IS_BRACKET_MATCH_NODE (child))
+        else if (M_IS_BRACKET_MATCH_NODE (child))
         {
             if (scheme->bracket_match)
             {
@@ -2152,7 +2193,7 @@ style_scheme_xml_parse (xmlNode *node,
             if (!scheme->bracket_match)
                 goto error;
         }
-        else if (IS_BRACKET_MISMATCH_NODE (child))
+        else if (M_IS_BRACKET_MISMATCH_NODE (child))
         {
             if (scheme->bracket_mismatch)
             {
@@ -2171,28 +2212,13 @@ style_scheme_xml_parse (xmlNode *node,
             goto error;
         }
     }
-    ELM_FOREACH_END;
 
     if (base_scheme)
-        *base_scheme = STRDUP (base);
+        *base_scheme = g_strdup (base);
 
-    STRING_FREE (name);
-    STRING_FREE (foreground);
-    STRING_FREE (background);
-    STRING_FREE (selected_foreground);
-    STRING_FREE (selected_background);
-    STRING_FREE (current_line);
-    STRING_FREE (base);
     return scheme;
 
 error:
-    STRING_FREE (name);
-    STRING_FREE (foreground);
-    STRING_FREE (background);
-    STRING_FREE (selected_foreground);
-    STRING_FREE (selected_background);
-    STRING_FREE (current_line);
-    STRING_FREE (base);
     g_object_unref (scheme);
     return NULL;
 }
@@ -2202,22 +2228,30 @@ MooTextStyleScheme*
 moo_text_style_scheme_parse_file (const char *file,
                                   char      **base_scheme)
 {
-    xmlDoc *doc;
-    xmlNode *root;
+    MooMarkupDoc *doc;
+    MooMarkupNode *root;
     MooTextStyleScheme *scheme;
+    GError *error = NULL;
 
     g_return_val_if_fail (file != NULL, NULL);
 
-    doc = xmlReadFile (file, "UTF8",
-                       XML_PARSE_NOENT | XML_PARSE_NOBLANKS | XML_PARSE_NONET);
-    g_return_val_if_fail (doc != NULL, NULL);
+    doc = moo_markup_parse_file (file, &error);
 
-    root = xmlDocGetRootElement (doc);
+    if (!doc)
+    {
+        g_warning ("%s: could not parse file '%s'", G_STRLOC, file);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        return NULL;
+    }
+
+    root = moo_markup_get_root_element (doc, NULL);
     scheme = style_scheme_xml_parse (root, base_scheme);
 
-    xmlFreeDoc (doc);
-    xmlCleanupParser ();
-
+    moo_markup_doc_unref (doc);
     return scheme;
 }
 
@@ -2227,24 +2261,32 @@ moo_text_style_scheme_parse_memory (const char     *buffer,
                                     int             size,
                                     char          **base_scheme)
 {
-    xmlDoc *doc;
-    xmlNode *root;
+    MooMarkupDoc *doc;
+    MooMarkupNode *root;
     MooTextStyleScheme *scheme;
+    GError *error = NULL;
 
     g_return_val_if_fail (buffer != NULL, NULL);
 
     if (size < 0)
         size = strlen (buffer);
 
-    doc = xmlReadMemory (buffer, size, NULL, "UTF8",
-                         XML_PARSE_NOENT | XML_PARSE_NOBLANKS);
-    g_return_val_if_fail (doc != NULL, NULL);
+    doc = moo_markup_parse_memory (buffer, size, &error);
 
-    root = xmlDocGetRootElement (doc);
+    if (!doc)
+    {
+        g_warning ("%s: could not parse string", G_STRLOC);
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+        return NULL;
+    }
+
+    root = moo_markup_get_root_element (doc, NULL);
     scheme = style_scheme_xml_parse (root, base_scheme);
 
-    xmlFreeDoc (doc);
-    xmlCleanupParser ();
-
+    moo_markup_doc_unref (doc);
     return scheme;
 }
