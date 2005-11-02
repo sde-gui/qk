@@ -42,6 +42,7 @@ struct _MooPaneLabel {
     GdkPixbuf *icon_pixbuf;
     GtkWidget *icon_widget;
     char *label;
+    char *window_title;
 };
 
 struct _MooPaneParams
@@ -101,11 +102,6 @@ GType           moo_pane_params_get_type    (void) G_GNUC_CONST;
 
 GtkWidget      *moo_paned_new               (MooPanePosition pane_position);
 
-int             moo_paned_add_pane          (MooPaned       *paned,
-                                             GtkWidget      *pane_widget,
-                                             const char     *label,
-                                             const char     *icon_stock_id,
-                                             int             position);
 int             moo_paned_insert_pane       (MooPaned       *paned,
                                              GtkWidget      *pane_widget,
                                              MooPaneLabel   *pane_label,
@@ -160,7 +156,8 @@ void            moo_pane_params_free        (MooPaneParams  *params);
 MooPaneLabel   *moo_pane_label_new          (const char     *stock_id,
                                              GdkPixbuf      *pixbuf,
                                              GtkWidget      *icon,
-                                             const char     *label);
+                                             const char     *label,
+                                             const char     *window_title);
 MooPaneLabel   *moo_pane_label_copy         (MooPaneLabel   *label);
 void            moo_pane_label_free         (MooPaneLabel   *label);
 

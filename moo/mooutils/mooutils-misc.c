@@ -661,6 +661,7 @@ moo_window_present (GtkWindow  *window)
 }
 
 
+/* XXX check what gtk_window_set_icon_name() does */
 gboolean
 moo_window_set_icon_from_stock (GtkWindow      *window,
                                 const char     *stock_id)

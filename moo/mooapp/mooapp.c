@@ -781,6 +781,8 @@ moo_app_init_real (MooApp *app)
     MooUIXML *ui_xml;
     GError *error = NULL;
 
+    gdk_set_program_class (app->priv->info->full_name);
+
 #ifdef __WIN32__
     app_dir = moo_app_get_application_dir (app);
 #endif
@@ -1234,23 +1236,6 @@ static MooTermWindow *new_terminal (MooApp *app)
 }
 
 
-static void
-open_terminal (void)
-{
-    MooApp *app = moo_app_get_instance ();
-    MooTermWindow *term;
-
-    g_return_if_fail (app != NULL);
-
-    if (app->priv->terminals)
-        term = app->priv->terminals->data;
-    else
-        term = new_terminal (app);
-
-    gtk_window_present (GTK_WINDOW (term));
-}
-
-
 void
 moo_app_set_terminal_type (MooApp     *app,
                            GType       type)
@@ -1306,16 +1291,6 @@ static void install_editor_actions  (MooApp *app)
                                  "closure::callback", execute_selection,
                                  NULL);
 #endif /* !MOO_USE_PYTHON */
-
-#ifdef MOO_BUILD_TERM
-    moo_window_class_new_action (klass, "Terminal",
-                                 "name", "Terminal",
-                                 "label", "_Terminal",
-                                 "tooltip", "Terminal",
-                                 "icon-stock-id", MOO_STOCK_TERMINAL,
-                                 "closure::callback", open_terminal,
-                                 NULL);
-#endif /* MOO_BUILD_TERM */
 
     g_type_class_unref (klass);
 }

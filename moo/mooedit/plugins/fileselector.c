@@ -183,7 +183,8 @@ file_selector_plugin_attach (Plugin        *plugin,
                               window);
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                NULL, NULL, "File Selector");
+                                NULL, NULL, "File Selector",
+                                "File Selector");
     moo_edit_window_add_pane (window, PLUGIN_ID, fileview,
                               label, MOO_PANE_POS_LEFT);
 }

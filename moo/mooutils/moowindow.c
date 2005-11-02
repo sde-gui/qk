@@ -686,6 +686,7 @@ create_toolbar_style_action (MooWindow      *window,
     };
 
     action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID);
+    g_object_set (action, "no-accel", TRUE, NULL);
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
     moo_menu_mgr_set_use_mnemonic (menu_mgr, TRUE);
 

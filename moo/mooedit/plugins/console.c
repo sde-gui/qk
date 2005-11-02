@@ -70,7 +70,8 @@ console_window_plugin_create (WindowStuff *stuff)
 
     stuff->window = window;
 
-    label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, NULL, "Console");
+    label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, NULL,
+                                "Console", "Console");
 
     stuff->terminal = g_object_new (MOO_TYPE_TERM, NULL);
     /* XXX */

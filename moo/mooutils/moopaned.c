@@ -15,6 +15,7 @@
 #include MOO_MARSHALS_H
 #include "mooutils/moopaned.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -2215,27 +2216,6 @@ static GtkWidget *moo_pane_label_get_widget (MooPaneLabel   *label,
 }
 
 
-int          moo_paned_add_pane     (MooPaned   *paned,
-                                     GtkWidget  *pane_widget,
-                                     const char *button_label,
-                                     const char *button_stock_id,
-                                     int         position)
-{
-    MooPaneLabel *label;
-    int result;
-
-    g_return_val_if_fail (MOO_IS_PANED (paned), -1);
-    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), -1);
-    g_return_val_if_fail (pane_widget->parent == NULL, -1);
-
-    label = moo_pane_label_new (button_stock_id, NULL, NULL, button_label);
-    result = moo_paned_insert_pane (paned, pane_widget, label, position);
-
-    moo_pane_label_free (label);
-    return result;
-}
-
-
 #ifndef __MOO__
 static GtkWidget   *create_icon (const guint8 *data)
 {
@@ -3483,23 +3463,27 @@ static void     moo_paned_set_handle_cursor_type    (MooPaned     *paned,
 }
 
 
-static void   label_icon_destroyed      (GtkWidget      *icon,
-                                         MooPaneLabel   *label)
+static void
+label_icon_destroyed (GtkWidget      *icon,
+                      MooPaneLabel   *label)
 {
     g_return_if_fail (label->icon_widget == icon);
     g_object_unref (label->icon_widget);
     label->icon_widget = NULL;
 }
 
-MooPaneLabel *moo_pane_label_new        (const char     *stock_id,
-                                         GdkPixbuf      *pixbuf,
-                                         GtkWidget      *icon,
-                                         const char     *text)
+MooPaneLabel*
+moo_pane_label_new (const char     *stock_id,
+                    GdkPixbuf      *pixbuf,
+                    GtkWidget      *icon,
+                    const char     *text,
+                    const char     *window_title)
 {
     MooPaneLabel *label = g_new0 (MooPaneLabel, 1);
 
     label->icon_stock_id = g_strdup (stock_id);
     label->label = g_strdup (text);
+    label->window_title = g_strdup (window_title);
 
     if (pixbuf)
         label->icon_pixbuf = g_object_ref (pixbuf);
@@ -3518,7 +3502,8 @@ MooPaneLabel *moo_pane_label_new        (const char     *stock_id,
 }
 
 
-MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label)
+MooPaneLabel*
+moo_pane_label_copy (MooPaneLabel   *label)
 {
     MooPaneLabel *copy;
 
@@ -3528,6 +3513,7 @@ MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label)
 
     copy->icon_stock_id = g_strdup (label->icon_stock_id);
     copy->label = g_strdup (label->label);
+    copy->window_title = g_strdup (label->window_title);
 
     if (label->icon_pixbuf)
         copy->icon_pixbuf = g_object_ref (label->icon_pixbuf);
@@ -3546,12 +3532,14 @@ MooPaneLabel *moo_pane_label_copy       (MooPaneLabel   *label)
 }
 
 
-void        moo_pane_label_free         (MooPaneLabel   *label)
+void
+moo_pane_label_free (MooPaneLabel *label)
 {
     if (label)
     {
         g_free (label->icon_stock_id);
         g_free (label->label);
+        g_free (label->window_title);
 
         if (label->icon_pixbuf)
             g_object_unref (label->icon_pixbuf);
@@ -3569,9 +3557,10 @@ void        moo_pane_label_free         (MooPaneLabel   *label)
 }
 
 
-static gboolean pane_window_delete_event    (GtkWidget  *window,
-                                             G_GNUC_UNUSED GdkEvent *event,
-                                             MooPaned       *paned)
+static gboolean
+pane_window_delete_event (GtkWidget  *window,
+                          G_GNUC_UNUSED GdkEvent *event,
+                          MooPaned       *paned)
 {
     Pane *pane;
     int index_;
@@ -3593,9 +3582,10 @@ static gboolean pane_window_delete_event    (GtkWidget  *window,
 
 
 /* XXX gtk_widget_reparent() doesn't work here for some reasons */
-static void reparent (GtkWidget *widget,
-                      GtkWidget *old_container,
-                      GtkWidget *new_container)
+static void
+reparent (GtkWidget *widget,
+          GtkWidget *old_container,
+          GtkWidget *new_container)
 {
     g_object_ref (widget);
     gtk_container_remove (GTK_CONTAINER (old_container), widget);
@@ -3604,11 +3594,68 @@ static void reparent (GtkWidget *widget,
 }
 
 
-void        moo_paned_detach_pane       (MooPaned       *paned,
-                                         guint           index_)
+void
+moo_paned_detach_pane (MooPaned       *paned,
+                       guint           index_)
 {
     g_return_if_fail (MOO_IS_PANED (paned));
     g_signal_emit (paned, signals[DETACH_PANE], 0, index_);
+}
+
+
+static void
+create_pane_window (MooPaned       *paned,
+                    Pane           *pane)
+{
+    int width = -1;
+    int height = -1;
+    GtkWidget *frame;
+    GtkWindow *window;
+
+    if (pane->window)
+        return;
+
+    pane->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    window = GTK_WINDOW (pane->window);
+
+    if (pane->label->window_title)
+        gtk_window_set_title (window, pane->label->window_title);
+
+    if (pane->label->icon_pixbuf)
+        gtk_window_set_icon (window, pane->label->icon_pixbuf);
+    else if (pane->label->icon_stock_id)
+        moo_window_set_icon_from_stock (window, pane->label->icon_stock_id);
+
+    switch (paned->priv->pane_position)
+    {
+        case MOO_PANE_POS_LEFT:
+        case MOO_PANE_POS_RIGHT:
+            width = paned->priv->position;
+            height = GTK_WIDGET(paned)->allocation.height;
+            break;
+        case MOO_PANE_POS_TOP:
+        case MOO_PANE_POS_BOTTOM:
+            height = paned->priv->position;
+            width = GTK_WIDGET(paned)->allocation.width;
+            break;
+    }
+
+    gtk_window_set_default_size (window, width, height);
+
+    g_signal_connect (window, "delete-event",
+                      G_CALLBACK (pane_window_delete_event), paned);
+
+    frame = create_frame_widget (paned, pane, FALSE);
+    gtk_widget_show (frame);
+    gtk_container_add (GTK_CONTAINER (pane->window), frame);
+
+    g_object_set_data (G_OBJECT (pane->window), "moo-pane", pane);
+    g_object_set_data (G_OBJECT (pane->keep_on_top_button), "moo-pane", pane);
+
+    g_signal_connect (pane->keep_on_top_button, "toggled",
+                      G_CALLBACK (keep_on_top_button_toggled), paned);
+    g_signal_connect (pane->window, "configure-event",
+                      G_CALLBACK (pane_window_configure), paned);
 }
 
 
@@ -3631,47 +3678,7 @@ moo_paned_detach_pane_real (MooPaned       *paned,
 
     pane->params->detached = TRUE;
 
-    if (!pane->window)
-    {
-        int width = -1;
-        int height = -1;
-        GtkWidget *frame;
-
-        pane->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-
-        switch (paned->priv->pane_position)
-        {
-            case MOO_PANE_POS_LEFT:
-            case MOO_PANE_POS_RIGHT:
-                width = paned->priv->position;
-                height = widget->allocation.height;
-                break;
-            case MOO_PANE_POS_TOP:
-            case MOO_PANE_POS_BOTTOM:
-                height = paned->priv->position;
-                width = widget->allocation.width;
-                break;
-        }
-
-        gtk_window_set_default_size (GTK_WINDOW (pane->window),
-                                     width, height);
-
-        g_signal_connect (pane->window, "delete-event",
-                          G_CALLBACK (pane_window_delete_event), paned);
-
-        frame = create_frame_widget (paned, pane, FALSE);
-        gtk_widget_show (frame);
-        gtk_container_add (GTK_CONTAINER (pane->window), frame);
-
-        g_object_set_data (G_OBJECT (pane->window), "moo-pane", pane);
-        g_object_set_data (G_OBJECT (pane->keep_on_top_button), "moo-pane", pane);
-
-        g_signal_connect (pane->keep_on_top_button, "toggled",
-                          G_CALLBACK (keep_on_top_button_toggled), paned);
-        g_signal_connect (pane->window, "configure-event",
-                          G_CALLBACK (pane_window_configure), paned);
-    }
-
+    create_pane_window (paned, pane);
     reparent (pane->child, pane->child_holder, pane->window_child_holder);
 
     if (pane->params->keep_on_top)

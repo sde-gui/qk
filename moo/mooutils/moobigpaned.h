@@ -84,12 +84,6 @@ void            moo_big_paned_add_child         (MooBigPaned    *paned,
 void            moo_big_paned_remove_child      (MooBigPaned    *paned);
 GtkWidget      *moo_big_paned_get_child         (MooBigPaned    *paned);
 
-int             moo_big_paned_add_pane          (MooBigPaned    *paned,
-                                                 GtkWidget      *pane_widget,
-                                                 MooPanePosition position,
-                                                 const char     *button_label,
-                                                 const char     *button_stock_id,
-                                                 int             index_);
 int             moo_big_paned_insert_pane       (MooBigPaned    *paned,
                                                  GtkWidget      *pane_widget,
                                                  MooPaneLabel   *pane_label,

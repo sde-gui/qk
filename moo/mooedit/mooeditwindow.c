@@ -1674,6 +1674,7 @@ create_lang_action (MooEditWindow      *window)
     langs = g_slist_sort (langs, (GCompareFunc) cmp_langs);
 
     action = moo_menu_action_new (LANG_ACTION_ID);
+    g_object_set (action, "no-accel", TRUE, NULL);
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
     moo_menu_mgr_append (menu_mgr, NULL, LANG_ACTION_ID,

@@ -163,15 +163,17 @@ find_file_cb (MooEditWindow *window)
 
 
 static void
-find_window_plugin_create (WindowStuff *stuff)
+ensure_output (WindowStuff *stuff)
 {
     GtkWidget *swin;
     MooPaneLabel *label;
     MooEditWindow *window = MOO_WIN_PLUGIN (stuff)->window;
 
-    stuff->window = window;
+    if (stuff->output)
+        return;
 
-    label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL, NULL, "Find");
+    label = moo_pane_label_new (MOO_STOCK_FIND_IN_FILES, NULL, NULL,
+                                "Search Results", "Search Results");
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
                                   NULL);
@@ -209,6 +211,13 @@ find_window_plugin_create (WindowStuff *stuff)
 
     moo_edit_window_add_pane (window, FIND_PLUGIN_ID,
                               swin, label, MOO_PANE_POS_BOTTOM);
+}
+
+
+static void
+find_window_plugin_create (WindowStuff *stuff)
+{
+    stuff->window = MOO_WIN_PLUGIN (stuff)->window;
 }
 
 
@@ -438,6 +447,7 @@ do_grep (MooEditWindow  *window,
     gboolean case_sensitive;
     char *dir;
 
+    ensure_output (stuff);
     pane = moo_edit_window_get_pane (window, FIND_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
@@ -473,6 +483,7 @@ do_find (MooEditWindow  *window,
     const char *dir_utf8, *pattern, *skip;
     char *dir;
 
+    ensure_output (stuff);
     pane = moo_edit_window_get_pane (window, FIND_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
@@ -782,13 +793,17 @@ find_window_plugin_destroy (WindowStuff *stuff)
 {
     MooEditWindow *window = MOO_WIN_PLUGIN(stuff)->window;
 
-    g_signal_handlers_disconnect_by_func (stuff->output,
-                                          (gpointer) command_exit,
-                                          stuff);
-    g_signal_handlers_disconnect_by_func (stuff->output,
-                                          (gpointer) process_line,
-                                          stuff);
-    moo_cmd_view_abort (stuff->output);
+    if (stuff->output)
+    {
+        g_signal_handlers_disconnect_by_func (stuff->output,
+                                              (gpointer) command_exit,
+                                              stuff);
+        g_signal_handlers_disconnect_by_func (stuff->output,
+                                              (gpointer) process_line,
+                                              stuff);
+        moo_cmd_view_abort (stuff->output);
+        moo_edit_window_remove_pane (window, FIND_PLUGIN_ID);
+    }
 
     if (stuff->grep_dialog)
         gtk_widget_destroy (stuff->grep_dialog);
@@ -803,8 +818,6 @@ find_window_plugin_destroy (WindowStuff *stuff)
     if (stuff->find_completion)
         g_object_unref (stuff->find_completion);
     g_free (stuff->current_file);
-
-    moo_edit_window_remove_pane (window, FIND_PLUGIN_ID);
 }
 
 

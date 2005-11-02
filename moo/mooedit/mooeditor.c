@@ -638,6 +638,7 @@ create_recent_action (MooEditWindow  *window)
     g_return_val_if_fail (editor != NULL, NULL);
 
     action = moo_menu_action_new (RECENT_ACTION_ID);
+    g_object_set (action, "no-accel", TRUE, NULL);
     mgr = moo_history_list_get_menu_mgr (editor->priv->history);
     moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
     moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);

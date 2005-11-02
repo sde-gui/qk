@@ -435,22 +435,6 @@ child_set_pane_size (GtkWidget      *child,
 }
 
 
-int         moo_big_paned_add_pane          (MooBigPaned        *paned,
-                                             GtkWidget          *pane_widget,
-                                             MooPanePosition     position,
-                                             const char         *button_label,
-                                             const char         *button_stock_id,
-                                             int                 index_)
-{
-    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), -1);
-    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), -1);
-    g_return_val_if_fail (position < 4, -1);
-
-    return moo_paned_add_pane (MOO_PANED (paned->paned[position]),
-                               pane_widget, button_label, button_stock_id, index_);
-}
-
-
 int         moo_big_paned_insert_pane       (MooBigPaned        *paned,
                                              GtkWidget          *pane_widget,
                                              MooPaneLabel       *pane_label,

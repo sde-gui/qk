@@ -208,19 +208,6 @@
   (return-type "GtkWidget*")
 )
 
-(define-method add_pane
-  (of-object "MooBigPaned")
-  (c-name "moo_big_paned_add_pane")
-  (return-type "int")
-  (parameters
-    '("GtkWidget*" "pane_widget")
-    '("MooPanePosition" "position")
-    '("const-char*" "button_label")
-    '("const-char*" "button_stock_id")
-    '("int" "index_")
-  )
-)
-
 (define-method insert_pane
   (of-object "MooBigPaned")
   (c-name "moo_big_paned_insert_pane")
@@ -1623,18 +1610,6 @@
   (of-object "MooPaneLabel")
   (c-name "moo_pane_label_free")
   (return-type "none")
-)
-
-(define-method add_pane
-  (of-object "MooPaned")
-  (c-name "moo_paned_add_pane")
-  (return-type "int")
-  (parameters
-    '("GtkWidget*" "pane_widget")
-    '("const-char*" "label")
-    '("const-char*" "icon_stock_id")
-    '("int" "position")
-  )
 )
 
 (define-method insert_pane
