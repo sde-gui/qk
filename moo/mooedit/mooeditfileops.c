@@ -28,19 +28,24 @@ static GSList *UNTITLED = NULL;
 static GHashTable *UNTITLED_NO = NULL;
 
 
-static gboolean moo_edit_load_default   (MooEditLoader  *loader,
-                                         MooEdit        *edit,
-                                         const char     *file,
-                                         const char     *encoding,
-                                         GError        **error);
-static gboolean moo_edit_reload_default (MooEditLoader  *loader,
-                                         MooEdit        *edit,
-                                         GError        **error);
-static gboolean moo_edit_save_default   (MooEditSaver   *saver,
-                                         MooEdit        *edit,
-                                         const char     *file,
-                                         const char     *encoding,
-                                         GError        **error);
+static gboolean moo_edit_load_default       (MooEditLoader  *loader,
+                                             MooEdit        *edit,
+                                             const char     *file,
+                                             const char     *encoding,
+                                             GError        **error);
+static gboolean moo_edit_reload_default     (MooEditLoader  *loader,
+                                             MooEdit        *edit,
+                                             GError        **error);
+static gboolean moo_edit_save_default       (MooEditSaver   *saver,
+                                             MooEdit        *edit,
+                                             const char     *file,
+                                             const char     *encoding,
+                                             GError        **error);
+static gboolean moo_edit_save_copy_default  (MooEditSaver   *saver,
+                                             MooEdit        *edit,
+                                             const char     *file,
+                                             const char     *encoding,
+                                             GError        **error);
 
 static void     block_buffer_signals        (MooEdit        *edit);
 static void     unblock_buffer_signals      (MooEdit        *edit);
@@ -74,6 +79,7 @@ MooEditSaver    *moo_edit_saver_get_default     (void)
         default_saver = g_new0 (MooEditSaver, 1);
         default_saver->ref_count = 1;
         default_saver->save = moo_edit_save_default;
+        default_saver->save_copy = moo_edit_save_copy_default;
     }
 
     return default_saver;
@@ -172,6 +178,31 @@ gboolean         moo_edit_save              (MooEditSaver   *saver,
     encoding_copy = g_strdup (encoding);
 
     result = saver->save (saver, edit, filename_copy, encoding_copy, error);
+
+    g_free (filename_copy);
+    g_free (encoding_copy);
+    return result;
+}
+
+
+gboolean
+moo_edit_save_copy (MooEditSaver   *saver,
+                    MooEdit        *edit,
+                    const char     *filename,
+                    const char     *encoding,
+                    GError        **error)
+{
+    char *filename_copy, *encoding_copy;
+    gboolean result;
+
+    g_return_val_if_fail (saver != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    filename_copy = g_strdup (filename);
+    encoding_copy = g_strdup (encoding);
+
+    result = saver->save_copy (saver, edit, filename_copy, encoding_copy, error);
 
     g_free (filename_copy);
     g_free (encoding_copy);
@@ -461,11 +492,12 @@ static gboolean do_write                (MooEdit        *edit,
                                          GError        **error);
 
 
-static gboolean moo_edit_save_default   (G_GNUC_UNUSED MooEditSaver *saver,
-                                         MooEdit        *edit,
-                                         const char     *filename,
-                                         const char     *encoding,
-                                         GError        **error)
+static gboolean
+moo_edit_save_default (G_GNUC_UNUSED MooEditSaver *saver,
+                       MooEdit        *edit,
+                       const char     *filename,
+                       const char     *encoding,
+                       GError        **error)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (filename && filename[0], FALSE);
@@ -482,6 +514,19 @@ static gboolean moo_edit_save_default   (G_GNUC_UNUSED MooEditSaver *saver,
     _moo_edit_start_file_watch (edit);
 
     return TRUE;
+}
+
+
+static gboolean
+moo_edit_save_copy_default (G_GNUC_UNUSED MooEditSaver *saver,
+                            MooEdit        *edit,
+                            const char     *filename,
+                            const char     *encoding,
+                            GError        **error)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    g_return_val_if_fail (filename && filename[0], FALSE);
+    return do_write (edit, filename, encoding ? encoding : "UTF8", error);
 }
 
 

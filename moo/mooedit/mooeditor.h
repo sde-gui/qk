@@ -107,6 +107,11 @@ void             moo_editor_set_window_type (MooEditor      *editor,
 void             moo_editor_set_edit_type   (MooEditor      *editor,
                                              GType           type);
 
+gboolean         moo_editor_save_copy       (MooEditor      *editor,
+                                             MooEdit        *doc,
+                                             const char     *filename,
+                                             const char     *encoding,
+                                             GError        **error);
 
 #ifdef MOOEDIT_COMPILATION
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,

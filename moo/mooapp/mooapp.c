@@ -1628,7 +1628,9 @@ moo_app_tempnam (MooApp     *app)
 
         for (i = 0; i < 1000; ++i)
         {
-            basename = g_strdup_printf ("%08x", g_random_int ());
+            basename = g_strdup_printf ("%s-%08x",
+                                        app->priv->info->short_name,
+                                        g_random_int ());
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
@@ -1649,7 +1651,7 @@ moo_app_tempnam (MooApp     *app)
 
     for (i = 0; i < 1000; ++i)
     {
-        basename = g_strdup_printf ("%08x", g_random_int ());
+        basename = g_strdup_printf ("%08x.tmp", g_random_int ());
         filename = g_build_filename (app->priv->tmpdir, basename, NULL);
         g_free (basename);
 

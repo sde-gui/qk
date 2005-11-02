@@ -41,11 +41,16 @@ struct _MooEditSaver
 {
     guint ref_count;
 
-    gboolean    (*save)     (MooEditSaver   *saver,
-                             MooEdit        *edit,
-                             const char     *file,
-                             const char     *encoding,
-                             GError        **error);
+    gboolean    (*save)         (MooEditSaver   *saver,
+                                 MooEdit        *edit,
+                                 const char     *file,
+                                 const char     *encoding,
+                                 GError        **error);
+    gboolean    (*save_copy)    (MooEditSaver   *saver,
+                                 MooEdit        *edit,
+                                 const char     *file,
+                                 const char     *encoding,
+                                 GError        **error);
 };
 
 
@@ -66,6 +71,11 @@ gboolean         moo_edit_reload            (MooEditLoader  *loader,
                                              MooEdit        *edit,
                                              GError        **error);
 gboolean         moo_edit_save              (MooEditSaver   *saver,
+                                             MooEdit        *edit,
+                                             const char     *file,
+                                             const char     *encoding,
+                                             GError        **error);
+gboolean         moo_edit_save_copy         (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,

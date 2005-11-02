@@ -1377,6 +1377,29 @@ out:
 }
 
 
+gboolean
+moo_editor_save_copy (MooEditor      *editor,
+                      MooEdit        *doc,
+                      const char     *filename,
+                      const char     *encoding,
+                      GError        **error)
+{
+    WindowInfo *info;
+    MooEditSaver *saver;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    info = window_list_find_doc (editor, doc);
+    g_return_val_if_fail (info != NULL, FALSE);
+
+    saver = get_saver (editor, doc);
+    g_return_val_if_fail (saver != NULL, FALSE);
+
+    return moo_edit_save_copy (saver, doc, filename, encoding, error);
+}
+
+
 static MooEditLoader*
 get_loader (MooEditor      *editor,
             MooEdit        *doc)
