@@ -77,6 +77,8 @@ struct _MooAppPrivate {
     guint       quit_handler_id;
     gboolean    use_editor;
     gboolean    use_terminal;
+
+    char       *tmpdir;
 };
 
 
@@ -738,7 +740,6 @@ void             moo_app_hide_python_console   (G_GNUC_UNUSED MooApp *app)
     g_return_if_fail (moo_app_python != NULL);
     gtk_widget_hide (GTK_WIDGET (moo_app_python->console));
 }
-#endif /* !MOO_USE_PYTHON */
 
 
 static guint strv_length (char **argv)
@@ -754,6 +755,7 @@ static guint strv_length (char **argv)
 
     return len;
 }
+#endif /* !MOO_USE_PYTHON */
 
 
 MooEditor       *moo_app_get_editor            (MooApp          *app)
@@ -778,36 +780,6 @@ moo_app_init_real (MooApp *app)
     MooLangMgr *lang_mgr;
     MooUIXML *ui_xml;
     GError *error = NULL;
-
-#if 0
-    if (app->priv->enable_options)
-    {
-        int argc = strv_length (app->priv->argv);
-
-        g_option_context_add_group (app->priv->option_ctx,
-                                    gtk_get_option_group (TRUE));
-        g_option_context_parse (app->priv->option_ctx, &argc,
-                                &app->priv->argv, &error);
-
-        if (error || argc > 1)
-        {
-            if (error)
-            {
-                g_print ("%s\n", error->message);
-                g_error_free (error);
-                error = NULL;
-            }
-            else
-            {
-                g_print ("Unknown option %s\n", app->priv->argv[1]);
-            }
-
-            g_print ("Type '%s --help' for usage\n", g_get_prgname ());
-
-            exit (1);
-        }
-    }
-#endif
 
 #ifdef __WIN32__
     app_dir = moo_app_get_application_dir (app);
@@ -950,6 +922,17 @@ start_io (MooApp *app)
 }
 
 
+gboolean
+moo_app_send_msg (MooApp     *app,
+                  const char *data,
+                  int         len)
+{
+    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
+    return _moo_app_input_send_msg (app->priv->info->short_name, data, len);
+}
+
+
 static gboolean on_gtk_main_quit (MooApp *app)
 {
     app->priv->quit_handler_id = 0;
@@ -982,6 +965,9 @@ static gboolean moo_app_try_quit_real   (MooApp         *app)
     if (!app->priv->running)
         return FALSE;
 
+    if (!moo_editor_close_all (app->priv->editor))
+        return TRUE;
+
     list = g_slist_copy (app->priv->terminals);
     for (l = list; l != NULL; l = l->next)
     {
@@ -992,9 +978,6 @@ static gboolean moo_app_try_quit_real   (MooApp         *app)
         }
     }
     g_slist_free (list);
-
-    if (!moo_editor_close_all (app->priv->editor))
-        return TRUE;
 
     return FALSE;
 }
@@ -1059,6 +1042,13 @@ static void     moo_app_quit_real       (MooApp         *app)
         gtk_quit_remove (app->priv->quit_handler_id);
 
     gtk_main_quit ();
+
+    if (app->priv->tmpdir)
+    {
+        moo_rmdir (app->priv->tmpdir, TRUE);
+        g_free (app->priv->tmpdir);
+        app->priv->tmpdir = NULL;
+    }
 }
 
 
@@ -1211,6 +1201,10 @@ static void terminal_destroyed (MooTermWindow *term,
     app->priv->terminals = g_slist_remove (app->priv->terminals,
                                            term);
 
+    if (app->priv->term_window == term)
+        app->priv->term_window = app->priv->terminals ?
+                app->priv->terminals->data : NULL;
+
     policy = app->priv->window_policy;
     quit = (policy & MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS) ||
             ((policy & MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS) &&
@@ -1229,6 +1223,9 @@ static MooTermWindow *new_terminal (MooApp *app)
                          "ui-xml", app->priv->ui_xml,
                          NULL);
     app->priv->terminals = g_slist_append (app->priv->terminals, term);
+
+    if (!app->priv->term_window)
+        app->priv->term_window = term;
 
     g_signal_connect (term, "destroy",
                       G_CALLBACK (terminal_destroyed), app);
@@ -1613,4 +1610,55 @@ moo_app_exec_cmd_real (MooApp             *app,
         default:
             g_warning ("%s: got unknown command %d", G_STRLOC, cmd);
     }
+}
+
+
+char*
+moo_app_tempnam (MooApp     *app)
+{
+    int i;
+    char *basename;
+    char *filename;
+
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+
+    if (!app->priv->tmpdir)
+    {
+        char *dirname = NULL;
+
+        for (i = 0; i < 1000; ++i)
+        {
+            basename = g_strdup_printf ("%08x", g_random_int ());
+            dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
+            g_free (basename);
+
+            if (moo_mkdir (dirname))
+            {
+                g_free (dirname);
+                dirname = NULL;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        g_return_val_if_fail (dirname != NULL, NULL);
+        app->priv->tmpdir = dirname;
+    }
+
+    for (i = 0; i < 1000; ++i)
+    {
+        basename = g_strdup_printf ("%08x", g_random_int ());
+        filename = g_build_filename (app->priv->tmpdir, basename, NULL);
+        g_free (basename);
+
+        if (g_file_test (filename, G_FILE_TEST_EXISTS))
+            g_free (filename);
+        else
+            return filename;
+    }
+
+    g_warning ("%s: could not generate temp file name", G_STRLOC);
+    return NULL;
 }

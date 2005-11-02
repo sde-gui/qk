@@ -36,7 +36,7 @@ typedef enum
 } MooAppCmdCode;
 
 
-#ifdef WANT_MOO_APP_CMD_CHARS
+#if defined(WANT_MOO_APP_CMD_STRINGS) || defined(WANT_MOO_APP_CMD_CHARS)
 
 #define CMD_ZERO            "\0"
 #define CMD_PYTHON_STRING   "s"
@@ -45,6 +45,10 @@ typedef enum
 #define CMD_QUIT            "q"
 #define CMD_DIE             "d"
 #define CMD_PRESENT         "r"
+
+#endif
+
+#ifdef WANT_MOO_APP_CMD_CHARS
 
 static const char *moo_app_cmd_chars =
     CMD_ZERO
@@ -79,16 +83,20 @@ struct _MooAppInput
 };
 
 
-MooAppInput *moo_app_input_new      (const char     *pipe_basename);
+MooAppInput *moo_app_input_new          (const char     *pipe_basename);
 
-MooAppInput *moo_app_input_ref      (MooAppInput    *ch);
-void         moo_app_input_unref    (MooAppInput    *ch);
+MooAppInput *moo_app_input_ref          (MooAppInput    *ch);
+void         moo_app_input_unref        (MooAppInput    *ch);
 
-gboolean     moo_app_input_start    (MooAppInput    *ch);
-void         moo_app_input_shutdown (MooAppInput    *ch);
-gboolean     moo_app_input_ready    (MooAppInput    *ch);
+gboolean     moo_app_input_start        (MooAppInput    *ch);
+void         moo_app_input_shutdown     (MooAppInput    *ch);
+gboolean     moo_app_input_ready        (MooAppInput    *ch);
 
-const char  *moo_app_input_get_name (MooAppInput    *ch);
+const char  *moo_app_input_get_name     (MooAppInput    *ch);
+
+gboolean     _moo_app_input_send_msg    (const char     *pipe_basename,
+                                         const char     *data,
+                                         int             len);
 
 
 G_END_DECLS

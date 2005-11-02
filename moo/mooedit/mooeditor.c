@@ -99,6 +99,9 @@ struct _MooEditorPrivate {
     gboolean         open_single;
     gboolean         allow_empty_window;
     gboolean         single_window;
+
+    GType            window_type;
+    GType            doc_type;
 };
 
 
@@ -332,8 +335,25 @@ moo_editor_instance (void)
 }
 
 
-static void          set_single_window      (MooEditor      *editor,
-                                             gboolean        single)
+static GType
+get_window_type (MooEditor *editor)
+{
+    return editor->priv->window_type ?
+            editor->priv->window_type : MOO_TYPE_EDIT_WINDOW;
+}
+
+
+static GType
+get_doc_type (MooEditor *editor)
+{
+    return editor->priv->doc_type ?
+            editor->priv->doc_type : MOO_TYPE_EDIT;
+}
+
+
+static void
+set_single_window (MooEditor      *editor,
+                   gboolean        single)
 {
     /* XXX */
     editor->priv->single_window = single;
@@ -341,7 +361,8 @@ static void          set_single_window      (MooEditor      *editor,
 }
 
 
-static MooEditWindow    *get_top_window (MooEditor      *editor)
+static MooEditWindow*
+get_top_window (MooEditor *editor)
 {
     GSList *list = NULL, *l;
     GtkWindow *window;
@@ -646,9 +667,10 @@ activate_history_item (MooEditor           *editor,
 
 /*****************************************************************************/
 
-static MooEditWindow *create_window         (MooEditor      *editor)
+static MooEditWindow*
+create_window (MooEditor *editor)
 {
-    MooEditWindow *window = g_object_new (MOO_TYPE_EDIT_WINDOW,
+    MooEditWindow *window = g_object_new (get_window_type (editor),
                                           "editor", editor,
                                           "ui-xml",
                                           moo_editor_get_ui_xml (editor),
@@ -661,11 +683,12 @@ static MooEditWindow *create_window         (MooEditor      *editor)
 }
 
 
-static void          moo_editor_add_doc     (MooEditor      *editor,
-                                             MooEditWindow  *window,
-                                             MooEdit        *doc,
-                                             MooEditLoader  *loader,
-                                             MooEditSaver   *saver)
+static void
+moo_editor_add_doc (MooEditor      *editor,
+                    MooEditWindow  *window,
+                    MooEdit        *doc,
+                    MooEditLoader  *loader,
+                    MooEditSaver   *saver)
 {
     WindowInfo *info = window_list_find (editor, window);
 
@@ -690,7 +713,7 @@ MooEditWindow   *moo_editor_new_window      (MooEditor      *editor)
 
     if (!editor->priv->allow_empty_window)
     {
-        doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+        doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
         _moo_edit_window_insert_doc (window, doc, -1);
         moo_editor_add_doc (editor, window, doc,
                             moo_edit_loader_get_default (),
@@ -710,7 +733,7 @@ MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
     g_return_val_if_fail (window_list_find (editor, window) != NULL, NULL);
 
-    doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+    doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
     _moo_edit_window_insert_doc (window, doc, -1);
     moo_editor_add_doc (editor, window, doc,
                         moo_edit_loader_get_default (),
@@ -781,7 +804,7 @@ void             moo_editor_open            (MooEditor      *editor,
 
         if (!doc)
         {
-            doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+            doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
             gtk_object_sink (g_object_ref (doc));
             new_doc = TRUE;
         }
@@ -826,22 +849,42 @@ void             moo_editor_open            (MooEditor      *editor,
 }
 
 
-MooEdit         *moo_editor_get_active_doc  (MooEditor      *editor)
+MooEdit*
+moo_editor_get_active_doc (MooEditor *editor)
 {
     MooEditWindow *window = moo_editor_get_active_window (editor);
     return window ? moo_edit_window_get_active_doc (window) : NULL;
 }
 
 
-MooEditWindow   *moo_editor_get_active_window (MooEditor    *editor)
+MooEditWindow*
+moo_editor_get_active_window (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return get_top_window (editor);
 }
 
 
-void             moo_editor_set_active_window (MooEditor    *editor,
-                                               MooEditWindow  *window)
+void
+moo_editor_present (MooEditor *editor)
+{
+    MooEditWindow *window;
+
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+
+    window = moo_editor_get_active_window (editor);
+
+    if (!window)
+        window = moo_editor_new_window (editor);
+
+    g_return_if_fail (window != NULL);
+    moo_window_present (GTK_WINDOW (window));
+}
+
+
+void
+moo_editor_set_active_window (MooEditor    *editor,
+                              MooEditWindow  *window)
 {
     WindowInfo *info;
 
@@ -855,8 +898,9 @@ void             moo_editor_set_active_window (MooEditor    *editor,
 }
 
 
-void             moo_editor_set_active_doc  (MooEditor      *editor,
-                                             MooEdit        *doc)
+void
+moo_editor_set_active_doc (MooEditor      *editor,
+                           MooEdit        *doc)
 {
     WindowInfo *info;
 
@@ -871,8 +915,9 @@ void             moo_editor_set_active_doc  (MooEditor      *editor,
 }
 
 
-gboolean         moo_editor_close_window    (MooEditor      *editor,
-                                             MooEditWindow  *window)
+gboolean
+moo_editor_close_window (MooEditor      *editor,
+                         MooEditWindow  *window)
 {
     WindowInfo *info;
     MooEditDialogResponse response;
@@ -951,8 +996,9 @@ gboolean         moo_editor_close_window    (MooEditor      *editor,
 }
 
 
-static void          do_close_window        (MooEditor      *editor,
-                                             MooEditWindow  *window)
+static void
+do_close_window (MooEditor      *editor,
+                 MooEditWindow  *window)
 {
     WindowInfo *info;
     GSList *l, *list;
@@ -1031,7 +1077,8 @@ moo_editor_close_docs (MooEditor      *editor,
         if (!moo_edit_window_num_docs (info->window) &&
              !editor->priv->allow_empty_window)
         {
-            MooEdit *doc = g_object_new (MOO_TYPE_EDIT, "editor", editor, NULL);
+            MooEdit *doc = g_object_new (get_doc_type (editor),
+                                         "editor", editor, NULL);
             _moo_edit_window_insert_doc (info->window, doc, -1);
             moo_editor_add_doc (editor, info->window, doc,
                                 moo_edit_loader_get_default (),
@@ -1365,4 +1412,24 @@ moo_editor_get_lang_mgr (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->lang_mgr;
+}
+
+
+void
+moo_editor_set_window_type (MooEditor      *editor,
+                            GType           type)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT_WINDOW));
+    editor->priv->window_type = type;
+}
+
+
+void
+moo_editor_set_edit_type (MooEditor      *editor,
+                          GType           type)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT));
+    editor->priv->doc_type = type;
 }

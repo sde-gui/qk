@@ -115,6 +115,12 @@ MooUIXML        *moo_app_get_ui_xml             (MooApp     *app);
 void             moo_app_set_ui_xml             (MooApp     *app,
                                                  MooUIXML   *xml);
 
+char            *moo_app_tempnam                (MooApp     *app);
+
+gboolean         moo_app_send_msg               (MooApp     *app,
+                                                 const char *data,
+                                                 int         len);
+
 void             _moo_app_exec_cmd              (MooApp     *app,
                                                  char        cmd,
                                                  const char *data,

@@ -26,10 +26,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/poll.h>
+#include <signal.h>
 #endif /* !__WIN32__ */
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooapp.h"
 
@@ -241,6 +243,20 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
 }
 
 
+gboolean
+_moo_app_input_send_msg (const char     *pipe_basename,
+                         const char     *data,
+                         int             len)
+{
+    g_return_val_if_fail (pipe_basename != NULL, FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
+
+#warning "Implement me"
+
+    return FALSE;
+}
+
+
 static gboolean read_input              (GIOChannel     *source,
                                          GIOCondition    condition,
                                          MooAppInput      *self)
@@ -398,13 +414,15 @@ static DWORD WINAPI listener_main (ListenerInfo *info)
  */
 #ifndef __WIN32__
 
+#define NAME_PREFIX "%s_in."
+
 /* TODO: could you finally learn non-blocking io? */
 gboolean     moo_app_input_start       (MooAppInput *ch)
 {
     g_return_val_if_fail (!ch->ready, FALSE);
 
     ch->pipe_name =
-            g_strdup_printf ("%s/%s_in.%d",
+            g_strdup_printf ("%s/" NAME_PREFIX "%d",
                              g_get_tmp_dir(),
                              ch->pipe_basename,
                              getpid ());
@@ -439,6 +457,99 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
 
     ch->ready = TRUE;
     return TRUE;
+}
+
+
+gboolean
+_moo_app_input_send_msg (const char     *pipe_basename,
+                         const char     *data,
+                         gssize          data_len)
+{
+    const char *tmpdir_name, *entry;
+    GDir *tmpdir = NULL;
+    char *prefix = NULL;
+    guint prefix_len;
+    gboolean success = FALSE;
+
+    g_return_val_if_fail (pipe_basename != NULL, FALSE);
+    g_return_val_if_fail (data != NULL, FALSE);
+
+    tmpdir_name = g_get_tmp_dir ();
+    tmpdir = g_dir_open (tmpdir_name, 0, NULL);
+
+    if (!tmpdir)
+        return FALSE;
+
+    prefix = g_strdup_printf (NAME_PREFIX, pipe_basename);
+    prefix_len = strlen (prefix);
+
+    while ((entry = g_dir_read_name (tmpdir)))
+    {
+        const char *pid_string;
+        GPid pid;
+        char *filename = NULL;
+        GIOChannel *chan;
+        GIOStatus status;
+
+        if (strncmp (entry, prefix, prefix_len))
+            goto cont;
+
+        pid_string = entry + prefix_len;
+
+        if (!pid_string[0])
+            goto cont;
+
+        errno = 0;
+        pid = strtol (entry + prefix_len, NULL, 10);
+
+        if (errno)
+            goto cont;
+
+        filename = g_build_filename (tmpdir_name, entry, NULL);
+
+        if (kill (pid, 0))
+        {
+            /* XXX unlink should file if it's not our file, but still.. */
+            unlink (filename);
+            goto cont;
+        }
+
+        chan = g_io_channel_new_file (filename, "w", NULL);
+
+        if (!chan)
+            goto cont;
+
+        g_io_channel_set_encoding (chan, NULL, NULL);
+        status = g_io_channel_set_flags (chan, G_IO_FLAG_NONBLOCK, NULL);
+
+        if (status != G_IO_STATUS_NORMAL)
+        {
+            g_io_channel_unref (chan);
+            goto cont;
+        }
+
+        status = g_io_channel_write_chars (chan, data, data_len, NULL, NULL);
+
+        if (status != G_IO_STATUS_NORMAL)
+        {
+            g_io_channel_unref (chan);
+            goto cont;
+        }
+
+        g_free (filename);
+        g_io_channel_unref (chan);
+        success = TRUE;
+        goto out;
+
+cont:
+        g_free (filename);
+    }
+
+out:
+    if (tmpdir)
+        g_dir_close (tmpdir);
+    g_free (prefix);
+    return success;
 }
 
 

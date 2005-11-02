@@ -76,6 +76,8 @@ void             moo_editor_set_active_window (MooEditor    *editor,
 void             moo_editor_set_active_doc  (MooEditor      *editor,
                                              MooEdit        *doc);
 
+void             moo_editor_present         (MooEditor      *editor);
+
 GSList          *moo_editor_list_windows    (MooEditor      *editor);
 
 gboolean         moo_editor_close_window    (MooEditor      *editor,
@@ -99,6 +101,11 @@ void             moo_editor_set_ui_xml      (MooEditor      *editor,
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
 
 MooLangMgr      *moo_editor_get_lang_mgr    (MooEditor      *editor);
+
+void             moo_editor_set_window_type (MooEditor      *editor,
+                                             GType           type);
+void             moo_editor_set_edit_type   (MooEditor      *editor,
+                                             GType           type);
 
 
 #ifdef MOOEDIT_COMPILATION

@@ -19,12 +19,17 @@
 #include <gtk/gtk.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef __WIN32__
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include <shellapi.h>
+#else
+# include <sys/wait.h>
 #endif
+
 #if GLIB_CHECK_VERSION(2,6,0)
 # include <glib/gstdio.h>
 #endif
@@ -39,6 +44,85 @@ moo_unlink (const char *filename)
     return g_unlink (filename);
 #else
     return unlink (filename);
+#endif
+}
+
+
+int
+moo_mkdir (const char *path)
+{
+    g_return_val_if_fail (path != NULL, -1);
+
+#if GLIB_CHECK_VERSION(2,6,0)
+    return g_mkdir (path, S_IRWXU);
+#else
+    return mkdir (path, S_IRWXU);
+#endif
+}
+
+
+#ifndef __WIN32__
+static gboolean
+rm_fr (const char *path)
+{
+    GError *error = NULL;
+    char **argv;
+    char *child_err;
+    int status;
+
+    argv = g_new0 (char*, 5);
+    argv[0] = g_strdup ("/bin/rm");
+    argv[1] = g_strdup ("-fr");
+    argv[2] = g_strdup ("--");
+    argv[3] = g_strdup (path);
+
+    if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_STDOUT_TO_DEV_NULL,
+                       NULL, NULL, NULL, &child_err, &status, &error))
+    {
+        g_warning ("%s: could not run 'rm' command: %s",
+                   G_STRLOC, error->message);
+        g_error_free (error);
+        g_strfreev (argv);
+        return FALSE;
+    }
+
+    g_strfreev (argv);
+
+    if (!WIFEXITED (status) || WEXITSTATUS (status))
+    {
+        g_warning ("%s: 'rm' command failed: %s",
+                   G_STRLOC, child_err ? child_err : "");
+        g_free (child_err);
+        return FALSE;
+    }
+    else
+    {
+        g_free (child_err);
+        return TRUE;
+    }
+}
+#endif /* __WIN32__ */
+
+
+gboolean
+moo_rmdir (const char *path,
+           gboolean    recursive)
+{
+    g_return_val_if_fail (path != NULL, -1);
+
+    if (!recursive)
+    {
+#if GLIB_CHECK_VERSION(2,6,0)
+        return g_rmdir (path) == 0;
+#else
+        return rmdir (path) == 0;
+#endif
+    }
+
+#ifndef __WIN32__
+    return rm_fr (path);
+#else
+#error "Implement me"
 #endif
 }
 

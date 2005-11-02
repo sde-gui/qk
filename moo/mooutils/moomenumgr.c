@@ -189,6 +189,8 @@ moo_menu_mgr_finalize (GObject *object)
 
     g_hash_table_destroy (mgr->priv->named_nodes);
 
+    g_free (mgr->priv);
+
     G_OBJECT_CLASS(moo_menu_mgr_parent_class)->finalize (object);
 }
 
