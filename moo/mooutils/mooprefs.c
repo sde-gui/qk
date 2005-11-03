@@ -331,28 +331,32 @@ prefs_new_key_from_string (MooPrefs     *prefs,
                            const char   *value)
 {
     PrefsItem *item;
-    GValue gval;
+    GValue val, default_val;
 
     g_return_if_fail (key && key[0]);
     g_return_if_fail (g_utf8_validate (key, -1, NULL));
 
     item = prefs_get_item (prefs, key);
 
-    gval.g_type = 0;
-    g_value_init (&gval, G_TYPE_STRING);
-    g_value_set_string (&gval, value);
+    val.g_type = 0;
+    g_value_init (&val, G_TYPE_STRING);
+    g_value_set_string (&val, value);
+    default_val.g_type = 0;
+    g_value_init (&default_val, G_TYPE_STRING);
 
     if (!item)
     {
-        prefs_new_key (prefs, key, G_TYPE_STRING, &gval);
+        prefs_new_key (prefs, key, G_TYPE_STRING, &default_val);
         item = prefs_get_item (prefs, key);
+        item_set (item, &val);
     }
     else
     {
-        moo_value_convert (&gval, &item->value);
+        moo_value_convert (&val, &item->value);
     }
 
-    g_value_unset (&gval);
+    g_value_unset (&val);
+    g_value_unset (&default_val);
     prefs_emit_notify (prefs, key, item_value (item));
 }
 

@@ -570,10 +570,12 @@ moo_edit_set_var (MooEdit        *edit,
 
     if (is_ascii (name))
         key = g_ascii_strdown (name, -1);
+    else
+        key = g_strdup (name);
 
-    g_hash_table_insert (edit->priv->vars,
-                         key ? key : g_strdup (name),
-                         g_strdup (value));
+    g_strdelimit (key, "-_", '-');
+
+    g_hash_table_insert (edit->priv->vars, key, g_strdup (value));
 }
 
 
@@ -654,8 +656,8 @@ out:
 
 #define KATE_MODE_STRING        "kate:"
 #define KATE_VAR_VAL_SEPARATOR  " "
-#define VI_MODE_STRING          "-*-"
-#define VI_VAR_VAL_SEPARATOR    ":"
+#define EMACS_MODE_STRING       "-*-"
+#define EMACS_VAR_VAL_SEPARATOR ":"
 
 static void
 try_mode (MooEdit *edit)
@@ -669,12 +671,23 @@ try_mode (MooEdit *edit)
     gtk_text_iter_forward_to_line_end (&end);
     text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
     try_mode_string (edit, text, KATE_MODE_STRING, KATE_VAR_VAL_SEPARATOR);
-    try_mode_string (edit, text, VI_MODE_STRING, VI_VAR_VAL_SEPARATOR);
+    try_mode_string (edit, text, EMACS_MODE_STRING, EMACS_VAR_VAL_SEPARATOR);
     g_free (text);
 
     gtk_text_buffer_get_end_iter (buffer, &end);
-    start = end;
-    gtk_text_iter_set_line_offset (&start, 0);
+
+    if (gtk_text_iter_starts_line (&end))
+    {
+        gtk_text_iter_backward_line (&end);
+        start = end;
+        gtk_text_iter_forward_to_line_end (&end);
+    }
+    else
+    {
+        start = end;
+        gtk_text_iter_set_line_offset (&start, 0);
+    }
+
     text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
     try_mode_string (edit, text, KATE_MODE_STRING, KATE_VAR_VAL_SEPARATOR);
     g_free (text);

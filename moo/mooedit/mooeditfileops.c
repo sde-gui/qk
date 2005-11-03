@@ -312,8 +312,11 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
 
     if (success)
     {
+        /* XXX */
         gtk_text_buffer_get_start_iter (buffer, &start);
         gtk_text_buffer_place_cursor (buffer, &start);
+        edit->priv->status = 0;
+        moo_edit_set_modified (edit, FALSE);
         _moo_edit_set_filename (edit, file, encoding);
         _moo_edit_start_file_watch (edit);
     }
@@ -326,11 +329,6 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
         gtk_text_buffer_end_user_action (buffer);
     else
         moo_text_view_end_not_undoable_action (view);
-
-    edit->priv->status = 0;
-    moo_edit_set_modified (edit, FALSE);
-
-//     _moo_text_buffer_dump (buffer, "/tmp/dump.c");
 
     return success;
 }
@@ -442,6 +440,7 @@ do_load (MooEdit        *edit,
 }
 
 
+/* XXX */
 static gboolean moo_edit_reload_default (MooEditLoader  *loader,
                                          MooEdit        *edit,
                                          GError        **error)

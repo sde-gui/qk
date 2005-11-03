@@ -613,12 +613,14 @@ set_value_default (MooIndenter    *indenter,
     }
     else if (!g_ascii_strcasecmp (var, "indent-tabs-mode"))
     {
-        if (!g_ascii_strcasecmp (value, "t"))
-            indenter->use_tabs = TRUE;
-        else
-            indenter->use_tabs = FALSE;
+        indenter->use_tabs = !g_ascii_strcasecmp (value, "t");
     }
-    else if (!g_ascii_strcasecmp (var, "c-basic-offset"))
+    else if (!g_ascii_strcasecmp (var, "space-indent"))
+    {
+        indenter->use_tabs = !!g_ascii_strcasecmp (value, "on");
+    }
+    else if (!g_ascii_strcasecmp (var, "c-basic-offset") ||
+              !g_ascii_strcasecmp (var, "indent-width"))
     {
         guint64 indent = g_ascii_strtoull (value, NULL, 10);
 

@@ -167,7 +167,7 @@ moo_value_convert (const GValue   *src,
 
         if (dest_type == G_TYPE_BOOLEAN)
         {
-            if (!string)
+            if (!string || !string[0])
                 g_value_set_boolean (dest, FALSE);
             else
                 g_value_set_boolean (dest,
@@ -179,7 +179,7 @@ moo_value_convert (const GValue   *src,
 
         if (dest_type == G_TYPE_DOUBLE)
         {
-            if (!string)
+            if (!string || !string[0])
                 g_value_set_double (dest, 0);
             else
                 g_value_set_double (dest, g_ascii_strtod (string, NULL));
@@ -188,7 +188,7 @@ moo_value_convert (const GValue   *src,
 
         if (dest_type == G_TYPE_INT)
         {
-            if (!string)
+            if (!string || !string[0])
                 g_value_set_int (dest, 0);
             else
                 g_value_set_int (dest, g_ascii_strtod (string, NULL));
@@ -199,7 +199,7 @@ moo_value_convert (const GValue   *src,
         {
             GdkColor color;
 
-            if (!string)
+            if (!string || !string[0])
             {
                 g_value_set_boxed (dest, NULL);
                 return TRUE;
@@ -222,7 +222,7 @@ moo_value_convert (const GValue   *src,
             if (!string || !string[0])
             {
                 g_value_set_enum (dest, 0);
-                g_return_val_if_reached (TRUE);
+                return TRUE;
             }
 
             klass = g_type_class_ref (dest_type);
