@@ -473,6 +473,8 @@ static void     moo_edit_window_init        (MooEditWindow  *window)
                   "menubar-ui-name", "Editor/Menubar",
                   "toolbar-ui-name", "Editor/Toolbar",
                   NULL);
+
+    window->priv->use_fullname = TRUE;
 }
 
 

@@ -969,6 +969,8 @@ static void     moo_notebook_unrealize      (GtkWidget      *widget)
 static void     moo_notebook_map            (GtkWidget      *widget)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
+    GtkWidget *left = nb->priv->action_widgets[LEFT];
+    GtkWidget *right = nb->priv->action_widgets[RIGHT];
 
     g_return_if_fail (GTK_WIDGET_REALIZED (widget) == TRUE);
 
@@ -981,13 +983,11 @@ static void     moo_notebook_map            (GtkWidget      *widget)
     {
         gdk_window_show (nb->priv->tab_window);
 
-        if (nb->priv->action_widgets[LEFT] &&
-            GTK_WIDGET_VISIBLE (nb->priv->action_widgets[LEFT]))
-            gtk_widget_map (nb->priv->action_widgets[LEFT]);
+        if (left && GTK_WIDGET_VISIBLE (left))
+            gtk_widget_map (left);
 
-        if (nb->priv->action_widgets[RIGHT] &&
-            GTK_WIDGET_VISIBLE (nb->priv->action_widgets[RIGHT]))
-            gtk_widget_map (nb->priv->action_widgets[RIGHT]);
+        if (right && GTK_WIDGET_VISIBLE (right))
+            gtk_widget_map (right);
 
         if (nb->priv->arrows_visible)
             gtk_widget_map (nb->priv->arrows);
@@ -1007,6 +1007,8 @@ static void     moo_notebook_map            (GtkWidget      *widget)
 static void     moo_notebook_unmap          (GtkWidget      *widget)
 {
     MooNotebook *nb = MOO_NOTEBOOK (widget);
+    GtkWidget *left = nb->priv->action_widgets[LEFT];
+    GtkWidget *right = nb->priv->action_widgets[RIGHT];
 
     if (!GTK_WIDGET_MAPPED (widget))
         return;
@@ -1023,13 +1025,11 @@ static void     moo_notebook_unmap          (GtkWidget      *widget)
     if (nb->priv->arrows_visible)
         gtk_widget_unmap (nb->priv->arrows);
 
-    if (nb->priv->action_widgets[RIGHT] &&
-        GTK_WIDGET_MAPPED (nb->priv->action_widgets[RIGHT]))
-            gtk_widget_unmap (nb->priv->action_widgets[RIGHT]);
+    if (right && GTK_WIDGET_MAPPED (right))
+        gtk_widget_unmap (right);
 
-    if (nb->priv->action_widgets[LEFT] &&
-        GTK_WIDGET_MAPPED (nb->priv->action_widgets[LEFT]))
-        gtk_widget_unmap (nb->priv->action_widgets[LEFT]);
+    if (left && GTK_WIDGET_MAPPED (left))
+        gtk_widget_unmap (left);
 
     gdk_window_hide (nb->priv->tab_window);
 
