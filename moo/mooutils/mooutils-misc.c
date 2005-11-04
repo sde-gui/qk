@@ -154,12 +154,16 @@ moo_save_file_utf8 (const char *name,
 
     if (status != G_IO_STATUS_NORMAL || bytes_written != real_len)
     {
-        g_io_channel_shutdown (file, TRUE, NULL);
+        /* glib #320668 */
+        g_io_channel_flush (file, NULL);
+        g_io_channel_shutdown (file, FALSE, NULL);
         g_io_channel_unref (file);
         return FALSE;
     }
 
-    g_io_channel_shutdown (file, TRUE, NULL);
+    /* glib #320668 */
+    g_io_channel_flush (file, NULL);
+    g_io_channel_shutdown (file, FALSE, NULL);
     g_io_channel_unref (file);
     return TRUE;
 }

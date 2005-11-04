@@ -605,6 +605,16 @@ static gboolean do_write                (MooEdit        *edit,
     }
     while (gtk_text_iter_forward_line (&line_start));
 
+    /* glib #320668 */
+    status = g_io_channel_flush (file, error);
+
+    if (status != G_IO_STATUS_NORMAL)
+    {
+        g_io_channel_shutdown (file, FALSE, NULL);
+        g_io_channel_unref (file);
+        return FALSE;
+    }
+
     status = g_io_channel_shutdown (file, TRUE, error);
 
     if (status != G_IO_STATUS_NORMAL)
