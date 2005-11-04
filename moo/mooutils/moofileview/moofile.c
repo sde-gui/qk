@@ -2028,6 +2028,7 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     const char *separator;
     GString *icon_name;
     GdkPixbuf *pixbuf;
+    char **parent_types;
 
     separator = strchr (mime_type, '/');
     if (!separator)
@@ -2078,7 +2079,17 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     if (pixbuf)
         return pixbuf;
 
-    /* XXX check parent mime types */
+    parent_types = xdg_mime_list_mime_parents (mime_type);
+
+    if (parent_types && parent_types[0])
+        pixbuf = _create_icon_for_mime_type (icon_theme, parent_types[0],
+                                             widget, size, pixel_size);
+
+    if (parent_types)
+        free (parent_types);
+
+    if (pixbuf)
+        return pixbuf;
 
     g_message ("%s: could not find icon for mime type '%s'",
                G_STRLOC, mime_type);
