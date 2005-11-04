@@ -156,13 +156,13 @@ AC_DEFUN([MOO_AC_PYGTK],[
             MOO_USE_PYTHON="yes"
             AC_MSG_NOTICE([compiling python support])
         ],[
-            MOO_USE_PYTHON="no"
-            MOO_USE_PYGTK="no"
             if test x$MOO_USE_PYTHON = "xyes"; then
                 AC_MSG_ERROR([Python not found])
             else
                 AC_MSG_WARN([Python support will be disabled])
             fi
+            MOO_USE_PYTHON="no"
+            MOO_USE_PYGTK="no"
         ])
     fi
 

@@ -51,6 +51,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
         PYTHON_INCLUDES=""
         PYTHON_LDFLAGS=""
         PYTHON_EXTRA_LIBS=""
+        $3
     ])
 
     LDFLAGS="$save_LDFLAGS"
