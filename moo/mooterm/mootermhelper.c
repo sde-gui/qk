@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include "pty.h"
 #define MOOTERM_COMPILATION
-#include "helper.h"
+#include "mootermhelper.h"
 
 
 #define WRITE_LOG     0

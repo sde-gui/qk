@@ -65,10 +65,6 @@ utilsinclude_headers =          \
     moowindow.h                 \
     mooutils-python.h
 
-win32_sources =                 \
-    moohandlewatch.h            \
-    moohandlewatch.c
-
 if MOO_STANDALONE
 utilsincludedir = $(includedir)/moo-1.0/mooutils
 utilsinclude_HEADERS = $(utilsinclude_headers)
@@ -131,10 +127,6 @@ if MOO_USE_PYTHON
 libmooutils_la_SOURCES += $(python_sources)
 endif
 
-if MOO_OS_MINGW
-libmooutils_la_SOURCES += $(win32_sources)
-endif
-
 nodist_libmooutils_la_SOURCES = \
     moomarshals.c               \
     moomarshals.h
@@ -142,7 +134,6 @@ CLEANFILES = $(nodist_libmooutils_la_SOURCES)
 
 EXTRA_DIST =            \
     $(python_sources)   \
-    $(win32_sources)    \
     moomarshals.list    \
     xml2h.sh
 

@@ -28,10 +28,8 @@
 #include <mooutils/moofilewatch.h>
 #include <mooutils/moofiltermgr.h>
 #include <mooutils/mooglade.h>
-#include <mooutils/moohandlewatch.h>
 #include <mooutils/moohistoryentry.h>
 #include <mooutils/moohistorylist.h>
-#include <mooutils/moolog.h>
 #include <mooutils/moomarkup.h>
 #include <mooutils/moomenuaction.h>
 #include <mooutils/moomenumgr.h>
