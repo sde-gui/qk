@@ -107,7 +107,8 @@ static gboolean run_in_helper       (const char *cmd,
 G_DEFINE_TYPE (MooTermPtWin, moo_term_pt_win, MOO_TYPE_TERM_PT)
 
 
-static void moo_term_pt_win_class_init (MooTermPtWinClass *klass)
+static void
+moo_term_pt_win_class_init (MooTermPtWinClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooTermPtClass *pt_class = MOO_TERM_PT_CLASS (klass);
@@ -121,7 +122,8 @@ static void moo_term_pt_win_class_init (MooTermPtWinClass *klass)
 }
 
 
-static void     moo_term_pt_win_init            (MooTermPtWin      *pt)
+static void
+moo_term_pt_win_init (MooTermPtWin      *pt)
 {
     MOO_TERM_PT(pt)->priv->child_alive = FALSE;
 
@@ -136,7 +138,8 @@ static void     moo_term_pt_win_init            (MooTermPtWin      *pt)
 }
 
 
-static void moo_term_pt_win_finalize    (GObject    *object)
+static void
+moo_term_pt_win_finalize (GObject    *object)
 {
     MooTermPtWin *pt = MOO_TERM_PT_WIN (object);
     kill_child (MOO_TERM_PT (pt));
@@ -144,17 +147,19 @@ static void moo_term_pt_win_finalize    (GObject    *object)
 }
 
 
-MooTermCommand *moo_term_get_default_shell (void)
+MooTermCommand *
+_moo_term_get_default_shell (void)
 {
     g_return_val_if_reached (NULL);
 }
 
 
-static gboolean fork_command        (MooTermPt      *pt_gen,
-                                     const MooTermCommand *cmd,
-                                     const char     *working_dir,
-                                     char          **envp,
-                                     GError        **error)
+static gboolean
+fork_command (MooTermPt      *pt_gen,
+              const MooTermCommand *cmd,
+              const char     *working_dir,
+              char          **envp,
+              GError        **error)
 {
     MooTermPtWin *pt;
     gboolean result;
@@ -199,9 +204,10 @@ static gboolean fork_command        (MooTermPt      *pt_gen,
 }
 
 
-static gboolean read_helper_out (GIOChannel     *source,
-                                 GIOCondition    condition,
-                                 MooTermPtWin   *pt)
+static gboolean
+read_helper_out (GIOChannel     *source,
+                 GIOCondition    condition,
+                 MooTermPtWin   *pt)
 {
     GError *err = NULL;
     gboolean error_occured = FALSE;
@@ -282,7 +288,8 @@ static gboolean read_helper_out (GIOChannel     *source,
 }
 
 
-static void     kill_child          (MooTermPt      *pt_gen)
+static void
+kill_child (MooTermPt      *pt_gen)
 {
     MooTermPtWin *pt = MOO_TERM_PT_WIN (pt_gen);
 
@@ -332,18 +339,20 @@ static void     kill_child          (MooTermPt      *pt_gen)
 }
 
 
-static void     set_size            (MooTermPt      *pt,
-                                     guint           width,
-                                     guint           height)
+static void
+set_size (MooTermPt      *pt,
+          guint           width,
+          guint           height)
 {
     if (pt->priv->child_alive)
         pt_write (MOO_TERM_PT (pt), set_size_cmd (width, height), SIZE_CMD_LEN);
 }
 
 
-static void     append                  (MooTermPt      *pt,
-                                         const char     *data,
-                                         guint           len)
+static void
+append (MooTermPt      *pt,
+        const char     *data,
+        guint           len)
 {
     GByteArray *ar = g_byte_array_sized_new (len);
     g_byte_array_append (ar, (const guint8*)data, len);
@@ -354,10 +363,11 @@ static void     append                  (MooTermPt      *pt,
 /* writes given data to file, returns TRUE on successful write,
    FALSE when could not write al teh data, puts start of leftover
    to string, length of it to len, and fills err in case of error */
-static gboolean do_write        (MooTermPt      *pt_gen,
-                                 const char    **string,
-                                 guint          *plen,
-                                 GError        **err)
+static gboolean
+do_write (MooTermPt      *pt_gen,
+          const char    **string,
+          guint          *plen,
+          GError        **err)
 {
     GIOStatus status;
     guint written;
@@ -383,13 +393,15 @@ static gboolean do_write        (MooTermPt      *pt_gen,
 }
 
 
-static gboolean write_cb        (MooTermPt      *pt)
+static gboolean
+write_cb (MooTermPt      *pt)
 {
     pt_write (pt, NULL, 0);
     return TRUE;
 }
 
-static void     start_writer    (MooTermPt      *pt)
+static void
+start_writer (MooTermPt      *pt)
 {
     if (!pt->priv->pending_write_id)
         pt->priv->pending_write_id =
@@ -398,7 +410,8 @@ static void     start_writer    (MooTermPt      *pt)
                                  pt, NULL);
 }
 
-static void     stop_writer     (MooTermPt      *pt)
+static void
+stop_writer (MooTermPt      *pt)
 {
     if (pt->priv->pending_write_id)
     {
@@ -408,9 +421,10 @@ static void     stop_writer     (MooTermPt      *pt)
 }
 
 
-static void     pt_write            (MooTermPt      *pt,
-                                     const char     *data,
-                                     gssize          data_len)
+static void
+pt_write (MooTermPt      *pt,
+          const char     *data,
+          gssize          data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
     g_return_if_fail (pt->priv->child_alive);
@@ -489,13 +503,14 @@ enum {
     WRITE_END = 1
 };
 
-static gboolean run_in_helper       (const char *cmd,
-                                     const char *working_dir,
-                                     char **env,
-                                     guint width, guint height,
-                                     int *hin, int *hout,
-                                     GPid *hpid, gulong *hproc_id,
-                                     GError        **error)
+static gboolean
+run_in_helper (const char *cmd,
+               const char *working_dir,
+               char **env,
+               guint width, guint height,
+               int *hin, int *hout,
+               GPid *hpid, gulong *hproc_id,
+               GError        **error)
 {
     /* char *cwidth = NULL, *cheight = NULL; */
     int my_stdin = _dup(0);
@@ -761,13 +776,15 @@ error:
 }
 
 
-char            moo_term_pt_get_erase_char  (G_GNUC_UNUSED MooTermPt *pt)
+char
+_moo_term_pt_get_erase_char (G_GNUC_UNUSED MooTermPt *pt)
 {
     return 127;
 }
 
 
-void            moo_term_pt_send_intr       (MooTermPt      *pt)
+void
+_moo_term_pt_send_intr (MooTermPt      *pt)
 {
     g_return_if_fail (pt->priv->child_alive);
     pt_flush_pending_write (pt);
@@ -775,8 +792,9 @@ void            moo_term_pt_send_intr       (MooTermPt      *pt)
 }
 
 
-gboolean        moo_term_check_cmd          (MooTermCommand *cmd,
-                                             G_GNUC_UNUSED GError **error)
+gboolean
+_moo_term_check_cmd (MooTermCommand *cmd,
+                     G_GNUC_UNUSED GError **error)
 {
     g_return_val_if_fail (cmd != NULL, FALSE);
     g_return_val_if_fail (cmd->cmd_line != NULL || cmd->argv != NULL, FALSE);

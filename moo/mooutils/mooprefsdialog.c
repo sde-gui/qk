@@ -355,7 +355,7 @@ moo_prefs_dialog_response (GtkDialog      *dialog,
             else
                 gtk_widget_destroy (GTK_WIDGET (dialog));
 #ifdef __WIN32__
-            parent = gtk_window_get_transient_for (GTK_WINDOW (window));
+            parent = gtk_window_get_transient_for (GTK_WINDOW (dialog));
             if (parent)
                 gtk_window_present (parent);
 #endif

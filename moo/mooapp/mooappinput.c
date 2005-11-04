@@ -232,11 +232,16 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
         return FALSE;
     }
 
+    g_print ("****************** 1\n");
     ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
+    g_print ("****************** 2\n");
     g_io_channel_set_encoding (ch->io, NULL, NULL);
+    g_print ("****************** 3\n");
     g_io_channel_set_buffered (ch->io, FALSE);
+    g_print ("****************** 4\n");
     ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
                                    (GIOFunc) read_input, ch);
+    g_print ("****************** 5\n");
 
     ch->ready = TRUE;
     return TRUE;

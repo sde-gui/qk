@@ -122,7 +122,9 @@ moo_rmdir (const char *path,
 #ifndef __WIN32__
     return rm_fr (path);
 #else
-#error "Implement me"
+/* XXX */
+#warning "Implement me"
+    return FALSE;
 #endif
 }
 
