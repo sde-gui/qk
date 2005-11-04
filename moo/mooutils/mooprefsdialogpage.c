@@ -167,8 +167,9 @@ static void moo_prefs_dialog_page_set_property  (GObject            *object,
     {
         case PROP_LABEL:
             g_free (page->label);
-            page->label = g_strdup_printf ("<b>%s</b>",
-                                           g_value_get_string (value));
+            /* XXX use GMarkup escaping here */
+            page->label = g_value_get_string (value) ?
+                g_strdup_printf ("<b>%s</b>", g_value_get_string (value)) : NULL;
             g_object_notify (G_OBJECT (page), "label");
             break;
 
