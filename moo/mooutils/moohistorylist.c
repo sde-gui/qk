@@ -232,6 +232,7 @@ moo_history_list_finalize (GObject *object)
     g_object_unref (list->priv->store);
     g_free (list->priv->user_id);
     g_object_unref (list->priv->mgr);
+    g_object_unref (list->priv->tooltips);
 
     g_free (list->priv);
 
