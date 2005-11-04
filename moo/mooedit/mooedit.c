@@ -28,28 +28,47 @@
 #include <string.h>
 
 
-static GObject *moo_edit_constructor    (GType                  type,
-                                         guint                  n_construct_properties,
-                                         GObjectConstructParam *construct_param);
-static void     moo_edit_finalize       (GObject        *object);
+typedef struct {
+    char *str;
+    MooEditVarDep dep : 1;
+} Value;
 
-static void     moo_edit_set_property   (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec);
-static void     moo_edit_get_property   (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec);
+static Value   *value_new                   (const char     *str,
+                                             MooEditVarDep   dep);
+static void     value_set                   (Value          *value,
+                                             const char     *str,
+                                             MooEditVarDep   dep);
+static void     value_free                  (Value          *value);
 
-static GtkTextBuffer *get_buffer        (MooEdit            *edit);
-static MooTextBuffer *get_moo_buffer    (MooEdit            *edit);
 
-static void     modified_changed_cb     (GtkTextBuffer      *buffer,
-                                         MooEdit            *edit);
+static GObject *moo_edit_constructor        (GType                  type,
+                                             guint                  n_construct_properties,
+                                             GObjectConstructParam *construct_param);
+static void     moo_edit_finalize           (GObject        *object);
 
-static void     moo_edit_comment        (MooEdit            *edit);
-static void     moo_edit_uncomment      (MooEdit            *edit);
+static void     moo_edit_set_property       (GObject        *object,
+                                             guint           prop_id,
+                                             const GValue   *value,
+                                             GParamSpec     *pspec);
+static void     moo_edit_get_property       (GObject        *object,
+                                             guint           prop_id,
+                                             GValue         *value,
+                                             GParamSpec     *pspec);
+
+static void     moo_edit_variable_changed   (MooEdit        *edit,
+                                             const char     *name,
+                                             const char     *value);
+static void     moo_edit_filename_changed   (MooEdit        *edit,
+                                             const char     *new_filename);
+
+static GtkTextBuffer *get_buffer            (MooEdit        *edit);
+static MooTextBuffer *get_moo_buffer        (MooEdit        *edit);
+
+static void     modified_changed_cb         (GtkTextBuffer  *buffer,
+                                             MooEdit        *edit);
+
+static void     moo_edit_comment            (MooEdit        *edit);
+static void     moo_edit_uncomment          (MooEdit        *edit);
 
 
 enum {
@@ -57,6 +76,7 @@ enum {
     FILENAME_CHANGED,
     COMMENT,
     UNCOMMENT,
+    VARIABLE_CHANGED,
     LAST_SIGNAL
 };
 
@@ -83,8 +103,8 @@ moo_edit_class_init (MooEditClass *klass)
     gobject_class->constructor = moo_edit_constructor;
     gobject_class->finalize = moo_edit_finalize;
 
-    klass->doc_status_changed = NULL;
-    klass->filename_changed = NULL;
+    klass->variable_changed = moo_edit_variable_changed;
+    klass->filename_changed = moo_edit_filename_changed;
 
     g_object_class_install_property (gobject_class,
                                      PROP_EDITOR,
@@ -93,6 +113,17 @@ moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              MOO_TYPE_EDITOR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    signals[VARIABLE_CHANGED] =
+            g_signal_new ("variable-changed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooEditClass, variable_changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING_STRING,
+                          G_TYPE_NONE, 2,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[DOC_STATUS_CHANGED] =
             g_signal_new ("doc-status-changed",
@@ -106,7 +137,7 @@ moo_edit_class_init (MooEditClass *klass)
     signals[FILENAME_CHANGED] =
             g_signal_new ("filename-changed",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
+                          G_SIGNAL_RUN_FIRST,
                           G_STRUCT_OFFSET (MooEditClass, filename_changed),
                           NULL, NULL,
                           _moo_marshal_VOID__STRING,
@@ -154,8 +185,8 @@ moo_edit_init (MooEdit *edit)
     edit->priv->line_end_type = MOO_EDIT_LINE_END_UNIX;
 #endif
 
-    edit->priv->vars = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                              g_free, g_free);
+    edit->priv->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                              (GDestroyNotify) value_free);
 }
 
 
@@ -514,7 +545,7 @@ get_moo_buffer (MooEdit *edit)
 }
 
 
-void
+static void
 moo_edit_set_lang (MooEdit        *edit,
                    MooLang        *lang)
 {
@@ -523,7 +554,7 @@ moo_edit_set_lang (MooEdit        *edit,
 }
 
 
-MooLang*
+static MooLang*
 moo_edit_get_lang (MooEdit        *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
@@ -555,37 +586,6 @@ is_ascii (const char *string)
         if ((guint8) *string > 127)
             return FALSE;
     return TRUE;
-}
-
-
-void
-moo_edit_set_var (MooEdit        *edit,
-                  const char     *name,
-                  const char     *value)
-{
-    char *key = NULL;
-
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    g_return_if_fail (name && name[0]);
-
-    if (is_ascii (name))
-        key = g_ascii_strdown (name, -1);
-    else
-        key = g_strdup (name);
-
-    g_strdelimit (key, "-_", '-');
-
-    g_hash_table_insert (edit->priv->vars, key, g_strdup (value));
-}
-
-
-const char*
-moo_edit_get_var (MooEdit        *edit,
-                  const char     *name)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    g_return_val_if_fail (name && name[0], NULL);
-    return g_hash_table_lookup (edit->priv->vars, name);
 }
 
 
@@ -694,63 +694,6 @@ try_mode (MooEdit *edit)
 }
 
 
-void
-_moo_edit_reload_vars (MooEdit *edit)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    g_hash_table_foreach_remove (edit->priv->vars, (GHRFunc) gtk_true, NULL);
-    try_mode (edit);
-}
-
-
-void
-_moo_edit_choose_lang (MooEdit *edit)
-{
-    MooLang *lang = NULL;
-
-    if (edit->priv->filename)
-    {
-        MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
-        lang = moo_lang_mgr_get_lang_for_file (mgr, edit->priv->filename);
-    }
-
-    moo_edit_set_lang (edit, lang);
-}
-
-
-static void
-indenter_set_var (const char  *var,
-                  const char  *value,
-                  MooIndenter *indent)
-{
-    moo_indenter_set_value (indent, var, value);
-}
-
-void
-_moo_edit_choose_indenter (MooEdit *edit)
-{
-    MooIndenter *indenter = NULL;
-    const char *mode;
-
-    if (!edit->priv->enable_indentation)
-        return;
-
-    mode = moo_edit_get_var (edit, "mode");
-
-    if (mode)
-        indenter = moo_indenter_get_for_mode (mode);
-
-    if (!indenter)
-        indenter = moo_indenter_default_new ();
-
-    g_hash_table_foreach (edit->priv->vars,
-                          (GHFunc) indenter_set_var,
-                          indenter);
-
-    moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indenter);
-}
-
-
 static void
 moo_edit_comment (MooEdit *edit)
 {
@@ -776,4 +719,201 @@ moo_edit_uncomment (MooEdit *edit)
     g_return_if_fail (!lang->multi_line_comment_start || lang->multi_line_comment_end);
 
     g_message ("uncomment");
+}
+
+
+static Value *
+get_value (MooEdit        *edit,
+           const char     *name)
+{
+    return g_hash_table_lookup (edit->priv->vars, name);
+}
+
+
+static void
+insert_value (MooEdit        *edit,
+              const char     *name,
+              Value          *value)
+{
+    if (value)
+        g_hash_table_insert (edit->priv->vars, g_strdup (name), value);
+    else
+        g_hash_table_remove (edit->priv->vars, name);
+}
+
+
+static void
+set_variable (MooEdit        *edit,
+              const char     *name,
+              const char     *strval,
+              MooEditVarDep   dep)
+{
+    char *key = NULL;
+    Value *value;
+
+    if (is_ascii (name))
+        key = g_ascii_strdown (name, -1);
+    else
+        key = g_strdup (name);
+
+    g_strdelimit (key, "-_", '-');
+
+    value = get_value (edit, name);
+
+    if (strval)
+    {
+        if (value)
+        {
+            if (value->dep >= dep)
+                value_set (value, strval, dep);
+        }
+        else
+        {
+            value = value_new (strval, dep);
+            insert_value (edit, key, value);
+        }
+    }
+    else if (value && value->dep >= dep)
+    {
+        insert_value (edit, key, NULL);
+    }
+
+    strval = strval ? value->str : NULL;
+    g_signal_emit (edit, signals[VARIABLE_CHANGED], 0, key, strval);
+
+    g_free (key);
+}
+
+
+void
+moo_edit_set_var (MooEdit        *edit,
+                  const char     *name,
+                  const char     *value)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (name && name[0]);
+    moo_edit_set_var_full (edit, name, value,
+                           MOO_EDIT_VAR_DEP_FILENAME);
+}
+
+
+void
+moo_edit_set_var_full (MooEdit        *edit,
+                       const char     *name,
+                       const char     *value,
+                       MooEditVarDep   dep)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (name && name[0]);
+    set_variable (edit, name, value, dep);
+}
+
+
+const char*
+moo_edit_get_var (MooEdit        *edit,
+                  const char     *name)
+{
+    Value *value;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    g_return_val_if_fail (name && name[0], NULL);
+
+    value = get_value (edit, name);
+    return value ? value->str : NULL;
+}
+
+
+static Value*
+value_new (const char     *str,
+           MooEditVarDep   dep)
+{
+    Value *val = g_new0 (Value, 1);
+    val->str = g_strdup (str);
+    val->dep = dep;
+    return val;
+}
+
+
+static void
+value_set (Value          *value,
+           const char     *str,
+           MooEditVarDep   dep)
+{
+    char *tmp = g_strdup (str);
+    g_free (value->str);
+    value->str = tmp;
+    value->dep = dep;
+}
+
+
+static void
+value_free (Value *value)
+{
+    if (value)
+    {
+        g_free (value->str);
+        g_free (value);
+    }
+}
+
+
+static void
+moo_edit_variable_changed (MooEdit        *edit,
+                           const char     *name,
+                           const char     *value)
+{
+    if (!strcmp (name, MOO_EDIT_VAR_LANG))
+    {
+        MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+        MooLang *lang = value ? moo_lang_mgr_get_lang (mgr, value) : NULL;
+        moo_edit_set_lang (edit, lang);
+    }
+}
+
+
+static void
+moo_edit_choose_indenter (MooEdit *edit)
+{
+    MooIndenter *indenter;
+    const char *name;
+
+    name = moo_edit_get_var (edit, MOO_EDIT_VAR_INDENTER);
+
+    if (!edit->priv->enable_indentation)
+        return;
+
+    indenter = moo_indenter_new (edit, name);
+    moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indenter);
+}
+
+
+static gboolean
+check_dep (G_GNUC_UNUSED const char *name,
+           Value      *value)
+{
+    return value->dep >= MOO_EDIT_VAR_DEP_FILENAME;
+}
+
+static void
+moo_edit_filename_changed (MooEdit    *edit,
+                           const char *filename)
+{
+    MooLang *lang = NULL;
+
+    g_hash_table_foreach_remove (edit->priv->vars, (GHRFunc) check_dep, NULL);
+
+    try_mode (edit);
+
+    if (!moo_edit_get_var (edit, MOO_EDIT_VAR_LANG))
+    {
+        if (filename)
+        {
+            MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+            lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
+        }
+
+        moo_edit_set_var (edit, MOO_EDIT_VAR_LANG, lang ? lang->name : NULL);
+    }
+
+    moo_edit_choose_indenter (edit);
 }

@@ -45,10 +45,6 @@ void        _moo_edit_set_filename          (MooEdit        *edit,
                                              const char     *encoding);
 char        *_moo_edit_filename_to_utf8     (const char     *filename);
 
-void         _moo_edit_reload_vars          (MooEdit        *edit);
-void         _moo_edit_choose_indenter      (MooEdit        *edit);
-void         _moo_edit_choose_lang          (MooEdit        *edit);
-
 void         _moo_edit_start_file_watch     (MooEdit        *edit);
 void         _moo_edit_stop_file_watch      (MooEdit        *edit);
 

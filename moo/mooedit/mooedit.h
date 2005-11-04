@@ -35,6 +35,15 @@ G_BEGIN_DECLS
 
 
 typedef enum {
+    MOO_EDIT_VAR_DEP_NONE       = 0,
+    MOO_EDIT_VAR_DEP_FILENAME   = 1
+} MooEditVarDep;
+
+#define MOO_EDIT_VAR_LANG       "lang"
+#define MOO_EDIT_VAR_INDENTER   "indenter"
+
+
+typedef enum {
     MOO_EDIT_DONT_WATCH_FILE = 0,
     MOO_EDIT_ALWAYS_ALERT,
     MOO_EDIT_ALWAYS_RELOAD,
@@ -82,6 +91,10 @@ struct _MooEditClass
                                      const char *new_filename);
 
     void (* lang_changed)           (MooEdit    *edit);
+
+    void (* variable_changed)       (MooEdit    *edit,
+                                     const char *variable,
+                                     const char *value);
 };
 
 
@@ -121,15 +134,24 @@ void             moo_edit_set_highlight         (MooEdit        *edit,
                                                  gboolean        highlight);
 gboolean         moo_edit_get_highlight         (MooEdit        *edit);
 
-void             moo_edit_set_lang              (MooEdit        *edit,
-                                                 MooLang        *lang);
-MooLang         *moo_edit_get_lang              (MooEdit        *edit);
+// void             moo_edit_set_lang              (MooEdit        *edit,
+//                                                  MooLang        *lang);
+// MooLang         *moo_edit_get_lang              (MooEdit        *edit);
 
 void             moo_edit_set_var               (MooEdit        *edit,
                                                  const char     *name,
                                                  const char     *value);
+void             moo_edit_set_var_full          (MooEdit        *edit,
+                                                 const char     *name,
+                                                 const char     *value,
+                                                 MooEditVarDep   dep);
 const char      *moo_edit_get_var               (MooEdit        *edit,
                                                  const char     *name);
+
+gboolean         moo_edit_str_to_bool           (const char     *string,
+                                                 gboolean        default_val);
+int              moo_edit_str_to_bool           (const char     *string,
+                                                 int             default_val);
 
 
 G_END_DECLS

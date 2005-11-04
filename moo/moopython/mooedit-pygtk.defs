@@ -700,28 +700,6 @@
   (return-type "GType")
 )
 
-(define-function moo_indenter_default_new
-  (c-name "moo_indenter_default_new")
-  (is-constructor-of "MooIndenterDefault")
-  (return-type "MooIndenter*")
-)
-
-(define-function moo_indenter_get_for_lang
-  (c-name "moo_indenter_get_for_lang")
-  (return-type "MooIndenter*")
-  (parameters
-    '("const-char*" "lang")
-  )
-)
-
-(define-function moo_indenter_get_for_mode
-  (c-name "moo_indenter_get_for_mode")
-  (return-type "MooIndenter*")
-  (parameters
-    '("const-char*" "mode")
-  )
-)
-
 (define-method set_value
   (of-object "MooIndenter")
   (c-name "moo_indenter_set_value")

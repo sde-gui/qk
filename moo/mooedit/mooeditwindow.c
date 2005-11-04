@@ -1639,22 +1639,23 @@ static void
 lang_item_activated (MooEditWindow *window,
                      const char    *lang_name)
 {
-    MooLangMgr *mgr;
-    MooLang *lang = NULL;
     MooEdit *doc = ACTIVE_DOC (window);
+    const char *old_val;
+    gboolean do_set = FALSE;
 
     g_return_if_fail (doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    mgr = moo_editor_get_lang_mgr (window->priv->editor);
+    old_val = moo_edit_get_var (doc, MOO_EDIT_VAR_LANG);
 
-    if (lang_name)
-    {
-        lang = moo_lang_mgr_get_lang (mgr, lang_name);
-        g_return_if_fail (lang != NULL);
-    }
+    if (old_val)
+        do_set = !lang_name || strcmp (old_val, lang_name);
+    else
+        do_set = !!lang_name;
 
-    moo_edit_set_lang (doc, lang);
+    if (do_set)
+        moo_edit_set_var_full (doc, MOO_EDIT_VAR_LANG, lang_name,
+                               MOO_EDIT_VAR_DEP_NONE);
 }
 
 
@@ -1715,18 +1716,19 @@ update_lang_menu (MooEditWindow      *window)
 {
     MooEdit *doc;
     MooAction *action;
-    MooLang *lang;
+    const char *lang;
 
     doc = ACTIVE_DOC (window);
+
     if (!doc)
         return;
 
-    lang = moo_edit_get_lang (doc);
+    lang = moo_edit_get_var (doc, MOO_EDIT_VAR_LANG);
     action = moo_window_get_action_by_id (MOO_WINDOW (window), LANG_ACTION_ID);
     g_return_if_fail (action != NULL);
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
-                             lang ? lang->name : NONE_LANGUAGE_NAME, TRUE);
+                             lang ? lang : NONE_LANGUAGE_NAME, TRUE);
 }
 
 

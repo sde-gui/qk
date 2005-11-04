@@ -36,6 +36,7 @@ struct _MooIndenter
 {
     GObject parent;
 
+    gpointer doc; /* MooEdit* */
     gboolean use_tabs;
     guint tab_width;
     guint indent;
@@ -58,10 +59,8 @@ struct _MooIndenterClass
 
 GType        moo_indenter_get_type              (void) G_GNUC_CONST;
 
-MooIndenter *moo_indenter_default_new           (void);
-
-MooIndenter *moo_indenter_get_for_lang          (const char     *lang);
-MooIndenter *moo_indenter_get_for_mode          (const char     *mode);
+MooIndenter *moo_indenter_new                   (gpointer        doc,
+                                                 const char     *name);
 
 void         moo_indenter_set_value             (MooIndenter    *indenter,
                                                  const char     *var,

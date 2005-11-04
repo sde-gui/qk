@@ -2078,7 +2078,9 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     if (pixbuf)
         return pixbuf;
 
-    g_warning ("%s: could not find icon for mime type '%s'",
+    /* XXX check parent mime types */
+
+    g_message ("%s: could not find icon for mime type '%s'",
                G_STRLOC, mime_type);
     return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
                                 widget, size);

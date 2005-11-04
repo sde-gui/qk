@@ -738,7 +738,8 @@ _moo_edit_stop_file_watch (MooEdit        *edit)
 }
 
 
-static gboolean focus_in_cb                 (MooEdit        *edit)
+static gboolean
+focus_in_cb (MooEdit *edit)
 {
     check_file_status (edit, TRUE);
     return FALSE;
@@ -762,7 +763,8 @@ check_file_status (MooEdit        *edit,
 }
 
 
-static void     file_modified_on_disk       (MooEdit        *edit)
+static void
+file_modified_on_disk (MooEdit *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
@@ -772,7 +774,8 @@ static void     file_modified_on_disk       (MooEdit        *edit)
 }
 
 
-static void     file_deleted                (MooEdit        *edit)
+static void
+file_deleted (MooEdit *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
@@ -782,16 +785,18 @@ static void     file_deleted                (MooEdit        *edit)
 }
 
 
-static void     add_status                  (MooEdit        *edit,
-                                             MooEditStatus   s)
+static void
+add_status (MooEdit        *edit,
+            MooEditStatus   s)
 {
     edit->priv->status |= s;
     g_signal_emit_by_name (edit, "doc-status-changed", NULL);
 }
 
 
-static void remove_untitled             (gpointer    destroyed,
-                                         MooEdit    *edit)
+static void
+remove_untitled (gpointer    destroyed,
+                 MooEdit    *edit)
 {
     gpointer n = g_hash_table_lookup (UNTITLED_NO, edit);
 
@@ -807,7 +812,8 @@ static void remove_untitled             (gpointer    destroyed,
 }
 
 
-static int  add_untitled                (MooEdit    *edit)
+static int
+add_untitled (MooEdit *edit)
 {
     int n;
 
@@ -832,9 +838,10 @@ static int  add_untitled                (MooEdit    *edit)
 }
 
 
-void        _moo_edit_set_filename      (MooEdit    *edit,
-                                         const char *file,
-                                         const char *encoding)
+void
+_moo_edit_set_filename (MooEdit    *edit,
+                        const char *file,
+                        const char *encoding)
 {
     g_free (edit->priv->filename);
     g_free (edit->priv->basename);
@@ -874,16 +881,13 @@ void        _moo_edit_set_filename      (MooEdit    *edit,
     g_free (edit->priv->encoding);
     edit->priv->encoding = g_strdup (encoding);
 
-    _moo_edit_reload_vars (edit);
-    _moo_edit_choose_lang (edit);
-    _moo_edit_choose_indenter (edit);
-
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     g_signal_emit_by_name (edit, "doc-status-changed", NULL);
 }
 
 
-char       *_moo_edit_filename_to_utf8      (const char         *filename)
+char*
+_moo_edit_filename_to_utf8 (const char *filename)
 {
     GError *err = NULL;
     char *utf_filename;
