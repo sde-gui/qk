@@ -58,8 +58,8 @@ mooutils_include_HEADERS = $(mooutils_include_headers)
 CLEANFILES = $(moo_cleanfiles)
 
 if !MOO_OS_CYGWIN
-libmoo_1_0_la_LDFLAGS  = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
-libmoo_1_0_la_SOURCES = $(moo_built_sources) $(moo_sources)
+libmoo_1_0_la_LDFLAGS = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
+libmoo_1_0_la_SOURCES = $(moo_sources)
 BUILT_SOURCES = $(moo_built_sources)
 nodist_libmoo_1_0_la_SOURCES = $(moo_nodist_sources)
 if MOO_OS_MINGW
@@ -76,3 +76,28 @@ $(moo_win32_sources)     \
 $(moo_unix_sources)      \
 $(moo_built_sources)     \
 $(moo_extra_dist)
+
+
+##############################################################################
+# moo module
+#
+if BUILD_PYMOO
+
+pyexec_LTLIBRARIES = moo.la
+
+moo_la_SOURCES = $(libmoo_1_0_la_SOURCES)
+nodist_moo_la_SOURCES = $(nodist_libmoo_1_0_la_SOURCES)
+
+if MOO_OS_MINGW
+mingw_flags = -no-undefined
+endif MOO_OS_MINGW
+
+moo_la_LDFLAGS = -module -avoid-version -no-undefined -export-symbols-regex "initmoo"
+
+moo_la_LIBADD =         \
+    $(GTK_LIBS)         \
+    $(XML_LIBS)         \
+    $(PYTHON_LDFLAGS)   \
+    $(PYTHON_EXTRA_LIBS)
+
+endif BUILD_PYMOO
