@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 13
+#define MOO_PLUGIN_CURRENT_VERSION 14
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
 
@@ -83,6 +83,7 @@ typedef void        (*MooDocPluginDestroyFunc)  (MooDocPlugin   *doc_plugin);
 struct _MooPluginParams
 {
     gboolean enabled;
+    gboolean visible;
 };
 
 struct _MooPluginPrefsParams

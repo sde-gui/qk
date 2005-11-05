@@ -46,6 +46,8 @@
 
 /* moo-pygtk.c */
 void initmoo (void);
+/* mooplugin-python.c */
+gboolean _moo_python_plugin_init (void);
 
 
 static MooApp *moo_app_instance = NULL;
@@ -895,6 +897,7 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
                           app->priv->argv);
 #ifdef MOO_USE_PYGTK
         initmoo ();
+        _moo_python_plugin_init ();
 #endif
     }
     else

@@ -863,6 +863,14 @@ moo_plugin_init_builtin (void)
 }
 
 
+static gboolean
+moo_plugin_visible (MooPlugin *plugin)
+{
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
+    return plugin->info->params->visible ? TRUE : FALSE;
+}
+
+
 /***************************************************************************/
 /* Preferences dialog
  */
@@ -1003,12 +1011,16 @@ prefs_init (MooPrefsDialog      *dialog,
     {
         GtkTreeIter iter;
         MooPlugin *plugin = l->data;
-        gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter,
-                            COLUMN_ENABLED, moo_plugin_enabled (plugin),
-                            COLUMN_PLUGIN_ID, moo_plugin_id (plugin),
-                            COLUMN_PLUGIN_NAME, moo_plugin_name (plugin),
-                            -1);
+
+        if (moo_plugin_visible (plugin))
+        {
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter,
+                                COLUMN_ENABLED, moo_plugin_enabled (plugin),
+                                COLUMN_PLUGIN_ID, moo_plugin_id (plugin),
+                                COLUMN_PLUGIN_NAME, moo_plugin_name (plugin),
+                                -1);
+        }
     }
 
     selection_changed (gtk_tree_view_get_selection (treeview), page);

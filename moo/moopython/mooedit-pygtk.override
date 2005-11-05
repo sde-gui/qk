@@ -3,7 +3,10 @@ headers
 #include <Python.h>
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
-#include "moo.h"
+#include "mooedit/mooeditor.h"
+#include "mooedit/mooeditsearch.h"
+#include "mooedit/mootextbuffer.h"
+#include "mooedit/moocmdview.h"
 
 void moo_edit_add_constants (PyObject *module, const gchar *strip_prefix);
 void moo_edit_register_classes (PyObject *d);

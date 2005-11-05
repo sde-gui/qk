@@ -22,6 +22,7 @@
                                description__,author__,version__)            \
                                                                             \
 static MooPluginParams plugin_name__##_plugin_params = {                    \
+    TRUE,                                                                   \
     TRUE                                                                    \
 };                                                                          \
                                                                             \
