@@ -127,7 +127,7 @@ AC_DEFUN([MOO_AC_PYGTK],[
     AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = autodetect)]),[
         if test x$with_python = "xno"; then
             MOO_USE_PYTHON="no"
-            MOO_USE_PYTHON="no"
+            MOO_USE_PYGTK="no"
         else
             if test x$with_python = "xyes"; then
                 moo_python_version=2.2
