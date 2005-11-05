@@ -451,7 +451,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "_Go to Line",
                                  "tooltip", "Go to line",
                                  "accel", "<ctrl>G",
-                                 "closure::signal", "goto-line",
+                                 "closure::signal", "goto-line-interactive",
                                  "closure::proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);

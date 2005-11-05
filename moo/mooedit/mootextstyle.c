@@ -179,7 +179,8 @@ moo_text_style_mask_get_type (void)
             { MOO_TEXT_STYLE_BOLD, (char*) "MOO_TEXT_STYLE_BOLD", (char*) "bold" },
             { MOO_TEXT_STYLE_ITALIC, (char*) "MOO_TEXT_STYLE_ITALIC", (char*) "italic" },
             { MOO_TEXT_STYLE_UNDERLINE, (char*) "MOO_TEXT_STYLE_UNDERLINE", (char*) "underline" },
-            { MOO_TEXT_STYLE_STRIKETHROUGH, (char*) "MOO_TEXT_STYLE_STRIKETHROUGH", (char*) "strikethrough" }
+            { MOO_TEXT_STYLE_STRIKETHROUGH, (char*) "MOO_TEXT_STYLE_STRIKETHROUGH", (char*) "strikethrough" },
+            { 0, NULL, NULL }
         };
 
         type = g_flags_register_static ("MooTextStyleMask", values);

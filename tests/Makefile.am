@@ -41,7 +41,7 @@ AM_CFLAGS =                     \
 
 ldflags = -export-dynamic
 ldadd =                     \
-    ../moo/libmoo-1.0.la    \
+    ../libmoo-1.0.la        \
     $(MOO_LIBS)             \
     $(PYTHON_LDFLAGS)       \
     $(PYTHON_EXTRA_LIBS)

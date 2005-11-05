@@ -61,6 +61,6 @@ fi
 ln -s $0 fake-pkg-config
 export PKG_CONFIG="./fake-pkg-config"
 
-TARGET=i586-mingw32msvc
+TARGET=i586-pc-mingw32msvc
 
 exec sh $CONFIGURE --target=$TARGET --host=$TARGET --without-native-gnu-regex $*

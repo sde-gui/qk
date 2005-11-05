@@ -290,7 +290,8 @@ moo_file_watch_method_get_type (void)
         static const GEnumValue values[] = {
             {MOO_FILE_WATCH_STAT, (char*) "MOO_FILE_WATCH_STAT", (char*) "stat"},
             {MOO_FILE_WATCH_FAM, (char*) "MOO_FILE_WATCH_FAM", (char*) "fam"},
-            {MOO_FILE_WATCH_WIN32, (char*) "MOO_FILE_WATCH_WIN32", (char*) "win32"}
+            {MOO_FILE_WATCH_WIN32, (char*) "MOO_FILE_WATCH_WIN32", (char*) "win32"},
+            { 0, NULL, NULL }
         };
 
         type = g_enum_register_static ("MooFileWatchMethod", values);
@@ -312,6 +313,7 @@ moo_file_watch_event_code_get_type (void)
             {MOO_FILE_WATCH_DELETED, (char*) "MOO_FILE_WATCH_DELETED", (char*) "deleted"},
             {MOO_FILE_WATCH_CREATED, (char*) "MOO_FILE_WATCH_CREATED", (char*) "created"},
             {MOO_FILE_WATCH_MOVED, (char*) "MOO_FILE_WATCH_MOVED", (char*) "moved"},
+            { 0, NULL, NULL }
         };
 
         type = g_enum_register_static ("MooFileWatchEventCode", values);

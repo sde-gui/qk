@@ -899,12 +899,15 @@ moo_edit_filename_changed (MooEdit    *edit,
                            const char *filename)
 {
     MooLang *lang = NULL;
+    Value *value;
 
     g_hash_table_foreach_remove (edit->priv->vars, (GHRFunc) check_dep, NULL);
 
     try_mode (edit);
 
-    if (!moo_edit_get_var (edit, MOO_EDIT_VAR_LANG))
+    value = get_value (edit, MOO_EDIT_VAR_LANG);
+
+    if (!value || value->dep >= MOO_EDIT_VAR_DEP_FILENAME)
     {
         if (filename)
         {

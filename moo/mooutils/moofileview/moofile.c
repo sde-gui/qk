@@ -22,9 +22,9 @@
  */
 
 #define MOO_FILE_SYSTEM_COMPILATION
-#include "moofilesystem.h"
+#include "mooutils/moofileview/moofilesystem.h"
+#include "mooutils/moofileview/symlink.h"
 #include MOO_MARSHALS_H
-#include "symlink.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

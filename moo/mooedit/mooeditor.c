@@ -705,8 +705,9 @@ moo_editor_add_doc (MooEditor      *editor,
     g_hash_table_insert (editor->priv->loaders, doc, moo_edit_loader_ref (loader));
     g_hash_table_insert (editor->priv->savers, doc, moo_edit_saver_ref (saver));
 
-    if (!moo_edit_get_var (doc, MOO_EDIT_VAR_LANG) && editor->priv->default_lang)
-        moo_edit_set_var (doc, MOO_EDIT_VAR_LANG, editor->priv->default_lang);
+    if (!moo_edit_get_filename (doc) &&
+        !moo_edit_get_var (doc, MOO_EDIT_VAR_LANG) && editor->priv->default_lang)
+            moo_edit_set_var (doc, MOO_EDIT_VAR_LANG, editor->priv->default_lang);
 }
 
 

@@ -11,17 +11,17 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "moobookmarkmgr.h"
-#include "moobookmarkmgr-glade.h"
-#include "moofileentry.h"
+#include "mooutils/moofileview/moobookmarkmgr.h"
+#include "mooutils/moofileview/moobookmarkmgr-glade.h"
+#include "mooutils/moofileview/moofileentry.h"
+#include "mooutils/mooglade.h"
+#include "mooutils/mooprefs.h"
 #include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
-#include "mooutils/mooglade.h"
-#include "mooutils/mooprefs.h"
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 

@@ -1,0 +1,108 @@
+#
+# moo/moopython/Makefile.incl
+#
+
+moopython = $(moo_prefix)/moopython
+moopython_srcdir = $(srcdir)/$(moopython)
+
+moopython_sources =                           \
+    $(moopython)/moo-pygtk.c
+
+nodist_moopython_sources =
+moopython_built_sources =
+moopython_cleanfiles =
+
+moopython_extra_dist =                        \
+    $(moopython)/moo-pygtk.c                  \
+    $(moopython)/mooapp-pygtk.defs            \
+    $(moopython)/mooapp-pygtk.override        \
+    $(moopython)/mooapp-mod.c                 \
+    $(moopython)/mooedit-pygtk.defs           \
+    $(moopython)/mooedit-pygtk.override       \
+    $(moopython)/mooedit-mod.c                \
+    $(moopython)/mooterm-pygtk.defs           \
+    $(moopython)/mooterm-pygtk.override       \
+    $(moopython)/mooterm-mod.c                \
+    $(moopython)/mooutils-pygtk.defs          \
+    $(moopython)/mooutils-pygtk.override      \
+    $(moopython)/mooutils-mod.c
+
+
+if MOO_BUILD_UTILS
+moopython_sources += $(moopython)/mooutils-mod.c
+nodist_moopython_sources += $(moopython)/mooutils-pygtk.c
+moopython_built_sources += $(moopython)/mooutils-pygtk.c
+moopython_cleanfiles += $(moopython)/mooutils-pygtk.c
+endif MOO_BUILD_UTILS
+
+if MOO_BUILD_TERM
+moopython_sources += $(moopython)/mooterm-mod.c
+nodist_moopython_sources += $(moopython)/mooterm-pygtk.c
+moopython_built_sources += $(moopython)/mooterm-pygtk.c
+moopython_cleanfiles += $(moopython)/mooterm-pygtk.c
+endif MOO_BUILD_TERM
+
+if MOO_BUILD_EDIT
+moopython_sources += $(moopython)/mooedit-mod.c
+nodist_moopython_sources += $(moopython)/mooedit-pygtk.c
+moopython_built_sources += $(moopython)/mooedit-pygtk.c
+moopython_cleanfiles += $(moopython)/mooedit-pygtk.c
+endif MOO_BUILD_EDIT
+
+if MOO_BUILD_APP
+moopython_sources += $(moopython)/mooapp-mod.c
+nodist_moopython_sources += $(moopython)/mooapp-pygtk.c
+moopython_built_sources += $(moopython)/mooapp-pygtk.c
+moopython_cleanfiles += $(moopython)/mooapp-pygtk.c
+endif MOO_BUILD_APP
+
+$(moopython)/mooutils-pygtk.c: $(moopython)/mooutils-pygtk.defs $(moopython)/mooutils-pygtk.override
+	mkdir -p $(moopython)
+	pygtk-codegen-2.0 --prefix moo_utils \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--override $(moopython_srcdir)/mooutils-pygtk.override \
+	--outfilename mooutils-pygtk.c \
+	$(moopython_srcdir)/mooutils-pygtk.defs > $(moopython)/mooutils-pygtk.c
+
+$(moopython)/mooterm-pygtk.c: $(moopython)/mooterm-pygtk.defs $(moopython)/mooterm-pygtk.override
+	mkdir -p $(moopython)
+	pygtk-codegen-2.0 --prefix moo_term \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopython_srcdir)/mooutils-pygtk.defs \
+	--override $(moopython_srcdir)/mooterm-pygtk.override \
+	--outfilename mooterm-pygtk.c \
+	$(moopython_srcdir)/mooterm-pygtk.defs > $(moopython)/mooterm-pygtk.c
+
+$(moopython)/mooedit-pygtk.c: $(moopython)/mooedit-pygtk.defs $(moopython)/mooedit-pygtk.override
+	mkdir -p $(moopython)
+	pygtk-codegen-2.0 --prefix moo_edit \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopython_srcdir)/mooutils-pygtk.defs \
+	--override $(moopython_srcdir)/mooedit-pygtk.override \
+	--outfilename mooedit-pygtk.c \
+	$(moopython_srcdir)/mooedit-pygtk.defs > $(moopython)/mooedit-pygtk.c
+
+$(moopython)/mooapp-pygtk.c: $(moopython)/mooapp-pygtk.defs $(moopython)/mooapp-pygtk.override
+	mkdir -p $(moopython)
+	pygtk-codegen-2.0 --prefix moo_app \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopython_srcdir)/mooedit-pygtk.defs \
+	--register $(moopython_srcdir)/mooterm-pygtk.defs \
+	--register $(moopython_srcdir)/mooutils-pygtk.defs \
+	--override $(moopython_srcdir)/mooapp-pygtk.override \
+	--outfilename mooapp-pygtk.c \
+	$(moopython_srcdir)/mooapp-pygtk.defs > $(moopython)/mooapp-pygtk.c
+
+
+if MOO_USE_PYTHON
+moo_sources += $(moopython_sources)
+moo_built_sources += $(moopython_bulit_sources)
+moo_nodist_sources += $(nodist_moopython_sources)
+moo_cleanfiles += $(moopython_cleanfiles)
+endif
+
+moo_extra_dist += $(moopython_extra_dist)
