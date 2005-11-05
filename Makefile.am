@@ -1,4 +1,4 @@
-EXTRA_DIST = makewin mingw-configure
+EXTRA_DIST = makewin mingw-configure cygwin-configure
 
 DIST_SUBDIRS = tests m4
 SUBDIRS = .
@@ -39,6 +39,19 @@ include moo/mooedit/Makefile.incl
 include moo/mooterm/Makefile.incl
 include moo/mooapp/Makefile.incl
 include moo/moopython/Makefile.incl
+
+moo_libincludedir = $(libdir)/moo-1.0/include
+moo_libinclude_HEADERS = $(moo_libinclude_headers)
+moo_includedir = $(includedir)/moo-1.0
+moo_include_HEADERS = $(moo_include_headers)
+mooedit_includedir = $(moo_includedir)/mooedit
+mooedit_include_HEADERS = $(mooedit_include_headers)
+mooterm_includedir = $(moo_includedir)/mooterm
+mooterm_include_HEADERS = $(mooterm_include_headers)
+mooapp_includedir = $(moo_includedir)/mooapp
+mooapp_include_HEADERS = $(mooapp_include_headers)
+mooutils_includedir = $(moo_includedir)/mooutils
+mooutils_include_HEADERS = $(mooutils_include_headers)
 
 ###########################################################################
 

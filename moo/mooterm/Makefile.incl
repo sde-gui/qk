@@ -18,7 +18,7 @@ moo_extra_dist +=                             \
 # mooterm
 #
 
-mooterminclude_headers =                      \
+mooterm_include_headers =                     \
     $(mooterm)/mooterm.h                      \
     $(mooterm)/mootermwindow.h                \
     $(mooterm)/mooterm-text.h                 \
@@ -26,7 +26,7 @@ mooterminclude_headers =                      \
     $(mooterm)/mootermtag.h
 
 mooterm_sources =                             \
-    $(mooterminclude_headers)                 \
+    $(mooterm_include_headers)                \
     $(mooterm)/mooterm.c                      \
     $(mooterm)/mooterm-input.c                \
     $(mooterm)/mooterm-keymap.h               \

@@ -10,6 +10,12 @@ moo_nodist_sources =
 moo_noinst_programs =
 moo_cleanfiles =
 
-moo_extra_dist =          \
-    $(moo_prefix)/moo.h   \
+moo_include_headers =               \
+    $(moo_prefix)/moo.h
+
+moo_libinclude_headers =            \
+    $(moo_prefix)/moo-config.h
+
+moo_extra_dist =                    \
+    $(moo_prefix)/moo.h             \
     $(moo_prefix)/TODO

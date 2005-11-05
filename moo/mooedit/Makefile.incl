@@ -84,7 +84,8 @@ moo_extra_dist += $(mooedit_plugins_extra_dist)
 # mooedit
 #
 
-mooeditinclude_headers =                      \
+mooedit_include_headers =                     \
+    $(mooedit)/moocmdview.h                   \
     $(mooedit)/mooedit.h                      \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
@@ -104,7 +105,6 @@ mooeditinclude_headers =                      \
 
 mooedit_noinst_headers =                      \
     $(mooedit)/gtksourceiter.h                \
-    $(mooedit)/moocmdview.h                   \
     $(mooedit)/mooedit-private.h              \
     $(mooedit)/mooeditcolorsprefs-glade.h     \
     $(mooedit)/mooeditdialogs.h               \
@@ -125,7 +125,7 @@ mooedit_noinst_headers =                      \
 mooedit_unix_sources = $(mooedit)/moocmdview.c
 
 mooedit_sources =                             \
-    $(mooeditinclude_headers)                 \
+    $(mooedit_include_headers)                \
     $(mooedit_noinst_headers)                 \
     $(mooedit)/gtksourceiter.c                \
     $(mooedit)/mooedit.c                      \

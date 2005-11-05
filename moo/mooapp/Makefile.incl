@@ -21,7 +21,11 @@ moo_extra_dist +=                             \
 mooapp_built_sources =                        \
     $(mooapp)/mooappabout-glade.h
 
+mooapp_include_headers =                      \
+    $(mooapp)/mooapp.h
+
 mooapp_sources =                              \
+    $(mooapp_include_headers)                 \
     $(mooapp)/mooappdialogs.c                 \
     $(mooapp)/mooapp-prefs.c                  \
     $(mooapp)/mooapp-private.h                \

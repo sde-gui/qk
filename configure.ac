@@ -45,8 +45,7 @@ MOO_AC_PROG_WINDRES
 MOO_AC_FUNCS
 
 #  Check debug options
-# TODO TODO check gcc
-MOO_AC_CHECK_DEBUG_STUFF([-Wall])
+MOO_AC_DEBUG
 
 #  Check operating system
 MOO_AC_CHECK_OS
@@ -250,10 +249,10 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     echo
     echo "    OS                                        = $system"
     echo "    prefix                                    = $mooprefix"
-    echo "    python support                            = $build_python"
-    echo "    pygtk support                             = $build_pygtk"
+    echo "    python support                            = $MOO_USE_PYTHON"
+    echo "    pygtk support                             = $MOO_USE_PYGTK"
     echo "    standalone 'moo' python module            = $build_pymoo"
-    echo "    xml support                               = $use_xml"
+    echo "    xml support                               = $MOO_USE_XML"
     echo
     echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
     echo

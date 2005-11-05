@@ -1,12 +1,12 @@
 #!/bin/sh
 
 if [ -z $CYGWIN_BIN_DIR ]; then
-    CYGWIN_BIN_DIR=/usr/lib/cygwin/bin
+    CYGWIN_BIN_DIR=/opt/cygwin/bin
 fi
 
 TARGET=i686-pc-cygwin
 
-export PATH=/usr/lib/cygwin/i686-pc-cygwin/bin:/usr/lib/cygwin/bin:$PATH
+export PATH=/opt/cygwin/i686-pc-cygwin/bin:/opt/cygwin/bin:$PATH
 
 export ADDR2LINE="$CYGWIN_BIN_DIR/$TARGET-addr2line"
 export AR="$CYGWIN_BIN_DIR/$TARGET-ar"
