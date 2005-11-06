@@ -76,7 +76,7 @@ static GObject *moo_python_constructor  (GType                  type,
     MooPython *python;
     object = G_OBJECT_CLASS (moo_python_parent_class)->constructor (type, n_props, props);
     python = MOO_PYTHON (object);
-    python->console = moo_python_console_new (python);
+    python->_console = moo_python_console_new (python);
     return object;
 }
 
@@ -277,4 +277,12 @@ static void     init_logger             (MooPython      *python)
         g_critical ("%s", script);
         PyErr_Print ();
     }
+}
+
+
+gpointer
+moo_python_get_console (MooPython *python)
+{
+    g_return_val_if_fail (MOO_IS_PYTHON (python), NULL);
+    return python->_console;
 }

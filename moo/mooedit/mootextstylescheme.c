@@ -283,9 +283,10 @@ static void
 fill_in_default_scheme (MooTextStyleScheme *scheme)
 {
     scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE] = g_strdup ("#EEF6FF");
-    scheme->bracket_match = new_style (NULL, "#FFFF99", FALSE,
-                                       FALSE, FALSE, FALSE,
-                                       MOO_TEXT_STYLE_BACKGROUND);
+    scheme->bracket_match = new_style (NULL, "#FFFF99",
+                                       FALSE, TRUE, FALSE, FALSE,
+                                       MOO_TEXT_STYLE_BACKGROUND |
+                                               MOO_TEXT_STYLE_BOLD);
 
     INSERT (DEF_STYLE_NORMAL,
             NULL, NULL, FALSE, FALSE, FALSE, FALSE, 0);

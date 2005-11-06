@@ -744,7 +744,7 @@ out:
 }
 
 
-void
+static void
 moo_plugin_read_dir (const char *path)
 {
     GDir *dir;
@@ -786,6 +786,14 @@ moo_plugin_read_dir (const char *path)
     }
 
     g_dir_close (dir);
+}
+
+
+void
+moo_plugin_read_dirs (char **dirs)
+{
+    for ( ; dirs && *dirs; ++dirs)
+        moo_plugin_read_dir (*dirs);
 }
 
 

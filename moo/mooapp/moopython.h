@@ -45,7 +45,7 @@ struct _MooPython
     MooPythonLogFunc     log_err_func;
     void                *log_data;
 
-    struct _MooPythonConsole *console;
+    struct _MooPythonConsole *_console;
 };
 
 struct _MooPythonClass
@@ -86,6 +86,8 @@ gpointer    moo_python_run_string       (MooPython      *python,
 gpointer    moo_python_run_file         (MooPython      *python,
                                          gpointer        fp,
                                          const char     *filename);
+
+gpointer    moo_python_get_console      (MooPython      *python);
 
 
 G_END_DECLS

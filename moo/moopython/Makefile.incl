@@ -12,17 +12,26 @@ nodist_moopython_sources =
 moopython_built_sources =
 moopython_cleanfiles =
 
+mooedit_defs_files =                          \
+    $(moopython_srcdir)/mooeditor.defs        \
+    $(moopython_srcdir)/mooplugin.defs
+
+# mooutils_defs_files =                         \
+#     $(moopython_srcdir)/mooutils.defs
+
 moopython_extra_dist =                        \
     $(moopython)/moo-pygtk.c                  \
     $(moopython)/mooapp-pygtk.defs            \
     $(moopython)/mooapp-pygtk.override        \
     $(moopython)/mooapp-mod.c                 \
+    $(mooedit_defs_files)                     \
     $(moopython)/mooedit-pygtk.defs           \
     $(moopython)/mooedit-pygtk.override       \
     $(moopython)/mooedit-mod.c                \
     $(moopython)/mooterm-pygtk.defs           \
     $(moopython)/mooterm-pygtk.override       \
     $(moopython)/mooterm-mod.c                \
+    $(mooutils_defs_files)                    \
     $(moopython)/mooutils-pygtk.defs          \
     $(moopython)/mooutils-pygtk.override      \
     $(moopython)/mooutils-mod.c
@@ -33,6 +42,8 @@ moopython_sources += $(moopython)/mooutils-mod.c
 nodist_moopython_sources += $(moopython)/mooutils-pygtk.c
 moopython_built_sources += $(moopython)/mooutils-pygtk.c
 moopython_cleanfiles += $(moopython)/mooutils-pygtk.c
+# $(moopython)/mooutils-pygtk.defs: $(mooutils_defs_files)
+# 	touch $(moopython_srcdir)/mooutils-pygtk.defs
 endif MOO_BUILD_UTILS
 
 if MOO_BUILD_TERM
@@ -47,6 +58,8 @@ moopython_sources += $(moopython)/mooedit-mod.c
 nodist_moopython_sources += $(moopython)/mooedit-pygtk.c
 moopython_built_sources += $(moopython)/mooedit-pygtk.c
 moopython_cleanfiles += $(moopython)/mooedit-pygtk.c
+$(moopython)/mooedit-pygtk.defs: $(mooedit_defs_files)
+	touch $(moopython_srcdir)/mooedit-pygtk.defs
 endif MOO_BUILD_EDIT
 
 if MOO_BUILD_APP
@@ -111,7 +124,12 @@ moo_extra_dist += $(moopython_extra_dist)
 ###########################################################################
 # Python plugin
 
+mooplugin_python_sources =                      \
+    $(moopython)/mooplugin-python.c             \
+    $(moopython)/mooplugin-python.h
+
 if MOO_USE_PYGTK
-moo_sources += $(moopython)/mooplugin-python.c
+moo_sources += $(mooplugin_python_sources)
 endif
-moo_extra_dist += $(moopython)/mooplugin-python.c
+
+moo_extra_dist += $(mooplugin_python_sources)

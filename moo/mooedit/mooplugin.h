@@ -193,7 +193,7 @@ const char *moo_plugin_description      (MooPlugin      *plugin);
 const char *moo_plugin_author           (MooPlugin      *plugin);
 const char *moo_plugin_version          (MooPlugin      *plugin);
 
-void        moo_plugin_read_dir         (const char     *dir);
+void        moo_plugin_read_dirs        (char          **dirs);
 void        moo_plugin_init_builtin     (void);
 
 void        _moo_window_attach_plugins  (MooEditWindow  *window);

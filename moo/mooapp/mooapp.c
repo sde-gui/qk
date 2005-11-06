@@ -20,6 +20,7 @@
 #include "mooapp/moopythonconsole.h"
 #include "mooapp/mooapp-python.h"
 #include "mooapp/moopython.h"
+#include "moopython/mooplugin-python.h"
 #endif
 
 #define WANT_MOO_APP_CMD_CHARS
@@ -46,8 +47,6 @@
 
 /* moo-pygtk.c */
 void initmoo (void);
-/* mooplugin-python.c */
-gboolean _moo_python_plugin_init (void);
 
 
 static MooApp *moo_app_instance = NULL;
@@ -720,27 +719,30 @@ moo_app_python_run_string (MooApp      *app,
 }
 
 
-GtkWidget       *moo_app_get_python_console    (G_GNUC_UNUSED MooApp *app)
+GtkWidget*
+moo_app_get_python_console (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
     g_return_val_if_fail (moo_app_python != NULL, NULL);
-    return GTK_WIDGET (moo_app_python->console);
+    return moo_python_get_console (moo_app_python);
 }
 
 
-void             moo_app_show_python_console   (G_GNUC_UNUSED MooApp *app)
+void
+moo_app_show_python_console (MooApp *app)
 {
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (moo_app_python != NULL);
-    gtk_window_present (GTK_WINDOW (moo_app_python->console));
+    gtk_window_present (GTK_WINDOW (moo_app_get_python_console (app)));
 }
 
 
-void             moo_app_hide_python_console   (G_GNUC_UNUSED MooApp *app)
+void
+moo_app_hide_python_console (MooApp *app)
 {
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (moo_app_python != NULL);
-    gtk_widget_hide (GTK_WIDGET (moo_app_python->console));
+    gtk_widget_hide (moo_app_get_python_console (app));
 }
 
 
@@ -771,6 +773,55 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
     return app->priv->info;
+}
+
+
+static char *
+moo_app_get_user_data_dir (MooApp *app)
+{
+    char *basename = g_strdup_printf (".%s", app->priv->info->short_name);
+    char *dir = g_build_filename (g_get_home_dir (), basename, NULL);
+    g_free (basename);
+    return dir;
+}
+
+
+static char **
+moo_app_get_plugin_dirs (MooApp *app)
+{
+    char **dirs;
+
+#ifdef __WIN32__
+
+    const char *data_dir;
+
+    if (app_dir[0])
+        data_dir = app_dir;
+    else
+        data_dir = ".";
+
+    dirs = g_new0 (char*, 2);
+    dirs[0] = g_build_filename (data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
+
+#else /* !__WIN32__ */
+
+    char *user_data_dir;
+
+    dirs = g_new0 (char*, 3);
+
+#ifdef MOO_PLUGINS_DIR
+    dirs[0] = g_strdup (MOO_PLUGINS_DIR);
+#else
+    dirs[0] = g_build_filename (".", MOO_PLUGIN_DIR_BASENAME, NULL);
+#endif
+
+    user_data_dir = moo_app_get_user_data_dir (app);
+    dirs[1] = g_build_filename (user_data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
+    g_free (user_data_dir);
+
+#endif /* !__WIN32__ */
+
+    return dirs;
 }
 
 
@@ -805,9 +856,9 @@ moo_app_init_real (MooApp *app)
 
     if (app->priv->use_editor)
     {
-        char *plugin_dir = NULL, *user_plugin_dir = NULL;
         char *lang_dir = NULL, *user_lang_dir = NULL;
         char *user_data_dir = NULL;
+        char **plugin_dirs;
 
 #ifdef __WIN32__
 
@@ -819,7 +870,6 @@ moo_app_init_real (MooApp *app)
             data_dir = ".";
 
         lang_dir = g_build_filename (data_dir, MOO_LANG_DIR_BASENAME, NULL);
-        plugin_dir = g_build_filename (data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
 
 #else /* !__WIN32__ */
 
@@ -829,14 +879,7 @@ moo_app_init_real (MooApp *app)
         lang_dir = g_build_filename (".", MOO_LANG_DIR_BASENAME, NULL);
 #endif
 
-#ifdef MOO_PLUGINS_DIR
-        plugin_dir = g_strdup (MOO_PLUGINS_DIR);
-#else
-        plugin_dir = g_build_filename (".", MOO_PLUGIN_DIR_BASENAME, NULL);
-#endif
-
-        user_data_dir = g_strdup_printf (".%s", app->priv->info->short_name);
-        user_plugin_dir = g_build_filename (user_data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
+        user_data_dir = moo_app_get_user_data_dir (app);
         user_lang_dir = g_build_filename (user_data_dir, MOO_LANG_DIR_BASENAME, NULL);
 
 #endif /* !__WIN32__ */
@@ -859,15 +902,13 @@ moo_app_init_real (MooApp *app)
                                   G_CALLBACK (all_editors_closed),
                                   app);
 
+        plugin_dirs = moo_app_get_plugin_dirs (app);
         moo_plugin_init_builtin ();
-        moo_plugin_read_dir (plugin_dir);
-        if (user_plugin_dir)
-            moo_plugin_read_dir (user_plugin_dir);
+        moo_plugin_read_dirs (plugin_dirs);
 
+        g_strfreev (plugin_dirs);
         g_free (lang_dir);
-        g_free (plugin_dir);
         g_free (user_lang_dir);
-        g_free (user_plugin_dir);
         g_free (user_data_dir);
     }
 
@@ -891,13 +932,18 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
 #ifdef MOO_USE_PYTHON
     if (app->priv->run_python)
     {
+        G_GNUC_UNUSED char **plugin_dirs;
+
         moo_app_python = moo_python_new ();
         moo_python_start (moo_app_python,
                           strv_length (app->priv->argv),
                           app->priv->argv);
 #ifdef MOO_USE_PYGTK
         initmoo ();
-        _moo_python_plugin_init ();
+
+        plugin_dirs = moo_app_get_plugin_dirs (app);
+        _moo_python_plugin_init (plugin_dirs);
+        g_strfreev (plugin_dirs);
 #endif
     }
     else
