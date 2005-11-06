@@ -181,7 +181,7 @@ static void moo_editor_class_init (MooEditorClass *klass)
     edit_window_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     moo_window_class_new_action_custom (edit_window_class, RECENT_ACTION_ID,
                                         (MooWindowActionFunc) create_recent_action,
-                                        NULL);
+                                        NULL, NULL);
     g_type_class_unref (edit_window_class);
 }
 

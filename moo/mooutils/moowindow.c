@@ -180,7 +180,8 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action_custom (klass, TOOLBAR_STYLE_ACTION_ID,
-                                        create_toolbar_style_action, NULL);
+                                        create_toolbar_style_action,
+                                        NULL, NULL);
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACCEL_GROUP,
@@ -836,9 +837,8 @@ create_action (const char        *action_id,
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
     class_id = moo_window_class_get_id (MOO_WINDOW_CLASS (G_OBJECT_GET_CLASS (window)));
-    action = MOO_ACTION (moo_object_factory_create_object (data->action, window,
-                         "id", action_id,
-                         NULL));
+    action = MOO_ACTION (moo_object_factory_create_object (data->action, window, NULL));
+    g_object_set (action, "id", action_id, NULL);
     g_return_val_if_fail (action != NULL, NULL);
 
     if (g_type_is_a (data->action->object_type, MOO_TYPE_TOGGLE_ACTION))
@@ -966,7 +966,8 @@ void
 moo_window_class_new_action_custom (MooWindowClass     *klass,
                                     const char         *action_id,
                                     MooWindowActionFunc func,
-                                    gpointer            data)
+                                    gpointer            data,
+                                    GDestroyNotify      notify)
 {
     MooObjectFactory *action_factory;
 
@@ -979,7 +980,8 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
     g_object_set_data_full (G_OBJECT (action_factory), "moo-window-class-action-id",
                             g_strdup (action_id), g_free);
     g_object_set_data (G_OBJECT (action_factory), "moo-window-class-action-func", func);
-    g_object_set_data (G_OBJECT (action_factory), "moo-window-class-action-func-data", data);
+    g_object_set_data_full (G_OBJECT (action_factory), "moo-window-class-action-func-data",
+                            data, notify);
 
     moo_window_class_install_action (klass, action_id, action_factory, NULL, NULL);
 }

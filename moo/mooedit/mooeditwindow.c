@@ -458,7 +458,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
-                                        NULL);
+                                        NULL, NULL);
 }
 
 

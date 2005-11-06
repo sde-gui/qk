@@ -18,19 +18,21 @@ headers
 #include "mooutils/mooprefs.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooentry.h"
+#include "mooutils/moostock.h"
+#include "mooutils/mooutils-python.h"
 
 
-void        moo_utils_register_classes  (PyObject   *dict);
-void        moo_utils_add_constants     (PyObject   *module,
-                                         const gchar *strip_prefix);
+void    moo_utils_register_classes  (PyObject   *dict);
+void    moo_utils_add_constants     (PyObject   *module,
+                                     const char *strip_prefix);
 
-static PyTypeObject *_PyGdkColor_Type;
-#define PyGdkColor_Type (*_PyGdkColor_Type)
+
 %%
-modulename moo
+modulename moo.utils
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type
+import gtk.Object as PyGtkObject_Type
 import gtk.ToggleButton as PyGtkToggleButton_Type
 import gtk.Button as PyGtkButton_Type
 import gtk.Dialog as PyGtkDialog_Type
@@ -47,3 +49,119 @@ import gtk.gdk.Color as PyGdkColor_Type
 %%
 ignore-glob
   *_get_type
+%%
+override moo_window_class_add_action varargs
+static MooAction*
+py_action_factory_func (MooWindow  *window,
+                        PyObject   *func_n_args)
+{
+    PyObject *py_window, *args, *func, *result;
+    MooAction *action;
+
+    g_return_val_if_fail (func_n_args != NULL, NULL);
+    g_return_val_if_fail (PyTuple_Check (func_n_args), NULL);
+    g_return_val_if_fail (PyTuple_GET_SIZE (func_n_args) == 2, NULL);
+
+    func = PyTuple_GET_ITEM (func_n_args, 0);
+    args = PyTuple_GET_ITEM (func_n_args, 1);
+
+    g_return_val_if_fail (PyCallable_Check (func), NULL);
+    g_return_val_if_fail (PyTuple_Check (args), NULL);
+    g_return_val_if_fail (PyTuple_GET_SIZE (args) > 0, NULL);
+
+    py_window = pygobject_new (G_OBJECT (window));
+    PyTuple_SET_ITEM (args, 0, py_window);
+    result = PyObject_Call (func, args, NULL);
+    PyTuple_SET_ITEM (args, 0, NULL);
+    Py_DECREF (py_window);
+
+    if (!result)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (!PyObject_TypeCheck (result, &PyMooAction_Type))
+    {
+        g_critical ("%s: got invalid value", G_STRLOC);
+        Py_DECREF (result);
+        return NULL;
+    }
+
+    action = MOO_ACTION (pygobject_get (result));
+    g_object_ref (action);
+    Py_DECREF (result);
+    return action;
+}
+
+static void
+destroy_func_n_args (PyObject *func_n_args)
+{
+    if (func_n_args)
+    {
+        PyTuple_SET_ITEM (PyTuple_GET_ITEM (func_n_args, 1), 0, Py_None);
+        Py_INCREF (Py_None);
+        Py_DECREF (func_n_args);
+    }
+}
+
+static PyObject *
+_wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_type, *py_id, *py_factory_func, *func_n_args;
+    GType type;
+    MooWindowClass *klass;
+    int i, extra;
+
+    extra = PyTuple_GET_SIZE (args) - 3;
+
+    if (extra < 0)
+        return_TypeErr ("at least three arguments required");
+
+    py_type = PyTuple_GET_ITEM (args, 0);
+    py_id = PyTuple_GET_ITEM (args, 1);
+    py_factory_func = PyTuple_GET_ITEM (args, 2);
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeErr ("type must be derived from MooWindow");
+
+    if (!PyString_Check (py_id))
+        return_TypeErr ("id must be a string");
+
+    if (!PyCallable_Check (py_factory_func))
+        return_TypeErr ("factory_func must be callable");
+
+    klass = g_type_class_ref (type);
+
+    func_n_args = PyTuple_New (2);
+    PyTuple_SET_ITEM (func_n_args, 0, py_factory_func);
+    Py_INCREF (py_factory_func);
+
+    PyTuple_SET_ITEM (func_n_args, 1, PyTuple_New (1 + extra));
+
+    for (i = 0; i < extra; ++i)
+    {
+        PyTuple_SET_ITEM (PyTuple_GET_ITEM (func_n_args, 1), i + 1,
+                          PyTuple_GET_ITEM (args, i + 3));
+        Py_INCREF (PyTuple_GET_ITEM (args, i + 3));
+    }
+
+    moo_window_class_new_action_custom (klass, PyString_AS_STRING (py_id),
+                                        (MooWindowActionFunc) py_action_factory_func,
+                                        func_n_args, (GDestroyNotify) destroy_func_n_args);
+
+    g_type_class_unref (klass);
+    return_None;
+}
+%%
+override moo_window_class_remove_action kwargs
+static PyObject *
+_wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, G_GNUC_UNUSED PyObject *args, G_GNUC_UNUSED PyObject *kwargs)
+{
+    return_None;
+}
