@@ -19,6 +19,7 @@ headers
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moostock.h"
+#include "mooutils/moouixml.h"
 #include "mooutils/mooutils-python.h"
 
 

@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 14
+#define MOO_PLUGIN_CURRENT_VERSION 15
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
 
@@ -88,6 +88,8 @@ struct _MooPluginParams
 
 struct _MooPluginPrefsParams
 {
+    /* it's needed to make sizeof() > 0 */
+    guint dummy : 1;
 };
 
 struct _MooPluginInfo

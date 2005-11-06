@@ -26,7 +26,9 @@ static MooPluginParams plugin_name__##_plugin_params = {                    \
     TRUE                                                                    \
 };                                                                          \
                                                                             \
-static MooPluginPrefsParams plugin_name__##_plugin_prefs_params = {};       \
+static MooPluginPrefsParams plugin_name__##_plugin_prefs_params = {         \
+    TRUE                                                                    \
+};                                                                          \
                                                                             \
 static MooPluginInfo plugin_name__##_plugin_info = {                        \
     id__,                                                                   \

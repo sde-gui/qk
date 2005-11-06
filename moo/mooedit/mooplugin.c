@@ -190,12 +190,12 @@ moo_plugin_register (GType type)
     }
 
     plugin = g_object_new (type, NULL);
-    g_return_val_if_fail (plugin != NULL, FALSE);
 
     if (!plugin_info_check (plugin->info))
     {
         g_warning ("%s: invalid info in plugin %s",
                    G_STRLOC, g_type_name (type));
+        g_object_unref (plugin);
         return FALSE;
     }
 
@@ -560,7 +560,7 @@ moo_doc_plugin_lookup (const char     *plugin_id,
 static gboolean
 plugin_info_check (MooPluginInfo *info)
 {
-    return info->id && info->id[0] &&
+    return info && info->id && info->id[0] &&
             g_utf8_validate (info->id, -1, NULL) &&
             info->name && g_utf8_validate (info->name, -1, NULL) &&
             info->description && g_utf8_validate (info->description, -1, NULL) &&

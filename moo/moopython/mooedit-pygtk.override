@@ -62,3 +62,26 @@ _wrap_moo_python_plugin_hook (G_GNUC_UNUSED PyObject *self, PyObject *args)
 
     return result;
 }
+%%
+override moo_python_plugin_register varargs
+static PyObject *
+_wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *plugin_type, *win_plugin_type = NULL, *doc_plugin_type = NULL;
+    const char *id;
+
+    if (!PyArg_ParseTuple (args, (char*) "sO|OO:plugin_register", &id, &plugin_type,
+                           win_plugin_type, doc_plugin_type))
+        return NULL;
+
+    if (!PyType_Check (plugin_type))
+        return_TypeErr ("argument must be a type");
+
+    if (win_plugin_type && !PyType_Check (win_plugin_type))
+        return_TypeErr ("argument must be a type");
+
+    if (doc_plugin_type && !PyType_Check (doc_plugin_type))
+        return_TypeErr ("argument must be a type");
+
+    return _moo_python_plugin_register (id, plugin_type, win_plugin_type, doc_plugin_type);
+}

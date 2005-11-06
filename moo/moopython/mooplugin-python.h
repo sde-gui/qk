@@ -21,11 +21,15 @@
 G_BEGIN_DECLS
 
 
-gboolean    _moo_python_plugin_init (char      **dirs);
+gboolean    _moo_python_plugin_init     (char      **dirs);
 
-PyObject   *_moo_python_plugin_hook (const char *event,
-                                     PyObject   *callback,
-                                     PyObject   *data);
+PyObject   *_moo_python_plugin_hook     (const char *event,
+                                         PyObject   *callback,
+                                         PyObject   *data);
+PyObject   *_moo_python_plugin_register (const char *id,
+                                         PyObject   *plugin_type,
+                                         PyObject   *win_plugin_type,
+                                         PyObject   *doc_plugin_type);
 
 
 G_END_DECLS

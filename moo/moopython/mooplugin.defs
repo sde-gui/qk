@@ -6,3 +6,11 @@
     '("const-char*" "dummy")
   )
 )
+
+(define-function plugin_register
+  (c-name "moo_python_plugin_register")
+  (return-type "none")
+  (parameters
+    '("const-char*" "dummy")
+  )
+)

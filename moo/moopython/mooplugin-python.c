@@ -443,3 +443,528 @@ hook_free (Hook *hook)
         g_free (hook);
     }
 }
+
+
+/***************************************************************************/
+/* Python plugins
+ */
+
+#define MOO_PY_PLUGIN(obj_) ((MooPyPlugin*)obj_)
+
+typedef struct _MooPyPlugin             MooPyPlugin;
+typedef struct _MooPyPluginClass        MooPyPluginClass;
+typedef struct _MooPyPluginClassData    MooPyPluginClassData;
+
+struct _MooPyPluginClassData {
+    PyObject   *py_plugin_type;
+    PyObject   *py_win_plugin_type;
+    PyObject   *py_doc_plugin_type;
+    GType win_plugin_type;
+    GType doc_plugin_type;
+};
+
+struct _MooPyPlugin {
+    MooPlugin base;
+    MooPyPluginClassData *class_data;
+    PyObject *instance;
+};
+
+struct _MooPyPluginClass {
+    MooPluginClass base_class;
+    MooPyPluginClassData *data;
+};
+
+
+static gpointer moo_py_plugin_parent_class;
+
+
+static void     moo_py_plugin_class_init    (MooPyPluginClass       *klass,
+                                             MooPyPluginClassData   *data);
+static void     moo_py_plugin_instance_init (MooPyPlugin            *plugin,
+                                             MooPyPluginClass       *klass);
+static void     moo_py_plugin_finalize      (GObject                *object);
+
+static gboolean moo_py_plugin_init          (MooPlugin              *plugin);
+static void     moo_py_plugin_deinit        (MooPlugin              *plugin);
+static void     moo_py_plugin_attach_win    (MooPlugin              *plugin,
+                                             MooEditWindow          *window);
+static void     moo_py_plugin_detach_win    (MooPlugin              *plugin,
+                                             MooEditWindow          *window);
+static void     moo_py_plugin_attach_doc    (MooPlugin              *plugin,
+                                             MooEdit                *doc,
+                                             MooEditWindow          *window);
+static void     moo_py_plugin_detach_doc    (MooPlugin              *plugin,
+                                             MooEdit                *doc,
+                                             MooEditWindow          *window);
+
+static MooPluginInfo *get_plugin_info       (PyObject               *object);
+static GType    generate_win_plugin_type    (PyObject               *py_type);
+static GType    generate_doc_plugin_type    (PyObject               *py_type);
+
+static GtkWidget *moo_py_plugin_create_prefs_page (MooPlugin        *plugin);
+
+static void     plugin_info_free            (MooPluginInfo          *info);
+
+
+static void
+moo_py_plugin_class_init (MooPyPluginClass       *klass,
+                          MooPyPluginClassData   *data)
+{
+    MooPluginClass *plugin_class = MOO_PLUGIN_CLASS (klass);
+    GObjectClass *gobj_class = G_OBJECT_CLASS (klass);
+
+    moo_py_plugin_parent_class = g_type_class_peek_parent (klass);
+
+    klass->data = data;
+    gobj_class->finalize = moo_py_plugin_finalize;
+    plugin_class->plugin_system_version = MOO_PLUGIN_CURRENT_VERSION;
+
+    if (data->py_plugin_type)
+    {
+        plugin_class->init = moo_py_plugin_init;
+        plugin_class->deinit = moo_py_plugin_deinit;
+        plugin_class->attach_win = moo_py_plugin_attach_win;
+        plugin_class->detach_win = moo_py_plugin_detach_win;
+        plugin_class->attach_doc = moo_py_plugin_attach_doc;
+        plugin_class->detach_doc = moo_py_plugin_detach_doc;
+        plugin_class->create_prefs_page = moo_py_plugin_create_prefs_page;
+    }
+}
+
+
+static void
+moo_py_plugin_instance_init (MooPyPlugin            *plugin,
+                             MooPyPluginClass       *klass)
+{
+    PyObject *args;
+    MooPlugin *moo_plugin = MOO_PLUGIN (plugin);
+
+    plugin->class_data = klass->data;
+
+    args = PyTuple_New (0);
+    plugin->instance = PyType_GenericNew ((PyTypeObject*) klass->data->py_plugin_type, args, NULL);
+    Py_DECREF (args);
+
+    g_return_if_fail (plugin->instance != NULL);
+
+    moo_plugin->info = get_plugin_info (plugin->instance);
+
+    if (klass->data->py_win_plugin_type && !klass->data->win_plugin_type)
+        klass->data->win_plugin_type = generate_win_plugin_type (klass->data->py_win_plugin_type);
+    if (klass->data->py_win_plugin_type && !klass->data->doc_plugin_type)
+        klass->data->doc_plugin_type = generate_doc_plugin_type (klass->data->py_doc_plugin_type);
+
+    moo_plugin->win_plugin_type = klass->data->win_plugin_type;
+    moo_plugin->doc_plugin_type = klass->data->doc_plugin_type;
+}
+
+
+static gboolean
+moo_py_plugin_init (MooPlugin *plugin)
+{
+    PyObject *result, *meth;
+    MooPyPlugin *py_plugin = MOO_PY_PLUGIN (plugin);
+    gboolean bool_result;
+
+    g_return_val_if_fail (py_plugin->instance != NULL, FALSE);
+
+    if (!PyObject_HasAttrString (py_plugin->instance, (char*) "init"))
+         return TRUE;
+
+    meth = PyObject_GetAttrString (py_plugin->instance, (char*) "init");
+
+    if (!meth)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    if (!PyCallable_Check (meth))
+    {
+        g_critical ("%s: init is not callable", G_STRLOC);
+        Py_DECREF (meth);
+        return FALSE;
+    }
+
+    result = PyObject_CallObject (meth, NULL);
+    Py_DECREF (meth);
+
+    if (!result)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    bool_result = PyObject_IsTrue (result);
+
+    Py_DECREF (result);
+    return bool_result;
+}
+
+
+static void
+moo_py_plugin_deinit (MooPlugin *plugin)
+{
+    PyObject *result, *meth;
+    MooPyPlugin *py_plugin = MOO_PY_PLUGIN (plugin);
+
+    g_return_if_fail (py_plugin->instance != NULL);
+
+    if (!PyObject_HasAttrString (py_plugin->instance, (char*) "deinit"))
+         return;
+
+    meth = PyObject_GetAttrString (py_plugin->instance, (char*) "deinit");
+
+    if (!meth)
+    {
+        PyErr_Print ();
+        return;
+    }
+
+    if (!PyCallable_Check (meth))
+    {
+        g_critical ("%s: deinit is not callable", G_STRLOC);
+        Py_DECREF (meth);
+        return;
+    }
+
+    result = PyObject_CallObject (meth, NULL);
+    Py_DECREF (meth);
+
+    if (!result)
+        PyErr_Print ();
+
+    Py_XDECREF (result);
+}
+
+
+static void
+moo_py_plugin_call_meth (MooPlugin              *plugin,
+                         MooEdit                *doc,
+                         MooEditWindow          *window,
+                         const char             *meth_name)
+{
+    PyObject *result, *meth, *py_window, *py_doc;
+    MooPyPlugin *py_plugin = MOO_PY_PLUGIN (plugin);
+
+    g_return_if_fail (py_plugin->instance != NULL);
+
+    if (!PyObject_HasAttrString (py_plugin->instance, (char*) meth_name))
+         return;
+
+    meth = PyObject_GetAttrString (py_plugin->instance, (char*) meth_name);
+
+    if (!meth)
+    {
+        PyErr_Print ();
+        return;
+    }
+
+    if (!PyCallable_Check (meth))
+    {
+        g_critical ("%s: %s is not callable", G_STRLOC, meth_name);
+        Py_DECREF (meth);
+        return;
+    }
+
+    py_window = pygobject_new (G_OBJECT (window));
+    py_doc = doc ? pygobject_new (G_OBJECT (doc)) : NULL;
+
+    if (doc)
+        result = PyObject_CallFunction (meth, (char*) "(OO)", py_doc, py_window);
+    else
+        result = PyObject_CallFunction (meth, (char*) "(O)", py_window);
+
+    Py_XDECREF (meth);
+    Py_XDECREF (py_window);
+    Py_XDECREF (py_doc);
+
+    if (!result)
+        PyErr_Print ();
+
+    Py_XDECREF (result);
+}
+
+
+static void
+moo_py_plugin_attach_win (MooPlugin              *plugin,
+                          MooEditWindow          *window)
+{
+    moo_py_plugin_call_meth (plugin, NULL, window, "attach_win");
+}
+
+static void
+moo_py_plugin_detach_win (MooPlugin              *plugin,
+                          MooEditWindow          *window)
+{
+    moo_py_plugin_call_meth (plugin, NULL, window, "detach_win");
+}
+
+static void
+moo_py_plugin_attach_doc (MooPlugin              *plugin,
+                          MooEdit                *doc,
+                          MooEditWindow          *window)
+{
+    moo_py_plugin_call_meth (plugin, doc, window, "attach_doc");
+}
+
+static void
+moo_py_plugin_detach_doc (MooPlugin              *plugin,
+                          MooEdit                *doc,
+                          MooEditWindow          *window)
+{
+    moo_py_plugin_call_meth (plugin, doc, window, "detach_doc");
+}
+
+
+static void
+moo_py_plugin_finalize (GObject *object)
+{
+    MooPyPlugin *py_plugin = MOO_PY_PLUGIN (object);
+    MooPlugin *plugin = MOO_PLUGIN (object);
+    Py_XDECREF (py_plugin->instance);
+    plugin_info_free (plugin->info);
+    G_OBJECT_CLASS(moo_py_plugin_parent_class)->finalize (object);
+}
+
+
+static GtkWidget*
+moo_py_plugin_create_prefs_page (MooPlugin *plugin)
+{
+    PyObject *result, *meth;
+    MooPyPlugin *py_plugin = MOO_PY_PLUGIN (plugin);
+
+    g_return_val_if_fail (py_plugin->instance != NULL, NULL);
+
+    if (!PyObject_HasAttrString (py_plugin->instance, (char*) "create_prefs_page"))
+         return NULL;
+
+    meth = PyObject_GetAttrString (py_plugin->instance, (char*) "create_prefs_page");
+
+    if (!meth)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (!PyCallable_Check (meth))
+    {
+        g_critical ("%s: create_prefs_page is not callable", G_STRLOC);
+        Py_DECREF (meth);
+        return NULL;
+    }
+
+    result = PyObject_CallObject (meth, NULL);
+    Py_DECREF (meth);
+
+    if (!result)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+    else
+    {
+        gpointer page = pygobject_get (result);
+        g_object_ref (page);
+        Py_DECREF (result);
+        return page;
+    }
+}
+
+
+PyObject*
+_moo_python_plugin_register (const char *id,
+                             PyObject   *py_plugin_type,
+                             PyObject   *py_win_plugin_type,
+                             PyObject   *py_doc_plugin_type)
+{
+    GType plugin_type;
+    char *plugin_type_name = NULL;
+    static GTypeInfo plugin_type_info;
+    MooPyPluginClassData *class_data;
+    int i;
+
+    g_return_val_if_fail (id != NULL, NULL);
+    g_return_val_if_fail (py_plugin_type != NULL, NULL);
+    g_return_val_if_fail (PyType_Check (py_plugin_type), NULL);
+    g_return_val_if_fail (!py_win_plugin_type || PyType_Check (py_win_plugin_type), NULL);
+    g_return_val_if_fail (!py_doc_plugin_type || PyType_Check (py_doc_plugin_type), NULL);
+
+    for (i = 0; i < 1000; ++i)
+    {
+        plugin_type_name = g_strdup_printf ("MooPyPlugin-%08x", g_random_int ());
+        if (!g_type_from_name (plugin_type_name))
+            break;
+        g_free (plugin_type_name);
+        plugin_type_name = NULL;
+    }
+
+    if (!plugin_type_name)
+        return_RuntimeErr ("could not find name for plugin class");
+
+    class_data = g_new0 (MooPyPluginClassData, 1);
+    class_data->py_plugin_type = py_plugin_type;
+    class_data->py_win_plugin_type = py_win_plugin_type;
+    class_data->py_doc_plugin_type = py_doc_plugin_type;
+    Py_XINCREF (py_plugin_type);
+    Py_XINCREF (py_win_plugin_type);
+    Py_XINCREF (py_doc_plugin_type);
+
+    plugin_type_info.class_size = sizeof (MooPyPluginClass);
+    plugin_type_info.class_init = (GClassInitFunc) moo_py_plugin_class_init;
+    plugin_type_info.class_data = class_data;
+    plugin_type_info.instance_size = sizeof (MooPyPlugin);
+    plugin_type_info.instance_init = (GInstanceInitFunc) moo_py_plugin_instance_init;
+
+    plugin_type = g_type_register_static (MOO_TYPE_PLUGIN, plugin_type_name,
+                                          &plugin_type_info, 0);
+
+    if (!moo_plugin_register (plugin_type))
+    {
+        Py_XDECREF (class_data->py_plugin_type);
+        Py_XINCREF (class_data->py_win_plugin_type);
+        Py_XINCREF (class_data->py_doc_plugin_type);
+        g_free (class_data);
+        return_RuntimeErr ("could not register plugin");
+    }
+
+    return_None;
+}
+
+
+static void
+plugin_info_free (MooPluginInfo *info)
+{
+    if (info)
+    {
+        g_free ((char*) info->id);
+        g_free ((char*) info->name);
+        g_free ((char*) info->description);
+        g_free ((char*) info->author);
+        g_free ((char*) info->version);
+        g_free (info->params);
+        g_free (info->prefs_params);
+        g_free (info);
+    }
+}
+
+
+static char *
+dict_get_string (PyObject   *dict,
+                 const char *key)
+{
+    PyObject *val, *strval;
+    char *result;
+
+    val = PyDict_GetItemString (dict, (char*) key);
+
+    if (!val)
+        return NULL;
+
+    strval = PyObject_Str (val);
+    Py_DECREF (val);
+
+    if (!strval)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    result = g_strdup (PyString_AS_STRING (strval));
+
+    Py_DECREF (strval);
+    return result;
+}
+
+
+static gboolean
+dict_get_bool (PyObject   *dict,
+               const char *key,
+               gboolean    default_val)
+{
+    PyObject *val;
+    gboolean result;
+
+    val = PyDict_GetItemString (dict, (char*) key);
+
+    if (!val)
+        return default_val;
+
+    result = PyObject_IsTrue (val);
+
+    Py_DECREF (val);
+    return result;
+}
+
+
+static MooPluginInfo*
+get_plugin_info (PyObject *object)
+{
+    MooPluginInfo *info;
+    PyObject *result, *meth;
+
+    if (!PyObject_HasAttrString (object, (char*) "get_info"))
+    {
+        g_critical ("%s: no get_info attribute", G_STRLOC);
+        return NULL;
+    }
+
+    meth = PyObject_GetAttrString (object, (char*) "get_info");
+
+    if (!meth)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (!PyCallable_Check (meth))
+    {
+        g_critical ("%s: get_info is not callable", G_STRLOC);
+        Py_DECREF (meth);
+        return NULL;
+    }
+
+    result = PyObject_CallObject (meth, NULL);
+    Py_DECREF (meth);
+
+    if (!result)
+    {
+        PyErr_Print ();
+        return NULL;
+    }
+
+    if (!PyDict_Check (result))
+    {
+        g_critical ("%s: not a dict", G_STRLOC);
+        Py_DECREF (result);
+        return NULL;
+    }
+
+    info = g_new0 (MooPluginInfo, 1);
+    info->params = g_new0 (MooPluginParams, 1);
+    info->prefs_params = g_new0 (MooPluginPrefsParams, 1);
+
+    info->id = dict_get_string (result, "id");
+    info->name = dict_get_string (result, "name");
+    info->description = dict_get_string (result, "description");
+    info->author = dict_get_string (result, "author");
+    info->version = dict_get_string (result, "version");
+
+    info->params->enabled = dict_get_bool (result, "enabled", TRUE);
+    info->params->visible = dict_get_bool (result, "visible", TRUE);
+
+    return info;
+}
+
+
+static GType
+generate_win_plugin_type (PyObject *py_type)
+{
+    return 0;
+}
+
+static GType
+generate_doc_plugin_type (PyObject *py_type)
+{
+    return 0;
+}

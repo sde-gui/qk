@@ -2243,3 +2243,45 @@ moo_ui_xml_finalize (GObject *object)
 
     G_OBJECT_CLASS(moo_ui_xml_parent_class)->finalize (object);
 }
+
+
+static gpointer
+ptr_copy (gpointer boxed)
+{
+    return boxed;
+}
+
+
+GType
+moo_ui_node_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooUINode",
+                                             (GBoxedCopyFunc) ptr_copy,
+                                             (GBoxedFreeFunc) ptr_copy);
+
+    return type;
+}
+
+
+GType
+moo_ui_widget_type_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_UI_MENUBAR, (char*) "MOO_UI_MENUBAR", (char*) "menubar" },
+            { MOO_UI_MENU, (char*) "MOO_UI_MENU", (char*) "menu" },
+            { MOO_UI_TOOLBAR, (char*) "MOO_UI_TOOLBAR", (char*) "toolbar" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooUIWidgetType", values);
+    }
+
+    return type;
+}

@@ -90,13 +90,6 @@
   (gtype-id "MOO_TYPE_PREFS_DIALOG_PAGE")
 )
 
-(define-object UIXML
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooUIXML")
-  (gtype-id "MOO_TYPE_UI_XML")
-)
-
 (define-object Window
   (in-module "Moo")
   (parent "GtkWindow")
@@ -118,7 +111,36 @@
   (gtype-id "MOO_TYPE_CLOSURE")
 )
 
+(define-object UIXML
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooUIXML")
+  (gtype-id "MOO_TYPE_UI_XML")
+)
+
+
+
+(define-boxed UINode
+  (in-module "Moo")
+  (c-name "MooUINode")
+  (gtype-id "MOO_TYPE_UI_NODE")
+  (copy-func "moo_ui_node_ref")
+  (release-func "moo_ui_node_unref")
+)
+
+
 ;; Enumerations and flags ...
+
+(define-enum UIWidgetType
+  (in-module "Moo")
+  (c-name "MooUIWidgetType")
+  (gtype-id "MOO_TYPE_UI_WIDGET_TYPE")
+  (values
+    '("menubar" "MOO_UI_MENUBAR")
+    '("menu" "MOO_UI_MENU")
+    '("toolbar" "MOO_UI_TOOLBAR")
+  )
+)
 
 (define-enum FileDialogType
   (in-module "Moo")
@@ -1113,231 +1135,6 @@
 
 
 
-;; From ../mooutils/moomarkup.h
-
-(define-function MOO_MARKUP_NODE
-  (c-name "MOO_MARKUP_NODE")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("gpointer" "node")
-  )
-)
-
-(define-function MOO_MARKUP_DOC
-  (c-name "MOO_MARKUP_DOC")
-  (return-type "MooMarkupDoc*")
-  (parameters
-    '("gpointer" "node")
-  )
-)
-
-(define-function MOO_MARKUP_ELEMENT
-  (c-name "MOO_MARKUP_ELEMENT")
-  (return-type "MooMarkupElement*")
-  (parameters
-    '("gpointer" "node")
-  )
-)
-
-(define-function MOO_MARKUP_TEXT
-  (c-name "MOO_MARKUP_TEXT")
-  (return-type "MooMarkupText*")
-  (parameters
-    '("gpointer" "node")
-  )
-)
-
-(define-function MOO_MARKUP_COMMENT
-  (c-name "MOO_MARKUP_COMMENT")
-  (return-type "MooMarkupComment*")
-  (parameters
-    '("gpointer" "node")
-  )
-)
-
-(define-function moo_markup_doc_new
-  (c-name "moo_markup_doc_new")
-  (is-constructor-of "MooMarkupDoc")
-  (return-type "MooMarkupDoc*")
-  (parameters
-    '("const-char*" "name")
-  )
-)
-
-(define-function moo_markup_parse_file
-  (c-name "moo_markup_parse_file")
-  (return-type "MooMarkupDoc*")
-  (parameters
-    '("const-char*" "filename")
-    '("GError**" "error")
-  )
-)
-
-(define-function moo_markup_parse_memory
-  (c-name "moo_markup_parse_memory")
-  (return-type "MooMarkupDoc*")
-  (parameters
-    '("const-char*" "buffer")
-    '("int" "size")
-    '("GError**" "error")
-  )
-)
-
-(define-function moo_markup_save
-  (c-name "moo_markup_save")
-  (return-type "gboolean")
-  (parameters
-    '("MooMarkupDoc*" "doc")
-    '("const-char*" "filename")
-    '("GError**" "error")
-  )
-)
-
-(define-function moo_markup_save_pretty
-  (c-name "moo_markup_save_pretty")
-  (return-type "gboolean")
-  (parameters
-    '("MooMarkupDoc*" "doc")
-    '("const-char*" "filename")
-    '("guint" "indent")
-    '("GError**" "error")
-  )
-)
-
-(define-method get_string
-  (of-object "MooMarkupNode")
-  (c-name "moo_markup_node_get_string")
-  (return-type "char*")
-)
-
-(define-method ref
-  (of-object "MooMarkupDoc")
-  (c-name "moo_markup_doc_ref")
-  (return-type "MooMarkupDoc*")
-)
-
-(define-method unref
-  (of-object "MooMarkupDoc")
-  (c-name "moo_markup_doc_unref")
-  (return-type "none")
-)
-
-(define-function moo_markup_get_root_element
-  (c-name "moo_markup_get_root_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupDoc*" "doc")
-    '("const-char*" "name")
-  )
-)
-
-(define-function moo_markup_get_element
-  (c-name "moo_markup_get_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupNode*" "node")
-    '("const-char*" "path")
-  )
-)
-
-(define-function moo_markup_get_prop
-  (c-name "moo_markup_get_prop")
-  (return-type "const-char*")
-  (parameters
-    '("MooMarkupNode*" "node")
-    '("const-char*" "prop_name")
-  )
-)
-
-(define-function moo_markup_set_prop
-  (c-name "moo_markup_set_prop")
-  (return-type "none")
-  (parameters
-    '("MooMarkupNode*" "node")
-    '("const-char*" "prop_name")
-    '("const-char*" "val")
-  )
-)
-
-(define-function moo_markup_set_content
-  (c-name "moo_markup_set_content")
-  (return-type "none")
-  (parameters
-    '("MooMarkupNode*" "node")
-    '("const-char*" "text")
-  )
-)
-
-(define-function moo_markup_get_content
-  (c-name "moo_markup_get_content")
-  (return-type "const-char*")
-  (parameters
-    '("MooMarkupNode*" "node")
-  )
-)
-
-(define-method get_path
-  (of-object "MooMarkupElement")
-  (c-name "moo_markup_element_get_path")
-  (return-type "char*")
-)
-
-(define-function moo_markup_delete_node
-  (c-name "moo_markup_delete_node")
-  (return-type "none")
-  (parameters
-    '("MooMarkupNode*" "node")
-  )
-)
-
-(define-function moo_markup_create_root_element
-  (c-name "moo_markup_create_root_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupDoc*" "doc")
-    '("const-char*" "name")
-  )
-)
-
-(define-function moo_markup_create_element
-  (c-name "moo_markup_create_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupNode*" "parent")
-    '("const-char*" "path")
-  )
-)
-
-(define-function moo_markup_create_text_element
-  (c-name "moo_markup_create_text_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupNode*" "parent")
-    '("const-char*" "path")
-    '("const-char*" "content")
-  )
-)
-
-(define-function moo_markup_create_file_element
-  (c-name "moo_markup_create_file_element")
-  (return-type "MooMarkupNode*")
-  (parameters
-    '("MooMarkupNode*" "parent")
-    '("const-char*" "path")
-    '("const-char*" "filename")
-  )
-)
-
-(define-function moo_markup_get_file_content
-  (c-name "moo_markup_get_file_content")
-  (return-type "char*")
-  (parameters
-    '("MooMarkupNode*" "node")
-  )
-)
-
-
-
 ;; From ../mooutils/moomenumgr.h
 
 (define-function moo_menu_mgr_new
@@ -1795,180 +1592,6 @@
 
 
 
-;; From ../mooutils/moouixml.h
-
-(define-function moo_ui_xml_new
-  (c-name "moo_ui_xml_new")
-  (is-constructor-of "MooUiXml")
-  (return-type "MooUIXML*")
-)
-
-(define-method add_ui_from_string
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_add_ui_from_string")
-  (return-type "none")
-  (parameters
-    '("const-char*" "buffer")
-    '("gssize" "length")
-  )
-)
-
-(define-method get_node
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_get_node")
-  (return-type "MooUINode*")
-  (parameters
-    '("const-char*" "path")
-  )
-)
-
-(define-method find_placeholder
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_find_placeholder")
-  (return-type "MooUINode*")
-  (parameters
-    '("const-char*" "name")
-  )
-)
-
-(define-method get_path
-  (of-object "MooUINode")
-  (c-name "moo_ui_node_get_path")
-  (return-type "char*")
-)
-
-(define-method get_child
-  (of-object "MooUINode")
-  (c-name "moo_ui_node_get_child")
-  (return-type "MooUINode*")
-  (parameters
-    '("const-char*" "path")
-  )
-)
-
-(define-method create_widget
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_create_widget")
-  (return-type "GtkWidget*")
-  (parameters
-    '("MooUIWidgetType" "type")
-    '("const-char*" "path")
-    '("MooActionGroup*" "actions")
-    '("GtkAccelGroup*" "accel_group")
-  )
-)
-
-(define-method new_merge_id
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_new_merge_id")
-  (return-type "guint")
-)
-
-(define-method add_item
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_add_item")
-  (return-type "MooUINode*")
-  (parameters
-    '("guint" "merge_id")
-    '("const-char*" "parent_path")
-    '("const-char*" "name")
-    '("const-char*" "action")
-    '("int" "position")
-  )
-)
-
-(define-method insert_after
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert_after")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("MooUINode*" "parent")
-    '("MooUINode*" "after")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method insert_before
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert_before")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("MooUINode*" "parent")
-    '("MooUINode*" "before")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method insert
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("MooUINode*" "parent")
-    '("int" "position")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method insert_markup_after
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert_markup_after")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("const-char*" "parent_path")
-    '("const-char*" "after")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method insert_markup_before
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert_markup_before")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("const-char*" "parent_path")
-    '("const-char*" "before")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method insert_markup
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_insert_markup")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-    '("const-char*" "parent_path")
-    '("int" "position")
-    '("const-char*" "markup")
-  )
-)
-
-(define-method remove_ui
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_remove_ui")
-  (return-type "none")
-  (parameters
-    '("guint" "merge_id")
-  )
-)
-
-(define-method remove_node
-  (of-object "MooUIXML")
-  (c-name "moo_ui_xml_remove_node")
-  (return-type "none")
-  (parameters
-    '("MooUINode*" "node")
-  )
-)
-
-
-
 ;; From ../mooutils/moowin.h
 
 (define-function moo_window_is_hidden
@@ -2254,4 +1877,178 @@
   (of-object "MooClosure")
   (c-name "moo_closure_invalidate")
   (return-type "none")
+)
+
+
+
+;; From ./moo/mooutils/moouixml.h
+
+(define-function moo_ui_xml_new
+  (c-name "moo_ui_xml_new")
+  (is-constructor-of "MooUiXml")
+  (return-type "MooUIXML*")
+)
+
+(define-method add_ui_from_string
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_add_ui_from_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "buffer")
+    '("gssize" "length")
+  )
+)
+
+(define-method get_node
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_get_node")
+  (return-type "MooUINode*")
+  (parameters
+    '("const-char*" "path")
+  )
+)
+
+(define-method find_placeholder
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_find_placeholder")
+  (return-type "MooUINode*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_path
+  (of-object "MooUINode")
+  (c-name "moo_ui_node_get_path")
+  (return-type "char*")
+)
+
+(define-method get_child
+  (of-object "MooUINode")
+  (c-name "moo_ui_node_get_child")
+  (return-type "MooUINode*")
+  (parameters
+    '("const-char*" "path")
+  )
+)
+
+(define-method create_widget
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_create_widget")
+  (return-type "GtkWidget*")
+  (parameters
+    '("MooUIWidgetType" "type")
+    '("const-char*" "path")
+    '("MooActionGroup*" "actions")
+    '("GtkAccelGroup*" "accel_group")
+  )
+)
+
+(define-method new_merge_id
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_new_merge_id")
+  (return-type "guint")
+)
+
+(define-method add_item
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_add_item")
+  (return-type "MooUINode*")
+  (parameters
+    '("guint" "merge_id")
+    '("const-char*" "parent_path")
+    '("const-char*" "name")
+    '("const-char*" "action")
+    '("int" "position")
+  )
+)
+
+(define-method insert_after
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert_after")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("MooUINode*" "parent")
+    '("MooUINode*" "after")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method insert_before
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert_before")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("MooUINode*" "parent")
+    '("MooUINode*" "before")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method insert
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("MooUINode*" "parent")
+    '("int" "position")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method insert_markup_after
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert_markup_after")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("const-char*" "parent_path")
+    '("const-char*" "after")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method insert_markup_before
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert_markup_before")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("const-char*" "parent_path")
+    '("const-char*" "before")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method insert_markup
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_insert_markup")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+    '("const-char*" "parent_path")
+    '("int" "position")
+    '("const-char*" "markup")
+  )
+)
+
+(define-method remove_ui
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_remove_ui")
+  (return-type "none")
+  (parameters
+    '("guint" "merge_id")
+  )
+)
+
+(define-method remove_node
+  (of-object "MooUIXML")
+  (c-name "moo_ui_xml_remove_node")
+  (return-type "none")
+  (parameters
+    '("MooUINode*" "node")
+  )
 )

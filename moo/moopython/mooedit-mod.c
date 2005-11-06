@@ -32,10 +32,10 @@ void        moo_edit_mod_init           (PyObject   *moo_mod)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ("moo.edit", moo_edit_functions, moo_edit_module_doc);
+    mod = Py_InitModule3 ((char*) "moo.edit", moo_edit_functions, moo_edit_module_doc);
     g_return_if_fail (mod != NULL);
     Py_INCREF (mod);
-    PyModule_AddObject (moo_mod, "edit", mod);
+    PyModule_AddObject (moo_mod, (char*) "edit", mod);
 //     moo_edit_add_constants (mod, "MOO_");
 
     moo_edit_register_classes (PyModule_GetDict (moo_mod));
