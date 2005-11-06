@@ -266,6 +266,7 @@ nodist_mooutils_sources =                      \
 mooutils_extra_dist =                          \
     $(mooutils_python_sources)                 \
     $(mooutils)/moomarshals.list               \
+    $(mooutils)/py2h.sh                        \
     $(mooutils)/xml2h.sh
 
 mooutils_built_sources =                       \

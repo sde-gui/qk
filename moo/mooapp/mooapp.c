@@ -46,7 +46,7 @@
 
 
 /* moo-pygtk.c */
-void initmoo (void);
+gboolean initmoo (void);
 
 
 static MooApp *moo_app_instance = NULL;
@@ -939,11 +939,16 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
                           strv_length (app->priv->argv),
                           app->priv->argv);
 #ifdef MOO_USE_PYGTK
-        initmoo ();
-
-        plugin_dirs = moo_app_get_plugin_dirs (app);
-        _moo_python_plugin_init (plugin_dirs);
-        g_strfreev (plugin_dirs);
+        if (initmoo ())
+        {
+            plugin_dirs = moo_app_get_plugin_dirs (app);
+            _moo_python_plugin_init (plugin_dirs);
+            g_strfreev (plugin_dirs);
+        }
+        else
+        {
+            PyErr_Print ();
+        }
 #endif
     }
     else

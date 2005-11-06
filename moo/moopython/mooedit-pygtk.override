@@ -23,8 +23,8 @@ import gtk.TextTagTable as PyGtkTextTagTable_Type
 import gtk.TextTag as PyGtkTextTag_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gobject.GObject as PyGObject_Type
-import moo.Window as PyMooWindow_Type
-import moo.UIXML as PyMooUIXML_Type
+import _moo.Window as PyMooWindow_Type
+import _moo.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type

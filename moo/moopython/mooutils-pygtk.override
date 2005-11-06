@@ -28,7 +28,7 @@ void    moo_utils_add_constants     (PyObject   *module,
 
 
 %%
-modulename moo.utils
+modulename moo
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type

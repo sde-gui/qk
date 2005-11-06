@@ -19,9 +19,10 @@
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
 #include <pygtk/pygtk.h>
 #include <glib.h>
+#include "moopython/moo-mod.h"
 
 
-void        initmoo             (void);
+gboolean    initmoo             (void);
 void        moo_utils_mod_init  (PyObject   *moo_mod);
 void        moo_edit_mod_init   (PyObject   *moo_mod);
 void        moo_term_mod_init   (PyObject   *moo_mod);
@@ -48,43 +49,44 @@ static PyObject *moo_detailed_version (void)
 }
 
 
-static PyMethodDef moo_functions[] = {
+static PyMethodDef _moo_functions[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static char *moo_module_doc = (char*)"moo module.";
+static char *_moo_module_doc = (char*)"_moo module.";
 
 
 #define mod_init(class)                         \
 {                                               \
-    class##_mod_init (moo_module);              \
+    class##_mod_init (_moo_module);             \
     if (PyErr_Occurred ())                      \
-    {                                           \
-        PyErr_Print ();                         \
-        PyErr_SetString (PyExc_RuntimeError,    \
-                         "error in " #class     \
-                         "_mod_init");          \
-        return;                                 \
-    }                                           \
+        return FALSE;                           \
 }
 
-void        initmoo                     (void)
+static void
+func_init_pygobject (void)
 {
-    PyObject *moo_module;
-
     init_pygobject ();
     init_pygtk ();
+}
 
-    moo_module = Py_InitModule3 ((char*)"moo", moo_functions, moo_module_doc);
+gboolean
+initmoo (void)
+{
+    PyObject *_moo_module, *code, *moo_mod;
 
-    if (PyErr_Occurred ()) {
-        PyErr_Print ();
-        PyErr_SetString (PyExc_RuntimeError, "could not create 'moo' module");
-        return;
-    }
+    func_init_pygobject ();
 
-    PyModule_AddObject (moo_module, (char*)"version", moo_version());
-    PyModule_AddObject (moo_module, (char*)"detailed_version", moo_detailed_version());
+    if (PyErr_Occurred ())
+        return FALSE;
+
+    _moo_module = Py_InitModule3 ((char*) "_moo", _moo_functions, _moo_module_doc);
+
+    if (PyErr_Occurred ())
+        return FALSE;
+
+    PyModule_AddObject (_moo_module, (char*)"version", moo_version());
+    PyModule_AddObject (_moo_module, (char*)"detailed_version", moo_detailed_version());
 
 #ifdef MOO_BUILD_UTILS
     mod_init (moo_utils);
@@ -98,4 +100,17 @@ void        initmoo                     (void)
 #ifdef MOO_BUILD_APP
     mod_init (moo_app);
 #endif
+
+    code = Py_CompileString (MOO_PY, "moo.py", Py_file_input);
+
+    if (!code)
+        return FALSE;
+
+    moo_mod = PyImport_ExecCodeModule ((char*) "moo", code);
+    Py_DECREF (code);
+
+    if (!moo_mod)
+        return FALSE;
+
+    return TRUE;
 }

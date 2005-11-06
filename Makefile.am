@@ -33,6 +33,7 @@ endif
 EXTRA_PROGRAMS =
 moo_prefix = moo
 XML2H = $(srcdir)/moo/mooutils/xml2h.sh
+PY2H = $(srcdir)/moo/mooutils/py2h.sh
 include moo/Makefile.incl
 include moo/mooutils/Makefile.incl
 include moo/mooedit/Makefile.incl
