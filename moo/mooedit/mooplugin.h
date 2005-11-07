@@ -170,6 +170,7 @@ GType       moo_win_plugin_get_type     (void) G_GNUC_CONST;
 GType       moo_doc_plugin_get_type     (void) G_GNUC_CONST;
 
 gboolean    moo_plugin_register         (GType           type);
+void        moo_plugin_unregister       (GType           type);
 
 gboolean    moo_plugin_initialized      (MooPlugin      *plugin);
 gboolean    moo_plugin_enabled          (MooPlugin      *plugin);
@@ -177,7 +178,6 @@ gboolean    moo_plugin_set_enabled      (MooPlugin      *plugin,
                                          gboolean        enabled);
 
 MooPlugin  *moo_plugin_get              (GType           type);
-gboolean    moo_plugin_registered       (GType           type);
 
 gpointer    moo_plugin_lookup           (const char     *plugin_id);
 gpointer    moo_win_plugin_lookup       (const char     *plugin_id,

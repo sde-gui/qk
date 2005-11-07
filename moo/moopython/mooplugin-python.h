@@ -22,6 +22,7 @@ G_BEGIN_DECLS
 
 
 gboolean    _moo_python_plugin_init     (char      **dirs);
+gboolean    _moo_python_plugin_reload   (char      **dirs);
 
 PyObject   *_moo_python_plugin_hook     (const char *event,
                                          PyObject   *callback,

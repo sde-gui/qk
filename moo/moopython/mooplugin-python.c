@@ -32,6 +32,7 @@
 
 #define MOO_TYPE_PYTHON_PLUGIN      (moo_python_plugin_get_type())
 #define MOO_IS_PYTHON_PLUGIN(obj_)  (G_TYPE_CHECK_INSTANCE_TYPE (obj_, MOO_TYPE_PYTHON_PLUGIN))
+#define MOO_PYTHON_PLUGIN(obj_)     (G_TYPE_CHECK_INSTANCE_CAST ((obj_), MOO_TYPE_PYTHON_PLUGIN, MooPythonPlugin))
 
 #define PLUGIN_SUFFIX ".py"
 
@@ -49,12 +50,15 @@ typedef struct {
     PyObject *data;
 } Hook;
 
+typedef struct _MooPyPluginData MooPyPluginData;
+
 typedef struct {
     MooPlugin parent;
 
     GHashTable *hook_ids;
     GSList *hooks[HOOK_LAST];
     int last_id;
+    GSList *plugins; /* MooPyPluginInfo* */
 } MooPythonPlugin;
 
 
@@ -71,6 +75,8 @@ static PyObject *moo_python_plugin_add_hook     (MooPythonPlugin    *plugin,
                                                  PyObject           *data);
 static void      moo_python_plugin_remove_hook  (MooPythonPlugin    *plugin,
                                                  int                 id);
+
+static void      moo_py_plugin_delete           (MooPyPluginData    *data);
 
 
 static gboolean
@@ -106,6 +112,10 @@ moo_python_plugin_deinit (MooPythonPlugin *plugin)
     g_hash_table_destroy (plugin->hook_ids);
     plugin->hook_ids = NULL;
     g_slist_free (ids);
+
+    g_slist_foreach (plugin->plugins, (GFunc) moo_py_plugin_delete, NULL);
+    g_slist_free (plugin->plugins);
+    plugin->plugins = NULL;
 }
 
 
@@ -318,6 +328,26 @@ _moo_python_plugin_init (char **dirs)
 }
 
 
+gboolean
+_moo_python_plugin_reload (char **dirs)
+{
+    MooPlugin *plugin = moo_plugin_get (MOO_TYPE_PYTHON_PLUGIN);
+
+    g_return_val_if_fail (plugin != NULL, FALSE);
+
+    if (moo_plugin_set_enabled (plugin, FALSE) &&
+        moo_plugin_set_enabled (plugin, TRUE))
+    {
+        moo_python_plugin_read_dirs (MOO_PYTHON_PLUGIN (plugin), dirs);
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
 static PyObject*
 moo_python_plugin_add_hook (MooPythonPlugin *plugin,
                             HookType         type,
@@ -468,47 +498,47 @@ typedef struct _MooPyWinPlugin          MooPyWinPlugin;
 typedef struct _MooPyWinPluginClass     MooPyWinPluginClass;
 typedef struct _MooPyDocPlugin          MooPyDocPlugin;
 typedef struct _MooPyDocPluginClass     MooPyDocPluginClass;
-typedef struct _MooPyPluginClassData    MooPyPluginClassData;
 
-struct _MooPyPluginClassData {
+struct _MooPyPluginData {
     PyObject   *py_plugin_type;
     PyObject   *py_win_plugin_type;
     PyObject   *py_doc_plugin_type;
+    GType plugin_type;
     GType win_plugin_type;
     GType doc_plugin_type;
 };
 
 struct _MooPyPlugin {
     MooPlugin base;
-    MooPyPluginClassData *class_data;
+    MooPyPluginData *class_data;
     PyObject *instance;
 };
 
 struct _MooPyPluginClass {
     MooPluginClass base_class;
-    MooPyPluginClassData *data;
+    MooPyPluginData *data;
 };
 
 struct _MooPyWinPlugin {
     MooWinPlugin base;
-    MooPyPluginClassData *class_data;
+    MooPyPluginData *class_data;
     PyObject *instance;
 };
 
 struct _MooPyWinPluginClass {
     MooWinPluginClass base_class;
-    MooPyPluginClassData *data;
+    MooPyPluginData *data;
 };
 
 struct _MooPyDocPlugin {
     MooDocPlugin base;
-    MooPyPluginClassData *class_data;
+    MooPyPluginData *class_data;
     PyObject *instance;
 };
 
 struct _MooPyDocPluginClass {
     MooDocPluginClass base_class;
-    MooPyPluginClassData *data;
+    MooPyPluginData *data;
 };
 
 
@@ -518,19 +548,19 @@ static gpointer moo_py_doc_plugin_parent_class;
 
 
 static void     moo_py_plugin_class_init        (MooPyPluginClass       *klass,
-                                                 MooPyPluginClassData   *data);
+                                                 MooPyPluginData        *data);
 static void     moo_py_plugin_instance_init     (MooPyPlugin            *plugin,
                                                  MooPyPluginClass       *klass);
 static void     moo_py_plugin_finalize          (GObject                *object);
 
 static void     moo_py_win_plugin_class_init    (MooPyWinPluginClass    *klass,
-                                                 MooPyPluginClassData   *data);
+                                                 MooPyPluginData        *data);
 static void     moo_py_win_plugin_instance_init (MooPyWinPlugin         *plugin,
                                                  MooPyWinPluginClass    *klass);
 static void     moo_py_win_plugin_finalize      (GObject                *object);
 
 static void     moo_py_doc_plugin_class_init    (MooPyDocPluginClass    *klass,
-                                                 MooPyPluginClassData   *data);
+                                                 MooPyPluginData        *data);
 static void     moo_py_doc_plugin_instance_init (MooPyDocPlugin         *plugin,
                                                  MooPyDocPluginClass    *klass);
 static void     moo_py_doc_plugin_finalize      (GObject                *object);
@@ -556,9 +586,9 @@ static void     moo_py_doc_plugin_destroy   (MooDocPlugin           *plugin);
 
 static MooPluginInfo *get_plugin_info       (PyObject               *object);
 static GType    generate_win_plugin_type    (PyObject               *py_type,
-                                             MooPyPluginClassData   *data);
+                                             MooPyPluginData        *data);
 static GType    generate_doc_plugin_type    (PyObject               *py_type,
-                                             MooPyPluginClassData   *data);
+                                             MooPyPluginData        *data);
 
 static GtkWidget *moo_py_plugin_create_prefs_page (MooPlugin        *plugin);
 
@@ -567,7 +597,7 @@ static void     plugin_info_free            (MooPluginInfo          *info);
 
 static void
 moo_py_plugin_class_init (MooPyPluginClass       *klass,
-                          MooPyPluginClassData   *data)
+                          MooPyPluginData        *data)
 {
     MooPluginClass *plugin_class = MOO_PLUGIN_CLASS (klass);
     GObjectClass *gobj_class = G_OBJECT_CLASS (klass);
@@ -635,16 +665,20 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
                              PyObject   *py_win_plugin_type,
                              PyObject   *py_doc_plugin_type)
 {
-    GType plugin_type;
     char *plugin_type_name = NULL;
     static GTypeInfo plugin_type_info;
-    MooPyPluginClassData *class_data;
+    MooPyPluginData *class_data;
+    MooPlugin *base;
     int i;
 
     g_return_val_if_fail (py_plugin_type != NULL, NULL);
     g_return_val_if_fail (PyType_Check (py_plugin_type), NULL);
     g_return_val_if_fail (!py_win_plugin_type || PyType_Check (py_win_plugin_type), NULL);
     g_return_val_if_fail (!py_doc_plugin_type || PyType_Check (py_doc_plugin_type), NULL);
+
+    base = moo_plugin_get (MOO_TYPE_PYTHON_PLUGIN);
+    g_return_val_if_fail (base != NULL, NULL);
+    g_return_val_if_fail (moo_plugin_initialized (base), NULL);
 
     for (i = 0; i < 1000; ++i)
     {
@@ -658,7 +692,7 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
     if (!plugin_type_name)
         return_RuntimeErr ("could not find name for plugin class");
 
-    class_data = g_new0 (MooPyPluginClassData, 1);
+    class_data = g_new0 (MooPyPluginData, 1);
     class_data->py_plugin_type = py_plugin_type;
     class_data->py_win_plugin_type = py_win_plugin_type;
     class_data->py_doc_plugin_type = py_doc_plugin_type;
@@ -672,11 +706,11 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
     plugin_type_info.instance_size = sizeof (MooPyPlugin);
     plugin_type_info.instance_init = (GInstanceInitFunc) moo_py_plugin_instance_init;
 
-    plugin_type = g_type_register_static (MOO_TYPE_PLUGIN, plugin_type_name,
-                                          &plugin_type_info, 0);
+    class_data->plugin_type = g_type_register_static (MOO_TYPE_PLUGIN, plugin_type_name,
+                                                      &plugin_type_info, 0);
     g_free (plugin_type_name);
 
-    if (!moo_plugin_register (plugin_type))
+    if (!moo_plugin_register (class_data->plugin_type))
     {
         Py_XDECREF (class_data->py_plugin_type);
         Py_XDECREF (class_data->py_win_plugin_type);
@@ -685,7 +719,22 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
         return_RuntimeErr ("could not register plugin");
     }
 
+    MOO_PYTHON_PLUGIN(base)->plugins =
+            g_slist_prepend (MOO_PYTHON_PLUGIN(base)->plugins, class_data);
+
     return_None;
+}
+
+
+static void
+moo_py_plugin_delete (MooPyPluginData *data)
+{
+    g_return_if_fail (data != NULL);
+    moo_plugin_unregister (data->plugin_type);
+    Py_XDECREF (data->py_plugin_type);
+    Py_XDECREF (data->py_win_plugin_type);
+    Py_XDECREF (data->py_doc_plugin_type);
+    g_free (data);
 }
 
 
@@ -816,7 +865,7 @@ get_plugin_info (PyObject *object)
 
 static GType
 generate_win_plugin_type (PyObject             *py_type,
-                          MooPyPluginClassData *class_data)
+                          MooPyPluginData      *class_data)
 {
     GType type;
     char *type_name = NULL;
@@ -855,7 +904,7 @@ generate_win_plugin_type (PyObject             *py_type,
 
 static GType
 generate_doc_plugin_type (PyObject               *py_type,
-                          MooPyPluginClassData   *class_data)
+                          MooPyPluginData        *class_data)
 {
     char *type_name = NULL;
     static GTypeInfo type_info;
@@ -895,7 +944,7 @@ generate_doc_plugin_type (PyObject               *py_type,
 
 static void
 moo_py_win_plugin_class_init (MooPyWinPluginClass    *klass,
-                              MooPyPluginClassData   *data)
+                              MooPyPluginData        *data)
 {
     MooWinPluginClass *plugin_class = MOO_WIN_PLUGIN_CLASS (klass);
     GObjectClass *gobj_class = G_OBJECT_CLASS (klass);
@@ -932,7 +981,7 @@ moo_py_win_plugin_finalize (GObject *object)
 
 static void
 moo_py_doc_plugin_class_init (MooPyDocPluginClass    *klass,
-                              MooPyPluginClassData   *data)
+                              MooPyPluginData        *data)
 {
     MooDocPluginClass *plugin_class = MOO_DOC_PLUGIN_CLASS (klass);
     GObjectClass *gobj_class = G_OBJECT_CLASS (klass);

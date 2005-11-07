@@ -70,6 +70,9 @@ static void     doc_set_plugin          (MooEdit        *doc,
                                          MooPlugin      *plugin,
                                          MooDocPlugin   *doc_plugin);
 
+static gboolean moo_plugin_registered   (GType           type);
+
+
 static gpointer parent_class = NULL;
 
 
@@ -195,6 +198,14 @@ moo_plugin_register (GType type)
     {
         g_warning ("%s: invalid info in plugin %s",
                    G_STRLOC, g_type_name (type));
+        g_object_unref (plugin);
+        return FALSE;
+    }
+
+    if (moo_plugin_lookup (moo_plugin_id (plugin)))
+    {
+        g_warning ("%s: plugin with id %s already registered",
+                   G_STRLOC, moo_plugin_id (plugin));
         g_object_unref (plugin);
         return FALSE;
     }
@@ -505,6 +516,16 @@ plugin_store_add (MooPlugin      *plugin)
 }
 
 
+static void
+plugin_store_remove (MooPlugin *plugin)
+{
+    g_return_if_fail (plugin_store != NULL);
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    plugin_store->list = g_slist_remove (plugin_store->list, plugin);
+    g_hash_table_remove (plugin_store->names, moo_plugin_id (plugin));
+}
+
+
 MooPlugin*
 moo_plugin_get (GType type)
 {
@@ -522,7 +543,7 @@ moo_plugin_get (GType type)
 }
 
 
-gboolean
+static gboolean
 moo_plugin_registered (GType type)
 {
     return moo_plugin_get (type) != NULL;
@@ -680,6 +701,17 @@ moo_plugin_set_enabled (MooPlugin  *plugin,
         plugin_disable (plugin);
         return TRUE;
     }
+}
+
+
+void
+moo_plugin_unregister (GType type)
+{
+    MooPlugin *plugin = moo_plugin_get (type);
+    g_return_if_fail (plugin != NULL);
+    moo_plugin_set_enabled (plugin, FALSE);
+    plugin_store_remove (plugin);
+    g_object_unref (plugin);
 }
 
 
