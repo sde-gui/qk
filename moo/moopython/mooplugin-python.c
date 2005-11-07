@@ -204,34 +204,43 @@ static void
 moo_python_plugin_read_file (G_GNUC_UNUSED MooPythonPlugin *plugin,
                              const char      *path)
 {
-    FILE *file;
-    PyObject *result, *main_dict, *main_mod;
+    PyObject *mod, *code;
+    char *modname = NULL, *content = NULL;
+    GError *error = NULL;
 
     g_return_if_fail (path != NULL);
 
-    file = fopen (path, "r");
-
-    if (!file)
+    if (!g_file_get_contents (path, &content, NULL, &error))
     {
-        perror ("fopen");
+        g_warning ("%s: could not read plugin file", G_STRLOC);
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
         return;
     }
 
-    main_mod = PyImport_AddModule ((char*) "__main__");
-    g_return_if_fail (main_mod != NULL);
-    main_dict = PyModule_GetDict (main_mod);
+    modname = g_strdup_printf ("moo_plugin_%08x%08x", g_random_int (), g_random_int ());
+    code = Py_CompileString (content, path, Py_file_input);
 
-    result = PyRun_File (file, path, Py_file_input, main_dict, main_dict);
-    fclose (file);
-
-    if (result)
-    {
-        Py_XDECREF (result);
-    }
-    else
+    if (!code)
     {
         PyErr_Print ();
+        goto out;
     }
+
+    mod = PyImport_ExecCodeModule (modname, code);
+    Py_DECREF (code);
+
+    if (!mod)
+    {
+        PyErr_Print ();
+        goto out;
+    }
+
+    Py_DECREF (mod);
+
+out:
+    g_free (content);
+    g_free (modname);
 }
 
 
