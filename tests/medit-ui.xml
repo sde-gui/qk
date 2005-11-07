@@ -56,13 +56,6 @@
       <separator/>
     </item>
 
-    <item name="Python" action="PythonMenu">
-      <separator/>
-      <item action="ExecuteScript"/>
-      <item action="ShowPythonConsole"/>
-      <separator/>
-    </item>
-
     <item name="Settings" label="_Settings">
       <separator/>
       <item action="ShowToolbar"/>
@@ -143,13 +136,6 @@
       <separator/>
     </item>
     -->
-
-    <item name="Python" action="PythonMenu">
-      <separator/>
-      <item action="ExecuteScript"/>
-      <item action="ShowConsole"/>
-      <separator/>
-    </item>
 
     <item name="Settings" label="_Settings">
       <separator/>

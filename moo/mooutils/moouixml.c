@@ -1061,7 +1061,7 @@ moo_ui_xml_insert_markup_before (MooUIXML       *xml,
         g_return_if_fail (before != NULL);
     }
 
-    moo_ui_xml_insert_after (xml, merge_id, parent, before, markup);
+    moo_ui_xml_insert_before (xml, merge_id, parent, before, markup);
 }
 
 

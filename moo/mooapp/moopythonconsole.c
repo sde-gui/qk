@@ -115,11 +115,11 @@ static GObject *moo_python_console_constructor (GType                   type,
                       G_CALLBACK (gtk_widget_hide_on_delete),
                       NULL);
 
-    moo_python_set_log_func (console->python,
-                             (MooPythonLogFunc) write_in,
-                             (MooPythonLogFunc) write_out,
-                             (MooPythonLogFunc) write_err,
-                             console);
+//     moo_python_set_log_func (console->python,
+//                              (MooPythonLogFunc) write_in,
+//                              (MooPythonLogFunc) write_out,
+//                              (MooPythonLogFunc) write_err,
+//                              console);
 
     g_signal_connect_swapped (console->entry, "activate",
                               G_CALLBACK (entry_activate),

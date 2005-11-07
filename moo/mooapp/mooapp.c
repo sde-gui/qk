@@ -1215,32 +1215,6 @@ static void install_actions (MooApp *app, GType  type)
                                  "closure::callback", moo_app_about_dialog,
                                  NULL);
 
-#ifdef MOO_USE_PYTHON
-    moo_window_class_new_action (klass, "PythonMenu",
-                                 "name", "Python Menu",
-                                 "label", "P_ython",
-                                 "visible", TRUE,
-                                 "no-accel", TRUE,
-                                 NULL);
-
-    moo_window_class_new_action (klass, "ExecuteScript",
-                                 "name", "Execute Script",
-                                 "label", "_Execute Script",
-                                 "tooltip", "Execute Script",
-                                 "icon-stock-id", GTK_STOCK_EXECUTE,
-                                 "closure::callback", moo_app_python_execute_file,
-                                 NULL);
-
-    moo_window_class_new_action (klass, "ShowPythonConsole",
-                                 "name", "Show Python Console",
-                                 "label", "Show Python Conso_le",
-                                 "tooltip", "Show python console",
-                                 "accel", "<alt>L",
-                                 "closure::callback", moo_app_show_python_console,
-                                 "closure::proxy-func", moo_app_get_instance,
-                                 NULL);
-#endif /* MOO_USE_PYTHON */
-
     g_type_class_unref (klass);
     g_free (about);
     g_free (_about);
