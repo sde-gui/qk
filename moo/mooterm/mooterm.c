@@ -1959,10 +1959,14 @@ static MooTermProfile*
 get_default_shell (MooTerm *term)
 {
     if (!term->priv->default_shell)
+    {
+        MooTermCommand *cmd = _moo_term_get_default_shell ();
+        g_return_val_if_fail (cmd != NULL, NULL);
         term->priv->default_shell =
-                moo_term_profile_new ("Default",
-                                      _moo_term_get_default_shell (),
-                                      NULL, g_get_home_dir ());
+                moo_term_profile_new ("Default", cmd, NULL,
+                                      g_get_home_dir ());
+        moo_term_command_free (cmd);
+    }
 
     return term->priv->default_shell;
 }

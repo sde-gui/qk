@@ -674,6 +674,7 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
 
     plugin_type = g_type_register_static (MOO_TYPE_PLUGIN, plugin_type_name,
                                           &plugin_type_info, 0);
+    g_free (plugin_type_name);
 
     if (!moo_plugin_register (plugin_type))
     {
@@ -817,6 +818,7 @@ static GType
 generate_win_plugin_type (PyObject             *py_type,
                           MooPyPluginClassData *class_data)
 {
+    GType type;
     char *type_name = NULL;
     static GTypeInfo type_info;
     int i;
@@ -845,7 +847,10 @@ generate_win_plugin_type (PyObject             *py_type,
     type_info.instance_size = sizeof (MooPyWinPlugin);
     type_info.instance_init = (GInstanceInitFunc) moo_py_win_plugin_instance_init;
 
-    return g_type_register_static (MOO_TYPE_WIN_PLUGIN, type_name, &type_info, 0);
+    type = g_type_register_static (MOO_TYPE_WIN_PLUGIN, type_name, &type_info, 0);
+
+    g_free (type_name);
+    return type;
 }
 
 static GType
@@ -855,6 +860,7 @@ generate_doc_plugin_type (PyObject               *py_type,
     char *type_name = NULL;
     static GTypeInfo type_info;
     int i;
+    GType type;
 
     g_return_val_if_fail (py_type != NULL, 0);
     g_return_val_if_fail (PyType_Check (py_type), 0);
@@ -880,7 +886,10 @@ generate_doc_plugin_type (PyObject               *py_type,
     type_info.instance_size = sizeof (MooPyDocPlugin);
     type_info.instance_init = (GInstanceInitFunc) moo_py_doc_plugin_instance_init;
 
-    return g_type_register_static (MOO_TYPE_DOC_PLUGIN, type_name, &type_info, 0);
+    type = g_type_register_static (MOO_TYPE_DOC_PLUGIN, type_name, &type_info, 0);
+
+    g_free (type_name);
+    return type;
 }
 
 

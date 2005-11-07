@@ -207,6 +207,7 @@ _moo_term_tag_table_free (MooTermTagTable *table)
 
         g_slist_free (table->tags);
         g_hash_table_destroy (table->named_tags);
+        g_free (table);
     }
 }
 
