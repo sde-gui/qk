@@ -6,6 +6,7 @@ headers
 #include "pygtk/pygtk.h"
 #include "mooterm/mooterm.h"
 #include "mooterm/mootermwindow.h"
+#include "mooterm/mooterm-text.h"
 #include "mooutils/mooutils-python.h"
 #include "moopython/moo-pygtk.h"
 

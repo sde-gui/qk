@@ -66,7 +66,7 @@ guint        moo_edit_window_num_docs           (MooEditWindow  *window);
 void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
                                                  const char     *prefix);
 
-/* sinks widget and frees label */
+/* sinks widget */
 gboolean     moo_edit_window_add_pane           (MooEditWindow  *window,
                                                  const char     *user_id,
                                                  GtkWidget      *widget,

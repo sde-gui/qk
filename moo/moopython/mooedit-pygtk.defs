@@ -5,6 +5,9 @@
   (parent "MooWindow")
   (c-name "MooEditWindow")
   (gtype-id "MOO_TYPE_EDIT_WINDOW")
+  (fields
+    '("MooBigPaned*" "paned")
+  )
 )
 
 (define-object Editor
@@ -65,3 +68,1641 @@
 
 (include "mooplugin.defs")
 (include "mooeditor.defs")
+
+;; Enumerations and flags ...
+
+(define-enum EditVarDep
+  (in-module "Moo")
+  (c-name "MooEditVarDep")
+  (gtype-id "MOO_TYPE_EDIT_VAR_DEP")
+  (values
+    '("none" "MOO_EDIT_VAR_DEP_NONE")
+    '("filename" "MOO_EDIT_VAR_DEP_FILENAME")
+  )
+)
+
+(define-enum EditOnExternalChanges
+  (in-module "Moo")
+  (c-name "MooEditOnExternalChanges")
+  (gtype-id "MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES")
+  (values
+    '("dont-watch-file" "MOO_EDIT_DONT_WATCH_FILE")
+    '("always-alert" "MOO_EDIT_ALWAYS_ALERT")
+    '("always-reload" "MOO_EDIT_ALWAYS_RELOAD")
+    '("reload-if-safe" "MOO_EDIT_RELOAD_IF_SAFE")
+  )
+)
+
+(define-flags EditStatus
+  (in-module "Moo")
+  (c-name "MooEditStatus")
+  (gtype-id "MOO_TYPE_EDIT_STATUS")
+  (values
+    '("modified-on-disk" "MOO_EDIT_MODIFIED_ON_DISK")
+    '("deleted" "MOO_EDIT_DELETED")
+    '("changed-on-disk" "MOO_EDIT_CHANGED_ON_DISK")
+    '("modified" "MOO_EDIT_MODIFIED")
+    '("clean" "MOO_EDIT_CLEAN")
+  )
+)
+
+(define-flags TextSearchOptions
+  (in-module "Moo")
+  (c-name "MooTextSearchOptions")
+  (gtype-id "MOO_TYPE_TEXT_SEARCH_OPTIONS")
+  (values
+    '("backwards" "MOO_TEXT_SEARCH_BACKWARDS")
+    '("case-insensitive" "MOO_TEXT_SEARCH_CASE_INSENSITIVE")
+    '("regex" "MOO_TEXT_SEARCH_REGEX")
+  )
+)
+
+(define-flags TextStyleMask
+  (in-module "Moo")
+  (c-name "MooTextStyleMask")
+  (gtype-id "MOO_TYPE_TEXT_STYLE_MASK")
+  (values
+    '("foreground" "MOO_TEXT_STYLE_FOREGROUND")
+    '("background" "MOO_TEXT_STYLE_BACKGROUND")
+    '("bold" "MOO_TEXT_STYLE_BOLD")
+    '("italic" "MOO_TEXT_STYLE_ITALIC")
+    '("underline" "MOO_TEXT_STYLE_UNDERLINE")
+    '("strikethrough" "MOO_TEXT_STYLE_STRIKETHROUGH")
+  )
+)
+
+(define-enum TextSelectionType
+  (in-module "Moo")
+  (c-name "MooTextSelectionType")
+  (gtype-id "MOO_TYPE_TEXT_SELECTION_TYPE")
+  (values
+    '("chars" "MOO_TEXT_SELECT_CHARS")
+    '("words" "MOO_TEXT_SELECT_WORDS")
+    '("lines" "MOO_TEXT_SELECT_LINES")
+  )
+)
+
+
+;; From moocmdview.h
+
+(define-function moo_cmd_view_new
+  (c-name "moo_cmd_view_new")
+  (is-constructor-of "MooCmdView")
+  (return-type "GtkWidget*")
+)
+
+(define-method run_command
+  (of-object "MooCmdView")
+  (c-name "moo_cmd_view_run_command")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "cmd")
+  )
+)
+
+(define-method abort
+  (of-object "MooCmdView")
+  (c-name "moo_cmd_view_abort")
+  (return-type "none")
+)
+
+
+
+;; From mooedit-private.h
+
+
+
+;; From mooedit.h
+
+(define-method get_filename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_filename")
+  (return-type "const-char*")
+)
+
+(define-method get_basename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_basename")
+  (return-type "const-char*")
+)
+
+(define-method get_display_filename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_display_filename")
+  (return-type "const-char*")
+)
+
+(define-method get_display_basename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_display_basename")
+  (return-type "const-char*")
+)
+
+(define-method get_encoding
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_encoding")
+  (return-type "const-char*")
+)
+
+(define-method set_modified
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_modified")
+  (return-type "none")
+  (parameters
+    '("gboolean" "modified")
+  )
+)
+
+(define-method get_clean
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_clean")
+  (return-type "gboolean")
+)
+
+(define-method set_clean
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_clean")
+  (return-type "none")
+  (parameters
+    '("gboolean" "clean")
+  )
+)
+
+(define-method get_status
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_status")
+  (return-type "MooEditStatus")
+)
+
+(define-method status_changed
+  (of-object "MooEdit")
+  (c-name "moo_edit_status_changed")
+  (return-type "none")
+)
+
+(define-method get_readonly
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_readonly")
+  (return-type "gboolean")
+)
+
+(define-method set_readonly
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_readonly")
+  (return-type "none")
+  (parameters
+    '("gboolean" "readonly")
+  )
+)
+
+(define-function moo_edit_file_info_new
+  (c-name "moo_edit_file_info_new")
+  (is-constructor-of "MooEditFileInfo")
+  (return-type "MooEditFileInfo*")
+  (parameters
+    '("const-char*" "filename")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method copy
+  (of-object "MooEditFileInfo")
+  (c-name "moo_edit_file_info_copy")
+  (return-type "MooEditFileInfo*")
+)
+
+(define-method free
+  (of-object "MooEditFileInfo")
+  (c-name "moo_edit_file_info_free")
+  (return-type "none")
+)
+
+(define-method set_highlight
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_highlight")
+  (return-type "none")
+  (parameters
+    '("gboolean" "highlight")
+  )
+)
+
+(define-method get_highlight
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_highlight")
+  (return-type "gboolean")
+)
+
+(define-method set_var
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_var")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "value")
+  )
+)
+
+(define-method set_var_full
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_var_full")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "value")
+    '("MooEditVarDep" "dep")
+  )
+)
+
+(define-method get_var
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_var")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+
+
+;; From mooeditprefs.h
+
+(define-function moo_edit_prefs_page_new
+  (c-name "moo_edit_prefs_page_new")
+  (is-constructor-of "MooEditPrefsPage")
+  (return-type "GtkWidget*")
+  (parameters
+    '("MooEditor*" "editor")
+  )
+)
+
+(define-function moo_edit_colors_prefs_page_new
+  (c-name "moo_edit_colors_prefs_page_new")
+  (is-constructor-of "MooEditColorsPrefsPage")
+  (return-type "GtkWidget*")
+  (parameters
+    '("MooEditor*" "editor")
+  )
+)
+
+(define-function moo_edit_setting
+  (c-name "moo_edit_setting")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "setting_name")
+  )
+)
+
+
+
+;; From mooeditsearch.h
+
+(define-function moo_text_search
+  (c-name "moo_text_search")
+  (return-type "gboolean")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("const-GtkTextIter*" "limit")
+    '("const-char*" "text")
+    '("GtkTextIter*" "match_start")
+    '("GtkTextIter*" "match_end")
+    '("MooTextSearchOptions" "options")
+    '("GError**" "error")
+  )
+)
+
+(define-function moo_text_search_regex
+  (c-name "moo_text_search_regex")
+  (return-type "gboolean")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("const-GtkTextIter*" "limit")
+    '("EggRegex*" "regex")
+    '("GtkTextIter*" "match_start")
+    '("GtkTextIter*" "match_end")
+    '("gboolean" "backwards")
+  )
+)
+
+(define-function moo_text_replace_func_replace_all
+  (c-name "moo_text_replace_func_replace_all")
+  (return-type "MooTextReplaceResponseType")
+  (parameters
+    '("const-char*" "text")
+    '("EggRegex*" "regex")
+    '("const-char*" "replacement")
+    '("GtkTextIter*" "to_replace_start")
+    '("GtkTextIter*" "to_replace_end")
+    '("gpointer" "data")
+  )
+)
+
+(define-function moo_text_replace_all_interactive
+  (c-name "moo_text_replace_all_interactive")
+  (return-type "int")
+  (parameters
+    '("GtkTextIter*" "start")
+    '("GtkTextIter*" "end")
+    '("const-char*" "text")
+    '("const-char*" "replacement")
+    '("MooTextSearchOptions" "options")
+    '("GError**" "error")
+    '("MooTextReplaceFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+(define-function moo_text_replace_regex_all_interactive
+  (c-name "moo_text_replace_regex_all_interactive")
+  (return-type "int")
+  (parameters
+    '("GtkTextIter*" "start")
+    '("GtkTextIter*" "end")
+    '("EggRegex*" "regex")
+    '("const-char*" "replacement")
+    '("gboolean" "backwards")
+    '("GError**" "error")
+    '("MooTextReplaceFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+
+
+;; From mooeditwindow.h
+
+(define-method get_active_doc
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_active_doc")
+  (return-type "MooEdit*")
+)
+
+(define-method set_active_doc
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_set_active_doc")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "edit")
+  )
+)
+
+(define-method list_docs
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_list_docs")
+  (return-type "GSList*")
+)
+
+(define-method num_docs
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_num_docs")
+  (return-type "guint")
+)
+
+(define-method set_title_prefix
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_set_title_prefix")
+  (return-type "none")
+  (parameters
+    '("const-char*" "prefix")
+  )
+)
+
+(define-method add_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_add_pane")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "user_id")
+    '("GtkWidget*" "widget")
+    '("MooPaneLabel*" "label")
+    '("MooPanePosition" "position")
+  )
+)
+
+(define-method remove_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_remove_pane")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "user_id")
+  )
+)
+
+(define-method get_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_pane")
+  (return-type "GtkWidget*")
+  (parameters
+    '("const-char*" "user_id")
+  )
+)
+
+
+
+;; From mooindenter.h
+
+(define-function moo_indenter_new
+  (c-name "moo_indenter_new")
+  (is-constructor-of "MooIndenter")
+  (return-type "MooIndenter*")
+  (properties
+    '("MooEdit*" "doc")
+    '("const-char*" "name")
+  )
+)
+
+(define-method set_value
+  (of-object "MooIndenter")
+  (c-name "moo_indenter_set_value")
+  (return-type "none")
+  (parameters
+    '("const-char*" "var")
+    '("const-char*" "value")
+  )
+)
+
+(define-method make_space
+  (of-object "MooIndenter")
+  (c-name "moo_indenter_make_space")
+  (return-type "char*")
+  (parameters
+    '("guint" "len")
+    '("guint" "start")
+  )
+)
+
+(define-method character
+  (of-object "MooIndenter")
+  (c-name "moo_indenter_character")
+  (return-type "none")
+  (parameters
+    '("GtkTextBuffer*" "buffer")
+    '("gunichar" "inserted_char")
+    '("GtkTextIter*" "where")
+  )
+)
+
+(define-method tab
+  (of-object "MooIndenter")
+  (c-name "moo_indenter_tab")
+  (return-type "none")
+  (parameters
+    '("GtkTextBuffer*" "buffer")
+  )
+)
+
+(define-method shift_lines
+  (of-object "MooIndenter")
+  (c-name "moo_indenter_shift_lines")
+  (return-type "none")
+  (parameters
+    '("GtkTextBuffer*" "buffer")
+    '("guint" "first_line")
+    '("guint" "last_line")
+    '("int" "direction")
+  )
+)
+
+(define-function moo_iter_get_blank_offset
+  (c-name "moo_iter_get_blank_offset")
+  (return-type "int")
+  (parameters
+    '("const-GtkTextIter*" "iter")
+    '("guint" "tab_width")
+  )
+)
+
+(define-function moo_text_iter_get_prev_stop
+  (c-name "moo_text_iter_get_prev_stop")
+  (return-type "guint")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("guint" "tab_width")
+    '("guint" "offset")
+    '("gboolean" "same_line")
+  )
+)
+
+
+
+;; From moolang-aux.h
+
+
+
+;; From moolang-parser.h
+
+(define-function moo_lang_parse_file
+  (c-name "moo_lang_parse_file")
+  (return-type "LangXML*")
+  (parameters
+    '("const-char*" "file")
+  )
+)
+
+(define-function moo_lang_parse_memory
+  (c-name "moo_lang_parse_memory")
+  (return-type "LangXML*")
+  (parameters
+    '("const-char*" "buffer")
+    '("int" "size")
+  )
+)
+
+(define-function moo_lang_xml_free
+  (c-name "moo_lang_xml_free")
+  (return-type "none")
+  (parameters
+    '("LangXML*" "xml")
+  )
+)
+
+(define-function moo_text_style_scheme_parse_file
+  (c-name "moo_text_style_scheme_parse_file")
+  (return-type "MooTextStyleScheme*")
+  (parameters
+    '("const-char*" "file")
+    '("char**" "base_scheme")
+  )
+)
+
+(define-function moo_text_style_scheme_parse_memory
+  (c-name "moo_text_style_scheme_parse_memory")
+  (return-type "MooTextStyleScheme*")
+  (parameters
+    '("const-char*" "buffer")
+    '("int" "size")
+    '("char**" "base_scheme")
+  )
+)
+
+(define-function moo_rule_new_from_xml
+  (c-name "moo_rule_new_from_xml")
+  (return-type "MooRule*")
+  (parameters
+    '("RuleXML*" "xml")
+    '("LangXML*" "lang_xml")
+    '("MooLang*" "lang")
+  )
+)
+
+
+
+;; From moolang-rules.h
+
+(define-function moo_rule_string_new
+  (c-name "moo_rule_string_new")
+  (is-constructor-of "MooRuleString")
+  (return-type "MooRule*")
+  (parameters
+    '("const-char*" "string")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_regex_new
+  (c-name "moo_rule_regex_new")
+  (is-constructor-of "MooRuleRegex")
+  (return-type "MooRule*")
+  (parameters
+    '("const-char*" "pattern")
+    '("gboolean" "non_empty")
+    '("EggRegexCompileFlags" "regex_compile_options")
+    '("EggRegexMatchFlags" "regex_match_options")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_char_new
+  (c-name "moo_rule_char_new")
+  (is-constructor-of "MooRuleChar")
+  (return-type "MooRule*")
+  (parameters
+    '("char" "ch")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_2char_new
+  (c-name "moo_rule_2char_new")
+  (is-constructor-of "MooRule2Char")
+  (return-type "MooRule*")
+  (parameters
+    '("char" "ch1")
+    '("char" "ch2")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_range_new
+  (c-name "moo_rule_range_new")
+  (is-constructor-of "MooRuleRange")
+  (return-type "MooRule*")
+  (parameters
+    '("const-char*" "string")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_keywords_new
+  (c-name "moo_rule_keywords_new")
+  (is-constructor-of "MooRuleKeywords")
+  (return-type "MooRule*")
+  (parameters
+    '("GSList*" "words")
+    '("MooRuleFlags" "flags")
+    '("const-char*" "style")
+  )
+)
+
+(define-function moo_rule_zero_new
+  (c-name "moo_rule_zero_new")
+  (is-constructor-of "MooRuleZero")
+  (return-type "MooRule*")
+  (parameters
+    '("MooRuleFlags" "flags")
+  )
+)
+
+(define-function moo_rule_include_new
+  (c-name "moo_rule_include_new")
+  (is-constructor-of "MooRuleInclude")
+  (return-type "MooRule*")
+  (parameters
+    '("MooContext*" "context")
+  )
+)
+
+(define-method add_child_rule
+  (of-object "MooRule")
+  (c-name "moo_rule_add_child_rule")
+  (return-type "none")
+  (parameters
+    '("MooRule*" "child_rule")
+  )
+)
+
+(define-method set_end_stay
+  (of-object "MooRule")
+  (c-name "moo_rule_set_end_stay")
+  (return-type "none")
+)
+
+(define-method set_end_pop
+  (of-object "MooRule")
+  (c-name "moo_rule_set_end_pop")
+  (return-type "none")
+  (parameters
+    '("guint" "num")
+  )
+)
+
+(define-method set_end_switch
+  (of-object "MooRule")
+  (c-name "moo_rule_set_end_switch")
+  (return-type "none")
+  (parameters
+    '("MooContext*" "target")
+  )
+)
+
+(define-method free
+  (of-object "MooRule")
+  (c-name "moo_rule_free")
+  (return-type "none")
+)
+
+(define-method match
+  (of-object "MooRuleArray")
+  (c-name "moo_rule_array_match")
+  (return-type "MooRule*")
+  (parameters
+    '("MatchData*" "data")
+    '("MatchResult*" "result")
+  )
+)
+
+(define-function moo_match_data_init
+  (c-name "moo_match_data_init")
+  (return-type "none")
+  (parameters
+    '("MatchData*" "data")
+    '("int" "line_number")
+    '("const-GtkTextIter*" "line_start")
+    '("const-GtkTextIter*" "line_end")
+  )
+)
+
+(define-function moo_match_data_set_start
+  (c-name "moo_match_data_set_start")
+  (return-type "none")
+  (parameters
+    '("MatchData*" "data")
+    '("const-GtkTextIter*" "start_iter")
+    '("char*" "start")
+    '("int" "start_offset")
+  )
+)
+
+(define-function moo_match_data_line_start
+  (c-name "moo_match_data_line_start")
+  (return-type "gboolean")
+  (parameters
+    '("MatchData*" "data")
+  )
+)
+
+(define-function moo_match_data_destroy
+  (c-name "moo_match_data_destroy")
+  (return-type "none")
+  (parameters
+    '("MatchData*" "data")
+  )
+)
+
+
+
+;; From moolang-strings.h
+
+
+
+;; From moolang.h
+
+(define-method add_rule
+  (of-object "MooContext")
+  (c-name "moo_context_add_rule")
+  (return-type "none")
+  (parameters
+    '("MooRule*" "rule")
+  )
+)
+
+(define-method set_line_end_stay
+  (of-object "MooContext")
+  (c-name "moo_context_set_line_end_stay")
+  (return-type "none")
+)
+
+(define-method set_line_end_pop
+  (of-object "MooContext")
+  (c-name "moo_context_set_line_end_pop")
+  (return-type "none")
+  (parameters
+    '("guint" "num")
+  )
+)
+
+(define-method set_line_end_switch
+  (of-object "MooContext")
+  (c-name "moo_context_set_line_end_switch")
+  (return-type "none")
+  (parameters
+    '("MooContext*" "target")
+  )
+)
+
+(define-function moo_lang_new
+  (c-name "moo_lang_new")
+  (is-constructor-of "MooLang")
+  (return-type "MooLang*")
+  (parameters
+    '("struct-_MooLangMgr*" "mgr")
+    '("const-char*" "name")
+    '("const-char*" "section")
+    '("const-char*" "version")
+    '("const-char*" "author")
+  )
+)
+
+(define-method get_name
+  (of-object "MooLang")
+  (c-name "moo_lang_get_name")
+  (return-type "char*")
+)
+
+(define-method get_display_name
+  (of-object "MooLang")
+  (c-name "moo_lang_get_display_name")
+  (return-type "char*")
+)
+
+(define-method ref
+  (of-object "MooLang")
+  (c-name "moo_lang_ref")
+  (return-type "MooLang*")
+)
+
+(define-method unref
+  (of-object "MooLang")
+  (c-name "moo_lang_unref")
+  (return-type "none")
+)
+
+(define-method add_context
+  (of-object "MooLang")
+  (c-name "moo_lang_add_context")
+  (return-type "MooContext*")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "style")
+  )
+)
+
+(define-method get_context
+  (of-object "MooLang")
+  (c-name "moo_lang_get_context")
+  (return-type "MooContext*")
+  (parameters
+    '("const-char*" "ctx_name")
+  )
+)
+
+(define-method get_default_context
+  (of-object "MooLang")
+  (c-name "moo_lang_get_default_context")
+  (return-type "MooContext*")
+)
+
+(define-method add_style
+  (of-object "MooLang")
+  (c-name "moo_lang_add_style")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-MooTextStyle*" "style")
+  )
+)
+
+
+
+;; From moolangmgr.h
+
+(define-function moo_lang_mgr_new
+  (c-name "moo_lang_mgr_new")
+  (is-constructor-of "MooLangMgr")
+  (return-type "MooLangMgr*")
+)
+
+(define-method get_available_langs
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_available_langs")
+  (return-type "GSList*")
+)
+
+(define-method get_sections
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_sections")
+  (return-type "GSList*")
+)
+
+(define-method get_lang_for_file
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_file")
+  (return-type "MooLang*")
+  (parameters
+    '("const-char*" "filename")
+  )
+)
+
+(define-method get_lang_for_filename
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_filename")
+  (return-type "MooLang*")
+  (parameters
+    '("const-char*" "filename")
+  )
+)
+
+(define-method get_lang_for_mime_type
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang_for_mime_type")
+  (return-type "MooLang*")
+  (parameters
+    '("const-char*" "mime_type")
+  )
+)
+
+(define-method get_lang
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_lang")
+  (return-type "MooLang*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_context
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_context")
+  (return-type "MooContext*")
+  (parameters
+    '("const-char*" "lang_name")
+    '("const-char*" "ctx_name")
+  )
+)
+
+(define-method list_schemes
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_list_schemes")
+  (return-type "GSList*")
+)
+
+(define-method add_dir
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_add_dir")
+  (return-type "none")
+  (parameters
+    '("const-char*" "dir")
+  )
+)
+
+(define-method read_dirs
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_read_dirs")
+  (return-type "none")
+)
+
+(define-method get_style
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_style")
+  (return-type "MooTextStyle*")
+  (parameters
+    '("const-char*" "lang_name")
+    '("const-char*" "style_name")
+    '("MooTextStyleScheme*" "scheme")
+  )
+)
+
+(define-method get_active_scheme
+  (of-object "MooLangMgr")
+  (c-name "moo_lang_mgr_get_active_scheme")
+  (return-type "MooTextStyleScheme*")
+)
+
+
+
+;; From moolinebuffer.h
+
+(define-function moo_line_buffer_new
+  (c-name "moo_line_buffer_new")
+  (is-constructor-of "MooLineBuffer")
+  (return-type "LineBuffer*")
+)
+
+(define-function moo_line_buffer_free
+  (c-name "moo_line_buffer_free")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+  )
+)
+
+(define-function moo_line_buffer_get_line
+  (c-name "moo_line_buffer_get_line")
+  (return-type "Line*")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "index")
+  )
+)
+
+(define-function moo_line_buffer_insert
+  (c-name "moo_line_buffer_insert")
+  (return-type "Line*")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "index")
+  )
+)
+
+(define-function moo_line_buffer_delete
+  (c-name "moo_line_buffer_delete")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "index")
+  )
+)
+
+(define-function moo_line_buffer_invalidate
+  (c-name "moo_line_buffer_invalidate")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "line")
+  )
+)
+
+(define-function moo_line_buffer_invalidate_all
+  (c-name "moo_line_buffer_invalidate_all")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+  )
+)
+
+(define-function moo_line_buffer_clamp_invalid
+  (c-name "moo_line_buffer_clamp_invalid")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+  )
+)
+
+(define-function moo_line_buffer_insert_range
+  (c-name "moo_line_buffer_insert_range")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "first")
+    '("int" "last")
+  )
+)
+
+(define-function moo_line_buffer_delete_range
+  (c-name "moo_line_buffer_delete_range")
+  (return-type "none")
+  (parameters
+    '("LineBuffer*" "line_buf")
+    '("int" "first")
+    '("int" "last")
+  )
+)
+
+(define-function moo_line_erase_segments
+  (c-name "moo_line_erase_segments")
+  (return-type "none")
+  (parameters
+    '("Line*" "line")
+  )
+)
+
+(define-function moo_line_add_segment
+  (c-name "moo_line_add_segment")
+  (return-type "none")
+  (parameters
+    '("Line*" "line")
+    '("int" "len")
+    '("CtxNode*" "ctx_node")
+    '("CtxNode*" "match_node")
+    '("MooRule*" "rule")
+  )
+)
+
+
+
+;; From moolineview.h
+
+(define-function moo_line_view_new
+  (c-name "moo_line_view_new")
+  (is-constructor-of "MooLineView")
+  (return-type "GtkWidget*")
+)
+
+(define-method grab
+  (of-object "MooLineView")
+  (c-name "moo_line_view_grab")
+  (return-type "gboolean")
+  (parameters
+    '("gpointer" "user_id")
+  )
+)
+
+(define-method ungrab
+  (of-object "MooLineView")
+  (c-name "moo_line_view_ungrab")
+  (return-type "none")
+  (parameters
+    '("gpointer" "user_id")
+  )
+)
+
+(define-method set_line_data
+  (of-object "MooLineView")
+  (c-name "moo_line_view_set_line_data")
+  (return-type "none")
+  (parameters
+    '("int" "line")
+    '("gpointer" "data")
+    '("GDestroyNotify" "free_func")
+  )
+)
+
+(define-method get_line_data
+  (of-object "MooLineView")
+  (c-name "moo_line_view_get_line_data")
+  (return-type "gpointer")
+  (parameters
+    '("int" "line")
+  )
+)
+
+(define-method create_tag
+  (of-object "MooLineView")
+  (c-name "moo_line_view_create_tag")
+  (return-type "GtkTextTag*")
+  (parameters
+    '("const-char*" "tag_name")
+    '("const-char*" "first_property_name")
+  )
+  (varargs #t)
+)
+
+(define-method lookup_tag
+  (of-object "MooLineView")
+  (c-name "moo_line_view_lookup_tag")
+  (return-type "GtkTextTag*")
+  (parameters
+    '("const-char*" "tag_name")
+  )
+)
+
+(define-method clear
+  (of-object "MooLineView")
+  (c-name "moo_line_view_clear")
+  (return-type "none")
+)
+
+(define-method start_line
+  (of-object "MooLineView")
+  (c-name "moo_line_view_start_line")
+  (return-type "int")
+)
+
+(define-method write
+  (of-object "MooLineView")
+  (c-name "moo_line_view_write")
+  (return-type "none")
+  (parameters
+    '("const-char*" "text")
+    '("gssize" "len")
+    '("GtkTextTag*" "tag")
+  )
+)
+
+(define-method end_line
+  (of-object "MooLineView")
+  (c-name "moo_line_view_end_line")
+  (return-type "none")
+)
+
+(define-method write_line
+  (of-object "MooLineView")
+  (c-name "moo_line_view_write_line")
+  (return-type "int")
+  (parameters
+    '("const-char*" "text")
+    '("gssize" "len")
+    '("GtkTextTag*" "tag")
+  )
+)
+
+
+
+;; From mootextbuffer.h
+
+(define-function moo_text_buffer_new
+  (c-name "moo_text_buffer_new")
+  (is-constructor-of "MooTextBuffer")
+  (return-type "GtkTextBuffer*")
+  (properties
+    '("GtkTextTagTable*" "table")
+  )
+)
+
+(define-method set_lang
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_lang")
+  (return-type "none")
+  (parameters
+    '("MooLang*" "lang")
+  )
+)
+
+(define-method get_lang
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_lang")
+  (return-type "MooLang*")
+)
+
+(define-method set_highlight
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_highlight")
+  (return-type "none")
+  (parameters
+    '("gboolean" "highlight")
+  )
+)
+
+(define-method get_highlight
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_highlight")
+  (return-type "gboolean")
+)
+
+(define-method set_bracket_match_style
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_bracket_match_style")
+  (return-type "none")
+  (parameters
+    '("const-MooTextStyle*" "style")
+  )
+)
+
+(define-method set_bracket_mismatch_style
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_bracket_mismatch_style")
+  (return-type "none")
+  (parameters
+    '("const-MooTextStyle*" "style")
+  )
+)
+
+(define-method set_brackets
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_brackets")
+  (return-type "none")
+  (parameters
+    '("const-char*" "brackets")
+  )
+)
+
+(define-method set_check_brackets
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_set_check_brackets")
+  (return-type "none")
+  (parameters
+    '("gboolean" "check")
+  )
+)
+
+(define-method has_text
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_has_text")
+  (return-type "gboolean")
+)
+
+(define-method has_selection
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_has_selection")
+  (return-type "gboolean")
+)
+
+(define-method apply_scheme
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_apply_scheme")
+  (return-type "none")
+  (parameters
+    '("MooTextStyleScheme*" "scheme")
+  )
+)
+
+
+
+;; From mootextiter.h
+
+(define-function moo_text_iter_find_matching_bracket
+  (c-name "moo_text_iter_find_matching_bracket")
+  (return-type "MooBracketMatchType")
+  (parameters
+    '("GtkTextIter*" "iter")
+    '("int" "limit")
+  )
+)
+
+(define-function moo_text_iter_at_bracket
+  (c-name "moo_text_iter_at_bracket")
+  (return-type "gboolean")
+  (parameters
+    '("GtkTextIter*" "iter")
+  )
+)
+
+
+
+;; From mootextstyle.h
+
+(define-function moo_text_style_new
+  (c-name "moo_text_style_new")
+  (is-constructor-of "MooTextStyle")
+  (return-type "MooTextStyle*")
+  (parameters
+    '("const-char*" "default_style")
+    '("const-GdkColor*" "foreground")
+    '("const-GdkColor*" "background")
+    '("gboolean" "bold")
+    '("gboolean" "italic")
+    '("gboolean" "underline")
+    '("gboolean" "strikethrough")
+    '("MooTextStyleMask" "mask")
+    '("gboolean" "modified")
+  )
+)
+
+(define-method copy
+  (of-object "MooTextStyle")
+  (c-name "moo_text_style_copy")
+  (return-type "MooTextStyle*")
+)
+
+(define-method copy_content
+  (of-object "MooTextStyle")
+  (c-name "moo_text_style_copy_content")
+  (return-type "none")
+  (parameters
+    '("const-MooTextStyle*" "src")
+  )
+)
+
+(define-method compose
+  (of-object "MooTextStyle")
+  (c-name "moo_text_style_compose")
+  (return-type "none")
+  (parameters
+    '("const-MooTextStyle*" "src")
+  )
+)
+
+(define-method free
+  (of-object "MooTextStyle")
+  (c-name "moo_text_style_free")
+  (return-type "none")
+)
+
+
+
+;; From mootextstylescheme.h
+
+(define-function moo_text_style_scheme_new_empty
+  (c-name "moo_text_style_scheme_new_empty")
+  (return-type "MooTextStyleScheme*")
+  (parameters
+    '("const-char*" "name")
+    '("MooTextStyleScheme*" "base")
+  )
+)
+
+(define-function moo_text_style_scheme_new_default
+  (c-name "moo_text_style_scheme_new_default")
+  (return-type "MooTextStyleScheme*")
+)
+
+(define-method copy
+  (of-object "MooTextStyleScheme")
+  (c-name "moo_text_style_scheme_copy")
+  (return-type "MooTextStyleScheme*")
+)
+
+(define-method list_default
+  (of-object "MooTextStyleScheme")
+  (c-name "moo_text_style_scheme_list_default")
+  (return-type "GSList*")
+)
+
+(define-method compose
+  (of-object "MooTextStyleScheme")
+  (c-name "moo_text_style_scheme_compose")
+  (return-type "none")
+  (parameters
+    '("const-char*" "language_name")
+    '("const-char*" "style_name")
+    '("const-MooTextStyle*" "style")
+  )
+)
+
+(define-method set
+  (of-object "MooTextStyleScheme")
+  (c-name "moo_text_style_scheme_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "language_name")
+    '("const-char*" "style_name")
+    '("const-MooTextStyle*" "style")
+  )
+)
+
+(define-method get
+  (of-object "MooTextStyleScheme")
+  (c-name "moo_text_style_scheme_get")
+  (return-type "const-MooTextStyle*")
+  (parameters
+    '("const-char*" "language_name")
+    '("const-char*" "style_name")
+  )
+)
+
+
+
+;; From mootextview.h
+
+(define-function moo_text_view_new
+  (c-name "moo_text_view_new")
+  (is-constructor-of "MooTextView")
+  (return-type "MooTextView*")
+)
+
+(define-method select_all
+  (of-object "MooTextView")
+  (c-name "moo_text_view_select_all")
+  (return-type "none")
+)
+
+(define-method get_selection
+  (of-object "MooTextView")
+  (c-name "moo_text_view_get_selection")
+  (return-type "char*")
+)
+
+(define-method get_text
+  (of-object "MooTextView")
+  (c-name "moo_text_view_get_text")
+  (return-type "char*")
+)
+
+(define-method has_selection
+  (of-object "MooTextView")
+  (c-name "moo_text_view_has_selection")
+  (return-type "gboolean")
+)
+
+(define-method has_text
+  (of-object "MooTextView")
+  (c-name "moo_text_view_has_text")
+  (return-type "gboolean")
+)
+
+(define-method delete_selection
+  (of-object "MooTextView")
+  (c-name "moo_text_view_delete_selection")
+  (return-type "none")
+)
+
+(define-method can_redo
+  (of-object "MooTextView")
+  (c-name "moo_text_view_can_redo")
+  (return-type "gboolean")
+)
+
+(define-method can_undo
+  (of-object "MooTextView")
+  (c-name "moo_text_view_can_undo")
+  (return-type "gboolean")
+)
+
+(define-method redo
+  (of-object "MooTextView")
+  (c-name "moo_text_view_redo")
+  (return-type "none")
+)
+
+(define-method undo
+  (of-object "MooTextView")
+  (c-name "moo_text_view_undo")
+  (return-type "none")
+)
+
+(define-method start_not_undoable_action
+  (of-object "MooTextView")
+  (c-name "moo_text_view_start_not_undoable_action")
+  (return-type "none")
+)
+
+(define-method end_not_undoable_action
+  (of-object "MooTextView")
+  (c-name "moo_text_view_end_not_undoable_action")
+  (return-type "none")
+)
+
+(define-method find_interactive
+  (of-object "MooTextView")
+  (c-name "moo_text_view_find_interactive")
+  (return-type "none")
+)
+
+(define-method replace_interactive
+  (of-object "MooTextView")
+  (c-name "moo_text_view_replace_interactive")
+  (return-type "none")
+)
+
+(define-method find_next_interactive
+  (of-object "MooTextView")
+  (c-name "moo_text_view_find_next_interactive")
+  (return-type "none")
+)
+
+(define-method find_prev_interactive
+  (of-object "MooTextView")
+  (c-name "moo_text_view_find_prev_interactive")
+  (return-type "none")
+)
+
+(define-method goto_line
+  (of-object "MooTextView")
+  (c-name "moo_text_view_goto_line")
+  (return-type "none")
+  (parameters
+    '("int" "line")
+  )
+)
+
+(define-method set_font_from_string
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_font_from_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "font")
+  )
+)
+
+(define-method get_indenter
+  (of-object "MooTextView")
+  (c-name "moo_text_view_get_indenter")
+  (return-type "MooIndenter*")
+)
+
+(define-method set_indenter
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_indenter")
+  (return-type "none")
+  (parameters
+    '("MooIndenter*" "indenter")
+  )
+)
+
+(define-method move_cursor
+  (of-object "MooTextView")
+  (c-name "moo_text_view_move_cursor")
+  (return-type "none")
+  (parameters
+    '("int" "line")
+    '("int" "character")
+    '("gboolean" "in_idle")
+  )
+)
+
+(define-method set_highlight_current_line
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_highlight_current_line")
+  (return-type "none")
+  (parameters
+    '("gboolean" "highlight")
+  )
+)
+
+(define-method set_current_line_color
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_current_line_color")
+  (return-type "none")
+  (parameters
+    '("const-GdkColor*" "color")
+  )
+)
+
+(define-method set_cursor_color
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_cursor_color")
+  (return-type "none")
+  (parameters
+    '("const-GdkColor*" "color")
+  )
+)
+
+(define-method set_show_tabs
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_show_tabs")
+  (return-type "none")
+  (parameters
+    '("gboolean" "show")
+  )
+)
+
+(define-method apply_scheme
+  (of-object "MooTextView")
+  (c-name "moo_text_view_apply_scheme")
+  (return-type "none")
+  (parameters
+    '("MooTextStyleScheme*" "scheme")
+  )
+)
+
+(define-method lookup_tag
+  (of-object "MooTextView")
+  (c-name "moo_text_view_lookup_tag")
+  (return-type "GtkTextTag*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method set_lang
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_lang")
+  (return-type "none")
+  (parameters
+    '("MooLang*" "lang")
+  )
+)

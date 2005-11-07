@@ -20,7 +20,7 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_TERM_TEXT_ATTR_MASK    (moo_term_text_attr_mask_get_type ())
-#define MOO_TYPE_TERM_TEXT_ATTR         (moo_term_text_attr_get_type ())
+#define MOO_TYPE_TERM_TEXT_COLOR        (moo_term_text_color_get_type ())
 
 #define MOO_TYPE_TERM_TAG               (moo_term_tag_get_type ())
 #define MOO_TERM_TAG(obj)               (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_TAG, MooTermTag))
@@ -63,7 +63,7 @@ struct _MooTermTextAttr {
 };
 
 struct _MooTermTag {
-    GObject     parent;
+    GObject parent;
     MooTermTagTable *table;
     char *name;
     MooTermTextAttr attr;
@@ -78,7 +78,7 @@ struct _MooTermTagClass {
 
 
 GType   moo_term_text_attr_mask_get_type    (void) G_GNUC_CONST;
-GType   moo_term_text_attr_get_type         (void) G_GNUC_CONST;
+GType   moo_term_text_color_get_type        (void) G_GNUC_CONST;
 GType   moo_term_tag_get_type               (void) G_GNUC_CONST;
 
 void    moo_term_tag_set_attr               (MooTermTag         *tag,

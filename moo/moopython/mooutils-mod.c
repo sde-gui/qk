@@ -17,10 +17,12 @@
 #include <glib.h>
 #include "moopython/moo-pygtk.h"
 #include "moopython/mooutils-mod.h"
+#include "mooutils/moostock.h"
 
 
 static char *moo_utils_module_doc = (char*)"_moo_utils module.";
 
+#define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)
 
 gboolean
 _moo_utils_mod_init (void)
@@ -34,6 +36,37 @@ _moo_utils_mod_init (void)
 
     _moo_utils_add_constants (mod, "MOO_");
     _moo_utils_register_classes (PyModule_GetDict (mod));
+
+    if (PyErr_Occurred ())
+        return FALSE;
+
+    add_constant (mod, "STOCK_APP", MOO_STOCK_APP);
+    add_constant (mod, "STOCK_GAP", MOO_STOCK_GAP);
+    add_constant (mod, "STOCK_TERMINAL", MOO_STOCK_TERMINAL);
+    add_constant (mod, "STOCK_KEYBOARD", MOO_STOCK_KEYBOARD);
+    add_constant (mod, "STOCK_RESTART", MOO_STOCK_RESTART);
+    add_constant (mod, "STOCK_CLOSE", MOO_STOCK_CLOSE);
+    add_constant (mod, "STOCK_STICKY", MOO_STOCK_STICKY);
+    add_constant (mod, "STOCK_DETACH", MOO_STOCK_DETACH);
+    add_constant (mod, "STOCK_ATTACH", MOO_STOCK_ATTACH);
+    add_constant (mod, "STOCK_KEEP_ON_TOP", MOO_STOCK_KEEP_ON_TOP);
+    add_constant (mod, "STOCK_DOC_DELETED", MOO_STOCK_DOC_DELETED);
+    add_constant (mod, "STOCK_DOC_MODIFIED_ON_DISK", MOO_STOCK_DOC_MODIFIED_ON_DISK);
+    add_constant (mod, "STOCK_DOC_DELETED", MOO_STOCK_DOC_DELETED);
+    add_constant (mod, "STOCK_DOC_MODIFIED", MOO_STOCK_DOC_MODIFIED);
+    add_constant (mod, "STOCK_FILE_SELECTOR", MOO_STOCK_FILE_SELECTOR);
+    add_constant (mod, "STOCK_SAVE_NONE", MOO_STOCK_SAVE_NONE);
+    add_constant (mod, "STOCK_SAVE_SELECTED", MOO_STOCK_SAVE_SELECTED);
+    add_constant (mod, "STOCK_NEW_PROJECT", MOO_STOCK_NEW_PROJECT);
+    add_constant (mod, "STOCK_OPEN_PROJECT", MOO_STOCK_OPEN_PROJECT);
+    add_constant (mod, "STOCK_CLOSE_PROJECT", MOO_STOCK_CLOSE_PROJECT);
+    add_constant (mod, "STOCK_PROJECT_OPTIONS", MOO_STOCK_PROJECT_OPTIONS);
+    add_constant (mod, "STOCK_BUILD", MOO_STOCK_BUILD);
+    add_constant (mod, "STOCK_COMPILE", MOO_STOCK_COMPILE);
+    add_constant (mod, "STOCK_EXECUTE", MOO_STOCK_EXECUTE);
+    add_constant (mod, "STOCK_FIND_IN_FILES", MOO_STOCK_FIND_IN_FILES);
+    add_constant (mod, "STOCK_FIND_FILE", MOO_STOCK_FIND_FILE);
+    add_constant (mod, "STOCK_PLUGINS", MOO_STOCK_PLUGINS);
 
     if (!PyErr_Occurred ())
     {

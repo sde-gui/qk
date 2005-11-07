@@ -90,6 +90,7 @@ console_window_plugin_create (WindowStuff *stuff)
 
     moo_edit_window_add_pane (window, CONSOLE_PLUGIN_ID,
                               swin, label, MOO_PANE_POS_BOTTOM);
+    moo_pane_label_free (label);
 }
 
 

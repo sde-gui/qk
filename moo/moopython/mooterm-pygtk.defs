@@ -1,10 +1,17 @@
-;; -*- scheme -*-
-; object definitions ...
+;; Hand-edited
+
 (define-object Term
   (in-module "Moo")
   (parent "GtkWidget")
   (c-name "MooTerm")
   (gtype-id "MOO_TYPE_TERM")
+)
+
+(define-object TermTag
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTermTag")
+  (gtype-id "MOO_TYPE_TERM_TAG")
 )
 
 (define-object TermWindow
@@ -14,39 +21,274 @@
   (gtype-id "MOO_TYPE_TERM_WINDOW")
 )
 
+
+(define-boxed TermIter
+  (in-module "Moo")
+  (c-name "MooTermIter")
+  (gtype-id "MOO_TYPE_TERM_ITER")
+  (copy-func "moo_term_iter_copy")
+  (release-func "moo_term_iter_free")
+)
+
 ;; Enumerations and flags ...
 
-;; From ../mooterm/mooterm.h
-
-(define-function moo_term_error_quark
-  (c-name "moo_term_error_quark")
-  (return-type "GQuark")
+(define-enum TermEraseBinding
+  (in-module "Moo")
+  (c-name "MooTermEraseBinding")
+  (gtype-id "MOO_TYPE_TERM_ERASE_BINDING")
+  (values
+    '("auto" "MOO_TERM_ERASE_AUTO")
+    '("ascii-backspace" "MOO_TERM_ERASE_ASCII_BACKSPACE")
+    '("ascii-delete" "MOO_TERM_ERASE_ASCII_DELETE")
+    '("delete-sequence" "MOO_TERM_ERASE_DELETE_SEQUENCE")
+  )
 )
 
-(define-function moo_term_get_type
-  (c-name "moo_term_get_type")
-  (return-type "GType")
+(define-flags TermTextAttrMask
+  (in-module "Moo")
+  (c-name "MooTermTextAttrMask")
+  (gtype-id "MOO_TYPE_TERM_TEXT_ATTR_MASK")
+  (values
+    '("reverse" "MOO_TERM_TEXT_REVERSE")
+    '("blink" "MOO_TERM_TEXT_BLINK")
+    '("foreground" "MOO_TERM_TEXT_FOREGROUND")
+    '("background" "MOO_TERM_TEXT_BACKGROUND")
+    '("bold" "MOO_TERM_TEXT_BOLD")
+    '("underline" "MOO_TERM_TEXT_UNDERLINE")
+  )
 )
 
-(define-function moo_term_command_get_type
-  (c-name "moo_term_command_get_type")
-  (return-type "GType")
+(define-enum TermTextColor
+  (in-module "Moo")
+  (c-name "MooTermTextColor")
+  (gtype-id "MOO_TYPE_TERM_TEXT_COLOR")
+  (values
+    '("black" "MOO_TERM_BLACK")
+    '("red" "MOO_TERM_RED")
+    '("green" "MOO_TERM_GREEN")
+    '("yellow" "MOO_TERM_YELLOW")
+    '("blue" "MOO_TERM_BLUE")
+    '("magenta" "MOO_TERM_MAGENTA")
+    '("cyan" "MOO_TERM_CYAN")
+    '("white" "MOO_TERM_WHITE")
+  )
 )
 
-(define-function moo_term_profile_get_type
-  (c-name "moo_term_profile_get_type")
-  (return-type "GType")
+
+;; From mooterm-text.h
+
+(define-method get_line_count
+  (of-object "MooTerm")
+  (c-name "moo_term_get_line_count")
+  (return-type "guint")
 )
 
-(define-function moo_term_profile_array_get_type
-  (c-name "moo_term_profile_array_get_type")
-  (return-type "GType")
+(define-method get_line
+  (of-object "MooTerm")
+  (c-name "moo_term_get_line")
+  (return-type "MooTermLine*")
+  (parameters
+    '("guint" "line_no")
+  )
 )
 
-(define-function moo_term_erase_binding_get_type
-  (c-name "moo_term_erase_binding_get_type")
-  (return-type "GType")
+(define-method set_line_data
+  (of-object "MooTerm")
+  (c-name "moo_term_set_line_data")
+  (return-type "none")
+  (parameters
+    '("MooTermLine*" "line")
+    '("const-char*" "key")
+    '("gpointer" "data")
+  )
 )
+
+(define-method set_line_data_full
+  (of-object "MooTerm")
+  (c-name "moo_term_set_line_data_full")
+  (return-type "none")
+  (parameters
+    '("MooTermLine*" "line")
+    '("const-char*" "key")
+    '("gpointer" "data")
+    '("GDestroyNotify" "destroy")
+  )
+)
+
+(define-method get_line_data
+  (of-object "MooTerm")
+  (c-name "moo_term_get_line_data")
+  (return-type "gpointer")
+  (parameters
+    '("MooTermLine*" "line")
+    '("const-char*" "key")
+  )
+)
+
+(define-method create_tag
+  (of-object "MooTerm")
+  (c-name "moo_term_create_tag")
+  (return-type "MooTermTag*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_tag
+  (of-object "MooTerm")
+  (c-name "moo_term_get_tag")
+  (return-type "MooTermTag*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method delete_tag
+  (of-object "MooTerm")
+  (c-name "moo_term_delete_tag")
+  (return-type "none")
+  (parameters
+    '("MooTermTag*" "tag")
+  )
+)
+
+(define-method get_tag_table
+  (of-object "MooTerm")
+  (c-name "moo_term_get_tag_table")
+  (return-type "MooTermTagTable*")
+)
+
+(define-method get_iter_at_line
+  (of-object "MooTerm")
+  (c-name "moo_term_get_iter_at_line")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermIter*" "iter")
+    '("guint" "line")
+  )
+)
+
+(define-method get_iter_at_line_offset
+  (of-object "MooTerm")
+  (c-name "moo_term_get_iter_at_line_offset")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermIter*" "iter")
+    '("guint" "line")
+    '("guint" "offset")
+  )
+)
+
+(define-method get_iter_at_cursor
+  (of-object "MooTerm")
+  (c-name "moo_term_get_iter_at_cursor")
+  (return-type "none")
+  (parameters
+    '("MooTermIter*" "iter")
+  )
+)
+
+(define-method forward_to_line_end
+  (of-object "MooTermIter")
+  (c-name "moo_term_iter_forward_to_line_end")
+  (return-type "none")
+)
+
+(define-method apply_tag
+  (of-object "MooTerm")
+  (c-name "moo_term_apply_tag")
+  (return-type "none")
+  (parameters
+    '("MooTermTag*" "tag")
+    '("MooTermIter*" "start")
+    '("MooTermIter*" "end")
+  )
+)
+
+(define-method remove_tag
+  (of-object "MooTerm")
+  (c-name "moo_term_remove_tag")
+  (return-type "none")
+  (parameters
+    '("MooTermTag*" "tag")
+    '("MooTermIter*" "start")
+    '("MooTermIter*" "end")
+  )
+)
+
+(define-method has_tag
+  (of-object "MooTermIter")
+  (c-name "moo_term_iter_has_tag")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermTag*" "tag")
+  )
+)
+
+(define-method get_tag_start
+  (of-object "MooTermIter")
+  (c-name "moo_term_iter_get_tag_start")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermTag*" "tag")
+  )
+)
+
+(define-method get_tag_end
+  (of-object "MooTermIter")
+  (c-name "moo_term_iter_get_tag_end")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermTag*" "tag")
+  )
+)
+
+(define-method window_to_buffer_coords
+  (of-object "MooTerm")
+  (c-name "moo_term_window_to_buffer_coords")
+  (return-type "none")
+  (parameters
+    '("int" "window_x")
+    '("int" "window_y")
+    '("int*" "buffer_x")
+    '("int*" "buffer_y")
+  )
+)
+
+(define-method get_iter_at_location
+  (of-object "MooTerm")
+  (c-name "moo_term_get_iter_at_location")
+  (return-type "none")
+  (parameters
+    '("MooTermIter*" "iter")
+    '("int" "x")
+    '("int" "y")
+  )
+)
+
+(define-method get_iter_at_pos
+  (of-object "MooTerm")
+  (c-name "moo_term_get_iter_at_pos")
+  (return-type "none")
+  (parameters
+    '("MooTermIter*" "iter")
+    '("int" "x")
+    '("int" "y")
+  )
+)
+
+(define-function moo_term_get_text
+  (c-name "moo_term_get_text")
+  (return-type "char*")
+  (parameters
+    '("MooTermIter*" "start")
+    '("MooTermIter*" "end")
+  )
+)
+
+
+
+;; From mooterm.h
 
 (define-method set_adjustment
   (of-object "MooTerm")
@@ -232,6 +474,18 @@
   )
 )
 
+(define-method reset
+  (of-object "MooTerm")
+  (c-name "moo_term_reset")
+  (return-type "none")
+)
+
+(define-method soft_reset
+  (of-object "MooTerm")
+  (c-name "moo_term_soft_reset")
+  (return-type "none")
+)
+
 (define-function moo_term_profile_new
   (c-name "moo_term_profile_new")
   (is-constructor-of "MooTermProfile")
@@ -344,7 +598,7 @@
 (define-method start_default_profile
   (of-object "MooTerm")
   (c-name "moo_term_start_default_profile")
-  (return-type "none")
+  (return-type "gboolean")
   (parameters
     '("GError**" "error")
   )
@@ -353,7 +607,7 @@
 (define-method start_profile
   (of-object "MooTerm")
   (c-name "moo_term_start_profile")
-  (return-type "none")
+  (return-type "gboolean")
   (parameters
     '("int" "profile")
     '("GError**" "error")
@@ -384,12 +638,20 @@
 
 
 
-;; From ../mooterm/mootermwindow.h
+;; From mootermtag.h
 
-(define-function moo_term_window_get_type
-  (c-name "moo_term_window_get_type")
-  (return-type "GType")
+(define-method set_attr
+  (of-object "MooTermTag")
+  (c-name "moo_term_tag_set_attr")
+  (return-type "none")
+  (parameters
+    '("MooTermTextAttr" "attr")
+  )
 )
+
+
+
+;; From mootermwindow.h
 
 (define-function moo_term_window_new
   (c-name "moo_term_window_new")
@@ -408,3 +670,14 @@
   (c-name "moo_term_window_get_term")
   (return-type "MooTerm*")
 )
+
+(define-method set_term_type
+  (of-object "MooTermWindow")
+  (c-name "moo_term_window_set_term_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+

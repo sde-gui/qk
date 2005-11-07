@@ -1584,3 +1584,30 @@ moo_term_get_line_data (MooTerm            *term,
 
     return _moo_term_buffer_get_line_data (term->priv->primary_buffer, line, key);
 }
+
+
+MooTermIter*
+moo_term_iter_copy (const MooTermIter *iter)
+{
+    g_return_val_if_fail (iter != NULL, NULL);
+    return g_memdup (iter, sizeof (MooTermIter));
+}
+
+void
+moo_term_iter_free (MooTermIter *iter)
+{
+    g_free (iter);
+}
+
+
+GType
+moo_term_iter_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooTermIter",
+                                             (GBoxedCopyFunc) moo_term_iter_copy,
+                                             (GBoxedFreeFunc) moo_term_iter_free);
+    return type;
+}

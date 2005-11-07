@@ -36,14 +36,6 @@ MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter,
  *   and chooses right one in the case )|(                  */
 gboolean    moo_text_iter_at_bracket    (GtkTextIter        *iter);
 
-/* does the same as gtk_text_buffer_get_iter_at_line_offset, with the
- * difference that it accepts invalid position */
-gboolean    moo_get_iter_at_line_offset (GtkTextBuffer      *buffer,
-                                         GtkTextIter        *iter,
-                                         gint                line_number,
-                                         gint                char_offset,
-                                         gboolean            exact);
-
 
 G_END_DECLS
 

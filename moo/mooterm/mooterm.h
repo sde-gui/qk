@@ -19,14 +19,16 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TERM              (moo_term_get_type ())
-#define MOO_TYPE_TERM_PROFILE      (moo_term_profile_get_type ())
-#define MOO_TYPE_TERM_COMMAND      (moo_term_command_get_type ())
-#define MOO_TERM(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TERM, MooTerm))
-#define MOO_TERM_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TERM, MooTermClass))
-#define MOO_IS_TERM(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_TERM))
-#define MOO_IS_TERM_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TERM))
-#define MOO_TERM_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TERM, MooTermClass))
+#define MOO_TYPE_TERM_PROFILE       (moo_term_profile_get_type ())
+#define MOO_TYPE_TERM_COMMAND       (moo_term_command_get_type ())
+#define MOO_TYPE_TERM_ERASE_BINDING (moo_term_erase_binding_get_type ())
+
+#define MOO_TYPE_TERM               (moo_term_get_type ())
+#define MOO_TERM(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TERM, MooTerm))
+#define MOO_TERM_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_TERM, MooTermClass))
+#define MOO_IS_TERM(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_TERM))
+#define MOO_IS_TERM_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TERM))
+#define MOO_TERM_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TERM, MooTermClass))
 
 typedef struct _MooTerm             MooTerm;
 typedef struct _MooTermPrivate      MooTermPrivate;

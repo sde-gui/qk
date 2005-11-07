@@ -2189,3 +2189,25 @@ emit_new_line (MooTerm *term)
 {
     g_signal_emit (term, signals[NEW_LINE], 0);
 }
+
+
+GType
+moo_term_erase_binding_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_TERM_ERASE_AUTO, (char*)"MOO_TERM_ERASE_AUTO", (char*)"auto" },
+            { MOO_TERM_ERASE_ASCII_BACKSPACE, (char*)"MOO_TERM_ERASE_ASCII_BACKSPACE", (char*)"ascii-backspace" },
+            { MOO_TERM_ERASE_ASCII_DELETE, (char*)"MOO_TERM_ERASE_ASCII_DELETE", (char*)"ascii-delete" },
+            { MOO_TERM_ERASE_DELETE_SEQUENCE, (char*)"MOO_TERM_ERASE_DELETE_SEQUENCE", (char*)"delete-sequence" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooTermEraseBinding", values);
+    }
+
+    return type;
+}

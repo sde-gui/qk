@@ -297,3 +297,53 @@ moo_term_tag_set_attr (MooTermTag         *tag,
     g_return_if_fail (MOO_IS_TERM_TAG (tag));
     tag->attr = attr;
 }
+
+
+GType
+moo_term_text_attr_mask_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GFlagsValue values[] = {
+            { MOO_TERM_TEXT_REVERSE, (char*)"MOO_TERM_TEXT_REVERSE", (char*)"reverse" },
+            { MOO_TERM_TEXT_BLINK, (char*)"MOO_TERM_TEXT_BLINK", (char*)"blink" },
+            { MOO_TERM_TEXT_FOREGROUND, (char*)"MOO_TERM_TEXT_FOREGROUND", (char*)"foreground" },
+            { MOO_TERM_TEXT_BACKGROUND, (char*)"MOO_TERM_TEXT_BACKGROUND", (char*)"background" },
+            { MOO_TERM_TEXT_BOLD, (char*)"MOO_TERM_TEXT_BOLD", (char*)"bold" },
+            { MOO_TERM_TEXT_UNDERLINE, (char*)"MOO_TERM_TEXT_UNDERLINE", (char*)"underline" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_flags_register_static ("MooTermTextAttrMask", values);
+    }
+
+    return type;
+}
+
+
+GType
+moo_term_text_color_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_TERM_BLACK, (char*)"MOO_TERM_BLACK", (char*)"black" },
+            { MOO_TERM_RED, (char*)"MOO_TERM_RED", (char*)"red" },
+            { MOO_TERM_GREEN, (char*)"MOO_TERM_GREEN", (char*)"green" },
+            { MOO_TERM_YELLOW, (char*)"MOO_TERM_YELLOW", (char*)"yellow" },
+            { MOO_TERM_BLUE, (char*)"MOO_TERM_BLUE", (char*)"blue" },
+            { MOO_TERM_MAGENTA, (char*)"MOO_TERM_MAGENTA", (char*)"magenta" },
+            { MOO_TERM_CYAN, (char*)"MOO_TERM_CYAN", (char*)"cyan" },
+            { MOO_TERM_WHITE, (char*)"MOO_TERM_WHITE", (char*)"white" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooTermTextColor", values);
+    }
+
+    return type;
+}

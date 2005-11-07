@@ -1282,7 +1282,7 @@ moo_edit_window_add_pane (MooEditWindow  *window,
 
     g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, FALSE);
 
-    gtk_object_sink (GTK_OBJECT (g_object_ref (widget)));
+    gtk_object_sink (g_object_ref (widget));
 
     result = moo_big_paned_insert_pane (window->paned, widget, label,
                                         position, -1);
@@ -1306,7 +1306,6 @@ moo_edit_window_add_pane (MooEditWindow  *window,
     }
 
     g_object_unref (widget);
-    moo_pane_label_free (label);
 
     return result >= 0;
 }

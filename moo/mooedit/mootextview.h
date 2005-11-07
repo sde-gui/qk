@@ -86,8 +86,6 @@ MooTextView *moo_text_view_new                      (void);
 
 void         moo_text_view_select_all               (MooTextView        *view);
 
-gboolean     moo_text_view_is_empty                 (MooTextView        *view);
-
 char        *moo_text_view_get_selection            (MooTextView        *view);
 char        *moo_text_view_get_text                 (MooTextView        *view);
 gboolean     moo_text_view_has_selection            (MooTextView        *view);

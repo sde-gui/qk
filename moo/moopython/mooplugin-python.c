@@ -610,7 +610,8 @@ moo_py_plugin_instance_init (MooPyPlugin            *plugin,
 
     if (klass->data->py_win_plugin_type && !klass->data->win_plugin_type)
         klass->data->win_plugin_type = generate_win_plugin_type (klass->data->py_win_plugin_type, klass->data);
-    if (klass->data->py_win_plugin_type && !klass->data->doc_plugin_type)
+
+    if (klass->data->py_doc_plugin_type && !klass->data->doc_plugin_type)
         klass->data->doc_plugin_type = generate_doc_plugin_type (klass->data->py_doc_plugin_type, klass->data);
 
     moo_plugin->win_plugin_type = klass->data->win_plugin_type;

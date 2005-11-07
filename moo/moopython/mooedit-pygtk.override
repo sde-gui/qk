@@ -8,6 +8,7 @@ headers
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mootextiter.h"
+#include "mooedit/mooeditprefs.h"
 #include "moopython/mooplugin-python.h"
 #include "mooutils/mooutils-python.h"
 #include "moopython/moo-pygtk.h"
@@ -76,11 +77,16 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (!PyType_Check (plugin_type))
         return_TypeErr ("argument must be a type");
 
-    if (win_plugin_type && !PyType_Check (win_plugin_type))
+    if (win_plugin_type && win_plugin_type != Py_None && !PyType_Check (win_plugin_type))
         return_TypeErr ("argument must be a type");
 
-    if (doc_plugin_type && !PyType_Check (doc_plugin_type))
+    if (doc_plugin_type && doc_plugin_type != Py_None && !PyType_Check (doc_plugin_type))
         return_TypeErr ("argument must be a type");
+
+    if (win_plugin_type == Py_None)
+        win_plugin_type = NULL;
+    if (doc_plugin_type == Py_None)
+        doc_plugin_type = NULL;
 
     return _moo_python_plugin_register (plugin_type, win_plugin_type, doc_plugin_type);
 }

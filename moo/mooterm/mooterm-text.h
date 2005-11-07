@@ -19,6 +19,8 @@
 #include <mooterm/mootermline.h>
 
 
+#define MOO_TYPE_TERM_ITER (moo_term_iter_get_type())
+
 typedef struct _MooTermIter MooTermIter;
 
 struct _MooTermIter {
@@ -31,6 +33,11 @@ struct _MooTermIter {
     int stamp;
 };
 
+
+GType        moo_term_iter_get_type             (void) G_GNUC_CONST;
+
+MooTermIter *moo_term_iter_copy                 (const MooTermIter  *iter);
+void         moo_term_iter_free                 (MooTermIter        *iter);
 
 guint        moo_term_get_line_count            (MooTerm            *term);
 MooTermLine *moo_term_get_line                  (MooTerm            *term,

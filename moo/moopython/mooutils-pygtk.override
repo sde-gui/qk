@@ -43,6 +43,7 @@ import gtk.Notebook as PyGtkNotebook_Type
 import gtk.Bin as PyGtkBin_Type
 import gobject.GObject as PyGObject_Type
 import gtk.gdk.Color as PyGdkColor_Type
+import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 %%
 ignore-glob
   *_get_type

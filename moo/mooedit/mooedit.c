@@ -313,6 +313,14 @@ moo_edit_set_clean (MooEdit            *edit,
 }
 
 
+gboolean
+moo_edit_get_clean (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return (edit->priv->status & MOO_EDIT_CLEAN) ? TRUE : FALSE;
+}
+
+
 void
 moo_edit_status_changed (MooEdit *edit)
 {
@@ -477,6 +485,25 @@ moo_edit_on_external_changes_get_type (void)
             { 0, NULL, NULL }
         };
         type = g_enum_register_static ("MooEditOnExternalChanges", values);
+    }
+
+    return type;
+}
+
+
+GType
+moo_edit_var_dep_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_EDIT_VAR_DEP_NONE, (char*)"MOO_EDIT_VAR_DEP_NONE", (char*)"none" },
+            { MOO_EDIT_VAR_DEP_FILENAME, (char*)"MOO_EDIT_VAR_DEP_FILENAME", (char*)"filename" },
+            { 0, NULL, NULL }
+        };
+        type = g_enum_register_static ("MooEditVarDep", values);
     }
 
     return type;
