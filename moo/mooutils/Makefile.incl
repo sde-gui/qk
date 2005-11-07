@@ -173,7 +173,10 @@ mooutils_srcdir = $(srcdir)/$(mooutils)
 
 mooutils_include_headers =                     \
     $(mooutils)/eggregex.h                     \
+    $(mooutils)/mooaccel.h                     \
     $(mooutils)/mooaccelbutton.h               \
+    $(mooutils)/mooaction.h                    \
+    $(mooutils)/mooactiongroup.h               \
     $(mooutils)/moobigpaned.h                  \
     $(mooutils)/moocellrenderercolor.h         \
     $(mooutils)/mooclosure.h                   \
@@ -184,29 +187,33 @@ mooutils_include_headers =                     \
     $(mooutils)/moohistoryentry.h              \
     $(mooutils)/moohistorylist.h               \
     $(mooutils)/moomarkup.h                    \
+    $(mooutils)/moomenuaction.h                \
     $(mooutils)/moomenumgr.h                   \
+    $(mooutils)/moomenutoolbutton.h            \
     $(mooutils)/moonotebook.h                  \
     $(mooutils)/moopaned.h                     \
     $(mooutils)/mooprefs.h                     \
     $(mooutils)/mooprefsdialog.h               \
     $(mooutils)/mooprefsdialogpage.h           \
     $(mooutils)/moostock.h                     \
-    $(mooutils)/mooutils-gobject.h             \
-    $(mooutils)/mooaccel.h                     \
-    $(mooutils)/mooaction.h                    \
-    $(mooutils)/mooactiongroup.h               \
-    $(mooutils)/moomenuaction.h                \
     $(mooutils)/mootoggleaction.h              \
     $(mooutils)/moouixml.h                     \
+    $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
-    $(mooutils)/moowindow.h                    \
-    $(mooutils)/mooutils-python.h
+    $(mooutils)/mooutils-python.h              \
+    $(mooutils)/moowindow.h
 
 mooutils_sources =                             \
     $(mooutils_include_headers)                \
     $(mooutils)/eggregex.c                     \
-    $(mooutils)/mooaccelbutton.c               \
+    $(mooutils)/gtksourceundomanager.c         \
+    $(mooutils)/gtksourceundomanager.h         \
+    $(mooutils)/mooaccel.c                     \
     $(mooutils)/mooaccelbutton-glade.h         \
+    $(mooutils)/mooaccelbutton.c               \
+    $(mooutils)/mooaccelprefs-glade.h          \
+    $(mooutils)/mooaction.c                    \
+    $(mooutils)/mooactiongroup.c               \
     $(mooutils)/moobigpaned.c                  \
     $(mooutils)/moocellrenderercolor.c         \
     $(mooutils)/mooclosure.c                   \
@@ -223,30 +230,25 @@ mooutils_sources =                             \
     $(mooutils)/moohistoryentry.c              \
     $(mooutils)/moohistorylist.c               \
     $(mooutils)/moomarkup.c                    \
+    $(mooutils)/moomenuaction.c                \
     $(mooutils)/moomenumgr.c                   \
+    $(mooutils)/moomenutoolbutton.c            \
     $(mooutils)/moonotebook.c                  \
     $(mooutils)/moopaned.c                     \
     $(mooutils)/mooprefs.c                     \
     $(mooutils)/mooprefsdialog.c               \
     $(mooutils)/mooprefsdialogpage.c           \
     $(mooutils)/moostock.c                     \
-    $(mooutils)/mooutils-gobject.c             \
-    $(mooutils)/mooutils-misc.c                \
-    $(mooutils)/mooaccel.c                     \
-    $(mooutils)/mooaccelprefs-glade.h          \
-    $(mooutils)/mooaction.c                    \
-    $(mooutils)/mooactiongroup.c               \
-    $(mooutils)/moomenuaction.c                \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
+    $(mooutils)/mooutils-gobject.c             \
+    $(mooutils)/mooutils-misc.c                \
     $(mooutils)/moowindow.c                    \
-    $(mooutils)/gtksourceundomanager.c         \
-    $(mooutils)/gtksourceundomanager.h         \
     $(mooutils)/stock-about-16.h               \
     $(mooutils)/stock-about-24.h               \
-    $(mooutils)/stock-moo.h                    \
     $(mooutils)/stock-edit-16.h                \
     $(mooutils)/stock-edit-24.h                \
+    $(mooutils)/stock-moo.h                    \
     $(mooutils)/stock-select-all-16.h          \
     $(mooutils)/stock-select-all-24.h          \
     $(mooutils)/stock-terminal-24.h

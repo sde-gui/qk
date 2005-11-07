@@ -731,7 +731,6 @@ static void         init_gui        (MooFileView    *fileview)
     toolbar = create_toolbar (fileview);
     gtk_widget_show (toolbar);
     gtk_box_pack_start (box, toolbar, FALSE, FALSE, 0);
-    fileview->toolbar = toolbar;
 
     entry = moo_file_entry_new ();
     g_object_set_data (G_OBJECT (entry), "moo-file-view", fileview);
@@ -821,61 +820,20 @@ void        moo_file_view_set_view_type     (MooFileView    *fileview,
 }
 
 
-static void create_bookmarks_button (MooFileView  *fileview,
-                                     GtkWidget    *box,
-                                     GtkTooltips  *tooltips)
+GtkWidget*
+moo_file_view_add_button (MooFileView  *fileview,
+                          GType         type,
+                          const char   *stock_id,
+                          const char   *tip)
 {
     GtkWidget *icon, *button;
-
-    icon = gtk_image_new_from_stock (GTK_STOCK_ABOUT,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    button = gtk_toggle_button_new ();
-    gtk_container_add (GTK_CONTAINER (button), icon);
-    gtk_widget_show (button);
-    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
-    gtk_tooltips_set_tip (tooltips, button, "Bookmarks", "Bookmarks");
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-
-    g_signal_connect (button, "toggled",
-                      G_CALLBACK (boomarks_button_toggled),
-                      fileview);
-}
-
-static void create_button (MooFileView  *fileview,
-                           GtkWidget    *box,
-                           GtkTooltips  *tooltips,
-                           const char   *stock_id,
-                           const char   *tip,
-                           const char   *signal)
-{
-    GtkWidget *icon, *button;
-
-    icon = gtk_image_new_from_stock (stock_id,
-                                     GTK_ICON_SIZE_MENU);
-    gtk_widget_show (GTK_WIDGET (icon));
-    button = gtk_button_new ();
-    gtk_container_add (GTK_CONTAINER (button), icon);
-    gtk_widget_show (button);
-    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
-    gtk_tooltips_set_tip (tooltips, button, tip, tip);
-    gtk_box_pack_start (GTK_BOX (box), button, FALSE, FALSE, 0);
-    g_object_set_data (G_OBJECT (button), "moo-file-view-signal",
-                       (gpointer) signal);
-    g_signal_connect (button, "clicked",
-                      G_CALLBACK (goto_item_activated),
-                      fileview);
-}
-
-static GtkWidget   *create_toolbar  (MooFileView    *fileview)
-{
-    GtkWidget *toolbar;
     GtkTooltips *tooltips;
 
-    tooltips = g_object_get_data (G_OBJECT (fileview),
-                                  "moo-file-view-tooltips");
+    g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);
+    g_return_val_if_fail (g_type_is_a (type, GTK_TYPE_BUTTON), NULL);
+
+    tooltips = g_object_get_data (G_OBJECT (fileview), "moo-file-view-tooltips");
+
     if (!tooltips)
     {
         tooltips = gtk_tooltips_new ();
@@ -885,20 +843,66 @@ static GtkWidget   *create_toolbar  (MooFileView    *fileview)
                                 tooltips, g_object_unref);
     }
 
-    toolbar = gtk_hbox_new (FALSE, 0);
+    button = g_object_new (type, NULL);
+    gtk_widget_show (button);
+    gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+    gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
 
-    create_button (fileview, toolbar, tooltips,
-                   GTK_STOCK_GO_UP, "Up", "go-up");
-    create_button (fileview, toolbar, tooltips,
-                   GTK_STOCK_GO_BACK, "Back", "go-back");
-    create_button (fileview, toolbar, tooltips,
-                   GTK_STOCK_GO_FORWARD, "Forward", "go-forward");
-    create_button (fileview, toolbar, tooltips,
-                   GTK_STOCK_HOME, "Home", "go-home");
+    if (tip)
+        gtk_tooltips_set_tip (tooltips, button, tip, tip);
 
-    create_bookmarks_button (fileview, toolbar, tooltips);
+    gtk_box_pack_start (GTK_BOX (fileview->toolbar), button,
+                        FALSE, FALSE, 0);
 
-    return toolbar;
+    if (stock_id)
+    {
+        icon = gtk_image_new_from_stock (stock_id,
+                                         GTK_ICON_SIZE_MENU);
+        gtk_widget_show (icon);
+        gtk_container_add (GTK_CONTAINER (button), icon);
+    }
+
+    return button;
+}
+
+
+static void
+create_bookmarks_button (MooFileView  *fileview)
+{
+    GtkWidget *button;
+
+    button = moo_file_view_add_button (fileview, GTK_TYPE_TOGGLE_BUTTON,
+                                       GTK_STOCK_ABOUT, "Bookmarks");
+
+    g_signal_connect (button, "toggled",
+                      G_CALLBACK (boomarks_button_toggled),
+                      fileview);
+}
+
+static void
+create_button (MooFileView  *fileview,
+               const char   *stock_id,
+               const char   *tip,
+               const char   *signal)
+{
+    GtkWidget *button = moo_file_view_add_button (fileview, GTK_TYPE_BUTTON, stock_id, tip);
+    g_object_set_data (G_OBJECT (button), "moo-file-view-signal", (gpointer) signal);
+    g_signal_connect (button, "clicked", G_CALLBACK (goto_item_activated), fileview);
+}
+
+static GtkWidget*
+create_toolbar  (MooFileView    *fileview)
+{
+    fileview->toolbar = gtk_hbox_new (FALSE, 0);
+
+    create_button (fileview, GTK_STOCK_GO_UP, "Up", "go-up");
+    create_button (fileview, GTK_STOCK_GO_BACK, "Back", "go-back");
+    create_button (fileview, GTK_STOCK_GO_FORWARD, "Forward", "go-forward");
+    create_button (fileview, GTK_STOCK_HOME, "Home", "go-home");
+
+    create_bookmarks_button (fileview);
+
+    return fileview->toolbar;
 }
 
 

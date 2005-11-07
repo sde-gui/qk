@@ -16,6 +16,7 @@
 #endif
 
 #include <gmodule.h>
+#include <gtk/gtkbutton.h>
 #include "mooedit/mooplugin-macro.h"
 #include "mooutils/moofileview/moofileview.h"
 #include "mooutils/moofileview/moobookmarkmgr.h"
@@ -158,10 +159,30 @@ fileview_activate (MooEditWindow    *window,
 
 
 static void
+goto_current_doc_dir (MooEditWindow    *window)
+{
+    GtkWidget *fileview;
+    MooEdit *doc;
+    const char *filename;
+
+    fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
+    doc = moo_edit_window_get_active_doc (window);
+    filename = doc ? moo_edit_get_filename (doc) : NULL;
+
+    if (filename)
+    {
+        char *dirname = g_path_get_dirname (filename);
+        moo_file_view_chdir (MOO_FILE_VIEW (fileview), dirname, NULL);
+        g_free (dirname);
+    }
+}
+
+
+static void
 file_selector_plugin_attach (Plugin        *plugin,
                              MooEditWindow *window)
 {
-    GtkWidget *fileview;
+    GtkWidget *fileview, *button;
     MooEditor *editor;
     MooPaneLabel *label;
 
@@ -181,6 +202,12 @@ file_selector_plugin_attach (Plugin        *plugin,
     g_signal_connect_swapped (fileview, "activate",
                               G_CALLBACK (fileview_activate),
                               window);
+
+    button = moo_file_view_add_button (MOO_FILE_VIEW (fileview),
+                                       GTK_TYPE_BUTTON, GTK_STOCK_JUMP_TO,
+                                       "Go to current document directory");
+    g_signal_connect_swapped (button, "clicked",
+                              G_CALLBACK (goto_current_doc_dir), window);
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL, "File Selector",

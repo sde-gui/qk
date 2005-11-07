@@ -18,7 +18,7 @@ class Plugin(object):
     def init(self):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
-        moo.utils.window_class_add_action (moo.utils.Window, "ShowConsole",
+        moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowConsole",
                                            name="Show Console",
                                            label="Show Console",
                                            icon_stock_id=moo.utils.STOCK_TERMINAL,
@@ -32,7 +32,7 @@ class Plugin(object):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
 
-        moo.utils.window_class_remove_action(moo.utils.Window, "ShowConsole");
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowConsole");
 
         if self.ui_merge_id:
             xml.remove_ui(self.ui_merge_id)
