@@ -50,7 +50,7 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
     g_free (title);
 
 #ifdef MOO_BUILD_TERM
-    moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
+//     moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
 #endif
 
 #ifdef MOO_BUILD_EDIT

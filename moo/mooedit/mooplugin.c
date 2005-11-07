@@ -895,9 +895,6 @@ moo_plugin_init_builtin (void)
 #ifndef __WIN32__
     moo_find_plugin_init ();
     moo_file_selector_plugin_init ();
-#ifdef MOO_BUILD_TERM
-    moo_console_plugin_init ();
-#endif
 #endif
     moo_active_strings_plugin_init ();
 }

@@ -53,8 +53,7 @@ mooedit_plugins_built_sources =               \
 
 mooedit_plugins_extra_dist =                  \
     $(mooedit_plugins)/moofind.glade          \
-    $(mooedit_plugins)/moofind-glade.h        \
-    $(mooedit_plugins)/console.c
+    $(mooedit_plugins)/moofind-glade.h
 
 $(mooedit_plugins)/moofind-glade.h: $(mooedit_plugins)/moofind.glade
 	mkdir -p $(mooedit_plugins)
@@ -65,10 +64,6 @@ mooedit_plugins_unix_sources =                \
     $(mooedit_plugins)/moofind.c              \
     $(mooedit_plugins)/moofind-glade.h        \
     $(mooedit_plugins)/fileselector.c
-
-if MOO_BUILD_TERM
-mooedit_plugins_unix_sources += $(mooedit_plugins)/console.c
-endif
 
 mooedit_plugins_sources =                     \
     $(mooedit_plugins)/activestrings.c        \

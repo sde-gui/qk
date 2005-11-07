@@ -5,6 +5,9 @@
 moopython = $(moo_prefix)/moopython
 moopython_srcdir = $(srcdir)/$(moopython)
 
+moopython_plugins =                           \
+    $(moopython)/plugins/console.py
+
 moopython_sources =                           \
     $(moopython)/moo-pygtk.c                  \
     $(moopython)/moo-pygtk.h                  \
@@ -32,6 +35,7 @@ mooedit_defs_files =                          \
 #     $(moopython_srcdir)/moowindow.override
 
 moopython_extra_dist =                        \
+    $(moopython_plugins)                      \
     $(moopython)/moo-mod.py                   \
     $(moopython)/moo-pygtk.c                  \
     $(moopython)/mooapp-mod.py                \

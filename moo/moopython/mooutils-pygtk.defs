@@ -1410,7 +1410,7 @@
   (return-type "none")
 )
 
-(define-function _window_class_remove_action
+(define-function window_class_remove_action
   (c-name "moo_window_class_remove_action")
   (return-type "none")
   (parameters

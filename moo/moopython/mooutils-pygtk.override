@@ -159,7 +159,28 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
 %%
 override moo_window_class_remove_action kwargs
 static PyObject *
-_wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, G_GNUC_UNUSED PyObject *args, G_GNUC_UNUSED PyObject *kwargs)
+_wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
 {
+    static char *kwlist[] = {(char*) "class", (char*) "id", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *action_id;
+    MooWindowClass *klass;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_action", kwlist, &py_type, &action_id))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_WINDOW))
+        return_TypeErr ("type must be derived from MooWindow");
+
+    klass = g_type_class_ref (type);
+    moo_window_class_remove_action (klass, action_id);
+    g_type_class_unref (klass);
+
     return_None;
 }

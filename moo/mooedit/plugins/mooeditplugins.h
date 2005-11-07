@@ -20,7 +20,6 @@ G_BEGIN_DECLS
 #ifndef __WIN32__
 gboolean moo_find_plugin_init           (void);
 gboolean moo_file_selector_plugin_init  (void);
-gboolean moo_console_plugin_init        (void);
 #endif
 
 gboolean moo_active_strings_plugin_init (void);
