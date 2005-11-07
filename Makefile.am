@@ -1,4 +1,4 @@
-EXTRA_DIST = makewin mingw-configure cygwin-configure
+EXTRA_DIST = mingw-configure cygwin-configure
 
 DIST_SUBDIRS = tests m4
 SUBDIRS = .
@@ -16,8 +16,8 @@ ACLOCAL_AMFLAGS = -I m4
 DEFAULT_INCLUDES =
 AM_CFLAGS =                                 \
     -I$(top_builddir)                       \
-    -I$(top_srcdir)/$(MOO_SRC_PREFIX)   \
-    -I$(top_builddir)/$(MOO_SRC_PREFIX) \
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
     $(MOO_CFLAGS)                           \
     $(PYTHON_INCLUDES)                      \
     $(PYGTK_CFLAGS)                         \
