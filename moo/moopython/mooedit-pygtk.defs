@@ -63,5 +63,5 @@
   (gtype-id "MOO_TYPE_EDIT")
 )
 
-;; moo_plugin
 (include "mooplugin.defs")
+(include "mooeditor.defs")

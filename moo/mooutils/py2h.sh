@@ -4,5 +4,5 @@ if [ x$2 = x ]; then
 fi
 
 echo "static const char *$1 = \"\""
-sed 's/"/\\"/g' $2 | sed 's/\\/\\\\/g' | sed 's/^\(.*\)$/"\1\\n"/'
+sed 's/\\/\\\\/g' | sed 's/"/\\"/g' $2 | sed 's/^\(.*\)$/"\1\\n"/'
 echo ";"

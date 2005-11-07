@@ -5,16 +5,15 @@ headers
 #include "pygobject.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/mooapp-python.h"
+#include "moopython/moo-pygtk.h"
 
-void moo_app_add_constants (PyObject *module, const gchar *strip_prefix);
-void moo_app_register_classes (PyObject *d);
 %%
-modulename moo
+modulename _moo_app
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type
 import gobject.GObject as PyGObject_Type
-import _moo.UIXML as PyMooUIXML_Type
+import _moo_utils.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type

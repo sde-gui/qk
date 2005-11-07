@@ -1,5 +1,5 @@
 /*
- *   moo/moo-pygtk.c
+ *   moopython/moo-pygtk.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,22 +11,17 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include <Python.h>
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <Python.h>
+#include "moopython/moo-mod.h"
+#include "moopython/moo-pygtk.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
 #include <pygtk/pygtk.h>
 #include <glib.h>
-#include "moopython/moo-mod.h"
-
-
-gboolean    initmoo             (void);
-void        moo_utils_mod_init  (PyObject   *moo_mod);
-void        moo_edit_mod_init   (PyObject   *moo_mod);
-void        moo_term_mod_init   (PyObject   *moo_mod);
-void        moo_app_mod_init    (PyObject   *moo_mod);
 
 
 static PyObject *moo_version (void)
@@ -56,13 +51,6 @@ static PyMethodDef _moo_functions[] = {
 static char *_moo_module_doc = (char*)"_moo module.";
 
 
-#define mod_init(class)                         \
-{                                               \
-    class##_mod_init (_moo_module);             \
-    if (PyErr_Occurred ())                      \
-        return FALSE;                           \
-}
-
 static void
 func_init_pygobject (void)
 {
@@ -88,20 +76,13 @@ initmoo (void)
     PyModule_AddObject (_moo_module, (char*)"version", moo_version());
     PyModule_AddObject (_moo_module, (char*)"detailed_version", moo_detailed_version());
 
-#ifdef MOO_BUILD_UTILS
-    mod_init (moo_utils);
-#endif
-#ifdef MOO_BUILD_EDIT
-    mod_init (moo_edit);
-#endif
-#ifdef MOO_BUILD_TERM
-    mod_init (moo_term);
-#endif
-#ifdef MOO_BUILD_APP
-    mod_init (moo_app);
-#endif
+    if (!_moo_utils_mod_init () || !_moo_term_mod_init () ||
+         !_moo_edit_mod_init () || !_moo_app_mod_init ())
+    {
+        return FALSE;
+    }
 
-    code = Py_CompileString (MOO_PY, "moo.py", Py_file_input);
+    code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);
 
     if (!code)
         return FALSE;

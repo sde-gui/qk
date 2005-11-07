@@ -1,5 +1,5 @@
 /*
- *   mooapp/mooapp-mod.c
+ *   moopython/mooapp-mod.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -15,28 +15,42 @@
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 #include <glib.h>
+#include "moopython/moo-pygtk.h"
+#include "moopython/mooapp-mod.h"
 
 
-void        moo_app_mod_init            (PyObject   *moo_mod);
-void        moo_app_register_classes    (PyObject   *dict);
-void        moo_app_add_constants       (PyObject   *module,
-                                         const gchar *strip_prefix);
+static char *moo_app_module_doc = (char*) "_moo_app module.";
 
 
-extern PyMethodDef moo_app_functions[];
-
-static char *moo_app_module_doc = (char*)"moo.app module.";
-
-
-void        moo_app_mod_init            (PyObject   *moo_mod)
+gboolean
+_moo_app_mod_init (void)
 {
     PyObject *mod;
 
-    mod = Py_InitModule3 ((char*) "moo.app", moo_app_functions, moo_app_module_doc);
-    g_return_if_fail (mod != NULL);
-    Py_INCREF (mod);
-    PyModule_AddObject (moo_mod, (char*) "app", mod);
-//     moo_app_add_constants (mod, "MOO_");
+    mod = Py_InitModule3 ((char*) "_moo_app", _moo_app_functions, moo_app_module_doc);
 
-    moo_app_register_classes (PyModule_GetDict (moo_mod));
+    if (!mod)
+        return FALSE;
+
+
+//     _moo_app_add_constants (mod, "MOO_");
+    _moo_app_register_classes (PyModule_GetDict (mod));
+
+    if (!PyErr_Occurred ())
+    {
+        PyObject *fake_mod, *code;
+
+        code = Py_CompileString (MOO_APP_PY, "moo/app.py", Py_file_input);
+
+        if (!code)
+            return FALSE;
+
+        fake_mod = PyImport_ExecCodeModule ((char*) "moo_app", code);
+        Py_DECREF (code);
+
+        if (!fake_mod)
+            PyErr_Print ();
+    }
+
+    return PyErr_Occurred () == NULL;
 }

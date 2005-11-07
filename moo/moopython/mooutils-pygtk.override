@@ -21,15 +21,11 @@ headers
 #include "mooutils/moostock.h"
 #include "mooutils/moouixml.h"
 #include "mooutils/mooutils-python.h"
-
-
-void    moo_utils_register_classes  (PyObject   *dict);
-void    moo_utils_add_constants     (PyObject   *module,
-                                     const char *strip_prefix);
+#include "moopython/moo-pygtk.h"
 
 
 %%
-modulename moo
+modulename _moo_utils
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type

@@ -7,15 +7,25 @@ moopython_srcdir = $(srcdir)/$(moopython)
 
 moopython_sources =                           \
     $(moopython)/moo-pygtk.c                  \
+    $(moopython)/moo-pygtk.h                  \
+    $(moopython)/mooapp-mod.h                 \
+    $(moopython)/mooedit-mod.h                \
+    $(moopython)/mooterm-mod.h                \
+    $(moopython)/mooutils-mod.h               \
     $(moopython)/moo-mod.h
 
 moopython_built_sources =                     \
+    $(moopython)/mooapp-mod.h                 \
+    $(moopython)/mooedit-mod.h                \
+    $(moopython)/mooterm-mod.h                \
+    $(moopython)/mooutils-mod.h               \
     $(moopython)/moo-mod.h
 
 nodist_moopython_sources =
 moopython_cleanfiles =
 
 mooedit_defs_files =                          \
+    $(moopython_srcdir)/mooeditor.defs        \
     $(moopython_srcdir)/mooplugin.defs
 
 # mooutils_override_files =                     \
@@ -24,20 +34,24 @@ mooedit_defs_files =                          \
 moopython_extra_dist =                        \
     $(moopython)/moo-mod.py                   \
     $(moopython)/moo-pygtk.c                  \
+    $(moopython)/mooapp-mod.py                \
     $(moopython)/mooapp-pygtk.defs            \
     $(moopython)/mooapp-pygtk.override        \
     $(moopython)/mooapp-mod.c                 \
     $(mooedit_defs_files)                     \
+    $(moopython)/mooedit-mod.py               \
     $(moopython)/mooedit-pygtk.defs           \
     $(moopython)/mooedit-pygtk.override       \
     $(moopython)/mooedit-mod.c                \
+    $(moopython)/mooterm-mod.py               \
     $(moopython)/mooterm-pygtk.defs           \
     $(moopython)/mooterm-pygtk.override       \
     $(moopython)/mooterm-mod.c                \
-    $(mooutils_defs_files)                    \
+    $(moopython)/mooutils-mod.py              \
     $(moopython)/mooutils-pygtk.defs          \
     $(moopython)/mooutils-pygtk.override      \
     $(moopython)/mooutils-mod.c               \
+    $(mooutils_defs_files)                    \
     $(mooutils_override_files)
 
 
@@ -71,48 +85,60 @@ endif MOO_BUILD_APP
 
 $(moopython)/mooutils-pygtk.c: $(moopython)/mooutils-pygtk.defs $(moopython)/mooutils-pygtk.override $(mooutils_override_files)
 	mkdir -p $(moopython)
-	pygtk-codegen-2.0 --prefix moo_utils \
+	pygtk-codegen-2.0 --prefix _moo_utils \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--override $(moopython_srcdir)/mooutils-pygtk.override \
-	--outfilename mooutils-pygtk.c \
+	--outfilename $(moopython)/mooutils-pygtk.c \
 	$(moopython_srcdir)/mooutils-pygtk.defs > $(moopython)/mooutils-pygtk.c
 
 $(moopython)/mooterm-pygtk.c: $(moopython)/mooterm-pygtk.defs $(moopython)/mooterm-pygtk.override
 	mkdir -p $(moopython)
-	pygtk-codegen-2.0 --prefix moo_term \
+	pygtk-codegen-2.0 --prefix _moo_term \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooutils-pygtk.defs \
 	--override $(moopython_srcdir)/mooterm-pygtk.override \
-	--outfilename mooterm-pygtk.c \
+	--outfilename $(moopython)/mooterm-pygtk.c \
 	$(moopython_srcdir)/mooterm-pygtk.defs > $(moopython)/mooterm-pygtk.c
 
 $(moopython)/mooedit-pygtk.c: $(moopython)/mooedit-pygtk.defs $(moopython)/mooedit-pygtk.override $(mooedit_defs_files)
 	mkdir -p $(moopython)
-	pygtk-codegen-2.0 --prefix moo_edit \
+	pygtk-codegen-2.0 --prefix _moo_edit \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooutils-pygtk.defs \
 	--override $(moopython_srcdir)/mooedit-pygtk.override \
-	--outfilename mooedit-pygtk.c \
+	--outfilename $(moopython)/mooedit-pygtk.c \
 	$(moopython_srcdir)/mooedit-pygtk.defs > $(moopython)/mooedit-pygtk.c
 
 $(moopython)/mooapp-pygtk.c: $(moopython)/mooapp-pygtk.defs $(moopython)/mooapp-pygtk.override
 	mkdir -p $(moopython)
-	pygtk-codegen-2.0 --prefix moo_app \
+	pygtk-codegen-2.0 --prefix _moo_app \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooedit-pygtk.defs \
 	--register $(moopython_srcdir)/mooterm-pygtk.defs \
 	--register $(moopython_srcdir)/mooutils-pygtk.defs \
 	--override $(moopython_srcdir)/mooapp-pygtk.override \
-	--outfilename mooapp-pygtk.c \
+	--outfilename $(moopython)/mooapp-pygtk.c \
 	$(moopython_srcdir)/mooapp-pygtk.defs > $(moopython)/mooapp-pygtk.c
 
 $(moopython)/moo-mod.h: $(moopython)/moo-mod.py
 	mkdir -p $(moopython)
 	sh $(PY2H) MOO_PY $(moopython_srcdir)/moo-mod.py > $(moopython)/moo-mod.h
+$(moopython)/mooedit-mod.h: $(moopython)/mooedit-mod.py
+	mkdir -p $(moopython)
+	sh $(PY2H) MOO_EDIT_PY $(moopython_srcdir)/mooedit-mod.py > $(moopython)/mooedit-mod.h
+$(moopython)/mooapp-mod.h: $(moopython)/mooapp-mod.py
+	mkdir -p $(moopython)
+	sh $(PY2H) MOO_APP_PY $(moopython_srcdir)/mooapp-mod.py > $(moopython)/mooapp-mod.h
+$(moopython)/mooutils-mod.h: $(moopython)/mooutils-mod.py
+	mkdir -p $(moopython)
+	sh $(PY2H) MOO_UTILS_PY $(moopython_srcdir)/mooutils-mod.py > $(moopython)/mooutils-mod.h
+$(moopython)/mooterm-mod.h: $(moopython)/mooterm-mod.py
+	mkdir -p $(moopython)
+	sh $(PY2H) MOO_TERM_PY $(moopython_srcdir)/mooterm-mod.py > $(moopython)/mooterm-mod.h
 
 if MOO_USE_PYGTK
 moo_sources += $(moopython_sources)

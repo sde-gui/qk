@@ -21,6 +21,7 @@
 #include <pygobject.h>
 #endif /* MOO_USE_PYGTK */
 #include <glib.h>
+#include <stdio.h>
 #include "mooapp/moopython.h"
 #include "mooapp/moopythonconsole.h"
 #include "mooutils/moocompat.h"
@@ -48,7 +49,8 @@ static void     init_logger             (MooPython      *python);
 G_DEFINE_TYPE (MooPython, moo_python, G_TYPE_OBJECT);
 
 
-static void     moo_python_class_init   (MooPythonClass *klass)
+static void
+moo_python_class_init (MooPythonClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     gobject_class->constructor = moo_python_constructor;
@@ -56,7 +58,8 @@ static void     moo_python_class_init   (MooPythonClass *klass)
 }
 
 
-static void     moo_python_init         (MooPython      *python)
+static void
+moo_python_init (MooPython      *python)
 {
     g_assert (instance == NULL);
     instance = python;
@@ -68,9 +71,10 @@ static void     moo_python_init         (MooPython      *python)
 }
 
 
-static GObject *moo_python_constructor  (GType                  type,
-                                         guint                  n_props,
-                                         GObjectConstructParam *props)
+static GObject*
+moo_python_constructor (GType                  type,
+                        guint                  n_props,
+                        GObjectConstructParam *props)
 {
     GObject *object;
     MooPython *python;
@@ -81,16 +85,18 @@ static GObject *moo_python_constructor  (GType                  type,
 }
 
 
-static void moo_python_finalize         (GObject    *object)
+static void
+moo_python_finalize (GObject    *object)
 {
     instance = NULL;
     G_OBJECT_CLASS (moo_python_parent_class)->finalize (object);
 }
 
 
-void        moo_python_start            (MooPython *python,
-                                         int        argc,
-                                         char     **argv)
+void
+moo_python_start (MooPython *python,
+                  int        argc,
+                  char     **argv)
 {
     g_return_if_fail (MOO_IS_PYTHON (python));
     g_return_if_fail (!python->running);
@@ -112,7 +118,8 @@ void        moo_python_start            (MooPython *python,
 }
 
 
-void        moo_python_shutdown            (MooPython *python)
+void
+moo_python_shutdown (MooPython *python)
 {
     g_return_if_fail (MOO_IS_PYTHON (python));
     g_return_if_fail (python->running);
@@ -132,8 +139,9 @@ void        moo_python_shutdown            (MooPython *python)
 }
 
 
-int         moo_python_run_simple_string    (MooPython *python,
-                                             const char *cmd)
+int
+moo_python_run_simple_string (MooPython *python,
+                              const char *cmd)
 {
     g_return_val_if_fail (MOO_IS_PYTHON (python), -1);
     g_return_val_if_fail (cmd != NULL, -1);
@@ -141,9 +149,10 @@ int         moo_python_run_simple_string    (MooPython *python,
 }
 
 
-int         moo_python_run_simple_file      (MooPython *python,
-                                             gpointer    fp,
-                                             const char *filename)
+int
+moo_python_run_simple_file (MooPython *python,
+                            gpointer    fp,
+                            const char *filename)
 {
     g_return_val_if_fail (MOO_IS_PYTHON (python), -1);
     g_return_val_if_fail (fp != NULL && filename != NULL, -1);
@@ -151,9 +160,10 @@ int         moo_python_run_simple_file      (MooPython *python,
 }
 
 
-gpointer    moo_python_run_string           (MooPython *python,
-                                             const char *str,
-                                             gboolean    silent)
+gpointer
+moo_python_run_string (MooPython *python,
+                       const char *str,
+                       gboolean    silent)
 {
     PyObject *dict;
     g_return_val_if_fail (MOO_IS_PYTHON (python), NULL);
@@ -165,9 +175,10 @@ gpointer    moo_python_run_string           (MooPython *python,
 }
 
 
-gpointer    moo_python_run_file             (MooPython *python,
-                                             gpointer    fp,
-                                             const char *filename)
+gpointer
+moo_python_run_file (MooPython *python,
+                     gpointer    fp,
+                     const char *filename)
 {
     PyObject *dict;
     g_return_val_if_fail (MOO_IS_PYTHON (python), NULL);
@@ -177,11 +188,12 @@ gpointer    moo_python_run_file             (MooPython *python,
 }
 
 
-void        moo_python_set_log_func        (MooPython        *python,
-                                             MooPythonLogFunc  in,
-                                             MooPythonLogFunc  out,
-                                             MooPythonLogFunc  err,
-                                             gpointer           data)
+void
+moo_python_set_log_func (MooPython        *python,
+                         MooPythonLogFunc  in,
+                         MooPythonLogFunc  out,
+                         MooPythonLogFunc  err,
+                         gpointer           data)
 {
     g_return_if_fail (MOO_IS_PYTHON (python));
     python->log_in_func = in;
@@ -191,35 +203,64 @@ void        moo_python_set_log_func        (MooPython        *python,
 }
 
 
-void        moo_python_write_log           (MooPython *python,
-                                             int         kind,
-                                             const char *text,
-                                             int         len)
+void
+moo_python_write_log (MooPython *python,
+                      int         kind,
+                      const char *text,
+                      int         len)
 {
+    char *freeme = NULL;
+    const char *write_text;
+
     g_return_if_fail (MOO_IS_PYTHON (python));
     g_return_if_fail (kind == 2 || kind == 3);
     g_return_if_fail (text != NULL);
 
+    if (!len)
+        return;
+
+    if (len > 0)
+    {
+        freeme = g_strndup (text, len);
+        write_text = freeme;
+    }
+    else
+    {
+        write_text = text;
+    }
+
     if (kind == 2)
+    {
         if (python->log_out_func)
-            python->log_out_func (text, len, python->log_data);
+            python->log_out_func (write_text, -1, python->log_data);
+        else
+            fprintf (stdout, "%s", write_text);
+    }
 
     if (kind == 3)
+    {
         if (python->log_err_func)
-                python->log_err_func (text, len, python->log_data);
+            python->log_err_func (write_text, -1, python->log_data);
+        else
+            fprintf (stderr, "%s", write_text);
+    }
+
+    g_free (freeme);
 }
 
 
-MooPython *moo_python_new                 (void)
+MooPython *
+moo_python_new (void)
 {
-    return MOO_PYTHON (g_object_new (MOO_TYPE_PYTHON, NULL));
+    return g_object_new (MOO_TYPE_PYTHON, NULL);
 }
 
 
 #define WRITE_LOG "_write_log"
 
-static PyObject *write_log (G_GNUC_UNUSED PyObject *self,
-                            PyObject* args)
+static PyObject*
+write_log (G_GNUC_UNUSED PyObject *self,
+           PyObject* args)
 {
     int kind;
     const char *string;
@@ -239,7 +280,8 @@ static PyObject *write_log (G_GNUC_UNUSED PyObject *self,
 }
 
 
-static void     init_logger             (MooPython      *python)
+static void
+init_logger (MooPython      *python)
 {
     PyObject *fun, *res;
     const char *script;

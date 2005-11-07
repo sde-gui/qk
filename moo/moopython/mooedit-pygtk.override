@@ -10,11 +10,11 @@ headers
 #include "mooedit/mootextiter.h"
 #include "moopython/mooplugin-python.h"
 #include "mooutils/mooutils-python.h"
+#include "moopython/moo-pygtk.h"
 
-void moo_edit_add_constants (PyObject *module, const gchar *strip_prefix);
-void moo_edit_register_classes (PyObject *d);
+
 %%
-modulename moo
+modulename _moo_edit
 %%
 import gtk.Widget as PyGtkWidget_Type
 import gtk.TextView as PyGtkTextView_Type
@@ -23,8 +23,8 @@ import gtk.TextTagTable as PyGtkTextTagTable_Type
 import gtk.TextTag as PyGtkTextTag_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gobject.GObject as PyGObject_Type
-import _moo.Window as PyMooWindow_Type
-import _moo.UIXML as PyMooUIXML_Type
+import _moo_utils.Window as PyMooWindow_Type
+import _moo_utils.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type
@@ -68,10 +68,9 @@ static PyObject *
 _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
 {
     PyObject *plugin_type, *win_plugin_type = NULL, *doc_plugin_type = NULL;
-    const char *id;
 
-    if (!PyArg_ParseTuple (args, (char*) "sO|OO:plugin_register", &id, &plugin_type,
-                           win_plugin_type, doc_plugin_type))
+    if (!PyArg_ParseTuple (args, (char*) "O|OO:plugin_register", &plugin_type,
+                           &win_plugin_type, &doc_plugin_type))
         return NULL;
 
     if (!PyType_Check (plugin_type))
@@ -83,5 +82,5 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (doc_plugin_type && !PyType_Check (doc_plugin_type))
         return_TypeErr ("argument must be a type");
 
-    return _moo_python_plugin_register (id, plugin_type, win_plugin_type, doc_plugin_type);
+    return _moo_python_plugin_register (plugin_type, win_plugin_type, doc_plugin_type);
 }

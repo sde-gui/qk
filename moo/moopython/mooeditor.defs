@@ -1,0 +1,219 @@
+(define-function editor_instance
+  (c-name "moo_editor_instance")
+  (return-type "MooEditor*")
+)
+
+(define-method new_window
+  (of-object "MooEditor")
+  (c-name "moo_editor_new_window")
+  (return-type "MooEditWindow*")
+)
+
+(define-method new_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_new_doc")
+  (return-type "MooEdit*")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-method open
+  (of-object "MooEditor")
+  (c-name "moo_editor_open")
+  (return-type "gboolean")
+  (parameters
+    '("MooEditWindow*" "window")
+    '("GtkWidget*" "parent")
+    '("GSList*" "files")
+  )
+)
+
+(define-method open_file
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_file")
+  (return-type "gboolean")
+  (parameters
+    '("MooEditWindow*" "window")
+    '("GtkWidget*" "parent")
+    '("const-char*" "filename")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method get_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_doc")
+  (return-type "MooEdit*")
+  (parameters
+    '("const-char*" "filename")
+  )
+)
+
+(define-method get_active_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_active_doc")
+  (return-type "MooEdit*")
+)
+
+(define-method get_active_window
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_active_window")
+  (return-type "MooEditWindow*")
+)
+
+(define-method set_active_window
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_active_window")
+  (return-type "none")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-method set_active_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_active_doc")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "doc")
+  )
+)
+
+(define-method present
+  (of-object "MooEditor")
+  (c-name "moo_editor_present")
+  (return-type "none")
+)
+
+(define-method list_windows
+  (of-object "MooEditor")
+  (c-name "moo_editor_list_windows")
+  (return-type "GSList*")
+)
+
+(define-method close_window
+  (of-object "MooEditor")
+  (c-name "moo_editor_close_window")
+  (return-type "gboolean")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-method close_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_close_doc")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+  )
+)
+
+(define-method close_docs
+  (of-object "MooEditor")
+  (c-name "moo_editor_close_docs")
+  (return-type "gboolean")
+  (parameters
+    '("GSList*" "list")
+  )
+)
+
+(define-method close_all
+  (of-object "MooEditor")
+  (c-name "moo_editor_close_all")
+  (return-type "gboolean")
+)
+
+(define-method set_app_name
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_app_name")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_history
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_history")
+  (return-type "MooHistoryList*")
+)
+
+(define-method get_filter_mgr
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_filter_mgr")
+  (return-type "MooFilterMgr*")
+)
+
+(define-method get_ui_xml
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_ui_xml")
+  (return-type "MooUIXML*")
+)
+
+(define-method set_ui_xml
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_ui_xml")
+  (return-type "none")
+  (parameters
+    '("MooUIXML*" "xml")
+  )
+)
+
+(define-method get_editor
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_editor")
+  (return-type "MooEditor*")
+)
+
+(define-method get_lang_mgr
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_lang_mgr")
+  (return-type "MooLangMgr*")
+)
+
+(define-method set_default_lang
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_default_lang")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_default_lang
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_default_lang")
+  (return-type "const-char*")
+)
+
+(define-method set_window_type
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_window_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+(define-method set_edit_type
+  (of-object "MooEditor")
+  (c-name "moo_editor_set_edit_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+(define-method save_copy
+  (of-object "MooEditor")
+  (c-name "moo_editor_save_copy")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("const-char*" "filename")
+    '("const-char*" "encoding")
+    '("GError**" "error")
+  )
+)

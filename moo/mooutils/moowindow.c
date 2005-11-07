@@ -837,9 +837,9 @@ create_action (const char        *action_id,
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
     class_id = moo_window_class_get_id (MOO_WINDOW_CLASS (G_OBJECT_GET_CLASS (window)));
-    action = MOO_ACTION (moo_object_factory_create_object (data->action, window, NULL));
-    g_object_set (action, "id", action_id, NULL);
+    action = moo_object_factory_create_object (data->action, window, NULL);
     g_return_val_if_fail (action != NULL, NULL);
+    g_object_set (action, "id", action_id, NULL);
 
     if (g_type_is_a (data->action->object_type, MOO_TYPE_TOGGLE_ACTION))
     {
