@@ -66,10 +66,12 @@ G_DEFINE_TYPE (MooPythonConsole, moo_python_console, GTK_TYPE_WINDOW);
 
 enum {
     PROP_0,
-    PROP_PYTHON
+    PROP_PYTHON,
+    PROP_REDIRECT_OUTPUT
 };
 
-static void moo_python_console_class_init (MooPythonConsoleClass *klass)
+static void
+moo_python_console_class_init (MooPythonConsoleClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -79,25 +81,34 @@ static void moo_python_console_class_init (MooPythonConsoleClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_PYTHON,
-                                     g_param_spec_object
-                                             ("python",
-                                              "python",
-                                              "python",
-                                              MOO_TYPE_PYTHON,
-                                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                     g_param_spec_object ("python",
+                                             "python",
+                                             "python",
+                                             MOO_TYPE_PYTHON,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_REDIRECT_OUTPUT,
+                                     g_param_spec_boolean ("redirect-output",
+                                             "redirect-output",
+                                             "redirect-output",
+                                             TRUE,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 
-static void moo_python_console_init (MooPythonConsole *console)
+static void
+moo_python_console_init (MooPythonConsole *console)
 {
     console->history = g_queue_new ();
     console->current = 0;
 }
 
 
-static GObject *moo_python_console_constructor (GType                   type,
-                                                 guint                   n_props,
-                                                 GObjectConstructParam  *props)
+static GObject*
+moo_python_console_constructor (GType                   type,
+                                guint                   n_props,
+                                GObjectConstructParam  *props)
 {
     MooPythonConsole *console;
     PangoFontDescription *font;
@@ -115,11 +126,12 @@ static GObject *moo_python_console_constructor (GType                   type,
                       G_CALLBACK (gtk_widget_hide_on_delete),
                       NULL);
 
-//     moo_python_set_log_func (console->python,
-//                              (MooPythonLogFunc) write_in,
-//                              (MooPythonLogFunc) write_out,
-//                              (MooPythonLogFunc) write_err,
-//                              console);
+    if (console->redirect_output)
+        moo_python_set_log_func (console->python,
+                                 (MooPythonLogFunc) write_in,
+                                 (MooPythonLogFunc) write_out,
+                                 (MooPythonLogFunc) write_err,
+                                 console);
 
     g_signal_connect_swapped (console->entry, "activate",
                               G_CALLBACK (entry_activate),
@@ -148,7 +160,8 @@ static GObject *moo_python_console_constructor (GType                   type,
 }
 
 
-static void moo_python_console_finalize       (GObject      *object)
+static void
+moo_python_console_finalize (GObject *object)
 {
     MooPythonConsole *console = MOO_PYTHON_CONSOLE (object);
     queue_free (console->history);
@@ -156,10 +169,11 @@ static void moo_python_console_finalize       (GObject      *object)
 }
 
 
-static void moo_python_console_set_property    (GObject        *object,
-                                                 guint           prop_id,
-                                                 const GValue   *value,
-                                                 GParamSpec     *pspec)
+static void
+moo_python_console_set_property (GObject        *object,
+                                 guint           prop_id,
+                                 const GValue   *value,
+                                 GParamSpec     *pspec)
 {
     MooPythonConsole *console = MOO_PYTHON_CONSOLE (object);
     switch (prop_id)
@@ -168,19 +182,25 @@ static void moo_python_console_set_property    (GObject        *object,
             console->python = g_value_get_object (value);
             break;
 
+        case PROP_REDIRECT_OUTPUT:
+            console->redirect_output = g_value_get_boolean (value);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
 }
 
 
-static void     entry_activate  (MooPythonConsole  *self)
+static void
+entry_activate (MooPythonConsole  *self)
 {
     return entry_commit (self);
 }
 
 
-static void     entry_commit    (MooPythonConsole  *self)
+static void
+entry_commit (MooPythonConsole  *self)
 {
     char *s;
     PyObject *res;
@@ -229,9 +249,10 @@ static void     entry_commit    (MooPythonConsole  *self)
 }
 
 
-static void     write_in        (const char         *text_to_write,
-                                 int                 len,
-                                 MooPythonConsole  *self)
+static void
+write_in (const char         *text_to_write,
+          int                 len,
+          MooPythonConsole  *self)
 {
     char *text;
     char **lines, **l;
@@ -267,9 +288,10 @@ static void     write_in        (const char         *text_to_write,
 }
 
 
-static void     write_out       (const char         *text,
-                                 int                 len,
-                                 MooPythonConsole  *self)
+static void
+write_out (const char         *text,
+           int                 len,
+           MooPythonConsole  *self)
 {
     GtkTextIter end;
     gtk_text_buffer_get_end_iter (self->buf, &end);
@@ -277,9 +299,10 @@ static void     write_out       (const char         *text,
     gtk_text_view_scroll_mark_onscreen (self->textview, self->end);
 }
 
-static void     write_err       (const char         *text,
-                                 int                 len,
-                                 MooPythonConsole  *self)
+static void
+write_err (const char         *text,
+           int                 len,
+           MooPythonConsole  *self)
 {
     GtkTextIter end;
     gtk_text_buffer_get_end_iter (self->buf, &end);
@@ -288,9 +311,10 @@ static void     write_err       (const char         *text,
 }
 
 
-static gboolean key_press_event (G_GNUC_UNUSED GtkEntry           *entry,
-                                 GdkEventKey        *event,
-                                 MooPythonConsole  *self)
+static gboolean
+key_press_event (G_GNUC_UNUSED GtkEntry *entry,
+                 GdkEventKey       *event,
+                 MooPythonConsole  *self)
 {
     if (event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK))
         return FALSE;
@@ -317,7 +341,8 @@ static gboolean key_press_event (G_GNUC_UNUSED GtkEntry           *entry,
 }
 
 
-static void     history_prev    (MooPythonConsole  *self)
+static void
+history_prev (MooPythonConsole  *self)
 {
     const char *s = "";
     guint hist_size = queue_len (self->history);
@@ -331,7 +356,8 @@ static void     history_prev    (MooPythonConsole  *self)
     gtk_entry_set_text (GTK_ENTRY (self->entry), s);
 }
 
-static void     history_next    (MooPythonConsole  *self)
+static void
+history_next (MooPythonConsole  *self)
 {
     const char *s = "";
     guint hist_size = queue_len (self->history);
@@ -346,7 +372,8 @@ static void     history_next    (MooPythonConsole  *self)
 }
 
 
-static void     create_gui      (MooPythonConsole  *self)
+static void
+create_gui (MooPythonConsole *self)
 {
     GtkWidget *vbox1;
     GtkWidget *scrolledwindow1;
@@ -393,15 +420,19 @@ static void     create_gui      (MooPythonConsole  *self)
 }
 
 
-MooPythonConsole   *moo_python_console_new        (struct _MooPython *python)
+MooPythonConsole*
+moo_python_console_new (struct _MooPython *python,
+                        gboolean           redirect_output)
 {
-    return MOO_PYTHON_CONSOLE (g_object_new (MOO_TYPE_PYTHON_CONSOLE,
-                                              "python", python,
-                                              NULL));
+    return g_object_new (MOO_TYPE_PYTHON_CONSOLE,
+                         "python", python,
+                         "redirect-output", redirect_output,
+                         NULL);
 }
 
 
-static void     queue_free      (GQueue             *que)
+static void
+queue_free (GQueue *que)
 {
     GList *l;
     if (!que) return;
@@ -411,7 +442,8 @@ static void     queue_free      (GQueue             *que)
 }
 
 
-static guint    queue_len       (GQueue             *que)
+static guint
+queue_len (GQueue *que)
 {
     GList *l;
     guint len = 0;
@@ -422,8 +454,9 @@ static guint    queue_len       (GQueue             *que)
 }
 
 
-static gpointer queue_nth       (GQueue             *que,
-                                 guint               n)
+static gpointer
+queue_nth (GQueue             *que,
+           guint               n)
 {
     GList *l;
     guint i;

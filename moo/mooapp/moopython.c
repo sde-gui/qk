@@ -40,6 +40,10 @@ static void     moo_python_init         (MooPython      *python);
 static GObject *moo_python_constructor  (GType           type,
                                          guint           n_construct_properties,
                                          GObjectConstructParam *construct_properties);
+static void     moo_python_set_property (GObject        *object,
+                                         guint           prop_id,
+                                         const GValue   *value,
+                                         GParamSpec     *pspec);
 static void     moo_python_finalize     (GObject        *object);
 
 static void     init_logger             (MooPython      *python);
@@ -49,12 +53,27 @@ static void     init_logger             (MooPython      *python);
 G_DEFINE_TYPE (MooPython, moo_python, G_TYPE_OBJECT);
 
 
+enum {
+    PROP_0,
+    PROP_USE_CONSOLE
+};
+
+
 static void
 moo_python_class_init (MooPythonClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     gobject_class->constructor = moo_python_constructor;
     gobject_class->finalize = moo_python_finalize;
+    gobject_class->set_property = moo_python_set_property;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USE_CONSOLE,
+                                     g_param_spec_boolean ("use-console",
+                                             "use-console",
+                                             "use-console",
+                                             TRUE,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 
@@ -80,7 +99,7 @@ moo_python_constructor (GType                  type,
     MooPython *python;
     object = G_OBJECT_CLASS (moo_python_parent_class)->constructor (type, n_props, props);
     python = MOO_PYTHON (object);
-    python->_console = moo_python_console_new (python);
+    python->_console = moo_python_console_new (python, python->use_console);
     return object;
 }
 
@@ -90,6 +109,26 @@ moo_python_finalize (GObject    *object)
 {
     instance = NULL;
     G_OBJECT_CLASS (moo_python_parent_class)->finalize (object);
+}
+
+
+static void
+moo_python_set_property (GObject        *object,
+                         guint           prop_id,
+                         const GValue   *value,
+                         GParamSpec     *pspec)
+{
+    MooPython *python = MOO_PYTHON (object);
+
+    switch (prop_id)
+    {
+        case PROP_USE_CONSOLE:
+            python->use_console = g_value_get_boolean (value);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
 }
 
 
@@ -250,9 +289,9 @@ moo_python_write_log (MooPython *python,
 
 
 MooPython *
-moo_python_new (void)
+moo_python_new (gboolean use_console)
 {
-    return g_object_new (MOO_TYPE_PYTHON, NULL);
+    return g_object_new (MOO_TYPE_PYTHON, "use-console", use_console, NULL);
 }
 
 

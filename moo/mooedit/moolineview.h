@@ -52,11 +52,6 @@ GType       moo_line_view_get_type      (void) G_GNUC_CONST;
 
 GtkWidget  *moo_line_view_new           (void);
 
-gboolean    moo_line_view_grab          (MooLineView    *view,
-                                         gpointer        user_id);
-void        moo_line_view_ungrab        (MooLineView    *view,
-                                         gpointer        user_id);
-
 void        moo_line_view_set_line_data (MooLineView    *view,
                                          int             line,
                                          gpointer        data,

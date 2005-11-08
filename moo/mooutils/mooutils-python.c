@@ -102,3 +102,55 @@ PyObject *moo_gvalue_to_pyobject (const GValue *val)
 {
     return pyg_value_as_pyobject (val, TRUE);
 }
+
+
+typedef PyObject *(*PtrToPy) (gpointer ptr);
+
+static PyObject*
+slist_to_pyobject (GSList *list,
+                   PtrToPy func)
+{
+    int i;
+    GSList *l;
+    PyObject *result;
+
+    result = PyList_New (g_slist_length (list));
+
+    for (i = 0, l = list; l != NULL; l = l->next, ++i)
+    {
+        PyObject *item = func (l->data);
+
+        if (!item)
+        {
+            Py_DECREF (result);
+            return NULL;
+        }
+
+        PyList_SetItem (result, i, item);
+    }
+
+    return result;
+}
+
+
+PyObject*
+moo_object_slist_to_pyobject (GSList *list)
+{
+    return slist_to_pyobject (list, (PtrToPy) pygobject_new);
+}
+
+
+static PyObject*
+string_to_pyobject (gpointer str)
+{
+    if (!str)
+        return_RuntimeErr ("got NULL string");
+    else
+        return PyString_FromString (str);
+}
+
+PyObject*
+moo_string_slist_to_pyobject (GSList *list)
+{
+    return slist_to_pyobject (list, string_to_pyobject);
+}

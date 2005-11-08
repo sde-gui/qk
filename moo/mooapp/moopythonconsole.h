@@ -36,6 +36,7 @@ struct _MooPythonConsole
 {
     GtkWindow        parent;
 
+    gboolean         redirect_output;
     GtkWidget       *entry;
     GtkTextTag      *in_tag;
     GtkTextTag      *out_tag;
@@ -54,7 +55,8 @@ struct _MooPythonConsoleClass
 };
 
 GType               moo_python_console_get_type (void) G_GNUC_CONST;
-MooPythonConsole   *moo_python_console_new      (struct _MooPython *python);
+MooPythonConsole   *moo_python_console_new      (struct _MooPython *python,
+                                                 gboolean           redirect_output);
 
 
 G_END_DECLS

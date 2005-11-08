@@ -45,6 +45,7 @@ struct _MooPython
     MooPythonLogFunc     log_err_func;
     void                *log_data;
 
+    gboolean             use_console;
     struct _MooPythonConsole *_console;
 };
 
@@ -56,7 +57,7 @@ struct _MooPythonClass
 GType       moo_python_get_type         (void) G_GNUC_CONST;
 
 MooPython  *moo_python_get_instance     (void);
-MooPython  *moo_python_new              (void);
+MooPython  *moo_python_new              (gboolean        use_python_console);
 
 void        moo_python_start            (MooPython      *python,
                                          int             argc,

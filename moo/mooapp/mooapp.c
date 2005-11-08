@@ -80,6 +80,8 @@ struct _MooAppPrivate {
     gboolean    use_terminal;
 
     char       *tmpdir;
+
+    gboolean    use_python_console;
 };
 
 
@@ -176,7 +178,8 @@ enum {
     PROP_RUN_INPUT,
     PROP_RUN_OUTPUT,
     PROP_USE_EDITOR,
-    PROP_USE_TERMINAL
+    PROP_USE_TERMINAL,
+    PROP_USE_PYTHON_CONSOLE
 };
 
 enum {
@@ -291,6 +294,14 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_boolean ("use-terminal",
                                              "use-terminal",
                                              "use-terminal",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USE_PYTHON_CONSOLE,
+                                     g_param_spec_boolean ("use-python-console",
+                                             "use-python-console",
+                                             "use-python-console",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -478,6 +489,10 @@ moo_app_set_property (GObject        *object,
 
         case PROP_USE_TERMINAL:
             app->priv->use_terminal = g_value_get_boolean (value);
+            break;
+
+        case PROP_USE_PYTHON_CONSOLE:
+            app->priv->use_python_console = g_value_get_boolean (value);
             break;
 
         default:
@@ -934,7 +949,7 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
     {
         G_GNUC_UNUSED char **plugin_dirs;
 
-        moo_app_python = moo_python_new ();
+        moo_app_python = moo_python_new (app->priv->use_python_console);
         moo_python_start (moo_app_python,
                           strv_length (app->priv->argv),
                           app->priv->argv);

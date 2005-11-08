@@ -20,10 +20,14 @@
 G_BEGIN_DECLS
 
 
-PyObject *moo_strv_to_pyobject (char **strv);
-int moo_pyobject_to_strv (PyObject *obj, char ***dest);
+PyObject    *moo_strv_to_pyobject           (char      **strv);
+int          moo_pyobject_to_strv           (PyObject   *obj,
+                                             char     ***dest);
 
-PyObject *moo_gvalue_to_pyobject (const GValue *val);
+PyObject    *moo_object_slist_to_pyobject   (GSList     *list);
+PyObject    *moo_string_slist_to_pyobject   (GSList     *list);
+
+PyObject    *moo_gvalue_to_pyobject (const GValue *val);
 
 
 #define return_None     G_STMT_START {Py_INCREF(Py_None); return Py_None;} G_STMT_END

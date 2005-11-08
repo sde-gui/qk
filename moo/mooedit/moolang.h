@@ -196,9 +196,6 @@ MooLang    *moo_lang_new                        (struct _MooLangMgr *mgr,
                                                  const char         *version,
                                                  const char         *author);
 
-char       *moo_lang_get_name                   (MooLang            *lang);
-char       *moo_lang_get_display_name           (MooLang            *lang);
-
 MooLang    *moo_lang_ref                        (MooLang            *lang);
 void        moo_lang_unref                      (MooLang            *lang);
 

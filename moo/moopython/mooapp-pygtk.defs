@@ -1,5 +1,5 @@
-;; -*- scheme -*-
-; object definitions ...
+;; hand-edited
+
 (define-object App
   (in-module "Moo")
   (parent "GObject")
@@ -7,27 +7,89 @@
   (gtype-id "MOO_TYPE_APP")
 )
 
-;; Enumerations and flags ...
+;; (define-object Python
+;;   (in-module "Moo")
+;;   (parent "GObject")
+;;   (c-name "MooPython")
+;;   (gtype-id "MOO_TYPE_PYTHON")
+;; )
+;;
+;; (define-object PythonConsole
+;;   (in-module "Moo")
+;;   (parent "GtkWindow")
+;;   (c-name "MooPythonConsole")
+;;   (gtype-id "MOO_TYPE_PYTHON_CONSOLE")
+;; )
 
 
-;; From ../mooapp/mooapp.h
+;; (define-boxed AppInfo
+;;   (in-module "Moo")
+;;   (c-name "MooAppInfo")
+;;   (gtype-id "MOO_TYPE_APP_INFO")
+;;   (fields
+;;     '("char*" "short_name")
+;;     '("char*" "full_name")
+;;     '("char*" "description")
+;;     '("char*" "version")
+;;     '("char*" "website")
+;;     '("char*" "website_label")
+;;     '("char*" "app_dir")
+;;     '("char*" "rc_file")
+;;   )
+;; )
 
-(define-function moo_app_get_type
-  (c-name "moo_app_get_type")
-  (return-type "GType")
+
+;; From mooapp-python.h
+
+(define-function python_execute_file
+  (c-name "moo_app_python_execute_file")
+  (return-type "none")
+  (parameters
+    '("GtkWindow*" "parent")
+  )
 )
 
-(define-function moo_app_info_get_type
-  (c-name "moo_app_info_get_type")
-  (return-type "GType")
+(define-method python_run_string
+  (of-object "MooApp")
+  (c-name "moo_app_python_run_string")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "string")
+  )
 )
 
-(define-function moo_app_window_policy_get_type
-  (c-name "moo_app_window_policy_get_type")
-  (return-type "GType")
+(define-method python_run_file
+  (of-object "MooApp")
+  (c-name "moo_app_python_run_file")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "filename")
+  )
 )
 
-(define-function moo_app_get_instance
+(define-method get_python_console
+  (of-object "MooApp")
+  (c-name "moo_app_get_python_console")
+  (return-type "GtkWidget*")
+)
+
+(define-method show_python_console
+  (of-object "MooApp")
+  (c-name "moo_app_show_python_console")
+  (return-type "none")
+)
+
+(define-method hide_python_console
+  (of-object "MooApp")
+  (c-name "moo_app_hide_python_console")
+  (return-type "none")
+)
+
+
+
+;; From mooapp.h
+
+(define-function get_instance
   (c-name "moo_app_get_instance")
   (return-type "MooApp*")
 )
@@ -65,11 +127,11 @@
   )
 )
 
-(define-method get_info
-  (of-object "MooApp")
-  (c-name "moo_app_get_info")
-  (return-type "const-MooAppInfo*")
-)
+;; (define-method get_info
+;;   (of-object "MooApp")
+;;   (c-name "moo_app_get_info")
+;;   (return-type "const-MooAppInfo*")
+;; )
 
 (define-method get_rc_file_name
   (of-object "MooApp")
@@ -80,6 +142,12 @@
 (define-method get_input_pipe_name
   (of-object "MooApp")
   (c-name "moo_app_get_input_pipe_name")
+  (return-type "const-char*")
+)
+
+(define-method get_output_pipe_name
+  (of-object "MooApp")
+  (c-name "moo_app_get_output_pipe_name")
   (return-type "const-char*")
 )
 
@@ -101,7 +169,16 @@
   (return-type "MooTermWindow*")
 )
 
-(define-function moo_app_prefs_dialog
+(define-method set_terminal_type
+  (of-object "MooApp")
+  (c-name "moo_app_set_terminal_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+(define-function prefs_dialog
   (c-name "moo_app_prefs_dialog")
   (return-type "none")
   (parameters
@@ -109,7 +186,7 @@
   )
 )
 
-(define-function moo_app_about_dialog
+(define-function about_dialog
   (c-name "moo_app_about_dialog")
   (return-type "none")
   (parameters
@@ -132,4 +209,18 @@
   )
 )
 
+(define-method tempnam
+  (of-object "MooApp")
+  (c-name "moo_app_tempnam")
+  (return-type "char*")
+)
 
+(define-method send_msg
+  (of-object "MooApp")
+  (c-name "moo_app_send_msg")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "data")
+    '("int" "len")
+  )
+)
