@@ -1383,6 +1383,7 @@ moo_term_apply_tag (MooTerm            *term,
     MooTermBuffer *buf;
     MooTermLine *line;
     int i;
+    Segment inv;
 
     g_return_if_fail (MOO_IS_TERM (term));
     g_return_if_fail (MOO_IS_TERM_TAG (tag));
@@ -1416,7 +1417,9 @@ moo_term_apply_tag (MooTerm            *term,
         }
     }
 
-    /* XXX invalidate */
+    inv.start = *start;
+    inv.end = *end;
+    invalidate_segment (&inv, 1);
 }
 
 
@@ -1428,6 +1431,7 @@ moo_term_remove_tag (MooTerm            *term,
 {
     MooTermBuffer *buf;
     MooTermLine *line;
+    Segment inv;
     int i;
 
     g_return_if_fail (MOO_IS_TERM (term));
@@ -1462,7 +1466,9 @@ moo_term_remove_tag (MooTerm            *term,
         }
     }
 
-    /* XXX invalidate */
+    inv.start = *start;
+    inv.end = *end;
+    invalidate_segment (&inv, 1);
 }
 
 

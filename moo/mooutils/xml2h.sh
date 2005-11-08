@@ -3,6 +3,9 @@ if [ x$2 = x ]; then
     exit 1
 fi
 
-echo "static const char *$1 = \"\""
-sed 's/"/\\"/g' $2 | sed 's/^\(.*\)$/"\1\\n"/'
+VARNAME=$1
+INPUT=$2
+
+echo "static const char *$VARNAME = \"\""
+sed 's/"/\\"/g' $INPUT | sed 's/^\(.*\)$/"\1\\n"/'
 echo ";"
