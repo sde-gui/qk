@@ -87,7 +87,7 @@ $(mooterm_srcdir)/mootermparser-yacc.c: $(mooterm)/mootermparser-yacc.y
 	mkdir -p $(mooterm)
 	bison -o $(mooterm_srcdir)/mootermparser-yacc.c -d $(mooterm_srcdir)/mootermparser-yacc.y
 
-$(mooterm)/mootermprefs-glade.h: $(mooterm)/glade/mootermprefs.glade
+$(mooterm)/mootermprefs-glade.h: $(mooterm)/glade/mootermprefs.glade $(XML2H)
 	mkdir -p $(mooterm)
 	sh $(XML2H) MOO_TERM_PREFS_GLADE_UI $(mooterm_srcdir)/glade/mootermprefs.glade \
 		> $(mooterm)/mootermprefs-glade.h

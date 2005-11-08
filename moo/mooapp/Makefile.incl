@@ -51,7 +51,7 @@ mooapp_extra_dist =                           \
     $(mooapp)/gpl                             \
     $(mooapp_python_sources)
 
-$(mooapp)/mooappabout-glade.h: $(mooapp_srcdir)/glade/mooappabout.glade
+$(mooapp)/mooappabout-glade.h: $(mooapp_srcdir)/glade/mooappabout.glade $(XML2H)
 	mkdir -p $(mooapp)
 	sh $(XML2H) MOO_APP_ABOUT_GLADE_UI $(mooapp_srcdir)/glade/mooappabout.glade > $(mooapp)/mooappabout-glade.h
 

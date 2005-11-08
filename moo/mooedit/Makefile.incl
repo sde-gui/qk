@@ -55,7 +55,7 @@ mooedit_plugins_extra_dist =                  \
     $(mooedit_plugins)/moofind.glade          \
     $(mooedit_plugins)/moofind-glade.h
 
-$(mooedit_plugins)/moofind-glade.h: $(mooedit_plugins)/moofind.glade
+$(mooedit_plugins)/moofind-glade.h: $(mooedit_plugins)/moofind.glade $(XML2H)
 	mkdir -p $(mooedit_plugins)
 	sh $(XML2H) MOO_FIND_GLADE_XML $(mooedit_plugins_srcdir)/moofind.glade > \
 	   $(mooedit_plugins)/moofind-glade.h
@@ -156,23 +156,23 @@ mooedit_built_sources =                       \
     $(mooedit)/mooeditcolorsprefs-glade.h
 
 
-$(mooedit)/mooeditgotoline-glade.h: $(mooedit_srcdir)/glade/mooeditgotoline.glade
+$(mooedit)/mooeditgotoline-glade.h: $(mooedit_srcdir)/glade/mooeditgotoline.glade $(XML2H)
 	sh $(XML2H) MOO_EDIT_GOTO_LINE_GLADE_UI $(mooedit_srcdir)/glade/mooeditgotoline.glade \
 		> $(mooedit)/mooeditgotoline-glade.h
 
-$(mooedit)/mooeditfind-glade.h: $(mooedit_srcdir)/glade/mooeditfind.glade
+$(mooedit)/mooeditfind-glade.h: $(mooedit_srcdir)/glade/mooeditfind.glade $(XML2H)
 	sh $(XML2H) MOO_EDIT_FIND_GLADE_UI $(mooedit_srcdir)/glade/mooeditfind.glade \
 		> $(mooedit)/mooeditfind-glade.h
 
-$(mooedit)/mooeditprefs-glade.h: $(mooedit_srcdir)/glade/mooeditprefs.glade
+$(mooedit)/mooeditprefs-glade.h: $(mooedit_srcdir)/glade/mooeditprefs.glade $(XML2H)
 	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditprefs.glade \
 		> $(mooedit)/mooeditprefs-glade.h
 
-$(mooedit)/mooeditcolorsprefs-glade.h: $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade
+$(mooedit)/mooeditcolorsprefs-glade.h: $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade $(XML2H)
 	sh $(XML2H) MOO_EDIT_COLORS_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade \
 		> $(mooedit)/mooeditcolorsprefs-glade.h
 
-$(mooedit)/moopluginprefs-glade.h: $(mooedit_srcdir)/glade/moopluginprefs.glade
+$(mooedit)/moopluginprefs-glade.h: $(mooedit_srcdir)/glade/moopluginprefs.glade $(XML2H)
 	sh $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(mooedit_srcdir)/glade/moopluginprefs.glade \
 		> $(mooedit)/moopluginprefs-glade.h
 
