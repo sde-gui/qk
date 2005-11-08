@@ -7,5 +7,5 @@ VARNAME=$1
 INPUT=$2
 
 echo "static const char *$VARNAME = \"\""
-sed 's/\\/\\\\/g' $INPUT | sed 's/"/\\"/g' | sed 's/^\(.*\)$/"\1\\n"/'
+sed 's/\\/\\\\/g' $INPUT | sed 's/"/\\"/g' | sed 's/^\(.*\)$/"\1\\n"/' || exit $?
 echo ";"
