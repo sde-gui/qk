@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="PythonConsole" visible="FALSE">
+  <syntax>
+    <context name="Normal">
+        <Regex pattern="^>>> " context="InputLine" style="PS1"/>
+        <Regex pattern="^\.\.\. " context="InputLineCont" style="PS2"/>
+    </context>
+
+    <context name="InputLine" end-of-line-context="#pop">
+        <IncludeRules from="##Python##Normal"/>
+    </context>
+
+    <context name="InputLineCont" end-of-line-context="#pop">
+        <IncludeRules from="##Python##Normal"/>
+    </context>
+  </syntax>
+
+  <styles>
+    <style name="PS1" default-style="Keyword"/>
+    <style name="PS2" default-style="Keyword"/>
+  </styles>
+</language>

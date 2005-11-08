@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- Mode: XML; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
 <!DOCTYPE language SYSTEM "language.dtd">
 <language name="Python" version="1.0" section="Scripts"
           mimetypes="text/x-python;application/x-python"
