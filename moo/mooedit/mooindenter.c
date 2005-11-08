@@ -142,8 +142,14 @@ moo_indenter_constructor (GType           type,
         };
 
         for (i = 0; i < G_N_ELEMENTS (known_vars); ++i)
-            moo_indenter_set_value (indent, known_vars[i],
-                                    moo_edit_get_var (indent->doc, known_vars[i]));
+            moo_indenter_set_value (indent, known_vars[i], NULL);
+
+        for (i = 0; i < G_N_ELEMENTS (known_vars); ++i)
+        {
+            const char *val = moo_edit_get_var (indent->doc, known_vars[i]);
+            if (val)
+                moo_indenter_set_value (indent, known_vars[i], val);
+        }
 
         g_signal_connect_swapped (indent->doc, "variable-changed",
                                   G_CALLBACK (variable_changed), indent);

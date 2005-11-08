@@ -647,7 +647,8 @@ try_mode_string (MooEdit    *edit,
     {
         char *sep, *var, *value;
 
-        sep = g_strrstr (*p, var_val_separator);
+        g_strstrip (*p);
+        sep = strstr (*p, var_val_separator);
 
         if (!sep || sep == *p || !sep[1])
             goto out;
