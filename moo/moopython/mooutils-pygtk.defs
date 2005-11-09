@@ -379,7 +379,7 @@
 
 ;; From ../mooutils/moodialogs.h
 
-(define-function moo_file_dialog
+(define-function file_dialog
   (c-name "moo_file_dialog")
   (return-type "const-char*")
   (parameters
@@ -390,7 +390,7 @@
   )
 )
 
-(define-function moo_file_dialog_create
+(define-function file_dialog_create
   (c-name "moo_file_dialog_create")
   (return-type "GtkWidget*")
   (parameters
@@ -402,7 +402,7 @@
   )
 )
 
-(define-function moo_file_dialog_run
+(define-function file_dialog_run
   (c-name "moo_file_dialog_run")
   (return-type "gboolean")
   (parameters
@@ -410,7 +410,7 @@
   )
 )
 
-(define-function moo_file_dialog_get_filename
+(define-function file_dialog_get_filename
   (c-name "moo_file_dialog_get_filename")
   (return-type "const-char*")
   (parameters
@@ -418,7 +418,7 @@
   )
 )
 
-(define-function moo_file_dialog_get_filenames
+(define-function file_dialog_get_filenames
   (c-name "moo_file_dialog_get_filenames")
   (return-type "GSList*")
   (parameters
@@ -426,7 +426,7 @@
   )
 )
 
-(define-function moo_file_dialogp
+(define-function file_dialogp
   (c-name "moo_file_dialogp")
   (return-type "const-char*")
   (parameters
@@ -438,7 +438,7 @@
   )
 )
 
-(define-function moo_font_dialog
+(define-function font_dialog
   (c-name "moo_font_dialog")
   (return-type "const-char*")
   (parameters
@@ -449,7 +449,7 @@
   )
 )
 
-(define-function moo_error_dialog
+(define-function error_dialog
   (c-name "moo_error_dialog")
   (return-type "none")
   (parameters
@@ -459,7 +459,7 @@
   )
 )
 
-(define-function moo_info_dialog
+(define-function info_dialog
   (c-name "moo_info_dialog")
   (return-type "none")
   (parameters
@@ -469,7 +469,7 @@
   )
 )
 
-(define-function moo_warning_dialog
+(define-function warning_dialog
   (c-name "moo_warning_dialog")
   (return-type "none")
   (parameters
@@ -529,7 +529,7 @@
 
 ;; From ../mooutils/moofileutils.h
 
-(define-function moo_open_url
+(define-function open_url
   (c-name "moo_open_url")
   (return-type "gboolean")
   (parameters
@@ -537,7 +537,7 @@
   )
 )
 
-(define-function moo_open_email
+(define-function open_email
   (c-name "moo_open_email")
   (return-type "gboolean")
   (parameters
@@ -551,10 +551,10 @@
 
 ;; From ../mooutils/moofilewatch.h
 
-(define-function moo_file_watch_error_quark
-  (c-name "moo_file_watch_error_quark")
-  (return-type "GQuark")
-)
+;; (define-function moo_file_watch_error_quark
+;;   (c-name "moo_file_watch_error_quark")
+;;   (return-type "GQuark")
+;; )
 
 (define-function moo_file_watch_new
   (c-name "moo_file_watch_new")
@@ -1018,17 +1018,17 @@
 
 ;; From ../mooutils/moolog.h
 
-(define-function moo_log_window_show
+(define-function log_window_show
   (c-name "moo_log_window_show")
   (return-type "none")
 )
 
-(define-function moo_log_window_hide
+(define-function log_window_hide
   (c-name "moo_log_window_hide")
   (return-type "none")
 )
 
-(define-function moo_log_window_write
+(define-function log_window_write
   (c-name "moo_log_window_write")
   (return-type "none")
   (parameters
@@ -1038,7 +1038,7 @@
   )
 )
 
-(define-function moo_set_log_func_window
+(define-function set_log_func_window
   (c-name "moo_set_log_func_window")
   (return-type "none")
   (parameters
@@ -1046,7 +1046,7 @@
   )
 )
 
-(define-function moo_set_log_func_file
+(define-function set_log_func_file
   (c-name "moo_set_log_func_file")
   (return-type "none")
   (parameters
@@ -1054,7 +1054,7 @@
   )
 )
 
-(define-function moo_set_log_func
+(define-function set_log_func
   (c-name "moo_set_log_func")
   (return-type "none")
   (parameters
@@ -1329,12 +1329,12 @@
 
 ;; From ../mooutils/moostock.h
 
-(define-function moo_create_stock_items
+(define-function create_stock_items
   (c-name "moo_create_stock_items")
   (return-type "none")
 )
 
-(define-function moo_get_icon_size_real_small
+(define-function get_icon_size_real_small
   (c-name "moo_get_icon_size_real_small")
   (return-type "GtkIconSize")
 )
@@ -1343,7 +1343,7 @@
 
 ;; From ../mooutils/moowin.h
 
-(define-function moo_window_is_hidden
+(define-function window_is_hidden
   (c-name "moo_window_is_hidden")
   (return-type "gboolean")
   (parameters
@@ -1351,7 +1351,7 @@
   )
 )
 
-(define-function moo_get_top_window
+(define-function get_top_window
   (c-name "moo_get_top_window")
   (return-type "GtkWindow*")
   (parameters
@@ -1359,12 +1359,12 @@
   )
 )
 
-(define-function moo_get_toplevel_window
+(define-function get_toplevel_window
   (c-name "moo_get_toplevel_window")
   (return-type "GtkWindow*")
 )
 
-(define-function moo_window_set_icon_from_stock
+(define-function window_set_icon_from_stock
   (c-name "moo_window_set_icon_from_stock")
   (return-type "gboolean")
   (parameters
@@ -1564,69 +1564,69 @@
 
 ;; From ./ggap/moo/mooutils/mooclosure.h
 
-(define-function moo_closure_new
-  (c-name "moo_closure_new")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-  (parameters
-    '("GCallback" "callback_func")
-    '("gpointer" "data")
-  )
-)
-
-(define-function moo_closure_new_object
-  (c-name "moo_closure_new_object")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-  (parameters
-    '("GCallback" "callback_func")
-    '("gpointer" "object")
-  )
-)
-
-(define-function moo_closure_new_signal
-  (c-name "moo_closure_new_signal")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-  (parameters
-    '("const-char*" "signal")
-    '("gpointer" "object")
-  )
-)
-
-(define-function moo_closure_new_proxy
-  (c-name "moo_closure_new_proxy")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-  (parameters
-    '("GCallback" "callback_func")
-    '("GCallback" "proxy_func")
-    '("gpointer" "object")
-  )
-)
-
-(define-function moo_closure_new_proxy_signal
-  (c-name "moo_closure_new_proxy_signal")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-  (parameters
-    '("const-char*" "signal")
-    '("GCallback" "proxy_func")
-    '("gpointer" "object")
-  )
-)
-
-(define-method invoke
-  (of-object "MooClosure")
-  (c-name "moo_closure_invoke")
-  (return-type "none")
-)
-
-(define-method invalidate
-  (of-object "MooClosure")
-  (c-name "moo_closure_invalidate")
-  (return-type "none")
-)
+;; (define-function moo_closure_new
+;;   (c-name "moo_closure_new")
+;;   (is-constructor-of "MooClosure")
+;;   (return-type "MooClosure*")
+;;   (parameters
+;;     '("GCallback" "callback_func")
+;;     '("gpointer" "data")
+;;   )
+;; )
+;;
+;; (define-function moo_closure_new_object
+;;   (c-name "moo_closure_new_object")
+;;   (is-constructor-of "MooClosure")
+;;   (return-type "MooClosure*")
+;;   (parameters
+;;     '("GCallback" "callback_func")
+;;     '("gpointer" "object")
+;;   )
+;; )
+;;
+;; (define-function moo_closure_new_signal
+;;   (c-name "moo_closure_new_signal")
+;;   (is-constructor-of "MooClosure")
+;;   (return-type "MooClosure*")
+;;   (parameters
+;;     '("const-char*" "signal")
+;;     '("gpointer" "object")
+;;   )
+;; )
+;;
+;; (define-function moo_closure_new_proxy
+;;   (c-name "moo_closure_new_proxy")
+;;   (is-constructor-of "MooClosure")
+;;   (return-type "MooClosure*")
+;;   (parameters
+;;     '("GCallback" "callback_func")
+;;     '("GCallback" "proxy_func")
+;;     '("gpointer" "object")
+;;   )
+;; )
+;;
+;; (define-function moo_closure_new_proxy_signal
+;;   (c-name "moo_closure_new_proxy_signal")
+;;   (is-constructor-of "MooClosure")
+;;   (return-type "MooClosure*")
+;;   (parameters
+;;     '("const-char*" "signal")
+;;     '("GCallback" "proxy_func")
+;;     '("gpointer" "object")
+;;   )
+;; )
+;;
+;; (define-method invoke
+;;   (of-object "MooClosure")
+;;   (c-name "moo_closure_invoke")
+;;   (return-type "none")
+;; )
+;;
+;; (define-method invalidate
+;;   (of-object "MooClosure")
+;;   (c-name "moo_closure_invalidate")
+;;   (return-type "none")
+;; )
 
 
 
@@ -1806,11 +1806,6 @@
 
 
 ;; From ./moo/mooutils/moobigpaned.h
-
-(define-function moo_big_paned_get_type
-  (c-name "moo_big_paned_get_type")
-  (return-type "GType")
-)
 
 (define-function moo_big_paned_new
   (c-name "moo_big_paned_new")

@@ -3,16 +3,16 @@
 <language name="PythonConsole" visible="FALSE">
   <syntax>
     <context name="Normal">
-        <Regex pattern="^>>> " context="InputLine" style="PS1"/>
-        <Regex pattern="^\.\.\. " context="InputLineCont" style="PS2"/>
+      <Regex pattern="^>>> " context="InputLine" style="PS1"/>
+      <Regex pattern="^\.\.\. " context="InputLineCont" style="PS2"/>
     </context>
 
     <context name="InputLine" end-of-line-context="#pop">
-        <IncludeRules from="##Python##Normal"/>
+      <IncludeRules from="##Python##Normal"/>
     </context>
 
     <context name="InputLineCont" end-of-line-context="#pop">
-        <IncludeRules from="##Python##Normal"/>
+      <IncludeRules from="##Python##Normal"/>
     </context>
   </syntax>
 
