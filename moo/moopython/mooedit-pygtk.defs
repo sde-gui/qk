@@ -300,7 +300,7 @@
   (return-type "MooEditFileInfo*")
   (parameters
     '("const-char*" "filename")
-    '("const-char*" "encoding")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -501,7 +501,7 @@
   (c-name "moo_edit_window_set_title_prefix")
   (return-type "none")
   (parameters
-    '("const-char*" "prefix")
+    '("const-char*" "prefix" (null-ok))
   )
 )
 
@@ -835,7 +835,7 @@
   (c-name "moo_text_buffer_set_lang")
   (return-type "none")
   (parameters
-    '("MooLang*" "lang")
+    '("MooLang*" "lang" (null-ok))
   )
 )
 
@@ -913,7 +913,7 @@
   (c-name "moo_text_buffer_apply_scheme")
   (return-type "none")
   (parameters
-    '("MooTextStyleScheme*" "scheme")
+    '("MooTextStyleScheme*" "scheme" (null-ok))
   )
 )
 
@@ -947,7 +947,7 @@
   (is-constructor-of "MooTextStyle")
   (return-type "MooTextStyle*")
   (parameters
-    '("const-char*" "default_style")
+    '("const-char*" "default_style" (null-ok) (default "NULL"))
     '("const-GdkColor*" "foreground")
     '("const-GdkColor*" "background")
     '("gboolean" "bold")
@@ -1012,7 +1012,7 @@
   (c-name "moo_text_style_scheme_compose")
   (return-type "none")
   (parameters
-    '("const-char*" "language_name")
+    '("const-char*" "language_name" (null-ok))
     '("const-char*" "style_name")
     '("const-MooTextStyle*" "style")
   )
@@ -1023,7 +1023,7 @@
   (c-name "moo_text_style_scheme_set")
   (return-type "none")
   (parameters
-    '("const-char*" "language_name")
+    '("const-char*" "language_name" (null-ok))
     '("const-char*" "style_name")
     '("const-MooTextStyle*" "style")
   )
@@ -1034,7 +1034,7 @@
   (c-name "moo_text_style_scheme_get")
   (return-type "const-MooTextStyle*")
   (parameters
-    '("const-char*" "language_name")
+    '("const-char*" "language_name" (null-ok))
     '("const-char*" "style_name")
   )
 )
@@ -1248,6 +1248,6 @@
   (c-name "moo_text_view_set_lang")
   (return-type "none")
   (parameters
-    '("MooLang*" "lang")
+    '("MooLang*" "lang" (null-ok))
   )
 )

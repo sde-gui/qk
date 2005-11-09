@@ -103,7 +103,7 @@ typedef enum {
     MOO_RULE_REGEX,
     MOO_RULE_ASCII_CHAR,
     MOO_RULE_ASCII_2CHAR,
-    MOO_RULE_ASCII_RANGE,
+    MOO_RULE_ASCII_ANY_CHAR,
     MOO_RULE_KEYWORDS,
     MOO_RULE_INCLUDE
 } MooRuleType;
@@ -140,7 +140,7 @@ typedef struct {
 typedef struct {
     char *chars;
     guint n_chars;
-} MooRuleAsciiRange;
+} MooRuleAsciiAnyChar;
 
 typedef struct {
     MooContext *ctx;
@@ -164,7 +164,7 @@ struct _MooRule
         MooRuleRegex regex;
         MooRuleAsciiChar _char;
         MooRuleAscii2Char _2char;
-        MooRuleAsciiRange range;
+        MooRuleAsciiAnyChar anychar;
         MooRuleInclude incl;
     };
 };

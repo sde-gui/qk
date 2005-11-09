@@ -456,6 +456,16 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "FocusDoc",
+                                 "name", "Focus Doc",
+                                 "label", "_Focus Doc",
+                                 "tooltip", "Focus Doc",
+                                 "accel", "<alt>C",
+                                 "closure::callback", gtk_widget_grab_focus,
+                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
                                         NULL, NULL);

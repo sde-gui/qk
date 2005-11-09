@@ -24,7 +24,7 @@ typedef enum {
 #define MooRuleString MooRuleAsciiString
 #define MooRuleChar MooRuleAsciiChar
 #define MooRule2Char MooRuleAscii2Char
-#define MooRuleRange MooRuleAsciiRange
+#define MooRuleAnyChar MooRuleAsciiAnyChar
 
 
 static MooRule *rule_new            (MooRuleType     type,
@@ -55,7 +55,7 @@ static gboolean match_2char         (MooRule2Char   *rule,
                                      MatchData      *data,
                                      MatchResult    *result,
                                      MatchFlags      flags);
-static gboolean match_range         (MooRuleRange   *rule,
+static gboolean match_any_char      (MooRuleAnyChar *rule,
                                      MatchData      *data,
                                      MatchResult    *result,
                                      MatchFlags      flags);
@@ -68,7 +68,7 @@ static void     rule_string_destroy (MooRuleString  *rule);
 static void     rule_regex_destroy  (MooRuleRegex   *rule);
 static void     rule_char_destroy   (MooRuleChar    *rule);
 static void     rule_2char_destroy  (MooRule2Char   *rule);
-static void     rule_range_destroy  (MooRuleRange   *rule);
+static void     rule_any_char_destroy (MooRuleAnyChar *rule);
 static void     rule_include_destroy(MooRuleInclude *rule);
 
 
@@ -198,8 +198,8 @@ rules_match_real (MooRuleArray       *array,
             case MOO_RULE_ASCII_2CHAR:
                 found = match_2char (&rule->_2char, data, &tmp, flags);
                 break;
-            case MOO_RULE_ASCII_RANGE:
-                found = match_range (&rule->range, data, &tmp, flags);
+            case MOO_RULE_ASCII_ANY_CHAR:
+                found = match_any_char (&rule->anychar, data, &tmp, flags);
                 break;
             case MOO_RULE_INCLUDE:
                 matched_here = match_include (&rule->incl, data, &tmp, flags);
@@ -302,7 +302,7 @@ rule_new (MooRuleType         type,
         case MOO_RULE_REGEX:
         case MOO_RULE_ASCII_CHAR:
         case MOO_RULE_ASCII_2CHAR:
-        case MOO_RULE_ASCII_RANGE:
+        case MOO_RULE_ASCII_ANY_CHAR:
         case MOO_RULE_INCLUDE:
             break;
 
@@ -342,8 +342,8 @@ moo_rule_free (MooRule *rule)
         case MOO_RULE_ASCII_2CHAR:
             rule_2char_destroy (&rule->_2char);
             break;
-        case MOO_RULE_ASCII_RANGE:
-            rule_range_destroy (&rule->range);
+        case MOO_RULE_ASCII_ANY_CHAR:
+            rule_any_char_destroy (&rule->anychar);
             break;
         case MOO_RULE_INCLUDE:
             rule_include_destroy (&rule->incl);
@@ -737,13 +737,13 @@ match_2char (MooRule2Char   *rule,
 
 
 /*************************************************************************/
-/* Range match
+/* AnyChar match
  */
 
 MooRule*
-moo_rule_range_new (const char         *string,
-                    MooRuleFlags        flags,
-                    const char         *style)
+moo_rule_any_char_new (const char         *string,
+                       MooRuleFlags        flags,
+                       const char         *style)
 {
     MooRule *rule;
     guint i, len;
@@ -755,21 +755,21 @@ moo_rule_range_new (const char         *string,
     for (i = 0; i < len; ++i)
         g_return_val_if_fail (CHAR_IS_ASCII (string[i]), NULL);
 
-    rule = rule_new (MOO_RULE_ASCII_RANGE, flags, style);
+    rule = rule_new (MOO_RULE_ASCII_ANY_CHAR, flags, style);
     g_return_val_if_fail (rule != NULL, NULL);
 
-    rule->range.n_chars = len;
-    rule->range.chars = g_strdup (string);
+    rule->anychar.n_chars = len;
+    rule->anychar.chars = g_strdup (string);
 
     return rule;
 }
 
 
 static gboolean
-match_range (MooRuleRange   *rule,
-             MatchData      *data,
-             MatchResult    *result,
-             MatchFlags      flags)
+match_any_char (MooRuleAnyChar   *rule,
+                MatchData      *data,
+                MatchResult    *result,
+                MatchFlags      flags)
 {
     guint i;
 
@@ -825,7 +825,7 @@ match_range (MooRuleRange   *rule,
 
 
 static void
-rule_range_destroy (MooRuleRange *rule)
+rule_any_char_destroy (MooRuleAnyChar *rule)
 {
     g_free (rule->chars);
 }

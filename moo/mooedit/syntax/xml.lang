@@ -25,13 +25,13 @@
 
   <context name="FindEntityRefs" style="Normal Text" end-of-line-context="#stay">
     <Regex style="EntityRef" context="#stay" pattern="&entref;" />
-    <Range style="Error" context="#stay" chars="&amp;&lt;" />
+    <AnyChar style="Error" context="#stay" chars="&amp;&lt;" />
   </context>
 
   <context name="FindPEntityRefs" style="Normal Text" end-of-line-context="#stay">
     <Regex style="EntityRef" context="#stay" pattern="&entref;" />
     <Regex style="PEntityRef" context="#stay" pattern="%&name;;" />
-    <Range style="Error" context="#stay" chars="&amp;%" />
+    <AnyChar style="Error" context="#stay" chars="&amp;%" />
   </context>
 
 

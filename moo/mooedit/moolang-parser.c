@@ -1259,7 +1259,7 @@ static RuleXML  *rule_string_xml_parse      (xmlNode            *node);
 static RuleXML  *rule_regex_xml_parse       (xmlNode            *node);
 static RuleXML  *rule_char_xml_parse        (xmlNode            *node);
 static RuleXML  *rule_2char_xml_parse       (xmlNode            *node);
-static RuleXML  *rule_range_xml_parse       (xmlNode            *node);
+static RuleXML  *rule_any_char_xml_parse    (xmlNode            *node);
 static RuleXML  *rule_keywords_xml_parse    (LangXML            *lang_xml,
                                              xmlNode            *node);
 static RuleXML  *rule_include_xml_parse     (LangXML            *lang_xml,
@@ -1267,13 +1267,13 @@ static RuleXML  *rule_include_xml_parse     (LangXML            *lang_xml,
 
 static void      rule_string_xml_free       (RuleStringXML      *xml);
 static void      rule_regex_xml_free        (RuleRegexXML       *xml);
-static void      rule_range_xml_free        (RuleRangeXML       *xml);
+static void      rule_any_char_xml_free     (RuleAnyCharXML     *xml);
 static void      rule_keywords_xml_free     (RuleKeywordsXML    *xml);
 static void      rule_include_xml_free      (RuleIncludeXML     *xml);
 
 static MooRule  *rule_string_xml_create_rule    (RuleStringXML      *xml);
 static MooRule  *rule_regex_xml_create_rule     (RuleRegexXML       *xml);
-static MooRule  *rule_range_xml_create_rule     (RuleRangeXML       *xml);
+static MooRule  *rule_any_char_xml_create_rule  (RuleAnyCharXML     *xml);
 static MooRule  *rule_keywords_xml_create_rule  (RuleKeywordsXML    *xml,
                                                  LangXML            *lang_xml);
 static MooRule  *rule_include_xml_create_rule   (RuleIncludeXML     *xml,
@@ -1289,7 +1289,7 @@ static MooRule  *rule_2char_xml_create_rule     (Rule2CharXML       *xml);
 #define RULE_IS_REGEX_NODE(node__)      (RULE_IS__(node__, RULE_REGEX_ELM))
 #define RULE_IS_CHAR_NODE(node__)       (RULE_IS__(node__, RULE_ASCII_CHAR_ELM))
 #define RULE_IS_2CHAR_NODE(node__)      (RULE_IS__(node__, RULE_ASCII_2CHAR_ELM))
-#define RULE_IS_RANGE_NODE(node__)      (RULE_IS__(node__, RULE_ASCII_RANGE_ELM))
+#define RULE_IS_ANY_CHAR_NODE(node__)   (RULE_IS__(node__, RULE_ASCII_ANY_CHAR_ELM))
 #define RULE_IS_KEYWORDS_NODE(node__)   (RULE_IS__(node__, RULE_KEYWORDS_ELM))
 #define RULE_IS_INCLUDE_NODE(node__)    (RULE_IS__(node__, RULE_INCLUDE_RULES_ELM))
 
@@ -1329,10 +1329,10 @@ rule_xml_parse (LangXML *lang_xml,
         xml = rule_2char_xml_parse (node);
         if (xml) xml->type = MOO_RULE_ASCII_2CHAR;
     }
-    else if (RULE_IS_RANGE_NODE (node))
+    else if (RULE_IS_ANY_CHAR_NODE (node))
     {
-        xml = rule_range_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_ASCII_RANGE;
+        xml = rule_any_char_xml_parse (node);
+        if (xml) xml->type = MOO_RULE_ASCII_ANY_CHAR;
     }
     else if (RULE_IS_KEYWORDS_NODE (node))
     {
@@ -1514,8 +1514,8 @@ moo_rule_new_from_xml (RuleXML    *xml,
         case MOO_RULE_ASCII_2CHAR:
             rule = rule_2char_xml_create_rule ((Rule2CharXML*) xml);
             break;
-        case MOO_RULE_ASCII_RANGE:
-            rule = rule_range_xml_create_rule ((RuleRangeXML*) xml);
+        case MOO_RULE_ASCII_ANY_CHAR:
+            rule = rule_any_char_xml_create_rule ((RuleAnyCharXML*) xml);
             break;
         case MOO_RULE_KEYWORDS:
             rule = rule_keywords_xml_create_rule ((RuleKeywordsXML*) xml, lang_xml);
@@ -1588,8 +1588,8 @@ rule_xml_free (RuleXML        *xml)
             case MOO_RULE_ASCII_2CHAR:
                 rule_2char_xml_free ((Rule2CharXML*) xml);
                 break;
-            case MOO_RULE_ASCII_RANGE:
-                rule_range_xml_free ((RuleRangeXML*) xml);
+            case MOO_RULE_ASCII_ANY_CHAR:
+                rule_any_char_xml_free ((RuleAnyCharXML*) xml);
                 break;
             case MOO_RULE_KEYWORDS:
                 rule_keywords_xml_free ((RuleKeywordsXML*) xml);
@@ -1800,23 +1800,23 @@ rule_2char_xml_create_rule (Rule2CharXML *xml)
 
 
 static RuleXML*
-rule_range_xml_parse (xmlNode            *node)
+rule_any_char_xml_parse (xmlNode            *node)
 {
-    RuleRangeXML *xml;
+    RuleAnyCharXML *xml;
     xmlChar *range;
 
-    g_assert (RULE_IS_RANGE_NODE (node));
+    g_assert (RULE_IS_ANY_CHAR_NODE (node));
 
-    range = GET_PROP (node, RULE_RANGE_CHARS_PROP);
+    range = GET_PROP (node, RULE_ANY_CHAR_CHARS_PROP);
 
     if (!range)
     {
-        g_warning ("%s: '" RULE_RANGE_CHARS_PROP "' attribute missing in rule %s",
+        g_warning ("%s: '" RULE_ANY_CHAR_CHARS_PROP "' attribute missing in rule %s",
                    G_STRLOC, node->name);
         return NULL;
     }
 
-    xml = g_new0 (RuleRangeXML, 1);
+    xml = g_new0 (RuleAnyCharXML, 1);
     xml->range = STRDUP (range);
 
     xmlFree (range);
@@ -1825,16 +1825,16 @@ rule_range_xml_parse (xmlNode            *node)
 
 
 static MooRule*
-rule_range_xml_create_rule (RuleRangeXML       *xml)
+rule_any_char_xml_create_rule (RuleAnyCharXML       *xml)
 {
-    return moo_rule_range_new (xml->range,
-                               rule_xml_get_flags (xml),
-                               rule_xml_get_style (xml));
+    return moo_rule_any_char_new (xml->range,
+                                  rule_xml_get_flags (xml),
+                                  rule_xml_get_style (xml));
 }
 
 
 static void
-rule_range_xml_free (RuleRangeXML       *xml)
+rule_any_char_xml_free (RuleAnyCharXML       *xml)
 {
     g_free (xml->range);
     g_free (xml);

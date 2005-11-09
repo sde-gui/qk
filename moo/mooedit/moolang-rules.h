@@ -66,7 +66,7 @@ MooRule    *moo_rule_2char_new          (char                ch1,
                                          char                ch2,
                                          MooRuleFlags        flags,
                                          const char         *style);
-MooRule    *moo_rule_range_new          (const char         *string,
+MooRule    *moo_rule_any_char_new       (const char         *string,
                                          MooRuleFlags        flags,
                                          const char         *style);
 MooRule    *moo_rule_keywords_new       (GSList             *words,

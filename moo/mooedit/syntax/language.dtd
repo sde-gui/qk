@@ -7,7 +7,7 @@
 <!ENTITY % boolean "true|false|TRUE|FALSE|0|1">
 
 <!-- rule_type -->
-<!ENTITY % rule_type "String|Regex|Char|TwoChars|Range|Keyword">
+<!ENTITY % rule_type "String|Regex|Char|TwoChars|AnyChar|Keyword">
 
 <!ELEMENT language (syntax, styles?, general?, sample-code?)>
 <!ATTLIST language
@@ -73,9 +73,9 @@
   char2     CDATA   #REQUIRED
 >
 
-<!-- Range of characters -->
-<!ELEMENT Range (%rule_type;)*>
-<!ATTLIST Range
+<!-- Set of characters -->
+<!ELEMENT AnyChar (%rule_type;)*>
+<!ATTLIST AnyChar
   %common_rule_attrs;
   chars     CDATA   #REQUIRED
 >

@@ -54,6 +54,8 @@
       <separator/>
       <item action="LanguageMenu"/>
       <separator/>
+      <item action="FocusDoc"/>
+      <separator/>
     </item>
 
     <item name="Tools" label="_Tools"/>

@@ -28,7 +28,7 @@
         <String string="UL" caseless="TRUE"/>
         <String string="LU" caseless="TRUE"/>
         <String string="LL" caseless="TRUE"/>
-        <Range chars="LUlu"/>
+        <AnyChar chars="LUlu"/>
       </Regex>
     </context>
     <context name="LineComment" style="Comment" end-of-line-context="#pop">

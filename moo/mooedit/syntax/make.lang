@@ -27,7 +27,7 @@
       <Regex style="Section" context="#stay" pattern="^[.].*:"/>
       <Char style="String" context="String" char="&quot;"/>
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>
-      <Range style="Operator" context="#stay" chars="+*=%$():\\&#059;" />
+      <AnyChar style="Operator" context="#stay" chars="+*=%$():\\&#059;" />
       <Regex style="Operator" context="Commands" pattern="^\s*[@-]"/>
       <Regex style="Comment" context="#stay" pattern="#.*$"/>
     </context>

@@ -35,7 +35,7 @@ typedef struct _RuleStringXML RuleStringXML;
 typedef struct _RuleRegexXML RuleRegexXML;
 typedef struct _RuleCharXML RuleCharXML;
 typedef struct _Rule2CharXML Rule2CharXML;
-typedef struct _RuleRangeXML RuleRangeXML;
+typedef struct _RuleAnyCharXML RuleAnyCharXML;
 typedef struct _RuleKeywordsXML RuleKeywordsXML;
 typedef struct _RuleIncludeXML RuleIncludeXML;
 typedef struct _CrossRef CrossRef;
@@ -164,7 +164,7 @@ struct _Rule2CharXML {
     char chars[3];
 };
 
-struct _RuleRangeXML {
+struct _RuleAnyCharXML {
     RULE_XML_MEMBERS;
     char *range;
 };

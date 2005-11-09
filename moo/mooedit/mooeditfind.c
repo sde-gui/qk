@@ -106,6 +106,7 @@ moo_text_view_goto_line (MooTextView *view,
         gtk_range_set_value (scale, line + 1);
 
         spin = moo_glade_xml_get_widget (xml, "spin");
+        gtk_entry_set_activates_default (GTK_ENTRY (spin), TRUE);
         gtk_spin_button_set_range (spin, 1, line_count);
         gtk_spin_button_set_value (spin, line + 1);
         gtk_editable_select_region (GTK_EDITABLE (spin), 0, -1);

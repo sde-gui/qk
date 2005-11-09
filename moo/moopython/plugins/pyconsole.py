@@ -18,7 +18,7 @@
 # this file.
 #
 # This widget is not a replacement for real terminal with python running
-# inside: gtk.TextView sucks as a terminal, and it can't be changed.
+# inside: GtkTextView is not a terminal.
 # The use case is: you have a python program, you create this widget,
 # and inspect your program interiors.
 

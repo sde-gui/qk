@@ -106,7 +106,7 @@
 #define RULE_REGEX_ELM              "Regex"
 #define RULE_ASCII_CHAR_ELM         "Char"
 #define RULE_ASCII_2CHAR_ELM        "TwoChars"
-#define RULE_ASCII_RANGE_ELM        "Range"
+#define RULE_ASCII_ANY_CHAR_ELM     "AnyChar"
 #define RULE_KEYWORDS_ELM           "Keyword"
 
 #define RULE_STRING_STRING_PROP     "string"
@@ -115,7 +115,7 @@
 #define RULE_CHAR_CHAR_PROP         "char"
 #define RULE_2CHAR_CHAR1_PROP       "char1"
 #define RULE_2CHAR_CHAR2_PROP       "char2"
-#define RULE_RANGE_CHARS_PROP       "chars"
+#define RULE_ANY_CHAR_CHARS_PROP    "chars"
 #define RULE_KEYWORDS_KEYWORD_PROP  "keyword"
 #define RULE_INCLUDE_FROM_PROP      "from"
 

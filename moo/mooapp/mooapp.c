@@ -302,7 +302,7 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_boolean ("use-python-console",
                                              "use-python-console",
                                              "use-python-console",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     signals[INIT] =
