@@ -59,6 +59,9 @@ static gboolean match_any_char      (MooRuleAnyChar *rule,
                                      MatchData      *data,
                                      MatchResult    *result,
                                      MatchFlags      flags);
+static gboolean match_int           (MatchData      *data,
+                                     MatchResult    *result,
+                                     MatchFlags      flags);
 static MooRule *match_include       (MooRuleInclude *rule,
                                      MatchData      *data,
                                      MatchResult    *result,
@@ -66,10 +69,7 @@ static MooRule *match_include       (MooRuleInclude *rule,
 
 static void     rule_string_destroy (MooRuleString  *rule);
 static void     rule_regex_destroy  (MooRuleRegex   *rule);
-static void     rule_char_destroy   (MooRuleChar    *rule);
-static void     rule_2char_destroy  (MooRule2Char   *rule);
 static void     rule_any_char_destroy (MooRuleAnyChar *rule);
-static void     rule_include_destroy(MooRuleInclude *rule);
 
 
 void
@@ -201,6 +201,9 @@ rules_match_real (MooRuleArray       *array,
             case MOO_RULE_ASCII_ANY_CHAR:
                 found = match_any_char (&rule->anychar, data, &tmp, flags);
                 break;
+            case MOO_RULE_INT:
+                found = match_int (data, &tmp, flags);
+                break;
             case MOO_RULE_INCLUDE:
                 matched_here = match_include (&rule->incl, data, &tmp, flags);
                 found = (matched_here != NULL);
@@ -304,6 +307,7 @@ rule_new (MooRuleType         type,
         case MOO_RULE_ASCII_2CHAR:
         case MOO_RULE_ASCII_ANY_CHAR:
         case MOO_RULE_INCLUDE:
+        case MOO_RULE_INT:
             break;
 
         case MOO_RULE_KEYWORDS:
@@ -336,18 +340,13 @@ moo_rule_free (MooRule *rule)
         case MOO_RULE_REGEX:
             rule_regex_destroy (&rule->regex);
             break;
-        case MOO_RULE_ASCII_CHAR:
-            rule_char_destroy (&rule->_char);
-            break;
-        case MOO_RULE_ASCII_2CHAR:
-            rule_2char_destroy (&rule->_2char);
-            break;
         case MOO_RULE_ASCII_ANY_CHAR:
             rule_any_char_destroy (&rule->anychar);
             break;
+        case MOO_RULE_ASCII_CHAR:
+        case MOO_RULE_ASCII_2CHAR:
         case MOO_RULE_INCLUDE:
-            rule_include_destroy (&rule->incl);
-            break;
+        case MOO_RULE_INT:
         case MOO_RULE_KEYWORDS:
             break;
     }
@@ -656,18 +655,6 @@ moo_rule_2char_new (char                ch1,
 }
 
 
-static void
-rule_char_destroy (G_GNUC_UNUSED MooRuleChar *rule)
-{
-}
-
-
-static void
-rule_2char_destroy (G_GNUC_UNUSED MooRule2Char *rule)
-{
-}
-
-
 static gboolean
 match_char (MooRuleChar    *rule,
             MatchData      *data,
@@ -901,7 +888,59 @@ match_include (MooRuleInclude *rule,
 }
 
 
-static void
-rule_include_destroy (G_GNUC_UNUSED MooRuleInclude *rule)
+/*************************************************************************/
+/* Special sequences
+ */
+
+MooRule*
+moo_rule_int_new (MooRuleFlags        flags,
+                  const char         *style)
 {
+    return rule_new (MOO_RULE_INT, flags, style);
+}
+
+
+#define ISDIGIT(c__) (c__ >= '0' && c__ <= '9')
+
+static gboolean
+match_int (MatchData      *data,
+           MatchResult    *result,
+           MatchFlags      flags)
+{
+    if (flags & MATCH_START_ONLY)
+    {
+        if (ISDIGIT(data->start[0]))
+        {
+            guint i;
+            for (i = 1; ISDIGIT(data->start[i]); ++i) ;
+            result->match_start = data->start;
+            result->match_end = result->match_start + i;
+            result->match_len = i;
+            result->match_offset = -1;
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+    else
+    {
+        guint i;
+
+        for (i = 0; data->start[i] && !ISDIGIT(data->start[i]); ++i) ;
+
+        if (!data->start[i])
+            return FALSE;
+
+        result->match_start = data->start + i;
+
+        for ( ; ISDIGIT(data->start[i]); ++i) ;
+
+        result->match_end = result->match_start + i;
+        result->match_len = result->match_end - result->match_start;
+        result->match_offset = -1;
+
+        return TRUE;
+    }
 }

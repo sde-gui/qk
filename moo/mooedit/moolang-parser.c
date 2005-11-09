@@ -1260,6 +1260,7 @@ static RuleXML  *rule_regex_xml_parse       (xmlNode            *node);
 static RuleXML  *rule_char_xml_parse        (xmlNode            *node);
 static RuleXML  *rule_2char_xml_parse       (xmlNode            *node);
 static RuleXML  *rule_any_char_xml_parse    (xmlNode            *node);
+static RuleXML  *rule_int_xml_parse         (xmlNode            *node);
 static RuleXML  *rule_keywords_xml_parse    (LangXML            *lang_xml,
                                              xmlNode            *node);
 static RuleXML  *rule_include_xml_parse     (LangXML            *lang_xml,
@@ -1274,6 +1275,7 @@ static void      rule_include_xml_free      (RuleIncludeXML     *xml);
 static MooRule  *rule_string_xml_create_rule    (RuleStringXML      *xml);
 static MooRule  *rule_regex_xml_create_rule     (RuleRegexXML       *xml);
 static MooRule  *rule_any_char_xml_create_rule  (RuleAnyCharXML     *xml);
+static MooRule  *rule_int_xml_create_rule       (RuleXML            *xml);
 static MooRule  *rule_keywords_xml_create_rule  (RuleKeywordsXML    *xml,
                                                  LangXML            *lang_xml);
 static MooRule  *rule_include_xml_create_rule   (RuleIncludeXML     *xml,
@@ -1283,6 +1285,7 @@ static MooRule  *rule_2char_xml_create_rule     (Rule2CharXML       *xml);
 
 #define rule_char_xml_free g_free
 #define rule_2char_xml_free g_free
+#define rule_int_xml_free g_free
 
 #define RULE_IS__(node__,name__)        (!g_ascii_strcasecmp ((char*)node__->name, name__))
 #define RULE_IS_STRING_NODE(node__)     (RULE_IS__(node__, RULE_ASCII_STRING_ELM))
@@ -1292,6 +1295,7 @@ static MooRule  *rule_2char_xml_create_rule     (Rule2CharXML       *xml);
 #define RULE_IS_ANY_CHAR_NODE(node__)   (RULE_IS__(node__, RULE_ASCII_ANY_CHAR_ELM))
 #define RULE_IS_KEYWORDS_NODE(node__)   (RULE_IS__(node__, RULE_KEYWORDS_ELM))
 #define RULE_IS_INCLUDE_NODE(node__)    (RULE_IS__(node__, RULE_INCLUDE_RULES_ELM))
+#define RULE_IS_INT_NODE(node__)        (RULE_IS__(node__, RULE_INT_ELM))
 
 
 static RuleXML*
@@ -1343,6 +1347,11 @@ rule_xml_parse (LangXML *lang_xml,
     {
         xml = rule_include_xml_parse (lang_xml, node);
         if (xml) xml->type = MOO_RULE_INCLUDE;
+    }
+    else if (RULE_IS_INT_NODE (node))
+    {
+        xml = rule_int_xml_parse (node);
+        if (xml) xml->type = MOO_RULE_INT;
     }
     else
     {
@@ -1523,6 +1532,9 @@ moo_rule_new_from_xml (RuleXML    *xml,
         case MOO_RULE_INCLUDE:
             rule = rule_include_xml_create_rule ((RuleIncludeXML*) xml, lang);
             break;
+        case MOO_RULE_INT:
+            rule = rule_int_xml_create_rule (xml);
+            break;
     }
 
     if (!rule)
@@ -1596,6 +1608,9 @@ rule_xml_free (RuleXML        *xml)
                 break;
             case MOO_RULE_INCLUDE:
                 rule_include_xml_free ((RuleIncludeXML*) xml);
+                break;
+            case MOO_RULE_INT:
+                rule_int_xml_free ((RuleIncludeXML*) xml);
                 break;
         }
     }
@@ -1733,6 +1748,22 @@ rule_char_xml_create_rule (RuleCharXML        *xml)
     return moo_rule_char_new (xml->ch,
                               rule_xml_get_flags (xml),
                               rule_xml_get_style (xml));
+}
+
+
+static RuleXML*
+rule_int_xml_parse (xmlNode *node)
+{
+    g_assert (RULE_IS_INT_NODE (node));
+    return g_new0 (RuleXML, 1);
+}
+
+
+static MooRule*
+rule_int_xml_create_rule (RuleXML *xml)
+{
+    return moo_rule_int_new (rule_xml_get_flags (xml),
+                             rule_xml_get_style (xml));
 }
 
 

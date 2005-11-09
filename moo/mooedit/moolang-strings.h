@@ -108,6 +108,7 @@
 #define RULE_ASCII_2CHAR_ELM        "TwoChars"
 #define RULE_ASCII_ANY_CHAR_ELM     "AnyChar"
 #define RULE_KEYWORDS_ELM           "Keyword"
+#define RULE_INT_ELM                "Int"
 
 #define RULE_STRING_STRING_PROP     "string"
 #define RULE_REGEX_PATTERN_PROP     "pattern"
