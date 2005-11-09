@@ -17,8 +17,8 @@
 # it creates the widget and 'starts' interactive session; see the end of
 # this file.
 #
-# This widget is not intended to be used as a replacement for real terminal:
-# gtk.TextView sucks as a terminal, and it can't be fixed.
+# This widget is not a replacement for real terminal with python running
+# inside: gtk.TextView sucks as a terminal, and it can't be changed.
 # The use case is: you have a python program, you create this widget,
 # and inspect your program interiors.
 

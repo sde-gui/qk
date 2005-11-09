@@ -2,6 +2,8 @@ import moo
 import gtk
 import pango
 
+SHOW_LOG_WINDOW = False
+
 try:
     import pyconsole
     have_pyconsole = True
@@ -25,13 +27,16 @@ class Plugin(object):
     def init(self):
         editor = moo.edit.editor_instance()
         xml = editor.get_ui_xml()
-        moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowLogWindow",
-                                           name="Show Log Window",
-                                           label="Show Log Window",
-                                           callback=self.show_log_window)
+
         self.ui_merge_id = xml.new_merge_id()
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools",
-                     "ShowLogWindow", "ShowLogWindow", -1)
+
+        if SHOW_LOG_WINDOW:
+            moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowLogWindow",
+                                               name="Show Log Window",
+                                               label="Show Log Window",
+                                               callback=self.show_log_window)
+            xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools",
+                         "ShowLogWindow", "ShowLogWindow", -1)
 
         if have_pyconsole:
             moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowPythonConsole",
@@ -68,7 +73,7 @@ class Plugin(object):
         console.modify_font(pango.FontDescription("Courier New 11"))
 
         swin.add(console)
-        swin.set_size_request(400,300)
+        window.set_default_size(400,300)
         window.show_all()
 
 moo.edit.plugin_register(Plugin)

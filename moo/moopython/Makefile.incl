@@ -6,7 +6,9 @@ moopython = $(moo_prefix)/moopython
 moopython_srcdir = $(srcdir)/$(moopython)
 
 moopython_plugins =                           \
-    $(moopython)/plugins/console.py
+    $(moopython)/plugins/console.py           \
+    $(moopython)/plugins/pyconsole.py         \
+    $(moopython)/plugins/pystuff.py
 
 moopython_sources =                           \
     $(moopython)/moo-pygtk.c                  \

@@ -1,3 +1,4 @@
+"""moo.utils module"""
 import _moo_utils as _utils
 from _moo_utils import *
 
