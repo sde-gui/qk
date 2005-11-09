@@ -3,9 +3,11 @@ import gtk
 
 CONSOLE_PLUGIN_ID = "Console"
 
-class Plugin(object):
-    def get_info(self):
-        return {
+class Plugin(moo.edit.Plugin):
+    def __init__(self):
+        moo.edit.Plugin.__init__(self)
+
+        self.info = {
             "id" : CONSOLE_PLUGIN_ID,
             "name" : "Console",
             "description" : "Console",
@@ -15,28 +17,15 @@ class Plugin(object):
             "visible" : True
         }
 
-    def init(self):
-        editor = moo.edit.editor_instance()
-        xml = editor.get_ui_xml()
-        moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowConsole",
-                                           name="Show Console",
-                                           label="Show Console",
-                                           icon_stock_id=moo.utils.STOCK_TERMINAL,
-                                           callback=self.show_console)
-        self.ui_merge_id = xml.new_merge_id()
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/View",
-                     "ShowConsole", "ShowConsole", -1)
-        return True
+        a = moo.edit.Plugin.ActionInfo(moo.edit.EditWindow, "ShowConsole",
+                                       name="Show Console",
+                                       label="Show Console",
+                                       icon_stock_id=moo.utils.STOCK_TERMINAL,
+                                       callback=self.show_console)
+        self.actions.append(a)
 
-    def deinit(self):
-        editor = moo.edit.editor_instance()
-        xml = editor.get_ui_xml()
-
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowConsole");
-
-        if self.ui_merge_id:
-            xml.remove_ui(self.ui_merge_id)
-        self.ui_merge_id = 0
+        i = moo.edit.Plugin.UIInfo("Editor/Menubar/View", "ShowConsole")
+        self.ui.append(i)
 
     def show_console(self, window):
         pane = window.get_pane(CONSOLE_PLUGIN_ID)

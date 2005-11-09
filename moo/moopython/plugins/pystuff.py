@@ -12,9 +12,11 @@ except ImportError:
 
 PLUGIN_ID = "PyStuff"
 
-class Plugin(object):
-    def get_info(self):
-        return {
+class Plugin(moo.edit.Plugin):
+    def __init__(self):
+        moo.edit.Plugin.__init__(self)
+
+        self.info = {
             "id" : PLUGIN_ID,
             "name" : "Python Stuff",
             "description" : "Python stuff",
@@ -24,35 +26,21 @@ class Plugin(object):
             "visible" : True
         }
 
-    def init(self):
-        editor = moo.edit.editor_instance()
-        xml = editor.get_ui_xml()
-
-        self.ui_merge_id = xml.new_merge_id()
-
         if SHOW_LOG_WINDOW:
-            moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowLogWindow",
-                                               name="Show Log Window",
-                                               label="Show Log Window",
-                                               callback=self.show_log_window)
-            xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools",
-                         "ShowLogWindow", "ShowLogWindow", -1)
+            a = moo.edit.Plugin.ActionInfo(moo.edit.EditWindow, "ShowLogWindow",
+                                           name="Show Log Window",
+                                           label="Show Log Window",
+                                           callback=self.show_log_window)
+            self.actions.append(a)
+            self.ui.append(moo.edit.Plugin.UIInfo("Editor/Menubar/Tools", "ShowLogWindow"))
 
         if have_pyconsole:
-            moo.utils.window_class_add_action (moo.edit.EditWindow, "ShowPythonConsole",
-                                               name="Show Python Console",
-                                               label="Show Python Console",
-                                               callback=self.show_console)
-            xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools",
-                        "ShowPythonConsole", "ShowPythonConsole", -1)
-        return True
-
-    def deinit(self):
-        editor = moo.edit.editor_instance()
-        xml = editor.get_ui_xml()
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowLogWindow");
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowPythonConsole");
-        xml.remove_ui(self.ui_merge_id)
+            a = moo.edit.Plugin.ActionInfo(moo.edit.EditWindow, "ShowPythonConsole",
+                                           name="Show Python Console",
+                                           label="Show Python Console",
+                                           callback=self.show_console)
+            self.actions.append(a)
+            self.ui.append(moo.edit.Plugin.UIInfo("Editor/Menubar/Tools", "ShowPythonConsole"))
 
     def show_log_window(self, window):
         moo.app.get_instance().show_python_console()

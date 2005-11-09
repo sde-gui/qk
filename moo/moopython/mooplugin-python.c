@@ -625,16 +625,17 @@ static void
 moo_py_plugin_instance_init (MooPyPlugin            *plugin,
                              MooPyPluginClass       *klass)
 {
-    PyObject *args;
     MooPlugin *moo_plugin = MOO_PLUGIN (plugin);
 
     plugin->class_data = klass->data;
 
-    args = PyTuple_New (0);
-    plugin->instance = PyType_GenericNew ((PyTypeObject*) klass->data->py_plugin_type, args, NULL);
-    Py_DECREF (args);
+    plugin->instance = PyObject_CallObject (klass->data->py_plugin_type, NULL);
 
-    g_return_if_fail (plugin->instance != NULL);
+    if (!plugin->instance)
+    {
+        PyErr_Print ();
+        g_warning ("%s: could not create plugin instance", G_STRLOC);
+    }
 
     moo_plugin->info = get_plugin_info (plugin->instance);
 
