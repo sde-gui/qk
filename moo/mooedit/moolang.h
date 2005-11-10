@@ -33,6 +33,9 @@ typedef struct _MooContextArray MooContextArray;
 typedef struct _MooCtxSwitch MooCtxSwitch;
 typedef struct _MooRule MooRule;
 typedef struct _MooRuleArray MooRuleArray;
+typedef struct _MooRuleMatchData MooRuleMatchData;
+typedef struct _MooRuleMatchResult MooRuleMatchResult;
+
 
 struct _MooLang {
     struct _MooLangMgr *mgr;
@@ -65,11 +68,13 @@ struct _MooLang {
 typedef enum {
     MOO_CONTEXT_STAY = 0,
     MOO_CONTEXT_POP,
-    MOO_CONTEXT_SWITCH
+    MOO_CONTEXT_SWITCH /*,
+    MOO_CONTEXT_JUMP */
 } MooCtxSwitchType;
 
 struct _MooCtxSwitch {
     MooCtxSwitchType type;
+
     union {
         guint num;
         MooContext *ctx;
@@ -99,23 +104,16 @@ struct _MooContext {
 
 
 typedef enum {
-    MOO_RULE_ASCII_STRING,
-    MOO_RULE_REGEX,
-    MOO_RULE_ASCII_CHAR,
-    MOO_RULE_ASCII_2CHAR,
-    MOO_RULE_ASCII_ANY_CHAR,
-    MOO_RULE_INT,
-    MOO_RULE_KEYWORDS,
-    MOO_RULE_INCLUDE
-} MooRuleType;
-
-typedef enum {
     MOO_RULE_MATCH_FIRST_CHAR            = 1 << 0,
     MOO_RULE_MATCH_FIRST_NON_EMPTY_CHAR  = 1 << 1,
     MOO_RULE_MATCH_FIRST_LINE            = 1 << 2,
     MOO_RULE_MATCH_CASELESS              = 1 << 3,
     MOO_RULE_INCLUDE_INTO_NEXT           = 1 << 4
 } MooRuleFlags;
+
+typedef enum {
+    MOO_RULE_MATCH_START_ONLY = 1 << 0
+} MooRuleMatchFlags;
 
 
 typedef struct {
@@ -150,12 +148,19 @@ typedef struct {
 
 struct _MooRule
 {
+    MooRule* (*match)   (MooRule            *self,
+                         MooRuleMatchData   *data,
+                         MooRuleMatchResult *result,
+                         MooRuleMatchFlags   flags);
+    void     (*destroy) (MooRule            *self);
+
     char *style;
 
     MooContext *context;
     MooCtxSwitch exit;
 
-    MooRuleType type;
+    gboolean include_eol;
+
     MooRuleFlags flags;
 
     MooRuleArray *child_rules;
@@ -180,11 +185,15 @@ GType       moo_lang_get_type       (void) G_GNUC_CONST;
 
 void        moo_context_add_rule                (MooContext     *ctx,
                                                  MooRule        *rule);
-void        moo_context_set_line_end_stay       (MooContext     *ctx);
-void        moo_context_set_line_end_pop        (MooContext     *ctx,
+void        moo_context_set_eol_stay            (MooContext     *ctx);
+void        moo_context_set_eol_pop             (MooContext     *ctx,
                                                  guint           num);
-void        moo_context_set_line_end_switch     (MooContext     *ctx,
+void        moo_context_set_eol_switch          (MooContext     *ctx,
                                                  MooContext     *target);
+#if 0
+void        moo_context_set_eol_jump            (MooContext     *ctx,
+                                                 MooContext     *target);
+#endif
 
 
 /*****************************************************************************/

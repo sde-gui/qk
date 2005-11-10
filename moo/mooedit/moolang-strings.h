@@ -76,7 +76,7 @@
 
 #define CONTEXT_NAME_PROP       "name"
 #define CONTEXT_STYLE_PROP      "style"
-#define CONTEXT_EOL_CTX_PROP    "end-of-line-context"
+#define CONTEXT_EOL_CTX_PROP    "eol-context"
 
 #define CONTEXT_STAY            "#stay"
 #define CONTEXT_POP             "#pop"
@@ -95,6 +95,7 @@
 
 #define RULE_STYLE_PROP             "style"
 #define RULE_CTX_PROP               "context"
+#define RULE_INCLUDE_EOL_PROP       "include-eol"
 #define RULE_INCLUDE_PROP           "include-into-next"
 #define RULE_BOL_PROP               "bol-only"
 #define RULE_FIRST_NON_BLANK_PROP   "first-non-blank-only"
@@ -109,6 +110,14 @@
 #define RULE_ASCII_ANY_CHAR_ELM     "AnyChar"
 #define RULE_KEYWORDS_ELM           "Keyword"
 #define RULE_INT_ELM                "Int"
+#define RULE_FLOAT_ELM              "Float"
+#define RULE_HEX_ELM                "Hex"
+#define RULE_OCTAL_ELM              "Octal"
+#define RULE_C_CHAR_ELM             "CChar"
+#define RULE_ESCAPED_CHAR_ELM       "EscapedChar"
+#define RULE_WHITESPACE_ELM         "Whitespace"
+#define RULE_IDENTIFIER_ELM         "Identifier"
+#define RULE_LINE_CONTINUE_ELM      "LineContinue"
 
 #define RULE_STRING_STRING_PROP     "string"
 #define RULE_REGEX_PATTERN_PROP     "pattern"

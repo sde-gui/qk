@@ -9,7 +9,7 @@
     <context name="ShebangRules">
       <TwoChars char1="#" char2="!" bol-only="TRUE" first-line-only="TRUE" include-into-next="TRUE" context="Shebang" style="Shebang line"/>
     </context>
-    <context name="Shebang" style="Shebang line" end-of-line-context="#pop"/>
+    <context name="Shebang" style="Shebang line" eol-context="#pop"/>
 
     <keyword-list name="Alert">
       <keyword>TODO</keyword>

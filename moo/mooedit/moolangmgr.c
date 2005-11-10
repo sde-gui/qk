@@ -650,10 +650,10 @@ moo_lang_finish_build (MooLang *lang,
         switch (ctx_xml->eol_switch_info.type)
         {
             case MOO_CONTEXT_STAY:
-                moo_context_set_line_end_stay (ctx);
+                moo_context_set_eol_stay (ctx);
                 break;
             case MOO_CONTEXT_POP:
-                moo_context_set_line_end_pop (ctx, ctx_xml->eol_switch_info.num);
+                moo_context_set_eol_pop (ctx, ctx_xml->eol_switch_info.num);
                 break;
             case MOO_CONTEXT_SWITCH:
                 if (ctx_xml->eol_switch_info.ref.lang)
@@ -666,7 +666,7 @@ moo_lang_finish_build (MooLang *lang,
                 if (!switch_to)
                     g_critical ("%s: oops", G_STRLOC);
                 else
-                    moo_context_set_line_end_switch (ctx, switch_to);
+                    moo_context_set_eol_switch (ctx, switch_to);
 
                 break;
         }

@@ -6,8 +6,11 @@
 -->
 <!ENTITY % boolean "true|false|TRUE|FALSE|0|1">
 
+<!ENTITY % def_styles "Normal|Keyword|DataType|Decimal|BaseN|Float|Char|String|Comment|Others|Alert|Function|RegionMarker|Error">
+
 <!-- rule_type -->
-<!ENTITY % rule_type "String|Regex|Char|TwoChars|AnyChar|Keyword">
+<!ENTITY % simple_rule_type "Int|Float|Hex|Octal|CChar|EscapedChar|Whitespace|Identifier">
+<!ENTITY % rule_type "String|Regex|Char|TwoChars|AnyChar|Keyword|LineContinue|(%simple_rule_type;)">
 
 <!ELEMENT language (syntax, styles?, general?, sample-code?)>
 <!ATTLIST language
@@ -19,6 +22,8 @@
   version       CDATA       #IMPLIED
   author        CDATA       #IMPLIED
   license       CDATA       #IMPLIED
+  priority      CDATA       #IMPLIED
+  kateversion   CDATA       #IMPLIED
 >
 
 <!-- Syntax -->
@@ -31,7 +36,7 @@
 <!ATTLIST context
   name                  CDATA       #REQUIRED
   style                 CDATA       #IMPLIED
-  end-of-line-context   CDATA       #IMPLIED
+  eol-context           CDATA       #IMPLIED
 >
 
 <!-- Keywords list -->
@@ -48,6 +53,7 @@
 <!ENTITY % common_rule_attrs
 " style                 CDATA       #IMPLIED
   context               CDATA       #IMPLIED
+  include-eol           CDATA       #IMPLIED
   include-into-next     (%boolean;) #IMPLIED
   caseless              (%boolean;) #IMPLIED
   bol-only              (%boolean;) #IMPLIED
@@ -102,6 +108,33 @@
   keyword   CDATA   #REQUIRED
 >
 
+<!ELEMENT Int (%rule_type;)*>
+<!ATTLIST Int %common_rule_attrs;>
+
+<!ELEMENT Float (%rule_type;)*>
+<!ATTLIST Float %common_rule_attrs;>
+
+<!ELEMENT Hex (%rule_type;)*>
+<!ATTLIST Hex %common_rule_attrs;>
+
+<!ELEMENT Octal (%rule_type;)*>
+<!ATTLIST Octal %common_rule_attrs;>
+
+<!ELEMENT CChar (%rule_type;)*>
+<!ATTLIST CChar %common_rule_attrs;>
+
+<!ELEMENT EscapedChar (%rule_type;)*>
+<!ATTLIST EscapedChar %common_rule_attrs;>
+
+<!ELEMENT Whitespace (%rule_type;)*>
+<!ATTLIST Whitespace %common_rule_attrs;>
+
+<!ELEMENT Identifier (%rule_type;)*>
+<!ATTLIST Identifier %common_rule_attrs;>
+
+<!ELEMENT LineContinue (%rule_type;)*>
+<!ATTLIST LineContinue %common_rule_attrs;>
+
 <!-- IncludeRules -->
 <!ELEMENT IncludeRules EMPTY>
 <!ATTLIST IncludeRules
@@ -142,14 +175,14 @@
 <!-- Style -->
 <!ELEMENT style EMPTY>
 <!ATTLIST style
-  name          CDATA       #REQUIRED
-  default-style CDATA       #IMPLIED
-  foreground    CDATA       #IMPLIED
-  background    CDATA       #IMPLIED
-  italic        (%boolean;) #IMPLIED
-  bold          (%boolean;) #IMPLIED
-  underline     (%boolean;) #IMPLIED
-  strikethrough (%boolean;) #IMPLIED
+  name          CDATA           #REQUIRED
+  default-style (%def_styles;)  #IMPLIED
+  foreground    CDATA           #IMPLIED
+  background    CDATA           #IMPLIED
+  italic        (%boolean;)     #IMPLIED
+  bold          (%boolean;)     #IMPLIED
+  underline     (%boolean;)     #IMPLIED
+  strikethrough (%boolean;)     #IMPLIED
 >
 
 

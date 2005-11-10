@@ -26,7 +26,7 @@
 #define SIZE_UNKNOWN -1
 #define SIZE_NOT_SET -2
 
-typedef struct {
+struct _MooRuleMatchData {
     int line_number;
     GtkTextIter line_start;
     GtkTextIter line_end;
@@ -39,16 +39,18 @@ typedef struct {
 
     char *limit;
     int limit_offset; /* chars from start */
-} MatchData;
+};
 
 
-typedef struct {
+struct _MooRuleMatchResult {
     char *match_start;
     char *match_end;
     int match_len;    /* chars */
     int match_offset; /* chars from start */
-} MatchResult;
+};
 
+typedef MooRuleMatchData MatchData;
+typedef MooRuleMatchResult MatchResult;
 
 MooRule    *moo_rule_string_new         (const char         *string,
                                          MooRuleFlags        flags,
@@ -69,13 +71,30 @@ MooRule    *moo_rule_2char_new          (char                ch1,
 MooRule    *moo_rule_any_char_new       (const char         *string,
                                          MooRuleFlags        flags,
                                          const char         *style);
-MooRule    *moo_rule_int_new            (MooRuleFlags        flags,
-                                         const char         *style);
 MooRule    *moo_rule_keywords_new       (GSList             *words,
                                          MooRuleFlags        flags,
                                          const char         *style);
 MooRule    *moo_rule_zero_new           (MooRuleFlags        flags);
 MooRule    *moo_rule_include_new        (MooContext         *context);
+
+MooRule    *moo_rule_int_new            (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_float_new          (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_octal_new          (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_hex_new            (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_escaped_char_new   (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_c_char_new         (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_whitespace_new     (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_identifier_new     (MooRuleFlags        flags,
+                                         const char         *style);
+MooRule    *moo_rule_line_continue_new  (MooRuleFlags        flags,
+                                         const char         *style);
 
 void        moo_rule_add_child_rule     (MooRule            *rule,
                                          MooRule            *child_rule);
@@ -84,6 +103,10 @@ void        moo_rule_set_end_pop        (MooRule            *rule,
                                          guint               num);
 void        moo_rule_set_end_switch     (MooRule            *rule,
                                          MooContext         *target);
+#if 0
+void        moo_rule_set_end_jump       (MooRule            *rule,
+                                         MooContext         *target);
+#endif
 
 
 void        moo_rule_free               (MooRule            *rule);

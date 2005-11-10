@@ -296,10 +296,19 @@ static void
 ctx_switch_info_destroy (CtxSwitchInfo *switch_info)
 {
     g_return_if_fail (switch_info != NULL);
-    if (switch_info->type == MOO_CONTEXT_SWITCH)
+
+    switch (switch_info->type)
     {
-        g_free (switch_info->ref.name);
-        g_free (switch_info->ref.lang);
+        case MOO_CONTEXT_SWITCH:
+#if 0
+        case MOO_CONTEXT_JUMP:
+#endif
+            g_free (switch_info->ref.name);
+            g_free (switch_info->ref.lang);
+            break;
+        case MOO_CONTEXT_STAY:
+        case MOO_CONTEXT_POP:
+            break;
     }
 }
 
@@ -1042,10 +1051,20 @@ context_xml_parse (LangXML *lang_xml,
         goto error;
     }
 
-    if (xml->eol_switch_info.type == MOO_CONTEXT_SWITCH)
-        lang_xml_add_cross_ref (lang_xml,
-                                xml->eol_switch_info.ref.lang,
-                                xml->eol_switch_info.ref.name);
+    switch (xml->eol_switch_info.type)
+    {
+        case MOO_CONTEXT_SWITCH:
+#if 0
+        case MOO_CONTEXT_JUMP:
+#endif
+            lang_xml_add_cross_ref (lang_xml,
+                                    xml->eol_switch_info.ref.lang,
+                                    xml->eol_switch_info.ref.name);
+            break;
+        case MOO_CONTEXT_STAY:
+        case MOO_CONTEXT_POP:
+            break;
+    }
 
     DEBUG_PRINT ({
         g_print ("context: %s\n", name);
@@ -1260,7 +1279,7 @@ static RuleXML  *rule_regex_xml_parse       (xmlNode            *node);
 static RuleXML  *rule_char_xml_parse        (xmlNode            *node);
 static RuleXML  *rule_2char_xml_parse       (xmlNode            *node);
 static RuleXML  *rule_any_char_xml_parse    (xmlNode            *node);
-static RuleXML  *rule_int_xml_parse         (xmlNode            *node);
+static RuleXML  *rule_special_xml_parse     (xmlNode            *node);
 static RuleXML  *rule_keywords_xml_parse    (LangXML            *lang_xml,
                                              xmlNode            *node);
 static RuleXML  *rule_include_xml_parse     (LangXML            *lang_xml,
@@ -1275,27 +1294,35 @@ static void      rule_include_xml_free      (RuleIncludeXML     *xml);
 static MooRule  *rule_string_xml_create_rule    (RuleStringXML      *xml);
 static MooRule  *rule_regex_xml_create_rule     (RuleRegexXML       *xml);
 static MooRule  *rule_any_char_xml_create_rule  (RuleAnyCharXML     *xml);
-static MooRule  *rule_int_xml_create_rule       (RuleXML            *xml);
 static MooRule  *rule_keywords_xml_create_rule  (RuleKeywordsXML    *xml,
                                                  LangXML            *lang_xml);
 static MooRule  *rule_include_xml_create_rule   (RuleIncludeXML     *xml,
                                                  MooLang            *lang);
 static MooRule  *rule_char_xml_create_rule      (RuleCharXML        *xml);
 static MooRule  *rule_2char_xml_create_rule     (Rule2CharXML       *xml);
+static MooRule  *rule_special_xml_create_rule   (RuleXML            *xml);
 
 #define rule_char_xml_free g_free
 #define rule_2char_xml_free g_free
-#define rule_int_xml_free g_free
+#define rule_special_xml_free g_free
 
-#define RULE_IS__(node__,name__)        (!g_ascii_strcasecmp ((char*)node__->name, name__))
-#define RULE_IS_STRING_NODE(node__)     (RULE_IS__(node__, RULE_ASCII_STRING_ELM))
-#define RULE_IS_REGEX_NODE(node__)      (RULE_IS__(node__, RULE_REGEX_ELM))
-#define RULE_IS_CHAR_NODE(node__)       (RULE_IS__(node__, RULE_ASCII_CHAR_ELM))
-#define RULE_IS_2CHAR_NODE(node__)      (RULE_IS__(node__, RULE_ASCII_2CHAR_ELM))
-#define RULE_IS_ANY_CHAR_NODE(node__)   (RULE_IS__(node__, RULE_ASCII_ANY_CHAR_ELM))
-#define RULE_IS_KEYWORDS_NODE(node__)   (RULE_IS__(node__, RULE_KEYWORDS_ELM))
-#define RULE_IS_INCLUDE_NODE(node__)    (RULE_IS__(node__, RULE_INCLUDE_RULES_ELM))
-#define RULE_IS_INT_NODE(node__)        (RULE_IS__(node__, RULE_INT_ELM))
+#define RULE_IS__(node__,name__)            (!g_ascii_strcasecmp ((char*)node__->name, name__))
+#define RULE_IS_STRING_NODE(node__)         (RULE_IS__(node__, RULE_ASCII_STRING_ELM))
+#define RULE_IS_REGEX_NODE(node__)          (RULE_IS__(node__, RULE_REGEX_ELM))
+#define RULE_IS_CHAR_NODE(node__)           (RULE_IS__(node__, RULE_ASCII_CHAR_ELM))
+#define RULE_IS_2CHAR_NODE(node__)          (RULE_IS__(node__, RULE_ASCII_2CHAR_ELM))
+#define RULE_IS_ANY_CHAR_NODE(node__)       (RULE_IS__(node__, RULE_ASCII_ANY_CHAR_ELM))
+#define RULE_IS_KEYWORDS_NODE(node__)       (RULE_IS__(node__, RULE_KEYWORDS_ELM))
+#define RULE_IS_INCLUDE_NODE(node__)        (RULE_IS__(node__, RULE_INCLUDE_RULES_ELM))
+#define RULE_IS_INT_NODE(node__)            (RULE_IS__(node__, RULE_INT_ELM))
+#define RULE_IS_HEX_NODE(node__)            (RULE_IS__(node__, RULE_HEX_ELM))
+#define RULE_IS_OCTAL_NODE(node__)          (RULE_IS__(node__, RULE_OCTAL_ELM))
+#define RULE_IS_FLOAT_NODE(node__)          (RULE_IS__(node__, RULE_FLOAT_ELM))
+#define RULE_IS_C_CHAR_NODE(node__)         (RULE_IS__(node__, RULE_C_CHAR_ELM))
+#define RULE_IS_ESCAPED_CHAR_NODE(node__)   (RULE_IS__(node__, RULE_ESCAPED_CHAR_ELM))
+#define RULE_IS_WHITESPACE_NODE(node__)     (RULE_IS__(node__, RULE_WHITESPACE_ELM))
+#define RULE_IS_IDENTIFIER_NODE(node__)     (RULE_IS__(node__, RULE_IDENTIFIER_ELM))
+#define RULE_IS_LINE_CONTINUE_NODE(node__)  (RULE_IS__(node__, RULE_LINE_CONTINUE_ELM))
 
 
 static RuleXML*
@@ -1316,42 +1343,82 @@ rule_xml_parse (LangXML *lang_xml,
     if (RULE_IS_STRING_NODE (node))
     {
         xml = rule_string_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_ASCII_STRING;
+        if (xml) xml->type = RULE_STRING;
     }
     else if (RULE_IS_REGEX_NODE (node))
     {
         xml = rule_regex_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_REGEX;
+        if (xml) xml->type = RULE_REGEX;
     }
     else if (RULE_IS_CHAR_NODE (node))
     {
         xml = rule_char_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_ASCII_CHAR;
+        if (xml) xml->type = RULE_CHAR;
     }
     else if (RULE_IS_2CHAR_NODE (node))
     {
         xml = rule_2char_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_ASCII_2CHAR;
+        if (xml) xml->type = RULE_2CHAR;
     }
     else if (RULE_IS_ANY_CHAR_NODE (node))
     {
         xml = rule_any_char_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_ASCII_ANY_CHAR;
+        if (xml) xml->type = RULE_ANY_CHAR;
     }
     else if (RULE_IS_KEYWORDS_NODE (node))
     {
         xml = rule_keywords_xml_parse (lang_xml, node);
-        if (xml) xml->type = MOO_RULE_KEYWORDS;
+        if (xml) xml->type = RULE_KEYWORDS;
     }
     else if (RULE_IS_INCLUDE_NODE (node))
     {
         xml = rule_include_xml_parse (lang_xml, node);
-        if (xml) xml->type = MOO_RULE_INCLUDE;
+        if (xml) xml->type = RULE_INCLUDE;
     }
     else if (RULE_IS_INT_NODE (node))
     {
-        xml = rule_int_xml_parse (node);
-        if (xml) xml->type = MOO_RULE_INT;
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_INT;
+    }
+    else if (RULE_IS_FLOAT_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_FLOAT;
+    }
+    else if (RULE_IS_OCTAL_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_OCTAL;
+    }
+    else if (RULE_IS_HEX_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_HEX;
+    }
+    else if (RULE_IS_C_CHAR_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_C_CHAR;
+    }
+    else if (RULE_IS_ESCAPED_CHAR_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_ESCAPED_CHAR;
+    }
+    else if (RULE_IS_WHITESPACE_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_WHITESPACE;
+    }
+    else if (RULE_IS_IDENTIFIER_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_IDENTIFIER;
+    }
+    else if (RULE_IS_LINE_CONTINUE_NODE (node))
+    {
+        xml = rule_special_xml_parse (node);
+        if (xml) xml->type = RULE_LINE_CONTINUE;
     }
     else
     {
@@ -1417,11 +1484,25 @@ rule_xml_parse (LangXML *lang_xml,
                     goto error;
                 }
 
-                if (xml->end_switch_info.type == MOO_CONTEXT_SWITCH)
-                    lang_xml_add_cross_ref (lang_xml,
-                                            xml->end_switch_info.ref.lang,
-                                            xml->end_switch_info.ref.name);
+                switch (xml->end_switch_info.type)
+                {
+                    case MOO_CONTEXT_SWITCH:
+#if 0
+                    case MOO_CONTEXT_JUMP:
+#endif
+                        lang_xml_add_cross_ref (lang_xml,
+                                xml->end_switch_info.ref.lang,
+                                xml->end_switch_info.ref.name);
+                        break;
+                    case MOO_CONTEXT_STAY:
+                    case MOO_CONTEXT_POP:
+                        break;
+                }
             }
+        }
+        else if (prop_equal (attr->name, RULE_INCLUDE_EOL_PROP))
+        {
+            xml->include_eol = parse_bool (val, TRUE);
         }
         else if (prop_equal (attr->name, RULE_INCLUDE_PROP))
         {
@@ -1511,29 +1592,37 @@ moo_rule_new_from_xml (RuleXML    *xml,
 
     switch (xml->type)
     {
-        case MOO_RULE_ASCII_STRING:
+        case RULE_STRING:
             rule = rule_string_xml_create_rule ((RuleStringXML*) xml);
             break;
-        case MOO_RULE_REGEX:
+        case RULE_REGEX:
             rule = rule_regex_xml_create_rule ((RuleRegexXML*) xml);
             break;
-        case MOO_RULE_ASCII_CHAR:
+        case RULE_CHAR:
             rule = rule_char_xml_create_rule ((RuleCharXML*) xml);
             break;
-        case MOO_RULE_ASCII_2CHAR:
+        case RULE_2CHAR:
             rule = rule_2char_xml_create_rule ((Rule2CharXML*) xml);
             break;
-        case MOO_RULE_ASCII_ANY_CHAR:
+        case RULE_ANY_CHAR:
             rule = rule_any_char_xml_create_rule ((RuleAnyCharXML*) xml);
             break;
-        case MOO_RULE_KEYWORDS:
+        case RULE_KEYWORDS:
             rule = rule_keywords_xml_create_rule ((RuleKeywordsXML*) xml, lang_xml);
             break;
-        case MOO_RULE_INCLUDE:
+        case RULE_INCLUDE:
             rule = rule_include_xml_create_rule ((RuleIncludeXML*) xml, lang);
             break;
-        case MOO_RULE_INT:
-            rule = rule_int_xml_create_rule (xml);
+        case RULE_INT:
+        case RULE_FLOAT:
+        case RULE_HEX:
+        case RULE_OCTAL:
+        case RULE_ESCAPED_CHAR:
+        case RULE_C_CHAR:
+        case RULE_WHITESPACE:
+        case RULE_IDENTIFIER:
+        case RULE_LINE_CONTINUE:
+            rule = rule_special_xml_create_rule (xml);
             break;
     }
 
@@ -1549,6 +1638,9 @@ moo_rule_new_from_xml (RuleXML    *xml,
             moo_rule_set_end_pop (rule, xml->end_switch_info.num);
             break;
         case MOO_CONTEXT_SWITCH:
+#if 0
+        case MOO_CONTEXT_JUMP:
+#endif
             if (xml->end_switch_info.ref.lang)
                 switch_to = moo_lang_mgr_get_context (lang->mgr,
                                                       xml->end_switch_info.ref.lang,
@@ -1564,10 +1656,20 @@ moo_rule_new_from_xml (RuleXML    *xml,
             }
             else
             {
-                moo_rule_set_end_switch (rule, switch_to);
+#if 0
+                if (xml->end_switch_info.type == MOO_CONTEXT_SWITCH)
+#endif
+                    moo_rule_set_end_switch (rule, switch_to);
+#if 0
+                else
+                    moo_rule_set_end_jump (rule, switch_to);
+#endif
             }
             break;
     }
+
+    if (xml->include_eol)
+        rule->include_eol = TRUE;
 
     return rule;
 }
@@ -1588,29 +1690,37 @@ rule_xml_free (RuleXML        *xml)
 
         switch (xml->type)
         {
-            case MOO_RULE_ASCII_STRING:
+            case RULE_STRING:
                 rule_string_xml_free ((RuleStringXML*) xml);
                 break;
-            case MOO_RULE_REGEX:
+            case RULE_REGEX:
                 rule_regex_xml_free ((RuleRegexXML*) xml);
                 break;
-            case MOO_RULE_ASCII_CHAR:
+            case RULE_CHAR:
                 rule_char_xml_free ((RuleCharXML*) xml);
                 break;
-            case MOO_RULE_ASCII_2CHAR:
+            case RULE_2CHAR:
                 rule_2char_xml_free ((Rule2CharXML*) xml);
                 break;
-            case MOO_RULE_ASCII_ANY_CHAR:
+            case RULE_ANY_CHAR:
                 rule_any_char_xml_free ((RuleAnyCharXML*) xml);
                 break;
-            case MOO_RULE_KEYWORDS:
+            case RULE_KEYWORDS:
                 rule_keywords_xml_free ((RuleKeywordsXML*) xml);
                 break;
-            case MOO_RULE_INCLUDE:
+            case RULE_INCLUDE:
                 rule_include_xml_free ((RuleIncludeXML*) xml);
                 break;
-            case MOO_RULE_INT:
-                rule_int_xml_free ((RuleIncludeXML*) xml);
+            case RULE_INT:
+            case RULE_FLOAT:
+            case RULE_HEX:
+            case RULE_OCTAL:
+            case RULE_ESCAPED_CHAR:
+            case RULE_C_CHAR:
+            case RULE_WHITESPACE:
+            case RULE_IDENTIFIER:
+            case RULE_LINE_CONTINUE:
+                rule_special_xml_free (xml);
                 break;
         }
     }
@@ -1752,18 +1862,41 @@ rule_char_xml_create_rule (RuleCharXML        *xml)
 
 
 static RuleXML*
-rule_int_xml_parse (xmlNode *node)
+rule_special_xml_parse (G_GNUC_UNUSED xmlNode *node)
 {
-    g_assert (RULE_IS_INT_NODE (node));
     return g_new0 (RuleXML, 1);
 }
 
 
 static MooRule*
-rule_int_xml_create_rule (RuleXML *xml)
+rule_special_xml_create_rule (RuleXML *xml)
 {
-    return moo_rule_int_new (rule_xml_get_flags (xml),
-                             rule_xml_get_style (xml));
+    MooRuleFlags flags = rule_xml_get_flags (xml);
+    const char *style = rule_xml_get_style (xml);
+
+    switch (xml->type)
+    {
+        case RULE_INT:
+            return moo_rule_int_new (flags, style);
+        case RULE_WHITESPACE:
+            return moo_rule_whitespace_new (flags, style);
+        case RULE_IDENTIFIER:
+            return moo_rule_identifier_new (flags, style);
+        case RULE_FLOAT:
+            return moo_rule_float_new (flags, style);
+        case RULE_HEX:
+            return moo_rule_hex_new (flags, style);
+        case RULE_OCTAL:
+            return moo_rule_octal_new (flags, style);
+        case RULE_ESCAPED_CHAR:
+            return moo_rule_escaped_char_new (flags, style);
+        case RULE_C_CHAR:
+            return moo_rule_c_char_new (flags, style);
+        case RULE_LINE_CONTINUE:
+            return moo_rule_line_continue_new (flags, style);
+        default:
+            g_return_val_if_reached (NULL);
+    }
 }
 
 

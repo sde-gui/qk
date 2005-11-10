@@ -2,64 +2,61 @@
 <!DOCTYPE language SYSTEM "language.dtd">
 <!-- Makefile syntaxfile v0.9 by Per Wigren <wigren@home.se> -->
 <!-- Modified by Joseph Wenninger <jowenn@kde.org> -->
-<language name="Makefile" version="1.04" section="Others"
-          extensions="makefile.*;Makefile.*;makefile;Makefile"
-          mimetypes="text/x-makefile"
-          author="Per Wigren (wigren@home.se)" license="">
+<language name="Makefile" version="1.06" kateversion="2.4" section="Other"
+          extensions="*makefile*;*Makefile*" mimetypes="text/x-makefile" author="Per Wigren (wigren@home.se)" license="">
+
   <syntax>
-    <keyword-list name="keywords">
+    <keyword-list name = "keywords">
       <keyword>include</keyword>
       <keyword>define</keyword>
       <keyword>else</keyword>
       <keyword>endef</keyword>
       <keyword>endif</keyword>
-      <keyword>if</keyword>
       <keyword>ifdef</keyword>
       <keyword>ifeq</keyword>
       <keyword>ifndef</keyword>
       <keyword>ifneq</keyword>
     </keyword-list>
 
-    <context name="Normal" style="Normal Text" end-of-line-context="#stay">
+    <context name="Normal" style="Normal Text" eol-context="#stay">
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
       <Regex style="Variable" context="Value" pattern="[_\w\d]*\s*(?=:=|=)"/>
-      <Regex style="Target" context="#stay" pattern="^\s*[_\w\d-]*\s*:"/>
+      <Regex style="Target" context="#stay" pattern="[_\w\d-]*\s*:" first-non-blank-only="true"/>
       <Regex style="Section" context="#stay" pattern="^[.].*:"/>
       <Char style="String" context="String" char="&quot;"/>
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>
       <AnyChar style="Operator" context="#stay" chars="+*=%$():\\&#059;" />
-      <Regex style="Operator" context="Commands" pattern="^\s*[@-]"/>
-      <Regex style="Comment" context="#stay" pattern="#.*$"/>
+      <Regex style="Operator" context="Commands" pattern="[@-]" first-non-blank-only="true"/>
+      <Regex style="Comment" context="#stay" pattern="(:^|[^\\])#.*$"/>
     </context>
 
-    <context style="String" end-of-line-context="#pop" name="String">
-<!--       <LineContinue style="String" context="#stay"/> -->
+    <context style="String" eol-context="#pop" name="String">
+      <LineContinue style="String" context="#stay"/>
       <Char style="String" context="#pop" char="&quot;"/>
     </context>
 
-    <context name="Value" style="String" end-of-line-context="#stay">
-      <Regex style="Operator" pattern="\\$"     context="#stay"/>
+    <context name="Value" style="String" eol-context="#stay">
+      <Regex style="Operator" pattern="\\$" context="#stay"/>
       <Regex style="String"   pattern="[^\\]?$" context="#pop"/>
       <Regex style="Operator" pattern="[$][\({]" context="VarFromValue"/>
       <Regex style="Special" context="#pop" pattern="@[-_\d\w]*@" />
       <Char style="Operator" char="&#059;" context="#pop"/>
     </context>
 
-    <context name="VarFromValue" style="Variable" end-of-line-context="#stay">
+    <context name="VarFromValue" style="Variable" eol-context="#stay">
       <Regex style="Operator" pattern="[\)}](?=/)" context="#pop"/>
       <Regex style="Operator" pattern="[\)}][^$]" context="#pop"/>
       <Regex style="Operator" pattern="[\)}]$" context="#pop#pop"/>
     </context>
 
-    <context name="VarFromNormal" style="Variable" end-of-line-context="#stay">
+    <context name="VarFromNormal" style="Variable" eol-context="#stay">
       <Regex style="Operator" pattern="[\)}]" context="#pop"/>
     </context>
 
-    <context name="Commands" style="Normal Text" end-of-line-context="#pop">
+    <context name="Commands" style="Normal Text" eol-context="#pop">
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>
       <Regex style="Commands" context="#pop" pattern="[_\w-]*\b"/>
     </context>
-
   </syntax>
 
   <styles>
@@ -72,7 +69,7 @@
     <style name="Section"     default-style="Others"/>
     <style name="Operator"    default-style="Char"/>
     <style name="Commands"    default-style="BaseN"/>
-    <style name="Special"    default-style="Float"/>
+    <style name="Special"     default-style="Float"/>
   </styles>
 
   <general>
@@ -80,5 +77,4 @@
       <single-line start="#"/>
     </comments>
   </general>
-
 </language>

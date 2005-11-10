@@ -1,220 +1,219 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Python" version="1.0" section="Scripts"
-          mimetypes="text/x-python;application/x-python"
-          extensions="*.py;*.pyw">
+<!-- Python syntax highlightning v0.9 by Per Wigren -->
+<language name="Python" version="1.23" kateversion="2.4" section="Scripts"
+          extensions="*.py;*.pyw" mimetypes="application/x-python;text/x-python"
+          author="Per Wigren" license="">
 
   <syntax>
-    <context name="Normal">
-      <IncludeRules from="##Misc##ShebangRules"/>
-      <Regex pattern="[uUrR]?&quot;&quot;&quot;" context="MultilineString" style="Multiline String"/>
-      <Regex pattern="[uUrR]?&apos;&apos;&apos;" context="MultilineString2" style="Multiline String"/>
-      <Regex pattern="[uUrR]?&quot;" context="String" style="String"/>
-      <Regex pattern="[uUrR]?&apos;" context="String2" style="String"/>
-      <Char char="#" context="Comment" include-into-next="TRUE" style="Comment"/>
-      <Keyword keyword="Module Handler" style="Others"/>
-      <Keyword keyword="Functions" style="Keyword"/>
-      <Keyword keyword="Special Variable" style="Others"/>
-      <Keyword keyword="Keywords" style="Keyword"/>
-      <Keyword keyword="Builtins" style="Data Type"/>
-      <Regex pattern="\b([1-9][0-9]*|0)([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b" style="Decimal"/>
-      <Regex pattern="\b([0-9]+[Ee][-]?[0-9]+|([0-9]*\.[0-9]+|[0-9]+\.)([Ee][-]?[0-9]+)?)[fFlL]?" style="Floating Point"/>
-      <Regex pattern="\b0[0-7]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b" style="BaseN"/>
-      <Regex pattern="\b0[xX][0-9a-fA-F]+([Uu]([Ll]|LL|ll)?|([Ll]|LL|ll)[Uu]?)?\b" style="BaseN"/>
+    <keyword-list name="prep">
+      <keyword>import</keyword>
+      <keyword>from</keyword>
+      <keyword>as</keyword>
+    </keyword-list>
+
+    <keyword-list name="statements">
+      <keyword>and</keyword>
+      <keyword>assert</keyword>
+      <keyword>break</keyword>
+      <keyword>class</keyword>
+      <keyword>continue</keyword>
+      <keyword>def</keyword>
+      <keyword>del</keyword>
+      <keyword>elif</keyword>
+      <keyword>else</keyword>
+      <keyword>except</keyword>
+      <keyword>exec</keyword>
+      <keyword>finally</keyword>
+      <keyword>for</keyword>
+      <keyword>global</keyword>
+      <keyword>if</keyword>
+      <keyword>in</keyword>
+      <keyword>is</keyword>
+      <keyword>lambda</keyword>
+      <keyword>not</keyword>
+      <keyword>or</keyword>
+      <keyword>pass</keyword>
+      <keyword>print</keyword>
+      <keyword>raise</keyword>
+      <keyword>return</keyword>
+      <keyword>try</keyword>
+      <keyword>while</keyword>
+      <keyword>yield</keyword>
+    </keyword-list>
+
+    <keyword-list name="builtinfuncs">
+      <keyword>abs</keyword>
+      <keyword>apply</keyword>
+      <keyword>buffer</keyword>
+      <keyword>callable</keyword>
+      <keyword>chr</keyword>
+      <keyword>cmp</keyword>
+      <keyword>coerce</keyword>
+      <keyword>compile</keyword>
+      <keyword>complex</keyword>
+      <keyword>copyright</keyword>
+      <keyword>credits</keyword>
+      <keyword>delattr</keyword>
+      <keyword>dir</keyword>
+      <keyword>divmod</keyword>
+      <keyword>eval</keyword>
+      <keyword>execfile</keyword>
+      <keyword>exit</keyword>
+      <keyword>filter</keyword>
+      <keyword>float</keyword>
+      <keyword>getattr</keyword>
+      <keyword>globals</keyword>
+      <keyword>hasattr</keyword>
+      <keyword>hash</keyword>
+      <keyword>hex</keyword>
+      <keyword>id</keyword>
+      <keyword>input</keyword>
+      <keyword>int</keyword>
+      <keyword>intern</keyword>
+      <keyword>isinstance</keyword>
+      <keyword>issubclass</keyword>
+      <keyword>iter</keyword>
+      <keyword>len</keyword>
+      <keyword>license</keyword>
+      <keyword>list</keyword>
+      <keyword>locals</keyword>
+      <keyword>long</keyword>
+      <keyword>map</keyword>
+      <keyword>max</keyword>
+      <keyword>min</keyword>
+      <keyword>oct</keyword>
+      <keyword>open</keyword>
+      <keyword>ord</keyword>
+      <keyword>pow</keyword>
+      <keyword>quit</keyword>
+      <keyword>range</keyword>
+      <keyword>raw_input</keyword>
+      <keyword>reduce</keyword>
+      <keyword>reload</keyword>
+      <keyword>repr</keyword>
+      <keyword>round</keyword>
+      <keyword>setattr</keyword>
+      <keyword>slice</keyword>
+      <keyword>str</keyword>
+      <keyword>tuple</keyword>
+      <keyword>type</keyword>
+      <keyword>unichr</keyword>
+      <keyword>unicode</keyword>
+      <keyword>vars</keyword>
+      <keyword>xrange</keyword>
+      <keyword>zip</keyword>
+    </keyword-list>
+
+    <keyword-list name="specialvars">
+      <keyword>None</keyword>
+      <keyword>self</keyword>
+      <keyword>True</keyword>
+      <keyword>False</keyword>
+      <keyword>NotImplemented</keyword>
+      <keyword>Ellipsis</keyword>
+    </keyword-list>
+
+    <context name="Normal" style="Normal Text" eol-context="#stay">
+      <Keyword style="Preprocessor" keyword="prep" context="#stay"/>
+      <Keyword style="Keyword" keyword="statements" context="#stay"/>
+      <Keyword style="Builtin Function" keyword="builtinfuncs" context="#stay"/>
+      <Keyword style="Special Variable" keyword="specialvars" context="#stay"/>
+      <Regex style="Normal Text" pattern="[a-zA-Z_]\w+" context="#stay"/>
+
+      <Regex style="Complex" pattern=" (((\d*\.\d+|\d+\.)|(\d+|(\d*\.\d+|\d+\.))[eE][+-]?\d+)|\d+)[jJ]" context="#stay"/>
+      <Regex style="Float" pattern="(\d+\.\d*|\.\d+)([eE]\d+)?" context="#stay"/>
+      <Regex style="Int" pattern="([1-9]\d*([eE]\d+)?|0)" context="#stay"/>
+      <Regex style="Long" pattern="[1-9]\d*([eE][\d.]+)?[Ll]" context="#stay"/>
+      <Regex style="Hex" pattern="0[Xx][\da-fA-F]+" context="#stay"/>
+      <Regex style="Octal" pattern="0[1-9]\d*" context="#stay"/>
+
+      <Regex style="Raw String" pattern="[rR]'" context="Raw A-string"/>
+      <Regex style="Raw String" pattern="[rR]&quot;" context="Raw Q-string"/>
+
+      <Regex style="Comment" pattern="#.*$" context="#stay"/>
+      <String style="Comment" string="'''" context="Tripple A-comment" first-non-blank-only="true"/>
+      <String style="Comment" string="&quot;&quot;&quot;" context="Tripple Q-comment" first-non-blank-only="true"/>
+
+      <String style="String" string="'''" context="Tripple A-string"/>
+      <String style="String" string="&quot;&quot;&quot;" context="Tripple Q-string"/>
+      <Char style="String" char="'" context="Single A-string"/>
+      <Char style="String" char="&quot;" context="Single Q-string"/>
+
+      <Regex style="Operator" pattern="[+*/\(\)%\|\[\]\{\}:=;\!&lt;&gt;!^&amp;~-]" context="#stay"/>
     </context>
-    <context name="MultilineString" style="Multiline String">
-      <String string="&quot;&quot;&quot;" include-into-next="TRUE" context="#pop" style="Multiline String"/>
-    </context>
-    <context name="MultilineString2" style="Multiline String">
-      <String string="&apos;&apos;&apos;" include-into-next="TRUE" context="#pop" style="Multiline String"/>
-    </context>
-    <context name="String" style="String">
-      <Char char="&quot;" include-into-next="TRUE" context="#pop" style="String"/>
-    </context>
-    <context name="String2" style="String">
-      <Char char="&apos;" include-into-next="TRUE" context="#pop" style="String"/>
-    </context>
-    <context name="Comment" style="Comment" end-of-line-context="#pop">
-      <IncludeRules from="##Misc##AlertRules"/>
+
+    <context name="Tripple A-comment" style="Comment" eol-context="#stay">
+      <CChar style="Comment" context="#stay"/>
+      <String style="Comment" string="'''" context="#pop"/>
     </context>
 
-  <keyword-list name="Module Handler">
-    <keyword>import</keyword>
-    <keyword>from</keyword>
-    <keyword>as</keyword>
-    <keyword>__name__</keyword>
-    <keyword>__debug__</keyword>
-  </keyword-list>
+    <context name="Tripple Q-comment" style="Comment" eol-context="#stay">
+      <CChar style="Comment" context="#stay"/>
+      <String style="Comment" string="&quot;&quot;&quot;" context="#pop"/>
+    </context>
 
-  <keyword-list name="Functions">
-    <keyword>def</keyword>
-    <keyword>class</keyword>
-    <keyword>return</keyword>
-  </keyword-list>
+    <context name="Tripple A-string" style="String" eol-context="#stay">
+      <CChar style="String" context="#stay"/>
+      <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
+      <String style="String" string="'''" context="#pop"/>
+    </context>
 
-  <keyword-list name="Special Variable">
-    <keyword>True</keyword>
-    <keyword>False</keyword>
-    <keyword>None</keyword>
-  </keyword-list>
+    <context name="Tripple Q-string" style="String" eol-context="#stay">
+      <EscapedChar style="String" context="#stay"/>
+      <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
+      <String style="String" string="&quot;&quot;&quot;" context="#pop"/>
+    </context>
 
-  <keyword-list name="Keywords">
-    <keyword>and</keyword>
-    <keyword>assert</keyword>
-    <keyword>break</keyword>
-    <keyword>continue</keyword>
-    <keyword>del</keyword>
-    <keyword>elif</keyword>
-    <keyword>else</keyword>
-    <keyword>except</keyword>
-    <keyword>exec</keyword>
-    <keyword>finally</keyword>
-    <keyword>for</keyword>
-    <keyword>global</keyword>
-    <keyword>if</keyword>
-    <keyword>in</keyword>
-    <keyword>is</keyword>
-    <keyword>lambda</keyword>
-    <keyword>not</keyword>
-    <keyword>or</keyword>
-    <keyword>pass</keyword>
-    <keyword>print</keyword>
-    <keyword>raise</keyword>
-    <keyword>try</keyword>
-    <keyword>while</keyword>
-    <keyword>yield</keyword>
-  </keyword-list>
+    <context name="Single A-comment" style="Comment" eol-context="#stay">
+      <EscapedChar style="Comment" context="#stay"/>
+      <Char style="Comment" char="'" context="#pop"/>
+    </context>
 
-  <keyword-list name="Builtins">
-    <keyword>ArithmeticError</keyword>
-    <keyword>AssertionError</keyword>
-    <keyword>AttributeError</keyword>
-    <keyword>DeprecationWarning</keyword>
-    <keyword>EnvironmentError</keyword>
-    <keyword>EOFError</keyword>
-    <keyword>Exception</keyword>
-    <keyword>FloatingPointError</keyword>
-    <keyword>FutureWarning</keyword>
-    <keyword>ImportError</keyword>
-    <keyword>IndentationError</keyword>
-    <keyword>IndexError</keyword>
-    <keyword>IOError</keyword>
-    <keyword>KeyboardInterrupt</keyword>
-    <keyword>KeyError</keyword>
-    <keyword>LookupError</keyword>
-    <keyword>MemoryError</keyword>
-    <keyword>NameError</keyword>
-    <keyword>NotImplementedError</keyword>
-    <keyword>OSError</keyword>
-    <keyword>OverflowError</keyword>
-    <keyword>OverflowWarning</keyword>
-    <keyword>PendingDeprecationWarning</keyword>
-    <keyword>ReferenceError</keyword>
-    <keyword>RuntimeError</keyword>
-    <keyword>RuntimeWarning</keyword>
-    <keyword>StandardError</keyword>
-    <keyword>StopIteration</keyword>
-    <keyword>SyntaxError</keyword>
-    <keyword>SyntaxWarning</keyword>
-    <keyword>SystemError</keyword>
-    <keyword>SystemExit</keyword>
-    <keyword>TabError</keyword>
-    <keyword>TypeError</keyword>
-    <keyword>UnboundLocalError</keyword>
-    <keyword>UnicodeDecodeError</keyword>
-    <keyword>UnicodeEncodeError</keyword>
-    <keyword>UnicodeError</keyword>
-    <keyword>UnicodeTranslateError</keyword>
-    <keyword>UserWarning</keyword>
-    <keyword>ValueError</keyword>
-    <keyword>Warning</keyword>
-    <keyword>WindowsError</keyword>
-    <keyword>ZeroDivisionError</keyword>
+    <context name="Single Q-comment" style="Comment" eol-context="#stay">
+      <EscapedChar style="Comment" context="#stay"/>
+      <Char style="Comment" char="&quot;" context="#pop"/>
+    </context>
 
-    <keyword>__import__</keyword>
+    <context name="Single A-string" style="String" eol-context="#stay">
+      <EscapedChar style="String" context="#stay"/>
+      <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
+      <Char style="String" char="'" context="#pop"/>
+    </context>
 
-    <keyword>abs</keyword>
-    <keyword>apply</keyword>
-    <keyword>basestring</keyword>
-    <keyword>bool</keyword>
-    <keyword>buffer</keyword>
-    <keyword>callable</keyword>
-    <keyword>chr</keyword>
-    <keyword>classmethod</keyword>
-    <keyword>cmp</keyword>
-    <keyword>coerce</keyword>
-    <keyword>compile</keyword>
-    <keyword>complex</keyword>
-    <keyword>delattr</keyword>
-    <keyword>dict</keyword>
-    <keyword>dir</keyword>
-    <keyword>divmod</keyword>
-    <keyword>enumerate</keyword>
-    <keyword>eval</keyword>
-    <keyword>execfile</keyword>
-    <keyword>file</keyword>
-    <keyword>filter</keyword>
-    <keyword>float</keyword>
-    <keyword>getattr</keyword>
-    <keyword>globals</keyword>
-    <keyword>hasattr</keyword>
-    <keyword>hash</keyword>
-    <keyword>hex</keyword>
-    <keyword>id</keyword>
-    <keyword>input</keyword>
-    <keyword>intern</keyword>
-    <keyword>int</keyword>
-    <keyword>isinstance</keyword>
-    <keyword>issubclass</keyword>
-    <keyword>iter</keyword>
-    <keyword>len</keyword>
-    <keyword>list</keyword>
-    <keyword>locals</keyword>
-    <keyword>long</keyword>
-    <keyword>map</keyword>
-    <keyword>max</keyword>
-    <keyword>min</keyword>
-    <keyword>object</keyword>
-    <keyword>oct</keyword>
-    <keyword>open</keyword>
-    <keyword>ord</keyword>
-    <keyword>pow</keyword>
-    <keyword>property</keyword>
-    <keyword>range</keyword>
-    <keyword>raw_input</keyword>
-    <keyword>reduce</keyword>
-    <keyword>reload</keyword>
-    <keyword>repr</keyword>
-    <keyword>round</keyword>
-    <keyword>self</keyword>
-    <keyword>setattr</keyword>
-    <keyword>slice</keyword>
-    <keyword>staticmethod</keyword>
-    <keyword>str</keyword>
-    <keyword>sum</keyword>
-    <keyword>super</keyword>
-    <keyword>tuple</keyword>
-    <keyword>type</keyword>
-    <keyword>unichr</keyword>
-    <keyword>unicode</keyword>
-    <keyword>vars</keyword>
-    <keyword>xrange</keyword>
-    <keyword>zip</keyword>
-  </keyword-list>
+    <context name="Single Q-string" style="String" eol-context="#stay">
+      <EscapedChar style="String" context="#stay"/>
+      <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
+      <Char style="String" char="&quot;" context="#pop"/>
+    </context>
+
+    <context name="Raw A-string" style="Raw String" eol-context="#stay">
+      <EscapedChar style="Raw String" context="#stay"/>
+      <Char style="Raw String" char="'" context="#pop"/>
+    </context>
+
+    <context name="Raw Q-string" style="Raw String" eol-context="#stay">
+      <EscapedChar style="Raw String" context="#stay"/>
+      <Char style="Raw String" char="&quot;" context="#pop"/>
+    </context>
   </syntax>
-
   <styles>
-    <style name="Multiline String" default-style="String"/>
-    <style name="String" default-style="String"/>
-    <style name="Comment" default-style="Comment"/>
-    <style name="Others" default-style="Others"/>
+    <style name="Normal Text" default-style="Normal"/>
+    <style name="Operator" default-style="Char"/>
     <style name="Keyword" default-style="Keyword"/>
-    <style name="Data Type" default-style="DataType"/>
-    <style name="Decimal" default-style="Decimal"/>
-    <style name="Floating Point" default-style="Float"/>
-    <style name="BaseN" default-style="BaseN"/>
+    <style name="Builtin Function" default-style="DataType"/>
+    <style name="Special Variable" default-style="Others"/>
+    <style name="Preprocessor" default-style="Char"/>
+    <style name="Long" default-style="Others"/>
+    <style name="Float" default-style="Float"/>
+    <style name="Int" default-style="Decimal"/>
+    <style name="Hex" default-style="Others"/>
+    <style name="Octal" default-style="Others"/>
+    <style name="Complex" default-style="Others"/>
+    <style name="Comment" default-style="Comment"/>
+    <style name="String" default-style="String"/>
+    <style name="Raw String" default-style="String"/>
   </styles>
-
   <general>
     <comments>
       <single-line start="#"/>

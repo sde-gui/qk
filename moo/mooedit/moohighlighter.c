@@ -426,9 +426,16 @@ get_next_line_node (MooHighlighter *hl,
         Segment *last = &info->segments[info->n_segments - 1];
 
         if (last->rule)
-            last_node = get_next_node (hl, last->ctx_node, last->rule);
+        {
+            if (last->rule->include_eol)
+                return get_next_node (hl, last->ctx_node, last->rule);
+            else
+                last_node = get_next_node (hl, last->ctx_node, last->rule);
+        }
         else
+        {
             last_node = last->ctx_node;
+        }
     }
 
     g_assert (last_node != NULL);
@@ -512,7 +519,7 @@ hl_compute_line (MooHighlighter     *hl,
         }
     }
 
-    *node_p = get_line_end_node (hl, node);
+    *node_p = get_next_line_node (hl, line);
 }
 
 

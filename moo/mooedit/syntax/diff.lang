@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
 <!DOCTYPE language SYSTEM "language.dtd">
-<language name="Diff" version="1.01" section="Others" extensions="*.diff;*patch" mimetypes="text/x-diff">
+<language name="Diff" version="1.02" kateversion="2.4" section="Other"
+          extensions="*.diff;*patch" mimetypes="text/x-diff">
+
   <syntax>
-    <context style="Normal Text" end-of-line-context="#stay" name="Normal">
-      <Regex style="Keyword" context="Keyword" pattern="^(\+\+\+|\-\-\-|\*\*\*|diff|\d)" />
-      <Regex style="Added line" context="Added" pattern="^(\+|&gt;|!)" />
-      <Regex style="Removed line" context="Removed" pattern="^(\-|&lt;)" />
-      <Regex style="Data Type" context="Data" pattern="^\@\@" />
+    <context style="Normal Text" eol-context="#stay" name="Normal">
+      <Regex style="Keyword" context="Keyword" pattern="(\+\+\+|\-\-\-|\*\*\*|diff|\d)" bol-only="TRUE"/>
+      <Regex style="Added line" context="Added" pattern="(\+|&gt;|!)" bol-only="TRUE"/>
+      <AnyChar style="Removed line" context="Removed" chars="-&lt;" bol-only="TRUE"/>
+      <TwoChars style="Data Type" context="Data" char1="@" char2="@" bol-only="TRUE"/>
     </context>
 
-    <context style="Keyword" end-of-line-context="#pop" name="Keyword"/>
-    <context style="Removed line" end-of-line-context="#pop" name="Removed"/>
-    <context style="Added line" end-of-line-context="#pop" name="Added"/>
-    <context style="Data Type" end-of-line-context="#pop" name="Data"/>
+    <context style="Keyword" eol-context="#pop" name="Keyword"/>
+    <context style="Removed line" eol-context="#pop" name="Removed"/>
+    <context style="Added line" eol-context="#pop" name="Added"/>
+    <context style="Data Type" eol-context="#pop" name="Data"/>
   </syntax>
 
   <styles>

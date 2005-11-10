@@ -91,7 +91,7 @@ moo_context_add_rule (MooContext     *ctx,
 
 
 void
-moo_context_set_line_end_stay (MooContext *ctx)
+moo_context_set_eol_stay (MooContext *ctx)
 {
     g_return_if_fail (ctx != NULL);
     ctx->line_end.type = MOO_CONTEXT_STAY;
@@ -100,8 +100,8 @@ moo_context_set_line_end_stay (MooContext *ctx)
 
 
 void
-moo_context_set_line_end_pop (MooContext     *ctx,
-                              guint           num)
+moo_context_set_eol_pop (MooContext     *ctx,
+                         guint           num)
 {
     g_return_if_fail (ctx != NULL);
     g_return_if_fail (num > 0);
@@ -111,8 +111,8 @@ moo_context_set_line_end_pop (MooContext     *ctx,
 
 
 void
-moo_context_set_line_end_switch (MooContext     *ctx,
-                                 MooContext     *target)
+moo_context_set_eol_switch (MooContext     *ctx,
+                            MooContext     *target)
 {
     g_return_if_fail (ctx != NULL && target != NULL);
     ctx->line_end.type = MOO_CONTEXT_SWITCH;

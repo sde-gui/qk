@@ -133,11 +133,31 @@ struct _StyleXML {
     guint first_non_blank_only : 1; /* optional, defaults to FALSE */                   \
     guint first_line_only : 1;      /* optional, defaults to FALSE */                   \
     guint caseless : 1;                                                                 \
+    guint include_eol : 1;                                                              \
                                                                                         \
     GSList *child_rules;            /* RuleXML* */                                      \
     CtxSwitchInfo end_switch_info;                                                      \
                                                                                         \
-    MooRuleType type                                                                    \
+    RuleType type                                                                       \
+
+typedef enum {
+    RULE_STRING,
+    RULE_REGEX,
+    RULE_CHAR,
+    RULE_2CHAR,
+    RULE_ANY_CHAR,
+    RULE_INT,
+    RULE_FLOAT,
+    RULE_HEX,
+    RULE_OCTAL,
+    RULE_ESCAPED_CHAR,
+    RULE_C_CHAR,
+    RULE_WHITESPACE,
+    RULE_IDENTIFIER,
+    RULE_LINE_CONTINUE,
+    RULE_KEYWORDS,
+    RULE_INCLUDE
+} RuleType;
 
 struct _RuleXML {
     RULE_XML_MEMBERS;

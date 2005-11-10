@@ -23,13 +23,13 @@
             <Keyword keyword="Library9" style="Library"/>
             <Regex pattern="\b[_\w][_\w\d]*(?=[\s]*[(])" style="Function"/>
         </context>
-        <context name="String" style="String" end-of-line-context="#pop">
+        <context name="String" style="String" eol-context="#pop">
             <Char char="&quot;" context="#pop" style="String"/>
         </context>
-        <context name="Char" style="Char" end-of-line-context="#pop">
+        <context name="Char" style="Char" eol-context="#pop">
             <Char char="&apos;" context="#pop" style="Char"/>
         </context>
-        <context name="Comment" style="Comment" end-of-line-context="#pop">
+        <context name="Comment" style="Comment" eol-context="#pop">
             <IncludeRules from="##Misc##AlertRules"/>
         </context>
 
