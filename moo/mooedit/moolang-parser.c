@@ -2285,7 +2285,7 @@ static MooTextStyleScheme*
 style_scheme_xml_parse (MooMarkupNode  *node,
                         char          **base_scheme)
 {
-    MooTextStyleScheme *scheme;
+    MooTextStyleScheme *scheme = NULL;
     MooMarkupNode *child;
     const char *name = NULL, *foreground = NULL, *background = NULL, *base = NULL;
     const char *selected_foreground = NULL, *selected_background = NULL, *current_line = NULL;
@@ -2383,7 +2383,8 @@ style_scheme_xml_parse (MooMarkupNode  *node,
     return scheme;
 
 error:
-    g_object_unref (scheme);
+    if (scheme)
+        g_object_unref (scheme);
     return NULL;
 }
 
