@@ -99,6 +99,7 @@ struct _MooEditorPrivate {
     gboolean         open_single;
     gboolean         allow_empty_window;
     gboolean         single_window;
+    gboolean         save_backups;
 
     GType            window_type;
     GType            doc_type;
@@ -122,7 +123,8 @@ enum {
     PROP_0,
     PROP_OPEN_SINGLE_FILE_INSTANCE,
     PROP_ALLOW_EMPTY_WINDOW,
-    PROP_SINGLE_WINDOW
+    PROP_SINGLE_WINDOW,
+    PROP_SAVE_BACKUPS
 };
 
 enum {
@@ -167,6 +169,14 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                      g_param_spec_boolean ("single-window",
                                              "single-window",
                                              "single-window",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SAVE_BACKUPS,
+                                     g_param_spec_boolean ("save-backups",
+                                             "save-backups",
+                                             "save-backups",
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -233,6 +243,11 @@ static void     moo_editor_set_property (GObject        *object,
             set_single_window (editor, g_value_get_boolean (value));
             break;
 
+        case PROP_SAVE_BACKUPS:
+            editor->priv->save_backups = g_value_get_boolean (value);
+            g_object_notify (object, "save-backups");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -258,6 +273,10 @@ static void     moo_editor_get_property (GObject        *object,
 
         case PROP_SINGLE_WINDOW:
             g_value_set_boolean (value, editor->priv->single_window);
+            break;
+
+        case PROP_SAVE_BACKUPS:
+            g_value_set_boolean (value, editor->priv->save_backups);
             break;
 
         default:
@@ -1269,6 +1288,8 @@ _moo_editor_reload (MooEditor      *editor,
     WindowInfo *info;
     MooEditLoader *loader;
     GError *error = NULL;
+    int cursor_line, cursor_offset;
+    GtkTextIter iter;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
@@ -1285,13 +1306,34 @@ _moo_editor_reload (MooEditor      *editor,
          !moo_edit_reload_modified_dialog (doc))
             return;
 
+    moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
+    cursor_line = gtk_text_iter_get_line (&iter);
+    cursor_offset = gtk_text_iter_get_line_offset (&iter);
+
     if (!moo_edit_reload (loader, doc, &error))
     {
         moo_edit_reload_error_dialog (GTK_WIDGET (doc),
                                       error ? error->message : NULL);
         if (error)
             g_error_free (error);
+        g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
+        return;
     }
+
+    moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor_line,
+                               cursor_offset, TRUE);
+}
+
+
+static MooEditSaveFlags
+moo_editor_get_save_flags (MooEditor *editor)
+{
+    MooEditSaveFlags flags = 0;
+
+    if (editor->priv->save_backups)
+        flags |= MOO_EDIT_SAVE_BACKUP;
+
+    return flags;
 }
 
 
@@ -1324,7 +1366,8 @@ _moo_editor_save (MooEditor      *editor,
          !moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!moo_edit_save (saver, doc, filename, encoding, &error))
+    if (!moo_edit_save (saver, doc, filename, encoding,
+                        moo_editor_get_save_flags (editor), &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
@@ -1376,7 +1419,8 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new (filename, encoding);
     }
 
-    if (!moo_edit_save (saver, doc, file_info->filename, file_info->encoding, &error))
+    if (!moo_edit_save (saver, doc, file_info->filename, file_info->encoding,
+                        moo_editor_get_save_flags (editor), &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);

@@ -23,6 +23,10 @@ G_BEGIN_DECLS
 typedef struct _MooEditLoader MooEditLoader;
 typedef struct _MooEditSaver  MooEditSaver;
 
+typedef enum {
+    MOO_EDIT_SAVE_BACKUP = 1 << 0
+} MooEditSaveFlags;
+
 struct _MooEditLoader
 {
     guint ref_count;
@@ -45,6 +49,7 @@ struct _MooEditSaver
                                  MooEdit        *edit,
                                  const char     *file,
                                  const char     *encoding,
+                                 MooEditSaveFlags flags,
                                  GError        **error);
     gboolean    (*save_copy)    (MooEditSaver   *saver,
                                  MooEdit        *edit,
@@ -74,6 +79,7 @@ gboolean         moo_edit_save              (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
+                                             MooEditSaveFlags flags,
                                              GError        **error);
 gboolean         moo_edit_save_copy         (MooEditSaver   *saver,
                                              MooEdit        *edit,

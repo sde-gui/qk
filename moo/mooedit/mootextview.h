@@ -114,6 +114,8 @@ MooIndenter *moo_text_view_get_indenter             (MooTextView        *view);
 void         moo_text_view_set_indenter             (MooTextView        *view,
                                                      MooIndenter        *indenter);
 
+void         moo_text_view_get_cursor               (MooTextView        *view,
+                                                     GtkTextIter        *iter);
 void         moo_text_view_move_cursor              (MooTextView        *view,
                                                      int                 line,
                                                      int                 character,

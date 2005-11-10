@@ -20,6 +20,12 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moofilewatch.h"
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
+#include <glib/gstdio.h>
 
 
 static MooEditLoader *default_loader = NULL;
@@ -40,6 +46,7 @@ static gboolean moo_edit_save_default       (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
+                                             MooEditSaveFlags flags,
                                              GError        **error);
 static gboolean moo_edit_save_copy_default  (MooEditSaver   *saver,
                                              MooEdit        *edit,
@@ -165,6 +172,7 @@ gboolean         moo_edit_save              (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *filename,
                                              const char     *encoding,
+                                             MooEditSaveFlags flags,
                                              GError        **error)
 {
     char *filename_copy, *encoding_copy;
@@ -177,7 +185,7 @@ gboolean         moo_edit_save              (MooEditSaver   *saver,
     filename_copy = g_strdup (filename);
     encoding_copy = g_strdup (encoding);
 
-    result = saver->save (saver, edit, filename_copy, encoding_copy, error);
+    result = saver->save (saver, edit, filename_copy, encoding_copy, flags, error);
 
     g_free (filename_copy);
     g_free (encoding_copy);
@@ -485,6 +493,12 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
 static const char *line_end[3] = {"\n", "\r\n", "\r"};
 static guint line_end_len[3] = {1, 2, 1};
 
+#ifdef __WIN32__
+#define BAK_SUFFIX ".bak"
+#else
+#define BAK_SUFFIX "~"
+#endif
+
 static gboolean do_write                (MooEdit        *edit,
                                          const char     *file,
                                          const char     *encoding,
@@ -496,6 +510,7 @@ moo_edit_save_default (G_GNUC_UNUSED MooEditSaver *saver,
                        MooEdit        *edit,
                        const char     *filename,
                        const char     *encoding,
+                       MooEditSaveFlags flags,
                        GError        **error)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
