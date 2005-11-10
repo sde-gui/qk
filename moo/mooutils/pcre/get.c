@@ -228,25 +228,6 @@ return 0;
 
 
 /*************************************************
-*   Free store obtained by get_substring_list    *
-*************************************************/
-
-/* This function exists for the benefit of people calling PCRE from non-C
-programs that can call its functions, but not free() or (pcre_free)() directly.
-
-Argument:   the result of a previous pcre_get_substring_list()
-Returns:    nothing
-*/
-
-void
-g_free_substring_list(const char **pointer)
-{
-(g_free)((void *)pointer);
-}
-
-
-
-/*************************************************
 *      Copy captured string to new store         *
 *************************************************/
 
@@ -328,22 +309,5 @@ return _pcre_get_substring(subject, ovector, stringcount, n, stringptr);
 
 
 
-
-/*************************************************
-*       Free store obtained by get_substring     *
-*************************************************/
-
-/* This function exists for the benefit of people calling PCRE from non-C
-programs that can call its functions, but not free() or (pcre_free)() directly.
-
-Argument:   the result of a previous pcre_get_substring()
-Returns:    nothing
-*/
-
-void
-g_free_substring(const char *pointer)
-{
-(g_free)((void *)pointer);
-}
 
 /* End of get.c */
