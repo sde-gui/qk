@@ -165,6 +165,101 @@ text_view_reset_im_context (GtkTextView *text_view)
 }
 
 
+static void
+move_cursor_to (GtkTextView *text_view,
+                GtkTextIter *where,
+                gboolean     extend_selection)
+{
+    GtkTextBuffer *buffer;
+    GtkTextMark *insert;
+
+    buffer = gtk_text_view_get_buffer (text_view);
+    insert = gtk_text_buffer_get_insert (buffer);
+    text_view_reset_im_context (text_view);
+
+    if (extend_selection)
+        gtk_text_buffer_move_mark (buffer, insert, where);
+    else
+        gtk_text_buffer_place_cursor (buffer, where);
+
+    gtk_text_view_scroll_mark_onscreen (text_view, insert);
+}
+
+
+static void
+moo_text_view_move_cursor_words (G_GNUC_UNUSED MooTextView *view,
+                                 GtkTextIter *iter,
+                                 gint         count)
+{
+    if (count < 0)
+        text_iter_backward_word_start_n (iter, -count);
+    else if (count > 0)
+        text_iter_forward_word_start_n (iter, count);
+}
+
+
+static void
+moo_text_view_home_end (MooTextView *view,
+                        GtkTextIter *iter,
+                        gint         count)
+{
+    if (gtk_text_iter_is_end (iter) && gtk_text_iter_is_start (iter))
+        return;
+
+    if (view->priv->smart_home_end && count == -1)
+    {
+        GtkTextIter first = *iter;
+
+        gtk_text_iter_set_line_offset (&first, 0);
+
+        while (!gtk_text_iter_ends_line (&first))
+        {
+            if (is_space (&first))
+                gtk_text_iter_forward_char (&first);
+            else
+                break;
+        }
+
+        if (gtk_text_iter_starts_line (iter) || !gtk_text_iter_equal (&first, iter))
+            *iter = first;
+        else
+            gtk_text_iter_set_line_offset (iter, 0);
+    }
+    else if (view->priv->smart_home_end && count == 1)
+    {
+        GtkTextIter last = *iter;
+
+        if (!gtk_text_iter_ends_line (&last))
+            gtk_text_iter_forward_to_line_end (&last);
+
+        while (!gtk_text_iter_starts_line (&last))
+        {
+            gtk_text_iter_backward_char (&last);
+
+            if (!is_space (&last))
+            {
+                gtk_text_iter_forward_char (&last);
+                break;
+            }
+        }
+
+        if (gtk_text_iter_ends_line (iter) || !gtk_text_iter_equal (&last, iter))
+            *iter = last;
+        else
+            gtk_text_iter_forward_to_line_end (iter);
+    }
+    else if (count == -1)
+    {
+        gtk_text_iter_set_line_offset (iter, 0);
+    }
+    else
+    {
+        if (!gtk_text_iter_ends_line (iter))
+            gtk_text_iter_forward_to_line_end (iter);
+    }
+}
+
+
 void
 _moo_text_view_move_cursor (GtkTextView        *text_view,
                             GtkMovementStep     step,
@@ -172,43 +267,31 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
                             gboolean            extend_selection)
 {
     GtkTextBuffer *buffer;
-    GtkTextIter insert;
-    GtkTextIter newplace;
+    GtkTextMark *insert;
+    GtkTextIter iter;
 
-    g_return_if_fail (text_view != NULL);
-    if (!text_view->cursor_visible || step != GTK_MOVEMENT_WORDS)
-        return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (
-            text_view, step, count, extend_selection);
+    if (!text_view->cursor_visible)
+        return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
 
     buffer = gtk_text_view_get_buffer (text_view);
+    insert = gtk_text_buffer_get_insert (buffer);
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter, insert);
 
-    text_view_reset_im_context (text_view);
-
-    gtk_text_buffer_get_iter_at_mark (buffer, &insert,
-                                      gtk_text_buffer_get_mark (buffer,
-                                                                "insert"));
-    newplace = insert;
-
-    if (count < 0)
-        text_iter_backward_word_start_n (&newplace, -count);
-    else if (count > 0)
-        text_iter_forward_word_start_n (&newplace, count);
-
-    /* call move_cursor() even if the cursor hasn't moved, since it
-        cancels the selection
-    */
-    /* move_cursor (buf, &newplace, extend_selection); */
-    if (extend_selection)
-        gtk_text_buffer_move_mark (buffer, gtk_text_buffer_get_insert (buffer),
-                                   &newplace);
-    else
-        gtk_text_buffer_place_cursor (buffer, &newplace);
-
-    if (!gtk_text_iter_equal (&insert, &newplace))
+    switch (step)
     {
-        gtk_text_view_scroll_mark_onscreen (text_view,
-                                            gtk_text_buffer_get_insert (buffer));
+        case GTK_MOVEMENT_WORDS:
+            moo_text_view_move_cursor_words (MOO_TEXT_VIEW (text_view), &iter, count);
+            break;
+
+        case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
+            moo_text_view_home_end (MOO_TEXT_VIEW (text_view), &iter, count);
+            break;
+
+        default:
+            return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
     }
+
+    move_cursor_to (text_view, &iter, extend_selection);
 }
 
 
@@ -228,8 +311,16 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
 
     buf = gtk_text_view_get_buffer (text_view);
     insert_mark = gtk_text_buffer_get_insert (buf);
-    gtk_text_buffer_get_iter_at_mark (buf, &insert, insert_mark);
 
+    /* XXX */
+    if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
+    {
+        gtk_text_buffer_delete_interactive (buf, &start, &end, text_view->editable);
+        gtk_text_view_scroll_mark_onscreen (text_view, insert_mark);
+        return;
+    }
+
+    gtk_text_buffer_get_iter_at_mark (buf, &insert, insert_mark);
     start = insert;
     end = insert;
 
