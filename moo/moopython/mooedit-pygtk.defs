@@ -337,7 +337,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "name")
-    '("const-char*" "value")
+    '("const-char*" "value" (null-ok))
   )
 )
 
@@ -347,7 +347,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "name")
-    '("const-char*" "value")
+    '("const-char*" "value" (null-ok))
     '("MooEditVarDep" "dep")
   )
 )
@@ -358,6 +358,33 @@
   (return-type "const-char*")
   (parameters
     '("const-char*" "name")
+  )
+)
+
+(define-method save
+  (of-object "MooEdit")
+  (c-name "moo_edit_save")
+  (return-type "gboolean")
+)
+
+(define-method save_as
+  (of-object "MooEdit")
+  (c-name "moo_edit_save_as")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "filename" (null-ok) (default "NULL"))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method save_copy
+  (of-object "MooEdit")
+  (c-name "moo_edit_save_copy")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "filename")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("GError**" "error")
   )
 )
 
@@ -743,17 +770,17 @@
   (return-type "none")
   (parameters
     '("int" "line")
-    '("gpointer" "data")
-    '("GDestroyNotify" "free_func")
+    '("const-GValue*" "data")
   )
 )
 
 (define-method get_line_data
   (of-object "MooLineView")
   (c-name "moo_line_view_get_line_data")
-  (return-type "gpointer")
+  (return-type "gboolean")
   (parameters
     '("int" "line")
+    '("const-GValue*" "data")
   )
 )
 

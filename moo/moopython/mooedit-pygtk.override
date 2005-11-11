@@ -91,49 +91,6 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
     return _moo_python_plugin_register (plugin_type, win_plugin_type, doc_plugin_type);
 }
 %%
-override moo_line_view_set_line_data varargs
-static void
-py_object_unref (PyObject *obj)
-{
-    Py_XDECREF (obj);
-}
-static PyObject *
-_wrap_moo_line_view_set_line_data (PyObject *self, PyObject *args)
-{
-    int line;
-    PyObject *data;
-    MooLineView *view;
-
-    if (!PyArg_ParseTuple (args, (char*) "iO:LineView.set_line_data", &line, &data))
-        return NULL;
-
-    view = MOO_LINE_VIEW (pygobject_get (self));
-    moo_line_view_set_line_data (view, line, data, (GDestroyNotify) py_object_unref);
-
-    return_None;
-}
-%%
-override moo_line_view_get_line_data varargs
-static PyObject *
-_wrap_moo_line_view_get_line_data (PyObject *self, PyObject *args)
-{
-    int line;
-    PyObject *data;
-    MooLineView *view;
-
-    if (!PyArg_ParseTuple (args, (char*) "i:LineView.get_line_data", &line))
-        return NULL;
-
-    view = MOO_LINE_VIEW (pygobject_get (self));
-    data = moo_line_view_get_line_data (view, line);
-
-    if (!data)
-        data = Py_None;
-
-    Py_INCREF (data);
-    return data;
-}
-%%
 override moo_edit_window_list_docs noargs
 static PyObject *
 _wrap_moo_edit_window_list_docs (PyObject *self)
@@ -174,4 +131,57 @@ static PyObject *
 _wrap_moo_lang__get_extensions (PyObject *self, G_GNUC_UNUSED void *closure)
 {
     return moo_string_slist_to_pyobject (pyg_boxed_get (self, MooLang)->extensions);
+}
+%%
+override moo_line_view_set_line_data varargs
+static PyObject *
+_wrap_moo_line_view_set_line_data (PyObject *self, PyObject *args)
+{
+    int line;
+    PyObject *py_data;
+    MooLineView *view;
+    GValue data;
+
+    if (!PyArg_ParseTuple (args, (char*) "iO:LineView.set_line_data", &line, &py_data))
+        return NULL;
+
+    view = MOO_LINE_VIEW (pygobject_get (self));
+
+    data.g_type = 0;
+    g_value_init (&data, MOO_TYPE_PY_OBJECT);
+
+    if (pyg_value_from_pyobject (&data, py_data))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return NULL;
+    }
+
+    moo_line_view_set_line_data (view, line, &data);
+    g_value_unset (&data);
+
+    return_None;
+}
+%%
+override moo_line_view_get_line_data varargs
+static PyObject *
+_wrap_moo_line_view_get_line_data (PyObject *self, PyObject *args)
+{
+    int line;
+    MooLineView *view;
+    GValue data;
+    PyObject *obj;
+
+    if (!PyArg_ParseTuple (args, (char*) "i:LineView.get_line_data", &line))
+        return NULL;
+
+    view = MOO_LINE_VIEW (pygobject_get (self));
+    data.g_type = 0;
+
+    if (!moo_line_view_get_line_data (view, line, &data))
+        return_None;
+
+    obj = pyg_value_as_pyobject (&data, FALSE);
+
+    g_value_unset (&data);
+    return obj;
 }

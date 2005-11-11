@@ -14,7 +14,7 @@
   (c-name "moo_editor_new_doc")
   (return-type "MooEdit*")
   (parameters
-    '("MooEditWindow*" "window")
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
   )
 )
 
@@ -23,8 +23,8 @@
   (c-name "moo_editor_open")
   (return-type "gboolean")
   (parameters
-    '("MooEditWindow*" "window")
-    '("GtkWidget*" "parent")
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("GSList*" "files")
   )
 )
@@ -34,10 +34,10 @@
   (c-name "moo_editor_open_file")
   (return-type "gboolean")
   (parameters
-    '("MooEditWindow*" "window")
-    '("GtkWidget*" "parent")
-    '("const-char*" "filename")
-    '("const-char*" "encoding")
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("const-char*" "filename" (null-ok) (default "NULL"))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -130,7 +130,7 @@
   (c-name "moo_editor_set_app_name")
   (return-type "none")
   (parameters
-    '("const-char*" "name")
+    '("const-char*" "name" (null-ok))
   )
 )
 
@@ -157,7 +157,7 @@
   (c-name "moo_editor_set_ui_xml")
   (return-type "none")
   (parameters
-    '("MooUIXML*" "xml")
+    '("MooUIXML*" "xml" (null-ok))
   )
 )
 
@@ -178,7 +178,7 @@
   (c-name "moo_editor_set_default_lang")
   (return-type "none")
   (parameters
-    '("const-char*" "name")
+    '("const-char*" "name" (null-ok))
   )
 )
 
@@ -213,7 +213,7 @@
   (parameters
     '("MooEdit*" "doc")
     '("const-char*" "filename")
-    '("const-char*" "encoding")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
 )
