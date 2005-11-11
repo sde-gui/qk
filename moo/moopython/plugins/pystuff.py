@@ -65,3 +65,4 @@ class Plugin(moo.edit.Plugin):
         window.show_all()
 
 moo.edit.plugin_register(Plugin)
+# kate: indent-width 4; space-indent on

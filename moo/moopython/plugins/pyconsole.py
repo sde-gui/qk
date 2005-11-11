@@ -93,6 +93,7 @@ class _ReadLine(object):
                                               False)
         self.buffer.connect("insert-text", self.on_buf_insert)
         self.buffer.connect("delete-range", self.on_buf_delete)
+        self.buffer.connect("mark-set", self.on_buf_mark_set)
         self.do_insert = False
         self.do_delete = False
 
@@ -117,6 +118,16 @@ class _ReadLine(object):
         self.scroll_to_mark(self.cursor, 0.2)
 
         self.in_raw_input = True
+
+    def on_buf_mark_set(self, buffer, iter, mark):
+        if not mark is buffer.get_insert():
+            return
+        start = self.__get_start()
+        end = self.__get_end()
+        if iter.compare(self.__get_start()) >= 0 and \
+           iter.compare(self.__get_end()) <= 0:
+                buffer.move_mark_by_name("cursor", iter)
+                self.scroll_to_mark(self.cursor, 0.2)
 
     def __insert(self, iter, text):
         self.do_insert = True
@@ -524,4 +535,4 @@ if __name__ == '__main__':
         window.connect("destroy", gtk.main_quit)
         gtk.main()
 
-# kate: space-indent on; indent-width 4
+# kate: space-indent on; indent-width 4; strip on;
