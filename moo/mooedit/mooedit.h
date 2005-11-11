@@ -42,6 +42,7 @@ typedef enum {
 
 #define MOO_EDIT_VAR_LANG       "lang"
 #define MOO_EDIT_VAR_INDENTER   "indenter"
+#define MOO_EDIT_VAR_STRIP      "strip"
 
 
 typedef enum {
@@ -143,6 +144,15 @@ void             moo_edit_set_var_full          (MooEdit        *edit,
                                                  MooEditVarDep   dep);
 const char      *moo_edit_get_var               (MooEdit        *edit,
                                                  const char     *name);
+
+gboolean         moo_edit_save                  (MooEdit        *edit);
+gboolean         moo_edit_save_as               (MooEdit        *edit,
+                                                 const char     *filename,
+                                                 const char     *encoding);
+gboolean         moo_edit_save_copy             (MooEdit        *edit,
+                                                 const char     *filename,
+                                                 const char     *encoding,
+                                                 GError        **error);
 
 
 G_END_DECLS

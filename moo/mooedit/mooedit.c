@@ -19,6 +19,7 @@
 #endif
 
 #include "mooedit/mooedit-private.h"
+#include "mooedit/mootextview-private.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
@@ -170,6 +171,8 @@ moo_edit_class_init (MooEditClass *klass)
 static void
 moo_edit_init (MooEdit *edit)
 {
+    MooTextView *view = MOO_TEXT_VIEW (edit);
+
     edit->priv = g_new0 (MooEditPrivate, 1);
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
@@ -187,6 +190,9 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                               (GDestroyNotify) value_free);
+
+    view->priv->show_tabs = TRUE;
+    view->priv->show_trailing_space = TRUE;
 }
 
 
@@ -947,4 +953,34 @@ moo_edit_filename_changed (MooEdit    *edit,
     }
 
     moo_edit_choose_indenter (edit);
+}
+
+
+gboolean
+moo_edit_save (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return _moo_editor_save (edit->priv->editor, edit);
+}
+
+
+gboolean
+moo_edit_save_as (MooEdit        *edit,
+                  const char     *filename,
+                  const char     *encoding)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return _moo_editor_save_as (edit->priv->editor, edit, filename, encoding);
+}
+
+
+gboolean
+moo_edit_save_copy (MooEdit        *edit,
+                    const char     *filename,
+                    const char     *encoding,
+                    GError        **error)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return moo_editor_save_copy (edit->priv->editor, edit,
+                                 filename, encoding, error);
 }
