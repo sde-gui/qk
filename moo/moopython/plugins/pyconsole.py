@@ -318,7 +318,10 @@ class _ReadLine(object):
             for j in range(n_columns):
                 ind = i + j*col_length
                 if ind < total:
-                    n_spaces = col_width - len(completions[ind])
+                    if j == n_columns - 1:
+                        n_spaces = 0
+                    else:
+                        n_spaces = col_width - len(completions[ind])
                     self.__insert(iter, completions[ind] + " " * n_spaces)
             self.__insert(iter, "\n")
 
