@@ -67,21 +67,21 @@ void             moo_edit_loader_unref      (MooEditLoader  *loader);
 MooEditSaver    *moo_edit_saver_ref         (MooEditSaver   *saver);
 void             moo_edit_saver_unref       (MooEditSaver   *saver);
 
-gboolean         moo_edit_load              (MooEditLoader  *loader,
+gboolean         moo_edit_loader_load       (MooEditLoader  *loader,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              GError        **error);
-gboolean         moo_edit_reload            (MooEditLoader  *loader,
+gboolean         moo_edit_loader_reload     (MooEditLoader  *loader,
                                              MooEdit        *edit,
                                              GError        **error);
-gboolean         moo_edit_save              (MooEditSaver   *saver,
+gboolean         moo_edit_saver_save        (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              MooEditSaveFlags flags,
                                              GError        **error);
-gboolean         moo_edit_save_copy         (MooEditSaver   *saver,
+gboolean         moo_edit_saver_save_copy   (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,

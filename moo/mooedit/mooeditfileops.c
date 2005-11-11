@@ -65,7 +65,8 @@ static void     add_status                  (MooEdit        *edit,
                                              MooEditStatus   s);
 
 
-MooEditLoader   *moo_edit_loader_get_default    (void)
+MooEditLoader*
+moo_edit_loader_get_default (void)
 {
     if (!default_loader)
     {
@@ -79,7 +80,8 @@ MooEditLoader   *moo_edit_loader_get_default    (void)
 }
 
 
-MooEditSaver    *moo_edit_saver_get_default     (void)
+MooEditSaver*
+moo_edit_saver_get_default (void)
 {
     if (!default_saver)
     {
@@ -93,7 +95,8 @@ MooEditSaver    *moo_edit_saver_get_default     (void)
 }
 
 
-MooEditLoader   *moo_edit_loader_ref            (MooEditLoader  *loader)
+MooEditLoader*
+moo_edit_loader_ref (MooEditLoader *loader)
 {
     g_return_val_if_fail (loader != NULL, NULL);
     loader->ref_count++;
@@ -101,7 +104,8 @@ MooEditLoader   *moo_edit_loader_ref            (MooEditLoader  *loader)
 }
 
 
-MooEditSaver    *moo_edit_saver_ref             (MooEditSaver   *saver)
+MooEditSaver*
+moo_edit_saver_ref (MooEditSaver *saver)
 {
     g_return_val_if_fail (saver != NULL, NULL);
     saver->ref_count++;
@@ -109,7 +113,8 @@ MooEditSaver    *moo_edit_saver_ref             (MooEditSaver   *saver)
 }
 
 
-void             moo_edit_loader_unref          (MooEditLoader  *loader)
+void
+moo_edit_loader_unref (MooEditLoader  *loader)
 {
     if (!loader || --loader->ref_count)
         return;
@@ -121,7 +126,8 @@ void             moo_edit_loader_unref          (MooEditLoader  *loader)
 }
 
 
-void             moo_edit_saver_unref           (MooEditSaver   *saver)
+void
+moo_edit_saver_unref (MooEditSaver   *saver)
 {
     if (!saver || --saver->ref_count)
         return;
@@ -133,11 +139,12 @@ void             moo_edit_saver_unref           (MooEditSaver   *saver)
 }
 
 
-gboolean         moo_edit_load              (MooEditLoader  *loader,
-                                             MooEdit        *edit,
-                                             const char     *filename,
-                                             const char     *encoding,
-                                             GError        **error)
+gboolean
+moo_edit_loader_load (MooEditLoader  *loader,
+                      MooEdit        *edit,
+                      const char     *filename,
+                      const char     *encoding,
+                      GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -157,9 +164,10 @@ gboolean         moo_edit_load              (MooEditLoader  *loader,
 }
 
 
-gboolean         moo_edit_reload            (MooEditLoader  *loader,
-                                             MooEdit        *edit,
-                                             GError        **error)
+gboolean
+moo_edit_loader_reload (MooEditLoader  *loader,
+                        MooEdit        *edit,
+                        GError        **error)
 {
     g_return_val_if_fail (loader != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
@@ -168,12 +176,13 @@ gboolean         moo_edit_reload            (MooEditLoader  *loader,
 }
 
 
-gboolean         moo_edit_save              (MooEditSaver   *saver,
-                                             MooEdit        *edit,
-                                             const char     *filename,
-                                             const char     *encoding,
-                                             MooEditSaveFlags flags,
-                                             GError        **error)
+gboolean
+moo_edit_saver_save (MooEditSaver   *saver,
+                     MooEdit        *edit,
+                     const char     *filename,
+                     const char     *encoding,
+                     MooEditSaveFlags flags,
+                     GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -194,11 +203,11 @@ gboolean         moo_edit_save              (MooEditSaver   *saver,
 
 
 gboolean
-moo_edit_save_copy (MooEditSaver   *saver,
-                    MooEdit        *edit,
-                    const char     *filename,
-                    const char     *encoding,
-                    GError        **error)
+moo_edit_saver_save_copy (MooEditSaver   *saver,
+                          MooEdit        *edit,
+                          const char     *filename,
+                          const char     *encoding,
+                          GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -449,9 +458,10 @@ do_load (MooEdit        *edit,
 
 
 /* XXX */
-static gboolean moo_edit_reload_default (MooEditLoader  *loader,
-                                         MooEdit        *edit,
-                                         GError        **error)
+static gboolean
+moo_edit_reload_default (MooEditLoader  *loader,
+                         MooEdit        *edit,
+                         GError        **error)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -467,8 +477,8 @@ static gboolean moo_edit_reload_default (MooEditLoader  *loader,
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
 
-    result = moo_edit_load (loader, edit, edit->priv->filename,
-                            edit->priv->encoding, error);
+    result = moo_edit_loader_load (loader, edit, edit->priv->filename,
+                                   edit->priv->encoding, error);
 
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
