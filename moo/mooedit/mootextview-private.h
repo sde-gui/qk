@@ -88,6 +88,7 @@ struct _MooTextViewPrivate {
     GdkColor current_line_color;
     GdkGC *current_line_gc;
     gboolean show_tabs;
+    gboolean show_trailing_space;
     gboolean check_brackets;
 
     /***********************************************************************/
@@ -109,6 +110,7 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Keyboard
     /*/
+    gboolean smart_home_end;
     gboolean ctrl_up_down_scrolls;
     gboolean ctrl_page_up_down_scrolls;
     /* key press handler sets this flag in order to distinguish typed in
