@@ -321,7 +321,7 @@ static gboolean moo_text_match_regex_forward    (const GtkTextIter  *start,
     }
 
     g_free (text);
-    g_assert (gtk_text_iter_compare (match_start, match_end) == -1);
+    g_assert (gtk_text_iter_compare (match_start, match_end) <= 0);
     return TRUE;
 }
 
@@ -439,7 +439,7 @@ static gboolean moo_text_match_regex_backward   (const GtkTextIter  *start,
     }
 
     g_free (text);
-    g_assert (gtk_text_iter_compare (match_start, match_end) == 1);
+    g_assert (gtk_text_iter_compare (match_start, match_end) >= 0);
     return TRUE;
 }
 
