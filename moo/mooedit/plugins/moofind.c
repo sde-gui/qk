@@ -103,7 +103,7 @@ static void         execute_find            (const char     *pattern,
                                              WindowStuff    *stuff);
 
 static gboolean     output_activate         (WindowStuff    *stuff,
-                                             FileLinePair   *line_data);
+                                             int             line);
 static gboolean     command_exit            (MooLineView    *view,
                                              int             status,
                                              WindowStuff    *stuff);
@@ -563,9 +563,9 @@ process_grep_line (MooLineView *view,
         stuff->current_file = filename;
         view_line = moo_line_view_write_line (view, filename, -1,
                                               stuff->file_tag);
-        moo_line_view_set_line_data (view, view_line,
-                                     file_line_pair_new (filename, -1),
-                                     (GDestroyNotify) file_line_pair_free);
+        moo_line_view_set_data (view, view_line,
+                                file_line_pair_new (filename, -1),
+                                (GDestroyNotify) file_line_pair_free);
     }
     else
     {
@@ -604,9 +604,9 @@ process_grep_line (MooLineView *view,
     moo_line_view_write (view, p, -1, stuff->match_tag);
     moo_line_view_end_line (view);
 
-    moo_line_view_set_line_data (view, view_line,
-                                 file_line_pair_new (stuff->current_file, line_no),
-                                 (GDestroyNotify) file_line_pair_free);
+    moo_line_view_set_data (view, view_line,
+                            file_line_pair_new (stuff->current_file, line_no),
+                            (GDestroyNotify) file_line_pair_free);
     stuff->match_count++;
 
     g_free (number);
@@ -629,9 +629,9 @@ process_find_line (MooLineView *view,
     int view_line;
 
     view_line = moo_line_view_write_line (view, line, -1, stuff->match_tag);
-    moo_line_view_set_line_data (view, view_line,
-                                 file_line_pair_new (line, -1),
-                                 (GDestroyNotify) file_line_pair_free);
+    moo_line_view_set_data (view, view_line,
+                            file_line_pair_new (line, -1),
+                            (GDestroyNotify) file_line_pair_free);
     stuff->match_count++;
 
     return TRUE;
@@ -860,10 +860,13 @@ command_exit (MooLineView *view,
 
 static gboolean
 output_activate (WindowStuff    *stuff,
-                 FileLinePair   *line_data)
+                 int             line)
 {
     MooEditor *editor;
     MooEdit *doc;
+    FileLinePair *line_data;
+
+    line_data = moo_line_view_get_data (MOO_LINE_VIEW (stuff->output), line);
 
     if (!line_data)
         return FALSE;
