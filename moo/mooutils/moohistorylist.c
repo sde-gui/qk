@@ -451,6 +451,9 @@ moo_history_list_add_full (MooHistoryList *list,
         if (!old->builtin)
             _list_move_on_top (list, &iter);
 
+        list_save_recent (list);
+        g_signal_emit (list, signals[CHANGED], 0);
+
         moo_history_list_item_free (old);
         return;
     }
