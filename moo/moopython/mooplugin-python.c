@@ -393,7 +393,7 @@ hook_new (HookType    type,
           PyObject   *callback,
           PyObject   *data)
 {
-    int data_len, extra, i;
+    int data_len, extra = 0, i;
     Hook *hook = g_new0 (Hook, 1);
 
     hook->type = type;
