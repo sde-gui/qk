@@ -349,6 +349,7 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->enter_indents = TRUE;
     view->priv->ctrl_up_down_scrolls = TRUE;
     view->priv->ctrl_page_up_down_scrolls = TRUE;
+    view->priv->smart_home_end = TRUE;
 
     view->priv->check_brackets = TRUE;
 
@@ -1159,20 +1160,51 @@ draw_tab_at_iter (GtkTextView    *text_view,
 
 
 static void
-moo_text_view_draw_tab_markers (GtkTextView     *text_view,
-                                GdkEventExpose  *event,
-                                GtkTextIter     *start,
-                                GtkTextIter     *end)
+moo_text_view_draw_tab_markers (GtkTextView       *text_view,
+                                GdkEventExpose    *event,
+                                const GtkTextIter *start,
+                                const GtkTextIter *end)
 {
+    GtkTextIter iter = *start;
 
-
-    while (gtk_text_iter_compare (start, end) < 0)
+    while (gtk_text_iter_compare (&iter, end) < 0)
     {
-        if (gtk_text_iter_get_char (start) == '\t')
-            draw_tab_at_iter (text_view, event, start);
-        if (!gtk_text_iter_forward_char (start))
+        if (gtk_text_iter_get_char (&iter) == '\t')
+            draw_tab_at_iter (text_view, event, &iter);
+        if (!gtk_text_iter_forward_char (&iter))
             break;
     }
+}
+
+
+static void
+moo_text_view_draw_trailing_space (GtkTextView       *text_view,
+                                   GdkEventExpose    *event,
+                                   const GtkTextIter *start,
+                                   const GtkTextIter *end)
+{
+    GtkTextIter iter = *start;
+
+    do
+    {
+        if (!gtk_text_iter_ends_line (&iter))
+            gtk_text_iter_forward_to_line_end (&iter);
+
+        while (!gtk_text_iter_starts_line (&iter))
+        {
+            gunichar c;
+            gtk_text_iter_backward_char (&iter);
+            c = gtk_text_iter_get_char (&iter);
+
+            if (g_unichar_isspace (c))
+                draw_tab_at_iter (text_view, event, &iter);
+            else
+                break;
+        }
+
+        gtk_text_iter_forward_line (&iter);
+    }
+    while (gtk_text_iter_compare (&iter, end) < 0);
 }
 
 
@@ -1217,6 +1249,9 @@ moo_text_view_expose (GtkWidget      *widget,
 
     if (event->window == text_window && view->priv->show_tabs)
         moo_text_view_draw_tab_markers (text_view, event, &start, &end);
+
+    if (event->window == text_window && view->priv->show_trailing_space)
+        moo_text_view_draw_trailing_space (text_view, event, &start, &end);
 
     return handled;
 }
@@ -1382,4 +1417,49 @@ moo_text_view_apply_scheme (MooTextView        *view,
     moo_text_view_set_highlight_current_line (view, color_ptr != NULL);
 
     moo_text_buffer_apply_scheme (buffer, scheme);
+}
+
+
+void
+moo_text_view_strip_whitespace (MooTextView *view)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    buffer = get_buffer (view);
+    gtk_text_buffer_begin_user_action (buffer);
+
+    for (gtk_text_buffer_get_start_iter (buffer, &iter);
+         !gtk_text_iter_is_end (&iter);
+         gtk_text_iter_forward_line (&iter))
+    {
+        GtkTextIter end;
+
+        if (gtk_text_iter_ends_line (&iter))
+            continue;
+
+        gtk_text_iter_forward_to_line_end (&iter);
+        end = iter;
+
+        do
+        {
+            gunichar c;
+
+            gtk_text_iter_backward_char (&iter);
+            c = gtk_text_iter_get_char (&iter);
+
+            if (!g_unichar_isspace (c))
+            {
+                gtk_text_iter_forward_char (&iter);
+                break;
+            }
+        }
+        while (!gtk_text_iter_starts_line (&iter));
+
+        gtk_text_buffer_delete (buffer, &iter, &end);
+    }
+
+    gtk_text_buffer_end_user_action (buffer);
 }

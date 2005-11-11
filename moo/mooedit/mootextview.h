@@ -139,6 +139,8 @@ GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
 void         moo_text_view_set_lang                 (MooTextView        *view,
                                                      MooLang            *lang);
 
+void         moo_text_view_strip_whitespace         (MooTextView        *view);
+
 
 G_END_DECLS
 
