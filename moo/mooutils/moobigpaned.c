@@ -522,8 +522,9 @@ void        moo_big_paned_hide_pane         (MooBigPaned    *paned,
 }
 
 
-void        moo_big_paned_present_pane      (MooBigPaned    *paned,
-                                             GtkWidget      *widget)
+void
+moo_big_paned_present_pane (MooBigPaned    *paned,
+                            GtkWidget      *widget)
 {
     int i, num;
 
@@ -533,9 +534,12 @@ void        moo_big_paned_present_pane      (MooBigPaned    *paned,
     for (i = 0; i < 4; ++i)
     {
         num = moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget);
+
         if (num >= 0)
             return moo_paned_present_pane (MOO_PANED (paned->paned[i]), num);
     }
+
+    g_return_if_reached ();
 }
 
 
