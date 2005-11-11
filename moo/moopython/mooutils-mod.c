@@ -18,16 +18,37 @@
 #include "moopython/moo-pygtk.h"
 #include "moopython/mooutils-mod.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-python.h"
 
 
 static char *moo_utils_module_doc = (char*)"_moo_utils module.";
 
 #define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)
 
+
+static PyObject *pyobj_from_gval (const GValue *value)
+{
+    if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
+        return_RuntimeErr ("invalid value passed");
+    return moo_py_object_ref (g_value_get_boxed (value));
+}
+
+
+static int gval_from_pyobj (GValue *value, PyObject *obj)
+{
+    if (!G_VALUE_HOLDS (value, MOO_TYPE_PY_OBJECT))
+        return_RuntimeErrInt ("invalid value passed");
+    g_value_set_boxed (value, obj);
+    return 0;
+}
+
+
 gboolean
 _moo_utils_mod_init (void)
 {
     PyObject *mod;
+
+    pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT, pyobj_from_gval, gval_from_pyobj);
 
     mod = Py_InitModule3 ((char*) "_moo_utils", _moo_utils_functions, moo_utils_module_doc);
 
