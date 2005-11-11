@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
 <!DOCTYPE language SYSTEM "language.dtd"
 [
-	<!ENTITY funcname "[A-Za-z_:][A-Za-z0-9_:#&#37;@-]*">
-	<!ENTITY varname  "[A-Za-z_][A-Za-z0-9_]*">
-	<!ENTITY word     "[^|&amp;;()&lt;&gt;\s]+">	<!-- see man bash -->
-	<!ENTITY eos      "(?=($|\s))">			<!-- eol or space following -->
-	<!ENTITY noword   "(?![\w$+-])">		<!-- no word, $, + or - following -->
+  <!ENTITY funcname "[A-Za-z_:][A-Za-z0-9_:#&#37;@-]*">
+  <!ENTITY varname  "[A-Za-z_][A-Za-z0-9_]*">
+  <!ENTITY word     "[^|&amp;;()&lt;&gt;\s]+"> <!-- see man bash -->
+  <!ENTITY eos      "(?=($|\s))"> <!-- eol or space following -->
+  <!ENTITY noword   "(?![\w$+-])"> <!-- no word, $, + or - following -->
 ]>
 <language name="Bash" version="2.05" kateversion="2.4" section="Scripts"
           extensions="*.sh;*.bash;*.ebuild;*.eclass" mimetypes="application/x-shellscript"

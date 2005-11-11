@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
 <!DOCTYPE scheme SYSTEM "scheme.dtd">
 <scheme name="Garnacho" background="DarkSlateGray" foreground="Wheat"
         selected-background="darkolivegreen4" current-line="DarkSlateGray">

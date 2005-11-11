@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
 <!DOCTYPE language SYSTEM "language.dtd">
 <language name="C" version="1.22" kateversion="2.4" section="Sources"
           extensions="*.c;*.C;*.h" mimetypes="text/x-csrc;text/x-c++src;text/x-chdr"
@@ -49,6 +49,7 @@
 
     <context style="Normal Text" eol-context="#stay" name="Normal">
       <Whitespace/>
+      <Regex style="Preprocessor" context="Outscoped" pattern="#\s*if\s+0" beginRegion="Outscoped" first-non-blank-only="true"/>
       <Char style="Preprocessor" context="Preprocessor" char="#" first-non-blank-only="true"/>
       <String style="Region Marker" context="Region Marker" string="//BEGIN" beginRegion="Region1" first-non-blank-only="true"/>
       <String style="Region Marker" context="Region Marker" string="//END" endRegion="Region1" first-non-blank-only="true"/>
@@ -77,7 +78,6 @@
       <!--             <IncludeRules from="##Doxygen"/> -->
       <TwoChars style="Comment" context="Commentar 1" char1="/" char2="/"/>
       <TwoChars style="Comment" context="Commentar 2" char1="/" char2="*" beginRegion="Comment"/>
-      <Regex style="Preprocessor" context="Outscoped" pattern="#\s*if\s+0" beginRegion="Outscoped" first-non-blank-only="true"/>
       <AnyChar style="Symbol" context="#stay" chars=":!%&amp;()+,-/.*&lt;=&gt;?[]|~^&#59;"/>
     </context>
     <context style="String" eol-context="#pop" name="String">

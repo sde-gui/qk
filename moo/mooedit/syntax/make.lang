@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2 -->
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
 <!DOCTYPE language SYSTEM "language.dtd">
 <!-- Makefile syntaxfile v0.9 by Per Wigren <wigren@home.se> -->
 <!-- Modified by Joseph Wenninger <jowenn@kde.org> -->
-<language name="Makefile" version="1.06" kateversion="2.4" section="Other"
-          extensions="*makefile*;*Makefile*" mimetypes="text/x-makefile" author="Per Wigren (wigren@home.se)" license="">
+<language name="Makefile" version="1.06" kateversion="2.4" section="Others"
+          extensions="*makefile*;*Makefile*" mimetypes="text/x-makefile"
+          author="Per Wigren (wigren@home.se)" license="">
 
   <syntax>
     <keyword-list name = "keywords">
@@ -12,6 +13,7 @@
       <keyword>else</keyword>
       <keyword>endef</keyword>
       <keyword>endif</keyword>
+      <keyword>if</keyword>
       <keyword>ifdef</keyword>
       <keyword>ifeq</keyword>
       <keyword>ifndef</keyword>
@@ -27,7 +29,11 @@
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>
       <AnyChar style="Operator" context="#stay" chars="+*=%$():\\&#059;" />
       <Regex style="Operator" context="Commands" pattern="[@-]" first-non-blank-only="true"/>
-      <Regex style="Comment" context="#stay" pattern="(:^|[^\\])#.*$"/>
+      <Char style="Comment" context="Comment" include-into-next="true" char="#"/>
+    </context>
+
+    <context style="Comment" eol-context="#pop" name="Comment">
+      <IncludeRules from="##Misc##AlertRules"/>
     </context>
 
     <context style="String" eol-context="#pop" name="String">
