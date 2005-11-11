@@ -154,3 +154,32 @@ moo_string_slist_to_pyobject (GSList *list)
 {
     return slist_to_pyobject (list, string_to_pyobject);
 }
+
+
+PyObject*
+moo_py_object_ref (PyObject *obj)
+{
+    Py_XINCREF (obj);
+    return obj;
+}
+
+
+void
+moo_py_object_unref (PyObject *obj)
+{
+    Py_XDECREF (obj);
+}
+
+
+GType
+moo_py_object_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooPyObject",
+                                             (GBoxedCopyFunc) moo_py_object_ref,
+                                             (GBoxedFreeFunc) moo_py_object_unref);
+
+    return type;
+}

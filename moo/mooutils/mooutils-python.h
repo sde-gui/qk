@@ -19,15 +19,21 @@
 
 G_BEGIN_DECLS
 
+#define MOO_TYPE_PY_OBJECT (moo_py_object_get_type())
 
-PyObject    *moo_strv_to_pyobject           (char      **strv);
-int          moo_pyobject_to_strv           (PyObject   *obj,
-                                             char     ***dest);
+PyObject    *moo_py_object_ref              (PyObject       *obj);
+void         moo_py_object_unref            (PyObject       *obj);
+GType        moo_py_object_get_type         (void) G_GNUC_CONST;
 
-PyObject    *moo_object_slist_to_pyobject   (GSList     *list);
-PyObject    *moo_string_slist_to_pyobject   (GSList     *list);
 
-PyObject    *moo_gvalue_to_pyobject (const GValue *val);
+PyObject    *moo_strv_to_pyobject           (char          **strv);
+int          moo_pyobject_to_strv           (PyObject       *obj,
+                                             char         ***dest);
+
+PyObject    *moo_object_slist_to_pyobject   (GSList         *list);
+PyObject    *moo_string_slist_to_pyobject   (GSList         *list);
+
+PyObject    *moo_gvalue_to_pyobject         (const GValue   *val);
 
 
 #define return_None     G_STMT_START {Py_INCREF(Py_None); return Py_None;} G_STMT_END
