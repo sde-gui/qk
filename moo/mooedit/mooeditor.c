@@ -99,7 +99,9 @@ struct _MooEditorPrivate {
     gboolean         open_single;
     gboolean         allow_empty_window;
     gboolean         single_window;
+
     gboolean         save_backups;
+    gboolean         strip_whitespace;
 
     GType            window_type;
     GType            doc_type;
@@ -124,7 +126,8 @@ enum {
     PROP_OPEN_SINGLE_FILE_INSTANCE,
     PROP_ALLOW_EMPTY_WINDOW,
     PROP_SINGLE_WINDOW,
-    PROP_SAVE_BACKUPS
+    PROP_SAVE_BACKUPS,
+    PROP_STRIP_WHITESPACE
 };
 
 enum {
@@ -177,6 +180,14 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                      g_param_spec_boolean ("save-backups",
                                              "save-backups",
                                              "save-backups",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_STRIP_WHITESPACE,
+                                     g_param_spec_boolean ("strip-whitespace",
+                                             "strip-whitespace",
+                                             "strip-whitespace",
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -248,6 +259,11 @@ static void     moo_editor_set_property (GObject        *object,
             g_object_notify (object, "save-backups");
             break;
 
+        case PROP_STRIP_WHITESPACE:
+            editor->priv->strip_whitespace = g_value_get_boolean (value);
+            g_object_notify (object, "strip-whitespace");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -277,6 +293,10 @@ static void     moo_editor_get_property (GObject        *object,
 
         case PROP_SAVE_BACKUPS:
             g_value_set_boolean (value, editor->priv->save_backups);
+            break;
+
+        case PROP_STRIP_WHITESPACE:
+            g_value_set_boolean (value, editor->priv->strip_whitespace);
             break;
 
         default:
@@ -414,8 +434,9 @@ static void file_info_list_free (GSList *list)
 }
 
 
-void             moo_editor_set_app_name        (MooEditor      *editor,
-                                                 const char     *name)
+void
+moo_editor_set_app_name (MooEditor      *editor,
+                         const char     *name)
 {
     GSList *l;
 
@@ -730,7 +751,8 @@ moo_editor_add_doc (MooEditor      *editor,
 }
 
 
-MooEditWindow   *moo_editor_new_window      (MooEditor      *editor)
+MooEditWindow*
+moo_editor_new_window (MooEditor *editor)
 {
     MooEditWindow *window;
     MooEdit *doc;
@@ -752,14 +774,23 @@ MooEditWindow   *moo_editor_new_window      (MooEditor      *editor)
 }
 
 
-MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
-                                             MooEditWindow  *window)
+MooEdit*
+moo_editor_new_doc (MooEditor      *editor,
+                    MooEditWindow  *window)
 {
     MooEdit *doc;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-    g_return_val_if_fail (window_list_find (editor, window) != NULL, NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!window || window_list_find (editor, window) != NULL, NULL);
+
+    if (!window)
+        window = get_top_window (editor);
+
+    if (!window)
+        window = moo_editor_new_window (editor);
+
+    g_return_val_if_fail (window != NULL, NULL);
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
     _moo_edit_window_insert_doc (window, doc, -1);
@@ -841,7 +872,7 @@ moo_editor_open (MooEditor      *editor,
         }
 
         /* XXX open_single */
-        if (!moo_edit_load (loader, doc, info->filename, info->encoding, &error))
+        if (!moo_edit_loader_load (loader, doc, info->filename, info->encoding, &error))
         {
             moo_edit_open_error_dialog (parent, error ? error->message : NULL);
             if (error)
@@ -1310,7 +1341,7 @@ _moo_editor_reload (MooEditor      *editor,
     cursor_line = gtk_text_iter_get_line (&iter);
     cursor_offset = gtk_text_iter_get_line_offset (&iter);
 
-    if (!moo_edit_reload (loader, doc, &error))
+    if (!moo_edit_loader_reload (loader, doc, &error))
     {
         moo_edit_reload_error_dialog (GTK_WIDGET (doc),
                                       error ? error->message : NULL);
@@ -1334,6 +1365,33 @@ moo_editor_get_save_flags (MooEditor *editor)
         flags |= MOO_EDIT_SAVE_BACKUP;
 
     return flags;
+}
+
+
+static gboolean
+do_save (MooEditor    *editor,
+         MooEditSaver *saver,
+         MooEdit      *doc,
+         const char   *filename,
+         const char   *encoding,
+         GError      **error)
+{
+    gboolean strip_whitespace = FALSE;
+    const char *var;
+
+    var = moo_edit_get_var (doc, MOO_EDIT_VAR_STRIP);
+
+    if (var) /* XXX */
+        strip_whitespace = !g_ascii_strcasecmp (var, "true") ||
+                !g_ascii_strcasecmp (var, "on");
+    else
+        strip_whitespace = editor->priv->strip_whitespace;
+
+    if (strip_whitespace)
+        moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
+
+    return moo_edit_saver_save (saver, doc, filename, encoding,
+                                moo_editor_get_save_flags (editor), error);
 }
 
 
@@ -1366,8 +1424,7 @@ _moo_editor_save (MooEditor      *editor,
          !moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!moo_edit_save (saver, doc, filename, encoding,
-                        moo_editor_get_save_flags (editor), &error))
+    if (!do_save (editor, saver, doc, filename, encoding, &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
@@ -1419,8 +1476,7 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new (filename, encoding);
     }
 
-    if (!moo_edit_save (saver, doc, file_info->filename, file_info->encoding,
-                        moo_editor_get_save_flags (editor), &error))
+    if (!do_save (editor, saver, doc, file_info->filename, file_info->encoding, &error))
     {
         moo_edit_save_error_dialog (GTK_WIDGET (doc),
                                     error ? error->message : NULL);
@@ -1458,7 +1514,7 @@ moo_editor_save_copy (MooEditor      *editor,
     saver = get_saver (editor, doc);
     g_return_val_if_fail (saver != NULL, FALSE);
 
-    return moo_edit_save_copy (saver, doc, filename, encoding, error);
+    return moo_edit_saver_save_copy (saver, doc, filename, encoding, error);
 }
 
 
