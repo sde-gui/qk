@@ -27,24 +27,17 @@ struct _MooLineViewPrivate {
 };
 
 typedef struct {
+    guint ref_count;
     gpointer data;
     GDestroyNotify free_func;
 } LineData;
 
 static LineData *line_data_new              (gpointer        data,
                                              GDestroyNotify  free_func);
-static void      line_data_free             (LineData       *line_data);
+static LineData *line_data_ref              (LineData       *line_data);
+static void      line_data_unref            (LineData       *line_data);
 
 static void      moo_line_view_finalize     (GObject        *object);
-
-// static void      moo_line_view_set_property (GObject        *object,
-//                                              guint           prop_id,
-//                                              const GValue   *value,
-//                                              GParamSpec     *pspec);
-// static void      moo_line_view_get_property (GObject        *object,
-//                                              guint           prop_id,
-//                                              GValue         *value,
-//                                              GParamSpec     *pspec);
 
 static void      moo_line_view_realize          (GtkWidget      *widget);
 static gboolean  moo_line_view_button_release   (GtkWidget      *widget,
@@ -107,9 +100,9 @@ static void moo_line_view_class_init (MooLineViewClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooLineViewClass, activate),
                           NULL, NULL,
-                          _moo_marshal_VOID__POINTER_INT,
-                          G_TYPE_NONE, 2,
-                          G_TYPE_POINTER, G_TYPE_INT);
+                          _moo_marshal_VOID__INT,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_INT);
 
     signals[ACTIVATE_CURRENT_LINE] =
             moo_signal_new_cb ("activate-current-line",
@@ -203,10 +196,19 @@ line_data_new (gpointer        data,
 }
 
 
-static void
-line_data_free (LineData *line_data)
+static LineData*
+line_data_ref (LineData *line_data)
 {
-    if (line_data)
+    g_return_val_if_fail (line_data != NULL, NULL);
+    line_data->ref_count++;
+    return line_data;
+}
+
+
+static void
+line_data_unref (LineData *line_data)
+{
+    if (line_data && !(--line_data->ref_count))
     {
         if (line_data->data && line_data->free_func)
             line_data->free_func (line_data->data);
@@ -215,13 +217,23 @@ line_data_free (LineData *line_data)
 }
 
 
+static void
+free_g_value (GValue *value)
+{
+    if (G_IS_VALUE (value))
+    {
+        g_value_unset (value);
+        g_free (value);
+    }
+}
+
 static GHashTable*
 get_hash_table (MooLineView *view)
 {
     if (!view->priv->line_data)
         view->priv->line_data =
                 g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                       NULL, (GDestroyNotify) line_data_free);
+                                       NULL, (GDestroyNotify) free_g_value);
 
     return view->priv->line_data;
 }
@@ -259,9 +271,7 @@ static void
 activate (MooLineView *view,
           int          line)
 {
-    g_signal_emit (view, signals[ACTIVATE], 0,
-                   moo_line_view_get_line_data (view, line),
-                   line);
+    g_signal_emit (view, signals[ACTIVATE], 0, line);
 }
 
 
@@ -391,45 +401,64 @@ moo_line_view_realize (GtkWidget *widget)
 
 /* XXX check line */
 void
-moo_line_view_set_line_data (MooLineView    *view,
-                             int             line,
-                             gpointer        data,
-                             GDestroyNotify  free_func)
+moo_line_view_set_data (MooLineView    *view,
+                        int             line,
+                        gpointer        data,
+                        GDestroyNotify  free_func)
 {
     g_return_if_fail (MOO_IS_LINE_VIEW (view));
     g_return_if_fail (line >= 0);
 
     if (data)
     {
-        GHashTable *hash = get_hash_table (view);
-        g_hash_table_insert (hash, GINT_TO_POINTER (line),
-                             line_data_new (data, free_func));
+        GValue val;
+        LineData *line_data;
+
+        val.g_type = 0;
+        g_value_init (&val, MOO_TYPE_LINE_VIEW_DATA);
+        line_data = line_data_new (data, free_func);
+        g_value_set_boxed (&val, line_data);
+
+        moo_line_view_set_line_data (view, line, &val);
+
+        line_data_unref (line_data);
+        g_value_unset (&val);
     }
-    else if (view->priv->line_data)
+    else
     {
-        g_hash_table_remove (view->priv->line_data, GINT_TO_POINTER (line));
+        moo_line_view_set_line_data (view, line, NULL);
     }
 }
 
 
 gpointer
-moo_line_view_get_line_data (MooLineView    *view,
-                             int             line)
+moo_line_view_get_data (MooLineView    *view,
+                        int             line)
 {
+    GValue val;
+    gpointer result = NULL;
+
     g_return_val_if_fail (MOO_IS_LINE_VIEW (view), NULL);
     g_return_val_if_fail (line >= 0, NULL);
 
-    if (!view->priv->line_data)
-    {
+    val.g_type = 0;
+
+    if (!moo_line_view_get_line_data (view, line, &val))
         return NULL;
+
+    if (G_VALUE_HOLDS (&val, MOO_TYPE_LINE_VIEW_DATA))
+    {
+        LineData *line_data = g_value_get_boxed (&val);
+        result = line_data->data;
     }
     else
     {
-        LineData *line_data =
-                g_hash_table_lookup (view->priv->line_data,
-                                     GINT_TO_POINTER (line));
-        return line_data ? line_data->data : NULL;
+        g_warning ("%s: uknown data type", G_STRLOC);
+        result = NULL;
     }
+
+    g_value_unset (&val);
+    return result;
 }
 
 
@@ -652,4 +681,75 @@ moo_line_view_populate_popup (GtkTextView *text_view,
     gtk_widget_set_sensitive (item, has_text);
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+}
+
+
+GType
+moo_line_view_data_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooLineViewData",
+                                             (GBoxedCopyFunc) line_data_ref,
+                                             (GBoxedFreeFunc) line_data_unref);
+
+    return type;
+}
+
+
+void
+moo_line_view_set_line_data (MooLineView    *view,
+                             int             line,
+                             const GValue   *data)
+{
+    GHashTable *hash;
+
+    g_return_if_fail (MOO_IS_LINE_VIEW (view));
+    g_return_if_fail (line >= 0);
+    g_return_if_fail (!data || G_IS_VALUE (data));
+
+    hash = get_hash_table (view);
+
+    if (data)
+    {
+        GValue *val = g_new0 (GValue, 1);
+        g_value_init (val, G_VALUE_TYPE (data));
+        g_value_copy (data, val);
+        g_hash_table_insert (hash, GINT_TO_POINTER (line), val);
+    }
+    else
+    {
+        g_hash_table_remove (hash, GINT_TO_POINTER (line));
+    }
+}
+
+
+gboolean
+moo_line_view_get_line_data (MooLineView    *view,
+                             int             line,
+                             GValue         *dest)
+{
+    GValue *val;
+
+    g_return_val_if_fail (MOO_IS_LINE_VIEW (view), FALSE);
+    g_return_val_if_fail (line >= 0, FALSE);
+    g_return_val_if_fail (!G_IS_VALUE (dest), FALSE);
+
+    if (!view->priv->line_data)
+        return FALSE;
+
+    val = g_hash_table_lookup (view->priv->line_data,
+                               GINT_TO_POINTER (line));
+
+    if (!val)
+        return FALSE;
+
+    if (dest)
+    {
+        g_value_init (dest, G_VALUE_TYPE (val));
+        g_value_copy (val, dest);
+    }
+
+    return TRUE;
 }

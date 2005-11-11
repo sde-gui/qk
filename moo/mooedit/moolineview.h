@@ -20,6 +20,7 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_LINE_VIEW_DATA         (moo_line_view_data_get_type ())
 #define MOO_TYPE_LINE_VIEW              (moo_line_view_get_type ())
 #define MOO_LINE_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LINE_VIEW, MooLineView))
 #define MOO_LINE_VIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_LINE_VIEW, MooLineViewClass))
@@ -43,21 +44,27 @@ struct _MooLineViewClass
     MooTextViewClass parent_class;
 
     void     (*activate) (MooLineView *view,
-                          gpointer     line_data,
                           int          line);
 };
 
 
 GType       moo_line_view_get_type      (void) G_GNUC_CONST;
+GType       moo_line_view_data_get_type (void) G_GNUC_CONST;
 
 GtkWidget  *moo_line_view_new           (void);
 
-void        moo_line_view_set_line_data (MooLineView    *view,
+void        moo_line_view_set_data      (MooLineView    *view,
                                          int             line,
                                          gpointer        data,
-                                         GDestroyNotify  free_func);
-gpointer    moo_line_view_get_line_data (MooLineView    *view,
+                                         GDestroyNotify  destroy);
+void        moo_line_view_set_line_data (MooLineView    *view,
+                                         int             line,
+                                         const GValue   *data);
+gpointer    moo_line_view_get_data      (MooLineView    *view,
                                          int             line);
+gboolean    moo_line_view_get_line_data (MooLineView    *view,
+                                         int             line,
+                                         GValue         *dest);
 
 GtkTextTag *moo_line_view_create_tag    (MooLineView    *view,
                                          const char     *tag_name,
