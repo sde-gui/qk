@@ -50,11 +50,11 @@
       <keyword>_Bool</keyword>
     </keyword-list>
     <keyword-list name="CommonMacro">
-      <keyword>NULL</item>
-      <keyword>TRUE</item>
-      <keyword>FALSE</item>
-      <keyword>MAX</item>
-      <keyword>MIN</item>
+      <keyword>NULL</keyword>
+      <keyword>TRUE</keyword>
+      <keyword>FALSE</keyword>
+      <keyword>MAX</keyword>
+      <keyword>MIN</keyword>
       <keyword>__LINE__</keyword>
       <keyword>__DATA__</keyword>
       <keyword>__FILE__</keyword>
@@ -156,7 +156,7 @@
     <style name="Preprocessor" default-style="Others"/>
     <style name="Prep. Lib"    default-style="Others"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
     <style name="Region Marker" default-style="RegionMarker"/>
-    <style name="Common Macro" default-style="Keyword" color="#0095ff" bold="1" italic="0"/>
+    <style name="Common Macro" default-style="Keyword" foreground="#0095ff" bold="1" italic="0"/>
     <style name="Function"     default-style="Function"/>
   </styles>
 
