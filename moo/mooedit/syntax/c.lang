@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
-<!DOCTYPE language SYSTEM "language.dtd">
+<!DOCTYPE language SYSTEM "language.dtd"
+[
+  <!ENTITY func_pattern "\b[_\w][_\w\d]*(?=[\s]*[(])">
+]>
 <language name="C" version="1.22" kateversion="2.4" section="Sources"
           extensions="*.c;*.C;*.h" mimetypes="text/x-csrc;text/x-c++src;text/x-chdr"
           priority="5">
@@ -46,6 +49,19 @@
       <keyword>_Complex</keyword>
       <keyword>_Bool</keyword>
     </keyword-list>
+    <keyword-list name="CommonMacro">
+      <keyword>NULL</item>
+      <keyword>TRUE</item>
+      <keyword>FALSE</item>
+      <keyword>MAX</item>
+      <keyword>MIN</item>
+      <keyword>__LINE__</keyword>
+      <keyword>__DATA__</keyword>
+      <keyword>__FILE__</keyword>
+      <keyword>__func__</keyword>
+      <keyword>__TIME__</keyword>
+      <keyword>__STDC__</keyword>
+    </keyword-list>
 
     <context style="Normal Text" eol-context="#stay" name="Normal">
       <Whitespace/>
@@ -55,6 +71,8 @@
       <String style="Region Marker" context="Region Marker" string="//END" endRegion="Region1" first-non-blank-only="true"/>
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
       <Keyword style="Data Type" context="#stay" keyword="types"/>
+      <Keyword keyword="CommonMacro" style="Common Macro" context="#stay"/>
+      <Regex pattern="&func_pattern;" style="Function"/>
       <Identifier/>
       <Char style="Symbol" context="#stay" char="{" beginRegion="Brace1"/>
       <Char style="Symbol" context="#stay" char="}" endRegion="Brace1"/>
@@ -138,6 +156,8 @@
     <style name="Preprocessor" default-style="Others"/>
     <style name="Prep. Lib"    default-style="Others"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
     <style name="Region Marker" default-style="RegionMarker"/>
+    <style name="Common Macro" default-style="Keyword" color="#0095ff" bold="1" italic="0"/>
+    <style name="Function"     default-style="Function"/>
   </styles>
 
   <general>
