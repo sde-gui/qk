@@ -483,11 +483,12 @@ moo_rule_regex_new (const char         *pattern,
     regex = egg_regex_new (pattern, regex_compile_options,
                            regex_match_options, &error);
 
-    if (!regex)
+    if (error)
     {
         g_warning ("could not compile pattern '%s': %s",
                    pattern, error->message);
         g_error_free (error);
+        egg_regex_unref (regex);
         return NULL;
     }
 

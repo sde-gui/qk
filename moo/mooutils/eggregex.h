@@ -109,7 +109,8 @@ EggRegex  *egg_regex_new          (const gchar           *pattern,
 				   GError               **error);
 void       egg_regex_optimize     (EggRegex              *regex,
 				   GError               **error);
-void       egg_regex_ref          (EggRegex              *regex);
+/* ref() and unref() accept NULL */
+EggRegex  *egg_regex_ref          (EggRegex              *regex);
 void       egg_regex_unref        (EggRegex              *regex);
 void       egg_regex_free         (EggRegex              *regex);
 /* FIXME */
@@ -169,8 +170,12 @@ gchar *egg_regex_eval_replacement (EggRegex              *regex,
 				   const gchar           *string,
 				   const gchar           *replacement,
 				   GError               **error);
-gboolean egg_regex_check_replacement (const gchar        *replacement,
-				   GError               **error);
+gchar *egg_regex_try_eval_replacement (EggRegex          *regex,
+                                       const gchar       *replacement,
+                                       GError           **error);
+gboolean egg_regex_check_replacement (const gchar *replacement,
+                                      gboolean    *has_references,
+                                      GError     **error);
 
 
 G_END_DECLS

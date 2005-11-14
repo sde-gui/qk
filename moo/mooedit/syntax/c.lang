@@ -88,11 +88,11 @@
     <context style="Region Marker" eol-context="#pop" name="Region Marker">
     </context>
     <context style="Comment" eol-context="#pop" name="Commentar 1">
-      <IncludeRules from="##Misc##AlertRules"/>
+      <IncludeRules from="##Misc##CommonCommentRules"/>
     </context>
     <context style="Comment" eol-context="#stay" name="Commentar 2">
       <TwoChars style="Comment" context="#pop" char1="*" char2="/" endRegion="Comment"/>
-      <IncludeRules from="##Misc##AlertRules"/>
+      <IncludeRules from="##Misc##CommonCommentRules"/>
     </context>
     <context style="Preprocessor" eol-context="#pop" name="Preprocessor">
       <LineContinue style="Preprocessor" context="#stay"/>
@@ -111,7 +111,7 @@
     </context>
     <context style="Comment" eol-context="#stay" name="Outscoped" >
       <TwoChars style="Comment" context="Commentar 2" char1="/" char2="*" beginRegion="Comment"/>
-      <IncludeRules from="##Misc##AlertRules"/>
+      <IncludeRules from="##Misc##CommonCommentRules"/>
       <Regex style="Comment" context="Outscoped intern" pattern="#\s*if" beginRegion="Outscoped" first-non-blank-only="true"/>
       <Regex style="Preprocessor" context="#pop" pattern="#\s*(endif|else|elif)" endRegion="Outscoped" first-non-blank-only="true"/>
     </context>
@@ -137,7 +137,6 @@
     <style name="Symbol"       default-style="Normal"/>
     <style name="Preprocessor" default-style="Others"/>
     <style name="Prep. Lib"    default-style="Others"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
-    <style name="Alert"        default-style="Alert"/>
     <style name="Region Marker" default-style="RegionMarker"/>
   </styles>
 

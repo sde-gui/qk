@@ -64,14 +64,14 @@
       </child>
 
       <child>
-	<widget class="GtkVBox" id="vbox1">
+	<widget class="GtkVBox" id="vbox">
 	  <property name="border_width">3</property>
 	  <property name="visible">True</property>
 	  <property name="homogeneous">False</property>
 	  <property name="spacing">3</property>
 
 	  <child>
-	    <widget class="GtkFrame" id="frame1">
+	    <widget class="GtkFrame" id="find_frame">
 	      <property name="visible">True</property>
 	      <property name="label_xalign">0</property>
 	      <property name="label_yalign">0.5</property>
@@ -117,7 +117,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkEntry" id="text_to_find">
+			<widget class="GtkEntry" id="search_entry">
 			  <property name="visible">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>
@@ -141,7 +141,7 @@
 			  <property name="spacing">0</property>
 
 			  <child>
-			    <widget class="GtkCheckButton" id="regular_expression">
+			    <widget class="GtkCheckButton" id="regex">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
 			      <property name="label" translatable="yes">Regular expression  </property>
@@ -258,7 +258,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkEntry" id="replacement_text">
+			<widget class="GtkEntry" id="replace_entry">
 			  <property name="visible">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>
@@ -282,10 +282,10 @@
 			  <property name="spacing">0</property>
 
 			  <child>
-			    <widget class="GtkCheckButton" id="use_placeholders">
+			    <widget class="GtkCheckButton" id="repl_literal">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Use placeholders  </property>
+			      <property name="label" translatable="yes">Literal replacement</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">False</property>
@@ -338,7 +338,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkFrame" id="frame2">
+	    <widget class="GtkFrame" id="options_frame">
 	      <property name="visible">True</property>
 	      <property name="label_xalign">0</property>
 	      <property name="label_yalign">0.5</property>
@@ -366,7 +366,7 @@
 		      <property name="column_spacing">3</property>
 
 		      <child>
-			<widget class="GtkCheckButton" id="whole_words_only">
+			<widget class="GtkCheckButton" id="whole_words">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Whole words only</property>
@@ -410,7 +410,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkCheckButton" id="selected_text">
+			<widget class="GtkCheckButton" id="selected">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Selected text</property>
@@ -453,7 +453,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkCheckButton" id="find_backwards">
+			<widget class="GtkCheckButton" id="backwards">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Find backwards</property>
@@ -474,7 +474,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkCheckButton" id="dont_prompt_on_replace">
+			<widget class="GtkCheckButton" id="dont_prompt">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="label" translatable="yes">Don't prompt on replace</property>
@@ -570,7 +570,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">False</property>
-	      <property name="response_id">3</property>
+	      <property name="response_id">2</property>
 	    </widget>
 	  </child>
 
@@ -583,7 +583,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">False</property>
-	      <property name="response_id">4</property>
+	      <property name="response_id">3</property>
 	    </widget>
 	  </child>
 
@@ -596,7 +596,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">False</property>
-	      <property name="response_id">2</property>
+	      <property name="response_id">1</property>
 	    </widget>
 	  </child>
 
@@ -609,7 +609,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">False</property>
-	      <property name="response_id">-6</property>
+	      <property name="response_id">0</property>
 	    </widget>
 	  </child>
 	</widget>

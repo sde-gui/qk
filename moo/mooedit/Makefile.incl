@@ -11,8 +11,8 @@ mooedit_srcdir = $(srcdir)/$(mooedit)
 mooedit_glade = $(mooedit)/glade
 
 moo_extra_dist +=                             \
-    $(mooedit_glade)/mooeditgotoline.glade    \
-    $(mooedit_glade)/mooeditfind.glade        \
+    $(mooedit_glade)/mootextgotoline.glade    \
+    $(mooedit_glade)/mootextfind.glade        \
     $(mooedit_glade)/mooeditprefs.glade       \
     $(mooedit_glade)/mooeditcolorsprefs.glade \
     $(mooedit_glade)/moopluginprefs.glade
@@ -86,7 +86,7 @@ mooedit_include_headers =                     \
     $(mooedit)/mooedit.h                      \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
-    $(mooedit)/mooeditsearch.h                \
+    $(mooedit)/mootextsearch.h                \
     $(mooedit)/mooeditwindow.h                \
     $(mooedit)/mooindenter.h                  \
     $(mooedit)/moolang.h                      \
@@ -106,8 +106,6 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mooeditcolorsprefs-glade.h     \
     $(mooedit)/mooeditdialogs.h               \
     $(mooedit)/mooeditfileops.h               \
-    $(mooedit)/mooeditfind-glade.h            \
-    $(mooedit)/mooeditgotoline-glade.h        \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/moohighlighter.h               \
     $(mooedit)/moolang-aux.h                  \
@@ -116,6 +114,9 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolang-strings.h              \
     $(mooedit)/moolinebuffer.h                \
     $(mooedit)/moopluginprefs-glade.h         \
+    $(mooedit)/mootextfind-glade.h            \
+    $(mooedit)/mootextfind.h                  \
+    $(mooedit)/mootextgotoline-glade.h        \
     $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextview-private.h
 
@@ -128,12 +129,12 @@ mooedit_sources =                             \
     $(mooedit)/mooedit.c                      \
     $(mooedit)/mooeditdialogs.c               \
     $(mooedit)/mooeditfileops.c               \
-    $(mooedit)/mooeditfind.c                  \
+    $(mooedit)/mootextfind.c                  \
     $(mooedit)/mooeditinput.c                 \
     $(mooedit)/mooeditor.c                    \
     $(mooedit)/mooeditprefs.c                 \
     $(mooedit)/mooeditprefspage.c             \
-    $(mooedit)/mooeditsearch.c                \
+    $(mooedit)/mootextsearch.c                \
     $(mooedit)/mooeditwindow.c                \
     $(mooedit)/moohighlighter.c               \
     $(mooedit)/mooindenter.c                  \
@@ -151,20 +152,20 @@ mooedit_sources =                             \
     $(mooedit)/mootextview.c
 
 mooedit_built_sources =                       \
-    $(mooedit)/mooeditgotoline-glade.h        \
-    $(mooedit)/mooeditfind-glade.h            \
+    $(mooedit)/mootextgotoline-glade.h        \
+    $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/moopluginprefs-glade.h         \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/mooeditcolorsprefs-glade.h
 
 
-$(mooedit)/mooeditgotoline-glade.h: $(mooedit_srcdir)/glade/mooeditgotoline.glade $(XML2H)
-	sh $(XML2H) MOO_EDIT_GOTO_LINE_GLADE_UI $(mooedit_srcdir)/glade/mooeditgotoline.glade \
-		> $(mooedit)/mooeditgotoline-glade.h
+$(mooedit)/mootextgotoline-glade.h: $(mooedit_srcdir)/glade/mootextgotoline.glade $(XML2H)
+	sh $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(mooedit_srcdir)/glade/mootextgotoline.glade \
+		> $(mooedit)/mootextgotoline-glade.h
 
-$(mooedit)/mooeditfind-glade.h: $(mooedit_srcdir)/glade/mooeditfind.glade $(XML2H)
-	sh $(XML2H) MOO_EDIT_FIND_GLADE_UI $(mooedit_srcdir)/glade/mooeditfind.glade \
-		> $(mooedit)/mooeditfind-glade.h
+$(mooedit)/mootextfind-glade.h: $(mooedit_srcdir)/glade/mootextfind.glade $(XML2H)
+	sh $(XML2H) MOO_TEXT_FIND_GLADE_UI $(mooedit_srcdir)/glade/mootextfind.glade \
+		> $(mooedit)/mootextfind-glade.h
 
 $(mooedit)/mooeditprefs-glade.h: $(mooedit_srcdir)/glade/mooeditprefs.glade $(XML2H)
 	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditprefs.glade \

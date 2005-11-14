@@ -6,6 +6,15 @@
       <Keyword keyword="Alert" style="Alert"/>
     </context>
 
+    <context name="LinkRules">
+      <Regex pattern="http://[^ ]*" style="Link"/>
+    </context>
+
+    <context name="CommonCommentRules">
+      <IncludeRules from="LinkRules"/>
+      <IncludeRules from="AlertRules"/>
+    </context>
+
     <context name="ShebangRules">
       <TwoChars char1="#" char2="!" bol-only="TRUE" first-line-only="TRUE" include-into-next="TRUE" context="Shebang" style="Shebang line"/>
     </context>
@@ -21,6 +30,7 @@
 
   <styles>
     <style name="Alert" default-style="Alert"/>
+    <style name="Link" underline="TRUE"/>
     <style name="Shebang line" default-style="Comment" bold="TRUE" italic="FALSE"/>
   </styles>
 </language>

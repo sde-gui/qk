@@ -70,6 +70,9 @@ void        moo_text_buffer_set_brackets                (MooTextBuffer      *buf
 void        moo_text_buffer_set_check_brackets          (MooTextBuffer      *buffer,
                                                          gboolean            check);
 
+void        moo_text_buffer_freeze                      (MooTextBuffer      *buffer);
+void        moo_text_buffer_thaw                        (MooTextBuffer      *buffer);
+
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);
 

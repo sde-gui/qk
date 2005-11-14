@@ -37,6 +37,9 @@ struct _MooTextBufferPrivate {
     MooBracketMatchType bracket_found;
 
     LineBuffer *line_buf;
+
+    int cursor_moved_frozen;
+    gboolean cursor_moved;
 };
 
 
@@ -67,9 +70,15 @@ static void     moo_text_buffer_apply_tag           (GtkTextBuffer      *buffer,
 static void     moo_text_buffer_delete_range        (GtkTextBuffer      *buffer,
                                                      GtkTextIter        *start,
                                                      GtkTextIter        *end);
+static void     moo_text_buffer_begin_user_action   (GtkTextBuffer      *buffer);
+static void     moo_text_buffer_end_user_action     (GtkTextBuffer      *buffer);
 
 static void     moo_text_buffer_queue_highlight     (MooTextBuffer      *buffer);
 
+static void     cursor_moved                        (MooTextBuffer      *buffer,
+                                                     const GtkTextIter  *iter);
+static void     freeze_cursor_moved                 (MooTextBuffer      *buffer);
+static void     thaw_cursor_moved                   (MooTextBuffer      *buffer);
 
 enum {
     CURSOR_MOVED,
@@ -108,6 +117,8 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     buffer_class->insert_text = moo_text_buffer_insert_text;
     buffer_class->delete_range = moo_text_buffer_delete_range;
     buffer_class->apply_tag = moo_text_buffer_apply_tag;
+    buffer_class->begin_user_action = moo_text_buffer_begin_user_action;
+    buffer_class->end_user_action = moo_text_buffer_end_user_action;
 
     klass->cursor_moved = moo_text_buffer_cursor_moved;
 
@@ -162,7 +173,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     signals[CURSOR_MOVED] =
             g_signal_new ("cursor-moved",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTextBufferClass, cursor_moved),
                           NULL, NULL,
                           _moo_marshal_VOID__BOXED,
@@ -210,6 +221,20 @@ moo_text_buffer_new (GtkTextTagTable *table)
 
 
 static void
+moo_text_buffer_begin_user_action (GtkTextBuffer *buffer)
+{
+    moo_text_buffer_freeze (MOO_TEXT_BUFFER (buffer));
+}
+
+
+static void
+moo_text_buffer_end_user_action (GtkTextBuffer *buffer)
+{
+    moo_text_buffer_thaw (MOO_TEXT_BUFFER (buffer));
+}
+
+
+static void
 moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
                           const GtkTextIter  *iter,
                           GtkTextMark        *mark)
@@ -242,7 +267,7 @@ moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
     }
 
     if (mark == insert)
-        g_signal_emit (buffer, signals[CURSOR_MOVED], 0, iter);
+        cursor_moved (buffer, iter);
 }
 
 
@@ -282,7 +307,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
 
     moo_text_buffer_queue_highlight (buffer);
 
-    g_signal_emit (buffer, signals[CURSOR_MOVED], 0, pos);
+    cursor_moved (buffer, pos);
 
     if (!buffer->priv->has_text)
     {
@@ -300,10 +325,16 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     int first_line, last_line;
 
-    gtk_text_buffer_remove_all_tags (text_buffer, start, end);
-
     first_line = gtk_text_iter_get_line (start);
     last_line = gtk_text_iter_get_line (end);
+
+#define MANY_LINES 1000
+    if (buffer->priv->lang && buffer->priv->do_highlight &&
+        last_line - first_line > MANY_LINES)
+    {
+        gtk_text_buffer_remove_all_tags (text_buffer, start, end);
+    }
+#undef MANY_LINES
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
 
@@ -315,7 +346,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     moo_text_buffer_queue_highlight (buffer);
 
-    g_signal_emit (buffer, signals[CURSOR_MOVED], 0, start);
+    cursor_moved (buffer, start);
 
     if (buffer->priv->has_text)
     {
@@ -551,11 +582,59 @@ moo_text_buffer_apply_scheme (MooTextBuffer      *buffer,
 }
 
 
+void
+moo_text_buffer_freeze (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    freeze_cursor_moved (buffer);
+}
+
+
+void
+moo_text_buffer_thaw (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    thaw_cursor_moved (buffer);
+}
+
+
 /*****************************************************************************/
 /* Matching brackets
  */
 
 #define FIND_BRACKETS_LIMIT 10000
+
+static void
+cursor_moved (MooTextBuffer      *buffer,
+              const GtkTextIter  *where)
+{
+    if (!buffer->priv->cursor_moved_frozen)
+        g_signal_emit (buffer, signals[CURSOR_MOVED], 0, where);
+    else
+        buffer->priv->cursor_moved = TRUE;
+}
+
+static void
+freeze_cursor_moved (MooTextBuffer *buffer)
+{
+    buffer->priv->cursor_moved_frozen++;
+}
+
+static void
+thaw_cursor_moved (MooTextBuffer *buffer)
+{
+    g_return_if_fail (buffer->priv->cursor_moved_frozen > 0);
+
+    if (!--buffer->priv->cursor_moved_frozen && buffer->priv->cursor_moved)
+    {
+        GtkTextIter iter;
+        GtkTextMark *insert = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (buffer));
+        gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (buffer), &iter, insert);
+        cursor_moved (buffer, &iter);
+        buffer->priv->cursor_moved = FALSE;
+    }
+}
+
 
 static void
 moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,

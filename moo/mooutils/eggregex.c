@@ -159,7 +159,7 @@ egg_regex_new (const gchar         *pattern,
 void
 egg_regex_unref (EggRegex *regex)
 {
-  if (--regex->ref_count)
+  if (!regex || --regex->ref_count)
     return;
 
   g_free (regex->pattern);
@@ -172,10 +172,12 @@ egg_regex_unref (EggRegex *regex)
   g_free (regex);
 }
 
-void
+EggRegex *
 egg_regex_ref (EggRegex *regex)
 {
-  ++regex->ref_count;
+  if (regex)
+    ++regex->ref_count;
+  return regex;
 }
 
 void
@@ -227,6 +229,8 @@ egg_regex_optimize (EggRegex  *regex,
 		  GError **error)
 {
   const gchar *errmsg;
+
+  g_return_if_fail (regex != NULL && regex->regex != NULL);
 
   regex->extra = _pcre_study (regex->regex, 0, &errmsg);
 
@@ -1115,9 +1119,15 @@ egg_regex_eval_replacement (EggRegex     *regex,
     GString *result;
     GList *list;
 
+    g_return_val_if_fail (replacement != NULL, NULL);
+
+    if (!*replacement)
+        return g_strdup ("");
+
     list = split_replacement (replacement, error);
 
-    if (!list) return NULL;
+    if (!list)
+        return NULL;
 
     result = g_string_new (NULL);
     interpolate_replacement (regex, string, result, list);
@@ -1131,19 +1141,107 @@ egg_regex_eval_replacement (EggRegex     *regex,
 /**
  * egg_regex_check_replacement:
  * @replacement: replacement string
+ * @has_references: location for information about references
  * @error: location to store error
  */
 gboolean
-egg_regex_check_replacement (const gchar           *replacement,
-			     GError               **error)
+egg_regex_check_replacement (const gchar *replacement,
+                             gboolean    *has_references,
+                             GError     **error)
 {
-    GList *list;
+    GList *list, *l;
+    GError *tmp = NULL;
 
-    list = split_replacement (replacement, error);
+    list = split_replacement (replacement, &tmp);
 
-    if (!list) return FALSE;
+    if (tmp)
+    {
+        g_propagate_error (error, tmp);
+        return FALSE;
+    }
+
+    if (has_references)
+    {
+        *has_references = FALSE;
+
+        for (l = list; l != NULL; l = l->next)
+        {
+            InterpolationData *data = l->data;
+
+            if (data->type == REPL_TYPE_SYMBOLIC_REFERENCE ||
+                data->type == REPL_TYPE_NUMERIC_REFERENCE)
+            {
+                *has_references = TRUE;
+                break;
+            }
+        }
+    }
 
     g_list_foreach (list, (GFunc)free_interpolation_data, NULL);
     g_list_free (list);
     return TRUE;
+}
+
+
+gchar*
+egg_regex_try_eval_replacement (EggRegex          *regex,
+                                const gchar       *replacement,
+                                GError           **error)
+{
+    GList *list, *l;
+    GError *tmp = NULL;
+    GString *string;
+    gboolean result = TRUE;
+    InterpolationData *idata;
+
+    g_return_val_if_fail (regex != NULL, NULL);
+    g_return_val_if_fail (replacement != NULL, NULL);
+
+    if (!*replacement)
+        return g_strdup ("");
+
+    list = split_replacement (replacement, &tmp);
+
+    if (tmp)
+    {
+        g_propagate_error (error, tmp);
+        return NULL;
+    }
+
+    if (!list)
+        return g_strdup ("");
+
+    string = g_string_new (NULL);
+
+    for (l = list; l && result; l = l->next)
+    {
+        idata = l->data;
+
+        switch (idata->type)
+        {
+            case REPL_TYPE_STRING:
+                g_string_append (string, idata->text);
+                break;
+            case REPL_TYPE_CHARACTER:
+                g_string_append_c (string, idata->c);
+                break;
+            case REPL_TYPE_NUMERIC_REFERENCE:
+            case REPL_TYPE_SYMBOLIC_REFERENCE:
+                result = FALSE;
+                break;
+        }
+    }
+
+    g_list_foreach (list, (GFunc) free_interpolation_data, NULL);
+    g_list_free (list);
+
+    if (result)
+    {
+        return g_string_free (string, FALSE);
+    }
+    else
+    {
+        g_string_free (string, TRUE);
+        return NULL;
+    }
 }

@@ -16,10 +16,11 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
-#include "mooedit/mooeditfind-glade.h"
+#include "mooedit/mootextfind-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/eggregex.h"
 #include <gtk/gtk.h>
 
 
@@ -576,24 +577,38 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 /* Search dialogs
  */
 
+static GtkWindow *
+get_parent_window (GtkWidget *widget)
+{
+    if (widget)
+    {
+        widget = gtk_widget_get_toplevel (widget);
+
+        if (GTK_WIDGET_TOPLEVEL (widget))
+            return GTK_WINDOW (widget);
+    }
+
+    return NULL;
+}
+
+
 void
-moo_text_nothing_found_dialog (MooTextView    *view,
+moo_text_nothing_found_dialog (GtkWidget      *parent,
                                const char     *text,
                                gboolean        regex)
 {
-    GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view) && text != NULL);
+    g_return_if_fail (text != NULL);
 
     if (regex)
         msg_text = g_strdup_printf ("Search pattern '%s' not found!", text);
     else
         msg_text = g_strdup_printf ("Search string '%s' not found!", text);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
+    dialog = gtk_message_dialog_new (get_parent_window (parent),
+                                     GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
@@ -608,15 +623,12 @@ moo_text_nothing_found_dialog (MooTextView    *view,
 
 
 gboolean
-moo_text_search_from_beginning_dialog (MooTextView    *view,
-                                       gboolean        backwards)
+moo_text_search_from_start_dialog (GtkWidget *widget,
+                                   gboolean   backwards)
 {
-    GtkWindow *parent_window;
     GtkWidget *dialog;
     int response;
     const char *msg;
-
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
     if (backwards)
         msg = "Beginning of document reached.\n"
@@ -625,8 +637,7 @@ moo_text_search_from_beginning_dialog (MooTextView    *view,
         msg = "End of document reached.\n"
               "Continue from the beginning?";
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
+    dialog = gtk_message_dialog_new (get_parent_window (widget), GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
                                      msg);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
@@ -649,31 +660,34 @@ moo_text_search_from_beginning_dialog (MooTextView    *view,
 
 
 void
-moo_text_regex_error_dialog (MooTextView *view,
-                             GError      *err)
+moo_text_regex_error_dialog (GtkWidget  *parent,
+                             GError     *error)
 {
-    GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text = NULL;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    if (err) {
-        if (err->domain != EGG_REGEX_ERROR)
+    if (error)
+    {
+        if (error->domain != EGG_REGEX_ERROR)
+        {
             g_warning ("%s: unknown error domain", G_STRLOC);
-        else if (err->code != EGG_REGEX_ERROR_COMPILE &&
-                 err->code != EGG_REGEX_ERROR_OPTIMIZE &&
-                 err->code != EGG_REGEX_ERROR_REPLACE)
-                    g_warning ("%s: unknown error code", G_STRLOC);
+        }
+        else if (error->code != EGG_REGEX_ERROR_COMPILE &&
+                 error->code != EGG_REGEX_ERROR_OPTIMIZE &&
+                 error->code != EGG_REGEX_ERROR_REPLACE)
+        {
+            g_warning ("%s: unknown error code", G_STRLOC);
+        }
 
-        msg_text = g_strdup (err->message);
+        msg_text = g_strdup (error->message);
+    }
+    else
+    {
+        msg_text = g_strdup_printf ("Invalid regular expression");
     }
 
-    if (!msg_text)
-        msg_text = g_strdup_printf ("Invalid regular expression");
-
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
+    dialog = gtk_message_dialog_new (get_parent_window (parent),
+                                     GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_ERROR, GTK_BUTTONS_NONE,
                                      msg_text);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
@@ -688,14 +702,11 @@ moo_text_regex_error_dialog (MooTextView *view,
 
 
 void
-moo_text_replaced_n_dialog (MooTextView *view,
-                            guint        n)
+moo_text_replaced_n_dialog (GtkWidget *parent,
+                            guint      n)
 {
-    GtkWindow *parent_window;
     GtkWidget *dialog;
     char *msg_text;
-
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
     if (!n)
         msg_text = g_strdup_printf ("No replacement made");
@@ -704,8 +715,8 @@ moo_text_replaced_n_dialog (MooTextView *view,
     else
         msg_text = g_strdup_printf ("%d replacements made", n);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-    dialog = gtk_message_dialog_new (parent_window, GTK_DIALOG_MODAL,
+    dialog = gtk_message_dialog_new (get_parent_window (parent),
+                                     GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
@@ -720,22 +731,17 @@ moo_text_replaced_n_dialog (MooTextView *view,
 
 
 GtkWidget*
-moo_text_prompt_on_replace_dialog (MooTextView *view)
+moo_text_prompt_on_replace_dialog (GtkWidget *parent)
 {
     GtkWidget *dialog;
-    GtkWindow *parent_window;
     MooGladeXML *xml;
 
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
-
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_FIND_GLADE_UI, -1,
+    xml = moo_glade_xml_new_from_buf (MOO_TEXT_FIND_GLADE_UI, -1,
                                       "prompt_on_replace_dialog", NULL);
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     moo_glade_xml_unref (xml);
 
-    parent_window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
-
-    gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), get_parent_window (parent));
 
     return dialog;
 }

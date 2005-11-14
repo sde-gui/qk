@@ -149,14 +149,25 @@
   )
 )
 
-(define-flags TextSearchOptions
+(define-flags TextSearchFlags
   (in-module "Moo")
-  (c-name "MooTextSearchOptions")
-  (gtype-id "MOO_TYPE_TEXT_SEARCH_OPTIONS")
+  (c-name "MooTextSearchFlags")
+  (gtype-id "MOO_TYPE_TEXT_SEARCH_FLAGS")
   (values
-    '("backwards" "MOO_TEXT_SEARCH_BACKWARDS")
-    '("case-insensitive" "MOO_TEXT_SEARCH_CASE_INSENSITIVE")
+    '("caseless" "MOO_TEXT_SEARCH_CASELESS")
     '("regex" "MOO_TEXT_SEARCH_REGEX")
+  )
+)
+
+(define-flags TextReplaceResponse
+  (in-module "Moo")
+  (c-name "MooTextReplaceResponse")
+  (gtype-id "MOO_TYPE_TEXT_REPLACE_RESPONSE")
+  (values
+    '("stop" "MOO_TEXT_REPLACE_STOP")
+    '("skip" "MOO_TEXT_REPLACE_SKIP")
+    '("do-replace" "MOO_TEXT_REPLACE_DO_REPLACE")
+    '("all" "MOO_TEXT_REPLACE_ALL")
   )
 )
 
@@ -415,80 +426,6 @@
   (return-type "const-char*")
   (parameters
     '("const-char*" "setting_name")
-  )
-)
-
-
-
-;; From mooeditsearch.h
-
-(define-function moo_text_search
-  (c-name "moo_text_search")
-  (return-type "gboolean")
-  (parameters
-    '("const-GtkTextIter*" "start")
-    '("const-GtkTextIter*" "limit")
-    '("const-char*" "text")
-    '("GtkTextIter*" "match_start")
-    '("GtkTextIter*" "match_end")
-    '("MooTextSearchOptions" "options")
-    '("GError**" "error")
-  )
-)
-
-(define-function moo_text_search_regex
-  (c-name "moo_text_search_regex")
-  (return-type "gboolean")
-  (parameters
-    '("const-GtkTextIter*" "start")
-    '("const-GtkTextIter*" "limit")
-    '("EggRegex*" "regex")
-    '("GtkTextIter*" "match_start")
-    '("GtkTextIter*" "match_end")
-    '("gboolean" "backwards")
-  )
-)
-
-(define-function moo_text_replace_func_replace_all
-  (c-name "moo_text_replace_func_replace_all")
-  (return-type "MooTextReplaceResponseType")
-  (parameters
-    '("const-char*" "text")
-    '("EggRegex*" "regex")
-    '("const-char*" "replacement")
-    '("GtkTextIter*" "to_replace_start")
-    '("GtkTextIter*" "to_replace_end")
-    '("gpointer" "data")
-  )
-)
-
-(define-function moo_text_replace_all_interactive
-  (c-name "moo_text_replace_all_interactive")
-  (return-type "int")
-  (parameters
-    '("GtkTextIter*" "start")
-    '("GtkTextIter*" "end")
-    '("const-char*" "text")
-    '("const-char*" "replacement")
-    '("MooTextSearchOptions" "options")
-    '("GError**" "error")
-    '("MooTextReplaceFunc" "func")
-    '("gpointer" "data")
-  )
-)
-
-(define-function moo_text_replace_regex_all_interactive
-  (c-name "moo_text_replace_regex_all_interactive")
-  (return-type "int")
-  (parameters
-    '("GtkTextIter*" "start")
-    '("GtkTextIter*" "end")
-    '("EggRegex*" "regex")
-    '("const-char*" "replacement")
-    '("gboolean" "backwards")
-    '("GError**" "error")
-    '("MooTextReplaceFunc" "func")
-    '("gpointer" "data")
   )
 )
 
@@ -1148,38 +1085,14 @@
   (return-type "none")
 )
 
-(define-method find_interactive
-  (of-object "MooTextView")
-  (c-name "moo_text_view_find_interactive")
-  (return-type "none")
-)
-
-(define-method replace_interactive
-  (of-object "MooTextView")
-  (c-name "moo_text_view_replace_interactive")
-  (return-type "none")
-)
-
-(define-method find_next_interactive
-  (of-object "MooTextView")
-  (c-name "moo_text_view_find_next_interactive")
-  (return-type "none")
-)
-
-(define-method find_prev_interactive
-  (of-object "MooTextView")
-  (c-name "moo_text_view_find_prev_interactive")
-  (return-type "none")
-)
-
-(define-method goto_line
-  (of-object "MooTextView")
-  (c-name "moo_text_view_goto_line")
-  (return-type "none")
-  (parameters
-    '("int" "line")
-  )
-)
+;; (define-method goto_line
+;;   (of-object "MooTextView")
+;;   (c-name "moo_text_view_goto_line")
+;;   (return-type "none")
+;;   (parameters
+;;     '("int" "line")
+;;   )
+;; )
 
 (define-method set_font_from_string
   (of-object "MooTextView")
@@ -1276,5 +1189,60 @@
   (return-type "none")
   (parameters
     '("MooLang*" "lang" (null-ok))
+  )
+)
+
+
+;; From mootextsearch.h
+
+(define-function search_forward
+  (c-name "moo_text_search_forward")
+  (return-type "gboolean")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("const-char*" "str")
+    '("MooTextSearchFlags" "flags")
+    '("GtkTextIter*" "match_start")
+    '("GtkTextIter*" "match_end")
+    '("const-GtkTextIter*" "end" (null-ok))
+  )
+)
+
+(define-function search_backward
+  (c-name "moo_text_search_backward")
+  (return-type "gboolean")
+  (parameters
+    '("const-GtkTextIter*" "start")
+    '("const-char*" "str")
+    '("MooTextSearchFlags" "flags")
+    '("GtkTextIter*" "match_start")
+    '("GtkTextIter*" "match_end")
+    '("const-GtkTextIter*" "end" (null-ok))
+  )
+)
+
+(define-function replace_all
+  (c-name "moo_text_replace_all")
+  (return-type "int")
+  (parameters
+    '("GtkTextIter*" "start")
+    '("GtkTextIter*" "end")
+    '("const-char*" "text")
+    '("const-char*" "replacement")
+    '("MooTextSearchFlags" "flags")
+  )
+)
+
+(define-function replace_all_interactive
+  (c-name "moo_text_replace_all_interactive")
+  (return-type "int")
+  (parameters
+    '("GtkTextIter*" "start")
+    '("GtkTextIter*" "end")
+    '("const-char*" "text")
+    '("const-char*" "replacement")
+    '("MooTextSearchFlags" "flags")
+    '("MooTextReplaceFunc" "func")
+    '("gpointer" "data")
   )
 )

@@ -4,7 +4,7 @@ headers
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooeditsearch.h"
+#include "mooedit/mootextsearch.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mootextiter.h"
@@ -184,4 +184,82 @@ _wrap_moo_line_view_get_line_data (PyObject *self, PyObject *args)
 
     g_value_unset (&data);
     return obj;
+}
+%%
+override moo_text_search_forward varargs
+static PyObject *
+_wrap_moo_text_search_forward (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_start, *py_flags, *py_end = Py_None;
+    char *str;
+    int flags;
+    const GtkTextIter *start, *end = NULL;
+    GtkTextIter match_start, match_end;
+
+    if (!PyArg_ParseTuple(args, (char*) "OsO|O:search_forward", &py_start, &str, &py_flags, &py_end))
+        return NULL;
+
+    if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
+        start = pyg_boxed_get (py_start, GtkTextIter);
+    else
+        return_TypeErr ("start should be a GtkTextIter");
+
+    if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
+        return NULL;
+
+    if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
+        end = pyg_boxed_get(py_end, GtkTextIter);
+    else if (py_end != Py_None)
+        return_TypeErr ("end should be a GtkTextIter or None");
+
+    if (moo_text_search_forward (start, str, flags, &match_start, &match_end, end))
+    {
+        PyObject *ret = PyTuple_New (2);
+        PyTuple_SET_ITEM (ret, 0, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_start, TRUE, TRUE));
+        PyTuple_SET_ITEM (ret, 1, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_end, TRUE, TRUE));
+        return ret;
+    }
+    else
+    {
+        return_None;
+    }
+}
+%%
+override moo_text_search_backward varargs
+static PyObject *
+_wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_start, *py_flags, *py_end = Py_None;
+    char *str;
+    int flags;
+    const GtkTextIter *start, *end = NULL;
+    GtkTextIter match_start, match_end;
+
+    if (!PyArg_ParseTuple (args, (char*) "OsO|O:search_backward", &py_start, &str, &py_flags, &py_end))
+        return NULL;
+
+    if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
+        start = pyg_boxed_get (py_start, GtkTextIter);
+    else
+        return_TypeErr ("start should be a GtkTextIter");
+
+    if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
+        return NULL;
+
+    if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
+        end = pyg_boxed_get(py_end, GtkTextIter);
+    else if (py_end != Py_None)
+        return_TypeErr ("end should be a GtkTextIter or None");
+
+    if (moo_text_search_backward (start, str, flags, &match_start, &match_end, end))
+    {
+        PyObject *ret = PyTuple_New (2);
+        PyTuple_SET_ITEM (ret, 0, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_start, TRUE, TRUE));
+        PyTuple_SET_ITEM (ret, 1, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_end, TRUE, TRUE));
+        return ret;
+    }
+    else
+    {
+        return_None;
+    }
 }

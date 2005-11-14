@@ -19,7 +19,6 @@
 #ifndef __MOO_TEXT_VIEW_PRIVATE_H__
 #define __MOO_TEXT_VIEW_PRIVATE_H__
 
-#include "mooedit/mooeditsearch.h"
 #include "mooedit/mootextview.h"
 #include "mooutils/gtksourceundomanager.h"
 #include "mooutils/moohistorylist.h"
@@ -60,23 +59,6 @@ typedef enum {
     MOO_TEXT_VIEW_DRAG_SELECT,
     MOO_TEXT_VIEW_DRAG_DRAG
 } MooTextViewDragType;
-
-
-typedef struct {
-    int          last_search_stamp;
-    char        *text;
-    char        *replace_with;
-    gboolean     regex;
-    gboolean     case_sensitive;
-    gboolean     backwards;
-    gboolean     whole_words;
-    gboolean     from_cursor;
-    gboolean     dont_prompt_on_replace;
-    MooHistoryList *text_to_find_history;
-    MooHistoryList *replacement_history;
-} MooTextSearchParams;
-
-extern MooTextSearchParams *_moo_text_search_params;
 
 
 struct _MooTextViewPrivate {

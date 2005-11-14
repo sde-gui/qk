@@ -32,7 +32,7 @@ _moo_edit_mod_init (void)
     if (!mod)
         return FALSE;
 
-//     _moo_edit_add_constants (mod, "MOO_");
+    _moo_edit_add_constants (mod, "MOO_");
     _moo_edit_register_classes (PyModule_GetDict (mod));
 
     if (!PyErr_Occurred ())

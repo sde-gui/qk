@@ -54,17 +54,19 @@ void             moo_edit_reload_error_dialog       (GtkWidget      *widget,
                                                      const char     *err_msg);
 
 
-void             moo_text_nothing_found_dialog      (MooTextView    *view,
+void             moo_text_nothing_found_dialog      (GtkWidget      *parent,
                                                      const char     *text,
                                                      gboolean        regex);
-gboolean         moo_text_search_from_beginning_dialog
-                                                    (MooTextView    *view,
+gboolean         moo_text_search_from_start_dialog  (GtkWidget      *parent,
                                                      gboolean        backwards);
-void             moo_text_regex_error_dialog        (MooTextView    *view,
+void             moo_text_regex_error_dialog        (GtkWidget      *parent,
                                                      GError         *error);
-void             moo_text_replaced_n_dialog         (MooTextView    *view,
+
+gboolean         moo_text_replace_from_start_dialog (GtkWidget      *parent,
+                                                     int             replaced);
+void             moo_text_replaced_n_dialog         (GtkWidget      *parent,
                                                      guint           n);
-GtkWidget       *moo_text_prompt_on_replace_dialog  (MooTextView    *view);
+GtkWidget       *moo_text_prompt_on_replace_dialog  (GtkWidget      *parent);
 
 
 G_END_DECLS

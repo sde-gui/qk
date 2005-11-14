@@ -20,7 +20,6 @@
 #define __MOO_EDIT_PRIVATE_H__
 
 #include "mooedit/mooeditor.h"
-#include "mooedit/mooeditsearch.h"
 #include "mooedit/mootextview.h"
 
 G_BEGIN_DECLS

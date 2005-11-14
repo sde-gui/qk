@@ -16,15 +16,12 @@
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mootextview.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/mootextfind.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 #define LIGHT_BLUE "#EEF6FF"
-
-
-MooTextSearchParams *_moo_text_search_params;
-static MooTextSearchParams search_params;
 
 
 static GObject *moo_text_view_constructor   (GType                  type,
@@ -60,7 +57,11 @@ static void     cursor_moved                (MooTextView    *view,
 static void     proxy_prop_notify           (MooTextView    *view,
                                              GParamSpec     *pspec);
 
-static void     goto_line                   (MooTextView    *view);
+static void     find_interactive            (MooTextView    *view);
+static void     replace_interactive         (MooTextView    *view);
+static void     find_next_interactive       (MooTextView    *view);
+static void     find_prev_interactive       (MooTextView    *view);
+static void     goto_line_interactive       (MooTextView    *view);
 
 static void     insert_text_cb              (MooTextView    *view,
                                              GtkTextIter    *iter,
@@ -114,11 +115,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkTextViewClass *text_view_class = GTK_TEXT_VIEW_CLASS (klass);
 
-    _moo_text_search_params = &search_params;
-    search_params.last_search_stamp = -1;
-    search_params.text_to_find_history = moo_history_list_new (NULL);
-    search_params.replacement_history = moo_history_list_new (NULL);
-
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
     gobject_class->constructor = moo_text_view_constructor;
@@ -137,11 +133,11 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
 
     klass->delete_selection = moo_text_view_delete_selection;
     klass->extend_selection = _moo_text_view_extend_selection;
-    klass->find_interactive = _moo_text_view_find;
-    klass->find_next_interactive = _moo_text_view_find_next;
-    klass->find_prev_interactive = _moo_text_view_find_previous;
-    klass->replace_interactive = _moo_text_view_replace;
-    klass->goto_line_interactive = goto_line;
+    klass->find_interactive = find_interactive;
+    klass->find_next_interactive = find_next_interactive;
+    klass->find_prev_interactive = find_prev_interactive;
+    klass->replace_interactive = replace_interactive;
+    klass->goto_line_interactive = goto_line_interactive;
     klass->undo = moo_text_view_undo;
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
@@ -434,38 +430,34 @@ moo_text_view_delete_selection (MooTextView *view)
 }
 
 
-void
-moo_text_view_find_interactive (MooTextView *view)
+static void
+find_interactive (MooTextView *view)
 {
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit (view, signals[FIND_INTERACTIVE], 0, NULL);
-}
-
-void
-moo_text_view_replace_interactive (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit (view, signals[REPLACE_INTERACTIVE], 0, NULL);
-}
-
-void
-moo_text_view_find_next_interactive (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit (view, signals[FIND_NEXT_INTERACTIVE], 0, NULL);
-}
-
-void
-moo_text_view_find_prev_interactive (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit (view, signals[FIND_PREV_INTERACTIVE], 0, NULL);
+    moo_text_view_run_find (GTK_TEXT_VIEW (view));
 }
 
 static void
-goto_line (MooTextView *view)
+replace_interactive (MooTextView *view)
 {
-    moo_text_view_goto_line (view, -1);
+    moo_text_view_run_replace (GTK_TEXT_VIEW (view));
+}
+
+static void
+find_next_interactive (MooTextView *view)
+{
+    moo_text_view_run_find_next (GTK_TEXT_VIEW (view));
+}
+
+static void
+find_prev_interactive (MooTextView *view)
+{
+    moo_text_view_run_find_prev (GTK_TEXT_VIEW (view));
+}
+
+static void
+goto_line_interactive (MooTextView *view)
+{
+    moo_text_view_run_goto_line (GTK_TEXT_VIEW (view));
 }
 
 
@@ -539,12 +531,12 @@ void
 moo_text_view_redo (MooTextView    *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-//     _moo_text_buffer_freeze_highlight (get_moo_buffer (view));
+    moo_text_buffer_freeze (get_moo_buffer (view));
     gtk_source_undo_manager_redo (view->priv->undo_mgr);
     gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
                                   get_insert (view),
                                   0, FALSE, 0, 0);
-//     _moo_text_buffer_thaw_highlight (get_moo_buffer (view));
+    moo_text_buffer_thaw (get_moo_buffer (view));
 }
 
 
@@ -552,12 +544,12 @@ void
 moo_text_view_undo (MooTextView    *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-//     _moo_text_buffer_freeze_highlight (get_moo_buffer (view));
+    moo_text_buffer_freeze (get_moo_buffer (view));
     gtk_source_undo_manager_undo (view->priv->undo_mgr);
     gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
                                   get_insert (view),
                                   0, FALSE, 0, 0);
-//     _moo_text_buffer_thaw_highlight (get_moo_buffer (view));
+    moo_text_buffer_thaw (get_moo_buffer (view));
 }
 
 
@@ -1436,29 +1428,28 @@ moo_text_view_strip_whitespace (MooTextView *view)
          gtk_text_iter_forward_line (&iter))
     {
         GtkTextIter end;
+        char *slice, *p;
+        int len;
 
         if (gtk_text_iter_ends_line (&iter))
             continue;
 
-        gtk_text_iter_forward_to_line_end (&iter);
         end = iter;
+        gtk_text_iter_forward_to_line_end (&end);
 
-        do
+        slice = gtk_text_buffer_get_slice (buffer, &iter, &end, TRUE);
+        len = strlen (slice);
+        g_assert (len > 0);
+
+        for (p = slice + len; p > slice && (p[-1] == ' ' || p[-1] == '\t'); --p) ;
+
+        if (*p)
         {
-            gunichar c;
-
-            gtk_text_iter_backward_char (&iter);
-            c = gtk_text_iter_get_char (&iter);
-
-            if (!g_unichar_isspace (c))
-            {
-                gtk_text_iter_forward_char (&iter);
-                break;
-            }
+            gtk_text_iter_forward_chars (&iter, g_utf8_pointer_to_offset (slice, p));
+            gtk_text_buffer_delete (buffer, &iter, &end);
         }
-        while (!gtk_text_iter_starts_line (&iter));
 
-        gtk_text_buffer_delete (buffer, &iter, &end);
+        g_free (slice);
     }
 
     gtk_text_buffer_end_user_action (buffer);

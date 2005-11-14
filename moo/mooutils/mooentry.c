@@ -33,6 +33,8 @@ struct _MooEntryPrivate {
     gboolean enable_undo_menu;
     guint user_action_stack;
     guint use_ctrl_u : 1;
+    guint grab_selection : 1;
+    guint fool_entry : 1;
 };
 
 
@@ -49,6 +51,9 @@ static void     moo_entry_get_property      (GObject            *object,
                                              guint               prop_id,
                                              GValue             *value,
                                              GParamSpec         *pspec);
+
+static gboolean moo_entry_button_release    (GtkWidget          *widget,
+                                             GdkEventButton     *event);
 
 static void     moo_entry_delete_to_start   (MooEntry           *entry);
 
@@ -78,6 +83,13 @@ static void     moo_entry_insert_text       (GtkEditable        *editable,
 static void     moo_entry_delete_text       (GtkEditable        *editable,
                                              gint                start_pos,
                                              gint                end_pos);
+static void     moo_entry_set_selection_bounds (GtkEditable     *editable,
+                                             gint                start_pos,
+                                             gint                end_pos);
+static gboolean moo_entry_get_selection_bounds (GtkEditable     *editable,
+                                             gint               *start_pos,
+                                             gint               *end_pos);
+
 
 
 GType
@@ -120,7 +132,8 @@ enum {
     PROP_0,
     PROP_UNDO_MANAGER,
     PROP_ENABLE_UNDO,
-    PROP_ENABLE_UNDO_MENU
+    PROP_ENABLE_UNDO_MENU,
+    PROP_GRAB_SELECTION
 };
 
 enum {
@@ -140,12 +153,15 @@ static void
 moo_entry_class_init (MooEntryClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkEntryClass *entry_class = GTK_ENTRY_CLASS (klass);
     GtkBindingSet *binding_set;
 
     gobject_class->finalize = moo_entry_finalize;
     gobject_class->set_property = moo_entry_set_property;
     gobject_class->get_property = moo_entry_get_property;
+
+    widget_class->button_release_event = moo_entry_button_release;
 
     entry_class->populate_popup = moo_entry_populate_popup;
     entry_class->insert_at_cursor = moo_entry_insert_at_cursor;
@@ -182,6 +198,14 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "enable-undo-menu",
                                              "enable-undo-menu",
                                              TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_GRAB_SELECTION,
+                                     g_param_spec_boolean ("grab-selection",
+                                             "grab-selection",
+                                             "grab-selection",
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[UNDO] =
@@ -249,6 +273,8 @@ moo_entry_editable_init (GtkEditableClass   *klass)
     klass->do_delete_text = moo_entry_do_delete_text;
     klass->insert_text = moo_entry_insert_text;
     klass->delete_text = moo_entry_delete_text;
+    klass->set_selection_bounds = moo_entry_set_selection_bounds;
+    klass->get_selection_bounds = moo_entry_get_selection_bounds;
 }
 
 
@@ -281,6 +307,11 @@ moo_entry_set_property (GObject        *object,
             g_object_notify (object, "enable-undo-menu");
             break;
 
+        case PROP_GRAB_SELECTION:
+            entry->priv->grab_selection = g_value_get_boolean (value) ? TRUE : FALSE;
+            g_object_notify (object, "grab-selection");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -308,6 +339,10 @@ moo_entry_get_property (GObject        *object,
 
         case PROP_UNDO_MANAGER:
             g_value_set_object (value, entry->priv->undo_mgr);
+            break;
+
+        case PROP_GRAB_SELECTION:
+            g_value_set_boolean (value, entry->priv->grab_selection ? TRUE : FALSE);
             break;
 
         default:
@@ -517,4 +552,49 @@ moo_entry_delete_to_start (MooEntry *entry)
     if (entry->priv->use_ctrl_u)
         gtk_editable_delete_text (GTK_EDITABLE (entry),
                                   0, gtk_editable_get_position (GTK_EDITABLE (entry)));
+}
+
+
+/*********************************************************************/
+/* Working around gtk idiotic selection business
+ */
+
+/* GtkEdiatble::delete_text and GtkWidget::realize might also require this hack */
+
+static void
+moo_entry_set_selection_bounds (GtkEditable *editable,
+                                gint         start_pos,
+                                gint         end_pos)
+{
+    if (!MOO_ENTRY(editable)->priv->grab_selection)
+        MOO_ENTRY(editable)->priv->fool_entry = TRUE;
+
+    parent_editable_iface->set_selection_bounds (editable, start_pos, end_pos);
+    MOO_ENTRY(editable)->priv->fool_entry = FALSE;
+}
+
+static gboolean
+moo_entry_get_selection_bounds (GtkEditable *editable,
+                                gint        *start_pos,
+                                gint        *end_pos)
+{
+    if (MOO_ENTRY(editable)->priv->fool_entry)
+        return FALSE;
+    else
+        return parent_editable_iface->get_selection_bounds (editable, start_pos, end_pos);
+}
+
+static gboolean
+moo_entry_button_release (GtkWidget          *widget,
+                          GdkEventButton     *event)
+{
+    gboolean result;
+
+    if (!MOO_ENTRY(widget)->priv->grab_selection)
+        MOO_ENTRY(widget)->priv->fool_entry = TRUE;
+
+    result = GTK_WIDGET_CLASS(moo_entry_parent_class)->button_release_event (widget, event);
+    MOO_ENTRY(widget)->priv->fool_entry = FALSE;
+
+    return result;
 }

@@ -100,10 +100,6 @@ void         moo_text_view_undo                     (MooTextView        *view);
 void         moo_text_view_start_not_undoable_action(MooTextView        *view);
 void         moo_text_view_end_not_undoable_action  (MooTextView        *view);
 
-void         moo_text_view_find_interactive         (MooTextView        *view);
-void         moo_text_view_replace_interactive      (MooTextView        *view);
-void         moo_text_view_find_next_interactive    (MooTextView        *view);
-void         moo_text_view_find_prev_interactive    (MooTextView        *view);
 void         moo_text_view_goto_line                (MooTextView        *view,
                                                      int                 line);
 
