@@ -28,3 +28,8 @@ Misc
 
 1. Make MooNotebook subclass GtkContainer; apparently dogtail doesn't like it to be
 a GtkNotebook.
+
+
+Bugs
+========
+1. HistoryList - make it load when needed.

@@ -177,17 +177,21 @@ static void moo_closure_invoke_real (MooClosure *closure)
         g_return_if_fail (G_IS_OBJECT (data));
     }
 
-    if (closure->signal) {
+    if (closure->signal)
+    {
+        gboolean ret;
         g_object_ref (G_OBJECT (data));
-        g_signal_emit_by_name (data, closure->signal);
+        g_signal_emit_by_name (data, closure->signal, &ret);
         g_object_unref (G_OBJECT (data));
     }
-    else if (closure->object) {
+    else if (closure->object)
+    {
         g_object_ref (G_OBJECT (data));
         closure->callback (data);
         g_object_unref (G_OBJECT (data));
     }
-    else {
+    else
+    {
         closure->callback (data);
     }
 }

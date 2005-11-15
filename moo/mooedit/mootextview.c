@@ -19,6 +19,9 @@
 #include "mooedit/mootextfind.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooundomanager.h"
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <string.h>
 
 #define LIGHT_BLUE "#EEF6FF"
@@ -43,10 +46,12 @@ static void     moo_text_view_unrealize     (GtkWidget      *widget);
 static gboolean moo_text_view_expose        (GtkWidget      *widget,
                                              GdkEventExpose *event);
 
-static void     create_current_line_gc      (MooTextView    *view);
+static void     moo_text_view_cut_clipboard (GtkTextView    *text_view);
+static void     moo_text_view_paste_clipboard (GtkTextView  *text_view);
+static void     moo_text_view_populate_popup(GtkTextView    *text_view,
+                                             GtkMenu        *menu);
 
-static void     emit_can_undo_changed       (MooTextView    *view);
-static void     emit_can_redo_changed       (MooTextView    *view);
+static void     create_current_line_gc      (MooTextView    *view);
 
 static GtkTextBuffer *get_buffer            (MooTextView    *view);
 static MooTextBuffer *get_moo_buffer        (MooTextView    *view);
@@ -114,6 +119,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkTextViewClass *text_view_class = GTK_TEXT_VIEW_CLASS (klass);
+    GtkBindingSet *binding_set;
 
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
@@ -130,6 +136,9 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
 
     text_view_class->move_cursor = _moo_text_view_move_cursor;
     text_view_class->delete_from_cursor = _moo_text_view_delete_from_cursor;
+    text_view_class->cut_clipboard = moo_text_view_cut_clipboard;
+    text_view_class->paste_clipboard = moo_text_view_paste_clipboard;
+    text_view_class->populate_popup = moo_text_view_populate_popup;
 
     klass->delete_selection = moo_text_view_delete_selection;
     klass->extend_selection = _moo_text_view_extend_selection;
@@ -235,18 +244,18 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooTextViewClass, undo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__VOID,
+                          G_TYPE_BOOLEAN, 0);
 
     signals[REDO] =
             g_signal_new ("redo",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooTextViewClass, redo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__VOID,
+                          G_TYPE_BOOLEAN, 0);
 
     signals[DELETE_SELECTION] =
             g_signal_new ("delete-selection",
@@ -320,7 +329,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                NULL, NULL, NULL,
                                _moo_marshal_VOID__BOXED,
                                G_TYPE_NONE, 1,
-                               GTK_TYPE_TEXT_ITER);
+                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    binding_set = gtk_binding_set_by_class (klass);
+    gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK,
+                                  "undo", 0);
+    gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
+                                  "redo", 0);
 }
 
 
@@ -362,6 +377,7 @@ moo_text_view_constructor (GType                  type,
 {
     GObject *object;
     MooTextView *view;
+    MooUndoMgr *undo_mgr;
 
     object = G_OBJECT_CLASS (moo_text_view_parent_class)->constructor (
         type, n_construct_properties, construct_param);
@@ -379,22 +395,16 @@ moo_text_view_constructor (GType                  type,
                               G_CALLBACK (proxy_prop_notify), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-text",
                               G_CALLBACK (proxy_prop_notify), view);
-    g_signal_connect_swapped (get_buffer (view), "notify::can-undo",
+
+    undo_mgr = moo_text_buffer_get_undo_mgr (get_moo_buffer (view));
+    g_signal_connect_swapped (undo_mgr, "notify::can-undo",
                               G_CALLBACK (proxy_prop_notify), view);
-    g_signal_connect_swapped (get_buffer (view), "notify::can-redo",
+    g_signal_connect_swapped (undo_mgr, "notify::can-redo",
                               G_CALLBACK (proxy_prop_notify), view);
 
     g_signal_connect_data (get_buffer (view), "insert-text",
                            G_CALLBACK (insert_text_cb), view,
                            NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
-
-    view->priv->undo_mgr = gtk_source_undo_manager_new (get_buffer (view));
-    gtk_source_undo_manager_set_max_undo_levels (view->priv->undo_mgr, -1);
-
-    g_signal_connect_swapped (view->priv->undo_mgr, "can-undo",
-                              G_CALLBACK (emit_can_undo_changed), view);
-    g_signal_connect_swapped (view->priv->undo_mgr, "can-redo",
-                              G_CALLBACK (emit_can_redo_changed), view);
 
     return object;
 }
@@ -479,11 +489,18 @@ moo_text_view_set_font_from_string (MooTextView *view,
 }
 
 
+static MooUndoMgr *
+get_undo_mgr (MooTextView *view)
+{
+    return moo_text_buffer_get_undo_mgr (get_moo_buffer (view));
+}
+
+
 gboolean
 moo_text_view_can_redo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return gtk_source_undo_manager_can_redo (view->priv->undo_mgr);
+    return moo_undo_mgr_can_redo (get_undo_mgr (view));
 }
 
 
@@ -491,29 +508,15 @@ gboolean
 moo_text_view_can_undo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return gtk_source_undo_manager_can_undo (view->priv->undo_mgr);
-}
-
-
-static void
-emit_can_undo_changed (MooTextView *view)
-{
-    g_object_notify (G_OBJECT (view), "can-undo");
-}
-
-
-static void
-emit_can_redo_changed (MooTextView *view)
-{
-    g_object_notify (G_OBJECT (view), "can-redo");
+    return moo_undo_mgr_can_undo (get_undo_mgr (view));
 }
 
 
 void
-moo_text_view_start_not_undoable_action (MooTextView *view)
+moo_text_view_begin_not_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    gtk_source_undo_manager_begin_not_undoable_action (view->priv->undo_mgr);
+    moo_undo_mgr_freeze (get_undo_mgr (view));
     gtk_text_buffer_begin_user_action (get_buffer (view));
 }
 
@@ -523,33 +526,71 @@ moo_text_view_end_not_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     gtk_text_buffer_end_user_action (get_buffer (view));
-    gtk_source_undo_manager_end_not_undoable_action (view->priv->undo_mgr);
+    moo_undo_mgr_thaw (get_undo_mgr (view));
 }
 
 
-void
+gboolean
 moo_text_view_redo (MooTextView    *view)
 {
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_text_buffer_freeze (get_moo_buffer (view));
-    gtk_source_undo_manager_redo (view->priv->undo_mgr);
-    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
-                                  get_insert (view),
-                                  0, FALSE, 0, 0);
-    moo_text_buffer_thaw (get_moo_buffer (view));
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
+
+    if (moo_undo_mgr_can_redo (get_undo_mgr (view)))
+    {
+        moo_text_buffer_freeze (get_moo_buffer (view));
+        moo_undo_mgr_redo (get_undo_mgr (view));
+        gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
+                                      get_insert (view),
+                                      0, FALSE, 0, 0);
+        moo_text_buffer_thaw (get_moo_buffer (view));
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
 }
 
 
-void
+gboolean
 moo_text_view_undo (MooTextView    *view)
 {
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_text_buffer_freeze (get_moo_buffer (view));
-    gtk_source_undo_manager_undo (view->priv->undo_mgr);
-    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
-                                  get_insert (view),
-                                  0, FALSE, 0, 0);
-    moo_text_buffer_thaw (get_moo_buffer (view));
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
+
+    if (moo_undo_mgr_can_undo (get_undo_mgr (view)))
+    {
+        moo_text_buffer_freeze (get_moo_buffer (view));
+        moo_undo_mgr_undo (get_undo_mgr (view));
+        gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
+                                      get_insert (view),
+                                      0, FALSE, 0, 0);
+        moo_text_buffer_thaw (get_moo_buffer (view));
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+
+static void
+moo_text_view_cut_clipboard (GtkTextView *text_view)
+{
+    MooTextBuffer *buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
+    moo_text_buffer_begin_interactive_action (buffer);
+    GTK_TEXT_VIEW_CLASS(moo_text_view_parent_class)->cut_clipboard (text_view);
+    moo_text_buffer_end_interactive_action (buffer);
+}
+
+
+static void
+moo_text_view_paste_clipboard (GtkTextView  *text_view)
+{
+    MooTextBuffer *buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
+    moo_text_buffer_begin_interactive_action (buffer);
+    GTK_TEXT_VIEW_CLASS(moo_text_view_parent_class)->paste_clipboard (text_view);
+    moo_text_buffer_end_interactive_action (buffer);
 }
 
 
@@ -1233,8 +1274,10 @@ moo_text_view_expose (GtkWidget      *widget,
         first_line = gtk_text_iter_get_line (&start);
         last_line = gtk_text_iter_get_line (&end);
 
-        _moo_text_buffer_ensure_highlight (get_moo_buffer (view),
-                                           first_line, last_line);
+        /* it reports bogus values sometimes, like on opening huge file */
+        if (last_line - first_line < 2000)
+            _moo_text_buffer_ensure_highlight (get_moo_buffer (view),
+                                               first_line, last_line);
     }
 
     handled = GTK_WIDGET_CLASS(moo_text_view_parent_class)->expose_event (widget, event);
@@ -1453,4 +1496,29 @@ moo_text_view_strip_whitespace (MooTextView *view)
     }
 
     gtk_text_buffer_end_user_action (buffer);
+}
+
+
+static void
+moo_text_view_populate_popup (GtkTextView    *text_view,
+                              GtkMenu        *menu)
+{
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+    GtkWidget *item;
+
+    item = gtk_separator_menu_item_new ();
+    gtk_widget_show (item);
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_REDO, NULL);
+    gtk_widget_show (item);
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+    g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_text_view_redo), view);
+    gtk_widget_set_sensitive (item, moo_text_view_can_redo (view));
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_UNDO, NULL);
+    gtk_widget_show (item);
+    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+    g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_text_view_undo), view);
+    gtk_widget_set_sensitive (item, moo_text_view_can_undo (view));
 }

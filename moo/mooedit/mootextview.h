@@ -54,8 +54,8 @@ struct _MooTextViewClass
     GtkTextViewClass parent_class;
 
     void (* delete_selection)       (MooTextView    *view);
-    void (* undo)                   (MooTextView    *view);
-    void (* redo)                   (MooTextView    *view);
+    gboolean (* undo)               (MooTextView    *view);
+    gboolean (* redo)               (MooTextView    *view);
 
     gboolean (* char_inserted)      (MooTextView    *view,
                                      GtkTextIter    *where, /* points to position after the char */
@@ -95,9 +95,9 @@ void         moo_text_view_delete_selection         (MooTextView        *view);
 
 gboolean     moo_text_view_can_redo                 (MooTextView        *view);
 gboolean     moo_text_view_can_undo                 (MooTextView        *view);
-void         moo_text_view_redo                     (MooTextView        *view);
-void         moo_text_view_undo                     (MooTextView        *view);
-void         moo_text_view_start_not_undoable_action(MooTextView        *view);
+gboolean     moo_text_view_redo                     (MooTextView        *view);
+gboolean     moo_text_view_undo                     (MooTextView        *view);
+void         moo_text_view_begin_not_undoable_action(MooTextView        *view);
 void         moo_text_view_end_not_undoable_action  (MooTextView        *view);
 
 void         moo_text_view_goto_line                (MooTextView        *view,

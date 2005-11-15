@@ -20,7 +20,6 @@
 #define __MOO_TEXT_VIEW_PRIVATE_H__
 
 #include "mooedit/mootextview.h"
-#include "mooutils/gtksourceundomanager.h"
 #include "mooutils/moohistorylist.h"
 
 G_BEGIN_DECLS
@@ -63,8 +62,6 @@ typedef enum {
 
 struct _MooTextViewPrivate {
     gboolean constructed;
-
-    GtkSourceUndoManager *undo_mgr;
 
     gboolean highlight_current_line;
     GdkColor current_line_color;

@@ -119,6 +119,12 @@
   (gtype-id "MOO_TYPE_UI_XML")
 )
 
+(define-object UndoMgr
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooUndoMgr")
+  (gtype-id "MOO_TYPE_UNDO_MGR")
+)
 
 
 (define-boxed UINode
@@ -501,28 +507,28 @@
   (return-type "none")
 )
 
-(define-method begin_user_action
+(define-method begin_undo_group
   (of-object "MooEntry")
-  (c-name "moo_entry_begin_user_action")
+  (c-name "moo_entry_begin_undo_group")
   (return-type "none")
 )
 
-(define-method end_user_action
+(define-method end_undo_group
   (of-object "MooEntry")
-  (c-name "moo_entry_end_user_action")
+  (c-name "moo_entry_end_undo_group")
   (return-type "none")
 )
 
-(define-method begin_not_undoable_action
+(define-method clear_undo
   (of-object "MooEntry")
-  (c-name "moo_entry_begin_not_undoable_action")
+  (c-name "moo_entry_clear_undo")
   (return-type "none")
 )
 
-(define-method end_not_undoable_action
+(define-method get_undo_mgr
   (of-object "MooEntry")
-  (c-name "moo_entry_end_not_undoable_action")
-  (return-type "none")
+  (c-name "moo_entry_get_undo_mgr")
+  (return-type "MooUndoMgr ")
 )
 
 
@@ -2138,4 +2144,91 @@
   (of-object "MooPaneLabel")
   (c-name "moo_pane_label_free")
   (return-type "none")
+)
+
+
+;; From moo/mooutils/mooundomanager.h
+
+(define-function moo_undo_mgr_new
+  (c-name "moo_undo_mgr_new")
+  (is-constructor-of "MooUndoMgr")
+  (return-type "MooUndoMgr*")
+  (parameters
+    '("GObject*" "document")
+  )
+)
+
+;; (define-method add_action
+;;   (of-object "MooUndoMgr")
+;;   (c-name "moo_undo_mgr_add_action")
+;;   (return-type "none")
+;;   (parameters
+;;     '("MooUndoAction*" "action")
+;;   )
+;; )
+
+(define-method clear
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_clear")
+  (return-type "none")
+)
+
+(define-method freeze
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_freeze")
+  (return-type "none")
+)
+
+(define-method thaw
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_thaw")
+  (return-type "none")
+)
+
+(define-method frozen
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_frozen")
+  (return-type "gboolean")
+)
+
+(define-method new_group
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_new_group")
+  (return-type "none")
+)
+
+(define-method start_group
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_start_group")
+  (return-type "none")
+)
+
+(define-method end_group
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_end_group")
+  (return-type "none")
+)
+
+(define-method undo
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_undo")
+  (return-type "none")
+)
+
+(define-method redo
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_redo")
+  (return-type "none")
+)
+
+(define-method can_undo
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_can_undo")
+  (return-type "gboolean")
+)
+
+(define-method can_redo
+  (of-object "MooUndoMgr")
+  (c-name "moo_undo_mgr_can_redo")
+  (return-type "gboolean")
 )

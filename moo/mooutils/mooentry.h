@@ -16,6 +16,7 @@
 #define __MOO_ENTRY_H__
 
 #include <gtk/gtkentry.h>
+#include "mooutils/mooundomanager.h"
 
 G_BEGIN_DECLS
 
@@ -43,8 +44,6 @@ struct _MooEntryClass
 
     void (*undo)              (MooEntry *entry);
     void (*redo)              (MooEntry *entry);
-    void (*begin_user_action) (MooEntry *entry);
-    void (*end_user_action)   (MooEntry *entry);
 };
 
 
@@ -54,10 +53,11 @@ GtkWidget  *moo_entry_new                       (void);
 
 void        moo_entry_undo                      (MooEntry   *entry);
 void        moo_entry_redo                      (MooEntry   *entry);
-void        moo_entry_begin_user_action         (MooEntry   *entry);
-void        moo_entry_end_user_action           (MooEntry   *entry);
-void        moo_entry_begin_not_undoable_action (MooEntry   *entry);
-void        moo_entry_end_not_undoable_action   (MooEntry   *entry);
+
+void        moo_entry_begin_undo_group          (MooEntry   *entry);
+void        moo_entry_end_undo_group            (MooEntry   *entry);
+void        moo_entry_clear_undo                (MooEntry   *entry);
+MooUndoMgr *moo_entry_get_undo_mgr              (MooEntry   *entry);
 
 
 G_END_DECLS

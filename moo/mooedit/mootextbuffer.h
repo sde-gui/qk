@@ -72,12 +72,18 @@ void        moo_text_buffer_set_check_brackets          (MooTextBuffer      *buf
 
 void        moo_text_buffer_freeze                      (MooTextBuffer      *buffer);
 void        moo_text_buffer_thaw                        (MooTextBuffer      *buffer);
+void        moo_text_buffer_begin_interactive_action    (MooTextBuffer      *buffer);
+void        moo_text_buffer_end_interactive_action      (MooTextBuffer      *buffer);
+void        moo_text_buffer_begin_non_interactive_action(MooTextBuffer      *buffer);
+void        moo_text_buffer_end_non_interactive_action  (MooTextBuffer      *buffer);
 
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);
 
 void        moo_text_buffer_apply_scheme                (MooTextBuffer      *buffer,
                                                          MooTextStyleScheme *scheme);
+
+gpointer    moo_text_buffer_get_undo_mgr                (MooTextBuffer      *buffer);
 
 void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
                                                          int                 first_line,

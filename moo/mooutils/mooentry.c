@@ -12,30 +12,27 @@
  */
 
 #include MOO_MARSHALS_H
-#ifndef __MOO__
-#include "mooentry.h"
-#include "gtksourceundomanager.h"
-#else
 #include "mooutils/mooentry.h"
 #include "mooutils/mooutils-gobject.h"
-#include "mooutils/gtksourceundomanager.h"
-#endif
 #include <gtk/gtkbindings.h>
 #include <gtk/gtkimagemenuitem.h>
 #include <gtk/gtkseparatormenuitem.h>
 #include <gtk/gtkstock.h>
 #include <gdk/gdkkeysyms.h>
+#include <string.h>
 
 
 struct _MooEntryPrivate {
-    GtkSourceUndoManager *undo_mgr;
+    MooUndoMgr *undo_mgr;
     gboolean enable_undo;
     gboolean enable_undo_menu;
-    guint user_action_stack;
     guint use_ctrl_u : 1;
     guint grab_selection : 1;
     guint fool_entry : 1;
 };
+
+static guint INSERT_ACTION_TYPE;
+static guint DELETE_ACTION_TYPE;
 
 
 static void     moo_entry_class_init        (MooEntryClass      *klass);
@@ -60,12 +57,9 @@ static void     moo_entry_delete_to_start   (MooEntry           *entry);
 static void     moo_entry_populate_popup    (GtkEntry           *entry,
                                              GtkMenu            *menu);
 
-static void     moo_entry_insert_at_cursor  (GtkEntry           *entry,
-                                             const gchar        *str);
 static void     moo_entry_delete_from_cursor(GtkEntry           *entry,
                                              GtkDeleteType       type,
                                              gint                count);
-static void     moo_entry_backspace         (GtkEntry           *entry);
 static void     moo_entry_cut_clipboard     (GtkEntry           *entry);
 static void     moo_entry_paste_clipboard   (GtkEntry           *entry);
 
@@ -76,13 +70,6 @@ static void     moo_entry_do_insert_text    (GtkEditable        *editable,
 static void     moo_entry_do_delete_text    (GtkEditable        *editable,
                                              gint                start_pos,
                                              gint                end_pos);
-static void     moo_entry_insert_text       (GtkEditable        *editable,
-                                             const gchar        *text,
-                                             gint                length,
-                                             gint               *position);
-static void     moo_entry_delete_text       (GtkEditable        *editable,
-                                             gint                start_pos,
-                                             gint                end_pos);
 static void     moo_entry_set_selection_bounds (GtkEditable     *editable,
                                              gint                start_pos,
                                              gint                end_pos);
@@ -90,6 +77,14 @@ static gboolean moo_entry_get_selection_bounds (GtkEditable     *editable,
                                              gint               *start_pos,
                                              gint               *end_pos);
 
+static void     init_undo_actions           (void);
+static gpointer insert_action_new           (GtkEditable        *editable,
+                                             const gchar        *text,
+                                             gint                length,
+                                             gint               *position);
+static gpointer delete_action_new           (GtkEditable        *editable,
+                                             gint                start_pos,
+                                             gint                end_pos);
 
 
 GType
@@ -157,6 +152,8 @@ moo_entry_class_init (MooEntryClass *klass)
     GtkEntryClass *entry_class = GTK_ENTRY_CLASS (klass);
     GtkBindingSet *binding_set;
 
+    init_undo_actions ();
+
     gobject_class->finalize = moo_entry_finalize;
     gobject_class->set_property = moo_entry_set_property;
     gobject_class->get_property = moo_entry_get_property;
@@ -164,9 +161,7 @@ moo_entry_class_init (MooEntryClass *klass)
     widget_class->button_release_event = moo_entry_button_release;
 
     entry_class->populate_popup = moo_entry_populate_popup;
-    entry_class->insert_at_cursor = moo_entry_insert_at_cursor;
     entry_class->delete_from_cursor = moo_entry_delete_from_cursor;
-    entry_class->backspace = moo_entry_backspace;
     entry_class->cut_clipboard = moo_entry_cut_clipboard;
     entry_class->paste_clipboard = moo_entry_paste_clipboard;
 
@@ -181,7 +176,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                      g_param_spec_object ("undo-manager",
                                              "undo-manager",
                                              "undo-manager",
-                                             GTK_SOURCE_TYPE_UNDO_MANAGER,
+                                             MOO_TYPE_UNDO_MGR,
                                              G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class,
@@ -226,24 +221,6 @@ moo_entry_class_init (MooEntryClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    signals[BEGIN_USER_ACTION] =
-            g_signal_new ("begin-user-action",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEntryClass, begin_user_action),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[END_USER_ACTION] =
-            g_signal_new ("end-user-action",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEntryClass, end_user_action),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
     signals[DELETE_TO_START] =
             moo_signal_new_cb ("delete-to-start",
                                G_OBJECT_CLASS_TYPE (klass),
@@ -271,8 +248,6 @@ moo_entry_editable_init (GtkEditableClass   *klass)
 {
     klass->do_insert_text = moo_entry_do_insert_text;
     klass->do_delete_text = moo_entry_do_delete_text;
-    klass->insert_text = moo_entry_insert_text;
-    klass->delete_text = moo_entry_delete_text;
     klass->set_selection_bounds = moo_entry_set_selection_bounds;
     klass->get_selection_bounds = moo_entry_get_selection_bounds;
 }
@@ -282,7 +257,7 @@ static void
 moo_entry_init (MooEntry *entry)
 {
     entry->priv = g_new0 (MooEntryPrivate, 1);
-    entry->priv->undo_mgr = gtk_source_undo_manager_new (entry);
+    entry->priv->undo_mgr = moo_undo_mgr_new (entry);
     entry->priv->use_ctrl_u = TRUE;
 }
 
@@ -368,8 +343,8 @@ void
 moo_entry_undo (MooEntry       *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    if (entry->priv->enable_undo && gtk_source_undo_manager_can_undo (entry->priv->undo_mgr))
-        gtk_source_undo_manager_undo (entry->priv->undo_mgr);
+    if (entry->priv->enable_undo && moo_undo_mgr_can_undo (entry->priv->undo_mgr))
+        moo_undo_mgr_undo (entry->priv->undo_mgr);
 }
 
 
@@ -377,8 +352,40 @@ void
 moo_entry_redo (MooEntry       *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    if (entry->priv->enable_undo && gtk_source_undo_manager_can_redo (entry->priv->undo_mgr))
-        gtk_source_undo_manager_redo (entry->priv->undo_mgr);
+    if (entry->priv->enable_undo && moo_undo_mgr_can_redo (entry->priv->undo_mgr))
+        moo_undo_mgr_redo (entry->priv->undo_mgr);
+}
+
+
+void
+moo_entry_begin_undo_group (MooEntry *entry)
+{
+    g_return_if_fail (MOO_IS_ENTRY (entry));
+    moo_undo_mgr_start_group (entry->priv->undo_mgr);
+}
+
+
+void
+moo_entry_end_undo_group (MooEntry *entry)
+{
+    g_return_if_fail (MOO_IS_ENTRY (entry));
+    moo_undo_mgr_end_group (entry->priv->undo_mgr);
+}
+
+
+void
+moo_entry_clear_undo (MooEntry *entry)
+{
+    g_return_if_fail (MOO_IS_ENTRY (entry));
+    moo_undo_mgr_clear (entry->priv->undo_mgr);
+}
+
+
+MooUndoMgr*
+moo_entry_get_undo_mgr (MooEntry *entry)
+{
+    g_return_val_if_fail (MOO_IS_ENTRY (entry), NULL);
+    return entry->priv->undo_mgr;
 }
 
 
@@ -407,100 +414,39 @@ moo_entry_populate_popup (GtkEntry           *gtkentry,
     gtk_widget_show (item);
     gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
     gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                                    gtk_source_undo_manager_can_redo (entry->priv->undo_mgr));
+                                    moo_undo_mgr_can_redo (entry->priv->undo_mgr));
     g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_redo), entry);
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_UNDO, NULL);
     gtk_widget_show (item);
     gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
     gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                                     gtk_source_undo_manager_can_undo (entry->priv->undo_mgr));
+                                    moo_undo_mgr_can_undo (entry->priv->undo_mgr));
     g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_undo), entry);
 }
 
-
-void
-moo_entry_begin_user_action (MooEntry   *entry)
-{
-    g_return_if_fail (MOO_IS_ENTRY (entry));
-
-    entry->priv->user_action_stack++;
-
-    if (entry->priv->user_action_stack == 1)
-        g_signal_emit (entry, signals[BEGIN_USER_ACTION], 0);
-}
-
-
-void
-moo_entry_end_user_action (MooEntry   *entry)
-{
-    g_return_if_fail (MOO_IS_ENTRY (entry));
-    g_return_if_fail (entry->priv->user_action_stack > 0);
-
-    entry->priv->user_action_stack--;
-
-    if (!entry->priv->user_action_stack)
-        g_signal_emit (entry, signals[END_USER_ACTION], 0);
-}
-
-
-void
-moo_entry_begin_not_undoable_action (MooEntry   *entry)
-{
-    g_return_if_fail (MOO_IS_ENTRY (entry));
-    gtk_source_undo_manager_begin_not_undoable_action (entry->priv->undo_mgr);
-}
-
-
-void
-moo_entry_end_not_undoable_action (MooEntry   *entry)
-{
-    g_return_if_fail (MOO_IS_ENTRY (entry));
-    gtk_source_undo_manager_end_not_undoable_action (entry->priv->undo_mgr);
-}
-
-
-static void
-moo_entry_insert_at_cursor (GtkEntry           *entry,
-                            const gchar        *str)
-{
-    moo_entry_begin_user_action (MOO_ENTRY (entry));
-    GTK_ENTRY_CLASS(moo_entry_parent_class)->insert_at_cursor (entry, str);
-    moo_entry_end_user_action (MOO_ENTRY (entry));
-}
 
 static void
 moo_entry_delete_from_cursor (GtkEntry           *entry,
                               GtkDeleteType       type,
                               gint                count)
 {
-    moo_entry_begin_user_action (MOO_ENTRY (entry));
+    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->delete_from_cursor (entry, type, count);
-    moo_entry_end_user_action (MOO_ENTRY (entry));
-}
-
-static void
-moo_entry_backspace (GtkEntry           *entry)
-{
-    moo_entry_begin_user_action (MOO_ENTRY (entry));
-    GTK_ENTRY_CLASS(moo_entry_parent_class)->backspace (entry);
-    moo_entry_end_user_action (MOO_ENTRY (entry));
 }
 
 static void
 moo_entry_cut_clipboard (GtkEntry           *entry)
 {
-    moo_entry_begin_user_action (MOO_ENTRY (entry));
+    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->cut_clipboard (entry);
-    moo_entry_end_user_action (MOO_ENTRY (entry));
 }
 
 static void
 moo_entry_paste_clipboard (GtkEntry           *entry)
 {
-    moo_entry_begin_user_action (MOO_ENTRY (entry));
+    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->paste_clipboard (entry);
-    moo_entry_end_user_action (MOO_ENTRY (entry));
 }
 
 static void
@@ -509,9 +455,19 @@ moo_entry_do_insert_text (GtkEditable        *editable,
                           gint                length,
                           gint               *position)
 {
-    moo_entry_begin_user_action (MOO_ENTRY (editable));
-    parent_editable_iface->do_insert_text (editable, text, length, position);
-    moo_entry_end_user_action (MOO_ENTRY (editable));
+    if (length < 0)
+        length = strlen (text);
+
+    if (*position < 0)
+        *position = GTK_ENTRY(editable)->text_length;
+
+    if (length > 0)
+    {
+        moo_undo_mgr_add_action (MOO_ENTRY(editable)->priv->undo_mgr,
+                                 INSERT_ACTION_TYPE,
+                                 insert_action_new (editable, text, length, position));
+        parent_editable_iface->do_insert_text (editable, text, length, position);
+    }
 }
 
 static void
@@ -519,30 +475,29 @@ moo_entry_do_delete_text (GtkEditable        *editable,
                           gint                start_pos,
                           gint                end_pos)
 {
-    moo_entry_begin_user_action (MOO_ENTRY (editable));
-    parent_editable_iface->do_delete_text (editable, start_pos, end_pos);
-    moo_entry_end_user_action (MOO_ENTRY (editable));
-}
+    if (start_pos == end_pos)
+        return;
 
-static void
-moo_entry_insert_text (GtkEditable        *editable,
-                       const gchar        *text,
-                       gint                length,
-                       gint               *position)
-{
-    moo_entry_begin_user_action (MOO_ENTRY (editable));
-    parent_editable_iface->insert_text (editable, text, length, position);
-    moo_entry_end_user_action (MOO_ENTRY (editable));
-}
+    g_return_if_fail (start_pos >= 0);
 
-static void
-moo_entry_delete_text (GtkEditable        *editable,
-                       gint                start_pos,
-                       gint                end_pos)
-{
-    moo_entry_begin_user_action (MOO_ENTRY (editable));
-    parent_editable_iface->delete_text (editable, start_pos, end_pos);
-    moo_entry_end_user_action (MOO_ENTRY (editable));
+    if (end_pos < 0)
+    {
+        end_pos = GTK_ENTRY(editable)->text_length;
+    }
+    else if (start_pos > end_pos)
+    {
+        int tmp = start_pos;
+        start_pos = end_pos;
+        end_pos = tmp;
+    }
+
+    if (start_pos < end_pos)
+    {
+        moo_undo_mgr_add_action (MOO_ENTRY(editable)->priv->undo_mgr,
+                                 DELETE_ACTION_TYPE,
+                                 delete_action_new (editable, start_pos, end_pos));
+        parent_editable_iface->do_delete_text (editable, start_pos, end_pos);
+    }
 }
 
 
@@ -556,7 +511,7 @@ moo_entry_delete_to_start (MooEntry *entry)
 
 
 /*********************************************************************/
-/* Working around gtk idiotic selection business
+/* Working around idiotic gtk selection business
  */
 
 /* GtkEdiatble::delete_text and GtkWidget::realize might also require this hack */
@@ -597,4 +552,250 @@ moo_entry_button_release (GtkWidget          *widget,
     MOO_ENTRY(widget)->priv->fool_entry = FALSE;
 
     return result;
+}
+
+
+/*********************************************************************/
+/* Undo/redo
+ */
+
+typedef struct {
+    int   pos;
+    char *text;
+    int   length;
+    int   chars;
+} InsertAction;
+
+typedef struct {
+    int   start;
+    int   end;
+    char *text;
+    gboolean forward;
+} DeleteAction;
+
+static void     insert_action_undo      (InsertAction   *action,
+                                         GtkEditable    *editable);
+static void     insert_action_redo      (InsertAction   *action,
+                                         GtkEditable    *editable);
+static gboolean insert_action_merge     (InsertAction   *action,
+                                         InsertAction   *what);
+static void     insert_action_destroy   (InsertAction   *action);
+
+static void     delete_action_undo      (DeleteAction   *action,
+                                         GtkEditable    *editable);
+static void     delete_action_redo      (DeleteAction   *action,
+                                         GtkEditable    *editable);
+static gboolean delete_action_merge     (DeleteAction   *action,
+                                         DeleteAction   *what);
+static void     delete_action_destroy   (DeleteAction   *action);
+
+
+static MooUndoActionClass InsertActionClass = {
+    (MooUndoActionUndo) insert_action_undo,
+    (MooUndoActionRedo) insert_action_redo,
+    (MooUndoActionMerge) insert_action_merge,
+    (MooUndoActionDestroy) insert_action_destroy
+};
+
+static MooUndoActionClass DeleteActionClass = {
+    (MooUndoActionUndo) delete_action_undo,
+    (MooUndoActionRedo) delete_action_redo,
+    (MooUndoActionMerge) delete_action_merge,
+    (MooUndoActionDestroy) delete_action_destroy
+};
+
+
+static void
+init_undo_actions (void)
+{
+    INSERT_ACTION_TYPE = moo_undo_action_register (&InsertActionClass);
+    DELETE_ACTION_TYPE = moo_undo_action_register (&DeleteActionClass);
+}
+
+
+static gpointer
+insert_action_new (G_GNUC_UNUSED GtkEditable *editable,
+                   const gchar        *text,
+                   gint                length,
+                   gint               *position)
+{
+    InsertAction *action;
+
+    if (length < 0)
+        length = strlen (text);
+
+    g_return_val_if_fail (length > 0, NULL);
+
+    action = g_new0 (InsertAction, 1);
+
+    action->pos = *position;
+    action->text = g_strndup (text, length);
+    action->length = length;
+    action->chars = g_utf8_strlen (text, length);
+
+    return action;
+}
+
+
+static gpointer
+delete_action_new (GtkEditable        *editable,
+                   gint                start_pos,
+                   gint                end_pos)
+{
+    DeleteAction *action;
+
+    g_return_val_if_fail (start_pos < end_pos, NULL);
+
+    action = g_new0 (DeleteAction, 1);
+
+    action->start = start_pos;
+    action->end = end_pos;
+
+    action->text = gtk_editable_get_chars (editable, start_pos, end_pos);
+
+    /* figure out if the user used the Delete or the Backspace key */
+    if (gtk_editable_get_position (editable) <= action->start)
+        action->forward = TRUE;
+    else
+        action->forward = FALSE;
+
+    return action;
+}
+
+
+static void
+insert_action_undo (InsertAction   *action,
+                    GtkEditable    *editable)
+{
+    gtk_editable_delete_text (editable, action->pos, action->pos + action->chars);
+    gtk_editable_set_position (editable, action->pos);
+}
+
+
+static void
+delete_action_undo (DeleteAction   *action,
+                    GtkEditable    *editable)
+{
+    int pos_here = action->start;
+
+    gtk_editable_insert_text (editable, action->text, -1, &pos_here);
+
+    if (action->forward)
+        gtk_editable_set_position (editable, action->start);
+    else
+        gtk_editable_set_position (editable, action->end);
+}
+
+
+static void
+insert_action_redo (InsertAction   *action,
+                    GtkEditable    *editable)
+{
+    int pos_here = action->pos;
+    gtk_editable_insert_text (editable, action->text, action->length, &pos_here);
+    gtk_editable_set_position (editable, action->pos + action->chars);
+}
+
+
+static void
+delete_action_redo (DeleteAction   *action,
+                    GtkEditable    *editable)
+{
+    gtk_editable_delete_text (editable, action->start, action->end);
+    gtk_editable_set_position (editable, action->start);
+}
+
+
+static void
+insert_action_destroy (InsertAction *action)
+{
+    if (action)
+    {
+        g_free (action->text);
+        g_free (action);
+    }
+}
+
+
+static void
+delete_action_destroy (DeleteAction *action)
+{
+    if (action)
+    {
+        g_free (action->text);
+        g_free (action);
+    }
+}
+
+
+static gboolean
+insert_action_merge (InsertAction   *last_action,
+                     InsertAction   *action)
+{
+    char *tmp;
+
+    if (action->pos != (last_action->pos + last_action->chars) ||
+        (action->text[0] != ' ' && action->text[0] != '\t' &&
+        (last_action->text[last_action->length-1] == ' ' ||
+        last_action->text[last_action->length-1] == '\t')))
+    {
+        return FALSE;
+    }
+
+    tmp = g_strconcat (last_action->text, action->text, NULL);
+    g_free (last_action->text);
+    last_action->length += action->length;
+    last_action->text = tmp;
+    last_action->chars += action->chars;
+
+    return TRUE;
+}
+
+
+static gboolean
+delete_action_merge (DeleteAction   *last_action,
+                     DeleteAction   *action)
+{
+    char *tmp;
+
+    if (last_action->forward != action->forward ||
+        (last_action->start != action->start &&
+        last_action->start != action->end))
+    {
+        return FALSE;
+    }
+
+    if (last_action->start == action->start)
+    {
+        char *text_end = g_utf8_offset_to_pointer (last_action->text,
+                last_action->end - last_action->start - 1);
+
+        /* Deleted with the delete key */
+        if (action->text[0] != ' ' && action->text[0] != '\t' &&
+            (*text_end == ' ' || *text_end  == '\t'))
+        {
+            return FALSE;
+        }
+
+        tmp = g_strconcat (last_action->text, action->text, NULL);
+        g_free (last_action->text);
+        last_action->end += (action->end - action->start);
+        last_action->text = tmp;
+    }
+    else
+    {
+        /* Deleted with the backspace key */
+        if (action->text[0] != ' ' && action->text[0] != '\t' &&
+            (last_action->text[0] == ' ' || last_action->text[0] == '\t'))
+        {
+            return FALSE;
+        }
+
+        tmp = g_strconcat (action->text, last_action->text, NULL);
+        g_free (last_action->text);
+        last_action->start = action->start;
+        last_action->text = tmp;
+    }
+
+    return TRUE;
 }

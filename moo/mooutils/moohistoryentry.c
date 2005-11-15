@@ -488,6 +488,8 @@ moo_history_entry_set_list (MooHistoryEntry    *entry,
                                             entry, NULL);
     moo_combo_set_model (MOO_COMBO (entry), entry->priv->filter);
 
+    moo_history_list_load (list);
+
     g_object_notify (G_OBJECT (entry), "list");
 }
 

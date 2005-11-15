@@ -198,6 +198,7 @@ mooutils_include_headers =                     \
     $(mooutils)/moostock.h                     \
     $(mooutils)/mootoggleaction.h              \
     $(mooutils)/moouixml.h                     \
+    $(mooutils)/mooundomanager.h               \
     $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
     $(mooutils)/mooutils-python.h              \
@@ -206,8 +207,6 @@ mooutils_include_headers =                     \
 mooutils_sources =                             \
     $(mooutils_include_headers)                \
     $(mooutils)/eggregex.c                     \
-    $(mooutils)/gtksourceundomanager.c         \
-    $(mooutils)/gtksourceundomanager.h         \
     $(mooutils)/mooaccel.c                     \
     $(mooutils)/mooaccelbutton-glade.h         \
     $(mooutils)/mooaccelbutton.c               \
@@ -241,6 +240,7 @@ mooutils_sources =                             \
     $(mooutils)/moostock.c                     \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
+    $(mooutils)/mooundomanager.c               \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \
     $(mooutils)/moowindow.c                    \

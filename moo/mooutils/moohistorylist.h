@@ -99,6 +99,8 @@ guint            moo_history_list_get_max_entries   (MooHistoryList *list);
 void             moo_history_list_set_max_entries   (MooHistoryList *list,
                                                      guint           num);
 
+void             moo_history_list_load              (MooHistoryList *list);
+
 void             moo_history_list_add_builtin       (MooHistoryList *list,
                                                      const char     *item,
                                                      const char     *display_item);

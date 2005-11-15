@@ -888,13 +888,13 @@ popup_select_iter (MooCombo     *combo,
 
     g_signal_handlers_block_by_func (combo->entry,
                                      (gpointer) entry_changed, combo);
-    moo_entry_begin_user_action (MOO_ENTRY (combo->entry));
+    moo_entry_begin_undo_group (MOO_ENTRY (combo->entry));
 
     moo_combo_popdown (combo);
     gtk_entry_set_text (GTK_ENTRY (combo->entry), text);
     gtk_editable_set_position (GTK_EDITABLE (combo->entry), -1);
 
-    moo_entry_end_user_action (MOO_ENTRY (combo->entry));
+    moo_entry_end_undo_group (MOO_ENTRY (combo->entry));
     g_signal_handlers_unblock_by_func (combo->entry,
                                        (gpointer) entry_changed, combo);
 

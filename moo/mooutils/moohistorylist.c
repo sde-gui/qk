@@ -76,7 +76,6 @@ static void     _list_move_on_top               (MooHistoryList     *list,
                                                  GtkTreeIter        *iter);
 static void     _list_delete_last               (MooHistoryList     *list);
 
-static void     list_load_recent                (MooHistoryList     *list);
 static void     list_save_recent                (MooHistoryList     *list);
 
 static void     menu_item_activated             (MooHistoryList     *list,
@@ -442,7 +441,7 @@ moo_history_list_add_full (MooHistoryList *list,
     if (!list->priv->allow_empty && !entry[0])
         return;
 
-    list_load_recent (list);
+    moo_history_list_load (list);
 
     if (list_find_item (list, entry, &iter))
     {
@@ -655,7 +654,7 @@ MooMenuMgr*
 moo_history_list_get_menu_mgr (MooHistoryList *list)
 {
     g_return_val_if_fail (MOO_IS_HISTORY_LIST (list), NULL);
-    list_load_recent (list);
+    moo_history_list_load (list);
     return list->priv->mgr;
 }
 
@@ -756,12 +755,14 @@ _list_delete_last (MooHistoryList *list)
 
 /* TODO: this all is broken with non-utf8 text */
 
-static void
-list_load_recent (MooHistoryList *list)
+void
+moo_history_list_load (MooHistoryList *list)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
     char *root_path;
+
+    g_return_if_fail (MOO_IS_HISTORY_LIST (list));
 
     if (!list->priv->user_id)
         return;

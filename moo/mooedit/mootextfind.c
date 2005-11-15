@@ -18,6 +18,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextsearch.h"
 #include "mooutils/moohistoryentry.h"
+#include "mooutils/mooentry.h"
 #include <gtk/gtk.h>
 
 
@@ -231,13 +232,15 @@ moo_find_setup (MooFind        *find,
         gtk_text_iter_get_line (&sel_start) == gtk_text_iter_get_line (&sel_end))
     {
         char *selection = gtk_text_buffer_get_text (buffer, &sel_start, &sel_end, TRUE);
-        moo_combo_entry_set_text (search_entry, selection);
+        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), selection);
         g_free (selection);
     }
     else if (last_search)
     {
-        moo_combo_entry_set_text (search_entry, last_search);
+        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), last_search);
     }
+
+    moo_entry_clear_undo (MOO_ENTRY (search_entry->entry));
 
     moo_find_set_flags (find, last_search_flags);
 }
@@ -726,13 +729,10 @@ run_replace_silent (GtkTextView *view,
 
     replaced = do_replace_silent (&start, &end, flags, text, regex, replacement);
 
-    if (get_search_bounds2 (buffer, flags, &start, &end))
+    if (get_search_bounds2 (buffer, flags, &start, &end) &&
+        moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
     {
-        int replaced2;
-
-        if (moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
-            replaced2 = do_replace_silent (&start, &end, flags, text, regex, replacement);
-
+        int replaced2 = do_replace_silent (&start, &end, flags, text, regex, replacement);
         moo_text_replaced_n_dialog (GTK_WIDGET (view), replaced2);
     }
     else

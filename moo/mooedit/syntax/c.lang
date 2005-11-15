@@ -49,6 +49,33 @@
       <keyword>_Complex</keyword>
       <keyword>_Bool</keyword>
     </keyword-list>
+    <keyword-list name="glib-types">
+      <keyword>gboolean</keyword>
+      <keyword>gpointer</keyword>
+      <keyword>gconstpointer</keyword>
+      <keyword>gchar</keyword>
+      <keyword>gunichar</keyword>
+      <keyword>guchar</keyword>
+      <keyword>gint</keyword>
+      <keyword>guint</keyword>
+      <keyword>gshort</keyword>
+      <keyword>gushort</keyword>
+      <keyword>glong</keyword>
+      <keyword>gulong</keyword>
+      <keyword>gint8</keyword>
+      <keyword>guint8</keyword>
+      <keyword>gint16</keyword>
+      <keyword>guint16</keyword>
+      <keyword>gint32</keyword>
+      <keyword>guint32</keyword>
+      <keyword>gint64</keyword>
+      <keyword>guint64</keyword>
+      <keyword>gfloat</keyword>
+      <keyword>gdouble</keyword>
+      <keyword>gsize</keyword>
+      <keyword>gssize</keyword>
+      <keyword>GType</keyword>
+    </keyword-list>
     <keyword-list name="CommonMacro">
       <keyword>NULL</keyword>
       <keyword>TRUE</keyword>

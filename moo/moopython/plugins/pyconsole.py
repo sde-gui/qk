@@ -103,6 +103,14 @@ class _ReadLine(object):
         self.history = _ReadLine.History()
         self.nonword_re = re.compile("[^\w\._]")
 
+    def freeze_undo(self):
+        try: self.begin_not_undoable_action()
+        except: pass
+
+    def thaw_undo(self):
+        try: self.end_not_undoable_action()
+        except: pass
+
     def raw_input(self, ps=None):
         if ps:
             self.ps = ps
@@ -112,7 +120,9 @@ class _ReadLine(object):
         iter = self.buffer.get_iter_at_mark(self.buffer.get_insert())
 
         if ps:
+            self.freeze_undo()
             self.buffer.insert(iter, self.ps)
+            self.thaw_undo()
 
         self.__move_cursor_to(iter)
         self.scroll_to_mark(self.cursor, 0.2)
@@ -184,9 +194,9 @@ class _ReadLine(object):
             end = line_end
         self.__delete(start, end)
 
-    def do_key_press_event(self, event):
+    def do_key_press_event(self, event, parent_type):
         if not self.in_raw_input:
-            return gtk.TextView.do_key_press_event(self, event)
+            return parent_type.do_key_press_event(self, event)
 
         tab_pressed = self.tab_pressed
         self.tab_pressed = 0
@@ -228,7 +238,7 @@ class _ReadLine(object):
             handled = False
 
         if not handled:
-            return gtk.TextView.do_key_press_event(self, event)
+            return parent_type.do_key_press_event(self, event)
         else:
             return True
 
@@ -352,7 +362,9 @@ class _ReadLine(object):
                 self.__delete(start_iter, end_iter)
                 self.__insert(end_iter, prefix)
             elif self.tab_pressed > 1:
+                self.freeze_undo()
                 self.__print_completions(completions)
+                self.thaw_undo()
                 self.tab_pressed = 0
 
     def complete(self, text):
@@ -375,10 +387,12 @@ class _ReadLine(object):
             end.forward_to_line_end()
         text = self.__get_line()
         self.__move_cursor_to(end)
+        self.freeze_undo()
         self.__insert(end, "\n")
         self.in_raw_input = False
         self.history.commit(text)
         self.do_raw_input(text)
+        self.thaw_undo()
 
     def do_raw_input(self, text):
         pass
@@ -508,7 +522,7 @@ def ReadLineType(t=gtk.TextView):
             t.__init__(self)
             _ReadLine.__init__(self, *args, **kwargs)
         def do_key_press_event(self, event):
-            return _ReadLine.do_key_press_event(self, event)
+            return _ReadLine.do_key_press_event(self, event, t)
     gobject.type_register(readline)
     return readline
 
@@ -518,7 +532,7 @@ def ConsoleType(t=gtk.TextView):
             t.__init__(self)
             _Console.__init__(self, *args, **kwargs)
         def do_key_press_event(self, event):
-            return _Console.do_key_press_event(self, event)
+            return _Console.do_key_press_event(self, event, t)
     gobject.type_register(console)
     return console
 

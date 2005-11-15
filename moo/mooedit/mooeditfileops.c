@@ -294,7 +294,9 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
     if (undo)
         gtk_text_buffer_begin_user_action (buffer);
     else
-        moo_text_view_start_not_undoable_action (view);
+        moo_text_view_begin_not_undoable_action (view);
+
+    moo_text_buffer_begin_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
     if (!encoding)
     {
@@ -346,6 +348,8 @@ moo_edit_load_default (G_GNUC_UNUSED MooEditLoader *loader,
         gtk_text_buffer_end_user_action (buffer);
     else
         moo_text_view_end_not_undoable_action (view);
+
+    moo_text_buffer_end_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
     return success;
 }

@@ -1064,18 +1064,18 @@
 (define-method redo
   (of-object "MooTextView")
   (c-name "moo_text_view_redo")
-  (return-type "none")
+  (return-type "gboolean")
 )
 
 (define-method undo
   (of-object "MooTextView")
   (c-name "moo_text_view_undo")
-  (return-type "none")
+  (return-type "gboolean")
 )
 
-(define-method start_not_undoable_action
+(define-method begin_not_undoable_action
   (of-object "MooTextView")
-  (c-name "moo_text_view_start_not_undoable_action")
+  (c-name "moo_text_view_begin_not_undoable_action")
   (return-type "none")
 )
 
