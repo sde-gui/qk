@@ -22,6 +22,7 @@ G_BEGIN_DECLS
 
 
 void        _moo_python_plugin_init         (char      **dirs);
+void        _moo_python_plugin_deinit       (void);
 void        _moo_python_plugin_reload       (void);
 
 PyObject   *_moo_python_plugin_hook         (const char *event,

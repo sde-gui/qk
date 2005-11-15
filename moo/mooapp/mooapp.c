@@ -942,7 +942,38 @@ moo_app_init_real (MooApp *app)
 }
 
 
-static void     start_python            (G_GNUC_UNUSED MooApp *app)
+#ifdef MOO_USE_PYTHON
+static void
+reload_python_plugins (void)
+{
+    _moo_python_plugin_reload ();
+}
+
+static void
+add_python_plugin_actions (MooApp *app)
+{
+    MooUIXML *xml;
+    MooWindowClass *klass;
+
+    klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    moo_window_class_new_action (klass, "ReloadPythonPlugins",
+                                 "name", "Reload Python Plugins",
+                                 "label", "Reload Python Plugins",
+                                 "icon-stock-id", GTK_STOCK_REFRESH,
+                                 "closure::callback", reload_python_plugins,
+                                 NULL);
+
+    xml = moo_app_get_ui_xml (app);
+    moo_ui_xml_add_item (xml, moo_ui_xml_new_merge_id (xml),
+                         "Editor/Menubar/Tools", "ReloadPythonPlugins",
+                         "ReloadPythonPlugins", -1);
+
+    g_type_class_unref (klass);
+}
+#endif /* MOO_USE_PYTHON */
+
+static void
+start_python (G_GNUC_UNUSED MooApp *app)
 {
 #ifdef MOO_USE_PYTHON
     if (app->priv->run_python)
@@ -959,6 +990,7 @@ static void     start_python            (G_GNUC_UNUSED MooApp *app)
             plugin_dirs = moo_app_get_plugin_dirs (app);
             _moo_python_plugin_init (plugin_dirs);
             g_strfreev (plugin_dirs);
+            add_python_plugin_actions (app);
         }
         else
         {

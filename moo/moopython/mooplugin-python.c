@@ -69,34 +69,6 @@ static void      moo_py_plugin_delete           (MooPyPluginData    *data);
 
 
 static void
-prepend_id (gpointer id,
-            G_GNUC_UNUSED gpointer hook,
-            GSList **list)
-{
-    *list = g_slist_prepend (*list, id);
-}
-
-static void
-moo_python_plugin_deinit (MooPythonPlugin *plugin)
-{
-    GSList *ids = NULL, *l;
-
-    g_hash_table_foreach (plugin->hook_ids, (GHFunc) prepend_id, &ids);
-
-    for (l = ids; l != NULL; l = l->next)
-        moo_python_plugin_remove_hook (plugin, GPOINTER_TO_INT (l->data));
-
-    g_hash_table_destroy (plugin->hook_ids);
-    plugin->hook_ids = NULL;
-    g_slist_free (ids);
-
-    g_slist_foreach (plugin->plugins, (GFunc) moo_py_plugin_delete, NULL);
-    g_slist_free (plugin->plugins);
-    plugin->plugins = NULL;
-}
-
-
-static void
 call_hooks (MooPythonPlugin *plugin,
             MooEditWindow   *window,
             MooEdit         *doc,
@@ -280,9 +252,38 @@ _moo_python_plugin_reload (void)
 {
     char **dirs = python_plugin.dirs;
     python_plugin.dirs = NULL;
-    moo_python_plugin_deinit (&python_plugin);
+    _moo_python_plugin_deinit ();
     _moo_python_plugin_init (dirs);
     g_strfreev (dirs);
+}
+
+
+static void
+prepend_id (gpointer id,
+            G_GNUC_UNUSED gpointer hook,
+            GSList **list)
+{
+    *list = g_slist_prepend (*list, id);
+}
+
+void
+_moo_python_plugin_deinit (void)
+{
+    GSList *ids = NULL, *l;
+
+    g_return_if_fail (python_plugin.hook_ids != NULL);
+    g_hash_table_foreach (python_plugin.hook_ids, (GHFunc) prepend_id, &ids);
+
+    for (l = ids; l != NULL; l = l->next)
+        moo_python_plugin_remove_hook (&python_plugin, GPOINTER_TO_INT (l->data));
+
+    g_hash_table_destroy (python_plugin.hook_ids);
+    python_plugin.hook_ids = NULL;
+    g_slist_free (ids);
+
+    g_slist_foreach (python_plugin.plugins, (GFunc) moo_py_plugin_delete, NULL);
+    g_slist_free (python_plugin.plugins);
+    python_plugin.plugins = NULL;
 }
 
 
@@ -568,6 +569,7 @@ moo_py_plugin_instance_init (MooPyPlugin            *plugin,
     {
         PyErr_Print ();
         g_warning ("%s: could not create plugin instance", G_STRLOC);
+        g_return_if_reached ();
     }
 
     moo_plugin->info = get_plugin_info (plugin->instance);
