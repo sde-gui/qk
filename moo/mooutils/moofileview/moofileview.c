@@ -2033,7 +2033,8 @@ static void file_view_properties_dialog     (MooFileView    *fileview,
                           G_CALLBACK (gtk_widget_hide_on_delete), NULL);
     }
 
-    moo_file_props_dialog_set_file (dialog, files->data, fileview->priv->current_dir);
+    moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (dialog),
+                                    files->data, fileview->priv->current_dir);
     gtk_window_present (GTK_WINDOW (dialog));
 
     g_list_foreach (files, (GFunc) moo_file_unref, NULL);

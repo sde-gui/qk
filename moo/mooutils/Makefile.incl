@@ -26,10 +26,12 @@ moofileview_sources =                          \
     $(moofileview)/moobookmarkmgr.c            \
     $(moofileview)/moobookmarkmgr.h            \
     $(moofileview)/moobookmarkmgr-glade.h      \
+    $(moofileview)/moocreatefolder-glade.h     \
     $(moofileview)/moofile.c                   \
     $(moofileview)/moofile.h                   \
     $(moofileview)/moofileentry.c              \
     $(moofileview)/moofileentry.h              \
+    $(moofileview)/moofileprops-glade.h        \
     $(moofileview)/moofilesystem.c             \
     $(moofileview)/moofilesystem.h             \
     $(moofileview)/moofileview.c               \
@@ -49,6 +51,8 @@ moofileview_pixmaps =                          \
     $(moofileview)/symlink-small.png
 
 moofileview_built_sources =                    \
+    $(moofileview)/moofileprops-glade.h        \
+    $(moofileview)/moocreatefolder-glade.h     \
     $(moofileview)/symlink.h                   \
     $(moofileview)/moobookmarkmgr-glade.h
 
@@ -59,6 +63,18 @@ $(moofileview)/symlink.h: $(moofileview_pixmaps)
 	SYMLINK_ARROW_SMALL $(moofileview_srcdir)/symlink-small.png        \
 	> $(moofileview)/symlink.h
 
+$(moofileview)/moofileprops-glade.h: $(moofileview_srcdir)/glade/moofileprops.glade $(XML2H)
+	mkdir -p $(moofileview)
+	sh $(XML2H) MOO_FILE_PROPS_GLADE_UI                                \
+	   $(moofileview_srcdir)/glade/moofileprops.glade >                \
+		$(moofileview)/moofileprops-glade.h
+
+$(moofileview)/moocreatefolder-glade.h: $(moofileview_srcdir)/glade/moocreatefolder.glade $(XML2H)
+	mkdir -p $(moofileview)
+	sh $(XML2H) MOO_CREATE_FOLDER_GLADE_UI                             \
+	   $(moofileview_srcdir)/glade/moocreatefolder.glade >             \
+		$(moofileview)/moocreatefolder-glade.h
+
 $(moofileview)/moobookmarkmgr-glade.h: $(moofileview_srcdir)/glade/bookmark_editor.glade $(XML2H)
 	mkdir -p $(moofileview)
 	sh $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI                              \
@@ -66,6 +82,7 @@ $(moofileview)/moobookmarkmgr-glade.h: $(moofileview_srcdir)/glade/bookmark_edit
 		$(moofileview)/moobookmarkmgr-glade.h
 
 moo_extra_dist +=                              \
+    $(moofileview)/glade/moofileprops.glade    \
     $(moofileview)/glade/bookmark_editor.glade \
     $(moofileview_pixmaps)
 moo_unix_sources +=                            \
