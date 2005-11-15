@@ -840,6 +840,10 @@ _moo_window_attach_plugins (MooEditWindow *window)
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_win (l->data, window);
+
+#ifdef MOO_USE_PYGTK
+    _moo_python_attach_win (window);
+#endif
 }
 
 
@@ -854,6 +858,10 @@ _moo_window_detach_plugins (MooEditWindow *window)
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_win (l->data, window);
+
+#ifdef MOO_USE_PYGTK
+    _moo_python_detach_win (window);
+#endif
 }
 
 
@@ -870,6 +878,10 @@ _moo_doc_attach_plugins (MooEditWindow *window,
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_doc (l->data, window, doc);
+
+#ifdef MOO_USE_PYGTK
+    _moo_python_attach_doc (window, doc);
+#endif
 }
 
 
@@ -886,6 +898,10 @@ _moo_doc_detach_plugins (MooEditWindow *window,
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_doc (l->data, window, doc);
+
+#ifdef MOO_USE_PYGTK
+    _moo_python_detach_doc (window, doc);
+#endif
 }
 
 

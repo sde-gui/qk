@@ -204,6 +204,12 @@ void        _moo_doc_attach_plugins     (MooEditWindow  *window,
                                          MooEdit        *doc);
 void        _moo_doc_detach_plugins     (MooEditWindow  *window,
                                          MooEdit        *doc);
+void        _moo_python_attach_win      (MooEditWindow  *window);
+void        _moo_python_detach_win      (MooEditWindow  *window);
+void        _moo_python_attach_doc      (MooEditWindow  *window,
+                                         MooEdit        *doc);
+void        _moo_python_detach_doc      (MooEditWindow  *window,
+                                         MooEdit        *doc);
 
 void        _moo_plugin_attach_prefs    (GtkWidget      *prefs_dialog);
 
