@@ -1163,15 +1163,15 @@ typedef struct {
 
 typedef struct {
     EditAction edit;
-    gint16 pos;
-    gint16 length;
-    gint16 chars;
+    int pos;
+    int length;
+    int chars;
 } InsertAction;
 
 typedef struct {
     EditAction edit;
-    gint16 start;
-    gint16 end;
+    int start;
+    int end;
     guint forward : 1;
 } DeleteAction;
 
