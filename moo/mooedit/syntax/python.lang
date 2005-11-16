@@ -132,11 +132,11 @@
       <Regex style="Raw String" pattern="[rR]&quot;" context="Raw Q-string"/>
 
       <Regex style="Comment" pattern="#.*$" context="#stay"/>
-      <String style="Comment" string="'''" context="Tripple A-comment" first-non-blank-only="true"/>
-      <String style="Comment" string="&quot;&quot;&quot;" context="Tripple Q-comment" first-non-blank-only="true"/>
+      <Regex style="Comment" pattern="^\s*'''" context="Tripple A-comment" first-non-blank-only="true"/>
+      <String style="Comment" string="^\s*&quot;&quot;&quot;" context="Tripple Q-comment" first-non-blank-only="true"/>
 
-      <String style="String" string="'''" context="Tripple A-string"/>
-      <String style="String" string="&quot;&quot;&quot;" context="Tripple Q-string"/>
+      <String style="Tripple String" string="'''" context="Tripple A-string"/>
+      <String style="Tripple String" string="&quot;&quot;&quot;" context="Tripple Q-string"/>
       <Char style="String" char="'" context="Single A-string"/>
       <Char style="String" char="&quot;" context="Single Q-string"/>
 
@@ -153,13 +153,13 @@
       <String style="Comment" string="&quot;&quot;&quot;" context="#pop"/>
     </context>
 
-    <context name="Tripple A-string" style="String" eol-context="#stay">
+    <context name="Tripple A-string" style="Tripple String" eol-context="#stay">
       <CChar style="String" context="#stay"/>
       <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
       <String style="String" string="'''" context="#pop"/>
     </context>
 
-    <context name="Tripple Q-string" style="String" eol-context="#stay">
+    <context name="Tripple Q-string" style="Tripple String" eol-context="#stay">
       <EscapedChar style="String" context="#stay"/>
       <Regex style="Operator" pattern="%[a-zA-Z]" context="#stay"/>
       <String style="String" string="&quot;&quot;&quot;" context="#pop"/>
@@ -213,6 +213,7 @@
     <style name="Comment" default-style="Comment"/>
     <style name="String" default-style="String"/>
     <style name="Raw String" default-style="String"/>
+    <style name="Tripple String" default-style="String"/>
   </styles>
   <general>
     <comments>
