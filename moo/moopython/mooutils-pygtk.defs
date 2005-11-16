@@ -105,6 +105,13 @@
   (gtype-id "MOO_TYPE_ACTION")
 )
 
+(define-object MenuAction
+  (in-module "Moo")
+  (parent "MooAction")
+  (c-name "MooMenuAction")
+  (gtype-id "MOO_TYPE_MENU_ACTION")
+)
+
 (define-object Closure
   (in-module "Moo")
   (parent "GtkObject")
@@ -149,6 +156,19 @@
   (gtype-id "MOO_TYPE_PANE_PARAMS")
   (copy-func "moo_pane_params_copy")
   (release-func "moo_pane_params_free")
+)
+
+(define-boxed HistoryListItem
+  (in-module "Moo")
+  (c-name "MooHistoryListItem")
+  (gtype-id "MOO_TYPE_HISTORY_LIST_ITEM")
+  (copy-func "moo_history_list_item_copy")
+  (release-func "moo_history_list_item_free")
+  (fields
+    '("char*" "data")
+    '("char*" "display")
+    '("gboolean" "builtin")
+  )
 )
 
 
@@ -389,10 +409,22 @@
   (c-name "moo_file_dialog")
   (return-type "const-char*")
   (parameters
-    '("GtkWidget*" "parent")
-    '("MooFileDialogType" "type")
-    '("const-char*" "title")
-    '("const-char*" "start_dir")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type" (default "MOO_DIALOG_FILE_OPEN_EXISTING"))
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "start_dir" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function file_dialogp
+  (c-name "moo_file_dialogp")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type" (default "MOO_DIALOG_FILE_OPEN_EXISTING"))
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "prefs_key")
+    '("const-char*" "alternate_prefs_key" (null-ok) (default "NULL"))
   )
 )
 
@@ -432,18 +464,6 @@
   )
 )
 
-(define-function file_dialogp
-  (c-name "moo_file_dialogp")
-  (return-type "const-char*")
-  (parameters
-    '("GtkWidget*" "parent")
-    '("MooFileDialogType" "type")
-    '("const-char*" "title")
-    '("const-char*" "prefs_key")
-    '("const-char*" "alternate_prefs_key")
-  )
-)
-
 (define-function font_dialog
   (c-name "moo_font_dialog")
   (return-type "const-char*")
@@ -459,9 +479,9 @@
   (c-name "moo_error_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("const-char*" "text")
-    '("const-char*" "secondary_text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
   )
 )
 
@@ -469,9 +489,9 @@
   (c-name "moo_info_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("const-char*" "text")
-    '("const-char*" "secondary_text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
   )
 )
 
@@ -479,9 +499,9 @@
   (c-name "moo_warning_dialog")
   (return-type "none")
   (parameters
-    '("GtkWidget*" "parent")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("const-char*" "text")
-    '("const-char*" "secondary_text")
+    '("const-char*" "secondary_text" (null-ok) (default "NULL"))
   )
 )
 
@@ -925,6 +945,15 @@
   )
 )
 
+(define-method remove
+  (of-object "MooHistoryList")
+  (c-name "moo_history_list_remove")
+  (return-type "none")
+  (parameters
+    '("const-char*" "item")
+  )
+)
+
 (define-method set_display_func
   (of-object "MooHistoryList")
   (c-name "moo_history_list_set_display_func")
@@ -981,6 +1010,12 @@
   )
 )
 
+(define-method load
+  (of-object "MooHistoryList")
+  (c-name "moo_history_list_load")
+  (return-type "none")
+)
+
 (define-method add_builtin
   (of-object "MooHistoryList")
   (c-name "moo_history_list_add_builtin")
@@ -1007,19 +1042,6 @@
     '("gboolean" "builtin")
   )
 )
-
-(define-method copy
-  (of-object "MooHistoryListItem")
-  (c-name "moo_history_list_item_copy")
-  (return-type "MooHistoryListItem*")
-)
-
-(define-method free
-  (of-object "MooHistoryListItem")
-  (c-name "moo_history_list_item_free")
-  (return-type "none")
-)
-
 
 
 ;; From ../mooutils/moolog.h
@@ -2231,4 +2253,116 @@
   (of-object "MooUndoMgr")
   (c-name "moo_undo_mgr_can_redo")
   (return-type "gboolean")
+)
+
+
+;; From moo/mooutils/moomenuaction.h
+
+(define-function moo_menu_action_new
+  (c-name "moo_menu_action_new")
+  (is-constructor-of "MooMenuAction")
+  (return-type "MooAction*")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-method get_mgr
+  (of-object "MooMenuAction")
+  (c-name "moo_menu_action_get_mgr")
+  (return-type "MooMenuMgr*")
+)
+
+(define-method set_mgr
+  (of-object "MooMenuAction")
+  (c-name "moo_menu_action_set_mgr")
+  (return-type "none")
+  (parameters
+    '("MooMenuMgr*" "mgr" (null-ok))
+  )
+)
+
+(define-method set_menu_data
+  (of-object "MooMenuAction")
+  (c-name "moo_menu_action_set_menu_data")
+  (return-type "none")
+  (parameters
+    '("gpointer" "data")
+    '("gboolean" "is_object")
+  )
+)
+
+(define-method set_menu_label
+  (of-object "MooMenuAction")
+  (c-name "moo_menu_action_set_menu_label")
+  (return-type "none")
+  (parameters
+    '("const-char*" "label")
+  )
+)
+
+
+;; From moo/mooutils/mooutils-gobject.h
+
+;; (define-function moo_bind_sensitive
+;;   (c-name "moo_bind_sensitive")
+;;   (return-type "none")
+;;   (parameters
+;;     '("GtkWidget*" "toggle_btn")
+;;     '("GtkWidget**" "dependent")
+;;     '("int" "num_dependent")
+;;     '("gboolean" "invert")
+;;   )
+;; )
+
+(define-function bind_bool_property
+  (c-name "moo_bind_bool_property")
+  (return-type "guint")
+  (parameters
+    '("GObject*" "target")
+    '("const-char*" "target_prop")
+    '("GObject*" "source")
+    '("const-char*" "source_prop")
+    '("gboolean" "invert")
+  )
+)
+
+(define-function add_property_watch
+  (c-name "moo_add_property_watch")
+  (return-type "guint")
+  (parameters
+    '("GObject*" "target")
+    '("const-char*" "target_prop")
+    '("GObject*" "source")
+    '("const-char*" "source_prop")
+    '("MooTransformPropFunc" "transform")
+    '("gpointer" "transform_data")
+    '("GDestroyNotify" "destroy_notify")
+  )
+)
+
+(define-function watch_add_signal
+  (c-name "moo_watch_add_signal")
+  (return-type "none")
+  (parameters
+    '("guint" "watch_id")
+    '("const-char*" "source_signal")
+  )
+)
+
+(define-function watch_add_property
+  (c-name "moo_watch_add_property")
+  (return-type "none")
+  (parameters
+    '("guint" "watch_id")
+    '("const-char*" "source_prop")
+  )
+)
+
+(define-function watch_remove
+  (c-name "moo_watch_remove")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "watch_id")
+  )
 )
