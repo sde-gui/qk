@@ -2072,15 +2072,29 @@ toplevel_add_node (MooUIXML *xml,
                    Node     *node)
 {
     g_return_if_fail (GTK_IS_WIDGET (toplevel->widget));
-    g_return_if_fail (node->type == ITEM);
+    g_return_if_fail (node->type == ITEM || node->type == SEPARATOR);
     g_return_if_fail (node_is_ancestor (node, toplevel->node));
 
     if (GTK_IS_TOOLBAR (toplevel->widget))
     {
         g_return_if_fail (effective_parent (node) == toplevel->node);
-        create_tool_item (xml, toplevel,
-                          GTK_TOOLBAR (toplevel->widget),
-                          node, effective_index (toplevel->node, node));
+
+        switch (node->type)
+        {
+            case ITEM:
+                create_tool_item (xml, toplevel,
+                                  GTK_TOOLBAR (toplevel->widget),
+                                  node, effective_index (toplevel->node, node));
+                break;
+            case SEPARATOR:
+                create_tool_separator (xml, toplevel,
+                                       GTK_TOOLBAR (toplevel->widget),
+                                       node, effective_index (toplevel->node, node));
+                break;
+            default:
+                g_return_if_reached ();
+        }
+
         update_separators (toplevel->node, toplevel);
     }
     else if (GTK_IS_MENU_SHELL (toplevel->widget))
@@ -2108,8 +2122,20 @@ toplevel_add_node (MooUIXML *xml,
             }
         }
 
-        create_menu_item (xml, toplevel, GTK_MENU_SHELL (menu_shell),
-                          node, effective_index (parent, node));
+        switch (node->type)
+        {
+            case ITEM:
+                create_menu_item (xml, toplevel, GTK_MENU_SHELL (menu_shell),
+                                  node, effective_index (parent, node));
+                break;
+            case SEPARATOR:
+                create_menu_separator (xml, toplevel, GTK_MENU_SHELL (menu_shell),
+                                       node, effective_index (parent, node));
+                break;
+            default:
+                g_return_if_reached ();
+        }
+
         update_separators (parent, toplevel);
     }
     else
