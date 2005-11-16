@@ -519,6 +519,8 @@ moo_history_list_remove (MooHistoryList *list,
         list->priv->has_separator = FALSE;
     }
 
+    list_save_recent (list);
+
     moo_history_list_item_free (item);
     return;
 }
