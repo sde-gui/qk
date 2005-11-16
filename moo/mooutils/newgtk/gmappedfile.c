@@ -21,6 +21,7 @@
 /*
  * Taken from glib-2.8 for glib < 2.8. Added noop P_() and _().
  * Modified includes to make it compile outside of glib tarball.
+ * Added empty file handling.
  */
 
 #include "config.h"
@@ -56,7 +57,7 @@
 #define MAP_FAILED ((void *) -1)
 #endif
 
-struct _GMappedFile 
+struct _GMappedFile
 {
   gsize  length;
   gchar *contents;
@@ -74,17 +75,17 @@ struct _GMappedFile
  * Maps a file into memory. On UNIX, this is using the mmap() function.
  *
  * If @writable is %TRUE, the mapped buffer may be modified, otherwise
- * it is an error to modify the mapped buffer. Modifications to the buffer 
- * are not visible to other processes mapping the same file, and are not 
+ * it is an error to modify the mapped buffer. Modifications to the buffer
+ * are not visible to other processes mapping the same file, and are not
  * written back to the file.
  *
  * Note that modifications of the underlying file might affect the contents
- * of the #GMappedFile. Therefore, mapping should only be used if the file 
+ * of the #GMappedFile. Therefore, mapping should only be used if the file
  * will not be modified, or if all modifications of the file are done
- * atomically (e.g. using g_file_set_contents()). 
+ * atomically (e.g. using g_file_set_contents()).
  *
  * Return value: a newly allocated #GMappedFile which must be freed
- *    with g_mapped_file_free(), or %NULL if the mapping failed. 
+ *    with g_mapped_file_free(), or %NULL if the mapping failed.
  *
  * Since: 2.8
  */
@@ -105,12 +106,12 @@ g_mapped_file_new (const gchar  *filename,
     {
       int save_errno = errno;
       gchar *display_filename = g_filename_display_name (filename);
-      
+
       g_set_error (error,
                    G_FILE_ERROR,
                    g_file_error_from_errno (save_errno),
                    _("Failed to open file '%s': open() failed: %s"),
-                   display_filename, 
+                   display_filename,
 		   g_strerror (save_errno));
       g_free (display_filename);
       return NULL;
@@ -127,10 +128,19 @@ g_mapped_file_new (const gchar  *filename,
                    G_FILE_ERROR,
                    g_file_error_from_errno (save_errno),
                    _("Failed to get attributes of file '%s': fstat() failed: %s"),
-                   display_filename, 
+                   display_filename,
 		   g_strerror (save_errno));
       g_free (display_filename);
       goto out;
+    }
+
+  if (st.st_size == 0)
+    {
+      static char zero = 0;
+      file->contents = &zero;
+      file->length = 0;
+      close (fd);
+      return file;
     }
 
   file->contents = MAP_FAILED;
@@ -141,7 +151,7 @@ g_mapped_file_new (const gchar  *filename,
       errno = EINVAL;
     }
   else
-    {      
+    {
       file->length = (gsize) st.st_size;
       file->contents = (gchar *) mmap (NULL,  file->length,
 				       writable ? PROT_READ|PROT_WRITE : PROT_READ,
@@ -169,12 +179,12 @@ g_mapped_file_new (const gchar  *filename,
     }
 #endif
 
-  
+
   if (file->contents == MAP_FAILED)
     {
       int save_errno = errno;
       gchar *display_filename = g_filename_display_name (filename);
-      
+
       g_set_error (error,
 		   G_FILE_ERROR,
 		   g_file_error_from_errno (save_errno),
@@ -217,7 +227,7 @@ g_mapped_file_get_length (GMappedFile *file)
  * g_mapped_file_get_contents:
  * @file: a #GMappedFile
  *
- * Returns the contents of a #GMappedFile. 
+ * Returns the contents of a #GMappedFile.
  *
  * Note that the contents may not be zero-terminated,
  * even if the #GMappedFile is backed by a text file.
@@ -238,7 +248,7 @@ g_mapped_file_get_contents (GMappedFile *file)
  * g_mapped_file_free:
  * @file: a #GMappedFile
  *
- * Unmaps the buffer of @file and frees it. 
+ * Unmaps the buffer of @file and frees it.
  *
  * Since: 2.8
  */
@@ -247,13 +257,16 @@ g_mapped_file_free (GMappedFile *file)
 {
   g_return_if_fail (file != NULL);
 
+  if (file->length)
+    {
 #ifdef HAVE_MMAP
-  munmap (file->contents, file->length);
+      munmap (file->contents, file->length);
 #endif
 #ifdef G_OS_WIN32
-  UnmapViewOfFile (file->contents);
-  CloseHandle (file->mapping);
+      UnmapViewOfFile (file->contents);
+      CloseHandle (file->mapping);
 #endif
+    }
 
   g_free (file);
 }
