@@ -133,7 +133,7 @@ class Plugin(moo.edit.Plugin):
         if not match:
             return False
 
-        data = FileLine(match.group(1), int(match.group(2)))
+        data = FileLine(match.group(1), int(match.group(2)) - 1)
 
         line_no = output.start_line()
         output.write(line, -1, output.lookup_tag("error"))
