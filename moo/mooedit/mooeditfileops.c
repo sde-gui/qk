@@ -695,6 +695,7 @@ file_watch_event (G_GNUC_UNUSED MooFileWatch *watch,
 
         case MOO_FILE_WATCH_DELETED:
             edit->priv->deleted_from_disk = TRUE;
+            edit->priv->file_monitor_id = 0;
             break;
 
         case MOO_FILE_WATCH_CREATED:
