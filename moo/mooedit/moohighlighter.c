@@ -140,6 +140,14 @@ moo_highlighter_destroy (MooHighlighter *hl,
 }
 
 
+GtkTextTag *
+_moo_text_iter_get_syntax_tag (const GtkTextIter *iter)
+{
+    MooSyntaxTag *tag = iter_get_syntax_tag (iter);
+    return tag ? GTK_TEXT_TAG (tag) : NULL;
+}
+
+
 static MooSyntaxTag*
 iter_get_syntax_tag (const GtkTextIter *iter)
 {

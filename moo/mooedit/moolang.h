@@ -239,6 +239,7 @@ void        _moo_lang_erase_tag_style           (GtkTextTag         *tag);
 
 /* implemented in moohighlighter.c */
 MooContext *_moo_text_iter_get_context          (const GtkTextIter  *iter);
+GtkTextTag *_moo_text_iter_get_syntax_tag       (const GtkTextIter  *iter);
 
 
 G_END_DECLS

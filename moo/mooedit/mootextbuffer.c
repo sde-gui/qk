@@ -358,6 +358,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
                              gint                length)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
+    GtkTextTag *tag;
     int first_line, last_line;
     gboolean starts_line, ins_line;
 
@@ -373,6 +374,15 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         MooUndoAction *action;
         action = insert_action_new (text_buffer, pos, text, length);
         moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
+    }
+
+    if ((tag = _moo_text_iter_get_syntax_tag (pos)) &&
+         !gtk_text_iter_begins_tag (pos, tag))
+    {
+        /* new text is gonna get this tag applied, so we better remove it */
+        GtkTextIter next = *pos;
+        gtk_text_iter_forward_char (&next);
+        gtk_text_buffer_remove_tag (text_buffer, tag, pos, &next);
     }
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
