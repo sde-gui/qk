@@ -2366,3 +2366,11 @@
     '("guint" "watch_id")
   )
 )
+
+
+;;;;;;;;;;;;;
+
+(define-function segfault
+  (c-name "moo_segfault")
+  (return-type "none")
+)

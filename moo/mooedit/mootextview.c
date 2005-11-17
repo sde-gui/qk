@@ -1366,9 +1366,15 @@ moo_text_view_set_lang (MooTextView    *view,
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     moo_text_buffer_set_lang (get_moo_buffer (view), lang);
-    /* GtkTextView does not want to properly redraw when
-       tags are changed */
     gtk_widget_queue_draw (GTK_WIDGET (view));
+}
+
+
+MooLang*
+moo_text_view_get_lang (MooTextView *view)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
+    return moo_text_buffer_get_lang (get_moo_buffer (view));
 }
 
 

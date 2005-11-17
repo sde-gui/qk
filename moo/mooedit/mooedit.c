@@ -937,8 +937,6 @@ moo_edit_filename_changed (MooEdit    *edit,
 
     g_hash_table_foreach_remove (edit->priv->vars, (GHRFunc) check_dep, NULL);
 
-    try_mode (edit);
-
     value = get_value (edit, MOO_EDIT_VAR_LANG);
 
     if (!value || value->dep >= MOO_EDIT_VAR_DEP_FILENAME)
@@ -949,8 +947,10 @@ moo_edit_filename_changed (MooEdit    *edit,
             lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
         }
 
-        moo_edit_set_var (edit, MOO_EDIT_VAR_LANG, lang ? lang->name : NULL);
+        moo_edit_set_var (edit, MOO_EDIT_VAR_LANG, lang ? lang->id : NULL);
     }
+
+    try_mode (edit);
 
     moo_edit_choose_indenter (edit);
 }

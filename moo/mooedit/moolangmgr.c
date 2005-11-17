@@ -520,7 +520,7 @@ moo_lang_build_contexts (MooLang *lang,
 {
     GSList *l;
 
-    g_assert (!strcmp (lang->name, xml->name));
+    g_assert (!strcmp (lang->display_name, xml->name));
 
     for (l = xml->syntax->contexts; l != NULL; l = l->next)
     {
@@ -608,7 +608,7 @@ moo_lang_finish_build (MooLang *lang,
 {
     GSList *l;
 
-    g_assert (!strcmp (lang->name, xml->name));
+    g_assert (!strcmp (lang->display_name, xml->name));
 
     if (xml->style_list)
     {
@@ -745,9 +745,14 @@ MooLang*
 moo_lang_mgr_get_lang (MooLangMgr     *mgr,
                        const char     *name)
 {
+    char *id;
+    MooLang *lang;
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (name != NULL, NULL);
-    return g_hash_table_lookup (mgr->lang_names, name);
+    id = g_ascii_strdown (name, -1);
+    lang = g_hash_table_lookup (mgr->lang_names, id);
+    g_free (id);
+    return lang;
 }
 
 
@@ -838,7 +843,7 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr     *mgr,
                                     const char     *filename)
 {
     MooLang *lang = NULL;
-    char *basename, *utf8_basename;
+    char *basename = NULL, *utf8_basename = NULL;
     GSList *l;
     gboolean found = FALSE;
 
@@ -903,6 +908,8 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr     *mgr,
         }
     }
 
+    g_free (basename);
+    g_free (utf8_basename);
     return lang;
 }
 
@@ -1001,11 +1008,11 @@ _moo_lang_mgr_add_lang (MooLangMgr         *mgr,
 {
     g_return_if_fail (MOO_IS_LANG_MGR (mgr));
     g_return_if_fail (lang != NULL);
-    g_return_if_fail (lang->name != NULL);
-    g_return_if_fail (!g_hash_table_lookup (mgr->lang_names, lang->name));
+    g_return_if_fail (lang->id != NULL);
+    g_return_if_fail (!g_hash_table_lookup (mgr->lang_names, lang->id));
 
     mgr->langs = g_slist_append (mgr->langs, lang);
-    g_hash_table_insert (mgr->lang_names, g_strdup (lang->name), lang);
+    g_hash_table_insert (mgr->lang_names, g_strdup (lang->id), lang);
 }
 
 

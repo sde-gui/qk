@@ -143,9 +143,7 @@ enum {
     PROP_CAN_UNDO,
     PROP_CAN_REDO,
     PROP_HAS_SELECTION,
-    PROP_HAS_TEXT,
-    PROP_CAN_SWITCH_TAB_RIGHT,
-    PROP_CAN_SWITCH_TAB_LEFT
+    PROP_HAS_TEXT
 };
 
 enum {
@@ -226,8 +224,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_CAN_REDO, "can-redo");
     INSTALL_PROP (PROP_HAS_SELECTION, "has-selection");
     INSTALL_PROP (PROP_HAS_TEXT, "has-text");
-    INSTALL_PROP (PROP_CAN_SWITCH_TAB_RIGHT, "can-switch-tab-right");
-    INSTALL_PROP (PROP_CAN_SWITCH_TAB_LEFT, "can-switch-tab-left");
 
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
@@ -389,7 +385,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "icon-stock-id", GTK_STOCK_GO_BACK,
                                  "accel", "<alt>Left",
                                  "closure::callback", moo_edit_window_previous_tab,
-                                 "condition::sensitive", "can-switch-tab-left",
                                  NULL);
 
     moo_window_class_new_action (window_class, "NextTab",
@@ -399,7 +394,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                  "accel", "<alt>Right",
                                  "closure::callback", moo_edit_window_next_tab,
-                                 "condition::sensitive", "can-switch-tab-right",
                                  NULL);
 
     moo_window_class_new_action (window_class, "Find",
@@ -546,7 +540,6 @@ static void     moo_edit_window_get_property(GObject        *object,
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     MooEdit *doc;
-    int num;
 
     switch (prop_id)
     {
@@ -580,14 +573,6 @@ static void     moo_edit_window_get_property(GObject        *object,
         case PROP_HAS_TEXT:
             doc = ACTIVE_DOC (window);
             g_value_set_boolean (value, doc && moo_text_view_has_text (MOO_TEXT_VIEW (doc)));
-            break;
-        case PROP_CAN_SWITCH_TAB_RIGHT:
-            num = moo_edit_window_num_docs (window);
-            g_value_set_boolean (value, num && ACTIVE_PAGE (window) < num - 1);
-            break;
-        case PROP_CAN_SWITCH_TAB_LEFT:
-            num = moo_edit_window_num_docs (window);
-            g_value_set_boolean (value, num && ACTIVE_PAGE (window) > 0);
             break;
 
         default:
@@ -789,21 +774,29 @@ static void moo_edit_window_close_all       (MooEditWindow   *window)
 
 static void moo_edit_window_previous_tab    (MooEditWindow   *window)
 {
+    MooEdit *doc;
     int n = moo_notebook_get_current_page (window->priv->notebook);
-    if (n <= 0)
-        moo_notebook_set_current_page (window->priv->notebook, -1);
-    else
+    if (n > 0)
         moo_notebook_set_current_page (window->priv->notebook, n - 1);
+    else
+        moo_notebook_set_current_page (window->priv->notebook, -1);
+    doc = moo_edit_window_get_active_doc (window);
+    if (doc)
+        gtk_widget_grab_focus (GTK_WIDGET (doc));
 }
 
 
 static void moo_edit_window_next_tab        (MooEditWindow   *window)
 {
+    MooEdit *doc;
     int n = moo_notebook_get_current_page (window->priv->notebook);
-    if (n == moo_notebook_get_n_pages (window->priv->notebook) - 1)
-        moo_notebook_set_current_page (window->priv->notebook, 0);
-    else
+    if (n < moo_notebook_get_n_pages (window->priv->notebook) - 1)
         moo_notebook_set_current_page (window->priv->notebook, n + 1);
+    else
+        moo_notebook_set_current_page (window->priv->notebook, 0);
+    doc = moo_edit_window_get_active_doc (window);
+    if (doc)
+        gtk_widget_grab_focus (GTK_WIDGET (doc));
 }
 
 
@@ -859,8 +852,6 @@ static void     edit_changed            (MooEditWindow      *window,
         g_object_notify (G_OBJECT (window), "can-redo");
         g_object_notify (G_OBJECT (window), "has-selection");
         g_object_notify (G_OBJECT (window), "has-text");
-        g_object_notify (G_OBJECT (window), "can-switch-tab-right");
-        g_object_notify (G_OBJECT (window), "can-switch-tab-left");
         g_object_thaw_notify (G_OBJECT (window));
 
         update_window_title (window);
@@ -1627,7 +1618,7 @@ edit_cursor_moved (MooEditWindow      *window,
 /* Language menu
  */
 
-#define NONE_LANGUAGE_NAME "moo-lang-none"
+#define NONE_LANGUAGE_ID "MOO_LANG_NONE"
 
 static int
 cmp_langs (MooLang *lang1,
@@ -1640,7 +1631,7 @@ cmp_langs (MooLang *lang1,
     if (result)
         return result;
     else
-        return strcmp (lang1->name, lang2->name);
+        return strcmp (lang1->display_name, lang2->display_name);
 }
 
 
@@ -1693,7 +1684,7 @@ create_lang_action (MooEditWindow      *window)
                          "Language", 0, NULL, NULL);
 
     moo_menu_mgr_append (menu_mgr, LANG_ACTION_ID,
-                         NONE_LANGUAGE_NAME, "None",
+                         NONE_LANGUAGE_ID, "None",
                          MOO_MENU_ITEM_RADIO, NULL, NULL);
 
     for (l = sections; l != NULL; l = l->next)
@@ -1704,8 +1695,8 @@ create_lang_action (MooEditWindow      *window)
     {
         MooLang *lang = l->data;
         moo_menu_mgr_append (menu_mgr, lang->section,
-                             lang->name, lang->name, MOO_MENU_ITEM_RADIO,
-                             g_strdup (lang->name), g_free);
+                             lang->id, lang->display_name, MOO_MENU_ITEM_RADIO,
+                             g_strdup (lang->id), g_free);
     }
 
     g_signal_connect_swapped (menu_mgr, "radio-set-active",
@@ -1725,19 +1716,19 @@ update_lang_menu (MooEditWindow      *window)
 {
     MooEdit *doc;
     MooAction *action;
-    const char *lang;
+    MooLang *lang;
 
     doc = ACTIVE_DOC (window);
 
     if (!doc)
         return;
 
-    lang = moo_edit_get_var (doc, MOO_EDIT_VAR_LANG);
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
     action = moo_window_get_action_by_id (MOO_WINDOW (window), LANG_ACTION_ID);
     g_return_if_fail (action != NULL);
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
-                             lang ? lang : NONE_LANGUAGE_NAME, TRUE);
+                             lang ? lang->id : NONE_LANGUAGE_ID, TRUE);
 }
 
 

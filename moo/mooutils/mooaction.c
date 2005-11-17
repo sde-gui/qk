@@ -789,19 +789,22 @@ static void set_visible_callback     (GtkWidget  *proxy,
         gtk_widget_hide (proxy);
 }
 
-static void proxy_destroyed          (MooAction  *action,
-                                      gpointer    proxy)
+static void
+proxy_destroyed (MooAction  *action,
+                 gpointer    proxy)
 {
     g_signal_handlers_disconnect_by_func (action, (gpointer)gtk_widget_set_sensitive, proxy);
     g_signal_handlers_disconnect_by_func (action, (gpointer)set_visible_callback, proxy);
+    g_signal_handlers_disconnect_by_func (proxy, (gpointer)proxy_destroyed, action);
     g_object_weak_unref (G_OBJECT (action), (GWeakNotify)action_destroyed, proxy);
 }
 
-static void action_destroyed         (GtkWidget  *proxy,
-                                      gpointer    action)
+static void
+action_destroyed (GtkWidget  *proxy,
+                  gpointer    action)
 {
     g_signal_handlers_disconnect_by_func (proxy, (gpointer)moo_action_activate, action);
-    g_object_weak_unref (G_OBJECT (proxy), (GWeakNotify)proxy_destroyed, action);
+    g_signal_handlers_disconnect_by_func (proxy, (gpointer)proxy_destroyed, action);
 }
 
 
@@ -851,9 +854,9 @@ static void moo_action_add_proxy        (MooAction      *action,
                               G_CALLBACK (set_visible_callback),
                               proxy);
 
-    g_object_weak_ref (G_OBJECT (proxy),
-                       (GWeakNotify)proxy_destroyed,
-                       action);
+    g_signal_connect_swapped (proxy, "destroy",
+                              G_CALLBACK (proxy_destroyed),
+                              action);
     g_object_weak_ref (G_OBJECT (action),
                        (GWeakNotify)action_destroyed,
                        proxy);

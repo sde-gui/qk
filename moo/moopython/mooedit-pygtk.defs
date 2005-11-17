@@ -75,7 +75,8 @@
   (copy-func "moo_lang_ref")
   (release-func "moo_lang_unref")
   (fields
-    '("char*" "name")
+    '("char*" "id")
+    '("char*" "display_name")
     '("char*" "section")
     '("char*" "version")
     '("char*" "author")

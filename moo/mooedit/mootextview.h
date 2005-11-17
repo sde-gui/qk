@@ -132,6 +132,7 @@ void         moo_text_view_apply_scheme             (MooTextView        *view,
 GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
                                                      const char         *name);
 
+MooLang     *moo_text_view_get_lang                 (MooTextView        *view);
 void         moo_text_view_set_lang                 (MooTextView        *view,
                                                      MooLang            *lang);
 

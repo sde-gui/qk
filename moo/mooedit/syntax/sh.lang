@@ -428,6 +428,7 @@
 
 
     <context style="Normal Text" eol-context="#stay" name="Start">
+      <IncludeRules from="##Misc##ShebangRules" />
       <IncludeRules from="FindAll" />
     </context>
 
@@ -818,6 +819,7 @@
     <style name="Function"        default-style="Char" bold="1"/>
     <style name="Path"            default-style="Normal"/>
     <style name="Option"          default-style="Normal"/>
+    <style name="Shebang line"    default-style="Comment" bold="TRUE" italic="FALSE"/>
   </styles>
 
   <general>

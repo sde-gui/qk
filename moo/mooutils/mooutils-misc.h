@@ -59,6 +59,8 @@ void        moo_show_fatal_error            (const char     *logdomain,
                                              const char     *logmsg);
 #endif /* __WIN32__ */
 
+void        moo_segfault                    (void);
+
 
 G_END_DECLS
 

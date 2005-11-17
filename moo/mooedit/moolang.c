@@ -238,7 +238,8 @@ moo_lang_new (MooLangMgr     *mgr,
     lang->styles = (MooTextStyleArray*) g_ptr_array_new ();
     style_cache_create (lang);
 
-    lang->name = g_strdup (name);
+    lang->id = g_ascii_strdown (name, -1);
+    lang->display_name = g_strdup (name);
     lang->section = section ? g_strdup (section) : g_strdup ("Others");
     lang->version = version ? g_strdup (version) : g_strdup ("");
     lang->author = author ? g_strdup (author) : g_strdup ("");
@@ -345,7 +346,8 @@ _moo_lang_free (MooLang *lang)
             moo_text_style_free (lang->styles->data[i]);
         g_ptr_array_free ((GPtrArray*) lang->styles, TRUE);
 
-        g_free (lang->name);
+        g_free (lang->id);
+        g_free (lang->display_name);
         g_free (lang->section);
         g_free (lang->version);
         g_free (lang->author);
@@ -399,7 +401,7 @@ set_tag_style (MooLang       *lang,
 
     if (!style)
     {
-        style = moo_lang_mgr_get_style (lang->mgr, lang->name, style_name, scheme);
+        style = moo_lang_mgr_get_style (lang->mgr, lang->id, style_name, scheme);
         g_return_if_fail (style != NULL);
 
         if (style->default_style)

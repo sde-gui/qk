@@ -985,7 +985,8 @@ set_handler (LogFunc func, gpointer data)
 void
 moo_set_log_func_window (int show)
 {
-    if (show) moo_log_window_show ();
+    if (show)
+        moo_log_window_show ();
     set_handler ((LogFunc)moo_log_window_write, NULL);
 }
 
@@ -1001,13 +1002,17 @@ void
 moo_set_log_func (int show_log)
 {
     if (!show_log)
-    {
         set_handler (log_func_silent, NULL);
-    }
 #ifdef __WIN32__
     else
-    {
         moo_set_log_func_window (FALSE);
-    }
 #endif /* __WIN32__ */
+}
+
+
+void
+moo_segfault (void)
+{
+    char *var = (char*) -1;
+    var[18] = 8;
 }

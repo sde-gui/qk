@@ -47,7 +47,8 @@ struct _MooLang {
     MooTextStyleArray *styles;
     GHashTable *style_cache;
 
-    char *name;         /* not NULL */
+    char *id;           /* not NULL */
+    char *display_name; /* not NULL */
     char *section;      /* not NULL; "Others" by default */
     char *version;      /* not NULL; "" by default */
     char *author;       /* not NULL; "" by default */

@@ -316,7 +316,7 @@ cmp_langs (MooLang *lang1,
 
     result = strcmp (lang1->section, lang2->section);
     if (!result)
-        result = strcmp (lang1->name, lang2->name);
+        result = strcmp (lang1->display_name, lang2->display_name);
 
     return result;
 }
@@ -372,7 +372,7 @@ syntax_combo_data_func (G_GNUC_UNUSED GtkCellLayout *layout,
 
     if (lang)
     {
-        char *text = g_strdup_printf ("%s/%s", lang->section, lang->name);
+        char *text = g_strdup_printf ("%s/%s", lang->section, lang->display_name);
         g_object_set (cell, "text", text, NULL);
         g_free (text);
         moo_lang_unref (lang);
