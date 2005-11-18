@@ -1,3 +1,4 @@
+;; kate: lang scheme; strip on;
 ;; Hand-edited
 
 (define-object BigPaned

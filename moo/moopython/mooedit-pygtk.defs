@@ -1,3 +1,4 @@
+;; kate: lang scheme; strip on;
 ;; hand-edited
 
 ; object definitions ...
@@ -212,6 +213,7 @@
   (return-type "gboolean")
   (parameters
     '("const-char*" "cmd")
+    '("const-char*" "job_name" (null-ok) (default "NULL"))
   )
 )
 
@@ -500,6 +502,29 @@
   )
 )
 
+(define-method add_stop_client
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_add_stop_client")
+  (return-type "none")
+  (parameters
+    '("GObject*" "client")
+  )
+)
+
+(define-method remove_stop_client
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_remove_stop_client")
+  (return-type "none")
+  (parameters
+    '("GObject*" "client")
+  )
+)
+
+(define-method abort_jobs
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_abort_jobs")
+  (return-type "none")
+)
 
 
 ;; From mooindenter.h

@@ -1,3 +1,4 @@
+/* kate: lang C; indent-width 4; space-indent on; strip on; */
 %%
 headers
 #include <Python.h>

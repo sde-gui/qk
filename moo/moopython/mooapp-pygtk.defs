@@ -1,3 +1,4 @@
+;; kate: lang scheme; strip on;
 ;; hand-edited
 
 (define-object App
@@ -193,7 +194,7 @@
     '("GtkWidget*" "parent")
   )
 )
-
+    
 (define-method get_ui_xml
   (of-object "MooApp")
   (c-name "moo_app_get_ui_xml")

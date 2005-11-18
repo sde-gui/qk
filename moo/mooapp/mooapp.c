@@ -965,7 +965,7 @@ add_python_plugin_actions (MooApp *app)
 
     xml = moo_app_get_ui_xml (app);
     moo_ui_xml_add_item (xml, moo_ui_xml_new_merge_id (xml),
-                         "Editor/Menubar/Tools", "ReloadPythonPlugins",
+                         "ToolsMenu", "ReloadPythonPlugins",
                          "ReloadPythonPlugins", -1);
 
     g_type_class_unref (klass);

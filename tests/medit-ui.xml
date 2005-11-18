@@ -58,7 +58,13 @@
       <separator/>
     </item>
 
-    <item name="Tools" label="_Tools"/>
+    <item name="Tools" label="_Tools">
+      <separator/>
+      <placeholder name="ToolsMenu"/>
+      <separator/>
+      <item action="StopJob"/>
+      <separator/>
+    </item>
 
     <item name="Settings" label="_Settings">
       <separator/>
@@ -98,6 +104,11 @@
     <item action="Replace"/>
 
     <separator/>
+    <placeholder name="BuildToolbar">
+      <item action="StopJob"/>
+    </placeholder>
+    <separator/>
+
   </widget> <!-- Toolbar -->
 
 </object> <!-- Editor -->

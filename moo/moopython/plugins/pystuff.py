@@ -42,7 +42,7 @@ class Plugin(moo.edit.Plugin):
                            label="Show Log Window",
                            callback=self.show_log_window)
             self.actions.append(a)
-            self.ui.append(UIInfo("Editor/Menubar/Tools", "ShowLogWindow"))
+            self.ui.append(UIInfo("ToolsMenu", "ShowLogWindow"))
 
         if have_pyconsole:
             a = ActionInfo(moo.edit.EditWindow, "ShowPythonConsole",
@@ -50,7 +50,7 @@ class Plugin(moo.edit.Plugin):
                            label="Show Python Console",
                            callback=self.show_console)
             self.actions.append(a)
-            self.ui.append(UIInfo("Editor/Menubar/Tools", "ShowPythonConsole"))
+            self.ui.append(UIInfo("ToolsMenu", "ShowPythonConsole"))
 
         """ Run file """
         self.file_pat = re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*')
@@ -61,7 +61,7 @@ class Plugin(moo.edit.Plugin):
                        accel="<shift>F9",
                        callback=self.run_file)
         self.actions.append(a)
-        self.ui.append(UIInfo("Editor/Menubar/Tools", "RunFile"))
+        self.ui.append(UIInfo("ToolsMenu", "RunFile"))
 
     def show_log_window(self, window):
         moo.app.get_instance().show_python_console()
