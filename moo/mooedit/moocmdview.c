@@ -500,8 +500,34 @@ moo_cmd_view_cmd_exit (MooCmdView *view,
         }
         else
         {
-            char *msg = g_strdup_printf ("*** Failed with code %d ***",
-                                         exit_code);
+            char *msg;
+
+            if (exit_code > 128)
+            {
+                static const char *signals[] = {
+                    NULL, "SIGHUP", "SIGINT", "SIGQUIT", "SIGILL",
+                    "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE",
+                    "SIGKILL", "SIGUSR", "SIGSEGV", "SIGUSR",
+                    "SIGPIPE", "SIGALRM", "SIGTERM", "SIGSTKFLT",
+                    "SIGCHLD", "SIGCONT", "SIGSTOP", "SIGTSTP",
+                    "SIGTTIN", "SIGTTOU", "SIGURG", "SIGXCPU",
+                    "SIGXFSZ", "SIGVTALRM", "SIGPROF", "SIGWINCH",
+                    "SIGIO", "SIGPWR", "SIGSYS"
+                };
+
+                int sig = exit_code - 128;
+
+                if (sig > 0 && sig < (int) G_N_ELEMENTS (signals))
+                    msg = g_strdup_printf ("*** Killed by signal %d (%s) ***",
+                                           exit_code - 128, signals[sig]);
+                else
+                    msg = g_strdup_printf ("*** Killed by signal %d ***",
+                                           exit_code - 128);
+            }
+            else
+                msg = g_strdup_printf ("*** Exited with status %d ***",
+                                       exit_code);
+
             moo_line_view_write_line (MOO_LINE_VIEW (view),
                                       msg, -1,
                                       view->priv->error_tag);
