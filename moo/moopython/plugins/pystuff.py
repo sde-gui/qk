@@ -83,6 +83,7 @@ class Plugin(moo.edit.Plugin):
 
         swin.add(console)
         window.set_default_size(400,300)
+        window.set_title("pythony")
         window.show_all()
 
 

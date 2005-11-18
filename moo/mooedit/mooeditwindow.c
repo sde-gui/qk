@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooeditwindow.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -1740,3 +1739,6 @@ edit_lang_changed (MooEditWindow      *window,
     if (doc == ACTIVE_DOC (window))
         update_lang_menu (window);
 }
+
+
+/* kate: space-indent: on; indent-width: 4; strip on; */
