@@ -84,7 +84,7 @@ G_STMT_START {                                      \
 } G_STMT_END
 
 
-/* walking nodes stops when func returns FALSE */
+/* walking nodes stops when func returns TRUE */
 typedef gboolean (*NodeForeachFunc) (Node       *node,
                                      gpointer    data);
 
@@ -819,7 +819,7 @@ moo_ui_xml_add_item (MooUIXML       *xml,
     merge = lookup_merge (xml, merge_id);
     g_return_val_if_fail (merge != NULL, NULL);
 
-    parent = moo_ui_xml_get_node (xml, parent_path);
+    parent = moo_ui_xml_find_node (xml, parent_path);
     g_return_val_if_fail (parent != NULL, NULL);
 
     switch (parent->type)
@@ -1015,7 +1015,7 @@ moo_ui_xml_insert_markup_after (MooUIXML       *xml,
 
     if (parent_path)
     {
-        parent = moo_ui_xml_get_node (xml, parent_path);
+        parent = moo_ui_xml_find_node (xml, parent_path);
         g_return_if_fail (parent != NULL);
     }
     else
@@ -1047,7 +1047,7 @@ moo_ui_xml_insert_markup_before (MooUIXML       *xml,
 
     if (parent_path)
     {
-        parent = moo_ui_xml_get_node (xml, parent_path);
+        parent = moo_ui_xml_find_node (xml, parent_path);
         g_return_if_fail (parent != NULL);
     }
     else
@@ -1079,7 +1079,7 @@ moo_ui_xml_insert_markup (MooUIXML       *xml,
 
     if (parent_path)
     {
-        parent = moo_ui_xml_get_node (xml, parent_path);
+        parent = moo_ui_xml_find_node (xml, parent_path);
         g_return_if_fail (parent != NULL);
     }
     else
@@ -1221,6 +1221,24 @@ moo_ui_xml_get_node (MooUIXML       *xml,
 }
 
 
+MooUINode*
+moo_ui_xml_find_node (MooUIXML       *xml,
+                      const char     *path)
+{
+    MooUINode *node;
+
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    node = moo_ui_xml_get_node (xml, path);
+
+    if (!node)
+        node = moo_ui_xml_find_placeholder (xml, path);
+
+    return node;
+}
+
+
 static gboolean
 find_placeholder_func (Node    *node,
                        gpointer user_data)
@@ -1231,15 +1249,15 @@ find_placeholder_func (Node    *node,
     } *data = user_data;
 
     if (node->type != PLACEHOLDER)
-        return TRUE;
+        return FALSE;
 
     if (!strcmp (node->name, data->name))
     {
         data->found = node;
-        return FALSE;
+        return TRUE;
     }
 
-    return TRUE;
+    return FALSE;
 }
 
 MooUINode*
@@ -1409,7 +1427,7 @@ static void
 xml_add_item_widget (MooUIXML       *xml,
                      GtkWidget      *widget)
 {
-    g_signal_connect (widget, "notify::visibility",
+    g_signal_connect (widget, "notify::visible",
                       G_CALLBACK (visibility_notify), xml);
 }
 
