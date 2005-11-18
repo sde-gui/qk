@@ -189,6 +189,7 @@ line_data_new (gpointer        data,
     g_return_val_if_fail (data != NULL, NULL);
 
     line_data = g_new (LineData, 1);
+    line_data->ref_count = 1;
     line_data->data = data;
     line_data->free_func = free_func;
 
