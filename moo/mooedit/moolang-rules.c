@@ -764,9 +764,14 @@ moo_rule_keywords_new (GSList             *words,
 
     for (l = words; l != NULL; l = l->next)
     {
+        char *s;
+
         if (l != words)
             g_string_append_c (pattern, '|');
-        g_string_append (pattern, l->data);
+
+        s = egg_regex_escape_string (l->data, -1);
+        g_string_append (pattern, s);
+        g_free (s);
     }
 
     g_string_append (pattern, ")\\b");

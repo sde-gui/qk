@@ -435,6 +435,8 @@ moo_text_view_finalize (GObject *object)
     if (view->priv->indenter)
         g_object_unref (view->priv->indenter);
 
+    /* XXX free view->priv->targets */
+
     g_free (view->priv);
     view->priv = NULL;
 

@@ -15,6 +15,7 @@
 #include "mooedit/moocmdview.h"
 #include "mooutils/moomarshals.h"
 #include <sys/wait.h>
+#include <unistd.h>
 
 
 struct _MooCmdViewPrivate {
@@ -61,6 +62,8 @@ enum {
     OUTPUT_LINE,
     STDOUT_LINE,
     STDERR_LINE,
+    JOB_STARTED,
+    JOB_FINISHED,
     LAST_SIGNAL
 };
 
@@ -141,6 +144,25 @@ moo_cmd_view_class_init (MooCmdViewClass *klass)
                           _moo_marshal_BOOL__STRING,
                           G_TYPE_BOOLEAN, 1,
                           G_TYPE_STRING);
+
+    signals[JOB_STARTED] =
+            g_signal_new ("job-started",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooCmdViewClass, job_started),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING);
+
+    signals[JOB_FINISHED] =
+            g_signal_new ("job-finished",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooCmdViewClass, job_finished),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -194,6 +216,7 @@ moo_cmd_view_destroy (GtkObject *object)
     MooCmdView *view = MOO_CMD_VIEW (object);
 
     moo_cmd_view_abort (view);
+    moo_cmd_view_cleanup (view);
 
     if (GTK_OBJECT_CLASS (moo_cmd_view_parent_class)->destroy)
         GTK_OBJECT_CLASS (moo_cmd_view_parent_class)->destroy (object);
@@ -356,9 +379,17 @@ stderr_watch_removed (MooCmdView *view)
 }
 
 
+static void
+child_setup (G_GNUC_UNUSED gpointer dummy)
+{
+    setpgrp ();
+}
+
+
 gboolean
 moo_cmd_view_run_command (MooCmdView *view,
-                          const char *cmd)
+                          const char *cmd,
+                          const char *job_name)
 {
     GError *error = NULL;
     char **argv = NULL;
@@ -381,7 +412,7 @@ moo_cmd_view_run_command (MooCmdView *view,
     g_spawn_async_with_pipes (NULL,
                               argv, NULL,
                               G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                              NULL, NULL,
+                              child_setup, NULL,
                               &view->priv->pid,
                               NULL,
                               &view->priv->stdout,
@@ -428,6 +459,8 @@ moo_cmd_view_run_command (MooCmdView *view,
                                  G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
                                  (GIOFunc) command_err, view,
                                  (GDestroyNotify) stderr_watch_removed);
+
+    g_signal_emit (view, signals[JOB_STARTED], 0, job_name);
 
 out:
     g_strfreev (argv);
@@ -522,8 +555,9 @@ moo_cmd_view_cleanup (MooCmdView *view)
 
     if (view->priv->pid)
     {
-        kill (view->priv->pid, SIGTERM);
+        kill (-view->priv->pid, SIGHUP);
         g_spawn_close_pid (view->priv->pid);
+        view->priv->pid = 0;
     }
 
     g_free (view->priv->cmd);
@@ -536,6 +570,8 @@ moo_cmd_view_cleanup (MooCmdView *view)
     view->priv->stderr_watch = 0;
     view->priv->stdout_io = NULL;
     view->priv->stderr_io = NULL;
+
+    g_signal_emit (view, signals[JOB_FINISHED], 0);
 }
 
 
@@ -547,7 +583,20 @@ moo_cmd_view_abort_real (MooCmdView *view)
 
     g_return_val_if_fail (view->priv->pid != 0, TRUE);
 
-    kill (view->priv->pid, SIGTERM);
+    kill (-view->priv->pid, SIGHUP);
+
+    if (view->priv->stdout_watch)
+    {
+        g_source_remove (view->priv->stdout_watch);
+        view->priv->stdout_watch = 0;
+    }
+
+    if (view->priv->stderr_watch > 0)
+    {
+        g_source_remove (view->priv->stderr_watch);
+        view->priv->stderr_watch = 0;
+    }
+
     return TRUE;
 }
 

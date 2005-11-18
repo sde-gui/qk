@@ -32,6 +32,7 @@ mooedit_syntax_DATA =                         \
     $(mooedit_syntax)/misc.lang               \
     $(mooedit_syntax)/python.lang             \
     $(mooedit_syntax)/python-console.lang     \
+    $(mooedit_syntax)/scheme.lang             \
     $(mooedit_syntax)/sci.lang                \
     $(mooedit_syntax)/sh.lang                 \
     $(mooedit_syntax)/xml.lang                \

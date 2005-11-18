@@ -78,6 +78,21 @@ GtkWidget   *moo_edit_window_get_pane           (MooEditWindow  *window,
                                                  const char     *user_id);
 
 
+typedef void (*MooAbortJobFunc) (gpointer job);
+
+void         moo_edit_window_add_stop_client    (MooEditWindow  *window,
+                                                 gpointer        client);
+void         moo_edit_window_remove_stop_client (MooEditWindow  *window,
+                                                 gpointer        client);
+void         moo_edit_window_abort_jobs         (MooEditWindow  *window);
+void         moo_edit_window_job_started        (MooEditWindow  *window,
+                                                 const char     *name,
+                                                 MooAbortJobFunc func,
+                                                 gpointer        job);
+void         moo_edit_window_job_finished       (MooEditWindow  *window,
+                                                 gpointer        job);
+
+
 G_END_DECLS
 
 #endif /* __MOO_EDIT_WINDOW_H__ */

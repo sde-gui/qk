@@ -178,6 +178,7 @@ ensure_output (WindowStuff *stuff)
                                   "highlight-current-line", TRUE,
                                   NULL);
 
+    moo_edit_window_add_stop_client (window, stuff->output);
     g_signal_connect_swapped (stuff->output, "activate",
                               G_CALLBACK (output_activate), stuff);
 
@@ -677,7 +678,7 @@ execute_grep (const char     *pattern,
     command = g_string_new ("");
     g_string_printf (command, "find '%s'", dir);
 
-    if (glob)
+    if (glob && glob[0] && strcmp (glob, "*"))
     {
         globs = g_strsplit (glob, ";", 0);
 
@@ -707,7 +708,7 @@ execute_grep (const char     *pattern,
 
     g_string_append_printf (command, " -print -follow");
 
-    if (skip_files)
+    if (skip_files && skip_files[0])
     {
         globs = g_strsplit (skip_files, ";", 0);
 
@@ -721,11 +722,13 @@ execute_grep (const char     *pattern,
         g_strfreev (globs);
     }
 
-    g_string_append_printf (command, " | sed \"s/ /\\\\\\ /g\" | xargs egrep -H -n %s-e '%s'",
+
+    g_string_append_printf (command, " | sed -e \"s/ /\\\\\\ /g\" -e \"s/'/\\\\\\'/g\" "
+                                     "| xargs egrep -H -n %s-e '%s'",
                             !case_sensitive ? "-i " : "", pattern);
 
     stuff->cmd = CMD_GREP;
-    moo_cmd_view_run_command (stuff->output, command->str);
+    moo_cmd_view_run_command (stuff->output, command->str, "Find in Files");
     g_string_free (command, TRUE);
 }
 
@@ -784,7 +787,7 @@ execute_find (const char     *pattern,
     }
 
     stuff->cmd = CMD_FIND;
-    moo_cmd_view_run_command (stuff->output, command->str);
+    moo_cmd_view_run_command (stuff->output, command->str, "Find File");
     g_string_free (command, TRUE);
 }
 

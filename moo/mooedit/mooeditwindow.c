@@ -31,6 +31,7 @@
 #define ACTIVE_PAGE(window) (moo_notebook_get_current_page (window->priv->notebook))
 
 #define LANG_ACTION_ID "LanguageMenu"
+#define STOP_ACTION_ID "StopJob"
 
 enum {
     TARGET_TEXT = 1,
@@ -47,6 +48,9 @@ struct _MooEditWindowPrivate {
     GHashTable *panes;
     GHashTable *panes_to_save; /* char* */
     guint save_params_idle;
+
+    GSList *stop_clients;
+    GSList *jobs; /* Job* */
 };
 
 
@@ -54,6 +58,7 @@ GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
                                              GObjectConstructParam *props);
 static void     moo_edit_window_finalize    (GObject        *object);
+static void     moo_edit_window_destroy     (GtkObject      *object);
 
 static void     moo_edit_window_set_property(GObject        *object,
                                              guint           prop_id,
@@ -154,7 +159,9 @@ enum {
     PROP_CAN_UNDO,
     PROP_CAN_REDO,
     PROP_HAS_SELECTION,
-    PROP_HAS_TEXT
+    PROP_HAS_TEXT,
+    PROP_HAS_JOBS_RUNNING,
+    PROP_HAS_STOP_CLIENTS
 };
 
 enum {
@@ -175,6 +182,7 @@ static guint signals[NUM_SIGNALS];
 static void moo_edit_window_class_init (MooEditWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
 
@@ -182,6 +190,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->finalize = moo_edit_window_finalize;
     gobject_class->set_property = moo_edit_window_set_property;
     gobject_class->get_property = moo_edit_window_get_property;
+    gtkobject_class->destroy = moo_edit_window_destroy;
     widget_class->drag_data_received = drag_data_received;
     window_class->close = (gboolean (*) (MooWindow*))moo_edit_window_close;
 
@@ -236,6 +245,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_CAN_REDO, "can-redo");
     INSTALL_PROP (PROP_HAS_SELECTION, "has-selection");
     INSTALL_PROP (PROP_HAS_TEXT, "has-text");
+    INSTALL_PROP (PROP_HAS_JOBS_RUNNING, "has-jobs-running");
+    INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
 
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
@@ -472,6 +483,17 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, STOP_ACTION_ID,
+                                 "name", "Stop",
+                                 "label", "Stop",
+                                 "tooltip", "Stop",
+                                 "icon-stock-id", GTK_STOCK_STOP,
+                                 "accel", "Escape",
+                                 "closure::callback", moo_edit_window_abort_jobs,
+                                 "condition::sensitive", "has-jobs-running",
+                                 "condition::visible", "has-stop-clients",
+                                 NULL);
+
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
                                         NULL, NULL);
@@ -505,6 +527,31 @@ MooEditor       *moo_edit_window_get_editor     (MooEditWindow  *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
     return window->priv->editor;
+}
+
+
+static void
+moo_edit_window_destroy (GtkObject *object)
+{
+    MooEditWindow *window = MOO_EDIT_WINDOW (object);
+
+    if (window->priv->stop_clients || window->priv->jobs)
+    {
+        GSList *list, *l;
+
+        moo_edit_window_abort_jobs (window);
+        g_slist_foreach (window->priv->jobs, (GFunc) g_free, NULL);
+        g_slist_free (window->priv->jobs);
+        window->priv->jobs = NULL;
+
+        list = g_slist_copy (window->priv->stop_clients);
+        for (l = list; l != NULL; l = l->next)
+            moo_edit_window_remove_stop_client (window, l->data);
+        g_assert (window->priv->stop_clients == NULL);
+        g_slist_free (list);
+    }
+
+    GTK_OBJECT_CLASS(moo_edit_window_parent_class)->destroy (object);
 }
 
 
@@ -592,6 +639,12 @@ static void     moo_edit_window_get_property(GObject        *object,
         case PROP_HAS_TEXT:
             doc = ACTIVE_DOC (window);
             g_value_set_boolean (value, doc && moo_text_view_has_text (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_HAS_JOBS_RUNNING:
+            g_value_set_boolean (value, window->priv->jobs != NULL);
+            break;
+        case PROP_HAS_STOP_CLIENTS:
+            g_value_set_boolean (value, window->priv->stop_clients != NULL);
             break;
 
         default:
@@ -1808,6 +1861,194 @@ edit_lang_changed (MooEditWindow      *window,
 {
     if (doc == ACTIVE_DOC (window))
         update_lang_menu (window);
+}
+
+
+/*****************************************************************************/
+/* Stop button
+ */
+
+typedef struct {
+    gpointer job;
+    MooAbortJobFunc abort;
+} Job;
+
+
+static void
+client_died (MooEditWindow  *window,
+             gpointer        client)
+{
+    window->priv->stop_clients = g_slist_remove (window->priv->stop_clients, client);
+    moo_edit_window_job_finished (window, client);
+}
+
+
+static void
+abort_client_job (gpointer client)
+{
+    gboolean ret;
+    g_signal_emit_by_name (client, "abort", &ret);
+}
+
+
+static void
+client_job_started (gpointer        client,
+                    const char     *job_name,
+                    MooEditWindow  *window)
+{
+    moo_edit_window_job_started (window, job_name, abort_client_job, client);
+}
+
+
+static void
+client_job_finished (gpointer        client,
+                     MooEditWindow  *window)
+{
+    moo_edit_window_job_finished (window, client);
+}
+
+
+void
+moo_edit_window_add_stop_client (MooEditWindow  *window,
+                                 gpointer        client)
+{
+    GType type, return_type;
+    guint signal_abort, signal_started, signal_finished;
+    GSignalQuery query;
+    gboolean had_clients;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (G_IS_OBJECT (client));
+
+    g_return_if_fail (!g_slist_find (window->priv->stop_clients, client));
+
+    type = G_OBJECT_TYPE (client);
+    signal_abort = g_signal_lookup ("abort", type);
+    signal_started = g_signal_lookup ("job-started", type);
+    signal_finished = g_signal_lookup ("job-finished", type);
+    g_return_if_fail (signal_abort && signal_started && signal_finished);
+
+#define REAL_TYPE(t__) ((t__) & ~(G_SIGNAL_TYPE_STATIC_SCOPE))
+    g_signal_query (signal_abort, &query);
+    return_type = REAL_TYPE (query.return_type);
+    g_return_if_fail (return_type == G_TYPE_NONE || return_type == G_TYPE_BOOLEAN);
+    g_return_if_fail (query.n_params == 0);
+
+    g_signal_query (signal_started, &query);
+    g_return_if_fail (REAL_TYPE (query.return_type) == G_TYPE_NONE);
+    g_return_if_fail (query.n_params == 1);
+    g_return_if_fail (REAL_TYPE (query.param_types[0]) == G_TYPE_STRING);
+
+    g_signal_query (signal_finished, &query);
+    g_return_if_fail (REAL_TYPE (query.return_type) == G_TYPE_NONE);
+    g_return_if_fail (query.n_params == 0);
+#undef REAL_TYPE
+
+    had_clients = window->priv->stop_clients != NULL;
+    window->priv->stop_clients = g_slist_prepend (window->priv->stop_clients, client);
+    g_object_weak_ref (client, (GWeakNotify) client_died, window);
+    g_signal_connect (client, "job-started", G_CALLBACK (client_job_started), window);
+    g_signal_connect (client, "job-finished", G_CALLBACK (client_job_finished), window);
+
+    if (!had_clients)
+        g_object_notify (G_OBJECT (window), "has-stop-clients");
+}
+
+
+void
+moo_edit_window_remove_stop_client (MooEditWindow  *window,
+                                    gpointer        client)
+{
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (g_slist_find (window->priv->stop_clients, client));
+
+    window->priv->stop_clients = g_slist_remove (window->priv->stop_clients, client);
+
+    if (G_IS_OBJECT (client))
+    {
+        g_object_weak_unref (client, (GWeakNotify) client_died, window);
+        g_signal_handlers_disconnect_by_func (client, (gpointer)client_job_started, window);
+        g_signal_handlers_disconnect_by_func (client, (gpointer)client_job_finished, window);
+    }
+
+    if (!window->priv->stop_clients)
+        g_object_notify (G_OBJECT (window), "has-stop-clients");
+}
+
+
+void
+moo_edit_window_abort_jobs (MooEditWindow *window)
+{
+    GSList *l, *jobs;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    jobs = g_slist_copy (window->priv->jobs);
+
+    for (l = jobs; l != NULL; l = l->next)
+    {
+        Job *j = l->data;
+        j->abort (j->job);
+    }
+
+    g_slist_free (jobs);
+}
+
+
+void
+moo_edit_window_job_started (MooEditWindow  *window,
+                             G_GNUC_UNUSED const char *name,
+                             MooAbortJobFunc func,
+                             gpointer        job)
+{
+    Job *j;
+    gboolean had_jobs;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (func != NULL);
+    g_return_if_fail (job != NULL);
+
+    j = g_new0 (Job, 1);
+    j->abort = func;
+    j->job = job;
+
+    had_jobs = window->priv->jobs != NULL;
+    window->priv->jobs = g_slist_prepend (window->priv->jobs, j);
+
+    if (!had_jobs)
+        g_object_notify (G_OBJECT (window), "has-jobs-running");
+}
+
+
+void
+moo_edit_window_job_finished (MooEditWindow  *window,
+                              gpointer        job)
+{
+    GSList *l;
+    Job *j = NULL;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (job != NULL);
+
+    for (l = window->priv->jobs; l != NULL; l = l->next)
+    {
+        j = l->data;
+
+        if (j->job == job)
+            break;
+        else
+            j = NULL;
+    }
+
+    if (j)
+    {
+        window->priv->jobs = g_slist_remove (window->priv->jobs, j);
+
+        if (!window->priv->jobs)
+            g_object_notify (G_OBJECT (window), "has-jobs-running");
+
+        g_free (j);
+    }
 }
 
 

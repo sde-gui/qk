@@ -706,8 +706,9 @@ _moo_text_buffer_apply_syntax_tag (MooTextBuffer      *buffer,
                                    const GtkTextIter  *start,
                                    const GtkTextIter  *end)
 {
+    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
     buffer->priv->may_apply_tag = TRUE;
-    gtk_text_buffer_apply_tag (GTK_TEXT_BUFFER (buffer), tag, start, end);
+    gtk_text_buffer_apply_tag (text_buffer, tag, start, end);
     buffer->priv->may_apply_tag = FALSE;
 }
 
@@ -802,6 +803,7 @@ thaw_cursor_moved (MooTextBuffer *buffer)
 {
     g_return_if_fail (buffer->priv->cursor_moved_frozen > 0);
 
+    /* XXX it should check cursor after text is rehighlighted */
     if (!--buffer->priv->cursor_moved_frozen && buffer->priv->cursor_moved)
     {
         GtkTextIter iter;

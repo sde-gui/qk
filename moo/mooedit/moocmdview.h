@@ -42,6 +42,10 @@ struct _MooCmdViewClass
 {
     MooLineViewClass parent_class;
 
+    void     (*job_started) (MooCmdView *view,
+                             const char *job_name);
+    void     (*job_finished)(MooCmdView *view);
+
     /* action signal */
     gboolean (*abort)       (MooCmdView *view);
 
@@ -57,13 +61,14 @@ struct _MooCmdViewClass
 };
 
 
-GType       moo_cmd_view_get_type       (void) G_GNUC_CONST;
+GType       moo_cmd_view_get_type           (void) G_GNUC_CONST;
 
-GtkWidget  *moo_cmd_view_new            (void);
+GtkWidget  *moo_cmd_view_new                (void);
 
-gboolean    moo_cmd_view_run_command    (MooCmdView     *view,
-                                         const char     *cmd);
-void        moo_cmd_view_abort          (MooCmdView     *view);
+gboolean    moo_cmd_view_run_command        (MooCmdView     *view,
+                                             const char     *cmd,
+                                             const char     *job_name);
+void        moo_cmd_view_abort              (MooCmdView     *view);
 
 
 G_END_DECLS
