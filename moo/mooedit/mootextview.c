@@ -26,7 +26,6 @@
 
 #define LIGHT_BLUE "#EEF6FF"
 
-
 static GObject *moo_text_view_constructor   (GType                  type,
                                              guint                  n_construct_properties,
                                              GObjectConstructParam *construct_param);
@@ -133,6 +132,12 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
+#if 0
+    widget_class->drag_data_received = _moo_text_view_drag_data_received;
+    widget_class->drag_drop = _moo_text_view_drag_drop;
+    widget_class->drag_leave = _moo_text_view_drag_leave;
+    widget_class->drag_motion = _moo_text_view_drag_motion;
+#endif
 
     text_view_class->move_cursor = _moo_text_view_move_cursor;
     text_view_class->delete_from_cursor = _moo_text_view_delete_from_cursor;
@@ -364,6 +369,13 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv->check_brackets = TRUE;
 
+#if 0
+    gtk_drag_dest_unset (GTK_WIDGET (view));
+    gtk_drag_dest_set (GTK_WIDGET (view), 0, NULL, 0, GDK_ACTION_DEFAULT);
+    view->priv->targets = gtk_target_list_new (NULL, 0);
+    gtk_target_list_add_text_targets (view->priv->targets, DND_TARGET_TEXT);
+#endif
+
     name = g_strdup_printf ("moo-text-view-%p", view);
     gtk_widget_set_name (GTK_WIDGET (view), name);
     g_free (name);
@@ -378,6 +390,7 @@ moo_text_view_constructor (GType                  type,
     GObject *object;
     MooTextView *view;
     MooUndoMgr *undo_mgr;
+    GtkTextIter iter;
 
     object = G_OBJECT_CLASS (moo_text_view_parent_class)->constructor (
         type, n_construct_properties, construct_param);
@@ -405,6 +418,10 @@ moo_text_view_constructor (GType                  type,
     g_signal_connect_data (get_buffer (view), "insert-text",
                            G_CALLBACK (insert_text_cb), view,
                            NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+
+    gtk_text_buffer_get_start_iter (get_buffer (view), &iter);
+    view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
+    gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
 
     return object;
 }

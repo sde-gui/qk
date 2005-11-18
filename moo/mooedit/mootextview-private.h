@@ -26,6 +26,31 @@ G_BEGIN_DECLS
 
 
 /***********************************************************************/
+/* Drag'n'drop
+/*/
+void     _moo_text_view_drag_data_received  (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time);
+gboolean _moo_text_view_drag_drop           (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
+void     _moo_text_view_drag_leave          (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             guint           time);
+gboolean _moo_text_view_drag_motion         (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
+
+
+/***********************************************************************/
 /* GtkTextView stuff
 /*/
 void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
@@ -109,6 +134,18 @@ struct _MooTextViewPrivate {
     guint           drag_moved                      : 1;
     guint           double_click_selects_brackets   : 1;
     guint           double_click_selects_inside     : 1;
+
+    /***********************************************************************/
+    /* Drag'n'drop from outside
+    /*/
+    gboolean drag_inside;
+    gboolean drag_drop;
+    GtkTargetList *targets;
+    GtkTextMark *dnd_mark;
+};
+
+enum {
+    DND_TARGET_TEXT = 1
 };
 
 

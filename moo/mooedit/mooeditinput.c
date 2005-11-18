@@ -1239,3 +1239,49 @@ handle_ctrl_pgup (MooTextView        *view,
 
     return TRUE;
 }
+
+
+/***********************************************************************/
+/* Drag'n'drop
+/*/
+
+void
+_moo_text_view_drag_data_received (GtkWidget      *widget,
+                                   GdkDragContext *context,
+                                   int             x,
+                                   int             y,
+                                   GtkSelectionData *data,
+                                   guint           info,
+                                   guint           time)
+{
+}
+
+
+gboolean
+_moo_text_view_drag_drop (GtkWidget      *widget,
+                          GdkDragContext *context,
+                          int             x,
+                          int             y,
+                          guint           time)
+{
+    return FALSE;
+}
+
+
+void
+_moo_text_view_drag_leave (GtkWidget      *widget,
+                           GdkDragContext *context,
+                           guint           time)
+{
+}
+
+
+gboolean
+_moo_text_view_drag_motion (GtkWidget      *widget,
+                            GdkDragContext *context,
+                            int             x,
+                            int             y,
+                            guint           time)
+{
+    return FALSE;
+}

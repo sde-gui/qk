@@ -48,6 +48,10 @@ struct _MooWindowPrivate {
     MooActionGroup *actions;
     char *name;
     char *id;
+
+    gboolean drag_inside;
+    gboolean drag_drop;
+    GtkTargetList *targets;
 };
 
 
@@ -97,6 +101,27 @@ static void     moo_window_remove_action            (MooWindow      *window,
 
 static gboolean moo_window_delete_event             (GtkWidget      *widget,
                                                      GdkEventAny    *event);
+
+static void     moo_window_drag_data_received       (GtkWidget      *widget,
+                                                     GdkDragContext *drag_context,
+                                                     int             x,
+                                                     int             y,
+                                                     GtkSelectionData *data,
+                                                     guint           info,
+                                                     guint           time);
+static gboolean moo_window_drag_drop                (GtkWidget      *widget,
+                                                     GdkDragContext *drag_context,
+                                                     int             x,
+                                                     int             y,
+                                                     guint           time);
+static void     moo_window_drag_leave               (GtkWidget      *widget,
+                                                     GdkDragContext *drag_context,
+                                                     guint           time);
+static gboolean moo_window_drag_motion              (GtkWidget      *widget,
+                                                     GdkDragContext *drag_context,
+                                                     int             x,
+                                                     int             y,
+                                                     guint           time);
 
 static gboolean moo_window_save_size                (MooWindow      *window);
 
@@ -150,6 +175,10 @@ static void moo_window_class_init (MooWindowClass *klass)
     gobject_class->get_property = moo_window_get_property;
 
     widget_class->delete_event = moo_window_delete_event;
+    widget_class->drag_data_received = moo_window_drag_data_received;
+    widget_class->drag_drop = moo_window_drag_drop;
+    widget_class->drag_leave = moo_window_drag_leave;
+    widget_class->drag_motion = moo_window_drag_motion;
 
     moo_window_class_set_id (klass, "MooWindow", "Window");
 
@@ -344,6 +373,10 @@ GObject    *moo_window_constructor      (GType                  type,
 static void moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
+
+    window->priv->targets = gtk_target_list_new (NULL, 0);
+    gtk_drag_dest_set (GTK_WIDGET (window), 0, NULL, 0,
+                       GDK_ACTION_DEFAULT);
 }
 
 
@@ -368,9 +401,19 @@ static void moo_window_finalize       (GObject      *object)
         g_source_remove (window->priv->save_size_id);
     window->priv->save_size_id = 0;
 
+    gtk_target_list_unref (window->priv->targets);
+
     g_free (window->priv);
 
     G_OBJECT_CLASS (moo_window_parent_class)->finalize (object);
+}
+
+
+GtkTargetList*
+moo_window_get_target_list (MooWindow *window)
+{
+    g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
+    return window->priv->targets;
 }
 
 
@@ -749,6 +792,123 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window)
     return s;
 }
 #undef N_STYLES
+
+
+static void
+moo_window_drag_data_received (GtkWidget      *widget,
+                               GdkDragContext *context,
+                               int             x,
+                               int             y,
+                               GtkSelectionData *data,
+                               guint           info,
+                               guint           time)
+{
+    MooWindow *window = MOO_WINDOW (widget);
+
+#if 0
+    char *name;
+    name = gdk_atom_name (data->target);
+    g_print ("Got data: %s\n", name);
+    g_free (name);
+#endif
+
+    if (window->priv->drag_drop)
+    {
+        gtk_drag_finish (context, TRUE, FALSE, time);
+        window->priv->drag_inside = FALSE;
+        window->priv->drag_drop = FALSE;
+    }
+    else
+    {
+        gdk_drag_status (context, context->suggested_action, time);
+    }
+}
+
+
+static gboolean
+moo_window_drag_drop (GtkWidget      *widget,
+                      GdkDragContext *context,
+                      int             x,
+                      int             y,
+                      guint           time)
+{
+    GdkAtom target = GDK_NONE;
+    MooWindow *window = MOO_WINDOW (widget);
+
+    target = gtk_drag_dest_find_target (widget, context,
+                                        window->priv->targets);
+
+    if (target != GDK_NONE)
+    {
+        gtk_drag_get_data (widget, context, target, time);
+        window->priv->drag_drop = TRUE;
+    }
+    else
+    {
+        gtk_drag_finish (context, FALSE, FALSE, time);
+    }
+
+    window->priv->drag_inside = FALSE;
+    gtk_drag_unhighlight (widget);
+    return TRUE;
+}
+
+
+static void
+moo_window_drag_leave (GtkWidget      *widget,
+                       GdkDragContext *context,
+                       guint           time)
+{
+    MooWindow *window = MOO_WINDOW (widget);
+
+    g_return_if_fail (window->priv->drag_inside);
+    window->priv->drag_inside = FALSE;
+    gtk_drag_unhighlight (widget);
+}
+
+
+static gboolean
+moo_window_drag_motion (GtkWidget      *widget,
+                        GdkDragContext *context,
+                        int             x,
+                        int             y,
+                        guint           time)
+{
+    MooWindow *window = MOO_WINDOW (widget);
+    GdkDragAction action = 0;
+
+#if 0
+    if (!window->priv->drag_inside)
+    {
+        GList *l;
+
+        g_print ("Targets:\n");
+
+        for (l = context->targets; l != NULL; l = l->next)
+        {
+            GdkAtom atom = GDK_POINTER_TO_ATOM (l->data);
+            char *name = gdk_atom_name (atom);
+            g_print (" %s\n", name);
+            g_free (name);
+        }
+
+        g_print ("==========\n");
+    }
+#endif
+
+    if (gtk_drag_dest_find_target (widget, context, window->priv->targets) != GDK_NONE)
+        action = context->suggested_action;
+
+    if (action != 0 && !window->priv->drag_inside)
+    {
+        window->priv->drag_inside = TRUE;
+        gtk_drag_highlight (widget);
+    }
+
+    gdk_drag_status (context, action, time);
+
+    return TRUE;
+}
 
 
 /*****************************************************************************/

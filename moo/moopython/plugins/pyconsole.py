@@ -88,14 +88,18 @@ class _ReadLine(object):
         self.modify_font(pango.FontDescription("Monospace"))
 
         self.buffer = self.get_buffer()
-        self.cursor = self.buffer.create_mark("cursor",
-                                              self.buffer.get_start_iter(),
-                                              False)
         self.buffer.connect("insert-text", self.on_buf_insert)
         self.buffer.connect("delete-range", self.on_buf_delete)
         self.buffer.connect("mark-set", self.on_buf_mark_set)
         self.do_insert = False
         self.do_delete = False
+
+        self.cursor = self.buffer.create_mark("cursor",
+                                              self.buffer.get_start_iter(),
+                                              False)
+        insert = self.buffer.get_insert()
+        self.cursor.set_visible(True)
+        insert.set_visible(False)
 
         self.ps = ''
         self.in_raw_input = False

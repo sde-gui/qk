@@ -18,6 +18,7 @@
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/moouixml.h>
 #include <gtk/gtkwindow.h>
+#include <gtk/gtkdnd.h>
 
 G_BEGIN_DECLS
 
@@ -62,6 +63,8 @@ typedef MooAction *(*MooWindowActionFunc) (MooWindow *window,
 GType       moo_window_get_type             (void) G_GNUC_CONST;
 
 gboolean    moo_window_close                (MooWindow          *window);
+
+GtkTargetList *moo_window_get_target_list   (MooWindow          *window);
 
 
 /*****************************************************************************/
