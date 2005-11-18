@@ -51,21 +51,21 @@ struct _MooToggleActionClass
 };
 
 
-GType            moo_toggle_action_get_type     (void) G_GNUC_CONST;
+GType       moo_toggle_action_get_type      (void) G_GNUC_CONST;
 
-MooToggleAction *moo_toggle_action_new          (const char         *id,
-                                                 const char         *label,
-                                                 const char         *tooltip,
-                                                 const char         *accel,
-                                                 MooToggleActionFunc func,
-                                                 gpointer            data);
-MooToggleAction *moo_toggle_action_new_stock    (const char         *id,
-                                                 const char         *stock_id,
-                                                 MooToggleActionFunc func,
-                                                 gpointer            data);
+MooAction  *moo_toggle_action_new           (const char         *id,
+                                             const char         *label,
+                                             const char         *tooltip,
+                                             const char         *accel,
+                                             MooToggleActionFunc func,
+                                             gpointer            data);
+MooAction  *moo_toggle_action_new_stock     (const char         *id,
+                                             const char         *stock_id,
+                                             MooToggleActionFunc func,
+                                             gpointer            data);
 
-void             moo_toggle_action_set_active   (MooToggleAction    *action,
-                                                 gboolean            active);
+void        moo_toggle_action_set_active    (MooToggleAction    *action,
+                                             gboolean            active);
 
 
 G_END_DECLS

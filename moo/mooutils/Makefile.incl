@@ -36,6 +36,7 @@ moofileview_sources =                          \
     $(moofileview)/moofilesystem.h             \
     $(moofileview)/moofileview.c               \
     $(moofileview)/moofileview.h               \
+    $(moofileview)/moofileview-ui.h            \
     $(moofileview)/moofileview-dialogs.c       \
     $(moofileview)/moofileview-dialogs.h       \
     $(moofileview)/moofileview-private.h       \
@@ -51,6 +52,7 @@ moofileview_pixmaps =                          \
     $(moofileview)/symlink-small.png
 
 moofileview_built_sources =                    \
+    $(moofileview)/moofileview-ui.h            \
     $(moofileview)/moofileprops-glade.h        \
     $(moofileview)/moocreatefolder-glade.h     \
     $(moofileview)/symlink.h                   \
@@ -62,6 +64,12 @@ $(moofileview)/symlink.h: $(moofileview_pixmaps)
 	SYMLINK_ARROW $(moofileview_srcdir)/symlink.png                    \
 	SYMLINK_ARROW_SMALL $(moofileview_srcdir)/symlink-small.png        \
 	> $(moofileview)/symlink.h
+
+$(moofileview)/moofileview-ui.h: $(moofileview_srcdir)/moofileview-ui.xml $(XML2H)
+	mkdir -p $(moofileview)
+	sh $(XML2H) MOO_FILE_VIEW_UI                                       \
+	   $(moofileview_srcdir)/moofileview-ui.xml >                      \
+		$(moofileview)/moofileview-ui.h
 
 $(moofileview)/moofileprops-glade.h: $(moofileview_srcdir)/glade/moofileprops.glade $(XML2H)
 	mkdir -p $(moofileview)
@@ -84,6 +92,7 @@ $(moofileview)/moobookmarkmgr-glade.h: $(moofileview_srcdir)/glade/bookmark_edit
 moo_extra_dist +=                              \
     $(moofileview)/glade/moofileprops.glade    \
     $(moofileview)/glade/bookmark_editor.glade \
+    $(moofileview)/moofileview-ui.xml          \
     $(moofileview_pixmaps)
 moo_unix_sources +=                            \
     $(moofileview_sources)

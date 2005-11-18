@@ -155,7 +155,7 @@ static void moo_toggle_action_set_property     (GObject        *object,
             break;
 
         case PROP_TOGGLED_CALLBACK:
-            action->toggled_callback = (void(*)(gpointer,gboolean))g_value_get_pointer (value);
+            action->toggled_callback = (MooToggleActionFunc) g_value_get_pointer (value);
             break;
 
         case PROP_TOGGLED_DATA:
@@ -165,6 +165,26 @@ static void moo_toggle_action_set_property     (GObject        *object,
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
+}
+
+
+MooAction*
+moo_toggle_action_new (const char         *id,
+                       const char         *label,
+                       const char         *tooltip,
+                       const char         *accel,
+                       MooToggleActionFunc func,
+                       gpointer            data)
+{
+    g_return_val_if_fail (id != NULL, NULL);
+    return g_object_new (MOO_TYPE_TOGGLE_ACTION,
+                         "id", id,
+                         "label", label,
+                         "tooltip", tooltip,
+                         "accel", accel,
+                         "toggled-callback", func,
+                         "toggled-data", data,
+                         NULL);
 }
 
 

@@ -16,6 +16,7 @@
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtktreemodel.h>
+#include <mooutils/moouixml.h>
 
 G_BEGIN_DECLS
 
@@ -57,11 +58,13 @@ struct _MooBookmarkMgrClass
 {
     GObjectClass parent_class;
 
-    void    (*changed)  (MooBookmarkMgr *watch);
+    void (*changed)   (MooBookmarkMgr *mgr);
+
+    void (*activate)  (MooBookmarkMgr *mgr,
+                       MooBookmark    *bookmark,
+                       GObject        *user);
 };
 
-typedef void   (*MooBookmarkFunc)           (MooBookmark    *bookmark,
-                                             gpointer        data);
 
 GType           moo_bookmark_get_type       (void) G_GNUC_CONST;
 GType           moo_bookmark_mgr_get_type   (void) G_GNUC_CONST;
@@ -83,15 +86,17 @@ GtkTreeModel   *moo_bookmark_mgr_get_model  (MooBookmarkMgr *mgr);
 
 void            moo_bookmark_mgr_add        (MooBookmarkMgr *mgr,
                                              MooBookmark    *bookmark);
-
-void            moo_bookmark_mgr_fill_menu  (MooBookmarkMgr *mgr,
-                                             GtkWidget      *menu_shell,
-                                             int             position,
-                                             MooBookmarkFunc func,
-                                             gpointer        data);
 gboolean        moo_bookmark_mgr_is_empty   (MooBookmarkMgr *mgr);
 
 GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr);
+
+void            moo_bookmark_mgr_add_user   (MooBookmarkMgr *mgr,
+                                             gpointer        user, /* GObject* */
+                                             MooActionGroup *actions,
+                                             MooUIXML       *xml,
+                                             const char     *path);
+void            moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
+                                             gpointer        user); /* GObject* */
 
 
 G_END_DECLS

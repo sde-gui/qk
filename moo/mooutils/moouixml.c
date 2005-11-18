@@ -14,6 +14,7 @@
 #include "mooutils/moouixml.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moomenutoolbutton.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -51,6 +52,7 @@ struct _MooUIXMLPrivate {
     GSList *toplevels;  /* Toplevel* */
     guint last_merge_id;
     GSList *merged_ui; /* Merge* */
+    GtkTooltips *tooltips;
 };
 
 typedef struct {
@@ -118,6 +120,7 @@ static Item    *item_new                (const char     *name,
                                          const char     *action,
                                          const char     *stock_id,
                                          const char     *label,
+                                         const char     *tooltip,
                                          const char     *icon_stock_id);
 static gboolean node_is_ancestor        (Node           *node,
                                          Node           *ancestor);
@@ -254,6 +257,21 @@ moo_ui_xml_new (void)
 }
 
 
+static GtkTooltips *
+moo_ui_xml_get_tooltips (MooUIXML *xml)
+{
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+
+    if (!xml->priv->tooltips)
+    {
+        xml->priv->tooltips = gtk_tooltips_new ();
+        gtk_object_sink (g_object_ref (xml->priv->tooltips));
+    }
+
+    return xml->priv->tooltips;
+}
+
+
 static Node*
 parse_object (MooMarkupNode *mnode)
 {
@@ -379,6 +397,7 @@ item_new (const char *name,
           const char *action,
           const char *stock_id,
           const char *label,
+          const char *tooltip,
           const char *icon_stock_id)
 {
     Item *item;
@@ -388,6 +407,7 @@ item_new (const char *name,
     item->action = g_strdup (action);
     item->stock_id = g_strdup (stock_id);
     item->label = g_strdup (label);
+    item->tooltip = g_strdup (tooltip);
     item->icon_stock_id = g_strdup (icon_stock_id);
 
     return item;
@@ -408,9 +428,10 @@ parse_item (MooMarkupNode *mnode)
 
     item = item_new (name,
                      moo_markup_get_prop (mnode, "action"),
-                     moo_markup_get_prop (mnode, "stock_id"),
+                     moo_markup_get_prop (mnode, "stock-id"),
                      moo_markup_get_prop (mnode, "label"),
-                     moo_markup_get_prop (mnode, "icon_stock_id"));
+                     moo_markup_get_prop (mnode, "tooltip"),
+                     moo_markup_get_prop (mnode, "icon-stock-id"));
 
     for (mchild = mnode->children; mchild != NULL; mchild = mchild->next)
     {
@@ -490,6 +511,7 @@ item_free (Item *item)
     g_free (item->action);
     g_free (item->stock_id);
     g_free (item->label);
+    g_free (item->tooltip);
     g_free (item->icon_stock_id);
 }
 
@@ -835,7 +857,7 @@ moo_ui_xml_add_item (MooUIXML       *xml,
                        G_STRLOC, NODE_TYPE_NAME[parent->type]);
     }
 
-    item = item_new (name, action, NULL, NULL, NULL);
+    item = item_new (name, action, NULL, NULL, NULL, NULL);
     item->parent = parent;
     parent->children = g_slist_insert (parent->children, item, position);
 
@@ -1929,8 +1951,32 @@ create_tool_item (MooUIXML       *xml,
     }
     else
     {
-        g_warning ("%s: implement me", G_STRLOC);
-        return FALSE;
+        GtkWidget *menu;
+
+        tool_item = moo_menu_tool_button_new ();
+        gtk_widget_show (tool_item);
+
+        if (item->tooltip)
+            gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (tool_item),
+                                       moo_ui_xml_get_tooltips (xml),
+                                       item->tooltip, item->tooltip);
+        if (item->icon_stock_id)
+            gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (tool_item),
+                                          item->icon_stock_id);
+        if (item->stock_id)
+            gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (tool_item),
+                                          item->stock_id);
+        if (item->label)
+            gtk_tool_button_set_label (GTK_TOOL_BUTTON (tool_item),
+                                       item->label);
+
+        gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
+
+        menu = gtk_menu_new ();
+        /* XXX empty menu */
+        gtk_widget_show (menu);
+        moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (tool_item), menu);
+        fill_menu_shell (xml, toplevel, node, GTK_MENU_SHELL (menu));
     }
 
     g_return_val_if_fail (tool_item != NULL, FALSE);
@@ -2000,7 +2046,7 @@ create_toolbar (MooUIXML       *xml,
 }
 
 
-GtkWidget*
+gpointer
 moo_ui_xml_create_widget (MooUIXML       *xml,
                           MooUIWidgetType type,
                           const char     *path,
@@ -2095,25 +2141,66 @@ toplevel_add_node (MooUIXML *xml,
 
     if (GTK_IS_TOOLBAR (toplevel->widget))
     {
-        g_return_if_fail (effective_parent (node) == toplevel->node);
+        GtkWidget *parent_widget;
+        Node *parent = effective_parent (node);
 
-        switch (node->type)
+        g_return_if_fail (parent != NULL);
+        parent_widget = toplevel_get_widget (toplevel, parent);
+        g_return_if_fail (parent_widget != NULL);
+
+        if (GTK_IS_TOOLBAR (parent_widget))
         {
-            case ITEM:
-                create_tool_item (xml, toplevel,
-                                  GTK_TOOLBAR (toplevel->widget),
-                                  node, effective_index (toplevel->node, node));
-                break;
-            case SEPARATOR:
-                create_tool_separator (xml, toplevel,
-                                       GTK_TOOLBAR (toplevel->widget),
-                                       node, effective_index (toplevel->node, node));
-                break;
-            default:
-                g_return_if_reached ();
-        }
+            switch (node->type)
+            {
+                case ITEM:
+                    create_tool_item (xml, toplevel,
+                                      GTK_TOOLBAR (parent_widget),
+                                      node, effective_index (parent, node));
+                    break;
+                case SEPARATOR:
+                    create_tool_separator (xml, toplevel,
+                                           GTK_TOOLBAR (parent_widget),
+                                           node, effective_index (parent, node));
+                    break;
+                default:
+                    g_return_if_reached ();
+            }
 
-        update_separators (toplevel->node, toplevel);
+            update_separators (parent, toplevel);
+        }
+        else if (MOO_IS_MENU_TOOL_BUTTON (parent_widget))
+        {
+            GtkWidget *menu;
+
+            menu = moo_menu_tool_button_get_menu (MOO_MENU_TOOL_BUTTON (parent_widget));
+
+            if (!menu)
+            {
+                menu = gtk_menu_new ();
+                gtk_widget_show (menu);
+                moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (parent_widget), menu);
+            }
+
+            switch (node->type)
+            {
+                case ITEM:
+                    create_menu_item (xml, toplevel, GTK_MENU_SHELL (menu),
+                                      node, effective_index (parent, node));
+                    break;
+                case SEPARATOR:
+                    create_menu_separator (xml, toplevel, GTK_MENU_SHELL (menu),
+                                           node, effective_index (parent, node));
+                    break;
+                default:
+                    g_return_if_reached ();
+            }
+
+            update_separators (parent, toplevel);
+        }
+        else
+        {
+            g_return_if_reached ();
+        }
     }
     else if (GTK_IS_MENU_SHELL (toplevel->widget))
     {
@@ -2281,6 +2368,9 @@ moo_ui_xml_finalize (GObject *object)
     g_slist_free (xml->priv->toplevels);
     g_slist_free (xml->priv->merged_ui);
     node_free (xml->priv->ui);
+
+    if (xml->priv->tooltips)
+        g_object_unref (xml->priv->tooltips);
 
     g_free (xml->priv);
     xml->priv = NULL;

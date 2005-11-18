@@ -159,7 +159,7 @@ fileview_activate (MooEditWindow    *window,
 
 
 static void
-goto_current_doc_dir (MooEditWindow    *window)
+goto_current_doc_dir (MooEditWindow *window)
 {
     GtkWidget *fileview;
     MooEdit *doc;
@@ -182,9 +182,12 @@ static void
 file_selector_plugin_attach (Plugin        *plugin,
                              MooEditWindow *window)
 {
-    GtkWidget *fileview, *button;
+    GtkWidget *fileview;
     MooEditor *editor;
     MooPaneLabel *label;
+    MooAction *action;
+    MooClosure *closure;
+    MooUIXML *xml;
 
     editor = moo_edit_window_get_editor (window);
 
@@ -203,11 +206,21 @@ file_selector_plugin_attach (Plugin        *plugin,
                               G_CALLBACK (fileview_activate),
                               window);
 
-    button = moo_file_view_add_button (MOO_FILE_VIEW (fileview),
-                                       GTK_TYPE_BUTTON, GTK_STOCK_JUMP_TO,
-                                       "Go to current document directory");
-    g_signal_connect_swapped (button, "clicked",
-                              G_CALLBACK (goto_current_doc_dir), window);
+    closure = moo_closure_new_object (G_CALLBACK (goto_current_doc_dir), window);
+    action = g_object_new (MOO_TYPE_ACTION,
+                           "id", "GoToCurrentDocDir",
+                           "icon-stock-id", GTK_STOCK_JUMP_TO,
+                           "tooltip", "Go to current document directory",
+                           "closure", closure,
+                           NULL);
+    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
+                                 action);
+    g_object_unref (action);
+
+    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
+    moo_ui_xml_insert_markup (xml, moo_ui_xml_new_merge_id (xml),
+                              "MooFileView/Toolbar", -1,
+                              "<item action=\"GoToCurrentDocDir\"/>");
 
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL, "File Selector",

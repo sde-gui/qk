@@ -72,8 +72,9 @@ struct _MooUIItemNode {
 
     char *action;
 
-    char *stock_id;
     char *label;
+    char *tooltip;
+    char *stock_id;
     char *icon_stock_id;
 };
 
@@ -131,7 +132,7 @@ char       *moo_ui_node_get_path            (MooUINode      *node);
 MooUINode  *moo_ui_node_get_child           (MooUINode      *node,
                                              const char     *path);
 
-GtkWidget  *moo_ui_xml_create_widget        (MooUIXML       *xml,
+gpointer    moo_ui_xml_create_widget        (MooUIXML       *xml,
                                              MooUIWidgetType type,
                                              const char     *path,
                                              MooActionGroup *actions,

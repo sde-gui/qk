@@ -89,8 +89,8 @@ menu_position_func (G_GNUC_UNUSED GtkMenu *menu,
     gdk_window_get_origin (button->window, x, y);
     gtk_widget_size_request (button, &req);
 
-    *x += GTK_WIDGET(button)->allocation.width - req.width;
-    *y += GTK_WIDGET(button)->allocation.height;
+    *x += button->allocation.x + button->allocation.width - req.width;
+    *y += button->allocation.y + button->allocation.height;
 
     *push_in = TRUE;
 }

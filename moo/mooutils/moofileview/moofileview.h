@@ -16,6 +16,7 @@
 
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkmenu.h>
+#include <mooutils/moouixml.h>
 
 G_BEGIN_DECLS
 
@@ -84,10 +85,8 @@ void        moo_file_view_set_sort_case_sensitive       (MooFileView    *filevie
 void        moo_file_view_set_typeahead_case_sensitive  (MooFileView    *fileview,
                                                          gboolean        case_sensitive);
 
-GtkWidget  *moo_file_view_add_button                    (MooFileView  *fileview,
-                                                         GType         type,
-                                                         const char   *stock_id,
-                                                         const char   *tip);
+MooUIXML   *moo_file_view_get_ui_xml                    (MooFileView    *fileview);
+MooActionGroup *moo_file_view_get_actions               (MooFileView    *fileview);
 
 
 G_END_DECLS

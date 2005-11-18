@@ -27,11 +27,14 @@
 
 struct _MooBookmarkMgrPrivate {
     GtkListStore *store;
-    GSList *menus;
-    guint update_idle;
+    GSList *users;
     GtkWidget *editor;
     gboolean loading;
+    guint last_user_id;
+    guint update_idle;
 };
+
+typedef struct _UserInfo UserInfo;
 
 
 static void moo_bookmark_mgr_finalize       (GObject        *object);
@@ -41,6 +44,10 @@ static void moo_bookmark_mgr_add_separator  (MooBookmarkMgr *mgr);
 
 static void moo_bookmark_mgr_load           (MooBookmarkMgr *mgr);
 static void moo_bookmark_mgr_save           (MooBookmarkMgr *mgr);
+
+static void mgr_remove_user                 (MooBookmarkMgr *mgr,
+                                             UserInfo       *info);
+static gboolean mgr_update_menus            (MooBookmarkMgr *mgr);
 
 
 /* MOO_TYPE_BOOKMARK_MGR */
@@ -52,12 +59,14 @@ enum {
 
 enum {
     CHANGED,
+    ACTIVATE,
     LAST_SIGNAL
 };
 
 static guint signals[LAST_SIGNAL];
 
-static void moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
+static void
+moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -72,11 +81,22 @@ static void moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
                           G_STRUCT_OFFSET (MooBookmarkMgrClass, changed),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE,0);
+                          G_TYPE_NONE, 0);
+
+    signals[ACTIVATE] =
+            g_signal_new ("activate",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooBookmarkMgrClass, activate),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOXED_OBJECT,
+                          G_TYPE_NONE, 2,
+                          MOO_TYPE_BOOKMARK, G_TYPE_OBJECT);
 }
 
 
-static void moo_bookmark_mgr_init      (MooBookmarkMgr *mgr)
+static void
+moo_bookmark_mgr_init (MooBookmarkMgr *mgr)
 {
     mgr->priv = g_new0 (MooBookmarkMgrPrivate, 1);
 
@@ -93,8 +113,10 @@ static void moo_bookmark_mgr_init      (MooBookmarkMgr *mgr)
 }
 
 
-static void moo_bookmark_mgr_finalize  (GObject      *object)
+static void
+moo_bookmark_mgr_finalize (GObject *object)
 {
+    GSList *l, *users;
     MooBookmarkMgr *mgr = MOO_BOOKMARK_MGR (object);
 
     g_object_unref (mgr->priv->store);
@@ -108,6 +130,12 @@ static void moo_bookmark_mgr_finalize  (GObject      *object)
         g_object_unref (mgr->priv->editor);
     }
 
+    users = g_slist_copy (mgr->priv->users);
+    for (l = users; l != NULL; l = l->next)
+        mgr_remove_user (mgr, l->data);
+    g_assert (mgr->priv->users == NULL);
+    g_slist_free (users);
+
     g_free (mgr->priv);
     mgr->priv = NULL;
 
@@ -115,21 +143,26 @@ static void moo_bookmark_mgr_finalize  (GObject      *object)
 }
 
 
-static void emit_changed                (MooBookmarkMgr *mgr)
+static void
+emit_changed (MooBookmarkMgr *mgr)
 {
     g_signal_emit (mgr, signals[CHANGED], 0);
 }
 
 
-static void moo_bookmark_mgr_changed    (G_GNUC_UNUSED MooBookmarkMgr *mgr)
+static void
+moo_bookmark_mgr_changed (MooBookmarkMgr *mgr)
 {
     if (!mgr->priv->loading)
         moo_bookmark_mgr_save (mgr);
+    if (!mgr->priv->update_idle)
+        mgr->priv->update_idle = g_idle_add ((GSourceFunc) mgr_update_menus, mgr);
 }
 
 
-void            moo_bookmark_mgr_add        (MooBookmarkMgr *mgr,
-                                             MooBookmark    *bookmark)
+void
+moo_bookmark_mgr_add (MooBookmarkMgr *mgr,
+                      MooBookmark    *bookmark)
 {
     GtkTreeIter iter;
 
@@ -144,7 +177,8 @@ void            moo_bookmark_mgr_add        (MooBookmarkMgr *mgr,
 }
 
 
-static void moo_bookmark_mgr_add_separator  (MooBookmarkMgr *mgr)
+static void
+moo_bookmark_mgr_add_separator (MooBookmarkMgr *mgr)
 {
     GtkTreeIter iter;
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
@@ -152,7 +186,8 @@ static void moo_bookmark_mgr_add_separator  (MooBookmarkMgr *mgr)
 }
 
 
-MooBookmarkMgr *moo_bookmark_mgr_new        (void)
+MooBookmarkMgr*
+moo_bookmark_mgr_new (void)
 {
     MooBookmarkMgr *mgr = g_object_new (MOO_TYPE_BOOKMARK_MGR, NULL);
     moo_bookmark_mgr_load (mgr);
@@ -160,7 +195,8 @@ MooBookmarkMgr *moo_bookmark_mgr_new        (void)
 }
 
 
-gboolean        moo_bookmark_mgr_is_empty   (MooBookmarkMgr *mgr)
+gboolean
+moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
 {
     GtkTreeIter iter;
     g_return_val_if_fail (MOO_IS_BOOKMARK_MGR (mgr), TRUE);
@@ -168,9 +204,10 @@ gboolean        moo_bookmark_mgr_is_empty   (MooBookmarkMgr *mgr)
 }
 
 
-MooBookmark    *moo_bookmark_new            (const char     *label,
-                                             const char     *path,
-                                             const char     *icon)
+MooBookmark*
+moo_bookmark_new (const char     *label,
+                  const char     *path,
+                  const char     *icon)
 {
     MooBookmark *bookmark;
 
@@ -185,7 +222,8 @@ MooBookmark    *moo_bookmark_new            (const char     *label,
 }
 
 
-MooBookmark    *moo_bookmark_copy           (MooBookmark    *bookmark)
+MooBookmark*
+moo_bookmark_copy (MooBookmark *bookmark)
 {
     MooBookmark *copy;
 
@@ -204,7 +242,8 @@ MooBookmark    *moo_bookmark_copy           (MooBookmark    *bookmark)
 }
 
 
-void            moo_bookmark_free           (MooBookmark    *bookmark)
+void
+moo_bookmark_free (MooBookmark *bookmark)
 {
     if (bookmark)
     {
@@ -219,7 +258,8 @@ void            moo_bookmark_free           (MooBookmark    *bookmark)
 }
 
 
-GType           moo_bookmark_get_type       (void)
+GType
+moo_bookmark_get_type (void)
 {
     static GType type = 0;
     if (!type)
@@ -230,8 +270,9 @@ GType           moo_bookmark_get_type       (void)
 }
 
 
-void            moo_bookmark_set_path       (MooBookmark    *bookmark,
-                                             const char     *path)
+void
+moo_bookmark_set_path (MooBookmark    *bookmark,
+                       const char     *path)
 {
     char *display_path;
     g_return_if_fail (bookmark != NULL);
@@ -247,8 +288,9 @@ void            moo_bookmark_set_path       (MooBookmark    *bookmark,
 }
 
 
-void            moo_bookmark_set_display_path (MooBookmark  *bookmark,
-                                               const char   *display_path)
+void
+moo_bookmark_set_display_path (MooBookmark  *bookmark,
+                               const char   *display_path)
 {
     char *path;
     g_return_if_fail (bookmark != NULL);
@@ -273,7 +315,8 @@ void            moo_bookmark_set_display_path (MooBookmark  *bookmark,
 #define PROP_LABEL "label"
 #define PROP_ICON "icon"
 
-static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
+static void
+moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
@@ -336,7 +379,8 @@ static void moo_bookmark_mgr_load       (MooBookmarkMgr *mgr)
 }
 
 
-static void moo_bookmark_mgr_save       (MooBookmarkMgr *mgr)
+static void
+moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root;
@@ -389,118 +433,303 @@ static void moo_bookmark_mgr_save       (MooBookmarkMgr *mgr)
 /* Bookmarks menu
  */
 
-static void     menu_item_activated         (GtkMenuItem    *item,
-                                             MooBookmarkMgr *mgr)
+struct _UserInfo {
+    GObject *user;
+    MooUIXML *xml;
+    MooActionGroup *actions;
+    char *path;
+    guint user_id;
+    guint merge_id;
+    GSList *bm_actions;
+};
+
+static UserInfo*
+user_info_new (GObject        *user,
+               MooActionGroup *actions,
+               MooUIXML       *xml,
+               const char     *path,
+               guint           user_id)
 {
-    MooBookmark *bookmark;
-    MooBookmarkFunc func;
-    gpointer data;
+    UserInfo *info;
 
-    g_return_if_fail (g_object_get_data (G_OBJECT (item), "moo-bookmark-mgr") == mgr);
+    g_return_val_if_fail (G_IS_OBJECT (user), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_GROUP (actions), NULL);
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (path, NULL);
+    g_return_val_if_fail (user_id > 0, NULL);
 
-    bookmark = g_object_get_data (G_OBJECT (item), "moo-bookmark");
-    g_return_if_fail (bookmark != NULL);
+    info = g_new0 (UserInfo, 1);
+    info->user = user;
+    info->actions = actions;
+    info->xml = xml;
+    info->path = g_strdup (path);
+    info->user_id = user_id;
 
-    func = g_object_get_data (G_OBJECT (item), "moo-bookmark-func");
-    data = g_object_get_data (G_OBJECT (item), "moo-bookmark-data");
-
-    if (func)
-        func (bookmark, data);
+    return info;
 }
 
 
-static void     create_menu_items           (MooBookmarkMgr *mgr,
-                                             GtkMenuShell   *menu,
-                                             int             position,
-                                             MooBookmarkFunc func,
-                                             gpointer        data)
+static void
+user_info_free (UserInfo *info)
 {
-    GtkTreeIter iter;
+    if (info)
+    {
+        g_free (info->path);
+        g_free (info);
+    }
+}
+
+
+static void
+item_activated (MooAction      *action,
+                MooBookmarkMgr *mgr)
+{
+    MooBookmark *bookmark;
+    gpointer user;
+
+    g_return_if_fail (MOO_IS_ACTION (action));
+    g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
+
+    bookmark = g_object_get_data (G_OBJECT (action), "moo-bookmark");
+    user = g_object_get_data (G_OBJECT (action), "moo-bookmark-user");
+
+    g_return_if_fail (bookmark != NULL && user != NULL);
+
+    g_signal_emit (mgr, signals[ACTIVATE], 0, bookmark, user);
+}
+
+
+static void
+make_menu (MooBookmarkMgr *mgr,
+           UserInfo       *info)
+{
     GtkTreeModel *model = GTK_TREE_MODEL (mgr->priv->store);
+    GtkTreeIter iter;
+    GString *markup;
 
     if (!gtk_tree_model_get_iter_first (model, &iter))
         return;
 
+    info->merge_id = moo_ui_xml_new_merge_id (info->xml);
+    markup = g_string_new (NULL);
+
     do
     {
         MooBookmark *bookmark = NULL;
-        GtkWidget *item, *icon;
+        MooAction *action;
+        char *action_id;
 
         gtk_tree_model_get (model, &iter, COLUMN_BOOKMARK, &bookmark, -1);
 
         if (!bookmark)
         {
-            item = gtk_separator_menu_item_new ();
-        }
-        else
-        {
-            if (bookmark->label)
-                item = gtk_image_menu_item_new_with_label (bookmark->label);
-            else
-                item = gtk_image_menu_item_new ();
-
-            if (bookmark->pixbuf)
-                icon = gtk_image_new_from_pixbuf (bookmark->pixbuf);
-            else if (bookmark->icon_stock_id)
-                icon = gtk_image_new_from_stock (bookmark->icon_stock_id,
-                    GTK_ICON_SIZE_MENU);
-            else
-                icon = NULL;
-
-            if (icon)
-            {
-                gtk_widget_show (icon);
-                gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), icon);
-            }
-
-            g_signal_connect (item, "activate",
-                              G_CALLBACK (menu_item_activated), mgr);
+            g_string_append (markup, "<separator/>");
+            continue;
         }
 
-        g_object_set_data_full (G_OBJECT (item), "moo-bookmark-mgr",
-                                g_object_ref (mgr), g_object_unref);
-        g_object_set_data_full (G_OBJECT (item), "moo-bookmark",
+        action_id = g_strdup_printf ("MooBookmarkAction-%p", bookmark);
+
+        action = g_object_new (MOO_TYPE_ACTION,
+                               "id", action_id,
+                               "label", bookmark->label ? bookmark->label :
+                                       bookmark->display_path,
+                               "icon_stock_id", bookmark->icon_stock_id,
+                               "tooltip", bookmark->display_path,
+                               "no-accel", TRUE,
+                               NULL);
+        g_object_set_data_full (G_OBJECT (action), "moo-bookmark",
                                 bookmark, (GDestroyNotify) moo_bookmark_free);
-        g_object_set_data (G_OBJECT (item), "moo-bookmark-func", func);
-        g_object_set_data (G_OBJECT (item), "moo-bookmark-data", data);
+        g_object_set_data (G_OBJECT (action), "moo-bookmark-user", info->user);
+        g_signal_connect (action, "activate", G_CALLBACK (item_activated), mgr);
 
-        gtk_widget_show (item);
-        gtk_menu_shell_insert (menu, item, position);
-        if (position >= 0)
-            position++;
+        moo_action_group_add_action (info->actions, action);
+        info->bm_actions = g_slist_prepend (info->bm_actions, action);
+
+        g_string_append_printf (markup, "<item action=\"%s\"/>", action_id);
+
+        g_free (action_id);
     }
     while (gtk_tree_model_iter_next (model, &iter));
+
+    moo_ui_xml_insert_markup (info->xml, info->merge_id,
+                              info->path, -1, markup->str);
+    g_string_free (markup, TRUE);
 }
 
 
-static void     menu_destroyed              (MooBookmarkMgr *mgr,
-                                             gpointer        menu)
+static void
+destroy_menu (UserInfo *info)
 {
-    g_slist_remove (mgr->priv->menus, menu);
+    GSList *l;
+
+    for (l = info->bm_actions; l != NULL; l = l->next)
+    {
+        MooAction *action = l->data;
+        moo_action_group_remove_action (info->actions,
+                                        moo_action_get_id (action));
+        g_object_unref (action);
+    }
+
+    g_slist_free (info->bm_actions);
+    info->bm_actions = NULL;
+
+    if (info->merge_id > 0)
+    {
+        moo_ui_xml_remove_ui (info->xml, info->merge_id);
+        info->merge_id = 0;
+    }
 }
 
-void            moo_bookmark_mgr_fill_menu  (MooBookmarkMgr *mgr,
-                                             GtkWidget      *menu,
-                                             int             position,
-                                             MooBookmarkFunc func,
-                                             gpointer        data)
+
+static gboolean
+mgr_update_menus (MooBookmarkMgr *mgr)
 {
+    GSList *l;
+    GtkTreeIter first;
+    GtkTreeModel *model = GTK_TREE_MODEL (mgr->priv->store);
+    gboolean empty;
+
+    mgr->priv->update_idle = 0;
+
+    empty = !gtk_tree_model_get_iter_first (model, &first);
+
+    for (l = mgr->priv->users; l != NULL; l = l->next)
+    {
+        UserInfo *info = l->data;
+
+        destroy_menu (info);
+
+        if (!empty)
+            make_menu (mgr, info);
+    }
+
+    return FALSE;
+}
+
+
+void
+moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
+                           gpointer        user,
+                           MooActionGroup *actions,
+                           MooUIXML       *xml,
+                           const char     *path)
+{
+    guint merge_id;
+    UserInfo *info;
+
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
-    g_return_if_fail (GTK_IS_MENU_SHELL (menu));
+    g_return_if_fail (G_IS_OBJECT (user));
+    g_return_if_fail (MOO_IS_ACTION_GROUP (actions));
+    g_return_if_fail (MOO_IS_UI_XML (xml));
+    g_return_if_fail (path != NULL);
 
-    g_return_if_fail (g_slist_find (mgr->priv->menus, menu) == NULL);
-    g_return_if_fail (g_object_get_data (G_OBJECT (menu), "moo-bookmark-mgr") == NULL);
+    merge_id = moo_ui_xml_new_merge_id (xml);
+    info = user_info_new (user, actions, xml, path,
+                          ++mgr->priv->last_user_id);
+    mgr->priv->users = g_slist_prepend (mgr->priv->users, info);
 
-    g_object_set_data_full (G_OBJECT (menu), "moo-bookmark-mgr",
-                            g_object_ref (mgr), g_object_unref);
-    g_object_set_data (G_OBJECT (menu), "moo-bookmark-func", func);
-    g_object_set_data (G_OBJECT (menu), "moo-bookmark-data", data);
-
-    g_object_weak_ref (G_OBJECT (menu), (GWeakNotify) menu_destroyed, mgr);
-    mgr->priv->menus = g_slist_prepend (mgr->priv->menus, menu);
-
-    create_menu_items (mgr, GTK_MENU_SHELL (menu), position, func, data);
+    make_menu (mgr, info);
 }
+
+
+static void
+mgr_remove_user (MooBookmarkMgr *mgr,
+                 UserInfo       *info)
+{
+    destroy_menu (info);
+    user_info_free (info);
+    mgr->priv->users = g_slist_remove (mgr->priv->users, info);
+}
+
+
+void
+moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
+                              gpointer        user)
+{
+    GSList *l, *infos = NULL;
+
+    g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
+
+    for (l = mgr->priv->users; l != NULL; l = l->next)
+    {
+        UserInfo *info = l->data;
+
+        if (info->user == user)
+            infos = g_slist_prepend (infos, info);
+    }
+
+    for (l = infos; l != NULL; l = l->next)
+    {
+        UserInfo *info = l->data;
+        mgr_remove_user (mgr, info);
+    }
+
+    g_slist_free (infos);
+}
+
+
+// static void     create_menu_items           (MooBookmarkMgr *mgr,
+//                                              GtkMenuShell   *menu,
+//                                              int             position,
+//                                              MooBookmarkFunc func,
+//                                              gpointer        data)
+// {
+//     GtkTreeIter iter;
+//     GtkTreeModel *model = GTK_TREE_MODEL (mgr->priv->store);
+//
+//     if (!gtk_tree_model_get_iter_first (model, &iter))
+//         return;
+//
+//     do
+//     {
+//         MooBookmark *bookmark = NULL;
+//         GtkWidget *item, *icon;
+//
+//         gtk_tree_model_get (model, &iter, COLUMN_BOOKMARK, &bookmark, -1);
+//
+//         if (!bookmark)
+//         {
+//             item = gtk_separator_menu_item_new ();
+//         }
+//         else
+//         {
+//             if (bookmark->label)
+//                 item = gtk_image_menu_item_new_with_label (bookmark->label);
+//             else
+//                 item = gtk_image_menu_item_new ();
+//
+//             if (bookmark->pixbuf)
+//                 icon = gtk_image_new_from_pixbuf (bookmark->pixbuf);
+//             else if (bookmark->icon_stock_id)
+//                 icon = gtk_image_new_from_stock (bookmark->icon_stock_id,
+//                     GTK_ICON_SIZE_MENU);
+//             else
+//                 icon = NULL;
+//
+//             if (icon)
+//             {
+//                 gtk_widget_show (icon);
+//                 gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), icon);
+//             }
+//
+//             g_signal_connect (item, "activate",
+//                               G_CALLBACK (menu_item_activated), mgr);
+//         }
+//
+//         g_object_set_data_full (G_OBJECT (item), "moo-bookmark-mgr",
+//                                 g_object_ref (mgr), g_object_unref);
+//         g_object_set_data_full (G_OBJECT (item), "moo-bookmark",
+//                                 bookmark, (GDestroyNotify) moo_bookmark_free);
+//         g_object_set_data (G_OBJECT (item), "moo-bookmark-func", func);
+//         g_object_set_data (G_OBJECT (item), "moo-bookmark-data", data);
+//
+//         gtk_widget_show (item);
+//         gtk_menu_shell_insert (menu, item, position);
+//         if (position >= 0)
+//             position++;
+//     }
+//     while (gtk_tree_model_iter_next (model, &iter));
+// }
 
 
 #if 0
