@@ -1245,3 +1245,52 @@ egg_regex_try_eval_replacement (EggRegex          *regex,
         return NULL;
     }
 }
+
+
+gchar *
+egg_regex_escape_string (const gchar *string,
+                         gint         length)
+{
+    GString *escaped;
+    gchar *tmp;
+    gint i;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    if (length < 0)
+        length = g_utf8_strlen (string, -1);
+
+    escaped = g_string_new ("");
+    tmp = (gchar*) string;
+    for (i = 0; i < length; i++)
+    {
+        gunichar wc = g_utf8_get_char (tmp);
+        switch (wc)
+        {
+            case '\0':
+                g_string_append (escaped, "\\0");
+                break;
+            case '\\':
+            case '|':
+            case '(':
+            case ')':
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '^':
+            case '$':
+            case '*':
+            case '+':
+            case '?':
+            case '.':
+                g_string_append_unichar (escaped, '\\');
+            default:
+                g_string_append_unichar (escaped, wc);
+        }
+        tmp = g_utf8_next_char (tmp);
+    }
+
+    return g_string_free (escaped, FALSE);
+}
+
