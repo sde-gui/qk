@@ -107,6 +107,7 @@ struct _MooFileViewPrivate {
 
     MooActionGroup  *actions;
     MooUIXML        *ui_xml;
+    gboolean         has_selection;
 };
 
 
@@ -1199,6 +1200,29 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
 }
 
 
+static void
+icon_selection_changed (MooIconView *icon_view,
+                        MooFileView *file_view)
+{
+    if (file_view->priv->view_type == MOO_FILE_VIEW_ICON)
+    {
+        gboolean has_selection;
+        GtkTreePath *path;
+
+        path = moo_icon_view_get_selected_path (icon_view);
+        has_selection = path != NULL;
+
+        if (file_view->priv->has_selection != has_selection)
+        {
+            file_view->priv->has_selection = has_selection;
+            g_object_notify (G_OBJECT (file_view), "has-selection");
+        }
+
+        gtk_tree_path_free (path);
+    }
+}
+
+
 static GtkWidget   *create_iconview         (MooFileView    *fileview)
 {
     GtkWidget *iconview;
@@ -1232,6 +1256,8 @@ static GtkWidget   *create_iconview         (MooFileView    *fileview)
                               G_CALLBACK (tree_path_activated), fileview);
     g_signal_connect (iconview, "button-press-event",
                       G_CALLBACK (icon_button_press), fileview);
+    g_signal_connect (iconview, "selection-changed",
+                      G_CALLBACK (icon_selection_changed), fileview);
 
     return iconview;
 }

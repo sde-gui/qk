@@ -785,8 +785,8 @@
   (return-type "none")
   (parameters
     '("const-char*" "text")
-    '("gssize" "len")
-    '("GtkTextTag*" "tag")
+    '("gssize" "len" (null-ok) (default "-1"))
+    '("GtkTextTag*" "tag" (null-ok) (default "NULL"))
   )
 )
 
@@ -802,8 +802,8 @@
   (return-type "int")
   (parameters
     '("const-char*" "text")
-    '("gssize" "len")
-    '("GtkTextTag*" "tag")
+    '("gssize" "len" (null-ok) (default "-1"))
+    '("GtkTextTag*" "tag" (null-ok) (default "NULL"))
   )
 )
 

@@ -226,7 +226,7 @@ file_selector_plugin_attach (Plugin        *plugin,
                                 NULL, NULL, "File Selector",
                                 "File Selector");
     moo_edit_window_add_pane (window, PLUGIN_ID, fileview,
-                              label, MOO_PANE_POS_LEFT);
+                              label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 }
 
