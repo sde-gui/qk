@@ -1247,29 +1247,31 @@ egg_regex_try_eval_replacement (EggRegex          *regex,
 }
 
 
-gchar *
-egg_regex_escape_string (const gchar *string,
-                         gint         length)
+char *
+egg_regex_escape_string (const char *string,
+                         int         chars)
 {
     GString *escaped;
-    gchar *tmp;
-    gint i;
+    const char *p;
+    int i;
 
     g_return_val_if_fail (string != NULL, NULL);
 
-    if (length < 0)
-        length = g_utf8_strlen (string, -1);
+    if (chars < 0)
+        chars = g_utf8_strlen (string, -1);
 
-    escaped = g_string_new ("");
-    tmp = (gchar*) string;
-    for (i = 0; i < length; i++)
+    escaped = g_string_sized_new (chars + 1);
+
+    for (i = 0, p = string; i < chars; i++)
     {
-        gunichar wc = g_utf8_get_char (tmp);
-        switch (wc)
+        char c = *p;
+
+        switch (c)
         {
             case '\0':
-                g_string_append (escaped, "\\0");
+                g_string_append_c (escaped, 0);
                 break;
+
             case '\\':
             case '|':
             case '(':
@@ -1284,11 +1286,24 @@ egg_regex_escape_string (const gchar *string,
             case '+':
             case '?':
             case '.':
-                g_string_append_unichar (escaped, '\\');
+                g_string_append_c (escaped, '\\');
+                g_string_append_c (escaped, c);
+                break;
+
             default:
-                g_string_append_unichar (escaped, wc);
+                if (c & 0x80)
+                {
+                    gunichar wc = g_utf8_get_char (p);
+                    g_string_append_unichar (escaped, wc);
+                }
+                else
+                {
+                    g_string_append_c (escaped, c);
+                }
+                break;
         }
-        tmp = g_utf8_next_char (tmp);
+
+        p = g_utf8_next_char (p);
     }
 
     return g_string_free (escaped, FALSE);

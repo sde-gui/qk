@@ -177,7 +177,7 @@ gboolean egg_regex_check_replacement (const gchar *replacement,
                                       gboolean    *has_references,
                                       GError     **error);
 gchar *egg_regex_escape_string  (const gchar            *string,
-                                 gint                    length);
+                                 gint                    chars);
 
 
 G_END_DECLS
