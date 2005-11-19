@@ -230,24 +230,28 @@ moo_text_view_home_end (MooTextView *view,
     {
         GtkTextIter last = *iter;
 
-        if (!gtk_text_iter_ends_line (&last))
-            gtk_text_iter_forward_to_line_end (&last);
-
-        while (!gtk_text_iter_starts_line (&last))
+        if (gtk_text_iter_ends_line (&last))
         {
-            gtk_text_iter_backward_char (&last);
-
-            if (!is_space (&last))
+            while (!gtk_text_iter_starts_line (&last))
             {
-                gtk_text_iter_forward_char (&last);
-                break;
-            }
-        }
+                gtk_text_iter_backward_char (&last);
 
-        if (gtk_text_iter_ends_line (iter) || !gtk_text_iter_equal (&last, iter))
-            *iter = last;
+                if (!is_space (&last))
+                {
+                    gtk_text_iter_forward_char (&last);
+                    break;
+                }
+            }
+
+            if (gtk_text_iter_ends_line (iter) || !gtk_text_iter_equal (&last, iter))
+                *iter = last;
+            else
+                gtk_text_iter_forward_to_line_end (iter);
+        }
         else
+        {
             gtk_text_iter_forward_to_line_end (iter);
+        }
     }
     else if (count == -1)
     {
