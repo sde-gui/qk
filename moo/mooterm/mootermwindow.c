@@ -48,7 +48,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "tooltip", "Save selected text to a file",
                                  "icon-stock-id", GTK_STOCK_SAVE,
                                  "accel", "<alt>S",
-                                 "closure::callback", moo_term_window_save_selection,
+                                 "closure-callback", moo_term_window_save_selection,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Copy",
@@ -57,8 +57,8 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "tooltip", "Copy",
                                  "icon-stock-id", GTK_STOCK_COPY,
                                  "accel", "<alt>C",
-                                 "closure::callback", moo_term_copy_clipboard,
-                                 "closure::proxy-func", moo_term_window_get_term,
+                                 "closure-callback", moo_term_copy_clipboard,
+                                 "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Paste",
@@ -67,8 +67,8 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "tooltip", "Paste",
                                  "icon-stock-id", GTK_STOCK_PASTE,
                                  "accel", "<alt>V",
-                                 "closure::callback", moo_term_paste_clipboard,
-                                 "closure::proxy-func", moo_term_window_get_term,
+                                 "closure-callback", moo_term_paste_clipboard,
+                                 "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
     moo_window_class_new_action (window_class, "SelectAll",
@@ -76,8 +76,8 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "label", "Select _All",
                                  "tooltip", "Select all",
                                  "accel", "<alt>A",
-                                 "closure::callback", moo_term_select_all,
-                                 "closure::proxy-func", moo_term_window_get_term,
+                                 "closure-callback", moo_term_select_all,
+                                 "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 }
 

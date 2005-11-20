@@ -35,10 +35,10 @@ typedef void (*MooToggleActionFunc) (gpointer data, gboolean active);
 struct _MooToggleAction
 {
     MooAction           parent;
-
+    MooToggleActionFunc callback;
+    gpointer            data;
+    guint               object : 1;
     guint               active : 1;
-    MooToggleActionFunc toggled_callback;
-    gpointer            toggled_data;
 };
 
 struct _MooToggleActionClass
@@ -52,17 +52,6 @@ struct _MooToggleActionClass
 
 
 GType       moo_toggle_action_get_type      (void) G_GNUC_CONST;
-
-MooAction  *moo_toggle_action_new           (const char         *id,
-                                             const char         *label,
-                                             const char         *tooltip,
-                                             const char         *accel,
-                                             MooToggleActionFunc func,
-                                             gpointer            data);
-MooAction  *moo_toggle_action_new_stock     (const char         *id,
-                                             const char         *stock_id,
-                                             MooToggleActionFunc func,
-                                             gpointer            data);
 
 void        moo_toggle_action_set_active    (MooToggleAction    *action,
                                              gboolean            active);

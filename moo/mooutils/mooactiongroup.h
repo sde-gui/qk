@@ -47,7 +47,11 @@ GType            moo_action_group_get_type      (void) G_GNUC_CONST;
 
 MooActionGroup  *moo_action_group_new           (const char     *name);
 
-void             moo_action_group_add_action    (MooActionGroup *group,
+MooAction       *moo_action_group_add_action    (MooActionGroup *group,
+                                                 const char     *first_prop_name,
+                                                 ...);
+
+void             moo_action_group_add           (MooActionGroup *group,
                                                  MooAction      *action);
 MooAction       *moo_action_group_get_action    (MooActionGroup *group,
                                                  const char     *action_id);

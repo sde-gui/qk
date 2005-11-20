@@ -2,7 +2,7 @@
 #   tests/Makefile.am
 #
 
-EXTRA_PROGRAMS = medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser
+EXTRA_PROGRAMS = medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject
 bin_PROGRAMS =
 noinst_PROGRAMS =
 
@@ -26,6 +26,7 @@ if MOO_BUILD_TERM
 # noinst_PROGRAMS += mterm termbuffer
 endif
 if MOO_BUILD_UTILS
+# noinst_PROGRAMS += testobject
 # noinst_PROGRAMS += markup miniglade
 endif
 
@@ -118,3 +119,7 @@ testfileview_SOURCES = testfileview.c
 testpanedfileview_LDFLAGS = $(ldflags)
 testpanedfileview_LDADD = $(ldadd)
 testpanedfileview_SOURCES = testpanedfileview.c
+
+testobject_LDFLAGS = $(ldflags)
+testobject_LDADD = $(ldadd)
+testobject_SOURCES = testobject.c

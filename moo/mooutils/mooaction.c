@@ -16,6 +16,7 @@
 #include "mooutils/mooaccel.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -24,6 +25,9 @@ static void moo_action_class_init       (MooActionClass *klass);
 
 static void moo_action_init             (MooAction      *action);
 static void moo_action_finalize         (GObject        *object);
+static GObject *moo_action_constructor  (GType           type,
+                                         guint           n_props,
+                                         GObjectConstructParam *props);
 
 static void moo_action_set_property     (GObject        *object,
                                          guint           prop_id,
@@ -47,7 +51,7 @@ static void moo_action_set_icon_stock_id(MooAction      *action,
 static void moo_action_set_icon         (MooAction      *action,
                                          GdkPixbuf      *icon);
 
-static void moo_action_set_sensitive_real (MooAction      *action,
+static void moo_action_set_sensitive_real (MooAction    *action,
                                          gboolean        sensitive);
 static void moo_action_set_visible_real (MooAction      *action,
                                          gboolean        visible);
@@ -77,6 +81,10 @@ enum {
     PROP_GROUP_NAME,
 
     PROP_CLOSURE,
+    PROP_CLOSURE_OBJECT,
+    PROP_CLOSURE_SIGNAL,
+    PROP_CLOSURE_CALLBACK,
+    PROP_CLOSURE_PROXY_FUNC,
 
     PROP_STOCK_ID,
     PROP_LABEL,
@@ -113,6 +121,7 @@ static void moo_action_class_init (MooActionClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+    gobject_class->constructor = moo_action_constructor;
     gobject_class->finalize = moo_action_finalize;
     gobject_class->set_property = moo_action_set_property;
     gobject_class->get_property = moo_action_get_property;
@@ -130,7 +139,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "id",
                                              "id",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_GROUP_NAME,
@@ -138,7 +147,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "group-name",
                                              "group-name",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_NAME,
@@ -146,15 +155,15 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "name",
                                              "name",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CLOSURE,
-                                     g_param_spec_object ("closure",
+                                     g_param_spec_boxed ("closure",
                                              "closure",
                                              "closure",
                                              MOO_TYPE_CLOSURE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_STOCK_ID,
@@ -162,7 +171,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "stock-id",
                                              "stock-id",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_LABEL,
@@ -170,7 +179,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "label",
                                              "label",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TOOLTIP,
@@ -178,7 +187,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "tooltip",
                                              "tooltip",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_NO_ACCEL,
@@ -186,7 +195,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "no-accel",
                                              "no-accel",
                                              FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACCEL,
@@ -194,7 +203,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "accel",
                                              "accel",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SENSITIVE,
@@ -218,7 +227,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "is-important",
                                              "is-important",
                                              FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DEAD,
@@ -234,7 +243,7 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "icon-stock-id",
                                              "icon-stock-id",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ICON,
@@ -242,7 +251,34 @@ static void moo_action_class_init (MooActionClass *klass)
                                              "icon",
                                              "icon",
                                              GDK_TYPE_PIXBUF,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CLOSURE_OBJECT,
+                                     g_param_spec_object ("closure-object",
+                                             "closure-object",
+                                             "closure-object",
+                                             G_TYPE_OBJECT,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+    g_object_class_install_property (gobject_class,
+                                     PROP_CLOSURE_SIGNAL,
+                                     g_param_spec_string ("closure-signal",
+                                             "closure-signal",
+                                             "closure-signal",
+                                             NULL,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+    g_object_class_install_property (gobject_class,
+                                     PROP_CLOSURE_CALLBACK,
+                                     g_param_spec_pointer ("closure-callback",
+                                             "closure-callback",
+                                             "closure-callback",
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+    g_object_class_install_property (gobject_class,
+                                     PROP_CLOSURE_PROXY_FUNC,
+                                     g_param_spec_pointer ("closure-proxy-func",
+                                             "closure-proxy-func",
+                                             "closure-proxy-func",
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
     signals[ACTIVATE] =
         g_signal_new ("activate",
@@ -277,21 +313,8 @@ static void moo_action_class_init (MooActionClass *klass)
 
 static void moo_action_init (MooAction *action)
 {
-    action->id = NULL;
-    action->name = NULL;
-    action->group_name = NULL;
-
-    action->no_accel = FALSE;
-    action->default_accel = NULL;
-    action->dead = FALSE;
     action->visible = TRUE;
     action->sensitive = TRUE;
-    action->closure = NULL;
-    action->stock_id = NULL;
-    action->label = NULL;
-    action->tooltip = NULL;
-    action->icon_stock_id = NULL;
-    action->icon = NULL;
 }
 
 
@@ -300,7 +323,7 @@ static void moo_action_finalize       (GObject      *object)
     MooAction *action = MOO_ACTION (object);
 
     if (action->closure)
-        g_object_unref (action->closure);
+        moo_closure_unref (action->closure);
     g_free (action->id);
     g_free (action->name);
     g_free (action->group_name);
@@ -316,7 +339,60 @@ static void moo_action_finalize       (GObject      *object)
 }
 
 
-static void moo_action_activate_real    (MooAction      *action)
+static GObject*
+moo_action_constructor (GType           type,
+                        guint           n_props,
+                        GObjectConstructParam *props)
+{
+    GObject *object;
+    MooAction *action;
+    guint i;
+
+    MooClosure *closure = NULL;
+    gpointer closure_object = NULL;
+    const char *closure_signal = NULL;
+    GCallback closure_callback = NULL;
+    GCallback closure_proxy_func = NULL;
+
+    object = G_OBJECT_CLASS(moo_action_parent_class)->constructor (type, n_props, props);
+    action = MOO_ACTION (object);
+
+    if (action->dead)
+        return object;
+
+    for (i = 0; i < n_props; ++i)
+    {
+        const char *name = props[i].pspec->name;
+        GValue *value = props[i].value;
+
+        if (!strcmp (name, "closure-callback"))
+            closure_callback = g_value_get_pointer (value);
+        else if (!strcmp (name, "closure-signal"))
+            closure_signal = g_value_get_string (value);
+        else if (!strcmp (name, "closure-proxy-func"))
+            closure_proxy_func = g_value_get_pointer (value);
+        else if (!strcmp (name, "closure-object"))
+            closure_object = g_value_get_object (value);
+    }
+
+    if (closure_callback || closure_signal)
+    {
+        if (closure_object)
+            closure = moo_closure_new_simple (closure_object, closure_signal,
+                                              closure_callback, closure_proxy_func);
+        else
+            g_warning ("%s: invalid closure params", G_STRLOC);
+    }
+
+    if (closure)
+        moo_action_set_closure (action, closure);
+
+    return object;
+}
+
+
+static void
+moo_action_activate_real (MooAction *action)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     if (action->closure)
@@ -324,10 +400,11 @@ static void moo_action_activate_real    (MooAction      *action)
 }
 
 
-static void moo_action_get_property     (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec)
+static void
+moo_action_get_property (GObject        *object,
+                         guint           prop_id,
+                         GValue         *value,
+                         GParamSpec     *pspec)
 {
     MooAction *action = MOO_ACTION (object);
 
@@ -352,7 +429,7 @@ static void moo_action_get_property     (GObject        *object,
             g_value_set_boolean (value, action->dead ? TRUE : FALSE);
             break;
         case PROP_CLOSURE:
-            g_value_set_object (value, action->closure);
+            g_value_set_boxed (value, action->closure);
             break;
         case PROP_STOCK_ID:
             g_value_set_string (value, action->stock_id);
@@ -384,10 +461,11 @@ static void moo_action_get_property     (GObject        *object,
 }
 
 
-static void moo_action_set_property     (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec)
+static void
+moo_action_set_property (GObject        *object,
+                         guint           prop_id,
+                         const GValue   *value,
+                         GParamSpec     *pspec)
 {
     MooAction *action = MOO_ACTION (object);
 
@@ -425,8 +503,7 @@ static void moo_action_set_property     (GObject        *object,
             g_object_notify (object, "is_important");
             break;
         case PROP_CLOSURE:
-            moo_action_set_closure (action,
-                                    MOO_CLOSURE (g_value_get_object (value)));
+            moo_action_set_closure (action, g_value_get_boxed (value));
             break;
         case PROP_STOCK_ID:
             g_free (action->stock_id);
@@ -458,62 +535,75 @@ static void moo_action_set_property     (GObject        *object,
             moo_action_set_icon (action, GDK_PIXBUF (g_value_get_object (value)));
             break;
 
+        case PROP_CLOSURE_OBJECT:
+        case PROP_CLOSURE_SIGNAL:
+        case PROP_CLOSURE_CALLBACK:
+        case PROP_CLOSURE_PROXY_FUNC:
+            /* constructor handles these */
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
 }
 
 
-static void moo_action_set_closure      (MooAction      *action,
-                                         MooClosure     *closure)
+static void
+moo_action_set_closure (MooAction      *action,
+                        MooClosure     *closure)
 {
     if (action->closure == closure)
         return;
 
     if (action->closure)
-        g_object_unref (G_OBJECT (action->closure));
+        moo_closure_unref (action->closure);
 
     action->closure = closure;
 
     if (action->closure)
     {
-        g_object_ref (G_OBJECT (action->closure));
-        gtk_object_sink (GTK_OBJECT (action->closure));
+        moo_closure_ref (action->closure);
+        moo_closure_sink (action->closure);
     }
 }
 
 
-static void moo_action_set_label        (MooAction      *action,
-                                         const char     *label)
+static void
+moo_action_set_label (MooAction      *action,
+                      const char     *label)
 {
     g_free (action->label);
     action->label = g_strdup (label);
 }
 
 
-static void moo_action_set_tooltip      (MooAction      *action,
-                                         const char     *tooltip)
+static void
+moo_action_set_tooltip (MooAction      *action,
+                        const char     *tooltip)
 {
     g_free (action->tooltip);
     action->tooltip = g_strdup (tooltip);
 }
 
 
-void         moo_action_set_no_accel        (MooAction      *action,
-                                             gboolean        no_accel)
+void
+moo_action_set_no_accel (MooAction      *action,
+                         gboolean        no_accel)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     action->no_accel = no_accel ? TRUE : FALSE;
 }
 
-gboolean     moo_action_get_no_accel        (MooAction      *action)
+gboolean
+moo_action_get_no_accel (MooAction *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), TRUE);
     return action->no_accel ? TRUE : FALSE;
 }
 
 
-GtkWidget   *moo_action_create_menu_item    (MooAction      *action)
+GtkWidget*
+moo_action_create_menu_item (MooAction *action)
 {
     MooActionClass *klass;
 
@@ -526,9 +616,10 @@ GtkWidget   *moo_action_create_menu_item    (MooAction      *action)
 }
 
 
-GtkWidget   *moo_action_create_tool_item    (MooAction      *action,
-                                             GtkWidget      *toolbar,
-                                             int             position)
+GtkWidget*
+moo_action_create_tool_item (MooAction      *action,
+                             GtkWidget      *toolbar,
+                             int             position)
 {
     MooActionClass *klass;
 
@@ -541,27 +632,31 @@ GtkWidget   *moo_action_create_tool_item    (MooAction      *action,
 }
 
 
-const char  *moo_action_get_id        (MooAction      *action)
+const char*
+moo_action_get_id (MooAction *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
     return action->id;
 }
 
-const char  *moo_action_get_group_name      (MooAction      *action)
+const char*
+moo_action_get_group_name (MooAction *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
     return action->group_name;
 }
 
-const char  *moo_action_get_name            (MooAction      *action)
+const char*
+moo_action_get_name (MooAction *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), NULL);
     return action->name;
 }
 
 
-const char  *moo_action_make_accel_path (const char     *group_id,
-                                         const char     *action_id)
+const char*
+moo_action_make_accel_path (const char     *group_id,
+                            const char     *action_id)
 {
     static GString *path = NULL;
 
@@ -579,7 +674,8 @@ const char  *moo_action_make_accel_path (const char     *group_id,
 }
 
 
-static GtkWidget *moo_action_create_menu_item_real (MooAction      *action)
+static GtkWidget*
+moo_action_create_menu_item_real (MooAction *action)
 {
     GtkWidget *item = NULL;
 
@@ -714,38 +810,43 @@ moo_action_create_tool_item_real (MooAction      *action,
 }
 
 
-void         moo_action_activate        (MooAction      *action)
+void
+moo_action_activate (MooAction *action)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     g_signal_emit (action, signals[ACTIVATE], 0);
 }
 
 
-void         moo_action_set_sensitive   (MooAction      *action,
-                                         gboolean        sensitive)
+void
+moo_action_set_sensitive (MooAction      *action,
+                          gboolean        sensitive)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     g_signal_emit (action, signals[SET_SENSITIVE], 0, sensitive ? TRUE : FALSE);
 }
 
-void         moo_action_set_visible    (MooAction      *action,
-                                        gboolean        visible)
+void
+moo_action_set_visible (MooAction      *action,
+                        gboolean        visible)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     g_signal_emit (action, signals[SET_VISIBLE], 0, visible ? TRUE : FALSE);
 }
 
 
-static void         moo_action_set_sensitive_real   (MooAction      *action,
-                                                     gboolean        sensitive)
+static void
+moo_action_set_sensitive_real (MooAction      *action,
+                               gboolean        sensitive)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     action->sensitive = sensitive ? TRUE : FALSE;
     g_object_notify (G_OBJECT (action), "sensitive");
 }
 
-static void         moo_action_set_visible_real     (MooAction      *action,
-                                                     gboolean        visible)
+static void
+moo_action_set_visible_real (MooAction      *action,
+                             gboolean        visible)
 {
     g_return_if_fail (MOO_IS_ACTION (action));
     action->visible = visible ? TRUE : FALSE;
@@ -753,113 +854,57 @@ static void         moo_action_set_visible_real     (MooAction      *action,
 }
 
 
-static void moo_action_set_icon_stock_id(MooAction      *action,
-                                         const char     *stock_id)
+static void
+moo_action_set_icon_stock_id (MooAction      *action,
+                              const char     *stock_id)
 {
-    if (action->icon_stock_id == stock_id) return;
-    g_free (action->icon_stock_id);
-    action->icon_stock_id = g_strdup (stock_id);
-    g_object_notify (G_OBJECT (action), "icon-stock-id");
+    if (action->icon_stock_id != stock_id)
+    {
+        g_free (action->icon_stock_id);
+        action->icon_stock_id = g_strdup (stock_id);
+        g_object_notify (G_OBJECT (action), "icon-stock-id");
+    }
 }
 
 
-static void moo_action_set_icon         (G_GNUC_UNUSED MooAction      *action,
-                                         GdkPixbuf      *icon)
+static void
+moo_action_set_icon (G_GNUC_UNUSED MooAction      *action,
+                     GdkPixbuf      *icon)
 {
     if (icon)
         g_warning ("%s: implement me", G_STRLOC);
 }
 
 
-/****************************************************************************/
-
-static void set_visible_callback     (GtkWidget  *proxy,
-                                      gboolean    visible);
-static void proxy_destroyed          (MooAction  *action,
-                                      gpointer    proxy);
-static void action_destroyed         (GtkWidget  *proxy,
-                                      gpointer    action);
-
-static void set_visible_callback     (GtkWidget  *proxy,
-                                      gboolean    visible)
-{
-    if (visible)
-        gtk_widget_show (proxy);
-    else
-        gtk_widget_hide (proxy);
-}
-
-static void
-proxy_destroyed (MooAction  *action,
-                 gpointer    proxy)
-{
-    g_signal_handlers_disconnect_by_func (action, (gpointer)gtk_widget_set_sensitive, proxy);
-    g_signal_handlers_disconnect_by_func (action, (gpointer)set_visible_callback, proxy);
-    g_signal_handlers_disconnect_by_func (proxy, (gpointer)proxy_destroyed, action);
-    g_object_weak_unref (G_OBJECT (action), (GWeakNotify)action_destroyed, proxy);
-}
-
-static void
-action_destroyed (GtkWidget  *proxy,
-                  gpointer    action)
-{
-    g_signal_handlers_disconnect_by_func (proxy, (gpointer)moo_action_activate, action);
-    g_signal_handlers_disconnect_by_func (proxy, (gpointer)proxy_destroyed, action);
-}
-
-
 static void moo_action_add_proxy        (MooAction      *action,
                                          GtkWidget      *proxy)
 {
-    gtk_widget_set_sensitive (proxy, action->sensitive);
-
-    if (action->visible)
-        gtk_widget_show (proxy);
-    else
-        gtk_widget_hide (proxy);
+    g_return_if_fail (MOO_IS_ACTION (action));
+    g_return_if_fail (G_IS_OBJECT (proxy));
 
     if (GTK_IS_MENU_ITEM (proxy))
     {
-        g_signal_connect_swapped (proxy, "activate",
-                                  G_CALLBACK (moo_action_activate),
-                                  action);
-//         moo_accel_label_set_action (GTK_BIN(proxy)->child, action);
+        moo_bind_signal (action, "activate", proxy, "activate");
     }
 #if GTK_MINOR_VERSION >= 4
     else if (GTK_IS_TOOL_BUTTON (proxy))
     {
-        g_signal_connect_swapped (proxy, "clicked",
-                                  G_CALLBACK (moo_action_activate),
-                                  action);
-        g_object_set (proxy, "is-important",
-                      (gboolean) (action->is_important ? TRUE : FALSE),
-                      NULL);
+        moo_bind_signal (action, "activate", proxy, "clicked");
+        moo_bind_bool_property (proxy, "is-important", action, "is-important", FALSE);
     }
 #endif /* GTK_MINOR_VERSION >= 4 */
     else if (GTK_IS_BUTTON (proxy))
     {
-        g_signal_connect_swapped (proxy, "clicked",
-                                  G_CALLBACK (moo_action_activate),
-                                  action);
+        moo_bind_signal (action, "activate", proxy, "clicked");
     }
     else
     {
-        g_critical ("unknown proxy type");
+        g_warning ("%s: unknown proxy type '%s'", G_STRLOC,
+                   g_type_name (G_OBJECT_TYPE (proxy)));
     }
 
-    g_signal_connect_swapped (action, "set-sensitive",
-                              G_CALLBACK (gtk_widget_set_sensitive),
-                              proxy);
-    g_signal_connect_swapped (action, "set-visible",
-                              G_CALLBACK (set_visible_callback),
-                              proxy);
-
-    g_signal_connect_swapped (proxy, "destroy",
-                              G_CALLBACK (proxy_destroyed),
-                              action);
-    g_object_weak_ref (G_OBJECT (action),
-                       (GWeakNotify)action_destroyed,
-                       proxy);
+    moo_bind_bool_property (proxy, "sensitive", action, "sensitive", FALSE);
+    moo_bind_bool_property (proxy, "visible", action, "visible", FALSE);
 }
 
 

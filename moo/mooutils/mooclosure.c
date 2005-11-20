@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooclosure.c
+ *   mooclosure.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -13,326 +13,380 @@
 
 #include "mooutils/mooclosure.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/moocompat.h"
 
 
-static void moo_closure_class_init          (MooClosureClass    *klass);
-
-static GObject *moo_closure_constructor     (GType                  type,
-                                             guint                  n_construct_properties,
-                                             GObjectConstructParam *construct_param);
-
-static void moo_closure_init                (MooClosure         *closure);
-static void moo_closure_finalize            (GObject            *object);
-static void moo_closure_set_property        (GObject            *object,
-                                             guint               prop_id,
-                                             const GValue       *value,
-                                             GParamSpec         *pspec);
-
-static void moo_closure_invoke_real         (MooClosure         *closure);
-static void moo_closure_object_destroyed    (MooClosure        *closure,
-                                             gpointer            object);
-
-
-enum {
-    PROP_0,
-    PROP_OBJECT,
-    PROP_SIGNAL,
-    PROP_CALLBACK,
-    PROP_PROXY_FUNC,
-    PROP_DATA
-};
-
-enum {
-    INVOKE,
-    LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = {0};
-
-
-G_DEFINE_TYPE(MooClosure, moo_closure, GTK_TYPE_OBJECT)
-
-
-static void moo_closure_class_init (MooClosureClass *klass)
+MooClosure*
+moo_closure_alloc (gsize size,
+                   MooClosureCall call,
+                   MooClosureDestroy destroy)
 {
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    MooClosure *cl;
 
-    gobject_class->constructor = moo_closure_constructor;
-    gobject_class->finalize = moo_closure_finalize;
-    gobject_class->set_property = moo_closure_set_property;
+    g_return_val_if_fail (size >= sizeof(MooClosure), NULL);
+    g_return_val_if_fail (call != NULL, NULL);
 
-    klass->invoke = moo_closure_invoke_real;
+    cl = g_malloc0 (size);
+    cl->call = call;
+    cl->destroy = destroy;
+    cl->ref_count = 1;
+    cl->floating = TRUE;
+    cl->valid = TRUE;
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_OBJECT,
-                                     g_param_spec_boolean
-                                           ("object",
-                                            "object",
-                                            "object",
-                                            FALSE,
-                                            G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_SIGNAL,
-                                     g_param_spec_string
-                                           ("signal",
-                                            "signal",
-                                            "signal",
-                                            NULL,
-                                            G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_CALLBACK,
-                                     g_param_spec_pointer
-                                           ("callback",
-                                            "callback",
-                                            "callback",
-                                            G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_PROXY_FUNC,
-                                     g_param_spec_pointer
-                                           ("proxy-func",
-                                            "proxy-func",
-                                            "proxy-func",
-                                            G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_DATA,
-                                     g_param_spec_pointer
-                                           ("data",
-                                            "data",
-                                            "data",
-                                            G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
-    signals[INVOKE] =
-        g_signal_new ("invoke",
-                    G_OBJECT_CLASS_TYPE (klass),
-                    (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                    G_STRUCT_OFFSET (MooClosureClass, invoke),
-                    NULL, NULL,
-                    _moo_marshal_VOID__VOID,
-                    G_TYPE_NONE, 0);
+    return cl;
 }
 
 
-static void moo_closure_init (MooClosure *closure)
+MooClosure *
+moo_closure_ref (MooClosure *closure)
 {
-    closure->callback = NULL;
-    closure->proxy_func = NULL;
-    closure->object = FALSE;
-    closure->signal = NULL;
-    closure->data = NULL;
-    closure->valid = TRUE;
-    closure->constructed = FALSE;
+    if (closure)
+        closure->ref_count++;
+    return closure;
 }
 
 
-static GObject *moo_closure_constructor    (GType                  type,
-                                             guint                  n_construct_properties,
-                                             GObjectConstructParam *construct_param)
+void
+moo_closure_unref (MooClosure *closure)
 {
-    GObject *object;
-    MooClosure *closure;
-
-    object = G_OBJECT_CLASS (moo_closure_parent_class)->constructor (
-        type, n_construct_properties, construct_param);
-    g_return_val_if_fail (object != NULL, NULL);
-
-    closure = MOO_CLOSURE (object);
-    if (closure->object && closure->data)
-        g_object_weak_ref (G_OBJECT (closure->data),
-                           (GWeakNotify) moo_closure_object_destroyed,
-                           closure);
-    closure->constructed = TRUE;
-
-    return object;
+    if (closure && !--closure->ref_count)
+    {
+        moo_closure_invalidate (closure);
+        g_free (closure);
+    }
 }
 
 
-static void moo_closure_finalize       (GObject      *object)
+void
+moo_closure_sink (MooClosure *closure)
 {
-    MooClosure *closure = MOO_CLOSURE (object);
     g_return_if_fail (closure != NULL);
-    if (closure->object && G_IS_OBJECT (closure->data) && closure->valid)
-        g_object_weak_unref (G_OBJECT (closure->data),
-                             (GWeakNotify) moo_closure_object_destroyed,
-                             closure);
-    g_free (closure->signal);
-    closure->valid = FALSE;
-    G_OBJECT_CLASS (moo_closure_parent_class)->finalize (object);
+
+    if (closure->floating)
+    {
+        closure->floating = FALSE;
+        moo_closure_unref (closure);
+    }
 }
 
 
-static void moo_closure_invoke_real (MooClosure *closure)
+void
+moo_closure_invoke (MooClosure *closure)
 {
-    gpointer data = closure->data;
+    g_return_if_fail (closure != NULL);
 
-    g_return_if_fail (closure->valid);
-    g_return_if_fail (closure->callback || closure->signal);
-
-    if (closure->proxy_func) {
-        data = closure->proxy_func (closure->data);
-        g_return_if_fail (G_IS_OBJECT (data));
-    }
-
-    if (closure->signal)
+    if (closure->valid)
     {
-        gboolean ret;
-        g_object_ref (G_OBJECT (data));
-        g_signal_emit_by_name (data, closure->signal, &ret);
-        g_object_unref (G_OBJECT (data));
+        moo_closure_ref (closure);
+
+        closure->in_call = TRUE;
+        closure->call (closure);
+        closure->in_call = FALSE;
+
+        if (!closure->valid)
+            moo_closure_invalidate (closure);
+
+        moo_closure_unref (closure);
     }
-    else if (closure->object)
+}
+
+
+void
+moo_closure_invalidate (MooClosure *closure)
+{
+    if (closure && closure->valid)
     {
-        g_object_ref (G_OBJECT (data));
-        closure->callback (data);
-        g_object_unref (G_OBJECT (data));
+        closure->valid = FALSE;
+        if (!closure->in_call && closure->destroy)
+            closure->destroy (closure);
+    }
+}
+
+
+GType
+moo_closure_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooClosure",
+                                             (GBoxedCopyFunc) moo_closure_ref,
+                                             (GBoxedFreeFunc) moo_closure_unref);
+
+    return type;
+}
+
+
+/******************************************************************/
+/* MooClosureSignal
+ */
+
+typedef struct
+{
+    MooClosure parent;
+    MooObjectPtr *object;
+    guint signal_id;
+    char *signal;
+    GType ret_type;
+    gpointer (*proxy) (gpointer);
+} MooClosureSignal;
+
+
+static void
+moo_closure_signal_call (MooClosure *cl)
+{
+    MooClosureSignal *closure = (MooClosureSignal*) cl;
+
+    if (!closure->proxy)
+    {
+        GValue ret_val;
+
+        if (closure->ret_type != G_TYPE_NONE)
+        {
+            ret_val.g_type = 0;
+            g_value_init (&ret_val, closure->ret_type);
+        }
+
+        g_object_ref (closure->object->target);
+        g_signal_emit (closure->object->target, closure->signal_id, 0);
+        g_object_unref (closure->object->target);
+
+        if (closure->ret_type != G_TYPE_NONE)
+            g_value_unset (&ret_val);
     }
     else
     {
-        closure->callback (data);
+        gboolean ret;
+        gpointer object = closure->proxy (closure->object->target);
+        g_return_if_fail (object != NULL);
+        g_object_ref (object);
+        g_signal_emit_by_name (object, closure->signal, &ret);
+        g_object_unref (object);
     }
 }
 
 
-void         moo_closure_invoke     (MooClosure         *closure)
+static void
+moo_closure_signal_destroy (MooClosure *closure)
 {
-    g_return_if_fail (MOO_IS_CLOSURE (closure));
-    g_signal_emit (closure, signals[INVOKE], 0);
+    MooClosureSignal *cl = (MooClosureSignal*) closure;
+    moo_object_ptr_free (cl->object);
+    g_free (cl->signal);
 }
 
 
-static void moo_closure_set_property       (GObject            *object,
-                                             guint               prop_id,
-                                             const GValue       *value,
-                                             GParamSpec         *pspec)
+static void
+object_died (MooClosureSignal *cl)
 {
-    MooClosure *closure = MOO_CLOSURE (object);
-
-    switch (prop_id)
-    {
-        case PROP_OBJECT:
-            closure->object = g_value_get_boolean (value);
-            break;
-
-        case PROP_SIGNAL:
-            g_free (closure->signal);
-            closure->signal = g_strdup (g_value_get_string (value));
-            if (closure->signal) closure->object = TRUE;
-            break;
-
-        case PROP_CALLBACK:
-            closure->callback = (void(*)(gpointer))g_value_get_pointer (value);
-            break;
-
-        case PROP_PROXY_FUNC:
-            closure->proxy_func = (gpointer(*)(gpointer))g_value_get_pointer (value);
-            break;
-
-        case PROP_DATA:
-            if (!closure->constructed) {
-                closure->data = g_value_get_pointer (value);
-            }
-            else {
-                if (closure->data && closure->object) {
-                    g_object_weak_unref (G_OBJECT (closure->data),
-                                         (GWeakNotify) moo_closure_object_destroyed,
-                                         closure);
-                }
-                closure->data = g_value_get_pointer (value);
-                if (closure->data && closure->object) {
-                    g_object_weak_ref (G_OBJECT (closure->data),
-                                       (GWeakNotify) moo_closure_object_destroyed,
-                                       closure);
-                }
-            }
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
+    moo_object_ptr_free (cl->object);
+    cl->object = NULL;
+    moo_closure_invalidate ((MooClosure*) cl);
 }
 
 
-void        moo_closure_invalidate (MooClosure     *closure)
+static MooClosure*
+moo_closure_signal_new (gpointer    object,
+                        const char *signal,
+                        GCallback   proxy_func)
 {
-    g_return_if_fail (MOO_IS_CLOSURE (closure));
-    if (closure->object && G_IS_OBJECT (closure->data))
-        g_object_weak_unref (G_OBJECT (closure->data),
-                             (GWeakNotify) moo_closure_object_destroyed,
-                             closure);
-    closure->data = NULL;
-    closure->object = FALSE;
-    closure->valid = FALSE;
-}
+    guint signal_id;
+    GSignalQuery query;
+    MooClosureSignal *cl;
 
-static void moo_closure_object_destroyed  (MooClosure        *closure,
-                                           G_GNUC_UNUSED gpointer           object)
-{
-    g_assert (closure->data == object);
-    closure->object = FALSE;
-    moo_closure_invalidate (closure);
-}
-
-
-MooClosure  *moo_closure_new        (GCallback       callback_func,
-                                       gpointer        data)
-{
-    return MOO_CLOSURE (g_object_new (MOO_TYPE_CLOSURE,
-                                     "callback", callback_func,
-                                     "data", data,
-                                     NULL));
-}
-
-MooClosure  *moo_closure_new_object (GCallback       callback_func,
-                                       gpointer        object)
-{
-    g_return_val_if_fail (callback_func != NULL, NULL);
     g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    return MOO_CLOSURE (g_object_new (MOO_TYPE_CLOSURE,
-                                     "callback", callback_func,
-                                     "data", object,
-                                     "object", TRUE,
-                                     NULL));
-}
-
-MooClosure  *moo_closure_new_signal   (const char     *signal,
-                                       gpointer        object)
-{
     g_return_val_if_fail (signal != NULL, NULL);
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    return MOO_CLOSURE (g_object_new (MOO_TYPE_CLOSURE,
-                                     "signal", signal,
-                                     "data", object,
-                                     NULL));
+
+    if (!proxy_func)
+    {
+        signal_id = g_signal_lookup (signal, G_OBJECT_TYPE (object));
+        g_return_val_if_fail (signal_id != 0, NULL);
+
+        g_signal_query (signal_id, &query);
+
+        if (query.n_params > 0)
+        {
+            g_warning ("%s: implement me", G_STRLOC);
+            return NULL;
+        }
+    }
+
+    cl = moo_closure_new (MooClosureSignal,
+                          moo_closure_signal_call,
+                          moo_closure_signal_destroy);
+
+    cl->object = moo_object_ptr_new (object, (GWeakNotify) object_died, cl);
+    cl->proxy = (gpointer (*) (gpointer)) proxy_func;
+    cl->signal = g_strdup (signal);
+
+    if (!proxy_func)
+    {
+        cl->signal_id = signal_id;
+        cl->ret_type = query.return_type & ~(G_SIGNAL_TYPE_STATIC_SCOPE);
+    }
+
+    return (MooClosure*) cl;
 }
 
-MooClosure  *moo_closure_new_proxy  (GCallback       callback_func,
-                                     GCallback       proxy_func,
-                                     gpointer        object)
+
+/******************************************************************/
+/* MooClosureSimple
+ */
+
+typedef struct
 {
-    g_return_val_if_fail (callback_func != NULL && proxy_func != NULL, NULL);
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    return MOO_CLOSURE (g_object_new (MOO_TYPE_CLOSURE,
-                                      "callback", callback_func,
-                                      "proxy_func", proxy_func,
-                                      "data", object,
-                                      "object", TRUE,
-                                      NULL));
+    MooClosure parent;
+    MooObjectPtr *object;
+    gpointer (*proxy) (gpointer);
+    void (*callback) (gpointer);
+} MooClosureSimple;
+
+
+static void
+moo_closure_simple_call (MooClosure *closure)
+{
+    MooClosureSimple *cl = (MooClosureSimple*) closure;
+    gpointer data = cl->object->target;
+
+    if (cl->proxy)
+        data = cl->proxy (cl->object->target);
+
+    g_object_ref (data);
+    cl->callback (data);
+    g_object_unref (data);
 }
 
-MooClosure  *moo_closure_new_proxy_signal  (const char      *signal,
-                                            GCallback        proxy_func,
-                                            gpointer         object)
+
+static void
+moo_closure_simple_destroy (MooClosure *closure)
 {
-    g_return_val_if_fail (signal != NULL && proxy_func != NULL, NULL);
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    return MOO_CLOSURE (g_object_new (MOO_TYPE_CLOSURE,
-                                      "signal", signal,
-                                      "proxy_func", proxy_func,
-                                      "data", object,
-                                      "object", TRUE,
-                                      NULL));
+    MooClosureSimple *cl = (MooClosureSimple*) closure;
+    moo_object_ptr_free (cl->object);
+    cl->object = NULL;
 }
+
+
+static void
+closure_simple_object_died (MooClosureSimple *cl)
+{
+    MooObjectPtr *tmp = cl->object;
+    cl->object = NULL;
+    moo_object_ptr_free (tmp);
+    moo_closure_invalidate ((MooClosure*)cl);
+}
+
+
+static MooClosure*
+moo_closure_simple_new (gpointer    object,
+                        GCallback   callback,
+                        GCallback   proxy_func)
+{
+    MooClosureSimple *cl;
+
+    cl = moo_closure_new (MooClosureSimple,
+                          moo_closure_simple_call,
+                          moo_closure_simple_destroy);
+    cl->object = moo_object_ptr_new (object,
+                                     (GWeakNotify) closure_simple_object_died,
+                                     cl);
+    cl->callback = (void (*) (gpointer)) callback;
+    cl->proxy = (gpointer (*) (gpointer)) proxy_func;
+
+    return (MooClosure*) cl;
+}
+
+
+static MooClosure*
+moo_closure_new_object (gpointer    object,
+                        GCallback   callback)
+{
+    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+    g_return_val_if_fail (callback != NULL, NULL);
+    return moo_closure_simple_new (object, callback, NULL);
+}
+
+
+static MooClosure*
+moo_closure_new_proxy (gpointer    object,
+                       GCallback   callback,
+                       GCallback   proxy_func)
+{
+    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+    g_return_val_if_fail (callback != NULL, NULL);
+    g_return_val_if_fail (proxy_func != NULL, NULL);
+    return moo_closure_simple_new (object, callback, NULL);
+}
+
+
+MooClosure*
+moo_closure_new_simple (gpointer    object,
+                        const char *signal,
+                        GCallback   callback,
+                        GCallback   proxy_func)
+{
+    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+    g_return_val_if_fail (callback || signal, NULL);
+    g_return_val_if_fail (!callback || !signal, NULL);
+
+    if (signal)
+        return moo_closure_signal_new (object, signal, proxy_func);
+    else if (!proxy_func)
+        return moo_closure_new_object (object, callback);
+    else
+        return moo_closure_new_proxy (object, callback, proxy_func);
+}
+
+
+/******************************************************************/
+/* MooObjectPtr
+ */
+
+static void
+object_ptr_object_died (MooObjectPtr *ptr)
+{
+    GObject *object = ptr->target;
+    ptr->target = NULL;
+    ptr->notify (ptr->notify_data, object);
+}
+
+
+MooObjectPtr*
+moo_object_ptr_new (GObject    *object,
+                    GWeakNotify notify,
+                    gpointer    data)
+{
+    MooObjectPtr *ptr;
+
+    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
+    g_return_val_if_fail (notify != NULL, NULL);
+
+    ptr = g_new (MooObjectPtr, 1);
+    ptr->target = object;
+    ptr->notify = notify;
+    ptr->notify_data = data;
+
+    g_object_weak_ref (object, (GWeakNotify) object_ptr_object_died, ptr);
+
+    return ptr;
+}
+
+
+void
+moo_object_ptr_die (MooObjectPtr *ptr)
+{
+    if (ptr)
+    {
+        if (ptr->target)
+            g_object_weak_unref (ptr->target, (GWeakNotify) object_ptr_object_died, ptr);
+        ptr->target = NULL;
+    }
+}
+
+
+void
+moo_object_ptr_free (MooObjectPtr *ptr)
+{
+    moo_object_ptr_die (ptr);
+    g_free (ptr);
+}
+
+
+/* kate: strip on; indent-width 4; */

@@ -91,6 +91,7 @@ $(moofileview)/moobookmarkmgr-glade.h: $(moofileview_srcdir)/glade/bookmark_edit
 
 moo_extra_dist +=                              \
     $(moofileview)/glade/moofileprops.glade    \
+    $(moofileview)/glade/moocreatefolder.glade \
     $(moofileview)/glade/bookmark_editor.glade \
     $(moofileview)/moofileview-ui.xml          \
     $(moofileview_pixmaps)

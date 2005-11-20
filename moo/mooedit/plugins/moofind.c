@@ -238,7 +238,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "label", "Find In Files",
                                  "tooltip", "Find In Files",
                                  "icon-stock-id", MOO_STOCK_FIND_IN_FILES,
-                                 "closure::callback", find_in_files_cb,
+                                 "closure-callback", find_in_files_cb,
                                  NULL);
 
     moo_window_class_new_action (klass, "FindFile",
@@ -246,7 +246,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "label", "Find File",
                                  "tooltip", "Find File",
                                  "icon-stock-id", MOO_STOCK_FIND_FILE,
-                                 "closure::callback", find_file_cb,
+                                 "closure-callback", find_file_cb,
                                  NULL);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);

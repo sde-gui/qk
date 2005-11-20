@@ -64,7 +64,7 @@ file_selector_plugin_init (Plugin *plugin)
                                  "label", "Show File Selector",
                                  "tooltip", "Show file selector",
                                  "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
-                                 "closure::callback", show_file_selector,
+                                 "closure-callback", show_file_selector,
                                  NULL);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
@@ -185,8 +185,6 @@ file_selector_plugin_attach (Plugin        *plugin,
     GtkWidget *fileview;
     MooEditor *editor;
     MooPaneLabel *label;
-    MooAction *action;
-    MooClosure *closure;
     MooUIXML *xml;
 
     editor = moo_edit_window_get_editor (window);
@@ -206,16 +204,13 @@ file_selector_plugin_attach (Plugin        *plugin,
                               G_CALLBACK (fileview_activate),
                               window);
 
-    closure = moo_closure_new_object (G_CALLBACK (goto_current_doc_dir), window);
-    action = g_object_new (MOO_TYPE_ACTION,
-                           "id", "GoToCurrentDocDir",
-                           "icon-stock-id", GTK_STOCK_JUMP_TO,
-                           "tooltip", "Go to current document directory",
-                           "closure", closure,
-                           NULL);
     moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
-                                 action);
-    g_object_unref (action);
+                                 "id", "GoToCurrentDocDir",
+                                 "icon-stock-id", GTK_STOCK_JUMP_TO,
+                                 "tooltip", "Go to current document directory",
+                                 "closure-object", window,
+                                 "closure-callback", goto_current_doc_dir,
+                                 NULL);
 
     xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
     moo_ui_xml_insert_markup (xml, moo_ui_xml_new_merge_id (xml),

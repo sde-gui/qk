@@ -186,3 +186,72 @@ _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *ar
 
     return_None;
 }
+%%
+override moo_closure_new varargs
+typedef struct {
+    MooClosure parent;
+    PyObject *func;
+    PyObject *args;
+} MooPyClosure;
+
+static void
+moo_py_closure_call (MooClosure *closure)
+{
+    MooPyClosure *cl = (MooPyClosure*) closure;
+    PyObject *ret;
+
+    ret = PyObject_CallObject (cl->func, cl->args);
+
+    if (!ret)
+        PyErr_Print ();
+
+    Py_XDECREF (ret);
+}
+
+static void
+moo_py_closure_destroy (MooClosure *closure)
+{
+    MooPyClosure *cl = (MooPyClosure*) closure;
+    PyObject *tmp1 = cl->func;
+    PyObject *tmp2 = cl->args;
+    cl->func = NULL;
+    cl->args = NULL;
+    Py_XDECREF (tmp1);
+    Py_XDECREF (tmp2);
+}
+
+static PyObject *
+_wrap_moo_closure_new (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_func, *cl_args = NULL;
+    MooPyClosure *closure;
+
+    if (!args)
+        return_TypeErr ("function argument required");
+
+    py_func = PyTuple_GET_ITEM (args, 0);
+
+    if (!PyCallable_Check (py_func))
+        return_TypeErr ("function must be callable");
+
+    if (PyTuple_GET_SIZE (args) > 1)
+    {
+        cl_args = PyTuple_GetSlice (args, 1, PyTuple_GET_SIZE (args));
+
+        if (!cl_args)
+            return NULL;
+    }
+
+    closure = moo_closure_new (MooPyClosure,
+                               moo_py_closure_call,
+                               moo_py_closure_destroy);
+
+    closure->func = py_func;
+    Py_INCREF (closure->func);
+    closure->args = cl_args;
+
+    moo_closure_ref ((MooClosure*) closure);
+    moo_closure_sink ((MooClosure*) closure);
+
+    return pyg_boxed_new (MOO_TYPE_CLOSURE, closure, FALSE, TRUE);
+}

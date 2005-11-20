@@ -529,20 +529,20 @@ make_menu (MooBookmarkMgr *mgr,
 
         action_id = g_strdup_printf ("MooBookmarkAction-%p", bookmark);
 
-        action = g_object_new (MOO_TYPE_ACTION,
-                               "id", action_id,
-                               "label", bookmark->label ? bookmark->label :
-                                       bookmark->display_path,
-                               "icon_stock_id", bookmark->icon_stock_id,
-                               "tooltip", bookmark->display_path,
-                               "no-accel", TRUE,
-                               NULL);
+        action = moo_action_group_add_action (info->actions,
+                                              "id", action_id,
+                                              "label", bookmark->label ? bookmark->label :
+                                                bookmark->display_path,
+                                              "icon_stock_id", bookmark->icon_stock_id,
+                                              "tooltip", bookmark->display_path,
+                                              "no-accel", TRUE,
+                                              NULL);
+        g_object_ref (action);
         g_object_set_data_full (G_OBJECT (action), "moo-bookmark",
                                 bookmark, (GDestroyNotify) moo_bookmark_free);
         g_object_set_data (G_OBJECT (action), "moo-bookmark-user", info->user);
         g_signal_connect (action, "activate", G_CALLBACK (item_activated), mgr);
 
-        moo_action_group_add_action (info->actions, action);
         info->bm_actions = g_slist_prepend (info->bm_actions, action);
 
         g_string_append_printf (markup, "<item action=\"%s\"/>", action_id);

@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooclosure.h
+ *   mooclosure.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,66 +11,72 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUI_MOOCLOSURE_H
-#define MOOUI_MOOCLOSURE_H
+#ifndef __MOO_CLOSURE_H__
+#define __MOO_CLOSURE_H__
 
-#include <gtk/gtkobject.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_CLOSURE              (moo_closure_get_type ())
-#define MOO_CLOSURE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_CLOSURE, MooClosure))
-#define MOO_CLOSURE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_CLOSURE, MooClosureClass))
-#define MOO_IS_CLOSURE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_CLOSURE))
-#define MOO_IS_CLOSURE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_CLOSURE))
-#define MOO_CLOSURE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_CLOSURE, MooClosureClass))
+#define MOO_TYPE_CLOSURE (moo_closure_get_type ())
 
+typedef struct _MooClosure MooClosure;
+typedef struct _MooObjectPtr MooObjectPtr;
 
-typedef struct _MooClosure        MooClosure;
-typedef struct _MooClosurePrivate MooClosurePrivate;
-typedef struct _MooClosureClass   MooClosureClass;
+typedef void (*MooClosureCall)      (MooClosure *closure);
+typedef void (*MooClosureDestroy)   (MooClosure *closure);
 
 struct _MooClosure
 {
-    GtkObject    parent_instance;
-    void        (*callback)         (gpointer data);
-    gpointer    (*proxy_func)       (gpointer data);
-    char        *signal;
-    gpointer     data;
-    guint        object         : 1;
-    guint        valid          : 1;
-    guint        constructed    : 1;
+    MooClosureCall call;
+    MooClosureDestroy destroy;
+    guint ref_count : 16;
+    guint valid : 1;
+    guint floating : 1;
+    guint in_call : 1;
 };
 
-struct _MooClosureClass
+struct _MooObjectPtr
 {
-    GtkObjectClass parent_class;
-
-    void (* invoke) (MooClosure *closure);
+    GObject *target;
+    GWeakNotify notify;
+    gpointer notify_data;
 };
 
 
-GType        moo_closure_get_type           (void) G_GNUC_CONST;
+GType       moo_closure_get_type            (void) G_GNUC_CONST;
 
-MooClosure  *moo_closure_new                (GCallback       callback_func,
-                                             gpointer        data);
-MooClosure  *moo_closure_new_object         (GCallback       callback_func,
-                                             gpointer        object);
-MooClosure  *moo_closure_new_signal         (const char     *signal,
-                                             gpointer        object);
-MooClosure  *moo_closure_new_proxy          (GCallback       callback_func,
-                                             GCallback       proxy_func,
-                                             gpointer        object);
-MooClosure  *moo_closure_new_proxy_signal   (const char     *signal,
-                                             GCallback       proxy_func,
-                                             gpointer        object);
+MooClosure *moo_closure_alloc               (gsize size,
+                                             MooClosureCall call,
+                                             MooClosureDestroy destroy);
+#define moo_closure_new(Type__,call__,destroy__) \
+    ((Type__*)moo_closure_alloc (sizeof(Type__), call__, destroy__))
 
-void         moo_closure_invoke             (MooClosure     *closure);
-void         moo_closure_invalidate         (MooClosure     *closure);
+MooClosure *moo_closure_ref                 (MooClosure *closure);
+void        moo_closure_unref               (MooClosure *closure);
+void        moo_closure_sink                (MooClosure *closure);
+
+void        moo_closure_invoke              (MooClosure *closure);
+void        moo_closure_invalidate          (MooClosure *closure);
+
+
+#define MOO_OBJECT_PTR_GET(ptr_) ((ptr_) && (ptr_)->target ? (ptr_)->target : NULL)
+
+MooObjectPtr *moo_object_ptr_new            (GObject    *object,
+                                             GWeakNotify notify,
+                                             gpointer    data);
+void        moo_object_ptr_die              (MooObjectPtr *ptr);
+void        moo_object_ptr_free             (MooObjectPtr *ptr);
+
+
+MooClosure *moo_closure_new_simple          (gpointer    object,
+                                             const char *signal,
+                                             GCallback   callback,
+                                             GCallback   proxy_func);
 
 
 G_END_DECLS
 
-#endif /* MOOUI_MOOCLOSURE_H */
-
+#endif /* __MOO_CLOSURE_H__ */
+/* kate: strip on; indent-width 4; */

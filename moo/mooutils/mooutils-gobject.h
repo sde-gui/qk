@@ -25,11 +25,30 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_GTYPE                  (moo_gtype_get_type())
 
-GType           moo_gtype_get_type          (void);
+#define MOO_TYPE_PARAM_GTYPE            (moo_param_gtype_get_type())
+#define MOO_IS_PARAM_SPEC_GTYPE(pspec)  (G_TYPE_CHECK_INSTANCE_TYPE ((pspec), MOO_TYPE_PARAM_GTYPE))
+#define MOO_PARAM_SPEC_GTYPE(pspec)     (G_TYPE_CHECK_INSTANCE_CAST ((pspec), MOO_TYPE_PARAM_GTYPE, MooParamSpecGType))
 
-void            moo_value_set_gtype         (GValue     *value,
-                                             GType       v_gtype);
-GType           moo_value_get_gtype         (const GValue *value);
+typedef struct _MooParamSpecGType MooParamSpecGType;
+
+struct _MooParamSpecGType
+{
+    GParamSpec parent;
+    GType base;
+};
+
+GType           moo_gtype_get_type          (void) G_GNUC_CONST;
+GType           moo_param_gtype_get_type    (void) G_GNUC_CONST;
+
+GParamSpec     *moo_param_spec_gtype        (const char     *name,
+                                             const char     *nick,
+                                             const char     *blurb,
+                                             GType           base,
+                                             GParamFlags     flags);
+
+void            moo_value_set_gtype         (GValue         *value,
+                                             GType           v_gtype);
+GType           moo_value_get_gtype         (const GValue   *value);
 
 
 /*****************************************************************************/
@@ -177,6 +196,11 @@ gpointer            moo_object_factory_create_object    (MooObjectFactory   *fac
 /*****************************************************************************/
 /* Property watch
  */
+
+guint       moo_bind_signal         (gpointer            target,
+                                     const char         *target_signal,
+                                     gpointer            source,
+                                     const char         *source_signal);
 
 void        moo_bind_sensitive      (GtkWidget          *toggle_btn,
                                      GtkWidget         **dependent,

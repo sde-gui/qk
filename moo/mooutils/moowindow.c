@@ -187,7 +187,7 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  "label", "Configure _Shortcuts...",
                                  "tooltip", "Configure _Shortcuts...",
                                  "icon-stock-id", MOO_STOCK_KEYBOARD,
-                                 "closure::callback", moo_window_shortcuts_prefs_dialog,
+                                 "closure-callback", moo_window_shortcuts_prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "ShowToolbar",
@@ -797,10 +797,10 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window)
 static void
 moo_window_drag_data_received (GtkWidget      *widget,
                                GdkDragContext *context,
-                               int             x,
-                               int             y,
-                               GtkSelectionData *data,
-                               guint           info,
+                               G_GNUC_UNUSED int x,
+                               G_GNUC_UNUSED int y,
+                               G_GNUC_UNUSED GtkSelectionData *data,
+                               G_GNUC_UNUSED guint info,
                                guint           time)
 {
     MooWindow *window = MOO_WINDOW (widget);
@@ -828,8 +828,8 @@ moo_window_drag_data_received (GtkWidget      *widget,
 static gboolean
 moo_window_drag_drop (GtkWidget      *widget,
                       GdkDragContext *context,
-                      int             x,
-                      int             y,
+                      G_GNUC_UNUSED int x,
+                      G_GNUC_UNUSED int y,
                       guint           time)
 {
     GdkAtom target = GDK_NONE;
@@ -856,8 +856,8 @@ moo_window_drag_drop (GtkWidget      *widget,
 
 static void
 moo_window_drag_leave (GtkWidget      *widget,
-                       GdkDragContext *context,
-                       guint           time)
+                       G_GNUC_UNUSED GdkDragContext *context,
+                       G_GNUC_UNUSED guint time)
 {
     MooWindow *window = MOO_WINDOW (widget);
 
@@ -870,8 +870,8 @@ moo_window_drag_leave (GtkWidget      *widget,
 static gboolean
 moo_window_drag_motion (GtkWidget      *widget,
                         GdkDragContext *context,
-                        int             x,
-                        int             y,
+                        G_GNUC_UNUSED int x,
+                        G_GNUC_UNUSED int y,
                         guint           time)
 {
     MooWindow *window = MOO_WINDOW (widget);
@@ -919,12 +919,10 @@ moo_window_drag_motion (GtkWidget      *widget,
 #define MOO_WINDOW_ID_QUARK          (get_quark__(1))
 #define MOO_WINDOW_ACTIONS_QUARK     (get_quark__(2))
 
-
 typedef struct {
     MooObjectFactory *action;
-    MooObjectFactory *closure;
-    char            **conditions;
-} ActionFactoryData;
+    char **conditions;
+} ActionInfo;
 
 
 static GQuark
@@ -950,74 +948,61 @@ get_quark__ (guint n)
 }
 
 
-static ActionFactoryData*
-action_factory_data_new (MooObjectFactory *action,
-                         MooObjectFactory *closure,
-                         char            **conditions)
+static ActionInfo*
+action_info_new (MooObjectFactory  *action,
+                 char             **conditions)
 {
-    ActionFactoryData *data;
+    ActionInfo *info;
 
     g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (action), NULL);
-    g_return_val_if_fail (!closure || MOO_IS_OBJECT_FACTORY (closure), NULL);
 
-    data = g_new0 (ActionFactoryData, 1);
-    data->action = g_object_ref (action);
-    data->closure = closure ? g_object_ref (closure) : NULL;
-    data->conditions = g_strdupv (conditions);
+    info = g_new0 (ActionInfo, 1);
+    info->action = g_object_ref (action);
+    info->conditions = g_strdupv (conditions);
 
-    return data;
+    return info;
 }
 
 
 static void
-action_factory_data_free (ActionFactoryData *data)
+action_info_free (ActionInfo *info)
 {
-    if (data)
+    if (info)
     {
-        g_object_unref (data->action);
-        if (data->closure)
-            g_object_unref (data->closure);
-        g_strfreev (data->conditions);
-        g_free (data);
+        g_object_unref (info->action);
+        g_strfreev (info->conditions);
+        g_free (info);
     }
 }
 
 
 static MooAction*
-create_action (const char        *action_id,
-               ActionFactoryData *data,
-               MooWindow         *window)
+create_action (const char *action_id,
+               ActionInfo *info,
+               MooWindow  *window)
 {
-    MooClosure *closure = NULL;
     MooAction *action;
     const char *class_id;
 
-    g_return_val_if_fail (data != NULL, NULL);
-    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (data->action), NULL);
+    g_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
     class_id = moo_window_class_get_id (MOO_WINDOW_CLASS (G_OBJECT_GET_CLASS (window)));
-    action = moo_object_factory_create_object (data->action, window, NULL);
+    action = moo_object_factory_create_object (info->action, window,
+                                               "closure-object", window,
+                                               NULL);
     g_return_val_if_fail (action != NULL, NULL);
     g_object_set (action, "id", action_id, NULL);
 
-    if (g_type_is_a (data->action->object_type, MOO_TYPE_TOGGLE_ACTION))
-    {
-        g_object_set (action, "toggled-data", window, NULL);
-    }
+    if (g_type_is_a (info->action->object_type, MOO_TYPE_TOGGLE_ACTION))
+        g_object_set (action, "toggled-object", window, NULL);
 
-    if (data->closure)
-    {
-        closure = MOO_CLOSURE (moo_object_factory_create_object (data->closure, NULL, NULL));
-        g_return_val_if_fail (closure != NULL, action);
-        g_object_set (closure, "data", window, NULL);
-        g_object_set (action, "closure", closure, NULL);
-    }
-
-    if (data->conditions)
+    if (info->conditions)
     {
         char **p;
-        for (p = data->conditions; *p != NULL; p += 2)
+
+        for (p = info->conditions; *p != NULL; p += 2)
         {
             if (p[1][0] == '!')
                 moo_bind_bool_property (action, p[0], window, p[1] + 1, TRUE);
@@ -1031,7 +1016,7 @@ create_action (const char        *action_id,
 
 
 const char*
-moo_window_class_get_id (MooWindowClass     *klass)
+moo_window_class_get_id (MooWindowClass *klass)
 {
     GType type;
 
@@ -1054,21 +1039,19 @@ moo_window_class_get_name (MooWindowClass     *klass)
 }
 
 
-void
+static void
 moo_window_class_install_action (MooWindowClass     *klass,
                                  const char         *action_id,
                                  MooObjectFactory   *action,
-                                 MooObjectFactory   *closure,
                                  char              **conditions)
 {
     GHashTable *actions;
-    ActionFactoryData *data;
+    ActionInfo *info;
     GType type;
     GSList *l;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
     g_return_if_fail (MOO_IS_OBJECT_FACTORY (action));
-    g_return_if_fail (closure == NULL || MOO_IS_OBJECT_FACTORY (closure));
     g_return_if_fail (action_id && action_id[0]);
 
     /* XXX check if action with this id exists */
@@ -1079,18 +1062,19 @@ moo_window_class_install_action (MooWindowClass     *klass,
     if (!actions)
     {
         actions = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                         g_free, (GDestroyNotify) action_factory_data_free);
+                                         g_free, (GDestroyNotify) action_info_free);
         g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK, actions);
     }
 
-    data = action_factory_data_new (action, closure, conditions);
-    g_hash_table_insert (actions, g_strdup (action_id), data);
+    info = action_info_new (action, conditions);
+    g_hash_table_insert (actions, g_strdup (action_id), info);
 
     for (l = window_instances; l != NULL; l = l->next)
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            MooAction *action = create_action (action_id, data, l->data);
+            MooAction *action = create_action (action_id, info, l->data);
+
             if (action)
                 moo_window_add_action (l->data, action);
         }
@@ -1143,7 +1127,7 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
     g_object_set_data_full (G_OBJECT (action_factory), "moo-window-class-action-func-data",
                             data, notify);
 
-    moo_window_class_install_action (klass, action_id, action_factory, NULL, NULL);
+    moo_window_class_install_action (klass, action_id, action_factory, NULL);
 }
 
 
@@ -1284,26 +1268,26 @@ moo_window_set_id (MooWindow      *window,
 
 
 static void
-add_action (const char        *id,
-            ActionFactoryData *data,
-            MooWindow         *window)
+add_action (const char *id,
+            ActionInfo *info,
+            MooWindow  *window)
 {
-    MooAction *action = create_action (id, data, window);
+    MooAction *action = create_action (id, info, window);
 
     if (action)
         moo_window_add_action (window, action);
 }
 
 static void
-moo_window_add_class_actions (MooWindow      *window)
+moo_window_add_class_actions (MooWindow *window)
 {
     GType type;
 
-    g_return_if_fail (G_IS_OBJECT (window));
+    g_return_if_fail (MOO_IS_WINDOW (window));
 
     type = G_OBJECT_TYPE (window);
 
-    do
+    while (TRUE)
     {
         GHashTable *actions;
 
@@ -1312,10 +1296,11 @@ moo_window_add_class_actions (MooWindow      *window)
         if (actions)
             g_hash_table_foreach (actions, (GHFunc) add_action, window);
 
+        if (type == MOO_TYPE_WINDOW)
+            break;
+
         type = g_type_parent (type);
-        g_return_if_fail (type != 0);
     }
-    while (type != G_TYPE_OBJECT);
 }
 
 
@@ -1349,7 +1334,7 @@ moo_window_add_action (MooWindow          *window,
     g_object_set (action, "group-name", window->priv->name, NULL);
 
     group = moo_window_get_actions (window);
-    moo_action_group_add_action (group, action);
+    moo_action_group_add (group, action);
 
     if (!action->dead)
     {
@@ -1387,18 +1372,15 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
                               va_list             var_args)
 {
     const char *name;
-    GType action_type = 0, closure_type = 0;
+    GType action_type = 0;
     GObjectClass *action_class = NULL;
-    GObjectClass *closure_class = NULL;
     GArray *action_params = NULL;
-    GArray *closure_params = NULL;
     GPtrArray *conditions = NULL;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
     g_return_if_fail (first_prop_name != NULL);
 
     action_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
-    closure_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
     conditions = g_ptr_array_new ();
 
     name = first_prop_name;
@@ -1417,7 +1399,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
         if (!strcmp (name, "action-type::") || !strcmp (name, "action_type::"))
         {
-            g_value_init (&param.value, G_TYPE_POINTER);
+            g_value_init (&param.value, MOO_TYPE_GTYPE);
             G_VALUE_COLLECT (&param.value, var_args, 0, &err);
 
             if (err)
@@ -1427,7 +1409,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
                 goto error;
             }
 
-            action_type = (GType) param.value.data[0].v_pointer;
+            action_type = moo_value_get_gtype (&param.value);
 
             if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
             {
@@ -1436,67 +1418,6 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
             }
 
             action_class = g_type_class_ref (action_type);
-        }
-        else if (!strcmp (name, "closure-type::") || !strcmp (name, "closure_type::"))
-        {
-            g_value_init (&param.value, G_TYPE_POINTER);
-            G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-
-            if (err)
-            {
-                g_warning ("%s: %s", G_STRLOC, err);
-                g_free (err);
-                goto error;
-            }
-
-            closure_type = (GType) param.value.data[0].v_pointer;
-
-            if (!g_type_is_a (closure_type, MOO_TYPE_CLOSURE))
-            {
-                g_warning ("%s: invalid closure type", G_STRLOC);
-                goto error;
-            }
-
-            closure_class = g_type_class_ref (closure_type);
-        }
-        else if (!strncmp (name, "closure::", strlen ("closure::")))
-        {
-            const char *suffix = strstr (name, "::");
-
-            if (!suffix || !suffix[1] || !suffix[2])
-            {
-                g_warning ("%s: invalid property name '%s'", G_STRLOC, name);
-                goto error;
-            }
-
-            name = suffix + 2;
-
-            if (!closure_class) {
-                if (!closure_type)
-                    closure_type = MOO_TYPE_CLOSURE;
-                closure_class = g_type_class_ref (closure_type);
-            }
-
-            pspec = g_object_class_find_property (closure_class, name);
-
-            if (!pspec)
-            {
-                g_warning ("%s: object class `%s' has no property named `%s'",
-                           G_STRLOC, g_type_name (closure_type), name);
-                goto error;
-            }
-
-            g_value_init (&param.value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-            G_VALUE_COLLECT (&param.value, var_args, 0, &err);
-            if (err) {
-                g_warning ("%s: %s", G_STRLOC, err);
-                g_free (err);
-                g_value_unset (&param.value);
-                goto error;
-            }
-
-            param.name = g_strdup (name);
-            g_array_append_val (closure_params, param);
         }
         else if (!strncmp (name, "condition::", strlen ("condition::")))
         {
@@ -1522,7 +1443,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
             g_ptr_array_add (conditions, g_strdup (name));
         }
-        else if (!strstr (name, "::"))
+        else
         {
             if (!action_class)
             {
@@ -1535,8 +1456,8 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
             if (!pspec)
             {
-                g_warning ("%s: object class `%s' has no property named `%s'",
-                           G_STRLOC, g_type_name (action_type), name);
+                g_warning ("%s: no property '%s' in class '%s'",
+                           G_STRLOC, name, g_type_name (action_type));
                 goto error;
             }
 
@@ -1554,11 +1475,6 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
             param.name = g_strdup (name);
             g_array_append_val (action_params, param);
         }
-        else
-        {
-            g_warning ("%s: invalid property '%s'", G_STRLOC, name);
-            goto error;
-        }
 
         name = va_arg (var_args, gchar*);
     }
@@ -1566,38 +1482,14 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
     G_STMT_START
     {
         MooObjectFactory *action_factory = NULL;
-        MooObjectFactory *closure_factory = NULL;
-
-        if (closure_params->len)
-        {
-            closure_factory =
-                    moo_object_factory_new_a (closure_type,
-                                              (GParameter*) closure_params->data,
-                                              closure_params->len);
-
-            if (!closure_factory)
-            {
-                g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
-                goto error;
-            }
-
-            g_array_free (closure_params, FALSE);
-            closure_params = NULL;
-        }
-        else
-        {
-            g_array_free (closure_params, TRUE);
-            closure_params = NULL;
-        }
 
         action_factory = moo_object_factory_new_a (action_type,
-                (GParameter*) action_params->data,
-                action_params->len);
+                                                   (GParameter*) action_params->data,
+                                                   action_params->len);
 
         if (!action_factory)
         {
             g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
-            g_object_unref (closure_factory);
             goto error;
         }
 
@@ -1609,7 +1501,6 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
         moo_window_class_install_action (klass,
                                          action_id,
                                          action_factory,
-                                         closure_factory,
                                          (char**) conditions->pdata);
 
         g_strfreev ((char**) conditions->pdata);
@@ -1617,12 +1508,8 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
         if (action_class)
             g_type_class_unref (action_class);
-        if (closure_class)
-            g_type_class_unref (closure_class);
         if (action_factory)
             g_object_unref (action_factory);
-        if (closure_factory)
-            g_object_unref (closure_factory);
 
         return;
     }
@@ -1643,17 +1530,6 @@ error:
         g_array_free (action_params, TRUE);
     }
 
-    if (closure_params)
-    {
-        guint i;
-        GParameter *params = (GParameter*) closure_params->data;
-        for (i = 0; i < closure_params->len; ++i) {
-            g_value_unset (&params[i].value);
-            g_free ((char*) params[i].name);
-        }
-        g_array_free (closure_params, TRUE);
-    }
-
     if (conditions)
     {
         guint i;
@@ -1664,6 +1540,4 @@ error:
 
     if (action_class)
         g_type_class_unref (action_class);
-    if (closure_class)
-        g_type_class_unref (closure_class);
 }

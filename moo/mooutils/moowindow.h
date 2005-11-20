@@ -77,11 +77,6 @@ void        moo_window_class_set_id         (MooWindowClass     *klass,
                                              const char         *id,
                                              const char         *name);
 
-void        moo_window_class_install_action (MooWindowClass     *klass,
-                                             const char         *id,
-                                             MooObjectFactory   *action,
-                                             MooObjectFactory   *closure,
-                                             char              **conditions);
 void        moo_window_class_new_action     (MooWindowClass     *klass,
                                              const char         *id,
                                              const char         *first_prop_name,

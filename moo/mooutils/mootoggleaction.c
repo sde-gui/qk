@@ -15,39 +15,43 @@
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
 
-static void moo_toggle_action_class_init        (MooToggleActionClass   *klass);
+#define PEEK_DATA(action)   (action->object ? MOO_OBJECT_PTR_GET((MooObjectPtr*)action->data) : action->data)
+#define PEEK_OBJECT(action) (action->object ? MOO_OBJECT_PTR_GET((MooObjectPtr*)action->data) : NULL)
+#define ACTION_DEAD(action) (action->object ? (MOO_OBJECT_PTR_GET((MooObjectPtr*)action->data) == NULL) : FALSE)
 
-static void moo_toggle_action_init              (MooToggleAction        *action);
 
-static void moo_toggle_action_set_property      (GObject                *object,
-                                                 guint                   prop_id,
-                                                 const GValue           *value,
-                                                 GParamSpec             *pspec);
-static void moo_toggle_action_get_property      (GObject                *object,
-                                                 guint                   prop_id,
-                                                 GValue                 *value,
-                                                 GParamSpec             *pspec);
+static void         moo_toggle_action_set_property  (GObject            *object,
+                                                     guint               prop_id,
+                                                     const GValue       *value,
+                                                     GParamSpec         *pspec);
+static void         moo_toggle_action_get_property  (GObject            *object,
+                                                     guint               prop_id,
+                                                     GValue             *value,
+                                                     GParamSpec         *pspec);
+static void         moo_toggle_action_finalize      (GObject            *object);
 
-static GtkWidget *moo_toggle_action_create_menu_item (MooAction      *action);
-static GtkWidget *moo_toggle_action_create_tool_item (MooAction      *action,
-                                                      GtkWidget      *toolbar,
-                                                      int             position);
+static GtkWidget   *create_menu_item                (MooAction          *action);
+static GtkWidget   *create_tool_item                (MooAction          *action,
+                                                     GtkWidget          *toolbar,
+                                                     int                 position);
 
-static void moo_action_toggled                  (MooToggleAction     *action,
-                                                 gboolean             active);
+static void         moo_toggle_action_toggled       (MooToggleAction    *action,
+                                                     gboolean            active);
 
-static void moo_toggle_action_add_proxy         (MooAction               *action,
-                                                 GtkWidget               *proxy);
+static void         moo_toggle_action_add_proxy     (MooAction          *action,
+                                                     GtkWidget          *proxy);
 
 
 enum {
     PROP_0,
     PROP_ACTIVE,
     PROP_TOGGLED_CALLBACK,
+    PROP_TOGGLED_OBJECT,
     PROP_TOGGLED_DATA
 };
 
@@ -71,34 +75,43 @@ static void moo_toggle_action_class_init (MooToggleActionClass *klass)
 
     gobject_class->set_property = moo_toggle_action_set_property;
     gobject_class->get_property = moo_toggle_action_get_property;
+    gobject_class->finalize = moo_toggle_action_finalize;
 
     action_class->add_proxy = moo_toggle_action_add_proxy;
-    action_class->create_menu_item = moo_toggle_action_create_menu_item;
-    action_class->create_tool_item = moo_toggle_action_create_tool_item;
+    action_class->create_menu_item = create_menu_item;
+    action_class->create_tool_item = create_tool_item;
 
-    klass->toggled = moo_action_toggled;
+    klass->toggled = moo_toggle_action_toggled;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACTIVE,
                                      g_param_spec_boolean ("active",
-                                                           "active",
-                                                           "active",
-                                                           TRUE,
-                                                           G_PARAM_READWRITE));
+                                             "active",
+                                             "active",
+                                             TRUE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TOGGLED_CALLBACK,
                                      g_param_spec_pointer ("toggled-callback",
-                                                           "toggled-callback",
-                                                           "toggled-callback",
-                                                           G_PARAM_READWRITE));
+                                             "toggled-callback",
+                                             "toggled-callback",
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TOGGLED_DATA,
                                      g_param_spec_pointer ("toggled-data",
-                                                           "toggled-data",
-                                                           "toggled-data",
-                                                           G_PARAM_READWRITE));
+                                             "toggled-data",
+                                             "toggled-data",
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TOGGLED_OBJECT,
+                                     g_param_spec_object ("toggled-object",
+                                             "toggled-object",
+                                             "toggled-object",
+                                             G_TYPE_OBJECT,
+                                             G_PARAM_READWRITE));
 
     signals[TOGGLED] =
         g_signal_new ("toggled",
@@ -112,32 +125,47 @@ static void moo_toggle_action_class_init (MooToggleActionClass *klass)
 }
 
 
-static void moo_toggle_action_init (MooToggleAction *action)
+static void moo_toggle_action_init (G_GNUC_UNUSED MooToggleAction *action)
 {
-    g_return_if_fail (MOO_IS_ACTION (action));
-
-    action->active = TRUE;
-    action->toggled_callback = NULL;
-    action->toggled_data = NULL;
 }
 
 
-static void moo_toggle_action_get_property     (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec)
+static void
+moo_toggle_action_get_property (GObject     *object,
+                                guint        prop_id,
+                                GValue      *value,
+                                GParamSpec  *pspec)
 {
     MooToggleAction *action = MOO_TOGGLE_ACTION (object);
 
     switch (prop_id)
     {
         case PROP_ACTIVE:
-            g_value_set_boolean (value, action->active);
+            g_value_set_boolean (value, action->active ? TRUE : FALSE);
+            break;
+
+        case PROP_TOGGLED_CALLBACK:
+            g_value_set_pointer (value, action->callback);
+            break;
+        case PROP_TOGGLED_DATA:
+            g_value_set_pointer (value, PEEK_DATA (action));
+            break;
+        case PROP_TOGGLED_OBJECT:
+            g_value_set_pointer (value, PEEK_OBJECT (action));
             break;
 
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
+}
+
+
+static void
+object_died (MooToggleAction *action)
+{
+    g_return_if_fail (action->object);
+    moo_object_ptr_free (action->data);
+    action->data = NULL;
 }
 
 
@@ -155,11 +183,26 @@ static void moo_toggle_action_set_property     (GObject        *object,
             break;
 
         case PROP_TOGGLED_CALLBACK:
-            action->toggled_callback = (MooToggleActionFunc) g_value_get_pointer (value);
+            action->callback = g_value_get_pointer (value);
             break;
 
         case PROP_TOGGLED_DATA:
-            action->toggled_data = g_value_get_pointer (value);
+            if (action->object)
+                moo_object_ptr_free (action->data);
+            action->data = g_value_get_pointer (value);
+            action->object = FALSE;
+            break;
+
+        case PROP_TOGGLED_OBJECT:
+            if (action->object)
+                moo_object_ptr_free (action->data);
+            if (G_VALUE_HOLDS_OBJECT (value))
+                action->data = moo_object_ptr_new (g_value_get_object (value),
+                                                   (GWeakNotify) object_died,
+                                                   action);
+            else
+                action->data = NULL;
+            action->object = TRUE;
             break;
 
         default:
@@ -168,36 +211,38 @@ static void moo_toggle_action_set_property     (GObject        *object,
 }
 
 
-MooAction*
-moo_toggle_action_new (const char         *id,
-                       const char         *label,
-                       const char         *tooltip,
-                       const char         *accel,
-                       MooToggleActionFunc func,
-                       gpointer            data)
+static void
+moo_toggle_action_finalize (GObject *object)
 {
-    g_return_val_if_fail (id != NULL, NULL);
-    return g_object_new (MOO_TYPE_TOGGLE_ACTION,
-                         "id", id,
-                         "label", label,
-                         "tooltip", tooltip,
-                         "accel", accel,
-                         "toggled-callback", func,
-                         "toggled-data", data,
-                         NULL);
+    MooToggleAction *action = MOO_TOGGLE_ACTION (object);
+
+    if (action->object)
+        moo_object_ptr_free (action->data);
+
+    G_OBJECT_CLASS(moo_toggle_action_parent_class)->finalize (object);
 }
 
 
-static void moo_action_toggled                  (MooToggleAction     *action,
-                                                 gboolean             active)
+static void
+moo_toggle_action_toggled (MooToggleAction *action,
+                           gboolean         active)
 {
-    action->active = active;
-    if (action->toggled_callback)
-        action->toggled_callback (action->toggled_data, active);
+    if ((action->active && !active) || (!action->active && active))
+    {
+        active = active ? TRUE : FALSE;
+        action->active = active;
+
+        if (action->callback && !ACTION_DEAD (action))
+            action->callback (PEEK_DATA (action), active);
+
+        g_object_notify (G_OBJECT (action), "active");
+    }
 }
 
-void        moo_toggle_action_set_active        (MooToggleAction     *action,
-                                                 gboolean             active)
+
+void
+moo_toggle_action_set_active (MooToggleAction *action,
+                              gboolean         active)
 {
     g_return_if_fail (MOO_IS_TOGGLE_ACTION (action));
     g_signal_emit (action, signals[TOGGLED], 0, active);
@@ -205,7 +250,7 @@ void        moo_toggle_action_set_active        (MooToggleAction     *action,
 
 
 static GtkWidget*
-moo_toggle_action_create_menu_item (MooAction         *action)
+create_menu_item (MooAction *action)
 {
     GtkWidget *item = NULL;
 
@@ -231,9 +276,9 @@ moo_toggle_action_create_menu_item (MooAction         *action)
 
 
 static GtkWidget*
-moo_toggle_action_create_tool_item (MooAction      *action,
-                                    GtkWidget      *toolbar,
-                                    int             position)
+create_tool_item (MooAction *action,
+                  GtkWidget *toolbar,
+                  int        position)
 {
 #if GTK_CHECK_VERSION(2,4,0)
     GtkToolItem *item = NULL;
@@ -306,96 +351,23 @@ moo_toggle_action_create_tool_item (MooAction      *action,
 }
 
 
-/****************************************************************************/
-
-static void proxy_set_active    (GtkWidget          *proxy,
-                                 gboolean            active);
-static gboolean proxy_get_active(GtkWidget          *proxy);
-static void proxy_destroyed     (MooAction          *action,
-                                 gpointer            proxy);
-static void action_destroyed    (GtkWidget          *proxy,
-                                 gpointer            action);
-static void proxy_toggled       (GtkWidget          *proxy,
-                                 MooToggleAction    *action);
-
-
-static void proxy_set_active      (GtkWidget    *proxy,
-                                   gboolean      active)
+static void
+moo_toggle_action_add_proxy (MooAction *action,
+                             GtkWidget *proxy)
 {
-    if (GTK_IS_CHECK_MENU_ITEM (proxy))
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (proxy), active);
-#if GTK_CHECK_VERSION(2,4,0)
-    else if (GTK_IS_TOGGLE_TOOL_BUTTON (proxy))
-        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (proxy), active);
-#endif /* GTK_CHECK_VERSION(2,4,0) */
-    else if (GTK_IS_TOGGLE_BUTTON (proxy))
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (proxy), active);
-    else
-        g_critical ("unknown proxy type");
-}
-
-static gboolean proxy_get_active      (GtkWidget    *proxy)
-{
-    if (GTK_IS_CHECK_MENU_ITEM (proxy))
-        return gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (proxy));
-#if GTK_CHECK_VERSION(2,4,0)
-    else if (GTK_IS_TOGGLE_TOOL_BUTTON (proxy))
-        return gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON (proxy));
-#endif /* GTK_CHECK_VERSION(2,4,0) */
-    else if (GTK_IS_TOGGLE_BUTTON (proxy))
-        return gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (proxy));
-    else
-        g_critical ("unknown proxy type");
-    return FALSE;
-}
-
-
-static void proxy_destroyed          (MooAction  *action,
-                                      gpointer    proxy)
-{
-    g_signal_handlers_disconnect_by_func (action, (gpointer)proxy_set_active, proxy);
-    g_object_weak_unref (G_OBJECT (action), (GWeakNotify)action_destroyed, proxy);
-}
-
-static void action_destroyed         (GtkWidget  *proxy,
-                                      gpointer    action)
-{
-    g_signal_handlers_disconnect_by_func (proxy, (gpointer)moo_action_activate, action);
-    g_object_weak_unref (G_OBJECT (proxy), (GWeakNotify)proxy_destroyed, action);
-}
-
-
-static void proxy_toggled   (GtkWidget          *proxy,
-                             MooToggleAction    *action)
-{
-    g_signal_handlers_block_by_func (action, (gpointer)proxy_set_active, proxy);
-    moo_toggle_action_set_active (action, proxy_get_active (proxy));
-    g_signal_handlers_unblock_by_func (action, (gpointer)proxy_set_active, proxy);
-}
-
-static void moo_toggle_action_add_proxy         (MooAction               *action,
-                                                 GtkWidget               *proxy)
-{
-    proxy_set_active (proxy, MOO_TOGGLE_ACTION(action)->active);
-
     if (GTK_IS_CHECK_MENU_ITEM (proxy) ||
 #if GTK_CHECK_VERSION(2,4,0)
         GTK_IS_TOGGLE_TOOL_BUTTON (proxy) ||
 #endif /* GTK_CHECK_VERSION(2,4,0) */
         GTK_IS_TOGGLE_BUTTON (proxy))
     {
-        g_signal_connect_swapped (action, "toggled",
-                                  G_CALLBACK (proxy_set_active), proxy);
-
-        g_signal_connect (proxy, "toggled", G_CALLBACK (proxy_toggled), action);
+        moo_bind_bool_property (action, "active", proxy, "active", FALSE);
+        moo_bind_bool_property (proxy, "active", action, "active", FALSE);
     }
     else
     {
         g_critical ("unknown proxy type");
     }
-
-    g_object_weak_ref (G_OBJECT (proxy), (GWeakNotify)proxy_destroyed, action);
-    g_object_weak_ref (G_OBJECT (action), (GWeakNotify)action_destroyed, proxy);
 
     MOO_ACTION_CLASS(moo_toggle_action_parent_class)->add_proxy (action, proxy);
 }

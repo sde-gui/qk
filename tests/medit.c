@@ -104,21 +104,21 @@ static void init_actions (void)
                                  "label", "Preferences",
                                  "tooltip", "Preferences",
                                  "icon-stock-id", GTK_STOCK_PREFERENCES,
-                                 "closure::callback", show_preferences,
+                                 "closure-callback", show_preferences,
                                  NULL);
     moo_window_class_new_action (klass, "Quit",
                                  "name", "Quit",
                                  "label", "_Quit",
                                  "tooltip", "Quit",
                                  "icon-stock-id", GTK_STOCK_QUIT,
-                                 "closure::callback", quit,
+                                 "closure-callback", quit,
                                  NULL);
     moo_window_class_new_action (klass, "About",
                                  "name", "About",
                                  "label", "About",
                                  "tooltip", "About",
                                  "icon-stock-id", GTK_STOCK_ABOUT,
-                                 "closure::callback", about,
+                                 "closure-callback", about,
                                  NULL);
 
     g_type_class_unref (klass);

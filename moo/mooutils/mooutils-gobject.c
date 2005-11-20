@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooclosure.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
 
@@ -20,15 +21,42 @@
 /* GType type
  */
 
-static gpointer
-copy_gtype (gpointer boxed)
-{
-    return boxed;
-}
+#define MOO_GTYPE_PEEK(val_) (val_)->data[0].v_pointer
 
 static void
-free_gtype (G_GNUC_UNUSED gpointer boxed)
+moo_gtype_value_init (G_GNUC_UNUSED GValue *value)
 {
+}
+
+
+static void
+moo_gtype_value_copy (const GValue   *src,
+                      GValue         *dest)
+{
+    MOO_GTYPE_PEEK(dest) = MOO_GTYPE_PEEK(src);
+}
+
+
+static char*
+moo_gtype_collect_value (GValue         *value,
+                         G_GNUC_UNUSED guint n_collect_values,
+                         GTypeCValue    *collect_values,
+                         G_GNUC_UNUSED guint collect_flags)
+{
+    MOO_GTYPE_PEEK(value) = collect_values->v_pointer;
+    return NULL;
+}
+
+
+static char*
+moo_gtype_lcopy_value (const GValue   *value,
+                       G_GNUC_UNUSED guint n_collect_values,
+                       GTypeCValue    *collect_values,
+                       G_GNUC_UNUSED guint collect_flags)
+{
+    GType *ptr = collect_values->v_pointer;
+    *ptr = moo_value_get_gtype (value);
+    return NULL;
 }
 
 
@@ -36,10 +64,40 @@ GType
 moo_gtype_get_type (void)
 {
     static GType type = 0;
+
     if (!type)
     {
-        type = g_boxed_type_register_static ("GType",
-                                             copy_gtype, free_gtype);
+        static GTypeValueTable val_table = {
+            moo_gtype_value_init,
+            NULL,
+            moo_gtype_value_copy,
+            NULL,
+            (char*) "p",
+            moo_gtype_collect_value,
+            (char*) "p",
+            moo_gtype_lcopy_value
+        };
+
+        static GTypeInfo info = {
+            /* interface types, classed types, instantiated types */
+            0, /*class_size*/
+            NULL, /*base_init*/
+            NULL, /*base_finalize*/
+            NULL,/*class_init*/
+            NULL,/*class_finalize*/
+            NULL,/*class_data*/
+            0,/*instance_size*/
+            0,/*n_preallocs*/
+            NULL,/*instance_init*/
+            /* value handling */
+            &val_table
+        };
+
+        static GTypeFundamentalInfo finfo = { 0 };
+
+        type = g_type_register_fundamental (g_type_fundamental_next (),
+                                            "MooGType",
+                                            &info, &finfo, 0);
     }
 
     return type;
@@ -50,15 +108,109 @@ void
 moo_value_set_gtype (GValue     *value,
                      GType       v_gtype)
 {
-    g_value_set_static_boxed (value, (gconstpointer) v_gtype);
+    MOO_GTYPE_PEEK(value) = (gpointer) v_gtype;
 }
 
 
 GType
 moo_value_get_gtype (const GValue *value)
 {
-    return (GType) g_value_get_boxed (value);
+    return (GType) MOO_GTYPE_PEEK(value);
 }
+
+
+static void
+param_gtype_set_default (GParamSpec *pspec,
+                         GValue     *value)
+{
+    MooParamSpecGType *mspec = MOO_PARAM_SPEC_GTYPE (pspec);
+    moo_value_set_gtype (value, mspec->base);
+}
+
+
+static gboolean
+param_gtype_validate (GParamSpec   *pspec,
+                      GValue       *value)
+{
+    MooParamSpecGType *mspec = MOO_PARAM_SPEC_GTYPE (pspec);
+    GType t = moo_value_get_gtype (value);
+    gboolean changed = FALSE;
+
+    if (G_TYPE_IS_DERIVABLE (mspec->base))
+    {
+        if (!g_type_is_a (t, mspec->base))
+        {
+            moo_value_set_gtype (value, mspec->base);
+            changed = TRUE;
+        }
+    }
+    else if (!g_type_name (t))
+    {
+        moo_value_set_gtype (value, mspec->base);
+        changed = TRUE;
+    }
+
+    return changed;
+}
+
+
+static int
+param_gtype_cmp (G_GNUC_UNUSED GParamSpec *pspec,
+                 const GValue *value1,
+                 const GValue *value2)
+{
+    GType t1 = moo_value_get_gtype (value1);
+    GType t2 = moo_value_get_gtype (value2);
+    return t1 == t2 ? 0 : (t1 < t2 ? -1 : 1);
+}
+
+
+GType
+moo_param_gtype_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        GParamSpecTypeInfo info = {
+            sizeof (MooParamSpecGType), /* instance_size */
+            16,                         /* n_preallocs */
+            NULL,                       /* instance_init */
+            MOO_TYPE_GTYPE,             /* value_type */
+            NULL,                       /* finalize */
+            param_gtype_set_default,    /* value_set_default */
+            param_gtype_validate,       /* value_validate */
+            param_gtype_cmp,            /* values_cmp */
+        };
+
+        type = g_param_type_register_static ("MooParamGType", &info);
+    }
+
+    return type;
+}
+
+
+GParamSpec*
+moo_param_spec_gtype (const char     *name,
+                      const char     *nick,
+                      const char     *blurb,
+                      GType           base,
+                      GParamFlags     flags)
+{
+    MooParamSpecGType *pspec;
+
+    g_return_val_if_fail (g_type_name (base) != NULL, NULL);
+
+    pspec = g_param_spec_internal (MOO_TYPE_PARAM_GTYPE,
+                                   name, nick, blurb, flags);
+    pspec->base = base;
+
+    return G_PARAM_SPEC (pspec);
+}
+
+
+GType       g_param_type_register_static    (const gchar *name,
+                                             const GParamSpecTypeInfo *pspec_info);
 
 
 /*****************************************************************************/
@@ -918,10 +1070,10 @@ moo_object_factory_class_init (MooObjectFactoryClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_OBJECT_TYPE,
-                                     g_param_spec_boxed ("object_type",
+                                     moo_param_spec_gtype ("object_type",
                                              "object_type",
                                              "object_type",
-                                             MOO_TYPE_GTYPE,
+                                             G_TYPE_OBJECT,
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
     g_object_class_install_property (gobject_class,
                                      PROP_FACTORY_FUNC,
@@ -1147,29 +1299,117 @@ moo_object_factory_new_a (GType               object_type,
 /* Property watch
  */
 
-typedef struct {
-    GObject *source;
-    GObject *target;
-    GParamSpec *source_prop;
-    GParamSpec *target_prop;
-    guint id;
-    MooTransformPropFunc transform;
-    gpointer data;
-    GDestroyNotify destroy_notify;
-} ObjectWatch;
+typedef struct _Watch Watch;
+typedef void (*WatchSourceNotify)   (Watch *watch);
+typedef void (*WatchTargetNotify)   (Watch *watch);
+typedef void (*WatchDestroy)        (Watch *watch);
 
+typedef struct {
+    WatchSourceNotify source_notify;
+    WatchTargetNotify target_notify;
+    WatchDestroy destroy;
+} WatchClass;
+
+#define watch_new(Type_,klass_,src_,tgt_,notify_,data_) \
+    ((Type_*) watch_alloc (sizeof (Type_), klass_, src_, tgt_, notify_, data_))
+
+struct _Watch {
+    WatchClass *klass;
+    MooObjectPtr *source;
+    MooObjectPtr *target;
+    GDestroyNotify notify;
+    gpointer notify_data;
+    guint id;
+};
 
 static GHashTable *watches = NULL;
 static guint watch_last_id = 0;
 
 
-static void source_died         (ObjectWatch *watch);
-static void target_died         (ObjectWatch *watch);
-static void watch_check         (ObjectWatch *watch);
-static void watch_die           (ObjectWatch *watch);
+static void
+watch_destroy (Watch *w)
+{
+    if (w)
+    {
+        if (w->klass->destroy)
+            w->klass->destroy (w);
+        if (w->notify)
+            w->notify (w->notify_data);
+        moo_object_ptr_free (w->source);
+        moo_object_ptr_free (w->target);
+        g_free (w);
+    }
+}
 
 
-static ObjectWatch*
+static void
+watch_source_died (Watch *w)
+{
+    if (w->klass->source_notify)
+        w->klass->source_notify (w);
+    moo_object_ptr_free (w->source);
+    w->source = NULL;
+    g_hash_table_remove (watches, GUINT_TO_POINTER (w->id));
+}
+
+static void
+watch_target_died (Watch *w)
+{
+    if (w->klass->target_notify)
+        w->klass->target_notify (w);
+    moo_object_ptr_free (w->target);
+    w->target = NULL;
+    g_hash_table_remove (watches, GUINT_TO_POINTER (w->id));
+}
+
+
+static Watch *
+watch_alloc (gsize          size,
+             WatchClass    *klass,
+             GObject       *source,
+             GObject       *target,
+             GDestroyNotify notify,
+             gpointer       notify_data)
+{
+    Watch *w;
+
+    g_return_val_if_fail (size >= sizeof (Watch), NULL);
+    g_return_val_if_fail (G_IS_OBJECT (source), NULL);
+    g_return_val_if_fail (G_IS_OBJECT (target), NULL);
+
+    w = g_malloc0 (size);
+    w->source = moo_object_ptr_new (source, (GWeakNotify) watch_source_died, w);
+    w->target = moo_object_ptr_new (target, (GWeakNotify) watch_target_died, w);
+    w->klass = klass;
+    w->notify = notify;
+    w->notify_data = notify_data;
+    w->id = ++watch_last_id;
+
+    if (!watches)
+        watches = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+                                         NULL, (GDestroyNotify) watch_destroy);
+    g_hash_table_insert (watches, GUINT_TO_POINTER (w->id), w);
+
+    return w;
+}
+
+
+typedef struct {
+    Watch parent;
+    GParamSpec *source_pspec;
+    GParamSpec *target_pspec;
+    MooTransformPropFunc transform;
+    gpointer transform_data;
+} PropWatch;
+
+
+static void prop_watch_check        (PropWatch  *watch);
+static void prop_watch_destroy      (Watch      *watch);
+
+static WatchClass PropWatchClass = {NULL, NULL, prop_watch_destroy};
+
+
+static PropWatch*
 prop_watch_new (GObject            *target,
                 const char         *target_prop,
                 GObject            *source,
@@ -1177,11 +1417,14 @@ prop_watch_new (GObject            *target,
                 const char         *signal,
                 MooTransformPropFunc transform,
                 gpointer            transform_data,
-                GDestroyNotify      destroy_notify)
+                GDestroyNotify      destroy_notify,
+                gpointer            destroy_notify_data)
 {
-    ObjectWatch *watch;
+    PropWatch *watch;
     GObjectClass *target_class, *source_class;
     char *signal_name = NULL;
+    GParamSpec *source_pspec;
+    GParamSpec *target_pspec;
 
     g_return_val_if_fail (G_IS_OBJECT (target), NULL);
     g_return_val_if_fail (G_IS_OBJECT (source), NULL);
@@ -1192,32 +1435,27 @@ prop_watch_new (GObject            *target,
     target_class = g_type_class_peek (G_OBJECT_TYPE (target));
     source_class = g_type_class_peek (G_OBJECT_TYPE (source));
 
-    watch = g_new0 (ObjectWatch, 1);
+    source_pspec = g_object_class_find_property (source_class, source_prop);
+    target_pspec = g_object_class_find_property (target_class, target_prop);
 
-    watch->source = source;
-    watch->target = target;
-
-    watch->source_prop = g_object_class_find_property (source_class, source_prop);
-    if (!watch->source_prop)
+    if (!source_pspec || !target_pspec)
     {
-        g_warning ("%s: could not find property '%s' in class '%s'",
-                   G_STRLOC, source_prop, g_type_name (G_OBJECT_TYPE (source)));
-        g_free (watch);
+        if (!source_pspec)
+            g_warning ("%s: no property '%s' in class '%s'",
+                       G_STRLOC, source_prop, g_type_name (G_OBJECT_TYPE (source)));
+        if (!target_pspec)
+            g_warning ("%s: no property '%s' in class '%s'",
+                       G_STRLOC, target_prop, g_type_name (G_OBJECT_TYPE (target)));
         return NULL;
     }
 
-    watch->target_prop = g_object_class_find_property (target_class, target_prop);
-    if (!watch->target_prop)
-    {
-        g_warning ("%s: could not find property '%s' in class '%s'",
-                   G_STRLOC, target_prop, g_type_name (G_OBJECT_TYPE (target)));
-        g_free (watch);
-        return NULL;
-    }
+    watch = watch_new (PropWatch, &PropWatchClass, source, target,
+                       destroy_notify, destroy_notify_data);
 
+    watch->source_pspec = source_pspec;
+    watch->target_pspec = target_pspec;
     watch->transform = transform;
-    watch->data = transform_data;
-    watch->destroy_notify = destroy_notify;
+    watch->transform_data = transform_data;
 
     if (!signal)
     {
@@ -1226,15 +1464,8 @@ prop_watch_new (GObject            *target,
     }
 
     g_signal_connect_swapped (source, signal,
-                              G_CALLBACK (watch_check), watch);
-    g_object_weak_ref (source, (GWeakNotify) source_died, watch);
-    g_object_weak_ref (target, (GWeakNotify) target_died, watch);
-
-    watch_last_id++;
-    watch->id = watch_last_id;
-    if (!watches)
-        watches = g_hash_table_new (g_direct_hash, g_direct_equal);
-    g_hash_table_insert (watches, GUINT_TO_POINTER (watch->id), watch);
+                              G_CALLBACK (prop_watch_check),
+                              watch);
 
     g_free (signal_name);
     return watch;
@@ -1242,25 +1473,12 @@ prop_watch_new (GObject            *target,
 
 
 static void
-watch_die (ObjectWatch *watch)
+prop_watch_destroy (Watch *watch)
 {
-    if (watch->source)
-    {
-        g_signal_handlers_disconnect_by_func (watch->source,
-                                              (gpointer) watch_check,
+    if (MOO_OBJECT_PTR_GET (watch->source))
+        g_signal_handlers_disconnect_by_func (MOO_OBJECT_PTR_GET (watch->source),
+                                              (gpointer) prop_watch_check,
                                               watch);
-        g_object_weak_unref (watch->source, (GWeakNotify) source_died, watch);
-    }
-
-    if (watch->target)
-        g_object_weak_unref (watch->target, (GWeakNotify) target_died, watch);
-
-    if (watch->destroy_notify)
-        watch->destroy_notify (watch->data);
-
-    g_hash_table_remove (watches, GUINT_TO_POINTER (watch->id));
-
-    g_free (watch);
 }
 
 
@@ -1273,7 +1491,7 @@ moo_add_property_watch (gpointer            target,
                         gpointer            transform_data,
                         GDestroyNotify      destroy_notify)
 {
-    ObjectWatch *watch;
+    PropWatch *watch;
 
     g_return_val_if_fail (G_IS_OBJECT (target), 0);
     g_return_val_if_fail (G_IS_OBJECT (source), 0);
@@ -1281,64 +1499,58 @@ moo_add_property_watch (gpointer            target,
     g_return_val_if_fail (source_prop != NULL, 0);
     g_return_val_if_fail (transform != NULL, 0);
 
-    watch = prop_watch_new (target, target_prop,
-                            source, source_prop,
-                            NULL, transform,
-                            transform_data,
-                            destroy_notify);
+    watch = prop_watch_new (target, target_prop, source, source_prop,
+                            NULL, transform, transform_data,
+                            destroy_notify, transform_data);
 
     if (!watch)
         return 0;
 
-    watch_check (watch);
-    return watch->id;
+    prop_watch_check (watch);
+    return watch->parent.id;
 }
 
 
 static void
-source_died (ObjectWatch *watch)
+prop_watch_check (PropWatch *watch)
 {
-    watch->source = NULL;
-    watch_die (watch);
-}
+    GValue source_val, target_val, old_target_val;
+    GObject *source, *target;
 
-
-static void
-target_died (ObjectWatch *watch)
-{
-    watch->target = NULL;
-    watch_die (watch);
-}
-
-
-static void
-watch_check (ObjectWatch *watch)
-{
-    GValue source_val, target_val;
-
-    if (!G_IS_OBJECT (watch->source) ||
-         !G_IS_OBJECT (watch->target))
-    {
-        watch_die (watch);
-        g_return_if_reached ();
-    }
+    source = MOO_OBJECT_PTR_GET (watch->parent.source);
+    target = MOO_OBJECT_PTR_GET (watch->parent.target);
+    g_return_if_fail (source && target);
 
     source_val.g_type = 0;
     target_val.g_type = 0;
+    old_target_val.g_type = 0;
 
-    g_value_init (&source_val, watch->source_prop->value_type);
-    g_value_init (&target_val, watch->target_prop->value_type);
+    g_value_init (&source_val, watch->source_pspec->value_type);
+    g_value_init (&target_val, watch->target_pspec->value_type);
+    g_value_init (&old_target_val, watch->target_pspec->value_type);
 
-    g_object_get_property (watch->source,
-                           watch->source_prop->name,
+    g_object_ref (source);
+    g_object_ref (target);
+
+    g_object_get_property (source,
+                           watch->source_pspec->name,
                            &source_val);
-    watch->transform (&target_val, &source_val, watch->data);
-    g_object_set_property (watch->target,
-                           watch->target_prop->name,
-                           &target_val);
+    g_object_get_property (target,
+                           watch->target_pspec->name,
+                           &old_target_val);
 
+    watch->transform (&target_val, &source_val, watch->transform_data);
+
+    if (g_param_values_cmp (watch->target_pspec, &target_val, &old_target_val))
+        g_object_set_property (target,
+                               watch->target_pspec->name,
+                               &target_val);
+
+    g_object_unref (source);
+    g_object_unref (target);
     g_value_unset (&source_val);
     g_value_unset (&target_val);
+    g_value_unset (&old_target_val);
 }
 
 
@@ -1347,7 +1559,7 @@ moo_copy_boolean (GValue             *target,
                   const GValue       *source,
                   G_GNUC_UNUSED gpointer dummy)
 {
-    g_value_set_boolean (target, g_value_get_boolean (source));
+    g_value_set_boolean (target, g_value_get_boolean (source) ? TRUE : FALSE);
 }
 
 
@@ -1392,7 +1604,7 @@ moo_bind_sensitive (GtkWidget          *btn,
 gboolean
 moo_watch_remove (guint watch_id)
 {
-    ObjectWatch *watch;
+    Watch *watch;
 
     if (!watches)
         return FALSE;
@@ -1402,31 +1614,34 @@ moo_watch_remove (guint watch_id)
     if (!watch)
         return FALSE;
 
-    watch_die (watch);
+    g_hash_table_remove (watches, GUINT_TO_POINTER (watch_id));
+
     return TRUE;
 }
 
 
 void
-moo_watch_add_signal (guint               watch_id,
-                      const char         *source_signal)
+moo_watch_add_signal (guint       watch_id,
+                      const char *source_signal)
 {
-    ObjectWatch *watch;
+    Watch *watch;
 
     g_return_if_fail (watches != NULL);
     g_return_if_fail (source_signal != NULL);
 
     watch = g_hash_table_lookup (watches, GUINT_TO_POINTER (watch_id));
     g_return_if_fail (watch != NULL);
+    g_return_if_fail (watch->klass == &PropWatchClass);
 
-    g_signal_connect_swapped (watch->source, source_signal,
-                              G_CALLBACK (watch_check), watch);
+    g_signal_connect_swapped (MOO_OBJECT_PTR_GET (watch->source),
+                              source_signal, G_CALLBACK (prop_watch_check),
+                              watch);
 }
 
 
 void
-moo_watch_add_property (guint               watch_id,
-                        const char         *source_prop)
+moo_watch_add_property (guint       watch_id,
+                        const char *source_prop)
 {
     char *signal;
 
@@ -1436,4 +1651,137 @@ moo_watch_add_property (guint               watch_id,
     moo_watch_add_signal (watch_id, signal);
 
     g_free (signal);
+}
+
+
+/************************************************************/
+/* SignalWatch
+ */
+
+typedef struct {
+    Watch parent;
+    guint signal_id;
+    GQuark detail;
+} SignalWatch;
+
+
+static void signal_watch_invoke     (SignalWatch    *watch);
+static void signal_watch_destroy    (Watch          *watch);
+
+static WatchClass SignalWatchClass = {NULL, NULL, signal_watch_destroy};
+
+
+static gboolean
+check_signal (GObject    *obj,
+              const char *signal,
+              guint      *signal_id,
+              GQuark     *detail,
+              gboolean    any_return)
+{
+    GSignalQuery query;
+
+    if (!g_signal_parse_name (signal, G_OBJECT_TYPE (obj), signal_id, detail, FALSE))
+    {
+        g_warning ("%s: could not parse signal '%s' of '%s' object",
+                   G_STRLOC, signal, g_type_name (G_OBJECT_TYPE (obj)));
+        return FALSE;
+    }
+
+    g_signal_query (*signal_id, &query);
+
+    if (query.n_params > 0)
+    {
+        g_warning ("%s: implement me", G_STRLOC);
+        return FALSE;
+    }
+
+    switch (query.return_type)
+    {
+        case G_TYPE_NONE:
+            break;
+
+        case G_TYPE_BOOLEAN:
+        case G_TYPE_INT:
+        case G_TYPE_UINT:
+            if (!any_return)
+                g_warning ("%s: implement me", G_STRLOC);
+            return FALSE;
+            break;
+
+        default:
+            g_warning ("%s: implement me", G_STRLOC);
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+static SignalWatch*
+signal_watch_new (GObject       *target,
+                  const char    *target_signal,
+                  GObject       *source,
+                  const char    *source_signal)
+{
+    SignalWatch *watch;
+    guint t_id, s_id;
+    GQuark t_detail, s_detail;
+
+    g_return_val_if_fail (G_IS_OBJECT (target), NULL);
+    g_return_val_if_fail (G_IS_OBJECT (source), NULL);
+    g_return_val_if_fail (target_signal != NULL, NULL);
+    g_return_val_if_fail (source_signal != NULL, NULL);
+
+    if (!check_signal (target, target_signal, &t_id, &t_detail, TRUE))
+        return NULL;
+
+    if (!check_signal (source, source_signal, &s_id, &s_detail, FALSE))
+        return NULL;
+
+    watch = watch_new (SignalWatch, &SignalWatchClass, source, target, NULL, NULL);
+
+    watch->signal_id = t_id;
+    watch->detail = t_detail;
+
+    g_signal_connect_swapped (source, source_signal,
+                              G_CALLBACK (signal_watch_invoke),
+                              watch);
+
+    return watch;
+}
+
+
+static void
+signal_watch_destroy (Watch *watch)
+{
+    if (MOO_OBJECT_PTR_GET (watch->source))
+        g_signal_handlers_disconnect_by_func (MOO_OBJECT_PTR_GET (watch->source),
+                                              (gpointer) signal_watch_invoke,
+                                              watch);
+}
+
+
+static void
+signal_watch_invoke (SignalWatch *watch)
+{
+    int ret[4];
+    g_signal_emit (MOO_OBJECT_PTR_GET (watch->parent.target),
+                   watch->signal_id, watch->detail, ret);
+}
+
+
+guint
+moo_bind_signal (gpointer            target,
+                 const char         *target_signal,
+                 gpointer            source,
+                 const char         *source_signal)
+{
+    SignalWatch *watch;
+
+    watch = signal_watch_new (target, target_signal, source, source_signal);
+
+    if (!watch)
+        return 0;
+
+    return watch->parent.id;
 }

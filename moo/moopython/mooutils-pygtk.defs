@@ -113,13 +113,6 @@
   (gtype-id "MOO_TYPE_MENU_ACTION")
 )
 
-(define-object Closure
-  (in-module "Moo")
-  (parent "GtkObject")
-  (c-name "MooClosure")
-  (gtype-id "MOO_TYPE_CLOSURE")
-)
-
 (define-object UIXML
   (in-module "Moo")
   (parent "GObject")
@@ -170,6 +163,14 @@
     '("char*" "display")
     '("gboolean" "builtin")
   )
+)
+
+(define-boxed Closure
+  (in-module "Moo")
+  (c-name "MooClosure")
+  (gtype-id "MOO_TYPE_CLOSURE")
+  (copy-func "moo_closure_ref")
+  (release-func "moo_closure_unref")
 )
 
 
@@ -1499,166 +1500,6 @@
 )
 
 
-;; From ./ggap/moo/mooutils/mooaction.h
-
-(define-method activate
-  (of-object "MooAction")
-  (c-name "moo_action_activate")
-  (return-type "none")
-)
-
-(define-method get_id
-  (of-object "MooAction")
-  (c-name "moo_action_get_id")
-  (return-type "const-char*")
-)
-
-(define-method get_group_name
-  (of-object "MooAction")
-  (c-name "moo_action_get_group_name")
-  (return-type "const-char*")
-)
-
-(define-method get_name
-  (of-object "MooAction")
-  (c-name "moo_action_get_name")
-  (return-type "const-char*")
-)
-
-(define-method set_no_accel
-  (of-object "MooAction")
-  (c-name "moo_action_set_no_accel")
-  (return-type "none")
-  (parameters
-    '("gboolean" "no_accel")
-  )
-)
-
-(define-method get_no_accel
-  (of-object "MooAction")
-  (c-name "moo_action_get_no_accel")
-  (return-type "gboolean")
-)
-
-(define-method create_menu_item
-  (of-object "MooAction")
-  (c-name "moo_action_create_menu_item")
-  (return-type "GtkWidget*")
-)
-
-(define-method create_tool_item
-  (of-object "MooAction")
-  (c-name "moo_action_create_tool_item")
-  (return-type "GtkWidget*")
-  (parameters
-    '("GtkWidget*" "toolbar")
-    '("int" "position")
-  )
-)
-
-(define-method set_sensitive
-  (of-object "MooAction")
-  (c-name "moo_action_set_sensitive")
-  (return-type "none")
-  (parameters
-    '("gboolean" "sensitive")
-  )
-)
-
-(define-method set_visible
-  (of-object "MooAction")
-  (c-name "moo_action_set_visible")
-  (return-type "none")
-  (parameters
-    '("gboolean" "visible")
-  )
-)
-
-(define-method get_default_accel
-  (of-object "MooAction")
-  (c-name "moo_action_get_default_accel")
-  (return-type "const-char*")
-)
-
-(define-function moo_action_make_accel_path
-  (c-name "moo_action_make_accel_path")
-  (return-type "const-char*")
-  (parameters
-    '("const-char*" "group_id")
-    '("const-char*" "action_id")
-  )
-)
-
-
-
-;; From ./ggap/moo/mooutils/mooclosure.h
-
-;; (define-function moo_closure_new
-;;   (c-name "moo_closure_new")
-;;   (is-constructor-of "MooClosure")
-;;   (return-type "MooClosure*")
-;;   (parameters
-;;     '("GCallback" "callback_func")
-;;     '("gpointer" "data")
-;;   )
-;; )
-;;
-;; (define-function moo_closure_new_object
-;;   (c-name "moo_closure_new_object")
-;;   (is-constructor-of "MooClosure")
-;;   (return-type "MooClosure*")
-;;   (parameters
-;;     '("GCallback" "callback_func")
-;;     '("gpointer" "object")
-;;   )
-;; )
-;;
-;; (define-function moo_closure_new_signal
-;;   (c-name "moo_closure_new_signal")
-;;   (is-constructor-of "MooClosure")
-;;   (return-type "MooClosure*")
-;;   (parameters
-;;     '("const-char*" "signal")
-;;     '("gpointer" "object")
-;;   )
-;; )
-;;
-;; (define-function moo_closure_new_proxy
-;;   (c-name "moo_closure_new_proxy")
-;;   (is-constructor-of "MooClosure")
-;;   (return-type "MooClosure*")
-;;   (parameters
-;;     '("GCallback" "callback_func")
-;;     '("GCallback" "proxy_func")
-;;     '("gpointer" "object")
-;;   )
-;; )
-;;
-;; (define-function moo_closure_new_proxy_signal
-;;   (c-name "moo_closure_new_proxy_signal")
-;;   (is-constructor-of "MooClosure")
-;;   (return-type "MooClosure*")
-;;   (parameters
-;;     '("const-char*" "signal")
-;;     '("GCallback" "proxy_func")
-;;     '("gpointer" "object")
-;;   )
-;; )
-;;
-;; (define-method invoke
-;;   (of-object "MooClosure")
-;;   (c-name "moo_closure_invoke")
-;;   (return-type "none")
-;; )
-;;
-;; (define-method invalidate
-;;   (of-object "MooClosure")
-;;   (c-name "moo_closure_invalidate")
-;;   (return-type "none")
-;; )
-
-
-
 ;; From ./moo/mooutils/moouixml.h
 
 (define-function moo_ui_xml_new
@@ -2374,4 +2215,116 @@
 (define-function segfault
   (c-name "moo_segfault")
   (return-type "none")
+)
+
+
+;; From moo/mooutils/mooclosure.h
+
+(define-function moo_closure_new
+  (c-name "moo_closure_new")
+  (is-constructor-of "MooClosure")
+  (return-type "MooClosure*")
+)
+
+(define-method invoke
+  (of-object "MooClosure")
+  (c-name "moo_closure_invoke")
+  (return-type "none")
+)
+
+(define-method invalidate
+  (of-object "MooClosure")
+  (c-name "moo_closure_invalidate")
+  (return-type "none")
+)
+
+
+;; From ./ggap/moo/mooutils/mooaction.h
+
+(define-method activate
+  (of-object "MooAction")
+  (c-name "moo_action_activate")
+  (return-type "none")
+)
+
+(define-method get_id
+  (of-object "MooAction")
+  (c-name "moo_action_get_id")
+  (return-type "const-char*")
+)
+
+(define-method get_group_name
+  (of-object "MooAction")
+  (c-name "moo_action_get_group_name")
+  (return-type "const-char*")
+)
+
+(define-method get_name
+  (of-object "MooAction")
+  (c-name "moo_action_get_name")
+  (return-type "const-char*")
+)
+
+(define-method set_no_accel
+  (of-object "MooAction")
+  (c-name "moo_action_set_no_accel")
+  (return-type "none")
+  (parameters
+    '("gboolean" "no_accel")
+  )
+)
+
+(define-method get_no_accel
+  (of-object "MooAction")
+  (c-name "moo_action_get_no_accel")
+  (return-type "gboolean")
+)
+
+(define-method create_menu_item
+  (of-object "MooAction")
+  (c-name "moo_action_create_menu_item")
+  (return-type "GtkWidget*")
+)
+
+(define-method create_tool_item
+  (of-object "MooAction")
+  (c-name "moo_action_create_tool_item")
+  (return-type "GtkWidget*")
+  (parameters
+    '("GtkWidget*" "toolbar")
+    '("int" "position")
+  )
+)
+
+(define-method set_sensitive
+  (of-object "MooAction")
+  (c-name "moo_action_set_sensitive")
+  (return-type "none")
+  (parameters
+    '("gboolean" "sensitive")
+  )
+)
+
+(define-method set_visible
+  (of-object "MooAction")
+  (c-name "moo_action_set_visible")
+  (return-type "none")
+  (parameters
+    '("gboolean" "visible")
+  )
+)
+
+(define-method get_default_accel
+  (of-object "MooAction")
+  (c-name "moo_action_get_default_accel")
+  (return-type "const-char*")
+)
+
+(define-function moo_action_make_accel_path
+  (c-name "moo_action_make_accel_path")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "group_id")
+    '("const-char*" "action_id")
+  )
 )

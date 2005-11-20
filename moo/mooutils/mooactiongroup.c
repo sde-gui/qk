@@ -13,11 +13,13 @@
 
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/moocompat.h"
+#include <string.h>
 
 
-struct _MooActionGroupPrivate {
-    GHashTable      *actions;       /* char* -> MooAction* */
-    char            *name;
+struct _MooActionGroupPrivate
+{
+    GHashTable *actions; /* char* -> MooAction* */
+    char       *name;
 };
 
 
@@ -71,62 +73,9 @@ static void moo_action_group_finalize       (GObject      *object)
 }
 
 
-#if 0
-static void moo_action_group_set_property   (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
-{
-    g_return_if_fail (MOO_IS_ACTION_GROUP (object));
-    MooActionGroup *group = MOO_ACTION_GROUP (object);
-
-    switch (prop_id)
-    {
-        case PROP_ID:
-            moo_action_group_set_id (group, g_value_get_string (value));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-static void moo_action_group_get_property   (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec)
-{
-    g_return_if_fail (MOO_IS_ACTION_GROUP (object));
-    MooActionGroup *group = MOO_ACTION_GROUP (object);
-    g_return_if_fail (group->priv != NULL);
-
-    switch (prop_id)
-    {
-        case PROP_ID:
-            g_value_set_string (value, group->priv->id().c_str());
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-
-void moo_action_group_set_id         (MooActionGroup *group,
-                                             const char     *id)
-{
-    if (!group->priv) group->priv = new MooActionGroupPrivate (group, id);
-    else {
-        group->priv->set_id (id);
-        g_object_notify (G_OBJECT (group), "id");
-    }
-}
-#endif /* 0 */
-
-
-void             moo_action_group_add_action    (MooActionGroup *group,
-                                                 MooAction      *action)
+void
+moo_action_group_add (MooActionGroup *group,
+                      MooAction      *action)
 {
     g_return_if_fail (MOO_IS_ACTION_GROUP (group) && group->priv != NULL);
     g_return_if_fail (MOO_IS_ACTION (action));
@@ -134,20 +83,22 @@ void             moo_action_group_add_action    (MooActionGroup *group,
 }
 
 
-MooActionGroup  *moo_action_group_new           (const char *name)
+MooActionGroup*
+moo_action_group_new (const char *name)
 {
     MooActionGroup *group;
 
     g_return_val_if_fail (name != NULL, NULL);
-    group = MOO_ACTION_GROUP (g_object_new (MOO_TYPE_ACTION_GROUP, NULL));
+    group = g_object_new (MOO_TYPE_ACTION_GROUP, NULL);
     group->priv->name = g_strdup (name);
 
     return group;
 }
 
 
-MooAction       *moo_action_group_get_action    (MooActionGroup *group,
-                                                 const char     *action_id)
+MooAction*
+moo_action_group_get_action (MooActionGroup *group,
+                             const char     *action_id)
 {
     g_return_val_if_fail (MOO_IS_ACTION_GROUP (group) && action_id != NULL, NULL);
     g_return_val_if_fail (group->priv != NULL, NULL);
@@ -162,17 +113,19 @@ typedef struct {
     MooActionGroup             *group;
 } ForeachData;
 
-static void foreach_func (G_GNUC_UNUSED const char *action_id,
-                          MooAction     *action,
-                          ForeachData   *data)
+static void
+foreach_func (G_GNUC_UNUSED const char *action_id,
+              MooAction     *action,
+              ForeachData   *data)
 {
     if (!data->stop)
         data->stop = data->func (data->group, action, data->data);
 }
 
-void             moo_action_group_foreach       (MooActionGroup             *group,
-                                                 MooActionGroupForeachFunc   func,
-                                                 gpointer                    data)
+void
+moo_action_group_foreach (MooActionGroup             *group,
+                          MooActionGroupForeachFunc   func,
+                          gpointer                    data)
 {
     ForeachData d = {func, data, FALSE, group};
 
@@ -184,8 +137,9 @@ void             moo_action_group_foreach       (MooActionGroup             *gro
 }
 
 
-void             moo_action_group_set_name      (MooActionGroup *group,
-                                                 const char     *name)
+void
+moo_action_group_set_name (MooActionGroup *group,
+                           const char     *name)
 {
     g_return_if_fail (MOO_IS_ACTION_GROUP (group) && name != NULL);
     g_free (group->priv->name);
@@ -193,15 +147,17 @@ void             moo_action_group_set_name      (MooActionGroup *group,
 }
 
 
-const char      *moo_action_group_get_name      (MooActionGroup *group)
+const char*
+moo_action_group_get_name (MooActionGroup *group)
 {
     g_return_val_if_fail (MOO_IS_ACTION_GROUP (group), NULL);
     return group->priv->name;
 }
 
 
-static void moo_action_group_add_action_priv (MooActionGroup    *group,
-                                              MooAction         *action)
+static void
+moo_action_group_add_action_priv (MooActionGroup    *group,
+                                  MooAction         *action)
 {
     const char *id = moo_action_get_id (action);
     if (g_hash_table_lookup (group->priv->actions, id))
@@ -221,4 +177,40 @@ moo_action_group_remove_action (MooActionGroup *group,
     g_return_if_fail (action_id != NULL);
 
     g_hash_table_remove (group->priv->actions, action_id);
+}
+
+
+MooAction*
+moo_action_group_add_action (MooActionGroup *group,
+                             const char     *first_prop_name,
+                             ...)
+{
+    MooAction *action;
+    GObject *object;
+    GType action_type = MOO_TYPE_ACTION;
+    va_list var_args;
+
+    g_return_val_if_fail (MOO_IS_ACTION_GROUP (group), NULL);
+
+    va_start (var_args, first_prop_name);
+
+    if (first_prop_name && (!strcmp (first_prop_name, "action-type::") ||
+        !strcmp (first_prop_name, "action-type::")))
+    {
+        action_type = va_arg (var_args, GType);
+        g_return_val_if_fail (g_type_is_a (action_type, MOO_TYPE_ACTION), NULL);
+        first_prop_name = va_arg (var_args, char*);
+    }
+
+    object = g_object_new_valist (action_type, first_prop_name, var_args);
+
+    va_end (var_args);
+
+    g_return_val_if_fail (object != NULL, NULL);
+
+    action = MOO_ACTION (object);
+    moo_action_group_add (group, action);
+    g_object_unref (action);
+
+    return action;
 }

@@ -960,7 +960,7 @@ add_python_plugin_actions (MooApp *app)
                                  "name", "Reload Python Plugins",
                                  "label", "Reload Python Plugins",
                                  "icon-stock-id", GTK_STOCK_REFRESH,
-                                 "closure::callback", reload_python_plugins,
+                                 "closure-callback", reload_python_plugins,
                                  NULL);
 
     xml = moo_app_get_ui_xml (app);
@@ -1241,8 +1241,8 @@ static void install_actions (MooApp *app, GType  type)
                                  "tooltip", "Quit",
                                  "icon-stock-id", GTK_STOCK_QUIT,
                                  "accel", "<ctrl>Q",
-                                 "closure::callback", moo_app_quit,
-                                 "closure::proxy-func", moo_app_get_instance,
+                                 "closure-callback", moo_app_quit,
+                                 "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
     moo_window_class_new_action (klass, "Preferences",
@@ -1251,7 +1251,7 @@ static void install_actions (MooApp *app, GType  type)
                                  "tooltip", "Preferences",
                                  "icon-stock-id", GTK_STOCK_PREFERENCES,
                                  "accel", "<ctrl>P",
-                                 "closure::callback", moo_app_prefs_dialog,
+                                 "closure-callback", moo_app_prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "About",
@@ -1259,7 +1259,7 @@ static void install_actions (MooApp *app, GType  type)
                                  "label", _about,
                                  "tooltip", about,
                                  "icon-stock-id", GTK_STOCK_ABOUT,
-                                 "closure::callback", moo_app_about_dialog,
+                                 "closure-callback", moo_app_about_dialog,
                                  NULL);
 
     g_type_class_unref (klass);
@@ -1363,7 +1363,7 @@ static void install_editor_actions  (MooApp *app)
                                  "tooltip", "Execute Selection",
                                  "icon-stock-id", GTK_STOCK_EXECUTE,
                                  "accel", "<shift><alt>Return",
-                                 "closure::callback", execute_selection,
+                                 "closure-callback", execute_selection,
                                  NULL);
 #endif /* !MOO_USE_PYTHON */
 
@@ -1400,8 +1400,8 @@ static void install_terminal_actions (MooApp *app)
                                  "tooltip", "New Editor",
                                  "icon-stock-id", GTK_STOCK_EDIT,
                                  "accel", "<Alt>E",
-                                 "closure::callback", new_editor,
-                                 "closure::proxy-func", moo_app_get_instance,
+                                 "closure-callback", new_editor,
+                                 "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
     moo_window_class_new_action (klass, "OpenInEditor",
@@ -1410,7 +1410,7 @@ static void install_terminal_actions (MooApp *app)
                                  "tooltip", "Open In Editor",
                                  "icon-stock-id", GTK_STOCK_OPEN,
                                  "accel", "<Alt>O",
-                                 "closure::callback", open_in_editor,
+                                 "closure-callback", open_in_editor,
                                  NULL);
 
     g_type_class_unref (klass);

@@ -256,7 +256,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Open new editor window",
                                  "icon-stock-id", GTK_STOCK_NEW,
                                  "accel", "<ctrl>N",
-                                 "closure::callback", moo_edit_window_new,
+                                 "closure-callback", moo_edit_window_new,
                                  NULL);
 
     moo_window_class_new_action (window_class, "NewTab",
@@ -265,7 +265,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Create new document tab",
                                  "icon-stock-id", GTK_STOCK_NEW,
                                  "accel", "<ctrl>T",
-                                 "closure::callback", moo_edit_window_new_tab,
+                                 "closure-callback", moo_edit_window_new_tab,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Open",
@@ -274,7 +274,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Open...",
                                  "icon-stock-id", GTK_STOCK_OPEN,
                                  "accel", "<ctrl>O",
-                                 "closure::callback", moo_edit_window_open,
+                                 "closure-callback", moo_edit_window_open,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Reload",
@@ -283,7 +283,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Reload document",
                                  "icon-stock-id", GTK_STOCK_REFRESH,
                                  "accel", "F5",
-                                 "closure::callback", moo_edit_window_reload,
+                                 "closure-callback", moo_edit_window_reload,
                                  "condition::sensitive", "can-reload",
                                  NULL);
 
@@ -293,7 +293,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Save document",
                                  "icon-stock-id", GTK_STOCK_SAVE,
                                  "accel", "<ctrl>S",
-                                 "closure::callback", moo_edit_window_save,
+                                 "closure-callback", moo_edit_window_save,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -303,7 +303,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Save as...",
                                  "icon-stock-id", GTK_STOCK_SAVE_AS,
                                  "accel", "<ctrl><shift>S",
-                                 "closure::callback", moo_edit_window_save_as,
+                                 "closure-callback", moo_edit_window_save_as,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -313,7 +313,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Close document",
                                  "icon-stock-id", GTK_STOCK_CLOSE,
                                  "accel", "<ctrl>W",
-                                 "closure::callback", moo_edit_window_close_tab,
+                                 "closure-callback", moo_edit_window_close_tab,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -322,7 +322,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "Close _All",
                                  "tooltip", "Close all documents",
                                  "accel", "<shift><ctrl>W",
-                                 "closure::callback", moo_edit_window_close_all,
+                                 "closure-callback", moo_edit_window_close_all,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -332,8 +332,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Undo",
                                  "icon-stock-id", GTK_STOCK_UNDO,
                                  "accel", "<ctrl>Z",
-                                 "closure::signal", "undo",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "undo",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "can-undo",
                                  NULL);
 
@@ -343,8 +343,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Redo",
                                  "icon-stock-id", GTK_STOCK_REDO,
                                  "accel", "<shift><ctrl>Z",
-                                 "closure::signal", "redo",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "redo",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "can-redo",
                                  NULL);
 
@@ -354,8 +354,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Cut",
                                  "icon-stock-id", GTK_STOCK_CUT,
                                  "accel", "<ctrl>X",
-                                 "closure::signal", "cut-clipboard",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "cut-clipboard",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-selection",
                                  NULL);
 
@@ -365,8 +365,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Copy",
                                  "icon-stock-id", GTK_STOCK_COPY,
                                  "accel", "<ctrl>C",
-                                 "closure::signal", "copy-clipboard",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "copy-clipboard",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-selection",
                                  NULL);
 
@@ -376,8 +376,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Paste",
                                  "icon-stock-id", GTK_STOCK_PASTE,
                                  "accel", "<ctrl>V",
-                                 "closure::signal", "paste-clipboard",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "paste-clipboard",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -386,8 +386,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "_Delete",
                                  "tooltip", "Delete",
                                  "icon-stock-id", GTK_STOCK_DELETE,
-                                 "closure::signal", "delete-selection",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "delete-selection",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-selection",
                                  NULL);
 
@@ -396,8 +396,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "Select _All",
                                  "tooltip", "Select all",
                                  "accel", "<ctrl>A",
-                                 "closure::callback", moo_text_view_select_all,
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-callback", moo_text_view_select_all,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-text",
                                  NULL);
 
@@ -407,7 +407,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Previous tab",
                                  "icon-stock-id", GTK_STOCK_GO_BACK,
                                  "accel", "<alt>Left",
-                                 "closure::callback", moo_edit_window_previous_tab,
+                                 "closure-callback", moo_edit_window_previous_tab,
                                  NULL);
 
     moo_window_class_new_action (window_class, "NextTab",
@@ -416,7 +416,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Next tab",
                                  "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                  "accel", "<alt>Right",
-                                 "closure::callback", moo_edit_window_next_tab,
+                                 "closure-callback", moo_edit_window_next_tab,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Find",
@@ -425,8 +425,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Find",
                                  "icon-stock-id", GTK_STOCK_FIND,
                                  "accel", "<ctrl>F",
-                                 "closure::signal", "find-interactive",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "find-interactive",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -436,8 +436,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Find next",
                                  "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                  "accel", "F3",
-                                 "closure::signal", "find-next-interactive",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "find-next-interactive",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -447,8 +447,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Find previous",
                                  "icon-stock-id", GTK_STOCK_GO_BACK,
                                  "accel", "<shift>F3",
-                                 "closure::signal", "find-prev-interactive",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "find-prev-interactive",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -458,8 +458,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Replace",
                                  "icon-stock-id", GTK_STOCK_FIND_AND_REPLACE,
                                  "accel", "<ctrl>R",
-                                 "closure::signal", "replace-interactive",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "replace-interactive",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -468,8 +468,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "_Go to Line",
                                  "tooltip", "Go to line",
                                  "accel", "<ctrl>G",
-                                 "closure::signal", "goto-line-interactive",
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-signal", "goto-line-interactive",
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -478,8 +478,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "_Focus Doc",
                                  "tooltip", "Focus Doc",
                                  "accel", "<alt>C",
-                                 "closure::callback", gtk_widget_grab_focus,
-                                 "closure::proxy-func", moo_edit_window_get_active_doc,
+                                 "closure-callback", gtk_widget_grab_focus,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -489,7 +489,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Stop",
                                  "icon-stock-id", GTK_STOCK_STOP,
                                  "accel", "Escape",
-                                 "closure::callback", moo_edit_window_abort_jobs,
+                                 "closure-callback", moo_edit_window_abort_jobs,
                                  "condition::sensitive", "has-jobs-running",
                                  "condition::visible", "has-stop-clients",
                                  NULL);
@@ -942,6 +942,7 @@ static void     setup_notebook          (MooEditWindow      *window)
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     g_signal_connect_swapped (button, "clicked",
                               G_CALLBACK (moo_edit_window_close_tab), window);
+    moo_bind_bool_property (button, "sensitive", window, "has-open-document", FALSE);
 
     icon = gtk_image_new_from_stock (MOO_STOCK_CLOSE, MOO_ICON_SIZE_REAL_SMALL);
 
