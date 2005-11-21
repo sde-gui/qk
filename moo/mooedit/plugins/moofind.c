@@ -187,12 +187,14 @@ ensure_output (WindowStuff *stuff)
                                       NULL, "weight", PANGO_WEIGHT_BOLD, NULL);
     stuff->match_tag =
             moo_line_view_create_tag (MOO_LINE_VIEW (stuff->output), NULL,
-                                      "foreground", "blue", NULL);
+                                      "foreground", "#0000C0", NULL);
     stuff->file_tag =
             moo_line_view_create_tag (MOO_LINE_VIEW (stuff->output), NULL,
-                                      "foreground", "green", NULL);
+                                      "foreground", "#008040", NULL);
     stuff->error_tag =
             moo_text_view_lookup_tag (MOO_TEXT_VIEW (stuff->output), "error");
+    g_object_set (stuff->error_tag, "foreground", "#C00000", NULL);
+
     stuff->message_tag =
             moo_text_view_lookup_tag (MOO_TEXT_VIEW (stuff->output), "message");
 
