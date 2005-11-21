@@ -108,10 +108,16 @@ void     moo_line_add_segment           (Line           *line,
     (ar__)->last = size__ - 1;                                  \
 
 #define LINE_SET_TAGS_APPLIED(line__)                           \
+G_STMT_START {                                                  \
     (line__)->hl_info->_tags_applied = TRUE;                    \
-    (line__)->hl_info->_dirty = TRUE;
+    (line__)->hl_info->_dirty = TRUE;                           \
+} G_STMT_END
+
 #define LINE_UNSET_TAGS_APPLIED(line__)                         \
-    (line__)->hl_info->_tags_applied = FALSE;
+G_STMT_START {                                                  \
+    (line__)->hl_info->_tags_applied = FALSE;                   \
+} G_STMT_END
+
 #define LINE_DIRTY(line__) ((line__)->hl_info->_dirty)
 #define LINE_TAGS_APPLIED(line__) ((line__)->hl_info->_tags_applied)
 
