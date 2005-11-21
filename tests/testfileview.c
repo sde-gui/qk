@@ -1,4 +1,5 @@
-#include "moofileview/moofileview.h"
+#include "mooutils/moofileview/moofileview.h"
+#include <gtk/gtk.h>
 
 
 int main (int argc, char *argv[])
@@ -6,6 +7,7 @@ int main (int argc, char *argv[])
     GtkWidget *window, *tree;
 
     gtk_init (&argc, &argv);
+    gdk_window_set_debug_updates (TRUE);
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (window, "destroy",

@@ -1182,15 +1182,6 @@
   )
 )
 
-(define-method set_show_tabs
-  (of-object "MooTextView")
-  (c-name "moo_text_view_set_show_tabs")
-  (return-type "none")
-  (parameters
-    '("gboolean" "show")
-  )
-)
-
 (define-method apply_scheme
   (of-object "MooTextView")
   (c-name "moo_text_view_apply_scheme")

@@ -512,6 +512,8 @@ moo_entry_delete_to_start (MooEntry *entry)
 
 /*********************************************************************/
 /* Working around idiotic gtk selection business
+ * TODO: make stealing primary optional, independent of
+ *       clearing selection
  */
 
 /* GtkEdiatble::delete_text and GtkWidget::realize might also require this hack */

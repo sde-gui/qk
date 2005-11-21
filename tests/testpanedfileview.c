@@ -1,5 +1,6 @@
-#include "mooedit/moopaned.h"
-#include "moofileview/moofileview.h"
+#include "mooutils/moopaned.h"
+#include "mooutils/moofileview/moofileview.h"
+#include <gtk/gtk.h>
 
 
 static int WINDOWS = 0;
@@ -12,8 +13,9 @@ static void window_destroyed (void)
 
 static void create_window_with_paned (GtkPositionType pane_position)
 {
-    GtkWidget *window, *paned, *textview, *swin, *fileview;
+    GtkWidget *window, *paned, *textview, *swin, *fileview, *evbox;
     GtkTextBuffer *buffer;
+    MooPaneLabel *label;
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
@@ -53,15 +55,21 @@ static void create_window_with_paned (GtkPositionType pane_position)
 
     fileview = moo_file_view_new ();
     moo_file_view_chdir (MOO_FILE_VIEW (fileview),
-                         g_get_home_dir (), NULL);;
-    moo_paned_add_pane (MOO_PANED (paned),
-                        fileview,
-                        "TextView",
-                        GTK_STOCK_OK, -1);
-    moo_paned_add_pane (MOO_PANED (paned),
-                        gtk_label_new ("This is a label"),
-                        "Label",
-                        GTK_STOCK_CANCEL, -1);
+                         g_get_home_dir (), NULL);
+
+    label = moo_pane_label_new (GTK_STOCK_DIRECTORY, NULL, NULL,
+                                "File selector", "File selector");
+    moo_paned_insert_pane (MOO_PANED (paned), fileview, label, -1);
+    moo_pane_label_free (label);
+
+    label = moo_pane_label_new (GTK_STOCK_BOLD, NULL, NULL,
+                                "Label", "Label");
+    evbox = gtk_event_box_new ();
+    gtk_container_add (GTK_CONTAINER (evbox),
+                       gtk_label_new ("This is a label"));
+    gtk_widget_show_all (evbox);
+    moo_paned_insert_pane (MOO_PANED (paned), evbox, label, -1);
+    moo_pane_label_free (label);
 
     gtk_widget_grab_focus (textview);
     gtk_widget_show_all (window);
@@ -72,7 +80,7 @@ int main (int argc, char *argv[])
 {
     gtk_init (&argc, &argv);
 
-//     gdk_window_set_debug_updates (TRUE);
+    gdk_window_set_debug_updates (TRUE);
 
 //     create_window_with_paned (GTK_POS_RIGHT);
     create_window_with_paned (GTK_POS_LEFT);

@@ -294,28 +294,6 @@ moo_closure_simple_new (gpointer    object,
 }
 
 
-static MooClosure*
-moo_closure_new_object (gpointer    object,
-                        GCallback   callback)
-{
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    g_return_val_if_fail (callback != NULL, NULL);
-    return moo_closure_simple_new (object, callback, NULL);
-}
-
-
-static MooClosure*
-moo_closure_new_proxy (gpointer    object,
-                       GCallback   callback,
-                       GCallback   proxy_func)
-{
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    g_return_val_if_fail (callback != NULL, NULL);
-    g_return_val_if_fail (proxy_func != NULL, NULL);
-    return moo_closure_simple_new (object, callback, NULL);
-}
-
-
 MooClosure*
 moo_closure_new_simple (gpointer    object,
                         const char *signal,
@@ -328,10 +306,8 @@ moo_closure_new_simple (gpointer    object,
 
     if (signal)
         return moo_closure_signal_new (object, signal, proxy_func);
-    else if (!proxy_func)
-        return moo_closure_new_object (object, callback);
     else
-        return moo_closure_new_proxy (object, callback, proxy_func);
+        return moo_closure_simple_new (object, callback, proxy_func);
 }
 
 

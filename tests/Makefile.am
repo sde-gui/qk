@@ -26,6 +26,7 @@ if MOO_BUILD_TERM
 # noinst_PROGRAMS += mterm termbuffer
 endif
 if MOO_BUILD_UTILS
+# noinst_PROGRAMS += testpanedfileview
 # noinst_PROGRAMS += testobject
 # noinst_PROGRAMS += markup miniglade
 endif
