@@ -124,8 +124,6 @@ void         moo_text_view_set_current_line_color   (MooTextView        *view,
                                                      const GdkColor     *color);
 void         moo_text_view_set_cursor_color         (MooTextView        *view,
                                                      const GdkColor     *color);
-void         moo_text_view_set_show_tabs            (MooTextView        *view,
-                                                     gboolean            show);
 void         moo_text_view_apply_scheme             (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 
