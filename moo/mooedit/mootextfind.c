@@ -547,7 +547,7 @@ moo_text_view_run_find (GtkTextView *view)
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0.2, FALSE, 0, 0);
+                                      0, FALSE, 0, 0);
     }
     else
     {
@@ -614,7 +614,7 @@ moo_text_view_run_find_next (GtkTextView *view)
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0.2, FALSE, 0, 0);
+                                      0, FALSE, 0, 0);
     }
     else
     {
@@ -678,7 +678,7 @@ moo_text_view_run_find_prev (GtkTextView *view)
     {
         gtk_text_buffer_select_range (buffer, &match_start, &match_end);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0.2, FALSE, 0, 0);
+                                      0, FALSE, 0, 0);
     }
     else
     {
@@ -762,7 +762,7 @@ replace_func (G_GNUC_UNUSED const char *text,
     buffer = gtk_text_view_get_buffer (data->view);
     gtk_text_buffer_select_range (buffer, to_replace_end, to_replace_start);
     gtk_text_view_scroll_to_mark (data->view, gtk_text_buffer_get_insert (buffer),
-                                  0.2, FALSE, 0, 0);
+                                  0, FALSE, 0, 0);
 
     if (!data->dialog)
         data->dialog = moo_text_prompt_on_replace_dialog (GTK_WIDGET (data->view));
@@ -995,6 +995,6 @@ moo_text_view_run_goto_line (GtkTextView *view)
         gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
         gtk_text_buffer_place_cursor (buffer, &iter);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0.2, FALSE, 0, 0);
+                                      0, FALSE, 0, 0);
     }
 }
