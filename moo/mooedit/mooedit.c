@@ -171,8 +171,6 @@ moo_edit_class_init (MooEditClass *klass)
 static void
 moo_edit_init (MooEdit *edit)
 {
-    MooTextView *view = MOO_TEXT_VIEW (edit);
-
     edit->priv = g_new0 (MooEditPrivate, 1);
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
@@ -191,8 +189,7 @@ moo_edit_init (MooEdit *edit)
     edit->priv->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                               (GDestroyNotify) value_free);
 
-    view->priv->show_tabs = TRUE;
-    view->priv->show_trailing_space = TRUE;
+    g_object_set (edit, "draw-tabs", TRUE, "draw-trailing-spaces", TRUE, NULL);
 }
 
 
