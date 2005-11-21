@@ -88,11 +88,17 @@ typedef enum {
 struct _MooTextViewPrivate {
     gboolean constructed;
 
+    /* Clipboard */
+    gboolean manage_clipboard;
+
+    /***********************************************************************/
+    /* Drawing
+    /*/
     gboolean highlight_current_line;
     GdkColor current_line_color;
     GdkGC *current_line_gc;
-    gboolean show_tabs;
-    gboolean show_trailing_space;
+    gboolean draw_tabs;
+    gboolean draw_trailing_spaces;
     gboolean check_brackets;
 
     /***********************************************************************/
