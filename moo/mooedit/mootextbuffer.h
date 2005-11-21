@@ -44,8 +44,9 @@ struct _MooTextBufferClass
 {
     GtkTextBufferClass parent_class;
 
-    void (*cursor_moved) (MooTextBuffer      *buffer,
-                          const GtkTextIter  *iter);
+    void (*cursor_moved)        (MooTextBuffer      *buffer,
+                                 const GtkTextIter  *iter);
+    void (*selection_changed)   (MooTextBuffer      *buffer);
 };
 
 
@@ -92,6 +93,9 @@ void        _moo_text_buffer_apply_syntax_tag           (MooTextBuffer      *buf
                                                          GtkTextTag         *tag,
                                                          const GtkTextIter  *start,
                                                          const GtkTextIter  *end);
+void        _moo_text_buffer_highlighting_changed       (MooTextBuffer      *buffer,
+                                                         int                 first,
+                                                         int                 last);
 
 
 G_END_DECLS
