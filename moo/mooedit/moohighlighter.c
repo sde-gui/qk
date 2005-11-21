@@ -465,9 +465,7 @@ hl_compute_line (MooHighlighter     *hl,
     MatchResult result;
 
     if (apply_tags)
-    {
         LINE_SET_TAGS_APPLIED (line);
-    }
 
     if (!gtk_text_iter_ends_line (&data->start_iter) &&
          (matched_rule = moo_rule_array_match (node->ctx->rules, data, &result)))
@@ -539,9 +537,10 @@ hl_compute_range (MooHighlighter *hl,
 {
     GtkTextIter iter;
     CtxNode *node;
-    int line_no;
+    int line_no, last_changed;
     GTimer *timer = NULL;
     double secs = ((double) time) / 1000;
+    gboolean done = FALSE;
 
     g_assert (!hl->line_buf->invalid.empty);
     g_assert (lines->first == hl->line_buf->invalid.first);
@@ -576,6 +575,7 @@ hl_compute_range (MooHighlighter *hl,
         g_assert (dirty || !LINE_TAGS_APPLIED (line));
         g_assert (line_no == gtk_text_iter_get_line (&iter));
 
+        last_changed = line_no;
         line->hl_info->start_node = node;
         LINE_UNSET_TAGS_APPLIED (line);
         moo_line_erase_segments (line);
@@ -592,7 +592,8 @@ hl_compute_range (MooHighlighter *hl,
                                                    then this last line 'does not
                                                    really exist'*/
             g_assert (line_no >= hl->line_buf->invalid.last - 1);
-            goto done;
+            done = TRUE;
+            goto out;
         }
 
         if (line_no == hl->line_buf->invalid.last)
@@ -601,7 +602,8 @@ hl_compute_range (MooHighlighter *hl,
 
             if (node == next->hl_info->start_node)
             {
-                goto done;
+                done = TRUE;
+                goto out;
             }
             else
             {
@@ -613,21 +615,24 @@ hl_compute_range (MooHighlighter *hl,
             break;
     }
 
-    /* not done yet */
-    hl->line_buf->invalid.first = line_no;
-    if (line_no <= lines->last)
-        hl->line_buf->invalid.first++;
-    moo_line_buffer_clamp_invalid (hl->line_buf);
+out:
+    if (!done)
+    {
+        hl->line_buf->invalid.first = line_no;
+        if (line_no <= lines->last)
+            hl->line_buf->invalid.first++;
+        moo_line_buffer_clamp_invalid (hl->line_buf);
+    }
+    else
+    {
+        BUF_SET_CLEAN (hl->line_buf);
+    }
 
     if (timer)
         g_timer_destroy (timer);
 
-    return;
-
-done:
-    BUF_SET_CLEAN (hl->line_buf);
-    if (timer)
-        g_timer_destroy (timer);
+    _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
+                                           lines->first, last_changed);
     return;
 }
 
