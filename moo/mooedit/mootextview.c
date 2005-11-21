@@ -25,55 +25,68 @@
 #include <string.h>
 
 #define LIGHT_BLUE "#EEF6FF"
+#define BOOL_CMP(b1,b2) ((b1 && b2) || (!b1 && !b2))
 
-static GObject *moo_text_view_constructor   (GType                  type,
-                                             guint                  n_construct_properties,
+static GObject *moo_text_view_constructor   (GType               type,
+                                             guint               n_construct_properties,
                                              GObjectConstructParam *construct_param);
-static void     moo_text_view_finalize      (GObject        *object);
+static void     moo_text_view_finalize      (GObject            *object);
 
-static void     moo_text_view_set_property  (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void     moo_text_view_get_property  (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
+static void     moo_text_view_set_property  (GObject            *object,
+                                             guint               prop_id,
+                                             const GValue       *value,
+                                             GParamSpec         *pspec);
+static void     moo_text_view_get_property  (GObject            *object,
+                                             guint               prop_id,
+                                             GValue             *value,
+                                             GParamSpec         *pspec);
 
-static void     moo_text_view_realize       (GtkWidget      *widget);
-static void     moo_text_view_unrealize     (GtkWidget      *widget);
-static gboolean moo_text_view_expose        (GtkWidget      *widget,
-                                             GdkEventExpose *event);
+static void     moo_text_view_realize       (GtkWidget          *widget);
+static void     moo_text_view_unrealize     (GtkWidget          *widget);
+static gboolean moo_text_view_expose        (GtkWidget          *widget,
+                                             GdkEventExpose     *event);
 
-static void     moo_text_view_cut_clipboard (GtkTextView    *text_view);
-static void     moo_text_view_paste_clipboard (GtkTextView  *text_view);
-static void     moo_text_view_populate_popup(GtkTextView    *text_view,
-                                             GtkMenu        *menu);
+static void     moo_text_view_cut_clipboard (GtkTextView        *text_view);
+static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
+static void     moo_text_view_populate_popup(GtkTextView        *text_view,
+                                             GtkMenu            *menu);
 
-static void     create_current_line_gc      (MooTextView    *view);
+static void     create_current_line_gc      (MooTextView        *view);
 
-static GtkTextBuffer *get_buffer            (MooTextView    *view);
-static MooTextBuffer *get_moo_buffer        (MooTextView    *view);
-static GtkTextMark *get_insert              (MooTextView    *view);
+static GtkTextBuffer *get_buffer            (MooTextView        *view);
+static MooTextBuffer *get_moo_buffer        (MooTextView        *view);
+static GtkTextMark *get_insert              (MooTextView        *view);
 
-static void     cursor_moved                (MooTextView    *view,
-                                             GtkTextIter    *where);
-static void     proxy_prop_notify           (MooTextView    *view,
-                                             GParamSpec     *pspec);
+static void     cursor_moved                (MooTextView        *view,
+                                             GtkTextIter        *where);
+static void     proxy_prop_notify           (MooTextView        *view,
+                                             GParamSpec         *pspec);
 
-static void     find_interactive            (MooTextView    *view);
-static void     replace_interactive         (MooTextView    *view);
-static void     find_next_interactive       (MooTextView    *view);
-static void     find_prev_interactive       (MooTextView    *view);
-static void     goto_line_interactive       (MooTextView    *view);
+static void     find_interactive            (MooTextView        *view);
+static void     replace_interactive         (MooTextView        *view);
+static void     find_next_interactive       (MooTextView        *view);
+static void     find_prev_interactive       (MooTextView        *view);
+static void     goto_line_interactive       (MooTextView        *view);
 
-static void     insert_text_cb              (MooTextView    *view,
-                                             GtkTextIter    *iter,
-                                             gchar          *text,
-                                             gint            len);
-static gboolean moo_text_view_char_inserted (MooTextView    *view,
-                                             GtkTextIter    *where,
-                                             guint           character);
+static void     insert_text_cb              (MooTextView        *view,
+                                             GtkTextIter        *iter,
+                                             gchar              *text,
+                                             gint                len);
+static gboolean moo_text_view_char_inserted (MooTextView        *view,
+                                             GtkTextIter        *where,
+                                             guint               character);
+
+static void     set_draw_tabs               (MooTextView        *view,
+                                             gboolean            draw);
+static void     set_draw_trailing_spaces    (MooTextView        *view,
+                                             gboolean            draw);
+static void     set_manage_clipboard        (MooTextView        *view,
+                                             gboolean            manage);
+static void     selection_changed           (MooTextView        *view,
+                                             MooTextBuffer      *buffer);
+static void     highlighting_changed        (GtkTextView        *view,
+                                             const GtkTextIter  *start,
+                                             const GtkTextIter  *end);
 
 
 enum {
@@ -101,11 +114,13 @@ enum {
     PROP_CHECK_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
     PROP_CURRENT_LINE_COLOR_GDK,
-    PROP_SHOW_TABS,
+    PROP_DRAW_TABS,
+    PROP_DRAW_TRAILING_SPACES,
     PROP_HAS_TEXT,
     PROP_HAS_SELECTION,
     PROP_CAN_UNDO,
-    PROP_CAN_REDO
+    PROP_CAN_REDO,
+    PROP_MANAGE_CLIPBOARD
 };
 
 
@@ -197,12 +212,20 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_WRITABLE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_SHOW_TABS,
-                                     g_param_spec_boolean ("show-tabs",
-                                             "show-tabs",
-                                             "show-tabs",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                     PROP_DRAW_TABS,
+                                     g_param_spec_boolean ("draw-tabs",
+                                             "draw-tabs",
+                                             "draw-tabs",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_DRAW_TRAILING_SPACES,
+                                     g_param_spec_boolean ("draw-trailing-spaces",
+                                             "draw-trailing-spaces",
+                                             "draw-trailing-spaces",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_INDENTER,
@@ -243,6 +266,14 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "can-redo",
                                              FALSE,
                                              G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MANAGE_CLIPBOARD,
+                                     g_param_spec_boolean ("manage-clipboard",
+                                             "manage-clipboard",
+                                             "manage-clipboard",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[UNDO] =
             g_signal_new ("undo",
@@ -404,6 +435,10 @@ moo_text_view_constructor (GType                  type,
 
     g_signal_connect_swapped (get_buffer (view), "cursor_moved",
                               G_CALLBACK (cursor_moved), view);
+    g_signal_connect_swapped (get_buffer (view), "selection-changed",
+                              G_CALLBACK (selection_changed), view);
+    g_signal_connect_swapped (get_buffer (view), "highlighting-changed",
+                              G_CALLBACK (highlighting_changed), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-selection",
                               G_CALLBACK (proxy_prop_notify), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-text",
@@ -680,8 +715,15 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_current_line_color (view, &color);
             break;
 
-        case PROP_SHOW_TABS:
-            moo_text_view_set_show_tabs (view, g_value_get_boolean (value));
+        case PROP_DRAW_TABS:
+            set_draw_tabs (view, g_value_get_boolean (value));
+            break;
+        case PROP_DRAW_TRAILING_SPACES:
+            set_draw_trailing_spaces (view, g_value_get_boolean (value));
+            break;
+
+        case PROP_MANAGE_CLIPBOARD:
+            set_manage_clipboard (view, g_value_get_boolean (value));
             break;
 
         default:
@@ -722,8 +764,11 @@ moo_text_view_get_property (GObject        *object,
             g_value_set_boxed (value, &view->priv->current_line_color);
             break;
 
-        case PROP_SHOW_TABS:
-            g_value_set_boolean (value, view->priv->show_tabs);
+        case PROP_DRAW_TABS:
+            g_value_set_boolean (value, view->priv->draw_tabs != 0);
+            break;
+        case PROP_DRAW_TRAILING_SPACES:
+            g_value_set_boolean (value, view->priv->draw_trailing_spaces != 0);
             break;
 
         case PROP_HAS_TEXT:
@@ -740,6 +785,10 @@ moo_text_view_get_property (GObject        *object,
 
         case PROP_CAN_REDO:
             g_value_set_boolean (value, moo_text_view_can_redo (view));
+            break;
+
+        case PROP_MANAGE_CLIPBOARD:
+            g_value_set_boolean (value, view->priv->manage_clipboard != 0);
             break;
 
         default:
@@ -1090,10 +1139,123 @@ moo_text_view_set_current_line_color (MooTextView    *view,
 
 
 static void
+add_selection_clipboard (MooTextView *view)
+{
+    GtkClipboard *clipboard;
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (view), GDK_SELECTION_PRIMARY);
+    gtk_text_buffer_add_selection_clipboard (get_buffer (view), clipboard);
+}
+
+static void
+remove_selection_clipboard (MooTextView *view)
+{
+    GtkClipboard *clipboard;
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (view), GDK_SELECTION_PRIMARY);
+    gtk_text_buffer_remove_selection_clipboard (get_buffer (view), clipboard);
+}
+
+
+static void
+clipboard_get_selection (G_GNUC_UNUSED GtkClipboard *clipboard,
+                         GtkSelectionData *selection_data,
+                         G_GNUC_UNUSED guint info,
+                         gpointer          data)
+{
+    MooTextView *view = data;
+    GtkTextIter start, end;
+
+    if (gtk_text_buffer_get_selection_bounds (get_buffer (view), &start, &end))
+    {
+        char *text = gtk_text_iter_get_text (&start, &end);
+        gtk_selection_data_set_text (selection_data, text, -1);
+        g_free (text);
+    }
+}
+
+
+static const GtkTargetEntry targets[] = {
+    { (char*) "STRING", 0, 0 },
+    { (char*) "TEXT",   0, 0 },
+    { (char*) "COMPOUND_TEXT", 0, 0 },
+    { (char*) "UTF8_STRING", 0, 0 }
+};
+
+static void
+clear_clipboard (MooTextView *view)
+{
+    GtkClipboard *clipboard;
+
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (view),
+                                          GDK_SELECTION_PRIMARY);
+
+    if (gtk_clipboard_get_owner (clipboard) == G_OBJECT (view))
+        gtk_clipboard_clear (clipboard);
+}
+
+
+static void
+selection_changed (MooTextView   *view,
+                   MooTextBuffer *buffer)
+{
+    GtkClipboard *clipboard;
+
+    if (!view->priv->manage_clipboard)
+        return;
+
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (view),
+                                          GDK_SELECTION_PRIMARY);
+
+    if (moo_text_buffer_has_selection (buffer))
+        gtk_clipboard_set_with_owner (clipboard, targets,
+                                      G_N_ELEMENTS (targets),
+                                      clipboard_get_selection,
+                                      NULL, G_OBJECT (view));
+    else
+        clear_clipboard (view);
+}
+
+
+static void
+set_manage_clipboard (MooTextView    *view,
+                      gboolean        manage)
+{
+    if (BOOL_CMP (view->priv->manage_clipboard, manage))
+        return;
+
+    view->priv->manage_clipboard = manage;
+
+    if (GTK_WIDGET_REALIZED (view))
+    {
+        if (manage)
+        {
+            remove_selection_clipboard (view);
+            selection_changed (view, get_moo_buffer (view));
+        }
+        else
+        {
+            clear_clipboard (view);
+            add_selection_clipboard (view);
+        }
+    }
+
+    g_object_notify (G_OBJECT (view), "manage-clipboard");
+}
+
+
+static void
 moo_text_view_realize (GtkWidget *widget)
 {
+    MooTextView *view = MOO_TEXT_VIEW (widget);
+
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
-    create_current_line_gc (MOO_TEXT_VIEW (widget));
+
+    create_current_line_gc (view);
+
+    if (view->priv->manage_clipboard)
+    {
+        remove_selection_clipboard (view);
+        selection_changed (view, get_moo_buffer (view));
+    }
 }
 
 
@@ -1101,9 +1263,17 @@ static void
 moo_text_view_unrealize (GtkWidget *widget)
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
+
     if (view->priv->current_line_gc)
         g_object_unref (view->priv->current_line_gc);
     view->priv->current_line_gc = NULL;
+
+    if (view->priv->manage_clipboard)
+    {
+        clear_clipboard (view);
+        add_selection_clipboard (view);
+    }
+
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }
 
@@ -1212,10 +1382,10 @@ draw_tab_at_iter (GtkTextView    *text_view,
 
 
 static void
-moo_text_view_draw_tab_markers (GtkTextView       *text_view,
-                                GdkEventExpose    *event,
-                                const GtkTextIter *start,
-                                const GtkTextIter *end)
+moo_text_view_draw_tabs (GtkTextView       *text_view,
+                         GdkEventExpose    *event,
+                         const GtkTextIter *start,
+                         const GtkTextIter *end)
 {
     GtkTextIter iter = *start;
 
@@ -1230,10 +1400,10 @@ moo_text_view_draw_tab_markers (GtkTextView       *text_view,
 
 
 static void
-moo_text_view_draw_trailing_space (GtkTextView       *text_view,
-                                   GdkEventExpose    *event,
-                                   const GtkTextIter *start,
-                                   const GtkTextIter *end)
+moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
+                                    GdkEventExpose    *event,
+                                    const GtkTextIter *start,
+                                    const GtkTextIter *end)
 {
     GtkTextIter iter = *start;
 
@@ -1301,27 +1471,77 @@ moo_text_view_expose (GtkWidget      *widget,
 
     handled = GTK_WIDGET_CLASS(moo_text_view_parent_class)->expose_event (widget, event);
 
-    if (event->window == text_window && view->priv->show_tabs)
-        moo_text_view_draw_tab_markers (text_view, event, &start, &end);
+    if (event->window == text_window && view->priv->draw_tabs)
+        moo_text_view_draw_tabs (text_view, event, &start, &end);
 
-    if (event->window == text_window && view->priv->show_trailing_space)
-        moo_text_view_draw_trailing_space (text_view, event, &start, &end);
+    if (event->window == text_window && view->priv->draw_trailing_spaces)
+        moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
 
     return handled;
 }
 
 
-void
-moo_text_view_set_show_tabs (MooTextView    *view,
-                             gboolean        show)
+static void
+highlighting_changed (GtkTextView        *view,
+                      const GtkTextIter  *start,
+                      const GtkTextIter  *end)
+{
+    GdkRectangle visible, redraw;
+    int y, height;
+
+    if (!GTK_WIDGET_DRAWABLE (view))
+        return;
+
+    gtk_text_view_get_visible_rect (view, &visible);
+
+    gtk_text_view_get_line_yrange (view, start, &redraw.y, &redraw.height);
+    gtk_text_view_get_line_yrange (view, end, &y, &height);
+    redraw.height += y + redraw.y;
+    redraw.x = visible.x;
+    redraw.width = visible.width;
+
+    if (gdk_rectangle_intersect (&redraw, &visible, &redraw))
+    {
+        GdkWindow *window = gtk_text_view_get_window (view, GTK_TEXT_WINDOW_TEXT);
+        gtk_text_view_buffer_to_window_coords (view,
+                                               GTK_TEXT_WINDOW_TEXT,
+                                               redraw.x,
+                                               redraw.y,
+                                               &redraw.x,
+                                               &redraw.y);
+        gdk_window_invalidate_rect (window, &redraw, FALSE);
+    }
+}
+
+
+static void
+set_draw_tabs (MooTextView    *view,
+               gboolean        draw)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (view->priv->show_tabs == show)
+    if (BOOL_CMP (view->priv->draw_tabs, draw))
         return;
 
-    view->priv->show_tabs = show;
-    g_object_notify (G_OBJECT (view), "show-tabs");
+    view->priv->draw_tabs = draw != 0;
+    g_object_notify (G_OBJECT (view), "draw-tabs");
+
+    if (GTK_WIDGET_DRAWABLE (view))
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+}
+
+
+static void
+set_draw_trailing_spaces (MooTextView    *view,
+                          gboolean        draw)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (BOOL_CMP (view->priv->draw_trailing_spaces, draw))
+        return;
+
+    view->priv->draw_trailing_spaces = draw != 0;
+    g_object_notify (G_OBJECT (view), "draw-trailing-spaces");
 
     if (GTK_WIDGET_DRAWABLE (view))
         gtk_widget_queue_draw (GTK_WIDGET (view));
