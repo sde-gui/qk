@@ -782,16 +782,15 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
 }
 
 
-MooLang*
-moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
-                                const char     *filename)
+static MooLang *
+lang_mgr_get_lang_by_extension (MooLangMgr  *mgr,
+                                const char  *filename)
 {
     MooLang *lang = NULL;
     char *basename, *utf8_basename;
     GSList *l;
     gboolean found = FALSE;
 
-    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
     /* TODO: is this right? */
@@ -818,118 +817,166 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
     if (!found)
         lang = NULL;
 
-#ifdef MOO_USE_XDGMIME
-    /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
-
-    if (!lang)
-    {
-        const char *mime_type = xdg_mime_get_mime_type_for_file (filename);
-        if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
-            lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
-    }
-#endif /* MOO_USE_XDGMIME */
-
-    if (!lang)
-        lang = moo_lang_mgr_get_lang_for_filename (mgr, filename);
-
     g_free (utf8_basename);
     g_free (basename);
     return lang;
 }
 
 
-MooLang*
-moo_lang_mgr_get_lang_for_filename (MooLangMgr     *mgr,
-                                    const char     *filename)
+static MooLang *
+lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
+                                    const char *filename)
 {
     MooLang *lang = NULL;
-    char *basename = NULL, *utf8_basename = NULL;
-    GSList *l;
-    gboolean found = FALSE;
+    char *base = NULL;
+    int len;
+    guint i;
+    char *utf8_name;
+
+    static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
+
+    utf8_name = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
+    g_return_val_if_fail (utf8_name != NULL, NULL);
+
+    len = strlen (utf8_name);
+
+    for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
+    {
+        int ext_len = strlen (bak_globs[i]) - 1;
+
+        if (len > ext_len && g_pattern_match_simple (bak_globs[i], utf8_name))
+        {
+            base = g_strndup (utf8_name, len - ext_len);
+            break;
+        }
+    }
+
+    if (base)
+    {
+        char *opsys_name = g_filename_from_utf8 (utf8_name, len, NULL, NULL, NULL);
+
+        if (opsys_name)
+            lang = moo_lang_mgr_get_lang_for_filename (mgr, opsys_name);
+
+        g_free (opsys_name);
+        g_free (base);
+    }
+
+    g_free (utf8_name);
+    return lang;
+}
+
+
+MooLang*
+moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
+                                const char     *filename)
+{
+    MooLang *lang = NULL;
+    const char *mime_type;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    basename = g_path_get_basename (filename);
-    g_return_val_if_fail (basename != NULL, NULL);
-    utf8_basename = g_filename_display_name (basename);
-    g_return_val_if_fail (utf8_basename != NULL, NULL);
+    lang = lang_mgr_get_lang_by_extension (mgr, filename);
 
-    for (l = mgr->langs; l != NULL && !found; l = l->next)
-    {
-        GSList *g;
-
-        lang = l->data;
-
-        for (g = lang->extensions; !found && g != NULL; g = g->next)
-            if (g_pattern_match_simple (g->data, utf8_basename))
-                found = TRUE;
-    }
-
-    if (!found)
-        lang = NULL;
+    if (lang)
+        return lang;
 
 #ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
-    if (!lang)
-    {
-        const char *mime_type = xdg_mime_get_mime_type_from_file_name (filename);
-        if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
-            lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
-    }
+
+    mime_type = xdg_mime_get_mime_type_for_file (filename);
+
+    if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
+        lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
+
+    if (lang)
+        return lang;
 #endif /* MOO_USE_XDGMIME */
 
-    /* check if it's backup file */
-    if (!lang)
-    {
-        char *base = NULL;
-        int len = strlen (utf8_basename);
-        guint i;
+    lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
 
-        static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
+    if (lang)
+        return lang;
 
-        /* XXX this is broken - it passes utf8 filename to get_lang_for_filename */
-
-        for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
-        {
-            int ext_len = strlen (bak_globs[i]) - 1;
-
-            if (len > ext_len && g_pattern_match_simple (bak_globs[i], utf8_basename))
-            {
-                base = g_strndup (utf8_basename, len - ext_len);
-                break;
-            }
-        }
-
-        if (base)
-        {
-            lang = moo_lang_mgr_get_lang_for_filename (mgr, base);
-            g_free (base);
-        }
-    }
-
-    g_free (basename);
-    g_free (utf8_basename);
-    return lang;
+    return NULL;
 }
 
 
 MooLang*
-moo_lang_mgr_get_lang_for_mime_type (MooLangMgr     *mgr,
-                                     const char     *mime_type)
+moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
+                                    const char *filename)
+{
+    MooLang *lang = NULL;
+    const char *mime_type;
+
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    lang = lang_mgr_get_lang_by_extension (mgr, filename);
+
+    if (lang)
+        return lang;
+
+#ifdef MOO_USE_XDGMIME
+    /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
+
+    mime_type = xdg_mime_get_mime_type_from_file_name (filename);
+
+    if (!xdg_mime_mime_type_equal (mime_type, XDG_MIME_TYPE_UNKNOWN))
+        lang = moo_lang_mgr_get_lang_for_mime_type (mgr, mime_type);
+
+    if (lang)
+        return lang;
+#endif /* MOO_USE_XDGMIME */
+
+    lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
+
+    if (lang)
+        return lang;
+
+    return NULL;
+}
+
+
+static int
+check_mime_subclass (const char *base,
+                     const char *mime)
+{
+    return !xdg_mime_mime_type_subclass (mime, base);
+}
+
+
+MooLang*
+moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
+                                     const char *mime)
 {
     GSList *l;
     MooLang *lang = NULL;
     gboolean found = FALSE;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    g_return_val_if_fail (mime_type != NULL, NULL);
+    g_return_val_if_fail (mime != NULL, NULL);
 
-    for (l = mgr->langs; !found && l != NULL; l = l->next)
+    for (l = mgr->langs; l != NULL; l = l->next)
     {
         lang = l->data;
 
-        if (g_slist_find_custom (lang->mime_types, mime_type, (GCompareFunc) strcmp))
+        if (g_slist_find_custom (lang->mime_types, mime, (GCompareFunc) strcmp))
+        {
+            found = TRUE;
+            break;
+        }
+    }
+
+    if (found)
+        return lang;
+
+    for (l = mgr->langs; l != NULL; l = l->next)
+    {
+        lang = l->data;
+
+        if (g_slist_find_custom (lang->mime_types, mime, (GCompareFunc) check_mime_subclass))
         {
             found = TRUE;
             break;
