@@ -18,6 +18,7 @@
 #include "mooedit/moohighlighter.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooundomanager.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 
@@ -110,6 +111,8 @@ static void     after_undo_redo                     (MooTextBuffer      *buffer)
 
 enum {
     CURSOR_MOVED,
+    SELECTION_CHANGED,
+    HIGHLIGHTING_CHANGED,
     LAST_SIGNAL
 };
 
@@ -210,6 +213,25 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                           _moo_marshal_VOID__BOXED,
                           G_TYPE_NONE, 1,
                           GTK_TYPE_TEXT_ITER);
+
+    signals[SELECTION_CHANGED] =
+            g_signal_new ("selection-changed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, selection_changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
+    signals[HIGHLIGHTING_CHANGED] =
+            moo_signal_new_cb ("highlighting-changed",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED_BOXED,
+                               G_TYPE_NONE, 2,
+                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 
@@ -315,6 +337,28 @@ moo_text_buffer_modified_changed (GtkTextBuffer *text_buffer)
 
 
 static void
+update_selection (MooTextBuffer *buffer)
+{
+    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
+    gboolean has_selection;
+    gboolean selection_changed = TRUE;
+
+    has_selection = gtk_text_buffer_get_selection_bounds (text_buffer, NULL, NULL) != 0;
+
+    selection_changed = has_selection || buffer->priv->has_selection;
+
+    if (has_selection != buffer->priv->has_selection)
+    {
+        buffer->priv->has_selection = has_selection;
+        g_object_notify (G_OBJECT (buffer), "has-selection");
+    }
+
+    if (selection_changed)
+        g_signal_emit (buffer, signals[SELECTION_CHANGED], 0);
+}
+
+
+static void
 moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
                           const GtkTextIter  *iter,
                           GtkTextMark        *mark)
@@ -322,29 +366,12 @@ moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
     GtkTextMark *insert = gtk_text_buffer_get_insert (text_buffer);
     GtkTextMark *sel_bound = gtk_text_buffer_get_selection_bound (text_buffer);
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
-    gboolean has_selection = buffer->priv->has_selection;
 
     if (GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->mark_set)
         GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->mark_set (text_buffer, iter, mark);
 
-    if (mark == insert)
-    {
-        GtkTextIter iter2;
-        gtk_text_buffer_get_iter_at_mark (text_buffer, &iter2, sel_bound);
-        has_selection = gtk_text_iter_compare (iter, &iter2) ? TRUE : FALSE;
-    }
-    else if (mark == sel_bound)
-    {
-        GtkTextIter iter2;
-        gtk_text_buffer_get_iter_at_mark (text_buffer, &iter2, insert);
-        has_selection = gtk_text_iter_compare (iter, &iter2) ? TRUE : FALSE;
-    }
-
-    if (has_selection != buffer->priv->has_selection)
-    {
-        buffer->priv->has_selection = has_selection;
-        g_object_notify (G_OBJECT (buffer), "has-selection");
-    }
+    if (mark == insert || mark == sel_bound)
+        update_selection (buffer);
 
     if (mark == insert)
         cursor_moved (buffer, iter);
@@ -452,6 +479,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     moo_text_buffer_queue_highlight (buffer);
 
+    update_selection (buffer);
     cursor_moved (buffer, start);
 
     if (buffer->priv->has_text)
@@ -647,7 +675,7 @@ moo_text_buffer_get_property (GObject        *object,
             break;
 
         case PROP_HAS_SELECTION:
-            g_value_set_boolean (value, moo_text_buffer_has_selection (buffer));
+            g_value_set_boolean (value, buffer->priv->has_selection);
             break;
 
         default:
@@ -684,6 +712,27 @@ _moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     moo_highlighter_apply_tags (buffer->priv->hl, first_line, last_line);
+}
+
+
+void
+_moo_text_buffer_highlighting_changed (MooTextBuffer *buffer,
+                                       int            first,
+                                       int            last)
+{
+    GtkTextIter start, end;
+
+    g_assert (MOO_IS_TEXT_BUFFER (buffer));
+    g_assert (first <= last && first >= 0);
+
+    gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (buffer), &start, first);
+
+    if (first == last)
+        end = start;
+    else
+        gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (buffer), &end, last);
+
+    g_signal_emit (buffer, signals[HIGHLIGHTING_CHANGED], 0, &start, &end);
 }
 
 
