@@ -578,7 +578,7 @@ hl_compute_range (MooHighlighter *hl,
                                                    really exist'*/
             g_assert (line_no >= hl->line_buf->invalid.last - 1);
             done = TRUE;
-            goto out;
+            break;
         }
 
         if (line_no == hl->line_buf->invalid.last)
@@ -588,7 +588,7 @@ hl_compute_range (MooHighlighter *hl,
             if (node == next->hl_info->start_node)
             {
                 done = TRUE;
-                goto out;
+                break;
             }
             else
             {
@@ -600,7 +600,6 @@ hl_compute_range (MooHighlighter *hl,
             break;
     }
 
-out:
     if (!done)
     {
         hl->line_buf->invalid.first = line_no;
@@ -745,7 +744,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
         return;
     }
 
-    first_changed = -1;
+    first_changed = last_changed = -1;
     moo_highlighter_compute (hl, first_line, last_line, TRUE);
 
     for (line_no = first_line; line_no <= last_line; ++line_no)

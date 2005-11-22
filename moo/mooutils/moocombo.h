@@ -47,6 +47,9 @@ struct _MooComboClass
 
     void    (*popup)    (MooCombo   *combo);
     void    (*popdown)  (MooCombo   *combo);
+
+    gboolean (*popup_key_press) (MooCombo    *combo,
+                                 GdkEventKey *event);
 };
 
 typedef char    *(*MooComboGetTextFunc)     (GtkTreeModel  *model,

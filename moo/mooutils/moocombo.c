@@ -93,6 +93,8 @@ static gboolean moo_combo_focus             (GtkWidget      *widget,
 static void     moo_combo_popup_real        (MooCombo       *combo);
 static void     moo_combo_popdown_real      (MooCombo       *combo);
 static void     moo_combo_changed           (MooCombo       *combo);
+static gboolean moo_combo_popup_key_press   (MooCombo       *combo,
+                                             GdkEventKey    *event);
 
 static void     create_arrow_button         (MooCombo       *combo);
 static void     button_clicked              (MooCombo       *combo);
@@ -102,7 +104,7 @@ static gboolean resize_popup                (MooCombo       *combo);
 static gboolean entry_focus_out             (MooCombo       *combo);
 static gboolean popup_button_press          (MooCombo       *combo,
                                              GdkEventButton *event);
-static gboolean popup_key_press             (MooCombo       *combo,
+static gboolean popup_key_press_cb          (MooCombo       *combo,
                                              GdkEventKey    *event);
 static int      popup_get_selected          (MooCombo       *combo);
 static gboolean list_button_press           (MooCombo       *combo,
@@ -162,6 +164,7 @@ enum {
     POPUP,
     POPDOWN,
     CHANGED,
+    POPUP_KEY_PRESS,
     NUM_SIGNALS
 };
 
@@ -189,6 +192,7 @@ moo_combo_class_init (MooComboClass *klass)
 
     klass->popup = moo_combo_popup_real;
     klass->popdown = moo_combo_popdown_real;
+    klass->popup_key_press = moo_combo_popup_key_press;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACTIVATES_DEFAULT,
@@ -227,11 +231,21 @@ moo_combo_class_init (MooComboClass *klass)
     signals[CHANGED] =
             g_signal_new ("changed",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooComboClass, changed),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
+
+    signals[POPUP_KEY_PRESS] =
+            g_signal_new ("popup-key-press",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooComboClass, popup_key_press),
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__BOXED,
+                          G_TYPE_BOOLEAN, 1,
+                          GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_space, GDK_CONTROL_MASK,
@@ -315,8 +329,6 @@ moo_combo_destroy (GtkObject *object)
 {
     MooCombo *combo = MOO_COMBO (object);
 
-    GTK_OBJECT_CLASS(moo_combo_parent_class)->destroy (object);
-
     combo->priv->button = NULL;
     combo->entry = NULL;
 
@@ -338,6 +350,8 @@ moo_combo_destroy (GtkObject *object)
         g_object_unref (combo->priv->size_group);
         combo->priv->size_group = NULL;
     }
+
+    GTK_OBJECT_CLASS(moo_combo_parent_class)->destroy (object);
 }
 
 
@@ -539,14 +553,13 @@ static void
 moo_combo_popup_real (MooCombo *combo)
 {
     GtkWidget *window;
+    int selected;
 
     if (moo_combo_popup_shown (combo))
         return;
 
     if (model_is_empty (combo->priv->model))
         return;
-
-    gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (combo->priv->treeview));
 
     window = gtk_widget_get_toplevel (GTK_WIDGET (combo->entry));
     g_return_if_fail (GTK_IS_WINDOW (window));
@@ -562,10 +575,16 @@ moo_combo_popup_real (MooCombo *combo)
 
     resize_popup (combo);
 
+    selected = popup_get_selected (combo);
     gtk_widget_show (combo->priv->popup);
-    send_focus_change (GTK_WIDGET (combo->priv->popup), TRUE);
+    /* treeview selects something on focus */
+    if (selected < 0)
+    {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (combo->priv->treeview);
+        gtk_tree_selection_unselect_all (selection);
+    }
 
-    /* XXX deselect and scroll */
+    send_focus_change (GTK_WIDGET (combo->priv->popup), TRUE);
 
     gtk_grab_add (combo->priv->popup);
     gdk_pointer_grab (combo->priv->popup->window, TRUE,
@@ -580,7 +599,7 @@ moo_combo_popup_real (MooCombo *combo)
     g_signal_connect_swapped (combo->priv->popup, "button-press-event",
                               G_CALLBACK (popup_button_press), combo);
     g_signal_connect_swapped (combo->priv->popup, "key-press-event",
-                              G_CALLBACK (popup_key_press), combo);
+                              G_CALLBACK (popup_key_press_cb), combo);
 
     g_signal_connect_swapped (combo->priv->treeview, "button-press-event",
                               G_CALLBACK (list_button_press), combo);
@@ -601,7 +620,7 @@ moo_combo_popdown_real (MooCombo       *combo)
                                           (gpointer) popup_button_press,
                                           combo);
     g_signal_handlers_disconnect_by_func (combo->priv->popup,
-                                          (gpointer) popup_key_press,
+                                          (gpointer) popup_key_press_cb,
                                           combo);
 
     g_signal_handlers_disconnect_by_func (combo->priv->treeview,
@@ -617,24 +636,10 @@ moo_combo_popdown_real (MooCombo       *combo)
 void
 moo_combo_update_popup (MooCombo *combo)
 {
-    int selected;
-    GtkTreePath *path;
-
     g_return_if_fail (MOO_IS_COMBO (combo));
 
-    if (!moo_combo_popup_shown (combo))
-        return;
-
-    resize_popup (combo);
-
-    selected = popup_get_selected (combo);
-
-    if (selected < 0)
-        selected = 0;
-
-    path = gtk_tree_path_new_from_indices (selected, -1);
-    gtk_tree_view_scroll_to_cell (combo->priv->treeview, path, NULL, FALSE, 0, 0);
-    gtk_tree_path_free (path);
+    if (moo_combo_popup_shown (combo))
+        resize_popup (combo);
 }
 
 
@@ -660,16 +665,17 @@ static gboolean
 resize_popup (MooCombo *combo)
 {
     GtkWidget *widget = GTK_WIDGET (combo->entry);
-    gint x, y;
-    gint matches, items, height, x_border, y_border;
+    int x, y;
+    int matches, items, height, x_border, y_border;
     GdkScreen *screen;
-    gint monitor_num;
+    int monitor_num;
     GdkRectangle monitor;
     GtkRequisition popup_req;
     GtkRequisition combo_req;
     gboolean above;
-    gint width;
+    int width;
     int separator_height = 0;
+    int selected;
 
     g_return_val_if_fail (GTK_WIDGET_REALIZED (combo->entry), FALSE);
 
@@ -738,6 +744,15 @@ resize_popup (MooCombo *combo)
     }
 
     gtk_window_move (GTK_WINDOW (combo->priv->popup), x, y);
+
+    selected = popup_get_selected (combo);
+
+    if (selected >= 0)
+    {
+        GtkTreePath *path = gtk_tree_path_new_from_indices (selected, -1);
+        gtk_tree_view_scroll_to_cell (combo->priv->treeview, path, NULL, FALSE, 0, 0);
+        gtk_tree_path_free (path);
+    }
 
     return above;
 }
@@ -863,7 +878,7 @@ popup_move_selection (MooCombo     *combo,
             g_return_if_reached ();
     }
 
-    if (new_item >= 0)
+    if (new_item >= 0 && new_item < n_items)
     {
         path = gtk_tree_path_new_from_indices (new_item, -1);
         gtk_tree_view_set_cursor (combo->priv->treeview, path, NULL, FALSE);
@@ -931,8 +946,8 @@ popup_return_key (MooCombo *combo)
 
 
 static gboolean
-popup_key_press (MooCombo    *combo,
-                 GdkEventKey *event)
+moo_combo_popup_key_press (MooCombo    *combo,
+                           GdkEventKey *event)
 {
     switch (event->keyval)
     {
@@ -961,6 +976,16 @@ popup_key_press (MooCombo    *combo,
             return gtk_widget_event (combo->entry, (GdkEvent*) event) ||
                     gtk_widget_event (GTK_WIDGET (combo), (GdkEvent*) event);
     }
+}
+
+
+static gboolean
+popup_key_press_cb (MooCombo    *combo,
+                    GdkEventKey *event)
+{
+    gboolean retval;
+    g_signal_emit (combo, signals[POPUP_KEY_PRESS], 0, event, &retval);
+    return retval;
 }
 
 
