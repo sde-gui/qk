@@ -745,7 +745,6 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
     }
 
     first_changed = last_changed = -1;
-    moo_highlighter_compute (hl, first_line, last_line, TRUE);
 
     for (line_no = first_line; line_no <= last_line; ++line_no)
     {

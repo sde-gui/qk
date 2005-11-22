@@ -11,7 +11,7 @@ BUILT_SOURCES += medit-ui.h
 medit-ui.h: tests/medit-ui.xml
 	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
 
-all-am: tests/pyapp.py tests/medit-ui.h
+all-am: tests/pyapp.py medit-ui.h
 
 if MOO_BUILD_APP
 medit = medit
@@ -51,7 +51,7 @@ endif MOO_OS_MINGW
 ##
 medit_LDFLAGS = $(ldflags)
 medit_LDADD = $(ldadd)
-medit_SOURCES = tests/medit-ui.h
+medit_SOURCES = medit-ui.h
 
 if !MOO_BUILD_LIB
 medit_SOURCES += $(libmoo_sources)

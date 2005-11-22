@@ -1441,7 +1441,6 @@ moo_text_view_expose (GtkWidget      *widget,
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
     GdkWindow *text_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT);
     GtkTextIter start, end;
-    int first_line, last_line;
 
     view->priv->in_expose = TRUE;
 
@@ -1451,17 +1450,18 @@ moo_text_view_expose (GtkWidget      *widget,
 
     if (event->window == text_window)
     {
-        GdkRectangle visible_rect;
+        int first_line, last_line;
+        GdkRectangle rect = event->area;
 
-        /* XXX do correct math here */
+        gtk_text_view_window_to_buffer_coords (text_view,
+                                               GTK_TEXT_WINDOW_TEXT,
+                                               rect.x,
+                                               rect.y,
+                                               &rect.x,
+                                               &rect.y);
 
-        gtk_text_view_get_visible_rect (text_view, &visible_rect);
-        gtk_text_view_get_line_at_y (text_view, &start,
-                                     visible_rect.y, NULL);
-        gtk_text_iter_backward_line (&start);
-        gtk_text_view_get_line_at_y (text_view, &end,
-                                     visible_rect.y
-                                             + visible_rect.height, NULL);
+        gtk_text_view_get_line_at_y (text_view, &start, rect.y, NULL);
+        gtk_text_view_get_line_at_y (text_view, &end, rect.y + rect.height, NULL);
         gtk_text_iter_forward_line (&end);
 
         first_line = gtk_text_iter_get_line (&start);
@@ -1531,8 +1531,8 @@ highlighting_changed (GtkTextView        *text_view,
                                                &update.x,
                                                &update.y);
 
-        if (view->priv->in_expose)
-        {
+//         if (view->priv->in_expose)
+//         {
             if (view->priv->update_region)
                 gdk_region_union_with_rect (view->priv->update_region,
                                             &update);
@@ -1543,11 +1543,11 @@ highlighting_changed (GtkTextView        *text_view,
                 view->priv->update_idle = g_idle_add_full (UPDATE_PRIORITY,
                                                            (GSourceFunc) update_idle,
                                                            view, NULL);
-        }
-        else
-        {
-            gdk_window_invalidate_rect (window, &update, TRUE);
-        }
+//         }
+//         else
+//         {
+//             gdk_window_invalidate_rect (window, &update, TRUE);
+//         }
     }
 }
 
