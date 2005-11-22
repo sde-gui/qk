@@ -63,13 +63,23 @@ moo_line_buffer_delete (LineBuffer     *line_buf,
 
 
 void
-moo_line_buffer_insert_range (LineBuffer *line_buf,
-                              int         first,
-                              int         num)
+moo_line_buffer_split_line (LineBuffer *line_buf,
+                            int         line,
+                            int         num_new_lines)
 {
-    moo_text_btree_insert_range (line_buf->tree, first, num);
-    /* XXX is it needed? */
-    moo_line_buffer_invalidate (line_buf, first);
+    Line *l;
+    GSList *tags;
+
+    moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines);
+
+    l = moo_line_buffer_get_line (line_buf, line);
+    invalidate_line (line_buf, l, line);
+    tags = g_slist_copy (l->hl_info->tags);
+
+    l = moo_line_buffer_get_line (line_buf, line + num_new_lines);
+    invalidate_line (line_buf, l, line + num_new_lines);
+    g_assert (l->hl_info->tags == NULL);
+    l->hl_info->tags = tags;
 }
 
 
@@ -90,8 +100,7 @@ invalidate_line_one (Line *line)
 {
     moo_line_erase_segments (line);
     line->hl_info->start_node = NULL;
-    line->hl_info->_dirty = TRUE;
-    line->hl_info->_tags_applied = FALSE;
+    line->hl_info->tags_applied = FALSE;
 }
 
 void
@@ -127,7 +136,7 @@ invalidate_line (LineBuffer *line_buf,
 void
 moo_line_buffer_invalidate_all (LineBuffer *line_buf)
 {
-    moo_text_btree_foreach (line_buf->tree, (MooTextBTreeForeach) invalidate_line_one, NULL);
+    moo_line_buffer_invalidate (line_buf, 0);
     AREA_SET (&line_buf->invalid, moo_text_btree_size (line_buf->tree));
 }
 

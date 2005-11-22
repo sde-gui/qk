@@ -37,7 +37,6 @@ typedef struct _BTree BTree;
 
 typedef struct _HLInfo HLInfo;
 
-typedef void (*MooTextBTreeForeach) (BTData *data, gpointer user_data);
 
 struct _BTNode {
     BTNode *parent;
@@ -54,7 +53,6 @@ struct _BTNode {
 
 struct _BTData {
     BTNode *parent;
-
     HLInfo *hl_info;
 };
 
@@ -62,20 +60,6 @@ struct _BTree {
     BTNode *root;
     guint depth;
     guint stamp;
-};
-
-struct _BTIter {
-    BTree *tree;
-
-    union {
-        BTNode *node;
-        BTData *data;
-    };
-
-    guint8 indices[BTREE_MAX_DEPTH];
-    guint depth : BTREE_MAX_DEPTH_EXP;
-    guint is_data : 1;
-    guint stamp : (31 - BTREE_MAX_DEPTH_EXP);
 };
 
 
@@ -98,17 +82,6 @@ void        moo_text_btree_insert_range     (BTree      *tree,
 void        moo_text_btree_delete_range     (BTree      *tree,
                                              int         first,
                                              int         num);
-
-void        moo_text_btree_foreach          (BTree      *tree,
-                                             MooTextBTreeForeach func,
-                                             gpointer    data);
-
-void        moo_text_btree_get_iter_first   (BTree      *tree,
-                                             BTIter     *iter);
-gboolean    moo_text_btree_iter_next        (BTIter     *iter);
-gboolean    moo_text_btree_iter_prev        (BTIter     *iter);
-gboolean    moo_text_btree_iter_parent      (BTIter     *iter);
-gboolean    moo_text_btree_iter_is_data     (BTIter     *iter);
 
 
 G_END_DECLS

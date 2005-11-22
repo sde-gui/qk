@@ -54,6 +54,8 @@ struct _MooHighlighter {
     GSList *nodes;
     guint idle;
     gboolean apply_tags;
+    guint apply_idle;
+    Area apply_to;
 };
 
 struct _MooSyntaxTag {

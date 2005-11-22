@@ -1,11 +1,6 @@
 EXTRA_DIST = mingw-configure cygwin-configure
 
-DIST_SUBDIRS = tests m4
-SUBDIRS = .
-
-if !MOO_OS_CYGWIN
-SUBDIRS += tests
-endif
+DIST_SUBDIRS = m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = moo.pc
@@ -25,7 +20,9 @@ AM_CFLAGS =                                 \
     $(CFLAGS)
 
 if !MOO_OS_CYGWIN
-noinst_LTLIBRARIES = libmoo-1.0.la
+if MOO_BUILD_LIB
+# noinst_LTLIBRARIES = libmoo-1.0.la
+endif
 endif
 
 ###########################################################################
@@ -57,17 +54,24 @@ mooutils_include_HEADERS = $(mooutils_include_headers)
 ###########################################################################
 
 CLEANFILES = $(moo_cleanfiles)
-
-if !MOO_OS_CYGWIN
-libmoo_1_0_la_LDFLAGS = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
-libmoo_1_0_la_SOURCES = $(moo_sources)
 BUILT_SOURCES = $(moo_built_sources)
-nodist_libmoo_1_0_la_SOURCES = $(moo_nodist_sources)
+
+libmoo_ldflags = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
+libmoo_sources = $(moo_sources)
+nodist_libmoo_sources = $(moo_nodist_sources)
+
 if MOO_OS_MINGW
-libmoo_1_0_la_SOURCES += $(moo_win32_sources)
+libmoo_sources += $(moo_win32_sources)
 endif
 if MOO_OS_UNIX
-libmoo_1_0_la_SOURCES += $(moo_unix_sources)
+libmoo_sources += $(moo_unix_sources)
+endif
+
+if !MOO_OS_CYGWIN
+if MOO_BUILD_LIB
+# libmoo_1_0_la_LDFLAGS = $(libmoo_ldflags)
+# libmoo_1_0_la_SOURCES = $(libmoo_sources)
+# nodist_libmoo_1_0_la_SOURCES = $(nodist_libmoo_sources)
 endif
 endif
 
@@ -84,21 +88,27 @@ $(moo_extra_dist)
 #
 if BUILD_PYMOO
 
-pyexec_LTLIBRARIES = moo.la
-
-moo_la_SOURCES = $(libmoo_1_0_la_SOURCES)
-nodist_moo_la_SOURCES = $(nodist_libmoo_1_0_la_SOURCES)
-
-if MOO_OS_MINGW
-mingw_flags = -no-undefined
-endif MOO_OS_MINGW
-
-moo_la_LDFLAGS = -module -avoid-version -no-undefined -export-symbols-regex "initmoo"
-
-moo_la_LIBADD =         \
-    $(GTK_LIBS)         \
-    $(XML_LIBS)         \
-    $(PYTHON_LDFLAGS)   \
-    $(PYTHON_EXTRA_LIBS)
+# pyexec_LTLIBRARIES = moo.la
+#
+# moo_la_SOURCES = $(libmoo_sources)
+# nodist_moo_la_SOURCES = $(nodist_libmoo_sources)
+#
+# if MOO_OS_MINGW
+# mingw_flags = -no-undefined
+# endif MOO_OS_MINGW
+#
+# moo_la_LDFLAGS = -module -avoid-version -no-undefined -export-symbols-regex "initmoo"
+#
+# moo_la_LIBADD =         \
+#     $(GTK_LIBS)         \
+#     $(XML_LIBS)         \
+#     $(PYTHON_LDFLAGS)   \
+#     $(PYTHON_EXTRA_LIBS)
 
 endif BUILD_PYMOO
+
+
+##############################################################################
+# tests
+#
+include tests/Makefile.incl

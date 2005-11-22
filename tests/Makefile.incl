@@ -1,0 +1,151 @@
+EXTRA_PROGRAMS += medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject
+bin_PROGRAMS =
+noinst_PROGRAMS =
+
+
+EXTRA_DIST +=           \
+    tests/pyapp.py.in   \
+    tests/medit-ui.xml
+
+BUILT_SOURCES += medit-ui.h
+medit-ui.h: tests/medit-ui.xml
+	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
+
+all-am: tests/pyapp.py tests/medit-ui.h
+
+if MOO_BUILD_APP
+medit = medit
+endif
+if MOO_BUILD_EDIT
+medit = medit
+endif
+if MOO_BUILD_TERM
+# noinst_PROGRAMS += mterm termbuffer
+endif
+if MOO_BUILD_UTILS
+# noinst_PROGRAMS += testpanedfileview
+# noinst_PROGRAMS += testobject
+# noinst_PROGRAMS += markup miniglade
+endif
+
+bin_PROGRAMS += $(medit)
+
+
+ldflags = -export-dynamic
+ldadd =                     \
+    $(MOO_LIBS)             \
+    $(PYTHON_LDFLAGS)       \
+    $(PYTHON_EXTRA_LIBS)
+
+if MOO_BUILD_LIB
+ldadd += libmoo-1.0.la
+endif
+
+if MOO_OS_MINGW
+ldflags += -mwindows
+endif MOO_OS_MINGW
+
+
+##############################################################################
+##  medit
+##
+medit_LDFLAGS = $(ldflags)
+medit_LDADD = $(ldadd)
+medit_SOURCES = tests/medit-ui.h
+
+if !MOO_BUILD_LIB
+medit_SOURCES += $(libmoo_sources)
+nodist_medit_SOURCES = $(nodist_libmoo_sources)
+endif
+
+if MOO_BUILD_APP
+medit_SOURCES += tests/medit-app.c
+else
+medit_SOURCES += tests/medit.c
+endif
+
+
+##############################################################################
+##  langparser
+##
+langparser_LDFLAGS = $(ldflags)
+langparser_LDADD = $(ldadd)
+langparser_SOURCES = tests/testparser.c
+if !MOO_BUILD_LIB
+langparser_SOURCES += $(libmoo_sources)
+nodist_langparser_SOURCES = $(nodist_libmoo_sources)
+endif
+
+
+##############################################################################
+##  mterm
+##
+mterm_LDFLAGS = $(ldflags)
+mterm_LDADD = $(ldadd)
+termbuffer_LDFLAGS = $(ldflags)
+termbuffer_LDADD = $(ldadd)
+
+mterm_SOURCES = tests/mterm.c
+termbuffer_SOURCES = tests/termbuffer.c
+if !MOO_BUILD_LIB
+mterm_SOURCES += $(libmoo_sources)
+nodist_mterm_SOURCES = $(nodist_libmoo_sources)
+termbuffer_SOURCES += $(libmoo_sources)
+nodist_termbuffer_SOURCES = $(nodist_libmoo_sources)
+endif
+
+
+##############################################################################
+##  markup
+##
+markup_LDFLAGS = $(ldflags)
+markup_LDADD = $(ldadd)
+
+markup_SOURCES = tests/markup.c
+if !MOO_BUILD_LIB
+markup_SOURCES += $(libmoo_sources)
+nodist_markup_SOURCES = $(nodist_libmoo_sources)
+endif
+
+
+##############################################################################
+##  miniglade
+##
+miniglade_LDFLAGS = $(ldflags)
+miniglade_LDADD = $(ldadd)
+
+miniglade_SOURCES = tests/miniglade.c
+if !MOO_BUILD_LIB
+miniglade_SOURCES += $(libmoo_sources)
+nodist_miniglade_SOURCES = $(nodist_libmoo_sources)
+endif
+
+
+##############################################################################
+
+testpaned_LDFLAGS = $(ldflags)
+testpaned_LDADD = $(ldadd)
+testpaned_SOURCES = tests/testpaned.c
+
+testfileview_LDFLAGS = $(ldflags)
+testfileview_LDADD = $(ldadd)
+testfileview_SOURCES = tests/testfileview.c
+
+testpanedfileview_LDFLAGS = $(ldflags)
+testpanedfileview_LDADD = $(ldadd)
+testpanedfileview_SOURCES = tests/testpanedfileview.c
+
+testobject_LDFLAGS = $(ldflags)
+testobject_LDADD = $(ldadd)
+testobject_SOURCES = tests/testobject.c
+
+if !MOO_BUILD_LIB
+testpaned_SOURCES += $(libmoo_sources)
+testfileview_SOURCES += $(libmoo_sources)
+testpanedfileview_SOURCES += $(libmoo_sources)
+testobject_SOURCES += $(libmoo_sources)
+nodist_testpaned_SOURCES = $(nodist_libmoo_sources)
+nodist_testfileview_SOURCES = $(nodist_libmoo_sources)
+nodist_testpanedfileview_SOURCES = $(nodist_libmoo_sources)
+nodist_testobject_SOURCES = $(nodist_libmoo_sources)
+endif

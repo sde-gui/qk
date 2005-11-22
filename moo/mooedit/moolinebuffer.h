@@ -59,9 +59,8 @@ struct _HLInfo {
     Segment *segments;
     guint n_segments;
     guint n_segments_alloc__;
-    /* tags_applied => dirty */
-    guint _dirty : 1; /* need to remove tags before applying next */
-    guint _tags_applied : 1; /* correct highlighting tags were applied */
+    GSList *tags; /* tags applied in this line */
+    guint tags_applied : 1; /* correct highlighting tags were applied */
 };
 
 
@@ -80,9 +79,9 @@ void     moo_line_buffer_invalidate     (LineBuffer     *line_buf,
 void     moo_line_buffer_invalidate_all (LineBuffer     *line_buf);
 void     moo_line_buffer_clamp_invalid  (LineBuffer     *line_buf);
 
-void     moo_line_buffer_insert_range   (LineBuffer     *line_buf,
-                                         int             first,
-                                         int             last);
+void     moo_line_buffer_split_line     (LineBuffer     *line_buf,
+                                         int             line,
+                                         int             num_new_lines);
 void     moo_line_buffer_delete_range   (LineBuffer     *line_buf,
                                          int             first,
                                          int             last);

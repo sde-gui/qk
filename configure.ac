@@ -35,8 +35,8 @@ AC_DEFINE(MOO_VERSION_MICRO, [moo_micro_version], "libmoo micro version")
 AC_PROG_CC
 AC_PROG_CC_STDC
 AC_HEADER_STDC
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+# AC_LIBTOOL_WIN32_DLL
+# AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 MOO_AC_PROG_WINDRES
 
@@ -214,6 +214,7 @@ AC_DEFINE_UNQUOTED(MOO_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugin
 
 
 AM_CONDITIONAL(MOO_STANDALONE, true)
+AM_CONDITIONAL(MOO_BUILD_LIB, false)
 
 
 ################################################################################
@@ -223,7 +224,6 @@ AC_OUTPUT([
 Makefile
 moo/moo-config.h
 moo/mooterm/termhelper_res.rc
-tests/Makefile
 tests/pyapp.py
 m4/Makefile
 moo.pc

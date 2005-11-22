@@ -19,9 +19,8 @@
 
 
 #define IDLE_HIGHLIGHT_PRIORITY GTK_TEXT_VIEW_PRIORITY_VALIDATE
-// #define IDLE_HIGHLIGHT_PRIORITY G_PRIORITY_DEFAULT_IDLE
-#define IDLE_HIGHLIGHT_TIME     30
-// #define IDLE_QUEUE_TIMEOUT      100
+#define IDLE_HIGHLIGHT_TIME 30
+#define COMPUTE_NOW_TIME 20
 
 
 static MooSyntaxTag *iter_get_syntax_tag    (const GtkTextIter *iter);
@@ -50,14 +49,12 @@ static CtxNode      *get_next_node          (MooHighlighter     *hl,
 static CtxNode      *get_line_end_node      (MooHighlighter     *hl,
                                              CtxNode            *node);
 
-static void          hl_compute_line        (MooHighlighter     *hl,
+static CtxNode      *hl_compute_line        (MooHighlighter     *hl,
                                              Line               *line,
-                                             int                 line_no,
                                              MatchData          *data,
-                                             CtxNode           **node_p,
-                                             gboolean            apply_tags,
-                                             gboolean            is_empty);
-static void          hl_compute_range       (MooHighlighter     *hl,
+                                             CtxNode            *node,
+                                             gboolean            apply_tags);
+static gboolean      hl_compute_range       (MooHighlighter     *hl,
                                              Interval           *lines,
                                              gboolean            apply_tags,
                                              int                 time);
@@ -132,9 +129,10 @@ moo_highlighter_destroy (MooHighlighter *hl,
 
     if (hl->lang)
         moo_lang_unref (hl->lang);
-
     if (hl->idle)
         g_source_remove (hl->idle);
+    if (hl->apply_idle)
+        g_source_remove (hl->apply_idle);
 
     g_free (hl);
 }
@@ -143,8 +141,7 @@ moo_highlighter_destroy (MooHighlighter *hl,
 GtkTextTag *
 _moo_text_iter_get_syntax_tag (const GtkTextIter *iter)
 {
-    MooSyntaxTag *tag = iter_get_syntax_tag (iter);
-    return tag ? GTK_TEXT_TAG (tag) : NULL;
+    return (GtkTextTag*) iter_get_syntax_tag (iter);
 }
 
 
@@ -184,14 +181,13 @@ _moo_text_iter_get_context (const GtkTextIter *iter)
 
 static void
 apply_tag (MooHighlighter     *hl,
+           Line               *line,
            CtxNode            *ctx_node,
            CtxNode            *match_node,
            MooRule            *rule,
            const GtkTextIter  *start,
-           const GtkTextIter  *end,
-           gboolean            remove_old)
+           const GtkTextIter  *end)
 {
-    GtkTextIter tag_start = *start;
     GtkTextTag *tag = get_syntax_tag (hl, ctx_node, match_node, rule);
 
     g_assert (!tag || (MOO_IS_SYNTAX_TAG (tag) && MOO_SYNTAX_TAG(tag)->rule == rule));
@@ -200,37 +196,13 @@ apply_tag (MooHighlighter     *hl,
     if (!gtk_text_iter_compare (start, end))
         return;
 
-    while (remove_old && gtk_text_iter_compare (&tag_start, end) < 0)
-    {
-        MooSyntaxTag *old_tag = iter_get_syntax_tag (&tag_start);
-
-        if (old_tag && (old_tag != (MooSyntaxTag*) tag))
-        {
-            GtkTextIter tag_end = tag_start;
-
-            g_assert (!gtk_text_iter_ends_tag (&tag_end, GTK_TEXT_TAG (old_tag)));
-
-            gtk_text_iter_forward_to_tag_toggle (&tag_end, GTK_TEXT_TAG (old_tag));
-
-            if (gtk_text_iter_compare (end, &tag_end) < 0)
-                tag_end = *end;
-
-            gtk_text_buffer_remove_tag (hl->buffer, GTK_TEXT_TAG (old_tag), &tag_start, &tag_end);
-
-            tag_start = tag_end;
-        }
-        else
-        {
-            if (!gtk_text_iter_forward_to_tag_toggle (&tag_start, NULL))
-                break;
-        }
-    }
-
-    g_assert (iter_get_syntax_tag (start) == NULL ||
-            iter_get_syntax_tag (start) == MOO_SYNTAX_TAG (tag));
+    g_assert (iter_get_syntax_tag (start) == NULL);
 
     if (tag)
+    {
+        line->hl_info->tags = g_slist_prepend (line->hl_info->tags, tag);
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
+    }
 }
 
 
@@ -451,85 +423,100 @@ get_next_line_node (MooHighlighter *hl,
 }
 
 
-static void
+static CtxNode *
 hl_compute_line (MooHighlighter     *hl,
                  Line               *line,
-                 int                 line_no,
                  MatchData          *data,
-                 CtxNode           **node_p,
-                 gboolean            apply_tags,
-                 gboolean            dirty)
+                 CtxNode            *node,
+                 gboolean            apply_tags)
 {
-    CtxNode *node = *node_p;
-    MooRule *matched_rule = NULL;
+    MooRule *matched_rule;
     MatchResult result;
 
+    if (apply_tags && line->hl_info->tags && !gtk_text_iter_ends_line (&data->start_iter))
+    {
+        GtkTextIter start = data->start_iter;
+        GtkTextIter end = data->start_iter;
+        GSList *tags = line->hl_info->tags;
+
+        line->hl_info->tags = NULL;
+
+        gtk_text_iter_forward_to_line_end (&end);
+
+        while (tags)
+        {
+            gtk_text_buffer_remove_tag (hl->buffer, tags->data, &start, &end);
+            tags = g_slist_delete_link (tags, tags);
+        }
+    }
+
+    while (!gtk_text_iter_ends_line (&data->start_iter))
+    {
+        if ((matched_rule = moo_rule_array_match (node->ctx->rules, data, &result)))
+        {
+            CtxNode *match_node, *next_node;
+
+            if (result.match_offset < 0)
+                result.match_offset = g_utf8_pointer_to_offset (data->start, result.match_start);
+
+            if (result.match_len < 0)
+                result.match_len = g_utf8_pointer_to_offset (result.match_start, result.match_end);
+
+            moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
+
+            next_node = get_next_node (hl, node, matched_rule);
+
+            if (matched_rule->flags & MOO_RULE_INCLUDE_INTO_NEXT)
+                match_node = next_node;
+            else
+                match_node = node;
+
+            moo_line_add_segment (line, result.match_len, match_node, node, matched_rule);
+
+            if (apply_tags)
+            {
+                GtkTextIter m_start = data->start_iter, m_end;
+                gtk_text_iter_forward_chars (&m_start, result.match_offset);
+                m_end = m_start;
+                gtk_text_iter_forward_chars (&m_end, result.match_len);
+
+                apply_tag (hl, line, node, NULL, NULL, &data->start_iter, &m_start);
+                apply_tag (hl, line, match_node, node, matched_rule, &m_start, &m_end);
+
+                moo_match_data_set_start (data, &m_end, result.match_end,
+                                          data->start_offset + result.match_offset + result.match_len);
+            }
+            else
+            {
+                moo_match_data_set_start (data, NULL, result.match_end,
+                                          data->start_offset + result.match_offset + result.match_len);
+            }
+
+            node = next_node;
+        }
+        else
+        {
+            moo_line_add_segment (line, -1, node, NULL, NULL);
+
+            if (apply_tags)
+            {
+                GtkTextIter eol = data->start_iter;
+                gtk_text_iter_forward_to_line_end (&eol);
+                apply_tag (hl, line, node, NULL, NULL, &data->start_iter, &eol);
+            }
+
+            break;
+        }
+    }
+
     if (apply_tags)
-        LINE_SET_TAGS_APPLIED (line);
+        line->hl_info->tags_applied = TRUE;
 
-    if (!gtk_text_iter_ends_line (&data->start_iter) &&
-         (matched_rule = moo_rule_array_match (node->ctx->rules, data, &result)))
-    {
-        CtxNode *match_node;
-
-        /* XXX make it a cycle instead of recursive function */
-
-        if (result.match_offset < 0)
-            result.match_offset = g_utf8_pointer_to_offset (data->start, result.match_start);
-
-        if (result.match_len < 0)
-            result.match_len = g_utf8_pointer_to_offset (result.match_start, result.match_end);
-
-        moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
-
-        *node_p = get_next_node (hl, node, matched_rule);
-
-        if (matched_rule->flags & MOO_RULE_INCLUDE_INTO_NEXT)
-            match_node = *node_p;
-        else
-            match_node = node;
-
-        moo_line_add_segment (line, result.match_len, match_node, node, matched_rule);
-
-        if (apply_tags)
-        {
-            GtkTextIter m_start = data->start_iter, m_end;
-            gtk_text_iter_forward_chars (&m_start, result.match_offset);
-            m_end = m_start;
-            gtk_text_iter_forward_chars (&m_end, result.match_len);
-
-            apply_tag (hl, node, NULL, NULL, &data->start_iter, &m_start, dirty);
-            apply_tag (hl, match_node, node, matched_rule, &m_start, &m_end, dirty);
-
-            moo_match_data_set_start (data, &m_end, result.match_end,
-                                      data->start_offset + result.match_offset + result.match_len);
-        }
-        else
-        {
-            moo_match_data_set_start (data, NULL, result.match_end,
-                                      data->start_offset + result.match_offset + result.match_len);
-        }
-
-        return hl_compute_line (hl, line, line_no, data, node_p, apply_tags, dirty);
-    }
-
-    if (!gtk_text_iter_ends_line (&data->start_iter))
-    {
-        moo_line_add_segment (line, -1, node, NULL, NULL);
-
-        if (apply_tags)
-        {
-            GtkTextIter eol = data->start_iter;
-            gtk_text_iter_forward_to_line_end (&eol);
-            apply_tag (hl, node, NULL, NULL, &data->start_iter, &eol, dirty);
-        }
-    }
-
-    *node_p = get_next_line_node (hl, line);
+    return get_next_line_node (hl, line);
 }
 
 
-static void
+static gboolean
 hl_compute_range (MooHighlighter *hl,
                   Interval       *lines,
                   gboolean        apply_tags,
@@ -537,7 +524,7 @@ hl_compute_range (MooHighlighter *hl,
 {
     GtkTextIter iter;
     CtxNode *node;
-    int line_no, last_changed;
+    int line_no;
     GTimer *timer = NULL;
     double secs = ((double) time) / 1000;
     gboolean done = FALSE;
@@ -562,28 +549,26 @@ hl_compute_range (MooHighlighter *hl,
         node = get_next_line_node (hl, prev);
     }
 
-    g_return_if_fail (node != NULL);
+    g_return_val_if_fail (node != NULL, TRUE);
 
     gtk_text_buffer_get_iter_at_line (hl->buffer, &iter, lines->first);
 
     for (line_no = lines->first; line_no <= lines->last; ++line_no)
     {
         Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
-        gboolean dirty = LINE_DIRTY (line);
         MatchData match_data;
 
-        g_assert (dirty || !LINE_TAGS_APPLIED (line));
+        g_assert (line->hl_info->tags || !line->hl_info->tags_applied);
         g_assert (line_no == gtk_text_iter_get_line (&iter));
 
-        last_changed = line_no;
         line->hl_info->start_node = node;
-        LINE_UNSET_TAGS_APPLIED (line);
+        line->hl_info->tags_applied = FALSE;
         moo_line_erase_segments (line);
 
         /* TODO: there is no need to recompute line if its start context matches
                  context implied by the previous line */
         moo_match_data_init (&match_data, line_no, &iter, NULL);
-        hl_compute_line (hl, line, line_no, &match_data, &node, apply_tags, dirty);
+        node = hl_compute_line (hl, line, &match_data, node, apply_tags);
         moo_match_data_destroy (&match_data);
 
         if (!gtk_text_iter_forward_line (&iter))
@@ -632,12 +617,12 @@ out:
         g_timer_destroy (timer);
 
     _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
-                                           lines->first, last_changed);
-    return;
+                                           lines->first, line_no);
+    return done;
 }
 
 
-static void
+static gboolean
 moo_highlighter_compute_timed (MooHighlighter     *hl,
                                int                 first_line,
                                int                 last_line,
@@ -647,10 +632,10 @@ moo_highlighter_compute_timed (MooHighlighter     *hl,
     Interval to_highlight;
 
     if (!hl->lang || !hl->buffer)
-        return;
+        return TRUE;
 
     if (BUF_CLEAN (hl->line_buf))
-        return;
+        return TRUE;
 
     if (last_line < 0)
         last_line = moo_text_btree_size (hl->line_buf->tree) - 1;
@@ -662,10 +647,10 @@ moo_highlighter_compute_timed (MooHighlighter     *hl,
     to_highlight.last = last_line;
 
     if (hl->line_buf->invalid.first > to_highlight.last)
-        return;
+        return TRUE;
 
     to_highlight.first = hl->line_buf->invalid.first;
-    hl_compute_range (hl, &to_highlight, apply_tags, time);
+    return hl_compute_range (hl, &to_highlight, apply_tags, time);
 }
 
 
@@ -689,7 +674,10 @@ compute_in_idle (MooHighlighter *hl)
                                        IDLE_HIGHLIGHT_TIME);
 
     if (!BUF_CLEAN (hl->line_buf))
-        moo_highlighter_queue_compute (hl, hl->apply_tags);
+        hl->idle = g_timeout_add_full (IDLE_HIGHLIGHT_PRIORITY,
+                                       IDLE_HIGHLIGHT_TIME,
+                                       (GSourceFunc) compute_in_idle,
+                                       hl, NULL);
 
     return FALSE;
 }
@@ -711,22 +699,53 @@ moo_highlighter_queue_compute (MooHighlighter     *hl,
 }
 
 
+static gboolean
+apply_in_idle (MooHighlighter *hl)
+{
+    hl->apply_idle = 0;
+    hl->apply_to.empty = TRUE;
+    moo_highlighter_apply_tags (hl, hl->apply_to.first, hl->apply_to.last);
+    return FALSE;
+}
+
+
 void
 moo_highlighter_apply_tags (MooHighlighter     *hl,
                             int                 first_line,
                             int                 last_line)
 {
     int line_no;
+    int total;
+    int first_changed, last_changed;
 
     if (!hl->lang || !hl->buffer)
         return;
 
+    total = moo_text_btree_size (hl->line_buf->tree);
+
     if (last_line < 0)
-        last_line = moo_text_btree_size (hl->line_buf->tree) - 1;
+        last_line = total - 1;
+
+    first_line = CLAMP (first_line, 0, total - 1);
+    last_line = CLAMP (last_line, first_line, total - 1);
 
     g_assert (first_line >= 0);
     g_assert (last_line >= first_line);
 
+    if (!moo_highlighter_compute_timed (hl, first_line, last_line,
+                                        TRUE, COMPUTE_NOW_TIME))
+    {
+        if (!hl->apply_idle)
+            hl->apply_idle = g_idle_add ((GSourceFunc) apply_in_idle, hl);
+
+        hl->apply_to.empty = FALSE;
+        hl->apply_to.first = first_line;
+        hl->apply_to.last = last_line;
+
+        return;
+    }
+
+    first_changed = -1;
     moo_highlighter_compute (hl, first_line, last_line, TRUE);
 
     for (line_no = first_line; line_no <= last_line; ++line_no)
@@ -735,40 +754,54 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
         HLInfo *info = line->hl_info;
         guint i;
         GtkTextIter t_start, t_end;
-        gboolean got_iter = FALSE;
+        GSList *tags;
 
-        if (LINE_TAGS_APPLIED (line))
+        if (line->hl_info->tags_applied)
             continue;
+
+        if (first_changed < 0)
+            first_changed = line_no;
+        last_changed = line_no;
+
+        line->hl_info->tags_applied = TRUE;
+
+        gtk_text_buffer_get_iter_at_line (hl->buffer, &t_start, line_no);
+
+        if (gtk_text_iter_ends_line (&t_start))
+            continue;
+
+        t_end = t_start;
+        gtk_text_iter_forward_to_line_end (&t_end);
+        tags = line->hl_info->tags;
+        line->hl_info->tags = NULL;
+
+        while (tags)
+        {
+            gtk_text_buffer_remove_tag (hl->buffer, tags->data, &t_start, &t_end);
+            tags = g_slist_delete_link (tags, tags);
+        }
+
+        t_end = t_start;
 
         for (i = 0; i < info->n_segments; ++i)
         {
-            if (!info->segments[i].len)
-                continue;
-
-            if (!got_iter)
-            {
-                gtk_text_buffer_get_iter_at_line (hl->buffer, &t_start, line_no);
-                t_end = t_start;
-                got_iter = TRUE;
-            }
-            else
-            {
-                t_start = t_end;
-            }
-
             if (info->segments[i].len < 0)
                 gtk_text_iter_forward_to_line_end (&t_end);
             else
                 gtk_text_iter_forward_chars (&t_end, info->segments[i].len);
 
-            apply_tag (hl, info->segments[i].ctx_node,
+            apply_tag (hl, line, info->segments[i].ctx_node,
                        info->segments[i].match_node,
                        info->segments[i].rule,
-                       &t_start, &t_end, LINE_DIRTY (line));
-        }
+                       &t_start, &t_end);
 
-        LINE_SET_TAGS_APPLIED (line);
+            t_start = t_end;
+        }
     }
+
+    if (first_changed >= 0)
+        _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
+                                               first_changed, last_changed);
 }
 
 

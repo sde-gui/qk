@@ -218,6 +218,7 @@ hl_info_free (HLInfo *info)
     {
 #ifdef __MOO__
         g_free (info->segments);
+        g_slist_free (info->tags);
         hl_info_free__ (info);
 #endif
     }
@@ -516,28 +517,6 @@ moo_text_btree_delete (BTree          *tree,
 }
 
 
-void
-moo_text_btree_get_iter_first (BTree      *tree,
-                               BTIter     *iter)
-{
-    guint i;
-    BTNode *node;
-
-    g_assert (tree != NULL && iter != NULL);
-
-    iter->tree = tree;
-    iter->stamp = tree->stamp;
-
-    for (i = 0, node = tree->root; i < tree->depth; ++i, node = node->children[0])
-        iter->indices[i] = 0;
-    iter->indices[tree->depth] = 0;
-
-    iter->depth = tree->depth + 1;
-    iter->is_data = TRUE;
-    iter->data = node->data[0];
-}
-
-
 /* XXX */
 void
 moo_text_btree_insert_range (BTree      *tree,
@@ -569,26 +548,6 @@ moo_text_btree_delete_range (BTree      *tree,
 
     for (i = 0; i < num; ++i)
         moo_text_btree_delete (tree, first);
-}
-
-
-/* XXX */
-void
-moo_text_btree_foreach (BTree      *tree,
-                        MooTextBTreeForeach func,
-                        gpointer    user_data)
-{
-    guint i, size;
-
-    g_return_if_fail (tree != NULL && func != NULL);
-
-    size = moo_text_btree_size (tree);
-
-    for (i = 0; i < size; ++i)
-    {
-        BTData *data = moo_text_btree_get_data (tree, i);
-        func (data, user_data);
-    }
 }
 
 

@@ -403,13 +403,15 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
     }
 
-    if ((tag = _moo_text_iter_get_syntax_tag (pos)) &&
-         !gtk_text_iter_begins_tag (pos, tag))
+    if (((tag = buffer->priv->correct_match_tag) && gtk_text_iter_has_tag (pos, tag)) ||
+        ((tag = buffer->priv->incorrect_match_tag) && gtk_text_iter_has_tag (pos, tag)))
     {
-        /* new text is gonna get this tag applied, so we better remove it */
-        GtkTextIter next = *pos;
-        gtk_text_iter_forward_char (&next);
-        gtk_text_buffer_remove_tag (text_buffer, tag, pos, &next);
+        if (!gtk_text_iter_begins_tag (pos, tag))
+        {
+            GtkTextIter next = *pos;
+            gtk_text_iter_forward_char (&next);
+            gtk_text_buffer_remove_tag (text_buffer, tag, pos, &next);
+        }
     }
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
@@ -417,17 +419,10 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     last_line = gtk_text_iter_get_line (pos);
 
     if (last_line == first_line)
-    {
         moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
-    }
     else
-    {
-        moo_line_buffer_insert_range (buffer->priv->line_buf,
-                                      first_line + 1,
-                                      last_line - first_line);
-        moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
-        moo_line_buffer_invalidate (buffer->priv->line_buf, last_line);
-    }
+        moo_line_buffer_split_line (buffer->priv->line_buf,
+                                    first_line, last_line - first_line);
 
     moo_text_buffer_queue_highlight (buffer);
 

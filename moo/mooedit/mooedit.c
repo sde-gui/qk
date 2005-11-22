@@ -915,6 +915,7 @@ moo_edit_choose_indenter (MooEdit *edit)
 
     indenter = moo_indenter_new (edit, name);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indenter);
+    g_object_unref (indenter);
 }
 
 

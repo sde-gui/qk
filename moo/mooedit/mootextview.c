@@ -26,6 +26,7 @@
 
 #define LIGHT_BLUE "#EEF6FF"
 #define BOOL_CMP(b1,b2) ((b1 && b2) || (!b1 && !b2))
+#define UPDATE_PRIORITY (GTK_TEXT_VIEW_PRIORITY_VALIDATE - 5)
 
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
@@ -965,12 +966,6 @@ moo_text_view_set_indenter (MooTextView *view,
     if (view->priv->indenter)
         g_object_ref (view->priv->indenter);
 
-//     if (view->priv->indenter)
-//         gtk_source_view_set_tabs_width (GTK_SOURCE_VIEW (view),
-//                                         view->priv->indenter->tab_width);
-//     else
-//         gtk_source_view_set_tabs_width (GTK_SOURCE_VIEW (view), 8);
-
     g_object_notify (G_OBJECT (view), "indenter");
 }
 
@@ -1274,6 +1269,13 @@ moo_text_view_unrealize (GtkWidget *widget)
         add_selection_clipboard (view);
     }
 
+    if (view->priv->update_idle)
+    {
+        g_source_remove (view->priv->update_idle);
+        gdk_region_destroy (view->priv->update_region);
+        view->priv->update_region = NULL;
+    }
+
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }
 
@@ -1441,6 +1443,8 @@ moo_text_view_expose (GtkWidget      *widget,
     GtkTextIter start, end;
     int first_line, last_line;
 
+    view->priv->in_expose = TRUE;
+
     if (view->priv->highlight_current_line &&
         event->window == text_window && view->priv->current_line_gc)
             moo_text_view_draw_current_line (text_view, event);
@@ -1477,39 +1481,73 @@ moo_text_view_expose (GtkWidget      *widget,
     if (event->window == text_window && view->priv->draw_trailing_spaces)
         moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
 
+    view->priv->in_expose = FALSE;
     return handled;
 }
 
 
+static gboolean
+update_idle (MooTextView *view)
+{
+    GdkRegion *region = view->priv->update_region;
+    GdkWindow *window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
+                                                  GTK_TEXT_WINDOW_TEXT);
+    view->priv->update_idle = 0;
+    view->priv->update_region = NULL;
+    gdk_window_invalidate_region (window, region, FALSE);
+    gdk_region_destroy (region);
+    return FALSE;
+}
+
+
 static void
-highlighting_changed (GtkTextView        *view,
+highlighting_changed (GtkTextView        *text_view,
                       const GtkTextIter  *start,
                       const GtkTextIter  *end)
 {
-    GdkRectangle visible, redraw;
+    GdkRectangle visible, changed, update;
     int y, height;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
 
-    if (!GTK_WIDGET_DRAWABLE (view))
+    if (!GTK_WIDGET_DRAWABLE (text_view))
         return;
 
-    gtk_text_view_get_visible_rect (view, &visible);
+    gtk_text_view_get_visible_rect (text_view, &visible);
 
-    gtk_text_view_get_line_yrange (view, start, &redraw.y, &redraw.height);
-    gtk_text_view_get_line_yrange (view, end, &y, &height);
-    redraw.height += y + redraw.y;
-    redraw.x = visible.x;
-    redraw.width = visible.width;
+    gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+    gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+    changed.height = y - changed.y + height;
+    changed.x = visible.x;
+    changed.width = visible.width;
 
-    if (gdk_rectangle_intersect (&redraw, &visible, &redraw))
+    if (gdk_rectangle_intersect (&changed, &visible, &update))
     {
-        GdkWindow *window = gtk_text_view_get_window (view, GTK_TEXT_WINDOW_TEXT);
-        gtk_text_view_buffer_to_window_coords (view,
+        GdkWindow *window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT);
+
+        gtk_text_view_buffer_to_window_coords (text_view,
                                                GTK_TEXT_WINDOW_TEXT,
-                                               redraw.x,
-                                               redraw.y,
-                                               &redraw.x,
-                                               &redraw.y);
-        gdk_window_invalidate_rect (window, &redraw, FALSE);
+                                               update.x,
+                                               update.y,
+                                               &update.x,
+                                               &update.y);
+
+        if (view->priv->in_expose)
+        {
+            if (view->priv->update_region)
+                gdk_region_union_with_rect (view->priv->update_region,
+                                            &update);
+            else
+                view->priv->update_region = gdk_region_rectangle (&update);
+
+            if (!view->priv->update_idle)
+                view->priv->update_idle = g_idle_add_full (UPDATE_PRIORITY,
+                                                           (GSourceFunc) update_idle,
+                                                           view, NULL);
+        }
+        else
+        {
+            gdk_window_invalidate_rect (window, &update, TRUE);
+        }
     }
 }
 
