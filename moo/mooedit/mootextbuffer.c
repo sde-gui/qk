@@ -570,7 +570,7 @@ static void
 moo_text_buffer_queue_highlight (MooTextBuffer *buffer)
 {
     if (buffer->priv->lang && buffer->priv->do_highlight)
-        moo_highlighter_queue_compute (buffer->priv->hl, FALSE);
+        moo_highlighter_queue_compute (buffer->priv->hl, TRUE);
 }
 
 

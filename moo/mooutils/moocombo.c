@@ -458,36 +458,11 @@ create_popup (MooCombo *combo)
     gtk_container_add (GTK_CONTAINER (scrolled_window), GTK_WIDGET (combo->priv->treeview));
 
     frame = gtk_frame_new (NULL);
-    gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_ETCHED_IN);
+    gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_OUT);
     gtk_container_add (GTK_CONTAINER (frame), scrolled_window);
 
     gtk_widget_show_all (frame);
     gtk_container_add (GTK_CONTAINER (combo->priv->popup), frame);
-}
-
-
-static void
-send_focus_change (GtkWidget *widget, gboolean in)
-{
-    GdkEvent *event = gdk_event_new (GDK_FOCUS_CHANGE);
-
-    g_object_ref (widget);
-
-    if (in)
-        GTK_WIDGET_SET_FLAGS (widget, GTK_HAS_FOCUS);
-    else
-        GTK_WIDGET_UNSET_FLAGS (widget, GTK_HAS_FOCUS);
-
-    event->focus_change.type = GDK_FOCUS_CHANGE;
-    event->focus_change.window = g_object_ref (widget->window);
-    event->focus_change.in = in;
-
-    gtk_widget_event (widget, event);
-
-    g_object_notify (G_OBJECT (widget), "has-focus");
-
-    g_object_unref (widget);
-    gdk_event_free (event);
 }
 
 
@@ -566,8 +541,6 @@ moo_combo_popup_real (MooCombo *combo)
 
     gtk_widget_realize (combo->priv->popup);
 
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET (combo->priv->treeview), GTK_CAN_FOCUS);
-
     if (GTK_WINDOW (window)->group)
         gtk_window_group_add_window (GTK_WINDOW (window)->group,
                                      GTK_WINDOW (window));
@@ -584,7 +557,11 @@ moo_combo_popup_real (MooCombo *combo)
         gtk_tree_selection_unselect_all (selection);
     }
 
-    send_focus_change (GTK_WIDGET (combo->priv->popup), TRUE);
+    gtk_widget_ensure_style (GTK_WIDGET (combo->priv->treeview));
+    gtk_widget_modify_bg (GTK_WIDGET (combo->priv->treeview), GTK_STATE_ACTIVE,
+                          &GTK_WIDGET(combo->priv->treeview)->style->base[GTK_STATE_SELECTED]);
+    gtk_widget_modify_base (GTK_WIDGET (combo->priv->treeview), GTK_STATE_ACTIVE,
+                            &GTK_WIDGET(combo->priv->treeview)->style->base[GTK_STATE_SELECTED]);
 
     gtk_grab_add (combo->priv->popup);
     gdk_pointer_grab (combo->priv->popup->window, TRUE,

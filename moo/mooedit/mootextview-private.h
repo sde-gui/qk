@@ -94,9 +94,6 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Drawing
     /*/
-    gboolean in_expose;
-    GdkRegion *update_region;
-    guint update_idle;
     gboolean highlight_current_line;
     GdkColor current_line_color;
     GdkGC *current_line_gc;

@@ -201,6 +201,7 @@ apply_tag (MooHighlighter     *hl,
     if (tag)
     {
         line->hl_info->tags = g_slist_prepend (line->hl_info->tags, tag);
+        hl->last_tag = tag;
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
     }
 }
@@ -219,6 +220,9 @@ moo_highlighter_new (GtkTextBuffer *buffer,
     hl->lang = lang ? moo_lang_ref (lang) : NULL;
     hl->buffer = buffer;
     hl->line_buf = line_buf;
+
+    if (gtk_check_version (2, 8, 0))
+        hl->need_last_tag = TRUE;
 
     return hl;
 }
@@ -462,7 +466,8 @@ hl_compute_line (MooHighlighter     *hl,
             if (result.match_len < 0)
                 result.match_len = g_utf8_pointer_to_offset (result.match_start, result.match_end);
 
-            moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
+            if (result.match_offset)
+                moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
 
             next_node = get_next_node (hl, node, matched_rule);
 
@@ -476,11 +481,16 @@ hl_compute_line (MooHighlighter     *hl,
             if (apply_tags)
             {
                 GtkTextIter m_start = data->start_iter, m_end;
-                gtk_text_iter_forward_chars (&m_start, result.match_offset);
+
+                if (result.match_offset)
+                    gtk_text_iter_forward_chars (&m_start, result.match_offset);
+
                 m_end = m_start;
                 gtk_text_iter_forward_chars (&m_end, result.match_len);
 
-                apply_tag (hl, line, node, NULL, NULL, &data->start_iter, &m_start);
+                if (result.match_offset)
+                    apply_tag (hl, line, node, NULL, NULL, &data->start_iter, &m_start);
+
                 apply_tag (hl, line, match_node, node, matched_rule, &m_start, &m_end);
 
                 moo_match_data_set_start (data, &m_end, result.match_end,
@@ -513,6 +523,20 @@ hl_compute_line (MooHighlighter     *hl,
         line->hl_info->tags_applied = TRUE;
 
     return get_next_line_node (hl, line);
+}
+
+
+static void
+check_last_tag (MooHighlighter *hl)
+{
+    if (hl->last_tag && hl->need_last_tag)
+    {
+        gboolean fg_set;
+        g_object_get (hl->last_tag, "foreground-set", &fg_set, NULL);
+        g_object_set (hl->last_tag, "foreground-set", fg_set, NULL);
+    }
+
+    hl->last_tag = NULL;
 }
 
 
@@ -551,6 +575,7 @@ hl_compute_range (MooHighlighter *hl,
 
     g_return_val_if_fail (node != NULL, TRUE);
 
+    hl->last_tag = NULL;
     gtk_text_buffer_get_iter_at_line (hl->buffer, &iter, lines->first);
 
     for (line_no = lines->first; line_no <= lines->last; ++line_no)
@@ -570,6 +595,23 @@ hl_compute_range (MooHighlighter *hl,
         moo_match_data_init (&match_data, line_no, &iter, NULL);
         node = hl_compute_line (hl, line, &match_data, node, apply_tags);
         moo_match_data_destroy (&match_data);
+
+#if 0
+        {
+            guint i;
+            g_print ("line %d, %d segments\n", line_no, line->hl_info->n_segments);
+            for (i = 0; i < line->hl_info->n_segments; ++i)
+            {
+                Segment *s = &line->hl_info->segments[i];
+                g_print ("segment %d: %d chars, context '%s'", i, s->len, s->ctx_node->ctx->name);
+                if (s->match_node)
+                    g_print (", match context '%s'", s->match_node->ctx->name);
+                if (s->rule)
+                    g_print (", rule '%s'", s->rule->debug_string);
+                g_print ("\n");
+            }
+        }
+#endif
 
         if (!gtk_text_iter_forward_line (&iter))
         {
@@ -615,6 +657,7 @@ hl_compute_range (MooHighlighter *hl,
     if (timer)
         g_timer_destroy (timer);
 
+    check_last_tag (hl);
     _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
                                            lines->first, line_no);
     return done;
@@ -745,6 +788,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
     }
 
     first_changed = last_changed = -1;
+    hl->last_tag = NULL;
 
     for (line_no = first_line; line_no <= last_line; ++line_no)
     {
@@ -796,6 +840,8 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
             t_start = t_end;
         }
     }
+
+    check_last_tag (hl);
 
     if (first_changed >= 0)
         _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),

@@ -56,6 +56,9 @@ struct _MooHighlighter {
     gboolean apply_tags;
     guint apply_idle;
     Area apply_to;
+
+    gboolean need_last_tag;
+    GtkTextTag *last_tag;
 };
 
 struct _MooSyntaxTag {

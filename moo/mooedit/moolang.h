@@ -174,6 +174,10 @@ struct _MooRule
         MooRuleAsciiAnyChar anychar;
         MooRuleInclude incl;
     };
+
+#if 1
+    char *debug_string;
+#endif
 };
 
 

@@ -1269,13 +1269,6 @@ moo_text_view_unrealize (GtkWidget *widget)
         add_selection_clipboard (view);
     }
 
-    if (view->priv->update_idle)
-    {
-        g_source_remove (view->priv->update_idle);
-        gdk_region_destroy (view->priv->update_region);
-        view->priv->update_region = NULL;
-    }
-
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }
 
@@ -1442,8 +1435,6 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *text_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT);
     GtkTextIter start, end;
 
-    view->priv->in_expose = TRUE;
-
     if (view->priv->highlight_current_line &&
         event->window == text_window && view->priv->current_line_gc)
             moo_text_view_draw_current_line (text_view, event);
@@ -1481,22 +1472,7 @@ moo_text_view_expose (GtkWidget      *widget,
     if (event->window == text_window && view->priv->draw_trailing_spaces)
         moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
 
-    view->priv->in_expose = FALSE;
     return handled;
-}
-
-
-static gboolean
-update_idle (MooTextView *view)
-{
-    GdkRegion *region = view->priv->update_region;
-    GdkWindow *window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
-                                                  GTK_TEXT_WINDOW_TEXT);
-    view->priv->update_idle = 0;
-    view->priv->update_region = NULL;
-    gdk_window_invalidate_region (window, region, FALSE);
-    gdk_region_destroy (region);
-    return FALSE;
 }
 
 
@@ -1507,7 +1483,6 @@ highlighting_changed (GtkTextView        *text_view,
 {
     GdkRectangle visible, changed, update;
     int y, height;
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
 
     if (!GTK_WIDGET_DRAWABLE (text_view))
         return;
@@ -1531,23 +1506,7 @@ highlighting_changed (GtkTextView        *text_view,
                                                &update.x,
                                                &update.y);
 
-//         if (view->priv->in_expose)
-//         {
-            if (view->priv->update_region)
-                gdk_region_union_with_rect (view->priv->update_region,
-                                            &update);
-            else
-                view->priv->update_region = gdk_region_rectangle (&update);
-
-            if (!view->priv->update_idle)
-                view->priv->update_idle = g_idle_add_full (UPDATE_PRIORITY,
-                                                           (GSourceFunc) update_idle,
-                                                           view, NULL);
-//         }
-//         else
-//         {
-//             gdk_window_invalidate_rect (window, &update, TRUE);
-//         }
+        gdk_window_invalidate_rect (window, &update, TRUE);
     }
 }
 
