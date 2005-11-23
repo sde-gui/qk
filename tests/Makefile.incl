@@ -24,8 +24,6 @@ if MOO_BUILD_TERM
 endif
 if MOO_BUILD_UTILS
 # noinst_PROGRAMS += testpanedfileview
-# noinst_PROGRAMS += testobject
-# noinst_PROGRAMS += markup miniglade
 endif
 
 bin_PROGRAMS += $(medit)
