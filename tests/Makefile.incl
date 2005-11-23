@@ -5,13 +5,16 @@ noinst_PROGRAMS =
 
 EXTRA_DIST +=           \
     tests/pyapp.py.in   \
-    tests/medit-ui.xml
+    tests/medit-ui.xml  \
+    tests/medit-app.opag
 
-BUILT_SOURCES += medit-ui.h
+BUILT_SOURCES += medit-ui.h tests/medit-app.c
 medit-ui.h: tests/medit-ui.xml
 	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
+tests/medit-app.c: tests/medit-app.opag
+	opag -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/tests/medit-app.opag $(srcdir)/tests/medit-app.c
 
-all-am: tests/pyapp.py medit-ui.h
+all-am: tests/pyapp.py
 
 if MOO_BUILD_APP
 medit = medit

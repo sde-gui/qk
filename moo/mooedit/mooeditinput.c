@@ -274,8 +274,9 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     GtkTextBuffer *buffer;
     GtkTextMark *insert;
     GtkTextIter iter;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
 
-    if (!text_view->cursor_visible)
+    if (!text_view->cursor_visible && !view->priv->overwrite_mode)
         return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
 
     buffer = gtk_text_view_get_buffer (text_view);
@@ -293,10 +294,31 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
             break;
 
         default:
-            return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+            if (view->priv->overwrite_mode)
+                gtk_text_view_set_cursor_visible (text_view, TRUE);
+            GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+            if (view->priv->overwrite_mode)
+                gtk_text_view_set_cursor_visible (text_view, FALSE);
+            return;
     }
 
     move_cursor_to (text_view, &iter, extend_selection);
+    _moo_text_view_pend_cursor_blink (view);
+}
+
+
+void
+_moo_text_view_page_horizontally (GtkTextView *text_view,
+                                  int          count,
+                                  gboolean     extend_selection)
+{
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+    if (view->priv->overwrite_mode)
+        gtk_text_view_set_cursor_visible (text_view, TRUE);
+    GTK_TEXT_VIEW_CLASS (parent_class())->page_horizontally (text_view, count, extend_selection);
+    if (view->priv->overwrite_mode)
+        gtk_text_view_set_cursor_visible (text_view, FALSE);
+    _moo_text_view_pend_cursor_blink (view);
 }
 
 
@@ -943,6 +965,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     view->priv->in_key_press = FALSE;
 
     _moo_text_view_check_char_inserted (view);
+    _moo_text_view_pend_cursor_blink (view);
 
     return handled;
 }

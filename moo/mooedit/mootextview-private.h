@@ -57,6 +57,9 @@ void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
                                                  GtkMovementStep     step,
                                                  gint                count,
                                                  gboolean            extend_selection);
+void        _moo_text_view_page_horizontally    (GtkTextView        *text_view,
+                                                 int                 count,
+                                                 gboolean            extend_selection);
 void        _moo_text_view_delete_from_cursor   (GtkTextView        *text_view,
                                                  GtkDeleteType       type,
                                                  gint                count);
@@ -76,6 +79,7 @@ int         _moo_text_view_extend_selection     (MooTextView        *view,
                                                  GtkTextIter        *selection_bound);
 
 void        _moo_text_view_check_char_inserted  (MooTextView        *view);
+void        _moo_text_view_pend_cursor_blink    (MooTextView        *view);
 
 
 typedef enum {
@@ -90,6 +94,12 @@ struct _MooTextViewPrivate {
 
     /* Clipboard */
     gboolean manage_clipboard;
+
+    /* Overwrite mode cursor */
+    gboolean overwrite_mode;
+    gboolean saved_cursor_visible;
+    gboolean cursor_visible;
+    guint blink_timeout;
 
     /***********************************************************************/
     /* Drawing

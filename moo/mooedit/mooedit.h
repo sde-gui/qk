@@ -87,16 +87,19 @@ struct _MooEditClass
 
     /* emitted when filename, modified status, or file on disk
        are changed. for use in editor to adjust title bar, etc. */
-    void (* doc_status_changed)     (MooEdit    *edit);
+    void (* doc_status_changed) (MooEdit    *edit);
 
-    void (* filename_changed)       (MooEdit    *edit,
-                                     const char *new_filename);
+    void (* filename_changed)   (MooEdit    *edit,
+                                 const char *new_filename);
 
-    void (* lang_changed)           (MooEdit    *edit);
+    void (* lang_changed)       (MooEdit    *edit);
 
-    void (* variable_changed)       (MooEdit    *edit,
-                                     const char *variable,
-                                     const char *value);
+    void (* variable_changed)   (MooEdit    *edit,
+                                 const char *variable,
+                                 const char *value);
+
+    void (* save_before)        (MooEdit    *edit);
+    void (* save_after)         (MooEdit    *edit);
 };
 
 

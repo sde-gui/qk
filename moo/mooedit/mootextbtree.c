@@ -218,6 +218,7 @@ hl_info_free (HLInfo *info)
     {
 #ifdef __MOO__
         g_free (info->segments);
+        g_slist_foreach (info->tags, (GFunc) g_object_unref, NULL);
         g_slist_free (info->tags);
         hl_info_free__ (info);
 #endif

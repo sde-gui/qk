@@ -853,7 +853,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
     if (base)
     {
-        char *opsys_name = g_filename_from_utf8 (utf8_name, len, NULL, NULL, NULL);
+        char *opsys_name = g_filename_from_utf8 (base, len, NULL, NULL, NULL);
 
         if (opsys_name)
             lang = moo_lang_mgr_get_lang_for_filename (mgr, opsys_name);

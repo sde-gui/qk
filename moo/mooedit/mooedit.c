@@ -78,6 +78,8 @@ enum {
     COMMENT,
     UNCOMMENT,
     VARIABLE_CHANGED,
+    SAVE_BEFORE,
+    SAVE_AFTER,
     LAST_SIGNAL
 };
 
@@ -162,6 +164,24 @@ moo_edit_class_init (MooEditClass *klass)
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
+
+    signals[SAVE_BEFORE] =
+            g_signal_new ("save-before",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooEditClass, save_before),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
+    signals[SAVE_AFTER] =
+            g_signal_new ("save-after",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST,
+                          G_STRUCT_OFFSET (MooEditClass, save_after),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     /* TODO: this is wrong */
     _moo_edit_set_default_settings ();

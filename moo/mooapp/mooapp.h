@@ -87,7 +87,7 @@ GType            moo_app_window_policy_get_type (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
-void             moo_app_init                   (MooApp     *app);
+gboolean         moo_app_init                   (MooApp     *app);
 int              moo_app_run                    (MooApp     *app);
 gboolean         moo_app_quit                   (MooApp     *app);
 

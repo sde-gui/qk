@@ -1376,6 +1376,7 @@ do_save (MooEditor    *editor,
          const char   *encoding,
          GError      **error)
 {
+    gboolean result;
     gboolean strip_whitespace = FALSE;
     const char *var;
 
@@ -1390,8 +1391,12 @@ do_save (MooEditor    *editor,
     if (strip_whitespace)
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
 
-    return moo_edit_saver_save (saver, doc, filename, encoding,
-                                moo_editor_get_save_flags (editor), error);
+    g_signal_emit_by_name (doc, "save-before");
+    result = moo_edit_saver_save (saver, doc, filename, encoding,
+                                  moo_editor_get_save_flags (editor), error);
+    g_signal_emit_by_name (doc, "save-after");
+
+    return result;
 }
 
 

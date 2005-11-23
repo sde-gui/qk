@@ -82,6 +82,9 @@ struct _MooAppPrivate {
     char       *tmpdir;
 
     gboolean    use_python_console;
+
+    gboolean    new_app;
+    char      **open_files;
 };
 
 
@@ -179,7 +182,9 @@ enum {
     PROP_RUN_OUTPUT,
     PROP_USE_EDITOR,
     PROP_USE_TERMINAL,
-    PROP_USE_PYTHON_CONSOLE
+    PROP_USE_PYTHON_CONSOLE,
+    PROP_OPEN_FILES,
+    PROP_NEW_APP
 };
 
 enum {
@@ -305,6 +310,21 @@ moo_app_class_init (MooAppClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_OPEN_FILES,
+                                     g_param_spec_pointer ("open-files",
+                                             "open-files",
+                                             "open-files",
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_NEW_APP,
+                                     g_param_spec_boolean ("new-app",
+                                             "new-app",
+                                             "new-app",
+                                             FALSE,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
     signals[INIT] =
             g_signal_new ("init",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -312,7 +332,7 @@ moo_app_class_init (MooAppClass *klass)
                           G_STRUCT_OFFSET (MooAppClass, init),
                           NULL, NULL,
                           _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_STRING, 0);
+                          G_TYPE_BOOLEAN, 0);
 
     signals[RUN] =
             g_signal_new ("run",
@@ -493,6 +513,20 @@ moo_app_set_property (GObject        *object,
 
         case PROP_USE_PYTHON_CONSOLE:
             app->priv->use_python_console = g_value_get_boolean (value);
+            break;
+
+        case PROP_NEW_APP:
+            app->priv->new_app = g_value_get_boolean (value);
+            break;
+
+        case PROP_OPEN_FILES:
+            g_strfreev (app->priv->open_files);
+            app->priv->open_files = g_strdupv (g_value_get_pointer (value));
+            if (app->priv->open_files && !*app->priv->open_files)
+            {
+                g_strfreev (app->priv->open_files);
+                app->priv->open_files = NULL;
+            }
             break;
 
         default:
@@ -849,6 +883,49 @@ moo_app_init_real (MooApp *app)
     MooUIXML *ui_xml;
     GError *error = NULL;
 
+    if (!app->priv->new_app)
+    {
+        char **p;
+        GString *msg = g_string_new (NULL);
+
+        if (!app->priv->open_files || !*(app->priv->open_files))
+            g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
+
+        for (p = app->priv->open_files; p && *p; ++p)
+        {
+            char *freeme = NULL;
+            const char *basename, *filename;
+
+            basename = *p;
+
+            if (g_path_is_absolute (basename))
+            {
+                filename = basename;
+            }
+            else
+            {
+                char *dir = g_get_current_dir ();
+                freeme = g_build_filename (dir, basename, NULL);
+                filename = freeme;
+                g_free (dir);
+            }
+
+            g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
+            g_string_append_len (msg, filename, strlen (filename) + 1);
+
+            g_free (freeme);
+        }
+
+        if (moo_app_send_msg (app, msg->str, msg->len))
+        {
+            g_string_free (msg, TRUE);
+            goto exit;
+        }
+
+        g_string_free (msg, TRUE);
+    }
+
+    app->priv->new_app = TRUE;
     gdk_set_program_class (app->priv->info->full_name);
 
 #ifdef __WIN32__
@@ -939,6 +1016,10 @@ moo_app_init_real (MooApp *app)
     start_io (app);
 
     return TRUE;
+
+exit:
+    app->priv->new_app = FALSE;
+    return FALSE;
 }
 
 
@@ -1047,13 +1128,36 @@ static gboolean on_gtk_main_quit (MooApp *app)
 }
 
 
-static int      moo_app_run_real        (MooApp         *app)
+static int
+moo_app_run_real (MooApp *app)
 {
     g_return_val_if_fail (!app->priv->running, 0);
     app->priv->running = TRUE;
 
+    if (!app->priv->new_app)
+        return 0;
+
     app->priv->quit_handler_id =
             gtk_quit_add (0, (GtkFunction) on_gtk_main_quit, app);
+
+    if (app->priv->open_files)
+    {
+        char **file;
+        MooEditor *editor;
+        MooEditWindow *window;
+
+        editor = moo_app_get_editor (app);
+        window = moo_editor_get_active_window (editor);
+
+        if (!window)
+            window = moo_editor_new_window (editor);
+
+        for (file = app->priv->open_files; file && *file; ++file)
+            moo_editor_open_file (editor, window, NULL, *file, NULL);
+
+        g_strfreev (app->priv->open_files);
+        app->priv->open_files = NULL;
+    }
 
     gtk_main ();
 
@@ -1155,19 +1259,23 @@ static void     moo_app_quit_real       (MooApp         *app)
 }
 
 
-void             moo_app_init                   (MooApp     *app)
+gboolean
+moo_app_init (MooApp *app)
 {
-    g_return_if_fail (MOO_IS_APP (app));
-
-    MOO_APP_GET_CLASS(app)->init (app);
+    gboolean retval;
+    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
+    g_signal_emit (app, signals[INIT], 0, &retval);
+    return retval;
 }
 
 
-int              moo_app_run                    (MooApp     *app)
+int
+moo_app_run (MooApp *app)
 {
+    int retval;
     g_return_val_if_fail (MOO_IS_APP (app), -1);
-
-    return MOO_APP_GET_CLASS(app)->run (app);
+    g_signal_emit (app, signals[RUN], 0, &retval);
+    return retval;
 }
 
 

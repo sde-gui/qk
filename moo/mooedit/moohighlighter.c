@@ -200,7 +200,7 @@ apply_tag (MooHighlighter     *hl,
 
     if (tag)
     {
-        line->hl_info->tags = g_slist_prepend (line->hl_info->tags, tag);
+        line->hl_info->tags = g_slist_prepend (line->hl_info->tags, g_object_ref (tag));
         hl->last_tag = tag;
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
     }
@@ -450,6 +450,7 @@ hl_compute_line (MooHighlighter     *hl,
         while (tags)
         {
             gtk_text_buffer_remove_tag (hl->buffer, tags->data, &start, &end);
+            g_object_unref (tags->data);
             tags = g_slist_delete_link (tags, tags);
         }
     }
@@ -820,6 +821,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
         while (tags)
         {
             gtk_text_buffer_remove_tag (hl->buffer, tags->data, &t_start, &t_end);
+            g_object_unref (tags->data);
             tags = g_slist_delete_link (tags, tags);
         }
 
