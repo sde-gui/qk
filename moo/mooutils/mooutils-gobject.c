@@ -15,6 +15,8 @@
 #include "mooutils/mooclosure.h"
 #include <gobject/gvaluecollector.h>
 #include <string.h>
+#include <errno.h>
+#include <stdlib.h>
 
 
 /*****************************************************************************/
@@ -263,6 +265,14 @@ moo_value_convert (const GValue   *src,
             return TRUE;
         }
 
+        if (src_type == G_TYPE_UINT)
+        {
+            char *string =
+                    g_strdup_printf ("%d", g_value_get_uint (src));
+            g_value_take_string (dest, string);
+            return TRUE;
+        }
+
         if (src_type == GDK_TYPE_COLOR)
         {
             char string[14];
@@ -341,9 +351,44 @@ moo_value_convert (const GValue   *src,
         if (dest_type == G_TYPE_INT)
         {
             if (!string || !string[0])
+            {
                 g_value_set_int (dest, 0);
+            }
             else
-                g_value_set_int (dest, g_ascii_strtod (string, NULL));
+            {
+                long v;
+
+                errno = 0;
+                v = strtol (string, NULL, 10);
+
+                if (errno || v > G_MAXINT || v < G_MININT)
+                    return FALSE;
+
+                g_value_set_int (dest, v);
+            }
+
+            return TRUE;
+        }
+
+        if (dest_type == G_TYPE_UINT)
+        {
+            if (!string || !string[0])
+            {
+                g_value_set_uint (dest, 0);
+            }
+            else
+            {
+                gulong v;
+
+                errno = 0;
+                v = strtoul (string, NULL, 10);
+
+                if (errno || v > G_MAXUINT)
+                    return FALSE;
+
+                g_value_set_uint (dest, v);
+            }
+
             return TRUE;
         }
 
@@ -459,6 +504,9 @@ moo_value_equal (const GValue   *a,
     if (type == G_TYPE_INT)
         return g_value_get_int (a) == g_value_get_int (b);
 
+    if (type == G_TYPE_UINT)
+        return g_value_get_uint (a) == g_value_get_uint (b);
+
     if (type == G_TYPE_DOUBLE)
         return g_value_get_double (a) == g_value_get_double (b);
 
@@ -505,6 +553,7 @@ moo_value_type_supported (GType type)
 {
     return type == G_TYPE_BOOLEAN ||
             type == G_TYPE_INT ||
+            type == G_TYPE_UINT ||
             type == G_TYPE_DOUBLE ||
             type == G_TYPE_STRING ||
             type == GDK_TYPE_COLOR ||
@@ -588,6 +637,26 @@ moo_value_convert_to_string (const GValue *val)
         return NULL;
     else
         return g_value_get_string (&result);
+}
+
+
+gboolean
+moo_value_convert_from_string (const char *string,
+                               GValue     *val)
+{
+    GValue str_val;
+    gboolean result;
+
+    g_return_val_if_fail (G_IS_VALUE (val), FALSE);
+    g_return_val_if_fail (string != NULL, FALSE);
+
+    str_val.g_type = 0;
+    g_value_init (&str_val, G_TYPE_STRING);
+    g_value_set_static_string (&str_val, string);
+    result = moo_value_convert (&str_val, val);
+    g_value_unset (&str_val);
+
+    return result;
 }
 
 

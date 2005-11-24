@@ -71,6 +71,8 @@ int             moo_value_convert_to_enum   (const GValue   *val,
 double          moo_value_convert_to_double (const GValue   *val);
 const GdkColor *moo_value_convert_to_color  (const GValue   *val);
 const char     *moo_value_convert_to_string (const GValue   *val);
+gboolean        moo_value_convert_from_string (const char   *string,
+                                               GValue       *val);
 
 gboolean        moo_convert_string_to_bool  (const char     *string,
                                              gboolean        default_val);
