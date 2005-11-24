@@ -467,11 +467,13 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
 
     if (first_line < last_line)
-        moo_line_buffer_delete_range (buffer->priv->line_buf,
-                                      first_line + 1,
-                                      last_line - first_line);
+        moo_line_buffer_delete (buffer->priv->line_buf,
+                                first_line + 1,
+                                last_line - first_line);
+    else
+        moo_line_buffer_invalidate (buffer->priv->line_buf,
+                                    first_line);
 
-    moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     moo_text_buffer_queue_highlight (buffer);
 
     update_selection (buffer);
@@ -570,7 +572,7 @@ static void
 moo_text_buffer_queue_highlight (MooTextBuffer *buffer)
 {
     if (buffer->priv->lang && buffer->priv->do_highlight)
-        moo_highlighter_queue_compute (buffer->priv->hl, TRUE);
+        moo_highlighter_queue_compute (buffer->priv->hl, FALSE);
 }
 
 

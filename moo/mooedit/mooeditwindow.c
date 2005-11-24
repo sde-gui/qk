@@ -408,6 +408,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "icon-stock-id", GTK_STOCK_GO_BACK,
                                  "accel", "<alt>Left",
                                  "closure-callback", moo_edit_window_previous_tab,
+                                 "condition::sensitive", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action (window_class, "NextTab",
@@ -417,6 +418,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                  "accel", "<alt>Right",
                                  "closure-callback", moo_edit_window_next_tab,
+                                 "condition::sensitive", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action (window_class, "Find",

@@ -437,21 +437,29 @@ hl_compute_line (MooHighlighter     *hl,
     MooRule *matched_rule;
     MatchResult result;
 
-    if (apply_tags && line->hl_info->tags && !gtk_text_iter_ends_line (&data->start_iter))
+    if (apply_tags && line->hl_info->tags)
     {
-        GtkTextIter start = data->start_iter;
-        GtkTextIter end = data->start_iter;
         GSList *tags = line->hl_info->tags;
 
         line->hl_info->tags = NULL;
 
-        gtk_text_iter_forward_to_line_end (&end);
-
-        while (tags)
+        if (!gtk_text_iter_ends_line (&data->start_iter))
         {
-            gtk_text_buffer_remove_tag (hl->buffer, tags->data, &start, &end);
-            g_object_unref (tags->data);
-            tags = g_slist_delete_link (tags, tags);
+            GtkTextIter start = data->start_iter;
+            GtkTextIter end = data->start_iter;
+            gtk_text_iter_forward_to_line_end (&end);
+
+            while (tags)
+            {
+                gtk_text_buffer_remove_tag (hl->buffer, tags->data, &start, &end);
+                g_object_unref (tags->data);
+                tags = g_slist_delete_link (tags, tags);
+            }
+        }
+        else
+        {
+            g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
+            g_slist_free (tags);
         }
     }
 
@@ -584,7 +592,7 @@ hl_compute_range (MooHighlighter *hl,
         Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
         MatchData match_data;
 
-        g_assert (line->hl_info->tags || !line->hl_info->tags_applied);
+        g_assert (line->hl_info->tags || !line->hl_info->tags_applied || !line->hl_info->n_segments);
         g_assert (line_no == gtk_text_iter_get_line (&iter));
 
         line->hl_info->start_node = node;
@@ -807,16 +815,20 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
         last_changed = line_no;
 
         line->hl_info->tags_applied = TRUE;
+        tags = line->hl_info->tags;
+        line->hl_info->tags = NULL;
 
         gtk_text_buffer_get_iter_at_line (hl->buffer, &t_start, line_no);
 
         if (gtk_text_iter_ends_line (&t_start))
+        {
+            g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
+            g_slist_free (tags);
             continue;
+        }
 
         t_end = t_start;
         gtk_text_iter_forward_to_line_end (&t_end);
-        tags = line->hl_info->tags;
-        line->hl_info->tags = NULL;
 
         while (tags)
         {

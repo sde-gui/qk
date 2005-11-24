@@ -72,8 +72,6 @@ Line    *moo_line_buffer_get_line       (LineBuffer     *line_buf,
 
 Line    *moo_line_buffer_insert         (LineBuffer     *line_buf,
                                          int             index);
-void     moo_line_buffer_delete         (LineBuffer     *line_buf,
-                                         int             index);
 void     moo_line_buffer_invalidate     (LineBuffer     *line_buf,
                                          int             line);
 void     moo_line_buffer_invalidate_all (LineBuffer     *line_buf);
@@ -82,9 +80,9 @@ void     moo_line_buffer_clamp_invalid  (LineBuffer     *line_buf);
 void     moo_line_buffer_split_line     (LineBuffer     *line_buf,
                                          int             line,
                                          int             num_new_lines);
-void     moo_line_buffer_delete_range   (LineBuffer     *line_buf,
+void     moo_line_buffer_delete         (LineBuffer     *line_buf,
                                          int             first,
-                                         int             last);
+                                         int             num);
 
 void     moo_line_erase_segments        (Line           *line);
 void     moo_line_add_segment           (Line           *line,

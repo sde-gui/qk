@@ -54,15 +54,6 @@ moo_line_buffer_clamp_invalid (LineBuffer *line_buf)
 
 
 void
-moo_line_buffer_delete (LineBuffer     *line_buf,
-                        int             index)
-{
-    moo_text_btree_delete (line_buf->tree, index);
-    moo_line_buffer_clamp_invalid (line_buf);
-}
-
-
-void
 moo_line_buffer_split_line (LineBuffer *line_buf,
                             int         line,
                             int         num_new_lines)
@@ -75,6 +66,7 @@ moo_line_buffer_split_line (LineBuffer *line_buf,
     l = moo_line_buffer_get_line (line_buf, line);
     invalidate_line (line_buf, l, line);
     tags = g_slist_copy (l->hl_info->tags);
+    g_slist_foreach (tags, (GFunc) g_object_ref, NULL);
 
     l = moo_line_buffer_get_line (line_buf, line + num_new_lines);
     invalidate_line (line_buf, l, line + num_new_lines);
@@ -84,14 +76,29 @@ moo_line_buffer_split_line (LineBuffer *line_buf,
 
 
 void
-moo_line_buffer_delete_range (LineBuffer *line_buf,
-                              int         first,
-                              int         num)
+moo_line_buffer_delete (LineBuffer *line_buf,
+                        int         first,
+                        int         num)
 {
+    Line *line = moo_line_buffer_get_line (line_buf, first + num - 1);
+    GSList *old_tags = line->hl_info->tags;
+    line->hl_info->tags = NULL;
+
     moo_text_btree_delete_range (line_buf->tree, first, num);
-    /* XXX is it needed? */
-    if (first < (int) moo_text_btree_size (line_buf->tree))
-        moo_line_buffer_invalidate (line_buf, first);
+
+    if (first > 0)
+    {
+        line = moo_line_buffer_get_line (line_buf, first - 1);
+        line->hl_info->tags = g_slist_concat (line->hl_info->tags, old_tags);
+    }
+    else
+    {
+        g_slist_foreach (old_tags, (GFunc) g_object_unref, NULL);
+        g_slist_free (old_tags);
+    }
+
+    if (first > 0)
+        moo_line_buffer_invalidate (line_buf, first - 1);
 }
 
 
