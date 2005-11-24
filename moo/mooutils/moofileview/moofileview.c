@@ -838,30 +838,24 @@ init_actions (MooFileView *fileview)
                                           "label", "Show Hidden Files",
                                           "tooltip", "Show Hidden Files",
                                           "accel", "<alt><shift>H",
-                                          "toggled-data", fileview,
-                                          "toggled-callback", moo_file_view_set_show_hidden,
                                           NULL);
-    moo_bind_bool_property (action, "active", fileview, "show-hidden-files", FALSE);
+    moo_sync_bool_property (action, "active", fileview, "show-hidden-files", FALSE);
 
     action = moo_action_group_add_action (fileview->priv->actions,
                                           "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "id", "ShowParentFolder",
                                           "label", "Show Parent Folder",
                                           "tooltip", "Show Parent Folder",
-                                          "toggled-data", fileview,
-                                          "toggled-callback", moo_file_view_set_show_parent,
                                           NULL);
-    moo_bind_bool_property (action, "active", fileview, "show-parent-folder", FALSE);
+    moo_sync_bool_property (action, "active", fileview, "show-parent-folder", FALSE);
 
     action = moo_action_group_add_action (fileview->priv->actions,
                                           "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                           "id", "CaseSensitiveSort",
                                           "label", "Case Sensitive Sort",
                                           "tooltip", "Case Sensitive Sort",
-                                          "toggled-data", fileview,
-                                          "toggled-callback", moo_file_view_set_sort_case_sensitive,
                                           NULL);
-    moo_bind_bool_property (action, "active", fileview, "sort-case-sensitive", FALSE);
+    moo_sync_bool_property (action, "active", fileview, "sort-case-sensitive", FALSE);
 
     action = moo_action_group_add_action (fileview->priv->actions,
                                           "id", "Properties",

@@ -1588,6 +1588,29 @@ moo_bind_bool_property (gpointer            target,
 }
 
 
+gboolean
+moo_sync_bool_property (gpointer            slave,
+                        const char         *slave_prop,
+                        gpointer            master,
+                        const char         *master_prop,
+                        gboolean            invert)
+{
+    guint id1 = 0, id2 = 0;
+
+    id1 = moo_bind_bool_property (slave, slave_prop, master, master_prop, invert);
+
+    if (id1)
+    {
+        id2 = moo_bind_bool_property (master, master_prop, slave, slave_prop, invert);
+
+        if (!id2)
+            moo_watch_remove (id1);
+    }
+
+    return id1 && id2;
+}
+
+
 void
 moo_bind_sensitive (GtkWidget          *btn,
                     GtkWidget         **dependent,

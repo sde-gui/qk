@@ -254,15 +254,16 @@ create_menu_item (MooAction *action)
 {
     GtkWidget *item = NULL;
 
-    if (action->stock_id) {
+    if (action->stock_id)
+    {
         GtkStockItem stock_item;
+
         if (gtk_stock_lookup (action->stock_id, &stock_item))
-        {
             item = gtk_check_menu_item_new_with_mnemonic (stock_item.label);
-        }
         else
             g_warning ("could not find stock item '%s'", action->stock_id);
     }
+
     if (!item)
         item = gtk_check_menu_item_new_with_label (action->label);
 
@@ -361,8 +362,7 @@ moo_toggle_action_add_proxy (MooAction *action,
 #endif /* GTK_CHECK_VERSION(2,4,0) */
         GTK_IS_TOGGLE_BUTTON (proxy))
     {
-        moo_bind_bool_property (action, "active", proxy, "active", FALSE);
-        moo_bind_bool_property (proxy, "active", action, "active", FALSE);
+        moo_sync_bool_property (proxy, "active", action, "active", FALSE);
     }
     else
     {

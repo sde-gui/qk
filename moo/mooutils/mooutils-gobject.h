@@ -212,6 +212,11 @@ guint       moo_bind_bool_property  (gpointer            target,
                                      gpointer            source,
                                      const char         *source_prop,
                                      gboolean            invert);
+gboolean    moo_sync_bool_property  (gpointer            slave,
+                                     const char         *slave_prop,
+                                     gpointer            master,
+                                     const char         *master_prop,
+                                     gboolean            invert);
 
 typedef void (*MooTransformPropFunc)(GValue             *target,
                                      const GValue       *source,
