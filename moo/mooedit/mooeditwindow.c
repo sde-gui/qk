@@ -1771,7 +1771,7 @@ lang_item_activated (MooEditWindow *window,
     g_return_if_fail (doc != NULL);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    old_val = moo_edit_get_var (doc, MOO_EDIT_VAR_LANG);
+    old_val = moo_edit_get_string (doc, MOO_EDIT_VAR_LANG);
 
     if (old_val)
         do_set = !lang_name || strcmp (old_val, lang_name);
@@ -1779,8 +1779,8 @@ lang_item_activated (MooEditWindow *window,
         do_set = !!lang_name;
 
     if (do_set)
-        moo_edit_set_var_full (doc, MOO_EDIT_VAR_LANG, lang_name,
-                               MOO_EDIT_VAR_DEP_NONE);
+        moo_edit_set_string (doc, MOO_EDIT_VAR_LANG, lang_name,
+                             MOO_EDIT_VAR_DEP_NONE);
 }
 
 

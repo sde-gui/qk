@@ -35,6 +35,12 @@ void        _moo_edit_settings_changed      (const char     *key,
                                              const GValue   *newval,
                                              MooEdit        *edit);
 
+void        _moo_edit_freeze_var_notify     (MooEdit        *edit);
+void        _moo_edit_thaw_var_notify       (MooEdit        *edit);
+void        _moo_edit_var_notify            (MooEdit        *edit,
+                                             const char     *name);
+
+
 /***********************************************************************/
 /* File operations
 /*/
@@ -55,6 +61,10 @@ typedef enum {
     MOO_EDIT_LINE_END_WIN32 = 1,
     MOO_EDIT_LINE_END_MAC   = 2
 } MooEditLineEndType;
+
+
+typedef struct _VarTable VarTable;
+typedef struct _StringList StringList;
 
 
 struct _MooEditPrivate {
@@ -87,8 +97,9 @@ struct _MooEditPrivate {
     /***********************************************************************/
     /* Language and stuff
     /*/
-    GHashTable *vars;
-    gboolean lang_custom;
+    VarTable *vars;
+    StringList *changed_vars;
+    guint freeze_var_notify;
 
     /***********************************************************************/
     /* Preferences

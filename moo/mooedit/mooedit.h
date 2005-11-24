@@ -37,12 +37,13 @@ G_BEGIN_DECLS
 
 typedef enum {
     MOO_EDIT_VAR_DEP_NONE       = 0,
-    MOO_EDIT_VAR_DEP_FILENAME   = 1
+    MOO_EDIT_VAR_DEP_FILENAME   = 1,
+    MOO_EDIT_VAR_DEP_AUTO       = 2
 } MooEditVarDep;
 
-#define MOO_EDIT_VAR_LANG       "lang"
-#define MOO_EDIT_VAR_INDENTER   "indenter"
-#define MOO_EDIT_VAR_STRIP      "strip"
+#define MOO_EDIT_VAR_LANG   "lang"
+#define MOO_EDIT_VAR_INDENT "indent"
+#define MOO_EDIT_VAR_STRIP  "strip"
 
 
 typedef enum {
@@ -95,8 +96,7 @@ struct _MooEditClass
     void (* lang_changed)       (MooEdit    *edit);
 
     void (* variable_changed)   (MooEdit    *edit,
-                                 const char *variable,
-                                 const char *value);
+                                 const char *name);
 
     void (* save_before)        (MooEdit    *edit);
     void (* save_after)         (MooEdit    *edit);
@@ -140,13 +140,31 @@ gboolean         moo_edit_get_highlight         (MooEdit        *edit);
 
 void             moo_edit_set_var               (MooEdit        *edit,
                                                  const char     *name,
-                                                 const char     *value);
-void             moo_edit_set_var_full          (MooEdit        *edit,
+                                                 const GValue   *value,
+                                                 MooEditVarDep   dep);
+gboolean         moo_edit_get_var               (MooEdit        *edit,
+                                                 const char     *name,
+                                                 GValue         *value);
+
+char            *moo_edit_get_string            (MooEdit        *edit,
+                                                 const char     *name);
+gboolean         moo_edit_get_bool              (MooEdit        *edit,
+                                                 const char     *name,
+                                                 gboolean        default_val);
+int              moo_edit_get_int               (MooEdit        *edit,
+                                                 const char     *name,
+                                                 int             default_val);
+guint            moo_edit_get_uint              (MooEdit        *edit,
+                                                 const char     *name,
+                                                 guint           default_val);
+void             moo_edit_set_string            (MooEdit        *edit,
                                                  const char     *name,
                                                  const char     *value,
                                                  MooEditVarDep   dep);
-const char      *moo_edit_get_var               (MooEdit        *edit,
-                                                 const char     *name);
+
+void             moo_edit_register_var          (GParamSpec     *pspec);
+void             moo_edit_register_var_alias    (const char     *name,
+                                                 const char     *alias);
 
 gboolean         moo_edit_save                  (MooEdit        *edit);
 gboolean         moo_edit_save_as               (MooEdit        *edit,

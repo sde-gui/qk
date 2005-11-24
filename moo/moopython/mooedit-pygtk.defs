@@ -123,6 +123,7 @@
   (values
     '("none" "MOO_EDIT_VAR_DEP_NONE")
     '("filename" "MOO_EDIT_VAR_DEP_FILENAME")
+    '("auto" "MOO_EDIT_VAR_DEP_AUTO")
   )
 )
 
@@ -345,35 +346,35 @@
   (return-type "gboolean")
 )
 
-(define-method set_var
-  (of-object "MooEdit")
-  (c-name "moo_edit_set_var")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name")
-    '("const-char*" "value" (null-ok))
-  )
-)
+;; (define-method set_var
+;;   (of-object "MooEdit")
+;;   (c-name "moo_edit_set_var")
+;;   (return-type "none")
+;;   (parameters
+;;     '("const-char*" "name")
+;;     '("const-char*" "value" (null-ok))
+;;   )
+;; )
 
-(define-method set_var_full
-  (of-object "MooEdit")
-  (c-name "moo_edit_set_var_full")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name")
-    '("const-char*" "value" (null-ok))
-    '("MooEditVarDep" "dep")
-  )
-)
+;; (define-method set_var_full
+;;   (of-object "MooEdit")
+;;   (c-name "moo_edit_set_var_full")
+;;   (return-type "none")
+;;   (parameters
+;;     '("const-char*" "name")
+;;     '("const-char*" "value" (null-ok))
+;;     '("MooEditVarDep" "dep")
+;;   )
+;; )
 
-(define-method get_var
-  (of-object "MooEdit")
-  (c-name "moo_edit_get_var")
-  (return-type "const-char*")
-  (parameters
-    '("const-char*" "name")
-  )
-)
+;; (define-method get_var
+;;   (of-object "MooEdit")
+;;   (c-name "moo_edit_get_var")
+;;   (return-type "const-char*")
+;;   (parameters
+;;     '("const-char*" "name")
+;;   )
+;; )
 
 (define-method save
   (of-object "MooEdit")
@@ -539,16 +540,6 @@
   )
 )
 
-(define-method set_value
-  (of-object "MooIndenter")
-  (c-name "moo_indenter_set_value")
-  (return-type "none")
-  (parameters
-    '("const-char*" "var")
-    '("const-char*" "value")
-  )
-)
-
 (define-method make_space
   (of-object "MooIndenter")
   (c-name "moo_indenter_make_space")
@@ -564,7 +555,6 @@
   (c-name "moo_indenter_character")
   (return-type "none")
   (parameters
-    '("GtkTextBuffer*" "buffer")
     '("gunichar" "inserted_char")
     '("GtkTextIter*" "where")
   )

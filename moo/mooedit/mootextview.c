@@ -930,7 +930,7 @@ moo_text_view_char_inserted (MooTextView    *view,
     {
         GtkTextBuffer *buffer = get_buffer (view);
         gtk_text_buffer_begin_user_action (buffer);
-        moo_indenter_character (view->priv->indenter, buffer,
+        moo_indenter_character (view->priv->indenter,
                                 character, where);
         gtk_text_buffer_end_user_action (buffer);
         return TRUE;

@@ -46,14 +46,11 @@ struct _MooIndenterClass
 {
     GObjectClass parent_class;
 
-    void        (*set_value)            (MooIndenter    *indenter,
-                                         const char     *var,
-                                         const char     *value);
-
-    void        (*character)            (MooIndenter    *indenter,
-                                         GtkTextBuffer  *buffer,
-                                         gunichar        inserted_char,
-                                         GtkTextIter    *where);
+    void    (*update_variable)  (MooIndenter    *indenter,
+                                 const char     *varname);
+    void    (*character)        (MooIndenter    *indenter,
+                                 gunichar        inserted_char,
+                                 GtkTextIter    *where);
 };
 
 
@@ -62,16 +59,11 @@ GType        moo_indenter_get_type              (void) G_GNUC_CONST;
 MooIndenter *moo_indenter_new                   (gpointer        doc,
                                                  const char     *name);
 
-void         moo_indenter_set_value             (MooIndenter    *indenter,
-                                                 const char     *var,
-                                                 const char     *value);
-
 char        *moo_indenter_make_space            (MooIndenter    *indenter,
                                                  guint           len,
                                                  guint           start);
 
 void         moo_indenter_character             (MooIndenter    *indenter,
-                                                 GtkTextBuffer  *buffer,
                                                  gunichar        inserted_char,
                                                  GtkTextIter    *where);
 void         moo_indenter_tab                   (MooIndenter    *indenter,

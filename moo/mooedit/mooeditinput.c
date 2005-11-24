@@ -1184,7 +1184,7 @@ handle_enter (MooTextView        *view,
         gtk_text_buffer_delete (buffer, &start, &end);
     /* XXX insert "\r\n" on windows? */
     gtk_text_buffer_insert (buffer, &start, "\n", 1);
-    moo_indenter_character (view->priv->indenter, buffer, '\n', &start);
+    moo_indenter_character (view->priv->indenter, '\n', &start);
 
     gtk_text_buffer_end_user_action (buffer);
 

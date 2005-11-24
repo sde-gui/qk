@@ -15,6 +15,7 @@
 #define MOOINDENTER_COMPILATION
 #include "mooedit/mooindenter.h"
 #include "mooedit/mooedit.h"
+#include "mooutils/moomarshals.h"
 #include <string.h>
 
 
@@ -34,22 +35,22 @@ static void     moo_indenter_get_property   (GObject        *object,
                                              GParamSpec     *pspec);
 
 static void     character_default           (MooIndenter    *indenter,
-                                             GtkTextBuffer  *buffer,
                                              gunichar        inserted_char,
                                              GtkTextIter    *where);
-static void     set_value_default           (MooIndenter    *indenter,
-                                             const char     *var,
-                                             const char     *value);
+static void     update_variable_default     (MooIndenter    *indenter,
+                                             const char     *var);
+
 static void     variable_changed            (MooIndenter    *indenter,
-                                             const char     *var,
-                                             const char     *value);
+                                             const char     *var);
 
 
 enum {
+    UPDATE_VARIABLE,
+    CHARACTER,
     LAST_SIGNAL
 };
 
-// static guint signals[LAST_SIGNAL];
+static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
@@ -75,7 +76,15 @@ moo_indenter_class_init (MooIndenterClass *klass)
     gobject_class->get_property = moo_indenter_get_property;
 
     klass->character = character_default;
-    klass->set_value = set_value_default;
+    klass->update_variable = update_variable_default;
+
+    moo_edit_register_var (g_param_spec_uint ("indent-tab-width", "indent-tab-width",
+                           "indent-tab-width", 1, G_MAXUINT, 8, 0));
+    moo_edit_register_var (g_param_spec_boolean ("indent-use-tabs",
+                           "indent-use-tabs", "indent-use-tabs", TRUE, 0));
+    moo_edit_register_var_alias ("indent-use-tabs", "use-tabs");
+    moo_edit_register_var (g_param_spec_uint ("indent-width", "indent-width",
+                           "indent-width", 1, G_MAXUINT, 8, 0));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DOC,
@@ -112,6 +121,27 @@ moo_indenter_class_init (MooIndenterClass *klass)
                                              G_MAXUINT,
                                              8,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    signals[UPDATE_VARIABLE] =
+            g_signal_new ("update-variable",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooIndenterClass, update_variable),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[CHARACTER] =
+            g_signal_new ("character",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooIndenterClass, character),
+                          NULL, NULL,
+                          _moo_marshal_VOID__UINT_BOXED,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_UINT,
+                          GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 
@@ -135,24 +165,22 @@ moo_indenter_constructor (GType           type,
     if (indent->doc)
     {
         guint i;
-        static const char *known_vars[] = {
-            "tab-width", "indent-tabs-mode",
-            "space-indent", "indent-width",
-            "c-basic-offset"
+
+        static const char *vars[] = {
+            "indent-tab-width",
+            "indent-width",
+            "indent-use-tabs"
         };
 
-        for (i = 0; i < G_N_ELEMENTS (known_vars); ++i)
-            moo_indenter_set_value (indent, known_vars[i], NULL);
-
-        for (i = 0; i < G_N_ELEMENTS (known_vars); ++i)
+        for (i = 0; i < G_N_ELEMENTS (vars); ++i)
         {
-            const char *val = moo_edit_get_var (indent->doc, known_vars[i]);
-            if (val)
-                moo_indenter_set_value (indent, known_vars[i], val);
+            if (moo_edit_get_var (indent->doc, vars[i], NULL))
+                variable_changed (indent, vars[i]);
         }
 
         g_signal_connect_swapped (indent->doc, "variable-changed",
-                                  G_CALLBACK (variable_changed), indent);
+                                  G_CALLBACK (variable_changed),
+                                  indent);
     }
 
     return object;
@@ -243,32 +271,19 @@ static void  moo_indenter_get_property  (GObject        *object,
 
 static void
 variable_changed (MooIndenter    *indenter,
-                  const char     *var,
-                  const char     *value)
+                  const char     *var)
 {
-    moo_indenter_set_value (indenter, var, value);
+    g_signal_emit (indenter, signals[UPDATE_VARIABLE], 0, var);
 }
 
 
 void
 moo_indenter_character (MooIndenter    *indenter,
-                        GtkTextBuffer  *buffer,
                         gunichar        inserted_char,
                         GtkTextIter    *where)
 {
     g_return_if_fail (MOO_IS_INDENTER (indenter));
-    MOO_INDENTER_GET_CLASS(indenter)->character (indenter, buffer, inserted_char, where);
-}
-
-
-void
-moo_indenter_set_value (MooIndenter    *indenter,
-                        const char     *var,
-                        const char     *value)
-{
-    g_return_if_fail (MOO_IS_INDENTER (indenter));
-    g_return_if_fail (var && var[0]);
-    MOO_INDENTER_GET_CLASS(indenter)->set_value (indenter, var, value);
+    MOO_INDENTER_GET_CLASS(indenter)->character (indenter, inserted_char, where);
 }
 
 
@@ -376,12 +391,12 @@ compute_line_offset (GtkTextIter    *iter,
 
 static void
 character_default (MooIndenter    *indenter,
-                   GtkTextBuffer  *buffer,
                    gunichar        inserted_char,
                    GtkTextIter    *where)
 {
     int i;
     char *indent_string = NULL;
+    GtkTextBuffer *buffer = gtk_text_iter_get_buffer (where);
 
     if (inserted_char != '\n')
         return;
@@ -676,31 +691,22 @@ moo_indenter_shift_lines (MooIndenter    *indenter,
 
 
 static void
-set_value_default (MooIndenter    *indenter,
-                   const char     *var,
-                   const char     *value)
+update_variable_default (MooIndenter    *indenter,
+                         const char     *var)
 {
-    if (!g_ascii_strcasecmp (var, "tab-width"))
+    if (!strcmp (var, "indent-tab-width"))
     {
-        guint64 tab_width = value ? g_ascii_strtoull (value, NULL, 10) : 8;
-
-        if (tab_width > 0 && tab_width < G_MAXUINT)
-            indenter->tab_width = tab_width;
+        guint tab_width = moo_edit_get_uint (indenter->doc, var, 8);
+        g_object_set (indenter, "tab-width", tab_width, NULL);
     }
-    else if (!g_ascii_strcasecmp (var, "indent-tabs-mode"))
+    else if (!strcmp (var, "indent-use-tabs"))
     {
-        indenter->use_tabs = value ? !g_ascii_strcasecmp (value, "t") : TRUE;
+        gboolean use_tabs = moo_edit_get_bool (indenter->doc, var, TRUE);
+        g_object_set (indenter, "use-tabs", use_tabs, NULL);
     }
-    else if (!g_ascii_strcasecmp (var, "space-indent"))
+    else if (!strcmp (var, "indent-width"))
     {
-        indenter->use_tabs = value ? !!g_ascii_strcasecmp (value, "on") : FALSE;
-    }
-    else if (!g_ascii_strcasecmp (var, "c-basic-offset") ||
-              !g_ascii_strcasecmp (var, "indent-width"))
-    {
-        guint64 indent = value ? g_ascii_strtoull (value, NULL, 10) : 8;
-
-        if (indent > 0 && indent < G_MAXUINT)
-            indenter->indent = indent;
+        guint width = moo_edit_get_uint (indenter->doc, var, 8);
+        g_object_set (indenter, "indent-width", width, NULL);
     }
 }

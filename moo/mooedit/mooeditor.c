@@ -746,8 +746,13 @@ moo_editor_add_doc (MooEditor      *editor,
     g_hash_table_insert (editor->priv->savers, doc, moo_edit_saver_ref (saver));
 
     if (!moo_edit_get_filename (doc) &&
-        !moo_edit_get_var (doc, MOO_EDIT_VAR_LANG) && editor->priv->default_lang)
-            moo_edit_set_var (doc, MOO_EDIT_VAR_LANG, editor->priv->default_lang);
+         !moo_edit_get_string (doc, MOO_EDIT_VAR_LANG) &&
+         editor->priv->default_lang)
+    {
+        moo_edit_set_string (doc, MOO_EDIT_VAR_LANG,
+                             editor->priv->default_lang,
+                             MOO_EDIT_VAR_DEP_AUTO);
+    }
 }
 
 
@@ -1377,18 +1382,11 @@ do_save (MooEditor    *editor,
          GError      **error)
 {
     gboolean result;
-    gboolean strip_whitespace = FALSE;
-    const char *var;
+    gboolean strip;
 
-    var = moo_edit_get_var (doc, MOO_EDIT_VAR_STRIP);
+    strip = moo_edit_get_bool (doc, MOO_EDIT_VAR_STRIP, FALSE);
 
-    if (var) /* XXX */
-        strip_whitespace = !g_ascii_strcasecmp (var, "true") ||
-                !g_ascii_strcasecmp (var, "on");
-    else
-        strip_whitespace = editor->priv->strip_whitespace;
-
-    if (strip_whitespace)
+    if (strip)
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
 
     g_signal_emit_by_name (doc, "save-before");
