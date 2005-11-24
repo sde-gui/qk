@@ -707,6 +707,6 @@ update_variable_default (MooIndenter    *indenter,
     else if (!strcmp (var, "indent-width"))
     {
         guint width = moo_edit_get_uint (indenter->doc, var, 8);
-        g_object_set (indenter, "indent-width", width, NULL);
+        g_object_set (indenter, "indent", width, NULL);
     }
 }
