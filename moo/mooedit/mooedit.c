@@ -619,80 +619,63 @@ moo_edit_get_highlight (MooEdit        *edit)
 }
 
 
-// static gboolean
-// is_ascii (const char *string)
-// {
-//     while (*string++)
-//         if ((guint8) *string > 127)
-//             return FALSE;
-//     return TRUE;
-// }
-//
-//
-// static void
-// try_mode_string (MooEdit    *edit,
-//                  const char *text,
-//                  const char *mode_string_start,
-//                  const char *var_val_separator)
-// {
-//     char *start, *mode_string;
-//     char **vars, **p;
-//
-//     mode_string = NULL;
-//     vars = NULL;
-//
-//     start = strstr (text, mode_string_start);
-//
-//     if (!start || !start[strlen (mode_string_start)])
-//         goto out;
-//
-//     start += strlen (mode_string_start);
-//
-//     mode_string = g_strdup (start);
-//     g_strstrip (mode_string);
-//
-//     vars = g_strsplit (mode_string, ";", 0);
-//
-//     if (!vars)
-//         goto out;
-//
-//     for (p = vars; *p != NULL; p++)
-//     {
-//         char *sep, *var, *value;
-//
-//         g_strstrip (*p);
-//         sep = strstr (*p, var_val_separator);
-//
-//         if (!sep || sep == *p || !sep[1])
-//             goto out;
-//
-//         var = g_strndup (*p, sep - *p);
-//         g_strstrip (var);
-//
-//         if (!var[0])
-//         {
-//             g_free (var);
-//             goto out;
-//         }
-//
-//         value = sep + 1;
-//         g_strstrip (value);
-//
-//         if (!value)
-//         {
-//             g_free (var);
-//             goto out;
-//         }
-//
-//         moo_edit_set_var (edit, var, value);
-//
-//         g_free (var);
-//     }
-//
-// out:
-//     g_free (mode_string);
-//     g_strfreev (vars);
-// }
+typedef void (*SetVarFunc) (MooEdit *edit,
+                            char    *name,
+                            char    *val);
+
+static void
+parse_mode_string (MooEdit    *edit,
+                   char       *string,
+                   const char *var_val_separator,
+                   SetVarFunc  func)
+{
+    char **vars, **p;
+
+    vars = NULL;
+
+    g_strstrip (string);
+
+    vars = g_strsplit (string, ";", 0);
+
+    if (!vars)
+        goto out;
+
+    for (p = vars; *p != NULL; p++)
+    {
+        char *sep, *var, *value;
+
+        g_strstrip (*p);
+        sep = strstr (*p, var_val_separator);
+
+        if (!sep || sep == *p || !sep[1])
+            goto out;
+
+        var = g_strndup (*p, sep - *p);
+        g_strstrip (var);
+
+        if (!var[0])
+        {
+            g_free (var);
+            goto out;
+        }
+
+        value = sep + 1;
+        g_strstrip (value);
+
+        if (!value)
+        {
+            g_free (var);
+            goto out;
+        }
+
+        func (edit, var, value);
+
+        g_free (var);
+    }
+
+out:
+    g_strfreev (vars);
+}
 
 
 static void
@@ -701,22 +684,126 @@ parse_kate_mode_string (G_GNUC_UNUSED MooEdit *edit,
 {
 }
 
-static void
-parse_emacs_mode_string (G_GNUC_UNUSED MooEdit *edit,
-                         G_GNUC_UNUSED char    *string)
+
+static gboolean
+moo_edit_set_var_from_string (MooEdit       *edit,
+                              const char    *name,
+                              const char    *strval)
 {
+    char *normname, *normval;
+    GParamSpec *pspec;
+    gboolean result = FALSE;
+    GValue value;
+
+    g_return_val_if_fail (name != NULL, FALSE);
+    g_return_val_if_fail (strval != NULL, FALSE);
+
+    normname = g_strdelimit (g_ascii_strdown (name, -1), "_", '-');
+    normval = g_ascii_strdown (strval, -1);
+
+    pspec = var_pool_get_pspec (moo_edit_var_pool, normname);
+    value.g_type = 0;
+
+    if (!pspec)
+        goto out;
+
+    if (G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_BOOLEAN)
+    {
+        if (!strcmp (normval, "yes") || !strcmp (normval, "on") ||
+             !strcmp (normval, "true") || !strcmp (normval, "1"))
+        {
+            g_value_init (&value, G_TYPE_BOOLEAN);
+            g_value_set_boolean (&value, TRUE);
+        }
+        else if (!strcmp (normval, "no") || !strcmp (normval, "off") ||
+                  !strcmp (normval, "false") || !strcmp (normval, "0"))
+        {
+            g_value_init (&value, G_TYPE_BOOLEAN);
+            g_value_set_boolean (&value, FALSE);
+        }
+        else
+        {
+            goto out;
+        }
+    }
+    else
+    {
+        g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+
+        if (!moo_value_convert_from_string (normval, &value))
+        {
+            g_value_unset (&value);
+            goto out;
+        }
+    }
+
+    moo_edit_set_var (edit, normname, &value, MOO_EDIT_VAR_DEP_FILENAME);
+    result = TRUE;
+
+out:
+
+#if 1
+    if (!result)
+        g_warning ("%s: could not set '%s' to '%s'", G_STRLOC, name, strval);
+    else
+        g_message ("%s: set '%s' to '%s'", G_STRLOC, normname, normval);
+#endif
+
+    g_free (normname);
+    g_free (normval);
+
+    if (G_IS_VALUE (&value))
+        g_value_unset (&value);
+
+    return result;
+}
+
+
+static void
+set_emacs_var (MooEdit *edit,
+               char    *name,
+               char    *val)
+{
+    if (!g_ascii_strcasecmp (name, "mode"))
+    {
+        moo_edit_set_var_from_string (edit, "lang", val);
+    }
+    else if (!g_ascii_strcasecmp (name, "tab-width"))
+    {
+        moo_edit_set_var_from_string (edit, "indent-tab-width", val);
+    }
+    else if (!g_ascii_strcasecmp (name, "c-basic-offset"))
+    {
+        moo_edit_set_var_from_string (edit, "indent-width", val);
+    }
+    else if (!g_ascii_strcasecmp (name, "indent-tabs-mode"))
+    {
+        if (!g_ascii_strcasecmp (val, "nil"))
+            moo_edit_set_var_from_string (edit, "indent-use-tabs", "false");
+        else
+            moo_edit_set_var_from_string (edit, "indent-use-tabs", "true");
+    }
 }
 
 static void
-parse_moo_mode_string (G_GNUC_UNUSED MooEdit *edit,
-                       G_GNUC_UNUSED char    *string)
+parse_emacs_mode_string (MooEdit *edit,
+                         char    *string)
 {
+    parse_mode_string (edit, string, ":", set_emacs_var);
+}
+
+
+static void
+parse_moo_mode_string (MooEdit *edit,
+                       char    *string)
+{
+    parse_mode_string (edit, string, " ", (SetVarFunc) moo_edit_set_var_from_string);
 }
 
 
 #define KATE_MODE_STRING        "kate:"
 #define EMACS_MODE_STRING       "-*-"
-#define MOO_MODE_STRING         "=*="
+#define MOO_MODE_STRING         "-%-"
 
 static void
 try_mode_string (MooEdit    *edit,
@@ -734,7 +821,7 @@ try_mode_string (MooEdit    *edit,
     {
         start += strlen (EMACS_MODE_STRING);
 
-        if ((end = strstr (start, EMACS_MODE_STRING)))
+        if ((end = strstr (start, EMACS_MODE_STRING)) && end > start)
         {
             end[0] = 0;
             return parse_emacs_mode_string (edit, start);
@@ -745,7 +832,7 @@ try_mode_string (MooEdit    *edit,
     {
         start += strlen (MOO_MODE_STRING);
 
-        if ((end = strstr (start, MOO_MODE_STRING)))
+        if ((end = strstr (start, MOO_MODE_STRING)) && end > start)
         {
             end[0] = 0;
             return parse_moo_mode_string (edit, start);
@@ -811,6 +898,9 @@ moo_edit_filename_changed (MooEdit    *edit,
     MooLang *lang = NULL;
 
     _moo_edit_freeze_var_notify (edit);
+
+    if (!edit->priv->changed_vars)
+        edit->priv->changed_vars = string_list_new ();
 
     var_table_remove_by_dep (edit->priv->vars,
                              MOO_EDIT_VAR_DEP_FILENAME,
