@@ -188,7 +188,7 @@ moo_closure_signal_new (gpointer    object,
                         const char *signal,
                         GCallback   proxy_func)
 {
-    guint signal_id;
+    guint signal_id = 0;
     GSignalQuery query;
     MooClosureSignal *cl;
 
