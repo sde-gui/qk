@@ -190,6 +190,8 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
+    edit->priv->vars = var_table_new (moo_edit_var_pool);
+
     edit->priv->enable_indentation = TRUE;
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
@@ -203,8 +205,6 @@ moo_edit_init (MooEdit *edit)
 #else
     edit->priv->line_end_type = MOO_EDIT_LINE_END_UNIX;
 #endif
-
-    edit->priv->vars = var_table_new (moo_edit_var_pool);
 
     g_object_set (edit, "draw-tabs", TRUE, "draw-trailing-spaces", TRUE, NULL);
 }
