@@ -1192,11 +1192,187 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 }
 
 
+typedef struct {
+    int x;
+    int y;
+} DragInfo;
+
+enum {
+    TARGET_MOO_EDIT_TAB = 1,
+    TARGET_URI_LIST = 2
+};
+
+static GtkTargetEntry tab_label_targets[] = {
+    { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
+    { (char*) "text/uri-list", 0, TARGET_URI_LIST }
+};
+
+
+static gboolean tab_icon_button_press       (GtkWidget      *evbox,
+                                             GdkEventButton *event,
+                                             MooEditWindow  *window);
+static gboolean tab_icon_button_release     (GtkWidget      *evbox,
+                                             GdkEventButton *event,
+                                             MooEditWindow  *window);
+static gboolean tab_icon_motion_notify      (GtkWidget      *evbox,
+                                             GdkEventMotion *event,
+                                             MooEditWindow  *window);
+static void     tab_icon_drag_data_delete   (GtkWidget      *evbox,
+                                             GdkDragContext *context,
+                                             MooEditWindow  *window);
+static void     tab_icon_drag_data_get      (GtkWidget      *evbox,
+                                             GdkDragContext *context,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time,
+                                             MooEditWindow  *window);
+static void     tab_icon_drag_end           (GtkWidget      *evbox,
+                                             GdkDragContext *context,
+                                             MooEditWindow  *window);
+
+static gboolean
+tab_icon_button_release (GtkWidget      *evbox,
+                         G_GNUC_UNUSED GdkEventButton *event,
+                         MooEditWindow  *window)
+{
+    g_object_set_data (G_OBJECT (evbox), "moo-drag-info", NULL);
+    g_signal_handlers_disconnect_by_func (evbox,
+                                          (gpointer) tab_icon_button_release,
+                                          window);
+    g_signal_handlers_disconnect_by_func (evbox,
+                                          (gpointer) tab_icon_motion_notify,
+                                          window);
+    return FALSE;
+}
+
+
+static gboolean
+tab_icon_motion_notify (GtkWidget      *evbox,
+                        GdkEventMotion *event,
+                        MooEditWindow  *window)
+{
+    DragInfo *info;
+
+    info = g_object_get_data (G_OBJECT (evbox), "moo-drag-info");
+    g_return_val_if_fail (info != NULL, FALSE);
+
+    if (gtk_drag_check_threshold (evbox, info->x, info->y, event->x, event->y))
+    {
+        GtkTargetList *targets;
+        GdkDragContext *context;
+        GdkPixbuf *pixbuf;
+        GtkImage *icon;
+        MooEdit *edit;
+
+        edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
+        g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+
+        targets = gtk_target_list_new (tab_label_targets, 1);
+
+        if (moo_edit_get_filename (edit))
+            gtk_target_list_add_table (targets, &tab_label_targets[1], 1);
+
+        context = gtk_drag_begin (evbox, targets,
+                                  GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,
+                                  1, (GdkEvent*) event);
+
+        icon = g_object_get_data (G_OBJECT (evbox), "moo-edit-icon");
+        pixbuf = gtk_image_get_pixbuf (icon);
+        gtk_drag_set_icon_pixbuf (context, pixbuf, 0, 0);
+
+        g_signal_connect (evbox, "drag-data-delete",
+                          G_CALLBACK (tab_icon_drag_data_delete), window);
+        g_signal_connect (evbox, "drag-data-get",
+                          G_CALLBACK (tab_icon_drag_data_get), window);
+        g_signal_connect (evbox, "drag-end",
+                          G_CALLBACK (tab_icon_drag_end), window);
+
+        gtk_target_list_unref (targets);
+    }
+
+    return TRUE;
+}
+
+
 static gboolean
 tab_icon_button_press (GtkWidget        *evbox,
                        GdkEventButton   *event,
                        MooEditWindow    *window)
 {
+    DragInfo *info;
+
+    if (event->window != evbox->window || event->button != 1 || event->type != GDK_BUTTON_PRESS)
+        return FALSE;
+
+    info = g_new0 (DragInfo, 1);
+    info->x = event->x;
+    info->y = event->y;
+
+    g_object_set_data_full (G_OBJECT (evbox), "moo-drag-info", info, g_free);
+    g_signal_connect (evbox, "motion-notify-event", G_CALLBACK (tab_icon_motion_notify), window);
+    g_signal_connect (evbox, "button-release-event", G_CALLBACK (tab_icon_button_release), window);
+
+    return FALSE;
+}
+
+
+static void
+tab_icon_drag_data_delete (G_GNUC_UNUSED GtkWidget      *evbox,
+                           G_GNUC_UNUSED GdkDragContext *context,
+                           G_GNUC_UNUSED MooEditWindow  *window)
+{
+    g_print ("delete!\n");
+}
+
+
+static void
+tab_icon_drag_data_get (GtkWidget      *evbox,
+                        G_GNUC_UNUSED GdkDragContext *context,
+                        GtkSelectionData *data,
+                        guint           info,
+                        G_GNUC_UNUSED guint           time,
+                        G_GNUC_UNUSED MooEditWindow  *window)
+{
+    MooEdit *edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    if (info == TARGET_MOO_EDIT_TAB)
+    {
+        g_print ("drag-data-get TARGET_MOO_EDIT_TAB\n");
+        gtk_selection_data_set (data,
+                                gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                                8, /* bytes */
+                                (void*) &edit,
+                                sizeof (edit));
+    }
+    else if (info == TARGET_URI_LIST)
+    {
+        char *uris[] = {NULL, NULL};
+
+        uris[0] = moo_edit_get_uri (edit);
+
+        if (uris[0])
+            gtk_selection_data_set_uris (data, uris);
+
+        g_free (uris[0]);
+    }
+}
+
+
+static void
+tab_icon_drag_end (GtkWidget      *evbox,
+                   G_GNUC_UNUSED GdkDragContext *context,
+                   MooEditWindow  *window)
+{
+    g_signal_handlers_disconnect_by_func (evbox,
+                                          (gpointer) tab_icon_drag_data_delete,
+                                          window);
+    g_signal_handlers_disconnect_by_func (evbox,
+                                          (gpointer) tab_icon_drag_data_get,
+                                          window);
+    g_signal_handlers_disconnect_by_func (evbox,
+                                          (gpointer) tab_icon_drag_end,
+                                          window);
 }
 
 
@@ -1232,15 +1408,9 @@ create_tab_label (MooEditWindow *window,
     g_object_set_data (G_OBJECT (evbox), "moo-edit", edit);
     g_object_set_data (G_OBJECT (icon), "moo-edit", edit);
 
-//     g_signal_connect (evbox, "button-press-event",
-//                       G_CALLBACK (tab_icon_button_press),
-//                       window);
-//     g_signal_connect (evbox, "button-release-event",
-//                       G_CALLBACK (tab_icon_button_release),
-//                       window);
-//     g_signal_connect (evbox, "motion-notify-event",
-//                       G_CALLBACK (tab_icon_motion_notify),
-//                       window);
+    g_signal_connect (evbox, "button-press-event",
+                      G_CALLBACK (tab_icon_button_press),
+                      window);
 
     return hbox;
 }
@@ -1250,7 +1420,7 @@ static void
 update_tab_label (MooEditWindow *window,
                   MooEdit       *doc)
 {
-    GtkWidget *hbox, *icon, *label;
+    GtkWidget *hbox, *icon, *label, *evbox;
     MooEditStatus status;
     char *label_text;
     gboolean modified, deleted;
@@ -1265,7 +1435,9 @@ update_tab_label (MooEditWindow *window,
 
     icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon");
     label = g_object_get_data (G_OBJECT (hbox), "moo-edit-label");
+    evbox = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon-evbox");
     g_return_if_fail (GTK_IS_WIDGET (icon) && GTK_IS_WIDGET (label));
+    g_return_if_fail (GTK_IS_WIDGET (evbox));
 
     status = moo_edit_get_status (doc);
 

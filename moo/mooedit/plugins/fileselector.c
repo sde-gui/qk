@@ -50,13 +50,26 @@ typedef struct {
 typedef struct {
     MooFileView base;
     MooEditWindow *window;
+
     GtkWidget *button;
+    guint open_pane_timeout;
 } MooFileSelector;
 
 typedef struct {
     MooFileViewClass base_class;
 } MooFileSelectorClass;
 
+enum {
+    TARGET_MOO_EDIT_TAB = 1,
+    TARGET_URI_LIST = 2
+};
+
+static GtkTargetEntry button_targets[] = {
+    { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
+    { (char*) "text/uri-list", 0, TARGET_URI_LIST }
+};
+
+#define OPEN_PANE_TIMEOUT 300
 
 GType moo_file_selector_get_type (void) G_GNUC_CONST;
 G_DEFINE_TYPE (MooFileSelector, moo_file_selector, MOO_TYPE_FILE_VIEW)
@@ -85,6 +98,18 @@ static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
                                                  GError        **error);
 static void     moo_file_selector_activate      (MooFileView    *fileview,
                                                  const char     *path);
+
+
+static void     button_drag_leave               (GtkWidget      *button,
+                                                 GdkDragContext *context,
+                                                 guint           time,
+                                                 MooFileSelector *filesel);
+static gboolean button_drag_motion              (GtkWidget      *button,
+                                                 GdkDragContext *context,
+                                                 int             x,
+                                                 int             y,
+                                                 guint           time,
+                                                 MooFileSelector *filesel);
 
 
 static void
@@ -237,6 +262,7 @@ moo_file_selector_constructor (GType           type,
     MooFileSelector *filesel;
     MooFileView *fileview;
     GObject *object;
+    GtkWidget *button;
 
     object = G_OBJECT_CLASS(moo_file_selector_parent_class)->constructor (type, n_props, props);
     filesel = MOO_FILE_SELECTOR (object);
@@ -268,7 +294,109 @@ moo_file_selector_constructor (GType           type,
                               label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 
+    button = moo_big_paned_get_button (filesel->window->paned,
+                                       GTK_WIDGET (filesel));
+    g_return_val_if_fail (button != NULL, object);
+
+    gtk_drag_dest_set (button, 0,
+                       button_targets,
+                       G_N_ELEMENTS (button_targets),
+                       GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+    g_signal_connect (button, "drag-motion",
+                      G_CALLBACK (button_drag_motion), filesel);
+    g_signal_connect (button, "drag-leave",
+                      G_CALLBACK (button_drag_leave), filesel);
+
     return object;
+}
+
+
+static void
+button_drag_leave (GtkWidget      *button,
+                   G_GNUC_UNUSED GdkDragContext *context,
+                   G_GNUC_UNUSED guint           time,
+                   MooFileSelector *filesel)
+{
+    if (filesel->open_pane_timeout)
+    {
+        g_source_remove (filesel->open_pane_timeout);
+        filesel->open_pane_timeout = 0;
+    }
+
+    gtk_drag_unhighlight (button);
+}
+
+
+static gboolean
+drag_open_pane (MooFileSelector *filesel)
+{
+    MooPaned *paned;
+    int pane_index;
+
+    if (!moo_big_paned_find_pane (filesel->window->paned,
+                                  GTK_WIDGET (filesel),
+                                  &paned, &pane_index))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        goto out;
+    }
+
+    moo_paned_open_pane (paned, pane_index);
+
+out:
+    filesel->open_pane_timeout = 0;
+    return FALSE;
+}
+
+
+static gboolean
+button_drag_motion (GtkWidget      *button,
+                    GdkDragContext *context,
+                    int             x,
+                    int             y,
+                    guint           time,
+                    MooFileSelector *filesel)
+{
+    MooPaneParams *params = NULL;
+    MooPaned *paned;
+    int pane_index;
+
+    if (!moo_big_paned_find_pane (filesel->window->paned,
+                                  GTK_WIDGET (filesel),
+                                  &paned, &pane_index))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        goto out;
+    }
+
+    if (moo_paned_is_open (paned) &&
+        moo_paned_get_open_pane (paned) == pane_index)
+    {
+        goto out;
+    }
+
+    params = moo_paned_get_pane_params (paned, pane_index);
+
+    if (params->detached)
+        goto out;
+
+    gtk_drag_highlight (button);
+
+    if (!filesel->open_pane_timeout)
+        filesel->open_pane_timeout = g_timeout_add (OPEN_PANE_TIMEOUT,
+                                                    (GSourceFunc) drag_open_pane,
+                                                    filesel);
+
+    moo_pane_params_free (params);
+    return TRUE;
+
+out:
+    if (params)
+        moo_pane_params_free (params);
+    if (filesel->open_pane_timeout)
+        g_source_remove (filesel->open_pane_timeout);
+    filesel->open_pane_timeout = 0;
+    return FALSE;
 }
 
 
