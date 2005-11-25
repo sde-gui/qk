@@ -40,12 +40,248 @@ typedef struct {
 #define Plugin FileSelectorPlugin
 
 
+#define MOO_TYPE_FILE_SELECTOR              (moo_file_selector_get_type ())
+#define MOO_FILE_SELECTOR(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SELECTOR, MooFileSelector))
+#define MOO_FILE_SELECTOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
+#define MOO_IS_FILE_SELECTOR(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SELECTOR))
+#define MOO_IS_FILE_SELECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_SELECTOR))
+#define MOO_FILE_SELECTOR_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
+
+typedef struct {
+    MooFileView base;
+    MooEditWindow *window;
+    GtkWidget *button;
+} MooFileSelector;
+
+typedef struct {
+    MooFileViewClass base_class;
+} MooFileSelectorClass;
+
+
+GType moo_file_selector_get_type (void) G_GNUC_CONST;
+G_DEFINE_TYPE (MooFileSelector, moo_file_selector, MOO_TYPE_FILE_VIEW)
+
+
+enum {
+    PROP_0,
+    PROP_WINDOW
+};
+
+
+static void     moo_file_selector_set_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 const GValue   *value,
+                                                 GParamSpec     *pspec);
+static void     moo_file_selector_get_property  (GObject        *object,
+                                                 guint           prop_id,
+                                                 GValue         *value,
+                                                 GParamSpec     *pspec);
+static GObject *moo_file_selector_constructor   (GType           type,
+                                                 guint           n_props,
+                                                 GObjectConstructParam *props);
+
+static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
+                                                 const char     *dir,
+                                                 GError        **error);
+static void     moo_file_selector_activate      (MooFileView    *fileview,
+                                                 const char     *path);
+
+
+static void
+moo_file_selector_class_init (MooFileSelectorClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    MooFileViewClass *fileview_class = MOO_FILE_VIEW_CLASS (klass);
+
+    gobject_class->set_property = moo_file_selector_set_property;
+    gobject_class->get_property = moo_file_selector_get_property;
+    gobject_class->constructor = moo_file_selector_constructor;
+
+    fileview_class->chdir = moo_file_selector_chdir;
+    fileview_class->activate = moo_file_selector_activate;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_WINDOW,
+                                     g_param_spec_object ("window",
+                                             "window",
+                                             "window",
+                                             MOO_TYPE_EDIT_WINDOW,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+}
+
+
+static void
+moo_file_selector_init (G_GNUC_UNUSED MooFileSelector *sel)
+{
+}
+
+
+static void
+moo_file_selector_set_property (GObject        *object,
+                                guint           prop_id,
+                                const GValue   *value,
+                                GParamSpec     *pspec)
+{
+    MooFileSelector *sel = MOO_FILE_SELECTOR (object);
+
+    switch (prop_id)
+    {
+        case PROP_WINDOW:
+            sel->window = g_value_get_object (value);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+
+static void
+moo_file_selector_get_property (GObject        *object,
+                                guint           prop_id,
+                                GValue         *value,
+                                GParamSpec     *pspec)
+{
+    MooFileSelector *sel = MOO_FILE_SELECTOR (object);
+
+    switch (prop_id)
+    {
+        case PROP_WINDOW:
+            g_value_set_object (value, sel->window);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+
+static gboolean
+file_selector_go_home (MooFileView *fileview)
+{
+    const char *dir;
+    char *real_dir = NULL;
+
+    dir = moo_prefs_get_string (DIR_PREFS);
+
+    if (dir)
+        real_dir = g_filename_from_utf8 (dir, -1, NULL, NULL, NULL);
+
+    if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
+        g_signal_emit_by_name (fileview, "go-home");
+
+    /* it's refed in g_idle_add() */
+    g_object_unref (fileview);
+    g_free (real_dir);
+    return FALSE;
+}
+
+
+static gboolean
+moo_file_selector_chdir (MooFileView    *fileview,
+                         const char     *dir,
+                         GError        **error)
+{
+    gboolean result;
+
+    result = MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->chdir (fileview, dir, error);
+
+    if (result)
+    {
+        char *dir = NULL;
+        g_object_get (fileview, "current-directory", &dir, NULL);
+        moo_prefs_set_filename (DIR_PREFS, dir);
+        g_free (dir);
+    }
+
+    return result;
+}
+
+
+static void
+moo_file_selector_activate (MooFileView    *fileview,
+                            const char     *path)
+{
+    MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
+    moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
+                          filesel->window, GTK_WIDGET (filesel), path, NULL);
+}
+
+
+static void
+goto_current_doc_dir (MooFileSelector *filesel)
+{
+    MooEdit *doc;
+    const char *filename;
+
+    doc = moo_edit_window_get_active_doc (filesel->window);
+    filename = doc ? moo_edit_get_filename (doc) : NULL;
+
+    if (filename)
+    {
+        char *dirname = g_path_get_dirname (filename);
+        moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, NULL);
+        g_free (dirname);
+    }
+}
+
+
+static GObject *
+moo_file_selector_constructor (GType           type,
+                               guint           n_props,
+                               GObjectConstructParam *props)
+{
+    MooEditor *editor;
+    MooPaneLabel *label;
+    MooUIXML *xml;
+    MooFileSelector *filesel;
+    MooFileView *fileview;
+    GObject *object;
+
+    object = G_OBJECT_CLASS(moo_file_selector_parent_class)->constructor (type, n_props, props);
+    filesel = MOO_FILE_SELECTOR (object);
+    fileview = MOO_FILE_VIEW (object);
+
+    g_return_val_if_fail (filesel->window != NULL, object);
+
+    editor = moo_edit_window_get_editor (filesel->window);
+
+    g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
+
+    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
+                                 "id", "GoToCurrentDocDir",
+                                 "icon-stock-id", GTK_STOCK_JUMP_TO,
+                                 "tooltip", "Go to current document directory",
+                                 "closure-object", filesel,
+                                 "closure-callback", goto_current_doc_dir,
+                                 NULL);
+
+    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
+    moo_ui_xml_insert_markup (xml, moo_ui_xml_new_merge_id (xml),
+                              "MooFileView/Toolbar", -1,
+                              "<item action=\"GoToCurrentDocDir\"/>");
+
+    label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
+                                NULL, NULL, "File Selector",
+                                "File Selector");
+    moo_edit_window_add_pane (filesel->window, PLUGIN_ID, GTK_WIDGET (filesel),
+                              label, MOO_PANE_POS_RIGHT);
+    moo_pane_label_free (label);
+
+    return object;
+}
+
+
+/****************************************************************************/
+/* Plugin
+ */
+
 static void
 show_file_selector (MooEditWindow *window)
 {
-    GtkWidget *fileview;
-    fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
-    moo_big_paned_present_pane (window->paned, fileview);
+    GtkWidget *pane;
+    pane = moo_edit_window_get_pane (window, PLUGIN_ID);
+    moo_big_paned_present_pane (window->paned, pane);
 }
 
 
@@ -103,126 +339,23 @@ file_selector_plugin_deinit (Plugin *plugin)
 }
 
 
-/* XXX */
-static gboolean
-file_selector_go_home (MooFileView *fileview)
-{
-    const char *dir;
-    char *real_dir = NULL;
-
-    if (!MOO_IS_FILE_VIEW (fileview))
-        return FALSE;
-
-    dir = moo_prefs_get_string (DIR_PREFS);
-
-    if (dir)
-        real_dir = g_filename_from_utf8 (dir, -1, NULL, NULL, NULL);
-
-    if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
-        g_signal_emit_by_name (fileview, "go-home");
-
-    g_free (real_dir);
-    return FALSE;
-}
-
-
-static void
-fileview_chdir (MooFileView *fileview)
-{
-    char *dir = NULL;
-    char *utf8_dir = NULL;
-
-    g_object_get (fileview, "current-directory", &dir, NULL);
-
-    if (!dir)
-    {
-        moo_prefs_set (DIR_PREFS, NULL);
-        return;
-    }
-
-    utf8_dir = g_filename_to_utf8 (dir, -1, NULL, NULL, NULL);
-    moo_prefs_set_string (DIR_PREFS, utf8_dir);
-
-    g_free (utf8_dir);
-    g_free (dir);
-}
-
-
-static void
-fileview_activate (MooEditWindow    *window,
-                   const char       *path)
-{
-    GtkWidget *fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
-    moo_editor_open_file (moo_edit_window_get_editor (window),
-                          window, fileview, path, NULL);
-}
-
-
-static void
-goto_current_doc_dir (MooEditWindow *window)
-{
-    GtkWidget *fileview;
-    MooEdit *doc;
-    const char *filename;
-
-    fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
-    doc = moo_edit_window_get_active_doc (window);
-    filename = doc ? moo_edit_get_filename (doc) : NULL;
-
-    if (filename)
-    {
-        char *dirname = g_path_get_dirname (filename);
-        moo_file_view_chdir (MOO_FILE_VIEW (fileview), dirname, NULL);
-        g_free (dirname);
-    }
-}
-
-
 static void
 file_selector_plugin_attach (Plugin        *plugin,
                              MooEditWindow *window)
 {
-    GtkWidget *fileview;
     MooEditor *editor;
-    MooPaneLabel *label;
-    MooUIXML *xml;
 
     editor = moo_edit_window_get_editor (window);
 
     if (!plugin->bookmark_mgr)
         plugin->bookmark_mgr = moo_bookmark_mgr_new ();
 
-    fileview = g_object_new (MOO_TYPE_FILE_VIEW,
-                             "filter-mgr", moo_editor_get_filter_mgr (editor),
-                             "bookmark-mgr", plugin->bookmark_mgr,
-                             NULL);
-
-    g_idle_add ((GSourceFunc) file_selector_go_home, fileview);
-    g_signal_connect (fileview, "notify::current-directory",
-                      G_CALLBACK (fileview_chdir), NULL);
-    g_signal_connect_swapped (fileview, "activate",
-                              G_CALLBACK (fileview_activate),
-                              window);
-
-    moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
-                                 "id", "GoToCurrentDocDir",
-                                 "icon-stock-id", GTK_STOCK_JUMP_TO,
-                                 "tooltip", "Go to current document directory",
-                                 "closure-object", window,
-                                 "closure-callback", goto_current_doc_dir,
-                                 NULL);
-
-    xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
-    moo_ui_xml_insert_markup (xml, moo_ui_xml_new_merge_id (xml),
-                              "MooFileView/Toolbar", -1,
-                              "<item action=\"GoToCurrentDocDir\"/>");
-
-    label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                NULL, NULL, "File Selector",
-                                "File Selector");
-    moo_edit_window_add_pane (window, PLUGIN_ID, fileview,
-                              label, MOO_PANE_POS_RIGHT);
-    moo_pane_label_free (label);
+    /* it attaches itself to window */
+    g_object_new (MOO_TYPE_FILE_SELECTOR,
+                  "filter-mgr", moo_editor_get_filter_mgr (editor),
+                  "bookmark-mgr", plugin->bookmark_mgr,
+                  "window", window,
+                  NULL);
 }
 
 
@@ -230,17 +363,6 @@ static void
 file_selector_plugin_detach (G_GNUC_UNUSED Plugin *plugin,
                              MooEditWindow *window)
 {
-    GtkWidget *fileview = moo_edit_window_get_pane (window, PLUGIN_ID);
-
-    g_return_if_fail (fileview != NULL);
-
-    g_signal_handlers_disconnect_by_func (fileview,
-                                          (gpointer) fileview_chdir,
-                                          NULL);
-    g_signal_handlers_disconnect_by_func (fileview,
-                                          (gpointer) fileview_activate,
-                                          window);
-
     moo_edit_window_remove_pane (window, PLUGIN_ID);
 }
 
