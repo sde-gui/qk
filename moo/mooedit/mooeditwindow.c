@@ -20,6 +20,7 @@
 #include "mooutils/moonotebook.h"
 #include "mooutils/moofileview/moofileview.h"
 #include "mooutils/moofileview/moobookmarkmgr.h"
+#include "mooutils/moofileview/moofile.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenuaction.h"
@@ -103,7 +104,8 @@ static void     edit_filename_changed   (MooEditWindow      *window,
 static void     edit_lang_changed       (MooEditWindow      *window,
                                          GParamSpec         *pspec,
                                          MooEdit            *doc);
-static GtkWidget *create_tab_label      (MooEdit            *edit);
+static GtkWidget *create_tab_label      (MooEditWindow      *window,
+                                         MooEdit            *edit);
 static void     update_tab_label        (MooEditWindow      *window,
                                          MooEdit            *doc);
 static void     edit_cursor_moved       (MooEditWindow      *window,
@@ -1097,9 +1099,10 @@ static int      get_page_num            (MooEditWindow      *window,
 }
 
 
-void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
-                                                 MooEdit        *edit,
-                                                 int             position)
+void
+_moo_edit_window_insert_doc (MooEditWindow  *window,
+                             MooEdit        *edit,
+                             int             position)
 {
     GtkWidget *label;
     GtkWidget *scrolledwindow;
@@ -1107,7 +1110,7 @@ void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    label = create_tab_label (edit);
+    label = create_tab_label (window, edit);
     gtk_widget_show (label);
 
     scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
@@ -1189,9 +1192,19 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 }
 
 
-static GtkWidget *create_tab_label      (MooEdit            *edit)
+static gboolean
+tab_icon_button_press (GtkWidget        *evbox,
+                       GdkEventButton   *event,
+                       MooEditWindow    *window)
 {
-    GtkWidget *hbox, *modified_icon, *modified_on_disk_icon, *label;
+}
+
+
+static GtkWidget *
+create_tab_label (MooEditWindow *window,
+                  MooEdit       *edit)
+{
+    GtkWidget *hbox, *icon, *label, *evbox;
     GtkSizeGroup *group;
 
     group = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
@@ -1199,74 +1212,77 @@ static GtkWidget *create_tab_label      (MooEdit            *edit)
     hbox = gtk_hbox_new (FALSE, 3);
     gtk_widget_show (hbox);
 
-    modified_on_disk_icon = gtk_image_new ();
-    gtk_box_pack_start (GTK_BOX (hbox), modified_on_disk_icon, FALSE, FALSE, 0);
-
-    modified_icon = gtk_image_new_from_stock (MOO_STOCK_DOC_MODIFIED,
-                                              GTK_ICON_SIZE_MENU);
-    gtk_box_pack_start (GTK_BOX (hbox), modified_icon, FALSE, FALSE, 0);
+    evbox = gtk_event_box_new ();
+    gtk_box_pack_start (GTK_BOX (hbox), evbox, FALSE, FALSE, 0);
+    icon = gtk_image_new ();
+    gtk_container_add (GTK_CONTAINER (evbox), icon);
+    gtk_widget_show_all (evbox);
 
     label = gtk_label_new (moo_edit_get_display_basename (edit));
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-    gtk_size_group_add_widget (group, modified_on_disk_icon);
-    gtk_size_group_add_widget (group, modified_icon);
+    gtk_size_group_add_widget (group, evbox);
     gtk_size_group_add_widget (group, label);
 
-    g_object_set_data (G_OBJECT (hbox), "moo-edit-modified-on-disk-icon", modified_on_disk_icon);
-    g_object_set_data (G_OBJECT (hbox), "moo-edit-modified-icon", modified_icon);
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-icon", icon);
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-icon-evbox", evbox);
     g_object_set_data (G_OBJECT (hbox), "moo-edit-label", label);
+    g_object_set_data (G_OBJECT (evbox), "moo-edit-icon", icon);
+    g_object_set_data (G_OBJECT (evbox), "moo-edit", edit);
+    g_object_set_data (G_OBJECT (icon), "moo-edit", edit);
+
+//     g_signal_connect (evbox, "button-press-event",
+//                       G_CALLBACK (tab_icon_button_press),
+//                       window);
+//     g_signal_connect (evbox, "button-release-event",
+//                       G_CALLBACK (tab_icon_button_release),
+//                       window);
+//     g_signal_connect (evbox, "motion-notify-event",
+//                       G_CALLBACK (tab_icon_motion_notify),
+//                       window);
 
     return hbox;
 }
 
 
-static void     update_tab_label        (MooEditWindow      *window,
-                                         MooEdit            *doc)
+static void
+update_tab_label (MooEditWindow *window,
+                  MooEdit       *doc)
 {
-    GtkWidget *hbox, *modified_icon, *modified_on_disk_icon, *label;
+    GtkWidget *hbox, *icon, *label;
     MooEditStatus status;
+    char *label_text;
+    gboolean modified, deleted;
+    GdkPixbuf *pixbuf;
     int page = get_page_num (window, doc);
 
     g_return_if_fail (page >= 0);
 
     hbox = moo_notebook_get_tab_label (window->priv->notebook,
                                        GTK_WIDGET(doc)->parent);
-    modified_icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-modified-icon");
-    modified_on_disk_icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-modified-on-disk-icon");
-    label = g_object_get_data (G_OBJECT (hbox), "moo-edit-label");
+    g_return_if_fail (GTK_IS_WIDGET (hbox));
 
-    g_return_if_fail (GTK_IS_WIDGET (hbox) && GTK_IS_WIDGET (modified_icon) &&
-            GTK_IS_WIDGET (modified_on_disk_icon));
+    icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon");
+    label = g_object_get_data (G_OBJECT (hbox), "moo-edit-label");
+    g_return_if_fail (GTK_IS_WIDGET (icon) && GTK_IS_WIDGET (label));
 
     status = moo_edit_get_status (doc);
 
-    if (status & MOO_EDIT_MODIFIED_ON_DISK)
-    {
-        gtk_image_set_from_stock (GTK_IMAGE (modified_on_disk_icon),
-                                  MOO_STOCK_DOC_MODIFIED_ON_DISK,
-                                  GTK_ICON_SIZE_MENU);
-        gtk_widget_show (modified_on_disk_icon);
-    }
-    else if (status & MOO_EDIT_DELETED)
-    {
-        gtk_image_set_from_stock (GTK_IMAGE (modified_on_disk_icon),
-                                  MOO_STOCK_DOC_DELETED,
-                                  GTK_ICON_SIZE_MENU);
-        gtk_widget_show (modified_on_disk_icon);
-    }
-    else
-    {
-        gtk_widget_hide (modified_on_disk_icon);
-    }
+    deleted = status & (MOO_EDIT_DELETED | MOO_EDIT_MODIFIED_ON_DISK);
+    modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
 
-    if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
-        gtk_widget_show (modified_icon);
-    else
-        gtk_widget_hide (modified_icon);
+    label_text = g_strdup_printf ("%s%s%s",
+                                  deleted ? "!" : "",
+                                  modified ? "*" : "",
+                                  moo_edit_get_display_basename (doc));
+    gtk_label_set_text (GTK_LABEL (label), label_text);
 
-    gtk_label_set_text (GTK_LABEL (label), moo_edit_get_display_basename (doc));
+    pixbuf = moo_get_icon_for_path (moo_edit_get_filename (doc),
+                                    icon, GTK_ICON_SIZE_MENU);
+    gtk_image_set_from_pixbuf (GTK_IMAGE (icon), pixbuf);
+
+    g_free (label_text);
 }
 
 
