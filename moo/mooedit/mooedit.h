@@ -116,6 +116,8 @@ const char      *moo_edit_get_display_basename  (MooEdit        *edit);
 
 const char      *moo_edit_get_encoding          (MooEdit        *edit);
 
+char            *moo_edit_get_uri               (MooEdit        *edit);
+
 gboolean         moo_edit_is_empty              (MooEdit        *edit);
 void             moo_edit_set_modified          (MooEdit        *edit,
                                                  gboolean        modified);

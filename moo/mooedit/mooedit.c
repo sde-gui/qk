@@ -579,6 +579,18 @@ moo_edit_get_encoding (MooEdit *edit)
 }
 
 
+char*
+moo_edit_get_uri (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+
+    if (edit->priv->filename)
+        return g_filename_to_uri (edit->priv->filename, NULL, NULL);
+    else
+        return NULL;
+}
+
+
 static GtkTextBuffer*
 get_buffer (MooEdit *edit)
 {
