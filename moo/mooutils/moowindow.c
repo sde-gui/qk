@@ -340,7 +340,7 @@ GObject    *moo_window_constructor      (GType                  type,
     gtk_box_pack_start (GTK_BOX (vbox), window->vbox, TRUE, TRUE, 0);
     window->statusbar = gtk_statusbar_new ();
     gtk_box_pack_start (GTK_BOX (vbox), window->statusbar, FALSE, FALSE, 0);
-    gtk_statusbar_set_has_resize_grip (GTK_STATUSBAR (window->statusbar), FALSE);
+    gtk_statusbar_set_has_resize_grip (GTK_STATUSBAR (window->statusbar), TRUE);
 
     g_signal_connect (window, "notify::toolbar-ui-name",
                       G_CALLBACK (moo_window_create_ui), NULL);
