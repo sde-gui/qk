@@ -155,7 +155,12 @@ gboolean     moo_file_test              (const MooFile  *file,
 
 const char  *moo_file_name              (const MooFile  *file);
 const char  *moo_file_get_mime_type     (const MooFile  *file);
+
+/* returned pixbuf is owned by icon cache */
 GdkPixbuf   *moo_file_get_icon          (const MooFile  *file,
+                                         GtkWidget      *widget,
+                                         GtkIconSize     size);
+GdkPixbuf   *moo_get_icon_for_path      (const char     *path,
                                          GtkWidget      *widget,
                                          GtkIconSize     size);
 

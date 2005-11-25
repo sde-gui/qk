@@ -126,6 +126,9 @@ static guint8   get_blank_icon              (void);
 static GdkPixbuf *render_icon               (const MooFile  *file,
                                              GtkWidget      *widget,
                                              GtkIconSize     size);
+static GdkPixbuf *render_icon_for_path      (const char     *path,
+                                             GtkWidget      *widget,
+                                             GtkIconSize     size);
 
 #define FILE_PATH(folder,file)  g_build_filename (folder->priv->path, file->name, NULL)
 #define MAKE_PATH(dirname,file) g_build_filename (dirname, file->name, NULL)
@@ -1325,12 +1328,24 @@ gconstpointer moo_file_get_stat             (const MooFile  *file)
 #endif
 
 
-GdkPixbuf   *moo_file_get_icon              (const MooFile  *file,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size)
+GdkPixbuf *
+moo_file_get_icon (const MooFile  *file,
+                   GtkWidget      *widget,
+                   GtkIconSize     size)
 {
     g_return_val_if_fail (file != NULL, NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
     return render_icon (file, widget, size);
+}
+
+
+GdkPixbuf *
+moo_get_icon_for_path (const char     *path,
+                       GtkWidget      *widget,
+                       GtkIconSize     size)
+{
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
+    return render_icon_for_path (path, widget, size);
 }
 
 
@@ -1822,14 +1837,37 @@ static GdkPixbuf    *_render_icon           (MooIconType     icon,
 }
 
 
-static GdkPixbuf    *render_icon            (const MooFile  *file,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size)
+static GdkPixbuf *
+render_icon (const MooFile  *file,
+             GtkWidget      *widget,
+             GtkIconSize     size)
 {
     GdkPixbuf *pixbuf = _render_icon (file->icon, file->mime_type,
                                       _get_icon_flags (file), widget, size);
     g_assert (pixbuf != NULL);
     return pixbuf;
+}
+
+
+static GdkPixbuf *
+render_icon_for_path (const char     *path,
+                      GtkWidget      *widget,
+                      GtkIconSize     size)
+{
+    MooIconType icon = MOO_ICON_BLANK;
+    const char *mime_type = xdg_mime_type_unknown;
+
+    if (path)
+    {
+        mime_type = xdg_mime_get_mime_type_for_file (path);
+
+        if (mime_type != xdg_mime_type_unknown)
+        {
+            icon = MOO_ICON_MIME;
+        }
+    }
+
+    return _render_icon (icon, mime_type, 0, widget, size);
 }
 
 
