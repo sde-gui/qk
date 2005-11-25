@@ -472,23 +472,6 @@ GtkWidget  *moo_big_paned_get_child         (MooBigPaned        *paned)
 }
 
 
-static MooPaned *
-find_child (MooBigPaned    *paned,
-            GtkWidget      *widget)
-{
-    int i;
-
-    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
-
-    for (i = 0; i < 4; ++i)
-        if (moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget) >= 0)
-            return MOO_PANED (paned->paned[i]);
-
-    return NULL;
-}
-
-
 gboolean
 moo_big_paned_remove_pane (MooBigPaned *paned,
                            GtkWidget   *widget)
@@ -498,8 +481,8 @@ moo_big_paned_remove_pane (MooBigPaned *paned,
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
-    child = find_child (paned, widget);
-    g_return_val_if_fail (child != NULL, FALSE);
+    if (!moo_big_paned_find_pane (paned, widget, &child, NULL))
+        return FALSE;
 
     return moo_paned_remove_pane (child, widget);
 }
@@ -509,17 +492,16 @@ void
 moo_big_paned_open_pane (MooBigPaned    *paned,
                          GtkWidget      *widget)
 {
-    int i, num;
+    int idx;
+    MooPaned *child;
 
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    for (i = 0; i < 4; ++i)
-    {
-        num = moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget);
-        if (num >= 0)
-            return moo_paned_open_pane (MOO_PANED (paned->paned[i]), num);
-    }
+    if (!moo_big_paned_find_pane (paned, widget, &child, &idx))
+        g_return_if_reached ();
+
+    return moo_paned_open_pane (child, idx);
 }
 
 
@@ -527,17 +509,15 @@ void
 moo_big_paned_hide_pane (MooBigPaned    *paned,
                          GtkWidget      *widget)
 {
-    int i, num;
+    MooPaned *child;
 
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    for (i = 0; i < 4; ++i)
-    {
-        num = moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget);
-        if (num >= 0)
-            return moo_paned_hide_pane (MOO_PANED (paned->paned[i]));
-    }
+    if (!moo_big_paned_find_pane (paned, widget, &child, NULL))
+        g_return_if_reached ();
+
+    return moo_paned_hide_pane (child);
 }
 
 
@@ -545,36 +525,61 @@ void
 moo_big_paned_present_pane (MooBigPaned    *paned,
                             GtkWidget      *widget)
 {
-    int i, num;
+    int idx;
+    MooPaned *child;
 
     g_return_if_fail (MOO_IS_BIG_PANED (paned));
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    for (i = 0; i < 4; ++i)
-    {
-        num = moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget);
+    if (!moo_big_paned_find_pane (paned, widget, &child, &idx))
+        g_return_if_reached ();
 
-        if (num >= 0)
-            return moo_paned_present_pane (MOO_PANED (paned->paned[i]), num);
-    }
-
-    g_return_if_reached ();
+    return moo_paned_present_pane (child, idx);
 }
 
 
 GtkWidget*
 moo_big_paned_get_button (MooBigPaned   *paned,
-                          GtkWidget     *pane_widget)
+                          GtkWidget     *widget)
 {
     MooPaned *child;
 
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
-    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
 
-    child = find_child (paned, pane_widget);
-    g_return_val_if_fail (child != NULL, NULL);
+    if (!moo_big_paned_find_pane (paned, widget, &child, NULL))
+        return NULL;
 
-    return moo_paned_get_button (child, pane_widget);
+    return moo_paned_get_button (child, widget);
+}
+
+
+gboolean
+moo_big_paned_find_pane (MooBigPaned    *paned,
+                         GtkWidget      *widget,
+                         MooPaned      **child_paned,
+                         int            *pane_index)
+{
+    int i, idx;
+
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+    for (i = 0; i < 4; ++i)
+    {
+        idx = moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget);
+
+        if (idx >= 0)
+        {
+            if (pane_index)
+                *pane_index = idx;
+            if (child_paned)
+                *child_paned = MOO_PANED (paned->paned[i]);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 

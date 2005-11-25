@@ -79,6 +79,11 @@ GtkWidget      *moo_big_paned_new               (void);
 void            moo_big_paned_set_pane_order    (MooBigPaned    *paned,
                                                  int            *order);
 
+gboolean        moo_big_paned_find_pane         (MooBigPaned    *paned,
+                                                 GtkWidget      *pane_widget,
+                                                 MooPaned      **child_paned,
+                                                 int            *pane_index);
+
 void            moo_big_paned_add_child         (MooBigPaned    *paned,
                                                  GtkWidget      *widget);
 void            moo_big_paned_remove_child      (MooBigPaned    *paned);
