@@ -115,6 +115,7 @@
     </keyword-list>
 
     <context name="Normal" style="Normal Text" eol-context="#stay">
+      <IncludeRules from="##Misc##ShebangRules"/>
       <Keyword style="Preprocessor" keyword="prep" context="#stay"/>
       <Keyword style="Keyword" keyword="statements" context="#stay"/>
       <Keyword style="Builtin Function" keyword="builtinfuncs" context="#stay"/>
