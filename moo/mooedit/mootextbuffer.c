@@ -582,7 +582,9 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
-    if ((highlight && buffer->priv->do_highlight) || (!highlight && !buffer->priv->do_highlight))
+    highlight = highlight != 0;
+
+    if (highlight == buffer->priv->do_highlight)
         return;
 
     if (buffer->priv->do_highlight && buffer->priv->lang)
@@ -609,10 +611,10 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
 
 
 gboolean
-moo_text_buffer_get_highlight (MooTextBuffer      *buffer)
+moo_text_buffer_get_highlight (MooTextBuffer *buffer)
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
-    return buffer->priv->do_highlight ? TRUE : FALSE;
+    return buffer->priv->do_highlight;
 }
 
 
