@@ -250,6 +250,10 @@ static void     labels_scroll_to_offset     (MooNotebook    *nb,
 static Page    *find_label_at_x             (MooNotebook    *nb,
                                              int             x,
                                              gboolean        widget_only);
+static Page    *find_label_at_xy            (MooNotebook    *nb,
+                                             int             x,
+                                             int             y,
+                                             gboolean        widget_only);
 static void     labels_move_label_onscreen  (MooNotebook    *nb,
                                              Page           *page,
                                              gboolean        realloc);
@@ -2291,11 +2295,25 @@ static void     labels_scroll_to_offset     (MooNotebook    *nb,
 }
 
 
-static Page    *find_label_at_x             (MooNotebook    *nb,
-                                             int             x,
-                                             gboolean        widget_only)
+static Page*
+find_label_at_x (MooNotebook    *nb,
+                 int             x,
+                 gboolean        widget_only)
+{
+    return find_label_at_xy (nb, x, nb->priv->tabs_height / 2, widget_only);
+}
+
+
+static Page*
+find_label_at_xy (MooNotebook    *nb,
+                  int             x,
+                  int             y,
+                  gboolean        widget_only)
 {
     /* TODO labels overlap */
+
+    if (y < 0 || y >= nb->priv->tabs_height)
+        return NULL;
 
     /* here it must go through all the pages because they may be swapped on drag */
     VISIBLE_FOREACH_START(nb, page)
@@ -2304,13 +2322,22 @@ static Page    *find_label_at_x             (MooNotebook    *nb,
         int lwidth = page->label->width;
         int ax = page->label->widget->allocation.x;
         int awidth = page->label->widget->allocation.width;
+        int ay = page->label->widget->allocation.y;
+        int aheight = page->label->widget->allocation.height;
 
         if (x >= lx && x < lx + lwidth)
         {
-            if (!widget_only || (x >= ax && x < ax + awidth))
-                return page;
+            if (widget_only)
+            {
+                if (x >= ax && x < ax + awidth && y >= ay && y >= ay + aheight)
+                    return page;
+                else
+                    return NULL;
+            }
             else
-                return NULL;
+            {
+                return page;
+            }
         }
     }
     VISIBLE_FOREACH_END;
@@ -2500,20 +2527,51 @@ static void     tab_drag_end                (MooNotebook    *nb,
 }
 
 
+static gboolean
+translate_coords (GdkWindow *parent_window,
+                  GdkWindow *window,
+                  int       *x,
+                  int       *y)
+{
+    while (window != parent_window)
+    {
+        int dx, dy;
+
+        gdk_window_get_position (window, &dx, &dy);
+        (*x) += dx;
+        (*y) += dy;
+
+        window = gdk_window_get_parent (window);
+
+        if (!window)
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+
 static void     tab_drag_start              (MooNotebook    *nb,
                                              GdkEventMotion *event)
 {
     Page *page;
     GdkRectangle rect;
+    int event_x, event_y;
 
     g_return_if_fail (nb->priv->button_pressed);
+
+    event_x = event->x;
+    event_y = event->y;
+
+    if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
+        g_return_if_reached ();
 
     page = nb->priv->current_page;
     g_return_if_fail (page != NULL);
     nb->priv->drag_page = page;
     nb->priv->drag_page_index = page_visible_index (nb, page);
 
-    nb->priv->drag_tab_x_delta = event->x + nb->priv->labels_offset - page->label->offset;
+    nb->priv->drag_tab_x_delta = event_x + nb->priv->labels_offset - page->label->offset;
     nb->priv->in_drag = TRUE;
 
     nb->priv->want_snapshot = TRUE;
@@ -2534,6 +2592,7 @@ static void     tab_drag_motion             (MooNotebook    *nb,
     int x, index_, width, offset, num;
     GSList *visible, *l;
     Page *drag_page, *page;
+    int event_x, event_y;
 
     if (!nb->priv->in_drag)
     {
@@ -2541,13 +2600,19 @@ static void     tab_drag_motion             (MooNotebook    *nb,
         g_return_if_reached ();
     }
 
+    event_x = event->x;
+    event_y = event->y;
+
+    if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
+        g_return_if_reached ();
+
     width = nb->priv->drag_page->label->width;
     num = get_n_visible_pages (nb);
 
     if (event)
     {
-        x = event->x + nb->priv->labels_offset - nb->priv->drag_tab_x_delta;
-        nb->priv->drag_mouse_x = event->x;
+        x = event_x + nb->priv->labels_offset - nb->priv->drag_tab_x_delta;
+        nb->priv->drag_mouse_x = event_x;
     }
     else
     {
@@ -2608,8 +2673,12 @@ static gboolean moo_notebook_button_press   (GtkWidget      *widget,
 {
     Page *page;
     MooNotebook *nb = MOO_NOTEBOOK (widget);
+    int x, y;
 
-    if (event->window != nb->priv->tab_window)
+    x = event->x;
+    y = event->y;
+
+    if (!translate_coords (nb->priv->tab_window, event->window, &x, &y))
         return FALSE;
 
     if (event->button == 1 && event->type == GDK_BUTTON_PRESS)
@@ -2623,7 +2692,7 @@ static gboolean moo_notebook_button_press   (GtkWidget      *widget,
         if (!nb->priv->focus && !GTK_WIDGET_HAS_FOCUS (widget))
             gtk_widget_grab_focus (widget);
 
-        page = find_label_at_x (nb, event->x, FALSE);
+        page = find_label_at_xy (nb, x, y, FALSE);
 
         if (page)
         {
@@ -2830,11 +2899,18 @@ static gboolean moo_notebook_maybe_popup    (MooNotebook    *nb,
                                              GdkEventButton *event)
 {
     Page *page;
+    int event_x, event_y;
 
     if (!nb->priv->enable_popup)
         return FALSE;
 
-    page = find_label_at_x (nb, event->x, FALSE);
+    event_x = event->x;
+    event_y = event->y;
+
+    if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
+        g_return_val_if_reached (FALSE);
+
+    page = find_label_at_xy (nb, event_x, event_y, FALSE);
 
     if (!page)
         return FALSE;
