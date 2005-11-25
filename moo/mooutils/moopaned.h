@@ -119,6 +119,8 @@ int             moo_paned_get_pane_num      (MooPaned       *paned,
 /* label should be freed with moo_pane_label_free() */
 MooPaneLabel   *moo_paned_get_label         (MooPaned       *paned,
                                              GtkWidget      *pane_widget);
+GtkWidget      *moo_paned_get_button        (MooPaned       *paned,
+                                             GtkWidget      *pane_widget);
 
 void            moo_paned_set_sticky_pane   (MooPaned       *paned,
                                              gboolean        sticky);

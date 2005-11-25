@@ -472,8 +472,9 @@ GtkWidget  *moo_big_paned_get_child         (MooBigPaned        *paned)
 }
 
 
-gboolean    moo_big_paned_remove_pane       (MooBigPaned    *paned,
-                                             GtkWidget      *widget)
+static MooPaned *
+find_child (MooBigPaned    *paned,
+            GtkWidget      *widget)
 {
     int i;
 
@@ -482,14 +483,31 @@ gboolean    moo_big_paned_remove_pane       (MooBigPaned    *paned,
 
     for (i = 0; i < 4; ++i)
         if (moo_paned_get_pane_num (MOO_PANED (paned->paned[i]), widget) >= 0)
-            return moo_paned_remove_pane (MOO_PANED (paned->paned[i]), widget);
+            return MOO_PANED (paned->paned[i]);
 
-    return FALSE;
+    return NULL;
 }
 
 
-void        moo_big_paned_open_pane         (MooBigPaned    *paned,
-                                             GtkWidget      *widget)
+gboolean
+moo_big_paned_remove_pane (MooBigPaned *paned,
+                           GtkWidget   *widget)
+{
+    MooPaned *child;
+
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+    child = find_child (paned, widget);
+    g_return_val_if_fail (child != NULL, FALSE);
+
+    return moo_paned_remove_pane (child, widget);
+}
+
+
+void
+moo_big_paned_open_pane (MooBigPaned    *paned,
+                         GtkWidget      *widget)
 {
     int i, num;
 
@@ -505,8 +523,9 @@ void        moo_big_paned_open_pane         (MooBigPaned    *paned,
 }
 
 
-void        moo_big_paned_hide_pane         (MooBigPaned    *paned,
-                                             GtkWidget      *widget)
+void
+moo_big_paned_hide_pane (MooBigPaned    *paned,
+                         GtkWidget      *widget)
 {
     int i, num;
 
@@ -540,6 +559,22 @@ moo_big_paned_present_pane (MooBigPaned    *paned,
     }
 
     g_return_if_reached ();
+}
+
+
+GtkWidget*
+moo_big_paned_get_button (MooBigPaned   *paned,
+                          GtkWidget     *pane_widget)
+{
+    MooPaned *child;
+
+    g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), NULL);
+
+    child = find_child (paned, pane_widget);
+    g_return_val_if_fail (child != NULL, NULL);
+
+    return moo_paned_get_button (child, pane_widget);
 }
 
 

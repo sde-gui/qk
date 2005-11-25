@@ -95,6 +95,8 @@ gboolean        moo_big_paned_remove_pane       (MooBigPaned    *paned,
 GtkWidget      *moo_big_paned_get_pane          (MooBigPaned    *paned,
                                                  MooPanePosition position,
                                                  int             index_);
+GtkWidget      *moo_big_paned_get_button        (MooBigPaned    *paned,
+                                                 GtkWidget      *pane_widget);
 
 void            moo_big_paned_open_pane         (MooBigPaned    *paned,
                                                  GtkWidget      *pane_widget);

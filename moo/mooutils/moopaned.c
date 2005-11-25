@@ -1821,10 +1821,26 @@ moo_paned_get_label (MooPaned       *paned,
     Pane *pane;
 
     g_return_val_if_fail (MOO_IS_PANED (paned), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), NULL);
 
     pane = g_object_get_data (G_OBJECT (pane_widget), "moo-pane");
     g_return_val_if_fail (pane != NULL, NULL);
     return moo_pane_label_copy (pane->label);
+}
+
+
+GtkWidget*
+moo_paned_get_button (MooPaned       *paned,
+                      GtkWidget      *pane_widget)
+{
+    Pane *pane;
+
+    g_return_val_if_fail (MOO_IS_PANED (paned), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (pane_widget), NULL);
+
+    pane = g_object_get_data (G_OBJECT (pane_widget), "moo-pane");
+    g_return_val_if_fail (pane != NULL, NULL);
+    return pane->button;
 }
 
 
