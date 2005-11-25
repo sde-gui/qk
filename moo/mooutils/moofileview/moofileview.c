@@ -403,14 +403,14 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                           G_TYPE_POINTER);
 
     signals[ACTIVATE] =
-            moo_signal_new_cb ("activate",
-                               G_OBJECT_CLASS_TYPE (klass),
-                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               NULL,
-                               NULL, NULL,
-                               _moo_marshal_VOID__STRING,
-                               G_TYPE_NONE, 1,
-                               G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+            g_signal_new ("activate",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooFileViewClass, activate),
+                          NULL, NULL,
+                          _moo_marshal_VOID__STRING,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[POPULATE_POPUP] =
             g_signal_new ("populate-popup",

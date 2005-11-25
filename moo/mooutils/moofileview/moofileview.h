@@ -50,12 +50,17 @@ struct _MooFileViewClass
 {
     GtkVBoxClass        vbox_class;
 
-    gboolean    (*chdir)            (MooFileView        *fileview,
-                                     const char         *dir,
-                                     GError            **error);
-    void        (*populate_popup)   (MooFileView        *fileview,
-                                     GList              *selected,
-                                     GtkMenu            *menu);
+    /* methods */
+    gboolean    (*chdir)            (MooFileView    *fileview,
+                                     const char     *dir,
+                                     GError        **error);
+
+    /* signals */
+    void        (*populate_popup)   (MooFileView    *fileview,
+                                     GList          *selected,
+                                     GtkMenu        *menu);
+    void        (*activate)         (MooFileView    *fileview,
+                                     const char     *path);
 };
 
 
