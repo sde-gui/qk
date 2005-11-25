@@ -50,6 +50,7 @@ struct _MooWindowPrivate {
     char *id;
 
     gboolean drag_inside;
+    gboolean drag_highlight;
     gboolean drag_drop;
     GtkTargetList *targets;
 };
@@ -805,7 +806,7 @@ moo_window_drag_data_received (GtkWidget      *widget,
 {
     MooWindow *window = MOO_WINDOW (widget);
 
-#if 0
+#if 1
     char *name;
     name = gdk_atom_name (data->target);
     g_print ("Got data: %s\n", name);
@@ -849,7 +850,9 @@ moo_window_drag_drop (GtkWidget      *widget,
     }
 
     window->priv->drag_inside = FALSE;
-    gtk_drag_unhighlight (widget);
+    if (window->priv->drag_highlight)
+        gtk_drag_unhighlight (widget);
+    window->priv->drag_highlight = FALSE;
     return TRUE;
 }
 
@@ -860,10 +863,10 @@ moo_window_drag_leave (GtkWidget      *widget,
                        G_GNUC_UNUSED guint time)
 {
     MooWindow *window = MOO_WINDOW (widget);
-
-    g_return_if_fail (window->priv->drag_inside);
     window->priv->drag_inside = FALSE;
-    gtk_drag_unhighlight (widget);
+    if (window->priv->drag_highlight)
+        gtk_drag_unhighlight (widget);
+    window->priv->drag_highlight = FALSE;
 }
 
 
@@ -896,18 +899,36 @@ moo_window_drag_motion (GtkWidget      *widget,
     }
 #endif
 
+    if (x < 0 || x >= widget->allocation.width ||
+        y < 0 || y >= widget->allocation.height)
+    {
+        window->priv->drag_inside = FALSE;
+        if (window->priv->drag_highlight)
+            gtk_drag_unhighlight (widget);
+        window->priv->drag_highlight = FALSE;
+        return FALSE;
+    }
+
     if (gtk_drag_dest_find_target (widget, context, window->priv->targets) != GDK_NONE)
         action = context->suggested_action;
 
-    if (action != 0 && !window->priv->drag_inside)
+    if (action != 0)
     {
         window->priv->drag_inside = TRUE;
-        gtk_drag_highlight (widget);
+        if (!window->priv->drag_highlight)
+            gtk_drag_highlight (widget);
+        window->priv->drag_highlight = TRUE;
+        gdk_drag_status (context, action, time);
+        return TRUE;
     }
-
-    gdk_drag_status (context, action, time);
-
-    return TRUE;
+    else
+    {
+        window->priv->drag_inside = FALSE;
+        if (window->priv->drag_highlight)
+            gtk_drag_unhighlight (widget);
+        window->priv->drag_highlight = FALSE;
+        return FALSE;
+    }
 }
 
 
