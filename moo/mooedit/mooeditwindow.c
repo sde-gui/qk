@@ -1131,11 +1131,6 @@ enum {
     TARGET_URI_LIST = 2
 };
 
-static GtkTargetEntry tab_label_targets[] = {
-    { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
-    { (char*) "text/uri-list", 0, TARGET_URI_LIST }
-};
-
 
 static gboolean tab_icon_button_press       (GtkWidget      *evbox,
                                              GdkEventButton *event,
@@ -1196,10 +1191,17 @@ tab_icon_motion_notify (GtkWidget      *evbox,
         edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
         g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-        targets = gtk_target_list_new (tab_label_targets, 1);
+        targets = gtk_target_list_new (NULL, 0);
+
+        gtk_target_list_add (targets,
+                             gdk_atom_intern ("text/uri-list", FALSE),
+                             0, TARGET_URI_LIST);
 
         if (moo_edit_get_filename (edit))
-            gtk_target_list_add_table (targets, &tab_label_targets[1], 1);
+            gtk_target_list_add (targets,
+                                 gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                                 GTK_TARGET_SAME_APP,
+                                 TARGET_MOO_EDIT_TAB);
 
         context = gtk_drag_begin (evbox, targets,
                                   GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,
@@ -1277,13 +1279,15 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
     else if (info == TARGET_URI_LIST)
     {
         char *uris[] = {NULL, NULL};
-
         uris[0] = moo_edit_get_uri (edit);
-
-        if (uris[0])
-            gtk_selection_data_set_uris (data, uris);
-
+        gtk_selection_data_set_uris (data, uris);
+        g_print ("drag-data-get uris\n");
         g_free (uris[0]);
+    }
+    else
+    {
+        g_print ("drag-data-get WTF?\n");
+        gtk_selection_data_set_text (data, "ERROR", -1);
     }
 }
 
@@ -1293,6 +1297,7 @@ tab_icon_drag_end (GtkWidget      *evbox,
                    G_GNUC_UNUSED GdkDragContext *context,
                    MooEditWindow  *window)
 {
+    g_object_set_data (G_OBJECT (evbox), "moo-drag-info", NULL);
     g_signal_handlers_disconnect_by_func (evbox,
                                           (gpointer) tab_icon_drag_data_delete,
                                           window);
