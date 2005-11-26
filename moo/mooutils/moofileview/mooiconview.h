@@ -17,6 +17,7 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtktreemodel.h>
 #include <gtk/gtkcellrenderer.h>
+#include <gtk/gtkdnd.h>
 
 G_BEGIN_DECLS
 
@@ -143,6 +144,13 @@ gboolean    moo_icon_view_get_path_at_pos       (MooIconView        *view,
                                                  int                *cell_x,
                                                  int                *cell_y);
 
+void        moo_icon_view_enable_drag_source    (MooIconView        *view,
+                                                 GdkModifierType     start_button_mask,
+                                                 GtkTargetEntry     *targets,
+                                                 gint                n_targets,
+                                                 GdkDragAction       actions);
+GtkTargetList *moo_icon_view_get_source_targets (MooIconView        *view);
+void        moo_icon_view_disable_drag_source   (MooIconView        *view);
 
 G_END_DECLS
 
