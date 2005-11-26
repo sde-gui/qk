@@ -1641,6 +1641,8 @@ moo_icon_view_button_press (GtkWidget      *widget,
     GtkTreePath *cursor_path = NULL;
     GdkModifierType mods = event->state & gtk_accelerator_get_default_mod_mask ();
 
+    view->priv->button_pressed = 0;
+
     if (event->button == 1)
     {
         gtk_widget_grab_focus (widget);
@@ -3001,9 +3003,11 @@ moo_icon_view_drag_begin (G_GNUC_UNUSED GtkWidget      *widget,
 
 
 static void
-moo_icon_view_drag_end (G_GNUC_UNUSED GtkWidget      *widget,
+moo_icon_view_drag_end (GtkWidget      *widget,
                         G_GNUC_UNUSED GdkDragContext *context)
 {
+    MooIconView *view = MOO_ICON_VIEW (widget);
+    view->priv->button_pressed = 0;
 }
 
 
