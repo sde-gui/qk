@@ -2103,6 +2103,28 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
 }
 
 
+GtkWidget*
+moo_ui_xml_get_widget (MooUIXML       *xml,
+                       GtkWidget      *widget,
+                       const char     *path)
+{
+    Toplevel *toplevel;
+    MooUINode *node;
+
+    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    node = moo_ui_xml_get_node (xml, path);
+    g_return_val_if_fail (node != NULL, NULL);
+
+    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    g_return_val_if_fail (toplevel != NULL, NULL);
+
+    return toplevel_get_widget (toplevel, node);
+}
+
+
 static Node*
 effective_parent (Node *node)
 {

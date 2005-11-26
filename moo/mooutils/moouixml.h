@@ -137,6 +137,9 @@ gpointer    moo_ui_xml_create_widget        (MooUIXML       *xml,
                                              const char     *path,
                                              MooActionGroup *actions,
                                              GtkAccelGroup  *accel_group);
+GtkWidget  *moo_ui_xml_get_widget           (MooUIXML       *xml,
+                                             GtkWidget      *toplevel,
+                                             const char     *path);
 
 guint       moo_ui_xml_new_merge_id         (MooUIXML       *xml);
 
