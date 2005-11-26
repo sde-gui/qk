@@ -115,13 +115,15 @@ struct _MooFileViewPrivate {
     MooUIXML        *ui_xml;
     gboolean         has_selection;
 
-    GtkTreeRowReference *drop_to;
-    guint            drop_to_timeout;
-    MooIconViewCell  drop_to_cell;
-    int              drop_to_x;
-    int              drop_to_y;
-    gboolean         drop_to_blink_clear;
-    guint            drop_to_n_blinks;
+    struct {
+        GtkTreeRowReference *row;
+        guint timeout;
+        MooIconViewCell  cell;
+        int x;
+        int y;
+        gboolean blink_clear;
+        guint n_blinks;
+    } drop_to;
 };
 
 
@@ -4126,7 +4128,7 @@ drop_open_timeout_func2 (MooFileView *fileview)
     GtkTreeIter iter;
     const char *goto_dir;
 
-    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to);
+    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
     cancel_drop_open (fileview);
     g_return_val_if_fail (path != NULL, FALSE);
 
@@ -4169,10 +4171,10 @@ drop_open_timeout_func (MooFileView *fileview)
 {
     GtkTreePath *path;
 
-    fileview->priv->drop_to_timeout = 0;
+    fileview->priv->drop_to.timeout = 0;
 
-    g_return_val_if_fail (fileview->priv->drop_to != NULL, FALSE);
-    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to);
+    g_return_val_if_fail (fileview->priv->drop_to.row != NULL, FALSE);
+    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
 
     if (!path)
     {
@@ -4181,25 +4183,25 @@ drop_open_timeout_func (MooFileView *fileview)
         g_return_val_if_reached (FALSE);
     }
 
-    if (fileview->priv->drop_to_blink_clear)
+    if (fileview->priv->drop_to.blink_clear)
     {
-        fileview->priv->drop_to_blink_clear = FALSE;
+        fileview->priv->drop_to.blink_clear = FALSE;
         moo_icon_view_set_drag_dest_row (fileview->priv->iconview, path);
 
-        if (++fileview->priv->drop_to_n_blinks > 1)
-            fileview->priv->drop_to_timeout =
+        if (++fileview->priv->drop_to.n_blinks > 1)
+            fileview->priv->drop_to.timeout =
                     g_timeout_add (DROP_OPEN_BLINK_TIME,
                                    (GSourceFunc) drop_open_timeout_func2,
                                    fileview);
     }
     else
     {
-        fileview->priv->drop_to_blink_clear = TRUE;
+        fileview->priv->drop_to.blink_clear = TRUE;
         moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
     }
 
-    if (!fileview->priv->drop_to_timeout)
-        fileview->priv->drop_to_timeout =
+    if (!fileview->priv->drop_to.timeout)
+        fileview->priv->drop_to.timeout =
                 g_timeout_add (DROP_OPEN_BLINK_TIME,
                                (GSourceFunc) drop_open_timeout_func,
                                fileview);
@@ -4347,16 +4349,16 @@ icon_drag_leave (MooFileView *fileview,
 static void
 cancel_drop_open (MooFileView *fileview)
 {
-    if (fileview->priv->drop_to)
-        gtk_tree_row_reference_free (fileview->priv->drop_to);
+    if (fileview->priv->drop_to.row)
+        gtk_tree_row_reference_free (fileview->priv->drop_to.row);
 
-    if (fileview->priv->drop_to_timeout)
-        g_source_remove (fileview->priv->drop_to_timeout);
+    if (fileview->priv->drop_to.timeout)
+        g_source_remove (fileview->priv->drop_to.timeout);
 
-    fileview->priv->drop_to_blink_clear = FALSE;
-    fileview->priv->drop_to_n_blinks = 0;
-    fileview->priv->drop_to = NULL;
-    fileview->priv->drop_to_timeout = 0;
+    fileview->priv->drop_to.blink_clear = FALSE;
+    fileview->priv->drop_to.n_blinks = 0;
+    fileview->priv->drop_to.row = NULL;
+    fileview->priv->drop_to.timeout = 0;
 }
 
 
@@ -4405,20 +4407,20 @@ icon_drag_motion (MooIconView    *iconview,
     {
         gboolean new_timeout = TRUE;
 
-        if (fileview->priv->drop_to)
+        if (fileview->priv->drop_to.row)
         {
-            GtkTreePath *old_path = gtk_tree_row_reference_get_path (fileview->priv->drop_to);
+            GtkTreePath *old_path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
 
             if (old_path && !gtk_tree_path_compare (path, old_path) &&
-                fileview->priv->drop_to_cell == cell &&
+                fileview->priv->drop_to.cell == cell &&
                 !gtk_drag_check_threshold (GTK_WIDGET (iconview),
-                                           fileview->priv->drop_to_x,
-                                           fileview->priv->drop_to_y,
+                                           fileview->priv->drop_to.x,
+                                           fileview->priv->drop_to.y,
                                            cell_x,
                                            cell_y))
             {
                 new_timeout = FALSE;
-                g_assert (fileview->priv->drop_to_timeout != 0);
+                g_assert (fileview->priv->drop_to.timeout != 0);
             }
         }
 
@@ -4426,15 +4428,15 @@ icon_drag_motion (MooIconView    *iconview,
         {
             cancel_drop_open (fileview);
 
-            fileview->priv->drop_to =
+            fileview->priv->drop_to.row =
                     gtk_tree_row_reference_new (fileview->priv->filter_model, path);
-            fileview->priv->drop_to_timeout =
+            fileview->priv->drop_to.timeout =
                     g_timeout_add (DROP_OPEN_TIMEOUT,
                                    (GSourceFunc) drop_open_timeout_func,
                                    fileview);
-            fileview->priv->drop_to_x = cell_x;
-            fileview->priv->drop_to_y = cell_y;
-            fileview->priv->drop_to_cell = cell;
+            fileview->priv->drop_to.x = cell_x;
+            fileview->priv->drop_to.y = cell_y;
+            fileview->priv->drop_to.cell = cell;
         }
     }
     else
