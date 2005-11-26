@@ -879,7 +879,8 @@ moo_editor_open (MooEditor      *editor,
         /* XXX open_single */
         if (!moo_edit_loader_load (loader, doc, info->filename, info->encoding, &error))
         {
-            moo_edit_open_error_dialog (parent, error ? error->message : NULL);
+            moo_edit_open_error_dialog (parent, info->filename,
+                                        error ? error->message : NULL);
             if (error)
                 g_error_free (error);
             result = FALSE;
@@ -1429,7 +1430,7 @@ _moo_editor_save (MooEditor      *editor,
 
     if (!do_save (editor, saver, doc, filename, encoding, &error))
     {
-        moo_edit_save_error_dialog (GTK_WIDGET (doc),
+        moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
                                     error ? error->message : NULL);
         if (error)
             g_error_free (error);
@@ -1481,7 +1482,7 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!do_save (editor, saver, doc, file_info->filename, file_info->encoding, &error))
     {
-        moo_edit_save_error_dialog (GTK_WIDGET (doc),
+        moo_edit_save_error_dialog (GTK_WIDGET (doc), file_info->filename,
                                     error ? error->message : NULL);
         if (error)
             g_error_free (error);

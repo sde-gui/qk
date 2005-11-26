@@ -461,18 +461,54 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
 /* XXX filename */
 void
 moo_edit_save_error_dialog (GtkWidget      *widget,
+                            const char     *filename,
                             const char     *err_msg)
 {
-    moo_error_dialog (widget, "Could not save file", err_msg);
+    char *filename_utf8, *msg = NULL;
+
+    g_return_if_fail (filename != NULL);
+
+    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
+
+    if (!filename_utf8)
+        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
+
+    if (filename_utf8)
+        msg = g_strdup_printf ("Could not save file\n%s", filename_utf8);
+    else
+        msg = g_strdup ("Could not save file");
+
+    moo_error_dialog (widget, msg, err_msg);
+
+    g_free (msg);
+    g_free (filename_utf8);
 }
 
 
 /* XXX filename */
 void
 moo_edit_open_error_dialog (GtkWidget      *widget,
+                            const char     *filename,
                             const char     *err_msg)
 {
-    moo_error_dialog (widget, "Could not open file", err_msg);
+    char *filename_utf8, *msg = NULL;
+
+    g_return_if_fail (filename != NULL);
+
+    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
+
+    if (!filename_utf8)
+        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
+
+    if (filename_utf8)
+        msg = g_strdup_printf ("Could not open file\n%s", filename_utf8);
+    else
+        msg = g_strdup ("Could not open file");
+
+    moo_error_dialog (widget, msg, err_msg);
+
+    g_free (msg);
+    g_free (filename_utf8);
 }
 
 

@@ -45,10 +45,10 @@ void             moo_edit_file_deleted_dialog       (MooEdit        *edit);
 int              moo_edit_file_modified_on_disk_dialog (MooEdit     *edit);
 
 void             moo_edit_save_error_dialog         (GtkWidget      *widget,
+                                                     const char     *filename,
                                                      const char     *err_msg);
 void             moo_edit_open_error_dialog         (GtkWidget      *widget,
-                                                     const char     *err_msg);
-void             moo_edit_load_error_dialog         (GtkWidget      *widget,
+                                                     const char     *filename,
                                                      const char     *err_msg);
 void             moo_edit_reload_error_dialog       (GtkWidget      *widget,
                                                      const char     *err_msg);
