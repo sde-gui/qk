@@ -160,6 +160,10 @@ static void     moo_notebook_size_allocate  (GtkWidget      *widget,
 
 static gboolean moo_notebook_focus          (GtkWidget      *widget,
                                              GtkDirectionType direction);
+static gboolean moo_notebook_focus_in       (GtkWidget      *widget,
+                                             GdkEventFocus  *event);
+static gboolean moo_notebook_focus_out      (GtkWidget      *widget,
+                                             GdkEventFocus  *event);
 static gboolean moo_notebook_expose         (GtkWidget      *widget,
                                              GdkEventExpose *event);
 static void     moo_notebook_draw_labels    (MooNotebook    *nb,
@@ -326,6 +330,8 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     widget_class->unrealize = moo_notebook_unrealize;
     widget_class->map = moo_notebook_map;
     widget_class->unmap = moo_notebook_unmap;
+    widget_class->focus_in_event = moo_notebook_focus_in;
+    widget_class->focus_out_event = moo_notebook_focus_out;
     widget_class->expose_event = moo_notebook_expose;
     widget_class->size_request = moo_notebook_size_request;
     widget_class->size_allocate = moo_notebook_size_allocate;
@@ -932,11 +938,15 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
                        2*border_width;
     attributes.height = nb->priv->tabs_height;
     attributes.window_type = GDK_WINDOW_CHILD;
-    attributes.event_mask = gtk_widget_get_events (widget)
-            | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK |
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-            GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK |
-            GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
+    attributes.event_mask = gtk_widget_get_events (widget) |
+            GDK_EXPOSURE_MASK |
+            GDK_POINTER_MOTION_MASK |
+            GDK_BUTTON_PRESS_MASK |
+            GDK_BUTTON_RELEASE_MASK |
+            GDK_KEY_PRESS_MASK |
+            GDK_KEY_RELEASE_MASK |
+            GDK_ENTER_NOTIFY_MASK |
+            GDK_LEAVE_NOTIFY_MASK |
             GDK_SCROLL_MASK;
 
     attributes.visual = gtk_widget_get_visual (widget);
@@ -1164,6 +1174,28 @@ static gboolean moo_notebook_expose         (GtkWidget      *widget,
     if (nb->priv->in_drag && event->window == nb->priv->tab_window)
         moo_notebook_draw_dragged_label (nb, event);
 
+    return FALSE;
+}
+
+
+static gboolean
+moo_notebook_focus_in (GtkWidget      *widget,
+                       G_GNUC_UNUSED GdkEventFocus *event)
+{
+    /* XXX invalidate only one label, not whole tab window */
+    if (MOO_NOTEBOOK(widget)->priv->focus_page)
+        labels_invalidate (MOO_NOTEBOOK (widget));
+    return FALSE;
+}
+
+
+static gboolean
+moo_notebook_focus_out (GtkWidget      *widget,
+                        G_GNUC_UNUSED GdkEventFocus *event)
+{
+    /* XXX invalidate only one label, not whole tab window */
+    if (MOO_NOTEBOOK(widget)->priv->focus_page)
+        labels_invalidate (MOO_NOTEBOOK (widget));
     return FALSE;
 }
 
