@@ -711,6 +711,35 @@ MooFile     *moo_folder_get_file        (MooFolder  *folder,
 }
 
 
+char*
+moo_folder_get_file_path (MooFolder *folder,
+                          MooFile   *file)
+{
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    g_return_val_if_fail (file != NULL, NULL);
+    return FILE_PATH (folder, file);
+}
+
+
+char*
+moo_folder_get_file_uri (MooFolder *folder,
+                         MooFile   *file)
+{
+    char *path, *uri;
+
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    g_return_val_if_fail (file != NULL, NULL);
+
+    path = FILE_PATH (folder, file);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    uri = g_filename_to_uri (path, NULL, NULL);
+
+    g_free (path);
+    return uri;
+}
+
+
 MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
                                          MooFileFlags    wanted)
 {

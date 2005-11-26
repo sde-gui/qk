@@ -178,6 +178,10 @@ const char  *moo_folder_get_path        (MooFolder      *folder);
 GSList      *moo_folder_list_files      (MooFolder      *folder);
 MooFile     *moo_folder_get_file        (MooFolder      *folder,
                                          const char     *basename);
+char        *moo_folder_get_file_path   (MooFolder      *folder,
+                                         MooFile        *file);
+char        *moo_folder_get_file_uri    (MooFolder      *folder,
+                                         MooFile        *file);
 /* result should be unref'ed */
 MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
                                          MooFileFlags    wanted);
