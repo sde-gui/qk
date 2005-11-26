@@ -61,10 +61,15 @@ struct _CellInfo {
 
 
 struct _DndInfo {
+    GtkTargetList *dest_targets;
+    GdkDragAction dest_actions;
+
     GdkModifierType start_button_mask;
     GtkTargetList *source_targets;
     GdkDragAction source_actions;
+
     guint source_enabled : 1;
+    guint dest_enabled : 1;
 };
 
 
@@ -128,6 +133,28 @@ static gboolean moo_icon_view_maybe_drag    (MooIconView    *view,
                                              GdkEventMotion *event);
 static void     moo_icon_view_drag_begin    (GtkWidget      *widget,
                                              GdkDragContext *context);
+static void     moo_icon_view_drag_end      (GtkWidget      *widget,
+                                             GdkDragContext *context);
+static void     moo_icon_drag_data_received (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time);
+static gboolean moo_icon_view_drag_drop     (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
+static void     moo_icon_view_drag_leave    (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             guint           time);
+static gboolean moo_icon_view_drag_motion   (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
 
 static void     row_changed                 (GtkTreeModel   *model,
                                              GtkTreePath    *path,
@@ -234,6 +261,11 @@ static void moo_icon_view_class_init (MooIconViewClass *klass)
     widget_class->button_release_event = moo_icon_view_button_release;
     widget_class->motion_notify_event = moo_icon_view_motion_notify;
     widget_class->drag_begin = moo_icon_view_drag_begin;
+    widget_class->drag_end = moo_icon_view_drag_end;
+//     widget_class->drag_data_received = moo_icon_drag_data_received;
+//     widget_class->drag_drop = moo_icon_view_drag_drop;
+//     widget_class->drag_leave = moo_icon_view_drag_leave;
+//     widget_class->drag_motion = moo_icon_view_drag_motion;
 
     klass->set_scroll_adjustments = moo_icon_view_set_scroll_adjustments;
 
@@ -477,6 +509,8 @@ static void moo_icon_view_finalize  (GObject      *object)
 
     if (view->priv->dnd_info->source_targets)
         gtk_target_list_unref (view->priv->dnd_info->source_targets);
+    if (view->priv->dnd_info->dest_targets)
+        gtk_target_list_unref (view->priv->dnd_info->dest_targets);
     g_free (view->priv->dnd_info);
 
     g_free (view->priv);
@@ -2948,3 +2982,101 @@ moo_icon_view_drag_begin (G_GNUC_UNUSED GtkWidget      *widget,
                           G_GNUC_UNUSED GdkDragContext *context)
 {
 }
+
+
+static void
+moo_icon_view_drag_end (G_GNUC_UNUSED GtkWidget      *widget,
+                        G_GNUC_UNUSED GdkDragContext *context)
+{
+    g_print ("drag-end!!!!\n");
+}
+
+
+void
+moo_icon_view_enable_drag_dest (MooIconView        *view,
+                                GtkTargetEntry     *targets,
+                                gint                n_targets,
+                                GdkDragAction       actions)
+{
+    DndInfo *info;
+
+    g_return_if_fail (MOO_IS_ICON_VIEW (view));
+
+    gtk_drag_dest_set (GTK_WIDGET (view), 0, targets, n_targets, actions);
+
+    info = view->priv->dnd_info;
+
+    if (info->dest_targets)
+        gtk_target_list_unref (info->dest_targets);
+
+    info->dest_targets = gtk_target_list_new (targets, n_targets);
+    info->dest_actions = actions;
+    info->dest_enabled = TRUE;
+}
+
+
+GtkTargetList *
+moo_icon_view_get_dest_targets (MooIconView *view)
+{
+    g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
+    return view->priv->dnd_info->dest_targets;
+}
+
+
+void
+moo_icon_view_disable_drag_dest (MooIconView *view)
+{
+    DndInfo *info;
+
+    g_return_if_fail (MOO_IS_ICON_VIEW (view));
+
+    info = view->priv->dnd_info;
+
+    if (info->dest_enabled)
+    {
+        gtk_drag_dest_unset (GTK_WIDGET (view));
+        gtk_target_list_unref (info->dest_targets);
+        info->dest_targets = NULL;
+    }
+}
+
+
+// static void
+// moo_icon_drag_data_received (G_GNUC_UNUSED GtkWidget      *widget,
+//                              G_GNUC_UNUSED GdkDragContext *context,
+//                              G_GNUC_UNUSED int             x,
+//                              G_GNUC_UNUSED int             y,
+//                              G_GNUC_UNUSED GtkSelectionData *data,
+//                              G_GNUC_UNUSED guint           info,
+//                              G_GNUC_UNUSED guint           time)
+// {
+// }
+//
+//
+// static gboolean
+// moo_icon_view_drag_drop (GtkWidget      *widget,
+//                          GdkDragContext *context,
+//                          int             x,
+//                          int             y,
+//                          guint           time)
+// {
+//     return FALSE;
+// }
+//
+//
+// static void
+// moo_icon_view_drag_leave (GtkWidget      *widget,
+//                           GdkDragContext *context,
+//                           guint           time)
+// {
+// }
+//
+//
+// static gboolean
+// moo_icon_view_drag_motion (GtkWidget      *widget,
+//                            GdkDragContext *context,
+//                            int             x,
+//                            int             y,
+//                            guint           time)
+// {
+// }
