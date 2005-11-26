@@ -73,7 +73,8 @@ class Plugin(moo.edit.Plugin):
         window.add(swin)
 
         console_type = pyconsole.ConsoleType(moo.edit.TextView)
-        console = console_type(use_rlcompleter=False)
+        console = console_type(use_rlcompleter=False, start_script=
+                               "import moo\nimport gtk\n")
         console.set_property("highlight-current-line", False)
         editor = moo.edit.editor_instance()
         mgr = editor.get_lang_mgr()

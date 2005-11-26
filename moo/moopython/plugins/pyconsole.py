@@ -13,9 +13,9 @@
 
 # This module 'runs' python interpreter in a TextView widget.
 # The main class is Console, usage is:
-# Console(locals=None, banner=None, completer=None, use_rlcompleter=True) -
+# Console(locals=None, banner=None, completer=None, use_rlcompleter=True, start_script='') -
 # it creates the widget and 'starts' interactive session; see the end of
-# this file.
+# this file. If start_script is not empty, it pastes it as it was entered from keyboard.
 #
 # This widget is not a replacement for real terminal with python running
 # inside: GtkTextView is not a terminal.
@@ -103,6 +103,7 @@ class _ReadLine(object):
 
         self.ps = ''
         self.in_raw_input = False
+        self.run_on_raw_input = None
         self.tab_pressed = 0
         self.history = _ReadLine.History()
         self.nonword_re = re.compile("[^\w\._]")
@@ -132,6 +133,11 @@ class _ReadLine(object):
         self.scroll_to_mark(self.cursor, 0.2)
 
         self.in_raw_input = True
+
+        if self.run_on_raw_input:
+            run_now = self.run_on_raw_input
+            self.run_on_raw_input = None
+            self.buffer.insert_at_cursor(run_now + '\n')
 
     def on_buf_mark_set(self, buffer, iter, mark):
         if not mark is buffer.get_insert():
@@ -407,23 +413,16 @@ class _ReadLine(object):
 
 class _Console(_ReadLine, code.InteractiveInterpreter):
     def __init__(self, locals=None, banner=None,
-                 completer=None, use_rlcompleter=True):
+                 completer=None, use_rlcompleter=True,
+                 start_script=None):
         _ReadLine.__init__(self)
 
         code.InteractiveInterpreter.__init__(self, locals)
         self.locals['__console__'] = self
 
-        self.ps1 = ">>> "
-        self.ps2 = "... "
-        self.cmd_buffer = ""
-
-        if banner:
-            iter = self.buffer.get_start_iter()
-            self.buffer.insert(iter, banner)
-            if not iter.starts_line():
-                self.buffer.insert(iter, "\n")
-
+        self.start_script = start_script
         self.completer = completer
+        self.banner = banner
 
         if not self.completer and use_rlcompleter:
             try:
@@ -432,7 +431,33 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             except ImportError:
                 pass
 
+        self.ps1 = ">>> "
+        self.ps2 = "... "
+        self.__start()
+        self.run_on_raw_input = start_script
         self.raw_input(self.ps1)
+
+    def __start(self):
+        self.cmd_buffer = ""
+
+        self.freeze_undo()
+        self.thaw_undo()
+        self.buffer.set_text("")
+
+        if self.banner:
+            iter = self.buffer.get_start_iter()
+            self.buffer.insert(iter, self.banner)
+            if not iter.starts_line():
+                self.buffer.insert(iter, "\n")
+
+    def clear(self, start_script=None):
+        if start_script is None:
+            start_script = self.start_script
+        else:
+            self.start_script = start_script
+
+        self.__start()
+        self.run_on_raw_input = start_script
 
     def do_raw_input(self, text):
         if self.cmd_buffer:
@@ -548,7 +573,13 @@ if __name__ == '__main__':
     swin = gtk.ScrolledWindow()
     swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     window.add(swin)
-    swin.add(Console(banner="Hello there!", use_rlcompleter=False))
+    swin.add(Console(banner="Hello there!",
+                     use_rlcompleter=False,
+                     start_script="import gtk\n" + \
+                                  "win = gtk.Window()\n" + \
+                                  "label = gtk.Label('Hello there!')\n" + \
+                                  "win.add(label)\n" + \
+                                  "win.show_all()\n"))
     window.set_default_size(400, 300)
     window.show_all()
 
