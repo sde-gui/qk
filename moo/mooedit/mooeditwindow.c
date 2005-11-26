@@ -34,11 +34,6 @@
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
 
-enum {
-    TARGET_TEXT = 1,
-    TARGET_URI = 2
-};
-
 struct _MooEditWindowPrivate {
     MooEditor *editor;
     GtkStatusbar *statusbar;
@@ -72,14 +67,6 @@ static void     moo_edit_window_get_property(GObject        *object,
 
 
 static gboolean moo_edit_window_close       (MooEditWindow  *window);
-
-static void     drag_data_received      (GtkWidget          *widget,
-                                         GdkDragContext     *context,
-                                         int                 x,
-                                         int                 y,
-                                         GtkSelectionData   *data,
-                                         guint               info,
-                                         guint               time);
 
 static void     setup_notebook          (MooEditWindow      *window);
 static void     update_window_title     (MooEditWindow      *window);
@@ -185,7 +172,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
 
     gobject_class->constructor = moo_edit_window_constructor;
@@ -193,7 +179,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->set_property = moo_edit_window_set_property;
     gobject_class->get_property = moo_edit_window_get_property;
     gtkobject_class->destroy = moo_edit_window_destroy;
-    widget_class->drag_data_received = drag_data_received;
     window_class->close = (gboolean (*) (MooWindow*))moo_edit_window_close;
 
     g_object_class_install_property (gobject_class,
@@ -507,8 +492,6 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
 static void
 moo_edit_window_init (MooEditWindow *window)
 {
-    GtkTargetList *targets;
-
     window->priv = g_new0 (MooEditWindowPrivate, 1);
     window->priv->prefix = g_strdup ("medit");
     window->priv->panes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
@@ -520,10 +503,6 @@ moo_edit_window_init (MooEditWindow *window)
                   NULL);
 
     window->priv->use_fullname = TRUE;
-
-    targets = moo_window_get_target_list (MOO_WINDOW (window));
-    gtk_target_list_add_uri_targets (targets, TARGET_URI);
-    gtk_target_list_add_text_targets (targets, TARGET_TEXT);
 }
 
 
@@ -668,56 +647,6 @@ void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
 
     if (GTK_WIDGET_REALIZED (GTK_WIDGET (window)))
         update_window_title (window);
-}
-
-
-static void
-drag_data_received (GtkWidget          *widget,
-                    GdkDragContext     *context,
-                    int                 x,
-                    int                 y,
-                    GtkSelectionData   *data,
-                    guint               info,
-                    guint               time)
-{
-    char **uris;
-    char *text;
-    MooEditWindow *window = MOO_EDIT_WINDOW (widget);
-
-    if ((uris = gtk_selection_data_get_uris (data)))
-    {
-        char **p;
-
-        for (p = uris; *p; ++p)
-        {
-            char *filename = g_filename_from_uri (*p, NULL, NULL);
-
-            if (filename)
-            {
-                moo_editor_open_file (window->priv->editor, window,
-                                      NULL, filename, NULL);
-                g_free (filename);
-            }
-        }
-
-        g_strfreev (uris);
-    }
-    else if ((text = gtk_selection_data_get_text (data)))
-    {
-        MooEdit *doc = moo_editor_new_doc (window->priv->editor, window);
-
-        if (doc)
-        {
-            /* XXX MooEdit should have appropriate methods */
-            GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
-            gtk_text_buffer_insert_at_cursor (buffer, text, -1);
-        }
-
-        g_free (text);
-    }
-
-    GTK_WIDGET_CLASS(moo_edit_window_parent_class)->drag_data_received (widget, context, x, y,
-                                                                        data, info, time);
 }
 
 
