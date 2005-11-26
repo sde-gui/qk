@@ -64,8 +64,6 @@ GType       moo_window_get_type             (void) G_GNUC_CONST;
 
 gboolean    moo_window_close                (MooWindow          *window);
 
-GtkTargetList *moo_window_get_target_list   (MooWindow          *window);
-
 
 /*****************************************************************************/
 /* Actions
