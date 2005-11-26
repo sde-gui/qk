@@ -41,8 +41,8 @@ typedef struct _MooFileViewClass    MooFileViewClass;
 
 struct _MooFileView
 {
-    GtkVBox             vbox;
-    GtkWidget          *toolbar;
+    GtkVBox vbox;
+    GtkWidget *toolbar;
     MooFileViewPrivate *priv;
 };
 
@@ -50,17 +50,27 @@ struct _MooFileViewClass
 {
     GtkVBoxClass        vbox_class;
 
-    /* methods */
     gboolean    (*chdir)            (MooFileView    *fileview,
                                      const char     *dir,
                                      GError        **error);
-
-    /* signals */
     void        (*populate_popup)   (MooFileView    *fileview,
                                      GList          *selected,
                                      GtkMenu        *menu);
     void        (*activate)         (MooFileView    *fileview,
                                      const char     *path);
+
+    gboolean    (*drop)             (MooFileView    *fileview,
+                                     const char     *path,
+                                     GtkWidget      *widget,
+                                     GdkDragContext *context,
+                                     guint           time);
+    gboolean    (*drop_data_received) (MooFileView  *fileview,
+                                     const char     *path,
+                                     GtkWidget      *widget,
+                                     GdkDragContext *context,
+                                     GtkSelectionData *data,
+                                     guint           info,
+                                     guint           time);
 };
 
 

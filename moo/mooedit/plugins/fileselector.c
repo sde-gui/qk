@@ -50,7 +50,6 @@ typedef struct {
 typedef struct {
     MooFileView base;
     MooEditWindow *window;
-
     GtkWidget *button;
     guint open_pane_timeout;
 } MooFileSelector;
@@ -93,23 +92,23 @@ static GObject *moo_file_selector_constructor   (GType           type,
                                                  guint           n_props,
                                                  GObjectConstructParam *props);
 
-static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
-                                                 const char     *dir,
-                                                 GError        **error);
-static void     moo_file_selector_activate      (MooFileView    *fileview,
-                                                 const char     *path);
+static gboolean moo_file_selector_chdir     (MooFileView    *fileview,
+                                             const char     *dir,
+                                             GError        **error);
+static void     moo_file_selector_activate  (MooFileView    *fileview,
+                                             const char     *path);
 
 
-static void     button_drag_leave               (GtkWidget      *button,
-                                                 GdkDragContext *context,
-                                                 guint           time,
-                                                 MooFileSelector *filesel);
-static gboolean button_drag_motion              (GtkWidget      *button,
-                                                 GdkDragContext *context,
-                                                 int             x,
-                                                 int             y,
-                                                 guint           time,
-                                                 MooFileSelector *filesel);
+static void     button_drag_leave           (GtkWidget      *button,
+                                             GdkDragContext *context,
+                                             guint           time,
+                                             MooFileSelector *filesel);
+static gboolean button_drag_motion          (GtkWidget      *button,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             MooFileSelector *filesel);
 
 
 static void
