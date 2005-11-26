@@ -52,6 +52,7 @@ typedef struct {
     MooEditWindow *window;
     GtkWidget *button;
     guint open_pane_timeout;
+    gboolean button_highlight;
 } MooFileSelector;
 
 typedef struct {
@@ -261,7 +262,6 @@ moo_file_selector_constructor (GType           type,
     MooFileSelector *filesel;
     MooFileView *fileview;
     GObject *object;
-    GtkWidget *button;
 
     object = G_OBJECT_CLASS(moo_file_selector_parent_class)->constructor (type, n_props, props);
     filesel = MOO_FILE_SELECTOR (object);
@@ -286,24 +286,29 @@ moo_file_selector_constructor (GType           type,
                               "MooFileView/Toolbar", -1,
                               "<item action=\"GoToCurrentDocDir\"/>");
 
+//     button = gtk_event_box_new ();
+//     gtk_widget_add_events (button, GDK_POINTER_MOTION_MASK);
+//     gtk_container_add (GTK_CONTAINER (button), gtk_label_new ("FileSel"));
+//     gtk_widget_show_all (button);
+
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
-                                NULL, NULL, "File Selector",
+                                NULL, NULL/*button*/, "File Selector",
                                 "File Selector");
     moo_edit_window_add_pane (filesel->window, PLUGIN_ID, GTK_WIDGET (filesel),
                               label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 
-    button = moo_big_paned_get_button (filesel->window->paned,
+    filesel->button = moo_big_paned_get_button (filesel->window->paned,
                                        GTK_WIDGET (filesel));
-    g_return_val_if_fail (button != NULL, object);
+    g_return_val_if_fail (filesel->button != NULL, object);
 
-    gtk_drag_dest_set (button, 0,
+    gtk_drag_dest_set (filesel->button, 0,
                        button_targets,
                        G_N_ELEMENTS (button_targets),
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
-    g_signal_connect (button, "drag-motion",
+    g_signal_connect (filesel->button, "drag-motion",
                       G_CALLBACK (button_drag_motion), filesel);
-    g_signal_connect (button, "drag-leave",
+    g_signal_connect (filesel->button, "drag-leave",
                       G_CALLBACK (button_drag_leave), filesel);
 
     return object;
@@ -317,12 +322,11 @@ button_drag_leave (GtkWidget      *button,
                    MooFileSelector *filesel)
 {
     if (filesel->open_pane_timeout)
-    {
         g_source_remove (filesel->open_pane_timeout);
-        filesel->open_pane_timeout = 0;
-    }
-
-    gtk_drag_unhighlight (button);
+    filesel->open_pane_timeout = 0;
+    if (filesel->button_highlight)
+        gtk_drag_unhighlight (button);
+    filesel->button_highlight = FALSE;
 }
 
 
@@ -342,6 +346,10 @@ drag_open_pane (MooFileSelector *filesel)
 
     moo_paned_open_pane (paned, pane_index);
 
+    if (filesel->button_highlight)
+        gtk_drag_unhighlight (filesel->button);
+    filesel->button_highlight = FALSE;
+
 out:
     filesel->open_pane_timeout = 0;
     return FALSE;
@@ -359,6 +367,8 @@ button_drag_motion (GtkWidget      *button,
     MooPaneParams *params = NULL;
     MooPaned *paned;
     int pane_index;
+
+    g_print ("button_drag_motion\n");
 
     if (!moo_big_paned_find_pane (filesel->window->paned,
                                   GTK_WIDGET (filesel),
@@ -379,23 +389,35 @@ button_drag_motion (GtkWidget      *button,
     if (params->detached)
         goto out;
 
-    gtk_drag_highlight (button);
+    if (!filesel->button_highlight)
+    {
+        gtk_drag_highlight (button);
+        filesel->button_highlight = TRUE;
+    }
 
     if (!filesel->open_pane_timeout)
         filesel->open_pane_timeout = g_timeout_add (OPEN_PANE_TIMEOUT,
                                                     (GSourceFunc) drag_open_pane,
                                                     filesel);
 
+    gdk_drag_status (context, context->suggested_action, time);
+
     moo_pane_params_free (params);
     return TRUE;
 
 out:
+    if (filesel->button_highlight)
+        gtk_drag_unhighlight (button);
+    filesel->button_highlight = FALSE;
     if (params)
         moo_pane_params_free (params);
     if (filesel->open_pane_timeout)
         g_source_remove (filesel->open_pane_timeout);
     filesel->open_pane_timeout = 0;
-    return FALSE;
+
+    gdk_drag_status (context, 0, time);
+
+    return TRUE;
 }
 
 
