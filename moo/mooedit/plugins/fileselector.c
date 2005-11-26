@@ -351,10 +351,10 @@ out:
 
 static gboolean
 button_drag_motion (GtkWidget      *button,
-                    GdkDragContext *context,
-                    int             x,
-                    int             y,
-                    guint           time,
+                    G_GNUC_UNUSED GdkDragContext *context,
+                    G_GNUC_UNUSED int x,
+                    G_GNUC_UNUSED int y,
+                    G_GNUC_UNUSED guint time,
                     MooFileSelector *filesel)
 {
     MooPaneParams *params = NULL;
