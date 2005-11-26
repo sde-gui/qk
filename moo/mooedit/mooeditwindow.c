@@ -1196,12 +1196,10 @@ tab_icon_motion_notify (GtkWidget      *evbox,
         gtk_target_list_add (targets,
                              gdk_atom_intern ("text/uri-list", FALSE),
                              0, TARGET_URI_LIST);
-
-        if (moo_edit_get_filename (edit))
-            gtk_target_list_add (targets,
-                                 gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                                 GTK_TARGET_SAME_APP,
-                                 TARGET_MOO_EDIT_TAB);
+        gtk_target_list_add (targets,
+                             gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                             GTK_TARGET_SAME_APP,
+                             TARGET_MOO_EDIT_TAB);
 
         context = gtk_drag_begin (evbox, targets,
                                   GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK,

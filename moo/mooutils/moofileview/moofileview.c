@@ -116,6 +116,8 @@ struct _MooFileViewPrivate {
     gboolean         has_selection;
 
     struct {
+        GtkWidget *button;
+        gboolean highlight;
         GtkTreeRowReference *row;
         guint timeout;
         MooIconViewCell  cell;
@@ -312,6 +314,17 @@ static gboolean     moo_file_view_drop_data_received
                                              guint           info,
                                              guint           time);
 static void         cancel_drop_open        (MooFileView    *fileview);
+
+static void         up_button_drag_leave    (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             guint           time,
+                                             GtkWidget      *button);
+static gboolean     up_button_drag_motion   (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             GtkWidget      *button);
 
 
 /* MOO_TYPE_FILE_VIEW */
@@ -1130,6 +1143,7 @@ static GtkWidget*
 create_toolbar (MooFileView    *fileview)
 {
     GtkToolbar *toolbar;
+    GtkWidget *button;
 
     toolbar = moo_ui_xml_create_widget (fileview->priv->ui_xml,
                                         MOO_UI_TOOLBAR,
@@ -1141,6 +1155,26 @@ create_toolbar (MooFileView    *fileview)
     gtk_toolbar_set_tooltips (toolbar, TRUE);
     gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_ICONS);
     gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_MENU);
+
+    button = moo_ui_xml_get_widget (fileview->priv->ui_xml,
+                                    GTK_WIDGET (toolbar),
+                                    "MooFileView/Toolbar/GoUp");
+
+    if (button)
+    {
+        gtk_drag_dest_set (button, 0,
+                           dest_targets,
+                           G_N_ELEMENTS (dest_targets),
+                           GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+        g_signal_connect_swapped (button, "drag-motion",
+                                  G_CALLBACK (up_button_drag_motion), fileview);
+        g_signal_connect_swapped (button, "drag-leave",
+                                  G_CALLBACK (up_button_drag_leave), fileview);
+    }
+    else
+    {
+        g_critical ("%s: oops", G_STRLOC);
+    }
 
     fileview->toolbar = GTK_WIDGET (toolbar);
     return fileview->toolbar;
@@ -4122,46 +4156,67 @@ icon_drag_end (MooFileView    *fileview,
 static gboolean
 drop_open_timeout_func2 (MooFileView *fileview)
 {
-    GtkTreePath *path;
-    MooFolder *current_dir;
+    const char *goto_dir = NULL;
     MooFile *file = NULL;
-    GtkTreeIter iter;
-    const char *goto_dir;
+    GtkTreeRowReference *ref;
+    GtkWidget *button;
 
-    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
+    ref = fileview->priv->drop_to.row;
+    fileview->priv->drop_to.row = NULL;
+    button = fileview->priv->drop_to.button;
+
     cancel_drop_open (fileview);
-    g_return_val_if_fail (path != NULL, FALSE);
 
-    if (!gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, path))
+    if (ref)
     {
+        GtkTreePath *path;
+        MooFolder *current_dir;
+        GtkTreeIter iter;
+
+        path = gtk_tree_row_reference_get_path (ref);
+        gtk_tree_row_reference_free (ref);
+
+        g_return_val_if_fail (path != NULL, FALSE);
+
+        if (!gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, path))
+        {
+            gtk_tree_path_free (path);
+            g_return_val_if_reached (FALSE);
+        }
+
         gtk_tree_path_free (path);
-        g_return_val_if_reached (FALSE);
+
+        current_dir = fileview->priv->current_dir;
+        g_return_val_if_fail (current_dir != NULL, FALSE);
+
+        gtk_tree_model_get (fileview->priv->filter_model,
+                            &iter, COLUMN_FILE, &file, -1);
+        g_return_val_if_fail (file != NULL, FALSE);
+
+        if (!strcmp (moo_file_name (file), "..") || MOO_FILE_IS_DIR (file))
+        {
+            goto_dir = moo_file_name (file);
+        }
+        else
+        {
+            g_warning ("%s: oops", G_STRLOC);
+        }
     }
-
-    gtk_tree_path_free (path);
-
-    current_dir = fileview->priv->current_dir;
-    g_return_val_if_fail (current_dir != NULL, FALSE);
-
-    gtk_tree_model_get (fileview->priv->filter_model,
-                        &iter, COLUMN_FILE, &file, -1);
-    g_return_val_if_fail (file != NULL, FALSE);
-
-    goto_dir = NULL;
-
-    if (!strcmp (moo_file_name (file), "..") || MOO_FILE_IS_DIR (file))
+    else if (button)
     {
-        goto_dir = moo_file_name (file);
+        goto_dir = "..";
     }
     else
     {
-        g_warning ("%s: oops", G_STRLOC);
+        g_return_val_if_reached (FALSE);
     }
 
     if (goto_dir && moo_file_view_chdir (fileview, goto_dir, NULL))
         moo_file_view_select_name (fileview, NULL);
 
-    moo_file_unref (file);
+    if (file)
+        moo_file_unref (file);
+
     return FALSE;
 }
 
@@ -4169,35 +4224,60 @@ drop_open_timeout_func2 (MooFileView *fileview)
 static gboolean
 drop_open_timeout_func (MooFileView *fileview)
 {
-    GtkTreePath *path;
-
     fileview->priv->drop_to.timeout = 0;
 
-    g_return_val_if_fail (fileview->priv->drop_to.row != NULL, FALSE);
-    path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
-
-    if (!path)
+    if (fileview->priv->drop_to.row)
     {
-        cancel_drop_open (fileview);
-        moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
-        g_return_val_if_reached (FALSE);
+        GtkTreePath *path;
+
+        path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
+
+        if (!path)
+        {
+            cancel_drop_open (fileview);
+            moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
+            g_return_val_if_reached (FALSE);
+        }
+
+        if (fileview->priv->drop_to.blink_clear)
+        {
+            fileview->priv->drop_to.blink_clear = FALSE;
+            moo_icon_view_set_drag_dest_row (fileview->priv->iconview, path);
+
+            if (++fileview->priv->drop_to.n_blinks > 1)
+                fileview->priv->drop_to.timeout =
+                        g_timeout_add (DROP_OPEN_BLINK_TIME,
+                                       (GSourceFunc) drop_open_timeout_func2,
+                                       fileview);
+        }
+        else
+        {
+            fileview->priv->drop_to.blink_clear = TRUE;
+            moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
+        }
     }
-
-    if (fileview->priv->drop_to.blink_clear)
+    else if (fileview->priv->drop_to.button)
     {
-        fileview->priv->drop_to.blink_clear = FALSE;
-        moo_icon_view_set_drag_dest_row (fileview->priv->iconview, path);
+        if (!fileview->priv->drop_to.highlight)
+        {
+            fileview->priv->drop_to.highlight = TRUE;
+            gtk_drag_highlight (fileview->priv->drop_to.button);
 
-        if (++fileview->priv->drop_to.n_blinks > 1)
-            fileview->priv->drop_to.timeout =
-                    g_timeout_add (DROP_OPEN_BLINK_TIME,
-                                   (GSourceFunc) drop_open_timeout_func2,
-                                   fileview);
+            if (++fileview->priv->drop_to.n_blinks > 1)
+                fileview->priv->drop_to.timeout =
+                        g_timeout_add (DROP_OPEN_BLINK_TIME,
+                                       (GSourceFunc) drop_open_timeout_func2,
+                                       fileview);
+        }
+        else
+        {
+            fileview->priv->drop_to.highlight = FALSE;
+            gtk_drag_unhighlight (fileview->priv->drop_to.button);
+        }
     }
     else
     {
-        fileview->priv->drop_to.blink_clear = TRUE;
-        moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
+        g_return_val_if_reached (FALSE);
     }
 
     if (!fileview->priv->drop_to.timeout)
@@ -4355,6 +4435,11 @@ cancel_drop_open (MooFileView *fileview)
     if (fileview->priv->drop_to.timeout)
         g_source_remove (fileview->priv->drop_to.timeout);
 
+    if (fileview->priv->drop_to.highlight && fileview->priv->drop_to.button)
+        gtk_drag_unhighlight (fileview->priv->drop_to.button);
+
+    fileview->priv->drop_to.button = NULL;
+    fileview->priv->drop_to.highlight = FALSE;
     fileview->priv->drop_to.blink_clear = FALSE;
     fileview->priv->drop_to.n_blinks = 0;
     fileview->priv->drop_to.row = NULL;
@@ -4447,5 +4532,56 @@ icon_drag_motion (MooIconView    *iconview,
 out:
     if (path)
         gtk_tree_path_free (path);
+    return TRUE;
+}
+
+
+static void
+up_button_drag_leave (MooFileView    *fileview,
+                      G_GNUC_UNUSED GdkDragContext *context,
+                      G_GNUC_UNUSED guint           time,
+                      G_GNUC_UNUSED GtkWidget      *button)
+{
+    g_print ("up_button_drag_motion\n");
+    cancel_drop_open (fileview);
+}
+
+
+static gboolean
+up_button_drag_motion (MooFileView    *fileview,
+                       GdkDragContext *context,
+                       int             x,
+                       int             y,
+                       guint           time,
+                       GtkWidget      *button)
+{
+    gboolean new_timeout = TRUE;
+
+    g_print ("up_button_drag_motion\n");
+
+    if (fileview->priv->drop_to.button == button)
+    {
+        new_timeout = FALSE;
+        g_assert (fileview->priv->drop_to.timeout != 0);
+    }
+
+    if (new_timeout)
+    {
+        cancel_drop_open (fileview);
+
+        if (!fileview->priv->drop_to.highlight)
+        {
+            gtk_drag_highlight (button);
+            fileview->priv->drop_to.highlight = TRUE;
+        }
+
+        fileview->priv->drop_to.button = button;
+        fileview->priv->drop_to.timeout =
+                g_timeout_add (DROP_OPEN_TIMEOUT,
+                               (GSourceFunc) drop_open_timeout_func,
+                               fileview);
+    }
+
+    gdk_drag_status (context, context->suggested_action, time);
     return TRUE;
 }
