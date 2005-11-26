@@ -53,12 +53,14 @@ enum {
 };
 
 
-#if 0
-static GtkTargetEntry source_targets[] = {
-    {(char*) "text/uri-list", 0, 0},
-    {(char*) "text/plain", 0, 0}
+enum {
+    TARGET_URI_LIST,
+    TARGET_TEXT
 };
-#endif
+
+static GtkTargetEntry source_targets[] = {
+    {(char*) "text/uri-list", 0, 0}
+};
 
 
 typedef struct _History History;
@@ -242,6 +244,19 @@ static void file_view_properties_dialog     (MooFileView    *fileview);
 
 static void         add_bookmark            (MooFileView    *fileview);
 static void         edit_bookmarks          (MooFileView    *fileview);
+
+/* Dnd */
+static void         icon_drag_begin         (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             MooIconView    *iconview);
+static void         icon_drag_data_get      (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time,
+                                             MooIconView    *iconview);
+
+
 
 
 /* MOO_TYPE_FILE_VIEW */
@@ -1199,10 +1214,12 @@ icon_selection_changed (MooIconView *icon_view,
 }
 
 
-static GtkWidget   *create_iconview         (MooFileView    *fileview)
+static GtkWidget*
+create_iconview (MooFileView *fileview)
 {
     GtkWidget *iconview;
     GtkCellRenderer *cell;
+//     GtkTargetList *targets;
 
     iconview = moo_icon_view_new_with_model (fileview->priv->filter_model);
     moo_icon_view_set_selection_mode (MOO_ICON_VIEW (iconview),
@@ -1234,6 +1251,20 @@ static GtkWidget   *create_iconview         (MooFileView    *fileview)
                       G_CALLBACK (icon_button_press), fileview);
     g_signal_connect (iconview, "selection-changed",
                       G_CALLBACK (icon_selection_changed), fileview);
+
+    moo_icon_view_enable_drag_source (MOO_ICON_VIEW (iconview),
+                                      GDK_BUTTON1_MASK,
+                                      source_targets,
+                                      G_N_ELEMENTS (source_targets),
+                                      GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+    g_signal_connect_swapped (iconview, "drag-begin",
+                              G_CALLBACK (icon_drag_begin),
+                              fileview);
+    g_signal_connect_swapped (iconview, "drag-data-get",
+                              G_CALLBACK (icon_drag_data_get),
+                              fileview);
+
+//     targets = moo_icon_view_get_source_targets (MOO_ICON_VIEW (iconview));
 
     return iconview;
 }
@@ -2060,6 +2091,7 @@ static void         fileview_set_use_filter (MooFileView    *fileview,
 /* File manager functionality
  */
 
+/* returned files must be unrefed and list freed */
 static GList   *file_view_get_selected_files    (MooFileView    *fileview)
 {
     GList *paths, *files, *l;
@@ -3878,4 +3910,58 @@ static gboolean typeahead_find_match_hidden     (MooFileView    *fileview,
         if (!gtk_tree_model_iter_next (model, iter))
             return FALSE;
     }
+}
+
+
+/***************************************************************************/
+/* Drag'n'drop
+ */
+
+static void
+icon_drag_begin (MooFileView    *fileview,
+                 GdkDragContext *context,
+                 G_GNUC_UNUSED MooIconView *iconview)
+{
+    GList *files, *l;
+    char **uris;
+    guint n_files, i;
+    MooFolder *folder;
+
+    folder = fileview->priv->current_dir;
+    g_return_if_fail (folder != NULL);
+
+    files = file_view_get_selected_files (fileview);
+    g_return_if_fail (files != NULL);
+
+    n_files = g_list_length (files);
+    uris = g_new0 (char*, n_files + 1);
+
+    for (l = files, i = 0; l != NULL; i++, l = l->next)
+    {
+        MooFile *file = l->data;
+        uris[i] = moo_folder_get_file_uri (folder, file);
+    }
+
+    g_object_set_data_full (G_OBJECT (context), "moo-file-view-source-files",
+                            uris, (GDestroyNotify) g_strfreev);
+
+    g_list_foreach (files, (GFunc) moo_file_unref, NULL);
+    g_list_free (files);
+}
+
+
+static void
+icon_drag_data_get (G_GNUC_UNUSED MooFileView    *fileview,
+                    GdkDragContext *context,
+                    GtkSelectionData *data,
+                    G_GNUC_UNUSED guint           info,
+                    G_GNUC_UNUSED guint           time,
+                    G_GNUC_UNUSED MooIconView    *iconview)
+{
+    char **uris;
+
+    uris = g_object_get_data (G_OBJECT (context), "moo-file-view-source-files");
+    g_return_if_fail (uris && *uris);
+
+    gtk_selection_data_set_uris (data, uris);
 }
