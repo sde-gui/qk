@@ -59,7 +59,8 @@ static void moo_action_set_visible_real (MooAction      *action,
 static GtkWidget *moo_action_create_menu_item_real (MooAction      *action);
 static GtkWidget *moo_action_create_tool_item_real (MooAction      *action,
                                                     GtkWidget      *toolbar,
-                                                    int             position);
+                                                    int             position,
+                                                    MooToolItemFlags flags);
 
 static void moo_action_add_proxy        (MooAction      *action,
                                          GtkWidget      *proxy);
@@ -619,7 +620,8 @@ moo_action_create_menu_item (MooAction *action)
 GtkWidget*
 moo_action_create_tool_item (MooAction      *action,
                              GtkWidget      *toolbar,
-                             int             position)
+                             int             position,
+                             MooToolItemFlags flags)
 {
     MooActionClass *klass;
 
@@ -628,7 +630,7 @@ moo_action_create_tool_item (MooAction      *action,
 
     klass = MOO_ACTION_GET_CLASS (action);
     g_return_val_if_fail (klass != NULL && klass->create_tool_item != NULL, FALSE);
-    return klass->create_tool_item (action, toolbar, position);
+    return klass->create_tool_item (action, toolbar, position, flags);
 }
 
 
@@ -717,14 +719,18 @@ moo_action_create_menu_item_real (MooAction *action)
 static GtkWidget*
 moo_action_create_tool_item_real (MooAction      *action,
                                   GtkWidget      *toolbar,
-                                  int             position)
+                                  int             position,
+                                  MooToolItemFlags flags)
 {
 #if GTK_MINOR_VERSION >= 4
     GtkToolItem *item = NULL;
 
     if (action->stock_id)
     {
-        item = gtk_tool_button_new_from_stock (action->stock_id);
+        if (flags & MOO_TOOL_ITEM_MENU)
+            item = gtk_menu_tool_button_new_from_stock (action->stock_id);
+        else
+            item = gtk_tool_button_new_from_stock (action->stock_id);
     }
     else
     {
@@ -741,7 +747,11 @@ moo_action_create_tool_item_real (MooAction      *action,
                 gtk_widget_show (icon);
         }
 
-        item = gtk_tool_button_new (icon, action->label);
+        if (flags & MOO_TOOL_ITEM_MENU)
+            item = gtk_menu_tool_button_new (icon, action->label);
+        else
+            item = gtk_tool_button_new (icon, action->label);
+
         gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (item), TRUE);
     }
 
@@ -944,4 +954,23 @@ _moo_action_get_accel (MooAction      *action)
     g_return_val_if_fail (MOO_IS_ACTION (action), "");
     g_return_val_if_fail (action->accel_path != NULL, "");
     return moo_get_accel (action->accel_path);
+}
+
+
+GType
+moo_tool_item_flags_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GFlagsValue values[] = {
+            { MOO_TOOL_ITEM_MENU, (char*) "MOO_TOOL_ITEM_MENU", (char*) "menu" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_flags_register_static ("MooToolItemFlags", values);
+    }
+
+    return type;
 }

@@ -38,7 +38,8 @@ static void         moo_toggle_action_finalize      (GObject            *object)
 static GtkWidget   *create_menu_item                (MooAction          *action);
 static GtkWidget   *create_tool_item                (MooAction          *action,
                                                      GtkWidget          *toolbar,
-                                                     int                 position);
+                                                     int                 position,
+                                                     MooToolItemFlags    flags);
 
 static void         moo_toggle_action_toggled       (MooToggleAction    *action,
                                                      gboolean            active);
@@ -279,7 +280,8 @@ create_menu_item (MooAction *action)
 static GtkWidget*
 create_tool_item (MooAction *action,
                   GtkWidget *toolbar,
-                  int        position)
+                  int        position,
+                  G_GNUC_UNUSED MooToolItemFlags flags)
 {
 #if GTK_CHECK_VERSION(2,4,0)
     GtkToolItem *item = NULL;

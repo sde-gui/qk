@@ -27,10 +27,16 @@ G_BEGIN_DECLS
 #define MOO_IS_ACTION_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_ACTION))
 #define MOO_ACTION_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_ACTION, MooActionClass))
 
+#define MOO_TYPE_TOOL_ITEM_FLAGS     (moo_tool_item_flags_get_type ())
+
 
 typedef struct _MooAction        MooAction;
 typedef struct _MooActionPrivate MooActionPrivate;
 typedef struct _MooActionClass   MooActionClass;
+
+typedef enum {
+    MOO_TOOL_ITEM_MENU = 1 << 0
+} MooToolItemFlags;
 
 struct _MooAction
 {
@@ -66,7 +72,8 @@ struct _MooActionClass
     GtkWidget   *(*create_menu_item)    (MooAction      *action);
     GtkWidget   *(*create_tool_item)    (MooAction      *action,
                                          GtkWidget      *toolbar,
-                                         int             position);
+                                         int             position,
+                                         MooToolItemFlags flags);
 
     void         (*add_proxy)           (MooAction      *action,
                                          GtkWidget      *widget);
@@ -81,6 +88,7 @@ struct _MooActionClass
 
 
 GType        moo_action_get_type            (void) G_GNUC_CONST;
+GType        moo_tool_item_flags_get_type   (void) G_GNUC_CONST;
 
 void         moo_action_activate            (MooAction      *action);
 
@@ -95,7 +103,8 @@ gboolean     moo_action_get_no_accel        (MooAction      *action);
 GtkWidget   *moo_action_create_menu_item    (MooAction      *action);
 GtkWidget   *moo_action_create_tool_item    (MooAction      *action,
                                              GtkWidget      *toolbar,
-                                             int             position);
+                                             int             position,
+                                             MooToolItemFlags flags);
 
 void         moo_action_set_sensitive       (MooAction      *action,
                                              gboolean        sensitive);

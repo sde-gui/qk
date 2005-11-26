@@ -1921,6 +1921,34 @@ create_tool_separator (MooUIXML       *xml,
 }
 
 
+#define IS_MENU_TOOL_BUTTON(wid) (GTK_IS_MENU_TOOL_BUTTON (wid) || \
+                                  MOO_IS_MENU_TOOL_BUTTON (wid))
+
+static void
+menu_tool_button_set_menu (GtkWidget *button,
+                           GtkWidget *menu)
+{
+    if (GTK_IS_MENU_TOOL_BUTTON (button))
+        gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (button), menu);
+    else if (MOO_IS_MENU_TOOL_BUTTON (button))
+        moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (button), menu);
+    else
+        g_return_if_reached ();
+}
+
+
+static GtkWidget*
+menu_tool_button_get_menu (GtkWidget *button)
+{
+    if (GTK_IS_MENU_TOOL_BUTTON (button))
+        return gtk_menu_tool_button_get_menu (GTK_MENU_TOOL_BUTTON (button));
+    else if (MOO_IS_MENU_TOOL_BUTTON (button))
+        return moo_menu_tool_button_get_menu (MOO_MENU_TOOL_BUTTON (button));
+    else
+        g_return_val_if_reached (NULL);
+}
+
+
 static gboolean
 create_tool_item (MooUIXML       *xml,
                   Toplevel       *toplevel,
@@ -1947,7 +1975,25 @@ create_tool_item (MooUIXML       *xml,
         if (action->dead)
             return TRUE;
 
-        tool_item = moo_action_create_tool_item (action, GTK_WIDGET (toolbar), index);
+        tool_item = moo_action_create_tool_item (action, GTK_WIDGET (toolbar), index,
+                                                 node->children ? MOO_TOOL_ITEM_MENU : 0);
+
+        if (node->children)
+        {
+            if (!IS_MENU_TOOL_BUTTON (tool_item))
+            {
+                g_critical ("%s: oops", G_STRLOC);
+            }
+            else
+            {
+                GtkWidget *menu = gtk_menu_new ();
+                /* XXX empty menu */
+                gtk_widget_show (menu);
+                menu_tool_button_set_menu (tool_item, menu);
+                fill_menu_shell (xml, toplevel, node, GTK_MENU_SHELL (menu));
+            }
+        }
+
     }
     else
     {
@@ -1975,7 +2021,7 @@ create_tool_item (MooUIXML       *xml,
         menu = gtk_menu_new ();
         /* XXX empty menu */
         gtk_widget_show (menu);
-        moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (tool_item), menu);
+        menu_tool_button_set_menu (tool_item, menu);
         fill_menu_shell (xml, toplevel, node, GTK_MENU_SHELL (menu));
     }
 
@@ -2190,17 +2236,17 @@ toplevel_add_node (MooUIXML *xml,
 
             update_separators (parent, toplevel);
         }
-        else if (MOO_IS_MENU_TOOL_BUTTON (parent_widget))
+        else if (IS_MENU_TOOL_BUTTON (parent_widget))
         {
             GtkWidget *menu;
 
-            menu = moo_menu_tool_button_get_menu (MOO_MENU_TOOL_BUTTON (parent_widget));
+            menu = menu_tool_button_get_menu (parent_widget);
 
             if (!menu)
             {
                 menu = gtk_menu_new ();
                 gtk_widget_show (menu);
-                moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (parent_widget), menu);
+                menu_tool_button_set_menu (parent_widget, menu);
             }
 
             switch (node->type)

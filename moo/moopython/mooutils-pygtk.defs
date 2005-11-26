@@ -245,6 +245,15 @@
   )
 )
 
+(define-flags ToolItemFlags
+  (in-module "Moo")
+  (c-name "MooToolItemFlags")
+  (gtype-id "MOO_TYPE_TOOL_ITEM_FLAGS")
+  (values
+    '("menu" "MOO_TOOL_ITEM_MENU")
+  )
+)
+
 
 ;; From ../mooutils/moocombo.h
 
@@ -2293,6 +2302,7 @@
   (parameters
     '("GtkWidget*" "toolbar")
     '("int" "position")
+    '("MooToolItemFlags" "flags")
   )
 )
 
