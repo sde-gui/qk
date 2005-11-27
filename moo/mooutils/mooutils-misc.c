@@ -1016,3 +1016,30 @@ moo_segfault (void)
     char *var = (char*) -1;
     var[18] = 8;
 }
+
+
+void
+moo_selection_data_set_pointer (GtkSelectionData *data,
+                                GdkAtom         type,
+                                gpointer        ptr)
+{
+    g_return_if_fail (data != NULL);
+    gtk_selection_data_set (data, type, 8, /* 8 bits per byte */
+                            (gpointer) &ptr, sizeof (ptr));
+}
+
+
+gpointer
+moo_selection_data_get_pointer (GtkSelectionData *data,
+                                GdkAtom         type)
+{
+    gpointer result = NULL;
+
+    g_return_val_if_fail (data != NULL, NULL);
+    g_return_val_if_fail (data->target == type, NULL);
+    g_return_val_if_fail (data->length == sizeof (result), NULL);
+
+    memcpy (&result, data->data, sizeof (result));
+
+    return result;
+}

@@ -307,12 +307,16 @@ static gboolean     moo_file_view_drop      (MooFileView    *fileview,
                                              const char     *path,
                                              GtkWidget      *widget,
                                              GdkDragContext *context,
+                                             int             x,
+                                             int             y,
                                              guint           time);
 static gboolean     moo_file_view_drop_data_received
                                             (MooFileView    *fileview,
                                              const char     *path,
                                              GtkWidget      *widget,
                                              GdkDragContext *context,
+                                             int             x,
+                                             int             y,
                                              GtkSelectionData *data,
                                              guint           info,
                                              guint           time);
@@ -329,6 +333,25 @@ static gboolean     button_drag_motion      (MooFileView    *fileview,
                                              guint           time,
                                              GtkWidget      *button);
 static void         sync_dest_targets       (MooFileView    *fileview);
+
+static gboolean     moo_file_view_drop_uris (MooFileView    *fileview,
+                                             char          **uris,
+                                             const char     *destdir,
+                                             GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             gboolean       *delete);
+static gboolean     moo_file_view_drop_text (MooFileView    *fileview,
+                                             const char     *text,
+                                             const char     *destdir,
+                                             GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             gboolean       *delete);
 
 
 /* MOO_TYPE_FILE_VIEW */
@@ -620,11 +643,13 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooFileViewClass, drop),
                           g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__STRING_OBJECT_OBJECT_UINT,
-                          G_TYPE_BOOLEAN, 4,
+                          _moo_marshal_BOOLEAN__STRING_OBJECT_OBJECT_INT_INT_UINT,
+                          G_TYPE_BOOLEAN, 6,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           GTK_TYPE_WIDGET,
                           GDK_TYPE_DRAG_CONTEXT,
+                          G_TYPE_INT,
+                          G_TYPE_INT,
                           G_TYPE_UINT);
 
     signals[DROP_DATA_RECEIVED] =
@@ -633,11 +658,13 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooFileViewClass, drop_data_received),
                           g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__STRING_OBJECT_OBJECT_POINTER_UINT_UINT,
-                          G_TYPE_BOOLEAN, 6,
+                          _moo_marshal_BOOLEAN__STRING_OBJECT_OBJECT_INT_INT_POINTER_UINT_UINT,
+                          G_TYPE_BOOLEAN, 8,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           GTK_TYPE_WIDGET,
                           GDK_TYPE_DRAG_CONTEXT,
+                          G_TYPE_INT,
+                          G_TYPE_INT,
                           G_TYPE_POINTER,
                           G_TYPE_UINT,
                           G_TYPE_UINT);
@@ -4352,7 +4379,7 @@ icon_drag_data_received (MooFileView    *fileview,
         dir = g_strdup (moo_folder_get_path (current_dir));
 
     g_signal_emit (fileview, signals[DROP_DATA_RECEIVED], 0,
-                   dir, iconview, context, data, info, time, &dummy);
+                   dir, iconview, context, x, y, data, info, time, &dummy);
 
     gtk_tree_path_free (path);
     g_free (dir);
@@ -4397,7 +4424,7 @@ icon_drag_drop (MooFileView    *fileview,
     if (!dir)
         dir = g_strdup (moo_folder_get_path (current_dir));
 
-    g_signal_emit (fileview, signals[DROP], 0, dir, iconview, context, time, &dummy);
+    g_signal_emit (fileview, signals[DROP], 0, dir, iconview, context, x, y, time, &dummy);
     moo_icon_view_set_drag_dest_row (iconview, NULL);
 
     gtk_tree_path_free (path);
@@ -4407,16 +4434,28 @@ icon_drag_drop (MooFileView    *fileview,
 
 
 static gboolean
-moo_file_view_drop (G_GNUC_UNUSED MooFileView *fileview,
+moo_file_view_drop (MooFileView    *fileview,
                     G_GNUC_UNUSED const char *path,
                     GtkWidget      *widget,
                     GdkDragContext *context,
+                    G_GNUC_UNUSED int x,
+                    G_GNUC_UNUSED int y,
                     guint           time)
 {
-    gtk_drag_get_data (widget, context,
-                       gdk_atom_intern ("text/uri-list", FALSE),
-                       time);
-    return TRUE;
+    GdkAtom target;
+
+    target = gtk_drag_dest_find_target (widget, context, fileview->priv->targets);
+
+    if (target != GDK_NONE)
+    {
+        gtk_drag_get_data (widget, context, target, time);
+        return TRUE;
+    }
+    else
+    {
+        g_warning ("%s: oops", G_STRLOC);
+        return FALSE;
+    }
 }
 
 
@@ -4425,11 +4464,41 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
                                   const char     *path,
                                   GtkWidget      *widget,
                                   GdkDragContext *context,
+                                  int             x,
+                                  int             y,
                                   GtkSelectionData *data,
-                                  guint           info,
+                                  G_GNUC_UNUSED guint info,
                                   guint           time)
 {
-    gtk_drag_finish (context, FALSE, FALSE, time);
+    gboolean success = FALSE;
+    gboolean delete = FALSE;
+
+    if (data->target == gdk_atom_intern ("text/uri-list", FALSE))
+    {
+        char **uris = gtk_selection_data_get_uris (data);
+
+        if (uris)
+            success = moo_file_view_drop_uris (fileview, uris, path, widget,
+                                               context, x, y, time, &delete);
+        else
+            g_critical ("%s: oops", G_STRLOC);
+
+        g_strfreev (uris);
+    }
+    else
+    {
+        char *text = gtk_selection_data_get_text (data);
+
+        if (text)
+            success = moo_file_view_drop_text (fileview, text, path, widget,
+                                               context, x, y, time, &delete);
+        else
+            g_critical ("%s: oops", G_STRLOC);
+
+        g_free (text);
+    }
+
+    gtk_drag_finish (context, success, delete, time);
     return TRUE;
 }
 
@@ -4585,8 +4654,8 @@ button_drag_leave (MooFileView    *fileview,
 static gboolean
 button_drag_motion (MooFileView    *fileview,
                     GdkDragContext *context,
-                    int             x,
-                    int             y,
+                    G_GNUC_UNUSED int x,
+                    G_GNUC_UNUSED int y,
                     guint           time,
                     GtkWidget      *button)
 {
@@ -4648,4 +4717,51 @@ sync_dest_targets (MooFileView *fileview)
 
     for (l = fileview->priv->drag_dest_widgets; l != NULL; l = l->next)
         gtk_drag_dest_set_target_list (l->data, fileview->priv->targets);
+}
+
+
+/***************************************************************************/
+/* Dropping stuff
+ */
+
+static gboolean
+moo_file_view_drop_uris (MooFileView    *fileview,
+                         char          **uris,
+                         const char     *destdir,
+                         GtkWidget      *widget,
+                         GdkDragContext *context,
+                         int             x,
+                         int             y,
+                         guint           time,
+                         gboolean       *delete)
+{
+    char **u;
+
+    g_return_val_if_fail (uris != NULL, FALSE);
+
+    g_print ("Got uris:\n");
+
+    for (u = uris; *u; ++u)
+        g_print ("'%s'\n", *u);
+
+    return FALSE;
+}
+
+
+static gboolean
+moo_file_view_drop_text (MooFileView    *fileview,
+                         const char     *text,
+                         const char     *destdir,
+                         GtkWidget      *widget,
+                         GdkDragContext *context,
+                         int             x,
+                         int             y,
+                         guint           time,
+                         gboolean       *delete)
+{
+    g_return_val_if_fail (text != NULL, FALSE);
+
+    g_print ("Got text:\n%s\n", text);
+
+    return FALSE;
 }

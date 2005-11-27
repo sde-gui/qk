@@ -24,6 +24,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenuaction.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -1268,11 +1269,9 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
     if (info == TARGET_MOO_EDIT_TAB)
     {
         g_print ("drag-data-get TARGET_MOO_EDIT_TAB\n");
-        gtk_selection_data_set (data,
-                                gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                                8, /* bytes */
-                                (void*) &edit,
-                                sizeof (edit));
+        moo_selection_data_set_pointer (data,
+                                        gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                                        edit);
     }
     else if (info == TARGET_URI_LIST)
     {

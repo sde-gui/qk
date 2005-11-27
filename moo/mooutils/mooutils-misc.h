@@ -62,6 +62,13 @@ void        moo_show_fatal_error            (const char     *logdomain,
 void        moo_segfault                    (void);
 
 
+void        moo_selection_data_set_pointer  (GtkSelectionData *data,
+                                             GdkAtom         type,
+                                             gpointer        ptr);
+gpointer    moo_selection_data_get_pointer  (GtkSelectionData *data,
+                                             GdkAtom         type);
+
+
 G_END_DECLS
 
 #endif /* __MOO_UTILS_MISC_H__ */

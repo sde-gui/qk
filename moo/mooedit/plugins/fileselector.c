@@ -22,6 +22,7 @@
 #include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-misc.h"
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -67,6 +68,8 @@ enum {
     TARGET_URI_LIST = 2
 };
 
+static GdkAtom moo_edit_tab_atom;
+
 static GtkTargetEntry targets[] = {
     { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
     { (char*) "text/uri-list", 0, TARGET_URI_LIST }
@@ -106,15 +109,27 @@ static gboolean moo_file_selector_drop      (MooFileView    *fileview,
                                              const char     *path,
                                              GtkWidget      *widget,
                                              GdkDragContext *context,
+                                             int             x,
+                                             int             y,
                                              guint           time);
 static gboolean moo_file_selector_drop_data_received (MooFileView *fileview,
                                              const char     *path,
                                              GtkWidget      *widget,
                                              GdkDragContext *context,
+                                             int             x,
+                                             int             y,
                                              GtkSelectionData *data,
                                              guint           info,
                                              guint           time);
 
+static gboolean moo_file_selector_drop_doc  (MooFileSelector *filesel,
+                                             MooEdit        *doc,
+                                             const char     *destdir,
+                                             GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
 
 static void     button_drag_leave           (GtkWidget      *button,
                                              GdkDragContext *context,
@@ -133,6 +148,8 @@ moo_file_selector_class_init (MooFileSelectorClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooFileViewClass *fileview_class = MOO_FILE_VIEW_CLASS (klass);
+
+    moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
 
     gobject_class->set_property = moo_file_selector_set_property;
     gobject_class->get_property = moo_file_selector_get_property;
@@ -158,10 +175,8 @@ static void
 moo_file_selector_init (MooFileSelector *filesel)
 {
     filesel->targets = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
-    moo_file_view_add_target (MOO_FILE_VIEW (filesel),
-                              gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
-                              GTK_TARGET_SAME_APP,
-                              TARGET_MOO_EDIT_TAB);
+    moo_file_view_add_target (MOO_FILE_VIEW (filesel), moo_edit_tab_atom,
+                              GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB);
 }
 
 
@@ -453,22 +468,23 @@ moo_file_selector_drop (MooFileView    *fileview,
                         const char     *path,
                         GtkWidget      *widget,
                         GdkDragContext *context,
+                        int             x,
+                        int             y,
                         guint           time)
 {
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
-    GdkAtom target, tab_target;
+    GdkAtom target;
 
     filesel->waiting_for_tab = FALSE;
     target = gtk_drag_dest_find_target (widget, context, filesel->targets);
-    tab_target = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
 
-    if (target != tab_target)
+    if (target != moo_edit_tab_atom)
         return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
-                drop (fileview, path, widget, context, time);
+                drop (fileview, path, widget, context, x, y, time);
 
     filesel->waiting_for_tab = TRUE;
 
-    gtk_drag_get_data (widget, context, tab_target, time);
+    gtk_drag_get_data (widget, context, moo_edit_tab_atom, time);
 
     return TRUE;
 }
@@ -479,29 +495,76 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
                                       const char     *path,
                                       GtkWidget      *widget,
                                       GdkDragContext *context,
+                                      int             x,
+                                      int             y,
                                       GtkSelectionData *data,
                                       guint           info,
                                       guint           time)
 {
+    MooEdit *doc;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
+    gboolean result = FALSE;
 
     if (!filesel->waiting_for_tab)
         goto parent;
 
     if (info != TARGET_MOO_EDIT_TAB)
     {
-        g_critical ("oops");
+        g_critical ("%s: oops", G_STRLOC);
         goto parent;
     }
+    else if (data->length < 0)
+    {
+        g_warning ("%s: could not get MOO_EDIT_TAB data", G_STRLOC);
+        goto error;
+    }
 
-    g_print ("got tab!!!\n");
-    gtk_drag_finish (context, FALSE, FALSE, time);
+    doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+
+    if (!MOO_IS_EDIT (doc))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        goto error;
+    }
+
+    result = moo_file_selector_drop_doc (MOO_FILE_SELECTOR (fileview),
+                                         doc, path, widget, context,
+                                         x, y, time);
+
+    gtk_drag_finish (context, result, FALSE, time);
     return TRUE;
+
+error:
+    gtk_drag_finish (context, FALSE, FALSE, time);
+    return FALSE;
 
 parent:
     return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
                 drop_data_received (fileview, path, widget, context,
-                                    data, info, time);
+                                    x, y, data, info, time);
+}
+
+
+static gboolean
+moo_file_selector_drop_doc (MooFileSelector *filesel,
+                            MooEdit        *doc,
+                            const char     *destdir,
+                            GtkWidget      *widget,
+                            GdkDragContext *context,
+                            int             x,
+                            int             y,
+                            guint           time)
+{
+    const char *filename;
+
+    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    g_return_val_if_fail (destdir != NULL, FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+    filename = moo_edit_get_filename (doc);
+    g_print ("Got doc '%s':\n", filename ? filename : "UNTITLED");
+
+    return FALSE;
 }
 
 

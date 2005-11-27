@@ -63,11 +63,15 @@ struct _MooFileViewClass
                                      const char     *path,
                                      GtkWidget      *widget,
                                      GdkDragContext *context,
+                                     int             x,
+                                     int             y,
                                      guint           time);
     gboolean    (*drop_data_received) (MooFileView  *fileview,
                                      const char     *path,
                                      GtkWidget      *widget,
                                      GdkDragContext *context,
+                                     int             x,
+                                     int             y,
                                      GtkSelectionData *data,
                                      guint           info,
                                      guint           time);
