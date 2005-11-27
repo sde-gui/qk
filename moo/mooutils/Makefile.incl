@@ -46,6 +46,8 @@ moofileview_sources =                          \
     $(moofileview)/moofoldermodel-private.h    \
     $(moofileview)/mooiconview.c               \
     $(moofileview)/mooiconview.h               \
+    $(moofileview)/mootreeview.c               \
+    $(moofileview)/mootreeview.h               \
     $(moofileview)/symlink.h
 
 moofileview_pixmaps =                          \

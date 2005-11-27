@@ -2319,8 +2319,6 @@ selection_clear (MooIconView *view)
     g_slist_foreach (view->priv->selection->selected,
                      (GFunc) gtk_tree_row_reference_free, NULL);
     g_slist_free (view->priv->selection->selected);
-    g_free (view->priv->selection);
-    view->priv->selection = NULL;
     selection_changed (view);
 }
 
@@ -2435,7 +2433,6 @@ moo_icon_view_get_selected (MooIconView  *view,
                             GtkTreeIter  *iter)
 {
     GtkTreePath *path = NULL;
-    gboolean result;
 
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), FALSE);
 
@@ -2443,9 +2440,10 @@ moo_icon_view_get_selected (MooIconView  *view,
 
     if (path)
     {
-        result = gtk_tree_model_get_iter (view->priv->model, iter, path);
+        if (iter)
+            gtk_tree_model_get_iter (view->priv->model, iter, path);
         gtk_tree_path_free (path);
-        return result;
+        return TRUE;
     }
     else
     {
