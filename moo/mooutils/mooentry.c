@@ -29,6 +29,7 @@ struct _MooEntryPrivate {
     guint use_ctrl_u : 1;
     guint grab_selection : 1;
     guint fool_entry : 1;
+    guint empty : 1;
 };
 
 static guint INSERT_ACTION_TYPE;
@@ -76,6 +77,7 @@ static void     moo_entry_set_selection_bounds (GtkEditable     *editable,
 static gboolean moo_entry_get_selection_bounds (GtkEditable     *editable,
                                              gint               *start_pos,
                                              gint               *end_pos);
+static void     moo_entry_changed           (GtkEditable        *editable);
 
 static void     init_undo_actions           (void);
 static gpointer insert_action_new           (GtkEditable        *editable,
@@ -128,7 +130,8 @@ enum {
     PROP_UNDO_MANAGER,
     PROP_ENABLE_UNDO,
     PROP_ENABLE_UNDO_MENU,
-    PROP_GRAB_SELECTION
+    PROP_GRAB_SELECTION,
+    PROP_EMPTY
 };
 
 enum {
@@ -203,6 +206,14 @@ moo_entry_class_init (MooEntryClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_EMPTY,
+                                     g_param_spec_boolean ("empty",
+                                             "empty",
+                                             "empty",
+                                             TRUE,
+                                             G_PARAM_READABLE));
+
     signals[UNDO] =
             g_signal_new ("undo",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -250,6 +261,7 @@ moo_entry_editable_init (GtkEditableClass   *klass)
     klass->do_delete_text = moo_entry_do_delete_text;
     klass->set_selection_bounds = moo_entry_set_selection_bounds;
     klass->get_selection_bounds = moo_entry_get_selection_bounds;
+    klass->changed = moo_entry_changed;
 }
 
 
@@ -259,6 +271,7 @@ moo_entry_init (MooEntry *entry)
     entry->priv = g_new0 (MooEntryPrivate, 1);
     entry->priv->undo_mgr = moo_undo_mgr_new (entry);
     entry->priv->use_ctrl_u = TRUE;
+    entry->priv->empty = TRUE;
 }
 
 
@@ -320,6 +333,10 @@ moo_entry_get_property (GObject        *object,
             g_value_set_boolean (value, entry->priv->grab_selection ? TRUE : FALSE);
             break;
 
+        case PROP_EMPTY:
+            g_value_set_boolean (value, GTK_ENTRY(entry)->text_length == 0);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -336,6 +353,25 @@ moo_entry_finalize (GObject *object)
     g_free (entry->priv);
 
     G_OBJECT_CLASS (moo_entry_parent_class)->finalize (object);
+}
+
+
+static void
+moo_entry_changed (GtkEditable *editable)
+{
+    MooEntry *entry = MOO_ENTRY (editable);
+    GtkEntry *gtkentry = GTK_ENTRY (editable);
+    gboolean empty = gtkentry->text_length == 0;
+
+    if ((empty && !entry->priv->empty) ||
+         (!empty && entry->priv->empty))
+    {
+        entry->priv->empty = empty;
+        g_object_notify (G_OBJECT (entry), "empty");
+    }
+
+    if (parent_editable_iface->changed)
+        parent_editable_iface->changed (editable);
 }
 
 
