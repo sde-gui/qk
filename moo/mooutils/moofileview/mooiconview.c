@@ -69,6 +69,8 @@ struct _DndInfo {
     GdkDragAction source_actions;
 
     guint scroll_timeout;
+    GdkDragContext *drag_motion_context;
+    guint drag_motion_time;
 
     guint drag_dest_inside : 1;
     guint source_enabled : 1;
@@ -3097,6 +3099,9 @@ moo_icon_view_drag_leave (G_GNUC_UNUSED GtkWidget      *widget,
 
     info = view->priv->dnd_info;
 
+    info->drag_motion_context = NULL;
+    info->drag_motion_time = 0;
+
     if (!info->drag_dest_inside)
         g_warning ("drag_leave: oops\n");
 
@@ -3104,43 +3109,6 @@ moo_icon_view_drag_leave (G_GNUC_UNUSED GtkWidget      *widget,
     drag_scroll_stop (view);
 
     g_print ("drag-leave\n");
-}
-
-
-static void
-drag_scroll_check (G_GNUC_UNUSED MooIconView *view,
-                   G_GNUC_UNUSED int          x,
-                   G_GNUC_UNUSED int          y)
-{
-    g_print ("drag_scroll_check\n");
-}
-
-
-static gboolean
-moo_icon_view_drag_motion (GtkWidget      *widget,
-                           G_GNUC_UNUSED GdkDragContext *context,
-                           int             x,
-                           int             y,
-                           G_GNUC_UNUSED guint           time)
-{
-    DndInfo *info;
-    MooIconView *view = MOO_ICON_VIEW (widget);
-
-    info = view->priv->dnd_info;
-
-    if (!info->drag_dest_inside)
-    {
-        info->drag_dest_inside = TRUE;
-        g_print ("drag-enter\n");
-    }
-    else
-    {
-        drag_scroll_check (view, x, y);
-    }
-
-    g_print ("drag-motion\n");
-
-    return FALSE;
 }
 
 
@@ -3155,6 +3123,134 @@ drag_scroll_stop (MooIconView *view)
         info->scroll_timeout = 0;
         g_print ("drag_scroll_stop\n");
     }
+}
+
+
+#define DRAG_SCROLL_MARGIN 0.1
+#define DRAG_SCROLL_TIMEOUT 100
+
+static gboolean
+drag_scroll_timeout (MooIconView *view)
+{
+    GtkWidget *widget = GTK_WIDGET (view);
+    GtkAllocation *alc = &widget->allocation;
+    GtkWidget *toplevel;
+    int x, y, new_offset;
+    GdkModifierType mask;
+    GdkEvent *event;
+    DndInfo *info = view->priv->dnd_info;
+
+    gdk_window_get_pointer (widget->window, &x, &y, &mask);
+
+    if (x < 0 || x >= alc->width || y < 0 || y >= alc->height)
+        goto out;
+
+    /* TODO make scrolling speed depend on mouse position */
+    if (x < widget->allocation.width * DRAG_SCROLL_MARGIN)
+    {
+        new_offset = view->priv->xoffset - 15;
+    }
+    else if (x > widget->allocation.width * (1 - DRAG_SCROLL_MARGIN))
+    {
+        new_offset = view->priv->xoffset + 15;
+    }
+    else
+    {
+        goto out;
+    }
+
+    new_offset = clamp_offset (view, new_offset);
+
+    if (new_offset == view->priv->xoffset)
+        goto out;
+
+    moo_icon_view_scroll_to (view, new_offset);
+
+    toplevel = gtk_widget_get_toplevel (widget);
+
+    if (!GTK_WIDGET_TOPLEVEL (toplevel))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        goto out;
+    }
+
+    event = gdk_event_new (GDK_DRAG_MOTION);
+
+    event->dnd.window = g_object_ref (toplevel->window);
+    event->dnd.send_event = TRUE;
+    event->dnd.context = g_object_ref (info->drag_motion_context);
+    event->dnd.time = info->drag_motion_time;
+
+    gdk_window_get_position (toplevel->window, &x, &y);
+    event->dnd.x_root = x;
+    event->dnd.y_root = y;
+    gdk_window_get_pointer (toplevel->window, &x, &y, &mask);
+    event->dnd.x_root += x;
+    event->dnd.y_root += y;
+
+    gtk_main_do_event (event);
+    gdk_event_free (event);
+
+    return TRUE;
+
+out:
+    drag_scroll_stop (view);
+    return FALSE;
+}
+
+
+static void
+drag_scroll_check (MooIconView *view,
+                   int          x,
+                   int          y)
+{
+    GtkAllocation *alc = &GTK_WIDGET(view)->allocation;
+
+    if (x >= 0 && x < alc->width && y >= 0 && y < alc->height &&
+        (x < alc->width * DRAG_SCROLL_MARGIN ||
+         x > alc->width * (1 - DRAG_SCROLL_MARGIN)))
+    {
+        DndInfo *info = view->priv->dnd_info;
+
+        if (!info->scroll_timeout)
+            info->scroll_timeout =
+                    g_timeout_add (DRAG_SCROLL_TIMEOUT,
+                                   (GSourceFunc) drag_scroll_timeout,
+                                   view);
+    }
+    else
+    {
+        drag_scroll_stop (view);
+    }
+}
+
+
+static gboolean
+moo_icon_view_drag_motion (GtkWidget      *widget,
+                           GdkDragContext *context,
+                           int             x,
+                           int             y,
+                           guint           time)
+{
+    DndInfo *info;
+    MooIconView *view = MOO_ICON_VIEW (widget);
+
+    info = view->priv->dnd_info;
+
+    info->drag_motion_context = context;
+    info->drag_motion_time = time;
+
+    if (!info->drag_dest_inside)
+    {
+        info->drag_dest_inside = TRUE;
+        g_print ("drag-enter\n");
+    }
+    else
+    {
+        drag_scroll_check (view, x, y);
+    }
+
+    return FALSE;
 }
 
 
