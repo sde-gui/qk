@@ -4177,7 +4177,7 @@ drop_open_timeout_func2 (MooFileView *fileview)
     if (ref)
     {
         MooFile *file = NULL;
-        const char *goto_dir;
+        const char *goto_dir = NULL;
         GtkTreePath *path;
         MooFolder *current_dir;
         GtkTreeIter iter;
