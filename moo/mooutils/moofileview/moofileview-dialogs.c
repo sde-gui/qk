@@ -16,7 +16,10 @@
 #include "mooutils/moofileview/moofilesystem.h"
 #include "mooutils/moofileview/moofileprops-glade.h"
 #include "mooutils/moofileview/moocreatefolder-glade.h"
+#include "mooutils/moofileview/moofileviewdrop-glade.h"
 #include "mooutils/mooentry.h"
+#include "mooutils/mooutils-gobject.h"
+#include "mooutils/moodialogs.h"
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -350,4 +353,156 @@ moo_create_folder_dialog (GtkWidget  *parent,
     moo_glade_xml_unref (xml);
     gtk_widget_destroy (dialog);
     return new_folder_name;
+}
+
+
+/****************************************************************************/
+/* Save droppped contents
+ */
+
+#define CLIP_NAME_BASE "clip"
+#define CLIP_NAME_SUFFIX ".txt"
+
+static char *
+find_available_clip_name (const char *dirname)
+{
+    int i;
+
+    g_assert (dirname != NULL);
+
+    for (i = 0; i < 1000; ++i)
+    {
+        char *fullname;
+        char *basename;
+
+        if (i)
+            basename = g_strdup_printf (CLIP_NAME_BASE "%d" CLIP_NAME_SUFFIX, i);
+        else
+            basename = g_strdup (CLIP_NAME_BASE CLIP_NAME_SUFFIX);
+
+        fullname = g_build_filename (dirname, basename, NULL);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+        {
+            g_free (fullname);
+            return basename;
+        }
+
+        g_free (fullname);
+        g_free (basename);
+    }
+
+    for (i = 0; i < 1000; ++i)
+    {
+        char *fullname;
+        char *basename;
+
+        basename = g_strdup_printf (CLIP_NAME_BASE "%08x" CLIP_NAME_SUFFIX,
+                                    g_random_int ());
+        fullname = g_build_filename (dirname, basename, NULL);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+        {
+            g_free (fullname);
+            return basename;
+        }
+
+        g_free (fullname);
+        g_free (basename);
+    }
+
+    return g_strdup (CLIP_NAME_BASE CLIP_NAME_SUFFIX);
+}
+
+
+char *
+moo_file_view_save_drop_dialog (GtkWidget          *parent,
+                                const char         *dirname,
+                                int                 x,
+                                int                 y)
+{
+    MooGladeXML *xml;
+    GtkWidget *dialog, *button;
+    GtkEntry *entry;
+    char *start_name, *fullname = NULL;
+
+    g_return_val_if_fail (dirname != NULL, NULL);
+
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+    if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
+        parent = NULL;
+
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
+    moo_glade_xml_parse_memory (xml, MOO_FILE_VIEW_DROP_GLADE_UI, -1, NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
+    g_return_val_if_fail (dialog != NULL, NULL);
+
+    if (parent)
+        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+
+    entry = moo_glade_xml_get_widget (xml, "entry");
+
+    start_name = find_available_clip_name (dirname);
+    gtk_entry_set_text (entry, start_name);
+    moo_entry_clear_undo (MOO_ENTRY (entry));
+
+    gtk_widget_show_all (dialog);
+    gtk_widget_grab_focus (GTK_WIDGET (entry));
+
+    button = moo_glade_xml_get_widget (xml, "ok_button");
+    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+
+    while (TRUE)
+    {
+        const char *text;
+        char *name, *err_text, *sec_text;
+
+        if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+            goto out;
+
+        text = gtk_entry_get_text (entry);
+
+        if (!text[0])
+        {
+            g_critical ("%s: ooops", G_STRLOC);
+            goto out;
+        }
+
+        /* XXX error checking, you know */
+        name = g_filename_from_utf8 (text, -1, NULL, NULL, NULL);
+
+        if (!name)
+        {
+            err_text = g_strdup_printf ("Can not save file as '%s'", text);
+            sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
+                                        "Please consider simpler name, such as foo.blah "
+                                        "or blah.foo", text);
+            moo_error_dialog (dialog, err_text, sec_text);
+            g_free (err_text);
+            g_free (sec_text);
+            continue;
+        }
+
+        fullname = g_build_filename (dirname, name, NULL);
+        g_free (name);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+            goto out;
+
+        err_text = g_strdup_printf ("File '%s' already exists", text);
+        moo_error_dialog (dialog, err_text, NULL);
+
+        g_free (err_text);
+        g_free (fullname);
+        fullname = NULL;
+    }
+
+out:
+    moo_glade_xml_unref (xml);
+    gtk_widget_destroy (dialog);
+    g_free (start_name);
+    return fullname;
 }

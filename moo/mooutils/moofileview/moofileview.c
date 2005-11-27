@@ -28,6 +28,8 @@
 #include "mooutils/moofileview/moofileview-private.h"
 #include "mooutils/moofileview/moofileview-ui.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
+#include "mooutils/moodialogs.h"
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mootoggleaction.h"
 #include "mooutils/moouixml.h"
@@ -4759,9 +4761,48 @@ moo_file_view_drop_text (MooFileView    *fileview,
                          guint           time,
                          gboolean       *delete)
 {
+    char *name = NULL;
+    gboolean result = FALSE;
+    GError *error = NULL;
+
     g_return_val_if_fail (text != NULL, FALSE);
 
-    g_print ("Got text:\n%s\n", text);
+    while (TRUE)
+    {
+        name = moo_file_view_save_drop_dialog (widget, destdir, x, y);
 
-    return FALSE;
+        if (!name)
+            return FALSE;
+
+        if (g_file_test (name, G_FILE_TEST_EXISTS))
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            goto out;
+        }
+
+        if (!moo_save_file_utf8 (name, text, -1, &error))
+        {
+            char *utf8_name = g_filename_display_name (name);
+            char *err_text = g_strdup_printf ("Could not save file\n%s", utf8_name);
+
+            moo_error_dialog (widget, err_text, error->message);
+
+            g_free (err_text);
+            g_free (utf8_name);
+
+            g_free (name);
+            g_error_free (error);
+            name = NULL;
+            error = NULL;
+        }
+        else
+        {
+            result = TRUE;
+            goto out;
+        }
+    }
+
+out:
+    g_free (name);
+    return result;
 }

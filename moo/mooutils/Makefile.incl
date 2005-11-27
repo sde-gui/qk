@@ -27,6 +27,7 @@ moofileview_sources =                          \
     $(moofileview)/moobookmarkmgr.h            \
     $(moofileview)/moobookmarkmgr-glade.h      \
     $(moofileview)/moocreatefolder-glade.h     \
+    $(moofileview)/moofileviewdrop-glade.h     \
     $(moofileview)/moofile.c                   \
     $(moofileview)/moofile.h                   \
     $(moofileview)/moofileentry.c              \
@@ -55,6 +56,7 @@ moofileview_built_sources =                    \
     $(moofileview)/moofileview-ui.h            \
     $(moofileview)/moofileprops-glade.h        \
     $(moofileview)/moocreatefolder-glade.h     \
+    $(moofileview)/moofileviewdrop-glade.h     \
     $(moofileview)/symlink.h                   \
     $(moofileview)/moobookmarkmgr-glade.h
 
@@ -88,6 +90,13 @@ $(moofileview)/moobookmarkmgr-glade.h: $(moofileview_srcdir)/glade/bookmark_edit
 	sh $(XML2H) MOO_BOOKMARK_MGR_GLADE_UI                              \
 	   $(moofileview_srcdir)/glade/bookmark_editor.glade >             \
 		$(moofileview)/moobookmarkmgr-glade.h
+
+$(moofileview)/moofileviewdrop-glade.h: $(moofileview_srcdir)/glade/drop.glade $(XML2H)
+	mkdir -p $(moofileview)
+	sh $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI                            \
+	   $(moofileview_srcdir)/glade/drop.glade >                        \
+		$(moofileview)/moofileviewdrop-glade.h
+
 
 moo_extra_dist +=                              \
     $(moofileview)/glade/moofileprops.glade    \

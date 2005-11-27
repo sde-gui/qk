@@ -60,6 +60,11 @@ void        moo_file_props_dialog_set_file  (MooFilePropsDialog *dialog,
 char       *moo_create_folder_dialog        (GtkWidget          *parent,
                                              MooFolder          *folder);
 
+char       *moo_file_view_save_drop_dialog  (GtkWidget          *parent,
+                                             const char         *dirname,
+                                             int                 x,
+                                             int                 y);
+
 
 G_END_DECLS
 
