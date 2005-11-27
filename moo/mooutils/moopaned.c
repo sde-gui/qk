@@ -468,6 +468,8 @@ moo_paned_class_init (MooPanedClass *klass)
 static void
 moo_paned_init (MooPaned *paned)
 {
+    GTK_WIDGET_UNSET_FLAGS (paned, GTK_NO_WINDOW);
+
     paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
                                                MOO_TYPE_PANED,
                                                MooPanedPrivate);

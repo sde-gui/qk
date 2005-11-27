@@ -442,14 +442,16 @@ static void     add_move_binding            (GtkBindingSet  *binding_set,
 }
 
 
-static void moo_icon_view_init      (MooIconView *view)
+static void
+moo_icon_view_init (MooIconView *view)
 {
     GtkWidget *widget = GTK_WIDGET (view);
 
     widget->allocation.width = -1;
     widget->allocation.height = -1;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
+    GTK_WIDGET_UNSET_FLAGS (view, GTK_NO_WINDOW);
+    GTK_WIDGET_SET_FLAGS (view, GTK_CAN_FOCUS);
 
     view->priv = g_new0 (MooIconViewPrivate, 1);
 

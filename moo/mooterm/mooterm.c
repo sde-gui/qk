@@ -264,8 +264,12 @@ static void moo_term_class_init (MooTermClass *klass)
 }
 
 
-static void moo_term_init                   (MooTerm        *term)
+static void
+moo_term_init (MooTerm *term)
 {
+    GTK_WIDGET_UNSET_FLAGS (term, GTK_NO_WINDOW);
+    GTK_WIDGET_SET_FLAGS (term, GTK_CAN_FOCUS);
+
     term->priv = g_new0 (MooTermPrivate, 1);
 
     term->priv->pt = _moo_term_pt_new (term);
@@ -539,7 +543,7 @@ static void moo_term_realize                (GtkWidget          *widget)
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL |
             GDK_WA_COLORMAP | GDK_WA_CURSOR;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED | GTK_CAN_FOCUS | GTK_CAN_DEFAULT);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED | GTK_CAN_FOCUS);
     widget->window = gdk_window_new (gtk_widget_get_parent_window (widget),
                                      &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
