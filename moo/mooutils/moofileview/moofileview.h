@@ -112,6 +112,12 @@ void        moo_file_view_add_target                    (MooFileView    *filevie
                                                          guint           flags,
                                                          guint           info);
 
+void        moo_file_view_drag_finish                   (MooFileView    *fileview,
+                                                         GdkDragContext *context,
+                                                         gboolean        success,
+                                                         gboolean        delete_data,
+                                                         guint           time);
+
 
 G_END_DECLS
 

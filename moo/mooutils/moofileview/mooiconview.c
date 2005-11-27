@@ -140,18 +140,6 @@ static void     moo_icon_view_drag_begin    (GtkWidget      *widget,
                                              GdkDragContext *context);
 static void     moo_icon_view_drag_end      (GtkWidget      *widget,
                                              GdkDragContext *context);
-static void     moo_icon_drag_data_received (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             GtkSelectionData *data,
-                                             guint           info,
-                                             guint           time);
-static gboolean moo_icon_view_drag_drop     (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time);
 static void     moo_icon_view_drag_leave    (GtkWidget      *widget,
                                              GdkDragContext *context,
                                              guint           time);
@@ -268,8 +256,6 @@ static void moo_icon_view_class_init (MooIconViewClass *klass)
     widget_class->motion_notify_event = moo_icon_view_motion_notify;
     widget_class->drag_begin = moo_icon_view_drag_begin;
     widget_class->drag_end = moo_icon_view_drag_end;
-    widget_class->drag_data_received = moo_icon_drag_data_received;
-    widget_class->drag_drop = moo_icon_view_drag_drop;
     widget_class->drag_leave = moo_icon_view_drag_leave;
     widget_class->drag_motion = moo_icon_view_drag_motion;
 
@@ -1075,7 +1061,7 @@ static void     draw_entry                  (MooIconView    *view,
     cursor = cursor_path != NULL && !gtk_tree_path_compare (cursor_path, path);
     gtk_tree_path_free (cursor_path);
 
-    drop_path = moo_icon_view_get_drop_dest_row (view);
+    drop_path = moo_icon_view_get_drag_dest_row (view);
     drop = drop_path != NULL && !gtk_tree_path_compare (drop_path, path);
     gtk_tree_path_free (drop_path);
 
@@ -3076,31 +3062,6 @@ moo_icon_view_disable_drag_dest (MooIconView *view)
 
 
 static void
-moo_icon_drag_data_received (G_GNUC_UNUSED GtkWidget      *widget,
-                             G_GNUC_UNUSED GdkDragContext *context,
-                             G_GNUC_UNUSED int             x,
-                             G_GNUC_UNUSED int             y,
-                             G_GNUC_UNUSED GtkSelectionData *data,
-                             G_GNUC_UNUSED guint           info,
-                             G_GNUC_UNUSED guint           time)
-{
-    g_print ("drag-data-received\n");
-}
-
-
-static gboolean
-moo_icon_view_drag_drop (G_GNUC_UNUSED GtkWidget      *widget,
-                         G_GNUC_UNUSED GdkDragContext *context,
-                         G_GNUC_UNUSED int             x,
-                         G_GNUC_UNUSED int             y,
-                         G_GNUC_UNUSED guint           time)
-{
-    g_print ("drag-drop\n");
-    return FALSE;
-}
-
-
-static void
 moo_icon_view_drag_leave (G_GNUC_UNUSED GtkWidget      *widget,
                           G_GNUC_UNUSED GdkDragContext *context,
                           G_GNUC_UNUSED guint           time)
@@ -3119,8 +3080,6 @@ moo_icon_view_drag_leave (G_GNUC_UNUSED GtkWidget      *widget,
 
     info->drag_dest_inside = FALSE;
     drag_scroll_stop (view);
-
-    g_print ("drag-leave\n");
 }
 
 
@@ -3133,7 +3092,6 @@ drag_scroll_stop (MooIconView *view)
     {
         g_source_remove (info->scroll_timeout);
         info->scroll_timeout = 0;
-        g_print ("drag_scroll_stop\n");
     }
 }
 
@@ -3284,14 +3242,9 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
     }
 
     if (!info->drag_dest_inside)
-    {
         info->drag_dest_inside = TRUE;
-        g_print ("drag-enter\n");
-    }
     else
-    {
         drag_scroll_check (view, x, y);
-    }
 
     return FALSE;
 }
@@ -3333,7 +3286,7 @@ moo_icon_view_set_drag_dest_row (MooIconView *view,
 
 
 GtkTreePath *
-moo_icon_view_get_drop_dest_row (MooIconView *view)
+moo_icon_view_get_drag_dest_row (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
 

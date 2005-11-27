@@ -1627,10 +1627,13 @@ static void         moo_file_view_go_up     (MooFileView    *fileview)
 
     if (parent != fileview->priv->current_dir)
     {
+        const char *path = moo_folder_get_path (parent);
         char *name = g_path_get_basename (
                 moo_folder_get_path (fileview->priv->current_dir));
-        moo_file_view_set_current_dir (fileview, parent);
-        moo_file_view_select_name (fileview, name);
+
+        if (moo_file_view_chdir (fileview, path, NULL))
+            moo_file_view_select_name (fileview, name);
+
         g_free (name);
     }
 
@@ -4363,7 +4366,7 @@ icon_drag_data_received (MooFileView    *fileview,
     if (!current_dir)
     {
         g_critical ("%s: oops", G_STRLOC);
-        gtk_drag_finish (context, FALSE, FALSE, time);
+        moo_file_view_drag_finish (fileview, context, FALSE, FALSE, time);
         return;
     }
 
@@ -4372,7 +4375,10 @@ icon_drag_data_received (MooFileView    *fileview,
         MooFile *file = file_view_get_file_at_path (fileview, path);
 
         if (MOO_FILE_IS_DIR (file))
+        {
             dir = moo_folder_get_file_path (current_dir, file);
+            moo_icon_view_set_drag_dest_row (iconview, path);
+        }
 
         moo_file_unref (file);
     }
@@ -4409,7 +4415,7 @@ icon_drag_drop (MooFileView    *fileview,
     if (!current_dir)
     {
         g_critical ("%s: oops", G_STRLOC);
-        gtk_drag_finish (context, FALSE, FALSE, time);
+        moo_file_view_drag_finish (fileview, context, FALSE, FALSE, time);
         return FALSE;
     }
 
@@ -4418,7 +4424,10 @@ icon_drag_drop (MooFileView    *fileview,
         MooFile *file = file_view_get_file_at_path (fileview, path);
 
         if (MOO_FILE_IS_DIR (file))
+        {
             dir = moo_folder_get_file_path (current_dir, file);
+            moo_icon_view_set_drag_dest_row (iconview, path);
+        }
 
         moo_file_unref (file);
     }
@@ -4427,7 +4436,6 @@ icon_drag_drop (MooFileView    *fileview,
         dir = g_strdup (moo_folder_get_path (current_dir));
 
     g_signal_emit (fileview, signals[DROP], 0, dir, iconview, context, x, y, time, &dummy);
-    moo_icon_view_set_drag_dest_row (iconview, NULL);
 
     gtk_tree_path_free (path);
     g_free (dir);
@@ -4500,8 +4508,35 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
         g_free (text);
     }
 
-    gtk_drag_finish (context, success, delete, time);
+    moo_file_view_drag_finish (fileview, context, success, delete, time);
     return TRUE;
+}
+
+
+void
+moo_file_view_drag_finish (MooFileView    *fileview,
+                           GdkDragContext *context,
+                           gboolean        success,
+                           gboolean        delete_data,
+                           guint           time)
+{
+    GtkTreePath *path;
+
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+
+    path = moo_icon_view_get_drag_dest_row (fileview->priv->iconview);
+    moo_icon_view_set_drag_dest_row (fileview->priv->iconview, NULL);
+
+    gtk_drag_finish (context, success, delete_data, time);
+
+    if (success && path)
+    {
+        moo_icon_view_unselect_all (fileview->priv->iconview);
+        moo_icon_view_set_cursor (fileview->priv->iconview, path, FALSE);
+    }
+
+    if (path)
+        gtk_tree_path_free (path);
 }
 
 

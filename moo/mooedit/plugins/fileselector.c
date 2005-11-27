@@ -410,8 +410,6 @@ button_drag_motion (GtkWidget      *button,
     MooPaned *paned;
     int pane_index;
 
-    g_print ("button_drag_motion\n");
-
     if (!moo_big_paned_find_pane (filesel->window->paned,
                                   GTK_WIDGET (filesel),
                                   &paned, &pane_index))
@@ -531,11 +529,11 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
                                          doc, path, widget, context,
                                          x, y, time);
 
-    gtk_drag_finish (context, result, FALSE, time);
+    moo_file_view_drag_finish (fileview, context, result, FALSE, time);
     return TRUE;
 
 error:
-    gtk_drag_finish (context, FALSE, FALSE, time);
+    moo_file_view_drag_finish (fileview, context, FALSE, FALSE, time);
     return FALSE;
 
 parent:

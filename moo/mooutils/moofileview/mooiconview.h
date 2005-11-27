@@ -161,7 +161,7 @@ void        moo_icon_view_set_dest_targets      (MooIconView        *view,
 void        moo_icon_view_disable_drag_dest     (MooIconView        *view);
 void        moo_icon_view_set_drag_dest_row     (MooIconView        *view,
                                                  GtkTreePath        *path);
-GtkTreePath *moo_icon_view_get_drop_dest_row    (MooIconView        *view);
+GtkTreePath *moo_icon_view_get_drag_dest_row    (MooIconView        *view);
 
 
 G_END_DECLS
