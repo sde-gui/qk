@@ -3037,11 +3037,23 @@ moo_icon_view_enable_drag_dest (MooIconView        *view,
 }
 
 
-GtkTargetList *
-moo_icon_view_get_dest_targets (MooIconView *view)
+void
+moo_icon_view_set_dest_targets (MooIconView        *view,
+                                GtkTargetList      *targets)
 {
-    g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
-    return view->priv->dnd_info->dest_targets;
+    DndInfo *info;
+
+    g_return_if_fail (MOO_IS_ICON_VIEW (view));
+
+    info = view->priv->dnd_info;
+    g_return_if_fail (info->dest_enabled);
+
+    if (info->dest_targets)
+        gtk_target_list_unref (info->dest_targets);
+
+    gtk_target_list_ref (targets);
+    info->dest_targets = targets;
+    gtk_drag_dest_set_target_list (GTK_WIDGET (view), targets);
 }
 
 
@@ -3241,9 +3253,24 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
                            G_GNUC_UNUSED guint time)
 {
     DndInfo *info;
+    GdkAtom target;
     MooIconView *view = MOO_ICON_VIEW (widget);
 
     info = view->priv->dnd_info;
+    target = gtk_drag_dest_find_target (widget, context, info->dest_targets);
+
+    if (target == GDK_NONE)
+    {
+        if (info->drag_motion_context)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            g_object_unref (info->drag_motion_context);
+            info->drag_motion_context = NULL;
+        }
+
+        drag_scroll_stop (view);
+        return FALSE;
+    }
 
     if (info->drag_motion_context != context)
     {

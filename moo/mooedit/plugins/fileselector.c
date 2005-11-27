@@ -53,6 +53,9 @@ typedef struct {
     GtkWidget *button;
     guint open_pane_timeout;
     gboolean button_highlight;
+
+    GtkTargetList *targets;
+    gboolean waiting_for_tab;
 } MooFileSelector;
 
 typedef struct {
@@ -64,7 +67,7 @@ enum {
     TARGET_URI_LIST = 2
 };
 
-static GtkTargetEntry button_targets[] = {
+static GtkTargetEntry targets[] = {
     { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
     { (char*) "text/uri-list", 0, TARGET_URI_LIST }
 };
@@ -92,12 +95,25 @@ static void     moo_file_selector_get_property  (GObject        *object,
 static GObject *moo_file_selector_constructor   (GType           type,
                                                  guint           n_props,
                                                  GObjectConstructParam *props);
+static void     moo_file_selector_finalize      (GObject        *object);
 
 static gboolean moo_file_selector_chdir     (MooFileView    *fileview,
                                              const char     *dir,
                                              GError        **error);
 static void     moo_file_selector_activate  (MooFileView    *fileview,
                                              const char     *path);
+static gboolean moo_file_selector_drop      (MooFileView    *fileview,
+                                             const char     *path,
+                                             GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             guint           time);
+static gboolean moo_file_selector_drop_data_received (MooFileView *fileview,
+                                             const char     *path,
+                                             GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time);
 
 
 static void     button_drag_leave           (GtkWidget      *button,
@@ -121,9 +137,12 @@ moo_file_selector_class_init (MooFileSelectorClass *klass)
     gobject_class->set_property = moo_file_selector_set_property;
     gobject_class->get_property = moo_file_selector_get_property;
     gobject_class->constructor = moo_file_selector_constructor;
+    gobject_class->finalize = moo_file_selector_finalize;
 
     fileview_class->chdir = moo_file_selector_chdir;
     fileview_class->activate = moo_file_selector_activate;
+    fileview_class->drop = moo_file_selector_drop;
+    fileview_class->drop_data_received = moo_file_selector_drop_data_received;
 
     g_object_class_install_property (gobject_class,
                                      PROP_WINDOW,
@@ -136,8 +155,22 @@ moo_file_selector_class_init (MooFileSelectorClass *klass)
 
 
 static void
-moo_file_selector_init (G_GNUC_UNUSED MooFileSelector *sel)
+moo_file_selector_init (MooFileSelector *filesel)
 {
+    filesel->targets = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
+    moo_file_view_add_target (MOO_FILE_VIEW (filesel),
+                              gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
+                              GTK_TARGET_SAME_APP,
+                              TARGET_MOO_EDIT_TAB);
+}
+
+
+static void
+moo_file_selector_finalize (GObject *object)
+{
+    MooFileSelector *filesel = MOO_FILE_SELECTOR (object);
+    gtk_target_list_unref (filesel->targets);
+    G_OBJECT_CLASS(moo_file_selector_parent_class)->finalize (object);
 }
 
 
@@ -286,11 +319,6 @@ moo_file_selector_constructor (GType           type,
                               "MooFileView/Toolbar", -1,
                               "<item action=\"GoToCurrentDocDir\"/>");
 
-//     button = gtk_event_box_new ();
-//     gtk_widget_add_events (button, GDK_POINTER_MOTION_MASK);
-//     gtk_container_add (GTK_CONTAINER (button), gtk_label_new ("FileSel"));
-//     gtk_widget_show_all (button);
-
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL/*button*/, "File Selector",
                                 "File Selector");
@@ -303,8 +331,7 @@ moo_file_selector_constructor (GType           type,
     g_return_val_if_fail (filesel->button != NULL, object);
 
     gtk_drag_dest_set (filesel->button, 0,
-                       button_targets,
-                       G_N_ELEMENTS (button_targets),
+                       targets, G_N_ELEMENTS (targets),
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
     g_signal_connect (filesel->button, "drag-motion",
                       G_CALLBACK (button_drag_motion), filesel);
@@ -418,6 +445,63 @@ out:
     gdk_drag_status (context, 0, time);
 
     return TRUE;
+}
+
+
+static gboolean
+moo_file_selector_drop (MooFileView    *fileview,
+                        const char     *path,
+                        GtkWidget      *widget,
+                        GdkDragContext *context,
+                        guint           time)
+{
+    MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
+    GdkAtom target, tab_target;
+
+    filesel->waiting_for_tab = FALSE;
+    target = gtk_drag_dest_find_target (widget, context, filesel->targets);
+    tab_target = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
+
+    if (target != tab_target)
+        return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
+                drop (fileview, path, widget, context, time);
+
+    filesel->waiting_for_tab = TRUE;
+
+    gtk_drag_get_data (widget, context, tab_target, time);
+
+    return TRUE;
+}
+
+
+static gboolean
+moo_file_selector_drop_data_received (MooFileView *fileview,
+                                      const char     *path,
+                                      GtkWidget      *widget,
+                                      GdkDragContext *context,
+                                      GtkSelectionData *data,
+                                      guint           info,
+                                      guint           time)
+{
+    MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
+
+    if (!filesel->waiting_for_tab)
+        goto parent;
+
+    if (info != TARGET_MOO_EDIT_TAB)
+    {
+        g_critical ("oops");
+        goto parent;
+    }
+
+    g_print ("got tab!!!\n");
+    gtk_drag_finish (context, FALSE, FALSE, time);
+    return TRUE;
+
+parent:
+    return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
+                drop_data_received (fileview, path, widget, context,
+                                    data, info, time);
 }
 
 

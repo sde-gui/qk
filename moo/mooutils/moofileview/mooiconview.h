@@ -156,7 +156,8 @@ void        moo_icon_view_enable_drag_dest      (MooIconView        *view,
                                                  GtkTargetEntry     *targets,
                                                  gint                n_targets,
                                                  GdkDragAction       actions);
-GtkTargetList *moo_icon_view_get_dest_targets   (MooIconView        *view);
+void        moo_icon_view_set_dest_targets      (MooIconView        *view,
+                                                 GtkTargetList      *targets);
 void        moo_icon_view_disable_drag_dest     (MooIconView        *view);
 void        moo_icon_view_set_drag_dest_row     (MooIconView        *view,
                                                  GtkTreePath        *path);

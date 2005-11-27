@@ -54,16 +54,16 @@ enum {
 
 
 enum {
-    TARGET_URI_LIST,
-    TARGET_TEXT
+    TARGET_URI_LIST = 1,
+    TARGET_TEXT = 2
 };
 
 static GtkTargetEntry source_targets[] = {
-    {(char*) "text/uri-list", 0, 0}
+    {(char*) "text/uri-list", 0, TARGET_URI_LIST}
 };
 
 static GtkTargetEntry dest_targets[] = {
-    {(char*) "text/uri-list", 0, 0}
+    {(char*) "text/uri-list", 0, TARGET_URI_LIST}
 };
 
 
@@ -114,6 +114,9 @@ struct _MooFileViewPrivate {
     MooActionGroup  *actions;
     MooUIXML        *ui_xml;
     gboolean         has_selection;
+
+    GtkTargetList   *targets;
+    GSList          *drag_dest_widgets;
 
     struct {
         GtkWidget *button;
@@ -325,6 +328,7 @@ static gboolean     button_drag_motion      (MooFileView    *fileview,
                                              int             y,
                                              guint           time,
                                              GtkWidget      *button);
+static void         sync_dest_targets       (MooFileView    *fileview);
 
 
 /* MOO_TYPE_FILE_VIEW */
@@ -715,6 +719,9 @@ static void moo_file_view_init      (MooFileView *fileview)
 
     fileview->priv->file_system = moo_file_system_create ();
 
+    fileview->priv->targets = gtk_target_list_new (dest_targets, G_N_ELEMENTS (dest_targets));
+    gtk_target_list_add_text_targets (fileview->priv->targets, TARGET_TEXT);
+
     init_gui (fileview);
     path_entry_init (fileview);
 }
@@ -759,6 +766,9 @@ static void moo_file_view_finalize  (GObject      *object)
 
     g_object_unref (fileview->priv->actions);
     g_object_unref (fileview->priv->ui_xml);
+
+    gtk_target_list_unref (fileview->priv->targets);
+    g_slist_free (fileview->priv->drag_dest_widgets);
 
     g_free (fileview->priv);
     fileview->priv = NULL;
@@ -1154,10 +1164,12 @@ setup_button_drag_dest (MooFileView *fileview,
     g_object_set_data_full (G_OBJECT (button), "moo-fileview-signal",
                             g_strdup (sig_name), g_free);
 
-    gtk_drag_dest_set (button, 0,
-                       dest_targets,
-                       G_N_ELEMENTS (dest_targets),
+    gtk_drag_dest_set (button, 0, NULL, 0,
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+    gtk_drag_dest_set_target_list (button, fileview->priv->targets);
+    fileview->priv->drag_dest_widgets =
+            g_slist_prepend (fileview->priv->drag_dest_widgets, button);
+
     g_signal_connect_swapped (button, "drag-motion",
                               G_CALLBACK (button_drag_motion), fileview);
     g_signal_connect_swapped (button, "drag-leave",
@@ -1360,7 +1372,6 @@ create_iconview (MooFileView *fileview)
 {
     GtkWidget *iconview;
     GtkCellRenderer *cell;
-//     GtkTargetList *targets;
 
     iconview = moo_icon_view_new_with_model (fileview->priv->filter_model);
     moo_icon_view_set_selection_mode (MOO_ICON_VIEW (iconview),
@@ -1398,10 +1409,11 @@ create_iconview (MooFileView *fileview)
                                       source_targets,
                                       G_N_ELEMENTS (source_targets),
                                       GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
-    moo_icon_view_enable_drag_dest (MOO_ICON_VIEW (iconview),
-                                    dest_targets,
-                                    G_N_ELEMENTS (dest_targets),
+    moo_icon_view_enable_drag_dest (MOO_ICON_VIEW (iconview), NULL, 0,
                                     GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+    moo_icon_view_set_dest_targets (MOO_ICON_VIEW (iconview),
+                                    fileview->priv->targets);
+
     g_signal_connect_swapped (iconview, "drag-begin",
                               G_CALLBACK (icon_drag_begin),
                               fileview);
@@ -4404,7 +4416,6 @@ moo_file_view_drop (G_GNUC_UNUSED MooFileView *fileview,
     gtk_drag_get_data (widget, context,
                        gdk_atom_intern ("text/uri-list", FALSE),
                        time);
-    cancel_drop_open (fileview);
     return TRUE;
 }
 
@@ -4419,7 +4430,6 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
                                   guint           time)
 {
     gtk_drag_finish (context, FALSE, FALSE, time);
-    cancel_drop_open (fileview);
     return TRUE;
 }
 
@@ -4457,6 +4467,17 @@ cancel_drop_open (MooFileView *fileview)
 
 
 static gboolean
+check_drop_targets (MooFileView    *fileview,
+                    GdkDragContext *context,
+                    GtkWidget      *widget)
+{
+    GdkAtom target;
+    target = gtk_drag_dest_find_target (widget, context, fileview->priv->targets);
+    return target != GDK_NONE;
+}
+
+
+static gboolean
 icon_drag_motion (MooIconView    *iconview,
                   GdkDragContext *context,
                   int             x,
@@ -4470,6 +4491,12 @@ icon_drag_motion (MooIconView    *iconview,
     gboolean drag_to_current_dir = TRUE;
     MooIconViewCell cell;
     int cell_x, cell_y;
+
+    if (!check_drop_targets (fileview, context, GTK_WIDGET (iconview)))
+    {
+        moo_icon_view_set_drag_dest_row (iconview, NULL);
+        return FALSE;
+    }
 
     current_dir = fileview->priv->current_dir;
     source_dir = g_object_get_data (G_OBJECT (fileview), "moo-file-view-source-dir");
@@ -4565,6 +4592,12 @@ button_drag_motion (MooFileView    *fileview,
 {
     gboolean new_timeout = TRUE;
 
+    if (!check_drop_targets (fileview, context, button))
+    {
+        cancel_drop_open (fileview);
+        return FALSE;
+    }
+
     if (fileview->priv->drop_to.button == button)
     {
         new_timeout = FALSE;
@@ -4590,4 +4623,29 @@ button_drag_motion (MooFileView    *fileview,
 
     gdk_drag_status (context, context->suggested_action, time);
     return TRUE;
+}
+
+
+void
+moo_file_view_add_target (MooFileView    *fileview,
+                          GdkAtom         target,
+                          guint           flags,
+                          guint           info)
+{
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
+    gtk_target_list_add (fileview->priv->targets, target, flags, info);
+    sync_dest_targets (fileview);
+}
+
+
+static void
+sync_dest_targets (MooFileView *fileview)
+{
+    GSList *l;
+
+    moo_icon_view_set_dest_targets (fileview->priv->iconview,
+                                    fileview->priv->targets);
+
+    for (l = fileview->priv->drag_dest_widgets; l != NULL; l = l->next)
+        gtk_drag_dest_set_target_list (l->data, fileview->priv->targets);
 }

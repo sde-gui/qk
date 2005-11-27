@@ -103,6 +103,11 @@ void        moo_file_view_set_typeahead_case_sensitive  (MooFileView    *filevie
 MooUIXML   *moo_file_view_get_ui_xml                    (MooFileView    *fileview);
 MooActionGroup *moo_file_view_get_actions               (MooFileView    *fileview);
 
+void        moo_file_view_add_target                    (MooFileView    *fileview,
+                                                         GdkAtom         target,
+                                                         guint           flags,
+                                                         guint           info);
+
 
 G_END_DECLS
 
