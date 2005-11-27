@@ -326,15 +326,14 @@ static gboolean button_drag_motion          (MooFileView    *fileview,
                                              GtkWidget      *button);
 static void     sync_dest_targets           (MooFileView    *fileview);
 
-static gboolean moo_file_view_drop_uris     (MooFileView    *fileview,
+static void     moo_file_view_drop_uris     (MooFileView    *fileview,
                                              char          **uris,
                                              const char     *destdir,
                                              GtkWidget      *widget,
                                              GdkDragContext *context,
                                              int             x,
                                              int             y,
-                                             guint           time,
-                                             gboolean       *delete);
+                                             guint           time);
 static gboolean moo_file_view_drop_text     (MooFileView    *fileview,
                                              const char     *text,
                                              const char     *destdir,
@@ -1419,7 +1418,8 @@ create_iconview (MooFileView *fileview)
                                       GDK_BUTTON1_MASK,
                                       source_targets,
                                       G_N_ELEMENTS (source_targets),
-                                      GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+                                      GDK_ACTION_ASK | GDK_ACTION_COPY |
+                                              GDK_ACTION_MOVE | GDK_ACTION_LINK);
     moo_icon_view_enable_drag_dest (MOO_ICON_VIEW (iconview), NULL, 0,
                                     GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
     moo_icon_view_set_dest_targets (MOO_ICON_VIEW (iconview),
@@ -4369,10 +4369,17 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
         char **uris = gtk_selection_data_get_uris (data);
 
         if (uris)
-            success = moo_file_view_drop_uris (fileview, uris, path, widget,
-                                               context, x, y, time, &delete);
+        {
+            /* it has to call drag_finish in order to be able to show menu */
+            moo_file_view_drop_uris (fileview, uris, path, widget,
+                                     context, x, y, time);
+            g_strfreev (uris);
+            return TRUE;
+        }
         else
+        {
             g_critical ("%s: oops", G_STRLOC);
+        }
 
         g_strfreev (uris);
     }
@@ -4507,7 +4514,8 @@ icon_drag_motion (MooIconView    *iconview,
         moo_icon_view_set_drag_dest_row (iconview, path);
 
     if (!drag_to_current_dir || source_dir != current_dir)
-        gdk_drag_status (context, context->suggested_action, time);
+        gdk_drag_status (context, context->actions & GDK_ACTION_MOVE ?
+                GDK_ACTION_MOVE : context->suggested_action, time);
     else
         gdk_drag_status (context, 0, time);
 
@@ -4642,7 +4650,75 @@ sync_dest_targets (MooFileView *fileview)
 /* Dropping stuff
  */
 
-static gboolean
+static void
+copy_files (MooFileView *fileview,
+            GSList      *filenames,
+            const char  *destdir)
+{
+    g_print ("copy-copy\n");
+}
+
+
+static void
+move_files (MooFileView *fileview,
+            GSList      *filenames,
+            const char  *destdir)
+{
+    g_print ("move-move\n");
+}
+
+
+static void
+link_files (MooFileView *fileview,
+            GSList      *filenames,
+            const char  *destdir)
+{
+    g_print ("link-link\n");
+}
+
+
+static void
+free_string_list (GSList *list)
+{
+    g_slist_foreach (list, (GFunc) g_free, NULL);
+    g_slist_free (list);
+}
+
+
+static void
+drop_item_activated (GObject     *item,
+                     MooFileView *fileview)
+{
+    GdkDragAction action;
+    gpointer data;
+    GSList *filenames;
+    char *destdir;
+
+    data = g_object_get_data (item, "moo-file-view-drop-action");
+    filenames = g_object_get_data (item, "moo-file-view-drop-files");
+    destdir = g_object_get_data (item, "moo-file-view-drop-dir");
+    g_return_if_fail (filenames != NULL && destdir != NULL);
+
+    action = GPOINTER_TO_INT (data);
+
+    switch (action)
+    {
+        case GDK_ACTION_COPY:
+            copy_files (fileview, filenames, destdir);
+            break;
+        case GDK_ACTION_MOVE:
+            move_files (fileview, filenames, destdir);
+            break;
+        case GDK_ACTION_LINK:
+            link_files (fileview, filenames, destdir);
+            break;
+        default:
+            g_return_if_reached ();
+    }
+}
+
+
+static void
 moo_file_view_drop_uris (MooFileView    *fileview,
                          char          **uris,
                          const char     *destdir,
@@ -4650,19 +4726,147 @@ moo_file_view_drop_uris (MooFileView    *fileview,
                          GdkDragContext *context,
                          int             x,
                          int             y,
-                         guint           time,
-                         gboolean       *delete)
+                         guint           time)
 {
     char **u;
+    GSList *filenames = NULL;
+    GError *error = NULL;
+    GdkModifierType mask;
+    GdkDragAction action;
+    gboolean success = FALSE;
 
-    g_return_val_if_fail (uris != NULL, FALSE);
-
-    g_print ("Got uris:\n");
+    g_assert (uris != NULL);
 
     for (u = uris; *u; ++u)
-        g_print ("'%s'\n", *u);
+    {
+        char *file = g_filename_from_uri (*u, NULL, &error);
 
-    return FALSE;
+        if (!file)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+            goto out;
+        }
+
+        filenames = g_slist_prepend (filenames, file);
+    }
+
+    if (!filenames)
+    {
+        g_warning ("%s: got empty uri list", G_STRLOC);
+        goto out;
+    }
+
+    gdk_display_get_pointer (gtk_widget_get_display (widget),
+                             NULL, NULL, NULL, &mask);
+
+#if 0
+#define ACTION_NAME(ac) (ac == GDK_ACTION_DEFAULT ? "DEFAULT" :             \
+                         (ac == GDK_ACTION_COPY ? "COPY" :                  \
+                          (ac == GDK_ACTION_MOVE ? "MOVE" :                 \
+                           (ac == GDK_ACTION_LINK ? "LINK" :                \
+                            (ac == GDK_ACTION_PRIVATE ? "PRIVATE" :         \
+                             (ac == GDK_ACTION_ASK ? "ASK" : "???"))))))
+
+    g_print ("suggested: %s\naction: %s\n",
+             ACTION_NAME (context->suggested_action),
+             ACTION_NAME (context->action));
+
+    g_print ("actions: %s%s%s%s%s%s\n",
+             context->actions & GDK_ACTION_DEFAULT ? "DEFAULT " : "",
+             context->actions & GDK_ACTION_COPY ? "COPY " : "",
+             context->actions & GDK_ACTION_MOVE ? "MOVE " : "",
+             context->actions & GDK_ACTION_LINK ? "LINK " : "",
+             context->actions & GDK_ACTION_PRIVATE ? "PRIVATE " : "",
+             context->actions & GDK_ACTION_ASK ? "ASK " : "");
+
+    g_print ("modifiers: %s%s%s\n",
+             mask & GDK_SHIFT_MASK ? "SHIFT " : "",
+             mask & GDK_CONTROL_MASK ? "CONTROL " : "",
+             mask & GDK_MOD1_MASK ? "MOD1 " : "");
+#endif
+
+    if (mask & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK))
+        action = context->suggested_action;
+    else
+        action = GDK_ACTION_ASK;
+
+    switch (action)
+    {
+        case GDK_ACTION_COPY:
+        case GDK_ACTION_MOVE:
+        case GDK_ACTION_LINK:
+        case GDK_ACTION_ASK:
+            break;
+
+        default:
+            g_warning ("%s: oops", G_STRLOC);
+            action = GDK_ACTION_ASK;
+    }
+
+    if (action == GDK_ACTION_ASK)
+    {
+        GtkWidget *menu, *item;
+        char *dir_copy = g_strdup (destdir);
+
+        menu = gtk_menu_new ();
+        gtk_object_sink (g_object_ref (menu));
+        g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+        g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-files",
+                                filenames, (GDestroyNotify) free_string_list);
+        g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-dir",
+                                dir_copy, g_free);
+
+#define CREATE_IT(label,action)                                                             \
+        item = gtk_menu_item_new_with_label (label);                                        \
+        g_object_set_data (G_OBJECT (item), "moo-file-view-drop-files", filenames);         \
+        g_object_set_data (G_OBJECT (item), "moo-file-view-drop-dir", dir_copy);            \
+        g_object_set_data (G_OBJECT (item), "moo-file-view-drop-action",                    \
+                           GINT_TO_POINTER (action));                                       \
+        g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), fileview);    \
+        gtk_widget_show (item);                                                             \
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        CREATE_IT ("Move", GDK_ACTION_MOVE);
+        CREATE_IT ("Copy", GDK_ACTION_COPY);
+        CREATE_IT ("Link", GDK_ACTION_LINK);
+#undef CREATE_IT
+
+        item = gtk_separator_menu_item_new ();
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        item = gtk_menu_item_new_with_label ("Cancel");
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        moo_file_view_drag_finish (fileview, context, TRUE, FALSE, time);
+        gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
+
+        return;
+    }
+
+    switch (action)
+    {
+        case GDK_ACTION_COPY:
+            copy_files (fileview, filenames, destdir);
+            break;
+        case GDK_ACTION_MOVE:
+            move_files (fileview, filenames, destdir);
+            break;
+        case GDK_ACTION_LINK:
+            link_files (fileview, filenames, destdir);
+            break;
+
+        default:
+            g_assert_not_reached ();
+    }
+
+    success = TRUE;
+
+out:
+    free_string_list (filenames);
+    moo_file_view_drag_finish (fileview, context, success, FALSE, time);
 }
 
 
