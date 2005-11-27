@@ -70,7 +70,6 @@ struct _DndInfo {
 
     guint scroll_timeout;
     GdkDragContext *drag_motion_context;
-    guint drag_motion_time;
 
     guint drag_dest_inside : 1;
     guint source_enabled : 1;
@@ -3099,8 +3098,9 @@ moo_icon_view_drag_leave (G_GNUC_UNUSED GtkWidget      *widget,
 
     info = view->priv->dnd_info;
 
+    if (info->drag_motion_context)
+        g_object_unref (info->drag_motion_context);
     info->drag_motion_context = NULL;
-    info->drag_motion_time = 0;
 
     if (!info->drag_dest_inside)
         g_warning ("drag_leave: oops\n");
@@ -3136,6 +3136,8 @@ drag_scroll_timeout (MooIconView *view)
     GtkAllocation *alc = &widget->allocation;
     GtkWidget *toplevel;
     int x, y, new_offset;
+    int delta, dist;
+    double ratio, margin;
     GdkModifierType mask;
     GdkEvent *event;
     DndInfo *info = view->priv->dnd_info;
@@ -3145,21 +3147,28 @@ drag_scroll_timeout (MooIconView *view)
     if (x < 0 || x >= alc->width || y < 0 || y >= alc->height)
         goto out;
 
-    /* TODO make scrolling speed depend on mouse position */
     if (x < widget->allocation.width * DRAG_SCROLL_MARGIN)
     {
-        new_offset = view->priv->xoffset - 15;
+        dist = x;
+        delta = -1;
     }
     else if (x > widget->allocation.width * (1 - DRAG_SCROLL_MARGIN))
     {
-        new_offset = view->priv->xoffset + 15;
+        dist = widget->allocation.width - 1 - x;
+        delta = 1;
     }
     else
     {
         goto out;
     }
 
-    new_offset = clamp_offset (view, new_offset);
+    margin = widget->allocation.width * DRAG_SCROLL_MARGIN;
+    margin = MAX (margin, 2);
+    dist = CLAMP (dist, 1, margin - 1);
+    ratio = (margin - dist) / margin;
+    delta *= 15 * (1 + 3 * ratio);
+
+    new_offset = clamp_offset (view, view->priv->xoffset + delta);
 
     if (new_offset == view->priv->xoffset)
         goto out;
@@ -3179,7 +3188,6 @@ drag_scroll_timeout (MooIconView *view)
     event->dnd.window = g_object_ref (toplevel->window);
     event->dnd.send_event = TRUE;
     event->dnd.context = g_object_ref (info->drag_motion_context);
-    event->dnd.time = info->drag_motion_time;
 
     gdk_window_get_position (toplevel->window, &x, &y);
     event->dnd.x_root = x;
@@ -3230,15 +3238,23 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
                            GdkDragContext *context,
                            int             x,
                            int             y,
-                           guint           time)
+                           G_GNUC_UNUSED guint time)
 {
     DndInfo *info;
     MooIconView *view = MOO_ICON_VIEW (widget);
 
     info = view->priv->dnd_info;
 
-    info->drag_motion_context = context;
-    info->drag_motion_time = time;
+    if (info->drag_motion_context != context)
+    {
+        if (info->drag_motion_context)
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            g_object_unref (info->drag_motion_context);
+        }
+
+        info->drag_motion_context = g_object_ref (context);
+    }
 
     if (!info->drag_dest_inside)
     {
