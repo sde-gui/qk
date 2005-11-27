@@ -1,22 +1,29 @@
-#include "moobigpaned.h"
+#include "mooutils/moobigpaned.h"
+#include "mooutils/moofileview/moofileview.h"
+#include <gtk/gtk.h>
 
 
 static void add_panes (GtkWidget *paned, MooPanePosition pane_position)
 {
     GtkWidget *textview;
     GtkTextBuffer *buffer;
+    MooPaneLabel *label;
 
     textview = gtk_text_view_new ();
     gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
     gtk_text_buffer_insert_at_cursor (buffer, "Hi there. Hi there. "
             "Hi there. Hi there. Hi there. Hi there. Hi there. ", -1);
-    moo_big_paned_add_pane (MOO_BIG_PANED (paned),
-                            textview, pane_position,
-                            "TextView", GTK_STOCK_OK, -1);
-    moo_big_paned_add_pane (MOO_BIG_PANED (paned),
-                            gtk_label_new ("This is a label"),
-                            pane_position, "Label", GTK_STOCK_CANCEL, -1);
+    label = moo_pane_label_new (GTK_STOCK_OK, NULL, NULL, "TextView", "TextView");
+    moo_big_paned_insert_pane (MOO_BIG_PANED (paned), textview, label,
+                               pane_position, -1);
+    moo_pane_label_free (label);
+
+    label = moo_pane_label_new (GTK_STOCK_CANCEL, NULL, NULL, "File Selector", "File Selector");
+    moo_big_paned_insert_pane (MOO_BIG_PANED (paned),
+                               moo_file_view_new (),
+                               label, pane_position, -1);
+    moo_pane_label_free (label);
 }
 
 
