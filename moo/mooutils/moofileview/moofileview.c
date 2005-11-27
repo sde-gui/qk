@@ -315,11 +315,11 @@ static gboolean     moo_file_view_drop_data_received
                                              guint           time);
 static void         cancel_drop_open        (MooFileView    *fileview);
 
-static void         up_button_drag_leave    (MooFileView    *fileview,
+static void         button_drag_leave       (MooFileView    *fileview,
                                              GdkDragContext *context,
                                              guint           time,
                                              GtkWidget      *button);
-static gboolean     up_button_drag_motion   (MooFileView    *fileview,
+static gboolean     button_drag_motion      (MooFileView    *fileview,
                                              GdkDragContext *context,
                                              int             x,
                                              int             y,
@@ -1139,11 +1139,35 @@ void        moo_file_view_set_view_type     (MooFileView    *fileview,
 }
 
 
+static void
+setup_button_drag_dest (MooFileView *fileview,
+                        const char  *xml_path,
+                        const char  *sig_name)
+{
+    GtkWidget *button;
+
+    button = moo_ui_xml_get_widget (fileview->priv->ui_xml,
+                                    fileview->toolbar, xml_path);
+
+    g_return_if_fail (button != NULL);
+
+    g_object_set_data_full (G_OBJECT (button), "moo-fileview-signal",
+                            g_strdup (sig_name), g_free);
+
+    gtk_drag_dest_set (button, 0,
+                       dest_targets,
+                       G_N_ELEMENTS (dest_targets),
+                       GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+    g_signal_connect_swapped (button, "drag-motion",
+                              G_CALLBACK (button_drag_motion), fileview);
+    g_signal_connect_swapped (button, "drag-leave",
+                              G_CALLBACK (button_drag_leave), fileview);
+}
+
 static GtkWidget*
-create_toolbar (MooFileView    *fileview)
+create_toolbar (MooFileView *fileview)
 {
     GtkToolbar *toolbar;
-    GtkWidget *button;
 
     toolbar = moo_ui_xml_create_widget (fileview->priv->ui_xml,
                                         MOO_UI_TOOLBAR,
@@ -1151,32 +1175,17 @@ create_toolbar (MooFileView    *fileview)
                                         fileview->priv->actions,
                                         NULL);
     g_return_val_if_fail (toolbar != NULL, NULL);
+    fileview->toolbar = GTK_WIDGET (toolbar);
 
     gtk_toolbar_set_tooltips (toolbar, TRUE);
     gtk_toolbar_set_style (toolbar, GTK_TOOLBAR_ICONS);
     gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_MENU);
 
-    button = moo_ui_xml_get_widget (fileview->priv->ui_xml,
-                                    GTK_WIDGET (toolbar),
-                                    "MooFileView/Toolbar/GoUp");
+    setup_button_drag_dest (fileview, "MooFileView/Toolbar/GoUp", "go-up");
+    setup_button_drag_dest (fileview, "MooFileView/Toolbar/GoBack", "go-back");
+    setup_button_drag_dest (fileview, "MooFileView/Toolbar/GoForward", "go-forward");
+    setup_button_drag_dest (fileview, "MooFileView/Toolbar/GoHome", "go-home");
 
-    if (button)
-    {
-        gtk_drag_dest_set (button, 0,
-                           dest_targets,
-                           G_N_ELEMENTS (dest_targets),
-                           GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
-        g_signal_connect_swapped (button, "drag-motion",
-                                  G_CALLBACK (up_button_drag_motion), fileview);
-        g_signal_connect_swapped (button, "drag-leave",
-                                  G_CALLBACK (up_button_drag_leave), fileview);
-    }
-    else
-    {
-        g_critical ("%s: oops", G_STRLOC);
-    }
-
-    fileview->toolbar = GTK_WIDGET (toolbar);
     return fileview->toolbar;
 }
 
@@ -4156,8 +4165,6 @@ icon_drag_end (MooFileView    *fileview,
 static gboolean
 drop_open_timeout_func2 (MooFileView *fileview)
 {
-    const char *goto_dir = NULL;
-    MooFile *file = NULL;
     GtkTreeRowReference *ref;
     GtkWidget *button;
 
@@ -4169,6 +4176,8 @@ drop_open_timeout_func2 (MooFileView *fileview)
 
     if (ref)
     {
+        MooFile *file = NULL;
+        const char *goto_dir;
         GtkTreePath *path;
         MooFolder *current_dir;
         GtkTreeIter iter;
@@ -4201,21 +4210,22 @@ drop_open_timeout_func2 (MooFileView *fileview)
         {
             g_warning ("%s: oops", G_STRLOC);
         }
+
+        if (goto_dir && moo_file_view_chdir (fileview, goto_dir, NULL))
+            moo_file_view_select_name (fileview, NULL);
+
+        if (file)
+            moo_file_unref (file);
     }
     else if (button)
     {
-        goto_dir = "..";
+        g_signal_emit_by_name (button, "clicked");
+        moo_file_view_select_name (fileview, NULL);
     }
     else
     {
         g_return_val_if_reached (FALSE);
     }
-
-    if (goto_dir && moo_file_view_chdir (fileview, goto_dir, NULL))
-        moo_file_view_select_name (fileview, NULL);
-
-    if (file)
-        moo_file_unref (file);
 
     return FALSE;
 }
@@ -4408,7 +4418,6 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
                                   guint           info,
                                   guint           time)
 {
-    g_print ("got uris dropped to %s!!!\n", path);
     gtk_drag_finish (context, FALSE, FALSE, time);
     cancel_drop_open (fileview);
     return TRUE;
@@ -4537,27 +4546,24 @@ out:
 
 
 static void
-up_button_drag_leave (MooFileView    *fileview,
-                      G_GNUC_UNUSED GdkDragContext *context,
-                      G_GNUC_UNUSED guint           time,
-                      G_GNUC_UNUSED GtkWidget      *button)
+button_drag_leave (MooFileView    *fileview,
+                   G_GNUC_UNUSED GdkDragContext *context,
+                   G_GNUC_UNUSED guint           time,
+                   G_GNUC_UNUSED GtkWidget      *button)
 {
-    g_print ("up_button_drag_motion\n");
     cancel_drop_open (fileview);
 }
 
 
 static gboolean
-up_button_drag_motion (MooFileView    *fileview,
-                       GdkDragContext *context,
-                       int             x,
-                       int             y,
-                       guint           time,
-                       GtkWidget      *button)
+button_drag_motion (MooFileView    *fileview,
+                    GdkDragContext *context,
+                    int             x,
+                    int             y,
+                    guint           time,
+                    GtkWidget      *button)
 {
     gboolean new_timeout = TRUE;
-
-    g_print ("up_button_drag_motion\n");
 
     if (fileview->priv->drop_to.button == button)
     {
