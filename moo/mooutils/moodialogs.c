@@ -68,57 +68,76 @@ static void message_dialog (GtkWidget       *parent,
     gtk_dialog_set_default_response (GTK_DIALOG (dialog),
                                      GTK_RESPONSE_CANCEL);
 
+    if (parent_window && parent_window->group)
+        gtk_window_group_add_window (parent_window->group, GTK_WINDOW (dialog));
+
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 }
 
 
-void        moo_error_dialog    (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text)
+void
+moo_error_dialog (GtkWidget  *parent,
+                  const char *text,
+                  const char *secondary_text)
 {
     return message_dialog (parent, text, secondary_text, GTK_MESSAGE_ERROR);
 }
 
-void        moo_info_dialog     (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text)
+void
+moo_info_dialog (GtkWidget  *parent,
+                 const char *text,
+                 const char *secondary_text)
 {
     return message_dialog (parent, text, secondary_text, GTK_MESSAGE_INFO);
 }
 
-void        moo_warning_dialog  (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text)
+void
+moo_warning_dialog (GtkWidget  *parent,
+                    const char *text,
+                    const char *secondary_text)
 {
     return message_dialog (parent, text, secondary_text, GTK_MESSAGE_WARNING);
 }
 
 
-static gboolean overwrite_dialog (GtkWindow  *parent)
+gboolean
+moo_overwrite_file_dialog (GtkWidget  *parent,
+                           const char *display_name,
+                           const char *display_dirname)
 {
-    int res;
+    int response;
+    GtkWidget *dialog;
+    GtkWidget *button;
 
-#if GTK_CHECK_VERSION(2,4,0)
-    GtkWidget *dialog = gtk_message_dialog_new_with_markup (
-        parent,
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        "<span weight=\"bold\" size=\"larger\">Overwrite existing file?</span>");
-#else /* !GTK_CHECK_VERSION(2,4,0) */
-    GtkWidget *dialog = gtk_message_dialog_new (
-        parent,
-        GTK_DIALOG_MODAL,
-        GTK_MESSAGE_WARNING,
-        GTK_BUTTONS_NONE,
-        "Overwrite existing file?");
-#endif /* !GTK_CHECK_VERSION(2,4,0) */
+    g_return_val_if_fail (display_name != NULL, FALSE);
 
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        "_Overwrite", GTK_RESPONSE_YES,
-        NULL);
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+    if (parent && !GTK_WIDGET_TOPLEVEL (parent))
+        parent = NULL;
+
+    dialog = gtk_message_dialog_new (parent ? GTK_WINDOW (parent) : NULL,
+                                     GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_NONE,
+                                     "A file named \"%s\" already exists.  Do you want to replace it?",
+                                     display_name);
+
+#if GTK_CHECK_VERSION(2,6,0)
+    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                              "The file already exists in \"%s\".  Replacing it will "
+                                              "overwrite its contents.",
+                                              display_dirname);
+#endif
+
+    gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+
+    button = gtk_button_new_with_mnemonic ("_Replace");
+    gtk_button_set_image (GTK_BUTTON (button),
+                          gtk_image_new_from_stock (GTK_STOCK_SAVE_AS, GTK_ICON_SIZE_BUTTON));
+    gtk_widget_show (button);
+    gtk_dialog_add_action_widget (GTK_DIALOG (dialog), button, GTK_RESPONSE_YES);
 
 #if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
@@ -127,12 +146,15 @@ static gboolean overwrite_dialog (GtkWindow  *parent)
                                              -1);
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 
-    res = gtk_dialog_run (GTK_DIALOG (dialog));
+    if (parent && GTK_WINDOW(parent)->group)
+        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 
-    return res == GTK_RESPONSE_YES;
+    return response == GTK_RESPONSE_YES;
 }
 
 
@@ -350,6 +372,7 @@ gboolean    moo_file_dialog_run             (GtkWidget          *dialog)
                 if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
                 {
                     filename = file_chooser_get_filename (dialog);
+
                     if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
                         ! g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
@@ -361,19 +384,31 @@ gboolean    moo_file_dialog_run             (GtkWidget          *dialog)
                     else if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
                              g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
-                        if (overwrite_dialog (GTK_WINDOW (dialog)))
+                        char *basename = g_path_get_basename (filename);
+                        char *dirname = g_path_get_dirname (filename);
+                        char *display_name = g_filename_display_name (basename);
+                        char *display_dirname = g_filename_display_name (dirname);
+                        gboolean overwrite;
+
+                        overwrite = moo_overwrite_file_dialog (dialog, display_name, display_dirname);
+
+                        g_free (basename);
+                        g_free (dirname);
+                        g_free (display_name);
+                        g_free (display_dirname);
+
+                        if (overwrite)
                         {
-                            g_object_set_data_full (G_OBJECT (dialog),
-                                    "moo-file-dialog-filename", filename,
-                                    g_free);
+                            g_object_set_data_full (G_OBJECT (dialog), "moo-file-dialog-filename",
+                                                    filename, g_free);
                             return TRUE;
                         }
                     }
                     else
                     {
                         g_object_set_data_full (G_OBJECT (dialog),
-                                "moo-file-dialog-filename", filename,
-                                g_free);
+                                                "moo-file-dialog-filename", filename,
+                                                g_free);
                         return TRUE;
                     }
                 }

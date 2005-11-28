@@ -32,40 +32,44 @@ typedef enum {
 } MooFileDialogType;
 
 
-const char *moo_file_dialog (GtkWidget          *parent,
-                             MooFileDialogType   type,
-                             const char         *title,
-                             const char         *start_dir);
+const char *moo_file_dialog                 (GtkWidget  *parent,
+                                             MooFileDialogType type,
+                                             const char *title,
+                                             const char *start_dir);
 
-GtkWidget  *moo_file_dialog_create          (GtkWidget          *parent,
+GtkWidget  *moo_file_dialog_create          (GtkWidget  *parent,
+                                             MooFileDialogType type,
+                                             gboolean    multiple,
+                                             const char *title,
+                                             const char *start_dir);
+gboolean    moo_file_dialog_run             (GtkWidget  *dialog);
+const char *moo_file_dialog_get_filename    (GtkWidget  *dialog);
+GSList     *moo_file_dialog_get_filenames   (GtkWidget  *dialog);
+
+const char *moo_file_dialogp                (GtkWidget  *parent,
                                              MooFileDialogType   type,
-                                             gboolean            multiple,
-                                             const char         *title,
-                                             const char         *start_dir);
-gboolean    moo_file_dialog_run             (GtkWidget          *dialog);
-const char *moo_file_dialog_get_filename    (GtkWidget          *dialog);
-GSList     *moo_file_dialog_get_filenames   (GtkWidget          *dialog);
+                                             const char *title,
+                                             const char *prefs_key,
+                                             const char *alternate_prefs_key);
 
-const char *moo_file_dialogp(GtkWidget          *parent,
-                             MooFileDialogType   type,
-                             const char         *title,
-                             const char         *prefs_key,
-                             const char         *alternate_prefs_key);
+const char *moo_font_dialog                 (GtkWidget  *parent,
+                                             const char *title,
+                                             const char *start_font,
+                                             gboolean    fixed_width);
 
-const char *moo_font_dialog (GtkWidget          *parent,
-                             const char         *title,
-                             const char         *start_font,
-                             gboolean            fixed_width);
+gboolean    moo_overwrite_file_dialog       (GtkWidget  *parent,
+                                             const char *display_name,
+                                             const char *display_dirname);
 
-void        moo_error_dialog    (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text);
-void        moo_info_dialog     (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text);
-void        moo_warning_dialog  (GtkWidget  *parent,
-                                 const char *text,
-                                 const char *secondary_text);
+void        moo_error_dialog                (GtkWidget  *parent,
+                                             const char *text,
+                                             const char *secondary_text);
+void        moo_info_dialog                 (GtkWidget  *parent,
+                                             const char *text,
+                                             const char *secondary_text);
+void        moo_warning_dialog              (GtkWidget  *parent,
+                                             const char *text,
+                                             const char *secondary_text);
 
 
 G_END_DECLS
