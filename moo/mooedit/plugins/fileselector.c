@@ -609,7 +609,7 @@ save_as_dialog (GtkWidget   *parent,
         if (!name)
         {
             char *err_text, *sec_text;
-            err_text = g_strdup_printf ("Can not save file as '%s'", text);
+            err_text = g_strdup_printf ("Could not save file as '%s'", text);
             sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
                                         "Please consider simpler name, such as foo.blah "
                                         "or blah.foo", text);

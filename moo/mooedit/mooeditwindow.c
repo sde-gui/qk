@@ -50,6 +50,18 @@ struct _MooEditWindowPrivate {
     GSList *jobs; /* Job* */
 };
 
+enum {
+    TARGET_MOO_EDIT_TAB = 1,
+    TARGET_URI_LIST = 2
+};
+
+static GdkAtom moo_edit_tab_atom;
+
+static GtkTargetEntry dest_targets[] = {
+    {(char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB},
+    {(char*) "text/uri-list", 0, TARGET_URI_LIST}
+};
+
 
 GObject        *moo_edit_window_constructor (GType                  type,
                                              guint                  n_props,
@@ -121,6 +133,31 @@ static void     pane_params_changed     (MooEditWindow      *window,
 static void     pane_size_changed       (MooEditWindow      *window,
                                          MooPanePosition     position);
 
+static void     notebook_drag_data_recv (GtkWidget          *widget,
+                                         GdkDragContext     *context,
+                                         int                 x,
+                                         int                 y,
+                                         GtkSelectionData   *data,
+                                         guint               info,
+                                         guint               time,
+                                         MooEditWindow      *window);
+static gboolean notebook_drag_drop      (GtkWidget          *widget,
+                                         GdkDragContext     *context,
+                                         int                 x,
+                                         int                 y,
+                                         guint               time,
+                                         MooEditWindow      *window);
+static void     notebook_drag_leave     (GtkWidget          *widget,
+                                         GdkDragContext     *context,
+                                         guint               time,
+                                         MooEditWindow      *window);
+static gboolean notebook_drag_motion    (GtkWidget          *widget,
+                                         GdkDragContext     *context,
+                                         int                 x,
+                                         int                 y,
+                                         guint               time,
+                                         MooEditWindow      *window);
+
 
 /* actions */
 static void moo_edit_window_new         (MooEditWindow      *window);
@@ -181,6 +218,8 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->get_property = moo_edit_window_get_property;
     gtkobject_class->destroy = moo_edit_window_destroy;
     window_class->close = (gboolean (*) (MooWindow*))moo_edit_window_close;
+
+    moo_edit_tab_atom = gdk_atom_intern ("MOO_EDIT_TAB", FALSE);
 
     g_object_class_install_property (gobject_class,
                                      PROP_EDITOR,
@@ -860,7 +899,8 @@ static void moo_edit_window_next_tab        (MooEditWindow   *window)
 /* Documents
  */
 
-static void     setup_notebook          (MooEditWindow      *window)
+static void
+setup_notebook (MooEditWindow *window)
 {
     GtkWidget *button, *icon, *frame;
 
@@ -884,6 +924,18 @@ static void     setup_notebook          (MooEditWindow      *window)
     gtk_container_add (GTK_CONTAINER (frame), button);
     gtk_widget_show_all (frame);
     moo_notebook_set_action_widget (window->priv->notebook, frame, TRUE);
+
+    gtk_drag_dest_set (GTK_WIDGET (window->priv->notebook), 0,
+                       dest_targets, G_N_ELEMENTS (dest_targets),
+                       GDK_ACTION_COPY | GDK_ACTION_MOVE);
+    g_signal_connect (window->priv->notebook, "drag-motion",
+                      G_CALLBACK (notebook_drag_motion), window);
+    g_signal_connect (window->priv->notebook, "drag-leave",
+                      G_CALLBACK (notebook_drag_leave), window);
+    g_signal_connect (window->priv->notebook, "drag-drop",
+                      G_CALLBACK (notebook_drag_drop), window);
+    g_signal_connect (window->priv->notebook, "drag-data-received",
+                      G_CALLBACK (notebook_drag_data_recv), window);
 }
 
 
@@ -1127,11 +1179,6 @@ typedef struct {
     int y;
 } DragInfo;
 
-enum {
-    TARGET_MOO_EDIT_TAB = 1,
-    TARGET_URI_LIST = 2
-};
-
 
 static gboolean tab_icon_button_press       (GtkWidget      *evbox,
                                              GdkEventButton *event,
@@ -1268,7 +1315,6 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        g_print ("drag-data-get TARGET_MOO_EDIT_TAB\n");
         moo_selection_data_set_pointer (data,
                                         gdk_atom_intern ("MOO_EDIT_TAB", FALSE),
                                         edit);
@@ -1278,7 +1324,6 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
         char *uris[] = {NULL, NULL};
         uris[0] = moo_edit_get_uri (edit);
         gtk_selection_data_set_uris (data, uris);
-        g_print ("drag-data-get uris\n");
         g_free (uris[0]);
     }
     else
@@ -2171,6 +2216,155 @@ moo_edit_window_job_finished (MooEditWindow  *window,
 
         g_free (j);
     }
+}
+
+
+/************************************************************************/
+/* Drag into the window
+ */
+
+static gboolean
+notebook_drag_motion (GtkWidget          *widget,
+                      GdkDragContext     *context,
+                      int                 x,
+                      int                 y,
+                      guint               time,
+                      MooEditWindow      *window)
+{
+    GdkAtom target;
+
+    target = gtk_drag_dest_find_target (widget, context, NULL);
+
+    if (target == GDK_NONE)
+    {
+        gdk_drag_status (context, 0, time);
+    }
+    else if (target == gdk_atom_intern ("text/uri-list", FALSE))
+    {
+        if (context->actions & GDK_ACTION_COPY)
+            gdk_drag_status (context, GDK_ACTION_COPY, time);
+        else
+            gdk_drag_status (context, context->suggested_action, time);
+    }
+    else
+    {
+        gtk_drag_get_data (widget, context, moo_edit_tab_atom, time);
+    }
+
+    return TRUE;
+}
+
+
+static void
+notebook_drag_leave (GtkWidget          *widget,
+                     GdkDragContext     *context,
+                     guint               time,
+                     MooEditWindow      *window)
+{
+}
+
+
+static gboolean
+notebook_drag_drop (GtkWidget          *widget,
+                    GdkDragContext     *context,
+                    int                 x,
+                    int                 y,
+                    guint               time,
+                    MooEditWindow      *window)
+{
+    GdkAtom target;
+
+    target = gtk_drag_dest_find_target (widget, context, NULL);
+
+    if (target == GDK_NONE)
+    {
+        gtk_drag_finish (context, FALSE, FALSE, time);
+    }
+    else
+    {
+        g_object_set_data (G_OBJECT (widget), "moo-edit-window-drop",
+                           GINT_TO_POINTER (TRUE));
+        gtk_drag_get_data (widget, context, target, time);
+    }
+
+    return TRUE;
+
+}
+
+
+static void
+notebook_drag_data_recv (GtkWidget          *widget,
+                         GdkDragContext     *context,
+                         int                 x,
+                         int                 y,
+                         GtkSelectionData   *data,
+                         guint               info,
+                         guint               time,
+                         MooEditWindow      *window)
+{
+    if (g_object_get_data (G_OBJECT (widget), "moo-edit-window-drop"))
+    {
+        g_object_set_data (G_OBJECT (widget), "moo-edit-window-drop", NULL);
+
+        if (data->target == moo_edit_tab_atom)
+        {
+            GtkWidget *toplevel;
+            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+
+            if (!doc)
+                goto out;
+
+            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+
+            if (toplevel == GTK_WIDGET (window))
+                goto out;
+
+            g_print ("%s: implement me\n", G_STRLOC);
+            goto out;
+        }
+        else
+        {
+            char **u;
+            char **uris = gtk_selection_data_get_uris (data);
+
+            if (!uris)
+                goto out;
+
+            for (u = uris; *u; ++u)
+                moo_editor_open_uri (window->priv->editor, window,
+                                     NULL, *u, NULL);
+
+            g_strfreev (uris);
+            gtk_drag_finish (context, TRUE, FALSE, time);
+        }
+    }
+    else
+    {
+        if (info == TARGET_MOO_EDIT_TAB)
+        {
+            GtkWidget *toplevel;
+            MooEdit *doc = moo_selection_data_get_pointer (data, moo_edit_tab_atom);
+
+            if (!doc)
+                return gdk_drag_status (context, 0, time);
+
+            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+
+            if (toplevel == GTK_WIDGET (window))
+                return gdk_drag_status (context, 0, time);
+
+            gdk_drag_status (context, GDK_ACTION_MOVE, time);
+        }
+        else
+        {
+            gdk_drag_status (context, 0, time);
+        }
+
+        return;
+    }
+
+out:
+    gtk_drag_finish (context, FALSE, FALSE, time);
 }
 
 
