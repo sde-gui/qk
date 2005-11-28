@@ -61,9 +61,7 @@ char       *moo_create_folder_dialog        (GtkWidget          *parent,
                                              MooFolder          *folder);
 
 char       *moo_file_view_save_drop_dialog  (GtkWidget          *parent,
-                                             const char         *dirname,
-                                             int                 x,
-                                             int                 y);
+                                             const char         *dirname);
 
 
 G_END_DECLS

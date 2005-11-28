@@ -6,6 +6,10 @@
       <item action="GoForward"/>
       <item action="GoHome"/>
       <separator/>
+      <item action="Cut"/>
+      <item action="Copy"/>
+      <item action="Paste"/>
+      <separator/>
       <item action="NewFolder"/>
       <item action="Delete"/>
       <separator/>

@@ -417,9 +417,7 @@ find_available_clip_name (const char *dirname)
 
 char *
 moo_file_view_save_drop_dialog (GtkWidget          *parent,
-                                const char         *dirname,
-                                int                 x,
-                                int                 y)
+                                const char         *dirname)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *button;
@@ -442,6 +440,8 @@ moo_file_view_save_drop_dialog (GtkWidget          *parent,
 
     if (parent)
         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+    if (parent && GTK_WINDOW(parent)->group)
+        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
 
     entry = moo_glade_xml_get_widget (xml, "entry");
 
