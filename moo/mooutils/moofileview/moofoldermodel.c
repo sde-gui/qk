@@ -26,25 +26,25 @@ struct _MooFolderModelPrivate {
 };
 
 
-static void moo_folder_model_class_init         (MooFolderModelClass *klass);
-static void moo_folder_model_init               (MooFolderModel *model);
+static void moo_folder_model_class_init         (MooFolderModelClass    *klass);
+static void moo_folder_model_init               (MooFolderModel         *model);
 
-static void moo_folder_model_tree_iface_init        (GtkTreeModelIface      *iface);
-static void moo_folder_model_drag_source_iface_init (GtkTreeDragSourceIface *iface);
+static void moo_folder_model_tree_iface_init    (GtkTreeModelIface      *iface);
 
-static void moo_folder_model_finalize           (GObject *object);
-static void moo_folder_model_set_property       (GObject *object,
-                                                 guint property_id,
-                                                 const GValue *value,
-                                                 GParamSpec *pspec);
-static void moo_folder_model_get_property       (GObject *object,
-                                                 guint property_id,
-                                                 GValue *value,
-                                                 GParamSpec *pspec);
+static void moo_folder_model_finalize           (GObject                *object);
+static void moo_folder_model_set_property       (GObject                *object,
+                                                 guint                   property_id,
+                                                 const GValue           *value,
+                                                 GParamSpec             *pspec);
+static void moo_folder_model_get_property       (GObject                *object,
+                                                 guint                   property_id,
+                                                 GValue                 *value,
+                                                 GParamSpec             *pspec);
 
 static gpointer moo_folder_model_parent_class = NULL;
 
-GType            moo_folder_model_get_type  (void)
+GType
+moo_folder_model_get_type (void)
 {
     static GType type = 0;
 
@@ -70,19 +70,11 @@ GType            moo_folder_model_get_type  (void)
             NULL /* interface_data; */
         };
 
-        static GInterfaceInfo drag_source_info = {
-            (GInterfaceInitFunc) moo_folder_model_drag_source_iface_init,
-            NULL, /* interface_finalize; */
-            NULL /* interface_data; */
-        };
-
         type = g_type_register_static (G_TYPE_OBJECT,
                                        "MooFolderModel",
                                        &info, 0);
         g_type_add_interface_static (type, GTK_TYPE_TREE_MODEL,
                                      &tree_model_info);
-        g_type_add_interface_static (type, GTK_TYPE_TREE_DRAG_SOURCE,
-                                     &drag_source_info);
     }
 
     return type;
@@ -94,7 +86,9 @@ enum {
     PROP_SORT_CASE_SENSITIVE
 };
 
-static void moo_folder_model_class_init         (MooFolderModelClass *klass)
+
+static void
+moo_folder_model_class_init (MooFolderModelClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -163,7 +157,8 @@ static gboolean     moo_folder_model_iter_parent    (GtkTreeModel *tree_model,
                                                      GtkTreeIter  *child);
 
 
-static void moo_folder_model_tree_iface_init    (GtkTreeModelIface *iface)
+static void
+moo_folder_model_tree_iface_init (GtkTreeModelIface *iface)
 {
     iface->get_flags = moo_folder_model_get_flags;
     iface->get_n_columns = moo_folder_model_get_n_columns;
@@ -180,10 +175,11 @@ static void moo_folder_model_tree_iface_init    (GtkTreeModelIface *iface)
 }
 
 
-static void moo_folder_model_set_property       (GObject *object,
-                                                 guint property_id,
-                                                 const GValue *value,
-                                                 GParamSpec *pspec)
+static void
+moo_folder_model_set_property (GObject *object,
+                               guint property_id,
+                               const GValue *value,
+                               GParamSpec *pspec)
 {
     MooFolderModel *model = MOO_FOLDER_MODEL (object);
 
@@ -205,10 +201,11 @@ static void moo_folder_model_set_property       (GObject *object,
 }
 
 
-static void moo_folder_model_get_property       (GObject *object,
-                                                 guint property_id,
-                                                 GValue *value,
-                                                 GParamSpec *pspec)
+static void
+moo_folder_model_get_property (GObject *object,
+                               guint property_id,
+                               GValue *value,
+                               GParamSpec *pspec)
 {
     MooFolderModel *model = MOO_FOLDER_MODEL (object);
 
@@ -229,8 +226,9 @@ static void moo_folder_model_get_property       (GObject *object,
 }
 
 
-void             moo_folder_model_set_folder    (MooFolderModel *model,
-                                                 MooFolder      *folder)
+void
+moo_folder_model_set_folder (MooFolderModel *model,
+                             MooFolder      *folder)
 {
     GSList *files;
 
@@ -268,7 +266,8 @@ void             moo_folder_model_set_folder    (MooFolderModel *model,
 }
 
 
-static void moo_folder_model_init               (MooFolderModel *model)
+static void
+moo_folder_model_init (MooFolderModel *model)
 {
     model->priv = g_new0 (MooFolderModelPrivate, 1);
 
@@ -284,7 +283,8 @@ static void moo_folder_model_init               (MooFolderModel *model)
 }
 
 
-static void moo_folder_model_finalize           (GObject *object)
+static void
+moo_folder_model_finalize (GObject *object)
 {
     MooFolderModel *model = MOO_FOLDER_MODEL (object);
 
@@ -313,8 +313,9 @@ static void moo_folder_model_finalize           (GObject *object)
 }
 
 
-void    moo_folder_model_set_sort_case_sensitive    (MooFolderModel *model,
-                                                     gboolean        case_sensitive)
+void
+moo_folder_model_set_sort_case_sensitive (MooFolderModel *model,
+                                          gboolean        case_sensitive)
 {
     g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
 
@@ -421,7 +422,8 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter);
 #endif
 
 
-static void         moo_folder_model_disconnect_folder  (MooFolderModel *model)
+static void
+moo_folder_model_disconnect_folder (MooFolderModel *model)
 {
     GSList *files;
 
@@ -457,32 +459,37 @@ static void         moo_folder_model_disconnect_folder  (MooFolderModel *model)
 }
 
 
-static void         moo_folder_model_folder_deleted (MooFolderModel *model)
+static void
+moo_folder_model_folder_deleted (MooFolderModel *model)
 {
     moo_folder_model_disconnect_folder (model);
 }
 
-static void         moo_folder_model_add_files      (MooFolderModel *model,
-                                                     GSList         *files)
+static void
+moo_folder_model_add_files (MooFolderModel *model,
+                            GSList         *files)
 {
     g_slist_foreach (files, (GFunc) model_add_moo_file, model);
 }
 
-static void         moo_folder_model_change_files   (MooFolderModel *model,
-                                                     GSList         *files)
+static void
+moo_folder_model_change_files (MooFolderModel *model,
+                               GSList         *files)
 {
     g_slist_foreach (files, (GFunc) model_change_moo_file, model);
 }
 
-static void         moo_folder_model_remove_files   (MooFolderModel *model,
-                                                     GSList         *files)
+static void
+moo_folder_model_remove_files (MooFolderModel *model,
+                               GSList         *files)
 {
     g_slist_foreach (files, (GFunc) model_remove_moo_file, model);
 }
 
 
-static void     model_add_moo_file  (MooFile        *file,
-                                     MooFolderModel *model)
+static void
+model_add_moo_file (MooFile        *file,
+                    MooFolderModel *model)
 {
     int index_;
     GtkTreePath *path;
@@ -515,8 +522,9 @@ static void     model_add_moo_file  (MooFile        *file,
 }
 
 
-static void     model_change_moo_file   (MooFile        *file,
-                                         MooFolderModel *model)
+static void
+model_change_moo_file (MooFile        *file,
+                       MooFolderModel *model)
 {
     int index_;
     GtkTreePath *path;
@@ -567,8 +575,9 @@ static void     model_change_moo_file   (MooFile        *file,
 }
 
 
-static void     model_remove_moo_file   (MooFile        *file,
-                                         MooFolderModel *model)
+static void
+model_remove_moo_file (MooFile        *file,
+                       MooFolderModel *model)
 {
     int index_;
     GtkTreePath *path;
@@ -621,30 +630,34 @@ G_STMT_START {                              \
 /* GtkTreeModel
  */
 
-static GtkTreeModelFlags moo_folder_model_get_flags (G_GNUC_UNUSED GtkTreeModel *tree_model)
+static GtkTreeModelFlags
+moo_folder_model_get_flags (G_GNUC_UNUSED GtkTreeModel *tree_model)
 {
     return GTK_TREE_MODEL_ITERS_PERSIST | GTK_TREE_MODEL_LIST_ONLY;
 }
 
 
-static gint         moo_folder_model_get_n_columns  (G_GNUC_UNUSED GtkTreeModel *tree_model)
+static gint
+moo_folder_model_get_n_columns (G_GNUC_UNUSED GtkTreeModel *tree_model)
 {
     g_assert (MOO_FOLDER_MODEL_N_COLUMNS == 1);
     return MOO_FOLDER_MODEL_N_COLUMNS;
 }
 
 
-static GType        moo_folder_model_get_column_type(G_GNUC_UNUSED GtkTreeModel *tree_model,
-                                                     gint          index_)
+static GType
+moo_folder_model_get_column_type (G_GNUC_UNUSED GtkTreeModel *tree_model,
+                                  gint          index_)
 {
     g_return_val_if_fail (index_ == 0, 0);
     return MOO_TYPE_FILE;
 }
 
 
-static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter,
-                                                     GtkTreePath  *path)
+static gboolean
+moo_folder_model_get_iter_impl (GtkTreeModel *tree_model,
+                                GtkTreeIter  *iter,
+                                GtkTreePath  *path)
 {
     MooFolderModel *model;
     int index_;
@@ -686,8 +699,9 @@ static gboolean     moo_folder_model_get_iter_impl  (GtkTreeModel *tree_model,
 }
 
 
-static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter)
+static GtkTreePath *
+moo_folder_model_get_path (GtkTreeModel *tree_model,
+                           GtkTreeIter  *iter)
 {
     MooFolderModel *model;
     int index_;
@@ -717,10 +731,11 @@ static GtkTreePath *moo_folder_model_get_path       (GtkTreeModel *tree_model,
 }
 
 
-static void         moo_folder_model_get_value      (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter,
-                                                     gint          column,
-                                                     GValue       *value)
+static void
+moo_folder_model_get_value (GtkTreeModel *tree_model,
+                            GtkTreeIter  *iter,
+                            gint          column,
+                            GValue       *value)
 {
     g_return_if_fail (MOO_IS_FOLDER_MODEL (tree_model));
     g_return_if_fail (iter != NULL);
@@ -733,8 +748,9 @@ static void         moo_folder_model_get_value      (GtkTreeModel *tree_model,
 }
 
 
-static gboolean     moo_folder_model_iter_next      (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter)
+static gboolean
+moo_folder_model_iter_next (GtkTreeModel *tree_model,
+                            GtkTreeIter  *iter)
 {
     MooFolderModel *model;
     MooFile *next;
@@ -785,9 +801,10 @@ static gboolean     moo_folder_model_iter_next      (GtkTreeModel *tree_model,
 }
 
 
-static gboolean     moo_folder_model_iter_children  (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter,
-                                                     GtkTreeIter  *parent)
+static gboolean
+moo_folder_model_iter_children (GtkTreeModel *tree_model,
+                                GtkTreeIter  *iter,
+                                GtkTreeIter  *parent)
 {
     MooFolderModel *model;
     MooFile *first;
@@ -826,8 +843,9 @@ static gboolean     moo_folder_model_iter_children  (GtkTreeModel *tree_model,
 }
 
 
-static gboolean     moo_folder_model_iter_has_child (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter)
+static gboolean
+moo_folder_model_iter_has_child (GtkTreeModel *tree_model,
+                                 GtkTreeIter  *iter)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), FALSE);
     g_return_val_if_fail (iter != NULL, FALSE);
@@ -837,8 +855,9 @@ static gboolean     moo_folder_model_iter_has_child (GtkTreeModel *tree_model,
 }
 
 
-static gint         moo_folder_model_iter_n_children(GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter)
+static gint
+moo_folder_model_iter_n_children (GtkTreeModel *tree_model,
+                                  GtkTreeIter  *iter)
 {
     MooFolderModel *model;
 
@@ -856,10 +875,11 @@ static gint         moo_folder_model_iter_n_children(GtkTreeModel *tree_model,
 }
 
 
-static gboolean     moo_folder_model_iter_nth_child (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter,
-                                                     GtkTreeIter  *parent,
-                                                     gint          n)
+static gboolean
+moo_folder_model_iter_nth_child (GtkTreeModel *tree_model,
+                                 GtkTreeIter  *iter,
+                                 GtkTreeIter  *parent,
+                                 gint          n)
 {
     MooFolderModel *model;
     GtkTreePath *path;
@@ -883,9 +903,10 @@ static gboolean     moo_folder_model_iter_nth_child (GtkTreeModel *tree_model,
 }
 
 
-static gboolean     moo_folder_model_iter_parent    (GtkTreeModel *tree_model,
-                                                     GtkTreeIter  *iter,
-                                                     GtkTreeIter  *child)
+static gboolean
+moo_folder_model_iter_parent (GtkTreeModel *tree_model,
+                              GtkTreeIter  *iter,
+                              GtkTreeIter  *child)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (tree_model), FALSE);
     g_return_val_if_fail (child != NULL, FALSE);
@@ -896,7 +917,8 @@ static gboolean     moo_folder_model_iter_parent    (GtkTreeModel *tree_model,
 }
 
 
-GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder)
+GtkTreeModel *
+moo_folder_model_new (MooFolder *folder)
 {
     g_return_val_if_fail (!folder || MOO_IS_FOLDER (folder), NULL);
     return GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_MODEL,
@@ -904,16 +926,18 @@ GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder)
 }
 
 
-MooFolder       *moo_folder_model_get_folder    (MooFolderModel *model)
+MooFolder *
+moo_folder_model_get_folder (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
     return model->priv->folder;
 }
 
 
-gboolean         moo_folder_model_get_iter      (MooFolderModel *model,
-                                                 MooFile        *file,
-                                                 GtkTreeIter    *iter)
+gboolean
+moo_folder_model_get_iter (MooFolderModel *model,
+                           MooFile        *file,
+                           GtkTreeIter    *iter)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), FALSE);
     g_return_val_if_fail (file != NULL, FALSE);
@@ -938,9 +962,10 @@ gboolean         moo_folder_model_get_iter      (MooFolderModel *model,
 }
 
 
-gboolean         moo_folder_model_get_iter_by_name  (MooFolderModel *model,
-                                                     const char     *name,
-                                                     GtkTreeIter    *iter)
+gboolean
+moo_folder_model_get_iter_by_name (MooFolderModel *model,
+                                   const char     *name,
+                                   GtkTreeIter    *iter)
 {
     MooFile *file;
 
@@ -968,9 +993,10 @@ gboolean         moo_folder_model_get_iter_by_name  (MooFolderModel *model,
 }
 
 
-gboolean    moo_folder_model_get_iter_by_display_name   (MooFolderModel *model,
-                                                         const char     *name,
-                                                         GtkTreeIter    *iter)
+gboolean
+moo_folder_model_get_iter_by_display_name (MooFolderModel *model,
+                                           const char     *name,
+                                           GtkTreeIter    *iter)
 {
     MooFile *file;
 
@@ -1044,107 +1070,25 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter)
 #endif /* DEFINE_CHECK_ITER */
 
 
-/***********************************************************************/
-/* DnD
+/*****************************************************************************/
+/* MooFolderFilter
  */
 
-static GdkAtom uri_atom (void)
+G_DEFINE_TYPE (MooFolderFilter, moo_folder_filter, GTK_TYPE_TREE_MODEL_FILTER)
+
+static void
+moo_folder_filter_class_init (G_GNUC_UNUSED MooFolderFilterClass *klass)
 {
-    static GdkAtom atom = 0;
-    if (!atom)
-        atom = gdk_atom_intern ("text/uri-list", FALSE);
-    return atom;
+}
+
+static void
+moo_folder_filter_init (G_GNUC_UNUSED MooFolderFilter *filter)
+{
 }
 
 
-static gboolean source_drag_data_get    (GtkTreeDragSource  *drag_source,
-                                         GtkTreePath        *path,
-                                         GtkSelectionData   *selection_data)
-{
-    GtkTreeIter iter;
-    MooFolderModel *model;
-    char *file_path;
-    static char *uris[2];
-    gboolean result;
-
-    model = MOO_FOLDER_MODEL (drag_source);
-
-    if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (model), &iter, path))
-        return FALSE;
-
-    g_assert (ITER_MODEL (&iter) == model);
-    g_assert (ITER_FILE (&iter) != NULL);
-
-    file_path = g_build_filename (moo_folder_get_path (model->priv->folder),
-                                  moo_file_name (ITER_FILE (&iter)),
-                                  NULL);
-
-    if (selection_data->target != uri_atom())
-    {
-        result = gtk_selection_data_set_text (selection_data, file_path, -1);
-    }
-    else
-    {
-        uris[0] = g_strdup_printf ("file://%s", file_path);
-        uris[1] = NULL;
-        result = gtk_selection_data_set_uris (selection_data, uris);
-        g_free (uris[0]);
-    }
-
-    g_free (file_path);
-    return result;
-}
-
-
-static gboolean source_drag_data_delete (GtkTreeDragSource  *drag_source,
-                                         GtkTreePath        *path)
-{
-    g_print ("deleting\n");
-    return TRUE;
-}
-
-
-static void moo_folder_model_drag_source_iface_init (GtkTreeDragSourceIface *iface)
-{
-    iface->drag_data_get = source_drag_data_get;
-    iface->drag_data_delete = source_drag_data_delete;
-}
-
-
-static void moo_folder_filter_class_init                (MooFolderFilterClass   *klass);
-
-
-GType            moo_folder_filter_get_type     (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static GTypeInfo info = {
-            /* interface types, classed types, instantiated types */
-            sizeof (MooFolderFilterClass),
-            NULL, /* base_init; */
-            NULL, /* base_finalize; */
-            (GClassInitFunc) moo_folder_filter_class_init,
-            NULL, /* class_finalize; */
-            NULL, /* class_data; */
-            sizeof (MooFolderFilter),
-            0, /* n_preallocs; */
-//             (GInstanceInitFunc) moo_folder_filter_init,
-            NULL,
-            NULL /* value_table; */
-        };
-
-        type = g_type_register_static (GTK_TYPE_TREE_MODEL_FILTER,
-                                       "MooFolderFilter",
-                                       &info, 0);
-    }
-
-    return type;
-}
-
-
-GtkTreeModel    *moo_folder_filter_new              (MooFolderModel     *model)
+GtkTreeModel*
+moo_folder_filter_new (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
     return g_object_new (MOO_TYPE_FOLDER_FILTER,
@@ -1152,13 +1096,9 @@ GtkTreeModel    *moo_folder_filter_new              (MooFolderModel     *model)
 }
 
 
-static void moo_folder_filter_class_init                (MooFolderFilterClass   *klass)
-{
-}
-
-
-void             moo_folder_filter_set_folder       (MooFolderFilter    *filter,
-                                                     MooFolder          *folder)
+void
+moo_folder_filter_set_folder (MooFolderFilter    *filter,
+                              MooFolder          *folder)
 {
     GtkTreeModel *model;
     g_return_if_fail (MOO_IS_FOLDER_FILTER (filter));
@@ -1168,7 +1108,8 @@ void             moo_folder_filter_set_folder       (MooFolderFilter    *filter,
 }
 
 
-MooFolder       *moo_folder_filter_get_folder       (MooFolderFilter    *filter)
+MooFolder *
+moo_folder_filter_get_folder (MooFolderFilter *filter)
 {
     GtkTreeModel *model;
     g_return_val_if_fail (MOO_IS_FOLDER_FILTER (filter), NULL);
