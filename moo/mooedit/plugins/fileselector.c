@@ -27,6 +27,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
+#include <string.h>
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -642,6 +643,26 @@ out:
 }
 
 
+static void
+select_file (MooFileSelector *filesel,
+             const char      *filename,
+             const char      *dirname)
+{
+    char *curdir = NULL;
+
+    g_object_get (filesel, "current-directory", &curdir, NULL);
+
+    if (curdir && !strcmp (curdir, dirname))
+    {
+        char *basename = g_path_get_basename (filename);
+        moo_file_view_select_name (MOO_FILE_VIEW (filesel), basename);
+        g_free (basename);
+    }
+
+    g_free (curdir);
+}
+
+
 static gboolean
 drop_untitled (MooFileSelector *filesel,
                MooEdit        *doc,
@@ -664,6 +685,9 @@ drop_untitled (MooFileSelector *filesel,
 
     result = moo_edit_save_as (doc, name, NULL);
 
+    if (result)
+        select_file (filesel, name, destdir);
+
     g_free (name);
     return result;
 }
@@ -681,7 +705,8 @@ doc_save_as (MooFileSelector *filesel,
     g_return_if_fail (basename != NULL);
 
     filename = g_build_filename (destdir, basename, NULL);
-    moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc));
+    if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+        select_file (filesel, filename, destdir);
 
     g_free (filename);
 }
@@ -698,9 +723,8 @@ doc_save_copy (MooFileSelector *filesel,
     g_return_if_fail (basename != NULL);
 
     filename = g_build_filename (destdir, basename, NULL);
-    moo_edit_save_copy (doc, filename,
-                        moo_edit_get_encoding (doc),
-                        NULL);
+    if (moo_edit_save_copy (doc, filename, moo_edit_get_encoding (doc), NULL))
+        select_file (filesel, filename, destdir);
 
     g_free (filename);
 }
@@ -721,7 +745,10 @@ doc_move (MooFileSelector *filesel,
     filename = g_build_filename (destdir, basename, NULL);
 
     if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+    {
         moo_unlink (old_filename);
+        select_file (filesel, filename, destdir);
+    }
 
     g_free (filename);
     g_free (old_filename);
