@@ -1305,6 +1305,10 @@ moo_editor_open_file (MooEditor      *editor,
     GSList *list;
     gboolean result;
 
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+
     if (!filename)
         return moo_editor_open (editor, window, parent, NULL);
 
@@ -1314,6 +1318,37 @@ moo_editor_open_file (MooEditor      *editor,
 
     moo_edit_file_info_free (info);
     g_slist_free (list);
+    return result;
+}
+
+
+gboolean
+moo_editor_open_uri (MooEditor      *editor,
+                     MooEditWindow  *window,
+                     GtkWidget      *parent,
+                     const char     *uri,
+                     const char     *encoding)
+{
+    MooEditFileInfo *info;
+    GSList *list;
+    gboolean result;
+    char *filename;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+    g_return_val_if_fail (uri != NULL, FALSE);
+
+    filename = g_filename_from_uri (uri, NULL, NULL);
+    g_return_val_if_fail (filename != NULL, FALSE);
+
+    info = moo_edit_file_info_new (filename, encoding);
+    list = g_slist_prepend (NULL, info);
+    result = moo_editor_open (editor, window, parent, list);
+
+    moo_edit_file_info_free (info);
+    g_slist_free (list);
+    g_free (filename);
     return result;
 }
 
