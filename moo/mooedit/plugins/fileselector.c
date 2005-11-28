@@ -16,13 +16,17 @@
 #endif
 
 #include <gmodule.h>
-#include <gtk/gtkbutton.h>
+#include <gtk/gtk.h>
 #include "mooedit/mooplugin-macro.h"
 #include "mooutils/moofileview/moofileview.h"
 #include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "mooedit/plugins/moofileselector-glade.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooglade.h"
+#include "mooutils/mooentry.h"
+#include "mooutils/moodialogs.h"
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -543,6 +547,131 @@ parent:
 }
 
 
+static char *
+save_as_dialog (GtkWidget   *parent,
+                const char  *dirname,
+                const char  *start_name,
+                int          x,
+                int          y)
+{
+    MooGladeXML *xml;
+    GtkWidget *dialog, *button;
+    GtkEntry *entry;
+    char *fullname = NULL;
+
+    g_return_val_if_fail (dirname != NULL, NULL);
+
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+    if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
+        parent = NULL;
+
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
+    moo_glade_xml_parse_memory (xml, MOO_FILE_SELECTOR_GLADE_XML, -1, NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "save_untitled_dialog");
+    g_return_val_if_fail (dialog != NULL, NULL);
+
+    if (parent)
+        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+
+    entry = moo_glade_xml_get_widget (xml, "entry");
+
+    gtk_entry_set_text (entry, start_name);
+    moo_entry_clear_undo (MOO_ENTRY (entry));
+
+    gtk_widget_show_all (dialog);
+    gtk_widget_grab_focus (GTK_WIDGET (entry));
+
+    button = moo_glade_xml_get_widget (xml, "ok_button");
+    moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+
+    while (TRUE)
+    {
+        const char *text;
+        char *name, *display_dirname;
+
+        if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+            goto out;
+
+        text = gtk_entry_get_text (entry);
+
+        if (!text[0])
+        {
+            g_critical ("%s: ooops", G_STRLOC);
+            goto out;
+        }
+
+        /* XXX error checking, you know */
+        name = g_filename_from_utf8 (text, -1, NULL, NULL, NULL);
+
+        if (!name)
+        {
+            char *err_text, *sec_text;
+            err_text = g_strdup_printf ("Can not save file as '%s'", text);
+            sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
+                                        "Please consider simpler name, such as foo.blah "
+                                        "or blah.foo", text);
+            moo_error_dialog (dialog, err_text, sec_text);
+            g_free (err_text);
+            g_free (sec_text);
+            continue;
+        }
+
+        fullname = g_build_filename (dirname, name, NULL);
+        g_free (name);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+            goto out;
+
+        display_dirname = g_filename_display_name (dirname);
+
+        if (moo_overwrite_file_dialog (dialog, text, display_dirname))
+        {
+            g_free (display_dirname);
+            goto out;
+        }
+
+        g_free (display_dirname);
+        g_free (fullname);
+        fullname = NULL;
+    }
+
+out:
+    moo_glade_xml_unref (xml);
+    gtk_widget_destroy (dialog);
+    return fullname;
+}
+
+
+static gboolean
+drop_untitled (MooFileSelector *filesel,
+               MooEdit        *doc,
+               const char     *destdir,
+               GtkWidget      *widget,
+               GdkDragContext *context,
+               int             x,
+               int             y,
+               guint           time)
+{
+    char *name;
+    gboolean result;
+
+    name = save_as_dialog (widget, destdir,
+                           moo_edit_get_display_basename (doc),
+                           x, y);
+
+    if (!name)
+        return FALSE;
+
+    result = moo_edit_save_as (doc, name, NULL);
+
+    g_free (name);
+    return result;
+}
+
+
 static gboolean
 moo_file_selector_drop_doc (MooFileSelector *filesel,
                             MooEdit        *doc,
@@ -560,7 +689,11 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
     g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
 
     filename = moo_edit_get_filename (doc);
-    g_print ("Got doc '%s':\n", filename ? filename : "UNTITLED");
+
+    if (!filename)
+        return drop_untitled (filesel, doc, destdir, widget, context, x, y, time);
+
+    g_print ("Got doc '%s':\n", filename);
 
     return FALSE;
 }
