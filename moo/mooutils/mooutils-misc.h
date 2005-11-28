@@ -68,6 +68,11 @@ void        moo_selection_data_set_pointer  (GtkSelectionData *data,
 gpointer    moo_selection_data_get_pointer  (GtkSelectionData *data,
                                              GdkAtom         type);
 
+GdkModifierType moo_get_modifiers           (GtkWidget      *widget);
+
+void        moo_menu_item_set_accel_label   (GtkWidget      *menu_item,
+                                             const char     *label);
+
 
 G_END_DECLS
 

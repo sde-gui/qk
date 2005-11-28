@@ -1043,3 +1043,42 @@ moo_selection_data_get_pointer (GtkSelectionData *data,
 
     return result;
 }
+
+
+GdkModifierType
+moo_get_modifiers (GtkWidget *widget)
+{
+    GdkModifierType mask;
+    GdkDisplay *display;
+
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), 0);
+    g_return_val_if_fail (GTK_WIDGET_REALIZED (widget), 0);
+
+    display = gtk_widget_get_display (widget);
+    g_return_val_if_fail (display != NULL, 0);
+
+    gdk_display_get_pointer (display, NULL, NULL, NULL, &mask);
+
+    return mask;
+}
+
+
+void
+moo_menu_item_set_accel_label (GtkWidget      *menu_item,
+                               const char     *label)
+{
+    GtkWidget *accel_label;
+
+    g_return_if_fail (GTK_IS_MENU_ITEM (menu_item));
+
+    if (!label)
+        label = "";
+
+    accel_label = gtk_bin_get_child (GTK_BIN (menu_item));
+    g_return_if_fail (GTK_IS_ACCEL_LABEL (accel_label));
+
+    g_free (GTK_ACCEL_LABEL(accel_label)->accel_string);
+    GTK_ACCEL_LABEL(accel_label)->accel_string = g_strdup (label);
+
+    gtk_widget_queue_resize (accel_label);
+}
