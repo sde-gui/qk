@@ -928,6 +928,7 @@ setup_notebook (MooEditWindow *window)
     gtk_drag_dest_set (GTK_WIDGET (window->priv->notebook), 0,
                        dest_targets, G_N_ELEMENTS (dest_targets),
                        GDK_ACTION_COPY | GDK_ACTION_MOVE);
+    gtk_drag_dest_add_text_targets (GTK_WIDGET (window->priv->notebook));
     g_signal_connect (window->priv->notebook, "drag-motion",
                       G_CALLBACK (notebook_drag_motion), window);
     g_signal_connect (window->priv->notebook, "drag-leave",
@@ -2236,20 +2237,11 @@ notebook_drag_motion (GtkWidget          *widget,
     target = gtk_drag_dest_find_target (widget, context, NULL);
 
     if (target == GDK_NONE)
-    {
         gdk_drag_status (context, 0, time);
-    }
-    else if (target == gdk_atom_intern ("text/uri-list", FALSE))
-    {
-        if (context->actions & GDK_ACTION_COPY)
-            gdk_drag_status (context, GDK_ACTION_COPY, time);
-        else
-            gdk_drag_status (context, context->suggested_action, time);
-    }
-    else
-    {
+    else if (target == moo_edit_tab_atom)
         gtk_drag_get_data (widget, context, moo_edit_tab_atom, time);
-    }
+    else
+        gdk_drag_status (context, context->suggested_action, time);
 
     return TRUE;
 }
@@ -2304,6 +2296,8 @@ notebook_drag_data_recv (GtkWidget          *widget,
 {
     if (g_object_get_data (G_OBJECT (widget), "moo-edit-window-drop"))
     {
+        char **uris;
+
         g_object_set_data (G_OBJECT (widget), "moo-edit-window-drop", NULL);
 
         if (data->target == moo_edit_tab_atom)
@@ -2322,10 +2316,9 @@ notebook_drag_data_recv (GtkWidget          *widget,
             g_print ("%s: implement me\n", G_STRLOC);
             goto out;
         }
-        else
+        else if ((uris = gtk_selection_data_get_uris (data)))
         {
             char **u;
-            char **uris = gtk_selection_data_get_uris (data);
 
             if (!uris)
                 goto out;
@@ -2336,6 +2329,32 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
             g_strfreev (uris);
             gtk_drag_finish (context, TRUE, FALSE, time);
+        }
+        else
+        {
+            MooEdit *doc;
+            GtkTextBuffer *buf;
+            char *text = gtk_selection_data_get_text (data);
+
+            if (!text)
+                goto out;
+
+            doc = moo_editor_new_doc (window->priv->editor, window);
+
+            if (!doc)
+            {
+                g_free (text);
+                goto out;
+            }
+
+            /* XXX */
+            buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+            gtk_text_buffer_set_text (buf, text, -1);
+
+            g_free (text);
+            gtk_drag_finish (context, TRUE,
+                             context->suggested_action == GDK_ACTION_MOVE,
+                             time);
         }
     }
     else
