@@ -93,6 +93,7 @@ enum {
 
     PROP_NO_ACCEL,
     PROP_ACCEL,
+    PROP_FORCE_ACCEL_LABEL,
 
     PROP_ICON,
     PROP_ICON_STOCK_ID,
@@ -195,6 +196,14 @@ static void moo_action_class_init (MooActionClass *klass)
                                      g_param_spec_boolean ("no-accel",
                                              "no-accel",
                                              "no-accel",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FORCE_ACCEL_LABEL,
+                                     g_param_spec_boolean ("force-accel-label",
+                                             "force-accel-label",
+                                             "force-accel-label",
                                              FALSE,
                                              G_PARAM_READWRITE));
 
@@ -421,13 +430,13 @@ moo_action_get_property (GObject        *object,
             g_value_set_string (value, action->name);
             break;
         case PROP_SENSITIVE:
-            g_value_set_boolean (value, action->sensitive ? TRUE : FALSE);
+            g_value_set_boolean (value, action->sensitive != 0);
             break;
         case PROP_VISIBLE:
-            g_value_set_boolean (value, action->visible ? TRUE : FALSE);
+            g_value_set_boolean (value, action->visible != 0);
             break;
         case PROP_DEAD:
-            g_value_set_boolean (value, action->dead ? TRUE : FALSE);
+            g_value_set_boolean (value, action->dead != 0);
             break;
         case PROP_CLOSURE:
             g_value_set_boxed (value, action->closure);
@@ -442,10 +451,13 @@ moo_action_get_property (GObject        *object,
             g_value_set_string (value, action->tooltip);
             break;
         case PROP_NO_ACCEL:
-            g_value_set_boolean (value, action->no_accel ? TRUE : FALSE);
+            g_value_set_boolean (value, action->no_accel != 0);
+            break;
+        case PROP_FORCE_ACCEL_LABEL:
+            g_value_set_boolean (value, action->force_accel_label != 0);
             break;
         case PROP_IS_IMPORTANT:
-            g_value_set_boolean (value, action->is_important ? TRUE : FALSE);
+            g_value_set_boolean (value, action->is_important != 0);
             break;
         case PROP_ACCEL:
             g_value_set_string (value, action->default_accel);
@@ -489,18 +501,18 @@ moo_action_set_property (GObject        *object,
             break;
         case PROP_SENSITIVE:
             moo_action_set_sensitive (action,
-                                      g_value_get_boolean (value) ? TRUE : FALSE);
+                                      g_value_get_boolean (value) != 0);
             break;
         case PROP_VISIBLE:
             moo_action_set_visible (action,
-                                    g_value_get_boolean (value) ? TRUE : FALSE);
+                                    g_value_get_boolean (value) != 0);
             break;
         case PROP_DEAD:
-            action->dead = g_value_get_boolean (value) ? TRUE : FALSE;
+            action->dead = g_value_get_boolean (value) != 0;
             g_object_notify (object, "dead");
             break;
         case PROP_IS_IMPORTANT:
-            action->is_important = g_value_get_boolean (value) ? TRUE : FALSE;
+            action->is_important = g_value_get_boolean (value) != 0;
             g_object_notify (object, "is_important");
             break;
         case PROP_CLOSURE:
@@ -520,8 +532,12 @@ moo_action_set_property (GObject        *object,
                                     g_value_get_string (value));
             break;
         case PROP_NO_ACCEL:
-            action->no_accel = g_value_get_boolean (value) ? TRUE : FALSE;
+            action->no_accel = g_value_get_boolean (value) != 0;
             g_object_notify (object, "no-accel");
+            break;
+        case PROP_FORCE_ACCEL_LABEL:
+            action->force_accel_label = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "force-accel-label");
             break;
         case PROP_ACCEL:
             g_free (action->default_accel);
@@ -709,6 +725,16 @@ moo_action_create_menu_item_real (MooAction *action)
     if (!action->no_accel)
         gtk_menu_item_set_accel_path (GTK_MENU_ITEM (item),
                                       _moo_action_get_accel_path (action));
+
+    if (action->force_accel_label)
+    {
+        GtkWidget *accel_label = gtk_bin_get_child (GTK_BIN (item));
+
+        if (GTK_IS_ACCEL_LABEL (accel_label))
+            moo_accel_label_set_action (accel_label, action);
+        else
+            g_critical ("%s: oops", G_STRLOC);
+    }
 
     moo_action_add_proxy (action, item);
 
@@ -949,11 +975,16 @@ _moo_action_get_accel_path (MooAction      *action)
 
 
 const char*
-_moo_action_get_accel (MooAction      *action)
+_moo_action_get_accel (MooAction *action)
 {
     g_return_val_if_fail (MOO_IS_ACTION (action), "");
-    g_return_val_if_fail (action->accel_path != NULL, "");
-    return moo_get_accel (action->accel_path);
+
+    if (action->accel_path)
+        return moo_get_accel (action->accel_path);
+    else if (action->default_accel)
+        return action->default_accel;
+    else
+        return "";
 }
 
 

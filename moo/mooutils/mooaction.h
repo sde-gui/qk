@@ -61,6 +61,7 @@ struct _MooAction
     guint        visible            : 1;
     guint        sensitive          : 1;
     guint        no_accel           : 1;
+    guint        force_accel_label  : 1;
     guint        is_important       : 1;
 };
 

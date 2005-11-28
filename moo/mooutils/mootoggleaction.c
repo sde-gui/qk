@@ -14,6 +14,7 @@
 #include "mooutils/mootoggleaction.h"
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooaccel.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
@@ -270,6 +271,16 @@ create_menu_item (MooAction *action)
 
     gtk_menu_item_set_accel_path (GTK_MENU_ITEM (item),
                                   _moo_action_get_accel_path (action));
+
+    if (action->force_accel_label)
+    {
+        GtkWidget *accel_label = gtk_bin_get_child (GTK_BIN (item));
+
+        if (GTK_IS_ACCEL_LABEL (accel_label))
+            moo_accel_label_set_action (accel_label, action);
+        else
+            g_critical ("%s: oops", G_STRLOC);
+    }
 
     moo_toggle_action_add_proxy (action, item);
 
