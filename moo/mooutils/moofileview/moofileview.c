@@ -81,7 +81,8 @@ struct _MooFileViewPrivate {
     MooFolder       *current_dir;
     MooFileSystem   *file_system;
 
-    guint            select_file_idle;
+    guint            _select_file_idle;
+    char            *_select_file;
 
     GtkIconSize      icon_size;
     GtkNotebook     *notebook;
@@ -249,8 +250,7 @@ static void     path_entry_delete_to_cursor (MooFileView *fileview);
 static void     file_view_activate_filename (MooFileView *fileview,
                                              const char     *display_name);
 
-static void     select_display_name_in_idle (MooFileView    *fileview,
-                                             const char     *display_name);
+static void     file_added                  (MooFileView    *fileview);
 
 static void     file_view_delete_selected   (MooFileView    *fileview);
 static void     file_view_create_folder     (MooFileView    *fileview);
@@ -742,6 +742,8 @@ static void moo_file_view_init      (MooFileView *fileview)
                                           "sort-case-sensitive",
                                           fileview->priv->sort_case_sensitive,
                                           NULL);
+    g_signal_connect_swapped (fileview->priv->model, "row-inserted",
+                              G_CALLBACK (file_added), fileview);
     fileview->priv->filter_model =
             moo_folder_filter_new (MOO_FOLDER_MODEL (fileview->priv->model));
     gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (fileview->priv->filter_model),
@@ -764,8 +766,9 @@ static void moo_file_view_finalize  (GObject      *object)
 
     path_entry_deinit (fileview);
 
-    if (fileview->priv->select_file_idle)
-        g_source_remove (fileview->priv->select_file_idle);
+    if (fileview->priv->_select_file_idle)
+        g_source_remove (fileview->priv->_select_file_idle);
+    g_free (fileview->priv->_select_file);
 
     g_object_unref (fileview->priv->model);
     g_object_unref (fileview->priv->filter_model);
@@ -1382,17 +1385,23 @@ static GtkWidget   *create_treeview     (MooFileView    *fileview)
 
 
 static void
-file_list_selection_changed (MooFileView *file_view,
+file_list_selection_changed (MooFileView *fileview,
                              MooTreeView *view)
 {
     gboolean has_selection;
 
+    if (fileview->priv->_select_file_idle)
+        g_source_remove (fileview->priv->_select_file_idle);
+    fileview->priv->_select_file_idle = 0;
+    g_free (fileview->priv->_select_file);
+    fileview->priv->_select_file = NULL;
+
     has_selection = !moo_tree_view_selection_is_empty (view);
 
-    if (file_view->priv->has_selection != has_selection)
+    if (fileview->priv->has_selection != has_selection)
     {
-        file_view->priv->has_selection = has_selection;
-        g_object_notify (G_OBJECT (file_view), "has-selection");
+        fileview->priv->has_selection = has_selection;
+        g_object_notify (G_OBJECT (fileview), "has-selection");
     }
 }
 
@@ -1632,7 +1641,8 @@ static void         moo_file_view_go_up     (MooFileView    *fileview)
 }
 
 
-static void         moo_file_view_go_home   (MooFileView    *fileview)
+static void
+moo_file_view_go_home (MooFileView *fileview)
 {
     GError *error = NULL;
 
@@ -1641,7 +1651,7 @@ static void         moo_file_view_go_home   (MooFileView    *fileview)
 
     if (!moo_file_view_chdir (fileview, fileview->priv->home_dir, &error))
     {
-        g_warning ("%s: could not go up", G_STRLOC);
+        g_warning ("%s: could not go home", G_STRLOC);
 
         if (error)
         {
@@ -1659,7 +1669,8 @@ file_list_row_activated (MooFileView    *fileview,
     MooFile *file = NULL;
     GtkTreeIter iter;
 
-    if (!gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, filter_path))
+    if (!gtk_tree_model_get_iter (fileview->priv->filter_model,
+                                  &iter, filter_path))
     {
         g_return_if_reached ();
     }
@@ -2458,7 +2469,7 @@ static void file_view_create_folder         (MooFileView    *fileview)
         goto out;
     }
 
-    select_display_name_in_idle (fileview, name);
+    moo_file_view_select_display_name (fileview, name);
 
 out:
     g_free (path);
@@ -2831,8 +2842,9 @@ file_view_move_selection (MooFileView    *fileview,
 }
 
 
-static void file_view_select_iter           (MooFileView    *fileview,
-                                             GtkTreeIter    *iter)
+static void
+file_view_select_iter (MooFileView *fileview,
+                       GtkTreeIter *iter)
 {
     if (iter)
     {
@@ -2845,11 +2857,9 @@ static void file_view_select_iter           (MooFileView    *fileview,
         filter_path = gtk_tree_model_filter_convert_child_path_to_path (
                 GTK_TREE_MODEL_FILTER (fileview->priv->filter_model), path);
 
-        if (!filter_path)
+        if (!filter_path && moo_tree_view_selection_is_empty (fileview->priv->view))
         {
-            gtk_tree_path_free (path);
-            if (gtk_tree_model_get_iter_first (fileview->priv->filter_model,
-                &filter_iter))
+            if (gtk_tree_model_get_iter_first (fileview->priv->filter_model, &filter_iter))
                 file_view_move_selection (fileview, &filter_iter);
         }
         else
@@ -2857,9 +2867,10 @@ static void file_view_select_iter           (MooFileView    *fileview,
             gtk_tree_model_get_iter (fileview->priv->filter_model,
                                      &filter_iter, filter_path);
             file_view_move_selection (fileview, &filter_iter);
-            gtk_tree_path_free (path);
             gtk_tree_path_free (filter_path);
         }
+
+        gtk_tree_path_free (path);
     }
     else
     {
@@ -2868,90 +2879,91 @@ static void file_view_select_iter           (MooFileView    *fileview,
 }
 
 
-void        moo_file_view_select_name       (MooFileView    *fileview,
-                                             const char     *name)
+void
+moo_file_view_select_name (MooFileView *fileview,
+                           const char  *name)
 {
     GtkTreeIter iter;
+    MooFolderModel *model;
 
-    if (name && moo_folder_model_get_iter_by_name (
-        MOO_FOLDER_MODEL (fileview->priv->model), name, &iter))
-    {
-        file_view_select_iter (fileview, &iter);
-    }
-    else
+    if (!name)
     {
         file_view_select_iter (fileview, NULL);
+        return;
     }
+
+    model = MOO_FOLDER_MODEL (fileview->priv->model);
+
+    if (moo_folder_model_get_iter_by_name (model, name, &iter))
+    {
+        file_view_select_iter (fileview, &iter);
+        return;
+    }
+
+    g_free (fileview->priv->_select_file);
+    fileview->priv->_select_file = g_strdup (name);
 }
 
 
-void        moo_file_view_select_display_name   (MooFileView    *fileview,
-                                                 const char     *name)
+void
+moo_file_view_select_display_name (MooFileView *fileview,
+                                   const char  *name)
 {
     GtkTreeIter iter;
+    MooFolderModel *model;
 
-    if (name && moo_folder_model_get_iter_by_display_name (
-        MOO_FOLDER_MODEL (fileview->priv->model), name, &iter))
-    {
-        file_view_select_iter (fileview, &iter);
-    }
-    else
+    if (!name)
     {
         file_view_select_iter (fileview, NULL);
+        return;
     }
+
+    model = MOO_FOLDER_MODEL (fileview->priv->model);
+
+    if (moo_folder_model_get_iter_by_display_name (model, name, &iter))
+    {
+        file_view_select_iter (fileview, &iter);
+        return;
+    }
+
+    g_free (fileview->priv->_select_file);
+    fileview->priv->_select_file = g_filename_from_utf8 (name, -1, NULL, NULL, NULL);
 }
 
 
-static gboolean do_select_display_name      (MooFileView        *fileview)
+static gboolean
+do_select_name (MooFileView *fileview)
 {
     GtkTreeIter iter;
-    const char *name;
 
-    fileview->priv->select_file_idle = 0;
+    fileview->priv->_select_file_idle = 0;
 
-    name = g_object_get_data (G_OBJECT (fileview),
-                              "moo-file-view-select-display-name");
-    g_return_val_if_fail (name != NULL, FALSE);
+    if (!fileview->priv->_select_file)
+        return FALSE;
 
-    if (moo_folder_model_get_iter_by_display_name (
-        MOO_FOLDER_MODEL (fileview->priv->model), name, &iter))
+    if (moo_folder_model_get_iter_by_name (MOO_FOLDER_MODEL (fileview->priv->model),
+                                           fileview->priv->_select_file, &iter))
     {
+        g_free (fileview->priv->_select_file);
+        fileview->priv->_select_file = NULL;
         file_view_select_iter (fileview, &iter);
     }
 
     return FALSE;
 }
 
-/* TODO: this */
-static void select_display_name_in_idle     (MooFileView        *fileview,
-                                             const char         *display_name)
+
+static void
+file_added (MooFileView *fileview)
 {
-    GtkTreeIter iter;
-
-    g_return_if_fail (display_name != NULL);
-
-    if (fileview->priv->select_file_idle)
-        g_source_remove (fileview->priv->select_file_idle);
-    fileview->priv->select_file_idle = 0;
-
-    if (moo_folder_model_get_iter_by_display_name (
-        MOO_FOLDER_MODEL (fileview->priv->model), display_name, &iter))
-    {
-        file_view_select_iter (fileview, &iter);
-    }
-    else
-    {
-        g_object_set_data_full (G_OBJECT (fileview),
-                                "moo-file-view-select-display-name",
-                                g_strdup (display_name), g_free);
-        g_idle_add_full (G_PRIORITY_LOW,
-                         (GSourceFunc) do_select_display_name,
-                         fileview, NULL);
-    }
+    if (fileview->priv->_select_file && !fileview->priv->_select_file_idle)
+        fileview->priv->_select_file_idle =
+                g_idle_add ((GSourceFunc) do_select_name, fileview);
 }
 
 
-static const char  *get_selected_display_name   (MooFileView    *fileview)
+static const char*
+get_selected_display_name (MooFileView *fileview)
 {
     GtkTreeModel *model = fileview->priv->filter_model;
     GtkTreePath *filter_path;
@@ -4705,6 +4717,18 @@ run_command_on_files (MooFileView *fileview,
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
         goto out;
+    }
+
+    if (fileview->priv->current_dir &&
+        !strcmp (destdir, moo_folder_get_path (fileview->priv->current_dir)) &&
+        list_len == 1)
+    {
+        char *basename = g_path_get_basename (filenames->data);
+
+        if (basename)
+            moo_file_view_select_name (fileview, basename);
+
+        g_free (basename);
     }
 
     g_signal_connect (cmd, "cmd-exit", G_CALLBACK (g_object_unref), NULL);
