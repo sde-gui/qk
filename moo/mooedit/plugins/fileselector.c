@@ -440,7 +440,7 @@ button_drag_motion (GtkWidget      *button,
                                                     (GSourceFunc) drag_open_pane,
                                                     filesel);
 
-    gdk_drag_status (context, context->suggested_action, time);
+    gdk_drag_status (context, 0, time);
 
     moo_pane_params_free (params);
     return TRUE;
