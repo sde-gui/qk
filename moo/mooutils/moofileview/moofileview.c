@@ -35,6 +35,7 @@
 #include "mooutils/mootoggleaction.h"
 #include "mooutils/moouixml.h"
 #include "mooutils/moocmd.h"
+#include "mooutils/moostock.h"
 #include MOO_MARSHALS_H
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -942,6 +943,7 @@ init_actions (MooFileView *fileview)
                                  "tooltip", "Parent Folder",
                                  "icon-stock-id", GTK_STOCK_GO_UP,
                                  "accel", "<alt>Up",
+                                 "force-accel-label", TRUE,
                                  "closure-object", fileview,
                                  "closure-signal", "go-up",
                                  NULL);
@@ -952,6 +954,7 @@ init_actions (MooFileView *fileview)
                                           "tooltip", "Go Back",
                                           "icon-stock-id", GTK_STOCK_GO_BACK,
                                           "accel", "<alt>Left",
+                                          "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-signal", "go-back",
                                           NULL);
@@ -963,6 +966,7 @@ init_actions (MooFileView *fileview)
                                           "tooltip", "Go Forward",
                                           "icon-stock-id", GTK_STOCK_GO_FORWARD,
                                           "accel", "<alt>Right",
+                                          "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-signal", "go-forward",
                                           NULL);
@@ -974,6 +978,7 @@ init_actions (MooFileView *fileview)
                                  "tooltip", "Home Folder",
                                  "icon-stock-id", GTK_STOCK_HOME,
                                  "accel", "<alt>Home",
+                                 "force-accel-label", TRUE,
                                  "closure-object", fileview,
                                  "closure-signal", "go-home",
                                  NULL);
@@ -993,6 +998,7 @@ init_actions (MooFileView *fileview)
                                           "tooltip", "Delete...",
                                           "icon-stock-id", GTK_STOCK_DELETE,
                                           "accel", "<alt>Delete",
+                                          "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_delete_selected,
                                           NULL);
@@ -1004,6 +1010,7 @@ init_actions (MooFileView *fileview)
                                           "label", "Show Hidden Files",
                                           "tooltip", "Show Hidden Files",
                                           "accel", "<alt><shift>H",
+                                          "force-accel-label", TRUE,
                                           NULL);
     moo_sync_bool_property (action, "active", fileview, "show-hidden-files", FALSE);
 
@@ -1029,6 +1036,7 @@ init_actions (MooFileView *fileview)
                                           "tooltip", "Properties",
                                           "icon-stock-id", GTK_STOCK_PROPERTIES,
                                           "accel", "<alt>Return",
+                                          "force-accel-label", TRUE,
                                           "closure-object", fileview,
                                           "closure-callback", file_view_properties_dialog,
                                           NULL);
@@ -4819,8 +4827,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         goto out;
     }
 
-    gdk_display_get_pointer (gtk_widget_get_display (widget),
-                             NULL, NULL, NULL, &mask);
+    mask = moo_get_modifiers (widget);
 
 #if 0
 #define ACTION_NAME(ac) (ac == GDK_ACTION_DEFAULT ? "DEFAULT" :             \
@@ -4879,27 +4886,29 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-dir",
                                 dir_copy, g_free);
 
-#define CREATE_IT(label,action)                                                             \
-        item = gtk_menu_item_new_with_label (label);                                        \
+#define CREATE_IT(stock,action,accel_label)                                                 \
+        item = gtk_image_menu_item_new_from_stock (stock, NULL);                            \
         g_object_set_data (G_OBJECT (item), "moo-file-view-drop-files", filenames);         \
         g_object_set_data (G_OBJECT (item), "moo-file-view-drop-dir", dir_copy);            \
         g_object_set_data (G_OBJECT (item), "moo-file-view-drop-action",                    \
                            GINT_TO_POINTER (action));                                       \
         g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), fileview);    \
         gtk_widget_show (item);                                                             \
+        moo_menu_item_set_accel_label (item, accel_label);                                  \
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-        CREATE_IT ("Move", GDK_ACTION_MOVE);
-        CREATE_IT ("Copy", GDK_ACTION_COPY);
-        CREATE_IT ("Link", GDK_ACTION_LINK);
+        CREATE_IT (MOO_STOCK_MOVE_FILE, GDK_ACTION_MOVE, "Shift");
+        CREATE_IT (MOO_STOCK_COPY_FILE, GDK_ACTION_COPY, "Control");
+        CREATE_IT (MOO_STOCK_LINK_FILE, GDK_ACTION_LINK, "Control+Shift");
 #undef CREATE_IT
 
         item = gtk_separator_menu_item_new ();
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-        item = gtk_menu_item_new_with_label ("Cancel");
+        item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
         gtk_widget_show (item);
+        moo_menu_item_set_accel_label (item, "Escape");
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
         moo_file_view_drag_finish (fileview, context, TRUE, FALSE, time);
