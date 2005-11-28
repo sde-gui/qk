@@ -218,6 +218,7 @@ mooutils_include_headers =                     \
     $(mooutils)/moobigpaned.h                  \
     $(mooutils)/moocellrenderercolor.h         \
     $(mooutils)/mooclosure.h                   \
+    $(mooutils)/moocmd.h                       \
     $(mooutils)/moocombo.h                     \
     $(mooutils)/mooentry.h                     \
     $(mooutils)/moofiltermgr.h                 \
@@ -254,6 +255,7 @@ mooutils_sources =                             \
     $(mooutils)/moobigpaned.c                  \
     $(mooutils)/moocellrenderercolor.c         \
     $(mooutils)/mooclosure.c                   \
+    $(mooutils)/moocmd.c                       \
     $(mooutils)/moocombo.c                     \
     $(mooutils)/moocompat.c                    \
     $(mooutils)/moocompat.h                    \

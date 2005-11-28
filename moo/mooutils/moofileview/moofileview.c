@@ -34,6 +34,7 @@
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mootoggleaction.h"
 #include "mooutils/moouixml.h"
+#include "mooutils/moocmd.h"
 #include MOO_MARSHALS_H
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -4651,11 +4652,68 @@ sync_dest_targets (MooFileView *fileview)
  */
 
 static void
+run_command_on_files (MooFileView *fileview,
+                      GSList      *filenames,
+                      const char  *destdir,
+                      const char **first_args,
+                      int          n_first_args)
+{
+    GError *error = NULL;
+    MooCmd *cmd;
+    char **argv;
+    int list_len, n_args, i;
+    GSList *l;
+
+    g_return_if_fail (filenames != NULL);
+    g_return_if_fail (destdir != NULL);
+    g_return_if_fail (n_first_args > 0);
+
+    list_len = g_slist_length (filenames);
+
+    n_args = list_len + n_first_args + 1;
+    argv = g_new (char*, n_args + 1);
+
+    for (i = 0; i < n_first_args; ++i)
+    {
+        g_assert (first_args[i] != NULL);
+        argv[i] = (char*) first_args[i];
+    }
+
+    argv[n_args-1] = (char*) destdir;
+    argv[n_args] = NULL;
+
+    for (i = 0, l = filenames; l != NULL; l = l->next, i++)
+        argv[n_first_args + i] = l->data;
+
+    cmd = moo_cmd_new_full (NULL, argv, NULL,
+                            G_SPAWN_SEARCH_PATH,
+                            MOO_CMD_STDOUT_TO_PARENT | MOO_CMD_STDERR_TO_PARENT,
+                            NULL, NULL, &error);
+
+    if (!cmd)
+    {
+        g_critical ("%s: could not spawn '%s'",
+                    G_STRLOC, first_args[0]);
+        g_critical ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        goto out;
+    }
+
+    g_signal_connect (cmd, "cmd-exit", G_CALLBACK (g_object_unref), NULL);
+
+out:
+    g_free (argv);
+}
+
+
+static void
 copy_files (MooFileView *fileview,
             GSList      *filenames,
             const char  *destdir)
 {
-    g_print ("copy-copy\n");
+    const char *args[] = {"cp", "-R", "--"};
+    run_command_on_files (fileview, filenames, destdir,
+                          args, G_N_ELEMENTS (args));
 }
 
 
@@ -4664,7 +4722,9 @@ move_files (MooFileView *fileview,
             GSList      *filenames,
             const char  *destdir)
 {
-    g_print ("move-move\n");
+    const char *args[] = {"mv", "--"};
+    run_command_on_files (fileview, filenames, destdir,
+                          args, G_N_ELEMENTS (args));
 }
 
 
@@ -4673,7 +4733,9 @@ link_files (MooFileView *fileview,
             GSList      *filenames,
             const char  *destdir)
 {
-    g_print ("link-link\n");
+    const char *args[] = {"ln", "-s", "--"};
+    run_command_on_files (fileview, filenames, destdir,
+                          args, G_N_ELEMENTS (args));
 }
 
 
