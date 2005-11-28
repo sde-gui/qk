@@ -126,7 +126,7 @@ static gboolean moo_file_selector_drop_data_received (MooFileView *fileview,
                                              guint           info,
                                              guint           time);
 
-static gboolean moo_file_selector_drop_doc  (MooFileSelector *filesel,
+static void     moo_file_selector_drop_doc  (MooFileSelector *filesel,
                                              MooEdit        *doc,
                                              const char     *destdir,
                                              GtkWidget      *widget,
@@ -505,7 +505,6 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
 {
     MooEdit *doc;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
-    gboolean result = FALSE;
 
     if (!filesel->waiting_for_tab)
         goto parent;
@@ -529,11 +528,9 @@ moo_file_selector_drop_data_received (MooFileView *fileview,
         goto error;
     }
 
-    result = moo_file_selector_drop_doc (MOO_FILE_SELECTOR (fileview),
-                                         doc, path, widget, context,
-                                         x, y, time);
-
-    moo_file_view_drag_finish (fileview, context, result, FALSE, time);
+    moo_file_selector_drop_doc (MOO_FILE_SELECTOR (fileview),
+                                doc, path, widget, context,
+                                x, y, time);
     return TRUE;
 
 error:
@@ -672,7 +669,121 @@ drop_untitled (MooFileSelector *filesel,
 }
 
 
+static void
+doc_save_as (MooFileSelector *filesel,
+             MooEdit         *doc,
+             const char      *destdir)
+{
+    const char *basename;
+    char *filename;
+
+    basename = moo_edit_get_basename (doc);
+    g_return_if_fail (basename != NULL);
+
+    filename = g_build_filename (destdir, basename, NULL);
+    moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc));
+
+    g_free (filename);
+}
+
+static void
+doc_save_copy (MooFileSelector *filesel,
+               MooEdit         *doc,
+               const char      *destdir)
+{
+    const char *basename;
+    char *filename;
+
+    basename = moo_edit_get_basename (doc);
+    g_return_if_fail (basename != NULL);
+
+    filename = g_build_filename (destdir, basename, NULL);
+    moo_edit_save_copy (doc, filename,
+                        moo_edit_get_encoding (doc),
+                        NULL);
+
+    g_free (filename);
+}
+
+static void
+doc_move (MooFileSelector *filesel,
+          MooEdit         *doc,
+          const char      *destdir)
+{
+    const char *basename;
+    char *filename, *old_filename;
+
+    old_filename = g_strdup (moo_edit_get_filename (doc));
+
+    basename = moo_edit_get_basename (doc);
+    g_return_if_fail (basename != NULL);
+
+    filename = g_build_filename (destdir, basename, NULL);
+
+    if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+        moo_unlink (old_filename);
+
+    g_free (filename);
+    g_free (old_filename);
+}
+
+
 static gboolean
+really_destroy_menu (GtkWidget *menu)
+{
+    g_object_unref (menu);
+    return FALSE;
+}
+
+static void
+destroy_menu (GtkWidget *menu)
+{
+    g_idle_add ((GSourceFunc) really_destroy_menu, menu);
+}
+
+
+typedef enum {
+    DROP_DOC_ASK = 1,
+    DROP_DOC_SAVE_AS,
+    DROP_DOC_SAVE_COPY,
+    DROP_DOC_MOVE
+} DropDocAction;
+
+
+static void
+drop_item_activated (GObject         *item,
+                     MooFileSelector *filesel)
+{
+    DropDocAction action;
+    gpointer data;
+    MooEdit *doc;
+    char *destdir;
+
+    data = g_object_get_data (item, "moo-file-selector-drop-action");
+    doc = g_object_get_data (item, "moo-file-selector-drop-doc");
+    destdir = g_object_get_data (item, "moo-file-selector-drop-destdir");
+    g_return_if_fail (doc != NULL && destdir != NULL);
+
+    action = GPOINTER_TO_INT (data);
+
+    switch (action)
+    {
+        case DROP_DOC_SAVE_AS:
+            doc_save_as (filesel, doc, destdir);
+            break;
+        case DROP_DOC_SAVE_COPY:
+            doc_save_copy (filesel, doc, destdir);
+            break;
+        case DROP_DOC_MOVE:
+            doc_move (filesel, doc, destdir);
+            break;
+        default:
+            g_return_if_reached ();
+    }
+}
+
+
+static void
 moo_file_selector_drop_doc (MooFileSelector *filesel,
                             MooEdit        *doc,
                             const char     *destdir,
@@ -683,19 +794,94 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
                             guint           time)
 {
     const char *filename;
+    GdkModifierType mods;
+    DropDocAction action;
 
-    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
-    g_return_val_if_fail (destdir != NULL, FALSE);
-    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (destdir != NULL);
+    g_return_if_fail (GTK_IS_WIDGET (widget));
 
     filename = moo_edit_get_filename (doc);
 
     if (!filename)
-        return drop_untitled (filesel, doc, destdir, widget, context, x, y, time);
+    {
+        gboolean result = drop_untitled (filesel, doc, destdir,
+                                         widget, context, x, y, time);
+        moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, result, FALSE, time);
+        return;
+    }
 
-    g_print ("Got doc '%s':\n", filename);
+    mods = moo_get_modifiers (widget) & (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK);
 
-    return FALSE;
+    if (!mods || mods & GDK_MOD1_MASK)
+        action = DROP_DOC_ASK;
+    else if (mods == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+        action = DROP_DOC_SAVE_COPY;
+    else if (mods & GDK_SHIFT_MASK)
+        action = DROP_DOC_MOVE;
+    else
+        action = DROP_DOC_SAVE_AS;
+
+    if (action == DROP_DOC_ASK)
+    {
+        GtkWidget *menu, *item;
+        char *dir_copy = g_strdup (destdir);
+
+        menu = gtk_menu_new ();
+        gtk_object_sink (g_object_ref (menu));
+        g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+        g_object_set_data_full (G_OBJECT (menu), "moo-file-selector-drop-doc",
+                                g_object_ref (doc), g_object_unref);
+        g_object_set_data_full (G_OBJECT (menu), "moo-file-selector-drop-destdir",
+                                dir_copy, g_free);
+
+#define CREATE_IT(stock,action,accel_label)                                             \
+        item = gtk_image_menu_item_new_from_stock (stock, NULL);                        \
+        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-doc", doc);         \
+        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-destdir", dir_copy);\
+        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-action",            \
+                           GINT_TO_POINTER (action));                                   \
+        g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), filesel); \
+        gtk_widget_show (item);                                                         \
+        moo_menu_item_set_accel_label (item, accel_label);                              \
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        CREATE_IT (MOO_STOCK_FILE_MOVE, DROP_DOC_MOVE, "Shift");
+        CREATE_IT (MOO_STOCK_FILE_SAVE_AS, DROP_DOC_SAVE_AS, "Control");
+        CREATE_IT (MOO_STOCK_FILE_SAVE_COPY, DROP_DOC_SAVE_COPY, "Control+Shift");
+#undef CREATE_IT
+
+        item = gtk_separator_menu_item_new ();
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
+        gtk_widget_show (item);
+        moo_menu_item_set_accel_label (item, "Escape");
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, TRUE, FALSE, time);
+        gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
+
+        return;
+    }
+
+    moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, TRUE, FALSE, time);
+
+    switch (action)
+    {
+        case DROP_DOC_SAVE_AS:
+            doc_save_as (filesel, doc, destdir);
+            break;
+        case DROP_DOC_SAVE_COPY:
+            doc_save_copy (filesel, doc, destdir);
+            break;
+        case DROP_DOC_MOVE:
+            doc_move (filesel, doc, destdir);
+            break;
+        default:
+            g_return_if_reached ();
+    }
 }
 
 

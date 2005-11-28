@@ -53,9 +53,11 @@ G_BEGIN_DECLS
 #define MOO_STOCK_FIND_IN_FILES         "moo-find-in-files"
 #define MOO_STOCK_FIND_FILE             "moo-find-file"
 
-#define MOO_STOCK_COPY_FILE             "moo-copy-file"
-#define MOO_STOCK_MOVE_FILE             "moo-move-file"
-#define MOO_STOCK_LINK_FILE             "moo-link-file"
+#define MOO_STOCK_FILE_COPY             "moo-file-copy"
+#define MOO_STOCK_FILE_MOVE             "moo-file-move"
+#define MOO_STOCK_FILE_LINK             "moo-file-link"
+#define MOO_STOCK_FILE_SAVE_AS          "moo-file-save-as"
+#define MOO_STOCK_FILE_SAVE_COPY        "moo-file-save-copy"
 
 #define MOO_STOCK_PLUGINS               GTK_STOCK_PREFERENCES
 

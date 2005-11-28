@@ -4897,9 +4897,9 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         moo_menu_item_set_accel_label (item, accel_label);                                  \
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-        CREATE_IT (MOO_STOCK_MOVE_FILE, GDK_ACTION_MOVE, "Shift");
-        CREATE_IT (MOO_STOCK_COPY_FILE, GDK_ACTION_COPY, "Control");
-        CREATE_IT (MOO_STOCK_LINK_FILE, GDK_ACTION_LINK, "Control+Shift");
+        CREATE_IT (MOO_STOCK_FILE_MOVE, GDK_ACTION_MOVE, "Shift");
+        CREATE_IT (MOO_STOCK_FILE_COPY, GDK_ACTION_COPY, "Control");
+        CREATE_IT (MOO_STOCK_FILE_LINK, GDK_ACTION_LINK, "Control+Shift");
 #undef CREATE_IT
 
         item = gtk_separator_menu_item_new ();
