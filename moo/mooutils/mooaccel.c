@@ -348,60 +348,60 @@ moo_get_accel_label_by_path (const char     *accel_path)
 /* Nasty hack to produce nice-looking menu items with accelerators
  */
 
-// static void
-// accel_label_set_from_action (GtkAccelLabel *label,
-//                              MooAction     *action)
-// {
-//     const char *accel;
-//
-//     g_return_if_fail (GTK_IS_ACCEL_LABEL (label));
-//     g_return_if_fail (MOO_IS_ACTION (action));
-//
-//     g_free (label->accel_string);
-//     label->accel_string = NULL;
-//
-//     accel = moo_action_get_accel (action);
-//
-//     if (accel && accel[0])
-//         label->accel_string = moo_get_accel_label (accel);
-//
-//     gtk_widget_queue_resize (GTK_WIDGET (label));
-// }
-//
-//
-// static void
-// action_accel_changed (MooAction      *action,
-//                       G_GNUC_UNUSED GParamSpec *pspec,
-//                       GtkWidget      *widget)
-// {
-//     accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
-// }
-//
-//
-// static void
-// accel_label_destroyed (GtkWidget *label,
-//                        MooAction *action)
-// {
-//     g_signal_handlers_disconnect_by_func (action,
-//                                           (gpointer) action_accel_changed,
-//                                           label);
-// }
-//
-//
-// void
-// moo_accel_label_set_action (GtkWidget      *widget,
-//                             MooAction      *action)
-// {
-//     g_return_if_fail (GTK_IS_ACCEL_LABEL (widget));
-//     g_return_if_fail (MOO_IS_ACTION (action));
-//
-//     accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
-//
-//     g_signal_connect (action, "notify::accel",
-//                       G_CALLBACK (action_accel_changed), widget);
-//     g_signal_connect (widget, "destroy",
-//                       G_CALLBACK (accel_label_destroyed), action);
-// }
+static void
+accel_label_set_from_action (GtkAccelLabel *label,
+                             MooAction     *action)
+{
+    const char *accel;
+
+    g_return_if_fail (GTK_IS_ACCEL_LABEL (label));
+    g_return_if_fail (MOO_IS_ACTION (action));
+
+    g_free (label->accel_string);
+    label->accel_string = NULL;
+
+    accel = _moo_action_get_accel (action);
+
+    if (accel && accel[0])
+        label->accel_string = moo_get_accel_label (accel);
+
+    gtk_widget_queue_resize (GTK_WIDGET (label));
+}
+
+
+static void
+action_accel_changed (MooAction      *action,
+                      G_GNUC_UNUSED GParamSpec *pspec,
+                      GtkWidget      *widget)
+{
+    accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
+}
+
+
+static void
+accel_label_destroyed (GtkWidget *label,
+                       MooAction *action)
+{
+    g_signal_handlers_disconnect_by_func (action,
+                                          (gpointer) action_accel_changed,
+                                          label);
+}
+
+
+void
+moo_accel_label_set_action (GtkWidget      *widget,
+                            MooAction      *action)
+{
+    g_return_if_fail (GTK_IS_ACCEL_LABEL (widget));
+    g_return_if_fail (MOO_IS_ACTION (action));
+
+    accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
+
+    g_signal_connect (action, "notify::accel",
+                      G_CALLBACK (action_accel_changed), widget);
+    g_signal_connect (widget, "destroy",
+                      G_CALLBACK (accel_label_destroyed), action);
+}
 
 
 /*****************************************************************************/
