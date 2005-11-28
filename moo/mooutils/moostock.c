@@ -34,7 +34,10 @@
 
 static GtkStockItem stock_items[] = {
     {(char*) MOO_STOCK_SAVE_NONE, (char*) "Save _None", 0, 0, NULL},
-    {(char*) MOO_STOCK_SAVE_SELECTED, (char*) "Save _Selected", 0, 0, NULL}
+    {(char*) MOO_STOCK_SAVE_SELECTED, (char*) "Save _Selected", 0, 0, NULL},
+    {(char*) MOO_STOCK_COPY_FILE, (char*) "Copy", 0, 0, NULL},
+    {(char*) MOO_STOCK_MOVE_FILE, (char*) "Move", 0, 0, NULL},
+    {(char*) MOO_STOCK_LINK_FILE, (char*) "Link", 0, 0, NULL}
 };
 
 #if !GTK_CHECK_VERSION(2,10,0)
@@ -211,6 +214,8 @@ void moo_create_stock_items (void)
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
     register_stock_icon_alias (factory, GTK_STOCK_NO, MOO_STOCK_SAVE_NONE);
     register_stock_icon_alias (factory, GTK_STOCK_SAVE, MOO_STOCK_SAVE_SELECTED);
+
+    register_stock_icon_alias (factory, GTK_STOCK_COPY, MOO_STOCK_COPY_FILE);
 
     register_stock_icon_alias (factory, GTK_STOCK_NEW, MOO_STOCK_NEW_PROJECT);
     register_stock_icon_alias (factory, GTK_STOCK_OPEN, MOO_STOCK_OPEN_PROJECT);
