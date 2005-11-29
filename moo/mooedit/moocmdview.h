@@ -51,9 +51,6 @@ struct _MooCmdViewClass
 
     gboolean (*cmd_exit)    (MooCmdView *view,
                              int         status);
-    gboolean (*output_line) (MooCmdView *view,
-                             const char *line,
-                             gboolean    std_err);
     gboolean (*stdout_line) (MooCmdView *view,
                              const char *line);
     gboolean (*stderr_line) (MooCmdView *view,
