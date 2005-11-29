@@ -77,7 +77,7 @@ call_hooks (MooPythonPlugin *plugin,
     GSList *l;
     PyObject *py_win, *py_doc;
 
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (!doc || MOO_IS_EDIT (doc));
     g_return_if_fail (type < HOOK_LAST);
 
@@ -134,7 +134,7 @@ void
 _moo_python_attach_doc (MooEditWindow   *window,
                         MooEdit         *doc)
 {
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
     call_hooks (&python_plugin, window, doc, HOOK_NEW_DOC);
 }
@@ -144,7 +144,7 @@ void
 _moo_python_detach_doc (MooEditWindow   *window,
                         MooEdit         *doc)
 {
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
     call_hooks (&python_plugin, window, doc, HOOK_CLOSE_DOC);
 }

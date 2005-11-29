@@ -87,6 +87,7 @@ static void          activate_history_item  (MooEditor      *editor,
 
 
 struct _MooEditorPrivate {
+    WindowInfo      *windowless;
     GSList          *windows; /* WindowInfo* */
     GHashTable      *loaders;
     GHashTable      *savers;
@@ -222,6 +223,7 @@ static void     moo_editor_init        (MooEditor  *editor)
                               G_CALLBACK (activate_history_item), editor);
 
     editor->priv->windows = NULL;
+    editor->priv->windowless = window_info_new (NULL);
 
     editor->priv->loaders =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
@@ -340,6 +342,8 @@ static void moo_editor_finalize       (GObject      *object)
         g_critical ("finalizing editor while some windows are open");
         window_list_free (editor);
     }
+
+    window_info_free (editor->priv->windowless);
 
     g_hash_table_destroy (editor->priv->loaders);
     g_hash_table_destroy (editor->priv->savers);
@@ -622,10 +626,14 @@ window_list_find_doc (MooEditor      *editor,
 {
     GSList *l = g_slist_find_custom (editor->priv->windows, edit,
                                      (GCompareFunc) doc_cmp);
+
     if (l)
         return l->data;
-    else
-        return NULL;
+
+    if (g_slist_find (editor->priv->windowless->docs, edit))
+        return editor->priv->windowless;
+
+    return NULL;
 }
 
 
@@ -661,10 +669,11 @@ window_list_find_filename (MooEditor   *editor,
         if (edit) *edit = data.edit;
         return l->data;
     }
-    else
-    {
-        return NULL;
-    }
+
+    if (window_info_find (editor->priv->windowless, filename))
+        return editor->priv->windowless;
+
+    return NULL;
 }
 
 
@@ -735,9 +744,18 @@ moo_editor_add_doc (MooEditor      *editor,
                     MooEditLoader  *loader,
                     MooEditSaver   *saver)
 {
-    WindowInfo *info = window_list_find (editor, window);
+    WindowInfo *info;
 
-    g_return_if_fail (info != NULL);
+    if (window)
+    {
+        info = window_list_find (editor, window);
+        g_return_if_fail (info != NULL);
+    }
+    else
+    {
+        info = editor->priv->windowless;
+    }
+
     g_return_if_fail (g_slist_find (info->docs, doc) == NULL);
 
     window_info_add (info, doc);
@@ -776,6 +794,25 @@ moo_editor_new_window (MooEditor *editor)
     }
 
     return window;
+}
+
+
+/* this creates MooEdit instance which can not be put into a window */
+MooEdit*
+moo_editor_create_doc (MooEditor *editor)
+{
+    MooEdit *doc;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+
+    moo_editor_add_doc (editor, NULL, doc,
+                        moo_edit_loader_get_default (),
+                        moo_edit_saver_get_default ());
+    _moo_doc_attach_plugins (NULL, doc);
+
+    return doc;
 }
 
 
@@ -980,6 +1017,7 @@ moo_editor_set_active_doc (MooEditor      *editor,
 
     info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
+    g_return_if_fail (info->window != NULL);
 
     gtk_window_present (GTK_WINDOW (info->window));
     moo_edit_window_set_active_doc (info->window, doc);
@@ -1009,7 +1047,9 @@ moo_editor_close_window (MooEditor      *editor,
     }
     else if (!modified->next)
     {
-        moo_edit_window_set_active_doc (info->window, modified->data);
+        if (info->window)
+            moo_edit_window_set_active_doc (info->window, modified->data);
+
         response = moo_edit_save_changes_dialog (modified->data);
 
         switch (response)
@@ -1101,7 +1141,12 @@ do_close_doc (MooEditor      *editor,
     WindowInfo *info = window_list_find_doc (editor, doc);
     g_return_if_fail (info != NULL);
     window_info_remove (info, doc);
-    _moo_edit_window_remove_doc (info->window, doc);
+
+    if (info->window)
+        _moo_edit_window_remove_doc (info->window, doc);
+    else
+        _moo_doc_detach_plugins (NULL, doc);
+
     g_hash_table_remove (editor->priv->loaders, doc);
     g_hash_table_remove (editor->priv->savers, doc);
 }
@@ -1145,7 +1190,8 @@ moo_editor_close_docs (MooEditor      *editor,
 
     if (close_docs_real (editor, list))
     {
-        if (!moo_edit_window_num_docs (info->window) &&
+        if (info->window &&
+            !moo_edit_window_num_docs (info->window) &&
              !editor->priv->allow_empty_window)
         {
             MooEdit *doc = g_object_new (get_doc_type (editor),
@@ -1184,7 +1230,9 @@ close_docs_real (MooEditor      *editor,
         WindowInfo *info = window_list_find_doc (editor, modified->data);
         g_return_val_if_fail (info != NULL, FALSE);
 
-        moo_edit_window_set_active_doc (info->window, modified->data);
+        if (info->window)
+            moo_edit_window_set_active_doc (info->window, modified->data);
+
         response = moo_edit_save_changes_dialog (modified->data);
 
         switch (response)

@@ -372,7 +372,7 @@ plugin_attach_doc (MooPlugin      *plugin,
     MooDocPlugin *doc_plugin;
     GType dtype;
 
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
 
@@ -414,7 +414,7 @@ plugin_detach_doc (MooPlugin      *plugin,
     MooDocPlugin *doc_plugin;
 
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     if (!moo_plugin_enabled (plugin))
@@ -871,7 +871,7 @@ _moo_doc_attach_plugins (MooEditWindow *window,
 {
     GSList *l;
 
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();

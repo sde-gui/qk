@@ -18,6 +18,12 @@
   )
 )
 
+(define-method create_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_create_doc")
+  (return-type "MooEdit*")
+)
+
 (define-method open
   (of-object "MooEditor")
   (c-name "moo_editor_open")

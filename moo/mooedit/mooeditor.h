@@ -51,6 +51,9 @@ GType            moo_editor_get_type        (void) G_GNUC_CONST;
 
 MooEditor       *moo_editor_instance        (void);
 
+/* this creates 'windowless' MooEdit instance */
+MooEdit         *moo_editor_create_doc      (MooEditor      *editor);
+
 MooEditWindow   *moo_editor_new_window      (MooEditor      *editor);
 MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
                                              MooEditWindow  *window);
