@@ -1198,7 +1198,7 @@ static gunichar
 iter_get_char (const MooTermIter *iter)
 {
     MooTermLine *line = buf_line (iter->term->priv->buffer, iter->row);
-    return __moo_term_line_get_char (line, iter->col);
+    return _moo_term_line_get_char (line, iter->col);
 }
 
 
@@ -1226,8 +1226,8 @@ segment_get_text (Segment *segment)
         line = buf_line (buf, ITER_ROW(&start));
 
         for (j = ITER_COL(&start);
-             j < ITER_COL(&end) && j < (int) __moo_term_line_len (line); ++j)
-                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+             j < ITER_COL(&end) && j < (int) _moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, _moo_term_line_get_char (line, j));
     }
     else
     {
@@ -1235,10 +1235,10 @@ segment_get_text (Segment *segment)
         {
             line = buf_line (buf, ITER_ROW(&start));
 
-            for (j = ITER_COL(&start); j < (int) __moo_term_line_len (line); ++j)
-                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+            for (j = ITER_COL(&start); j < (int) _moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, _moo_term_line_get_char (line, j));
 
-            if (!__moo_term_line_wrapped (line))
+            if (!_moo_term_line_wrapped (line))
                 g_string_append_c (text, '\n');
         }
 
@@ -1246,10 +1246,10 @@ segment_get_text (Segment *segment)
         {
             line = buf_line (buf, i);
 
-            for (j = 0; j < (int) __moo_term_line_len (line); ++j)
-                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+            for (j = 0; j < (int) _moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, _moo_term_line_get_char (line, j));
 
-            if (!__moo_term_line_wrapped (line))
+            if (!_moo_term_line_wrapped (line))
                 g_string_append_c (text, '\n');
         }
 
@@ -1258,7 +1258,7 @@ segment_get_text (Segment *segment)
             line = buf_line (buf, ITER_ROW(&end));
 
             for (j = 0; j < ITER_COL(&start); ++j)
-                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+                g_string_append_unichar (text, _moo_term_line_get_char (line, j));
         }
     }
 
@@ -1349,7 +1349,7 @@ moo_term_get_iter_at_line_offset (MooTerm            *term,
 
     line = buf_line (term->priv->buffer, line_no);
 
-    if (offset > __moo_term_line_width (line))
+    if (offset > _moo_term_line_width (line))
         return FALSE;
 
     FILL_ITER (iter, term, line_no, offset);
@@ -1412,7 +1412,7 @@ moo_term_apply_tag (MooTerm            *term,
     {
         line = buf_line (buf, ITER_ROW (start));
         _moo_term_line_apply_tag (line, tag, ITER_COL (start),
-                                  __moo_term_line_width (line) - ITER_COL (start));
+                                  _moo_term_line_width (line) - ITER_COL (start));
         line = buf_line (buf, ITER_ROW (end));
         _moo_term_line_apply_tag (line, tag, 0, ITER_COL (end));
         if (ITER_ROW (start) + 1 < ITER_ROW (end))
@@ -1421,7 +1421,7 @@ moo_term_apply_tag (MooTerm            *term,
             {
                 line = buf_line (buf, i);
                 _moo_term_line_apply_tag (line, tag, 0,
-                                          __moo_term_line_width (line));
+                                          _moo_term_line_width (line));
             }
         }
     }
@@ -1461,7 +1461,7 @@ moo_term_remove_tag (MooTerm            *term,
     {
         line = buf_line (buf, ITER_ROW (start));
         _moo_term_line_remove_tag (line, tag, ITER_COL (start),
-                                   __moo_term_line_width (line) - ITER_COL (start));
+                                   _moo_term_line_width (line) - ITER_COL (start));
         line = buf_line (buf, ITER_ROW (end));
         _moo_term_line_remove_tag (line, tag, 0, ITER_COL (end));
         if (ITER_ROW (start) + 1 < ITER_ROW (end))
@@ -1470,7 +1470,7 @@ moo_term_remove_tag (MooTerm            *term,
             {
                 line = buf_line (buf, i);
                 _moo_term_line_remove_tag (line, tag, 0,
-                                           __moo_term_line_width (line));
+                                           _moo_term_line_width (line));
             }
         }
     }

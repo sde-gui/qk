@@ -385,7 +385,7 @@ _moo_term_line_get_chars (MooTermLine    *line,
 
     for (i = first; i < first + len; ++i)
     {
-        gunichar c = __moo_term_line_get_char (line, i);
+        gunichar c = _moo_term_line_get_char (line, i);
         guint l = g_unichar_to_utf8 (c, buf);
         buf += l;
         res += l;

@@ -709,7 +709,7 @@ term_draw_range_simple (MooTerm        *term,
     else
         bg = term->priv->fg[COLOR_NORMAL];
 
-    if (start >= __moo_term_line_width (line))
+    if (start >= _moo_term_line_width (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
@@ -721,20 +721,20 @@ term_draw_range_simple (MooTerm        *term,
 
         return;
     }
-    else if (start + len > __moo_term_line_width (line))
+    else if (start + len > _moo_term_line_width (line))
     {
         gdk_draw_rectangle (term->priv->back_pixmap,
                             bg,
                             TRUE,
-                            __moo_term_line_width (line) * CHAR_WIDTH(term),
+                            _moo_term_line_width (line) * CHAR_WIDTH(term),
                             y,
-                            (start + len - __moo_term_line_width (line)) * CHAR_WIDTH(term),
+                            (start + len - _moo_term_line_width (line)) * CHAR_WIDTH(term),
                             CHAR_HEIGHT(term));
 
-        len = __moo_term_line_width (line) - start;
+        len = _moo_term_line_width (line) - start;
     }
 
-    g_assert (start + len <= __moo_term_line_width (line));
+    g_assert (start + len <= _moo_term_line_width (line));
 
     while (len)
     {
@@ -771,7 +771,7 @@ term_draw_cells (MooTerm        *term,
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
     g_assert (len != 0);
-    g_assert (start + len <= __moo_term_line_width (line));
+    g_assert (start + len <= _moo_term_line_width (line));
 
     buf_len = _moo_term_line_get_chars (line, buf, start, len);
     g_return_if_fail (buf_len != 0);
@@ -850,7 +850,7 @@ term_draw_cursor (MooTerm        *term)
     guint column = term->priv->cursor_col;
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
-    if (__moo_term_line_width (line) > column)
+    if (_moo_term_line_width (line) > column)
     {
         return term_draw_cells (term, abs_row, column, 1,
                                 _moo_term_line_get_attr (line, column),

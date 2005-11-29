@@ -115,22 +115,22 @@ gboolean     _moo_term_line_wrapped_chk__   (MooTermLine    *line);
 #define MOO_TERM_LINE_WIDTH__(line__)        ((line__)->width)
 #define MOO_TERM_LINE_WRAPPED__(line__)      ((line__)->wrapped != 0)
 
-#define __moo_term_line_set_wrapped(line__)  (line__)->wrapped = TRUE
+#define _moo_term_line_set_wrapped(line__)  (line__)->wrapped = TRUE
 
 #if 1
-#define __moo_term_line_get_cell(line__,index__) (_moo_term_line_get_cell_chk__(line__, index__))
-#define __moo_term_line_get_char(line__,index__) (_moo_term_line_get_char_chk__(line__, index__))
-#define __moo_term_line_get_tags(line__,index__) (_moo_term_line_get_tags_chk__(line__, index__))
-#define __moo_term_line_len(line__)              (_moo_term_line_len_chk__(line__))
-#define __moo_term_line_width(line__)            (_moo_term_line_width_chk__(line__))
-#define __moo_term_line_wrapped(line__)          (_moo_term_line_wrapped_chk__(line__))
+#define _moo_term_line_get_cell(line__,index__) (_moo_term_line_get_cell_chk__(line__, index__))
+#define _moo_term_line_get_char(line__,index__) (_moo_term_line_get_char_chk__(line__, index__))
+#define _moo_term_line_get_tags(line__,index__) (_moo_term_line_get_tags_chk__(line__, index__))
+#define _moo_term_line_len(line__)              (_moo_term_line_len_chk__(line__))
+#define _moo_term_line_width(line__)            (_moo_term_line_width_chk__(line__))
+#define _moo_term_line_wrapped(line__)          (_moo_term_line_wrapped_chk__(line__))
 #else
-#define __moo_term_line_get_cell(line__,index__) (MOO_TERM_LINE_CELL__ (line__,index__))
-#define __moo_term_line_get_char(line__,index__) (MOO_TERM_LINE_CHAR__ (line__,index__))
-#define __moo_term_line_get_tags(line__,index__) (MOO_TERM_LINE_TAGS__ (line__,index__))
-#define __moo_term_line_len(line__)              (MOO_TERM_LINE_LEN__ (line__))
-#define __moo_term_line_width(line__)            (MOO_TERM_LINE_WIDTH__ (line__))
-#define __moo_term_line_wrapped(line__)          (MOO_TERM_LINE_WRAPPED__ (line__))
+#define _moo_term_line_get_cell(line__,index__) (MOO_TERM_LINE_CELL__ (line__,index__))
+#define _moo_term_line_get_char(line__,index__) (MOO_TERM_LINE_CHAR__ (line__,index__))
+#define _moo_term_line_get_tags(line__,index__) (MOO_TERM_LINE_TAGS__ (line__,index__))
+#define _moo_term_line_len(line__)              (MOO_TERM_LINE_LEN__ (line__))
+#define _moo_term_line_width(line__)            (MOO_TERM_LINE_WIDTH__ (line__))
+#define _moo_term_line_wrapped(line__)          (MOO_TERM_LINE_WRAPPED__ (line__))
 #endif
 
 

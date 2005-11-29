@@ -636,7 +636,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
     }
 
     line = buf_screen_line (buf, cursor_row);
-    g_assert (__moo_term_line_width (line) == width);
+    g_assert (_moo_term_line_width (line) == width);
 
     if (buf_get_mode (MODE_IRM))
     {
@@ -660,7 +660,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
 
         if (buf_get_mode (MODE_DECAWM))
         {
-            __moo_term_line_set_wrapped (line);
+            _moo_term_line_set_wrapped (line);
             _moo_term_buffer_new_line (buf);
         }
     }
@@ -1323,7 +1323,7 @@ _moo_term_buffer_delete_char (MooTermBuffer  *buf,
     }
 
     line = buf_screen_line (buf, cursor_row);
-    g_assert (__moo_term_line_width (line) == buf_screen_width (buf));
+    g_assert (_moo_term_line_width (line) == buf_screen_width (buf));
     _moo_term_line_delete_range (line, cursor_col, n, buf->priv->current_attr);
     buf_changed_add_range(buf, cursor_row, cursor_col,
                           buf_screen_width (buf) - cursor_col);
@@ -1452,7 +1452,7 @@ _moo_term_buffer_insert_char (MooTermBuffer  *buf,
     }
 
     line = buf_screen_line (buf, cursor_row);
-    g_assert (__moo_term_line_width (line) == buf_screen_width (buf));
+    g_assert (_moo_term_line_width (line) == buf_screen_width (buf));
 
     _moo_term_line_insert_unichar (line, cursor_col, 0, n,
                                    buf->priv->current_attr);
@@ -1742,7 +1742,7 @@ _moo_term_buffer_decaln (MooTermBuffer  *buf)
     for (i = 0; i < height; ++i)
     {
         MooTermLine *line = buf_screen_line (buf, i);
-        g_assert (__moo_term_line_width (line) == width);
+        g_assert (_moo_term_line_width (line) == width);
         _moo_term_line_set_unichar (line, 0, MOO_TERM_DECALN_CHAR, width,
                                     buf->priv->current_attr);
     }

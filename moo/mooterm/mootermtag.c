@@ -269,7 +269,7 @@ moo_term_delete_tag (MooTerm            *term,
     {
         MooTermLine *line = l->data;
         _moo_term_line_remove_tag (line, tag, 0,
-                                   __moo_term_line_width (line));
+                                   _moo_term_line_width (line));
     }
 
     if (tag->name)
