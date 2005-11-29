@@ -340,7 +340,7 @@ prefs_new_key_from_string (MooPrefs     *prefs,
 
     val.g_type = 0;
     g_value_init (&val, G_TYPE_STRING);
-    g_value_set_string (&val, value);
+    g_value_set_static_string (&val, value);
     default_val.g_type = 0;
     g_value_init (&default_val, G_TYPE_STRING);
 
@@ -1088,11 +1088,13 @@ moo_prefs_new_key_string (const char     *key,
 
     g_return_if_fail (key != NULL);
 
-    if (!G_IS_VALUE (&val))
-        g_value_init (&val, G_TYPE_STRING);
+    val.g_type = 0;
+    g_value_init (&val, G_TYPE_STRING);
 
-    g_value_set_string (&val, default_val);
+    g_value_set_static_string (&val, default_val);
     moo_prefs_new_key (key, G_TYPE_STRING, &val);
+
+    g_value_unset (&val);
 }
 
 
@@ -1232,7 +1234,7 @@ moo_prefs_set_string (const char     *key,
 
     gval.g_type = 0;
     g_value_init (&gval, G_TYPE_STRING);
-    g_value_set_string (&gval, val);
+    g_value_set_static_string (&gval, val);
     moo_prefs_set (key, &gval);
     g_value_unset (&gval);
 }
@@ -1258,6 +1260,7 @@ moo_prefs_set_filename (const char     *key,
     }
 
     moo_prefs_set_string (key, utf8_val);
+    g_free (utf8_val);
 }
 
 
