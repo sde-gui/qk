@@ -1,10 +1,19 @@
+;; -*- scheme -*-
 ;; Hand-edited
 
+; object definitions ...
 (define-object Term
   (in-module "Moo")
   (parent "GtkWidget")
   (c-name "MooTerm")
   (gtype-id "MOO_TYPE_TERM")
+)
+
+(define-object TermBuffer
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooTermBuffer")
+  (gtype-id "MOO_TYPE_TERM_BUFFER")
 )
 
 (define-object TermTag
@@ -29,6 +38,7 @@
   (copy-func "moo_term_iter_copy")
   (release-func "moo_term_iter_free")
 )
+
 
 ;; Enumerations and flags ...
 
@@ -75,7 +85,44 @@
 )
 
 
+;; From mooterm-prefs.h
+
+(define-function prefs_page_new
+  (c-name "moo_term_prefs_page_new")
+  (is-constructor-of "MooTermPrefsPage")
+  (return-type "GtkWidget*")
+)
+
+;; (define-function set_prefs_prefix
+;;   (c-name "moo_term_set_prefs_prefix")
+;;   (return-type "none")
+;;   (parameters
+;;     '("const-char*" "prefix")
+;;   )
+;; )
+;;
+;; (define-function get_prefs_prefix
+;;   (c-name "moo_term_get_prefs_prefix")
+;;   (return-type "const-char*")
+;; )
+
+(define-function make_setting
+  (c-name "moo_term_setting")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "setting_name")
+  )
+)
+
+
+
 ;; From mooterm-text.h
+
+(define-method copy
+  (of-object "MooTermIter")
+  (c-name "moo_term_iter_copy")
+  (return-type "MooTermIter*")
+)
 
 (define-method get_line_count
   (of-object "MooTerm")
@@ -130,7 +177,7 @@
   (c-name "moo_term_create_tag")
   (return-type "MooTermTag*")
   (parameters
-    '("const-char*" "name")
+    '("const-char*" "name" (null-ok) (default "NULL"))
   )
 )
 
@@ -277,11 +324,11 @@
   )
 )
 
-(define-function moo_term_get_text
+(define-method get_text
+  (of-object "MooTermIter")
   (c-name "moo_term_get_text")
   (return-type "char*")
   (parameters
-    '("MooTermIter*" "start")
     '("MooTermIter*" "end")
   )
 )
@@ -289,6 +336,7 @@
 
 
 ;; From mooterm.h
+
 
 (define-method set_adjustment
   (of-object "MooTerm")
@@ -347,7 +395,7 @@
   (return-type "none")
 )
 
-(define-function moo_term_set_helper_directory
+(define-function set_helper_directory
   (c-name "moo_term_set_helper_directory")
   (return-type "none")
   (parameters
@@ -638,6 +686,58 @@
 
 
 
+;; From mootermbuffer.h
+
+(define-function moo_term_buffer_new
+  (c-name "moo_term_buffer_new")
+  (is-constructor-of "MooTermBuffer")
+  (return-type "MooTermBuffer*")
+  (parameters
+    '("guint" "width")
+    '("guint" "height")
+  )
+)
+
+(define-method print_chars
+  (of-object "MooTermBuffer")
+  (c-name "moo_term_buffer_print_chars")
+  (return-type "none")
+  (parameters
+    '("const-char*" "chars")
+    '("int" "len")
+  )
+)
+
+(define-method print_unichar
+  (of-object "MooTermBuffer")
+  (c-name "moo_term_buffer_print_unichar")
+  (return-type "none")
+  (parameters
+    '("gunichar" "c")
+  )
+)
+
+
+
+;; From mootermline.h
+
+(define-method len
+  (of-object "MooTermLine")
+  (c-name "moo_term_line_len")
+  (return-type "guint")
+)
+
+(define-method get_char
+  (of-object "MooTermLine")
+  (c-name "moo_term_line_get_char")
+  (return-type "gunichar")
+  (parameters
+    '("guint" "index_")
+  )
+)
+
+
+
 ;; From mootermtag.h
 
 (define-method set_attr
@@ -679,5 +779,3 @@
     '("GType" "type")
   )
 )
-
-

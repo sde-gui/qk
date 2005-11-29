@@ -8,6 +8,8 @@ headers
 #include "mooterm/mooterm.h"
 #include "mooterm/mootermwindow.h"
 #include "mooterm/mooterm-text.h"
+#include "mooterm/mootermbuffer.h"
+#include "mooterm/mooterm-prefs.h"
 #include "mooutils/mooutils-python.h"
 #include "moopython/moo-pygtk.h"
 
@@ -105,4 +107,99 @@ _wrap_moo_term_paste_clipboard(PyGObject *self, PyObject *args, PyObject *kwargs
     moo_term_paste_clipboard(MOO_TERM(self->obj), selection);
     Py_INCREF(Py_None);
     return Py_None;
+}
+%%
+override moo_term_get_iter_at_line varargs
+static PyObject *
+_wrap_moo_term_get_iter_at_line (PyGObject *self, PyObject *args)
+{
+    int line;
+    MooTermIter iter;
+
+    if (!PyArg_ParseTuple (args, (char*) "i:MooTerm.get_iter_at_line", &line))
+        return NULL;
+
+    if (moo_term_get_iter_at_line (MOO_TERM(self->obj), &iter, line))
+        return pyg_boxed_new (MOO_TYPE_TERM_ITER, &iter, TRUE, TRUE);
+    else
+        return_None;
+}
+%%
+override moo_term_get_iter_at_line_offset varargs
+static PyObject *
+_wrap_moo_term_get_iter_at_line_offset (PyGObject *self, PyObject *args)
+{
+    int line, offset;
+    MooTermIter iter;
+
+    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_line_offset", &line, &offset))
+        return NULL;
+
+    if (moo_term_get_iter_at_line_offset (MOO_TERM(self->obj), &iter, line, offset))
+        return pyg_boxed_new (MOO_TYPE_TERM_ITER, &iter, TRUE, TRUE);
+    else
+        return_None;
+}
+%%
+override moo_term_get_iter_at_cursor noargs
+static PyObject *
+_wrap_moo_term_get_iter_at_cursor (PyGObject *self)
+{
+    MooTermIter iter;
+
+    moo_term_get_iter_at_cursor (MOO_TERM(self->obj), &iter);
+    return pyg_boxed_new (MOO_TYPE_TERM_ITER, &iter, TRUE, TRUE);
+}
+%%
+override moo_term_get_iter_at_location varargs
+static PyObject *
+_wrap_moo_term_get_iter_at_location (PyGObject *self, PyObject *args)
+{
+    int x, y;
+    MooTermIter iter;
+
+    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_location", &x, &y))
+        return NULL;
+
+    moo_term_get_iter_at_location (MOO_TERM(self->obj), &iter, x, y);
+    return pyg_boxed_new (MOO_TYPE_TERM_ITER, &iter, TRUE, TRUE);
+}
+%%
+override moo_term_get_iter_at_pos varargs
+static PyObject *
+_wrap_moo_term_get_iter_at_pos (PyGObject *self, PyObject *args)
+{
+    int x, y;
+    MooTermIter iter;
+
+    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.get_iter_at_pos", &x, &y))
+        return NULL;
+
+    moo_term_get_iter_at_pos (MOO_TERM(self->obj), &iter, x, y);
+    return pyg_boxed_new (MOO_TYPE_TERM_ITER, &iter, TRUE, TRUE);
+}
+%%
+override moo_term_iter_copy noargs
+static PyObject *
+_wrap_moo_term_iter_copy (PyObject *self)
+{
+    MooTermIter *ret;
+
+    ret = moo_term_iter_copy(pyg_boxed_get(self, MooTermIter));
+
+    return pyg_boxed_new (MOO_TYPE_TERM_ITER, ret, FALSE, TRUE);
+}
+%%
+override moo_term_window_to_buffer_coords varargs
+static PyObject *
+_wrap_moo_term_window_to_buffer_coords (PyGObject *self, PyObject *args)
+{
+    int x, y;
+    int buf_x, buf_y;
+
+    if (!PyArg_ParseTuple (args, (char*) "ii:MooTerm.window_to_buffer_coords", &x, &y))
+        return NULL;
+
+    moo_term_window_to_buffer_coords (MOO_TERM(self->obj), x, y, &buf_x, &buf_y);
+    return Py_BuildValue((char*) "(ii)", buf_x, buf_y);
 }
