@@ -23,19 +23,34 @@
 G_BEGIN_DECLS
 
 
+struct _MooTermCell {
+    gunichar        ch;
+    MooTermTextAttr attr;
+};
+
+struct _MooTermLine {
+    MooTermCell *cells;
+    guint16 width;
+    guint16 len;
+    guint16 width_allocd__;
+    guint wrapped : 1;
+    GSList **tags;
+};
+
+
 #define MOO_TERM_DECALN_CHAR 'S'
 #define MOO_TERM_LINE_MAX_LEN (1 << 16)
 
 
 void         _moo_term_line_mem_init        (void);
 
-MooTermLine *_moo_term_line_new             (guint           len,
+MooTermLine *_moo_term_line_new             (guint           width,
                                              MooTermTextAttr fill);
 void         _moo_term_line_free            (MooTermLine    *line,
                                              gboolean        remove_tags);
 
 void         _moo_term_line_resize          (MooTermLine    *line,
-                                             guint           len,
+                                             guint           width,
                                              MooTermTextAttr fill);
 
 void         _moo_term_line_erase_range     (MooTermLine    *line,
@@ -82,29 +97,40 @@ gboolean     _moo_term_line_get_tag_end     (MooTermLine    *line,
 
 MooTermTextAttr _moo_term_line_get_attr     (MooTermLine    *line,
                                              guint           index_);
-guint        _moo_term_line_len_chk         (MooTermLine    *line);
-MooTermCell *_moo_term_line_get_cell_chk    (MooTermLine    *line,
-                                             guint           index_);
-gunichar     _moo_term_line_get_char_chk    (MooTermLine    *line,
-                                             guint           index_);
-GSList      *_moo_term_line_get_tags_chk    (MooTermLine    *line,
-                                             guint           index_);
 
-#define _MOO_TERM_LINE_CELL(line__,index__) (&(line__)->cells[index__])
-#define _MOO_TERM_LINE_CHAR(line__,index__) ((line__)->cells[index__].ch)
-#define _MOO_TERM_LINE_LEN(line__)          ((line__)->n_cells)
-#define _MOO_TERM_LINE_TAGS(line__,index__) ((line__)->tags ? (line__)->tags[index__] : NULL)
+guint        _moo_term_line_len_chk__       (MooTermLine    *line);
+guint        _moo_term_line_width_chk__     (MooTermLine    *line);
+MooTermCell *_moo_term_line_get_cell_chk__  (MooTermLine    *line,
+                                             guint           index_);
+gunichar     _moo_term_line_get_char_chk__  (MooTermLine    *line,
+                                             guint           index_);
+GSList      *_moo_term_line_get_tags_chk__  (MooTermLine    *line,
+                                             guint           index_);
+gboolean     _moo_term_line_wrapped_chk__   (MooTermLine    *line);
+
+#define MOO_TERM_LINE_CELL__(line__,index__) (&(line__)->cells[index__])
+#define MOO_TERM_LINE_CHAR__(line__,index__) ((line__)->cells[index__].ch)
+#define MOO_TERM_LINE_TAGS__(line__,index__) ((line__)->tags ? (line__)->tags[index__] : NULL)
+#define MOO_TERM_LINE_LEN__(line__)          ((line__)->len)
+#define MOO_TERM_LINE_WIDTH__(line__)        ((line__)->width)
+#define MOO_TERM_LINE_WRAPPED__(line__)      ((line__)->wrapped != 0)
+
+#define __moo_term_line_set_wrapped(line__)  (line__)->wrapped = TRUE
 
 #if 1
-#define _moo_term_line_get_cell(line__,index__) (_moo_term_line_get_cell_chk(line__, index__))
-#define _moo_term_line_get_char(line__,index__) (_moo_term_line_get_char_chk(line__, index__))
-#define _moo_term_line_get_tags(line__,index__) (_moo_term_line_get_tags_chk(line__, index__))
-#define _moo_term_line_len(line__)              (_moo_term_line_len_chk(line__))
+#define __moo_term_line_get_cell(line__,index__) (_moo_term_line_get_cell_chk__(line__, index__))
+#define __moo_term_line_get_char(line__,index__) (_moo_term_line_get_char_chk__(line__, index__))
+#define __moo_term_line_get_tags(line__,index__) (_moo_term_line_get_tags_chk__(line__, index__))
+#define __moo_term_line_len(line__)              (_moo_term_line_len_chk__(line__))
+#define __moo_term_line_width(line__)            (_moo_term_line_width_chk__(line__))
+#define __moo_term_line_wrapped(line__)          (_moo_term_line_wrapped_chk__(line__))
 #else
-#define _moo_term_line_get_cell(line__,index__) (_MOO_TERM_LINE_CELL (line__,index__))
-#define _moo_term_line_get_char(line__,index__) (_MOO_TERM_LINE_CHAR (line__,index__))
-#define _moo_term_line_get_tags(line__,index__) (_MOO_TERM_LINE_TAGS (line__,index__))
-#define _moo_term_line_len(line__)              (_MOO_TERM_LINE_LEN (line__))
+#define __moo_term_line_get_cell(line__,index__) (MOO_TERM_LINE_CELL__ (line__,index__))
+#define __moo_term_line_get_char(line__,index__) (MOO_TERM_LINE_CHAR__ (line__,index__))
+#define __moo_term_line_get_tags(line__,index__) (MOO_TERM_LINE_TAGS__ (line__,index__))
+#define __moo_term_line_len(line__)              (MOO_TERM_LINE_LEN__ (line__))
+#define __moo_term_line_width(line__)            (MOO_TERM_LINE_WIDTH__ (line__))
+#define __moo_term_line_wrapped(line__)          (MOO_TERM_LINE_WRAPPED__ (line__))
 #endif
 
 

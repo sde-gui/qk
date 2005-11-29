@@ -1089,13 +1089,15 @@ char_class (MooTerm            *term,
 
 
 static gboolean
-iter_ends_line (const MooTermIter  *iter)
+iter_ends_line (const MooTermIter *iter)
 {
+    CHECK_ITER (iter);
     return iter->col == (int)iter->term->priv->width;
 }
 
 
-static gboolean iter_starts_line        (const MooTermIter  *iter)
+static gboolean
+iter_starts_line (const MooTermIter *iter)
 {
     CHECK_ITER (iter);
     return iter->col == 0;
@@ -1192,14 +1194,16 @@ static gboolean is_word_char            (const MooTermIter  *iter)
 }
 
 
-static gunichar iter_get_char           (const MooTermIter  *iter)
+static gunichar
+iter_get_char (const MooTermIter *iter)
 {
     MooTermLine *line = buf_line (iter->term->priv->buffer, iter->row);
-    return _moo_term_line_get_char (line, iter->col);
+    return __moo_term_line_get_char (line, iter->col);
 }
 
 
-static char    *segment_get_text    (Segment            *segment)
+static char*
+segment_get_text (Segment *segment)
 {
     MooTerm *term = ITER_TERM (&segment->start);
     MooTermBuffer *buf = term->priv->buffer;
@@ -1208,9 +1212,9 @@ static char    *segment_get_text    (Segment            *segment)
     GString *text;
     MooTermLine *line;
     int width = term->priv->width;
-    int i;
+    int i, j;
 
-    _moo_term_iter_order  (&start, &end);
+    _moo_term_iter_order (&start, &end);
 
     if (!iter_cmp (&start, &end))
         return NULL;
@@ -1220,36 +1224,41 @@ static char    *segment_get_text    (Segment            *segment)
     if (ITER_ROW(&start) == ITER_ROW(&end))
     {
         line = buf_line (buf, ITER_ROW(&start));
-        for (i = ITER_COL(&start); i < ITER_COL(&end); ++i)
-            g_string_append_unichar (text, _moo_term_line_get_char (line, i));
+
+        for (j = ITER_COL(&start);
+             j < ITER_COL(&end) && j < (int) __moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
     }
     else
     {
         if (ITER_COL(&start) < width)
         {
             line = buf_line (buf, ITER_ROW(&start));
-            for (i = ITER_COL(&start); i < width; ++i)
-                g_string_append_unichar (text, _moo_term_line_get_char (line, i));
-            g_string_append_c (text, '\n');
+
+            for (j = ITER_COL(&start); j < (int) __moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+
+            if (!__moo_term_line_wrapped (line))
+                g_string_append_c (text, '\n');
         }
 
-        if (ITER_ROW(&start) + 1 < ITER_ROW(&end))
+        for (i = ITER_ROW(&start) + 1; i < ITER_ROW(&end); ++i)
         {
-            for (i = ITER_ROW(&start) + 1; i < ITER_ROW(&end); ++i)
-            {
-                int j;
-                line = buf_line (buf, i);
-                for (j = 0; j < width; ++j)
-                    g_string_append_unichar (text, _moo_term_line_get_char (line, j));
+            line = buf_line (buf, i);
+
+            for (j = 0; j < (int) __moo_term_line_len (line); ++j)
+                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
+
+            if (!__moo_term_line_wrapped (line))
                 g_string_append_c (text, '\n');
-            }
         }
 
         if (ITER_COL(&end) > 0)
         {
             line = buf_line (buf, ITER_ROW(&end));
-            for (i = 0; i < ITER_COL(&start); ++i)
-                g_string_append_unichar (text, _moo_term_line_get_char (line, i));
+
+            for (j = 0; j < ITER_COL(&start); ++j)
+                g_string_append_unichar (text, __moo_term_line_get_char (line, j));
         }
     }
 
@@ -1340,7 +1349,7 @@ moo_term_get_iter_at_line_offset (MooTerm            *term,
 
     line = buf_line (term->priv->buffer, line_no);
 
-    if (offset > _moo_term_line_len (line))
+    if (offset > __moo_term_line_width (line))
         return FALSE;
 
     FILL_ITER (iter, term, line_no, offset);
@@ -1403,7 +1412,7 @@ moo_term_apply_tag (MooTerm            *term,
     {
         line = buf_line (buf, ITER_ROW (start));
         _moo_term_line_apply_tag (line, tag, ITER_COL (start),
-                                  _moo_term_line_len (line) - ITER_COL (start));
+                                  __moo_term_line_width (line) - ITER_COL (start));
         line = buf_line (buf, ITER_ROW (end));
         _moo_term_line_apply_tag (line, tag, 0, ITER_COL (end));
         if (ITER_ROW (start) + 1 < ITER_ROW (end))
@@ -1412,7 +1421,7 @@ moo_term_apply_tag (MooTerm            *term,
             {
                 line = buf_line (buf, i);
                 _moo_term_line_apply_tag (line, tag, 0,
-                                          _moo_term_line_len (line));
+                                          __moo_term_line_width (line));
             }
         }
     }
@@ -1452,7 +1461,7 @@ moo_term_remove_tag (MooTerm            *term,
     {
         line = buf_line (buf, ITER_ROW (start));
         _moo_term_line_remove_tag (line, tag, ITER_COL (start),
-                                   _moo_term_line_len (line) - ITER_COL (start));
+                                   __moo_term_line_width (line) - ITER_COL (start));
         line = buf_line (buf, ITER_ROW (end));
         _moo_term_line_remove_tag (line, tag, 0, ITER_COL (end));
         if (ITER_ROW (start) + 1 < ITER_ROW (end))
@@ -1461,7 +1470,7 @@ moo_term_remove_tag (MooTerm            *term,
             {
                 line = buf_line (buf, i);
                 _moo_term_line_remove_tag (line, tag, 0,
-                                           _moo_term_line_len (line));
+                                           __moo_term_line_width (line));
             }
         }
     }

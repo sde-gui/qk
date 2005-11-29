@@ -35,23 +35,6 @@ typedef struct _MooTermLine MooTermLine;
         (a1__).background == (a2__).background))
 
 
-struct _MooTermCell {
-    gunichar        ch;
-    MooTermTextAttr attr;
-};
-
-struct _MooTermLine {
-    MooTermCell *cells;
-    guint16 n_cells;
-    guint16 n_cells_allocd__;
-    GSList **tags;
-};
-
-
-char       *moo_term_line_get_text      (MooTermLine    *line,
-                                         guint           start,
-                                         int             len);
-
 guint       moo_term_line_len           (MooTermLine    *line);
 gunichar    moo_term_line_get_char      (MooTermLine    *line,
                                          guint           index_);

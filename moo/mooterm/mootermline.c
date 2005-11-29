@@ -51,21 +51,20 @@ _moo_term_line_mem_init (void)
 
 
 MooTermLine*
-_moo_term_line_new (guint            len,
+_moo_term_line_new (guint            width,
                     MooTermTextAttr  attr)
 {
     MooTermLine *line;
     guint i;
 
-    g_assert (len != 0);
-    g_assert (len <= MOO_TERM_LINE_MAX_LEN);
+    g_assert (width != 0);
+    g_assert (width <= MOO_TERM_LINE_MAX_LEN);
 
-    line = g_chunk_new (MooTermLine, LINE_MEM_CHUNK__);
-    line->cells = g_new (MooTermCell, len);
-    line->tags = NULL;
-    line->n_cells = line->n_cells_allocd__ = len;
+    line = g_chunk_new0 (MooTermLine, LINE_MEM_CHUNK__);
+    line->cells = g_new (MooTermCell, width);
+    line->width = line->width_allocd__ = width;
 
-    for (i = 0; i < len; ++i)
+    for (i = 0; i < width; ++i)
     {
         line->cells[i].ch = EMPTY_CHAR;
         line->cells[i].attr = attr;
@@ -90,7 +89,7 @@ _moo_term_line_free (MooTermLine *line,
                 GSList *tags = NULL, *l;
                 MooTermTag *tag;
 
-                for (i = 0; i < line->n_cells; ++i)
+                for (i = 0; i < line->width; ++i)
                 {
                     if (line->tags[i])
                     {
@@ -115,7 +114,7 @@ _moo_term_line_free (MooTermLine *line,
             }
             else
             {
-                for (i = 0; i < line->n_cells; ++i)
+                for (i = 0; i < line->width; ++i)
                     g_slist_free (line->tags[i]);
             }
 
@@ -130,28 +129,34 @@ _moo_term_line_free (MooTermLine *line,
 
 void
 _moo_term_line_resize (MooTermLine    *line,
-                       guint           len,
+                       guint           width,
                        MooTermTextAttr attr)
 {
     guint i;
 
     g_assert (line != NULL);
-    g_assert (len != 0);
-    g_assert (len <= MOO_TERM_LINE_MAX_LEN);
+    g_assert (width != 0);
+    g_assert (width < MOO_TERM_LINE_MAX_LEN);
 
-    if (len <= line->n_cells)
+    if (width == line->width)
+        return;
+
+    line->wrapped = FALSE;
+
+    if (width <= line->width)
     {
         if (line->tags)
         {
             GSList *removed = NULL, *l;
             MooTermTag *tag;
 
-            for (i = len; i < line->n_cells; ++i)
+            for (i = width; i < line->width; ++i)
             {
                 if (line->tags[i])
                 {
                     for (l = line->tags[i]; l != NULL; l = l->next)
                         removed = g_slist_prepend (removed, l->data);
+
                     g_slist_free (line->tags[i]);
                 }
             }
@@ -164,12 +169,12 @@ _moo_term_line_resize (MooTermLine    *line,
                 {
                     tag = l->data;
 
-                    if (!line_has_tag_in_range (line, tag, 0, len))
+                    if (!line_has_tag_in_range (line, tag, 0, width))
                         _moo_term_tag_remove_line (tag, line);
                 }
             }
 
-            if (!line_has_tag_in_range (line, NULL, 0, len))
+            if (!line_has_tag_in_range (line, NULL, 0, width))
             {
                 g_free (line->tags);
                 line->tags = NULL;
@@ -180,36 +185,38 @@ _moo_term_line_resize (MooTermLine    *line,
     }
     else
     {
-        if (line->n_cells_allocd__ < len)
+        if (line->width_allocd__ < width)
         {
-            MooTermCell *tmp = g_new (MooTermCell, len);
-            CELLCPY (tmp, line->cells, line->n_cells);
+            MooTermCell *tmp = g_new (MooTermCell, width);
+            CELLCPY (tmp, line->cells, line->width);
             g_free (line->cells);
             line->cells = tmp;
 
             if (line->tags)
             {
-                GSList **tmp2 = g_new (GSList*, len);
-                PTRCPY (tmp2, line->tags, line->n_cells);
+                GSList **tmp2 = g_new (GSList*, width);
+                PTRCPY (tmp2, line->tags, line->width);
                 g_free (line->tags);
                 line->tags = tmp2;
             }
 
-            line->n_cells_allocd__ = len;
+            line->width_allocd__ = width;
         }
 
-        for (i = line->n_cells; i < len; ++i)
+        for (i = line->width; i < width; ++i)
         {
             line->cells[i].ch = EMPTY_CHAR;
             line->cells[i].attr = attr;
         }
 
         if (line->tags)
-            PTRSET (&line->tags[line->n_cells], 0,
-                    len - line->n_cells);
+            PTRSET (&line->tags[line->width], 0,
+                     width - line->width);
     }
 
-    line->n_cells = len;
+    line->width = width;
+    line->len = MIN (line->len, width);
+    line->wrapped = FALSE;
 }
 
 
@@ -220,7 +227,10 @@ _moo_term_line_erase_range (MooTermLine    *line,
                             MooTermTextAttr attr)
 {
     guint i;
-    guint last = MIN ((guint) (line->n_cells - 1), pos + len);
+    guint last = MIN ((guint) (line->width - 1), pos + len);
+
+    if ((int) last == line->width - 1)
+        line->len = MIN (line->len, pos);
 
     for (i = pos; i < last; ++i)
     {
@@ -240,11 +250,21 @@ _moo_term_line_delete_range (MooTermLine    *line,
 
     g_assert (line != NULL);
     g_assert (len != 0);
-    g_assert (pos < line->n_cells);
+    g_assert (pos < line->width);
 
-    if (len + pos >= line->n_cells)
+    line->wrapped = FALSE;
+
+    if (pos < line->len)
     {
-        for (i = pos; i < line->n_cells; ++i)
+        if (len + pos >= line->len)
+            line->len = pos;
+        else
+            line->len -= pos;
+    }
+
+    if (len + pos >= line->width)
+    {
+        for (i = pos; i < line->width; ++i)
         {
             line->cells[i].ch = EMPTY_CHAR;
             line->cells[i].attr = attr;
@@ -253,8 +273,8 @@ _moo_term_line_delete_range (MooTermLine    *line,
     else
     {
         CELLMOVE (&line->cells[pos], &line->cells[pos+len],
-                  line->n_cells - (pos + len));
-        for (i = line->n_cells - len; i < line->n_cells; ++i)
+                   line->width - (pos + len));
+        for (i = line->width - len; i < line->width; ++i)
         {
             line->cells[i].ch = EMPTY_CHAR;
             line->cells[i].attr = attr;
@@ -274,13 +294,17 @@ _moo_term_line_set_unichar (MooTermLine    *line,
 
     g_assert (line != NULL);
     g_assert (num != 0);
-    g_assert (pos < line->n_cells);
+    g_assert (pos < line->width);
 
-    if (pos + num > line->n_cells)
-        num = line->n_cells - pos;
+    if (pos + num > line->width)
+        num = line->width - pos;
 
     if (!c)
         c = EMPTY_CHAR;
+
+    if (c != EMPTY_CHAR)
+        line->len = MAX (line->len, pos + num);
+    g_assert (line->len <= line->width);
 
     for (i = pos; i < pos + num; ++i)
     {
@@ -301,14 +325,28 @@ _moo_term_line_insert_unichar (MooTermLine    *line,
 
     g_assert (line != NULL);
     g_assert (num != 0);
-    g_assert (pos < line->n_cells);
+    g_assert (pos < line->width);
 
     if (!c)
         c = EMPTY_CHAR;
 
-    if (pos + num >= line->n_cells)
+    line->wrapped = FALSE;
+
+    if (c != EMPTY_CHAR)
     {
-        for (i = pos; i < line->n_cells; ++i)
+        if (pos + num >= line->width)
+            line->len = line->width;
+        else if (pos >= line->len)
+            line->len = pos + num;
+        else
+            line->len += num;
+
+        g_assert (line->len <= line->width);
+    }
+
+    if (pos + num >= line->width)
+    {
+        for (i = pos; i < line->width; ++i)
         {
             line->cells[i].ch = c;
             line->cells[i].attr = attr;
@@ -317,7 +355,8 @@ _moo_term_line_insert_unichar (MooTermLine    *line,
     else
     {
         CELLMOVE (&line->cells[pos+num], &line->cells[pos],
-                  line->n_cells - (pos+num));
+                   line->width - (pos+num));
+
         for (i = pos; i < pos+num; ++i)
         {
             line->cells[i].ch = c;
@@ -338,15 +377,15 @@ _moo_term_line_get_chars (MooTermLine    *line,
 
     g_assert (line != NULL);
 
-    if (!len || first >= line->n_cells)
+    if (!len || first >= line->width)
         return 0;
 
-    if (len < 0 || first + len > line->n_cells)
-        len = line->n_cells - first;
+    if (len < 0 || first + len > line->width)
+        len = line->width - first;
 
     for (i = first; i < first + len; ++i)
     {
-        gunichar c = _moo_term_line_get_char (line, i);
+        gunichar c = __moo_term_line_get_char (line, i);
         guint l = g_unichar_to_utf8 (c, buf);
         buf += l;
         res += l;
@@ -356,29 +395,43 @@ _moo_term_line_get_chars (MooTermLine    *line,
 }
 
 
-guint
-_moo_term_line_len_chk (MooTermLine *line)
+gboolean
+_moo_term_line_wrapped_chk__ (MooTermLine *line)
 {
     g_assert (line != NULL);
-    return _MOO_TERM_LINE_LEN (line);
+    return MOO_TERM_LINE_WRAPPED__ (line);
 }
 
+
+guint
+_moo_term_line_len_chk__ (MooTermLine *line)
+{
+    g_assert (line != NULL);
+    return MOO_TERM_LINE_LEN__ (line);
+}
 
 guint
 moo_term_line_len (MooTermLine    *line)
 {
     g_return_val_if_fail (line != NULL, 0);
-    return _MOO_TERM_LINE_LEN (line);
+    return MOO_TERM_LINE_LEN__ (line);
 }
 
 
-gunichar
-_moo_term_line_get_char_chk (MooTermLine   *line,
-                             guint          index_)
+guint
+_moo_term_line_width_chk__ (MooTermLine *line)
 {
     g_assert (line != NULL);
-    g_assert (index_ < line->n_cells);
-    return _MOO_TERM_LINE_CHAR (line, index_);
+    return MOO_TERM_LINE_WIDTH__ (line);
+}
+
+gunichar
+_moo_term_line_get_char_chk__ (MooTermLine   *line,
+                               guint          index_)
+{
+    g_assert (line != NULL);
+    g_assert (index_ < line->width);
+    return MOO_TERM_LINE_CHAR__ (line, index_);
 }
 
 
@@ -387,7 +440,7 @@ moo_term_line_get_char (MooTermLine    *line,
                         guint           index_)
 {
     g_return_val_if_fail (line != NULL, 0);
-    return index_ < line->n_cells ? _MOO_TERM_LINE_CHAR (line, index_) : EMPTY_CHAR;
+    return index_ < line->width ? MOO_TERM_LINE_CHAR__ (line, index_) : EMPTY_CHAR;
 }
 
 
@@ -399,7 +452,7 @@ _moo_term_line_get_attr (MooTermLine    *line,
     GSList *tags, *l;
 
     g_assert (line != NULL);
-    g_assert (index_ < line->n_cells);
+    g_assert (index_ < line->width);
 
     if (!line->tags || !line->tags[index_])
         return line->cells[index_].attr;
@@ -445,22 +498,22 @@ _moo_term_line_get_attr (MooTermLine    *line,
 
 
 MooTermCell*
-_moo_term_line_get_cell_chk (MooTermLine    *line,
-                             guint           index_)
+_moo_term_line_get_cell_chk__ (MooTermLine    *line,
+                               guint           index_)
 {
     g_assert (line != NULL);
-    g_assert (index_ < line->n_cells);
-    return _MOO_TERM_LINE_CELL (line, index_);
+    g_assert (index_ < line->width);
+    return MOO_TERM_LINE_CELL__ (line, index_);
 }
 
 
 GSList*
-_moo_term_line_get_tags_chk (MooTermLine    *line,
-                             guint           index_)
+_moo_term_line_get_tags_chk__ (MooTermLine    *line,
+                               guint           index_)
 {
     g_assert (line != NULL);
-    g_assert (index_ < line->n_cells);
-    return _MOO_TERM_LINE_TAGS (line, index_);
+    g_assert (index_ < line->width);
+    return MOO_TERM_LINE_TAGS__ (line, index_);
 }
 
 
@@ -473,13 +526,13 @@ _moo_term_line_apply_tag (MooTermLine    *line,
     guint i;
 
     g_assert (line != NULL);
-    g_assert (start < line->n_cells);
+    g_assert (start < line->width);
     g_assert (len > 0);
-    g_assert (start + len <= line->n_cells);
+    g_assert (start + len <= line->width);
     g_assert (MOO_IS_TERM_TAG (tag));
 
     if (!line->tags)
-        line->tags = g_new0 (GSList*, line->n_cells_allocd__);
+        line->tags = g_new0 (GSList*, line->width_allocd__);
 
     for (i = start; i < start + len; ++i)
         line->tags[i] = g_slist_append (line->tags[i], tag);
@@ -499,13 +552,13 @@ line_has_tag (MooTermLine    *line,
 
     if (tag)
     {
-        for (i = 0; i < line->n_cells; ++i)
+        for (i = 0; i < line->width; ++i)
             if (g_slist_find (line->tags[i], tag))
                 return TRUE;
     }
     else
     {
-        for (i = 0; i < line->n_cells; ++i)
+        for (i = 0; i < line->width; ++i)
             if (line->tags[i])
                 return TRUE;
     }
@@ -547,7 +600,7 @@ _moo_term_line_has_tag (MooTermLine    *line,
                         MooTermTag     *tag,
                         guint           index_)
 {
-    if (!line->tags || index_ >= line->n_cells || !line->tags[index_])
+    if (!line->tags || index_ >= line->width || !line->tags[index_])
         return FALSE;
 
     if (tag)
@@ -578,10 +631,10 @@ _moo_term_line_get_tag_end (MooTermLine    *line,
                             MooTermTag     *tag,
                             guint          *index_)
 {
-    if (*index_ >= line->n_cells || !_moo_term_line_has_tag (line, tag, *index_))
+    if (*index_ >= line->width || !_moo_term_line_has_tag (line, tag, *index_))
         return FALSE;
 
-    for ( ; *index_ < line->n_cells; (*index_)++)
+    for ( ; *index_ < line->width; (*index_)++)
         if (!_moo_term_line_has_tag (line, tag, *index_))
             return TRUE;
 
@@ -598,9 +651,9 @@ _moo_term_line_remove_tag (MooTermLine    *line,
     guint i;
 
     g_assert (line != NULL);
-    g_assert (start < line->n_cells);
+    g_assert (start < line->width);
     g_assert (len > 0);
-    g_assert (start + len <= line->n_cells);
+    g_assert (start + len <= line->width);
     g_assert (MOO_IS_TERM_TAG (tag));
 
     if (!line->tags)
@@ -619,29 +672,4 @@ _moo_term_line_remove_tag (MooTermLine    *line,
             line->tags = NULL;
         }
     }
-}
-
-
-char*
-moo_term_line_get_text (MooTermLine    *line,
-                        guint           start,
-                        int             len)
-{
-    GString *text;
-    guint i;
-
-    g_return_val_if_fail (line != NULL, NULL);
-
-    if (!len || start >= line->n_cells)
-        return g_strdup ("");
-
-    text = g_string_new (NULL);
-
-    if (start + len > line->n_cells)
-        len = line->n_cells - start;
-
-    for (i = start; i < start + len; ++i)
-        g_string_append_unichar (text, _moo_term_line_get_char (line, i));
-
-    return g_string_free (text, FALSE);
 }
