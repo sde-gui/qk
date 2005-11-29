@@ -506,8 +506,10 @@ moo_cmd_check_stop (MooCmd *cmd)
 
     if (!cmd->priv->child_watch && !cmd->priv->stdout_watch && !cmd->priv->stderr_watch)
     {
+        g_object_ref (cmd);
         g_signal_emit (cmd, signals[CMD_EXIT], 0, cmd->priv->exit_status, &result);
         moo_cmd_cleanup (cmd);
+        g_object_unref (cmd);
     }
 }
 
