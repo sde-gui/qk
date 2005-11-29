@@ -32,6 +32,7 @@ typedef struct _MooCmd         MooCmd;
 typedef struct _MooCmdPrivate  MooCmdPrivate;
 typedef struct _MooCmdClass    MooCmdClass;
 
+/* XXX BUFFERED */
 typedef enum {
     MOO_CMD_COLLECT_STDOUT      = 1 << 0,
     MOO_CMD_COLLECT_STDERR      = 1 << 1,
