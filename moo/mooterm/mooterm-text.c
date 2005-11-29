@@ -1257,8 +1257,11 @@ segment_get_text (Segment *segment)
         {
             line = buf_line (buf, ITER_ROW(&end));
 
-            for (j = 0; j < ITER_COL(&start); ++j)
+            for (j = 0; j < ITER_COL(&end) && j < (int) _moo_term_line_len (line); ++j)
                 g_string_append_unichar (text, _moo_term_line_get_char (line, j));
+
+            if (iter_ends_line (&end) && !_moo_term_line_wrapped (line))
+                g_string_append_c (text, '\n');
         }
     }
 
