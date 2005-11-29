@@ -370,6 +370,8 @@ do_load (MooEdit        *edit,
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
+    /* XXX stat the file first */
+
     if (!strcmp (encoding, "UTF-8") || !strcmp (encoding, "UTF8"))
     {
         char *contents;
