@@ -11,7 +11,7 @@ EXTRA_DIST +=           \
 BUILT_SOURCES += medit-ui.h tests/medit-app.c
 medit-ui.h: tests/medit-ui.xml
 	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
-tests/medit-app.c: tests/medit-app.opag
+tests/medit-app.c: tests/medit-app.opag medit-ui.h
 	opag -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/tests/medit-app.opag $(srcdir)/tests/medit-app.c
 
 all-am: tests/pyapp.py
@@ -150,3 +150,8 @@ nodist_testfileview_SOURCES = $(nodist_libmoo_sources)
 nodist_testpanedfileview_SOURCES = $(nodist_libmoo_sources)
 nodist_testobject_SOURCES = $(nodist_libmoo_sources)
 endif
+
+#####################################################################
+# Quick hack to get the module
+moo.so: medit
+	gcc *.o $(medit_LDFLAGS) $(medit_LDADD) -shared -o moo.so

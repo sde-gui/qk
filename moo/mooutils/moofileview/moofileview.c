@@ -2758,7 +2758,7 @@ static void     file_view_delete_selected       (MooFileView    *fileview)
 
     if (one)
     {
-        if (MOO_FILE_IS_DIR (files->data))
+        if (MOO_FILE_IS_DIR (files->data) && !MOO_FILE_IS_LINK (files->data))
             message = g_strdup_printf ("Delete folder %s and all its content?",
                                        moo_file_display_name (files->data));
         else

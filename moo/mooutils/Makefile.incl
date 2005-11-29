@@ -101,6 +101,7 @@ $(moofileview)/moofileviewdrop-glade.h: $(moofileview_srcdir)/glade/drop.glade $
 
 
 moo_extra_dist +=                              \
+    $(moofileview)/glade/drop.glade            \
     $(moofileview)/glade/moofileprops.glade    \
     $(moofileview)/glade/moocreatefolder.glade \
     $(moofileview)/glade/bookmark_editor.glade \
