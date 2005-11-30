@@ -392,6 +392,9 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     if (!text[0])
         return;
 
+    if (length < 0)
+        length = strlen (text);
+
     first_line = gtk_text_iter_get_line (pos);
     starts_line = gtk_text_iter_starts_line (pos);
     ins_line = (text[0] == '\n' || text[0] == '\r');
@@ -424,7 +427,10 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         moo_line_buffer_split_line (buffer->priv->line_buf,
                                     first_line, last_line - first_line);
 
-    moo_text_buffer_queue_highlight (buffer);
+    if (last_line - first_line < 2)
+        _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
+    else
+        moo_text_buffer_queue_highlight (buffer);
 
     cursor_moved (buffer, pos);
 
@@ -474,7 +480,10 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
         moo_line_buffer_invalidate (buffer->priv->line_buf,
                                     first_line);
 
-    moo_text_buffer_queue_highlight (buffer);
+    if (last_line - first_line < 2)
+        _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
+    else
+        moo_text_buffer_queue_highlight (buffer);
 
     update_selection (buffer);
     cursor_moved (buffer, start);
@@ -710,7 +719,8 @@ _moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
                                    int                 last_line)
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    moo_highlighter_apply_tags (buffer->priv->hl, first_line, last_line);
+    moo_highlighter_apply_tags (buffer->priv->hl,
+                                first_line, last_line);
 }
 
 
