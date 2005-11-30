@@ -1264,12 +1264,12 @@ egg_regex_escape_string (const char *string,
 
     for (i = 0, p = string; i < chars; i++)
     {
-        char c = *p;
+        char c = *(p++);
 
         switch (c)
         {
             case '\0':
-                g_string_append_c (escaped, 0);
+                g_string_append_c (escaped, 0); /* XXX wtf is this? */
                 break;
 
             case '\\':
@@ -1293,8 +1293,9 @@ egg_regex_escape_string (const char *string,
             default:
                 if (c & 0x80)
                 {
-                    gunichar wc = g_utf8_get_char (p);
+                    gunichar wc = g_utf8_get_char (p - 1);
                     g_string_append_unichar (escaped, wc);
+                    p = g_utf8_next_char (p - 1);
                 }
                 else
                 {
@@ -1302,8 +1303,6 @@ egg_regex_escape_string (const char *string,
                 }
                 break;
         }
-
-        p = g_utf8_next_char (p);
     }
 
     return g_string_free (escaped, FALSE);
