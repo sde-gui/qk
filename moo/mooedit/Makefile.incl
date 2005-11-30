@@ -14,6 +14,7 @@ moo_extra_dist +=                             \
     $(mooedit_glade)/mootextgotoline.glade    \
     $(mooedit_glade)/mootextfind.glade        \
     $(mooedit_glade)/mooeditprefs.glade       \
+    $(mooedit_glade)/mooeditsavemult.glade    \
     $(mooedit_glade)/mooeditcolorsprefs.glade \
     $(mooedit_glade)/moopluginprefs.glade
 
@@ -116,6 +117,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mooeditdialogs.h               \
     $(mooedit)/mooeditfileops.h               \
     $(mooedit)/mooeditprefs-glade.h           \
+    $(mooedit)/mooeditsavemultiple-glade.h    \
     $(mooedit)/moohighlighter.h               \
     $(mooedit)/moolang-aux.h                  \
     $(mooedit)/moolang-parser.h               \
@@ -165,6 +167,7 @@ mooedit_built_sources =                       \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/moopluginprefs-glade.h         \
     $(mooedit)/mooeditprefs-glade.h           \
+    $(mooedit)/mooeditsavemultiple-glade.h    \
     $(mooedit)/mooeditcolorsprefs-glade.h
 
 
@@ -187,6 +190,10 @@ $(mooedit)/mooeditcolorsprefs-glade.h: $(mooedit_srcdir)/glade/mooeditcolorspref
 $(mooedit)/moopluginprefs-glade.h: $(mooedit_srcdir)/glade/moopluginprefs.glade $(XML2H)
 	sh $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(mooedit_srcdir)/glade/moopluginprefs.glade \
 		> $(mooedit)/moopluginprefs-glade.h
+
+$(mooedit)/mooeditsavemultiple-glade.h: $(mooedit_srcdir)/glade/mooeditsavemult.glade $(XML2H)
+	sh $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(mooedit_srcdir)/glade/mooeditsavemult.glade \
+		> $(mooedit)/mooeditsavemultiple-glade.h
 
 
 moo_sources += $(mooedit_sources)

@@ -17,6 +17,7 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextfind-glade.h"
+#include "mooedit/mooeditsavemultiple-glade.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
@@ -284,11 +285,10 @@ save_toggled (GtkCellRendererToggle *cell,
     gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_YES, sensitive);
 }
 
-static GtkWidget*
-files_treeview_create (GtkWidget *dialog, GSList  *docs)
+static void
+files_treeview_init (GtkTreeView *treeview, GtkWidget *dialog, GSList  *docs)
 {
     GtkListStore *store;
-    GtkTreeView *treeview;
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
     GSList *l;
@@ -304,8 +304,7 @@ files_treeview_create (GtkWidget *dialog, GSList  *docs)
                             COLUMN_EDIT, l->data, -1);
     }
 
-    treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL (store)));
-    gtk_tree_view_set_headers_visible (treeview, FALSE);
+    gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
 
     column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (treeview, column);
@@ -326,7 +325,6 @@ files_treeview_create (GtkWidget *dialog, GSList  *docs)
     g_object_set_data (G_OBJECT (store), "moo-dialog", dialog);
 
     g_object_unref (store);
-    return GTK_WIDGET (treeview);
 }
 
 
@@ -370,11 +368,11 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                        GSList **to_save)
 {
     GSList *l;
-    GtkWidget *dialog, *parent;
-    GtkWidget *table, *icon, *label, *treeview, *swin;
+    GtkWidget *dialog, *parent, *label, *treeview;
     char *msg;
     int response;
     MooEditDialogResponse retval;
+    MooGladeXML *xml;
 
     g_return_val_if_fail (docs != NULL, MOO_EDIT_RESPONSE_CANCEL);
     g_return_val_if_fail (docs->next != NULL, MOO_EDIT_RESPONSE_CANCEL);
@@ -383,15 +381,23 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
 
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1,
+                                      "dialog", NULL);
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
+
     parent = gtk_widget_get_toplevel (docs->data);
-    dialog = gtk_dialog_new_with_buttons (NULL,
-                                          GTK_IS_WINDOW (parent) ? GTK_WINDOW (parent) : NULL,
-                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                          MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
-                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                          MOO_STOCK_SAVE_SELECTED, GTK_RESPONSE_YES,
-                                          NULL);
+
+    if (parent && GTK_WIDGET_TOPLEVEL (parent))
+        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
+                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                            MOO_STOCK_SAVE_SELECTED, GTK_RESPONSE_YES,
+                            NULL);
+
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
+
 #if GTK_CHECK_VERSION(2,6,0)
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
                                              GTK_RESPONSE_YES,
@@ -399,40 +405,14 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                              GTK_RESPONSE_CANCEL, -1);
 #endif /* GTK_CHECK_VERSION(2,6,0) */
 
-    table = gtk_table_new (3, 2, FALSE);
-    icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
-    gtk_table_attach (GTK_TABLE (table), icon,
-                      0, 1, 0, 1, 0, 0, 0, 0);
-
+    label = moo_glade_xml_get_widget (xml, "label");
     msg = g_strdup_printf ("<span weight=\"bold\" size=\"larger\">There are %d "
                            "documents with unsaved changes. Save changes before "
                            "closing?</span>", g_slist_length (docs));
-    label = gtk_label_new (NULL);
     gtk_label_set_markup (GTK_LABEL (label), msg);
-    gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-    g_free (msg);
-    gtk_table_attach (GTK_TABLE (table), label,
-                      1, 2, 0, 1, GTK_EXPAND | GTK_FILL, 0, 0, 0);
 
-    label = gtk_label_new ("Select the documents you want to save:");
-    gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
-    gtk_table_attach (GTK_TABLE (table), label,
-                      1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 0, 0);
-
-    swin = gtk_scrolled_window_new (NULL, NULL);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
-                                    GTK_POLICY_AUTOMATIC,
-                                    GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
-                                         GTK_SHADOW_ETCHED_IN);
-    gtk_table_attach (GTK_TABLE (table), swin,
-                      1, 2, 2, 3, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
-
-    treeview = files_treeview_create (dialog, docs);
-    gtk_container_add (GTK_CONTAINER (swin), treeview);
-
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG(dialog)->vbox), table, TRUE, TRUE, 0);
-    gtk_widget_show_all (table);
+    treeview = moo_glade_xml_get_widget (xml, "treeview");
+    files_treeview_init (GTK_TREE_VIEW (treeview), dialog, docs);
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
 
@@ -449,7 +429,9 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
             retval = MOO_EDIT_RESPONSE_CANCEL;
     }
 
+    g_free (msg);
     gtk_widget_destroy (dialog);
+    moo_glade_xml_unref (xml);
     return retval;
 }
 
