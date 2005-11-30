@@ -34,13 +34,13 @@
     </context>
 
     <keyword-list name="Keyword">
-      <keyword>&#60;</keyword>
-      <keyword>&#62;</keyword>
-      <keyword>&#60;=</keyword>
-      <keyword>&#62;=</keyword>
-      <keyword>&#60;&#62;</keyword>
-      <keyword>\=</keyword>
-      <keyword>\:\=</keyword>
+      <keyword>&lt;</keyword>
+      <keyword>&gt;</keyword>
+      <keyword>&lt;=</keyword>
+      <keyword>&gt;=</keyword>
+      <keyword>&lt;&gt;</keyword>
+      <keyword>=</keyword>
+      <keyword>:=</keyword>
       <keyword>and</keyword>
       <keyword>break</keyword>
       <keyword>continue</keyword>

@@ -1,4 +1,4 @@
-;; kate: lang scheme; strip on;
+;; -*- Mode: scheme; strip on; -*-
 ;; hand-edited
 
 (define-object App

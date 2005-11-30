@@ -54,76 +54,76 @@
       <keyword>&gt;</keyword>
       <keyword>-</keyword>
       <keyword>/</keyword>
-      <keyword>*,*</keyword>
-      <keyword>*)</keyword>
-      <keyword>+</keyword>
+      <keyword>\*,\*</keyword>
+      <keyword>\*\)</keyword>
+      <keyword>\+</keyword>
     </keyword-list>
     <keyword-list name="characters">
-      <keyword>#\nul</keyword>
-      <keyword>#\soh</keyword>
-      <keyword>#\stx</keyword>
-      <keyword>#\etx</keyword>
-      <keyword>#\eot</keyword>
-      <keyword>#\enq</keyword>
-      <keyword>#\ack</keyword>
-      <keyword>#\bel</keyword>
-      <keyword>#\bs</keyword>
-      <keyword>#\ht</keyword>
-      <keyword>#\nl</keyword>
-      <keyword>#\vt</keyword>
-      <keyword>#\np</keyword>
-      <keyword>#\cr</keyword>
-      <keyword>#\so</keyword>
-      <keyword>#\si</keyword>
-      <keyword>#\dle</keyword>
-      <keyword>#\dc1</keyword>
-      <keyword>#\dc2</keyword>
-      <keyword>#\dc3</keyword>
-      <keyword>#\dc4</keyword>
-      <keyword>#\nak</keyword>
-      <keyword>#\syn</keyword>
-      <keyword>#\etb</keyword>
-      <keyword>#\can</keyword>
-      <keyword>#\em</keyword>
-      <keyword>#\sub</keyword>
-      <keyword>#\esc</keyword>
-      <keyword>#\fs</keyword>
-      <keyword>#\gs</keyword>
-      <keyword>#\rs</keyword>
-      <keyword>#\us</keyword>
-      <keyword>#\space</keyword>
-      <keyword>#\sp</keyword>
-      <keyword>#\newline</keyword>
-      <keyword>#\nl</keyword>
-      <keyword>#\tab</keyword>
-      <keyword>#\ht</keyword>
-      <keyword>#\backspace</keyword>
-      <keyword>#\bs</keyword>
-      <keyword>#\return</keyword>
-      <keyword>#\cr</keyword>
-      <keyword>#\page</keyword>
-      <keyword>#\np</keyword>
-      <keyword>#\null</keyword>
-      <keyword>#\nul</keyword>
+      <keyword>#\\nul</keyword>
+      <keyword>#\\soh</keyword>
+      <keyword>#\\stx</keyword>
+      <keyword>#\\etx</keyword>
+      <keyword>#\\eot</keyword>
+      <keyword>#\\enq</keyword>
+      <keyword>#\\ack</keyword>
+      <keyword>#\\bel</keyword>
+      <keyword>#\\bs</keyword>
+      <keyword>#\\ht</keyword>
+      <keyword>#\\nl</keyword>
+      <keyword>#\\vt</keyword>
+      <keyword>#\\np</keyword>
+      <keyword>#\\cr</keyword>
+      <keyword>#\\so</keyword>
+      <keyword>#\\si</keyword>
+      <keyword>#\\dle</keyword>
+      <keyword>#\\dc1</keyword>
+      <keyword>#\\dc2</keyword>
+      <keyword>#\\dc3</keyword>
+      <keyword>#\\dc4</keyword>
+      <keyword>#\\nak</keyword>
+      <keyword>#\\syn</keyword>
+      <keyword>#\\etb</keyword>
+      <keyword>#\\can</keyword>
+      <keyword>#\\em</keyword>
+      <keyword>#\\sub</keyword>
+      <keyword>#\\esc</keyword>
+      <keyword>#\\fs</keyword>
+      <keyword>#\\gs</keyword>
+      <keyword>#\\rs</keyword>
+      <keyword>#\\us</keyword>
+      <keyword>#\\space</keyword>
+      <keyword>#\\sp</keyword>
+      <keyword>#\\newline</keyword>
+      <keyword>#\\nl</keyword>
+      <keyword>#\\tab</keyword>
+      <keyword>#\\ht</keyword>
+      <keyword>#\\backspace</keyword>
+      <keyword>#\\bs</keyword>
+      <keyword>#\\return</keyword>
+      <keyword>#\\cr</keyword>
+      <keyword>#\\page</keyword>
+      <keyword>#\\np</keyword>
+      <keyword>#\\null</keyword>
+      <keyword>#\\nul</keyword>
     </keyword-list>
     <keyword-list name="defines">
       <keyword>define-accessor</keyword>
       <keyword>define-class</keyword>
-      <keyword>defined?</keyword>
+      <keyword>defined\?</keyword>
       <keyword>define-generic</keyword>
       <keyword>define-macro</keyword>
       <keyword>define-method</keyword>
       <keyword>define-module</keyword>
       <keyword>define-private</keyword>
       <keyword>define-public</keyword>
-      <keyword>define*-public</keyword>
+      <keyword>define\*-public</keyword>
       <keyword>define-reader-ctor</keyword>
       <keyword>define-syntax</keyword>
       <keyword>define-syntax-macro</keyword>
-      <keyword>define*</keyword>
+      <keyword>define\*</keyword>
       <keyword>define</keyword>
-      <keyword>defmacro*-public</keyword>
-      <keyword>defmacro*</keyword>
+      <keyword>defmacro\*-public</keyword>
+      <keyword>defmacro\*</keyword>
       <keyword>defmacro</keyword>
     </keyword-list>
     <keyword-list name="keywords">
@@ -139,7 +139,7 @@
       <keyword>assv</keyword>
       <keyword>atan</keyword>
       <keyword>begin</keyword>
-      <keyword>boolean?</keyword>
+      <keyword>boolean\?</keyword>
       <keyword>break</keyword>
       <keyword>caaaar</keyword>
       <keyword>caaadr</keyword>
@@ -179,28 +179,28 @@
       <keyword>cddr</keyword>
       <keyword>cdr</keyword>
       <keyword>ceiling</keyword>
-      <keyword>char-alphabetic?</keyword>
-      <keyword>char-ci&gt;=?</keyword>
-      <keyword>char-ci&gt;?</keyword>
-      <keyword>char-ci=?</keyword>
-      <keyword>char-ci&lt;=?</keyword>
+      <keyword>char-alphabetic\?</keyword>
+      <keyword>char-ci&gt;=\?</keyword>
+      <keyword>char-ci&gt;\?</keyword>
+      <keyword>char-ci=\?</keyword>
+      <keyword>char-ci&lt;=\?</keyword>
       <keyword>char-downcase</keyword>
       <keyword>char-&gt;integer</keyword>
-      <keyword>char&gt;=?</keyword>
-      <keyword>char&gt;?</keyword>
-      <keyword>char=?</keyword>
-      <keyword>char?</keyword>
-      <keyword>char-lower-case?</keyword>
-      <keyword>char&lt;?c</keyword>
-      <keyword>char&lt;=?</keyword>
-      <keyword>char-numeric?</keyword>
-      <keyword>char-ready?</keyword>
+      <keyword>char&gt;=\?</keyword>
+      <keyword>char&gt;\?</keyword>
+      <keyword>char=\?</keyword>
+      <keyword>char\?</keyword>
+      <keyword>char-lower-case\?</keyword>
+      <keyword>char&lt;\?c</keyword>
+      <keyword>char&lt;=\?</keyword>
+      <keyword>char-numeric\?</keyword>
+      <keyword>char-ready\?</keyword>
       <keyword>char-upcase</keyword>
-      <keyword>char-upper-case?</keyword>
-      <keyword>char-whitespace?</keyword>
+      <keyword>char-upper-case\?</keyword>
+      <keyword>char-whitespace\?</keyword>
       <keyword>close-input-port</keyword>
       <keyword>close-output-port</keyword>
-      <keyword>complex?</keyword>
+      <keyword>complex\?</keyword>
       <keyword>cond</keyword>
       <keyword>cons</keyword>
       <keyword>continue</keyword>
@@ -212,40 +212,40 @@
       <keyword>do</keyword>
       <keyword>dynamic-wind</keyword>
       <keyword>else</keyword>
-      <keyword>eof-object?</keyword>
-      <keyword>eq?</keyword>
-      <keyword>equal?</keyword>
-      <keyword>eqv?</keyword>
+      <keyword>eof-object\?</keyword>
+      <keyword>eq\?</keyword>
+      <keyword>equal\?</keyword>
+      <keyword>eqv\?</keyword>
       <keyword>eval</keyword>
-      <keyword>even?</keyword>
+      <keyword>even\?</keyword>
       <keyword>exact->inexact</keyword>
-      <keyword>exact?</keyword>
+      <keyword>exact\?</keyword>
       <keyword>exp</keyword>
       <keyword>expt</keyword>
       <keyword>floor</keyword>
       <keyword>force</keyword>
       <keyword>for-each</keyword>
       <keyword>gcd</keyword>
-      <keyword>har-ci&lt;?</keyword>
+      <keyword>har-ci&lt;\?</keyword>
       <keyword>if</keyword>
       <keyword>imag-part</keyword>
       <keyword>inexact-&gt;exact</keyword>
-      <keyword>inexact?</keyword>
-      <keyword>input-port?</keyword>
+      <keyword>inexact\?</keyword>
+      <keyword>input-port\?</keyword>
       <keyword>integer-&gt;char</keyword>
-      <keyword>integer?</keyword>
+      <keyword>integer\?</keyword>
       <keyword>interaction-environment</keyword>
       <keyword>lambda</keyword>
       <keyword>lcm</keyword>
       <keyword>length</keyword>
       <keyword>let</keyword>
-      <keyword>let*</keyword>
+      <keyword>let\*</keyword>
       <keyword>letrec</keyword>
       <keyword>letrec-syntax</keyword>
       <keyword>let-syntax</keyword>
       <keyword>list-&gt;string</keyword>
       <keyword>list</keyword>
-      <keyword>list?</keyword>
+      <keyword>list\?</keyword>
       <keyword>list-ref</keyword>
       <keyword>list-tail</keyword>
       <keyword>load</keyword>
@@ -261,30 +261,30 @@
       <keyword>memv</keyword>
       <keyword>min</keyword>
       <keyword>modulo</keyword>
-      <keyword>negative?</keyword>
+      <keyword>negative\?</keyword>
       <keyword>newline</keyword>
       <keyword>not</keyword>
       <keyword>null-environment</keyword>
-      <keyword>null?</keyword>
-      <keyword>number?</keyword>
+      <keyword>null\?</keyword>
+      <keyword>number\?</keyword>
       <keyword>number->string</keyword>
       <keyword>numerator</keyword>
-      <keyword>odd?</keyword>
+      <keyword>odd\?</keyword>
       <keyword>open-input-file</keyword>
       <keyword>open-output-file</keyword>
       <keyword>or</keyword>
-      <keyword>output-port?</keyword>
-      <keyword>pair?</keyword>
+      <keyword>output-port\?</keyword>
+      <keyword>pair\?</keyword>
       <keyword>peek-char</keyword>
-      <keyword>port?</keyword>
-      <keyword>positive?</keyword>
-      <keyword>procedure?</keyword>
+      <keyword>port\?</keyword>
+      <keyword>positive\?</keyword>
+      <keyword>procedure\?</keyword>
       <keyword>quotient</keyword>
-      <keyword>rational?</keyword>
+      <keyword>rational\?</keyword>
       <keyword>rationalize</keyword>
       <keyword>read-char</keyword>
       <keyword>read</keyword>
-      <keyword>real?</keyword>
+      <keyword>real\?</keyword>
       <keyword>real-part</keyword>
       <keyword>remainder</keyword>
       <keyword>reverse</keyword>
@@ -295,29 +295,29 @@
       <keyword>sin</keyword>
       <keyword>sqrt</keyword>
       <keyword>string-append</keyword>
-      <keyword>string-ci&gt;=?</keyword>
-      <keyword>string-ci&gt;?</keyword>
-      <keyword>string-ci=?</keyword>
-      <keyword>string-ci&lt;=?</keyword>
-      <keyword>string-ci&lt;?</keyword>
+      <keyword>string-ci&gt;=\?</keyword>
+      <keyword>string-ci&gt;\?</keyword>
+      <keyword>string-ci=\?</keyword>
+      <keyword>string-ci&lt;=\?</keyword>
+      <keyword>string-ci&lt;\?</keyword>
       <keyword>string-copy</keyword>
       <keyword>string-fill!</keyword>
-      <keyword>string&gt;=?</keyword>
-      <keyword>string&gt;?</keyword>
+      <keyword>string&gt;=\?</keyword>
+      <keyword>string&gt;\?</keyword>
       <keyword>string-&gt;list</keyword>
       <keyword>string-&gt;number</keyword>
       <keyword>string-&gt;symbol</keyword>
-      <keyword>string=?</keyword>
+      <keyword>string=\?</keyword>
       <keyword>string</keyword>
-      <keyword>string?</keyword>
+      <keyword>string\?</keyword>
       <keyword>string-length</keyword>
-      <keyword>string&lt;=?</keyword>
-      <keyword>string&lt;?</keyword>
+      <keyword>string&lt;=\?</keyword>
+      <keyword>string&lt;\?</keyword>
       <keyword>string-ref</keyword>
       <keyword>string-set!</keyword>
       <keyword>substring</keyword>
       <keyword>symbol-&gt;string</keyword>
-      <keyword>symbol?</keyword>
+      <keyword>symbol\?</keyword>
       <keyword>syntax-rules</keyword>
       <keyword>tan</keyword>
       <keyword>transcript-off</keyword>
@@ -327,7 +327,7 @@
       <keyword>vector-fill!</keyword>
       <keyword>vector-&gt;listlist->vector</keyword>
       <keyword>vector</keyword>
-      <keyword>vector?</keyword>
+      <keyword>vector\?</keyword>
       <keyword>vector-length</keyword>
       <keyword>vector-ref</keyword>
       <keyword>vector-set!</keyword>
@@ -336,7 +336,7 @@
       <keyword>with-output-to-file</keyword>
       <keyword>write-char</keyword>
       <keyword>write</keyword>
-      <keyword>zero?</keyword>
+      <keyword>zero\?</keyword>
     </keyword-list>
 
     <context name="Level0" style="Normal" eol-context="#stay">

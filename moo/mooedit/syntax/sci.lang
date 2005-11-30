@@ -43,7 +43,7 @@
       <keyword>%io</keyword>
       <keyword>%s</keyword>
       <keyword>%nan</keyword>
-      <keyword>$</keyword>
+      <keyword>\$</keyword>
       <keyword>%eps</keyword>
       <keyword>MSDOS</keyword>
     </keyword-list>

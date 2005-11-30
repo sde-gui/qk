@@ -23,7 +23,7 @@
       <keyword>select</keyword>
       <keyword>until</keyword>
       <keyword>while</keyword>
-      <keyword>.</keyword>
+      <keyword>\.</keyword>
       <keyword>elif</keyword>
       <keyword>then</keyword>
       <keyword>set</keyword>
@@ -31,7 +31,7 @@
 
     <keyword-list name="builtins">
       <keyword>:</keyword>
-      <keyword>.</keyword>
+      <keyword>\.</keyword>
       <keyword>source</keyword>
       <keyword>alias</keyword>
       <keyword>bg</keyword>
@@ -154,7 +154,7 @@
       <keyword>ls</keyword>
       <keyword>lsattr</keyword>
       <keyword>lsmod</keyword>
-      <keyword>lsmod.old</keyword>
+      <keyword>lsmod\.old</keyword>
       <keyword>mapscrn</keyword>
       <keyword>mesg</keyword>
       <keyword>mkdir</keyword>
@@ -242,7 +242,7 @@
       <keyword>basename</keyword>
       <keyword>bc</keyword>
       <keyword>bison</keyword>
-      <keyword>c++</keyword>
+      <keyword>c\+\+</keyword>
       <keyword>cal</keyword>
       <keyword>cat</keyword>
       <keyword>cc</keyword>
@@ -282,13 +282,13 @@
       <keyword>file</keyword>
       <keyword>find</keyword>
       <keyword>flex</keyword>
-      <keyword>flex++</keyword>
+      <keyword>flex\+\+</keyword>
       <keyword>fmt</keyword>
       <keyword>free</keyword>
       <keyword>ftp</keyword>
       <keyword>funzip</keyword>
       <keyword>fuser</keyword>
-      <keyword>g++</keyword>
+      <keyword>g\+\+</keyword>
       <keyword>gawk</keyword>
       <keyword>gc</keyword>
       <keyword>gcc</keyword>
