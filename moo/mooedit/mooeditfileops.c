@@ -25,7 +25,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include <glib/gstdio.h>
+
+#if GLIB_CHECK_VERSION(2,6,0)
+# include <glib/gstdio.h>
+#endif
 
 
 static MooEditLoader *default_loader = NULL;

@@ -50,7 +50,7 @@ font_calculate (MooTermFont *font)
     pango_layout_get_extents (layout, NULL, &logical);
 
     font->width = HOW_MANY (logical.width, strlen (CHARS));
-    font->width = PANGO_PIXELS (font->width);
+    font->width = PANGO_PIXELS ((int)font->width);
 
     iter = pango_layout_get_iter (layout);
     font->height = PANGO_PIXELS (logical.height);

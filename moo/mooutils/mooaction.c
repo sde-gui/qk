@@ -748,14 +748,16 @@ moo_action_create_tool_item_real (MooAction      *action,
                                   int             position,
                                   MooToolItemFlags flags)
 {
-#if GTK_MINOR_VERSION >= 4
+#if GTK_CHECK_VERSION(2,4,0)
     GtkToolItem *item = NULL;
 
     if (action->stock_id)
     {
+#if GTK_CHECK_VERSION(2,6,0)
         if (flags & MOO_TOOL_ITEM_MENU)
             item = gtk_menu_tool_button_new_from_stock (action->stock_id);
         else
+#endif
             item = gtk_tool_button_new_from_stock (action->stock_id);
     }
     else
@@ -773,9 +775,11 @@ moo_action_create_tool_item_real (MooAction      *action,
                 gtk_widget_show (icon);
         }
 
+#if GTK_CHECK_VERSION(2,6,0)
         if (flags & MOO_TOOL_ITEM_MENU)
             item = gtk_menu_tool_button_new (icon, action->label);
         else
+#endif
             item = gtk_tool_button_new (icon, action->label);
 
         gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (item), TRUE);
@@ -797,7 +801,7 @@ moo_action_create_tool_item_real (MooAction      *action,
     gtk_container_child_set (GTK_CONTAINER (toolbar), GTK_WIDGET (item),
                              "homogeneous", FALSE, NULL);
 
-#else /*  GTK_MINOR_VERSION < 4 */
+#else /*  !GTK_CHECK_VERSION(2,4,0) */
 
     GtkWidget *item = NULL;
 
@@ -838,7 +842,7 @@ moo_action_create_tool_item_real (MooAction      *action,
         gtk_button_set_use_underline (GTK_BUTTON (item), TRUE);
     }
 
-#endif /* GTK_MINOR_VERSION < 4 */
+#endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     moo_action_add_proxy (action, GTK_WIDGET (item));
 

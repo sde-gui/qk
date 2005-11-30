@@ -34,6 +34,7 @@
 #include <string.h>
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moocompat.h"
 
 
 #if 0

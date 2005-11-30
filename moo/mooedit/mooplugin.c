@@ -910,7 +910,9 @@ moo_plugin_init_builtin (void)
 {
 #ifndef __WIN32__
     moo_find_plugin_init ();
+#if GTK_CHECK_VERSION(2,6,0)
     moo_file_selector_plugin_init ();
+#endif
 #endif
     moo_active_strings_plugin_init ();
 }

@@ -7,24 +7,24 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts>
+      <part>kdevopenwith</part>
       <part>kdevabbrev</part>
+      <part>kdevctags2</part>
       <part>kdevclassview</part>
       <part>kdevsnippet</part>
-      <part>kdevctags2</part>
       <part>kdevdocumentation</part>
       <part>kdevdoxygen</part>
       <part>kdevfilegroups</part>
-      <part>kdevfilelist</part>
       <part>kdevfileview</part>
+      <part>kdevfilelist</part>
       <part>kdevdistpart</part>
-      <part>kdevopenwith</part>
       <part>kdevregexptest</part>
       <part>kdevscripting</part>
       <part>kdevtexttools</part>
     </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>optimized</useconfiguration>
+      <useconfiguration>gtk-2.4</useconfiguration>
     </general>
     <run>
       <mainprogram>./medit</mainprogram>
@@ -173,18 +173,18 @@
         <envvars/>
         <configargs>--enable-debug --enable-all-gcc-warnings=fatal</configargs>
         <builddir>build/gtk-2.4</builddir>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <cflags/>
-        <cxxflags/>
-        <f77flags/>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <cflags>-g3 -pg -O0</cflags>
+        <cxxflags></cxxflags>
+        <f77flags></f77flags>
       </gtk-2.4>
     </configurations>
     <make>
@@ -198,12 +198,12 @@
   </kdevautoproject>
   <kdevdebugger>
     <general>
-      <dbgshell/>
+      <dbgshell></dbgshell>
       <programargs>--g-fatal-warnings </programargs>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>
@@ -304,7 +304,7 @@
     </codecompletion>
     <references/>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>

@@ -1921,17 +1921,23 @@ create_tool_separator (MooUIXML       *xml,
 }
 
 
+#if GTK_CHECK_VERSION(2,6,0)
 #define IS_MENU_TOOL_BUTTON(wid) (GTK_IS_MENU_TOOL_BUTTON (wid) || \
                                   MOO_IS_MENU_TOOL_BUTTON (wid))
+#else
+#define IS_MENU_TOOL_BUTTON MOO_IS_MENU_TOOL_BUTTON
+#endif
 
 static void
 menu_tool_button_set_menu (GtkWidget *button,
                            GtkWidget *menu)
 {
-    if (GTK_IS_MENU_TOOL_BUTTON (button))
-        gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (button), menu);
-    else if (MOO_IS_MENU_TOOL_BUTTON (button))
+    if (MOO_IS_MENU_TOOL_BUTTON (button))
         moo_menu_tool_button_set_menu (MOO_MENU_TOOL_BUTTON (button), menu);
+#if GTK_CHECK_VERSION(2,6,0)
+    else if (GTK_IS_MENU_TOOL_BUTTON (button))
+        gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (button), menu);
+#endif
     else
         g_return_if_reached ();
 }
@@ -1940,10 +1946,12 @@ menu_tool_button_set_menu (GtkWidget *button,
 static GtkWidget*
 menu_tool_button_get_menu (GtkWidget *button)
 {
-    if (GTK_IS_MENU_TOOL_BUTTON (button))
-        return gtk_menu_tool_button_get_menu (GTK_MENU_TOOL_BUTTON (button));
-    else if (MOO_IS_MENU_TOOL_BUTTON (button))
+    if (MOO_IS_MENU_TOOL_BUTTON (button))
         return moo_menu_tool_button_get_menu (MOO_MENU_TOOL_BUTTON (button));
+#if GTK_CHECK_VERSION(2,6,0)
+    else if (GTK_IS_MENU_TOOL_BUTTON (button))
+        return gtk_menu_tool_button_get_menu (GTK_MENU_TOOL_BUTTON (button));
+#endif
     else
         g_return_val_if_reached (NULL);
 }

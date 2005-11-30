@@ -16,6 +16,7 @@
 #include "mooutils/moopaned.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>

@@ -110,7 +110,7 @@ struct _MooPlugin
     GObject parent;
 
     gboolean initialized;
-    GModule *module;
+    gpointer module;
 
     GQuark id_quark;
     MooPluginInfo *info;

@@ -16,6 +16,7 @@
 # include "config.h"
 #endif
 #include "mooutils/mooutils-python.h"
+#include "mooutils/moocompat.h"
 #ifdef MOO_USE_PYGTK
 # define NO_IMPORT_PYGOBJECT
 # include "pygobject.h"

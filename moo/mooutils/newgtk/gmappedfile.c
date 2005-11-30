@@ -38,8 +38,12 @@
 #endif
 
 #include <glib.h>
+#if GLIB_CHECK_VERSION(2,6,0)
 #include <glib/gstdio.h>
-#include "mooutils/newgtk/gmappedfile.h"
+#else
+#define g_open open
+#endif
+#include "mooutils/moocompat.h"
 
 #define P_(s) (s)
 #define _(s) (s)

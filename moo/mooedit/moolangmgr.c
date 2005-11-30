@@ -24,6 +24,7 @@
 #include "mooutils/xdgmime/xdgmime.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 
 

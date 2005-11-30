@@ -16,12 +16,16 @@
 #include "mooutils/moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moocompat.h"
 #include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <glib/gstdio.h>
 #include <gtk/gtk.h>
+
+#if GLIB_CHECK_VERSION(2,6,0)
+# include <glib/gstdio.h>
+#endif
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 

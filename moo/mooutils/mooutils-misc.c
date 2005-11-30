@@ -19,6 +19,7 @@
 #include <gtk/gtk.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

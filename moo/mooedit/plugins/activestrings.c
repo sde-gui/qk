@@ -20,8 +20,8 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/mootextview.h"
+#include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/eggregex.h"
 #include <string.h>
 

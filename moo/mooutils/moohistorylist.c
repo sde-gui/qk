@@ -13,12 +13,9 @@
  */
 
 #include MOO_MARSHALS_H
-#ifdef __MOO__
 #include "mooutils/moohistorylist.h"
 #include "mooutils/mooprefs.h"
-#else
-#include "moohistorylist.h"
-#endif
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

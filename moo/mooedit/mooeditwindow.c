@@ -25,6 +25,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 #include <gtk/gtk.h>
 

@@ -24,12 +24,6 @@
 #include "mooutils/newgtk/gmappedfile.h"
 #endif /* !GLIB_CHECK_VERSION(2,8,0) */
 
-#if !GLIB_CHECK_VERSION(2,6,0)
-#include "mooutils/newgtk/goption.h"
-/* TODO */
-#define gtk_get_option_group(whatever) (NULL)
-#endif /* !GLIB_CHECK_VERSION(2,6,0) */
-
 #if !GTK_CHECK_VERSION(2,4,0)
 #include "mooutils/newgtk/gtkfontbutton.h"
 #include "mooutils/newgtk/gtkcolorbutton.h"
@@ -121,23 +115,39 @@ typedef pid_t GPid;
 
 #if !GTK_CHECK_VERSION(2,6,0)
 
-void gtk_target_list_add_text_targets (GtkTargetList *list,
-                                       guint          info);
+void        gtk_target_list_add_text_targets    (GtkTargetList  *list,
+                                                 guint           info);
 
-char *gtk_accelerator_get_label (guint accelerator_key,
-                                 GdkModifierType accelerator_mods);
+char       *gtk_accelerator_get_label           (guint           accelerator_key,
+                                                 GdkModifierType accelerator_mods);
 
-GtkWidget *gtk_label_new_with_markup (const char *markup);
+GtkWidget  *gtk_label_new_with_markup           (const char     *markup);
+void        gtk_label_set_angle                 (GtkLabel       *label,
+                                                 gdouble         angle);
 
+void gtk_dialog_set_alternative_button_order (GtkDialog *dialog,
+                                              gint       first_response_id,
+                                              ...);
 
-#ifndef GTK_STOCK_EDIT
+void           gtk_drag_dest_add_text_targets  (GtkWidget    *widget);
+void           gtk_drag_dest_add_uri_targets   (GtkWidget    *widget);
+
+gboolean gtk_selection_data_set_uris (GtkSelectionData     *selection_data,
+                                      gchar               **uris);
+gchar  **gtk_selection_data_get_uris (GtkSelectionData     *selection_data);
+
 #define GTK_STOCK_EDIT      "gtk-edit"
-#endif
-#ifndef GTK_STOCK_ABOUT
 #define GTK_STOCK_ABOUT     "gtk-about"
-#endif
+#define GTK_STOCK_DIRECTORY "gtk-directory"
 
 #endif /* !GTK_CHECK_VERSION(2,6,0) */
+
+
+#if !GLIB_CHECK_VERSION(2,6,0)
+gchar *g_filename_display_basename (const gchar *filename);
+gchar *g_filename_display_name (const gchar *filename);
+guint  g_strv_length (gchar **str_array);
+#endif /* !GLIB_CHECK_VERSION(2,6,0) */
 
 
 #if !GTK_CHECK_VERSION(2,10,0)

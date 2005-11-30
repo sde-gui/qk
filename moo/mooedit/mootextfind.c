@@ -19,6 +19,7 @@
 #include "mooedit/mootextsearch.h"
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/mooentry.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 
 

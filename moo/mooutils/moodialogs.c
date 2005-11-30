@@ -15,6 +15,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 
 
 static void message_dialog (GtkWidget       *parent,

@@ -18,6 +18,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 
 int _medit_parse_options (const char *const program_name,

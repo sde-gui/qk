@@ -14,12 +14,18 @@
 #ifndef __MOO_EDIT_PLUGINS_H__
 #define __MOO_EDIT_PLUGINS_H__
 
+#include <gtk/gtkversion.h>
+
 G_BEGIN_DECLS
 
 
 #ifndef __WIN32__
 gboolean moo_find_plugin_init           (void);
+
+#if GTK_CHECK_VERSION(2,6,0)
 gboolean moo_file_selector_plugin_init  (void);
+#endif
+
 #endif
 
 gboolean moo_active_strings_plugin_init (void);
