@@ -673,3 +673,28 @@ _moo_term_line_remove_tag (MooTermLine    *line,
         }
     }
 }
+
+
+char*
+moo_term_line_get_text (MooTermLine    *line,
+                        guint           start,
+                        guint           len)
+{
+    GString *text;
+    guint i;
+
+    g_return_val_if_fail (line != NULL, NULL);
+
+    if (!len || start >= line->width)
+        return g_strdup ("");
+
+    text = g_string_new (NULL);
+
+    if (start + len > line->width)
+        len = line->width - start;
+
+    for (i = start; i < start + len; ++i)
+        g_string_append_unichar (text, _moo_term_line_get_char (line, i));
+
+    return g_string_free (text, FALSE);
+}

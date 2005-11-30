@@ -39,6 +39,10 @@ guint       moo_term_line_len           (MooTermLine    *line);
 gunichar    moo_term_line_get_char      (MooTermLine    *line,
                                          guint           index_);
 
+char       *moo_term_line_get_text      (MooTermLine    *line,
+                                         guint           index_,
+                                         guint           len);
+
 
 G_END_DECLS
 
