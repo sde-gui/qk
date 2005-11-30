@@ -176,8 +176,12 @@ gchar *egg_regex_try_eval_replacement (EggRegex          *regex,
 gboolean egg_regex_check_replacement (const gchar *replacement,
                                       gboolean    *has_references,
                                       GError     **error);
-gchar *egg_regex_escape_string  (const gchar            *string,
-                                 gint                    chars);
+
+gchar      *egg_regex_escape_string (const char *string,
+                                     gint        chars);
+gboolean    egg_regex_escape        (const char *string,
+                                     int         bytes,
+                                     GString    *dest);
 
 
 G_END_DECLS

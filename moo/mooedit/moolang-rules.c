@@ -776,37 +776,64 @@ moo_rule_keywords_new (GSList             *words,
                        const char         *style)
 {
     GSList *l;
-    GString *pattern;
-    MooRule *rule;
+    GString *pattern, *string;
+    MooRule *rule = NULL;
+    guint i;
 
     g_return_val_if_fail (words != NULL, NULL);
+
+    pattern = g_string_new ("\\b(");
+    string = g_string_new ("\\b(");
 
     for (l = words; l != NULL; l = l->next)
     {
         char *word = l->data;
-        g_return_val_if_fail (word && word[0], NULL);
-        g_return_val_if_fail (g_utf8_validate (word, -1, NULL), NULL);
-    }
+        guint wordlen;
 
-    pattern = g_string_new ("\\b(");
+        if (!word || !word[0])
+        {
+            g_warning ("%s: empty keyword", G_STRLOC);
+            goto out;
+        }
 
-    for (l = words; l != NULL; l = l->next)
-    {
-        char *s;
+        wordlen = strlen (word);
+
+        if (!g_utf8_validate (word, wordlen, NULL))
+        {
+            g_warning ("%s: invalid utf8 in '%s'", G_STRLOC, word);
+            goto out;
+        }
 
         if (l != words)
-            g_string_append_c (pattern, '|');
+            g_string_append_c (string, 0);
 
-        s = egg_regex_escape_string (l->data, -1);
-        g_string_append (pattern, s);
-        g_free (s);
+        g_string_append_len (string, word, wordlen);
     }
 
+    if (egg_regex_escape (string->str + 3, string->len - 3, pattern))
+    {
+        g_string_free (string, TRUE);
+    }
+    else
+    {
+        g_string_free (pattern, TRUE);
+        pattern = string;
+    }
+
+    string = NULL;
     g_string_append (pattern, ")\\b");
+
+    for (i = 3; i < pattern->len; ++i)
+        if (!pattern->str[i])
+            pattern->str[i] = '|';
 
     rule = moo_rule_regex_new (pattern->str, TRUE, 0, 0, flags, style);
 
-    g_string_free (pattern, TRUE);
+out:
+    if (pattern)
+        g_string_free (pattern, TRUE);
+    if (string)
+        g_string_free (string, TRUE);
     return rule;
 }
 
