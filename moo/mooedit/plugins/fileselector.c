@@ -668,10 +668,10 @@ drop_untitled (MooFileSelector *filesel,
                MooEdit        *doc,
                const char     *destdir,
                GtkWidget      *widget,
-               GdkDragContext *context,
+               G_GNUC_UNUSED GdkDragContext *context,
                int             x,
                int             y,
-               guint           time)
+               G_GNUC_UNUSED guint time)
 {
     char *name;
     gboolean result;

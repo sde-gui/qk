@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   mooedit.c
+ *   mooindenter.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,7 +12,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#define MOOINDENTER_COMPILATION
 #include "mooedit/mooindenter.h"
 #include "mooedit/mooedit.h"
 #include "mooutils/moomarshals.h"

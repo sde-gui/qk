@@ -29,7 +29,6 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooIndenter         MooIndenter;
-typedef struct _MooIndenterPrivate  MooIndenterPrivate;
 typedef struct _MooIndenterClass    MooIndenterClass;
 
 struct _MooIndenter

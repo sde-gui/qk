@@ -147,10 +147,6 @@ static gboolean notebook_drag_drop      (GtkWidget          *widget,
                                          int                 y,
                                          guint               time,
                                          MooEditWindow      *window);
-static void     notebook_drag_leave     (GtkWidget          *widget,
-                                         GdkDragContext     *context,
-                                         guint               time,
-                                         MooEditWindow      *window);
 static gboolean notebook_drag_motion    (GtkWidget          *widget,
                                          GdkDragContext     *context,
                                          int                 x,
@@ -931,8 +927,6 @@ setup_notebook (MooEditWindow *window)
     gtk_drag_dest_add_text_targets (GTK_WIDGET (window->priv->notebook));
     g_signal_connect (window->priv->notebook, "drag-motion",
                       G_CALLBACK (notebook_drag_motion), window);
-    g_signal_connect (window->priv->notebook, "drag-leave",
-                      G_CALLBACK (notebook_drag_leave), window);
     g_signal_connect (window->priv->notebook, "drag-drop",
                       G_CALLBACK (notebook_drag_drop), window);
     g_signal_connect (window->priv->notebook, "drag-data-received",
@@ -2227,10 +2221,10 @@ moo_edit_window_job_finished (MooEditWindow  *window,
 static gboolean
 notebook_drag_motion (GtkWidget          *widget,
                       GdkDragContext     *context,
-                      int                 x,
-                      int                 y,
+                      G_GNUC_UNUSED int   x,
+                      G_GNUC_UNUSED int   y,
                       guint               time,
-                      MooEditWindow      *window)
+                      G_GNUC_UNUSED MooEditWindow *window)
 {
     GdkAtom target;
 
@@ -2247,22 +2241,13 @@ notebook_drag_motion (GtkWidget          *widget,
 }
 
 
-static void
-notebook_drag_leave (GtkWidget          *widget,
-                     GdkDragContext     *context,
-                     guint               time,
-                     MooEditWindow      *window)
-{
-}
-
-
 static gboolean
 notebook_drag_drop (GtkWidget          *widget,
                     GdkDragContext     *context,
-                    int                 x,
-                    int                 y,
+                    G_GNUC_UNUSED int   x,
+                    G_GNUC_UNUSED int   y,
                     guint               time,
-                    MooEditWindow      *window)
+                    G_GNUC_UNUSED MooEditWindow *window)
 {
     GdkAtom target;
 
@@ -2287,8 +2272,8 @@ notebook_drag_drop (GtkWidget          *widget,
 static void
 notebook_drag_data_recv (GtkWidget          *widget,
                          GdkDragContext     *context,
-                         int                 x,
-                         int                 y,
+                         G_GNUC_UNUSED int   x,
+                         G_GNUC_UNUSED int   y,
                          GtkSelectionData   *data,
                          guint               info,
                          guint               time,
