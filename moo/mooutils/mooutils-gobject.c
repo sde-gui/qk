@@ -1877,3 +1877,288 @@ moo_bind_signal (gpointer            target,
 
     return watch->parent.id;
 }
+
+
+
+/*****************************************************************************/
+/* Data store
+ */
+
+struct _MooData
+{
+    GHashTable *hash;
+    guint ref_count;
+    GHashFunc hash_func;
+    GEqualFunc key_equal_func;
+    GDestroyNotify key_destroy_func;
+};
+
+
+GType
+moo_ptr_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooPtr",
+                                             (GBoxedCopyFunc) moo_ptr_ref,
+                                             (GBoxedFreeFunc) moo_ptr_unref);
+
+    return type;
+}
+
+
+MooPtr*
+moo_ptr_new (gpointer        data,
+             GDestroyNotify  free_func)
+{
+    MooPtr *ptr;
+
+    g_return_val_if_fail (data != NULL, NULL);
+
+    ptr = g_new (MooPtr, 1);
+
+    ptr->data = data;
+    ptr->free_func = free_func;
+    ptr->ref_count = 1;
+
+    return ptr;
+}
+
+
+MooPtr *
+moo_ptr_ref (MooPtr *ptr)
+{
+    if (ptr)
+        ptr->ref_count++;
+    return ptr;
+}
+
+
+void
+moo_ptr_unref (MooPtr *ptr)
+{
+    if (ptr && !--(ptr->ref_count))
+    {
+        if (ptr->free_func)
+            ptr->free_func (ptr->data);
+        g_free (ptr);
+    }
+}
+
+
+GType
+moo_data_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooData",
+                                             (GBoxedCopyFunc) moo_data_ref,
+                                             (GBoxedFreeFunc) moo_data_unref);
+
+    return type;
+}
+
+
+static void
+free_gvalue (GValue *val)
+{
+    if (val)
+    {
+        g_value_unset (val);
+        g_free (val);
+    }
+}
+
+
+static GValue *
+copy_gvalue (const GValue *val)
+{
+    GValue *copy;
+
+    g_return_val_if_fail (G_IS_VALUE (val), NULL);
+
+    copy = g_new (GValue, 1);
+    copy->g_type = 0;
+    g_value_init (copy, G_VALUE_TYPE (val));
+    g_value_copy (val, copy);
+
+    return copy;
+}
+
+
+MooData *
+moo_data_new (GHashFunc       hash_func,
+              GEqualFunc      key_equal_func,
+              GDestroyNotify  key_destroy_func)
+{
+    MooData *data;
+
+    g_return_val_if_fail (hash_func != NULL, NULL);
+    g_return_val_if_fail (key_equal_func != NULL, NULL);
+
+    data = g_new0 (MooData, 1);
+
+    data->hash = g_hash_table_new_full (hash_func, key_equal_func,
+                                        key_destroy_func,
+                                        (GDestroyNotify) free_gvalue);
+    data->ref_count = 1;
+    data->hash_func = hash_func;
+    data->key_equal_func = key_equal_func;
+    data->key_destroy_func = key_destroy_func;
+
+    return data;
+}
+
+
+MooData *
+moo_data_ref (MooData *data)
+{
+    if (data)
+        data->ref_count++;
+    return data;
+}
+
+
+void
+moo_data_unref (MooData *data)
+{
+    if (data && !--(data->ref_count))
+    {
+        g_hash_table_destroy (data->hash);
+        g_free (data);
+    }
+}
+
+
+void
+moo_data_insert_value (MooData        *data,
+                       gpointer        key,
+                       const GValue   *value)
+{
+    g_return_if_fail (data != NULL);
+    g_return_if_fail (G_IS_VALUE (value));
+    g_hash_table_insert (data->hash, key, copy_gvalue (value));
+}
+
+
+void
+moo_data_insert_ptr (MooData        *data,
+                     gpointer        key,
+                     gpointer        value,
+                     GDestroyNotify  destroy)
+{
+    MooPtr *ptr;
+    GValue gval;
+
+    g_return_if_fail (data != NULL);
+    g_return_if_fail (value != NULL);
+
+    ptr = moo_ptr_new (value, destroy);
+    gval.g_type = 0;
+    g_value_init (&gval, MOO_TYPE_PTR);
+    g_value_set_boxed (&gval, ptr);
+
+    moo_data_insert_value (data, key, &gval);
+
+    g_value_unset (&gval);
+    moo_ptr_unref (ptr);
+}
+
+
+void
+moo_data_remove (MooData  *data,
+                 gpointer  key)
+{
+    g_return_if_fail (data != NULL);
+    g_hash_table_remove (data->hash, key);
+}
+
+
+void
+moo_data_clear (MooData *data)
+{
+    g_return_if_fail (data != NULL);
+
+    g_hash_table_destroy (data->hash);
+
+    data->hash = g_hash_table_new_full (data->hash_func,
+                                        data->key_equal_func,
+                                        data->key_destroy_func,
+                                        (GDestroyNotify) free_gvalue);
+}
+
+
+guint
+moo_data_size (MooData *data)
+{
+    g_return_val_if_fail (data != NULL, 0);
+    return g_hash_table_size (data->hash);
+}
+
+
+gboolean
+moo_data_has_key (MooData  *data,
+                  gpointer  key)
+{
+    g_return_val_if_fail (data != NULL, FALSE);
+    return g_hash_table_lookup (data->hash, key) != NULL;
+}
+
+
+GType
+moo_data_get_value_type (MooData  *data,
+                         gpointer  key)
+{
+    GValue *value;
+    g_return_val_if_fail (data != NULL, 0);
+    value = g_hash_table_lookup (data->hash, key);
+    return value ? G_VALUE_TYPE (value) : G_TYPE_NONE;
+}
+
+
+gboolean
+moo_data_get_value (MooData        *data,
+                    gpointer        key,
+                    GValue         *dest)
+{
+    GValue *value;
+
+    g_return_val_if_fail (data != NULL, FALSE);
+    g_return_val_if_fail (!dest || dest->g_type == 0, FALSE);
+
+    value = g_hash_table_lookup (data->hash, key);
+
+    if (value && dest)
+    {
+        g_value_init (dest, G_VALUE_TYPE (value));
+        g_value_copy (value, dest);
+    }
+
+    return value != NULL;
+}
+
+
+gpointer
+moo_data_get_ptr (MooData  *data,
+                  gpointer  key)
+{
+    MooPtr *ptr;
+    GValue *value;
+
+    g_return_val_if_fail (data != NULL, NULL);
+
+    value = g_hash_table_lookup (data->hash, key);
+
+    if (value)
+    {
+        g_return_val_if_fail (G_VALUE_TYPE (value) == MOO_TYPE_PTR, NULL);
+        ptr = g_value_get_boxed (value);
+        return ptr->data;
+    }
+    else
+    {
+        return NULL;
+    }
+}

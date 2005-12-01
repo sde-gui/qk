@@ -248,6 +248,67 @@ void        moo_watch_add_property  (guint               watch_id,
 gboolean    moo_watch_remove        (guint               watch_id);
 
 
+/*****************************************************************************/
+/* Data store
+ */
+
+#define MOO_TYPE_PTR    (moo_ptr_get_type ())
+#define MOO_TYPE_DATA   (moo_data_get_type ())
+
+typedef struct _MooPtr MooPtr;
+typedef struct _MooData MooData;
+
+
+struct _MooPtr {
+    guint ref_count;
+    gpointer data;
+    GDestroyNotify free_func;
+};
+
+GType    moo_ptr_get_type           (void) G_GNUC_CONST;
+GType    moo_data_get_type          (void) G_GNUC_CONST;
+
+/* There are no ref-counted NULL pointers! */
+MooPtr  *moo_ptr_new                (gpointer        data,
+                                     GDestroyNotify  free_func);
+MooPtr  *moo_ptr_ref                (MooPtr         *ptr);
+void     moo_ptr_unref              (MooPtr         *ptr);
+
+MooData *moo_data_new               (GHashFunc       hash_func,
+                                     GEqualFunc      key_equal_func,
+                                     GDestroyNotify  key_destroy_func);
+
+/* these accept NULL */
+MooData *moo_data_ref               (MooData        *data);
+void     moo_data_unref             (MooData        *data);
+#define  moo_data_destroy  moo_data_unref
+
+void     moo_data_insert_value      (MooData        *data,
+                                     gpointer        key,
+                                     const GValue   *value);
+void     moo_data_insert_ptr        (MooData        *data,
+                                     gpointer        key,
+                                     gpointer        value,
+                                     GDestroyNotify  destroy);
+
+void     moo_data_remove            (MooData        *data,
+                                     gpointer        key);
+void     moo_data_clear             (MooData        *data);
+guint    moo_data_size              (MooData        *data);
+
+gboolean moo_data_has_key           (MooData        *data,
+                                     gpointer        key);
+GType    moo_data_get_value_type    (MooData        *data,
+                                     gpointer        key);
+
+/* dest must not be initialized */
+gboolean moo_data_get_value         (MooData        *data,
+                                     gpointer        key,
+                                     GValue         *dest);
+gpointer moo_data_get_ptr           (MooData        *data,
+                                     gpointer        key);
+
+
 G_END_DECLS
 
 #endif /* __MOO_UTILS_GOBJECT_H__ */
