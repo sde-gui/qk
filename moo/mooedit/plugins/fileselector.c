@@ -15,8 +15,6 @@
 #include "config.h"
 #endif
 
-#include <gmodule.h>
-#include <gtk/gtk.h>
 #include "mooedit/mooplugin-macro.h"
 #include "mooutils/moofileview/moofileview.h"
 #include "mooutils/moofileview/moobookmarkmgr.h"
@@ -28,6 +26,9 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
 #include <string.h>
+#include <gmodule.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #ifndef MOO_VERSION
 #define MOO_VERSION NULL
@@ -548,9 +549,7 @@ parent:
 static char *
 save_as_dialog (GtkWidget   *parent,
                 const char  *dirname,
-                const char  *start_name,
-                int          x,
-                int          y)
+                const char  *start_name)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *button;
@@ -669,16 +668,15 @@ drop_untitled (MooFileSelector *filesel,
                const char     *destdir,
                GtkWidget      *widget,
                G_GNUC_UNUSED GdkDragContext *context,
-               int             x,
-               int             y,
+               G_GNUC_UNUSED int             x,
+               G_GNUC_UNUSED int             y,
                G_GNUC_UNUSED guint time)
 {
     char *name;
     gboolean result;
 
     name = save_as_dialog (widget, destdir,
-                           moo_edit_get_display_basename (doc),
-                           x, y);
+                           moo_edit_get_display_basename (doc));
 
     if (!name)
         return FALSE;
@@ -785,10 +783,12 @@ drop_item_activated (GObject         *item,
     gpointer data;
     MooEdit *doc;
     char *destdir;
+    gboolean alternate;
 
     data = g_object_get_data (item, "moo-file-selector-drop-action");
     doc = g_object_get_data (item, "moo-file-selector-drop-doc");
     destdir = g_object_get_data (item, "moo-file-selector-drop-destdir");
+    alternate = GPOINTER_TO_INT (g_object_get_data (item, "moo-menu-item-alternate"));
     g_return_if_fail (doc != NULL && destdir != NULL);
 
     action = GPOINTER_TO_INT (data);
@@ -807,6 +807,145 @@ drop_item_activated (GObject         *item,
         default:
             g_return_if_reached ();
     }
+}
+
+
+static GtkWidget *
+create_menu_item (MooFileSelector *filesel,
+                  MooEdit         *doc,
+                  const char      *destdir,
+                  const char      *stock_icon,
+                  const char      *label,
+                  const char      *alternate_label,
+                  const char      *accel_label,
+                  DropDocAction    action)
+{
+    GtkWidget *item;
+
+    item = gtk_image_menu_item_new_with_label (label);
+
+    if (stock_icon)
+    {
+        GtkWidget *icon = gtk_image_new_from_stock (stock_icon, GTK_ICON_SIZE_MENU);
+        gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), icon);
+    }
+
+    g_object_set_data_full (G_OBJECT (item), "moo-menu-item-label",
+                            g_strdup (label), g_free);
+    g_object_set_data_full (G_OBJECT (item), "moo-menu-item-alternate-label",
+                            g_strdup (alternate_label), g_free);
+
+    g_object_set_data_full (G_OBJECT (item), "moo-file-selector-drop-doc",
+                            g_object_ref (doc), g_object_unref);
+    g_object_set_data_full (G_OBJECT (item), "moo-file-selector-drop-destdir",
+                            g_strdup (destdir), g_free);
+    g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-action",
+                       GINT_TO_POINTER (action));
+
+    g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), filesel);
+    gtk_widget_show (item);
+    moo_menu_item_set_accel_label (item, accel_label);
+
+    return item;
+}
+
+static gboolean
+menu_key_event (GtkWidget   *menu,
+                GdkEventKey *event)
+{
+    GdkModifierType mask;
+    gboolean alternate;
+    GSList *items, *l;
+
+    switch (event->keyval)
+    {
+        case GDK_Shift_L:
+        case GDK_Shift_R:
+        case GDK_Control_L:
+        case GDK_Control_R:
+            break;
+
+        default:
+            return FALSE;
+    }
+
+    mask = moo_get_modifiers (menu);
+    alternate = (mask & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) != 0;
+
+    items = g_object_get_data (G_OBJECT (menu), "moo-menu-items");
+
+    for (l = items; l != NULL; l = l->next)
+    {
+        GtkWidget *item = l->data;
+        const char *label;
+
+        if (alternate)
+            label = g_object_get_data (G_OBJECT (item), "moo-menu-item-alternate-label");
+        else
+            label = g_object_get_data (G_OBJECT (item), "moo-menu-item-label");
+
+        g_object_set_data (G_OBJECT (item), "moo-menu-item-alternate",
+                           GINT_TO_POINTER (alternate));
+        moo_menu_item_set_label (item, label, FALSE);
+    }
+
+    return FALSE;
+}
+
+static GtkWidget *
+create_drop_doc_menu (MooFileSelector *filesel,
+                      MooEdit         *doc,
+                      const char      *destdir)
+{
+    GtkWidget *menu, *item;
+    GSList *items = NULL;
+
+    menu = gtk_menu_new ();
+    gtk_object_sink (g_object_ref (menu));
+    g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
+    g_signal_connect (menu, "key-press-event", G_CALLBACK (menu_key_event), NULL);
+    g_signal_connect (menu, "key-release-event", G_CALLBACK (menu_key_event), NULL);
+
+    item = create_menu_item (filesel, doc, destdir,
+                             MOO_STOCK_FILE_MOVE,
+                             "Move Here",
+                             "Move/Rename...",
+                             "Shift",
+                             DROP_DOC_MOVE);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    items = g_slist_prepend (items, item);
+
+    item = create_menu_item (filesel, doc, destdir,
+                             MOO_STOCK_FILE_SAVE_AS,
+                             "Save Here",
+                             "Save As...",
+                             "Control",
+                             DROP_DOC_SAVE_AS);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    items = g_slist_prepend (items, item);
+
+    item = create_menu_item (filesel, doc, destdir,
+                             MOO_STOCK_FILE_SAVE_COPY,
+                             "Save Copy",
+                             "Save Copy As...",
+                             "  Control+Shift",
+                             DROP_DOC_SAVE_COPY);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    items = g_slist_prepend (items, item);
+
+    g_object_set_data_full (G_OBJECT (menu), "moo-menu-items",
+                            items, (GDestroyNotify) g_slist_free);
+
+    item = gtk_separator_menu_item_new ();
+    gtk_widget_show (item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
+    gtk_widget_show (item);
+    moo_menu_item_set_accel_label (item, "Escape");
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+    return menu;
 }
 
 
@@ -851,45 +990,9 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
 
     if (action == DROP_DOC_ASK)
     {
-        GtkWidget *menu, *item;
-        char *dir_copy = g_strdup (destdir);
-
-        menu = gtk_menu_new ();
-        gtk_object_sink (g_object_ref (menu));
-        g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
-        g_object_set_data_full (G_OBJECT (menu), "moo-file-selector-drop-doc",
-                                g_object_ref (doc), g_object_unref);
-        g_object_set_data_full (G_OBJECT (menu), "moo-file-selector-drop-destdir",
-                                dir_copy, g_free);
-
-#define CREATE_IT(stock,action,accel_label)                                             \
-        item = gtk_image_menu_item_new_from_stock (stock, NULL);                        \
-        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-doc", doc);         \
-        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-destdir", dir_copy);\
-        g_object_set_data (G_OBJECT (item), "moo-file-selector-drop-action",            \
-                           GINT_TO_POINTER (action));                                   \
-        g_signal_connect (item, "activate", G_CALLBACK (drop_item_activated), filesel); \
-        gtk_widget_show (item);                                                         \
-        moo_menu_item_set_accel_label (item, accel_label);                              \
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-        CREATE_IT (MOO_STOCK_FILE_MOVE, DROP_DOC_MOVE, "Shift");
-        CREATE_IT (MOO_STOCK_FILE_SAVE_AS, DROP_DOC_SAVE_AS, "Control");
-        CREATE_IT (MOO_STOCK_FILE_SAVE_COPY, DROP_DOC_SAVE_COPY, "Control+Shift");
-#undef CREATE_IT
-
-        item = gtk_separator_menu_item_new ();
-        gtk_widget_show (item);
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
-        item = gtk_image_menu_item_new_from_stock (GTK_STOCK_CANCEL, NULL);
-        gtk_widget_show (item);
-        moo_menu_item_set_accel_label (item, "Escape");
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
+        GtkWidget *menu = create_drop_doc_menu (filesel, doc, destdir);
         moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, TRUE, FALSE, time);
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
-
         return;
     }
 
