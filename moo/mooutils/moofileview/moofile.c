@@ -656,7 +656,12 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
             !(file->flags & MOO_FILE_HAS_MIME_TYPE))
         {
             char *path = FILE_PATH (folder, file);
-            file->mime_type = xdg_mime_get_mime_type_for_file (path);
+
+            if (file->flags & MOO_FILE_HAS_STAT)
+                file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
+            else
+                file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+
             file->flags |= MOO_FILE_HAS_MIME_TYPE;
             file->flags |= MOO_FILE_HAS_ICON;
             file->icon = get_icon (file, folder->priv->path);
@@ -912,7 +917,12 @@ static void file_created    (MooFolder      *folder,
         !(file->flags & MOO_FILE_HAS_MIME_TYPE))
     {
         char *path = FILE_PATH (folder, file);
-        file->mime_type = xdg_mime_get_mime_type_for_file (path);
+
+        if (file->flags & MOO_FILE_HAS_STAT)
+            file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
+        else
+            file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+
         file->flags |= MOO_FILE_HAS_MIME_TYPE;
         file->flags |= MOO_FILE_HAS_ICON;
         file->icon = get_icon (file, folder->priv->path);
@@ -1037,7 +1047,12 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
         !(file->flags & MOO_FILE_HAS_MIME_TYPE))
     {
         char *path = FILE_PATH (folder, file);
-        file->mime_type = xdg_mime_get_mime_type_for_file (path);
+
+        if (file->flags & MOO_FILE_HAS_STAT)
+            file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
+        else
+            file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+
         file->flags |= MOO_FILE_HAS_MIME_TYPE;
         file->flags |= MOO_FILE_HAS_ICON;
         file->icon = get_icon (file, folder->priv->path);
@@ -1888,7 +1903,7 @@ render_icon_for_path (const char     *path,
 
     if (path)
     {
-        mime_type = xdg_mime_get_mime_type_for_file (path);
+        mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
 
         if (mime_type != xdg_mime_type_unknown)
         {
