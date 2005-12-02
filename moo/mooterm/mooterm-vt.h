@@ -83,7 +83,9 @@ enum {
                         is at the right border of the page appear at the beginning of the next line. Any
                         text on the page scrolls up if the cursor is at the end of the scrolling region.
                         If the DECAWM function is reset, then graphic characters received when the cursor
-                        is at the right border of the page replace characters already on the page.  */
+                        is at the right border of the page replace characters already on the page.
+                        NOTE: Regardless of this selection, the tab character never moves the cursor
+                        to the next line. */
     MODE_DECTCEM,   /*  Text Cursor Enable Mode
                         This control function makes the cursor visible or invisible.
                         Set: makes the cursor visible.
