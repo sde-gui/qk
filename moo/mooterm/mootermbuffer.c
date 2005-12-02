@@ -553,6 +553,8 @@ _moo_term_buffer_cursor_move (MooTermBuffer  *buf,
     cursor_col += cols;
     cursor_row += rows;
 
+    /* XXX MODE_REVERSE_WRAPAROUND */
+
     if (cursor_row < 0)
         cursor_row = 0;
     else if (cursor_row >= height)
@@ -658,7 +660,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
     {
         buf->priv->cursor_col--;
 
-        if (buf_get_mode (MODE_DECAWM))
+        if (c != '\t' && buf_get_mode (MODE_DECAWM))
         {
             _moo_term_line_set_wrapped (line);
             _moo_term_buffer_new_line (buf);
