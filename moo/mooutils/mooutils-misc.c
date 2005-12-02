@@ -1083,3 +1083,23 @@ moo_menu_item_set_accel_label (GtkWidget      *menu_item,
 
     gtk_widget_queue_resize (accel_label);
 }
+
+
+void
+moo_menu_item_set_label (GtkWidget      *item,
+                         const char     *text,
+                         gboolean        mnemonic)
+{
+    GtkWidget *label;
+
+    g_return_if_fail (GTK_IS_MENU_ITEM (item));
+    g_return_if_fail (text != NULL);
+
+    label = gtk_bin_get_child (GTK_BIN (item));
+    g_return_if_fail (GTK_IS_LABEL (label));
+
+    if (mnemonic)
+        gtk_label_set_text_with_mnemonic (GTK_LABEL (label), text);
+    else
+        gtk_label_set_text (GTK_LABEL (label), text);
+}

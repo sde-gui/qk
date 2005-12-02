@@ -72,6 +72,9 @@ GdkModifierType moo_get_modifiers           (GtkWidget      *widget);
 
 void        moo_menu_item_set_accel_label   (GtkWidget      *menu_item,
                                              const char     *label);
+void        moo_menu_item_set_label         (GtkWidget      *menu_item,
+                                             const char     *label,
+                                             gboolean        mnemonic);
 
 
 G_END_DECLS
