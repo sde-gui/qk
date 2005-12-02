@@ -775,7 +775,7 @@ class GObjectWrapper(Wrapper):
                       constructor.deprecated
                 print >> out, '        return -1;'
                 print >> out
-            print >> out, "    if (!PyArg_ParseTupleAndKeywords(args, kwargs, ",
+            print >> out, "    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*)",
             template = '"'
             if mandatory_arguments:
                 template += "O"*len(mandatory_arguments)

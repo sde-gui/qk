@@ -843,6 +843,7 @@ moo_app_get_plugin_dirs (MooApp *app)
 #ifdef __WIN32__
 
     const char *data_dir;
+    const char *app_dir = moo_app_get_application_dir (app);
 
     if (app_dir[0])
         data_dir = app_dir;

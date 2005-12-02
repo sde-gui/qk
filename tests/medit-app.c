@@ -15,6 +15,7 @@
 #include "config.h"
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
+#include <mooutils/mooutils-misc.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

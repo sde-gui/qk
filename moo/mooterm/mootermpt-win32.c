@@ -735,9 +735,8 @@ run_in_helper (const char *cmd,
     return TRUE;
 
     /* cleanup on error */
-    g_assert_not_reached();
 error:
-        _dup2(my_stdin, 0);
+    _dup2(my_stdin, 0);
     _dup2(my_stdout, 1);
     close (helper_in[0]);
     close (helper_in[1]);

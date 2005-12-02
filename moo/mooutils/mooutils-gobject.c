@@ -1798,7 +1798,6 @@ check_signal (GObject    *obj,
             if (!any_return)
                 g_warning ("%s: implement me", G_STRLOC);
             return FALSE;
-            break;
 
         default:
             g_warning ("%s: implement me", G_STRLOC);

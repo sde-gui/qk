@@ -940,6 +940,7 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
 }
 
 
+#ifdef MOO_USE_XDGMIME
 static int
 check_mime_subclass (const char *base,
                      const char *mime)
@@ -986,6 +987,7 @@ moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
 
     return found ? lang : NULL;
 }
+#endif /* MOO_USE_XDGMIME */
 
 
 static MooTextStyle*
