@@ -82,6 +82,32 @@ _wrap_moo_term_fork_command_line (PyGObject *self, PyObject *args, PyObject *kwa
     return_None;
 }
 %%
+override moo_term_fork_argv kwargs
+static PyObject *
+_wrap_moo_term_fork_argv (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*)"argv", (char*)"working_dir", (char*)"env", NULL};
+    const char *working_dir = NULL;
+    char **argv = NULL;
+    char **env = NULL;
+    GError *error = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "O&|sO&:Term.fork_argv",
+         kwlist, moo_pyobject_to_strv, &argv,
+         &working_dir, moo_pyobject_to_strv, &env))
+        return NULL;
+
+    moo_term_fork_argv (MOO_TERM (self->obj), argv,
+                        working_dir, env, &error);
+    g_strfreev (env);
+    g_strfreev (argv);
+
+    if (pyg_error_check (&error))
+        return NULL;
+
+    return_None;
+}
+%%
 override moo_term_copy_clipboard kwargs
 static PyObject *
 _wrap_moo_term_copy_clipboard (PyGObject *self, PyObject *args, PyObject *kwargs)
