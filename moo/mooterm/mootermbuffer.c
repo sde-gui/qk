@@ -643,6 +643,8 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
         }
     }
 
+    /* XXX reorder the code! */
+
     width = buf_screen_width (buf);
     cursor_row = buf_cursor_row (buf);
 
@@ -652,6 +654,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
 
         if (c != '\t' && buf_get_mode (MODE_DECAWM))
         {
+            line = buf_screen_line (buf, cursor_row);
             _moo_term_line_set_wrapped (line);
             _moo_term_buffer_new_line (buf);
             cursor_row = buf_cursor_row (buf);
