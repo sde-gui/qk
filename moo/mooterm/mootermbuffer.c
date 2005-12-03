@@ -609,13 +609,10 @@ void    _moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
 }
 
 
-/* chars must be valid unicode string */
-static void buf_print_unichar_real  (MooTermBuffer  *buf,
-                                     gunichar        c)
+static gunichar
+get_print_char (MooTermBuffer  *buf,
+                gunichar        c)
 {
-    MooTermLine *line;
-    guint width, cursor_row;
-
     if (c <= MAX_GRAPH)
     {
         if (buf->priv->single_shift >= 0)
@@ -639,11 +636,21 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
                 c = graph_sets[buf->priv->current_graph_set][c];
             else
                 g_warning ("%s: using regular character while in "
-                           "graphics mode", G_STRLOC);
+                        "graphics mode", G_STRLOC);
         }
     }
 
-    /* XXX reorder the code! */
+    return c;
+}
+
+static void
+buf_print_unichar_real (MooTermBuffer  *buf,
+                        gunichar        c)
+{
+    MooTermLine *line = NULL;
+    guint width, cursor_row;
+
+    c = get_print_char (buf, c);
 
     width = buf_screen_width (buf);
     cursor_row = buf_cursor_row (buf);
