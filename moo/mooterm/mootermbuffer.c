@@ -365,6 +365,14 @@ _moo_term_buffer_scrollback_changed (MooTermBuffer  *buf)
 
 
 static void
+clamp_cursor_col (MooTermBuffer  *buf)
+{
+    if (buf->priv->_cursor_col >= buf->priv->screen_width)
+        buf->priv->_cursor_col = buf->priv->screen_width - 1;
+}
+
+
+static void
 set_screen_width (MooTermBuffer  *buf,
                   guint           width)
 {
@@ -378,7 +386,7 @@ set_screen_width (MooTermBuffer  *buf,
 
     if (old_width != width)
     {
-        if (buf->priv->cursor_col >= width)
+        if (buf->priv->_cursor_col >= width)
             _moo_term_buffer_cursor_move_to (buf, -1, width - 1);
 
         if (old_width < width)
@@ -392,10 +400,8 @@ set_screen_width (MooTermBuffer  *buf,
             buf_changed_add_rect (buf, changed);
             _moo_term_buffer_changed (buf);
         }
-        else
-        {
-            reset_tab_stops (buf);
-        }
+
+        reset_tab_stops (buf);
 
         for (i = 0; i < height; ++i)
             _moo_term_line_resize (buf_screen_line (buf, i),
@@ -448,9 +454,9 @@ static void     set_screen_height   (MooTermBuffer  *buf,
                                       buf->priv->lines->len - remove,
                                       remove);
 
-            if (buf->priv->cursor_row >= height)
+            if (buf->priv->_cursor_row >= height)
             {
-                buf->priv->cursor_row = height - 1;
+                buf->priv->_cursor_row = height - 1;
                 cursor_moved = TRUE;
             }
         }
@@ -478,7 +484,7 @@ static void     set_screen_height   (MooTermBuffer  *buf,
         {
             guint remove = old_height - height;
 
-            if (buf->priv->cursor_row < height)
+            if (buf->priv->_cursor_row < height)
             {
                 for (i = height; i < old_height; ++i)
                     delete_line (buf, buf_screen_line (buf, i), TRUE, TRUE);
@@ -488,11 +494,11 @@ static void     set_screen_height   (MooTermBuffer  *buf,
             }
             else
             {
-                guint del = old_height - 1 - buf->priv->cursor_row;
+                guint del = old_height - 1 - buf->priv->_cursor_row;
 
                 if (del)
                 {
-                    for (i = buf->priv->cursor_row + 1; i < old_height; ++i)
+                    for (i = buf->priv->_cursor_row + 1; i < old_height; ++i)
                         delete_line (buf, buf_screen_line (buf, i), TRUE, TRUE);
                     g_ptr_array_remove_range (buf->priv->lines,
                                               buf->priv->lines->len - del,
@@ -507,9 +513,9 @@ static void     set_screen_height   (MooTermBuffer  *buf,
                 content_changed = TRUE;
             }
 
-            if (buf->priv->cursor_row >= height)
+            if (buf->priv->_cursor_row >= height)
             {
-                buf->priv->cursor_row = height - 1;
+                buf->priv->_cursor_row = height - 1;
                 cursor_moved = TRUE;
             }
         }
@@ -547,11 +553,12 @@ _moo_term_buffer_cursor_move (MooTermBuffer  *buf,
 {
     int width = buf_screen_width (buf);
     int height = buf_screen_height (buf);
-    int cursor_row = buf_cursor_row (buf);
-    int cursor_col = buf_cursor_col (buf);
+    int cursor_row, cursor_col;
 
-    cursor_col += cols;
-    cursor_row += rows;
+    clamp_cursor_col (buf);
+
+    cursor_row = buf_cursor_row (buf) + rows;
+    cursor_col = buf_cursor_col_real (buf) + cols;
 
     /* XXX MODE_REVERSE_WRAPAROUND */
 
@@ -583,7 +590,7 @@ void    _moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
     int width = buf_screen_width (buf);
     int height = buf_screen_height (buf);
     guint old_row = buf_cursor_row (buf);
-    guint old_col = buf_cursor_col (buf);
+    guint old_col = buf_cursor_col_display (buf); /* XXX apparently it's correct, but.. */
 
     if (row < 0)
         row = old_row;
@@ -592,11 +599,11 @@ void    _moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
 
     if (col < 0)
         col = old_col;
-    else if (col >= width)
-        col = width - 1;
+    else if (col > width)
+        col = width;
 
-    buf->priv->cursor_row = row;
-    buf->priv->cursor_col = col;
+    buf->priv->_cursor_row = row;
+    buf->priv->_cursor_col = col;
 
     _moo_term_buffer_cursor_moved (buf);
 }
@@ -607,8 +614,7 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
                                      gunichar        c)
 {
     MooTermLine *line;
-    guint width = buf_screen_width (buf);
-    guint cursor_row = buf_cursor_row (buf);
+    guint width, cursor_row;
 
     if (c <= MAX_GRAPH)
     {
@@ -637,34 +643,38 @@ static void buf_print_unichar_real  (MooTermBuffer  *buf,
         }
     }
 
-    line = buf_screen_line (buf, cursor_row);
-    g_assert (_moo_term_line_width (line) == width);
+    width = buf_screen_width (buf);
+    cursor_row = buf_cursor_row (buf);
 
-    if (buf_get_mode (MODE_IRM))
+    if (buf->priv->_cursor_col == width)
     {
-        _moo_term_line_insert_unichar (line, buf->priv->cursor_col++,
-                                       c, 1, buf->priv->current_attr);
-        buf_changed_add_range (buf, cursor_row,
-                               buf->priv->cursor_col - 1,
-                               width - buf->priv->cursor_col + 1);
-    }
-    else
-    {
-        _moo_term_line_set_unichar (line, buf->priv->cursor_col++,
-                                    c, 1, buf->priv->current_attr);
-        buf_changed_add_range (buf, cursor_row,
-                               buf->priv->cursor_col - 1, 1);
-    }
-
-    if (buf->priv->cursor_col == width)
-    {
-        buf->priv->cursor_col--;
+        buf->priv->_cursor_col--;
 
         if (c != '\t' && buf_get_mode (MODE_DECAWM))
         {
             _moo_term_line_set_wrapped (line);
             _moo_term_buffer_new_line (buf);
+            cursor_row = buf_cursor_row (buf);
         }
+    }
+
+    line = buf_screen_line (buf, cursor_row);
+    g_assert (_moo_term_line_width (line) == width);
+
+    if (buf_get_mode (MODE_IRM))
+    {
+        _moo_term_line_insert_unichar (line, buf->priv->_cursor_col++,
+                                       c, 1, buf->priv->current_attr);
+        buf_changed_add_range (buf, cursor_row,
+                               buf->priv->_cursor_col - 1,
+                               width - buf->priv->_cursor_col + 1);
+    }
+    else
+    {
+        _moo_term_line_set_unichar (line, buf->priv->_cursor_col++,
+                                    c, 1, buf->priv->current_attr);
+        buf_changed_add_range (buf, cursor_row,
+                               buf->priv->_cursor_col - 1, 1);
     }
 }
 
@@ -801,7 +811,7 @@ _moo_term_buffer_clear_tab_stop (MooTermBuffer  *buf,
         case CLEAR_TAB_AT_CURSOR:
             buf->priv->tab_stops =
                     g_list_remove (buf->priv->tab_stops,
-                                   GUINT_TO_POINTER (buf_cursor_col (buf)));
+                                   GUINT_TO_POINTER (buf_cursor_col_real (buf)));
 
         case CLEAR_ALL_TABS:
             g_list_free (buf->priv->tab_stops);
@@ -825,7 +835,7 @@ cmp_guints (gconstpointer a, gconstpointer b)
 void
 _moo_term_buffer_set_tab_stop (MooTermBuffer  *buf)
 {
-    guint cursor = buf_cursor_col (buf);
+    guint cursor = buf_cursor_col_real (buf);
 
     if (!g_list_find (buf->priv->tab_stops, GUINT_TO_POINTER (cursor)))
         buf->priv->tab_stops =
@@ -998,12 +1008,14 @@ _moo_term_buffer_cuu (MooTermBuffer  *buf,
     guint i;
     guint top = buf->priv->top_margin;
 
-    if (buf->priv->cursor_row < top)
+    clamp_cursor_col (buf);
+
+    if (buf->priv->_cursor_row < top)
         top = 0;
 
     _moo_term_buffer_freeze_cursor_notify (buf);
 
-    for (i = 0; i < n && buf->priv->cursor_row > top; ++i)
+    for (i = 0; i < n && buf->priv->_cursor_row > top; ++i)
         _moo_term_buffer_cursor_move (buf, -1, 0);
 
     _moo_term_buffer_thaw_cursor_notify (buf);
@@ -1018,12 +1030,14 @@ _moo_term_buffer_cud (MooTermBuffer  *buf,
     guint i;
     guint bottom = buf->priv->bottom_margin;
 
-    if (buf->priv->cursor_row > bottom)
+    clamp_cursor_col (buf);
+
+    if (buf->priv->_cursor_row > bottom)
         bottom = buf_screen_height (buf) - 1;
 
     _moo_term_buffer_freeze_cursor_notify (buf);
 
-    for (i = 0; i < n && buf->priv->cursor_row < bottom; ++i)
+    for (i = 0; i < n && buf->priv->_cursor_row < bottom; ++i)
         _moo_term_buffer_cursor_move (buf, 1, 0);
 
     _moo_term_buffer_thaw_cursor_notify (buf);
@@ -1047,6 +1061,8 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
     guint cursor_row = buf_cursor_row (buf);
     guint screen_height = buf_screen_height (buf);
     guint width = buf_screen_width (buf);
+
+    clamp_cursor_col (buf);
 
     g_assert (cursor_row < screen_height);
 
@@ -1083,7 +1099,7 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
         }
         else
         {
-            buf->priv->cursor_row += 1;
+            buf->priv->_cursor_row += 1;
         }
     }
     else
@@ -1102,7 +1118,7 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
         }
         else
         {
-            buf->priv->cursor_row += 1;
+            buf->priv->_cursor_row += 1;
         }
     }
 
@@ -1118,6 +1134,8 @@ _moo_term_buffer_reverse_index (MooTermBuffer  *buf)
     guint top = buf->priv->top_margin + buf->priv->screen_offset;
     guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint cursor = buf_cursor_row (buf) + buf->priv->screen_offset;
+
+    clamp_cursor_col (buf);
 
     g_assert (cursor <= bottom && cursor >= top);
 
@@ -1140,7 +1158,7 @@ _moo_term_buffer_reverse_index (MooTermBuffer  *buf)
     }
     else
     {
-        buf->priv->cursor_row -= 1;
+        buf->priv->_cursor_row -= 1;
     }
 
     NOTIFY;
@@ -1163,10 +1181,10 @@ _moo_term_buffer_tab (MooTermBuffer  *buf,
 
     _moo_term_buffer_freeze_cursor_notify (buf);
 
-    for (i = 0; i < n && buf->priv->cursor_col < width; ++i)
+    for (i = 0; i < n && buf->priv->_cursor_col < width; ++i)
     {
         _moo_term_buffer_cursor_move_to (buf, -1,
-            _moo_term_buffer_next_tab_stop (buf, buf->priv->cursor_col));
+            _moo_term_buffer_next_tab_stop (buf, buf->priv->_cursor_col));
     }
 
     _moo_term_buffer_thaw_cursor_notify (buf);
@@ -1182,10 +1200,10 @@ _moo_term_buffer_back_tab (MooTermBuffer  *buf,
 
     _moo_term_buffer_freeze_cursor_notify (buf);
 
-    for (i = 0; i < n && buf->priv->cursor_col > 0; ++i)
+    for (i = 0; i < n && buf->priv->_cursor_col > 0; ++i)
     {
         _moo_term_buffer_cursor_move_to (buf, -1,
-            _moo_term_buffer_prev_tab_stop (buf, buf->priv->cursor_col));
+            _moo_term_buffer_prev_tab_stop (buf, buf->priv->_cursor_col));
     }
 
     _moo_term_buffer_thaw_cursor_notify (buf);
@@ -1313,9 +1331,13 @@ _moo_term_buffer_delete_char (MooTermBuffer  *buf,
                               guint           n)
 {
     MooTermLine *line;
-    guint cursor_col = buf_cursor_col (buf);
-    guint cursor_row = buf_cursor_row (buf);
+    guint cursor_col;
+    guint cursor_row;
 
+    clamp_cursor_col (buf);
+
+    cursor_col = buf_cursor_col_real (buf);
+    cursor_row = buf_cursor_row (buf);
     g_assert (cursor_col < buf_screen_width (buf));
 
     if (!n || cursor_row > buf->priv->bottom_margin ||
@@ -1357,8 +1379,11 @@ void
 _moo_term_buffer_erase_char (MooTermBuffer  *buf,
                              guint           n)
 {
-    guint cursor_col = buf_cursor_col (buf);
-    guint cursor_row = buf_cursor_row (buf);
+    guint cursor_col, cursor_row;
+
+    clamp_cursor_col (buf);
+    cursor_col = buf_cursor_col_real (buf);
+    cursor_row = buf_cursor_row (buf);
 
     g_assert (cursor_col < buf_screen_width (buf));
 
@@ -1372,12 +1397,16 @@ _moo_term_buffer_erase_in_display (MooTermBuffer  *buf,
                                    EraseType       what)
 {
     guint i;
-    guint cursor_col = buf_cursor_col (buf);
-    guint cursor_row = buf_cursor_row (buf);
+    guint cursor_col, cursor_row;
     guint width = buf_screen_width (buf);
     guint height = buf_screen_height (buf);
 
     g_return_if_fail (what == 0 || what == 1 || what == 2);
+
+    clamp_cursor_col (buf);
+
+    cursor_col = buf_cursor_col_real (buf);
+    cursor_row = buf_cursor_row (buf);
 
     FREEZE_CHANGED;
 
@@ -1411,9 +1440,13 @@ void
 _moo_term_buffer_erase_in_line (MooTermBuffer  *buf,
                                 EraseType       what)
 {
-    guint cursor_col = buf_cursor_col (buf);
-    guint cursor_row = buf_cursor_row (buf);
+    guint cursor_col, cursor_row;
     guint width = buf_screen_width (buf);
+
+    clamp_cursor_col (buf);
+
+    cursor_col = buf_cursor_col_real (buf);
+    cursor_row = buf_cursor_row (buf);
 
     g_return_if_fail (what == 0 || what == 1 || what == 2);
 
@@ -1442,8 +1475,10 @@ _moo_term_buffer_insert_char (MooTermBuffer  *buf,
                               guint           n)
 {
     MooTermLine *line;
-    guint cursor_col = buf_cursor_col (buf);
+    guint cursor_col = buf_cursor_col_display (buf);
     guint cursor_row = buf_cursor_row (buf);
+
+    /* XXX what about autowrapping here? */
 
     g_assert (cursor_col < buf_screen_width (buf));
 
@@ -1490,13 +1525,13 @@ void
 _moo_term_buffer_delete_line (MooTermBuffer  *buf,
                               guint           n)
 {
-    guint cursor = buf->priv->cursor_row + buf->priv->screen_offset;
+    guint cursor = buf->priv->_cursor_row + buf->priv->screen_offset;
     guint top = buf->priv->top_margin + buf->priv->screen_offset;
     guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
 
     GdkRectangle changed = {
-        0, buf->priv->cursor_row,
+        0, buf->priv->_cursor_row,
         buf->priv->screen_width,
         bottom - cursor + 1
     };
@@ -1531,21 +1566,21 @@ void
 _moo_term_buffer_insert_line (MooTermBuffer  *buf,
                               guint           n)
 {
-    guint cursor = buf->priv->cursor_row + buf->priv->screen_offset;
+    guint cursor = buf->priv->_cursor_row + buf->priv->screen_offset;
     guint top = buf->priv->top_margin + buf->priv->screen_offset;
     guint bottom = buf->priv->bottom_margin + buf->priv->screen_offset;
     guint i;
 
     GdkRectangle changed = {
-        0, buf->priv->cursor_row,
+        0, buf->priv->_cursor_row,
         buf->priv->screen_width,
-        buf->priv->bottom_margin - buf->priv->cursor_row + 1
+        buf->priv->bottom_margin - buf->priv->_cursor_row + 1
     };
 
     g_return_if_fail (n != 0);
     g_return_if_fail (top <= cursor && cursor <= bottom);
 
-    /* TODO: scroll the window */
+    /* TODO: scroll the gdk window */
 
     if (n > bottom - cursor + 1)
         n = bottom - cursor + 1;
@@ -1588,10 +1623,16 @@ void    moo_term_buffer_set_mode                (MooTermBuffer  *buf,
             buf->priv->modes[mode] = set;
             break;
 
+        case MODE_DECOM:
+            buf->priv->modes[mode] = set;
+            /* vttest says this homes cursor */
+            if (set)
+                _moo_term_buffer_cup (buf, 0, 0);
+            break;
+
         /* these do not require anything special, just record the value */
         case MODE_IRM:
         case MODE_LNM:
-        case MODE_DECOM:
         case MODE_DECAWM:
         case MODE_REVERSE_WRAPAROUND:   /* TODO*/
             buf->priv->modes[mode] = set;
@@ -1629,7 +1670,7 @@ _moo_term_buffer_set_ca_mode (MooTermBuffer  *buf,
 static void
 set_defaults (MooTermBuffer  *buf)
 {
-    buf->priv->cursor_col = buf->priv->cursor_row = 0;
+    buf->priv->_cursor_col = buf->priv->_cursor_row = 0;
 
     buf->priv->top_margin = 0;
     buf->priv->bottom_margin = buf->priv->screen_height - 1;
@@ -1700,8 +1741,8 @@ _moo_term_buffer_cursor_next_line (MooTermBuffer  *buf,
 
     for (i = 0; i < n ; ++i)
     {
-        if (buf->priv->cursor_row + 1 < buf->priv->screen_height)
-            _moo_term_buffer_cursor_move_to (buf, buf->priv->cursor_row + 1, 0);
+        if (buf->priv->_cursor_row + 1 < buf->priv->screen_height)
+            _moo_term_buffer_cursor_move_to (buf, buf->priv->_cursor_row + 1, 0);
         else
             break;
     }
@@ -1721,8 +1762,8 @@ _moo_term_buffer_cursor_prev_line (MooTermBuffer  *buf,
 
     for (i = 0; i < n ; ++i)
     {
-        if (buf->priv->cursor_row > 0)
-            _moo_term_buffer_cursor_move_to (buf, buf->priv->cursor_row - 1, 0);
+        if (buf->priv->_cursor_row > 0)
+            _moo_term_buffer_cursor_move_to (buf, buf->priv->_cursor_row - 1, 0);
         else
             break;
     }

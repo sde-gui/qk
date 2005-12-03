@@ -1368,7 +1368,7 @@ moo_term_get_iter_at_cursor (MooTerm            *term,
     g_return_if_fail (iter != NULL);
 
     FILL_ITER (iter, term, buf_cursor_row_abs (term->priv->buffer),
-               buf_cursor_col (term->priv->buffer));
+               buf_cursor_col_display (term->priv->buffer));
 }
 
 

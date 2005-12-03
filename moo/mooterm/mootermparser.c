@@ -74,7 +74,7 @@ static InputIter *iter_new (MooTermParser *parser)
 
 static gboolean iter_eof (InputIter *iter)
 {
-    return !iter->old && iter->offset ==
+    return !iter->old && iter->offset >=
             iter->parser->input.data_len;
 }
 

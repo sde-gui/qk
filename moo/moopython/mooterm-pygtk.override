@@ -212,3 +212,40 @@ _wrap_moo_term_window_to_buffer_coords (PyGObject *self, PyObject *args)
     moo_term_window_to_buffer_coords (MOO_TERM(self->obj), x, y, &buf_x, &buf_y);
     return Py_BuildValue((char*) "(ii)", buf_x, buf_y);
 }
+%%
+override moo_term_feed varargs
+static PyObject *
+_wrap_moo_term_feed (PyGObject *self, PyObject *args)
+{
+    char *string;
+    int len;
+
+    if (!PyArg_ParseTuple (args, (char*) "s#:MooTerm.feed", &string, &len))
+        return NULL;
+
+    moo_term_feed (MOO_TERM (self->obj), string, len);
+    return_None;
+}
+%%
+override moo_term_feed_child varargs
+static PyObject *
+_wrap_moo_term_feed_child (PyGObject *self, PyObject *args)
+{
+    char *string;
+    int len;
+
+    if (!PyArg_ParseTuple (args, (char*) "s#:MooTerm.feed_child", &string, &len))
+        return NULL;
+
+    moo_term_feed_child (MOO_TERM (self->obj), string, len);
+    return_None;
+}
+%%
+override moo_term_get_screen_size noargs
+static PyObject *
+_wrap_moo_term_get_screen_size (PyGObject *self)
+{
+    guint columns, rows;
+    moo_term_get_screen_size (MOO_TERM (self->obj), &columns, &rows);
+    return Py_BuildValue ((char*) "(ii)", columns, rows);
+}

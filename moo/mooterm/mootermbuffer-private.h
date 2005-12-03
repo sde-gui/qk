@@ -61,8 +61,9 @@ struct _MooTermBufferPrivate {
     gboolean        scrolling_region_set;
 
     /* independent of scrolling region */
-    guint           cursor_row;
-    guint           cursor_col;
+    guint           _cursor_row;
+    guint           _cursor_col; /* 0..width - it equals width if a character
+                                    was inserted at the last column in AWM mode */
 
     GList          *tab_stops;
 
@@ -176,17 +177,23 @@ inline static guint buf_screen_height    (MooTermBuffer  *buf)
 
 inline static guint buf_cursor_row      (MooTermBuffer  *buf)
 {
-    return buf->priv->cursor_row;
+    return buf->priv->_cursor_row;
 }
 
 inline static guint buf_cursor_row_abs  (MooTermBuffer  *buf)
 {
-    return buf->priv->cursor_row + buf_scrollback (buf);
+    return buf->priv->_cursor_row + buf_scrollback (buf);
 }
 
-inline static guint buf_cursor_col      (MooTermBuffer  *buf)
+inline static guint buf_cursor_col_real (MooTermBuffer  *buf)
 {
-    return buf->priv->cursor_col;
+    return buf->priv->_cursor_col;
+}
+
+inline static guint buf_cursor_col_display (MooTermBuffer  *buf)
+{
+    return buf->priv->_cursor_col >= buf->priv->screen_width ?
+            buf->priv->screen_width - 1 : buf->priv->_cursor_col;
 }
 
 inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)

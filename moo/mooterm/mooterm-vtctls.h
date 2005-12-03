@@ -111,13 +111,13 @@ G_STMT_START {                                              \
 #define VT_RIS          moo_term_reset (parser->term)
 
 #define VT_CBT(n)       _moo_term_buffer_back_tab (parser->term->priv->buffer, n)
-#define VT_CHA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, n)
+#define VT_CHA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, (n)-1) /* XXX is it right? */
 #define VT_CHT(n)       _moo_term_buffer_tab (parser->term->priv->buffer, n)
 #define VT_CNL(n)       _moo_term_buffer_cursor_next_line (parser->term->priv->buffer, n)
 #define VT_CPL(n)       _moo_term_buffer_cursor_prev_line (parser->term->priv->buffer, n)
-#define VT_HPA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, n)
+#define VT_HPA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, -1, (n)-1) /* XXX is it right? */
 #define VT_HPR(n)       _moo_term_buffer_cursor_move (parser->term->priv->buffer, 0, n)
-#define VT_VPA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, n, -1)
+#define VT_VPA(n)       _moo_term_buffer_cursor_move_to (parser->term->priv->buffer, (n)-1, -1) /* XXX is it right? */
 #define VT_VPR(n)       _moo_term_buffer_cursor_move (parser->term->priv->buffer, n, 0)
 #define VT_DECALN       _moo_term_buffer_decaln (parser->term->priv->buffer)
 

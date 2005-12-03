@@ -892,6 +892,21 @@ _moo_term_size_changed (MooTerm        *term)
 }
 
 
+void
+moo_term_get_screen_size (MooTerm        *term,
+                          guint          *columns,
+                          guint          *rows)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    if (rows)
+        *rows = term->priv->height;
+
+    if (columns)
+        *columns = term->priv->width;
+}
+
+
 gboolean    moo_term_fork_command           (MooTerm        *term,
                                              const MooTermCommand *cmd,
                                              const char     *working_dir,
@@ -1568,11 +1583,11 @@ _moo_term_dsr (MooTerm    *term,
             if (extended)
                 answer = g_strdup_printf (VT_CSI_ "%d;%d;0R",
                                           buf_cursor_row (buf) + 1,
-                                          buf_cursor_col (buf) + 1);
+                                          buf_cursor_col_real (buf) + 1);
             else
                 answer = g_strdup_printf (VT_CSI_ "%d;%dR",
                                           buf_cursor_row (buf) + 1,
-                                          buf_cursor_col (buf) + 1);
+                                          buf_cursor_col_real (buf) + 1);
             break;
         case 75:
             answer = g_strdup (VT_CSI_ "?70n");
@@ -1666,7 +1681,7 @@ menu_position_func (G_GNUC_UNUSED GtkMenu     *menu,
     window = GTK_WIDGET(term)->window;
     gdk_window_get_origin (window, px, py);
 
-    cursor_col = buf_cursor_col (term->priv->buffer);
+    cursor_col = buf_cursor_col_display (term->priv->buffer);
     cursor_row = buf_cursor_row (term->priv->buffer);
     cursor_row += buf_scrollback (term->priv->buffer);
 
@@ -2218,4 +2233,22 @@ moo_term_erase_binding_get_type (void)
     }
 
     return type;
+}
+
+
+guint
+moo_term_char_height (MooTerm *term)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), 0);
+    g_return_val_if_fail (GTK_WIDGET_REALIZED (term), 0);
+    return term_char_height (term);
+}
+
+
+guint
+moo_term_char_width (MooTerm *term)
+{
+    g_return_val_if_fail (MOO_IS_TERM (term), 0);
+    g_return_val_if_fail (GTK_WIDGET_REALIZED (term), 0);
+    return term_char_width (term);
 }

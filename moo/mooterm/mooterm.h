@@ -131,6 +131,10 @@ void        moo_term_feed_child             (MooTerm        *term,
                                              const char     *string,
                                              int             len);
 
+void        moo_term_get_screen_size        (MooTerm        *term,
+                                             guint          *columns,
+                                             guint          *rows);
+
 void        moo_term_scroll_to_top          (MooTerm        *term);
 void        moo_term_scroll_to_bottom       (MooTerm        *term);
 void        moo_term_scroll_lines           (MooTerm        *term,
@@ -156,6 +160,9 @@ void        moo_term_set_cursor_blink_time  (MooTerm        *term,
 
 void        moo_term_reset                  (MooTerm        *term);
 void        moo_term_soft_reset             (MooTerm        *term);
+
+guint       moo_term_char_height            (MooTerm        *term);
+guint       moo_term_char_width             (MooTerm        *term);
 
 
 MooTermProfile      *moo_term_profile_new       (const char     *name,

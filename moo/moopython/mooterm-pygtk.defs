@@ -354,6 +354,28 @@
 ;; From mooterm.h
 
 
+(define-method get_screen_size
+  (of-object "MooTerm")
+  (c-name "moo_term_get_screen_size")
+  (return-type "none")
+  (parameters
+    '("guint*" "columns")
+    '("guint*" "rows")
+  )
+)
+
+(define-method char_height
+  (of-object "MooTerm")
+  (c-name "moo_term_char_height")
+  (return-type "guint")
+)
+
+(define-method char_width
+  (of-object "MooTerm")
+  (c-name "moo_term_char_width")
+  (return-type "guint")
+)
+
 (define-method set_adjustment
   (of-object "MooTerm")
   (c-name "moo_term_set_adjustment")

@@ -227,12 +227,12 @@ _moo_term_line_erase_range (MooTermLine    *line,
                             MooTermTextAttr attr)
 {
     guint i;
-    guint last = MIN ((guint) (line->width - 1), pos + len);
+    guint end = MIN ((guint) line->width, pos + len);
 
-    if ((int) last == line->width - 1)
+    if ((int) end >= line->len)
         line->len = MIN (line->len, pos);
 
-    for (i = pos; i < last; ++i)
+    for (i = pos; i < end; ++i)
     {
         line->cells[i].ch = EMPTY_CHAR;
         line->cells[i].attr = attr;
@@ -334,14 +334,13 @@ _moo_term_line_insert_unichar (MooTermLine    *line,
 
     if (c != EMPTY_CHAR)
     {
-        if (pos + num >= line->width)
-            line->len = line->width;
-        else if (pos >= line->len)
-            line->len = pos + num;
-        else
+        if (pos <= line->len)
             line->len += num;
+        else
+            line->len = pos + num;
 
-        g_assert (line->len <= line->width);
+        if (line->len > line->width)
+            line->len = line->width;
     }
 
     if (pos + num >= line->width)

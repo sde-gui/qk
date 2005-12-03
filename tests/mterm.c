@@ -89,6 +89,14 @@ static void set_width (MooTerm *term, guint width, GtkWindow *window)
 }
 
 
+static gboolean
+invalidate (gpointer term)
+{
+    _moo_term_invalidate_all (term);
+    return TRUE;
+}
+
+
 int main (int argc, char *argv[])
 {
     const char *cmd = NULL;
@@ -117,6 +125,8 @@ int main (int argc, char *argv[])
                                      "cursor-blinks", FALSE,
                                      "font-name", "Courier New 11",
                                      NULL));
+
+    g_timeout_add (1000, invalidate, term);
 
     gtk_container_add (GTK_CONTAINER (swin), term);
 

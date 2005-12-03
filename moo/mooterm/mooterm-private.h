@@ -93,7 +93,8 @@ struct _MooTermPrivate {
     guint           cursor_col;
 
     struct {
-        guint           cursor_row, cursor_col;
+        guint           cursor_row, cursor_col; /* these are real cursor coordinates in buffer
+                                                   (it may be different from what's displayed in AWM mode) */
         MooTermTextAttr attr;
         int             GL, GR;
         gboolean        autowrap;

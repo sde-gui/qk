@@ -316,18 +316,22 @@ _moo_term_cursor_moved (MooTerm        *term,
         return;
 
     new_row = buf_cursor_row (buf);
-    new_col = buf_cursor_col (buf);
+    new_col = buf_cursor_col_display (buf);
 
-    if (term->priv->cursor_visible && term->priv->blink_cursor_visible)
+    if (new_row != (int) term->priv->cursor_row ||
+        new_col != (int) term->priv->cursor_col)
     {
-        invalidate_screen_cell (term,
-                                term->priv->cursor_row,
-                                term->priv->cursor_col);
-        invalidate_screen_cell (term, new_row, new_col);
-    }
+        if (term->priv->cursor_visible && term->priv->blink_cursor_visible)
+        {
+            invalidate_screen_cell (term,
+                                    term->priv->cursor_row,
+                                    term->priv->cursor_col);
+            invalidate_screen_cell (term, new_row, new_col);
+        }
 
-    term->priv->cursor_col = new_col;
-    term->priv->cursor_row = new_row;
+        term->priv->cursor_col = new_col;
+        term->priv->cursor_row = new_row;
+    }
 }
 
 
@@ -568,7 +572,7 @@ term_draw_range (MooTerm        *term,
     if (term->priv->cursor_visible && term->priv->blink_cursor_visible &&
         term->priv->cursor_row + buf_scrollback (term->priv->buffer) == abs_row)
     {
-        guint cursor = buf_cursor_col (term->priv->buffer);
+        guint cursor = buf_cursor_col_display (term->priv->buffer);
 
         if (cursor >= start && cursor < start + len)
         {
