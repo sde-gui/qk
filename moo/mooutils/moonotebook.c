@@ -135,8 +135,6 @@ G_STMT_START {                                                  \
 } G_STMT_END
 
 
-static gpointer moo_notebook_grand_parent_class;
-
 static void     moo_notebook_finalize       (GObject        *object);
 static void     moo_notebook_destroy        (GtkObject      *object);
 static void     moo_notebook_set_property   (GObject        *object,
@@ -201,8 +199,7 @@ static void     moo_notebook_remove         (GtkContainer   *container,
 static void     moo_notebook_set_focus_child(GtkContainer  *container,
                                              GtkWidget      *widget);
 
-static void     moo_notebook_switch_page    (GtkNotebook     *notebook,
-                                             GtkNotebookPage *page,
+static void     moo_notebook_switch_page    (MooNotebook     *nb,
                                              guint            page_num);
 
 static void     notebook_create_arrows      (MooNotebook    *nb);
@@ -263,15 +260,6 @@ static void     labels_move_label_onscreen  (MooNotebook    *nb,
                                              gboolean        realloc);
 static void     labels_invalidate           (MooNotebook    *nb);
 
-static void     moo_notebook_move_focus_out (GtkNotebook    *notebook,
-                                             GtkDirectionType direction);
-static gboolean moo_notebook_select_page    (GtkNotebook    *notebook,
-                                             gboolean        move_focus);
-static gboolean moo_notebook_focus_tab      (GtkNotebook    *notebook,
-                                             GtkNotebookTab  type);
-static void     moo_notebook_change_current_page (GtkNotebook *notebook,
-                                             gint            offset);
-
 static gboolean moo_notebook_maybe_popup    (MooNotebook    *notebook,
                                              GdkEventButton *event);
 static GtkWidget *popup_func                (MooNotebook    *notebook,
@@ -279,14 +267,11 @@ static GtkWidget *popup_func                (MooNotebook    *notebook,
                                              gpointer        user_data);
 
 /* MOO_TYPE_NOTEBOOK */
-G_DEFINE_TYPE (MooNotebook, moo_notebook, GTK_TYPE_NOTEBOOK)
+G_DEFINE_TYPE (MooNotebook, moo_notebook, GTK_TYPE_CONTAINER)
 
 enum {
     PROP_0,
-    PROP_TAB_POS,
     PROP_SHOW_TABS,
-    PROP_SHOW_BORDER,
-    PROP_SCROLLABLE,
     PROP_TAB_BORDER,
     PROP_TAB_HBORDER,
     PROP_TAB_VBORDER,
@@ -297,12 +282,7 @@ enum {
 };
 
 enum {
-    /* GtkNotebook signals */
     SWITCH_PAGE,
-    MOVE_FOCUS_OUT,
-    SELECT_PAGE,
-    FOCUS_TAB_SIGNAL,
-    CHANGE_CURRENT_PAGE,
     POPULATE_POPUP,
     NUM_SIGNALS
 };
@@ -315,10 +295,6 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
-    GtkNotebookClass *notebook_class = GTK_NOTEBOOK_CLASS (klass);
-
-    moo_notebook_grand_parent_class =
-            g_type_class_peek_parent (moo_notebook_parent_class);
 
     gobject_class->finalize = moo_notebook_finalize;
     gobject_class->set_property = moo_notebook_set_property;
@@ -348,16 +324,63 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     container_class->remove = moo_notebook_remove;
     container_class->add = moo_notebook_add;
 
-    g_object_class_override_property (gobject_class, PROP_TAB_POS, "tab-pos");
-    g_object_class_override_property (gobject_class, PROP_PAGE, "page");
-    g_object_class_override_property (gobject_class, PROP_TAB_BORDER, "tab-border");
-    g_object_class_override_property (gobject_class, PROP_TAB_HBORDER, "tab-hborder");
-    g_object_class_override_property (gobject_class, PROP_TAB_VBORDER, "tab-vborder");
-    g_object_class_override_property (gobject_class, PROP_SHOW_TABS, "show-tabs");
-    g_object_class_override_property (gobject_class, PROP_SHOW_BORDER, "show-border");
-    g_object_class_override_property (gobject_class, PROP_SCROLLABLE, "scrollable");
-    g_object_class_override_property (gobject_class, PROP_ENABLE_POPUP, "enable-popup");
-    g_object_class_override_property (gobject_class, PROP_HOMOGENEOUS, "homogeneous");
+    klass->switch_page = moo_notebook_switch_page;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_PAGE,
+                                     g_param_spec_int ("page",
+                                             "Page",
+                                             "The index of the current page",
+                                             0, G_MAXINT, 0,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_BORDER,
+                                     g_param_spec_uint ("tab-border",
+                                             "Tab Border",
+                                             "Width of the border around the tab labels",
+                                             0, G_MAXUINT, 2,
+                                             G_PARAM_WRITABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_HBORDER,
+                                     g_param_spec_uint ("tab-hborder",
+                                             "Horizontal Tab Border",
+                                             "Width of the horizontal border of tab labels",
+                                             0, G_MAXUINT, 2,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_VBORDER,
+                                     g_param_spec_uint ("tab-vborder",
+                                             "Vertical Tab Border",
+                                             "Width of the vertical border of tab labels",
+                                             0, G_MAXUINT, 2,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SHOW_TABS,
+                                     g_param_spec_boolean ("show-tabs",
+                                             "Show Tabs",
+                                             "Whether tabs should be shown or not",
+                                             TRUE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_POPUP,
+                                     g_param_spec_boolean ("enable-popup",
+                                             "Enable Popup",
+                                             "If TRUE, pressing the right mouse button on the notebook pops up a menu",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HOMOGENEOUS,
+                                     g_param_spec_boolean ("homogeneous",
+                                             "Homogeneous",
+                                             "Whether tabs should have homogeneous sizes",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_REORDERING,
@@ -367,20 +390,15 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-    notebook_class->switch_page = moo_notebook_switch_page;
-    signals[SWITCH_PAGE] = g_signal_lookup ("switch-page", GTK_TYPE_NOTEBOOK);
-
-    notebook_class->move_focus_out = moo_notebook_move_focus_out;
-    signals[MOVE_FOCUS_OUT] = g_signal_lookup ("move-focus-out", GTK_TYPE_NOTEBOOK);
-
-    notebook_class->select_page = moo_notebook_select_page;
-    signals[SELECT_PAGE] = g_signal_lookup ("select_page", GTK_TYPE_NOTEBOOK);
-
-    notebook_class->focus_tab = moo_notebook_focus_tab;
-    signals[FOCUS_TAB_SIGNAL] = g_signal_lookup ("focus_tab", GTK_TYPE_NOTEBOOK);
-
-    notebook_class->change_current_page = moo_notebook_change_current_page;
-    signals[CHANGE_CURRENT_PAGE] = g_signal_lookup ("change_current_page", GTK_TYPE_NOTEBOOK);
+    signals[SWITCH_PAGE] =
+            g_signal_new ("switch-page",
+                          G_TYPE_FROM_CLASS (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooNotebookClass, switch_page),
+                          NULL, NULL,
+                          _moo_marshal_VOID__UINT,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_UINT);
 
     signals[POPULATE_POPUP] =
             g_signal_new ("populate-popup",
@@ -397,6 +415,9 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
 
 static void moo_notebook_init      (MooNotebook *notebook)
 {
+    GTK_WIDGET_SET_FLAGS (notebook, GTK_CAN_FOCUS);
+    GTK_WIDGET_SET_FLAGS (notebook, GTK_NO_WINDOW);
+
     notebook->priv = g_new0 (MooNotebookPrivate, 1);
 
     notebook->priv->enable_popup = FALSE;
@@ -553,25 +574,6 @@ static void     moo_notebook_set_property   (GObject        *object,
             moo_notebook_set_show_tabs (nb, g_value_get_boolean (value));
             break;
 
-        /***************************************************************/
-        /* Not implemented GtkNotebook properties
-         */
-        case PROP_SHOW_BORDER:
-            if (g_value_get_boolean (value))
-                g_warning ("Property %s is not imlemented for class %s", pspec->name,
-                           g_type_name (G_PARAM_SPEC_TYPE (pspec)));
-            break;
-        case PROP_SCROLLABLE:
-            if (g_value_get_boolean (value))
-                g_warning ("Property %s is not imlemented for class %s", pspec->name,
-                           g_type_name (G_PARAM_SPEC_TYPE (pspec)));
-            break;
-        case PROP_TAB_POS:
-            if (g_value_get_enum (value) != GTK_POS_TOP)
-                g_warning ("Property %s is not imlemented for class %s", pspec->name,
-                           g_type_name (G_PARAM_SPEC_TYPE (pspec)));
-            break;
-
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -605,21 +607,8 @@ static void     moo_notebook_get_property   (GObject        *object,
         case PROP_ENABLE_REORDERING:
             g_value_set_boolean (value, nb->priv->enable_reordering);
             break;
-
-        /***************************************************************/
-        /* Not implemented GtkNotebook properties
-        */
-        case PROP_SHOW_BORDER:
-            g_value_set_boolean (value, FALSE);
-            break;
-        case PROP_SCROLLABLE:
-            g_value_set_boolean (value, FALSE);
-            break;
         case PROP_SHOW_TABS:
-            g_value_set_boolean (value, TRUE);
-            break;
-        case PROP_TAB_POS:
-            g_value_set_enum (value, GTK_POS_TOP);
+            g_value_set_boolean (value, nb->priv->show_tabs);
             break;
 
         default:
@@ -920,6 +909,8 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     MooNotebook *nb;
     GSList *l;
     int border_width = gtk_container_get_border_width (GTK_CONTAINER (widget));
+    GtkStyle *notebook_style;
+    GtkSettings *settings;
 
     nb = MOO_NOTEBOOK (widget);
 
@@ -928,7 +919,18 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     widget->window = gtk_widget_get_parent_window (widget);
     g_object_ref (widget->window);
 
-    widget->style = gtk_style_attach (widget->style, widget->window);
+    settings = gtk_widget_get_settings (widget);
+    notebook_style = gtk_rc_get_style_by_paths (settings, NULL, "*", GTK_TYPE_NOTEBOOK);
+
+    if (notebook_style)
+    {
+        g_object_ref (notebook_style);
+        widget->style = gtk_style_attach (notebook_style, widget->window);
+    }
+    else
+    {
+        widget->style = gtk_style_attach (widget->style, widget->window);
+    }
 
     /* Tabs window */
     attributes.x = widget->allocation.x + border_width + nb->priv->action_widgets_size[LEFT];
@@ -976,7 +978,7 @@ static void     moo_notebook_unrealize      (GtkWidget      *widget)
     gdk_window_destroy (nb->priv->tab_window);
     nb->priv->tab_window = NULL;
 
-    GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->unrealize (widget);
+    GTK_WIDGET_CLASS(moo_notebook_parent_class)->unrealize (widget);
 }
 
 
@@ -1169,7 +1171,7 @@ static gboolean moo_notebook_expose         (GtkWidget      *widget,
     if (event->window == widget->window)
         moo_notebook_draw_child_border (nb, event);
 
-    GTK_WIDGET_CLASS(moo_notebook_grand_parent_class)->expose_event (widget, event);
+    GTK_WIDGET_CLASS(moo_notebook_parent_class)->expose_event (widget, event);
 
     if (nb->priv->in_drag && event->window == nb->priv->tab_window)
         moo_notebook_draw_dragged_label (nb, event);
@@ -1654,12 +1656,11 @@ GtkWidget*  moo_notebook_get_nth_page       (MooNotebook    *notebook,
 }
 
 
-static void     moo_notebook_switch_page    (GtkNotebook     *notebook,
-                                             G_GNUC_UNUSED GtkNotebookPage *whatever,
-                                             guint            page_num)
+static void
+moo_notebook_switch_page (MooNotebook *nb,
+                          guint        page_num)
 {
     Page *page;
-    MooNotebook *nb = MOO_NOTEBOOK (notebook);
     FocusType old_focus = nb->priv->focus;
 
     page = nb->priv->current_page;
@@ -1706,7 +1707,7 @@ void        moo_notebook_set_current_page   (MooNotebook    *notebook,
     if (page_num == moo_notebook_get_current_page (notebook))
         return;
 
-    g_signal_emit (notebook, signals[SWITCH_PAGE], 0, NULL, (guint) page_num);
+    g_signal_emit (notebook, signals[SWITCH_PAGE], 0, (guint) page_num);
 }
 
 
@@ -2986,50 +2987,6 @@ static GtkWidget *popup_func                (G_GNUC_UNUSED MooNotebook *notebook
 /* Focus and keyboard navigation
  */
 
-/*
- *  arrow keys emit GTK_DIR_*
- *  Ctrl-Tab does GTK_DIR_TAB_FORWARD
- *  Shift-Ctrl-Tab does GTK_DIR_TAB_BACKWARD
- */
-static void     moo_notebook_move_focus_out (G_GNUC_UNUSED GtkNotebook    *notebook,
-                                             G_GNUC_UNUSED GtkDirectionType direction)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-
-/*
- *  Space key; move_focus == FALSE
- */
-static gboolean moo_notebook_select_page    (G_GNUC_UNUSED GtkNotebook    *notebook,
-                                             G_GNUC_UNUSED gboolean        move_focus)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-    return FALSE;
-}
-
-
-/*
- *  Home and End
- */
-static gboolean moo_notebook_focus_tab      (G_GNUC_UNUSED GtkNotebook    *notebook,
-                                             G_GNUC_UNUSED GtkNotebookTab  type)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-    return FALSE;
-}
-
-
-/*
- *  [Alt-]Ctrl-PgUp/PgDown
- */
-static void moo_notebook_change_current_page(G_GNUC_UNUSED GtkNotebook    *notebook,
-                                             G_GNUC_UNUSED gint            offset)
-{
-    g_warning ("%s: implement me", G_STRLOC);
-}
-
-
 static gboolean focus_to_action_widget      (MooNotebook    *nb,
                                              int             n,
                                              GtkDirectionType direction)
@@ -3426,5 +3383,5 @@ static void     moo_notebook_set_focus_child(GtkContainer   *container,
         nb->priv->focus = FOCUS_ARROWS;
     }
 
-    GTK_CONTAINER_CLASS(moo_notebook_grand_parent_class)->set_focus_child (container, child);
+    GTK_CONTAINER_CLASS(moo_notebook_parent_class)->set_focus_child (container, child);
 }

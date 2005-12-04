@@ -86,7 +86,6 @@ static void     setup_notebook          (MooEditWindow      *window);
 static void     update_window_title     (MooEditWindow      *window);
 
 static void     notebook_switch_page    (MooNotebook        *notebook,
-                                         gpointer            whatever,
                                          guint               page_num,
                                          MooEditWindow      *window);
 static gboolean notebook_populate_popup (MooNotebook        *notebook,
@@ -936,7 +935,6 @@ setup_notebook (MooEditWindow *window)
 
 
 static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
-                                         G_GNUC_UNUSED gpointer whatever,
                                          guint          page_num,
                                          MooEditWindow *window)
 {

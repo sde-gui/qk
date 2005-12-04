@@ -15,7 +15,6 @@
 #ifndef __MOO_NOTEBOOK_H__
 #define __MOO_NOTEBOOK_H__
 
-#include <gtk/gtknotebook.h>
 #include <gtk/gtkmenu.h>
 
 G_BEGIN_DECLS
@@ -34,17 +33,20 @@ typedef struct _MooNotebookClass    MooNotebookClass;
 
 struct _MooNotebook
 {
-    GtkNotebook         parent;
+    GtkContainer container;
     MooNotebookPrivate *priv;
 };
 
 struct _MooNotebookClass
 {
-    GtkNotebookClass parent_class;
+    GtkContainerClass container_class;
 
     gboolean    (*populate_popup)   (MooNotebook    *notebook,
                                      GtkWidget      *child,
                                      GtkMenu        *menu);
+
+    void        (*switch_page)      (MooNotebook    *notebook,
+                                     guint           page_num);
 };
 
 
