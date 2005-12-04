@@ -15,6 +15,7 @@
 #define MOOUTILS_DIALOGS_H
 
 #include <gtk/gtkwidget.h>
+#include <gtk/gtkmessagedialog.h>
 
 G_BEGIN_DECLS
 
@@ -60,6 +61,21 @@ const char *moo_font_dialog                 (GtkWidget  *parent,
 gboolean    moo_overwrite_file_dialog       (GtkWidget  *parent,
                                              const char *display_name,
                                              const char *display_dirname);
+
+void        moo_message_dialog              (GtkWidget  *parent,
+                                             GtkMessageType type,
+                                             const char *text,
+                                             const char *secondary_text,
+                                             gboolean    at_mouse,
+                                             gboolean    at_coords,
+                                             int         x,
+                                             int         y);
+void        moo_position_window             (GtkWidget  *window,
+                                             GtkWidget  *parent,
+                                             gboolean    at_mouse,
+                                             gboolean    at_coords,
+                                             int         x,
+                                             int         y);
 
 void        moo_error_dialog                (GtkWidget  *parent,
                                              const char *text,

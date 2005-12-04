@@ -18,59 +18,183 @@
 #include "mooutils/moocompat.h"
 
 
-static void message_dialog (GtkWidget       *parent,
-                            const char      *text,
-                            const char      *secondary_text,
-                            GtkMessageType   type)
+static GtkWidget *
+create_message_dialog (GtkWindow  *parent,
+                       GtkMessageType type,
+                       const char *text,
+                       const char *secondary_text)
 {
-    GtkWindow *parent_window = NULL;
     GtkWidget *dialog;
 
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-
-    if (GTK_IS_WINDOW (parent))
-        parent_window = GTK_WINDOW (parent);
-    else
-        parent_window = moo_get_toplevel_window ();
-
 #if GTK_CHECK_VERSION(2,6,0)
-    dialog = gtk_message_dialog_new_with_markup (
-        parent_window,
-        GTK_DIALOG_MODAL,
-        type,
-        GTK_BUTTONS_NONE,
-        "<span weight=\"bold\" size=\"larger\">%s</span>", text);
+    dialog = gtk_message_dialog_new_with_markup (parent,
+                                                 GTK_DIALOG_MODAL,
+                                                 type,
+                                                 GTK_BUTTONS_NONE,
+                                                 "<span weight=\"bold\" size=\"larger\">%s</span>", text);
     if (secondary_text)
-        gtk_message_dialog_format_secondary_text (
-            GTK_MESSAGE_DIALOG (dialog),
-            "%s", secondary_text);
+        gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                                  "%s", secondary_text);
 #elif GTK_CHECK_VERSION(2,4,0)
-    dialog = gtk_message_dialog_new_with_markup (
-            parent_window,
-            GTK_DIALOG_MODAL,
-            type,
-            GTK_BUTTONS_NONE,
-            "<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
-            text, secondary_text ? secondary_text : "");
+    dialog = gtk_message_dialog_new_with_markup (parent,
+                                                 GTK_DIALOG_MODAL,
+                                                 type,
+                                                 GTK_BUTTONS_NONE,
+                                                 "<span weight=\"bold\" size=\"larger\">%s</span>\n%s",
+                                                 text, secondary_text ? secondary_text : "");
 #else /* !GTK_CHECK_VERSION(2,4,0) */
-    dialog = gtk_message_dialog_new (
-            parent_window,
-            GTK_DIALOG_MODAL,
-            type,
-            GTK_BUTTONS_NONE,
-            "%s\n%s",
-            text, secondary_text ? secondary_text : "");
+    dialog = gtk_message_dialog_new (parent,
+                                     GTK_DIALOG_MODAL,
+                                     type,
+                                     GTK_BUTTONS_NONE,
+                                     "%s\n%s",
+                                     text, secondary_text ? secondary_text : "");
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                            GTK_STOCK_OK, GTK_RESPONSE_CANCEL,
+                            GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
                             NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog),
                                      GTK_RESPONSE_CANCEL);
 
-    if (parent_window && parent_window->group)
-        gtk_window_group_add_window (parent_window->group, GTK_WINDOW (dialog));
+    if (parent && parent->group)
+        gtk_window_group_add_window (parent->group, GTK_WINDOW (dialog));
+
+    return dialog;
+}
+
+
+/* gtkwindow.c */
+static void
+clamp_window_to_rectangle (gint               *x,
+                           gint               *y,
+                           gint                w,
+                           gint                h,
+                           const GdkRectangle *rect)
+{
+    /* if larger than the screen, center on the screen. */
+    if (w > rect->width)
+        *x = rect->x - (w - rect->width) / 2;
+    else if (*x < rect->x)
+        *x = rect->x;
+    else if (*x + w > rect->x + rect->width)
+        *x = rect->x + rect->width - w;
+
+    if (h > rect->height)
+        *y = rect->y - (h - rect->height) / 2;
+    else if (*y < rect->y)
+        *y = rect->y;
+    else if (*y + h > rect->y + rect->height)
+        *y = rect->y + rect->height - h;
+}
+
+
+static void
+position_window (GtkWindow *dialog)
+{
+    GdkPoint *coord;
+    int screen_width, screen_height, monitor_num;
+    GdkRectangle monitor;
+    GdkScreen *screen;
+    GtkRequisition req;
+
+    g_signal_handlers_disconnect_by_func (dialog,
+                                          (gpointer) position_window,
+                                          NULL);
+
+    coord = g_object_get_data (G_OBJECT (dialog), "moo-coords");
+    g_return_if_fail (coord != NULL);
+
+    screen = gtk_widget_get_screen (GTK_WIDGET (dialog));
+    g_return_if_fail (screen != NULL);
+
+    screen_width = gdk_screen_get_width (screen);
+    screen_height = gdk_screen_get_height (screen);
+    monitor_num = gdk_screen_get_monitor_at_point (screen, coord->x, coord->y);
+
+    gtk_widget_size_request (GTK_WIDGET (dialog), &req);
+
+    coord->x = coord->x - req.width / 2;
+    coord->y = coord->y - req.height / 2;
+    coord->x = CLAMP (coord->x, 0, screen_width - req.width);
+    coord->y = CLAMP (coord->y, 0, screen_height - req.height);
+
+    gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
+    clamp_window_to_rectangle (&coord->x, &coord->y, req.width, req.height, &monitor);
+
+    gtk_window_move (dialog, coord->x, coord->y);
+}
+
+
+void
+moo_position_window (GtkWidget  *window,
+                     GtkWidget  *parent,
+                     gboolean    at_mouse,
+                     gboolean    at_coords,
+                     int         x,
+                     int         y)
+{
+    g_return_if_fail (GTK_IS_WINDOW (window));
+    g_return_if_fail (!GTK_WIDGET_REALIZED (window));
+
+    if (!at_mouse && !at_coords && parent && GTK_WIDGET_REALIZED (parent))
+    {
+        if (GTK_WIDGET_TOPLEVEL (parent))
+        {
+            gdk_window_get_origin (parent->window, &x, &y);
+        }
+        else
+        {
+            GdkWindow *parent_window = gtk_widget_get_parent_window (parent);
+            gdk_window_get_origin (parent_window, &x, &y);
+            x += parent->allocation.x;
+            y += parent->allocation.y;
+        }
+
+        x += parent->allocation.width / 2;
+        y += parent->allocation.height / 2;
+        at_coords = TRUE;
+    }
+
+    if (at_mouse)
+    {
+        gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
+    }
+    else if (at_coords)
+    {
+        GdkPoint *coord = g_new (GdkPoint, 1);
+        coord->x = x;
+        coord->y = y;
+        g_object_set_data_full (G_OBJECT (window), "moo-coords", coord, g_free);
+        g_signal_connect (window, "realize",
+                          G_CALLBACK (position_window),
+                          NULL);
+    }
+}
+
+
+void
+moo_message_dialog (GtkWidget  *parent,
+                    GtkMessageType type,
+                    const char *text,
+                    const char *secondary_text,
+                    gboolean    at_mouse,
+                    gboolean    at_coords,
+                    int         x,
+                    int         y)
+{
+    GtkWidget *dialog, *toplevel = NULL;
+
+    if (parent)
+        toplevel = gtk_widget_get_toplevel (parent);
+    if (!toplevel || !GTK_WIDGET_TOPLEVEL (toplevel))
+        toplevel = NULL;
+
+    dialog = create_message_dialog (toplevel ? GTK_WINDOW (toplevel) : NULL,
+                                    type, text, secondary_text);
+    g_return_if_fail (dialog != NULL);
+
+    moo_position_window (dialog, parent, at_mouse, at_coords, x, y);
 
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
@@ -82,7 +206,10 @@ moo_error_dialog (GtkWidget  *parent,
                   const char *text,
                   const char *secondary_text)
 {
-    return message_dialog (parent, text, secondary_text, GTK_MESSAGE_ERROR);
+    moo_message_dialog (parent,
+                        GTK_MESSAGE_ERROR,
+                        text, secondary_text,
+                        FALSE, FALSE, 0, 0);
 }
 
 void
@@ -90,7 +217,10 @@ moo_info_dialog (GtkWidget  *parent,
                  const char *text,
                  const char *secondary_text)
 {
-    return message_dialog (parent, text, secondary_text, GTK_MESSAGE_INFO);
+    moo_message_dialog (parent,
+                        GTK_MESSAGE_INFO,
+                        text, secondary_text,
+                        FALSE, FALSE, 0, 0);
 }
 
 void
@@ -98,7 +228,10 @@ moo_warning_dialog (GtkWidget  *parent,
                     const char *text,
                     const char *secondary_text)
 {
-    return message_dialog (parent, text, secondary_text, GTK_MESSAGE_WARNING);
+    moo_message_dialog (parent,
+                        GTK_MESSAGE_WARNING,
+                        text, secondary_text,
+                        FALSE, FALSE, 0, 0);
 }
 
 
@@ -108,17 +241,16 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
                            const char *display_dirname)
 {
     int response;
-    GtkWidget *dialog;
-    GtkWidget *button;
+    GtkWidget *dialog, *button, *toplevel = NULL;
 
     g_return_val_if_fail (display_name != NULL, FALSE);
 
     if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-    if (parent && !GTK_WIDGET_TOPLEVEL (parent))
-        parent = NULL;
+        toplevel = gtk_widget_get_toplevel (parent);
+    if (!toplevel || !GTK_WIDGET_TOPLEVEL (toplevel))
+        toplevel = NULL;
 
-    dialog = gtk_message_dialog_new (parent ? GTK_WINDOW (parent) : NULL,
+    dialog = gtk_message_dialog_new (toplevel ? GTK_WINDOW (toplevel) : NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_NONE,
@@ -149,8 +281,10 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 
-    if (parent && GTK_WINDOW(parent)->group)
-        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+
+    if (toplevel && GTK_WINDOW(toplevel)->group)
+        gtk_window_group_add_window (GTK_WINDOW(toplevel)->group, GTK_WINDOW (dialog));
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
