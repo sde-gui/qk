@@ -247,7 +247,7 @@ _xdg_glob_hash_insert_text (XdgGlobHashNode *glob_hash_node,
 	    {
 	      XdgGlobHashNode *child;
 	      int found_node = FALSE;
-	      
+
 	      child = node->child;
 	      while (child && child->character == '\0')
 		{
@@ -308,11 +308,13 @@ _xdg_glob_hash_node_lookup_file_name (XdgGlobHashNode *glob_hash_node,
 	  if (*file_name == '\000')
 	    {
 	      n = 0;
-	      mime_types[n++] = node->mime_type;
+              if (node->mime_type)
+	        mime_types[n++] = node->mime_type;
 	      node = node->child;
 	      while (n < n_mime_types && node && node->character == 0)
 		{
-		  mime_types[n++] = node->mime_type;
+                  if (node->mime_type)
+                    mime_types[n++] = node->mime_type;
 		  node = node->next;
 		}
 	    }
@@ -363,7 +365,7 @@ _xdg_glob_hash_lookup_file_name (XdgGlobHash *glob_hash,
  	stopchars[i++] = (char)node->character;
     }
   stopchars[i] = '\0';
- 
+
   ptr = strpbrk (file_name, stopchars);
   while (ptr)
     {
@@ -371,12 +373,12 @@ _xdg_glob_hash_lookup_file_name (XdgGlobHash *glob_hash,
 						mime_types, n_mime_types);
       if (n > 0)
 	return n;
-      
+
       n = _xdg_glob_hash_node_lookup_file_name (glob_hash->simple_node, ptr, TRUE,
 						mime_types, n_mime_types);
       if (n > 0)
 	return n;
-      
+
       ptr = strpbrk (ptr + 1, stopchars);
     }
 
