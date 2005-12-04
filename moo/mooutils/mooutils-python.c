@@ -23,15 +23,14 @@
 #endif
 
 
-PyObject *moo_strv_to_pyobject (char **strv)
+PyObject *
+moo_strv_to_pyobject (char **strv)
 {
     PyObject *result;
     guint len, i;
 
     if (!strv)
-    {
         return_None;
-    }
 
     len = g_strv_length (strv);
     result = PyTuple_New (len);
@@ -43,6 +42,35 @@ PyObject *moo_strv_to_pyobject (char **strv)
     }
 
     return result;
+}
+
+
+static char **
+moo_pyobject_to_strv_no_check (PyObject *seq,
+                               int       len)
+{
+#define CACHE_SIZE 10
+    static char **cache[CACHE_SIZE];
+    static guint n;
+    int i;
+    char **ret;
+
+    g_strfreev (cache[n]);
+
+    cache[n] = ret = g_new (char*, len + 1);
+    ret[len] = NULL;
+
+    for (i = 0; i < len; ++i)
+    {
+        PyObject *item = PySequence_ITEM (seq, i);
+        ret[i] = g_strdup (PyString_AS_STRING (item));
+    }
+
+    if (++n == CACHE_SIZE)
+        n = 0;
+
+    return ret;
+#undef CACHE_SIZE
 }
 
 
@@ -86,16 +114,24 @@ int moo_pyobject_to_strv (PyObject *obj, char ***dest)
         }
     }
 
-    *dest = g_new (char*, len + 1);
-    (*dest)[len] = NULL;
-
-    for (i = 0; i < len; ++i)
-    {
-        PyObject *item = PySequence_ITEM (obj, i);
-        (*dest)[i] = g_strdup (PyString_AS_STRING (item));
-    }
+    *dest = moo_pyobject_to_strv_no_check (obj, len);
 
     return TRUE;
+}
+
+
+int
+moo_pyobject_to_strv_no_null (PyObject  *obj,
+                              char    ***dest)
+{
+    if (obj == Py_None)
+    {
+        PyErr_SetString (PyExc_TypeError,
+                         "argument must be a sequence, not None");
+        return FALSE;
+    }
+
+    return moo_pyobject_to_strv (obj, dest);
 }
 
 

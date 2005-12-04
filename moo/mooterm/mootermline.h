@@ -22,6 +22,8 @@ G_BEGIN_DECLS
 typedef struct _MooTermCell MooTermCell;
 typedef struct _MooTermLine MooTermLine;
 
+#define MOO_TYPE_TERM_LINE (moo_term_line_get_type ())
+
 
 #define MOO_TERM_EMPTY_CHAR  ' '
 #define MOO_TERM_ZERO_ATTR {0, 0, 0}
@@ -34,6 +36,8 @@ typedef struct _MooTermLine MooTermLine;
     (!((a1__).mask & MOO_TERM_TEXT_BACKGROUND) ||       \
         (a1__).background == (a2__).background))
 
+
+GType       moo_term_line_get_type      (void) G_GNUC_CONST;
 
 guint       moo_term_line_len           (MooTermLine    *line);
 gunichar    moo_term_line_get_char      (MooTermLine    *line,

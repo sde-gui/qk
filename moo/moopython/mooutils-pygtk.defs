@@ -128,12 +128,10 @@
 )
 
 
-(define-boxed UINode
+(define-pointer UINode
   (in-module "Moo")
   (c-name "MooUINode")
   (gtype-id "MOO_TYPE_UI_NODE")
-  (copy-func "moo_ui_node_ref")
-  (release-func "moo_ui_node_unref")
 )
 
 (define-boxed PaneLabel

@@ -25,9 +25,12 @@ PyObject    *moo_py_object_ref              (PyObject       *obj);
 void         moo_py_object_unref            (PyObject       *obj);
 GType        moo_py_object_get_type         (void) G_GNUC_CONST;
 
-
 PyObject    *moo_strv_to_pyobject           (char          **strv);
+
+/* result may not be freed */
 int          moo_pyobject_to_strv           (PyObject       *obj,
+                                             char         ***dest);
+int          moo_pyobject_to_strv_no_null   (PyObject       *obj,
                                              char         ***dest);
 
 PyObject    *moo_object_slist_to_pyobject   (GSList         *list);

@@ -54,60 +54,6 @@ _wrap_moo_term_new (PyGObject *self, PyObject *args, PyObject *kwargs)
     return 0;
 }
 %%
-override moo_term_fork_command_line kwargs
-static PyObject *
-_wrap_moo_term_fork_command_line (PyGObject *self, PyObject *args, PyObject *kwargs)
-{
-    static char *kwlist[] = {(char*)"cmd", (char*)"working_dir", (char*)"env", NULL};
-    const char *cmd = NULL;
-    const char *working_dir = NULL;
-    char **env = NULL;
-    GError *error = NULL;
-
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "s|sO&:Term.fork_command_line",
-                                      kwlist, &cmd, &working_dir,
-                                      moo_pyobject_to_strv, &env))
-        return NULL;
-
-    if (working_dir)
-        g_print ("working_dir: %s\n", working_dir);
-
-    moo_term_fork_command_line (MOO_TERM (self->obj), cmd,
-                                working_dir, env, &error);
-    g_strfreev (env);
-
-    if (pyg_error_check (&error))
-        return NULL;
-
-    return_None;
-}
-%%
-override moo_term_fork_argv kwargs
-static PyObject *
-_wrap_moo_term_fork_argv (PyGObject *self, PyObject *args, PyObject *kwargs)
-{
-    static char *kwlist[] = {(char*)"argv", (char*)"working_dir", (char*)"env", NULL};
-    const char *working_dir = NULL;
-    char **argv = NULL;
-    char **env = NULL;
-    GError *error = NULL;
-
-    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "O&|sO&:Term.fork_argv",
-         kwlist, moo_pyobject_to_strv, &argv,
-         &working_dir, moo_pyobject_to_strv, &env))
-        return NULL;
-
-    moo_term_fork_argv (MOO_TERM (self->obj), argv,
-                        working_dir, env, &error);
-    g_strfreev (env);
-    g_strfreev (argv);
-
-    if (pyg_error_check (&error))
-        return NULL;
-
-    return_None;
-}
-%%
 override moo_term_copy_clipboard kwargs
 static PyObject *
 _wrap_moo_term_copy_clipboard (PyGObject *self, PyObject *args, PyObject *kwargs)
@@ -274,4 +220,15 @@ _wrap_moo_term_get_screen_size (PyGObject *self)
     guint columns, rows;
     moo_term_get_screen_size (MOO_TERM (self->obj), &columns, &rows);
     return Py_BuildValue ((char*) "(ii)", columns, rows);
+}
+%%
+override moo_term_command_copy noargs
+static PyObject *
+_wrap_moo_term_command_copy (PyObject *self)
+{
+    MooTermCommand *ret;
+
+    ret = moo_term_command_copy (pyg_boxed_get (self, MooTermCommand));
+
+    return pyg_boxed_new (MOO_TYPE_TERM_COMMAND, ret, FALSE, TRUE);
 }

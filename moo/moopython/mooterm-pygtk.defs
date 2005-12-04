@@ -55,6 +55,12 @@
   (release-func "moo_term_profile_free")
 )
 
+(define-pointer TermLine
+  (in-module "Moo")
+  (c-name "MooTermLine")
+  (gtype-id "MOO_TYPE_TERM_LINE")
+)
+
 
 ;; Enumerations and flags ...
 
@@ -388,11 +394,11 @@
 (define-method fork_command
   (of-object "MooTerm")
   (c-name "moo_term_fork_command")
-  (return-type "gboolean")
+  (return-type "none")
   (parameters
     '("const-MooTermCommand*" "cmd")
-    '("const-char*" "working_dir")
-    '("char**" "envp")
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
+    '("strv" "envp" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
 )
@@ -400,25 +406,41 @@
 (define-method fork_command_line
   (of-object "MooTerm")
   (c-name "moo_term_fork_command_line")
-  (return-type "gboolean")
+  (return-type "none")
   (parameters
     '("const-char*" "cmd_line")
-    '("const-char*" "working_dir")
-    '("char**" "envp")
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
+    '("strv" "envp" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
+  (docstring "fork_command_line(cmd, [working_dir, env]) -> None. Starts process in the terminal\n"
+             "\n"
+             "cmd - command line\n"
+             "working_dir - working directory for new process\n"
+             "env - sequence of strings representing environment variables \n"
+             "for new process, in format 'VARIABLE=value'\n"
+             "\n"
+             "Raises gobject.GError on error.")
 )
 
 (define-method fork_argv
   (of-object "MooTerm")
   (c-name "moo_term_fork_argv")
-  (return-type "gboolean")
+  (return-type "none")
   (parameters
-    '("char**" "argv")
-    '("const-char*" "working_dir")
-    '("char**" "envp")
+    '("strv" "argv")
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
+    '("strv" "envp" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
+  (docstring "fork_argv(cmd, [working_dir, env]) -> None. Starts process in the terminal\n"
+             "\n"
+             "argv - sequence of command line arguments\n"
+             "working_dir - working directory for new process\n"
+             "env - sequence of strings representing environment variables \n"
+             "for new process, in format 'VARIABLE=value'\n"
+             "\n"
+             "Raises gobject.GError on error.")
 )
 
 (define-method child_alive
@@ -579,8 +601,8 @@
   (parameters
     '("const-char*" "name")
     '("const-MooTermCommand*" "cmd")
-    '("char**" "envp")
-    '("const-char*" "working_dir")
+    '("strv" "env" (null-ok) (default "NULL"))
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
   )
 )
 
@@ -705,8 +727,8 @@
   (is-constructor-of "MooTermCommand")
   (return-type "MooTermCommand*")
   (parameters
-    '("const-char*" "cmd_line")
-    '("char**" "argv")
+    '("const-char*" "cmd_line" (null-ok) (default "NULL"))
+    '("strv" "argv" (null-ok) (default "NULL"))
   )
 )
 
@@ -714,12 +736,6 @@
   (of-object "MooTermCommand")
   (c-name "moo_term_command_copy")
   (return-type "MooTermCommand*")
-)
-
-(define-method free
-  (of-object "MooTermCommand")
-  (c-name "moo_term_command_free")
-  (return-type "none")
 )
 
 

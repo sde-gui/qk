@@ -2455,22 +2455,13 @@ moo_ui_xml_finalize (GObject *object)
 }
 
 
-static gpointer
-ptr_copy (gpointer boxed)
-{
-    return boxed;
-}
-
-
 GType
 moo_ui_node_get_type (void)
 {
     static GType type = 0;
 
     if (!type)
-        type = g_boxed_type_register_static ("MooUINode",
-                                             (GBoxedCopyFunc) ptr_copy,
-                                             (GBoxedFreeFunc) ptr_copy);
+        type = g_pointer_type_register_static ("MooUINode");
 
     return type;
 }

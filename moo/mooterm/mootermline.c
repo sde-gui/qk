@@ -697,3 +697,15 @@ moo_term_line_get_text (MooTermLine    *line,
 
     return g_string_free (text, FALSE);
 }
+
+
+GType
+moo_term_line_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_pointer_type_register_static ("MooTermLine");
+
+    return type;
+}
