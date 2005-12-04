@@ -1166,14 +1166,15 @@ moo_app_run_real (MooApp *app)
 }
 
 
-static gboolean moo_app_try_quit_real   (MooApp         *app)
+static gboolean
+moo_app_try_quit_real (MooApp *app)
 {
     GSList *l, *list;
 
     if (!app->priv->running)
         return FALSE;
 
-    if (!moo_editor_close_all (app->priv->editor))
+    if (!moo_editor_close_all (app->priv->editor, TRUE))
         return TRUE;
 
     list = g_slist_copy (app->priv->terminals);
@@ -1232,7 +1233,7 @@ static void     moo_app_quit_real       (MooApp         *app)
     app->priv->terminals = NULL;
     app->priv->term_window = NULL;
 
-    moo_editor_close_all (app->priv->editor);
+    moo_editor_close_all (app->priv->editor, TRUE);
     g_object_unref (app->priv->editor);
     app->priv->editor = NULL;
 

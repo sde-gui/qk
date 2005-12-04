@@ -376,33 +376,67 @@
 ;;   )
 ;; )
 
+(define-method close
+  (of-object "MooEdit")
+  (c-name "moo_edit_close")
+  (parameters
+    '("gboolean" "ask_confirm" (null-ok) (default "TRUE"))
+  )
+  (return-type "gboolean")
+  (docstring "close(ask_confirm=True) -> bool - closes document.\n"
+             "\n"
+             "If ask_confirm is False, closes document. Otherwise, checks\n"
+             "whether document is saved, and ask user confirmation if needed.")
+)
+
 (define-method save
   (of-object "MooEdit")
   (c-name "moo_edit_save")
-  (return-type "gboolean")
+  (parameters
+    '("GError**" "error")
+  )
+  (return-type "none")
+  (docstring "save() -> None - saves document.\n"
+             "\n"
+             "Saves document and raises gobject.GError on error.\n"
+             "Note that document must have filename, i.e. it should have \n"
+             "been saved before or opened from disk. Otherwise it will present\n"
+             "Save As dialog."
+  )
 )
 
 (define-method save_as
   (of-object "MooEdit")
   (c-name "moo_edit_save_as")
-  (return-type "gboolean")
+  (return-type "none")
   (parameters
     '("const-char*" "filename" (null-ok) (default "NULL"))
     '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+  (docstring "save_as([filename, encoding]) -> None - saves document with new name.\n"
+             "\n"
+             "Saves document and raises gobject.GError on error.\n"
+             "If filename is not specified, then it presents Save As \n"
+             "dialog asking user for name to use."
   )
 )
 
 (define-method save_copy
   (of-object "MooEdit")
   (c-name "moo_edit_save_copy")
-  (return-type "gboolean")
+  (return-type "none")
   (parameters
     '("const-char*" "filename")
     '("const-char*" "encoding" (null-ok) (default "NULL"))
     '("GError**" "error")
   )
+  (docstring "save_copy(filename, [encoding]) -> None - saves copy of document.\n"
+             "\n"
+             "Saves document contents with given name, and raises gobject.GError on\n"
+             "error."
+  )
 )
-
 
 
 ;; From mooeditprefs.h

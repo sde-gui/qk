@@ -74,7 +74,8 @@ static void          do_close_window        (MooEditor      *editor,
 static void          do_close_doc           (MooEditor      *editor,
                                              MooEdit        *doc);
 static gboolean      close_docs_real        (MooEditor      *editor,
-                                             GSList         *docs);
+                                             GSList         *docs,
+                                             gboolean        ask_confirm);
 static GSList       *find_modified          (GSList         *docs);
 static MooEditLoader*get_loader             (MooEditor      *editor,
                                              MooEdit        *doc);
@@ -103,6 +104,7 @@ struct _MooEditorPrivate {
 
     gboolean         save_backups;
     gboolean         strip_whitespace;
+    gboolean         silent;
 
     GType            window_type;
     GType            doc_type;
@@ -128,7 +130,8 @@ enum {
     PROP_ALLOW_EMPTY_WINDOW,
     PROP_SINGLE_WINDOW,
     PROP_SAVE_BACKUPS,
-    PROP_STRIP_WHITESPACE
+    PROP_STRIP_WHITESPACE,
+    PROP_SILENT
 };
 
 enum {
@@ -189,6 +192,14 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                      g_param_spec_boolean ("strip-whitespace",
                                              "strip-whitespace",
                                              "strip-whitespace",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SILENT,
+                                     g_param_spec_boolean ("silent",
+                                             "silent",
+                                             "silent",
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
@@ -266,6 +277,11 @@ static void     moo_editor_set_property (GObject        *object,
             g_object_notify (object, "strip-whitespace");
             break;
 
+        case PROP_SILENT:
+            editor->priv->silent = g_value_get_boolean (value);
+            g_object_notify (object, "silent");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -299,6 +315,10 @@ static void     moo_editor_get_property (GObject        *object,
 
         case PROP_STRIP_WHITESPACE:
             g_value_set_boolean (value, editor->priv->strip_whitespace);
+            break;
+
+        case PROP_SILENT:
+            g_value_set_boolean (value, editor->priv->silent);
             break;
 
         default:
@@ -799,17 +819,29 @@ moo_editor_new_window (MooEditor *editor)
 
 /* this creates MooEdit instance which can not be put into a window */
 MooEdit*
-moo_editor_create_doc (MooEditor *editor)
+moo_editor_create_doc (MooEditor      *editor,
+                       const char     *filename,
+                       const char     *encoding,
+                       GError        **error)
 {
     MooEdit *doc;
+    MooEditLoader *loader;
+    MooEditSaver *saver;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+    loader = moo_edit_loader_get_default ();
+    saver = moo_edit_saver_get_default ();
 
-    moo_editor_add_doc (editor, NULL, doc,
-                        moo_edit_loader_get_default (),
-                        moo_edit_saver_get_default ());
+    if (filename && !moo_edit_loader_load (loader, doc, filename, encoding, error))
+    {
+        gtk_object_sink (g_object_ref (doc));
+        g_object_unref (doc);
+        return NULL;
+    }
+
+    moo_editor_add_doc (editor, NULL, doc, loader, saver);
     _moo_doc_attach_plugins (NULL, doc);
 
     return doc;
@@ -1026,7 +1058,8 @@ moo_editor_set_active_doc (MooEditor      *editor,
 
 gboolean
 moo_editor_close_window (MooEditor      *editor,
-                         MooEditWindow  *window)
+                         MooEditWindow  *window,
+                         gboolean        ask_confirm)
 {
     WindowInfo *info;
     MooEditDialogResponse response;
@@ -1041,7 +1074,7 @@ moo_editor_close_window (MooEditor      *editor,
 
     modified = find_modified (info->docs);
 
-    if (!modified)
+    if (!modified || !ask_confirm)
     {
         do_close = TRUE;
     }
@@ -1055,7 +1088,7 @@ moo_editor_close_window (MooEditor      *editor,
         switch (response)
         {
             case MOO_EDIT_RESPONSE_SAVE:
-                if (_moo_editor_save (editor, modified->data))
+                if (_moo_editor_save (editor, modified->data, NULL))
                     do_close = TRUE;
                 break;
 
@@ -1078,7 +1111,7 @@ moo_editor_close_window (MooEditor      *editor,
         {
             case MOO_EDIT_RESPONSE_SAVE:
                 for (l = to_save; l != NULL; l = l->next)
-                    if (!_moo_editor_save (editor, l->data))
+                    if (!_moo_editor_save (editor, l->data, NULL))
                     {
                         saved = FALSE;
                         break;
@@ -1154,13 +1187,14 @@ do_close_doc (MooEditor      *editor,
 
 gboolean
 moo_editor_close_doc (MooEditor      *editor,
-                      MooEdit        *doc)
+                      MooEdit        *doc,
+                      gboolean        ask_confirm)
 {
     gboolean result;
     GSList *list;
 
     list = g_slist_prepend (NULL, doc);
-    result = moo_editor_close_docs (editor, list);
+    result = moo_editor_close_docs (editor, list, ask_confirm);
 
     g_slist_free (list);
     return result;
@@ -1169,7 +1203,8 @@ moo_editor_close_doc (MooEditor      *editor,
 
 gboolean
 moo_editor_close_docs (MooEditor      *editor,
-                       GSList         *list)
+                       GSList         *list,
+                       gboolean        ask_confirm)
 {
     WindowInfo *info;
     GSList *l;
@@ -1188,7 +1223,7 @@ moo_editor_close_docs (MooEditor      *editor,
     info = window_list_find_doc (editor, list->data);
     g_return_val_if_fail (info != NULL, FALSE);
 
-    if (close_docs_real (editor, list))
+    if (close_docs_real (editor, list, ask_confirm))
     {
         if (info->window &&
             !moo_edit_window_num_docs (info->window) &&
@@ -1213,7 +1248,8 @@ moo_editor_close_docs (MooEditor      *editor,
 
 static gboolean
 close_docs_real (MooEditor      *editor,
-                 GSList         *docs)
+                 GSList         *docs,
+                 gboolean        ask_confirm)
 {
     MooEditDialogResponse response;
     GSList *modified, *l;
@@ -1221,7 +1257,7 @@ close_docs_real (MooEditor      *editor,
 
     modified = find_modified (docs);
 
-    if (!modified)
+    if (!modified || !ask_confirm)
     {
         do_close = TRUE;
     }
@@ -1238,7 +1274,7 @@ close_docs_real (MooEditor      *editor,
         switch (response)
         {
             case MOO_EDIT_RESPONSE_SAVE:
-                if (_moo_editor_save (editor, modified->data))
+                if (_moo_editor_save (editor, modified->data, NULL))
                     do_close = TRUE;
                 break;
 
@@ -1261,7 +1297,7 @@ close_docs_real (MooEditor      *editor,
         {
             case MOO_EDIT_RESPONSE_SAVE:
                 for (l = to_save; l != NULL; l = l->next)
-                    if (!_moo_editor_save (editor, l->data))
+                    if (!_moo_editor_save (editor, l->data, NULL))
                 {
                     saved = FALSE;
                     break;
@@ -1303,7 +1339,8 @@ find_modified (GSList *docs)
 
 
 gboolean
-moo_editor_close_all (MooEditor *editor)
+moo_editor_close_all (MooEditor *editor,
+                      gboolean   ask_confirm)
 {
     GSList *windows, *l;
 
@@ -1313,7 +1350,7 @@ moo_editor_close_all (MooEditor *editor)
 
     for (l = windows; l != NULL; l = l->next)
     {
-        if (!moo_editor_close_window (editor, l->data))
+        if (!moo_editor_close_window (editor, l->data, ask_confirm))
         {
             g_slist_free (windows);
             return FALSE;
@@ -1403,11 +1440,12 @@ moo_editor_open_uri (MooEditor      *editor,
 
 void
 _moo_editor_reload (MooEditor      *editor,
-                    MooEdit        *doc)
+                    MooEdit        *doc,
+                    GError        **error)
 {
     WindowInfo *info;
     MooEditLoader *loader;
-    GError *error = NULL;
+    GError *error_here = NULL;
     int cursor_line, cursor_offset;
     GtkTextIter iter;
 
@@ -1422,20 +1460,23 @@ _moo_editor_reload (MooEditor      *editor,
     /* XXX */
     g_return_if_fail (moo_edit_get_filename (doc) != NULL);
 
-    if (!MOO_EDIT_IS_CLEAN (doc) && MOO_EDIT_IS_MODIFIED (doc) &&
+    if (!editor->priv->silent &&
+         !MOO_EDIT_IS_CLEAN (doc) &&
+         MOO_EDIT_IS_MODIFIED (doc) &&
          !moo_edit_reload_modified_dialog (doc))
-            return;
+                return;
 
     moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
     cursor_line = gtk_text_iter_get_line (&iter);
     cursor_offset = gtk_text_iter_get_line_offset (&iter);
 
-    if (!moo_edit_loader_reload (loader, doc, &error))
+    if (!moo_edit_loader_reload (loader, doc, &error_here))
     {
-        moo_edit_reload_error_dialog (GTK_WIDGET (doc),
-                                      error ? error->message : NULL);
-        if (error)
-            g_error_free (error);
+        if (!editor->priv->silent)
+            moo_edit_reload_error_dialog (GTK_WIDGET (doc), error_here->message);
+        else
+            g_propagate_error (error, error_here);
+
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
         return;
     }
@@ -1484,11 +1525,12 @@ do_save (MooEditor    *editor,
 
 gboolean
 _moo_editor_save (MooEditor      *editor,
-                  MooEdit        *doc)
+                  MooEdit        *doc,
+                  GError        **error)
 {
     WindowInfo *info;
     MooEditSaver *saver;
-    GError *error = NULL;
+    GError *error_here = NULL;
     char *filename;
     char *encoding;
     gboolean result = FALSE;
@@ -1502,21 +1544,29 @@ _moo_editor_save (MooEditor      *editor,
     g_return_val_if_fail (saver != NULL, FALSE);
 
     if (!moo_edit_get_filename (doc))
-        return _moo_editor_save_as (editor, doc, NULL, NULL);
+        return _moo_editor_save_as (editor, doc, NULL, NULL, error);
 
     filename = g_strdup (moo_edit_get_filename (doc));
     encoding = g_strdup (moo_edit_get_encoding (doc));
 
-    if ((moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
+    if (!editor->priv->silent &&
+         (moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
          !moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!do_save (editor, saver, doc, filename, encoding, &error))
+    if (!do_save (editor, saver, doc, filename, encoding, &error_here))
     {
-        moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
-                                    error ? error->message : NULL);
-        if (error)
-            g_error_free (error);
+        if (!editor->priv->silent)
+        {
+            moo_edit_save_error_dialog (GTK_WIDGET (doc), filename,
+                                        error_here->message);
+            g_error_free (error_here);
+        }
+        else
+        {
+            g_propagate_error (error, error_here);
+        }
+
         goto out;
     }
 
@@ -1535,11 +1585,12 @@ gboolean
 _moo_editor_save_as (MooEditor      *editor,
                      MooEdit        *doc,
                      const char     *filename,
-                     const char     *encoding)
+                     const char     *encoding,
+                     GError        **error)
 {
     WindowInfo *info;
     MooEditSaver *saver;
-    GError *error = NULL;
+    GError *error_here = NULL;
     MooEditFileInfo *file_info = NULL;
     gboolean result = FALSE;
 
@@ -1563,12 +1614,20 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new (filename, encoding);
     }
 
-    if (!do_save (editor, saver, doc, file_info->filename, file_info->encoding, &error))
+    if (!do_save (editor, saver, doc, file_info->filename, file_info->encoding, &error_here))
     {
-        moo_edit_save_error_dialog (GTK_WIDGET (doc), file_info->filename,
-                                    error ? error->message : NULL);
-        if (error)
-            g_error_free (error);
+        if (!editor->priv->silent)
+        {
+            moo_edit_save_error_dialog (GTK_WIDGET (doc),
+                                        file_info->filename,
+                                        error_here->message);
+            g_error_free (error_here);
+        }
+        else
+        {
+            g_propagate_error (error, error_here);
+        }
+
         goto out;
     }
 

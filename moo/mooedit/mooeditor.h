@@ -52,7 +52,10 @@ GType            moo_editor_get_type        (void) G_GNUC_CONST;
 MooEditor       *moo_editor_instance        (void);
 
 /* this creates 'windowless' MooEdit instance */
-MooEdit         *moo_editor_create_doc      (MooEditor      *editor);
+MooEdit         *moo_editor_create_doc      (MooEditor      *editor,
+                                             const char     *filename,
+                                             const char     *encoding,
+                                             GError        **error);
 
 MooEditWindow   *moo_editor_new_window      (MooEditor      *editor);
 MooEdit         *moo_editor_new_doc         (MooEditor      *editor,
@@ -89,12 +92,16 @@ void             moo_editor_present         (MooEditor      *editor);
 GSList          *moo_editor_list_windows    (MooEditor      *editor);
 
 gboolean         moo_editor_close_window    (MooEditor      *editor,
-                                             MooEditWindow  *window);
+                                             MooEditWindow  *window,
+                                             gboolean        ask_confirm);
 gboolean         moo_editor_close_doc       (MooEditor      *editor,
-                                             MooEdit        *doc);
+                                             MooEdit        *doc,
+                                             gboolean        ask_confirm);
 gboolean         moo_editor_close_docs      (MooEditor      *editor,
-                                             GSList         *list);
-gboolean         moo_editor_close_all       (MooEditor      *editor);
+                                             GSList         *list,
+                                             gboolean        ask_confirm);
+gboolean         moo_editor_close_all       (MooEditor      *editor,
+                                             gboolean        ask_confirm);
 
 void             moo_editor_set_app_name    (MooEditor      *editor,
                                              const char     *name);
@@ -133,13 +140,16 @@ void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
 
 gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
 void             _moo_editor_reload             (MooEditor      *editor,
-                                                 MooEdit        *doc);
+                                                 MooEdit        *doc,
+                                                 GError        **error);
 gboolean         _moo_editor_save               (MooEditor      *editor,
-                                                 MooEdit        *doc);
+                                                 MooEdit        *doc,
+                                                 GError        **error);
 gboolean         _moo_editor_save_as            (MooEditor      *editor,
                                                  MooEdit        *doc,
                                                  const char     *filename,
-                                                 const char     *encoding);
+                                                 const char     *encoding,
+                                                 GError        **error);
 #endif /* MOOEDIT_COMPILATION */
 
 

@@ -22,6 +22,14 @@
   (of-object "MooEditor")
   (c-name "moo_editor_create_doc")
   (return-type "MooEdit*")
+  (parameters
+    '("const-char*" "filename" (null-ok) (default "NULL"))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+  (docstring "create_doc([filename, encoding]) -> moo.Edit. \n"
+             "\n"
+             "Opens or creates a new document. Raises gobject.GError if open fails.")
 )
 
 (define-method open
@@ -104,6 +112,7 @@
   (return-type "gboolean")
   (parameters
     '("MooEditWindow*" "window")
+    '("gboolean" "ask_confirm")
   )
 )
 
@@ -113,6 +122,7 @@
   (return-type "gboolean")
   (parameters
     '("MooEdit*" "doc")
+    '("gboolean" "ask_confirm")
   )
 )
 
@@ -122,6 +132,7 @@
   (return-type "gboolean")
   (parameters
     '("GSList*" "list")
+    '("gboolean" "ask_confirm")
   )
 )
 
@@ -129,6 +140,9 @@
   (of-object "MooEditor")
   (c-name "moo_editor_close_all")
   (return-type "gboolean")
+  (parameters
+    '("gboolean" "ask_confirm")
+  )
 )
 
 (define-method set_app_name

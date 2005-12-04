@@ -800,7 +800,7 @@ apply_styles (MooEditWindow      *window,
 
 static gboolean moo_edit_window_close       (MooEditWindow      *window)
 {
-    moo_editor_close_window (window->priv->editor, window);
+    moo_editor_close_window (window->priv->editor, window, TRUE);
     return TRUE;
 }
 
@@ -827,7 +827,7 @@ static void moo_edit_window_reload          (MooEditWindow   *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_reload (window->priv->editor, edit);
+    _moo_editor_reload (window->priv->editor, edit, NULL);
 }
 
 
@@ -835,7 +835,7 @@ static void moo_edit_window_save            (MooEditWindow   *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_save (window->priv->editor, edit);
+    _moo_editor_save (window->priv->editor, edit, NULL);
 }
 
 
@@ -843,7 +843,7 @@ static void moo_edit_window_save_as         (MooEditWindow   *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_save_as (window->priv->editor, edit, NULL, NULL);
+    _moo_editor_save_as (window->priv->editor, edit, NULL, NULL, NULL);
 }
 
 
@@ -851,14 +851,14 @@ static void moo_edit_window_close_tab       (MooEditWindow   *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
-    moo_editor_close_doc (window->priv->editor, edit);
+    moo_editor_close_doc (window->priv->editor, edit, TRUE);
 }
 
 
 static void moo_edit_window_close_all       (MooEditWindow   *window)
 {
     GSList *docs = moo_edit_window_list_docs (window);
-    moo_editor_close_docs (window->priv->editor, docs);
+    moo_editor_close_docs (window->priv->editor, docs, TRUE);
     g_slist_free (docs);
 }
 
@@ -1445,7 +1445,7 @@ static void     close_activated         (GtkWidget          *item,
     MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_editor_close_doc (window->priv->editor, edit);
+    moo_editor_close_doc (window->priv->editor, edit, TRUE);
 }
 
 
@@ -1461,7 +1461,7 @@ static void     close_others_activated  (GtkWidget          *item,
     list = moo_edit_window_list_docs (window);
     list = g_slist_remove (list, edit);
 
-    moo_editor_close_docs (window->priv->editor, list);
+    moo_editor_close_docs (window->priv->editor, list, TRUE);
 
     g_slist_free (list);
 }

@@ -722,7 +722,7 @@ drop_untitled (MooFileSelector *filesel,
     if (!name)
         return FALSE;
 
-    result = moo_edit_save_as (doc, name, NULL);
+    result = moo_edit_save_as (doc, name, NULL, NULL);
 
     if (result)
         select_file (filesel, name, destdir);
@@ -746,7 +746,7 @@ doc_save_as (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
             select_file (filesel, filename, destdir);
         g_free (filename);
     }
@@ -788,7 +788,7 @@ doc_move (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
         {
             moo_unlink (old_filename);
             select_file (filesel, filename, destdir);

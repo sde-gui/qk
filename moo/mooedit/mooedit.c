@@ -935,20 +935,31 @@ moo_edit_filename_changed (MooEdit    *edit,
 
 
 gboolean
-moo_edit_save (MooEdit *edit)
+moo_edit_close (MooEdit        *edit,
+                gboolean        ask_confirm)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return _moo_editor_save (edit->priv->editor, edit);
+    return moo_editor_close_doc (edit->priv->editor, edit, ask_confirm);
+}
+
+
+gboolean
+moo_edit_save (MooEdit *edit,
+               GError **error)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return _moo_editor_save (edit->priv->editor, edit, error);
 }
 
 
 gboolean
 moo_edit_save_as (MooEdit        *edit,
                   const char     *filename,
-                  const char     *encoding)
+                  const char     *encoding,
+                  GError        **error)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return _moo_editor_save_as (edit->priv->editor, edit, filename, encoding);
+    return _moo_editor_save_as (edit->priv->editor, edit, filename, encoding, error);
 }
 
 

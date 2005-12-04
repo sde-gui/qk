@@ -1,4 +1,18 @@
-"""moo.edit module"""
+"""moo.edit module
+
+Contains text editor and stuff.
+
+To get an instance of Editor, the object which manages document instances,
+use editor_instance().
+To create new or open existing document, use Editor.create_doc().
+To save or close document use Edit.save() and Edit.close().
+To find out status of document (unsaved, deleted from disk, etc.) use
+Edit.get_status, it returns flags from EditStatus class.
+
+Note that by default Editor shows alerts in various places, like when
+user tries to close document with unsaved changes. To disable this,
+use 'silent' property: editor.set_property("silent", True).
+"""
 from _moo_edit import *
 
 class Plugin(object):

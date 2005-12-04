@@ -168,10 +168,14 @@ void             moo_edit_register_var          (GParamSpec     *pspec);
 void             moo_edit_register_var_alias    (const char     *name,
                                                  const char     *alias);
 
-gboolean         moo_edit_save                  (MooEdit        *edit);
+gboolean         moo_edit_close                 (MooEdit        *edit,
+                                                 gboolean        ask_confirm);
+gboolean         moo_edit_save                  (MooEdit        *edit,
+                                                 GError        **error);
 gboolean         moo_edit_save_as               (MooEdit        *edit,
                                                  const char     *filename,
-                                                 const char     *encoding);
+                                                 const char     *encoding,
+                                                 GError        **error);
 gboolean         moo_edit_save_copy             (MooEdit        *edit,
                                                  const char     *filename,
                                                  const char     *encoding,
