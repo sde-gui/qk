@@ -546,53 +546,85 @@ parent:
 }
 
 
-static char *
-save_as_dialog (GtkWidget   *parent,
-                const char  *dirname,
-                const char  *start_name)
+static GtkWidget *
+create_save_as_dialog (GtkWidget   *parent,
+                       const char  *start_text,
+                       const char  *title,
+                       MooGladeXML **xml)
 {
-    MooGladeXML *xml;
     GtkWidget *dialog, *button;
     GtkEntry *entry;
-    char *fullname = NULL;
-
-    g_return_val_if_fail (dirname != NULL, NULL);
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
     if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
         parent = NULL;
 
-    xml = moo_glade_xml_new_empty ();
-    moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
-    moo_glade_xml_parse_memory (xml, MOO_FILE_SELECTOR_GLADE_XML, -1, NULL);
+    *xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
+    moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1, NULL);
 
-    dialog = moo_glade_xml_get_widget (xml, "save_untitled_dialog");
+    dialog = moo_glade_xml_get_widget (*xml, "save_untitled_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
+
+    gtk_window_set_title (GTK_WINDOW (dialog), title);
 
     if (parent)
         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+    if (parent && GTK_WINDOW(parent)->group)
+        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
 
-    entry = moo_glade_xml_get_widget (xml, "entry");
+    entry = moo_glade_xml_get_widget (*xml, "entry");
 
-    gtk_entry_set_text (entry, start_name);
+    gtk_entry_set_text (entry, start_text);
     moo_entry_clear_undo (MOO_ENTRY (entry));
 
     gtk_widget_show_all (dialog);
     gtk_widget_grab_focus (GTK_WIDGET (entry));
 
-    button = moo_glade_xml_get_widget (xml, "ok_button");
+    button = moo_glade_xml_get_widget (*xml, "ok_button");
     moo_bind_bool_property (button, "sensitive", entry, "empty", TRUE);
+
+    return dialog;
+}
+
+static char *
+save_as_dialog (GtkWidget   *parent,
+                const char  *dirname,
+                const char  *start_name,
+                gboolean     ask_name,
+                const char  *title)
+{
+    MooGladeXML *xml = NULL;
+    GtkWidget *dialog = NULL;
+    GtkEntry *entry = NULL;
+    char *fullname = NULL;
+
+    g_return_val_if_fail (dirname != NULL, NULL);
 
     while (TRUE)
     {
         const char *text;
         char *name, *display_dirname;
 
-        if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
-            goto out;
+        if (!ask_name)
+        {
+            ask_name = TRUE;
+            text = start_name;
+        }
+        else
+        {
+            if (!dialog)
+            {
+                dialog = create_save_as_dialog (parent, start_name, title, &xml);
+                entry = moo_glade_xml_get_widget (xml, "entry");
+            }
 
-        text = gtk_entry_get_text (entry);
+            if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
+                goto out;
+
+            text = gtk_entry_get_text (entry);
+        }
 
         if (!text[0])
         {
@@ -610,7 +642,7 @@ save_as_dialog (GtkWidget   *parent,
             sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
                                         "Please consider simpler name, such as foo.blah "
                                         "or blah.foo", text);
-            moo_error_dialog (dialog, err_text, sec_text);
+            moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
             g_free (err_text);
             g_free (sec_text);
             continue;
@@ -624,7 +656,7 @@ save_as_dialog (GtkWidget   *parent,
 
         display_dirname = g_filename_display_name (dirname);
 
-        if (moo_overwrite_file_dialog (dialog, text, display_dirname))
+        if (moo_overwrite_file_dialog (dialog ? dialog : parent, text, display_dirname))
         {
             g_free (display_dirname);
             goto out;
@@ -636,8 +668,10 @@ save_as_dialog (GtkWidget   *parent,
     }
 
 out:
-    moo_glade_xml_unref (xml);
-    gtk_widget_destroy (dialog);
+    if (xml)
+        moo_glade_xml_unref (xml);
+    if (dialog)
+        gtk_widget_destroy (dialog);
     return fullname;
 }
 
@@ -676,7 +710,8 @@ drop_untitled (MooFileSelector *filesel,
     gboolean result;
 
     name = save_as_dialog (widget, destdir,
-                           moo_edit_get_display_basename (doc));
+                           moo_edit_get_display_basename (doc),
+                           TRUE, "Save As");
 
     if (!name)
         return FALSE;
@@ -694,61 +729,68 @@ drop_untitled (MooFileSelector *filesel,
 static void
 doc_save_as (MooFileSelector *filesel,
              MooEdit         *doc,
+             gboolean         ask_name,
              const char      *destdir)
 {
-    const char *basename;
     char *filename;
 
-    basename = moo_edit_get_basename (doc);
-    g_return_if_fail (basename != NULL);
+    filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
+                               moo_edit_get_display_basename (doc),
+                               ask_name, "Save As");
 
-    filename = g_build_filename (destdir, basename, NULL);
-    if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
-        select_file (filesel, filename, destdir);
-
-    g_free (filename);
+    if (filename)
+    {
+        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+            select_file (filesel, filename, destdir);
+        g_free (filename);
+    }
 }
 
 static void
 doc_save_copy (MooFileSelector *filesel,
                MooEdit         *doc,
+               gboolean         ask_name,
                const char      *destdir)
 {
-    const char *basename;
     char *filename;
 
-    basename = moo_edit_get_basename (doc);
-    g_return_if_fail (basename != NULL);
+    filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
+                               moo_edit_get_display_basename (doc),
+                               ask_name, "Save Copy As");
 
-    filename = g_build_filename (destdir, basename, NULL);
-    if (moo_edit_save_copy (doc, filename, moo_edit_get_encoding (doc), NULL))
-        select_file (filesel, filename, destdir);
-
-    g_free (filename);
+    if (filename)
+    {
+        if (moo_edit_save_copy (doc, filename, moo_edit_get_encoding (doc), NULL))
+            select_file (filesel, filename, destdir);
+        g_free (filename);
+    }
 }
 
 static void
 doc_move (MooFileSelector *filesel,
           MooEdit         *doc,
+          gboolean         ask_name,
           const char      *destdir)
 {
-    const char *basename;
     char *filename, *old_filename;
 
     old_filename = g_strdup (moo_edit_get_filename (doc));
 
-    basename = moo_edit_get_basename (doc);
-    g_return_if_fail (basename != NULL);
+    filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
+                               moo_edit_get_display_basename (doc),
+                               ask_name, "Rename To");
 
-    filename = g_build_filename (destdir, basename, NULL);
-
-    if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+    if (filename)
     {
-        moo_unlink (old_filename);
-        select_file (filesel, filename, destdir);
+        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc)))
+        {
+            moo_unlink (old_filename);
+            select_file (filesel, filename, destdir);
+        }
+
+        g_free (filename);
     }
 
-    g_free (filename);
     g_free (old_filename);
 }
 
@@ -796,13 +838,13 @@ drop_item_activated (GObject         *item,
     switch (action)
     {
         case DROP_DOC_SAVE_AS:
-            doc_save_as (filesel, doc, destdir);
+            doc_save_as (filesel, doc, alternate, destdir);
             break;
         case DROP_DOC_SAVE_COPY:
-            doc_save_copy (filesel, doc, destdir);
+            doc_save_copy (filesel, doc, alternate, destdir);
             break;
         case DROP_DOC_MOVE:
-            doc_move (filesel, doc, destdir);
+            doc_move (filesel, doc, alternate, destdir);
             break;
         default:
             g_return_if_reached ();
@@ -1001,13 +1043,13 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
     switch (action)
     {
         case DROP_DOC_SAVE_AS:
-            doc_save_as (filesel, doc, destdir);
+            doc_save_as (filesel, doc, FALSE, destdir);
             break;
         case DROP_DOC_SAVE_COPY:
-            doc_save_copy (filesel, doc, destdir);
+            doc_save_copy (filesel, doc, FALSE, destdir);
             break;
         case DROP_DOC_MOVE:
-            doc_move (filesel, doc, destdir);
+            doc_move (filesel, doc, FALSE, destdir);
             break;
         default:
             g_return_if_reached ();
