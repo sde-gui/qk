@@ -141,7 +141,7 @@ moo_position_window (GtkWidget  *window,
     {
         if (GTK_WIDGET_TOPLEVEL (parent))
         {
-            gdk_window_get_origin (parent->window, &x, &y);
+            gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER_ON_PARENT);
         }
         else
         {
@@ -149,11 +149,10 @@ moo_position_window (GtkWidget  *window,
             gdk_window_get_origin (parent_window, &x, &y);
             x += parent->allocation.x;
             y += parent->allocation.y;
+            x += parent->allocation.width / 2;
+            y += parent->allocation.height / 2;
+            at_coords = TRUE;
         }
-
-        x += parent->allocation.width / 2;
-        y += parent->allocation.height / 2;
-        at_coords = TRUE;
     }
 
     if (at_mouse)
@@ -165,6 +164,7 @@ moo_position_window (GtkWidget  *window,
         GdkPoint *coord = g_new (GdkPoint, 1);
         coord->x = x;
         coord->y = y;
+        gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_NONE);
         g_object_set_data_full (G_OBJECT (window), "moo-coords", coord, g_free);
         g_signal_connect (window, "realize",
                           G_CALLBACK (position_window),

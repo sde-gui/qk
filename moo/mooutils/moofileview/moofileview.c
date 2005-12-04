@@ -2778,6 +2778,7 @@ static void     file_view_delete_selected       (MooFileView    *fileview)
                                      GTK_MESSAGE_WARNING,
                                      GTK_BUTTONS_NONE,
                                      "%s", message);
+    moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -2803,10 +2804,13 @@ static void     file_view_delete_selected       (MooFileView    *fileview)
                                                  "Could not delete %s '%s'",
                                                  MOO_FILE_IS_DIR (l->data) ? "folder" : "file",
                                                  path);
+
+                moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
+
                 if (error)
                 {
                     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                            "%s", error->message);
+                                                              "%s", error->message);
                     g_error_free (error);
                 }
 

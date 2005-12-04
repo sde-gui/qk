@@ -599,6 +599,7 @@ save_as_dialog (GtkWidget   *parent,
     GtkWidget *dialog = NULL;
     GtkEntry *entry = NULL;
     char *fullname = NULL;
+    gboolean first_time = TRUE;
 
     g_return_val_if_fail (dirname != NULL, NULL);
 
@@ -620,11 +621,16 @@ save_as_dialog (GtkWidget   *parent,
                 entry = moo_glade_xml_get_widget (xml, "entry");
             }
 
+            if (!first_time)
+                moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+
             if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
                 goto out;
 
             text = gtk_entry_get_text (entry);
         }
+
+        first_time = FALSE;
 
         if (!text[0])
         {
