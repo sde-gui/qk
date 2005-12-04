@@ -2623,9 +2623,9 @@ static void     tab_drag_start              (MooNotebook    *nb,
 static void     tab_drag_motion             (MooNotebook    *nb,
                                              GdkEventMotion *event)
 {
-    int x, index_, width, offset, num;
+    int x, new_index, width, offset, num, i;
     GSList *visible, *l;
-    Page *drag_page, *page;
+    Page *drag_page;
     int event_x, event_y;
 
     if (!nb->priv->in_drag)
@@ -2660,30 +2660,49 @@ static void     tab_drag_motion             (MooNotebook    *nb,
     visible = g_slist_remove (visible, drag_page);
     visible = g_slist_insert (visible, drag_page, nb->priv->drag_page_index);
 
-    for (l = visible, index_ = 0, offset = 0; l != NULL; l = l->next, ++index_)
-    {
-        page = l->data;
+    new_index = nb->priv->drag_page_index;
 
-        if (index_ == 0)
+    for (l = visible, i = 0, offset = 0; l != NULL; l = l->next, ++i)
+    {
+        Page *page;
+        int min_width;
+
+        page = l->data;
+        min_width = MIN (page->label->width, width);
+
+        if (i == new_index)
         {
-            if (x + width/2 < offset + page->label->width)
-                break;
+            offset += page->label->width;
+            continue;
         }
-        else if (index_ == num - 1)
+
+        if (i == 0)
         {
-            if (x + width/2 >= offset)
+            if (x + min_width/2 < offset + min_width)
+            {
+                new_index = i;
                 break;
+            }
         }
-        else if (x + width/2 >= offset && x + width/2 < offset + page->label->width)
+        else if (i == num - 1)
         {
+            if (x + min_width/2 >= offset)
+            {
+                new_index = i;
+                break;
+            }
+        }
+        else if (x + min_width/2 >= offset &&
+                 x + min_width/2 < offset + min_width)
+        {
+            new_index = i;
             break;
         }
 
         offset += page->label->width;
     }
 
-    if (index_ != nb->priv->drag_page_index)
-        nb->priv->drag_page_index = index_;
+    nb->priv->drag_page_index = new_index;
 
     if (nb->priv->labels_width > nb->priv->labels_visible_width)
     {
