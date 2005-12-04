@@ -2349,6 +2349,7 @@ find_label_at_xy (MooNotebook    *nb,
         return NULL;
 
     /* here it must go through all the pages because they may be swapped on drag */
+    /* XXX so it could just check if we are in drag */
     VISIBLE_FOREACH_START(nb, page)
     {
         int lx = page->label->offset - nb->priv->labels_offset;
