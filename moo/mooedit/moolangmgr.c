@@ -885,6 +885,7 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr     *mgr,
 
 #ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
+    /* It's a big problem! */
 
     mime_type = xdg_mime_get_mime_type_for_file (filename, NULL);
 
@@ -921,6 +922,7 @@ moo_lang_mgr_get_lang_for_filename (MooLangMgr *mgr,
 
 #ifdef MOO_USE_XDGMIME
     /* XXX: xdgmime wants utf8-encoded filename here. is it a problem? */
+    /* It's a big problem! */
 
     mime_type = xdg_mime_get_mime_type_from_file_name (filename);
 
