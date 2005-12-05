@@ -26,6 +26,8 @@ moofileview_sources =                          \
     $(moofileview)/moobookmarkmgr.c            \
     $(moofileview)/moobookmarkmgr.h            \
     $(moofileview)/moobookmarkmgr-glade.h      \
+    $(moofileview)/moobookmarkview.c           \
+    $(moofileview)/moobookmarkview.h           \
     $(moofileview)/moocreatefolder-glade.h     \
     $(moofileview)/moofileviewdrop-glade.h     \
     $(moofileview)/moofile.c                   \

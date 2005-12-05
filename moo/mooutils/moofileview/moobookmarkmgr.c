@@ -199,6 +199,14 @@ moo_bookmark_mgr_new (void)
 }
 
 
+GtkTreeModel *
+moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr)
+{
+    g_return_val_if_fail (MOO_IS_BOOKMARK_MGR (mgr), NULL);
+    return GTK_TREE_MODEL (mgr->priv->store);
+}
+
+
 gboolean
 moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
 {

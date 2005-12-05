@@ -28,6 +28,7 @@
 #include "mooutils/moofileview/moofileview-private.h"
 #include "mooutils/moofileview/moofileview-ui.h"
 #include "mooutils/moofileview/mootreeview.h"
+#include "mooutils/moofileview/moobookmarkview.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
@@ -54,7 +55,8 @@
 
 enum {
     TREEVIEW_PAGE = 0,
-    ICONVIEW_PAGE = 1
+    ICONVIEW_PAGE = 1,
+    BOOKMARK_PAGE = 2
 };
 
 
@@ -98,11 +100,13 @@ struct _MooFileViewPrivate {
     GtkIconSize      icon_size;
     GtkNotebook     *notebook;
     MooFileViewType  view_type;
+    MooFileViewType  file_view_type;
 
     MooTreeView     *view;
     GtkTreeView     *treeview;
     GtkTreeViewColumn *tree_name_column;
     MooIconView     *iconview;
+    MooBookmarkView *bkview;
 
     GtkMenu         *bookmarks_menu;
     MooBookmarkMgr  *bookmark_mgr;
@@ -188,6 +192,8 @@ static void         bookmark_activate       (MooBookmarkMgr *mgr,
                                              MooBookmark    *bookmark,
                                              MooFileView    *activated,
                                              MooFileView    *fileview);
+static void         bookmark_activated      (MooFileView    *fileview,
+                                             MooBookmark    *bookmark);
 
 static void         history_init            (MooFileView    *fileview);
 static void         history_free            (MooFileView    *fileview);
@@ -245,10 +251,10 @@ static void     fileview_set_use_filter     (MooFileView    *fileview,
                                              gboolean        block_signals);
 
 static GtkWidget *create_treeview           (MooFileView    *fileview);
-
 static GtkWidget *create_iconview           (MooFileView    *fileview);
+static GtkWidget *create_bookmark_view      (MooFileView    *fileview);
 
-static GtkWidget *get_file_view_widget      (MooFileView    *fileview);
+static GtkWidget *get_view_widget           (MooFileView    *fileview);
 static void     file_view_move_selection    (MooFileView    *fileview,
                                              GtkTreeIter    *filter_iter);
 static GList   *file_view_get_selected_files(MooFileView    *fileview);
@@ -269,6 +275,8 @@ static void     file_view_delete_selected   (MooFileView    *fileview);
 static void     file_view_create_folder     (MooFileView    *fileview);
 static void     file_view_properties_dialog (MooFileView    *fileview);
 
+static void     view_files                  (MooFileView    *fileview);
+static void     view_bookmarks              (MooFileView    *fileview);
 static void     add_bookmark                (MooFileView    *fileview);
 static void     edit_bookmarks              (MooFileView    *fileview);
 
@@ -310,6 +318,34 @@ static gboolean icon_drag_motion            (MooIconView    *iconview,
                                              int             y,
                                              guint           time,
                                              MooFileView    *fileview);
+
+#if 0
+static void     bookmark_drag_data_received (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time,
+                                             MooBookmarkView *bkview);
+static gboolean bookmark_drag_drop          (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             MooBookmarkView *bkview);
+static void     bookmark_drag_leave         (MooFileView    *fileview,
+                                             GdkDragContext *context,
+                                             guint           time,
+                                             MooBookmarkView *bkview);
+static gboolean bookmark_drag_motion        (MooBookmarkView *bkview,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time,
+                                             MooFileView    *fileview);
+#endif
+
 static gboolean moo_file_view_drop          (MooFileView    *fileview,
                                              const char     *path,
                                              GtkWidget      *widget,
@@ -812,7 +848,7 @@ static void moo_file_view_init      (MooFileView *fileview)
 {
     fileview->priv = g_new0 (MooFileViewPrivate, 1);
     fileview->priv->show_hidden_files = FALSE;
-    fileview->priv->view_type = MOO_FILE_VIEW_ICON;
+    fileview->priv->file_view_type = fileview->priv->view_type = MOO_FILE_VIEW_ICON;
     fileview->priv->use_current_filter = FALSE;
     fileview->priv->icon_size = GTK_ICON_SIZE_MENU;
 
@@ -1008,6 +1044,8 @@ moo_file_view_chdir_real (MooFileView    *fileview,
     if (!folder)
         return FALSE;
 
+    view_files (fileview);
+
     moo_file_view_set_current_dir (fileview, folder);
     g_object_unref (folder);
     return TRUE;
@@ -1130,6 +1168,15 @@ init_actions (MooFileView *fileview)
     moo_bind_bool_property (action, "sensitive", fileview, "has-selection", FALSE);
 
     moo_action_group_add_action (fileview->priv->actions,
+                                 "id", "BookmarksMenu",
+                                 "label", "Bookmarks",
+                                 "tooltip", "Bookmarks",
+                                 "icon-stock-id", GTK_STOCK_ABOUT,
+                                 "closure-object", fileview,
+                                 "closure-callback", view_bookmarks,
+                                 NULL);
+
+    moo_action_group_add_action (fileview->priv->actions,
                                  "id", "AddBookmark",
                                  "label", "Add Bookmark",
                                  "tooltip", "Add Bookmark",
@@ -1236,62 +1283,82 @@ init_gui (MooFileView *fileview)
     gtk_widget_show (filter_combo);
     gtk_box_pack_start (box, filter_combo, FALSE, FALSE, 0);
 
-    if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
+    switch (fileview->priv->view_type)
     {
-        gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
-                                       ICONVIEW_PAGE);
-        moo_tree_view_set_active (fileview->priv->view,
-                                  GTK_WIDGET (fileview->priv->iconview));
-    }
-    else
-    {
-        gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
-                                       TREEVIEW_PAGE);
-        moo_tree_view_set_active (fileview->priv->view,
-                                  GTK_WIDGET (fileview->priv->treeview));
+        case MOO_FILE_VIEW_ICON:
+            fileview->priv->file_view_type = MOO_FILE_VIEW_ICON;
+            gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
+                                           ICONVIEW_PAGE);
+            moo_tree_view_set_active (fileview->priv->view,
+                                      GTK_WIDGET (fileview->priv->iconview));
+            break;
+
+        case MOO_FILE_VIEW_LIST:
+            fileview->priv->file_view_type = MOO_FILE_VIEW_LIST;
+            gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
+                                           TREEVIEW_PAGE);
+            moo_tree_view_set_active (fileview->priv->view,
+                                      GTK_WIDGET (fileview->priv->treeview));
+
+        case MOO_FILE_VIEW_BOOKMARK:
+            fileview->priv->file_view_type = MOO_FILE_VIEW_ICON;
+            gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook),
+                                           BOOKMARK_PAGE);
     }
 
     focus_to_file_view (fileview);
 }
 
 
-static void         focus_to_file_view      (MooFileView    *fileview)
+static void
+focus_to_file_view (MooFileView *fileview)
 {
-    gtk_widget_grab_focus (get_file_view_widget (fileview));
+    gtk_widget_grab_focus (get_view_widget (fileview));
 }
 
 
-static void         focus_to_filter_entry   (MooFileView    *fileview)
+static void
+focus_to_filter_entry (MooFileView *fileview)
 {
     gtk_widget_grab_focus (GTK_WIDGET(fileview->priv->filter_entry));
 }
 
 
-void        moo_file_view_set_view_type     (MooFileView    *fileview,
-                                             MooFileViewType type)
+void
+moo_file_view_set_view_type (MooFileView    *fileview,
+                             MooFileViewType type)
 {
-    g_return_if_fail (type == MOO_FILE_VIEW_ICON ||
-            type == MOO_FILE_VIEW_LIST);
-
     if (fileview->priv->view_type == type)
         return;
 
-    fileview->priv->view_type = type;
+    cancel_drop_open (fileview);
 
-    if (type == MOO_FILE_VIEW_LIST)
+    switch (type)
     {
-        moo_tree_view_set_active (fileview->priv->view,
-                                  GTK_WIDGET (fileview->priv->treeview));
-        gtk_notebook_set_current_page (fileview->priv->notebook,
-                                       TREEVIEW_PAGE);
+        case MOO_FILE_VIEW_LIST:
+            fileview->priv->file_view_type = MOO_FILE_VIEW_LIST;
+            moo_tree_view_set_active (fileview->priv->view,
+                                      GTK_WIDGET (fileview->priv->treeview));
+            gtk_notebook_set_current_page (fileview->priv->notebook,
+                                           TREEVIEW_PAGE);
+            break;
+
+        case MOO_FILE_VIEW_ICON:
+            fileview->priv->file_view_type = MOO_FILE_VIEW_ICON;
+            moo_tree_view_set_active (fileview->priv->view,
+                                      GTK_WIDGET (fileview->priv->iconview));
+            gtk_notebook_set_current_page (fileview->priv->notebook,
+                                           ICONVIEW_PAGE);
+            break;
+
+        case MOO_FILE_VIEW_BOOKMARK:
+            fileview->priv->file_view_type = fileview->priv->view_type;
+            gtk_notebook_set_current_page (fileview->priv->notebook,
+                                           BOOKMARK_PAGE);
+            break;
     }
-    else
-    {
-        moo_tree_view_set_active (fileview->priv->view,
-                                  GTK_WIDGET (fileview->priv->iconview));
-        gtk_notebook_set_current_page (fileview->priv->notebook,
-                                       ICONVIEW_PAGE);
-    }
+
+    fileview->priv->view_type = type;
 }
 
 
@@ -1365,9 +1432,10 @@ create_tree_view_proxy (MooFileView *fileview)
 }
 
 
-static GtkWidget   *create_notebook     (MooFileView    *fileview)
+static GtkWidget *
+create_notebook (MooFileView *fileview)
 {
-    GtkWidget *notebook, *swin, *treeview, *iconview;
+    GtkWidget *notebook, *swin, *treeview, *iconview, *bkview;
 
     notebook = gtk_notebook_new ();
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK (notebook), FALSE);
@@ -1401,6 +1469,17 @@ static GtkWidget   *create_notebook     (MooFileView    *fileview)
     gtk_container_add (GTK_CONTAINER (swin), iconview);
     fileview->priv->iconview = MOO_ICON_VIEW (iconview);
     moo_tree_view_add (fileview->priv->view, iconview);
+
+    swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_widget_show (swin);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), swin, NULL);
+    bkview = create_bookmark_view (fileview);
+    gtk_widget_show (bkview);
+    gtk_container_add (GTK_CONTAINER (swin), bkview);
+    fileview->priv->bkview = MOO_BOOKMARK_VIEW (bkview);
 
     return notebook;
 }
@@ -1588,6 +1667,44 @@ create_iconview (MooFileView *fileview)
 }
 
 
+static GtkWidget *
+create_bookmark_view (MooFileView *fileview)
+{
+    GtkWidget *bkview;
+
+    bkview = moo_bookmark_view_new (NULL);
+
+//     gtk_tree_view_enable_drag_source (GTK_TREE_VIEW (bkview),
+//                                       GDK_BUTTON1_MASK,
+//                                       source_targets,
+//                                       G_N_ELEMENTS (source_targets),
+//                                       GDK_ACTION_ASK | GDK_ACTION_COPY |
+//                                               GDK_ACTION_MOVE | GDK_ACTION_LINK);
+//     gtk_tree_view_enable_drag_dest (GTK_TREE_VIEW (bkview), NULL, 0,
+//                                     GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
+//     gtk_tree_view_set_dest_targets (GTK_TREE_VIEW (bkview),
+//                                     fileview->priv->targets);
+//
+//     g_signal_connect_swapped (bkview, "drag-data-received",
+//                               G_CALLBACK (bookmark_drag_data_received),
+//                               fileview);
+//     g_signal_connect_swapped (bkview, "drag-drop",
+//                               G_CALLBACK (bookmark_drag_drop),
+//                               fileview);
+//     g_signal_connect_swapped (bkview, "drag-leave",
+//                               G_CALLBACK (bookmark_drag_leave),
+//                               fileview);
+//     g_signal_connect_after (bkview, "drag-motion",
+//                             G_CALLBACK (bookmark_drag_motion),
+//                             fileview);
+
+    g_signal_connect_swapped (bkview, "bookmark-activated",
+                              G_CALLBACK (bookmark_activated), fileview);
+
+    return bkview;
+}
+
+
 static gboolean moo_file_view_check_visible (MooFileView    *fileview,
                                              MooFile        *file,
                                              gboolean        ignore_hidden,
@@ -1713,9 +1830,10 @@ static void size_data_func  (G_GNUC_UNUSED GObject            *column_or_iconvie
 #endif
 
 
-gboolean    moo_file_view_chdir             (MooFileView    *fileview,
-                                             const char     *dir,
-                                             GError        **error)
+gboolean
+moo_file_view_chdir (MooFileView    *fileview,
+                     const char     *dir,
+                     GError        **error)
 {
     gboolean result;
 
@@ -1728,12 +1846,19 @@ gboolean    moo_file_view_chdir             (MooFileView    *fileview,
 
 
 /* TODO */
-static void         moo_file_view_go_up     (MooFileView    *fileview)
+static void
+moo_file_view_go_up (MooFileView *fileview)
 {
     MooFolder *parent = NULL;
 
     if (fileview->priv->entry_state)
         stop_path_entry (fileview, TRUE);
+
+    if (fileview->priv->view_type == MOO_FILE_VIEW_BOOKMARK)
+    {
+        view_files (fileview);
+        return;
+    }
 
     if (fileview->priv->current_dir)
         parent = moo_folder_get_parent (fileview->priv->current_dir,
@@ -2001,6 +2126,12 @@ moo_file_view_go (MooFileView *fileview,
     if (fileview->priv->entry_state)
         stop_path_entry (fileview, TRUE);
 
+    if (fileview->priv->view_type == MOO_FILE_VIEW_BOOKMARK)
+    {
+        view_files (fileview);
+        return;
+    }
+
     dir = history_get (fileview, where);
 
     if (dir)
@@ -2017,8 +2148,6 @@ moo_file_view_go (MooFileView *fileview,
                 g_warning ("%s: %s", G_STRLOC, error->message);
                 g_error_free (error);
             }
-
-//             history_remove (fileview, dir);
         }
         else
         {
@@ -3106,12 +3235,20 @@ static void         toggle_show_hidden      (MooFileView    *fileview)
 }
 
 
-static GtkWidget   *get_file_view_widget        (MooFileView    *fileview)
+static GtkWidget *
+get_view_widget (MooFileView *fileview)
 {
-    if (fileview->priv->view_type == MOO_FILE_VIEW_ICON)
-        return GTK_WIDGET(fileview->priv->iconview);
-    else
-        return GTK_WIDGET(fileview->priv->treeview);
+    switch (fileview->priv->view_type)
+    {
+        case MOO_FILE_VIEW_ICON:
+            return GTK_WIDGET(fileview->priv->iconview);
+        case MOO_FILE_VIEW_LIST:
+            return GTK_WIDGET(fileview->priv->treeview);
+        case MOO_FILE_VIEW_BOOKMARK:
+            return GTK_WIDGET(fileview->priv->bkview);
+    }
+
+    g_return_val_if_reached (NULL);
 }
 
 
@@ -3152,10 +3289,33 @@ moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
                       "activate", G_CALLBACK (bookmark_activate),
                       fileview);
 
+    moo_bookmark_view_set_mgr (fileview->priv->bkview, mgr);
+
     g_object_set_data (G_OBJECT (fileview),
                        "moo-file-view-bookmarks-editor",
                        NULL);
     g_object_notify (G_OBJECT (fileview), "bookmark-mgr");
+}
+
+
+static void
+view_bookmarks (MooFileView *fileview)
+{
+    MooFileViewType new_type;
+
+    if (fileview->priv->view_type == MOO_FILE_VIEW_BOOKMARK)
+        new_type = fileview->priv->file_view_type;
+    else
+        new_type = MOO_FILE_VIEW_BOOKMARK;
+
+    moo_file_view_set_view_type (fileview, new_type);
+}
+
+static void
+view_files (MooFileView *fileview)
+{
+    if (fileview->priv->view_type == MOO_FILE_VIEW_BOOKMARK)
+        moo_file_view_set_view_type (fileview, fileview->priv->file_view_type);
 }
 
 
@@ -3217,6 +3377,15 @@ bookmark_activate (G_GNUC_UNUSED MooBookmarkMgr *mgr,
     if (activated != fileview)
         return;
 
+    moo_file_view_chdir (fileview, bookmark->path, NULL);
+}
+
+
+static void
+bookmark_activated (MooFileView    *fileview,
+                    MooBookmark    *bookmark)
+{
+    g_return_if_fail (bookmark != NULL && bookmark->path != NULL);
     moo_file_view_chdir (fileview, bookmark->path, NULL);
 }
 
@@ -3543,7 +3712,7 @@ static gboolean entry_key_press     (GtkEntry       *entry,
         case GDK_KP_Up:
         case GDK_Down:
         case GDK_KP_Down:
-            filewidget = get_file_view_widget (fileview);
+            filewidget = get_view_widget (fileview);
             GTK_WIDGET_CLASS(G_OBJECT_GET_CLASS (filewidget))->
                     key_press_event (filewidget, event);
             name = get_selected_display_name (fileview);
@@ -5429,3 +5598,99 @@ out:
     g_free (name);
     return result;
 }
+
+
+#if 0
+static void
+bookmark_drag_data_received (MooFileView    *fileview,
+                             GdkDragContext *context,
+                             int             x,
+                             int             y,
+                             GtkSelectionData *data,
+                             guint           info,
+                             guint           time,
+                             MooBookmarkView *bkview);
+
+
+static gboolean
+bookmark_drag_drop (MooFileView    *fileview,
+                    GdkDragContext *context,
+                    int             x,
+                    int             y,
+                    guint           time,
+                    MooBookmarkView *bkview);
+
+
+static void
+bookmark_drag_leave (MooFileView    *fileview,
+                     GdkDragContext *context,
+                     guint           time,
+                     MooBookmarkView *bkview);
+
+
+static gboolean
+bookmark_drag_motion (MooBookmarkView *bkview,
+                      GdkDragContext *context,
+                      int             x,
+                      int             y,
+                      guint           time,
+                      MooFileView    *fileview)
+{
+    MooFolder *source_dir;
+    MooFolder *current_dir;
+    GtkTreePath *path = NULL;
+    MooIconViewCell cell;
+    int cell_x, cell_y;
+    gboolean new_timeout = TRUE;
+
+    if (!check_drop_targets (fileview, context, GTK_WIDGET (bkview)) ||
+         !moo_tree_view_get_path_at_pos (bkview, x, y, &path, &cell_x, &cell_y))
+    {
+        moo_tree_view_set_drag_dest_row (bkview, NULL);
+        cancel_drop_open (fileview);
+        return FALSE;
+    }
+
+    moo_tree_view_set_drag_dest_row (bkview, path);
+
+    gdk_drag_status (context, context->actions & GDK_ACTION_MOVE ?
+                     GDK_ACTION_MOVE : context->suggested_action, time);
+
+    if (fileview->priv->drop_to.row)
+    {
+        GtkTreePath *old_path = gtk_tree_row_reference_get_path (fileview->priv->drop_to.row);
+
+        if (old_path && !gtk_tree_path_compare (path, old_path) &&
+            fileview->priv->drop_to.cell == cell &&
+            !gtk_drag_check_threshold (GTK_WIDGET (bkview),
+                                       fileview->priv->drop_to.x,
+                                       fileview->priv->drop_to.y,
+                                       cell_x,
+                                       cell_y))
+        {
+            new_timeout = FALSE;
+            g_assert (fileview->priv->drop_to.timeout != 0);
+        }
+    }
+
+    if (new_timeout)
+    {
+        cancel_drop_open (fileview);
+
+        fileview->priv->drop_to.row =
+                gtk_tree_row_reference_new (moo_tree_view_get_model (bkview), path);
+        fileview->priv->drop_to.timeout =
+                g_timeout_add (DROP_OPEN_TIMEOUT,
+                               (GSourceFunc) drop_open_timeout_func,
+                               fileview);
+        fileview->priv->drop_to.x = cell_x;
+        fileview->priv->drop_to.y = cell_y;
+        fileview->priv->drop_to.cell = cell;
+    }
+
+out:
+    if (path)
+        gtk_tree_path_free (path);
+    return TRUE;
+}
+#endif

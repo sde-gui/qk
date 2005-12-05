@@ -32,7 +32,8 @@ G_BEGIN_DECLS
 
 typedef enum {
     MOO_FILE_VIEW_LIST,
-    MOO_FILE_VIEW_ICON
+    MOO_FILE_VIEW_ICON,
+    MOO_FILE_VIEW_BOOKMARK
 } MooFileViewType;
 
 typedef struct _MooFileView         MooFileView;
