@@ -919,18 +919,7 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     widget->window = gtk_widget_get_parent_window (widget);
     g_object_ref (widget->window);
 
-    settings = gtk_widget_get_settings (widget);
-    notebook_style = gtk_rc_get_style_by_paths (settings, NULL, "*", GTK_TYPE_NOTEBOOK);
-
-    if (notebook_style)
-    {
-        g_object_ref (notebook_style);
-        widget->style = gtk_style_attach (notebook_style, widget->window);
-    }
-    else
-    {
-        widget->style = gtk_style_attach (widget->style, widget->window);
-    }
+    widget->style = gtk_style_attach (widget->style, widget->window);
 
     /* Tabs window */
     attributes.x = widget->allocation.x + border_width + nb->priv->action_widgets_size[LEFT];
@@ -966,6 +955,15 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     {
         Page *page = l->data;
         gtk_widget_set_parent_window (page->label->widget, nb->priv->tab_window);
+    }
+
+    settings = gtk_widget_get_settings (widget);
+    notebook_style = gtk_rc_get_style_by_paths (settings, NULL, "*.GtkNotebook", GTK_TYPE_NOTEBOOK);
+
+    if (notebook_style)
+    {
+        g_object_ref (notebook_style);
+        widget->style = gtk_style_attach (notebook_style, widget->window);
     }
 }
 
