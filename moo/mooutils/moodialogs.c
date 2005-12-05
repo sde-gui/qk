@@ -134,8 +134,20 @@ moo_position_window (GtkWidget  *window,
                      int         x,
                      int         y)
 {
+    GtkWidget *toplevel = NULL;
+
     g_return_if_fail (GTK_IS_WINDOW (window));
     g_return_if_fail (!GTK_WIDGET_REALIZED (window));
+
+    if (parent)
+        toplevel = gtk_widget_get_toplevel (parent);
+    if (toplevel && !GTK_WIDGET_TOPLEVEL (toplevel))
+        toplevel = NULL;
+
+    if (toplevel)
+        gtk_window_set_transient_for (GTK_WINDOW (window), GTK_WINDOW (toplevel));
+    if (toplevel && GTK_WINDOW(toplevel)->group)
+        gtk_window_group_add_window (GTK_WINDOW(toplevel)->group, GTK_WINDOW (window));
 
     if (!at_mouse && !at_coords && parent && GTK_WIDGET_REALIZED (parent))
     {

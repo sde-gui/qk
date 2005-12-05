@@ -2899,9 +2899,6 @@ static void     file_view_delete_selected       (MooFileView    *fileview)
         message = g_strdup ("Delete selected files?");
     }
 
-    parent = gtk_widget_get_toplevel (GTK_WIDGET (fileview));
-    parent_window = GTK_IS_WINDOW (parent) ? GTK_WINDOW (parent) : NULL;
-
     dialog = gtk_message_dialog_new (parent_window,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING,
@@ -3360,10 +3357,7 @@ edit_bookmarks (MooFileView *fileview)
                           G_CALLBACK (gtk_widget_hide_on_delete), NULL);
     }
 
-    parent = gtk_widget_get_toplevel (GTK_WIDGET (fileview));
-    if (GTK_IS_WINDOW (parent) && !GTK_WIDGET_VISIBLE (dialog))
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
-
+    moo_position_window (dialog, GTK_WIDGET (fileview), FALSE, FALSE, 0, 0);
     gtk_window_present (GTK_WINDOW (dialog));
 }
 

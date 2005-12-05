@@ -13,6 +13,7 @@
 
 #include "mooutils/moocellrenderercolor.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moodialogs.h"
 #include <gtk/gtkcolorseldialog.h>
 
 #define CELL_MIN_WIDTH 20
@@ -212,14 +213,23 @@ moo_cell_renderer_color_get_size (GtkCellRenderer *gtkcell,
                                   gint            *width,
                                   gint            *height)
 {
+    int border_x = CELL_BORDER_WIDTH;
+    int border_y = CELL_BORDER_WIDTH;
+
+    if (widget->style)
+    {
+        border_x = widget->style->xthickness;
+        border_y = widget->style->ythickness;
+    }
+
     if (x_offset)
         *x_offset = 0;
     if (y_offset)
         *y_offset = 0;
     if (width)
-        *width = 2 * gtkcell->xpad + 2 * CELL_BORDER_WIDTH + CELL_MIN_WIDTH;
+        *width = 2 * gtkcell->xpad + 2 * border_x + CELL_MIN_WIDTH;
     if (height)
-        *height = 2 * gtkcell->ypad + 2 * CELL_BORDER_WIDTH + CELL_MIN_HEIGHT;
+        *height = 2 * gtkcell->ypad + 2 * border_y + CELL_MIN_HEIGHT;
 }
 
 
@@ -236,7 +246,6 @@ moo_cell_renderer_color_render (GtkCellRenderer      *gtkcell,
     MooCellRendererColor *cell = MOO_CELL_RENDERER_COLOR (gtkcell);
     GdkRectangle rect;
     GdkGC *gc;
-    GdkColor *color;
 
     rect = *cell_area;
     rect.x += gtkcell->xpad;
@@ -294,7 +303,7 @@ moo_cell_renderer_color_activate (GtkCellRenderer      *gtkcell,
 
     if (cell->activatable)
     {
-        GtkWidget *dialog, *toplevel;
+        GtkWidget *dialog;
         GtkColorSelectionDialog *color_dialog;
         GtkColorSelection *colorsel;
         GdkColor color;
@@ -306,9 +315,7 @@ moo_cell_renderer_color_activate (GtkCellRenderer      *gtkcell,
 
         gtk_color_selection_set_current_color (colorsel, &cell->color);
 
-        toplevel = gtk_widget_get_toplevel (widget);
-        if (GTK_WIDGET_TOPLEVEL (toplevel))
-            gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (toplevel));
+        moo_position_window (dialog, widget, TRUE, FALSE, 0, 0);
         response = gtk_dialog_run (GTK_DIALOG (dialog));
 
         if (response == GTK_RESPONSE_OK)

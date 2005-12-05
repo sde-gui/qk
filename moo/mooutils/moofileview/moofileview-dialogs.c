@@ -297,10 +297,7 @@ moo_file_props_dialog_new (GtkWidget *parent)
 
     dialog = g_object_new (MOO_TYPE_FILE_PROPS_DIALOG, NULL);
 
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-    if (parent && GTK_WIDGET_TOPLEVEL (parent))
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     return dialog;
 }
@@ -316,11 +313,6 @@ moo_create_folder_dialog (GtkWidget  *parent,
 
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
 
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-    if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
-        parent = NULL;
-
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
     moo_glade_xml_parse_memory (xml, MOO_CREATE_FOLDER_GLADE_UI, -1, NULL);
@@ -328,8 +320,7 @@ moo_create_folder_dialog (GtkWidget  *parent,
     dialog = moo_glade_xml_get_widget (xml, "dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
 
-    if (parent)
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     label = moo_glade_xml_get_widget (xml, "label");
     path = g_filename_display_name (moo_folder_get_path (folder));
@@ -426,11 +417,6 @@ moo_file_view_save_drop_dialog (GtkWidget          *parent,
 
     g_return_val_if_fail (dirname != NULL, NULL);
 
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-    if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
-        parent = NULL;
-
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
     moo_glade_xml_parse_memory (xml, MOO_FILE_VIEW_DROP_GLADE_UI, -1, NULL);
@@ -438,10 +424,7 @@ moo_file_view_save_drop_dialog (GtkWidget          *parent,
     dialog = moo_glade_xml_get_widget (xml, "save_drop_dialog");
     g_return_val_if_fail (dialog != NULL, NULL);
 
-    if (parent)
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
-    if (parent && GTK_WINDOW(parent)->group)
-        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
+    moo_position_window (dialog, parent, TRUE, FALSE, 0, 0);
 
     entry = moo_glade_xml_get_widget (xml, "entry");
 

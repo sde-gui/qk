@@ -555,11 +555,6 @@ create_save_as_dialog (GtkWidget   *parent,
     GtkWidget *dialog, *button;
     GtkEntry *entry;
 
-    if (parent)
-        parent = gtk_widget_get_toplevel (parent);
-    if (!parent || !GTK_WIDGET_TOPLEVEL (parent))
-        parent = NULL;
-
     *xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (*xml, "GtkEntry", MOO_TYPE_ENTRY);
     moo_glade_xml_parse_memory (*xml, MOO_FILE_SELECTOR_GLADE_XML, -1, NULL);
@@ -569,10 +564,7 @@ create_save_as_dialog (GtkWidget   *parent,
 
     gtk_window_set_title (GTK_WINDOW (dialog), title);
 
-    if (parent)
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
-    if (parent && GTK_WINDOW(parent)->group)
-        gtk_window_group_add_window (GTK_WINDOW(parent)->group, GTK_WINDOW (dialog));
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     entry = moo_glade_xml_get_widget (*xml, "entry");
 
@@ -620,9 +612,6 @@ save_as_dialog (GtkWidget   *parent,
                 dialog = create_save_as_dialog (parent, start_name, title, &xml);
                 entry = moo_glade_xml_get_widget (xml, "entry");
             }
-
-            if (!first_time)
-                moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
             if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
                 goto out;

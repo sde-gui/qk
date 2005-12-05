@@ -14,6 +14,7 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/moodialogs.h"
 
 
 enum {
@@ -319,15 +320,9 @@ void
 moo_prefs_dialog_run (MooPrefsDialog *dialog,
                       GtkWidget      *parent)
 {
-    GtkWindow *parent_window = NULL;
-
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    if (parent)
-    {
-        parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);
-    }
+    moo_position_window (GTK_WIDGET (dialog), parent, FALSE, FALSE, 0, 0);
 
     g_signal_emit_by_name (dialog, "init");
     gtk_window_present (GTK_WINDOW (dialog));

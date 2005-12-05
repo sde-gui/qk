@@ -385,10 +385,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                       "dialog", NULL);
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
-    parent = gtk_widget_get_toplevel (docs->data);
-
-    if (parent && GTK_WIDGET_TOPLEVEL (parent))
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (parent));
+    moo_position_window (dialog, docs->data, FALSE, FALSE, 0, 0);
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
@@ -595,21 +592,6 @@ moo_edit_file_modified_on_disk_dialog (MooEdit *edit)
 /* Search dialogs
  */
 
-static GtkWindow *
-get_parent_window (GtkWidget *widget)
-{
-    if (widget)
-    {
-        widget = gtk_widget_get_toplevel (widget);
-
-        if (GTK_WIDGET_TOPLEVEL (widget))
-            return GTK_WINDOW (widget);
-    }
-
-    return NULL;
-}
-
-
 void
 moo_text_nothing_found_dialog (GtkWidget      *parent,
                                const char     *text,
@@ -625,10 +607,12 @@ moo_text_nothing_found_dialog (GtkWidget      *parent,
     else
         msg_text = g_strdup_printf ("Search string '%s' not found!", text);
 
-    dialog = gtk_message_dialog_new (get_parent_window (parent),
+    dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
@@ -655,9 +639,11 @@ moo_text_search_from_start_dialog (GtkWidget *widget,
         msg = "End of document reached.\n"
               "Continue from the beginning?";
 
-    dialog = gtk_message_dialog_new (get_parent_window (widget), GTK_DIALOG_MODAL,
+    dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
                                      msg);
+    moo_position_window (dialog, widget, FALSE, FALSE, 0, 0);
+
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             GTK_STOCK_NO, GTK_RESPONSE_CANCEL,
                             GTK_STOCK_YES, GTK_RESPONSE_YES,
@@ -704,10 +690,11 @@ moo_text_regex_error_dialog (GtkWidget  *parent,
         msg_text = g_strdup_printf ("Invalid regular expression");
     }
 
-    dialog = gtk_message_dialog_new (get_parent_window (parent),
+    dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_ERROR, GTK_BUTTONS_NONE,
                                      msg_text);
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
@@ -733,10 +720,11 @@ moo_text_replaced_n_dialog (GtkWidget *parent,
     else
         msg_text = g_strdup_printf ("%d replacements made", n);
 
-    dialog = gtk_message_dialog_new (get_parent_window (parent),
+    dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
                                      msg_text);
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
                             GTK_RESPONSE_CANCEL, NULL);
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
@@ -759,7 +747,7 @@ moo_text_prompt_on_replace_dialog (GtkWidget *parent)
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     moo_glade_xml_unref (xml);
 
-    gtk_window_set_transient_for (GTK_WINDOW (dialog), get_parent_window (parent));
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     return dialog;
 }

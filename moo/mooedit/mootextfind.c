@@ -20,6 +20,7 @@
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/moodialogs.h"
 #include <gtk/gtk.h>
 
 
@@ -213,7 +214,6 @@ void
 moo_find_setup (MooFind        *find,
                 GtkTextView    *view)
 {
-    GtkWidget *parent;
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
     MooCombo *search_entry;
@@ -221,10 +221,7 @@ moo_find_setup (MooFind        *find,
     g_return_if_fail (MOO_IS_FIND (find));
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
-    parent = gtk_widget_get_toplevel (GTK_WIDGET (view));
-
-    if (GTK_WIDGET_TOPLEVEL (parent))
-        gtk_window_set_transient_for (GTK_WINDOW (find), GTK_WINDOW (parent));
+    moo_position_window (GTK_WIDGET (find), GTK_WIDGET (view), FALSE, FALSE, 0, 0);
 
     buffer = gtk_text_view_get_buffer (view);
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
@@ -973,8 +970,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
     g_signal_connect (scale, "value-changed", G_CALLBACK (update_spin_value), spin);
     g_signal_connect (spin, "value-changed", G_CALLBACK (update_scale_value), scale);
 
-    gtk_window_set_transient_for (GTK_WINDOW (dialog),
-                                  GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))));
+    moo_position_window (dialog, GTK_WIDGET (view), FALSE, FALSE, 0, 0);
 
     moo_glade_xml_unref (xml);
 
