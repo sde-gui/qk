@@ -101,7 +101,7 @@ void            moo_tree_view_add                   (MooTreeView    *view,
 void            moo_tree_view_set_active            (MooTreeView    *view,
                                                      GtkWidget      *real_view);
 
-GtkTreeModel   *moo_tree_view_get_model             (MooTreeView    *view);
+GtkTreeModel   *moo_tree_view_get_model             (gpointer        view);
 void            moo_tree_view_set_model             (MooTreeView    *view,
                                                      GtkTreeModel   *model);
 
@@ -116,10 +116,21 @@ void            moo_tree_view_selected_foreach      (MooTreeView    *view,
                                                      gpointer        data);
 
 /* window coordinates */
-gboolean        moo_tree_view_get_path_at_pos       (MooTreeView    *view,
+gboolean        moo_tree_view_get_path_at_pos       (gpointer        view,
                                                      int             x,
                                                      int             y,
                                                      GtkTreePath   **path);
+
+void            moo_tree_view_widget_to_abs_coords  (gpointer        view,
+                                                     int             wx,
+                                                     int             wy,
+                                                     int            *absx,
+                                                     int            *absy);
+void            moo_tree_view_abs_to_widget_coords  (gpointer        view,
+                                                     int             absx,
+                                                     int             absy,
+                                                     int            *wx,
+                                                     int            *wy);
 
 void            moo_tree_view_set_cursor            (MooTreeView    *view,
                                                      GtkTreePath    *path,
@@ -127,6 +138,8 @@ void            moo_tree_view_set_cursor            (MooTreeView    *view,
 void            moo_tree_view_scroll_to_cell        (MooTreeView    *view,
                                                      GtkTreePath    *path);
 
+void            moo_tree_view_set_drag_dest_row     (gpointer        view,
+                                                     GtkTreePath    *path);
 
 
 // void            moo_tree_view_set_selection_mode    (MooTreeView    *view,

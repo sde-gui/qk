@@ -136,6 +136,17 @@ GtkTreePath* moo_icon_view_get_cursor           (MooIconView        *view);
 void        moo_icon_view_row_activated         (MooIconView        *view,
                                                  GtkTreePath        *path);
 
+void        moo_icon_view_widget_to_abs_coords  (MooIconView        *view,
+                                                 int                 wx,
+                                                 int                 wy,
+                                                 int                *absx,
+                                                 int                *absy);
+void        moo_icon_view_abs_to_widget_coords  (MooIconView        *view,
+                                                 int                 absx,
+                                                 int                 absy,
+                                                 int                *wx,
+                                                 int                *wy);
+
 gboolean    moo_icon_view_get_path_at_pos       (MooIconView        *view,
                                                  int                 x,
                                                  int                 y,
