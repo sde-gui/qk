@@ -2264,7 +2264,7 @@ static void     right_arrow_clicked         (GtkWidget      *button,
 }
 
 
-#define SCROLL_PAD 3
+#define SCROLL_PAD 6
 
 static void     labels_scroll               (MooNotebook    *nb,
                                              GtkDirectionType where)
