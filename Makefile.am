@@ -11,6 +11,7 @@ ACLOCAL_AMFLAGS = -I m4
 DEFAULT_INCLUDES =
 AM_CFLAGS =                                 \
     -I$(top_builddir)                       \
+    -I$(top_srcdir)                         \
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
     -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
     $(MOO_CFLAGS)                           \
