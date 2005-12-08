@@ -803,7 +803,11 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_SHOW_LINE_NUMBERS:
-            g_message ("PROP_SHOW_LINE_NUMBERS: implement me");
+            do {
+                static int c = 0;
+                if (!c++)
+                    g_message ("PROP_SHOW_LINE_NUMBERS: implement me");
+            } while (0);
             break;
 
         default:

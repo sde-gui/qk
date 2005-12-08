@@ -282,6 +282,7 @@ moo_editor_init (MooEditor *editor)
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                    NULL, (GDestroyNotify) moo_edit_saver_unref);
 
+    /* XXX use regex */
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX,
                                       MOO_PREFS_MATCH_PREFIX,
@@ -333,7 +334,11 @@ moo_editor_set_property (GObject        *object,
         case PROP_AUTOSAVE:
             editor->priv->autosave = g_value_get_boolean (value);
             g_object_notify (object, "autosave");
-            g_message ("implement Editor::autosave");
+            do {
+                static int c = 0;
+                if (!c++)
+                    g_message ("implement Editor::autosave");
+            } while (0);
             break;
 
         case PROP_AUTOSAVE_INTERVAL:

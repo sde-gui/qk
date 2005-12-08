@@ -98,7 +98,8 @@ _moo_edit_init_settings (void)
 #define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_enum(key) moo_prefs_get_enum (MOO_EDIT_PREFS_PREFIX "/" key)
 
-void        _moo_edit_apply_settings            (MooEdit    *edit)
+void
+_moo_edit_apply_settings (MooEdit *edit)
 {
     GtkTextView *text_view;
     MooTextView *moo_view;
