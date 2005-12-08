@@ -35,10 +35,8 @@ void        _moo_edit_settings_changed      (const char     *key,
                                              const GValue   *newval,
                                              MooEdit        *edit);
 
-void        _moo_edit_freeze_var_notify     (MooEdit        *edit);
-void        _moo_edit_thaw_var_notify       (MooEdit        *edit);
-void        _moo_edit_var_notify            (MooEdit        *edit,
-                                             const char     *name);
+void        _moo_edit_freeze_config_notify  (MooEdit        *edit);
+void        _moo_edit_thaw_config_notify    (MooEdit        *edit);
 
 
 /***********************************************************************/
@@ -64,7 +62,7 @@ typedef enum {
 
 
 typedef struct _VarTable VarTable;
-typedef struct _StringList StringList;
+typedef struct _UintList UintList;
 
 
 struct _MooEditPrivate {
@@ -93,13 +91,6 @@ struct _MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
-
-    /***********************************************************************/
-    /* Language and stuff
-    /*/
-    VarTable *vars;
-    StringList *changed_vars;
-    guint freeze_var_notify;
 
     /***********************************************************************/
     /* Preferences

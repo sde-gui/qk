@@ -368,7 +368,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
                                        GSList **to_save)
 {
     GSList *l;
-    GtkWidget *dialog, *parent, *label, *treeview;
+    GtkWidget *dialog, *label, *treeview;
     char *msg;
     int response;
     MooEditDialogResponse retval;

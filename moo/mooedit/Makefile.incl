@@ -116,7 +116,7 @@ mooedit_include_headers =                     \
 mooedit_noinst_headers =                      \
     $(mooedit)/gtksourceiter.h                \
     $(mooedit)/mooedit-private.h              \
-    $(mooedit)/mooedit-vars.h                 \
+    $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditcolorsprefs-glade.h     \
     $(mooedit)/mooeditdialogs.h               \
     $(mooedit)/mooeditfileops.h               \
@@ -142,6 +142,7 @@ mooedit_sources =                             \
     $(mooedit_noinst_headers)                 \
     $(mooedit)/gtksourceiter.c                \
     $(mooedit)/mooedit.c                      \
+    $(mooedit)/mooeditconfig.c                \
     $(mooedit)/mooeditdialogs.c               \
     $(mooedit)/mooeditfileops.c               \
     $(mooedit)/mootextfind.c                  \

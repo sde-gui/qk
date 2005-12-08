@@ -784,12 +784,12 @@ moo_editor_add_doc (MooEditor      *editor,
     g_hash_table_insert (editor->priv->savers, doc, moo_edit_saver_ref (saver));
 
     if (!moo_edit_get_filename (doc) &&
-         !moo_edit_get_string (doc, MOO_EDIT_VAR_LANG) &&
+         !moo_edit_config_get_string (doc->config, "lang") &&
          editor->priv->default_lang)
     {
-        moo_edit_set_string (doc, MOO_EDIT_VAR_LANG,
-                             editor->priv->default_lang,
-                             MOO_EDIT_VAR_DEP_AUTO);
+        moo_edit_config_set (doc->config,
+                             "lang", MOO_EDIT_CONFIG_SOURCE_AUTO,
+                             editor->priv->default_lang, NULL);
     }
 }
 
@@ -1509,7 +1509,7 @@ do_save (MooEditor    *editor,
     gboolean result;
     gboolean strip;
 
-    strip = moo_edit_get_bool (doc, MOO_EDIT_VAR_STRIP, FALSE);
+    strip = moo_edit_config_get_bool (doc->config, "strip");
 
     if (strip)
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));

@@ -45,8 +45,8 @@ struct _MooIndenterClass
 {
     GObjectClass parent_class;
 
-    void    (*update_variable)  (MooIndenter    *indenter,
-                                 const char     *varname);
+    void    (*config_changed)   (MooIndenter    *indenter,
+                                 guint           setting_id);
     void    (*character)        (MooIndenter    *indenter,
                                  gunichar        inserted_char,
                                  GtkTextIter    *where);
