@@ -320,21 +320,6 @@
   (return-type "none")
 )
 
-(define-method set_highlight
-  (of-object "MooEdit")
-  (c-name "moo_edit_set_highlight")
-  (return-type "none")
-  (parameters
-    '("gboolean" "highlight")
-  )
-)
-
-(define-method get_highlight
-  (of-object "MooEdit")
-  (c-name "moo_edit_get_highlight")
-  (return-type "gboolean")
-)
-
 (define-method close
   (of-object "MooEdit")
   (c-name "moo_edit_close")
@@ -857,15 +842,6 @@
   (return-type "none")
   (parameters
     '("const-char*" "brackets")
-  )
-)
-
-(define-method set_check_brackets
-  (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_set_check_brackets")
-  (return-type "none")
-  (parameters
-    '("gboolean" "check")
   )
 )
 

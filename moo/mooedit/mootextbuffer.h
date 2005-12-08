@@ -68,8 +68,6 @@ void        moo_text_buffer_set_bracket_mismatch_style  (MooTextBuffer      *buf
                                                          const MooTextStyle *style);
 void        moo_text_buffer_set_brackets                (MooTextBuffer      *buffer,
                                                          const char         *brackets);
-void        moo_text_buffer_set_check_brackets          (MooTextBuffer      *buffer,
-                                                         gboolean            check);
 
 void        moo_text_buffer_freeze                      (MooTextBuffer      *buffer);
 void        moo_text_buffer_thaw                        (MooTextBuffer      *buffer);

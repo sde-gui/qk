@@ -54,6 +54,7 @@ static MooEditConfig *global;
 static GSList *instances;
 static VarArray *vars;
 static GQuark prop_id_quark;
+static GHashTable *aliases;
 
 
 static void moo_edit_config_finalize        (GObject        *object);
@@ -71,15 +72,6 @@ static void global_changed                  (GObject        *object,
                                              GParamSpec     *pspec);
 
 
-enum {
-    PROP_0,
-    PROP_LANG,
-    PROP_INDENT,
-    PROP_STRIP,
-    N_PROPS
-};
-
-
 /* MOO_TYPE_EDIT_CONFIG */
 G_DEFINE_TYPE (MooEditConfig, moo_edit_config, G_TYPE_OBJECT)
 
@@ -87,7 +79,6 @@ G_DEFINE_TYPE (MooEditConfig, moo_edit_config, G_TYPE_OBJECT)
 static void
 moo_edit_config_class_init (MooEditConfigClass *klass)
 {
-    guint i;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
     gobject_class->set_property = moo_edit_config_set_property;
@@ -95,22 +86,10 @@ moo_edit_config_class_init (MooEditConfigClass *klass)
     gobject_class->finalize = moo_edit_config_finalize;
 
     prop_id_quark = g_quark_from_static_string ("MooEditConfigPropId");
+    aliases = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
     vars = (VarArray*) g_array_new (FALSE, TRUE, sizeof (Variable));
-    g_array_set_size ((GArray*) vars, N_PROPS);
-
-    vars->data[PROP_LANG].pspec =
-            g_param_spec_string ("lang", "lang", "lang", NULL, G_PARAM_READWRITE);
-    vars->data[PROP_INDENT].pspec =
-            g_param_spec_string ("indent", "indent", "indent", NULL, G_PARAM_READWRITE);
-    vars->data[PROP_STRIP].pspec =
-            g_param_spec_boolean ("strip", "strip", "strip", FALSE, G_PARAM_READWRITE);
-
-    for (i = 1; i < N_PROPS; ++i)
-    {
-        g_param_spec_set_qdata (vars->data[i].pspec, prop_id_quark, GUINT_TO_POINTER (i));
-        g_object_class_install_property (gobject_class, i, vars->data[i].pspec);
-    }
+    g_array_set_size ((GArray*) vars, 1);
 }
 
 
@@ -362,17 +341,27 @@ moo_edit_config_get_spec (guint id)
 
 GParamSpec *
 moo_edit_config_lookup_spec (const char     *name,
-                             guint          *id)
+                             guint          *id,
+                             gboolean        try_alias)
 {
     GParamSpec *pspec;
     GObjectClass *klass;
+    const char *real_name;
 
     g_return_val_if_fail (name != NULL, NULL);
 
     global_init ();
 
     klass = g_type_class_ref (MOO_TYPE_EDIT_CONFIG);
-    pspec = g_object_class_find_property (klass, name);
+
+    real_name = name;
+
+    if (try_alias)
+        real_name = g_hash_table_lookup (aliases, name);
+    if (!real_name)
+        real_name = name;
+
+    pspec = g_object_class_find_property (klass, real_name);
 
     if (id)
     {
@@ -396,7 +385,7 @@ config_get_value (MooEditConfig  *config,
     g_return_val_if_fail (MOO_IS_EDIT_CONFIG (config), NULL);
     g_return_val_if_fail (setting != NULL, NULL);
 
-    moo_edit_config_lookup_spec (setting, &prop_id);
+    moo_edit_config_lookup_spec (setting, &prop_id, FALSE);
     g_return_val_if_fail (prop_id != 0, NULL);
 
     return GVALUE (config, prop_id);
@@ -467,7 +456,9 @@ moo_edit_config_set_value (MooEditConfig  *config,
 
     val = VALUE (config, prop_id);
 
-    if (val->source >= source)
+    if (val->source >= source &&
+        (val->source != source ||
+         g_param_values_cmp (vars->data[prop_id].pspec, &val->gval, value)))
     {
         g_value_copy (value, &val->gval);
         val->source = source;
@@ -500,7 +491,7 @@ moo_edit_config_set_valist (MooEditConfig  *config,
         guint prop_id;
 
         value.g_type = 0;
-        pspec = moo_edit_config_lookup_spec (name, &prop_id);
+        pspec = moo_edit_config_lookup_spec (name, &prop_id, FALSE);
 
         if (!pspec)
         {
@@ -679,7 +670,7 @@ moo_edit_config_parse (MooEditConfig  *config,
     g_return_if_fail (name != NULL);
     g_return_if_fail (value != NULL);
 
-    pspec = moo_edit_config_lookup_spec (name, &prop_id);
+    pspec = moo_edit_config_lookup_spec (name, &prop_id, TRUE);
 
     if (!pspec)
     {
@@ -702,4 +693,44 @@ moo_edit_config_parse (MooEditConfig  *config,
                    G_STRLOC, value, g_type_name (G_VALUE_TYPE (&gval)));
 
     g_value_unset (&gval);
+}
+
+
+void
+moo_edit_config_install_alias (const char     *name,
+                               const char     *alias)
+{
+    char *s1, *s2;
+    GParamSpec *pspec;
+
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (alias != NULL);
+
+    pspec = moo_edit_config_lookup_spec (name, NULL, FALSE);
+
+    if (!pspec)
+    {
+        g_warning ("%s: no setting named '%s'", G_STRLOC, name);
+        return;
+    }
+
+    if (moo_edit_config_lookup_spec (alias, NULL, TRUE))
+    {
+        g_warning ("%s: setting named '%s' already exists", G_STRLOC, alias);
+        return;
+    }
+
+    if (g_hash_table_lookup (aliases, alias))
+    {
+        g_warning ("%s: alias '%s' already exists", G_STRLOC, alias);
+        return;
+    }
+
+    s1 = g_strdup (alias);
+    g_strdelimit (s1, "_", '-');
+    s2 = g_strdup (alias);
+    g_strdelimit (s2, "-", '_');
+
+    g_hash_table_insert (aliases, s1, g_strdup (pspec->name));
+    g_hash_table_insert (aliases, s2, g_strdup (pspec->name));
 }

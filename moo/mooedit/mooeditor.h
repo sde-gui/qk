@@ -90,6 +90,7 @@ void             moo_editor_set_active_doc  (MooEditor      *editor,
 void             moo_editor_present         (MooEditor      *editor);
 
 GSList          *moo_editor_list_windows    (MooEditor      *editor);
+GSList          *moo_editor_list_docs       (MooEditor      *editor);
 
 gboolean         moo_editor_close_window    (MooEditor      *editor,
                                              MooEditWindow  *window,

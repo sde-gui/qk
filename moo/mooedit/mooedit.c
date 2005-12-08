@@ -53,7 +53,6 @@ static void     moo_edit_config_notify      (MooEdit        *edit,
                                              GParamSpec     *pspec);
 
 static GtkTextBuffer *get_buffer            (MooEdit        *edit);
-static MooTextBuffer *get_moo_buffer        (MooEdit        *edit);
 
 static void     modified_changed_cb         (GtkTextBuffer  *buffer,
                                              MooEdit        *edit);
@@ -77,6 +76,14 @@ enum {
     PROP_EDITOR
 };
 
+enum {
+    SETTING_LANG,
+    SETTING_INDENT,
+    SETTING_STRIP,
+    LAST_SETTING
+};
+
+static guint settings[LAST_SETTING];
 
 /* MOO_TYPE_EDIT */
 G_DEFINE_TYPE (MooEdit, moo_edit, MOO_TYPE_TEXT_VIEW)
@@ -102,6 +109,19 @@ moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              MOO_TYPE_EDITOR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    settings[SETTING_LANG] = moo_edit_config_install_setting (
+            g_param_spec_string ("lang", "lang", "lang",
+                                 NULL,
+                                 G_PARAM_READWRITE));
+    settings[SETTING_INDENT] = moo_edit_config_install_setting (
+            g_param_spec_string ("indent", "indent", "indent",
+                                 NULL,
+                                 G_PARAM_READWRITE));
+    settings[SETTING_STRIP] = moo_edit_config_install_setting (
+            g_param_spec_boolean ("strip", "strip", "strip",
+                                  FALSE,
+                                  G_PARAM_READWRITE));
 
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
@@ -168,8 +188,7 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    /* TODO: this is wrong */
-    _moo_edit_set_default_settings ();
+    _moo_edit_init_settings ();
 }
 
 
@@ -224,13 +243,7 @@ moo_edit_constructor (GType                  type,
                               edit);
 
     _moo_edit_apply_settings (edit);
-    edit->priv->prefs_notify =
-        moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX,
-                                  MOO_PREFS_MATCH_PREFIX,
-                                  (MooPrefsNotify) _moo_edit_settings_changed,
-                                  edit);
-
-    g_signal_connect (edit, "realize", G_CALLBACK (_moo_edit_apply_style_settings), NULL);
+    g_signal_connect_after (edit, "realize", G_CALLBACK (_moo_edit_apply_style_settings), NULL);
 
     _moo_edit_set_filename (edit, NULL, NULL);
 
@@ -243,8 +256,10 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
+    g_signal_handlers_disconnect_by_func (edit->config,
+                                          (gpointer) config_changed,
+                                          edit);
     g_object_unref (edit->config);
-    moo_prefs_notify_disconnect (edit->priv->prefs_notify);
 
     edit->priv->focus_in_handler_id = 0;
     if (edit->priv->file_monitor_id)
@@ -571,36 +586,12 @@ get_buffer (MooEdit *edit)
 }
 
 
-static MooTextBuffer*
-get_moo_buffer (MooEdit *edit)
-{
-    return MOO_TEXT_BUFFER (get_buffer (edit));
-}
-
-
 static void
 moo_edit_set_lang (MooEdit        *edit,
                    MooLang        *lang)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
-}
-
-
-void
-moo_edit_set_highlight (MooEdit        *edit,
-                        gboolean        highlight)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_text_buffer_set_highlight (get_moo_buffer (edit), highlight);
-}
-
-
-gboolean
-moo_edit_get_highlight (MooEdit        *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return moo_text_buffer_get_highlight (get_moo_buffer (edit));
 }
 
 
@@ -813,10 +804,10 @@ config_changed (MooEdit        *edit,
 
 static void
 moo_edit_config_notify (MooEdit        *edit,
-                        G_GNUC_UNUSED guint var_id,
-                        GParamSpec     *pspec)
+                        guint           var_id,
+                        G_GNUC_UNUSED GParamSpec *pspec)
 {
-    if (!strcmp (pspec->name, "lang"))
+    if (var_id == settings[SETTING_LANG])
     {
         const char *value = moo_edit_config_get_string (edit->config, "lang");
         MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);

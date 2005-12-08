@@ -17,6 +17,8 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/mooeditprefs.h"
+#include "mooedit/mooedit-private.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -86,6 +88,11 @@ static void          activate_history_item  (MooEditor      *editor,
                                              MooHistoryListItem *item,
                                              MooEditWindow  *window);
 
+static void          prefs_changed          (const char     *key,
+                                             const GValue   *newval,
+                                             MooEditor      *editor);
+static gboolean      apply_prefs            (MooEditor      *editor);
+
 
 struct _MooEditorPrivate {
     WindowInfo      *windowless;
@@ -110,6 +117,12 @@ struct _MooEditorPrivate {
     GType            doc_type;
 
     char            *default_lang;
+
+    guint            prefs_notify;
+    guint            prefs_idle;
+
+    gboolean         autosave;
+    guint            autosave_interval;
 };
 
 
@@ -131,7 +144,9 @@ enum {
     PROP_SINGLE_WINDOW,
     PROP_SAVE_BACKUPS,
     PROP_STRIP_WHITESPACE,
-    PROP_SILENT
+    PROP_SILENT,
+    PROP_AUTOSAVE,
+    PROP_AUTOSAVE_INTERVAL
 };
 
 enum {
@@ -148,12 +163,19 @@ G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 
 static void moo_editor_class_init (MooEditorClass *klass)
 {
+    gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooWindowClass *edit_window_class;
 
     gobject_class->finalize = moo_editor_finalize;
     gobject_class->set_property = moo_editor_set_property;
     gobject_class->get_property = moo_editor_get_property;
+
+    _moo_edit_init_settings ();
+    ref_class = g_type_class_ref (MOO_TYPE_EDIT);
+    g_type_class_unref (ref_class);
+    ref_class = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    g_type_class_unref (ref_class);
 
     g_object_class_install_property (gobject_class,
                                      PROP_OPEN_SINGLE_FILE_INSTANCE,
@@ -203,6 +225,22 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_AUTOSAVE,
+                                     g_param_spec_boolean ("autosave",
+                                             "autosave",
+                                             "autosave",
+                                             FALSE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_AUTOSAVE_INTERVAL,
+                                     g_param_spec_uint ("autosave-interval",
+                                             "autosave-interval",
+                                             "autosave-interval",
+                                             1, 1000, 5,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
     signals[ALL_WINDOWS_CLOSED] =
             moo_signal_new_cb ("all-windows-closed",
                                G_OBJECT_CLASS_TYPE (klass),
@@ -219,7 +257,8 @@ static void moo_editor_class_init (MooEditorClass *klass)
 }
 
 
-static void     moo_editor_init        (MooEditor  *editor)
+static void
+moo_editor_init (MooEditor *editor)
 {
     editor->priv = g_new0 (MooEditorPrivate, 1);
 
@@ -242,13 +281,22 @@ static void     moo_editor_init        (MooEditor  *editor)
     editor->priv->savers =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                    NULL, (GDestroyNotify) moo_edit_saver_unref);
+
+    editor->priv->prefs_notify =
+            moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX,
+                                      MOO_PREFS_MATCH_PREFIX,
+                                      (MooPrefsNotify) prefs_changed,
+                                      editor);
+
+    apply_prefs (editor);
 }
 
 
-static void     moo_editor_set_property (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec)
+static void
+moo_editor_set_property (GObject        *object,
+                         guint           prop_id,
+                         const GValue   *value,
+                         GParamSpec     *pspec)
 {
     MooEditor *editor = MOO_EDITOR (object);
 
@@ -282,6 +330,17 @@ static void     moo_editor_set_property (GObject        *object,
             g_object_notify (object, "silent");
             break;
 
+        case PROP_AUTOSAVE:
+            editor->priv->autosave = g_value_get_boolean (value);
+            g_object_notify (object, "autosave");
+            g_message ("implement Editor::autosave");
+            break;
+
+        case PROP_AUTOSAVE_INTERVAL:
+            editor->priv->autosave_interval = g_value_get_uint (value);
+            g_object_notify (object, "autosave-interval");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -289,10 +348,11 @@ static void     moo_editor_set_property (GObject        *object,
 }
 
 
-static void     moo_editor_get_property (GObject        *object,
-                                         guint           prop_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec)
+static void
+moo_editor_get_property (GObject        *object,
+                         guint           prop_id,
+                         GValue         *value,
+                         GParamSpec     *pspec)
 {
     MooEditor *editor = MOO_EDITOR (object);
 
@@ -321,6 +381,14 @@ static void     moo_editor_get_property (GObject        *object,
             g_value_set_boolean (value, editor->priv->silent);
             break;
 
+        case PROP_AUTOSAVE:
+            g_value_set_boolean (value, editor->priv->autosave);
+            break;
+
+        case PROP_AUTOSAVE_INTERVAL:
+            g_value_set_uint (value, editor->priv->autosave_interval);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -328,7 +396,8 @@ static void     moo_editor_get_property (GObject        *object,
 }
 
 
-static void moo_editor_finalize       (GObject      *object)
+static void
+moo_editor_finalize (GObject *object)
 {
     MooEditor *editor = MOO_EDITOR (object);
 
@@ -341,6 +410,10 @@ static void moo_editor_finalize       (GObject      *object)
     if (editor->priv->history)
         g_object_unref (editor->priv->history);
     g_object_unref (editor->priv->lang_mgr);
+
+    if (editor->priv->prefs_idle)
+        g_source_remove (editor->priv->prefs_idle);
+    moo_prefs_notify_disconnect (editor->priv->prefs_notify);
 
     if (editor->priv->file_watch)
     {
@@ -1379,6 +1452,29 @@ moo_editor_list_windows (MooEditor *editor)
 }
 
 
+GSList*
+moo_editor_list_docs (MooEditor *editor)
+{
+    GSList *docs = NULL, *l, *list;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    for (l = editor->priv->windows; l != NULL; l = l->next)
+    {
+        WindowInfo *info = l->data;
+        list = g_slist_copy (info->docs);
+        list = g_slist_reverse (list);
+        docs = g_slist_concat (list, docs);
+    }
+
+    list = g_slist_copy (editor->priv->windowless->docs);
+    list = g_slist_reverse (list);
+    docs = g_slist_concat (list, docs);
+
+    return g_slist_reverse (docs);
+}
+
+
 gboolean
 moo_editor_open_file (MooEditor      *editor,
                       MooEditWindow  *window,
@@ -1737,4 +1833,69 @@ moo_editor_get_default_lang (MooEditor      *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     return editor->priv->default_lang;
+}
+
+
+static void
+prefs_changed (G_GNUC_UNUSED const char *key,
+               G_GNUC_UNUSED const GValue *newval,
+               MooEditor *editor)
+{
+    if (!editor->priv->prefs_idle)
+        editor->priv->prefs_idle =
+                g_idle_add ((GSourceFunc) apply_prefs, editor);
+}
+
+
+static void
+doc_apply_prefs (MooEdit *doc,
+                 MooTextStyleScheme *scheme)
+{
+    g_object_freeze_notify (G_OBJECT (doc));
+    _moo_edit_freeze_config_notify (doc);
+    _moo_edit_apply_settings (doc);
+    moo_text_view_apply_scheme (MOO_TEXT_VIEW (doc), scheme);
+    _moo_edit_thaw_config_notify (doc);
+    g_object_thaw_notify (G_OBJECT (doc));
+}
+
+static gboolean
+apply_prefs (MooEditor *editor)
+{
+    GSList *docs;
+    gboolean use_tabs, autosave, backups, strip;
+    int indent_width, autosave_interval;
+    const char *color_scheme;
+    MooTextStyleScheme *scheme;
+
+    editor->priv->prefs_idle = 0;
+
+    use_tabs = !moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SPACES_NO_TABS));
+    indent_width = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_INDENT_WIDTH));
+    strip = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_STRIP));
+    autosave = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE));
+    autosave_interval = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL));
+    backups = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_MAKE_BACKUPS));
+    color_scheme = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME));
+
+    moo_edit_config_set_global ("indent-use-tabs", MOO_EDIT_CONFIG_SOURCE_PREFS, use_tabs,
+                                "indent-width", MOO_EDIT_CONFIG_SOURCE_PREFS, indent_width,
+                                "strip", MOO_EDIT_CONFIG_SOURCE_PREFS, strip,
+                                NULL);
+
+    if (color_scheme)
+        moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
+    scheme = moo_lang_mgr_get_active_scheme (editor->priv->lang_mgr);
+
+    docs = moo_editor_list_docs (editor);
+    g_slist_foreach (docs, (GFunc) doc_apply_prefs, scheme);
+    g_slist_free (docs);
+
+    g_object_set (editor,
+                  "autosave", autosave,
+                  "autosave-interval", autosave_interval,
+                  "save-backups", backups,
+                  NULL);
+
+    return FALSE;
 }

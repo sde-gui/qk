@@ -259,12 +259,13 @@ load_language_node (MooTextStyleScheme  *scheme,
 }
 
 
-static void
-moo_lang_mgr_choose_scheme (MooLangMgr     *mgr,
-                            MooMarkupNode  *node)
+void
+moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
+                                const char *name)
 {
-    const char *name = moo_markup_get_prop (node, DEFAULT_SCHEME_PROP);
     MooTextStyleScheme *scheme;
+
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
     if (!name)
         name = SCHEME_DEFAULT;
@@ -276,6 +277,15 @@ moo_lang_mgr_choose_scheme (MooLangMgr     *mgr,
 
     g_return_if_fail (scheme != NULL);
     mgr->active_scheme = scheme;
+}
+
+
+static void
+moo_lang_mgr_choose_scheme (MooLangMgr     *mgr,
+                            MooMarkupNode  *node)
+{
+    const char *name = moo_markup_get_prop (node, DEFAULT_SCHEME_PROP);
+    moo_lang_mgr_set_active_scheme (mgr, name);
 }
 
 

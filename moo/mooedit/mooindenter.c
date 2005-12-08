@@ -91,6 +91,7 @@ moo_indenter_class_init (MooIndenterClass *klass)
                                "indent-tab-width",
                                1, G_MAXUINT, 8,
                                G_PARAM_READWRITE));
+    moo_edit_config_install_alias ("indent-tab-width", "tab-width");
 
     settings[SETTING_USE_TABS] = moo_edit_config_install_setting (
             g_param_spec_boolean ("indent-use-tabs",
@@ -98,6 +99,7 @@ moo_indenter_class_init (MooIndenterClass *klass)
                                   "indent-use-tabs",
                                   TRUE,
                                   G_PARAM_READWRITE));
+    moo_edit_config_install_alias ("indent-use-tabs", "use-tabs");
 
     settings[SETTING_INDENT_WIDTH] = moo_edit_config_install_setting (
             g_param_spec_uint ("indent-width",

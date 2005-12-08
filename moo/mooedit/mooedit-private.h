@@ -28,12 +28,9 @@ G_BEGIN_DECLS
 /***********************************************************************/
 /* Preferences
 /*/
-void        _moo_edit_set_default_settings  (void);
+void        _moo_edit_init_settings         (void);
 void        _moo_edit_apply_settings        (MooEdit        *edit);
 void        _moo_edit_apply_style_settings  (MooEdit        *edit);
-void        _moo_edit_settings_changed      (const char     *key,
-                                             const GValue   *newval,
-                                             MooEdit        *edit);
 
 void        _moo_edit_freeze_config_notify  (MooEdit        *edit);
 void        _moo_edit_thaw_config_notify    (MooEdit        *edit);
@@ -91,11 +88,6 @@ struct _MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
-
-    /***********************************************************************/
-    /* Preferences
-    /*/
-    guint prefs_notify;
 };
 
 

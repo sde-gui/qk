@@ -125,10 +125,6 @@ MooEditFileInfo *moo_edit_file_info_new         (const char     *filename,
 MooEditFileInfo *moo_edit_file_info_copy        (const MooEditFileInfo *info);
 void             moo_edit_file_info_free        (MooEditFileInfo       *info);
 
-void             moo_edit_set_highlight         (MooEdit        *edit,
-                                                 gboolean        highlight);
-gboolean         moo_edit_get_highlight         (MooEdit        *edit);
-
 gboolean         moo_edit_close                 (MooEdit        *edit,
                                                  gboolean        ask_confirm);
 gboolean         moo_edit_save                  (MooEdit        *edit,

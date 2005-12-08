@@ -109,7 +109,8 @@ struct _MooTextViewPrivate {
     GdkGC *current_line_gc;
     gboolean draw_tabs;
     gboolean draw_trailing_spaces;
-    gboolean check_brackets;
+    gboolean highlight_matching_brackets;
+    gboolean highlight_mismatching_brackets;
 
     /***********************************************************************/
     /* Search

@@ -31,7 +31,8 @@ struct _MooTextBufferPrivate {
     gboolean may_apply_tag;
     gboolean do_highlight;
 
-    gboolean check_brackets;
+    gboolean highlight_matching_brackets;
+    gboolean highlight_mismatching_brackets;
     guint num_brackets;
     gunichar *left_brackets, *right_brackets;
     GtkTextTag *correct_match_tag;
@@ -121,7 +122,8 @@ static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
-    PROP_CHECK_BRACKETS,
+    PROP_HIGHLIGHT_MATCHING_BRACKETS,
+    PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_BRACKET_MATCH_STYLE,
     PROP_BRACKET_MISMATCH_STYLE,
     PROP_HAS_TEXT,
@@ -157,12 +159,20 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
     klass->cursor_moved = moo_text_buffer_cursor_moved;
 
     g_object_class_install_property (gobject_class,
-                                     PROP_CHECK_BRACKETS,
-                                     g_param_spec_boolean ("check-brackets",
-                                             "check-brackets",
-                                             "check-brackets",
+                                     PROP_HIGHLIGHT_MATCHING_BRACKETS,
+                                     g_param_spec_boolean ("highlight-matching-brackets",
+                                             "highlight-matching-brackets",
+                                             "highlight-matching-brackets",
                                              TRUE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
+                                     g_param_spec_boolean ("highlight-mismatching-brackets",
+                                             "highlight-mismatching-brackets",
+                                             "highlight-mismatching-brackets",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BRACKET_MATCH_STYLE,
@@ -637,8 +647,14 @@ moo_text_buffer_set_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_CHECK_BRACKETS:
-            moo_text_buffer_set_check_brackets (buffer, g_value_get_boolean (value));
+        case PROP_HIGHLIGHT_MATCHING_BRACKETS:
+            buffer->priv->highlight_matching_brackets = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "highlight-matching-brackets");
+            break;
+
+        case PROP_HIGHLIGHT_MISMATCHING_BRACKETS:
+            buffer->priv->highlight_mismatching_brackets = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "highlight-mismatching-brackets");
             break;
 
         case PROP_BRACKET_MATCH_STYLE:
@@ -670,8 +686,12 @@ moo_text_buffer_get_property (GObject        *object,
 
     switch (prop_id)
     {
-        case PROP_CHECK_BRACKETS:
-            g_value_set_boolean (value, buffer->priv->check_brackets);
+        case PROP_HIGHLIGHT_MATCHING_BRACKETS:
+            g_value_set_boolean (value, buffer->priv->highlight_matching_brackets);
+            break;
+
+        case PROP_HIGHLIGHT_MISMATCHING_BRACKETS:
+            g_value_set_boolean (value, buffer->priv->highlight_mismatching_brackets);
             break;
 
         case PROP_LANG:
@@ -906,7 +926,8 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
         gtk_text_buffer_remove_tag (text_buffer, tag, &iter[2], &iter[3]);
     }
 
-    if (!buffer->priv->check_brackets)
+    if (!buffer->priv->highlight_matching_brackets &&
+         !buffer->priv->highlight_mismatching_brackets)
         return;
 
     iter[0] = *where;
@@ -924,10 +945,12 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
     switch (bracket_match)
     {
         case MOO_BRACKET_MATCH_CORRECT:
-            tag = buffer->priv->correct_match_tag;
+            if (buffer->priv->highlight_matching_brackets)
+                tag = buffer->priv->correct_match_tag;
             break;
         case MOO_BRACKET_MATCH_INCORRECT:
-            tag = buffer->priv->incorrect_match_tag;
+            if (buffer->priv->highlight_mismatching_brackets)
+                tag = buffer->priv->incorrect_match_tag;
             break;
         default:
             tag = NULL;
@@ -1063,16 +1086,6 @@ moo_text_buffer_set_brackets (MooTextBuffer *buffer,
                     &(buffer->priv->left_brackets),
                     &(buffer->priv->right_brackets),
                     &(buffer->priv->num_brackets));
-}
-
-
-void
-moo_text_buffer_set_check_brackets (MooTextBuffer  *buffer,
-                                    gboolean        check)
-{
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    buffer->priv->check_brackets = check ? TRUE : FALSE;
-    g_object_notify (G_OBJECT (buffer), "check-brackets");
 }
 
 

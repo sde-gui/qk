@@ -268,6 +268,7 @@ connect_prefs_key (MooGladeXML    *xml,
     if (object)
     {
         set_or_not = moo_glade_xml_get_widget (xml, object);
+
         if (!set_or_not)
         {
             g_warning ("%s: could not find widget '%s'", G_STRLOC, object);

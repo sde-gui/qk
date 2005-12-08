@@ -86,6 +86,8 @@ MooTextStyle   *moo_lang_mgr_get_style              (MooLangMgr         *mgr,
                                                      const char         *style_name,
                                                      MooTextStyleScheme *scheme);
 MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr         *mgr);
+void            moo_lang_mgr_set_active_scheme      (MooLangMgr         *mgr,
+                                                     const char         *scheme_name);
 
 void            _moo_lang_mgr_add_lang              (MooLangMgr         *mgr,
                                                      MooLang            *lang);

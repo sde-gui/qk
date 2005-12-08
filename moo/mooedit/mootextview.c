@@ -121,7 +121,8 @@ enum {
     PROP_BUFFER,
     PROP_INDENTER,
     PROP_HIGHLIGHT_CURRENT_LINE,
-    PROP_CHECK_BRACKETS,
+    PROP_HIGHLIGHT_MATCHING_BRACKETS,
+    PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
     PROP_CURRENT_LINE_COLOR_GDK,
     PROP_DRAW_TABS,
@@ -130,7 +131,10 @@ enum {
     PROP_HAS_SELECTION,
     PROP_CAN_UNDO,
     PROP_CAN_REDO,
-    PROP_MANAGE_CLIPBOARD
+    PROP_MANAGE_CLIPBOARD,
+    PROP_SMART_HOME_END,
+    PROP_ENABLE_HIGHLIGHT,
+    PROP_SHOW_LINE_NUMBERS
 };
 
 
@@ -140,10 +144,14 @@ G_DEFINE_TYPE (MooTextView, moo_text_view, GTK_TYPE_TEXT_VIEW)
 
 static void moo_text_view_class_init (MooTextViewClass *klass)
 {
+    gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkTextViewClass *text_view_class = GTK_TEXT_VIEW_CLASS (klass);
     GtkBindingSet *binding_set;
+
+    ref_class = g_type_class_ref (MOO_TYPE_INDENTER);
+    g_type_class_unref (ref_class);
 
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
@@ -201,11 +209,19 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_CHECK_BRACKETS,
-                                     g_param_spec_boolean ("check-brackets",
-                                             "check-brackets",
-                                             "check-brackets",
+                                     PROP_HIGHLIGHT_MATCHING_BRACKETS,
+                                     g_param_spec_boolean ("highlight-matching-brackets",
+                                             "highlight-matching-brackets",
+                                             "highlight-matching-brackets",
                                              TRUE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
+                                     g_param_spec_boolean ("highlight-mismatching-brackets",
+                                             "highlight-mismatching-brackets",
+                                             "highlight-mismatching-brackets",
+                                             FALSE,
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
@@ -286,6 +302,30 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "manage-clipboard",
                                              "manage-clipboard",
                                              TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SMART_HOME_END,
+                                     g_param_spec_boolean ("smart-home-end",
+                                             "smart-home-end",
+                                             "smart-home-end",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_HIGHLIGHT,
+                                     g_param_spec_boolean ("enable-highlight",
+                                             "enable-highlight",
+                                             "enable-highlight",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_SHOW_LINE_NUMBERS,
+                                     g_param_spec_boolean ("show-line-numbers",
+                                             "show-line-numbers",
+                                             "show-line-numbers",
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[UNDO] =
@@ -411,7 +451,8 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->ctrl_page_up_down_scrolls = TRUE;
     view->priv->smart_home_end = TRUE;
 
-    view->priv->check_brackets = TRUE;
+    view->priv->highlight_matching_brackets = TRUE;
+    view->priv->highlight_mismatching_brackets = FALSE;
 
 #if 0
     gtk_drag_dest_unset (GTK_WIDGET (view));
@@ -443,8 +484,10 @@ moo_text_view_constructor (GType                  type,
 
     view->priv->constructed = TRUE;
 
-    g_object_set (get_buffer (view), "check-brackets",
-                  view->priv->check_brackets, NULL);
+    g_object_set (get_buffer (view),
+                  "highlight-matching-brackets", view->priv->highlight_matching_brackets,
+                  "highlight-mismatching-brackets", view->priv->highlight_mismatching_brackets,
+                  NULL);
 
     g_signal_connect_swapped (get_buffer (view), "cursor_moved",
                               G_CALLBACK (cursor_moved), view);
@@ -709,11 +752,18 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_indenter (view, g_value_get_object (value));
             break;
 
-        case PROP_CHECK_BRACKETS:
-            view->priv->check_brackets = g_value_get_boolean (value);
+        case PROP_HIGHLIGHT_MATCHING_BRACKETS:
+            view->priv->highlight_matching_brackets = g_value_get_boolean (value);
             if (view->priv->constructed)
-                g_object_set (get_buffer (view), "check-brackets",
-                              view->priv->check_brackets, NULL);
+                g_object_set (get_buffer (view), "highlight-matching-brackets",
+                              view->priv->highlight_matching_brackets, NULL);
+            break;
+
+        case PROP_HIGHLIGHT_MISMATCHING_BRACKETS:
+            view->priv->highlight_mismatching_brackets = g_value_get_boolean (value);
+            if (view->priv->constructed)
+                g_object_set (get_buffer (view), "highlight-mismatching-brackets",
+                              view->priv->highlight_mismatching_brackets, NULL);
             break;
 
         case PROP_HIGHLIGHT_CURRENT_LINE:
@@ -739,6 +789,21 @@ moo_text_view_set_property (GObject        *object,
 
         case PROP_MANAGE_CLIPBOARD:
             set_manage_clipboard (view, g_value_get_boolean (value));
+            break;
+
+        case PROP_SMART_HOME_END:
+            view->priv->smart_home_end = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "smart-home-end");
+            break;
+
+        case PROP_ENABLE_HIGHLIGHT:
+            moo_text_buffer_set_highlight (get_moo_buffer (view),
+                                           g_value_get_boolean (value));
+            g_object_notify (object, "enable-highlight");
+            break;
+
+        case PROP_SHOW_LINE_NUMBERS:
+            g_message ("PROP_SHOW_LINE_NUMBERS: implement me");
             break;
 
         default:
@@ -770,8 +835,13 @@ moo_text_view_get_property (GObject        *object,
             g_value_set_boolean (value, view->priv->highlight_current_line);
             break;
 
-        case PROP_CHECK_BRACKETS:
-            g_object_get (get_buffer (view), "check-brackets", &val, NULL);
+        case PROP_HIGHLIGHT_MATCHING_BRACKETS:
+            g_object_get (get_buffer (view), "highlight-matching-brackets", &val, NULL);
+            g_value_set_boolean (value, val);
+            break;
+
+        case PROP_HIGHLIGHT_MISMATCHING_BRACKETS:
+            g_object_get (get_buffer (view), "highlight-mismatching-brackets", &val, NULL);
             g_value_set_boolean (value, val);
             break;
 
@@ -804,6 +874,18 @@ moo_text_view_get_property (GObject        *object,
 
         case PROP_MANAGE_CLIPBOARD:
             g_value_set_boolean (value, view->priv->manage_clipboard != 0);
+            break;
+
+        case PROP_SMART_HOME_END:
+            g_value_set_boolean (value, view->priv->smart_home_end != 0);
+            break;
+
+        case PROP_ENABLE_HIGHLIGHT:
+            g_value_set_boolean (value, moo_text_buffer_get_highlight (get_moo_buffer (view)));
+            break;
+
+        case PROP_SHOW_LINE_NUMBERS:
+            g_value_set_boolean (value, FALSE);
             break;
 
         default:
