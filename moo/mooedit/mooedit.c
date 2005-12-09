@@ -854,7 +854,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     {
         MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
-        lang_id = lang->id;
+        lang_id = lang ? lang->id : NULL;
     }
 
     moo_edit_config_set (edit->config, "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME, lang_id, NULL);
