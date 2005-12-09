@@ -187,6 +187,8 @@ static gboolean moo_notebook_key_press      (GtkWidget      *widget,
                                              GdkEventKey    *event);
 static gboolean moo_notebook_motion         (GtkWidget      *widget,
                                              GdkEventMotion *event);
+static gboolean moo_notebook_scroll_event   (GtkWidget      *widget,
+                                             GdkEventScroll *event);
 
 static void     moo_notebook_forall         (GtkContainer   *container,
                                              gboolean        include_internals,
@@ -315,6 +317,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
 //     widget_class->leave_notify_event = moo_notebook_leave;
     widget_class->button_press_event = moo_notebook_button_press;
     widget_class->button_release_event = moo_notebook_button_release;
+    widget_class->scroll_event = moo_notebook_scroll_event;
     widget_class->key_press_event = moo_notebook_key_press;
     widget_class->motion_notify_event = moo_notebook_motion;
     widget_class->focus = moo_notebook_focus;
@@ -2805,6 +2808,36 @@ static gboolean moo_notebook_button_release (GtkWidget      *widget,
         tab_drag_end (nb, TRUE);
 
     return TRUE;
+}
+
+
+static gboolean
+moo_notebook_scroll_event (GtkWidget      *widget,
+                           GdkEventScroll *event)
+{
+    MooNotebook *nb = MOO_NOTEBOOK (widget);
+    int x, y;
+
+    x = event->x;
+    y = event->y;
+
+    if (!translate_coords (nb->priv->tab_window, event->window, &x, &y))
+        return FALSE;
+
+    switch (event->direction)
+    {
+        case GDK_SCROLL_UP:
+        case GDK_SCROLL_LEFT:
+            labels_scroll (nb, GTK_DIR_LEFT);
+            return TRUE;
+
+        case GDK_SCROLL_DOWN:
+        case GDK_SCROLL_RIGHT:
+            labels_scroll (nb, GTK_DIR_RIGHT);
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 
