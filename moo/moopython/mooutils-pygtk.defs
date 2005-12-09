@@ -2336,3 +2336,315 @@
     '("const-char*" "action_id")
   )
 )
+
+
+;; From ../mooutils/mooprefs.h
+
+(define-function prefs_load
+  (c-name "moo_prefs_load")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "file")
+    '("GError**" "error")
+  )
+)
+
+(define-function prefs_save
+  (c-name "moo_prefs_save")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "file")
+    '("GError**" "error")
+  )
+)
+
+(define-function prefs_get_markup
+  (c-name "moo_prefs_get_markup")
+  (return-type "MooMarkupDoc*")
+)
+
+(define-function prefs_new_key
+  (c-name "moo_prefs_new_key")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("GType" "value_type")
+    '("const-GValue*" "default_value")
+  )
+)
+
+(define-function prefs_delete_key
+  (c-name "moo_prefs_delete_key")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_key_type
+  (c-name "moo_prefs_get_key_type")
+  (return-type "GType")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_key_registered
+  (c-name "moo_prefs_key_registered")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get
+  (c-name "moo_prefs_get")
+  (return-type "const-GValue*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_default
+  (c-name "moo_prefs_get_default")
+  (return-type "const-GValue*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_set
+  (c-name "moo_prefs_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-GValue*" "value")
+  )
+)
+
+(define-function prefs_set_default
+  (c-name "moo_prefs_set_default")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-GValue*" "value")
+  )
+)
+
+(define-function prefs_new_key_bool
+  (c-name "moo_prefs_new_key_bool")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("gboolean" "default_val")
+  )
+)
+
+(define-function prefs_new_key_int
+  (c-name "moo_prefs_new_key_int")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("int" "default_val")
+  )
+)
+
+(define-function prefs_new_key_string
+  (c-name "moo_prefs_new_key_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "default_val")
+  )
+)
+
+(define-function prefs_new_key_color
+  (c-name "moo_prefs_new_key_color")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-GdkColor*" "default_val")
+  )
+)
+
+(define-function prefs_new_key_enum
+  (c-name "moo_prefs_new_key_enum")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("GType" "enum_type")
+    '("int" "default_val")
+  )
+)
+
+(define-function prefs_make_key
+  (c-name "moo_prefs_make_key")
+  (return-type "char*")
+  (parameters
+    '("const-char*" "first_comp")
+  )
+  (varargs #t)
+)
+
+(define-function prefs_make_keyv
+  (c-name "moo_prefs_make_keyv")
+  (return-type "char*")
+  (parameters
+    '("const-char*" "first_comp")
+    '("va_list" "var_args")
+  )
+)
+
+(define-function prefs_get_string
+  (c-name "moo_prefs_get_string")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_filename
+  (c-name "moo_prefs_get_filename")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_bool
+  (c-name "moo_prefs_get_bool")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_number
+  (c-name "moo_prefs_get_number")
+  (return-type "gdouble")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_color
+  (c-name "moo_prefs_get_color")
+  (return-type "const-GdkColor*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_int
+  (c-name "moo_prefs_get_int")
+  (return-type "int")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_enum
+  (c-name "moo_prefs_get_enum")
+  (return-type "int")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_set_string
+  (c-name "moo_prefs_set_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val")
+  )
+)
+
+(define-function prefs_set_filename
+  (c-name "moo_prefs_set_filename")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val")
+  )
+)
+
+(define-function prefs_set_number
+  (c-name "moo_prefs_set_number")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("double" "val")
+  )
+)
+
+(define-function prefs_set_int
+  (c-name "moo_prefs_set_int")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("int" "val")
+  )
+)
+
+(define-function prefs_set_bool
+  (c-name "moo_prefs_set_bool")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("gboolean" "val")
+  )
+)
+
+(define-function prefs_set_color
+  (c-name "moo_prefs_set_color")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-GdkColor*" "val")
+  )
+)
+
+(define-function prefs_set_enum
+  (c-name "moo_prefs_set_enum")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("int" "val")
+  )
+)
+
+(define-function prefs_notify_connect
+  (c-name "moo_prefs_notify_connect")
+  (return-type "guint")
+  (parameters
+    '("const-char*" "pattern")
+    '("MooPrefsMatchType" "match_type")
+    '("MooPrefsNotify" "callback")
+    '("gpointer" "data")
+  )
+)
+
+(define-function prefs_notify_block
+  (c-name "moo_prefs_notify_block")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-function prefs_notify_unblock
+  (c-name "moo_prefs_notify_unblock")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-function prefs_notify_disconnect
+  (c-name "moo_prefs_notify_disconnect")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
