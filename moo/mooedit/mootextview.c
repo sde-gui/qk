@@ -24,6 +24,11 @@
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 
+/* XXX connect to style set and update/invalidate:
+    current line gc;
+    digit_width
+*/
+
 #define LIGHT_BLUE "#EEF6FF"
 #define BOOL_CMP(b1,b2) ((b1 && b2) || (!b1 && !b2))
 #define UPDATE_PRIORITY (GTK_TEXT_VIEW_PRIORITY_VALIDATE - 5)
@@ -81,10 +86,6 @@ static gboolean moo_text_view_char_inserted (MooTextView        *view,
                                              GtkTextIter        *where,
                                              guint               character);
 
-static void     set_draw_tabs               (MooTextView        *view,
-                                             gboolean            draw);
-static void     set_draw_trailing_spaces    (MooTextView        *view,
-                                             gboolean            draw);
 static void     set_manage_clipboard        (MooTextView        *view,
                                              gboolean            manage);
 static void     selection_changed           (MooTextView        *view,
@@ -96,6 +97,12 @@ static void     highlighting_changed        (GtkTextView        *view,
 static void     overwrite_changed           (MooTextView        *view);
 static void     check_cursor_blink          (MooTextView        *view);
 static void     moo_text_view_draw_cursor   (GtkTextView        *view,
+                                             GdkEventExpose     *event);
+static void     set_draw_tabs               (MooTextView        *view,
+                                             gboolean            draw);
+static void     set_draw_trailing_spaces    (MooTextView        *view,
+                                             gboolean            draw);
+static void     draw_left_margin            (MooTextView        *view,
                                              GdkEventExpose     *event);
 
 
@@ -803,11 +810,7 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_SHOW_LINE_NUMBERS:
-            do {
-                static int c = 0;
-                if (!c++)
-                    g_message ("PROP_SHOW_LINE_NUMBERS: implement me");
-            } while (0);
+            moo_text_view_set_show_line_numbers (view, g_value_get_boolean (value));
             break;
 
         default:
@@ -889,7 +892,7 @@ moo_text_view_get_property (GObject        *object,
             break;
 
         case PROP_SHOW_LINE_NUMBERS:
-            g_value_set_boolean (value, FALSE);
+            g_value_set_boolean (value, view->priv->show_line_numbers);
             break;
 
         default:
@@ -1345,6 +1348,7 @@ moo_text_view_realize (GtkWidget *widget)
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
 
     create_current_line_gc (view);
+    view->priv->digit_width = 0;
 
     if (view->priv->manage_clipboard)
     {
@@ -1362,6 +1366,11 @@ moo_text_view_unrealize (GtkWidget *widget)
     if (view->priv->current_line_gc)
         g_object_unref (view->priv->current_line_gc);
     view->priv->current_line_gc = NULL;
+
+    view->priv->digit_width = 0;
+    if (view->priv->line_numbers_font)
+        pango_font_description_free (view->priv->line_numbers_font);
+    view->priv->line_numbers_font = NULL;
 
     if (view->priv->manage_clipboard)
     {
@@ -1533,6 +1542,13 @@ moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
 
 
 static gboolean
+get_show_margin (MooTextView *view)
+{
+    return view->priv->show_line_numbers;
+}
+
+
+static gboolean
 moo_text_view_expose (GtkWidget      *widget,
                       GdkEventExpose *event)
 {
@@ -1545,6 +1561,10 @@ moo_text_view_expose (GtkWidget      *widget,
     if (view->priv->highlight_current_line &&
         event->window == text_window && view->priv->current_line_gc)
             moo_text_view_draw_current_line (text_view, event);
+
+    if (get_show_margin (view) &&
+        event->window == gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT))
+            draw_left_margin (view, event);
 
     if (event->window == text_window)
     {
@@ -2093,4 +2113,160 @@ _moo_text_view_pend_cursor_blink (MooTextView *view)
         time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_PEND_MULTIPLIER;
         view->priv->blink_timeout = g_timeout_add (time, (GSourceFunc) blink_cb, view);
     }
+}
+
+
+/*****************************************************************************/
+/* Left margin
+ */
+
+void
+moo_text_view_set_show_line_numbers (MooTextView *view,
+                                     gboolean     show)
+{
+    gboolean show_margin;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    show = show != 0;
+
+    if (view->priv->show_line_numbers == show)
+        return;
+
+    view->priv->show_line_numbers = show;
+    view->priv->digit_width = 0;
+
+    show_margin = get_show_margin (view);
+
+    gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+                                          GTK_TEXT_WINDOW_LEFT,
+                                          show_margin ? 4 : 0); /* something, to get expose */
+
+    if (show_margin)
+        /* XXX dont' invalidate whole widget */
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+
+    g_object_notify (G_OBJECT (view), "show-line-numbers");
+}
+
+
+static int
+calculate_digit_width (MooTextView *view,
+                       PangoLayout *layout)
+{
+    int i;
+    char s[4];
+    int digit_width;
+
+    if (view->priv->digit_width > 0)
+        return view->priv->digit_width;
+
+    for (i = 0, digit_width = 0; i < 10; ++i)
+    {
+        int width;
+        g_snprintf (s, sizeof (s), "%d", i);
+        pango_layout_set_text (layout, s, 1);
+        pango_layout_get_pixel_size (layout, &width, NULL);
+        digit_width = MAX (digit_width, width);
+    }
+
+    return view->priv->digit_width = digit_width;
+}
+
+
+static void
+draw_left_margin (MooTextView    *view,
+                  GdkEventExpose *event)
+{
+    GtkTextView *text_view;
+    GtkTextBuffer *buffer;
+    GdkWindow *window;
+    PangoLayout *layout = NULL;
+    int margin_width, line, text_loffset, text_roffset, text_width;
+    GdkRectangle area;
+    GtkTextIter iter;
+    char str[16];
+
+    text_view = GTK_TEXT_VIEW (view);
+    buffer = gtk_text_view_get_buffer (text_view);
+    window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
+
+    if (!get_show_margin (view) || event->window != window)
+        return;
+
+    margin_width = text_width = 0;
+    text_loffset = text_roffset = 0;
+
+    if (view->priv->show_line_numbers)
+    {
+        int digit_width, digits;
+
+        layout = gtk_widget_create_pango_layout (GTK_WIDGET (view), "");
+
+        if (!view->priv->line_numbers_font)
+            view->priv->line_numbers_font = pango_font_description_from_string ("Sans 10");
+
+        if (view->priv->line_numbers_font)
+            pango_layout_set_font_description (layout, view->priv->line_numbers_font);
+
+        digit_width = calculate_digit_width (view, layout);
+        g_snprintf (str, sizeof(str), "%d",
+                    MAX (99, gtk_text_buffer_get_line_count (buffer)));
+        digits = strlen (str);
+        text_width = digits * digit_width;
+
+        pango_layout_set_width (layout, text_width);
+        pango_layout_set_alignment (layout, PANGO_ALIGN_RIGHT);
+
+        text_loffset = text_roffset = 4;
+        margin_width += text_width + text_loffset + text_roffset;
+    }
+
+    g_return_if_fail (margin_width > 0);
+
+    gtk_text_view_set_border_window_size (text_view,
+                                          GTK_TEXT_WINDOW_LEFT,
+                                          margin_width);
+
+    area = event->area;
+    gtk_text_view_window_to_buffer_coords (text_view,
+                                           GTK_TEXT_WINDOW_LEFT,
+                                           area.x, area.y,
+                                           &area.x, &area.y);
+    gtk_text_view_get_line_at_y (text_view, &iter, area.y, NULL);
+    line = gtk_text_iter_get_line (&iter);
+
+    while (TRUE)
+    {
+        int y, height;
+
+        gtk_text_view_get_line_yrange (text_view, &iter, &y, &height);
+
+        if (y > area.y + area.height)
+            break;
+
+        gtk_text_view_buffer_to_window_coords (text_view, GTK_TEXT_WINDOW_LEFT,
+                                               0, y, NULL, &y);
+
+        g_snprintf (str, sizeof(str), "%d", line + 1);
+        pango_layout_set_text (layout, str, -1);
+        gtk_paint_layout (GTK_WIDGET(view)->style,
+                          window, GTK_WIDGET_STATE (view),
+                          TRUE, &event->area,
+                          GTK_WIDGET(view),
+                          NULL,
+                          text_width + text_loffset, y,
+                          layout);
+
+        if (!gtk_text_iter_forward_line (&iter))
+        {
+            if (gtk_text_iter_get_line (&iter) == line)
+                break;
+        }
+
+        line++;
+    }
+
+    if (layout)
+        g_object_unref (layout);
 }

@@ -112,6 +112,10 @@ struct _MooTextViewPrivate {
     gboolean highlight_matching_brackets;
     gboolean highlight_mismatching_brackets;
 
+    gboolean show_line_numbers;
+    int digit_width; /* max line number digit width */
+    PangoFontDescription *line_numbers_font;
+
     /***********************************************************************/
     /* Search
     /*/

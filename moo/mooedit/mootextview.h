@@ -127,6 +127,9 @@ void         moo_text_view_set_cursor_color         (MooTextView        *view,
 void         moo_text_view_apply_scheme             (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 
+void         moo_text_view_set_show_line_numbers    (MooTextView        *view,
+                                                     gboolean            show);
+
 GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
                                                      const char         *name);
 
