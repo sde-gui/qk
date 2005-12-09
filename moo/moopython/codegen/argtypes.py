@@ -402,9 +402,9 @@ class EnumArg(ArgType):
 	self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
 	if pdflt:
-	    info.varlist.add(self.enumname, pname + ' = ' + pdflt)
+	    info.varlist.add('int', pname + ' = ' + pdflt)
 	else:
-	    info.varlist.add(self.enumname, pname)
+	    info.varlist.add('int', pname)
 	info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
 	info.codebefore.append(self.enum % { 'typecode': self.typecode,
                                              'name': pname})
@@ -422,10 +422,10 @@ class FlagsArg(ArgType):
 	self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
 	if pdflt:
-	    info.varlist.add(self.flagname, pname + ' = ' + pdflt)
+	    info.varlist.add('int', pname + ' = ' + pdflt)
             default = "py_%s && " % (pname,)
 	else:
-	    info.varlist.add(self.flagname, pname)
+	    info.varlist.add('int', pname)
             default = ""
 	info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
         info.codebefore.append(self.flag % {'default':default,
@@ -546,13 +546,22 @@ class BoxedArg(ArgType):
     ret_tmpl = '    /* pyg_boxed_new handles NULL checking */\n' \
                '    return pyg_boxed_new(%(typecode)s, %(ret)s, %(copy)s, TRUE);'
     def write_return(self, ptype, ownsreturn, info):
+        if ptype[-1] == '*' and ptype[:6] == 'const-':
+            const_arg = True
+        else:
+            const_arg = False
         if ptype[-1] == '*':
-            info.varlist.add(self.typename, '*ret')
+            if const_arg:
+                info.varlist.add('const ' + self.typename, '*ret')
+            else:
+                info.varlist.add(self.typename, '*ret')
             ret = 'ret'
         else:
             info.varlist.add(self.typename, 'ret')
             ret = '&ret'
             ownsreturn = 0 # of course it can't own a ref to a local var ...
+        if const_arg:
+            ret = '(%s*) ' % (self.typename,) + ret
         info.codeafter.append(self.ret_tmpl %
                               { 'typecode': self.typecode,
                                 'ret': ret,
