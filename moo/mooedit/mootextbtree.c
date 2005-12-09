@@ -301,7 +301,7 @@ moo_text_btree_insert (BTree          *tree,
 {
     BTNode *node, *tmp;
     BTData *data;
-    guint index_orig = index_;
+    G_GNUC_UNUSED guint index_orig = index_;
 
     g_assert (tree != NULL);
     g_assert (index_ <= tree->root->count);

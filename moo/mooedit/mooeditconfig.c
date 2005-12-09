@@ -252,7 +252,7 @@ update_prop_from_global (MooEditConfig *config,
 }
 
 static void
-global_changed (GObject        *object,
+global_changed (G_GNUC_UNUSED GObject *object,
                 GParamSpec     *pspec)
 {
     gpointer prop_id;
