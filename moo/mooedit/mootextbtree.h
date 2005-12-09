@@ -27,7 +27,7 @@ G_BEGIN_DECLS
 #define BTREE_NODE_EXP 4
 #define BTREE_NODE_MAX_CAPACITY (1 << BTREE_NODE_EXP)
 #define BTREE_NODE_MIN_CAPACITY (BTREE_NODE_MAX_CAPACITY >> 1)
-#define BTREE_MAX_DEPTH 8 /* 2^(3*(8-1)) == 2^21 > 1000000 - more than enough */
+#define BTREE_MAX_DEPTH 9 /* 2^(3*(9-1)) == 2^24 > 16,777,216 - more than enough */
 #define BTREE_MAX_DEPTH_EXP 4 /* 2^4 > 8 */
 
 typedef struct _BTNode BTNode;
@@ -36,10 +36,12 @@ typedef struct _BTIter BTIter;
 typedef struct _BTree BTree;
 
 typedef struct _HLInfo HLInfo;
+struct _MooLineMark;
 
 
 struct _BTNode {
     BTNode *parent;
+    guint n_marks;
 
     union {
         BTNode *children[BTREE_NODE_MAX_CAPACITY];
@@ -53,7 +55,10 @@ struct _BTNode {
 
 struct _BTData {
     BTNode *parent;
+    guint n_marks;
+
     HLInfo *hl_info;
+    struct _MooLineMark **marks;
 };
 
 struct _BTree {

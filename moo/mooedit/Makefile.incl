@@ -104,6 +104,7 @@ mooedit_include_headers =                     \
     $(mooedit)/mooindenter.h                  \
     $(mooedit)/moolang.h                      \
     $(mooedit)/moolangmgr.h                   \
+    $(mooedit)/moolinemark.h                  \
     $(mooedit)/moolineview.h                  \
     $(mooedit)/mooplugin-macro.h              \
     $(mooedit)/mooplugin.h                    \
@@ -159,6 +160,7 @@ mooedit_sources =                             \
     $(mooedit)/moolang-parser.c               \
     $(mooedit)/moolang-rules.c                \
     $(mooedit)/moolinebuffer.c                \
+    $(mooedit)/moolinemark.c                  \
     $(mooedit)/moolineview.c                  \
     $(mooedit)/mooplugin.c                    \
     $(mooedit)/mootextbtree.c                 \
