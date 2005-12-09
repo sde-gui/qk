@@ -115,6 +115,11 @@ struct _MooTextViewPrivate {
     gboolean show_line_numbers;
     int digit_width; /* max line number digit width */
     PangoFontDescription *line_numbers_font;
+    gboolean bold_current_line_number;
+
+    gboolean show_scrollbar_marks;
+    int right_margin_width;
+    int cursor_line;
 
     /***********************************************************************/
     /* Search
