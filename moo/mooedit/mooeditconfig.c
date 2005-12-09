@@ -628,23 +628,27 @@ moo_edit_config_get_setting_id (GParamSpec *pspec)
 }
 
 
-static gboolean
-parse_boolean (const char *value,
-               GValue     *gval)
+gboolean
+moo_edit_config_parse_bool (const char *string,
+                            gboolean   *value)
 {
-    if (!g_ascii_strcasecmp (value, "true") ||
-         !g_ascii_strcasecmp (value, "on") ||
-         !g_ascii_strcasecmp (value, "yes") ||
-         !g_ascii_strcasecmp (value, "1"))
+    g_return_val_if_fail (string != NULL, FALSE);
+
+    if (!g_ascii_strcasecmp (string, "true") ||
+         !g_ascii_strcasecmp (string, "on") ||
+         !g_ascii_strcasecmp (string, "yes") ||
+         !g_ascii_strcasecmp (string, "1"))
     {
-        g_value_set_boolean (gval, TRUE);
+        if (value)
+            *value = TRUE;
     }
-    else if (!g_ascii_strcasecmp (value, "false") ||
-              !g_ascii_strcasecmp (value, "off") ||
-              !g_ascii_strcasecmp (value, "no") ||
-              !g_ascii_strcasecmp (value, "0"))
+    else if (!g_ascii_strcasecmp (string, "false") ||
+              !g_ascii_strcasecmp (string, "off") ||
+              !g_ascii_strcasecmp (string, "no") ||
+              !g_ascii_strcasecmp (string, "0"))
     {
-        g_value_set_boolean (gval, FALSE);
+        if (value)
+            *value = FALSE;
     }
     else
     {
@@ -652,6 +656,24 @@ parse_boolean (const char *value,
     }
 
     return TRUE;
+}
+
+
+static gboolean
+parse_boolean (const char *value,
+               GValue     *gval)
+{
+    gboolean bval;
+
+    if (moo_edit_config_parse_bool (value, &bval))
+    {
+        g_value_set_boolean (gval, bval);
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
 }
 
 

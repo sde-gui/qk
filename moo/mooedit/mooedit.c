@@ -655,9 +655,31 @@ out:
 
 
 static void
-parse_kate_mode_string (G_GNUC_UNUSED MooEdit *edit,
-                        G_GNUC_UNUSED char    *string)
+set_kate_var (MooEdit    *edit,
+              const char *name,
+              const char *val)
 {
+    if (!g_ascii_strcasecmp (name, "space-indent"))
+    {
+        gboolean spaces = FALSE;
+
+        if (moo_edit_config_parse_bool (val, &spaces))
+            moo_edit_config_parse (edit->config, "indent-use-tabs",
+                                   spaces ? "false" : "true",
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
+    else
+    {
+        moo_edit_config_parse (edit->config, name, val,
+                               MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
+}
+
+static void
+parse_kate_mode_string (MooEdit *edit,
+                        char    *string)
+{
+    parse_mode_string (edit, string, " ", (SetVarFunc) set_kate_var);
 }
 
 

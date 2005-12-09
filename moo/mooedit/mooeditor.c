@@ -284,8 +284,8 @@ moo_editor_init (MooEditor *editor)
 
     /* XXX use regex */
     editor->priv->prefs_notify =
-            moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX,
-                                      MOO_PREFS_MATCH_PREFIX,
+            moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
+                                      MOO_PREFS_MATCH_REGEX,
                                       (MooPrefsNotify) prefs_changed,
                                       editor);
 

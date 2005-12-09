@@ -98,6 +98,9 @@ GParamSpec     *moo_edit_config_lookup_spec     (const char     *name,
 void            moo_edit_config_unset_by_source (MooEditConfig  *config,
                                                  MooEditConfigSource source);
 
+gboolean        moo_edit_config_parse_bool      (const char     *string,
+                                                 gboolean       *value);
+
 
 G_END_DECLS
 
