@@ -65,6 +65,7 @@ moo_menu_tool_button_destroy (GtkObject *object)
 
     if (button->menu)
         gtk_widget_destroy (button->menu);
+    button->menu = NULL;
 
     GTK_OBJECT_CLASS (moo_menu_tool_button_parent_class)->destroy (object);
 }
