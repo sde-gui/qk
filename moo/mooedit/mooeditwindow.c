@@ -118,8 +118,6 @@ static MooEdit *get_nth_tab             (MooEditWindow      *window,
                                          guint               n);
 static int      get_page_num            (MooEditWindow      *window,
                                          MooEdit            *doc);
-static void     apply_styles            (MooEditWindow      *window,
-                                         MooEdit            *edit);
 
 static MooAction *create_lang_action    (MooEditWindow      *window);
 
@@ -779,21 +777,6 @@ static void     update_window_title     (MooEditWindow      *window)
 }
 
 
-static void
-apply_styles (MooEditWindow      *window,
-              MooEdit            *edit)
-{
-    MooLangMgr *mgr;
-    MooTextStyleScheme *scheme;
-
-    mgr = moo_editor_get_lang_mgr (window->priv->editor);
-    scheme = moo_lang_mgr_get_active_scheme (mgr);
-    g_return_if_fail (scheme != NULL);
-
-    moo_text_view_apply_scheme (MOO_TEXT_VIEW (edit), scheme);
-}
-
-
 /****************************************************************************/
 /* Actions
  */
@@ -1118,8 +1101,6 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (edit_cursor_moved), window);
 
     g_signal_emit (window, signals[NEW_DOC], 0, edit);
-
-    apply_styles (window, edit);
 
     _moo_doc_attach_plugins (window, edit);
 
