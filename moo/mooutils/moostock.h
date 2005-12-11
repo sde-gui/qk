@@ -59,6 +59,8 @@ G_BEGIN_DECLS
 #define MOO_STOCK_FILE_SAVE_AS          "moo-file-save-as"
 #define MOO_STOCK_FILE_SAVE_COPY        "moo-file-save-copy"
 
+#define MOO_STOCK_EDIT_BOOKMARK         "moo-edit-bookmark"
+
 #define MOO_STOCK_PLUGINS               GTK_STOCK_PREFERENCES
 
 

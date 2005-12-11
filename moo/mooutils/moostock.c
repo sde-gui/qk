@@ -232,5 +232,7 @@ void moo_create_stock_items (void)
     register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_IN_FILES);
     register_stock_icon_alias (factory, GTK_STOCK_FIND, MOO_STOCK_FIND_FILE);
 
+    register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_EDIT_BOOKMARK);
+
     g_object_unref (G_OBJECT (factory));
 }
