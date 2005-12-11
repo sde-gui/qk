@@ -58,10 +58,6 @@ typedef enum {
 } MooEditLineEndType;
 
 
-typedef struct _VarTable VarTable;
-typedef struct _UintList UintList;
-
-
 struct _MooEditPrivate {
     MooEditor *editor;
 

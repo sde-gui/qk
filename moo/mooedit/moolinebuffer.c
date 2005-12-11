@@ -13,7 +13,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/moolinebuffer.h"
+#include "mooedit/mootext-private.h"
 #include <string.h>
 
 

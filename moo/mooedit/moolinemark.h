@@ -73,21 +73,6 @@ const char *moo_line_mark_get_stock_id          (MooLineMark    *mark);
 GdkPixbuf  *moo_line_mark_get_pixbuf            (MooLineMark    *mark);
 GdkGC      *moo_line_mark_get_background_gc     (MooLineMark    *mark);
 
-gpointer    _moo_line_mark_get_line             (MooLineMark    *mark);
-void        _moo_line_mark_set_line             (MooLineMark    *mark,
-                                                 gpointer        line,
-                                                 int             line_no,
-                                                 guint           stamp);
-void        _moo_line_mark_set_buffer           (MooLineMark    *mark,
-                                                 MooTextBuffer  *buffer,
-                                                 gpointer        line_buf);
-void        _moo_line_mark_removed              (MooLineMark    *mark);
-void        _moo_line_mark_moved                (MooLineMark    *mark);
-
-void        _moo_line_mark_realize              (MooLineMark    *mark,
-                                                 GtkWidget      *widget);
-void        _moo_line_mark_unrealize            (MooLineMark    *mark);
-
 
 G_END_DECLS
 

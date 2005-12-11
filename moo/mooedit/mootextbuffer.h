@@ -100,17 +100,6 @@ GSList     *moo_text_buffer_get_line_marks_in_range     (MooTextBuffer      *buf
 GSList     *moo_text_buffer_get_line_marks_at_line      (MooTextBuffer      *buffer,
                                                          int                 line);
 
-void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
-                                                         int                 first_line,
-                                                         int                 last_line);
-void        _moo_text_buffer_apply_syntax_tag           (MooTextBuffer      *buffer,
-                                                         GtkTextTag         *tag,
-                                                         const GtkTextIter  *start,
-                                                         const GtkTextIter  *end);
-void        _moo_text_buffer_highlighting_changed       (MooTextBuffer      *buffer,
-                                                         int                 first,
-                                                         int                 last);
-
 
 G_END_DECLS
 

@@ -17,6 +17,7 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mootextfind.h"
+#include "mooedit/mootext-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooundomanager.h"
@@ -371,7 +372,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("show-line-marks",
                                              "show-line-marks",
                                              "show-line-marks",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     signals[UNDO] =

@@ -29,6 +29,7 @@ endif
 ###########################################################################
 
 EXTRA_PROGRAMS =
+noinst_PROGRAMS =
 moo_prefix = moo
 XML2H = $(srcdir)/moo/mooutils/xml2h.sh
 PY2H = $(srcdir)/moo/mooutils/py2h.sh

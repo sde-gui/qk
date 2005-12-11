@@ -326,16 +326,20 @@ mooutils_built_sources =                       \
     $(mooutils)/stock-moo.h
 
 $(mooutils)/moomarshals.c: $(mooutils)/moomarshals.list
+	mkdir -p $(mooutils)
 	glib-genmarshal --prefix=_moo_marshal --body \
 	       $(mooutils_srcdir)/moomarshals.list > $(mooutils)/moomarshals.c
 $(mooutils)/moomarshals.h: $(mooutils)/moomarshals.list
+	mkdir -p $(mooutils)
 	glib-genmarshal --prefix=_moo_marshal --header \
 	       $(mooutils_srcdir)/moomarshals.list > $(mooutils)/moomarshals.h
 
 $(mooutils)/mooaccelbutton-glade.h: $(mooutils_srcdir)/glade/shortcutdialog.glade
+	mkdir -p $(mooutils)
 	sh $(mooutils_srcdir)/xml2h.sh MOO_ACCEL_BUTTON_GLADE_UI \
 	   $(mooutils_srcdir)/glade/shortcutdialog.glade > $(mooutils)/mooaccelbutton-glade.h
 $(mooutils)/mooaccelprefs-glade.h: $(mooutils_srcdir)/glade/shortcutsprefs.glade
+	mkdir -p $(mooutils)
 	sh $(mooutils_srcdir)/xml2h.sh MOO_SHORTCUTS_PREFS_GLADE_UI \
 	   $(mooutils_srcdir)/glade/shortcutsprefs.glade > $(mooutils)/mooaccelprefs-glade.h
 
@@ -349,6 +353,7 @@ mooutils_pixmaps =                             \
     $(mooutils_srcdir)/pixmaps/sticky.png
 
 $(mooutils)/stock-moo.h: $(mooutils_pixmaps)
+	mkdir -p $(mooutils)
 	gdk-pixbuf-csource --static --build-list                               \
 		GAP_ICON  $(mooutils_srcdir)/pixmaps/gap.png                   \
 		GGAP_ICON $(mooutils_srcdir)/pixmaps/ggap.png                  \

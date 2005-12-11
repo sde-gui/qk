@@ -13,9 +13,8 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/moolinemark.h"
+#include "mooedit/mootext-private.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooedit/moolinebuffer.h"
 #include "mooutils/moomarshals.h"
 
 
@@ -446,7 +445,7 @@ moo_line_mark_get_line (MooLineMark *mark)
 
 void
 _moo_line_mark_set_line (MooLineMark    *mark,
-                         gpointer        line,
+                         Line           *line,
                          int             line_no,
                          guint           stamp)
 {
@@ -467,7 +466,7 @@ _moo_line_mark_set_line (MooLineMark    *mark,
 }
 
 
-gpointer
+Line*
 _moo_line_mark_get_line (MooLineMark *mark)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
@@ -478,7 +477,7 @@ _moo_line_mark_get_line (MooLineMark *mark)
 void
 _moo_line_mark_set_buffer (MooLineMark    *mark,
                            MooTextBuffer  *buffer,
-                           gpointer        line_buf)
+                           LineBuffer     *line_buf)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
     g_assert (!buffer || mark->priv->buffer == NULL);

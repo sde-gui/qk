@@ -13,9 +13,9 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/moolinebuffer.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/moohighlighter.h"
+#include "mooedit/mootext-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooundomanager.h"
 #include "mooutils/mooutils-gobject.h"

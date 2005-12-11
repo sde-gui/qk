@@ -13,18 +13,8 @@
  */
 
 #define MOOEDIT_COMPILATION
-#ifdef __MOO__
-#include "mooedit/moolinebuffer.h"
-#else
-#include "mootextbtree.h"
-#endif
+#include "mooedit/mootext-private.h"
 #include <string.h>
-
-#ifndef __MOO__
-struct _HLInfo {
-    gpointer segments;
-};
-#endif
 
 
 static BTNode  *bt_node_new         (BTNode *parent,

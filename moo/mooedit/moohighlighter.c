@@ -15,6 +15,7 @@
 #include "mooedit/moohighlighter.h"
 #include "mooedit/moolang-rules.h"
 #include "mooedit/gtksourceiter.h"
+#include "mooedit/mootext-private.h"
 #include <string.h>
 
 

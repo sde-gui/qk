@@ -1,6 +1,5 @@
 EXTRA_PROGRAMS += medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject
 bin_PROGRAMS =
-noinst_PROGRAMS =
 
 
 EXTRA_DIST +=           \
@@ -23,7 +22,9 @@ if MOO_BUILD_EDIT
 medit = medit
 endif
 if MOO_BUILD_TERM
+if !MOO_OS_CYGWIN
 #noinst_PROGRAMS += mterm #termbuffer
+endif
 endif
 if MOO_BUILD_UTILS
 # noinst_PROGRAMS += testpanedfileview
