@@ -1859,7 +1859,7 @@ doc_apply_prefs (MooEdit *doc,
     g_object_freeze_notify (G_OBJECT (doc));
     _moo_edit_freeze_config_notify (doc);
     _moo_edit_apply_settings (doc);
-    moo_text_view_apply_scheme (MOO_TEXT_VIEW (doc), scheme);
+    moo_text_view_set_scheme (MOO_TEXT_VIEW (doc), scheme);
     _moo_edit_thaw_config_notify (doc);
     g_object_thaw_notify (G_OBJECT (doc));
 }

@@ -100,6 +100,8 @@ static void     highlighting_changed        (GtkTextView        *view,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end);
 
+static void     moo_text_view_set_scheme_real (MooTextView      *view,
+                                             MooTextStyleScheme *scheme);
 static void     overwrite_changed           (MooTextView        *view);
 static void     check_cursor_blink          (MooTextView        *view);
 static void     moo_text_view_draw_cursor   (GtkTextView        *view,
@@ -138,6 +140,7 @@ enum {
     CHAR_INSERTED,
     UNDO,
     REDO,
+    SET_SCHEME,
     LAST_SIGNAL
 };
 
@@ -222,6 +225,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->undo = moo_text_view_undo;
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
+    klass->set_scheme = moo_text_view_set_scheme_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,
@@ -466,6 +470,16 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                _moo_marshal_VOID__BOXED,
                                G_TYPE_NONE, 1,
                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[SET_SCHEME] =
+            g_signal_new ("set-scheme",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextViewClass, set_scheme),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_TEXT_STYLE_SCHEME);
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK,
@@ -1888,9 +1902,9 @@ moo_text_view_get_lang (MooTextView *view)
 }
 
 
-void
-moo_text_view_apply_scheme (MooTextView        *view,
-                            MooTextStyleScheme *scheme)
+static void
+moo_text_view_set_scheme_real (MooTextView      *view,
+                               MooTextStyleScheme *scheme)
 {
     GdkColor color;
     GdkColor *color_ptr;
@@ -1968,6 +1982,16 @@ moo_text_view_apply_scheme (MooTextView        *view,
     moo_text_view_set_highlight_current_line (view, color_ptr != NULL);
 
     moo_text_buffer_apply_scheme (buffer, scheme);
+}
+
+
+void
+moo_text_view_set_scheme (MooTextView        *view,
+                          MooTextStyleScheme *scheme)
+{
+    g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_signal_emit (view, signals[SET_SCHEME], 0, scheme);
 }
 
 

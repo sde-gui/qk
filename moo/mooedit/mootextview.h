@@ -61,6 +61,9 @@ struct _MooTextViewClass
                                      GtkTextIter    *where, /* points to position after the char */
                                      guint           character); /* gunichar */
 
+    void (* set_scheme)             (MooTextView    *view,
+                                     MooTextStyleScheme *scheme);
+
     /* these are made signals for convenience */
     void (* find_interactive)       (MooTextView    *view);
     void (* replace_interactive)    (MooTextView    *view);
@@ -124,7 +127,7 @@ void         moo_text_view_set_current_line_color   (MooTextView        *view,
                                                      const GdkColor     *color);
 void         moo_text_view_set_cursor_color         (MooTextView        *view,
                                                      const GdkColor     *color);
-void         moo_text_view_apply_scheme             (MooTextView        *view,
+void         moo_text_view_set_scheme               (MooTextView        *view,
                                                      MooTextStyleScheme *scheme);
 
 void         moo_text_view_set_show_line_numbers    (MooTextView        *view,
