@@ -164,6 +164,9 @@ static void moo_edit_window_close_tab   (MooEditWindow      *window);
 static void moo_edit_window_close_all   (MooEditWindow      *window);
 static void moo_edit_window_previous_tab(MooEditWindow      *window);
 static void moo_edit_window_next_tab    (MooEditWindow      *window);
+static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
+static void moo_edit_window_next_bookmark (MooEditWindow    *window);
+static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
 
 
 /* MOO_TYPE_EDIT_WINDOW */
@@ -515,6 +518,36 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "closure-callback", moo_edit_window_abort_jobs,
                                  "condition::sensitive", "has-jobs-running",
                                  "condition::visible", "has-stop-clients",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "ToggleBookmark",
+                                 "name", "Toggle Bookmark",
+                                 "label", "Toggle Bookmark",
+                                 "tooltip", "Toggle bookmark",
+                                 "icon-stock-id", MOO_STOCK_EDIT_BOOKMARK,
+                                 "accel", "<ctrl>B",
+                                 "closure-callback", moo_edit_window_toggle_bookmark,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "NextBookmark",
+                                 "name", "Next Bookmark",
+                                 "label", "Next Bookmark",
+                                 "tooltip", "Next bookmark",
+                                 "icon-stock-id", GTK_STOCK_GO_DOWN,
+                                 "accel", "<alt>Down",
+                                 "closure-callback", moo_edit_window_next_bookmark,
+                                 "condition::visible", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "PreviousBookmark",
+                                 "name", "Previous Bookmark",
+                                 "label", "Previous Bookmark",
+                                 "tooltip", "Previous bookmark",
+                                 "icon-stock-id", GTK_STOCK_GO_UP,
+                                 "accel", "<alt>Up",
+                                 "closure-callback", moo_edit_window_prev_bookmark,
+                                 "condition::visible", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
@@ -871,6 +904,60 @@ static void moo_edit_window_next_tab        (MooEditWindow   *window)
     doc = moo_edit_window_get_active_doc (window);
     if (doc)
         gtk_widget_grab_focus (GTK_WIDGET (doc));
+}
+
+
+static void
+moo_edit_window_toggle_bookmark (MooEditWindow *window)
+{
+    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+    moo_edit_toggle_bookmark (doc, moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
+}
+
+
+static void
+moo_edit_window_next_bookmark (MooEditWindow *window)
+{
+    int cursor;
+    GSList *bookmarks;
+    MooEdit *doc = moo_edit_window_get_active_doc (window);
+
+    g_return_if_fail (doc != NULL);
+
+    cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+    bookmarks = moo_edit_get_bookmarks_in_range (doc, cursor + 1, -1);
+
+    if (bookmarks)
+    {
+        cursor = moo_line_mark_get_line (bookmarks->data);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE);
+        g_slist_free (bookmarks);
+    }
+}
+
+
+static void
+moo_edit_window_prev_bookmark (MooEditWindow *window)
+{
+    int cursor;
+    GSList *bookmarks = NULL;
+    MooEdit *doc = moo_edit_window_get_active_doc (window);
+
+    g_return_if_fail (doc != NULL);
+
+    cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+
+    if (cursor > 0)
+        bookmarks = moo_edit_get_bookmarks_in_range (doc, 0, cursor - 1);
+
+    if (bookmarks)
+    {
+        GSList *last = g_slist_last (bookmarks);
+        cursor = moo_line_mark_get_line (last->data);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE);
+        g_slist_free (bookmarks);
+    }
 }
 
 
