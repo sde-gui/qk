@@ -43,7 +43,12 @@ struct _MooLineMark
 struct _MooLineMarkClass
 {
     GObjectClass parent_class;
+
+    /* signal */
     void (*changed) (MooLineMark *mark);
+
+    /* method */
+    void (*deleted) (MooLineMark *mark);
 };
 
 
@@ -61,6 +66,8 @@ const char *moo_line_mark_get_name              (MooLineMark    *mark);
 int         moo_line_mark_get_line              (MooLineMark    *mark);
 MooTextBuffer *moo_line_mark_get_buffer         (MooLineMark    *mark);
 gboolean    moo_line_mark_get_visible           (MooLineMark    *mark);
+
+gboolean    moo_line_mark_get_deleted           (MooLineMark    *mark);
 
 void        moo_line_mark_set_stock_id          (MooLineMark    *mark,
                                                  const char     *stock_id);

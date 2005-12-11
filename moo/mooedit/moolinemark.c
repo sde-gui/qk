@@ -57,6 +57,8 @@ static void     moo_line_mark_changed       (MooLineMark    *mark);
 static void     update_background_gc        (MooLineMark    *mark);
 static void     update_pixbuf               (MooLineMark    *mark);
 
+static void     moo_line_mark_deleted_real  (MooLineMark    *mark);
+
 
 enum {
     CHANGED,
@@ -73,8 +75,6 @@ enum {
     PROP_BACKGROUND_SET,
     PROP_PIXBUF,
     PROP_STOCK_ID,
-    PROP_BUFFER,
-    PROP_LINE,
     PROP_NAME,
     PROP_VISIBLE
 };
@@ -92,6 +92,8 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
     gobject_class->set_property = moo_line_mark_set_property;
     gobject_class->get_property = moo_line_mark_get_property;
     gobject_class->finalize = moo_line_mark_finalize;
+
+    klass->deleted = moo_line_mark_deleted_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_BACKGROUND,
@@ -116,22 +118,6 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "background-set",
                                              FALSE,
                                              G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_BUFFER,
-                                     g_param_spec_object ("buffer",
-                                             "buffer",
-                                             "buffer",
-                                             MOO_TYPE_TEXT_BUFFER,
-                                             G_PARAM_READABLE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_LINE,
-                                     g_param_spec_int ("line",
-                                             "line",
-                                             "line",
-                                             0, 10000000, 0,
-                                             G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_NAME,
@@ -267,14 +253,6 @@ moo_line_mark_get_property (GObject        *object,
 
         case PROP_BACKGROUND_SET:
             g_value_set_boolean (value, mark->priv->background_set != 0);
-            break;
-
-        case PROP_BUFFER:
-            g_value_set_object (value, mark->priv->buffer);
-            break;
-
-        case PROP_LINE:
-            g_value_set_int (value, mark->priv->line_no);
             break;
 
         case PROP_NAME:
@@ -431,20 +409,12 @@ _moo_line_mark_set_line (MooLineMark    *mark,
                          int             line_no,
                          guint           stamp)
 {
-    gboolean moved = FALSE;
-
     g_assert (MOO_IS_LINE_MARK (mark));
-    g_assert (mark->priv->buffer != NULL);
-
-    if (mark->priv->line_no != line_no)
-        moved = TRUE;
+    g_assert (!line || mark->priv->buffer != NULL);
 
     mark->priv->line = line;
     mark->priv->line_no = line_no;
     mark->priv->stamp = stamp;
-
-    if (moved)
-        g_object_notify (G_OBJECT (mark), "line");
 }
 
 
@@ -463,9 +433,12 @@ _moo_line_mark_set_buffer (MooLineMark    *mark,
 {
     g_assert (MOO_IS_LINE_MARK (mark));
     g_assert (!buffer || mark->priv->buffer == NULL);
+
     mark->priv->buffer = buffer;
     mark->priv->line_buf = line_buf;
-    g_object_notify (G_OBJECT (mark), "buffer");
+
+    if (!buffer)
+        _moo_line_mark_set_line (mark, NULL, -1, 0);
 }
 
 
@@ -477,15 +450,26 @@ moo_line_mark_get_buffer (MooLineMark *mark)
 }
 
 
+static void
+moo_line_mark_deleted_real (MooLineMark *mark)
+{
+    _moo_line_mark_set_buffer (mark, NULL, NULL);
+}
+
+
 void
 _moo_line_mark_deleted (MooLineMark *mark)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
-    mark->priv->buffer = NULL;
-    mark->priv->line_buf = NULL;
-    mark->priv->line = NULL;
-    mark->priv->line_no = -1;
-    g_object_notify (G_OBJECT (mark), "buffer");
+    MOO_LINE_MARK_GET_CLASS (mark)->deleted (mark);
+}
+
+
+gboolean
+moo_line_mark_get_deleted (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), TRUE);
+    return mark->priv->buffer == NULL;
 }
 
 

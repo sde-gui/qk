@@ -478,7 +478,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
                                     first_line, last_line - first_line,
                                     tag);
 
-    /* XXX btree can do it better */
+    /* XXX btree can do it better ? i guess it can't */
     if (starts_line && ins_line)
     {
         GSList *l, *marks;
@@ -504,6 +504,36 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
 
 
 static void
+marks_moved_or_deleted (MooTextBuffer *buffer,
+                        GSList        *moved,
+                        GSList        *deleted)
+{
+    GSList *l;
+
+    if (!moved && !deleted)
+        return;
+
+    g_slist_foreach (moved, (GFunc) g_object_ref, NULL);
+    g_slist_foreach (deleted, (GFunc) g_object_ref, NULL);
+
+    for (l = deleted; l != NULL; l = l->next)
+        _moo_line_mark_set_buffer (l->data, NULL, NULL);
+
+    for (l = deleted; l != NULL; l = l->next)
+    {
+        line_mark_deleted (buffer, l->data);
+        g_object_unref (l->data);
+    }
+
+    for (l = moved; l != NULL; l = l->next)
+        if (!moo_line_mark_get_deleted (l->data))
+            line_mark_moved (buffer, l->data);
+
+    g_slist_foreach (deleted, (GFunc) g_object_unref, NULL);
+    g_slist_foreach (moved, (GFunc) g_object_unref, NULL);
+}
+
+static void
 moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                               GtkTextIter        *start,
                               GtkTextIter        *end)
@@ -511,7 +541,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     int first_line, last_line;
     gboolean starts_line;
-    GSList *deleted_marks = NULL, *moved_marks = NULL, *l;
+    GSList *deleted_marks = NULL, *moved_marks = NULL;
 
     gtk_text_iter_order (start, end);
 
@@ -556,18 +586,14 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                                     first_line);
     }
 
-    /* XXX */
-    for (l = deleted_marks; l != NULL; l = l->next)
-        line_mark_deleted (buffer, l->data);
-    for (l = deleted_marks; l != NULL; l = l->next)
-        g_object_unref (l->data);
+    /* It would be better if marks were moved/deleted before deleting text, but it
+       could cause problems with invalidated iters. if they were deleted after
+       deleting text, it would be even worse since our btree and gtk btree would not
+       be syncronized when callbacks are called. So doing it here is safest (though
+       not most simple or clean) */
+    marks_moved_or_deleted (buffer, moved_marks, deleted_marks);
     g_slist_free (deleted_marks);
-
-    while (moved_marks)
-    {
-        line_mark_moved (buffer, moved_marks->data);
-        moved_marks = g_slist_delete_link (moved_marks, moved_marks);
-    }
+    g_slist_free (moved_marks);
 
     if (last_line - first_line < 2)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
@@ -1742,14 +1768,10 @@ moo_text_buffer_remove_line_mark (MooTextBuffer *buffer,
     g_return_if_fail (MOO_IS_LINE_MARK (mark));
     g_return_if_fail (moo_line_mark_get_buffer (mark) == buffer);
 
-    g_object_freeze_notify (G_OBJECT (mark));
-
     line = moo_line_mark_get_line (mark);
     moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
 
     line_mark_deleted (buffer, mark);
-
-    g_object_thaw_notify (G_OBJECT (mark));
     g_object_unref (mark);
 }
 
@@ -1766,6 +1788,7 @@ static void
 line_mark_deleted (MooTextBuffer      *buffer,
                    MooLineMark        *mark)
 {
+    _moo_line_mark_set_buffer (mark, NULL, NULL);
     _moo_line_mark_deleted (mark);
     g_signal_emit (buffer, signals[LINE_MARK_DELETED], 0, mark);
 }
