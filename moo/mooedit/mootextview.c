@@ -119,7 +119,7 @@ static void     invalidate_right_margin     (MooTextView        *view);
 
 static void     line_mark_added             (MooTextView        *view,
                                              MooLineMark        *mark);
-static void     line_mark_removed           (MooTextView        *view,
+static void     line_mark_deleted           (MooTextView        *view,
                                              MooLineMark        *mark);
 static void     line_mark_changed           (MooTextView        *view,
                                              MooLineMark        *mark);
@@ -561,6 +561,10 @@ moo_text_view_constructor (GType                  type,
 
     g_signal_connect_swapped (get_buffer (view), "line-mark-added",
                               G_CALLBACK (line_mark_added), view);
+    g_signal_connect_swapped (get_buffer (view), "line-mark-moved",
+                              G_CALLBACK (line_mark_moved), view);
+    g_signal_connect_swapped (get_buffer (view), "line-mark-deleted",
+                              G_CALLBACK (line_mark_deleted), view);
 
     gtk_text_buffer_get_start_iter (get_buffer (view), &iter);
     view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
@@ -584,9 +588,8 @@ moo_text_view_finalize (GObject *object)
     for (l = view->priv->line_marks; l != NULL; l = l->next)
     {
         MooLineMark *mark = l->data;
-        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_removed, view);
+        _moo_line_mark_set_pretty (mark, FALSE);
         g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
-        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_moved, view);
         g_object_unref (mark);
     }
 
@@ -2852,16 +2855,18 @@ invalidate_right_margin (MooTextView *view)
 
 
 static void
-line_mark_removed (MooTextView *view,
+line_mark_deleted (MooTextView *view,
                    MooLineMark *mark)
 {
-    view->priv->line_marks = g_slist_remove (view->priv->line_marks, mark);
-    g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_removed, view);
-    g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
-    g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_moved, view);
-    g_object_unref (mark);
-    update_line_mark_width (view);
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+    if (_moo_line_mark_get_pretty (mark))
+    {
+        _moo_line_mark_set_pretty (mark, FALSE);
+        view->priv->line_marks = g_slist_remove (view->priv->line_marks, mark);
+        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
+        g_object_unref (mark);
+        update_line_mark_width (view);
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+    }
 }
 
 
@@ -2869,7 +2874,6 @@ static void
 line_mark_changed (MooTextView *view,
                    G_GNUC_UNUSED MooLineMark *mark)
 {
-    /* XXX */
     update_line_mark_width (view);
     gtk_widget_queue_draw (GTK_WIDGET (view));
 }
@@ -2877,10 +2881,11 @@ line_mark_changed (MooTextView *view,
 
 static void
 line_mark_moved (MooTextView *view,
-                 G_GNUC_UNUSED MooLineMark *mark)
+                 MooLineMark *mark)
 {
     /* XXX */
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+    if (_moo_line_mark_get_pretty (mark))
+        gtk_widget_queue_draw (GTK_WIDGET (view));
 }
 
 
@@ -2893,15 +2898,11 @@ line_mark_added (MooTextView *view,
     if (!moo_line_mark_get_visible (mark))
         return;
 
+    _moo_line_mark_set_pretty (mark, TRUE);
     view->priv->line_marks = g_slist_prepend (view->priv->line_marks,
                                               g_object_ref (mark));
-
-    g_signal_connect_swapped (mark, "removed",
-                              G_CALLBACK (line_mark_removed), view);
     g_signal_connect_swapped (mark, "changed",
                               G_CALLBACK (line_mark_changed), view);
-    g_signal_connect_swapped (mark, "moved",
-                              G_CALLBACK (line_mark_moved), view);
 
     if (GTK_WIDGET_REALIZED (view))
         _moo_line_mark_realize (mark, GTK_WIDGET (view));

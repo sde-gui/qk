@@ -33,8 +33,10 @@ void        _moo_line_mark_set_line                 (MooLineMark        *mark,
 void        _moo_line_mark_set_buffer               (MooLineMark        *mark,
                                                      MooTextBuffer      *buffer,
                                                      LineBuffer         *line_buf);
-void        _moo_line_mark_removed                  (MooLineMark        *mark);
-void        _moo_line_mark_moved                    (MooLineMark        *mark);
+void        _moo_line_mark_deleted                  (MooLineMark        *mark);
+void        _moo_line_mark_set_pretty               (MooLineMark        *mark,
+                                                     gboolean            pretty);
+gboolean    _moo_line_mark_get_pretty               (MooLineMark        *mark);
 
 void        _moo_line_mark_realize                  (MooLineMark        *mark,
                                                      GtkWidget          *widget);

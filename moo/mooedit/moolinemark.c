@@ -20,15 +20,12 @@
 
 struct _MooLineMarkPrivate {
     GdkColor background;
-    gboolean background_set;
     GdkGC *background_gc;
 
     char *stock_id;
     GdkPixbuf *pixbuf;
 
     GtkWidget *widget;
-    gboolean visible;
-    gboolean realized;
 
     char *name;
 
@@ -37,6 +34,11 @@ struct _MooLineMarkPrivate {
     Line *line;
     int line_no;
     guint stamp;
+
+    guint background_set : 1;
+    guint visible : 1;
+    guint realized : 1;
+    guint pretty : 1;
 };
 
 
@@ -58,8 +60,6 @@ static void     update_pixbuf               (MooLineMark    *mark);
 
 enum {
     CHANGED,
-    REMOVED,
-    MOVED,
     LAST_SIGNAL
 };
 
@@ -173,24 +173,6 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
-
-    signals[REMOVED] =
-            g_signal_new ("removed",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooLineMarkClass, removed),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[MOVED] =
-            g_signal_new ("moved",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooLineMarkClass, moved),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
 }
 
 
@@ -284,7 +266,7 @@ moo_line_mark_get_property (GObject        *object,
             break;
 
         case PROP_BACKGROUND_SET:
-            g_value_set_boolean (value, mark->priv->background_set);
+            g_value_set_boolean (value, mark->priv->background_set != 0);
             break;
 
         case PROP_BUFFER:
@@ -300,7 +282,7 @@ moo_line_mark_get_property (GObject        *object,
             break;
 
         case PROP_VISIBLE:
-            g_value_set_boolean (value, mark->priv->visible);
+            g_value_set_boolean (value, mark->priv->visible != 0);
             break;
 
         case PROP_PIXBUF:
@@ -496,7 +478,7 @@ moo_line_mark_get_buffer (MooLineMark *mark)
 
 
 void
-_moo_line_mark_removed (MooLineMark *mark)
+_moo_line_mark_deleted (MooLineMark *mark)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
     mark->priv->buffer = NULL;
@@ -504,7 +486,6 @@ _moo_line_mark_removed (MooLineMark *mark)
     mark->priv->line = NULL;
     mark->priv->line_no = -1;
     g_object_notify (G_OBJECT (mark), "buffer");
-    g_signal_emit (mark, signals[REMOVED], 0);
 }
 
 
@@ -512,7 +493,7 @@ gboolean
 moo_line_mark_get_visible (MooLineMark *mark)
 {
     g_return_val_if_fail (MOO_IS_LINE_MARK (mark), FALSE);
-    return mark->priv->visible;
+    return mark->priv->visible != 0;
 }
 
 
@@ -716,9 +697,17 @@ moo_line_mark_get_background_gc (MooLineMark *mark)
 
 
 void
-_moo_line_mark_moved (MooLineMark *mark)
+_moo_line_mark_set_pretty (MooLineMark *mark,
+                           gboolean     pretty)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
-    g_assert (mark->priv->buffer != NULL);
-    g_signal_emit (mark, signals[MOVED], 0);
+    mark->priv->pretty = pretty != 0;
+}
+
+
+gboolean
+_moo_line_mark_get_pretty (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    return mark->priv->pretty != 0;
 }

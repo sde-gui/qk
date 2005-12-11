@@ -109,12 +109,19 @@ static void     before_undo_redo                    (MooTextBuffer      *buffer)
 #endif
 static void     after_undo_redo                     (MooTextBuffer      *buffer);
 
+static void     line_mark_moved                     (MooTextBuffer      *buffer,
+                                                     MooLineMark        *mark);
+static void     line_mark_deleted                   (MooTextBuffer      *buffer,
+                                                     MooLineMark        *mark);
+
 
 enum {
     CURSOR_MOVED,
     SELECTION_CHANGED,
     HIGHLIGHTING_CHANGED,
     LINE_MARK_ADDED,
+    LINE_MARK_MOVED,
+    LINE_MARK_DELETED,
     LAST_SIGNAL
 };
 
@@ -249,6 +256,26 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTextBufferClass, line_mark_added),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_LINE_MARK);
+
+    signals[LINE_MARK_MOVED] =
+            g_signal_new ("line-mark-moved",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, line_mark_moved),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_LINE_MARK);
+
+    signals[LINE_MARK_DELETED] =
+            g_signal_new ("line-mark-deleted",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, line_mark_deleted),
                           NULL, NULL,
                           _moo_marshal_VOID__OBJECT,
                           G_TYPE_NONE, 1,
@@ -484,6 +511,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     int first_line, last_line;
     gboolean starts_line;
+    GSList *deleted_marks = NULL, *moved_marks = NULL, *l;
 
     gtk_text_iter_order (start, end);
 
@@ -514,17 +542,31 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
             moo_line_buffer_delete (buffer->priv->line_buf,
                                     first_line,
                                     last_line - first_line,
-                                    -1);
+                                    -1, &moved_marks, &deleted_marks);
         else
             moo_line_buffer_delete (buffer->priv->line_buf,
                                     first_line + 1,
                                     last_line - first_line,
-                                    first_line);
+                                    first_line,
+                                    &moved_marks, &deleted_marks);
     }
     else
     {
         moo_line_buffer_invalidate (buffer->priv->line_buf,
                                     first_line);
+    }
+
+    /* XXX */
+    for (l = deleted_marks; l != NULL; l = l->next)
+        line_mark_deleted (buffer, l->data);
+    for (l = deleted_marks; l != NULL; l = l->next)
+        g_object_unref (l->data);
+    g_slist_free (deleted_marks);
+
+    while (moved_marks)
+    {
+        line_mark_moved (buffer, moved_marks->data);
+        moved_marks = g_slist_delete_link (moved_marks, moved_marks);
     }
 
     if (last_line - first_line < 2)
@@ -1704,12 +1746,28 @@ moo_text_buffer_remove_line_mark (MooTextBuffer *buffer,
 
     line = moo_line_mark_get_line (mark);
     moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
-    _moo_line_mark_set_buffer (mark, NULL, NULL);
 
-    _moo_line_mark_removed (mark);
+    line_mark_deleted (buffer, mark);
 
     g_object_thaw_notify (G_OBJECT (mark));
     g_object_unref (mark);
+}
+
+
+static void
+line_mark_moved (MooTextBuffer      *buffer,
+                 MooLineMark        *mark)
+{
+    g_signal_emit (buffer, signals[LINE_MARK_MOVED], 0, mark);
+}
+
+
+static void
+line_mark_deleted (MooTextBuffer      *buffer,
+                   MooLineMark        *mark)
+{
+    _moo_line_mark_deleted (mark);
+    g_signal_emit (buffer, signals[LINE_MARK_DELETED], 0, mark);
 }
 
 
@@ -1730,7 +1788,7 @@ moo_text_buffer_move_line_mark (MooTextBuffer *buffer,
         return;
 
     moo_line_buffer_move_mark (buffer->priv->line_buf, mark, line);
-    _moo_line_mark_moved (mark);
+    line_mark_moved (buffer, mark);
 }
 
 

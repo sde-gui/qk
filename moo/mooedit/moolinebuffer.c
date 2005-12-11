@@ -79,12 +79,14 @@ void
 moo_line_buffer_delete (LineBuffer *line_buf,
                         int         first,
                         int         num,
-                        int         move_to)
+                        int         move_to,
+                        GSList    **moved_marks,
+                        GSList    **deleted_marks)
 {
     Line *line;
     GSList *old_tags = NULL;
     MooLineMark **old_marks = NULL;
-    guint n_old_marks = 0;
+    guint i, n_old_marks = 0;
 
     if (move_to >= 0)
     {
@@ -98,9 +100,11 @@ moo_line_buffer_delete (LineBuffer *line_buf,
 
         if (n_old_marks)
             moo_text_btree_update_n_marks (line_buf->tree, line, -n_old_marks);
+
+        g_assert (line->n_marks == 0);
     }
 
-    moo_text_btree_delete_range (line_buf->tree, first, num);
+    moo_text_btree_delete_range (line_buf->tree, first, num, deleted_marks);
 
     if (move_to >= 0)
     {
@@ -112,12 +116,18 @@ moo_line_buffer_delete (LineBuffer *line_buf,
         {
             MooLineMark **tmp = g_new (MooLineMark*, n_old_marks + line->n_marks);
 
+            if (moved_marks)
+                for (i = 0; i < n_old_marks; ++i)
+                    *moved_marks = g_slist_prepend (*moved_marks, old_marks[i]);
+
             if (line->n_marks)
                 memcpy (tmp, line->marks, line->n_marks * sizeof (MooLineMark*));
             memcpy (&tmp[line->n_marks], old_marks, n_old_marks * sizeof (MooLineMark*));
 
             g_free (line->marks);
             line->marks = tmp;
+
+            g_free (old_marks);
 
             moo_text_btree_update_n_marks (line_buf->tree, line, n_old_marks);
         }
@@ -286,6 +296,7 @@ line_remove_mark (LineBuffer  *line_buf,
     else if (i < line->n_marks - 1)
     {
         g_memmove (&line->marks[i], &line->marks[i+1], line->n_marks - i - 1);
+        line->marks[line->n_marks - 1] = NULL;
     }
     else
     {
@@ -334,7 +345,7 @@ node_get_marks (BTree  *tree,
                 int     node_offset)
 {
     GSList *total = NULL;
-    int i, j;
+    int i;
 
     if (!node->n_marks)
         return NULL;
@@ -347,13 +358,14 @@ node_get_marks (BTree  *tree,
         for (i = MAX (first_line - node_offset, 0); i < node->n_children; ++i)
         {
             Line *line;
+            guint j;
 
             if (i + node_offset > last_line)
                 break;
 
             line = node->data[i];
 
-            for (j = 0; j < (int) line->n_marks; ++j)
+            for (j = 0; j < line->n_marks; ++j)
             {
                 MooLineMark *mark = line->marks[j];
                 _moo_line_mark_set_line (mark, line, i + node_offset, tree->stamp);

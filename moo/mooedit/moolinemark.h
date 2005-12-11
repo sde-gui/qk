@@ -43,10 +43,7 @@ struct _MooLineMark
 struct _MooLineMarkClass
 {
     GObjectClass parent_class;
-
-    void (*moved)   (MooLineMark *mark);
     void (*changed) (MooLineMark *mark);
-    void (*removed) (MooLineMark *mark);
 };
 
 

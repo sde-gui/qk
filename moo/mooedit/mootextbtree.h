@@ -80,7 +80,8 @@ BTData     *moo_text_btree_insert           (BTree      *tree,
                                              guint       index_,
                                              gpointer    tag);
 void        moo_text_btree_delete           (BTree      *tree,
-                                             guint       index_);
+                                             guint       index_,
+                                             GSList    **removed_marks);
 
 void        moo_text_btree_insert_range     (BTree      *tree,
                                              int         first,
@@ -88,7 +89,8 @@ void        moo_text_btree_insert_range     (BTree      *tree,
                                              gpointer    tag);
 void        moo_text_btree_delete_range     (BTree      *tree,
                                              int         first,
-                                             int         num);
+                                             int         num,
+                                             GSList    **removed_marks);
 
 void        moo_text_btree_update_n_marks   (BTree      *tree,
                                              BTData     *data,

@@ -50,6 +50,10 @@ struct _MooTextBufferClass
 
     void (*line_mark_added)     (MooTextBuffer      *buffer,
                                  MooLineMark        *mark);
+    void (*line_mark_deleted)   (MooTextBuffer      *buffer,
+                                 MooLineMark        *mark);
+    void (*line_mark_moved)     (MooTextBuffer      *buffer,
+                                 MooLineMark        *mark);
 };
 
 

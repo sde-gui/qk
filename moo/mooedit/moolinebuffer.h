@@ -100,7 +100,9 @@ void     moo_line_buffer_split_line     (LineBuffer     *line_buf,
 void     moo_line_buffer_delete         (LineBuffer     *line_buf,
                                          int             first,
                                          int             num,
-                                         int             move_to);
+                                         int             move_to,
+                                         GSList        **moved_marks,
+                                         GSList        **deleted_marks);
 
 void     moo_line_erase_segments        (Line           *line);
 void     moo_line_add_segment           (Line           *line,

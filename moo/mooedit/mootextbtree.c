@@ -17,18 +17,23 @@
 #include <string.h>
 
 
-static BTNode  *bt_node_new         (BTNode *parent,
-                                     guint   n_children,
-                                     guint   count,
-                                     guint   n_marks);
-static BTData  *bt_data_new         (BTNode *parent,
-                                     gpointer tag);
-static void     bt_node_free_rec    (BTNode *node);
-static void     bt_data_free        (BTData *data);
+#define USE_MEM_CHUNK 0
+
+
+static BTNode  *bt_node_new         (BTNode     *parent,
+                                     guint       n_children,
+                                     guint       count,
+                                     guint       n_marks);
+static BTData  *bt_data_new         (BTNode     *parent,
+                                     gpointer    tag);
+static void     bt_node_free_rec    (BTNode     *node,
+                                     GSList    **removed_marks);
+static void     bt_data_free        (BTData     *data,
+                                     GSList    **removed_marks);
 
 #define NODE_IS_ROOT(node__) (!(node__)->parent)
 
-#if 1
+#if 0
 #define WANT_CHECK_INTEGRITY
 static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #else
@@ -36,10 +41,18 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #endif
 
 
+#if USE_MEM_CHUNK
 static GMemChunk *btree_data_chunk = NULL;
 static GMemChunk *btree_node_chunk = NULL;
 static GMemChunk *btree_hl_info_chunk = NULL;
+#endif
 
+#if !USE_MEM_CHUNK
+#undef g_chunk_free
+#undef g_chunk_new0
+#define g_chunk_free(m,c) g_free (m)
+#define g_chunk_new0(T,c) g_new0 (T, 1)
+#endif
 
 inline static void
 data_free__ (BTData *data)
@@ -81,12 +94,14 @@ hl_info_new__ (void)
 static void
 init_mem_chunk (void)
 {
+#if USE_MEM_CHUNK
     if (!btree_node_chunk)
     {
         btree_node_chunk = g_mem_chunk_create (BTNode, 512, G_ALLOC_AND_FREE);
         btree_data_chunk = g_mem_chunk_create (BTData, 512, G_ALLOC_AND_FREE);
         btree_hl_info_chunk = g_mem_chunk_create (HLInfo, 512, G_ALLOC_AND_FREE);
     }
+#endif
 }
 
 
@@ -118,11 +133,11 @@ moo_text_btree_size (BTree *tree)
 
 
 void
-moo_text_btree_free (BTree          *tree)
+moo_text_btree_free (BTree *tree)
 {
     if (tree)
     {
-        bt_node_free_rec (tree->root);
+        bt_node_free_rec (tree->root, NULL);
         g_free (tree);
     }
 }
@@ -171,7 +186,8 @@ bt_node_new (BTNode *parent,
 
 
 static void
-bt_node_free_rec (BTNode *node)
+bt_node_free_rec (BTNode  *node,
+                  GSList **removed_marks)
 {
     if (node)
     {
@@ -180,12 +196,12 @@ bt_node_free_rec (BTNode *node)
         if (node->is_bottom)
         {
             for (i = 0; i < node->n_children; ++i)
-                bt_data_free (node->data[i]);
+                bt_data_free (node->data[i], removed_marks);
         }
         else
         {
             for (i = 0; i < node->n_children; ++i)
-                bt_node_free_rec (node->children[i]);
+                bt_node_free_rec (node->children[i], removed_marks);
         }
 
         node_free__ (node);
@@ -237,7 +253,8 @@ bt_data_new (BTNode  *parent,
 
 
 static void
-bt_data_free (BTData         *data)
+bt_data_free (BTData  *data,
+              GSList **removed_marks)
 {
     if (data)
     {
@@ -247,10 +264,18 @@ bt_data_free (BTData         *data)
         {
             guint i;
 
-            for (i = 0; i < data->n_marks; ++i)
+            if (removed_marks)
             {
-                _moo_line_mark_removed (data->marks[i]);
-                g_object_unref (data->marks[i]);
+                for (i = 0; i < data->n_marks; ++i)
+                    *removed_marks = g_slist_prepend (*removed_marks, data->marks[i]);
+            }
+            else
+            {
+                for (i = 0; i < data->n_marks; ++i)
+                {
+                    _moo_line_mark_deleted (data->marks[i]);
+                    g_object_unref (data->marks[i]);
+                }
             }
         }
 
@@ -427,7 +452,8 @@ merge_nodes (BTNode *parent, guint first)
 
 void
 moo_text_btree_delete (BTree          *tree,
-                       guint           index_)
+                       guint           index_,
+                       GSList        **deleted_marks)
 {
     BTNode *node, *tmp;
     BTData *data;
@@ -452,7 +478,7 @@ moo_text_btree_delete (BTree          *tree,
         tmp->n_marks -= data->n_marks;
     }
 
-    bt_data_free (data);
+    bt_data_free (data, deleted_marks);
 
     while (node->n_children < BTREE_NODE_MIN_CAPACITY)
     {
@@ -575,7 +601,8 @@ moo_text_btree_insert_range (BTree      *tree,
 void
 moo_text_btree_delete_range (BTree      *tree,
                              int         first,
-                             int         num)
+                             int         num,
+                             GSList    **deleted_marks)
 {
     int i;
 
@@ -584,12 +611,12 @@ moo_text_btree_delete_range (BTree      *tree,
     g_assert (num > 0 && first + num <= (int) tree->root->count);
 
     for (i = 0; i < num; ++i)
-        moo_text_btree_delete (tree, first);
+        moo_text_btree_delete (tree, first, deleted_marks);
 }
 
 
 void
-moo_text_btree_update_n_marks (BTree      *tree,
+moo_text_btree_update_n_marks (G_GNUC_UNUSED BTree *tree,
                                BTData     *data,
                                int         add)
 {
