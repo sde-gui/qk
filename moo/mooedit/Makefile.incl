@@ -123,6 +123,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mooeditfileops.h               \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/mooeditsavemultiple-glade.h    \
+    $(mooedit)/moofold.h                      \
     $(mooedit)/moohighlighter.h               \
     $(mooedit)/moolang-aux.h                  \
     $(mooedit)/moolang-parser.h               \
@@ -154,6 +155,7 @@ mooedit_sources =                             \
     $(mooedit)/mooeditprefspage.c             \
     $(mooedit)/mootextsearch.c                \
     $(mooedit)/mooeditwindow.c                \
+    $(mooedit)/moofold.c                      \
     $(mooedit)/moohighlighter.c               \
     $(mooedit)/mooindenter.c                  \
     $(mooedit)/moolang.c                      \
