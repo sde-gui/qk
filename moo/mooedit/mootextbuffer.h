@@ -97,6 +97,8 @@ void        moo_text_buffer_move_line_mark              (MooTextBuffer      *buf
 GSList     *moo_text_buffer_get_line_marks_in_range     (MooTextBuffer      *buffer,
                                                          int                 first_line,
                                                          int                 last_line);
+GSList     *moo_text_buffer_get_line_marks_at_line      (MooTextBuffer      *buffer,
+                                                         int                 line);
 
 void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
                                                          int                 first_line,

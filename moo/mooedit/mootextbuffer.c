@@ -455,7 +455,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     if (starts_line && ins_line)
     {
         GSList *l, *marks;
-        marks = moo_text_buffer_get_line_marks_in_range (buffer, first_line, first_line);
+        marks = moo_text_buffer_get_line_marks_at_line (buffer, first_line);
         for (l = marks; l != NULL; l = l->next)
             moo_text_buffer_move_line_mark (buffer, l->data, last_line);
         g_slist_free (marks);
@@ -1735,11 +1735,21 @@ moo_text_buffer_move_line_mark (MooTextBuffer *buffer,
 
 
 GSList *
-moo_text_buffer_get_line_marks_in_range (MooTextBuffer      *buffer,
-                                         int                 first_line,
-                                         int                 last_line)
+moo_text_buffer_get_line_marks_in_range (MooTextBuffer *buffer,
+                                         int            first_line,
+                                         int            last_line)
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
     g_return_val_if_fail (first_line >= 0, NULL);
     return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, first_line, last_line);
+}
+
+
+GSList *
+moo_text_buffer_get_line_marks_at_line (MooTextBuffer *buffer,
+                                        int            line)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    g_return_val_if_fail (line >= 0, NULL);
+    return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, line, line);
 }
