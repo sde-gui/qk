@@ -130,6 +130,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolang-strings.h              \
     $(mooedit)/moolinebuffer.h                \
     $(mooedit)/moopluginprefs-glade.h         \
+    $(mooedit)/mootext-private.h              \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/mootextfind.h                  \
     $(mooedit)/mootextgotoline-glade.h        \
