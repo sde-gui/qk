@@ -370,15 +370,16 @@ moo_indenter_make_space (MooIndenter    *indenter,
    returns TRUE if line contains some non-whitespace chars;
    if returns TRUE, then iter points to the first non-white-space char */
 static gboolean
-compute_line_offset (GtkTextIter    *iter,
+compute_line_offset (GtkTextIter    *dest,
                      guint           tab_width,
                      guint          *offsetp)
 {
     guint offset = 0;
+    GtkTextIter iter = *dest;
 
-    while (!gtk_text_iter_ends_line (iter))
+    while (!gtk_text_iter_ends_line (&iter))
     {
-        gunichar c = gtk_text_iter_get_char (iter);
+        gunichar c = gtk_text_iter_get_char (&iter);
 
         if (c == ' ')
         {
@@ -392,10 +393,11 @@ compute_line_offset (GtkTextIter    *iter,
         else
         {
             *offsetp = offset;
+            *dest = iter;
             return TRUE;
         }
 
-        gtk_text_iter_forward_char (iter);
+        gtk_text_iter_forward_char (&iter);
     }
 
     return FALSE;
@@ -507,9 +509,10 @@ moo_text_iter_get_prev_stop (const GtkTextIter *start,
     {
         if (compute_line_offset (&iter, tab_width, &indent) &&
             indent && indent <= offset)
-            return indent;
-        if (!gtk_text_iter_backward_line (&iter))
+                return indent;
+        if (!gtk_text_iter_get_line (&iter))
             return 0;
+        gtk_text_iter_backward_line (&iter);
     }
 }
 

@@ -1140,7 +1140,7 @@ handle_backspace (MooTextView        *view,
 
     gtk_text_buffer_begin_user_action (buffer);
 
-    if (!offset)
+    if (offset <= 1)
         new_offset = 0;
     else
         new_offset = moo_text_iter_get_prev_stop (&end, tab_width, offset - 1, FALSE);
