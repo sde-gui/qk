@@ -175,6 +175,9 @@ void             moo_edit_add_bookmark          (MooEdit        *edit,
                                                  guint           line);
 MooEditBookmark *moo_edit_get_bookmark_at_line  (MooEdit        *edit,
                                                  guint           line);
+GSList          *moo_edit_get_bookmarks_in_range(MooEdit        *edit,
+                                                 int             first_line,
+                                                 int             last_line);
 
 
 G_END_DECLS

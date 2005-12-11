@@ -1284,3 +1284,37 @@ moo_edit_line_mark_clicked (MooTextView *view,
     moo_edit_toggle_bookmark (MOO_EDIT (view), line);
     return TRUE;
 }
+
+
+GSList*
+moo_edit_get_bookmarks_in_range (MooEdit *edit,
+                                 int      first_line,
+                                 int      last_line)
+{
+    GSList *all, *range, *l;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    g_return_val_if_fail (first_line >= 0, NULL);
+
+    if (last_line < 0 || last_line >= (int) get_line_count (edit))
+        last_line = get_line_count (edit) - 1;
+
+    if (first_line > last_line)
+        return NULL;
+
+    all = (GSList*) moo_edit_list_bookmarks (edit);
+
+    for (l = all, range = NULL; l != NULL; l = l->next)
+    {
+        int line = moo_line_mark_get_line (l->data);
+
+        if (line < first_line)
+            continue;
+        else if (line > last_line)
+            break;
+        else
+            range = g_slist_prepend (range, l->data);
+    }
+
+    return g_slist_reverse (range);
+}
