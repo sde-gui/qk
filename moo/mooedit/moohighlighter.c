@@ -445,22 +445,17 @@ hl_compute_line (MooHighlighter     *hl,
 
         if (!gtk_text_iter_ends_line (&data->start_iter))
         {
-            GtkTextIter start = data->start_iter;
             GtkTextIter end = data->start_iter;
+            GSList *l;
+
             gtk_text_iter_forward_to_line_end (&end);
 
-            while (tags)
-            {
-                gtk_text_buffer_remove_tag (hl->buffer, tags->data, &start, &end);
-                g_object_unref (tags->data);
-                tags = g_slist_delete_link (tags, tags);
-            }
+            for (l = tags; l; l = l->next)
+                gtk_text_buffer_remove_tag (hl->buffer, l->data, &data->start_iter, &end);
         }
-        else
-        {
-            g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
-            g_slist_free (tags);
-        }
+
+        g_slist_foreach (tags, (GFunc) g_object_unref, NULL);
+        g_slist_free (tags);
     }
 
     while (!gtk_text_iter_ends_line (&data->start_iter))

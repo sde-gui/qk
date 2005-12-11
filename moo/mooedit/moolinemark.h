@@ -15,8 +15,7 @@
 #ifndef __MOO_LINE_MARK_H__
 #define __MOO_LINE_MARK_H__
 
-#include <glib-object.h>
-#include <gdk/gdkcolor.h>
+#include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
 
@@ -28,6 +27,8 @@ G_BEGIN_DECLS
 #define MOO_IS_LINE_MARK_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_LINE_MARK))
 #define MOO_LINE_MARK_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LINE_MARK, MooLineMarkClass))
 
+
+typedef struct _MooTextBuffer       MooTextBuffer;
 
 typedef struct _MooLineMark         MooLineMark;
 typedef struct _MooLineMarkPrivate  MooLineMarkPrivate;
@@ -43,8 +44,9 @@ struct _MooLineMarkClass
 {
     GObjectClass parent_class;
 
-    void (*changed) (MooLineMark *mark);
     void (*moved)   (MooLineMark *mark);
+    void (*changed) (MooLineMark *mark);
+    void (*removed) (MooLineMark *mark);
 };
 
 
@@ -60,10 +62,31 @@ void        moo_line_mark_set_name              (MooLineMark    *mark,
 const char *moo_line_mark_get_name              (MooLineMark    *mark);
 
 int         moo_line_mark_get_line              (MooLineMark    *mark);
+MooTextBuffer *moo_line_mark_get_buffer         (MooLineMark    *mark);
+gboolean    moo_line_mark_get_visible           (MooLineMark    *mark);
 
+void        moo_line_mark_set_stock_id          (MooLineMark    *mark,
+                                                 const char     *stock_id);
+void        moo_line_mark_set_pixbuf            (MooLineMark    *mark,
+                                                 GdkPixbuf      *pixbuf);
+const char *moo_line_mark_get_stock_id          (MooLineMark    *mark);
+GdkPixbuf  *moo_line_mark_get_pixbuf            (MooLineMark    *mark);
+GdkGC      *moo_line_mark_get_background_gc     (MooLineMark    *mark);
+
+gpointer    _moo_line_mark_get_line             (MooLineMark    *mark);
 void        _moo_line_mark_set_line             (MooLineMark    *mark,
                                                  gpointer        line,
-                                                 int             line_no);
+                                                 int             line_no,
+                                                 guint           stamp);
+void        _moo_line_mark_set_buffer           (MooLineMark    *mark,
+                                                 MooTextBuffer  *buffer,
+                                                 gpointer        line_buf);
+void        _moo_line_mark_removed              (MooLineMark    *mark);
+void        _moo_line_mark_moved                (MooLineMark    *mark);
+
+void        _moo_line_mark_realize              (MooLineMark    *mark,
+                                                 GtkWidget      *widget);
+void        _moo_line_mark_unrealize            (MooLineMark    *mark);
 
 
 G_END_DECLS

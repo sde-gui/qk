@@ -68,6 +68,13 @@
   (gtype-id "MOO_TYPE_EDIT")
 )
 
+(define-object LineMark
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooLineMark")
+  (gtype-id "MOO_TYPE_LINE_MARK")
+)
+
 
 (define-boxed Lang
   (in-module "Moo")
@@ -512,7 +519,7 @@
   (c-name "moo_indenter_new")
   (is-constructor-of "MooIndenter")
   (return-type "MooIndenter*")
-  (properties
+  (parameters
     '("MooEdit*" "doc")
     '("const-char*" "name")
   )
@@ -783,7 +790,7 @@
   (c-name "moo_text_buffer_new")
   (is-constructor-of "MooTextBuffer")
   (return-type "GtkTextBuffer*")
-  (properties
+  (parameters
     '("GtkTextTagTable*" "table")
   )
 )
@@ -866,6 +873,43 @@
   )
 )
 
+(define-method add_line_mark
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_add_line_mark")
+  (return-type "none")
+  (parameters
+    '("MooLineMark*" "mark")
+  )
+)
+
+(define-method remove_line_mark
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_remove_line_mark")
+  (return-type "none")
+  (parameters
+    '("MooLineMark*" "mark")
+  )
+)
+
+(define-method move_line_mark
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_move_line_mark")
+  (return-type "none")
+  (parameters
+    '("MooLineMark*" "mark")
+    '("int" "line")
+  )
+)
+
+(define-method get_line_marks_in_range
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_line_marks_in_range")
+  (return-type "GSList*")
+  (parameters
+    '("int" "first_line")
+    '("int" "last_line")
+  )
+)
 
 
 ;; From mootextiter.h
@@ -1221,4 +1265,109 @@
     '("MooTextReplaceFunc" "func")
     '("gpointer" "data")
   )
+)
+
+
+
+;; From moo/mooedit/moolinemark.h
+
+(define-function moo_line_mark_new
+  (c-name "moo_line_mark_new")
+  (is-constructor-of "MooLineMark")
+  (return-type "MooLineMark*")
+  (properties
+    '("name" (optional))
+    '("visible" (optional))
+    '("stock_id" (optional))
+    '("pixbuf" (optional))
+    '("background" (optional))
+    '("background_gdk" (optional))
+  )
+)
+
+(define-method set_background_gdk
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_set_background_gdk")
+  (return-type "none")
+  (parameters
+    '("const-GdkColor*" "color")
+  )
+)
+
+(define-method set_background
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_set_background")
+  (return-type "none")
+  (parameters
+    '("const-char*" "color")
+  )
+)
+
+(define-method set_name
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_set_name")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method get_name
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_name")
+  (return-type "const-char*")
+)
+
+(define-method get_line
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_line")
+  (return-type "int")
+)
+
+(define-method get_buffer
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_buffer")
+  (return-type "MooTextBuffer*")
+)
+
+(define-method get_visible
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_visible")
+  (return-type "gboolean")
+)
+
+(define-method set_stock_id
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_set_stock_id")
+  (return-type "none")
+  (parameters
+    '("const-char*" "stock_id")
+  )
+)
+
+(define-method set_pixbuf
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_set_pixbuf")
+  (return-type "none")
+  (parameters
+    '("GdkPixbuf*" "pixbuf")
+  )
+)
+
+(define-method get_stock_id
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_stock_id")
+  (return-type "const-char*")
+)
+
+(define-method get_pixbuf
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_pixbuf")
+  (return-type "GdkPixbuf*")
+)
+
+(define-method get_background_gc
+  (of-object "MooLineMark")
+  (c-name "moo_line_mark_get_background_gc")
+  (return-type "GdkGC*")
 )

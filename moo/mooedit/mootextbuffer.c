@@ -114,6 +114,7 @@ enum {
     CURSOR_MOVED,
     SELECTION_CHANGED,
     HIGHLIGHTING_CHANGED,
+    LINE_MARK_ADDED,
     LAST_SIGNAL
 };
 
@@ -242,6 +243,16 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                G_TYPE_NONE, 2,
                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
                                GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[LINE_MARK_ADDED] =
+            g_signal_new ("line-mark-added",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, line_mark_added),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_LINE_MARK);
 }
 
 
@@ -427,6 +438,8 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         }
     }
 
+    tag = _moo_text_iter_get_syntax_tag (pos);
+
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->insert_text (text_buffer, pos, text, length);
 
     last_line = gtk_text_iter_get_line (pos);
@@ -435,7 +448,18 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     else
         moo_line_buffer_split_line (buffer->priv->line_buf,
-                                    first_line, last_line - first_line);
+                                    first_line, last_line - first_line,
+                                    tag);
+
+    /* XXX btree can do it better */
+    if (starts_line && ins_line)
+    {
+        GSList *l, *marks;
+        marks = moo_text_buffer_get_line_marks_in_range (buffer, first_line, first_line);
+        for (l = marks; l != NULL; l = l->next)
+            moo_text_buffer_move_line_mark (buffer, l->data, last_line);
+        g_slist_free (marks);
+    }
 
     if (last_line - first_line < 2)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
@@ -459,11 +483,13 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     int first_line, last_line;
+    gboolean starts_line;
 
     gtk_text_iter_order (start, end);
 
     first_line = gtk_text_iter_get_line (start);
     last_line = gtk_text_iter_get_line (end);
+    starts_line = gtk_text_iter_starts_line (start);
 
 #define MANY_LINES 1000
     if (buffer->priv->lang && buffer->priv->do_highlight &&
@@ -483,12 +509,23 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
 
     if (first_line < last_line)
-        moo_line_buffer_delete (buffer->priv->line_buf,
-                                first_line + 1,
-                                last_line - first_line);
+    {
+        if (starts_line)
+            moo_line_buffer_delete (buffer->priv->line_buf,
+                                    first_line,
+                                    last_line - first_line,
+                                    -1);
+        else
+            moo_line_buffer_delete (buffer->priv->line_buf,
+                                    first_line + 1,
+                                    last_line - first_line,
+                                    first_line);
+    }
     else
+    {
         moo_line_buffer_invalidate (buffer->priv->line_buf,
                                     first_line);
+    }
 
     if (last_line - first_line < 2)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
@@ -1628,4 +1665,81 @@ delete_action_merge (DeleteAction   *last_action,
     }
 
     return TRUE;
+}
+
+
+void
+moo_text_buffer_add_line_mark (MooTextBuffer *buffer,
+                               MooLineMark   *mark)
+{
+    Line *line;
+
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    g_return_if_fail (MOO_IS_LINE_MARK (mark));
+    g_return_if_fail (!moo_line_mark_get_buffer (mark));
+
+    g_object_ref (mark);
+    g_object_freeze_notify (G_OBJECT (mark));
+
+    line = moo_line_buffer_get_line (buffer->priv->line_buf, 0);
+    _moo_line_mark_set_buffer (mark, buffer, buffer->priv->line_buf);
+    moo_line_buffer_add_mark (buffer->priv->line_buf, mark, 0);
+
+    g_signal_emit (buffer, signals[LINE_MARK_ADDED], 0, mark);
+    g_object_thaw_notify (G_OBJECT (mark));
+}
+
+
+void
+moo_text_buffer_remove_line_mark (MooTextBuffer *buffer,
+                                  MooLineMark   *mark)
+{
+    int line;
+
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    g_return_if_fail (MOO_IS_LINE_MARK (mark));
+    g_return_if_fail (moo_line_mark_get_buffer (mark) == buffer);
+
+    g_object_freeze_notify (G_OBJECT (mark));
+
+    line = moo_line_mark_get_line (mark);
+    moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
+    _moo_line_mark_set_buffer (mark, NULL, NULL);
+
+    _moo_line_mark_removed (mark);
+
+    g_object_thaw_notify (G_OBJECT (mark));
+    g_object_unref (mark);
+}
+
+
+void
+moo_text_buffer_move_line_mark (MooTextBuffer *buffer,
+                                MooLineMark   *mark,
+                                int            line)
+{
+    int old_line;
+
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    g_return_if_fail (MOO_IS_LINE_MARK (mark));
+    g_return_if_fail (moo_line_mark_get_buffer (mark) == buffer);
+
+    old_line = moo_line_mark_get_line (mark);
+
+    if (old_line == line)
+        return;
+
+    moo_line_buffer_move_mark (buffer->priv->line_buf, mark, line);
+    _moo_line_mark_moved (mark);
+}
+
+
+GSList *
+moo_text_buffer_get_line_marks_in_range (MooTextBuffer      *buffer,
+                                         int                 first_line,
+                                         int                 last_line)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    g_return_val_if_fail (first_line >= 0, NULL);
+    return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, first_line, last_line);
 }

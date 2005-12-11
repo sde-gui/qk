@@ -121,6 +121,10 @@ struct _MooTextViewPrivate {
     int right_margin_width;
     int cursor_line;
 
+    gboolean show_line_marks;
+    int line_mark_width;
+    GSList *line_marks;
+
     /***********************************************************************/
     /* Search
     /*/

@@ -36,7 +36,7 @@ Line*
 moo_line_buffer_insert (LineBuffer     *line_buf,
                         int             index)
 {
-    Line *line = moo_text_btree_insert (line_buf->tree, index);
+    Line *line = moo_text_btree_insert (line_buf->tree, index, NULL);
     invalidate_line (line_buf, line, index);
     return line;
 }
@@ -56,12 +56,13 @@ moo_line_buffer_clamp_invalid (LineBuffer *line_buf)
 void
 moo_line_buffer_split_line (LineBuffer *line_buf,
                             int         line,
-                            int         num_new_lines)
+                            int         num_new_lines,
+                            GtkTextTag *tag)
 {
     Line *l;
     GSList *tags;
 
-    moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines);
+    moo_text_btree_insert_range (line_buf->tree, line + 1, num_new_lines, tag);
 
     l = moo_line_buffer_get_line (line_buf, line);
     invalidate_line (line_buf, l, line);
@@ -70,35 +71,59 @@ moo_line_buffer_split_line (LineBuffer *line_buf,
 
     l = moo_line_buffer_get_line (line_buf, line + num_new_lines);
     invalidate_line (line_buf, l, line + num_new_lines);
-    g_assert (l->hl_info->tags == NULL);
-    l->hl_info->tags = tags;
+    l->hl_info->tags = g_slist_concat (l->hl_info->tags, tags);
 }
 
 
 void
 moo_line_buffer_delete (LineBuffer *line_buf,
                         int         first,
-                        int         num)
+                        int         num,
+                        int         move_to)
 {
-    Line *line = moo_line_buffer_get_line (line_buf, first + num - 1);
-    GSList *old_tags = line->hl_info->tags;
-    line->hl_info->tags = NULL;
+    Line *line;
+    GSList *old_tags = NULL;
+    MooLineMark **old_marks = NULL;
+    guint n_old_marks = 0;
+
+    if (move_to >= 0)
+    {
+        line = moo_line_buffer_get_line (line_buf, first + num - 1);
+        old_tags = line->hl_info->tags;
+        line->hl_info->tags = NULL;
+
+        old_marks = line->marks;
+        n_old_marks = line->n_marks;
+        line->marks = NULL;
+
+        if (n_old_marks)
+            moo_text_btree_update_n_marks (line_buf->tree, line, -n_old_marks);
+    }
 
     moo_text_btree_delete_range (line_buf->tree, first, num);
 
-    if (first > 0)
+    if (move_to >= 0)
     {
-        line = moo_line_buffer_get_line (line_buf, first - 1);
+        line = moo_line_buffer_get_line (line_buf, move_to);
+
         line->hl_info->tags = g_slist_concat (line->hl_info->tags, old_tags);
-    }
-    else
-    {
-        g_slist_foreach (old_tags, (GFunc) g_object_unref, NULL);
-        g_slist_free (old_tags);
+
+        if (n_old_marks)
+        {
+            MooLineMark **tmp = g_new (MooLineMark*, n_old_marks + line->n_marks);
+
+            if (line->n_marks)
+                memcpy (tmp, line->marks, line->n_marks * sizeof (MooLineMark*));
+            memcpy (&tmp[line->n_marks], old_marks, n_old_marks * sizeof (MooLineMark*));
+
+            g_free (line->marks);
+            line->marks = tmp;
+
+            moo_text_btree_update_n_marks (line_buf->tree, line, n_old_marks);
+        }
     }
 
-    if (first > 0)
-        moo_line_buffer_invalidate (line_buf, first - 1);
+    moo_line_buffer_invalidate (line_buf, move_to >= 0 ? move_to : first);
 }
 
 
@@ -196,4 +221,230 @@ moo_line_buffer_free (LineBuffer *line_buf)
         moo_text_btree_free (line_buf->tree);
         g_free (line_buf);
     }
+}
+
+
+static void
+line_add_mark (LineBuffer  *line_buf,
+               MooLineMark *mark,
+               Line        *line)
+{
+    if (line->marks)
+    {
+        MooLineMark **tmp = g_new (MooLineMark*, line->n_marks + 1);
+        memcpy (tmp, line->marks, line->n_marks * sizeof(MooLineMark*));
+        g_free (line->marks);
+        line->marks = tmp;
+    }
+    else
+    {
+        g_assert (!line->n_marks);
+        line->marks = g_new (MooLineMark*, 1);
+    }
+
+    line->marks[line->n_marks] = mark;
+    moo_text_btree_update_n_marks (line_buf->tree, line, 1);
+}
+
+
+void
+moo_line_buffer_add_mark (LineBuffer  *line_buf,
+                          MooLineMark *mark,
+                          int          index)
+{
+    Line *line;
+
+    g_return_if_fail (index < (int) moo_text_btree_size (line_buf->tree));
+    g_assert (_moo_line_mark_get_line (mark) == NULL);
+
+    line = moo_line_buffer_get_line (line_buf, index);
+    line_add_mark (line_buf, mark, line);
+    _moo_line_mark_set_line (mark, line, index, line_buf->tree->stamp);
+}
+
+
+static void
+line_remove_mark (LineBuffer  *line_buf,
+                  MooLineMark *mark,
+                  Line        *line)
+{
+    guint i;
+
+    g_assert (line->marks);
+
+    for (i = 0; i < line->n_marks; ++i)
+        if (line->marks[i] == mark)
+            break;
+
+    g_assert (i < line->n_marks);
+
+    if (line->n_marks == 1)
+    {
+        g_free (line->marks);
+        line->marks = NULL;
+    }
+    else if (i < line->n_marks - 1)
+    {
+        g_memmove (&line->marks[i], &line->marks[i+1], line->n_marks - i - 1);
+    }
+    else
+    {
+        line->marks[line->n_marks - 1] = NULL;
+    }
+
+    moo_text_btree_update_n_marks (line_buf->tree, line, -1);
+}
+
+
+void
+moo_line_buffer_remove_mark (LineBuffer     *line_buf,
+                             MooLineMark    *mark)
+{
+    Line *line;
+    int index;
+
+    line = _moo_line_mark_get_line (mark);
+    index = moo_line_mark_get_line (mark);
+
+    g_assert (line != NULL);
+    g_assert (line == moo_line_buffer_get_line (line_buf, index));
+
+    _moo_line_mark_set_line (mark, NULL, -1, 0);
+    line_remove_mark (line_buf, mark, line);
+}
+
+
+/* XXX */
+void
+moo_line_buffer_move_mark (LineBuffer  *line_buf,
+                           MooLineMark *mark,
+                           int          line)
+{
+    g_return_if_fail (line < (int) moo_text_btree_size (line_buf->tree));
+    moo_line_buffer_remove_mark (line_buf, mark);
+    moo_line_buffer_add_mark (line_buf, mark, line);
+}
+
+
+static GSList *
+node_get_marks (BTree  *tree,
+                BTNode *node,
+                int     first_line,
+                int     last_line,
+                int     node_offset)
+{
+    GSList *total = NULL;
+    int i, j;
+
+    if (!node->n_marks)
+        return NULL;
+
+    if (last_line < node_offset || first_line >= node_offset + node->count)
+        return NULL;
+
+    if (node->is_bottom)
+    {
+        for (i = MAX (first_line - node_offset, 0); i < node->n_children; ++i)
+        {
+            Line *line;
+
+            if (i + node_offset > last_line)
+                break;
+
+            line = node->data[i];
+
+            for (j = 0; j < (int) line->n_marks; ++j)
+            {
+                MooLineMark *mark = line->marks[j];
+                _moo_line_mark_set_line (mark, line, i + node_offset, tree->stamp);
+                total = g_slist_prepend (total, line->marks[j]);
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < node->n_children; ++i)
+        {
+            GSList *child_list;
+
+            if (node->children[i]->n_marks)
+            {
+                child_list = node_get_marks (tree, node->children[i],
+                                             first_line, last_line,
+                                             node_offset);
+                total = g_slist_concat (child_list, total);
+            }
+
+            node_offset += node->children[i]->count;
+
+            if (last_line < node_offset)
+                break;
+        }
+    }
+
+    return total;
+}
+
+
+GSList *
+moo_line_buffer_get_marks_in_range (LineBuffer     *line_buf,
+                                    int             first_line,
+                                    int             last_line)
+{
+    int size = moo_text_btree_size (line_buf->tree);
+
+    g_assert (first_line >= 0);
+    g_return_val_if_fail (first_line < size, NULL);
+
+    if (last_line < 0 || last_line >= size)
+        last_line = size - 1;
+
+    g_return_val_if_fail (first_line <= last_line, NULL);
+
+    return g_slist_reverse (node_get_marks (line_buf->tree,
+                                            line_buf->tree->root,
+                                            first_line, last_line, 0));
+}
+
+
+guint
+moo_line_buffer_get_stamp (LineBuffer *line_buf)
+{
+    return line_buf->tree->stamp;
+}
+
+
+static guint
+node_get_index (BTNode* node)
+{
+    guint index = 0;
+
+    while (node->parent)
+    {
+        int i;
+
+        for (i = 0; i < node->parent->n_children; ++i)
+        {
+            if (node->parent->children[i] != node)
+                index += node->parent->children[i]->count;
+            else
+                break;
+        }
+
+        g_assert (i < node->parent->n_children);
+        node = node->parent;
+    }
+
+    return index;
+}
+
+
+int
+moo_line_buffer_get_line_index (LineBuffer     *line_buf,
+                                Line           *line)
+{
+    guint index;
+    index = node_get_index ((BTNode*) line);
+    g_assert (line == moo_line_buffer_get_line (line_buf, index));
+    return index;
 }

@@ -22,12 +22,22 @@
 struct _MooLineMarkPrivate {
     GdkColor background;
     gboolean background_set;
+    GdkGC *background_gc;
+
+    char *stock_id;
+    GdkPixbuf *pixbuf;
+
+    GtkWidget *widget;
+    gboolean visible;
+    gboolean realized;
 
     char *name;
 
     MooTextBuffer *buffer;
+    LineBuffer *line_buf;
     Line *line;
     int line_no;
+    guint stamp;
 };
 
 
@@ -42,12 +52,14 @@ static void     moo_line_mark_get_property  (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
-static void     moo_line_mark_moved         (MooLineMark    *mark);
 static void     moo_line_mark_changed       (MooLineMark    *mark);
+static void     update_background_gc        (MooLineMark    *mark);
+static void     update_pixbuf               (MooLineMark    *mark);
 
 
 enum {
     CHANGED,
+    REMOVED,
     MOVED,
     LAST_SIGNAL
 };
@@ -60,9 +72,12 @@ enum {
     PROP_BACKGROUND,
     PROP_BACKGROUND_GDK,
     PROP_BACKGROUND_SET,
+    PROP_PIXBUF,
+    PROP_STOCK_ID,
     PROP_BUFFER,
     PROP_LINE,
-    PROP_NAME
+    PROP_NAME,
+    PROP_VISIBLE
 };
 
 
@@ -105,9 +120,9 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
 
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,
-                                     g_param_spec_object ("mark",
-                                             "mark",
-                                             "mark",
+                                     g_param_spec_object ("buffer",
+                                             "buffer",
+                                             "buffer",
                                              MOO_TYPE_TEXT_BUFFER,
                                              G_PARAM_READABLE));
 
@@ -127,11 +142,44 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              NULL,
                                              G_PARAM_READWRITE));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_VISIBLE,
+                                     g_param_spec_boolean ("visible",
+                                             "visible",
+                                             "visible",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_PIXBUF,
+                                     g_param_spec_object ("pixbuf",
+                                             "pixbuf",
+                                             "pixbuf",
+                                             GDK_TYPE_PIXBUF,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_STOCK_ID,
+                                     g_param_spec_string ("stock-id",
+                                             "stock-id",
+                                             "stock-id",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
     signals[CHANGED] =
             g_signal_new ("changed",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooLineMarkClass, changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
+    signals[REMOVED] =
+            g_signal_new ("removed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooLineMarkClass, removed),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -160,6 +208,12 @@ static void
 moo_line_mark_finalize (GObject *object)
 {
     MooLineMark *mark = MOO_LINE_MARK (object);
+
+    if (mark->priv->pixbuf)
+        g_object_unref (mark->priv->pixbuf);
+    if (mark->priv->background_gc)
+        g_object_unref (mark->priv->background_gc);
+    g_free (mark->priv->stock_id);
 
     g_free (mark->priv->name);
     g_free (mark->priv);
@@ -194,6 +248,19 @@ moo_line_mark_set_property (GObject        *object,
 
         case PROP_NAME:
             moo_line_mark_set_name (mark, g_value_get_string (value));
+            break;
+
+        case PROP_VISIBLE:
+            mark->priv->visible = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "visible");
+            break;
+
+        case PROP_PIXBUF:
+            moo_line_mark_set_pixbuf (mark, g_value_get_object (value));
+            break;
+
+        case PROP_STOCK_ID:
+            moo_line_mark_set_stock_id (mark, g_value_get_string (value));
             break;
 
         default:
@@ -231,6 +298,18 @@ moo_line_mark_get_property (GObject        *object,
 
         case PROP_NAME:
             g_value_set_string (value, mark->priv->name);
+            break;
+
+        case PROP_VISIBLE:
+            g_value_set_boolean (value, mark->priv->visible);
+            break;
+
+        case PROP_PIXBUF:
+            g_value_set_object (value, mark->priv->pixbuf);
+            break;
+
+        case PROP_STOCK_ID:
+            g_value_set_string (value, mark->priv->stock_id);
             break;
 
         default:
@@ -271,6 +350,8 @@ moo_line_mark_set_background_gdk (MooLineMark    *mark,
             changed = TRUE;
         }
     }
+
+    update_background_gc (mark);
 
     if (notify_set || notify_bg)
     {
@@ -317,14 +398,6 @@ moo_line_mark_set_background (MooLineMark    *mark,
 
 
 static void
-moo_line_mark_moved (MooLineMark *mark)
-{
-    g_object_notify (G_OBJECT (mark), "line");
-    g_signal_emit (mark, signals[MOVED], 0);
-}
-
-
-static void
 moo_line_mark_changed (MooLineMark *mark)
 {
     g_signal_emit (mark, signals[CHANGED], 0);
@@ -358,6 +431,15 @@ int
 moo_line_mark_get_line (MooLineMark *mark)
 {
     g_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
+    g_return_val_if_fail (mark->priv->line != NULL, -1);
+
+    if (moo_line_buffer_get_stamp (mark->priv->line_buf) != mark->priv->stamp)
+    {
+        mark->priv->line_no =
+                moo_line_buffer_get_line_index (mark->priv->line_buf, mark->priv->line);
+        mark->priv->stamp = moo_line_buffer_get_stamp (mark->priv->line_buf);
+    }
+
     return mark->priv->line_no;
 }
 
@@ -365,7 +447,8 @@ moo_line_mark_get_line (MooLineMark *mark)
 void
 _moo_line_mark_set_line (MooLineMark    *mark,
                          gpointer        line,
-                         int             line_no)
+                         int             line_no,
+                         guint           stamp)
 {
     gboolean moved = FALSE;
 
@@ -377,7 +460,266 @@ _moo_line_mark_set_line (MooLineMark    *mark,
 
     mark->priv->line = line;
     mark->priv->line_no = line_no;
+    mark->priv->stamp = stamp;
 
     if (moved)
-        moo_line_mark_moved (mark);
+        g_object_notify (G_OBJECT (mark), "line");
+}
+
+
+gpointer
+_moo_line_mark_get_line (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    return mark->priv->line;
+}
+
+
+void
+_moo_line_mark_set_buffer (MooLineMark    *mark,
+                           MooTextBuffer  *buffer,
+                           gpointer        line_buf)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    g_assert (!buffer || mark->priv->buffer == NULL);
+    mark->priv->buffer = buffer;
+    mark->priv->line_buf = line_buf;
+    g_object_notify (G_OBJECT (mark), "buffer");
+}
+
+
+MooTextBuffer *
+moo_line_mark_get_buffer (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), NULL);
+    return mark->priv->buffer;
+}
+
+
+void
+_moo_line_mark_removed (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    mark->priv->buffer = NULL;
+    mark->priv->line_buf = NULL;
+    mark->priv->line = NULL;
+    mark->priv->line_no = -1;
+    g_object_notify (G_OBJECT (mark), "buffer");
+    g_signal_emit (mark, signals[REMOVED], 0);
+}
+
+
+gboolean
+moo_line_mark_get_visible (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), FALSE);
+    return mark->priv->visible;
+}
+
+
+void
+moo_line_mark_set_stock_id (MooLineMark *mark,
+                            const char  *stock_id)
+{
+    g_return_if_fail (MOO_IS_LINE_MARK (mark));
+
+    if (stock_id != mark->priv->stock_id)
+    {
+        if (mark->priv->pixbuf)
+            g_object_unref (mark->priv->pixbuf);
+        mark->priv->pixbuf = NULL;
+        g_free (mark->priv->stock_id);
+
+        mark->priv->stock_id = g_strdup (stock_id);
+
+        update_pixbuf (mark);
+        g_signal_emit (mark, signals[CHANGED], 0);
+    }
+}
+
+
+void
+moo_line_mark_set_pixbuf (MooLineMark    *mark,
+                          GdkPixbuf      *pixbuf)
+{
+    g_return_if_fail (MOO_IS_LINE_MARK (mark));
+    g_return_if_fail (!pixbuf || GDK_IS_PIXBUF (pixbuf));
+
+    if (pixbuf != mark->priv->pixbuf)
+    {
+        if (mark->priv->pixbuf)
+            g_object_unref (mark->priv->pixbuf);
+        mark->priv->pixbuf = NULL;
+        g_free (mark->priv->stock_id);
+        mark->priv->stock_id = NULL;
+
+        mark->priv->pixbuf = g_object_ref (pixbuf);
+
+        g_signal_emit (mark, signals[CHANGED], 0);
+    }
+}
+
+
+const char *
+moo_line_mark_get_stock_id (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), NULL);
+    return mark->priv->stock_id;
+}
+
+
+GdkPixbuf *
+moo_line_mark_get_pixbuf (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), NULL);
+    return mark->priv->pixbuf;
+}
+
+
+static void
+update_background_gc (MooLineMark *mark)
+{
+    GHashTable *cache;
+    GdkGC *gc;
+
+    if (!mark->priv->realized || !mark->priv->background_set)
+    {
+        if (mark->priv->background_gc)
+            g_object_unref (mark->priv->background_gc);
+        mark->priv->background_gc = NULL;
+        return;
+    }
+
+    g_assert (mark->priv->widget != NULL);
+    g_return_if_fail (GTK_IS_WIDGET (mark->priv->widget));
+    g_return_if_fail (GTK_WIDGET_REALIZED (mark->priv->widget));
+
+    cache = g_object_get_data (G_OBJECT (mark->priv->widget),
+                               "moo-line-mark-colors");
+
+    if (!cache)
+    {
+        cache = g_hash_table_new_full ((GHashFunc) gdk_color_hash,
+                                       (GEqualFunc) gdk_color_equal,
+                                       (GDestroyNotify) gdk_color_free,
+                                       g_object_unref);
+        g_object_set_data_full (G_OBJECT (mark->priv->widget),
+                                "moo-line-mark-colors", cache,
+                                (GDestroyNotify) g_hash_table_destroy);
+    }
+
+    gc = g_hash_table_lookup (cache, &mark->priv->background);
+
+    if (!gc)
+    {
+        GdkColormap *colormap;
+
+        colormap = gtk_widget_get_colormap (mark->priv->widget);
+        g_return_if_fail (colormap != NULL);
+
+        gc = gdk_gc_new (mark->priv->widget->window);
+        gdk_colormap_alloc_color (colormap,
+                                  &mark->priv->background,
+                                  TRUE, TRUE);
+        gdk_gc_set_foreground (gc, &mark->priv->background);
+        g_hash_table_insert (cache, gdk_color_copy (&mark->priv->background), gc);
+    }
+
+    mark->priv->background_gc = g_object_ref (gc);
+}
+
+
+static void
+update_pixbuf (MooLineMark *mark)
+{
+    GHashTable *cache;
+    GdkPixbuf *pixbuf;
+
+    if (!mark->priv->realized || !mark->priv->stock_id)
+        return;
+
+    g_assert (mark->priv->widget != NULL);
+    g_return_if_fail (GTK_IS_WIDGET (mark->priv->widget));
+    g_return_if_fail (GTK_WIDGET_REALIZED (mark->priv->widget));
+
+    cache = g_object_get_data (G_OBJECT (mark->priv->widget),
+                               "moo-line-mark-icons");
+
+    if (!cache)
+    {
+        cache = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                       g_free, g_object_unref);
+        g_object_set_data_full (G_OBJECT (mark->priv->widget),
+                                "moo-line-mark-icons", cache,
+                                (GDestroyNotify) g_hash_table_destroy);
+    }
+
+    pixbuf = g_hash_table_lookup (cache, mark->priv->stock_id);
+
+    if (!pixbuf)
+    {
+        pixbuf = gtk_widget_render_icon (mark->priv->widget,
+                                         mark->priv->stock_id,
+                                         GTK_ICON_SIZE_MENU,
+                                         NULL);
+        g_return_if_fail (pixbuf != NULL);
+        g_hash_table_insert (cache, g_strdup (mark->priv->stock_id), pixbuf);
+    }
+
+    mark->priv->pixbuf = g_object_ref (pixbuf);
+}
+
+
+void
+_moo_line_mark_realize (MooLineMark *mark,
+                        GtkWidget   *widget)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    g_assert (GTK_IS_WIDGET (widget));
+    g_assert (GTK_WIDGET_REALIZED (widget));
+    g_assert (!mark->priv->realized);
+
+    mark->priv->realized = TRUE;
+    mark->priv->widget = widget;
+
+    update_background_gc (mark);
+    update_pixbuf (mark);
+}
+
+
+void
+_moo_line_mark_unrealize (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    g_assert (mark->priv->realized);
+
+    mark->priv->realized = FALSE;
+    mark->priv->widget = NULL;
+
+    if (mark->priv->background_gc)
+        g_object_unref (mark->priv->background_gc);
+    mark->priv->background_gc = NULL;
+
+    if (mark->priv->pixbuf && mark->priv->stock_id)
+    {
+        g_object_unref (mark->priv->pixbuf);
+        mark->priv->pixbuf = NULL;
+    }
+}
+
+
+GdkGC *
+moo_line_mark_get_background_gc (MooLineMark *mark)
+{
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), NULL);
+    return mark->priv->background_gc;
+}
+
+
+void
+_moo_line_mark_moved (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    g_assert (mark->priv->buffer != NULL);
+    g_signal_emit (mark, signals[MOVED], 0);
 }

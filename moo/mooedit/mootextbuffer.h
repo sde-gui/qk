@@ -17,6 +17,7 @@
 
 #include <gtk/gtktextbuffer.h>
 #include <mooedit/moolang.h>
+#include <mooedit/moolinemark.h>
 
 G_BEGIN_DECLS
 
@@ -29,7 +30,6 @@ G_BEGIN_DECLS
 #define MOO_TEXT_BUFFER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TEXT_BUFFER, MooTextBufferClass))
 
 
-typedef struct _MooTextBuffer         MooTextBuffer;
 typedef struct _MooTextBufferPrivate  MooTextBufferPrivate;
 typedef struct _MooTextBufferClass    MooTextBufferClass;
 
@@ -47,6 +47,9 @@ struct _MooTextBufferClass
     void (*cursor_moved)        (MooTextBuffer      *buffer,
                                  const GtkTextIter  *iter);
     void (*selection_changed)   (MooTextBuffer      *buffer);
+
+    void (*line_mark_added)     (MooTextBuffer      *buffer,
+                                 MooLineMark        *mark);
 };
 
 
@@ -83,6 +86,17 @@ void        moo_text_buffer_apply_scheme                (MooTextBuffer      *buf
                                                          MooTextStyleScheme *scheme);
 
 gpointer    moo_text_buffer_get_undo_mgr                (MooTextBuffer      *buffer);
+
+void        moo_text_buffer_add_line_mark               (MooTextBuffer      *buffer,
+                                                         MooLineMark        *mark);
+void        moo_text_buffer_remove_line_mark            (MooTextBuffer      *buffer,
+                                                         MooLineMark        *mark);
+void        moo_text_buffer_move_line_mark              (MooTextBuffer      *buffer,
+                                                         MooLineMark        *mark,
+                                                         int                 line);
+GSList     *moo_text_buffer_get_line_marks_in_range     (MooTextBuffer      *buffer,
+                                                         int                 first_line,
+                                                         int                 last_line);
 
 void        _moo_text_buffer_ensure_highlight           (MooTextBuffer      *buffer,
                                                          int                 first_line,

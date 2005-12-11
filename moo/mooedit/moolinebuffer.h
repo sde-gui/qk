@@ -77,12 +77,30 @@ void     moo_line_buffer_invalidate     (LineBuffer     *line_buf,
 void     moo_line_buffer_invalidate_all (LineBuffer     *line_buf);
 void     moo_line_buffer_clamp_invalid  (LineBuffer     *line_buf);
 
+guint    moo_line_buffer_get_stamp      (LineBuffer     *line_buf);
+int      moo_line_buffer_get_line_index (LineBuffer     *line_buf,
+                                         Line           *line);
+
+void     moo_line_buffer_add_mark       (LineBuffer     *line_buf,
+                                         MooLineMark    *mark,
+                                         int             line);
+void     moo_line_buffer_remove_mark    (LineBuffer     *line_buf,
+                                         MooLineMark    *mark);
+void     moo_line_buffer_move_mark      (LineBuffer     *line_buf,
+                                         MooLineMark    *mark,
+                                         int             line);
+GSList  *moo_line_buffer_get_marks_in_range (LineBuffer *line_buf,
+                                         int             first_line,
+                                         int             last_line);
+
 void     moo_line_buffer_split_line     (LineBuffer     *line_buf,
                                          int             line,
-                                         int             num_new_lines);
+                                         int             num_new_lines,
+                                         GtkTextTag     *tag);
 void     moo_line_buffer_delete         (LineBuffer     *line_buf,
                                          int             first,
-                                         int             num);
+                                         int             num,
+                                         int             move_to);
 
 void     moo_line_erase_segments        (Line           *line);
 void     moo_line_add_segment           (Line           *line,

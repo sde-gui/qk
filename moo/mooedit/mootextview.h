@@ -131,6 +131,8 @@ void         moo_text_view_set_show_line_numbers    (MooTextView        *view,
                                                      gboolean            show);
 void         moo_text_view_set_show_scrollbar_marks (MooTextView        *view,
                                                      gboolean            show);
+void         moo_text_view_set_show_line_marks      (MooTextView        *view,
+                                                     gboolean            show);
 
 GtkTextTag  *moo_text_view_lookup_tag               (MooTextView        *view,
                                                      const char         *name);
