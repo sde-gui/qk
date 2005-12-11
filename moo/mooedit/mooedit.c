@@ -45,6 +45,8 @@ static void     moo_edit_get_property       (GObject        *object,
 
 static void     moo_edit_filename_changed   (MooEdit        *edit,
                                              const char     *new_filename);
+static gboolean moo_edit_line_mark_clicked  (MooTextView    *view,
+                                             int             line);
 
 static void     config_changed              (MooEdit        *edit,
                                              GParamSpec     *pspec);
@@ -53,9 +55,16 @@ static void     moo_edit_config_notify      (MooEdit        *edit,
                                              GParamSpec     *pspec);
 
 static GtkTextBuffer *get_buffer            (MooEdit        *edit);
+static MooTextBuffer *get_moo_buffer        (MooEdit        *edit);
 
 static void     modified_changed_cb         (GtkTextBuffer  *buffer,
                                              MooEdit        *edit);
+
+static void     disconnect_bookmark         (MooEditBookmark *bk);
+static void     line_mark_moved             (MooEdit        *edit,
+                                             MooLineMark    *mark);
+static void     line_mark_deleted           (MooEdit        *edit,
+                                             MooLineMark    *mark);
 
 
 enum {
@@ -66,6 +75,7 @@ enum {
     CONFIG_NOTIFY,
     SAVE_BEFORE,
     SAVE_AFTER,
+    BOOKMARKS_CHANGED,
     LAST_SIGNAL
 };
 
@@ -73,7 +83,8 @@ static guint signals[LAST_SIGNAL];
 
 enum {
     PROP_0,
-    PROP_EDITOR
+    PROP_EDITOR,
+    PROP_ENABLE_BOOKMARKS
 };
 
 enum {
@@ -93,11 +104,14 @@ static void
 moo_edit_class_init (MooEditClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    MooTextViewClass *view_class = MOO_TEXT_VIEW_CLASS (klass);
 
     gobject_class->set_property = moo_edit_set_property;
     gobject_class->get_property = moo_edit_get_property;
     gobject_class->constructor = moo_edit_constructor;
     gobject_class->finalize = moo_edit_finalize;
+
+    view_class->line_mark_clicked = moo_edit_line_mark_clicked;
 
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
@@ -109,6 +123,14 @@ moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              MOO_TYPE_EDITOR,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_BOOKMARKS,
+                                     g_param_spec_boolean ("enable-bookmarks",
+                                             "enable-bookmarks",
+                                             "enable-bookmarks",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     settings[SETTING_LANG] = moo_edit_config_install_setting (
             g_param_spec_string ("lang", "lang", "lang",
@@ -188,6 +210,15 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
+    signals[BOOKMARKS_CHANGED] =
+            g_signal_new ("bookmarks-changed",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, bookmarks_changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
     _moo_edit_init_settings ();
 }
 
@@ -205,7 +236,6 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
-    edit->priv->enable_indentation = TRUE;
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
@@ -230,6 +260,7 @@ moo_edit_constructor (GType                  type,
 {
     GObject *object;
     MooEdit *edit;
+    GtkTextBuffer *buffer;
 
     object = G_OBJECT_CLASS (moo_edit_parent_class)->constructor (
         type, n_construct_properties, construct_param);
@@ -246,6 +277,14 @@ moo_edit_constructor (GType                  type,
     g_signal_connect_after (edit, "realize", G_CALLBACK (_moo_edit_apply_style_settings), NULL);
 
     _moo_edit_set_filename (edit, NULL, NULL);
+
+    buffer = get_buffer (edit);
+    g_signal_connect_swapped (buffer, "line-mark-moved",
+                              G_CALLBACK (line_mark_moved),
+                              edit);
+    g_signal_connect_swapped (buffer, "line-mark-deleted",
+                              G_CALLBACK (line_mark_deleted),
+                              edit);
 
     return object;
 }
@@ -270,6 +309,12 @@ moo_edit_finalize (GObject *object)
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
+
+    if (edit->priv->update_bookmarks_idle)
+        g_source_remove (edit->priv->update_bookmarks_idle);
+    g_slist_foreach (edit->priv->bookmarks, (GFunc) disconnect_bookmark, NULL);
+    g_slist_foreach (edit->priv->bookmarks, (GFunc) g_object_unref, NULL);
+    g_slist_free (edit->priv->bookmarks);
 
     g_free (edit->priv);
     edit->priv = NULL;
@@ -448,6 +493,10 @@ moo_edit_set_property (GObject        *object,
             edit->priv->editor = g_value_get_object (value);
             break;
 
+        case PROP_ENABLE_BOOKMARKS:
+            moo_edit_set_enable_bookmarks (edit, g_value_get_boolean (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -467,6 +516,10 @@ moo_edit_get_property (GObject        *object,
     {
         case PROP_EDITOR:
             g_value_set_object (value, edit->priv->editor);
+            break;
+
+        case PROP_ENABLE_BOOKMARKS:
+            g_value_set_boolean (value, edit->priv->enable_bookmarks);
             break;
 
         default:
@@ -583,6 +636,13 @@ static GtkTextBuffer*
 get_buffer (MooEdit *edit)
 {
     return gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+}
+
+
+static MooTextBuffer *
+get_moo_buffer (MooEdit *edit)
+{
+    return MOO_TEXT_BUFFER (get_buffer (edit));
 }
 
 
@@ -920,4 +980,307 @@ _moo_edit_thaw_config_notify (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_object_thaw_notify (G_OBJECT (edit->config));
+}
+
+
+/***********************************************************************/
+/* Bookmarks
+ */
+
+G_DEFINE_TYPE(MooEditBookmark, moo_edit_bookmark, MOO_TYPE_LINE_MARK)
+
+
+static void
+moo_edit_bookmark_finalize (GObject *object)
+{
+    MooEditBookmark *bk = MOO_EDIT_BOOKMARK (object);
+    g_free (bk->text);
+    G_OBJECT_CLASS(moo_edit_bookmark_parent_class)->finalize (object);
+}
+
+
+static void
+moo_edit_bookmark_class_init (MooEditBookmarkClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    object_class->finalize = moo_edit_bookmark_finalize;
+}
+
+
+static void
+moo_edit_bookmark_init (MooEditBookmark *bk)
+{
+    g_object_set (bk,
+                  "visible", TRUE,
+                  "background", "#E5E5FF",
+                  "stock-id", GTK_STOCK_ABOUT,
+                  NULL);
+}
+
+
+static guint
+get_line_count (MooEdit *edit)
+{
+    return gtk_text_buffer_get_line_count (get_buffer (edit));
+}
+
+
+static void
+bookmarks_changed (MooEdit *edit)
+{
+    g_signal_emit (edit, signals[BOOKMARKS_CHANGED], 0);
+}
+
+
+void
+moo_edit_set_enable_bookmarks (MooEdit  *edit,
+                               gboolean  enable)
+{
+    MooTextBuffer *buffer;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    enable = enable != 0;
+
+    if (enable == edit->priv->enable_bookmarks)
+        return;
+
+    edit->priv->enable_bookmarks = enable;
+    moo_text_view_set_show_line_marks (MOO_TEXT_VIEW (edit), enable);
+    buffer = get_moo_buffer (edit);
+
+    if (!enable && edit->priv->bookmarks)
+    {
+        GSList *tmp = edit->priv->bookmarks;
+        edit->priv->bookmarks = NULL;
+        g_slist_foreach (tmp, (GFunc) disconnect_bookmark, NULL);
+
+        while (tmp)
+        {
+            moo_text_buffer_remove_line_mark (buffer, tmp->data);
+            g_object_unref (tmp->data);
+            tmp = g_slist_delete_link (tmp, tmp);
+        }
+
+        bookmarks_changed (edit);
+    }
+
+    g_object_notify (G_OBJECT (edit), "enable-bookmarks");
+}
+
+
+gboolean
+moo_edit_get_enable_bookmarks (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return edit->priv->enable_bookmarks;
+}
+
+
+static int cmp_bookmarks (MooLineMark *a,
+                          MooLineMark *b)
+{
+    int line_a = moo_line_mark_get_line (a);
+    int line_b = moo_line_mark_get_line (b);
+    return line_a < line_b ? -1 : (line_a > line_b ? 1 : 0);
+}
+
+static gboolean
+update_bookmarks (MooEdit *edit)
+{
+    GSList *deleted, *dup, *old, *new, *l;
+
+    edit->priv->update_bookmarks_idle = 0;
+    old = edit->priv->bookmarks;
+    edit->priv->bookmarks = NULL;
+
+    for (deleted = NULL, new = NULL, l = old; l != NULL; l = l->next)
+        if (moo_line_mark_get_deleted (MOO_LINE_MARK (l->data)))
+            deleted = g_slist_prepend (deleted, l->data);
+        else
+            new = g_slist_prepend (new, l->data);
+
+    g_slist_foreach (deleted, (GFunc) disconnect_bookmark, NULL);
+    g_slist_foreach (deleted, (GFunc) g_object_unref, NULL);
+    g_slist_free (deleted);
+
+    new = g_slist_sort (new, (GCompareFunc) cmp_bookmarks);
+    old = new;
+    new = NULL;
+    dup = NULL;
+
+    for (l = old; l != NULL; l = l->next)
+        if (new && moo_line_mark_get_line (new->data) == moo_line_mark_get_line (l->data))
+            dup = g_slist_prepend (dup, l->data);
+        else
+            new = g_slist_prepend (new, l->data);
+
+    while (dup)
+    {
+        disconnect_bookmark (dup->data);
+        moo_text_buffer_remove_line_mark (get_moo_buffer (edit), dup->data);
+        g_object_unref (dup->data);
+        dup = g_slist_delete_link (dup, dup);
+    }
+
+    edit->priv->bookmarks = g_slist_reverse (new);
+
+    return FALSE;
+}
+
+
+static void
+update_bookmarks_now (MooEdit *edit)
+{
+    if (edit->priv->update_bookmarks_idle)
+    {
+        g_source_remove (edit->priv->update_bookmarks_idle);
+        edit->priv->update_bookmarks_idle = 0;
+        update_bookmarks (edit);
+    }
+}
+
+
+const GSList *
+moo_edit_list_bookmarks (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    update_bookmarks_now (edit);
+    return edit->priv->bookmarks;
+}
+
+
+void
+moo_edit_toggle_bookmark (MooEdit *edit,
+                          guint    line)
+{
+    MooEditBookmark *bk;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (line < get_line_count (edit));
+
+    bk = moo_edit_get_bookmark_at_line (edit, line);
+
+    if (bk)
+        moo_edit_remove_bookmark (edit, bk);
+    else
+        moo_edit_add_bookmark (edit, line);
+}
+
+
+MooEditBookmark *
+moo_edit_get_bookmark_at_line (MooEdit *edit,
+                               guint    line)
+{
+    GSList *list, *l;
+    MooEditBookmark *bk;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    g_return_val_if_fail (line < get_line_count (edit), NULL);
+
+    bk = NULL;
+    list = moo_text_buffer_get_line_marks_at_line (get_moo_buffer (edit), line);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        if (MOO_IS_EDIT_BOOKMARK (l->data) && g_slist_find (edit->priv->bookmarks, l->data))
+        {
+            bk = l->data;
+            break;
+        }
+    }
+
+    g_slist_free (list);
+    return bk;
+}
+
+void
+moo_edit_remove_bookmark (MooEdit         *edit,
+                          MooEditBookmark *bookmark)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_EDIT_BOOKMARK (bookmark));
+    g_return_if_fail (g_slist_find (edit->priv->bookmarks, bookmark));
+
+    disconnect_bookmark (bookmark);
+    edit->priv->bookmarks = g_slist_remove (edit->priv->bookmarks, bookmark);
+    moo_text_buffer_remove_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bookmark));
+
+    g_object_unref (bookmark);
+    bookmarks_changed (edit);
+}
+
+
+void
+moo_edit_add_bookmark (MooEdit *edit,
+                       guint    line)
+{
+    MooEditBookmark *bk;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (line < get_line_count (edit));
+    g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
+
+    bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, NULL);
+    moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
+    g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", GINT_TO_POINTER (TRUE));
+
+    // bk->text = ???
+    // background
+
+    if (!edit->priv->update_bookmarks_idle)
+        edit->priv->bookmarks =
+                g_slist_insert_sorted (edit->priv->bookmarks, bk,
+                                       (GCompareFunc) cmp_bookmarks);
+    else
+        edit->priv->bookmarks = g_slist_prepend (edit->priv->bookmarks, bk);
+
+    bookmarks_changed (edit);
+}
+
+
+static void
+disconnect_bookmark (MooEditBookmark *bk)
+{
+    g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", NULL);
+}
+
+
+static void
+line_mark_moved (MooEdit        *edit,
+                 MooLineMark    *mark)
+{
+    if (MOO_IS_EDIT_BOOKMARK (mark) &&
+        g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
+        !edit->priv->update_bookmarks_idle)
+    {
+        edit->priv->update_bookmarks_idle =
+                g_idle_add ((GSourceFunc) update_bookmarks, edit);
+        bookmarks_changed (edit);
+    }
+}
+
+
+static void
+line_mark_deleted (MooEdit        *edit,
+                   MooLineMark    *mark)
+{
+    if (MOO_IS_EDIT_BOOKMARK (mark) &&
+        g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
+        g_slist_find (edit->priv->bookmarks, mark))
+    {
+        disconnect_bookmark (MOO_EDIT_BOOKMARK (mark));
+        edit->priv->bookmarks = g_slist_remove (edit->priv->bookmarks, mark);
+        g_object_unref (mark);
+        bookmarks_changed (edit);
+    }
+}
+
+
+static gboolean
+moo_edit_line_mark_clicked (MooTextView *view,
+                            int          line)
+{
+    moo_edit_toggle_bookmark (MOO_EDIT (view), line);
+    return TRUE;
 }

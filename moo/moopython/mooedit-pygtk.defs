@@ -879,6 +879,7 @@
   (return-type "none")
   (parameters
     '("MooLineMark*" "mark")
+    '("int" "line" (null-ok) (default "0"))
   )
 )
 

@@ -127,6 +127,9 @@ moo_line_buffer_delete (LineBuffer *line_buf,
             g_free (line->marks);
             line->marks = tmp;
 
+            for (i = 0; i < n_old_marks; ++i)
+                _moo_line_mark_set_line (old_marks[i], line, move_to, line_buf->tree->stamp);
+
             g_free (old_marks);
 
             moo_text_btree_update_n_marks (line_buf->tree, line, n_old_marks);

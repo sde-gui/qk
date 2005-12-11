@@ -405,6 +405,33 @@ text_view_unobscure_mouse_cursor (GtkTextView *text_view)
     }
 }
 
+
+static gboolean
+left_window_click (GtkTextView    *text_view,
+                   GdkEventButton *event)
+{
+    int y, line;
+    GtkTextIter iter;
+    gboolean ret;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+
+    if (!view->priv->show_line_marks)
+        return FALSE;
+
+    if (event->x < 0 || event->x > view->priv->line_mark_width)
+        return FALSE;
+
+    gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_LEFT,
+                                           event->x, event->y, NULL, &y);
+    gtk_text_view_get_line_at_y (text_view, &iter, y, NULL);
+    line = gtk_text_iter_get_line (&iter);
+
+    g_signal_emit_by_name (text_view, "line-mark-clicked", line, &ret);
+
+    return ret;
+}
+
+
 static void     start_drag_scroll               (MooTextView        *view);
 static void     stop_drag_scroll                (MooTextView        *view);
 static gboolean drag_scroll_timeout_func        (MooTextView        *view);
@@ -428,9 +455,16 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
     text_view = GTK_TEXT_VIEW (widget);
     text_view_unobscure_mouse_cursor (text_view);
 
-    if (gtk_text_view_get_window_type (text_view, event->window) != GTK_TEXT_WINDOW_TEXT)
+    switch (gtk_text_view_get_window_type (text_view, event->window))
     {
-        return FALSE;
+        case GTK_TEXT_WINDOW_TEXT:
+            break;
+
+        case GTK_TEXT_WINDOW_LEFT:
+            return left_window_click (text_view, event);
+
+        default:
+            return FALSE;
     }
 
     view = MOO_TEXT_VIEW (widget);

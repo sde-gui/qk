@@ -62,7 +62,6 @@ struct _MooEditPrivate {
     MooEditor *editor;
 
     gulong modified_changed_handler_id;
-    gboolean enable_indentation;
 
     /***********************************************************************/
     /* Document
@@ -84,6 +83,13 @@ struct _MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
+
+    /***********************************************************************/
+    /* Bookmarks
+    /*/
+    gboolean enable_bookmarks;
+    GSList *bookmarks; /* sorted by line number */
+    guint update_bookmarks_idle;
 };
 
 

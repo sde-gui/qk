@@ -92,7 +92,8 @@ void        moo_text_buffer_apply_scheme                (MooTextBuffer      *buf
 gpointer    moo_text_buffer_get_undo_mgr                (MooTextBuffer      *buffer);
 
 void        moo_text_buffer_add_line_mark               (MooTextBuffer      *buffer,
-                                                         MooLineMark        *mark);
+                                                         MooLineMark        *mark,
+                                                         int                 line);
 void        moo_text_buffer_remove_line_mark            (MooTextBuffer      *buffer,
                                                          MooLineMark        *mark);
 void        moo_text_buffer_move_line_mark              (MooTextBuffer      *buffer,

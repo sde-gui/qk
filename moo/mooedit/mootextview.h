@@ -64,6 +64,9 @@ struct _MooTextViewClass
     void (* set_scheme)             (MooTextView    *view,
                                      MooTextStyleScheme *scheme);
 
+    gboolean (* line_mark_clicked)  (MooTextView    *view,
+                                     int             line);
+
     /* these are made signals for convenience */
     void (* find_interactive)       (MooTextView    *view);
     void (* replace_interactive)    (MooTextView    *view);

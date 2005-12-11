@@ -260,18 +260,18 @@ bt_data_free (BTData  *data,
     {
         hl_info_free (data->hl_info);
 
-        if (data->marks)
+        if (data->n_marks)
         {
             guint i;
 
-            if (removed_marks)
+            for (i = 0; i < data->n_marks; ++i)
             {
-                for (i = 0; i < data->n_marks; ++i)
+                if (removed_marks)
+                {
                     *removed_marks = g_slist_prepend (*removed_marks, data->marks[i]);
-            }
-            else
-            {
-                for (i = 0; i < data->n_marks; ++i)
+                    _moo_line_mark_set_line (data->marks[i], NULL, -1, 0);
+                }
+                else
                 {
                     _moo_line_mark_deleted (data->marks[i]);
                     g_object_unref (data->marks[i]);

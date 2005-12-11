@@ -141,6 +141,7 @@ enum {
     UNDO,
     REDO,
     SET_SCHEME,
+    LINE_MARK_CLICKED,
     LAST_SIGNAL
 };
 
@@ -480,6 +481,16 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           _moo_marshal_VOID__OBJECT,
                           G_TYPE_NONE, 1,
                           MOO_TYPE_TEXT_STYLE_SCHEME);
+
+    signals[LINE_MARK_CLICKED] =
+            g_signal_new ("line-mark-clicked",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextViewClass, line_mark_clicked),
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_BOOLEAN__INT,
+                          G_TYPE_BOOLEAN, 1,
+                          G_TYPE_INT);
 
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK,

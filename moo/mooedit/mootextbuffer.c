@@ -1738,7 +1738,8 @@ delete_action_merge (DeleteAction   *last_action,
 
 void
 moo_text_buffer_add_line_mark (MooTextBuffer *buffer,
-                               MooLineMark   *mark)
+                               MooLineMark   *mark,
+                               int            line_no)
 {
     Line *line;
 
@@ -1749,9 +1750,15 @@ moo_text_buffer_add_line_mark (MooTextBuffer *buffer,
     g_object_ref (mark);
     g_object_freeze_notify (G_OBJECT (mark));
 
-    line = moo_line_buffer_get_line (buffer->priv->line_buf, 0);
+    if (line_no < 0 || line_no >= gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)))
+        line_no = 0;
+
+    /* XXX ??? */
+    line = moo_line_buffer_get_line (buffer->priv->line_buf, line_no);
+    g_return_if_fail (line != NULL);
+
     _moo_line_mark_set_buffer (mark, buffer, buffer->priv->line_buf);
-    moo_line_buffer_add_mark (buffer->priv->line_buf, mark, 0);
+    moo_line_buffer_add_mark (buffer->priv->line_buf, mark, line_no);
 
     g_signal_emit (buffer, signals[LINE_MARK_ADDED], 0, mark);
     g_object_thaw_notify (G_OBJECT (mark));
