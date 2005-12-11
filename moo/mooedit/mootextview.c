@@ -1265,6 +1265,18 @@ moo_text_view_get_cursor (MooTextView *view,
 }
 
 
+int
+moo_text_view_get_cursor_line (MooTextView *view)
+{
+    GtkTextIter iter;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    moo_text_view_get_cursor (view, &iter);
+    return gtk_text_iter_get_line (&iter);
+}
+
+
 static GtkTextBuffer*
 get_buffer (MooTextView *view)
 {
