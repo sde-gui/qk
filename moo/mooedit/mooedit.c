@@ -286,6 +286,8 @@ moo_edit_constructor (GType                  type,
                               G_CALLBACK (line_mark_deleted),
                               edit);
 
+//     g_object_set (edit, "enable-folding", TRUE, NULL);
+
     return object;
 }
 
@@ -1057,7 +1059,7 @@ moo_edit_set_enable_bookmarks (MooEdit  *edit,
 
         while (tmp)
         {
-            moo_text_buffer_remove_line_mark (buffer, tmp->data);
+            moo_text_buffer_delete_line_mark (buffer, tmp->data);
             g_object_unref (tmp->data);
             tmp = g_slist_delete_link (tmp, tmp);
         }
@@ -1118,7 +1120,7 @@ update_bookmarks (MooEdit *edit)
     while (dup)
     {
         disconnect_bookmark (dup->data);
-        moo_text_buffer_remove_line_mark (get_moo_buffer (edit), dup->data);
+        moo_text_buffer_delete_line_mark (get_moo_buffer (edit), dup->data);
         g_object_unref (dup->data);
         dup = g_slist_delete_link (dup, dup);
     }
@@ -1204,7 +1206,7 @@ moo_edit_remove_bookmark (MooEdit         *edit,
 
     disconnect_bookmark (bookmark);
     edit->priv->bookmarks = g_slist_remove (edit->priv->bookmarks, bookmark);
-    moo_text_buffer_remove_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bookmark));
+    moo_text_buffer_delete_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bookmark));
 
     g_object_unref (bookmark);
     bookmarks_changed (edit);

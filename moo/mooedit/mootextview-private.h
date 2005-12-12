@@ -125,6 +125,10 @@ struct _MooTextViewPrivate {
     int line_mark_width;
     GSList *line_marks;
 
+    gboolean enable_folding;
+    int fold_margin_width;
+    int expander_size;
+
     /***********************************************************************/
     /* Search
     /*/

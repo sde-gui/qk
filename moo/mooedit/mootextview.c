@@ -35,6 +35,8 @@
 #define UPDATE_PRIORITY (GTK_TEXT_VIEW_PRIORITY_VALIDATE - 5)
 
 #define MIN_LINE_MARK_WIDTH 6
+#define DEFAULT_EXPANDER_SIZE 12
+#define EXPANDER_PADDING 2
 
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
@@ -58,6 +60,8 @@ static gboolean moo_text_view_focus_in      (GtkWidget          *widget,
                                              GdkEventFocus      *event);
 static gboolean moo_text_view_focus_out     (GtkWidget          *widget,
                                              GdkEventFocus      *event);
+static void     moo_text_view_style_set     (GtkWidget          *widget,
+                                             GtkStyle           *previous_style);
 
 static void     moo_text_view_cut_clipboard (GtkTextView        *text_view);
 static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
@@ -127,6 +131,11 @@ static void     line_mark_changed           (MooTextView        *view,
                                              MooLineMark        *mark);
 static void     line_mark_moved             (MooTextView        *view,
                                              MooLineMark        *mark);
+static void     fold_added                  (MooTextView        *view,
+                                             MooFold            *fold);
+static void     fold_deleted                (MooTextView        *view);
+static void     fold_toggled                (MooTextView        *view,
+                                             MooFold            *fold);
 
 
 enum {
@@ -168,7 +177,8 @@ enum {
     PROP_ENABLE_HIGHLIGHT,
     PROP_SHOW_LINE_NUMBERS,
     PROP_SHOW_SCROLLBAR_MARKS,
-    PROP_SHOW_LINE_MARKS
+    PROP_SHOW_LINE_MARKS,
+    PROP_ENABLE_FOLDING
 };
 
 
@@ -201,6 +211,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->expose_event = moo_text_view_expose;
     widget_class->focus_in_event = moo_text_view_focus_in;
     widget_class->focus_out_event = moo_text_view_focus_out;
+    widget_class->style_set = moo_text_view_style_set;
 #if 0
     widget_class->drag_data_received = _moo_text_view_drag_data_received;
     widget_class->drag_drop = _moo_text_view_drag_drop;
@@ -369,7 +380,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("show-scrollbar-marks",
                                              "show-scrollbar-marks",
                                              "show-scrollbar-marks",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
@@ -379,6 +390,23 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "show-line-marks",
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_FOLDING,
+                                     g_param_spec_boolean ("enable-folding",
+                                             "enable-folding",
+                                             "enable-folding",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
+
+    gtk_widget_class_install_style_property (widget_class,
+                                             g_param_spec_int ("expander-size",
+                                                     "Expander Size",
+                                                     "Size of the expander arrow",
+                                                     0,
+                                                     G_MAXINT,
+                                                     DEFAULT_EXPANDER_SIZE,
+                                                     G_PARAM_READABLE));
 
     signals[UNDO] =
             g_signal_new ("undo",
@@ -590,6 +618,12 @@ moo_text_view_constructor (GType                  type,
                               G_CALLBACK (line_mark_moved), view);
     g_signal_connect_swapped (get_buffer (view), "line-mark-deleted",
                               G_CALLBACK (line_mark_deleted), view);
+    g_signal_connect_swapped (get_buffer (view), "fold-added",
+                              G_CALLBACK (fold_added), view);
+    g_signal_connect_swapped (get_buffer (view), "fold-deleted",
+                              G_CALLBACK (fold_deleted), view);
+    g_signal_connect_swapped (get_buffer (view), "fold-toggled",
+                              G_CALLBACK (fold_toggled), view);
 
     gtk_text_buffer_get_start_iter (get_buffer (view), &iter);
     view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
@@ -906,6 +940,10 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_show_line_marks (view, g_value_get_boolean (value));
             break;
 
+        case PROP_ENABLE_FOLDING:
+            moo_text_view_set_enable_folding (view, g_value_get_boolean (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -994,6 +1032,10 @@ moo_text_view_get_property (GObject        *object,
 
         case PROP_SHOW_LINE_MARKS:
             g_value_set_boolean (value, view->priv->show_line_marks);
+            break;
+
+        case PROP_ENABLE_FOLDING:
+            g_value_set_boolean (value, view->priv->enable_folding);
             break;
 
         default:
@@ -1270,7 +1312,7 @@ moo_text_view_get_cursor_line (MooTextView *view)
 {
     GtkTextIter iter;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), -1);
 
     moo_text_view_get_cursor (view, &iter);
     return gtk_text_iter_get_line (&iter);
@@ -1702,7 +1744,8 @@ static gboolean
 get_show_left_margin (MooTextView *view)
 {
     return view->priv->show_line_numbers ||
-            view->priv->show_line_marks;
+            view->priv->show_line_marks ||
+            view->priv->enable_folding;
 }
 
 static gboolean
@@ -2506,26 +2549,81 @@ get_left_margin_width (MooTextView *view)
     if (view->priv->show_line_marks)
         margin_width += view->priv->line_mark_width + 2*LINE_MARK_XPAD;
 
+    if (view->priv->enable_folding)
+        margin_width += view->priv->fold_margin_width;
+
     return margin_width;
 }
 
 
-static GSList *
-draw_icons (GdkEventExpose *event,
+static void
+moo_text_view_style_set (GtkWidget *widget,
+                         GtkStyle  *prev_style)
+{
+    MooTextView *view = MOO_TEXT_VIEW (widget);
+
+    gtk_widget_style_get (widget,
+                          "expander-size", &view->priv->expander_size,
+                          NULL);
+    view->priv->expander_size += EXPANDER_PADDING;
+
+    GTK_WIDGET_CLASS(moo_text_view_parent_class)->style_set (widget, prev_style);
+}
+
+
+void
+moo_text_view_set_enable_folding (MooTextView *view,
+                                  gboolean     show)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    show = show != 0;
+
+    if (show == view->priv->enable_folding)
+        return;
+
+    if (show)
+    {
+        GtkTextTagTable *table = gtk_text_buffer_get_tag_table (get_buffer (view));
+        if (!gtk_text_tag_table_lookup (table, MOO_FOLD_TAG))
+            gtk_text_buffer_create_tag (get_buffer (view), MOO_FOLD_TAG,
+                                        "invisible", TRUE, NULL);
+        view->priv->fold_margin_width = view->priv->expander_size;
+    }
+    else
+    {
+        view->priv->fold_margin_width = 0;
+    }
+
+    view->priv->enable_folding = show;
+    gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+                                          GTK_TEXT_WINDOW_LEFT,
+                                          get_left_margin_width (view));
+}
+
+
+static void
+draw_marks (GdkEventExpose *event,
             GSList         *marks,
             int             line_y,
             int             line_height)
 {
     GdkPixbuf *pixbuf, *composite;
-    int width, height, line;
+    int width, height;
     MooLineMark *mark;
 
-    g_return_val_if_fail (marks != NULL, NULL);
+    g_return_if_fail (marks != NULL);
 
     composite = NULL;
     width = height = 0;
+
+    while (marks && !_moo_line_mark_get_pretty (marks->data))
+        marks = marks->next;
+
+    if (!marks)
+        return;
+
     mark = marks->data;
-    line = moo_line_mark_get_line (mark);
 
     while (TRUE)
     {
@@ -2561,13 +2659,13 @@ draw_icons (GdkEventExpose *event,
 
         marks = marks->next;
 
+        while (marks && !_moo_line_mark_get_pretty (marks->data))
+            marks = marks->next;
+
         if (!marks)
             break;
 
         mark = marks->data;
-
-        if (moo_line_mark_get_line (mark) != line)
-            break;
     }
 
     if (composite)
@@ -2581,14 +2679,72 @@ draw_icons (GdkEventExpose *event,
                          GDK_RGB_DITHER_NORMAL, 0, 0);
         g_object_unref (composite);
     }
-
-    return marks;
 }
 
 
 static void
-draw_line_numbers_and_icons (MooTextView    *view,
-                             GdkEventExpose *event)
+draw_fold_mark (MooTextView    *view,
+                GdkEventExpose *event,
+                MooFold        *fold,
+                int             y,
+                int             height,
+                int             window_width)
+{
+    gtk_paint_expander (GTK_WIDGET(view)->style,
+                        event->window,
+                        GTK_WIDGET_STATE (view),
+                        &event->area,
+                        GTK_WIDGET(view),
+                        "fold",
+                        window_width - view->priv->fold_margin_width / 2,
+                        y + height / 2,
+                        fold->collapsed ? GTK_EXPANDER_COLLAPSED : GTK_EXPANDER_EXPANDED);
+}
+
+
+static gboolean
+text_iter_forward_visible_line (MooTextView *view,
+                                GtkTextIter *iter,
+                                int         *line)
+{
+    if (!view->priv->enable_folding)
+    {
+        if (!gtk_text_iter_forward_line (iter))
+        {
+            if (gtk_text_iter_get_line (iter) == *line)
+                return FALSE;
+        }
+
+        *line += 1;
+        return TRUE;
+    }
+    else
+    {
+        GtkTextTagTable *table = gtk_text_buffer_get_tag_table (get_buffer (view));
+        GtkTextTag *tag = gtk_text_tag_table_lookup (table, MOO_FOLD_TAG);
+
+        g_return_val_if_fail (tag != NULL, FALSE);
+
+        while (TRUE)
+        {
+            if (!gtk_text_iter_forward_line (iter))
+            {
+                if (gtk_text_iter_get_line (iter) == *line)
+                    return FALSE;
+            }
+
+            *line += 1;
+
+            if (!gtk_text_iter_has_tag (iter, tag) && !gtk_text_iter_begins_tag (iter, tag))
+                return TRUE;
+        }
+    }
+}
+
+
+static void
+draw_left_margin (MooTextView    *view,
+                  GdkEventExpose *event)
 {
     GtkTextView *text_view;
     GtkTextBuffer *buffer;
@@ -2597,7 +2753,6 @@ draw_line_numbers_and_icons (MooTextView    *view,
     GdkRectangle area;
     GtkTextIter iter;
     char str[32];
-    GSList *all_marks = NULL, *marks;
 
     text_view = GTK_TEXT_VIEW (view);
     buffer = gtk_text_view_get_buffer (text_view);
@@ -2635,11 +2790,6 @@ draw_line_numbers_and_icons (MooTextView    *view,
     gtk_text_view_get_line_at_y (text_view, &iter, area.y, NULL);
     line = gtk_text_iter_get_line (&iter);
 
-    if (view->priv->show_line_marks)
-        all_marks = moo_text_buffer_get_line_marks_in_range (get_moo_buffer (view),
-                                                             line, last_line);
-    marks = all_marks;
-
     while (TRUE)
     {
         int y, height;
@@ -2665,29 +2815,53 @@ draw_line_numbers_and_icons (MooTextView    *view,
                               TRUE, &event->area,
                               GTK_WIDGET(view),
                               NULL,
-                              window_width - LINE_NUMBERS_XPAD, y,
+                              window_width - LINE_NUMBERS_XPAD - view->priv->fold_margin_width,
+                              y,
                               layout);
         }
 
-        if (view->priv->show_line_marks && marks)
+        if (view->priv->enable_folding)
         {
-            MooLineMark *m = marks->data;
-            if (line == moo_line_mark_get_line (m))
-                marks = draw_icons (event, marks, y, height);
+            MooFold *fold = moo_text_buffer_get_fold_at_line (get_moo_buffer (view), line);
+
+            if (fold)
+                draw_fold_mark (view, event, fold, y, height, window_width);
         }
 
-        if (!gtk_text_iter_forward_line (&iter))
+        if (view->priv->show_line_marks)
         {
-            if (gtk_text_iter_get_line (&iter) == line)
-                break;
+            GSList *marks = moo_text_buffer_get_line_marks_at_line (get_moo_buffer (view), line);
+
+            if (marks)
+                draw_marks (event, marks, y, height);
+
+            g_slist_free (marks);
         }
 
-        line++;
+        if (!text_iter_forward_visible_line (view, &iter, &line))
+            break;
     }
 
     if (layout)
         g_object_unref (layout);
-    g_slist_free (all_marks);
+}
+
+
+static void
+draw_fold_background (MooTextView    *view,
+                      GdkEventExpose *event,
+                      MooFold        *fold,
+                      int             y,
+                      int             height,
+                      int             window_width)
+{
+    if (fold->collapsed)
+        gdk_draw_line (event->window,
+                       GTK_WIDGET(view)->style->text_gc[GTK_STATE_NORMAL],
+                       gtk_text_view_get_left_margin (GTK_TEXT_VIEW (view)),
+                       y + height - 1,
+                       gtk_text_view_get_left_margin (GTK_TEXT_VIEW (view)) + window_width,
+                       y + height - 1);
 }
 
 
@@ -2697,19 +2871,22 @@ draw_line_marks_background (MooTextView    *view,
 {
     GtkTextView *text_view;
     GtkTextBuffer *buffer;
-    int line, last_line;
+    int line, last_line, window_width;
     GdkRectangle area;
     GtkTextIter iter;
-    GSList *all_marks = NULL, *marks;
 
     text_view = GTK_TEXT_VIEW (view);
     buffer = gtk_text_view_get_buffer (text_view);
 
     area = event->area;
     gtk_text_view_window_to_buffer_coords (text_view,
-                                           GTK_TEXT_WINDOW_LEFT,
+                                           GTK_TEXT_WINDOW_TEXT,
                                            area.x, area.y,
                                            &area.x, &area.y);
+
+    gdk_drawable_get_size (event->window, &window_width, NULL);
+    window_width -= gtk_text_view_get_left_margin (text_view) +
+                    gtk_text_view_get_right_margin (text_view);
 
     gtk_text_view_get_line_at_y (text_view, &iter, area.y + area.height - 1, NULL);
     last_line = gtk_text_iter_get_line (&iter);
@@ -2717,59 +2894,67 @@ draw_line_marks_background (MooTextView    *view,
     gtk_text_view_get_line_at_y (text_view, &iter, area.y, NULL);
     line = gtk_text_iter_get_line (&iter);
 
-    if (view->priv->show_line_marks)
-        all_marks = moo_text_buffer_get_line_marks_in_range (get_moo_buffer (view),
-                                                             line, last_line);
-
-    marks = all_marks;
-
-    while (marks)
+    while (TRUE)
     {
-        MooLineMark *mark;
-        GdkGC *gc = NULL;
-        int y, height, width;
+        int y, height;
 
-        while (marks)
-        {
-            mark = marks->data;
-
-            if (moo_line_mark_get_visible (mark))
-                gc = moo_line_mark_get_background_gc (mark);
-
-            if (!gc)
-                marks = marks->next;
-            else
-                break;
-        }
-
-        if (!gc)
-            break;
-
-        line = moo_line_mark_get_line (mark);
-
-        /* TODO: compose colors somehow? */
-        while (marks && moo_line_mark_get_line (marks->data) == line)
-            marks = marks->next;
-
-        gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
         gtk_text_view_get_line_yrange (text_view, &iter, &y, &height);
 
         if (y > area.y + area.height)
             break;
 
-        gtk_text_view_buffer_to_window_coords (text_view,
-                                               GTK_TEXT_WINDOW_TEXT,
+        gtk_text_view_buffer_to_window_coords (text_view, GTK_TEXT_WINDOW_LEFT,
                                                0, y, NULL, &y);
-        gdk_drawable_get_size (event->window, &width, NULL);
 
-        gdk_gc_set_clip_rectangle (gc, &event->area);
-        gdk_draw_rectangle (event->window,
-                            gc, TRUE,
-                            MAX (0, gtk_text_view_get_left_margin (text_view) - 1),
-                            y, width, height);
+        if (view->priv->enable_folding)
+        {
+            MooFold *fold = moo_text_buffer_get_fold_at_line (get_moo_buffer (view), line);
+
+            if (fold)
+                draw_fold_background (view, event, fold, y, height, window_width);
+        }
+
+        if (view->priv->show_line_marks)
+        {
+            MooLineMark *mark;
+            GdkGC *gc = NULL;
+            GSList *marks = moo_text_buffer_get_line_marks_at_line (get_moo_buffer (view), line);
+
+            if (marks)
+            {
+                while (marks)
+                {
+                    mark = marks->data;
+
+                    if (_moo_line_mark_get_pretty (mark))
+                        gc = moo_line_mark_get_background_gc (mark);
+
+                    if (!gc)
+                        marks = g_slist_delete_link (marks, marks);
+                    else
+                        break;
+                }
+
+                /* XXX compose colors */
+                if (gc)
+                {
+                    gdk_gc_set_clip_rectangle (gc, &event->area);
+                    gdk_draw_rectangle (event->window,
+                                        gc,
+                                        TRUE,
+                                        gtk_text_view_get_left_margin (text_view),
+                                        y,
+                                        window_width,
+                                        height);
+                }
+            }
+
+            g_slist_free (marks);
+        }
+
+        if (!text_iter_forward_visible_line (view, &iter, &line))
+            break;
     }
-
-    g_slist_free (all_marks);
 }
 
 
@@ -2782,7 +2967,7 @@ draw_line_numbers_and_marks (MooTextView    *view,
     if (event->window == text_window)
         draw_line_marks_background (view, event);
     else if (event->window == left_window)
-        draw_line_numbers_and_icons (view, event);
+        draw_left_margin (view, event);
     else
         g_return_if_reached ();
 }
@@ -2902,6 +3087,49 @@ invalidate_right_margin (MooTextView *view)
 
 
 static void
+invalidate_line (MooTextView *view,
+                 int          line,
+                 gboolean     left,
+                 gboolean     text)
+{
+    GtkTextIter iter;
+    GdkRectangle rect = {0, 0, 0, 0};
+
+    if (!GTK_WIDGET_DRAWABLE (view))
+        return;
+
+    gtk_text_buffer_get_iter_at_line (get_buffer (view), &iter, line);
+    gtk_text_view_get_line_yrange (GTK_TEXT_VIEW (view), &iter, &rect.y, &rect.height);
+
+    gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
+                                           GTK_TEXT_WINDOW_TEXT,
+                                           0, rect.y, NULL, &rect.y);
+
+    if (left)
+    {
+        GdkWindow *window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
+                                                      GTK_TEXT_WINDOW_LEFT);
+        if (window)
+        {
+            gdk_drawable_get_size (window, &rect.width, NULL);
+            gdk_window_invalidate_rect (window, &rect, FALSE);
+        }
+    }
+
+    if (text)
+    {
+        GdkWindow *window = gtk_text_view_get_window (GTK_TEXT_VIEW (view),
+                                                      GTK_TEXT_WINDOW_TEXT);
+        if (window)
+        {
+            gdk_drawable_get_size (window, &rect.width, NULL);
+            gdk_window_invalidate_rect (window, &rect, FALSE);
+        }
+    }
+}
+
+
+static void
 line_mark_deleted (MooTextView *view,
                    MooLineMark *mark)
 {
@@ -2919,10 +3147,10 @@ line_mark_deleted (MooTextView *view,
 
 static void
 line_mark_changed (MooTextView *view,
-                   G_GNUC_UNUSED MooLineMark *mark)
+                   MooLineMark *mark)
 {
     update_line_mark_width (view);
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+    invalidate_line (view, moo_line_mark_get_line (mark), TRUE, TRUE);
 }
 
 
@@ -2955,5 +3183,31 @@ line_mark_added (MooTextView *view,
         _moo_line_mark_realize (mark, GTK_WIDGET (view));
 
     update_line_mark_width (view);
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+    invalidate_line (view, moo_line_mark_get_line (mark), TRUE, TRUE);
+}
+
+
+static void
+fold_added (MooTextView        *view,
+            MooFold            *fold)
+{
+    if (view->priv->enable_folding)
+        invalidate_line (view, moo_fold_get_start (fold), TRUE, fold->collapsed);
+}
+
+
+static void
+fold_deleted (MooTextView *view)
+{
+    if (view->priv->enable_folding)
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+}
+
+
+static void
+fold_toggled (MooTextView        *view,
+              MooFold            *fold)
+{
+    if (view->priv->enable_folding)
+        invalidate_line (view, moo_fold_get_start (fold), TRUE, TRUE);
 }

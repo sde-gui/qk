@@ -41,6 +41,7 @@ struct _MooTextBufferPrivate {
     MooBracketMatchType bracket_found;
 
     LineBuffer *line_buf;
+    MooFoldTree *fold_tree;
 
     guint interactive;
     guint non_interactive;
@@ -122,6 +123,9 @@ enum {
     LINE_MARK_ADDED,
     LINE_MARK_MOVED,
     LINE_MARK_DELETED,
+    FOLD_ADDED,
+    FOLD_DELETED,
+    FOLD_TOGGLED,
     LAST_SIGNAL
 };
 
@@ -280,6 +284,36 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                           _moo_marshal_VOID__OBJECT,
                           G_TYPE_NONE, 1,
                           MOO_TYPE_LINE_MARK);
+
+    signals[FOLD_ADDED] =
+            g_signal_new ("fold-added",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, fold_added),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_FOLD);
+
+    signals[FOLD_DELETED] =
+            g_signal_new ("fold-deleted",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, fold_deleted),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_FOLD);
+
+    signals[FOLD_TOGGLED] =
+            g_signal_new ("fold-toggled",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTextBufferClass, fold_toggled),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_FOLD);
 }
 
 
@@ -292,6 +326,8 @@ moo_text_buffer_init (MooTextBuffer *buffer)
     buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
                                             buffer->priv->line_buf, NULL);
     buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
+
+    buffer->priv->fold_tree = moo_fold_tree_new (buffer);
 
     buffer->priv->undo_mgr = moo_undo_mgr_new (buffer);
     buffer->priv->move_cursor_to = -1;
@@ -311,6 +347,8 @@ moo_text_buffer_init (MooTextBuffer *buffer)
                            G_CALLBACK (after_undo_redo),
                            buffer, NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+
+    moo_text_buffer_set_brackets (buffer, NULL);
 }
 
 
@@ -319,6 +357,8 @@ moo_text_buffer_finalize (GObject *object)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (object);
 
+    /* XXX leak if folds are not deleted */
+    moo_fold_tree_free (buffer->priv->fold_tree);
     moo_highlighter_destroy (buffer->priv->hl, FALSE);
     moo_line_buffer_free (buffer->priv->line_buf);
 
@@ -1766,7 +1806,7 @@ moo_text_buffer_add_line_mark (MooTextBuffer *buffer,
 
 
 void
-moo_text_buffer_remove_line_mark (MooTextBuffer *buffer,
+moo_text_buffer_delete_line_mark (MooTextBuffer *buffer,
                                   MooLineMark   *mark)
 {
     int line;
@@ -1840,4 +1880,109 @@ moo_text_buffer_get_line_marks_at_line (MooTextBuffer *buffer,
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
     g_return_val_if_fail (line >= 0, NULL);
     return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, line, line);
+}
+
+
+MooFold *
+moo_text_buffer_add_fold (MooTextBuffer *buffer,
+                          int            first_line,
+                          int            last_line)
+{
+    MooFold *fold;
+
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    g_return_val_if_fail (first_line >= 0, NULL);
+    g_return_val_if_fail (last_line > first_line, NULL);
+    g_return_val_if_fail (last_line < gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)), NULL);
+
+    fold = moo_fold_tree_add (buffer->priv->fold_tree, first_line, last_line);
+    g_return_val_if_fail (fold != NULL, NULL);
+
+    g_object_ref (fold);
+    g_signal_emit (buffer, signals[FOLD_ADDED], 0, fold);
+
+    return fold;
+}
+
+
+static void
+fold_deleted (MooTextBuffer *buffer,
+              MooFold       *fold)
+{
+    g_signal_emit (buffer, signals[FOLD_DELETED], 0, fold);
+}
+
+void
+moo_text_buffer_delete_fold (MooTextBuffer *buffer,
+                             MooFold       *fold)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    g_return_if_fail (MOO_IS_FOLD (fold));
+    g_return_if_fail (!moo_fold_is_deleted (fold));
+
+    moo_fold_tree_remove (buffer->priv->fold_tree, fold);
+    fold_deleted (buffer, fold);
+    g_object_unref (fold);
+}
+
+
+GSList *
+moo_text_buffer_get_folds_in_range (MooTextBuffer *buffer,
+                                    int            first_line,
+                                    int            last_line)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    g_return_val_if_fail (first_line >= 0, NULL);
+
+    if (last_line < 0)
+        last_line = gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)) - 1;
+
+    g_return_val_if_fail (last_line >= first_line, NULL);
+    g_return_val_if_fail (last_line < gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)), NULL);
+
+    return moo_fold_tree_get (buffer->priv->fold_tree, first_line, last_line);
+}
+
+
+MooFold *
+moo_text_buffer_get_fold_at_line (MooTextBuffer *buffer,
+                                  int            line)
+{
+    GSList *marks, *l;
+    MooFold *fold;
+
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
+    g_return_val_if_fail (line >= 0, NULL);
+    g_return_val_if_fail (line < gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)), NULL);
+
+    fold = NULL;
+    marks = moo_text_buffer_get_line_marks_at_line (buffer, line);
+
+    for (l = marks; l != NULL; l = l->next)
+    {
+        fold = _moo_line_mark_get_fold (l->data);
+        if (fold && fold->start == l->data)
+            break;
+        fold = NULL;
+    }
+
+    g_slist_free (marks);
+    return fold;
+}
+
+
+void
+moo_text_buffer_toggle_fold (MooTextBuffer *buffer,
+                             MooFold       *fold)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    g_return_if_fail (MOO_IS_FOLD (fold));
+    g_return_if_fail (!moo_fold_is_deleted (fold));
+
+    if (fold->collapsed)
+        moo_fold_tree_expand (buffer->priv->fold_tree, fold);
+    else
+        moo_fold_tree_collapse (buffer->priv->fold_tree, fold);
+
+    g_signal_emit (buffer, signals[FOLD_TOGGLED], 0, fold);
 }

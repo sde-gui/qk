@@ -151,5 +151,11 @@ set_font (MooEdit *edit)
 void
 _moo_edit_apply_style_settings (MooEdit *edit)
 {
+    MooLangMgr *mgr;
+
     set_font (edit);
+
+    mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+    moo_text_view_set_scheme (MOO_TEXT_VIEW (edit),
+                              moo_lang_mgr_get_active_scheme (mgr));
 }

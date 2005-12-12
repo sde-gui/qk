@@ -75,6 +75,13 @@
   (gtype-id "MOO_TYPE_LINE_MARK")
 )
 
+(define-object Fold
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooFold")
+  (gtype-id "MOO_TYPE_FOLD")
+)
+
 
 (define-boxed Lang
   (in-module "Moo")
@@ -883,9 +890,9 @@
   )
 )
 
-(define-method remove_line_mark
+(define-method delete_line_mark
   (of-object "MooTextBuffer")
-  (c-name "moo_text_buffer_remove_line_mark")
+  (c-name "moo_text_buffer_delete_line_mark")
   (return-type "none")
   (parameters
     '("MooLineMark*" "mark")
@@ -909,6 +916,25 @@
   (parameters
     '("int" "first_line")
     '("int" "last_line")
+  )
+)
+
+(define-method add_fold
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_add_fold")
+  (return-type "MooFold*")
+  (parameters
+    '("int" "first_line")
+    '("int" "last_line")
+  )
+)
+
+(define-method delete_fold
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_delete_fold")
+  (return-type "none")
+  (parameters
+    '("MooFold*" "fold")
   )
 )
 

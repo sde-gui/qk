@@ -17,6 +17,10 @@
 #include <string.h>
 
 
+#define PTRMOVE(dest_,src_,n_ptr_) g_memmove (dest_, src_, (n_ptr_) * sizeof(gpointer))
+#define PTRCPY(dest_,src_,n_ptr_)  memcpy (dest_, src_, (n_ptr_) * sizeof(gpointer))
+
+
 static void     invalidate_line (LineBuffer *line_buf,
                                  Line       *line,
                                  int         index);
@@ -121,8 +125,9 @@ moo_line_buffer_delete (LineBuffer *line_buf,
                     *moved_marks = g_slist_prepend (*moved_marks, old_marks[i]);
 
             if (line->n_marks)
-                memcpy (tmp, line->marks, line->n_marks * sizeof (MooLineMark*));
-            memcpy (&tmp[line->n_marks], old_marks, n_old_marks * sizeof (MooLineMark*));
+                PTRCPY (tmp, line->marks, line->n_marks);
+
+            PTRCPY (&tmp[line->n_marks], old_marks, n_old_marks);
 
             g_free (line->marks);
             line->marks = tmp;
@@ -245,7 +250,7 @@ line_add_mark (LineBuffer  *line_buf,
     if (line->marks)
     {
         MooLineMark **tmp = g_new (MooLineMark*, line->n_marks + 1);
-        memcpy (tmp, line->marks, line->n_marks * sizeof(MooLineMark*));
+        PTRCPY (tmp, line->marks, line->n_marks);
         g_free (line->marks);
         line->marks = tmp;
     }
@@ -290,6 +295,7 @@ line_remove_mark (LineBuffer  *line_buf,
             break;
 
     g_assert (i < line->n_marks);
+    g_assert (line->marks[i] == mark);
 
     if (line->n_marks == 1)
     {
@@ -298,7 +304,7 @@ line_remove_mark (LineBuffer  *line_buf,
     }
     else if (i < line->n_marks - 1)
     {
-        g_memmove (&line->marks[i], &line->marks[i+1], line->n_marks - i - 1);
+        PTRMOVE (&line->marks[i], &line->marks[i+1], line->n_marks - i - 1);
         line->marks[line->n_marks - 1] = NULL;
     }
     else
@@ -315,13 +321,12 @@ moo_line_buffer_remove_mark (LineBuffer     *line_buf,
                              MooLineMark    *mark)
 {
     Line *line;
-    int index;
+    G_GNUC_UNUSED int index;
 
     line = _moo_line_mark_get_line (mark);
-    index = moo_line_mark_get_line (mark);
 
     g_assert (line != NULL);
-    g_assert (line == moo_line_buffer_get_line (line_buf, index));
+    g_assert (line == moo_line_buffer_get_line (line_buf, moo_line_mark_get_line (mark)));
 
     _moo_line_mark_set_line (mark, NULL, -1, 0);
     line_remove_mark (line_buf, mark, line);

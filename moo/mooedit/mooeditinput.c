@@ -406,29 +406,57 @@ text_view_unobscure_mouse_cursor (GtkTextView *text_view)
 }
 
 
+static int
+left_window_to_line (GtkTextView *text_view,
+                     int          window_y)
+{
+    int y;
+    GtkTextIter iter;
+    gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_LEFT,
+                                           0, window_y, NULL, &y);
+    gtk_text_view_get_line_at_y (text_view, &iter, y, NULL);
+    return gtk_text_iter_get_line (&iter);
+}
+
+
 static gboolean
 left_window_click (GtkTextView    *text_view,
                    GdkEventButton *event)
 {
-    int y, line;
-    GtkTextIter iter;
-    gboolean ret;
+    int line, window_width;
     MooTextView *view = MOO_TEXT_VIEW (text_view);
 
-    if (!view->priv->show_line_marks)
-        return FALSE;
+    gdk_drawable_get_size (event->window, &window_width, NULL);
 
-    if (event->x < 0 || event->x > view->priv->line_mark_width)
-        return FALSE;
+    if (view->priv->show_line_marks && event->x >= 0 && event->x < view->priv->line_mark_width)
+    {
+        gboolean ret;
+        line = left_window_to_line (text_view, event->y);
+        g_signal_emit_by_name (text_view, "line-mark-clicked", line, &ret);
+        return ret;
+    }
+    else if (view->priv->enable_folding &&
+             event->x >= window_width - view->priv->fold_margin_width &&
+             event->x < window_width)
+    {
+        MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
+        MooFold *fold;
 
-    gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_LEFT,
-                                           event->x, event->y, NULL, &y);
-    gtk_text_view_get_line_at_y (text_view, &iter, y, NULL);
-    line = gtk_text_iter_get_line (&iter);
+        line = left_window_to_line (text_view, event->y);
+        fold = moo_text_buffer_get_fold_at_line (buffer, line);
 
-    g_signal_emit_by_name (text_view, "line-mark-clicked", line, &ret);
+        if (fold)
+        {
+            moo_text_buffer_toggle_fold (buffer, fold);
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
 
-    return ret;
+    return FALSE;
 }
 
 

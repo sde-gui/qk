@@ -35,6 +35,8 @@ struct _MooLineMarkPrivate {
     int line_no;
     guint stamp;
 
+    MooFold *fold;
+
     guint background_set : 1;
     guint visible : 1;
     guint realized : 1;
@@ -694,4 +696,22 @@ _moo_line_mark_get_pretty (MooLineMark *mark)
 {
     g_assert (MOO_IS_LINE_MARK (mark));
     return mark->priv->pretty != 0;
+}
+
+
+void
+_moo_line_mark_set_fold (MooLineMark *mark,
+                         MooFold     *fold)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    g_assert (!fold || MOO_IS_FOLD (fold));
+    mark->priv->fold = fold;
+}
+
+
+MooFold *
+_moo_line_mark_get_fold (MooLineMark *mark)
+{
+    g_assert (MOO_IS_LINE_MARK (mark));
+    return mark->priv->fold;
 }

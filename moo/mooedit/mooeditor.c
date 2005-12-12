@@ -1853,13 +1853,11 @@ prefs_changed (G_GNUC_UNUSED const char *key,
 
 
 static void
-doc_apply_prefs (MooEdit *doc,
-                 MooTextStyleScheme *scheme)
+doc_apply_prefs (MooEdit *doc)
 {
     g_object_freeze_notify (G_OBJECT (doc));
     _moo_edit_freeze_config_notify (doc);
     _moo_edit_apply_settings (doc);
-    moo_text_view_set_scheme (MOO_TEXT_VIEW (doc), scheme);
     _moo_edit_thaw_config_notify (doc);
     g_object_thaw_notify (G_OBJECT (doc));
 }
@@ -1871,7 +1869,6 @@ apply_prefs (MooEditor *editor)
     gboolean use_tabs, autosave, backups, strip;
     int indent_width, autosave_interval;
     const char *color_scheme;
-    MooTextStyleScheme *scheme;
 
     editor->priv->prefs_idle = 0;
 
@@ -1890,10 +1887,9 @@ apply_prefs (MooEditor *editor)
 
     if (color_scheme)
         moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
-    scheme = moo_lang_mgr_get_active_scheme (editor->priv->lang_mgr);
 
     docs = moo_editor_list_docs (editor);
-    g_slist_foreach (docs, (GFunc) doc_apply_prefs, scheme);
+    g_slist_foreach (docs, (GFunc) doc_apply_prefs, NULL);
     g_slist_free (docs);
 
     g_object_set (editor,

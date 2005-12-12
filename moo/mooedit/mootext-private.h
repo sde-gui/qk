@@ -19,7 +19,7 @@
 #ifndef __MOO_TEXT_PRIVATE_H__
 #define __MOO_TEXT_PRIVATE_H__
 
-#include "mooedit/moolinemark.h"
+#include "mooedit/moofold.h"
 #include "mooedit/moolinebuffer.h"
 
 G_BEGIN_DECLS
@@ -42,6 +42,9 @@ void        _moo_line_mark_realize                  (MooLineMark        *mark,
                                                      GtkWidget          *widget);
 void        _moo_line_mark_unrealize                (MooLineMark        *mark);
 
+void        _moo_line_mark_set_fold                 (MooLineMark        *mark,
+                                                     MooFold            *fold);
+MooFold    *_moo_line_mark_get_fold                 (MooLineMark        *mark);
 
 void        _moo_text_buffer_ensure_highlight       (MooTextBuffer      *buffer,
                                                      int                 first_line,

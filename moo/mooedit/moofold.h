@@ -24,30 +24,33 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FOLD              (moo_fold_get_type ())
-#define MOO_FOLD(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLD, MooFold))
-#define MOO_FOLD_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FOLD, MooFoldClass))
-#define MOO_IS_FOLD(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FOLD))
-#define MOO_IS_FOLD_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FOLD))
-#define MOO_FOLD_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FOLD, MooFoldClass))
+#define MOO_FOLD_TAG "moo-fold-invisible"
 
+typedef struct _MooFoldTree     MooFoldTree;
 
-typedef struct _MooFold         MooFold;
-typedef struct _MooFoldPrivate  MooFoldPrivate;
-typedef struct _MooFoldClass    MooFoldClass;
+struct _MooFoldTree
+{
+    MooFold *folds;
+    guint n_folds;
+    MooTextBuffer *buffer;
+    guint consistent : 1;
+};
 
 struct _MooFold
 {
     GObject object;
 
     MooFold *parent;
+    MooFold *prev;
     MooFold *next;
-    GSList *children;
+    MooFold *children;  /* chlidren are sorted by line */
+    guint n_children;
 
     MooLineMark *start;
-    MooLineMark *end;
+    MooLineMark *end;   /* may be NULL */
 
     guint collapsed : 1;
+    guint deleted : 1;  /* alive just because of reference count */
 };
 
 struct _MooFoldClass
@@ -56,7 +59,27 @@ struct _MooFoldClass
 };
 
 
-GType       moo_fold_get_type              (void) G_GNUC_CONST;
+int          moo_fold_get_start     (MooFold        *fold);
+int          moo_fold_get_end       (MooFold        *fold);
+
+gboolean     moo_fold_is_deleted    (MooFold        *fold);
+
+MooFoldTree *moo_fold_tree_new      (MooTextBuffer  *buffer);
+void         moo_fold_tree_free     (MooFoldTree    *tree);
+
+MooFold     *moo_fold_tree_add      (MooFoldTree    *tree,
+                                     int             first_line,
+                                     int             last_line);
+void         moo_fold_tree_remove   (MooFoldTree    *tree,
+                                     MooFold        *fold);
+GSList      *moo_fold_tree_get      (MooFoldTree    *tree,
+                                     int             first_line,
+                                     int             last_line);
+
+void         moo_fold_tree_expand   (MooFoldTree    *tree,
+                                     MooFold        *fold);
+void         moo_fold_tree_collapse (MooFoldTree    *tree,
+                                     MooFold        *fold);
 
 
 G_END_DECLS

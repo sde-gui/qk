@@ -20,6 +20,13 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_FOLD                   (moo_fold_get_type ())
+#define MOO_FOLD(object)                (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLD, MooFold))
+#define MOO_FOLD_CLASS(klass)           (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FOLD, MooFoldClass))
+#define MOO_IS_FOLD(object)             (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FOLD))
+#define MOO_IS_FOLD_CLASS(klass)        (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FOLD))
+#define MOO_FOLD_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FOLD, MooFoldClass))
+
 #define MOO_TYPE_LINE_MARK              (moo_line_mark_get_type ())
 #define MOO_LINE_MARK(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LINE_MARK, MooLineMark))
 #define MOO_LINE_MARK_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_LINE_MARK, MooLineMarkClass))
@@ -29,6 +36,9 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooTextBuffer       MooTextBuffer;
+
+typedef struct _MooFold             MooFold;
+typedef struct _MooFoldClass        MooFoldClass;
 
 typedef struct _MooLineMark         MooLineMark;
 typedef struct _MooLineMarkPrivate  MooLineMarkPrivate;
@@ -53,6 +63,7 @@ struct _MooLineMarkClass
 
 
 GType       moo_line_mark_get_type              (void) G_GNUC_CONST;
+GType       moo_fold_get_type                   (void) G_GNUC_CONST;
 
 void        moo_line_mark_set_background_gdk    (MooLineMark    *mark,
                                                  const GdkColor *color);

@@ -54,6 +54,13 @@ struct _MooTextBufferClass
                                  MooLineMark        *mark);
     void (*line_mark_moved)     (MooTextBuffer      *buffer,
                                  MooLineMark        *mark);
+
+    void (*fold_added)          (MooTextBuffer      *buffer,
+                                 MooFold            *fold);
+    void (*fold_deleted)        (MooTextBuffer      *buffer,
+                                 MooFold            *fold);
+    void (*fold_toggled)        (MooTextBuffer      *buffer,
+                                 MooFold            *fold);
 };
 
 
@@ -94,7 +101,7 @@ gpointer    moo_text_buffer_get_undo_mgr                (MooTextBuffer      *buf
 void        moo_text_buffer_add_line_mark               (MooTextBuffer      *buffer,
                                                          MooLineMark        *mark,
                                                          int                 line);
-void        moo_text_buffer_remove_line_mark            (MooTextBuffer      *buffer,
+void        moo_text_buffer_delete_line_mark            (MooTextBuffer      *buffer,
                                                          MooLineMark        *mark);
 void        moo_text_buffer_move_line_mark              (MooTextBuffer      *buffer,
                                                          MooLineMark        *mark,
@@ -104,6 +111,19 @@ GSList     *moo_text_buffer_get_line_marks_in_range     (MooTextBuffer      *buf
                                                          int                 last_line);
 GSList     *moo_text_buffer_get_line_marks_at_line      (MooTextBuffer      *buffer,
                                                          int                 line);
+
+MooFold    *moo_text_buffer_add_fold                    (MooTextBuffer      *buffer,
+                                                         int                 first_line,
+                                                         int                 end_line);
+void        moo_text_buffer_delete_fold                 (MooTextBuffer      *buffer,
+                                                         MooFold            *fold);
+GSList     *moo_text_buffer_get_folds_in_range          (MooTextBuffer      *buffer,
+                                                         int                 first_line,
+                                                         int                 last_line);
+MooFold    *moo_text_buffer_get_fold_at_line            (MooTextBuffer      *buffer,
+                                                         int                 line);
+void        moo_text_buffer_toggle_fold                 (MooTextBuffer      *buffer,
+                                                         MooFold            *fold);
 
 
 G_END_DECLS
