@@ -3414,7 +3414,7 @@ moo_text_view_size_request (GtkWidget      *widget,
 
     for (i = 0; i < 4; i++)
     {
-        int border_size;
+        int border_size = 0;
         MooTextViewChild *child = &view->priv->children[i];
 
         if (child->widget && GTK_WIDGET_VISIBLE (child->widget))
@@ -3490,7 +3490,7 @@ moo_text_view_size_allocate (GtkWidget     *widget,
 
     for (i = 0; i < 4; i++)
     {
-        int x, y;
+        int x = 0, y = 0;
         GtkRequisition child_req;
         MooTextViewChild *child = &view->priv->children[i];
 

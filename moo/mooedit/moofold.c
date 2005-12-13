@@ -119,14 +119,14 @@ moo_fold_is_deleted (MooFold *fold)
 
 #if WANT_CHECKS
 
-static gboolean
+static void
 CHECK_LIST_MEMBER__ (MooFold *list,
                      MooFold *fold)
 {
     while (list)
     {
         if (list == fold)
-            return TRUE;
+            return;
         list = list->next;
     }
 
