@@ -214,23 +214,29 @@ moo_entry_class_init (MooEntryClass *klass)
                                              TRUE,
                                              G_PARAM_READABLE));
 
-    signals[UNDO] =
-            g_signal_new ("undo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEntryClass, undo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+    signals[UNDO] = g_signal_lookup ("undo", GTK_TYPE_ENTRY);
 
-    signals[REDO] =
-            g_signal_new ("redo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooEntryClass, redo),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+    if (!signals[UNDO])
+        signals[UNDO] =
+                g_signal_new ("undo",
+                              G_OBJECT_CLASS_TYPE (klass),
+                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                              G_STRUCT_OFFSET (MooEntryClass, undo),
+                              NULL, NULL,
+                              _moo_marshal_VOID__VOID,
+                              G_TYPE_NONE, 0);
+
+    signals[REDO] = g_signal_lookup ("redo", GTK_TYPE_ENTRY);
+
+    if (!signals[REDO])
+        signals[REDO] =
+                g_signal_new ("redo",
+                              G_OBJECT_CLASS_TYPE (klass),
+                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                              G_STRUCT_OFFSET (MooEntryClass, redo),
+                              NULL, NULL,
+                              _moo_marshal_VOID__VOID,
+                              G_TYPE_NONE, 0);
 
     signals[DELETE_TO_START] =
             moo_signal_new_cb ("delete-to-start",
