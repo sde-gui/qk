@@ -575,12 +575,8 @@ if __name__ == '__main__':
     window.add(swin)
     swin.add(Console(banner="Hello there!",
                      use_rlcompleter=False,
-                     start_script="import gtk\n" + \
-                                  "win = gtk.Window()\n" + \
-                                  "label = gtk.Label('Hello there!')\n" + \
-                                  "win.add(label)\n" + \
-                                  "win.show_all()\n"))
-    window.set_default_size(400, 300)
+                     start_script="from gtk import *\n"))
+    window.set_default_size(500, 400)
     window.show_all()
 
     if not gtk.main_level():
