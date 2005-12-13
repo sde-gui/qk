@@ -97,6 +97,7 @@
     <separator/>
     <item action="Open"/>
     <item action="Save"/>
+    <item action="SaveAs"/>
     <separator/>
     <item action="Undo"/>
     <item action="Redo"/>
