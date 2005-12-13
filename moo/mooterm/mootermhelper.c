@@ -81,6 +81,7 @@ int child_pid = -1;
 
 void doexit (int status)
 {
+    /* XXX man, it's all stupid (and race conditions, and infinite loops, and crash)! */
     writelog ("helper: exiting\r\n");
     write (master, "\4", 1);
     _vte_pty_close (master);
