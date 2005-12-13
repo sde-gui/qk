@@ -17,8 +17,11 @@
 #include "mooutils/moomarshals.h"
 
 
+#ifdef MOO_DEBUG
 #define WANT_CHECKS 1
-
+#else
+#define WANT_CHECKS 0
+#endif
 
 static void     moo_fold_finalize           (GObject    *object);
 static void     moo_fold_free_recursively   (MooFold    *fold);

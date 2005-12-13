@@ -91,7 +91,7 @@ static void      _hash_table_remove     (FileList       *flist,
                                          MooFile        *file);
 
 
-#ifdef DEBUG
+#ifdef MOO_DEBUG
 #if 0
 #define DEFINE_CHECK_FILE_LIST_INTEGRITY
 static void CHECK_FILE_LIST_INTEGRITY (FileList *flist)
@@ -115,7 +115,7 @@ static void CHECK_FILE_LIST_INTEGRITY (FileList *flist)
     }
 }
 #endif
-#endif /* DEBUG */
+#endif /* MOO_DEBUG */
 
 #ifndef DEFINE_CHECK_FILE_LIST_INTEGRITY
 #define CHECK_FILE_LIST_INTEGRITY(flist)

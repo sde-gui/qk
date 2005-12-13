@@ -157,7 +157,7 @@ iter_get_syntax_tag (const GtkTextIter *iter)
     {
         if (MOO_IS_SYNTAX_TAG (l->data))
         {
-#if 0
+#ifndef MOO_DEBUG
             tag = l->data;
             break;
 #else

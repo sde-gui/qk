@@ -2,18 +2,20 @@
 # MOO_AC_DEBUG()
 #
 AC_DEFUN([MOO_AC_DEBUG],[
+    MOO_DEBUG="no"
     MOO_DEBUG_CFLAGS=
     MOO_DEBUG_CXXFLAGS=
 
     AC_ARG_ENABLE(debug,
     AC_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
         if test "x$enable_debug" = "xno"; then
-            debug="no"
+            MOO_DEBUG="no"
         else
-            debug="yes"
+            MOO_DEBUG="yes"
+            MOO_DEBUG="yes"
         fi
     ],[
-        debug="no"
+        MOO_DEBUG="no"
     ])
 
     AC_ARG_ENABLE(all-gcc-warnings,
@@ -66,10 +68,10 @@ MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_GCC_CXXFLAGS $MOO_DEBUG_CXXFLAGS -W -Wall -Woverl
         MOO_DEBUG_CXXFLAGS=$MOO_DEBUG_GCC_CXXFLAGS
     fi
 
-    if test x$debug = "xyes"; then
+    if test x$MOO_DEBUG = "xyes"; then
         moo_debug_flags="-DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED dnl
  -DGDK_DISABLE_DEPRECATED -DDEBUG -DENABLE_DEBUG -DENABLE_PROFILE dnl
- -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE"
+ -DG_ENABLE_DEBUG -DG_ENABLE_PROFILE -DMOO_DEBUG=1"
     else
         moo_debug_flags="-DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
     fi
