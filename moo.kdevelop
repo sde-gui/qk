@@ -199,7 +199,7 @@
   <kdevdebugger>
     <general>
       <dbgshell></dbgshell>
-      <programargs></programargs>
+      <programargs>--g-fatal-warnings</programargs>
       <gdbpath></gdbpath>
       <configGdbScript></configGdbScript>
       <runShellScript></runShellScript>

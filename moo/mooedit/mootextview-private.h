@@ -20,6 +20,7 @@
 #define __MOO_TEXT_VIEW_PRIVATE_H__
 
 #include "mooedit/mootextview.h"
+#include "mooedit/mootextsearch.h"
 #include "mooutils/moohistorylist.h"
 
 G_BEGIN_DECLS
@@ -87,6 +88,19 @@ typedef enum {
     MOO_TEXT_VIEW_DRAG_SELECT,
     MOO_TEXT_VIEW_DRAG_DRAG
 } MooTextViewDragType;
+
+typedef enum {
+    MOO_TEXT_VIEW_POS_LEFT,
+    MOO_TEXT_VIEW_POS_RIGHT,
+    MOO_TEXT_VIEW_POS_TOP,
+    MOO_TEXT_VIEW_POS_BOTTOM,
+    MOO_TEXT_VIEW_POS_INVALID
+} MooTextViewPos;
+
+typedef struct {
+    GtkWidget *widget;
+    double align;
+} MooTextViewChild;
 
 
 struct _MooTextViewPrivate {
@@ -176,6 +190,19 @@ struct _MooTextViewPrivate {
     gboolean drag_drop;
     GtkTargetList *targets;
     GtkTextMark *dnd_mark;
+
+    /***********************************************************************/
+    /* Children
+    /*/
+    MooTextViewChild children[4];
+
+    /***********************************************************************/
+    /* Search
+    /*/
+    gboolean enable_quick_search;
+    gboolean in_search;
+    GtkWidget *entry;
+    MooTextSearchFlags search_flags;
 };
 
 enum {

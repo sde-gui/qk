@@ -550,6 +550,17 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::visible", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "QuickSearch",
+                                 "name", "Quick Search",
+                                 "label", "Quick Search",
+                                 "tooltip", "Quick search",
+                                 "icon-stock-id", GTK_STOCK_FIND,
+                                 "accel", "<ctrl>slash",
+                                 "closure-callback", moo_text_view_start_quick_search,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
                                         NULL, NULL);

@@ -950,6 +950,10 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     text_view = GTK_TEXT_VIEW (widget);
     buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
 
+    /* ignore key events from the search entry */
+    if (view->priv->in_search)
+        return FALSE;
+
     if (!mods)
     {
         switch (keyval)

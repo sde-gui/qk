@@ -152,6 +152,17 @@ void         moo_text_view_set_lang                 (MooTextView        *view,
 
 void         moo_text_view_strip_whitespace         (MooTextView        *view);
 
+void         moo_text_view_add_child_in_border      (MooTextView        *view,
+                                                     GtkWidget          *child,
+                                                     GtkTextWindowType   which_border,
+                                                     double              alignment);
+void         moo_text_view_align_child              (MooTextView        *view,
+                                                     GtkWidget          *child,
+                                                     double              alignment);
+
+void         moo_text_view_start_quick_search       (MooTextView        *view);
+void         moo_text_view_stop_quick_search        (MooTextView        *view);
+
 
 G_END_DECLS
 

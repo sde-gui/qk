@@ -21,6 +21,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooundomanager.h"
+#include "mooutils/mooentry.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -52,6 +53,7 @@ static void     moo_text_view_get_property  (GObject            *object,
                                              GValue             *value,
                                              GParamSpec         *pspec);
 
+static void     moo_text_view_map           (GtkWidget          *widget);
 static void     moo_text_view_realize       (GtkWidget          *widget);
 static void     moo_text_view_unrealize     (GtkWidget          *widget);
 static gboolean moo_text_view_expose        (GtkWidget          *widget,
@@ -62,6 +64,13 @@ static gboolean moo_text_view_focus_out     (GtkWidget          *widget,
                                              GdkEventFocus      *event);
 static void     moo_text_view_style_set     (GtkWidget          *widget,
                                              GtkStyle           *previous_style);
+static void     moo_text_view_size_request  (GtkWidget          *widget,
+                                             GtkRequisition     *requisition);
+static void     moo_text_view_size_allocate (GtkWidget          *widget,
+                                             GtkAllocation      *allocation);
+
+static void     moo_text_view_remove        (GtkContainer       *container,
+                                             GtkWidget          *child);
 
 static void     moo_text_view_cut_clipboard (GtkTextView        *text_view);
 static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
@@ -87,6 +96,7 @@ static void     replace_interactive         (MooTextView        *view);
 static void     find_next_interactive       (MooTextView        *view);
 static void     find_prev_interactive       (MooTextView        *view);
 static void     goto_line_interactive       (MooTextView        *view);
+static gboolean start_quick_search          (MooTextView        *view);
 
 static void     insert_text_cb              (MooTextView        *view,
                                              GtkTextIter        *iter,
@@ -151,6 +161,7 @@ enum {
     REDO,
     SET_SCHEME,
     LINE_MARK_CLICKED,
+    START_QUICK_SEARCH,
     LAST_SIGNAL
 };
 
@@ -178,7 +189,9 @@ enum {
     PROP_SHOW_LINE_NUMBERS,
     PROP_SHOW_SCROLLBAR_MARKS,
     PROP_SHOW_LINE_MARKS,
-    PROP_ENABLE_FOLDING
+    PROP_ENABLE_FOLDING,
+    PROP_ENABLE_QUICK_SEARCH,
+    PROP_QUICK_SEARCH_FLAGS
 };
 
 
@@ -191,6 +204,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+    GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
     GtkTextViewClass *text_view_class = GTK_TEXT_VIEW_CLASS (klass);
     GtkBindingSet *binding_set;
 
@@ -206,18 +220,23 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
     widget_class->motion_notify_event = _moo_text_view_motion_event;
+    widget_class->map = moo_text_view_map;
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
     widget_class->focus_in_event = moo_text_view_focus_in;
     widget_class->focus_out_event = moo_text_view_focus_out;
     widget_class->style_set = moo_text_view_style_set;
+    widget_class->size_request = moo_text_view_size_request;
+    widget_class->size_allocate = moo_text_view_size_allocate;
 #if 0
     widget_class->drag_data_received = _moo_text_view_drag_data_received;
     widget_class->drag_drop = _moo_text_view_drag_drop;
     widget_class->drag_leave = _moo_text_view_drag_leave;
     widget_class->drag_motion = _moo_text_view_drag_motion;
 #endif
+
+    container_class->remove = moo_text_view_remove;
 
     text_view_class->move_cursor = _moo_text_view_move_cursor;
     text_view_class->page_horizontally = _moo_text_view_page_horizontally;
@@ -399,6 +418,23 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              FALSE,
                                              G_PARAM_READWRITE));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_ENABLE_QUICK_SEARCH,
+                                     g_param_spec_boolean ("enable-quick-search",
+                                             "enable-quick-search",
+                                             "enable-quick-search",
+                                             TRUE,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_QUICK_SEARCH_FLAGS,
+                                     g_param_spec_flags ("quick-search-flags",
+                                             "quick-search-flags",
+                                             "quick-search-flags",
+                                             MOO_TYPE_TEXT_SEARCH_FLAGS,
+                                             MOO_TEXT_SEARCH_CASELESS,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
     gtk_widget_class_install_style_property (widget_class,
                                              g_param_spec_int ("expander-size",
                                                      "Expander Size",
@@ -520,11 +556,22 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_BOOLEAN, 1,
                           G_TYPE_INT);
 
+    signals[START_QUICK_SEARCH] =
+            moo_signal_new_cb ("start-quick-search",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (start_quick_search),
+                               NULL, NULL,
+                               _moo_marshal_BOOL__VOID,
+                               G_TYPE_BOOLEAN, 0);
+
     binding_set = gtk_binding_set_by_class (klass);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK,
                                   "undo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
                                   "redo", 0);
+    gtk_binding_entry_add_signal (binding_set, GDK_slash, GDK_CONTROL_MASK,
+                                  "start-quick-search", 0);
 }
 
 
@@ -555,6 +602,8 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->highlight_mismatching_brackets = FALSE;
 
     view->priv->bold_current_line_number = TRUE;
+
+    view->priv->search_flags = MOO_TEXT_SEARCH_CASELESS;
 
 #if 0
     gtk_drag_dest_unset (GTK_WIDGET (view));
@@ -944,6 +993,16 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_enable_folding (view, g_value_get_boolean (value));
             break;
 
+        case PROP_ENABLE_QUICK_SEARCH:
+            view->priv->enable_quick_search = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "enable-quick-search");
+            break;
+
+        case PROP_QUICK_SEARCH_FLAGS:
+            view->priv->search_flags = g_value_get_flags (value);
+            g_object_notify (object, "quick-search-flags");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -1036,6 +1095,14 @@ moo_text_view_get_property (GObject        *object,
 
         case PROP_ENABLE_FOLDING:
             g_value_set_boolean (value, view->priv->enable_folding);
+            break;
+
+        case PROP_ENABLE_QUICK_SEARCH:
+            g_value_set_boolean (value, view->priv->enable_quick_search);
+            break;
+
+        case PROP_QUICK_SEARCH_FLAGS:
+            g_value_set_flags (value, view->priv->search_flags);
             break;
 
         default:
@@ -1528,6 +1595,27 @@ update_line_mark_width (MooTextView *view)
             int pixbuf_width = gdk_pixbuf_get_width (pixbuf);
             view->priv->line_mark_width = MAX (view->priv->line_mark_width,
                                                pixbuf_width);
+        }
+    }
+}
+
+
+static void
+moo_text_view_map (GtkWidget *widget)
+{
+    if (!GTK_WIDGET_MAPPED (widget))
+    {
+        guint i;
+        MooTextView *view = MOO_TEXT_VIEW (widget);
+
+        GTK_WIDGET_CLASS(moo_text_view_parent_class)->map (widget);
+
+        for (i = 0; i < 4; ++i)
+        {
+            /* XXX what about windowless widgets? */
+            GtkWidget *child = view->priv->children[i].widget;
+            if (child && child->window && !GTK_WIDGET_NO_WINDOW (child))
+                gdk_window_show (child->window);
         }
     }
 }
@@ -3210,4 +3298,531 @@ fold_toggled (MooTextView        *view,
 {
     if (view->priv->enable_folding)
         invalidate_line (view, moo_fold_get_start (fold), TRUE, TRUE);
+}
+
+
+/***************************************************************************/
+/* Children
+ */
+
+static GtkTextWindowType window_types[4] = {
+    GTK_TEXT_WINDOW_LEFT,
+    GTK_TEXT_WINDOW_RIGHT,
+    GTK_TEXT_WINDOW_TOP,
+    GTK_TEXT_WINDOW_BOTTOM
+};
+
+
+/* http://bugzilla.gnome.org/show_bug.cgi?id=323843 */
+static int
+get_border_window_size (GtkTextView      *text_view,
+                        GtkTextWindowType type)
+{
+    if (GTK_WIDGET_REALIZED (text_view) && gtk_text_view_get_window (text_view, type))
+        return gtk_text_view_get_border_window_size (text_view, type);
+    else
+        return 0;
+}
+
+
+void
+moo_text_view_add_child_in_border (MooTextView        *view,
+                                   GtkWidget          *widget,
+                                   GtkTextWindowType   which_border,
+                                   double              align)
+{
+    MooTextViewPos pos = MOO_TEXT_VIEW_POS_INVALID;
+    MooTextViewChild *child;
+    GtkRequisition child_req = {0, 0};
+    int border_size = 0;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_if_fail (widget->parent == NULL);
+    g_return_if_fail (align >= 0. && align <= 1.);
+
+    switch (which_border)
+    {
+        case GTK_TEXT_WINDOW_LEFT:
+            pos = MOO_TEXT_VIEW_POS_LEFT;
+            break;
+        case GTK_TEXT_WINDOW_RIGHT:
+            pos = MOO_TEXT_VIEW_POS_RIGHT;
+            break;
+        case GTK_TEXT_WINDOW_TOP:
+            pos = MOO_TEXT_VIEW_POS_TOP;
+            break;
+        case GTK_TEXT_WINDOW_BOTTOM:
+            pos = MOO_TEXT_VIEW_POS_BOTTOM;
+            break;
+        default:
+            g_return_if_reached ();
+    }
+
+    g_return_if_fail (pos < MOO_TEXT_VIEW_POS_INVALID);
+
+    child = &view->priv->children[pos];
+    g_return_if_fail (child->widget == NULL);
+
+    gtk_object_sink (g_object_ref (widget));
+
+    child->widget = widget;
+    child->align = align;
+
+    if (GTK_WIDGET_VISIBLE (widget))
+    {
+        gtk_widget_size_request (widget, &child_req);
+
+        switch (which_border)
+        {
+            case GTK_TEXT_WINDOW_LEFT:
+            case GTK_TEXT_WINDOW_RIGHT:
+                border_size = child_req.width;
+                break;
+            case GTK_TEXT_WINDOW_TOP:
+            case GTK_TEXT_WINDOW_BOTTOM:
+                border_size = child_req.height;
+                break;
+            default:
+                g_assert_not_reached ();
+        }
+    }
+    else
+    {
+        border_size = 0;
+    }
+
+    gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+                                          which_border, border_size);
+    gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (view), widget,
+                                       GTK_TEXT_WINDOW_WIDGET, 0, 0);
+}
+
+
+static void
+moo_text_view_size_request (GtkWidget      *widget,
+                            GtkRequisition *requisition)
+{
+    guint i;
+    GtkRequisition child_req[4];
+    MooTextView *view;
+    GtkTextView *text_view;
+    GtkRequisition total_child_req = {0, 0};
+
+    view = MOO_TEXT_VIEW (widget);
+    text_view = GTK_TEXT_VIEW (widget);
+
+    for (i = 0; i < 4; i++)
+    {
+        int border_size;
+        MooTextViewChild *child = &view->priv->children[i];
+
+        if (child->widget && GTK_WIDGET_VISIBLE (child->widget))
+        {
+            gtk_widget_size_request (child->widget, &child_req[i]);
+        }
+        else
+        {
+            child_req[i].width = child_req[i].height = 0;
+        }
+
+        if (child->widget)
+        {
+            switch (i)
+            {
+                case MOO_TEXT_VIEW_POS_LEFT:
+                case MOO_TEXT_VIEW_POS_RIGHT:
+                    border_size = child_req[i].width;
+                    total_child_req.height = MAX (total_child_req.height, child_req[i].height);
+                    break;
+                case MOO_TEXT_VIEW_POS_TOP:
+                case MOO_TEXT_VIEW_POS_BOTTOM:
+                    border_size = child_req[i].height;
+                    total_child_req.width = MAX (total_child_req.width, child_req[i].width);
+                    break;
+            }
+
+            gtk_text_view_set_border_window_size (text_view,
+                                                  window_types[i],
+                                                  border_size);
+        }
+    }
+
+    GTK_WIDGET_CLASS(moo_text_view_parent_class)->size_request (widget, requisition);
+
+    total_child_req.width += get_border_window_size (text_view, GTK_TEXT_WINDOW_RIGHT) +
+                             get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
+    requisition->width = MAX (requisition->width, total_child_req.width);
+    requisition->height = MAX (requisition->height, total_child_req.height);
+}
+
+
+static int
+calc_pos (int    total,
+          int    request,
+          double align)
+{
+    if (total <= request)
+        /* oops */
+        return 0;
+    else
+        return align * (total - request);
+}
+
+
+static void
+moo_text_view_size_allocate (GtkWidget     *widget,
+                             GtkAllocation *allocation)
+{
+    guint i;
+    int right_border, left_border, bottom_border;
+    MooTextView *view;
+    GtkTextView *text_view;
+
+    view = MOO_TEXT_VIEW (widget);
+    text_view = GTK_TEXT_VIEW (widget);
+
+    GTK_WIDGET_CLASS(moo_text_view_parent_class)->size_allocate (widget, allocation);
+
+    right_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_RIGHT);
+    left_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
+    bottom_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_BOTTOM);
+
+    for (i = 0; i < 4; i++)
+    {
+        int x, y;
+        GtkRequisition child_req;
+        MooTextViewChild *child = &view->priv->children[i];
+
+        if (!child->widget || !GTK_WIDGET_VISIBLE (child->widget))
+            continue;
+
+        gtk_widget_get_child_requisition (child->widget, &child_req);
+
+        switch (i)
+        {
+            case MOO_TEXT_VIEW_POS_LEFT:
+                x = 0;
+                break;
+            case MOO_TEXT_VIEW_POS_RIGHT:
+                x = allocation->width - right_border;
+                break;
+            case MOO_TEXT_VIEW_POS_TOP:
+                y = 0;
+                break;
+            case MOO_TEXT_VIEW_POS_BOTTOM:
+                y = allocation->height - bottom_border;
+                break;
+        }
+
+        switch (i)
+        {
+            case MOO_TEXT_VIEW_POS_LEFT:
+            case MOO_TEXT_VIEW_POS_RIGHT:
+                y = calc_pos (allocation->height, child_req.height, child->align);
+                break;
+            case MOO_TEXT_VIEW_POS_TOP:
+            case MOO_TEXT_VIEW_POS_BOTTOM:
+                x = left_border + calc_pos (allocation->width - left_border - right_border,
+                                            child_req.width, child->align);
+                break;
+        }
+
+        gtk_text_view_move_child (text_view, child->widget, x, y);
+    }
+
+    for (i = 0; i < 4; ++i)
+    {
+        /* XXX what about windowless widgets? */
+        GtkWidget *child = view->priv->children[i].widget;
+        if (child && GTK_WIDGET_MAPPED (child) && child->window && !GTK_WIDGET_NO_WINDOW (child))
+            gdk_window_show (child->window);
+    }
+}
+
+
+static void
+moo_text_view_remove (GtkContainer *container,
+                      GtkWidget    *widget)
+{
+    guint i;
+    MooTextView *view = MOO_TEXT_VIEW (container);
+
+    if (widget == view->priv->entry)
+    {
+        view->priv->in_search = FALSE;
+        view->priv->entry = NULL;
+    }
+
+    for (i = 0; i < 4; ++i)
+    {
+        MooTextViewChild *child = &view->priv->children[i];
+
+        if (child->widget == widget)
+        {
+            child->widget = NULL;
+            g_object_unref (widget);
+            gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+                                                  window_types[i], 0);
+            break;
+        }
+    }
+
+    GTK_CONTAINER_CLASS(moo_text_view_parent_class)->remove (container, widget);
+}
+
+
+void
+moo_text_view_align_child (MooTextView *view,
+                           GtkWidget   *child,
+                           double       align)
+{
+    guint i;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (align >= 0.0 && align <= 1.0);
+
+    for (i = 0; i < 4; ++i)
+    {
+        if (child == view->priv->children[i].widget)
+        {
+            view->priv->children[i].align = align;
+            gtk_widget_queue_resize (GTK_WIDGET (view));
+            return;
+        }
+    }
+
+    g_return_if_reached ();
+}
+
+
+/***************************************************************************/
+/* Search
+ */
+
+static void
+scroll_selection_onscreen (GtkTextView *text_view)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+    GdkRectangle rect, visible_rect;
+
+    buffer = gtk_text_view_get_buffer (text_view);
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_selection_bound (buffer));
+    gtk_text_view_scroll_to_iter (text_view, &iter, 0.0, FALSE, 0.0, 0.0);
+
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                      gtk_text_buffer_get_insert (buffer));
+
+    gtk_text_view_get_iter_location (text_view, &iter, &rect);
+    gtk_text_view_get_visible_rect (text_view, &visible_rect);
+
+    if (rect.x < visible_rect.x || rect.y < visible_rect.y ||
+        rect.x + rect.width > visible_rect.x + visible_rect.width ||
+        rect.y + rect.height > visible_rect.y + visible_rect.height)
+            gtk_text_view_scroll_to_iter (text_view, &iter, 0.0, FALSE, 0.0, 0.0);
+}
+
+
+static void
+quick_search_find_from (MooTextView *view,
+                        const char  *text,
+                        GtkTextIter *start)
+{
+    gboolean found;
+    GtkTextIter match_start, match_end;
+    GtkTextBuffer *buffer;
+
+    buffer = get_buffer (view);
+    found = moo_text_search_forward (start, text, view->priv->search_flags,
+                                     &match_start, &match_end, NULL);
+
+    if (!found)
+    {
+        GtkTextIter iter;
+
+        gtk_text_buffer_get_start_iter (buffer, &iter);
+
+        if (!gtk_text_iter_equal (start, &iter))
+            found = moo_text_search_forward (&iter, text, view->priv->search_flags,
+                                             &match_start, &match_end, NULL);
+    }
+
+    if (found)
+    {
+        gtk_text_buffer_select_range (buffer, &match_end, &match_start);
+        scroll_selection_onscreen (GTK_TEXT_VIEW (view));
+    }
+    else
+    {
+        gdk_beep ();
+    }
+}
+
+
+static void
+quick_search_find (MooTextView *view,
+                   const char  *text)
+{
+    GtkTextIter iter1, iter2, insert;
+    GtkTextBuffer *buffer = get_buffer (view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &iter1, &iter2))
+    {
+        gtk_text_buffer_get_iter_at_mark (buffer, &insert, gtk_text_buffer_get_insert (buffer));
+
+        if (gtk_text_iter_equal (&iter1, &insert))
+        {
+            gtk_text_buffer_place_cursor (buffer, &insert);
+            return quick_search_find_from (view, text, &insert);
+        }
+    }
+
+    quick_search_find_from (view, text, &iter1);
+}
+
+
+static void
+quick_search_find_next (MooTextView *view,
+                        GtkEntry    *entry,
+                        gboolean     from_start)
+{
+    const char *text;
+    GtkTextIter start;
+    GtkTextBuffer *buffer = get_buffer (view);
+
+    text = gtk_entry_get_text (entry);
+
+    if (text[0])
+    {
+        if (from_start)
+            gtk_text_buffer_get_start_iter (buffer, &start);
+        else
+            gtk_text_buffer_get_iter_at_mark (buffer, &start, gtk_text_buffer_get_insert (buffer));
+        quick_search_find_from (view, text, &start);
+    }
+}
+
+
+static void
+search_entry_changed (MooTextView *view,
+                      GtkEntry    *entry)
+{
+    const char *text;
+
+    if (!view->priv->in_search)
+        return;
+
+    text = gtk_entry_get_text (entry);
+
+    if (text[0])
+        quick_search_find (view, text);
+}
+
+
+static void
+search_entry_focus_out (MooTextView *view)
+{
+    moo_text_view_stop_quick_search (view);
+}
+
+
+static gboolean
+search_entry_key_press (MooTextView *view,
+                        GdkEventKey *event,
+                        GtkEntry    *entry)
+{
+    if (!view->priv->in_search)
+        return FALSE;
+
+    switch (event->keyval)
+    {
+        case GDK_Escape:
+            moo_text_view_stop_quick_search (view);
+            return TRUE;
+
+        case GDK_Return:
+        case GDK_KP_Enter:
+            quick_search_find_next (view, entry,
+                                    event->state & GDK_CONTROL_MASK);
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+
+void
+moo_text_view_start_quick_search (MooTextView *view)
+{
+    char *text = NULL;
+    GtkTextIter iter1, iter2;
+    GtkTextBuffer *buffer;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (view->priv->in_search)
+        return;
+
+    if (!view->priv->entry)
+    {
+        view->priv->entry = moo_entry_new ();
+        g_signal_connect_swapped (view->priv->entry, "changed",
+                                  G_CALLBACK (search_entry_changed), view);
+        g_signal_connect_swapped (view->priv->entry, "focus-out-event",
+                                  G_CALLBACK (search_entry_focus_out), view);
+        g_signal_connect_swapped (view->priv->entry, "key-press-event",
+                                  G_CALLBACK (search_entry_key_press), view);
+        moo_text_view_add_child_in_border (view, view->priv->entry,
+                                           GTK_TEXT_WINDOW_BOTTOM, 0);
+    }
+
+    buffer = get_buffer (view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &iter1, &iter2) &&
+        gtk_text_iter_get_line (&iter1) == gtk_text_iter_get_line (&iter2))
+    {
+        text = gtk_text_buffer_get_text (buffer, &iter1, &iter2, TRUE);
+    }
+
+    if (text)
+        gtk_entry_set_text (GTK_ENTRY (view->priv->entry), text);
+
+    gtk_widget_show (view->priv->entry);
+    gtk_widget_grab_focus (view->priv->entry);
+    gtk_widget_queue_draw (view->priv->entry);
+
+    view->priv->in_search = TRUE;
+
+    g_free (text);
+}
+
+
+void
+moo_text_view_stop_quick_search (MooTextView *view)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (view->priv->in_search)
+    {
+        view->priv->in_search = FALSE;
+        gtk_widget_hide (view->priv->entry);
+        gtk_widget_grab_focus (GTK_WIDGET (view));
+    }
+}
+
+
+static gboolean
+start_quick_search (MooTextView *view)
+{
+    if (view->priv->enable_quick_search)
+    {
+        moo_text_view_start_quick_search (view);
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;
+    }
 }

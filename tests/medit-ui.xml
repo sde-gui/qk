@@ -43,6 +43,8 @@
       <item action="FindPrevious"/>
       <item action="Replace"/>
       <separator/>
+      <item action="QuickSearch"/>
+      <separator/>
       <item action="GoToLine"/>
       <separator/>
     </item>
