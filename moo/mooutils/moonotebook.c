@@ -16,6 +16,7 @@
 #include "mooutils/moonotebook.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <string.h>
 
 #define MIN_LABELS_WIDTH 10
 #define DEFAULT_HBORDER 6
@@ -156,6 +157,8 @@ static void     moo_notebook_size_request   (GtkWidget      *widget,
 static void     moo_notebook_size_allocate  (GtkWidget      *widget,
                                              GtkAllocation  *allocation);
 
+static void     moo_notebook_parent_set     (GtkWidget      *widget,
+                                             GtkWidget      *previous_parent);
 static gboolean moo_notebook_focus          (GtkWidget      *widget,
                                              GtkDirectionType direction);
 static gboolean moo_notebook_focus_in       (GtkWidget      *widget,
@@ -313,6 +316,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
     widget_class->expose_event = moo_notebook_expose;
     widget_class->size_request = moo_notebook_size_request;
     widget_class->size_allocate = moo_notebook_size_allocate;
+    widget_class->parent_set = moo_notebook_parent_set;
 //     widget_class->enter_notify_event = moo_notebook_enter;
 //     widget_class->leave_notify_event = moo_notebook_leave;
     widget_class->button_press_event = moo_notebook_button_press;
@@ -905,6 +909,55 @@ static void     moo_notebook_size_allocate  (GtkWidget      *widget,
 }
 
 
+static void
+mangle_class_name (char *string)
+{
+    g_return_if_fail (string != NULL);
+
+    while ((string = strstr (string, "MooNotebook")))
+    {
+        string[0] = 'G';
+        string[1] = 't';
+        string[2] = 'k';
+        string += strlen ("MooNotebook");
+    }
+}
+
+
+static void
+update_notebook_style (GtkWidget *widget)
+{
+    GtkStyle *style;
+    GtkSettings *settings;
+    char *path, *class_path;
+
+    if (!gtk_widget_has_screen (widget))
+        return;
+
+    settings = gtk_widget_get_settings (widget);
+
+    gtk_widget_path (widget, NULL, &path, NULL);
+    mangle_class_name (path);
+    gtk_widget_class_path (widget, NULL, &class_path, NULL);
+    mangle_class_name (class_path);
+
+    style = gtk_rc_get_style_by_paths (settings, path, class_path,
+                                       GTK_TYPE_NOTEBOOK);
+    gtk_widget_set_style (widget, style);
+
+    g_free (path);
+    g_free (class_path);
+}
+
+
+static void
+moo_notebook_parent_set (GtkWidget *widget,
+                         G_GNUC_UNUSED GtkWidget *previous_parent)
+{
+    update_notebook_style (widget);
+}
+
+
 static void     moo_notebook_realize        (GtkWidget      *widget)
 {
     static GdkWindowAttr attributes;
@@ -912,8 +965,6 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     MooNotebook *nb;
     GSList *l;
     int border_width = gtk_container_get_border_width (GTK_CONTAINER (widget));
-    GtkStyle *notebook_style;
-    GtkSettings *settings;
 
     nb = MOO_NOTEBOOK (widget);
 
@@ -952,21 +1003,13 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
     nb->priv->tab_window = gdk_window_new (widget->window, &attributes, attributes_mask);
     gdk_window_set_user_data (nb->priv->tab_window, widget);
 
+    update_notebook_style (widget);
     gtk_style_set_background (widget->style, nb->priv->tab_window, GTK_STATE_NORMAL);
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
         Page *page = l->data;
         gtk_widget_set_parent_window (page->label->widget, nb->priv->tab_window);
-    }
-
-    settings = gtk_widget_get_settings (widget);
-    notebook_style = gtk_rc_get_style_by_paths (settings, NULL, "*.GtkNotebook", GTK_TYPE_NOTEBOOK);
-
-    if (notebook_style)
-    {
-        g_object_ref (notebook_style);
-        widget->style = gtk_style_attach (notebook_style, widget->window);
     }
 }
 
