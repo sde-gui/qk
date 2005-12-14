@@ -56,9 +56,11 @@
       <separator/>
       <item action="LanguageMenu"/>
       <separator/>
+      <!--
       <item action="ToggleBookmark"/>
       <item action="PreviousBookmark"/>
       <item action="NextBookmark"/>
+      -->
       <separator/>
       <item action="FocusDoc"/>
       <separator/>

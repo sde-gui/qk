@@ -129,7 +129,7 @@ moo_edit_class_init (MooEditClass *klass)
                                      g_param_spec_boolean ("enable-bookmarks",
                                              "enable-bookmarks",
                                              "enable-bookmarks",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     settings[SETTING_LANG] = moo_edit_config_install_setting (
