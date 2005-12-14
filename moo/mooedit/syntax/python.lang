@@ -124,10 +124,10 @@
 
       <Regex style="Complex" pattern=" (((\d*\.\d+|\d+\.)|(\d+|(\d*\.\d+|\d+\.))[eE][+-]?\d+)|\d+)[jJ]" context="#stay"/>
       <Regex style="Float" pattern="(\d+\.\d*|\.\d+)([eE]\d+)?" context="#stay"/>
-      <Regex style="Int" pattern="([1-9]\d*([eE]\d+)?|0)" context="#stay"/>
-      <Regex style="Long" pattern="[1-9]\d*([eE][\d.]+)?[Ll]" context="#stay"/>
       <Regex style="Hex" pattern="0[Xx][\da-fA-F]+" context="#stay"/>
       <Regex style="Octal" pattern="0[1-9]\d*" context="#stay"/>
+      <Regex style="Long" pattern="[1-9]\d*([eE][\d.]+)?[Ll]" context="#stay"/>
+      <Regex style="Int" pattern="([1-9]\d*([eE]\d+)?|0)" context="#stay"/>
 
       <Regex style="Raw String" pattern="[rR]'" context="Raw A-string"/>
       <Regex style="Raw String" pattern="[rR]&quot;" context="Raw Q-string"/>
