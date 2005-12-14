@@ -208,6 +208,24 @@ apply_tag (MooHighlighter     *hl,
 }
 
 
+#if !GTK_CHECK_VERSION(2,8,0)
+static void
+check_last_tag (MooHighlighter *hl)
+{
+    if (hl->last_tag && hl->need_last_tag)
+    {
+        gboolean fg_set;
+        g_object_get (hl->last_tag, "foreground-set", &fg_set, NULL);
+        g_object_set (hl->last_tag, "foreground-set", fg_set, NULL);
+    }
+
+    hl->last_tag = NULL;
+}
+#else
+#define check_last_tag(hl)
+#endif
+
+
 MooHighlighter*
 moo_highlighter_new (GtkTextBuffer *buffer,
                      LineBuffer    *line_buf,
@@ -528,20 +546,6 @@ hl_compute_line (MooHighlighter     *hl,
         line->hl_info->tags_applied = TRUE;
 
     return get_next_line_node (hl, line);
-}
-
-
-static void
-check_last_tag (MooHighlighter *hl)
-{
-    if (hl->last_tag && hl->need_last_tag)
-    {
-        gboolean fg_set;
-        g_object_get (hl->last_tag, "foreground-set", &fg_set, NULL);
-        g_object_set (hl->last_tag, "foreground-set", fg_set, NULL);
-    }
-
-    hl->last_tag = NULL;
 }
 
 
