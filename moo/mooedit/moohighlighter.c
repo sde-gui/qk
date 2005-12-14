@@ -272,7 +272,12 @@ create_tag (MooHighlighter *hl,
             CtxNode        *match_node,
             MooRule        *rule)
 {
-    GtkTextTag *tag = moo_syntax_tag_new (ctx_node, match_node, rule);
+    GtkTextTag *tag;
+
+    if (!ctx_node->parent && !match_node && !rule)
+        return NULL;
+
+    tag = moo_syntax_tag_new (ctx_node, match_node, rule);
 
     gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (hl->buffer), tag);
     g_object_unref (tag);
