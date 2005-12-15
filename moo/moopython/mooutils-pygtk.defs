@@ -69,6 +69,9 @@
   (parent "GtkBin")
   (c-name "MooPaned")
   (gtype-id "MOO_TYPE_PANED")
+  (fields
+    '("GtkWidget*" "button_box")
+  )
 )
 
 (define-object Prefs
