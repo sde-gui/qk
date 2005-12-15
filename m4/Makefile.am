@@ -4,6 +4,7 @@ EXTRA_DIST =        \
     moo-funcs.m4    \
     moo-gtk.m4      \
     moo-os.m4       \
+    moo-pcre.m4     \
     moo-pygtk.m4    \
     moo-python.m4   \
     moo-windres.m4  \

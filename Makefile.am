@@ -14,6 +14,7 @@ AM_CFLAGS =                                 \
     -I$(top_srcdir)                         \
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
     -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)/mooutils/pcre \
     $(MOO_CFLAGS)                           \
     $(PYTHON_INCLUDES)                      \
     $(PYGTK_CFLAGS)                         \

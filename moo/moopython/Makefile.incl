@@ -43,11 +43,11 @@ nodist_moopython_sources =
 moopython_cleanfiles =
 
 mooedit_defs_files =                          \
-    $(moopython_srcdir)/mooeditor.defs        \
-    $(moopython_srcdir)/mooplugin.defs
+    $(moopython)/mooeditor.defs               \
+    $(moopython)/mooplugin.defs
 
 # mooutils_override_files =                     \
-#     $(moopython_srcdir)/moowindow.override
+#     $(moopython)/moowindow.override
 
 moopython_extra_dist =                        \
     $(moopython_plugins)                      \

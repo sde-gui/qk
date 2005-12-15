@@ -65,6 +65,9 @@ MOO_AC_XDGMIME
 #  Python stuff
 MOO_AC_PYGTK
 
+# pcre
+MOO_AC_PCRE
+
 
 ################################################################################
 #  Python module
@@ -224,6 +227,7 @@ AC_OUTPUT([
 Makefile
 moo/moo-config.h
 moo/mooterm/termhelper_res.rc
+moo/mooutils/pcre/pcre.h
 tests/pyapp.py
 m4/Makefile
 moo.pc

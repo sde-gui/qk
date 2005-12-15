@@ -53,7 +53,7 @@
 
 #include "eggregex.h"
 #include <glib.h>
-#include "pcre/pcre.h"
+#include "pcre.h"
 
 /* FIXME when this is in glib */
 #define _(s) s

@@ -2,45 +2,48 @@
 *      Perl-Compatible Regular Expressions       *
 *************************************************/
 
-/*
-This is a library of functions to support regular expressions whose syntax
-and semantics are as close as possible to those of the Perl 5 language. See
-the file Tech.Notes for some information on the internals.
+/* PCRE is a library of functions to support regular expressions whose syntax
+and semantics are as close as possible to those of the Perl 5 language.
 
-Written by: Philip Hazel <ph10@cam.ac.uk>
-
-           Copyright (c) 1997-2003 University of Cambridge
+                       Written by Philip Hazel
+           Copyright (c) 1997-2005 University of Cambridge
 
 -----------------------------------------------------------------------------
-Permission is granted to anyone to use this software for any purpose on any
-computer system, and to redistribute it freely, subject to the following
-restrictions:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-1. This software is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    * Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
 
-2. The origin of this software must not be misrepresented, either by
-   explicit claim or by omission.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
 
-3. Altered versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
+    * Neither the name of the University of Cambridge nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
 
-4. If PCRE is embedded in any software that is released under the GNU
-   General Purpose Licence (GPL), then the terms of that licence shall
-   supersede any condition above with which it is incompatible.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains some convenience functions for extracting substrings
 from the subject string after a regex match has succeeded. The original idea
-for these functions came from Scott Wimer <scottw@cgibuilder.com>. */
+for these functions came from Scott Wimer. */
 
 
-/* Include the internals header, which itself includes Standard C headers plus
-the external pcre header. */
-
-#include "internal.h"
+#include "pcre_internal.h"
 
 
 /*************************************************
@@ -59,20 +62,20 @@ Returns:      the number of the named parentheses, or a negative number
 */
 
 int
-_pcre_get_stringnumber(const pcre *code, const char *stringname)
+pcre_get_stringnumber(const pcre *code, const char *stringname)
 {
 int rc;
 int entrysize;
 int top, bot;
 uschar *nametable;
 
-if ((rc = _pcre_fullinfo(code, NULL, PCRE_INFO_NAMECOUNT, &top)) != 0)
+if ((rc = pcre_fullinfo(code, NULL, PCRE_INFO_NAMECOUNT, &top)) != 0)
   return rc;
 if (top <= 0) return PCRE_ERROR_NOSUBSTRING;
 
-if ((rc = _pcre_fullinfo(code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize)) != 0)
+if ((rc = pcre_fullinfo(code, NULL, PCRE_INFO_NAMEENTRYSIZE, &entrysize)) != 0)
   return rc;
-if ((rc = _pcre_fullinfo(code, NULL, PCRE_INFO_NAMETABLE, &nametable)) != 0)
+if ((rc = pcre_fullinfo(code, NULL, PCRE_INFO_NAMETABLE, &nametable)) != 0)
   return rc;
 
 bot = 0;
@@ -118,7 +121,7 @@ Returns:         if successful:
 */
 
 int
-_pcre_copy_substring(const char *subject, int *ovector, int stringcount,
+pcre_copy_substring(const char *subject, int *ovector, int stringcount,
   int stringnumber, char *buffer, int size)
 {
 int yield;
@@ -162,12 +165,12 @@ Returns:         if successful:
 */
 
 int
-_pcre_copy_named_substring(const pcre *code, const char *subject, int *ovector,
+pcre_copy_named_substring(const pcre *code, const char *subject, int *ovector,
   int stringcount, const char *stringname, char *buffer, int size)
 {
-int n = _pcre_get_stringnumber(code, stringname);
+int n = pcre_get_stringnumber(code, stringname);
 if (n <= 0) return n;
-return _pcre_copy_substring(subject, ovector, stringcount, n, buffer, size);
+return pcre_copy_substring(subject, ovector, stringcount, n, buffer, size);
 }
 
 
@@ -194,7 +197,7 @@ Returns:         if successful: 0
 */
 
 int
-_pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
+pcre_get_substring_list(const char *subject, int *ovector, int stringcount,
   const char ***listptr)
 {
 int i;
@@ -206,7 +209,7 @@ char *p;
 for (i = 0; i < double_count; i += 2)
   size += sizeof(char *) + ovector[i+1] - ovector[i] + 1;
 
-stringlist = (char **)(g_malloc)(size);
+stringlist = (char **)(pcre_malloc)(size);
 if (stringlist == NULL) return PCRE_ERROR_NOMEMORY;
 
 *listptr = (const char **)stringlist;
@@ -223,6 +226,25 @@ for (i = 0; i < double_count; i += 2)
 
 *stringlist = NULL;
 return 0;
+}
+
+
+
+/*************************************************
+*   Free store obtained by get_substring_list    *
+*************************************************/
+
+/* This function exists for the benefit of people calling PCRE from non-C
+programs that can call its functions, but not free() or (pcre_free)() directly.
+
+Argument:   the result of a previous pcre_get_substring_list()
+Returns:    nothing
+*/
+
+void
+pcre_free_substring_list(const char **pointer)
+{
+(pcre_free)((void *)pointer);
 }
 
 
@@ -253,7 +275,7 @@ Returns:         if successful:
 */
 
 int
-_pcre_get_substring(const char *subject, int *ovector, int stringcount,
+pcre_get_substring(const char *subject, int *ovector, int stringcount,
   int stringnumber, const char **stringptr)
 {
 int yield;
@@ -262,7 +284,7 @@ if (stringnumber < 0 || stringnumber >= stringcount)
   return PCRE_ERROR_NOSUBSTRING;
 stringnumber *= 2;
 yield = ovector[stringnumber+1] - ovector[stringnumber];
-substring = (char *)(g_malloc)(yield + 1);
+substring = (char *)(pcre_malloc)(yield + 1);
 if (substring == NULL) return PCRE_ERROR_NOMEMORY;
 memcpy(substring, subject + ovector[stringnumber], yield);
 substring[yield] = 0;
@@ -299,15 +321,32 @@ Returns:         if successful:
 */
 
 int
-_pcre_get_named_substring(const pcre *code, const char *subject, int *ovector,
+pcre_get_named_substring(const pcre *code, const char *subject, int *ovector,
   int stringcount, const char *stringname, const char **stringptr)
 {
-int n = _pcre_get_stringnumber(code, stringname);
+int n = pcre_get_stringnumber(code, stringname);
 if (n <= 0) return n;
-return _pcre_get_substring(subject, ovector, stringcount, n, stringptr);
+return pcre_get_substring(subject, ovector, stringcount, n, stringptr);
 }
 
 
 
 
-/* End of get.c */
+/*************************************************
+*       Free store obtained by get_substring     *
+*************************************************/
+
+/* This function exists for the benefit of people calling PCRE from non-C
+programs that can call its functions, but not free() or (pcre_free)() directly.
+
+Argument:   the result of a previous pcre_get_substring()
+Returns:    nothing
+*/
+
+void
+pcre_free_substring(const char *pointer)
+{
+(pcre_free)((void *)pointer);
+}
+
+/* End of pcre_get.c */
