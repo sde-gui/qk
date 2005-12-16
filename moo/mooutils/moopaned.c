@@ -1507,7 +1507,7 @@ moo_paned_expose (GtkWidget      *widget,
         gtk_container_propagate_expose (GTK_CONTAINER (paned),
                                         paned->button_box, event);
 
-    if (GTK_WIDGET_DRAWABLE (GTK_BIN(paned)->child))
+    if (GTK_BIN(paned)->child && GTK_WIDGET_DRAWABLE (GTK_BIN(paned)->child))
         gtk_container_propagate_expose (GTK_CONTAINER (paned),
                                         GTK_BIN(paned)->child,
                                         event);
@@ -3601,6 +3601,7 @@ pane_window_delete_event (GtkWidget  *window,
 
 
 /* XXX gtk_widget_reparent() doesn't work here for some reasons */
+/* shouldn't it work now, as I fixed GTK_NO_WINDOW flag? */
 static void
 reparent (GtkWidget *widget,
           GtkWidget *old_container,
