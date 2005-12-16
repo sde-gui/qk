@@ -528,7 +528,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         g_slist_free (marks);
     }
 
-    if (last_line - first_line < 2)
+    if (length == 1)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
     else
         moo_text_buffer_queue_highlight (buffer);
@@ -579,7 +579,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
                               GtkTextIter        *end)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
-    int first_line, last_line;
+    int first_line, last_line, offset;
     gboolean starts_line;
     GSList *deleted_marks = NULL, *moved_marks = NULL;
 
@@ -588,6 +588,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     first_line = gtk_text_iter_get_line (start);
     last_line = gtk_text_iter_get_line (end);
     starts_line = gtk_text_iter_starts_line (start);
+    offset = gtk_text_iter_get_line_offset (end) - gtk_text_iter_get_line_offset (start);
 
 #define MANY_LINES 1000
     if (buffer->priv->lang && buffer->priv->do_highlight &&
@@ -635,7 +636,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     g_slist_free (deleted_marks);
     g_slist_free (moved_marks);
 
-    if (last_line - first_line < 2)
+    if (last_line == first_line && offset == 1)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
     else
         moo_text_buffer_queue_highlight (buffer);
