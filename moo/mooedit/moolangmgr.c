@@ -636,8 +636,15 @@ moo_lang_finish_build (MooLang *lang,
         moo_lang_parse_mime_types (lang, xml->mimetypes);
     if (xml->extensions)
         moo_lang_parse_extensions (lang, xml->extensions);
+
     if (xml->general)
+    {
         lang->brackets = g_strdup (xml->general->brackets);
+        lang->line_comment = g_strdup (xml->general->single_line_start);
+        lang->block_comment_start = g_strdup (xml->general->multi_line_start);
+        lang->block_comment_end = g_strdup (xml->general->multi_line_end);
+    }
+
     lang->sample = g_strdup (xml->sample);
 
     for (l = xml->syntax->contexts; l != NULL; l = l->next)

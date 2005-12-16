@@ -179,6 +179,9 @@ GSList          *moo_edit_get_bookmarks_in_range(MooEdit        *edit,
                                                  int             first_line,
                                                  int             last_line);
 
+void             moo_edit_comment               (MooEdit        *edit);
+void             moo_edit_uncomment             (MooEdit        *edit);
+
 
 G_END_DECLS
 

@@ -561,6 +561,24 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "Comment",
+                                 "name", "Comment",
+                                 "label", "Comment",
+                                 "tooltip", "Comment",
+                                 "closure-callback", moo_edit_comment,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "Uncomment",
+                                 "name", "Uncomment",
+                                 "label", "Uncomment",
+                                 "tooltip", "Uncomment",
+                                 "closure-callback", moo_edit_uncomment,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
                                         NULL, NULL);

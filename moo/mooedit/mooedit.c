@@ -1320,3 +1320,306 @@ moo_edit_get_bookmarks_in_range (MooEdit *edit,
 
     return g_slist_reverse (range);
 }
+
+
+/*****************************************************************************/
+/* Comment/uncomment
+ */
+
+/* TODO: all this stuff, it's pretty lame */
+
+static gboolean
+has_comments (MooEdit  *edit,
+              gboolean *single_line,
+              gboolean *multi_line)
+{
+    MooLang *lang;
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
+
+    *single_line = lang->line_comment != NULL;
+    *multi_line = lang->block_comment_start &&
+                    lang->block_comment_end;
+
+    return *single_line || *multi_line;
+}
+
+
+static void
+line_comment (GtkTextBuffer *buffer,
+              const char    *comment_string,
+              GtkTextIter   *start,
+              GtkTextIter   *end)
+{
+    int first, last, i;
+    GtkTextIter iter;
+    char *comment_and_space;
+
+    g_return_if_fail (comment_string && comment_string[0]);
+
+    first = gtk_text_iter_get_line (start);
+    last = gtk_text_iter_get_line (end);
+
+    if (!gtk_text_iter_equal (start, end) && gtk_text_iter_starts_line (end))
+        last -= 1;
+
+    comment_and_space = g_strdup_printf ("%s ", comment_string);
+
+    for (i = first; i <= last; ++i)
+    {
+        gtk_text_buffer_get_iter_at_line (buffer, &iter, i);
+
+        if (gtk_text_iter_ends_line (&iter))
+            gtk_text_buffer_insert (buffer, &iter, comment_string, -1);
+        else
+            gtk_text_buffer_insert (buffer, &iter, comment_and_space, -1);
+    }
+
+    g_free (comment_and_space);
+}
+
+
+static void
+line_uncomment (GtkTextBuffer *buffer,
+                const char    *comment_string,
+                GtkTextIter   *start,
+                GtkTextIter   *end)
+{
+    int first, last, i;
+    guint chars;
+
+    g_return_if_fail (comment_string && comment_string[0]);
+
+    first = gtk_text_iter_get_line (start);
+    last = gtk_text_iter_get_line (end);
+
+    if (!gtk_text_iter_equal (start, end) && gtk_text_iter_starts_line (end))
+        last -= 1;
+
+    chars = g_utf8_strlen (comment_string, -1);
+
+    for (i = first; i <= last; ++i)
+    {
+        char *text;
+
+        gtk_text_buffer_get_iter_at_line (buffer, start, i);
+        *end = *start;
+        gtk_text_iter_forward_chars (end, chars);
+        text = gtk_text_iter_get_slice (start, end);
+
+        if (!strcmp (comment_string, text))
+        {
+            if (gtk_text_iter_get_char (end) == ' ')
+                gtk_text_iter_forward_char (end);
+            gtk_text_buffer_delete (buffer, start, end);
+        }
+
+        g_free (text);
+    }
+}
+
+
+static void
+iter_to_line_end (GtkTextIter *iter)
+{
+    if (!gtk_text_iter_ends_line (iter))
+        gtk_text_iter_forward_to_line_end (iter);
+}
+
+static void
+block_comment (GtkTextBuffer *buffer,
+               const char    *comment_start,
+               const char    *comment_end,
+               GtkTextIter   *start,
+               GtkTextIter   *end)
+{
+    GtkTextMark *end_mark;
+
+    g_return_if_fail (comment_start && comment_start[0]);
+    g_return_if_fail (comment_end && comment_end[0]);
+
+    if (gtk_text_iter_equal (start, end))
+    {
+        gtk_text_iter_set_line_offset (start, 0);
+        iter_to_line_end (end);
+    }
+    else
+    {
+        if (gtk_text_iter_starts_line (end))
+        {
+            gtk_text_iter_backward_line (end);
+            iter_to_line_end (end);
+        }
+    }
+
+    end_mark = gtk_text_buffer_create_mark (buffer, NULL, end, FALSE);
+    gtk_text_buffer_insert (buffer, start, comment_start, -1);
+    gtk_text_buffer_get_iter_at_mark (buffer, start, end_mark);
+    gtk_text_buffer_insert (buffer, start, comment_end, -1);
+    gtk_text_buffer_delete_mark (buffer, end_mark);
+}
+
+
+static void
+block_uncomment (GtkTextBuffer *buffer,
+                 const char    *comment_start,
+                 const char    *comment_end,
+                 GtkTextIter   *start,
+                 GtkTextIter   *end)
+{
+    GtkTextIter start1, start2, end1, end2;
+    GtkTextMark *mark1, *mark2;
+    GtkTextIter limit;
+    gboolean found;
+
+    g_return_if_fail (comment_start && comment_start[0]);
+    g_return_if_fail (comment_end && comment_end[0]);
+
+    if (!gtk_text_iter_equal (start, end) && gtk_text_iter_starts_line (end))
+    {
+        gtk_text_iter_backward_line (end);
+        iter_to_line_end (end);
+    }
+
+    limit = *end;
+    found = moo_text_search_forward (start, comment_start, 0,
+                                     &start1, &start2,
+                                     &limit);
+
+    if (!found)
+    {
+        gtk_text_iter_set_line_offset (&limit, 0);
+        found = gtk_text_iter_backward_search (start, comment_start, 0,
+                                               &start1, &start2,
+                                               &limit);
+    }
+
+    if (!found)
+        return;
+
+    limit = start2;
+    found = gtk_text_iter_backward_search (end, comment_end, 0,
+                                           &end1, &end2, &limit);
+
+    if (!found)
+    {
+        limit = *end;
+        iter_to_line_end (&limit);
+        found = moo_text_search_forward (end, comment_end, 0,
+                                         &end1, &end2, &limit);
+    }
+
+    if (!found)
+        return;
+
+    g_assert (gtk_text_iter_compare (&start2, &end1) < 0);
+
+    mark1 = gtk_text_buffer_create_mark (buffer, NULL, &end1, FALSE);
+    mark2 = gtk_text_buffer_create_mark (buffer, NULL, &end2, FALSE);
+    gtk_text_buffer_delete (buffer, &start1, &start2);
+    gtk_text_buffer_get_iter_at_mark (buffer, &end1, mark1);
+    gtk_text_buffer_get_iter_at_mark (buffer, &end2, mark2);
+    gtk_text_buffer_delete (buffer, &end1, &end2);
+    gtk_text_buffer_delete_mark (buffer, mark1);
+    gtk_text_buffer_delete_mark (buffer, mark2);
+}
+
+
+static void
+begin_comment_action (MooEdit *edit)
+{
+    gtk_text_buffer_begin_user_action (get_buffer (edit));
+    moo_text_buffer_begin_interactive_action (get_moo_buffer (edit));
+}
+
+static void
+end_comment_action (MooEdit *edit)
+{
+    gtk_text_buffer_end_user_action (get_buffer (edit));
+    moo_text_buffer_end_interactive_action (get_moo_buffer (edit));
+}
+
+
+void
+moo_edit_comment (MooEdit *edit)
+{
+    MooLang *lang;
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+    gboolean has_selection, single_line, multi_line;
+    gboolean adjust_selection = FALSE, move_insert = FALSE;
+    int sel_start_line, sel_start_offset;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
+
+    if (!has_comments (edit, &single_line, &multi_line))
+        return;
+
+    buffer = get_buffer (edit);
+    has_selection = gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
+
+    begin_comment_action (edit);
+
+    if (has_selection)
+    {
+        GtkTextIter iter;
+        adjust_selection = TRUE;
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter,
+                                          gtk_text_buffer_get_insert (buffer));
+        move_insert = gtk_text_iter_equal (&iter, &start);
+        sel_start_line = gtk_text_iter_get_line (&start);
+        sel_start_offset = gtk_text_iter_get_line_offset (&start);
+    }
+
+    /* FIXME */
+    if (single_line)
+        line_comment (buffer, lang->line_comment, &start, &end);
+    else
+        block_comment (buffer, lang->block_comment_start,
+                       lang->block_comment_end, &start, &end);
+
+
+    if (adjust_selection)
+    {
+        const char *mark = move_insert ? "insert" : "selection_bound";
+        gtk_text_buffer_get_iter_at_line_offset (buffer, &start,
+                                                 sel_start_line,
+                                                 sel_start_offset);
+        gtk_text_buffer_move_mark_by_name (buffer, mark, &start);
+    }
+
+    end_comment_action (edit);
+}
+
+
+void
+moo_edit_uncomment (MooEdit *edit)
+{
+    MooLang *lang;
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+    gboolean single_line, multi_line;
+
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
+
+    if (!has_comments (edit, &single_line, &multi_line))
+        return;
+
+    buffer = get_buffer (edit);
+    gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
+
+    begin_comment_action (edit);
+
+    /* FIXME */
+    if (single_line)
+        line_uncomment (buffer, lang->line_comment, &start, &end);
+    else
+        block_uncomment (buffer, lang->block_comment_start,
+                         lang->block_comment_end, &start, &end);
+
+    end_comment_action (edit);
+}

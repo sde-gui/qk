@@ -56,9 +56,9 @@ struct _MooLang {
     GSList *extensions; /* list of globs */
 
     char *brackets;
-    char *single_line_comment;
-    char *multi_line_comment_start;
-    char *multi_line_comment_end;
+    char *line_comment;
+    char *block_comment_start;
+    char *block_comment_end;
 
     char *sample;
 

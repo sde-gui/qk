@@ -34,6 +34,9 @@
       <separator/>
       <item action="SelectAll"/>
       <separator/>
+      <item action="Comment"/>
+      <item action="Uncomment"/>
+      <separator/>
     </item>
 
     <item name="Search" label="_Search">

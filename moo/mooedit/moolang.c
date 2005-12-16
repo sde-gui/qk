@@ -354,6 +354,9 @@ _moo_lang_free (MooLang *lang)
         g_free (lang->sample);
 
         g_free (lang->brackets);
+        g_free (lang->line_comment);
+        g_free (lang->block_comment_start);
+        g_free (lang->block_comment_end);
 
         g_slist_foreach (lang->mime_types, (GFunc) g_free, NULL);
         g_slist_free (lang->mime_types);
