@@ -1063,7 +1063,7 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
             tag = NULL;
     }
 
-    if (tag)
+    if (tag && buffer->priv->bracket_mark[0])
     {
         for (i = 0; i < 4; ++i)
             gtk_text_buffer_get_iter_at_mark (text_buffer, &iter[i],
