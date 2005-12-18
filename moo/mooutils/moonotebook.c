@@ -2678,11 +2678,18 @@ static void     tab_drag_motion             (MooNotebook    *nb,
         g_return_if_reached ();
     }
 
-    event_x = event->x;
-    event_y = event->y;
+    if (event)
+    {
+        event_x = event->x;
+        event_y = event->y;
 
-    if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
-        g_return_if_reached ();
+        if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
+            g_return_if_reached ();
+    }
+    else
+    {
+        event_x = nb->priv->drag_mouse_x;
+    }
 
     width = nb->priv->drag_page->label->width;
     num = get_n_visible_pages (nb);
