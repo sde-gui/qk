@@ -1548,7 +1548,7 @@ moo_edit_comment (MooEdit *edit)
     GtkTextBuffer *buffer;
     gboolean has_selection, single_line, multi_line;
     gboolean adjust_selection = FALSE, move_insert = FALSE;
-    int sel_start_line, sel_start_offset;
+    int sel_start_line = 0, sel_start_offset = 0;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
