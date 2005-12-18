@@ -443,8 +443,7 @@ egg_regex_fetch_pos (EggRegex      *regex,
 {
   /* make sure the sub expression number they're requesting is less than
    * the total number of sub expressions that were matched. */
-  if (match_num >= regex->matches)
-    return;
+  g_return_if_fail (match_num < regex->matches);
 
   if (start_pos)
     *start_pos = regex->offsets[2 * match_num];
@@ -1365,4 +1364,14 @@ egg_regex_escape (const char *string,
         g_string_append_len (dest, piece, end - piece);
 
     return escaped;
+}
+
+
+int
+egg_regex_get_string_number (EggRegex   *regex,
+                             const char *name)
+{
+    g_return_val_if_fail (regex != NULL, PCRE_ERROR_NULL);
+    g_return_val_if_fail (name != NULL, PCRE_ERROR_NULL);
+    return _pcre_get_stringnumber (regex->regex, name);
 }

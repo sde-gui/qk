@@ -166,6 +166,10 @@ gchar     *egg_regex_replace_eval (EggRegex              *regex,
 				   gpointer               user_data,
 				   EggRegexMatchFlags     match_options);
 
+int        egg_regex_get_string_number (EggRegex         *regex,
+                                   const char            *name);
+
+
 gchar *egg_regex_eval_replacement (EggRegex              *regex,
 				   const gchar           *string,
 				   const gchar           *replacement,
