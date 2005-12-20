@@ -81,7 +81,6 @@ mooedit_plugins_unix_sources +=               \
 endif
 
 mooedit_plugins_sources =                     \
-    $(mooedit_plugins)/activestrings.c        \
     $(mooedit_plugins)/mooeditplugins.h
 
 moo_sources += $(mooedit_plugins_sources)

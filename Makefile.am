@@ -34,9 +34,12 @@ noinst_PROGRAMS =
 moo_prefix = moo
 XML2H = $(srcdir)/moo/mooutils/xml2h.sh
 PY2H = $(srcdir)/moo/mooutils/py2h.sh
+SUBDIRS =
+
 include moo/Makefile.incl
 include moo/mooutils/Makefile.incl
 include moo/mooedit/Makefile.incl
+include moo/mooedit/plugins/activestrings/Makefile.incl
 include moo/mooterm/Makefile.incl
 include moo/mooapp/Makefile.incl
 include moo/moopython/Makefile.incl
