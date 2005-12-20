@@ -14,7 +14,9 @@ $(astrings)/as-script-yacc.h: $(astrings)/as-script-yacc.y
 	bison -d -o $(astrings_srcdir)/as-script-yacc.c $(astrings_srcdir)/as-script-yacc.y
 
 astrings_sources =                      \
-    $(astrings)/activestrings.c         \
+    $(astrings)/as-plugin.c             \
+    $(astrings)/as-plugin-script.c      \
+    $(astrings)/as-plugin-script.h      \
     $(astrings)/as-script-context.c     \
     $(astrings)/as-script-context.h     \
     $(astrings)/as-script-func.c        \

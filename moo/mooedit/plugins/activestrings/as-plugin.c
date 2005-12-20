@@ -23,6 +23,8 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/eggregex.h"
+#include "as-plugin-script.h"
+#include "as-script-parser.h"
 #include <string.h>
 
 #define AS_PLUGIN_ID "ActiveStrings"
@@ -40,6 +42,7 @@ typedef struct _ASMatch ASMatch;
 struct _ASPlugin {
     MooPlugin parent;
     ASSet *set;
+    ASContext *ctx;
 };
 
 struct _ASStringInfo {
@@ -526,6 +529,7 @@ as_plugin_init (ASPlugin   *plugin)
         info[i] = as_string_get_info (strings[i], 0, 0, i);
 
     plugin->set = as_set_new (info, N_STRINGS);
+    plugin->ctx = _as_plugin_context_new ();
 
     return TRUE;
 }
@@ -536,6 +540,8 @@ as_plugin_deinit (ASPlugin   *plugin)
 {
     as_set_unref (plugin->set);
     plugin->set = NULL;
+    g_object_unref (plugin->ctx);
+    plugin->ctx = NULL;
 }
 
 
@@ -636,7 +642,8 @@ process_match (MooEdit        *doc,
 
     g_print ("\n");
 
-    plugin = moo_doc_plugin_lookup (AS_PLUGIN_ID, doc);
+    plugin = moo_plugin_lookup (AS_PLUGIN_ID);
+    g_return_if_fail (plugin != NULL);
     as_plugin_do_action (plugin, doc, end, set, match,
                          full_text, parens_text);
 
@@ -646,14 +653,25 @@ process_match (MooEdit        *doc,
 
 
 static void
-as_plugin_do_action (G_GNUC_UNUSED ASPlugin       *plugin,
-                     G_GNUC_UNUSED MooEdit        *doc,
-                     G_GNUC_UNUSED GtkTextIter    *insert,
-                     G_GNUC_UNUSED ASSet          *set,
-                     G_GNUC_UNUSED ASMatch        *match,
-                     G_GNUC_UNUSED char           *full_text,
-                     G_GNUC_UNUSED char          **parens_text)
+as_plugin_do_action (ASPlugin       *plugin,
+                     MooEdit        *doc,
+                     GtkTextIter    *insert,
+                     G_GNUC_UNUSED ASSet *set,
+                     ASMatch        *match,
+                     char           *full_text,
+                     char          **parens_text)
 {
+    ASNode *script;
+    const char *code =
+            "print 'Hello there!';"
+            "print $0;";
+
+    script = as_script_parse (code);
+
+    _as_plugin_context_exec (plugin->ctx, script, doc, insert,
+                             full_text, parens_text, match->n_parens);
+
+    g_object_unref (script);
 }
 
 

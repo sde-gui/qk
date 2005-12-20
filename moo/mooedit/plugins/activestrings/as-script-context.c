@@ -127,7 +127,8 @@ as_context_get_positional_var (ASContext  *ctx,
 {
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (num < N_POS_VARS, NULL);
-    return ctx->positional_vars[num];
+    return ctx->positional_vars[num] ?
+            as_value_ref (ctx->positional_vars[num]) : NULL;
 }
 
 
