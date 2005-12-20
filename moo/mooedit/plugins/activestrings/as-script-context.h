@@ -33,6 +33,7 @@ typedef enum {
     AS_ERROR_NONE = 0,
     AS_ERROR_TYPE,
     AS_ERROR_VALUE,
+    AS_ERROR_NAME,
     AS_ERROR_LAST
 } ASError;
 
@@ -81,6 +82,11 @@ gboolean     as_context_set_func            (ASContext  *ctx,
 ASValue     *as_context_set_error           (ASContext  *ctx,
                                              ASError     error,
                                              const char *message);
+ASValue     *as_context_format_error        (ASContext  *ctx,
+                                             ASError     error,
+                                             const char *format,
+                                             ...);
+
 const char  *as_context_get_error_msg       (ASContext  *ctx);
 void         as_context_clear_error         (ASContext  *ctx);
 

@@ -44,13 +44,14 @@ typedef enum {
     AS_OP_GT,
     AS_OP_LE,
     AS_OP_GE,
-    AS_OP_PRINT,
+    AS_OP_FORMAT,
     AS_BINARY_OP_LAST
 } ASBinaryOp;
 
 typedef enum {
     AS_OP_UMINUS,
     AS_OP_NOT,
+    AS_OP_LEN,
     AS_UNARY_OP_LAST
 } ASUnaryOp;
 

@@ -13,6 +13,7 @@
  */
 
 #include "as-script-context.h"
+#include <glib/gprintf.h>
 
 #define N_POS_VARS 20
 
@@ -233,11 +234,56 @@ as_context_set_error (ASContext  *ctx,
                       ASError     error,
                       const char *message)
 {
+    const char *errname;
+
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (!ctx->error && error, NULL);
     g_return_val_if_fail (!ctx->error_msg, NULL);
+
     ctx->error = error;
-    ctx->error_msg = g_strdup (message);
+    errname = as_context_get_error_msg (ctx);
+
+    if (message && *message)
+        ctx->error_msg = g_strdup_printf ("%s: %s", errname, message);
+    else
+        ctx->error_msg = g_strdup (message);
+
+    return NULL;
+}
+
+
+static void
+as_context_format_error_valist (ASContext  *ctx,
+                                ASError     error,
+                                const char *format,
+                                va_list     args)
+{
+    char *buffer = NULL;
+    g_vasprintf (&buffer, format, args);
+    as_context_set_error (ctx, error, buffer);
+    g_free (buffer);
+}
+
+
+ASValue *
+as_context_format_error (ASContext  *ctx,
+                         ASError     error,
+                         const char *format,
+                         ...)
+{
+    va_list args;
+
+    g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (!ctx->error && error, NULL);
+    g_return_val_if_fail (!ctx->error_msg, NULL);
+
+    if (!format || !format[0])
+        as_context_set_error (ctx, error, NULL);
+
+    va_start (args, format);
+    as_context_format_error_valist (ctx, error, format, args);
+    va_end (args);
+
     return NULL;
 }
 
@@ -256,7 +302,7 @@ const char *
 as_context_get_error_msg (ASContext *ctx)
 {
     static const char *msgs[AS_ERROR_LAST] = {
-        NULL, "Type error", "Value error"
+        NULL, "Type error", "Value error", "Name error"
     };
 
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);

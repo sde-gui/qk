@@ -226,6 +226,7 @@ GType           as_node_if_else_get_type    (void) G_GNUC_CONST;
 GType           as_node_loop_get_type       (void) G_GNUC_CONST;
 GType           as_node_assign_get_type     (void) G_GNUC_CONST;
 GType           as_node_val_list_get_type   (void) G_GNUC_CONST;
+GType           as_node_value_get_type      (void) G_GNUC_CONST;
 
 ASValue        *as_node_eval                (ASNode     *node,
                                              ASContext  *ctx);

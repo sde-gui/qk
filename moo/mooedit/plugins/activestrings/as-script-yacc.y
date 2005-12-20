@@ -52,6 +52,7 @@
 %left OR
 %left AND
 %left NOT
+%left '#'
 %left UMINUS
 
 %%
@@ -110,11 +111,9 @@ expr:     simple_expr
         | expr '-' expr                     { $$ = BINARY_OP (AS_OP_MINUS, $1, $3); }
         | expr '/' expr                     { $$ = BINARY_OP (AS_OP_DIV, $1, $3); }
         | expr '*' expr                     { $$ = BINARY_OP (AS_OP_MULT, $1, $3); }
-        | '-' expr %prec UMINUS             { $$ = UNARY_OP (AS_OP_UMINUS, $2); }
 
         | expr AND expr                     { $$ = BINARY_OP (AS_OP_AND, $1, $3); }
         | expr OR expr                      { $$ = BINARY_OP (AS_OP_OR, $1, $3); }
-        | NOT expr                          { $$ = UNARY_OP (AS_OP_NOT, $2); }
 
         | expr EQ expr                      { $$ = BINARY_OP (AS_OP_EQ, $1, $3); }
         | expr NEQ expr                     { $$ = BINARY_OP (AS_OP_NEQ, $1, $3); }
@@ -130,7 +129,10 @@ simple_expr:
         | variable
         | '(' stmt_or_program ')'           { $$ = $2; }
         | '[' list_elms ']'                 { $$ = NODE_VALUE_LIST ($2); }
-        | simple_expr '%' simple_expr       { $$ = BINARY_OP (AS_OP_PRINT, $1, $3); }
+        | simple_expr '%' simple_expr       { $$ = BINARY_OP (AS_OP_FORMAT, $1, $3); }
+        | '#' simple_expr                   { $$ = UNARY_OP (AS_OP_LEN, $2); }
+        | NOT simple_expr                   { $$ = UNARY_OP (AS_OP_NOT, $2); }
+        | '-' simple_expr %prec UMINUS      { $$ = UNARY_OP (AS_OP_UMINUS, $2); }
 ;
 
 list_elms: /* empty */                      { $$ = NULL; }

@@ -261,7 +261,11 @@ as_node_command_eval (ASNode    *node,
     g_return_val_if_fail (cmd->name != NULL, NULL);
 
     func = as_context_get_func (ctx, cmd->name);
-    g_return_val_if_fail (func != NULL, NULL);
+
+    if (!func)
+        return as_context_format_error (ctx, AS_ERROR_NAME,
+                                        "unknown command '%s'",
+                                        cmd->name);
 
     n_args = cmd->args ? cmd->args->n_nodes : 0;
     args = NULL;
@@ -493,7 +497,8 @@ as_node_loop_times (ASNodeLoop *loop,
 
     if (!as_value_get_int (times, &n_times))
     {
-        g_warning ("could not convert valur to int");
+        as_context_format_error (ctx, AS_ERROR_TYPE,
+                                 "could not convert value to int");
         as_value_unref (times);
         return NULL;
     }
@@ -502,7 +507,8 @@ as_node_loop_times (ASNodeLoop *loop,
 
     if (n_times < 0)
     {
-        g_warning ("can't repeat negative number of times");
+        as_context_format_error (ctx, AS_ERROR_VALUE,
+                                 "can not repeat negative number of times");
         return NULL;
     }
 

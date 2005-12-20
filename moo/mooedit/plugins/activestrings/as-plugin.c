@@ -663,8 +663,10 @@ as_plugin_do_action (ASPlugin       *plugin,
 {
     ASNode *script;
     const char *code =
-            "print 'Hello there!';"
-            "print $0;";
+            "bs #$0;"
+            "ins '=== %s ===' % $0;"
+            "left #' ===';"
+            "sel -#$0;";
 
     script = as_script_parse (code);
 

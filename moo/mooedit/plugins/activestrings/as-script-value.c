@@ -232,7 +232,7 @@ const char *
 as_unary_op_name (ASUnaryOp op)
 {
     static const char *names[AS_UNARY_OP_LAST] = {
-        "@UMINUS", "@NOT"
+        "@UMINUS", "@NOT", "@LEN"
     };
 
     g_return_val_if_fail (op < AS_UNARY_OP_LAST, NULL);
@@ -462,19 +462,6 @@ as_value_print (ASValue *val)
     }
 
     g_return_val_if_reached (NULL);
-}
-
-
-#define DEFINE_STUB(name)                       \
-static ASValue *                                \
-name (ASValue *a, ASValue *b, ASContext *ctx)   \
-{                                               \
-    g_return_val_if_fail (a != NULL, NULL);     \
-    g_return_val_if_fail (b != NULL, NULL);     \
-    g_warning ("implement me");                 \
-    return as_context_set_error (ctx,           \
-                                 AS_ERROR_TYPE, \
-                                 NULL);         \
 }
 
 
@@ -851,11 +838,27 @@ func_not (ASValue *val)
 }
 
 
+static ASValue *
+func_len (ASValue    *val,
+          ASContext  *ctx)
+{
+    switch (val->type)
+    {
+        case AS_VALUE_STRING:
+            return as_value_int (strlen (val->str));
+        case AS_VALUE_LIST:
+            return as_value_int (val->list.n_elms);
+        default:
+            return as_context_set_error (ctx, AS_ERROR_TYPE, NULL);
+    }
+}
+
+
 gpointer
 as_unary_op_cfunc (ASUnaryOp op)
 {
     static gpointer funcs[AS_UNARY_OP_LAST] = {
-        func_uminus, func_not
+        func_uminus, func_not, func_len
     };
 
     g_return_val_if_fail (op < AS_UNARY_OP_LAST, NULL);
