@@ -664,6 +664,7 @@ as_plugin_do_action (ASPlugin       *plugin,
     ASNode *script;
     const char *code =
             "bs #$0;"
+            "ins '=== %s ===\\n' % $1;"
             "ins '=== %s ===' % $0;"
             "left #' ===';"
             "sel -#$0;";
