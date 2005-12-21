@@ -20,7 +20,6 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
-#include "mooutils/moocellrenderercolor.h"
 #include <string.h>
 
 

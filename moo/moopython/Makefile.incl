@@ -40,7 +40,7 @@ moopython_built_sources =                     \
     $(moopython)/moo-mod.h
 
 nodist_moopython_sources =
-moopython_cleanfiles =
+moopython_cleanfiles = $(moopython)/moo-mod.h
 
 mooedit_defs_files =                          \
     $(moopython)/mooeditor.defs               \
@@ -150,7 +150,7 @@ $(moopython)/mooapp-pygtk.c: $(moopython)/mooapp-pygtk.defs $(moopython)/mooapp-
 
 $(moopython)/moo-mod.h: $(moopython)/moo-mod.py $(PY2H)
 	mkdir -p $(moopython)
-	sh $(PY2H) MOO_PY $(moopython_srcdir)/moo-mod.py > $(moopython)/moo-mod.h
+	sh $(PY2H) MOO_PY $(moopython)/moo-mod.py > $(moopython)/moo-mod.h
 $(moopython)/mooedit-mod.h: $(moopython)/mooedit-mod.py $(PY2H)
 	mkdir -p $(moopython)
 	sh $(PY2H) MOO_EDIT_PY $(moopython_srcdir)/mooedit-mod.py > $(moopython)/mooedit-mod.h

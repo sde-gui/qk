@@ -68,31 +68,8 @@ MOO_AC_PYGTK
 # pcre
 MOO_AC_PCRE
 
-
-################################################################################
 #  Python module
-#
-AC_ARG_ENABLE([moo-module],
-  AC_HELP_STRING([--enable-moo-module], [create standalone python module 'moo' (default = YES)]),
-  [
-    if test x$enable_moo_module = "xno"; then
-        build_pymoo="no"
-    else
-        build_pymoo="yes"
-    fi
-  ], [
-    build_pymoo="yes"
-])
-
-if test x$MOO_USE_PYGTK = "xyes"; then
-    if test x$build_pymoo != "xno"; then
-        build_pymoo="yes"
-    fi
-else
-    build_pymoo="no"
-fi
-
-AM_CONDITIONAL(BUILD_PYMOO, test x$build_pymoo = "xyes")
+MOO_AC_MODULE
 
 
 ################################################################################
@@ -141,20 +118,33 @@ AM_CONDITIONAL(MOO_BUILD_UTILS,     test "x$build_mooutils"  != "xno")
 AM_CONDITIONAL(MOO_BUILD_EDIT,      test "x$build_mooedit"   != "xno")
 AM_CONDITIONAL(MOO_BUILD_TERM,      test "x$build_mooterm"   != "xno")
 AM_CONDITIONAL(MOO_BUILD_APP,       test "x$build_mooapp"    != "xno")
-AM_CONDITIONAL(MOO_BUILD_PLUGINS,   true)
+
+MOO_BUILD_UTILS=0
+MOO_BUILD_EDIT=0
+MOO_BUILD_TERM=0
+MOO_BUILD_APP=0
 
 if test "x$build_mooutils" != "xno"; then
     AC_DEFINE(MOO_BUILD_UTILS,, [build mooutils])
+    MOO_BUILD_UTILS=1
 fi
 if test "x$build_mooedit" != "xno"; then
     AC_DEFINE(MOO_BUILD_EDIT,, [build mooedit])
+    MOO_BUILD_EDIT=1
 fi
 if test "x$build_mooterm" != "xno"; then
     AC_DEFINE(MOO_BUILD_TERM,, [build mooterm])
+    MOO_BUILD_TERM=1
 fi
 if test "x$build_mooapp" != "xno"; then
     AC_DEFINE(MOO_BUILD_APP,, [build mooapp])
+    MOO_BUILD_APP=1
 fi
+
+AC_SUBST(MOO_BUILD_UTILS)
+AC_SUBST(MOO_BUILD_EDIT)
+AC_SUBST(MOO_BUILD_TERM)
+AC_SUBST(MOO_BUILD_APP)
 
 moo_top_src_dir=`cd $srcdir && pwd`
 moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
@@ -228,9 +218,10 @@ Makefile
 moo/moo-config.h
 moo/mooterm/termhelper_res.rc
 moo/mooutils/pcre/pcre.h
+moo/moopython/moo-mod.py
+moo/moo.pc
 tests/pyapp.py
 m4/Makefile
-moo.pc
 ])
 
 

@@ -76,11 +76,22 @@ initmoo (void)
     PyModule_AddObject (_moo_module, (char*)"version", moo_version());
     PyModule_AddObject (_moo_module, (char*)"detailed_version", moo_detailed_version());
 
-    if (!_moo_utils_mod_init () || !_moo_term_mod_init () ||
-         !_moo_edit_mod_init () || !_moo_app_mod_init ())
-    {
+#ifdef MOO_BUILD_UTILS
+    if (!_moo_utils_mod_init ())
         return FALSE;
-    }
+#endif
+#ifdef MOO_BUILD_TERM
+    if (!_moo_term_mod_init ())
+        return FALSE;
+#endif
+#ifdef MOO_BUILD_EDIT
+    if (!_moo_edit_mod_init ())
+        return FALSE;
+#endif
+#ifdef MOO_BUILD_APP
+    if (!_moo_app_mod_init ())
+        return FALSE;
+#endif
 
     code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);
 

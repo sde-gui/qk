@@ -90,4 +90,5 @@ moo_extra_dist += $(mooterm_extra_dist)
 if MOO_OS_CYGWIN
 noinst_PROGRAMS += termhelper
 termhelper_SOURCES = $(termhelper_sources)
+termhelper_CFLAGS =
 endif

@@ -13,7 +13,6 @@ mooutils_include_headers =                     \
     $(mooutils)/mooaction.h                    \
     $(mooutils)/mooactiongroup.h               \
     $(mooutils)/moobigpaned.h                  \
-    $(mooutils)/moocellrenderercolor.h         \
     $(mooutils)/mooclosure.h                   \
     $(mooutils)/moocmd.h                       \
     $(mooutils)/moocombo.h                     \
@@ -50,7 +49,6 @@ mooutils_sources =                             \
     $(mooutils)/mooaction.c                    \
     $(mooutils)/mooactiongroup.c               \
     $(mooutils)/moobigpaned.c                  \
-    $(mooutils)/moocellrenderercolor.c         \
     $(mooutils)/mooclosure.c                   \
     $(mooutils)/moocombo.c                     \
     $(mooutils)/moocompat.c                    \
