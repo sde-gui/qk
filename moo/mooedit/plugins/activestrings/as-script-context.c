@@ -189,19 +189,28 @@ as_context_assign_named (ASContext  *ctx,
 
     if (value)
     {
-        if (var->func)
+        if (var)
         {
-            g_object_unref (var->func);
-            var->func = NULL;
-        }
+            if (var->func)
+            {
+                g_object_unref (var->func);
+                var->func = NULL;
+            }
 
-        if (var->value != value)
+            if (var->value != value)
+            {
+                as_value_unref (var->value);
+                var->value = as_value_ref (value);
+            }
+        }
+        else
         {
-            as_value_unref (var->value);
-            var->value = as_value_ref (value);
+            var = as_variable_new_value (value);
+            as_context_set_var (ctx, name, var);
+            as_variable_unref (var);
         }
     }
-    else
+    else if (var)
     {
         as_context_set_var (ctx, name, NULL);
     }
