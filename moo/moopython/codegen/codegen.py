@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, os, string
 import getopt, traceback, keyword
 import defsparser, argtypes, override
