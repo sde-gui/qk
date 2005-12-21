@@ -103,7 +103,6 @@ struct _MooEditClass
 
     void (* filename_changed)   (MooEdit    *edit,
                                  const char *new_filename);
-    void (* lang_changed)       (MooEdit    *edit);
 
     void (* bookmarks_changed)  (MooEdit    *edit);
 

@@ -148,7 +148,7 @@ moo_edit_class_init (MooEditClass *klass)
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_FIRST,
+                          G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
                           G_STRUCT_OFFSET (MooEditClass, config_notify),
                           NULL, NULL,
                           _moo_marshal_VOID__UINT_POINTER,
@@ -881,8 +881,9 @@ config_changed (MooEdit        *edit,
                 GParamSpec     *pspec)
 {
     guint id = moo_edit_config_get_setting_id (pspec);
+    GQuark detail = g_quark_from_string (pspec->name);
     g_return_if_fail (id != 0);
-    g_signal_emit (edit, signals[CONFIG_NOTIFY], 0, id, pspec);
+    g_signal_emit (edit, signals[CONFIG_NOTIFY], detail, id, pspec);
 }
 
 
