@@ -5,19 +5,6 @@
 mooterm = $(moo_prefix)/mooterm
 mooterm_srcdir = $(srcdir)/$(mooterm)
 
-###########################################################################
-# mooterm/glade
-#
-mooterm_glade = $(mooterm)/glade
-
-moo_extra_dist +=                             \
-    $(mooterm_glade)/mootermprefs.glade
-
-
-###########################################################################
-# mooterm
-#
-
 mooterm_include_headers =                     \
     $(mooterm)/mooterm.h                      \
     $(mooterm)/mootermwindow.h                \

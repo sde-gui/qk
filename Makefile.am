@@ -36,12 +36,29 @@ XML2H = $(srcdir)/moo/mooutils/xml2h.sh
 PY2H = $(srcdir)/moo/mooutils/py2h.sh
 SUBDIRS =
 
+# common moo Makefile
 include moo/Makefile.incl
+# mooutils
 include moo/mooutils/Makefile.incl
+include moo/mooutils/glade/Makefile.incl
+include moo/mooutils/moofileview/Makefile.incl
+include moo/mooutils/newgtk/Makefile.incl
+include moo/mooutils/pcre/Makefile.incl
+include moo/mooutils/pixmaps/Makefile.incl
+include moo/mooutils/xdgmime/Makefile.incl
+# mooedit
 include moo/mooedit/Makefile.incl
+include moo/mooedit/glade/Makefile.incl
+include moo/mooedit/syntax/Makefile.incl
+include moo/mooedit/plugins/Makefile.incl
 include moo/mooedit/plugins/activestrings/Makefile.incl
+# mooterm
 include moo/mooterm/Makefile.incl
+include moo/mooterm/glade/Makefile.incl
+# mooapp
 include moo/mooapp/Makefile.incl
+include moo/mooapp/glade/Makefile.incl
+# moopython
 include moo/moopython/Makefile.incl
 
 # moo_libincludedir = $(libdir)/moo-1.0/include

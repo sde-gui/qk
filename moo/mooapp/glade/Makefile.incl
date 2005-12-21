@@ -1,0 +1,8 @@
+#
+# moo/mooapp/glade/Makefile.incl
+#
+
+mooapp_glade = $(mooapp)/glade
+
+moo_extra_dist +=                             \
+    $(mooapp_glade)/mooappabout.glade

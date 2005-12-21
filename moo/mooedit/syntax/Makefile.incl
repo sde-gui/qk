@@ -1,0 +1,26 @@
+#
+#   moo/mooedit/syntax/Makefile.incl
+#
+
+mooedit_syntax = $(mooedit)/syntax
+
+mooedit_syntaxdir = ${MOO_TEXT_LANG_FILES_DIR}
+mooedit_syntax_DATA =                         \
+    $(mooedit_syntax)/c.lang                  \
+    $(mooedit_syntax)/diff.lang               \
+    $(mooedit_syntax)/gap.lang                \
+    $(mooedit_syntax)/make.lang               \
+    $(mooedit_syntax)/misc.lang               \
+    $(mooedit_syntax)/python.lang             \
+    $(mooedit_syntax)/python-console.lang     \
+    $(mooedit_syntax)/scheme.lang             \
+    $(mooedit_syntax)/sci.lang                \
+    $(mooedit_syntax)/sh.lang                 \
+    $(mooedit_syntax)/xml.lang                \
+    $(mooedit_syntax)/garnacho.styles         \
+    $(mooedit_syntax)/gvim.styles             \
+    $(mooedit_syntax)/check.sh                \
+    $(mooedit_syntax)/language.dtd            \
+    $(mooedit_syntax)/scheme.dtd
+
+moo_extra_dist += $(mooedit_syntax_DATA)

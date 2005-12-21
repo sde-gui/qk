@@ -1,0 +1,13 @@
+#
+#   moo/mooedit/glade/Makefile.incl
+#
+
+mooedit_glade = $(mooedit)/glade
+
+moo_extra_dist +=                             \
+    $(mooedit_glade)/mootextgotoline.glade    \
+    $(mooedit_glade)/mootextfind.glade        \
+    $(mooedit_glade)/mooeditprefs.glade       \
+    $(mooedit_glade)/mooeditsavemult.glade    \
+    $(mooedit_glade)/mooeditcolorsprefs.glade \
+    $(mooedit_glade)/moopluginprefs.glade

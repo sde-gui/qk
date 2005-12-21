@@ -5,19 +5,6 @@
 mooapp = $(moo_prefix)/mooapp
 mooapp_srcdir = $(srcdir)/$(mooapp)
 
-###########################################################################
-# mooapp/glade
-#
-mooapp_glade = $(mooapp)/glade
-
-moo_extra_dist +=                             \
-    $(mooapp_glade)/mooappabout.glade
-
-
-###########################################################################
-# mooapp
-#
-
 mooapp_built_sources =                        \
     $(mooapp)/mooappabout-glade.h
 

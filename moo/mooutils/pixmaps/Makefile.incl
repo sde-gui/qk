@@ -1,0 +1,15 @@
+#
+# moo/mooutils/pixmaps/Makefile.incl
+#
+
+moopixmaps = $(mooutils)/pixmaps
+
+moo_extra_dist +=                              \
+    $(moopixmaps)/ggap.png                     \
+    $(moopixmaps)/ggap.ico                     \
+    $(moopixmaps)/gap.png                      \
+    $(moopixmaps)/close.png                    \
+    $(moopixmaps)/sticky.png                   \
+    $(moopixmaps)/detach.png                   \
+    $(moopixmaps)/attach.png                   \
+    $(moopixmaps)/keepontop.png

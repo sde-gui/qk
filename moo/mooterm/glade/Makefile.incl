@@ -1,0 +1,8 @@
+#
+#   moo/mooterm/glade/Makefile.incl
+#
+
+mooterm_glade = $(mooterm)/glade
+
+moo_extra_dist +=                             \
+    $(mooterm_glade)/mootermprefs.glade
