@@ -20,6 +20,27 @@
 G_BEGIN_DECLS
 
 
+typedef struct _ASInfo ASInfo;
+
+struct _ASInfo {
+    char *pattern;
+    char *script;
+    char *lang;
+};
+
+
+ASInfo     *_as_info_new    (const char *pattern,
+                             const char *script,
+                             const char *lang);
+void        _as_info_free   (ASInfo     *info);
+
+gboolean    _as_load_file   (const char *filename,
+                             GSList    **info);
+gboolean    _as_save        (const char *filename,
+                             GSList     *info);
+
+char       *_as_format_xml  (GSList     *info);
+
 
 G_END_DECLS
 

@@ -24,12 +24,16 @@
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/eggregex.h"
 #include "as-plugin-script.h"
+#include "as-plugin-xml.h"
 #include "as-script-parser.h"
 #include <string.h>
 
 #define AS_PLUGIN_ID "ActiveStrings"
 #define AS_DATA "moo-active-strings"
 #define AS_WILDCARD '?'
+
+#define PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID
+#define FILE_PREFS_KEY PREFS_ROOT "/file"
 
 
 typedef struct _ASPlugin ASPlugin;
@@ -41,8 +45,9 @@ typedef struct _ASMatch ASMatch;
 
 struct _ASPlugin {
     MooPlugin parent;
-    ASSet *set;
     ASContext *ctx;
+    GHashTable *lang_sets;
+    ASSet *any_lang;
 };
 
 struct _ASStringInfo {
@@ -50,6 +55,7 @@ struct _ASStringInfo {
     char *pattern;
     guint pattern_len;
     gunichar last_char;
+    char *script;
 };
 
 struct _ASString {
@@ -60,6 +66,7 @@ struct _ASString {
 
 struct _ASSet {
     ASString **strings;
+    char **scripts;
     guint n_strings;
     EggRegex *regex;
     guint ref_count;
@@ -102,7 +109,7 @@ static void     as_plugin_do_action (ASPlugin       *plugin,
 static gboolean char_inserted_cb    (MooEdit        *doc,
                                      GtkTextIter    *where,
                                      guint           character,
-                                     ASSet          *set);
+                                     GSList         *sets);
 static void     process_match       (MooEdit        *doc,
                                      GtkTextIter    *end,
                                      ASSet          *set,
@@ -118,8 +125,11 @@ static gboolean as_set_match        (ASSet          *set,
                                      const char     *text,
                                      ASMatch        *match);
 
-static void     as_match_destroy    (ASMatch        *match);
+static void     as_string_info_set_script (ASStringInfo *info,
+                                     const char     *script);
 static void     as_string_info_free (ASStringInfo   *info);
+
+static void     as_match_destroy    (ASMatch        *match);
 static ASString *as_string_new      (guint           n_wildcards);
 static void     as_string_free      (ASString       *s);
 
@@ -246,8 +256,19 @@ as_string_info_free (ASStringInfo *info)
     if (info)
     {
         g_free (info->pattern);
+        g_free (info->script);
         g_free (info);
     }
+}
+
+
+static void
+as_string_info_set_script (ASStringInfo *info,
+                           const char   *script)
+{
+    g_return_if_fail (info != NULL);
+    g_free (info->script);
+    info->script = g_strdup (script);
 }
 
 
@@ -343,6 +364,16 @@ as_set_new (ASStringInfo **strings,
     {
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
+    }
+
+    set->scripts = g_new (char*, n_strings);
+
+    for (i = 0; i < n_strings; ++i)
+    {
+        const char *script = strings[i]->script;
+
+        if (script && script[0])
+            set->scripts[i] = g_strdup (script);
     }
 
     g_qsort_with_data (last_chars, n_strings, sizeof (gunichar),
@@ -499,14 +530,19 @@ as_set_unref (ASSet *set)
 {
     guint i;
 
-    g_return_if_fail (set != NULL);
+    if (!set)
+        return;
 
     if (!--set->ref_count)
     {
-        if (set->strings)
-            for (i = 0; i < set->n_strings; ++i)
-                as_string_free (set->strings[i]);
+        for (i = 0; i < set->n_strings; ++i)
+        {
+            as_string_free (set->strings[i]);
+            g_free (set->scripts[i]);
+        }
+
         g_free (set->strings);
+        g_free (set->scripts);
         egg_regex_unref (set->regex);
         g_free (set->last_chars);
         g_free (set);
@@ -522,19 +558,145 @@ static ASSet *as_set_ref (ASSet *set)
 }
 
 
-static gboolean
-as_plugin_init (ASPlugin   *plugin)
+static void
+as_string_info_array_free (GPtrArray *ar)
 {
-#define N_STRINGS 5
-    const char *strings[N_STRINGS] = {"\\begin{?}", "\\cite{?}", "\\some{?}", "BB", "FF"};
-    ASStringInfo *info[N_STRINGS];
-    int i;
+    g_ptr_array_foreach (ar, (GFunc) as_string_info_free, NULL);
+    g_ptr_array_free (ar, TRUE);
+}
 
-    for (i = 0; i < N_STRINGS; ++i)
-        info[i] = as_string_get_info (strings[i], 0, 0, i);
 
-    plugin->set = as_set_new (info, N_STRINGS);
+static void
+add_lang_sets (const char *lang,
+               GPtrArray  *strings,
+               ASPlugin   *plugin)
+{
+    ASSet *set;
+
+    g_return_if_fail (strings && strings->len);
+
+    set = as_set_new ((ASStringInfo**) strings->pdata, strings->len);
+
+    if (set)
+        g_hash_table_insert (plugin->lang_sets, g_strdup (lang), set);
+}
+
+
+static gboolean
+is_nonblank_string (const char *string)
+{
+    if (!string)
+        return FALSE;
+
+    while (*string)
+    {
+        if (!g_ascii_isspace (*string))
+            return TRUE;
+        string++;
+    }
+
+    return FALSE;
+}
+
+
+static void
+as_plugin_load_info (ASPlugin *plugin,
+                     GSList   *list)
+{
+    GPtrArray *any_lang;
+    GHashTable *lang_strings;
+    GSList *l;
+
+    if (!list)
+        return;
+
+    any_lang = g_ptr_array_new ();
+    lang_strings = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                          (GDestroyNotify) as_string_info_array_free);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        ASInfo *info = l->data;
+        ASStringInfo *sinfo;
+        GPtrArray *ar;
+
+        if (info->lang)
+        {
+            ar = g_hash_table_lookup (lang_strings, info->lang);
+
+            if (!ar)
+            {
+                ar = g_ptr_array_new ();
+                g_hash_table_insert (lang_strings, g_strdup (info->lang), ar);
+            }
+        }
+        else
+        {
+            ar = any_lang;
+        }
+
+        sinfo = as_string_get_info (info->pattern, 0, 0, ar->len);
+
+        if (!sinfo)
+        {
+            g_warning ("%s: invalid pattern '%s'", G_STRLOC, info->pattern);
+            continue;
+        }
+
+        if (is_nonblank_string (info->script))
+        {
+            ASNode *script = as_script_parse (info->script);
+
+            if (script)
+            {
+                as_string_info_set_script (sinfo, info->script);
+                g_object_unref (script);
+            }
+        }
+
+        g_ptr_array_add (ar, sinfo);
+    }
+
+    if (any_lang->len)
+        plugin->any_lang = as_set_new ((ASStringInfo**) any_lang->pdata,
+                                        any_lang->len);
+
+    g_hash_table_foreach (lang_strings, (GHFunc) add_lang_sets, plugin);
+
+    as_string_info_array_free (any_lang);
+    g_hash_table_destroy (lang_strings);
+}
+
+
+static void
+as_plugin_load (ASPlugin *plugin)
+{
+    const char *file;
+    GSList *info = NULL;
+
+    moo_prefs_new_key_string (FILE_PREFS_KEY, NULL);
+
+    file = moo_prefs_get_filename (FILE_PREFS_KEY);
+
+    if (file)
+        _as_load_file (file, &info);
+
+    if (info)
+        as_plugin_load_info (plugin, info);
+
+    g_slist_foreach (info, (GFunc) _as_info_free, NULL);
+    g_slist_free (info);
+}
+
+
+static gboolean
+as_plugin_init (ASPlugin *plugin)
+{
+    plugin->lang_sets = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                               (GDestroyNotify) as_set_unref);
     plugin->ctx = _as_plugin_context_new ();
+
+    as_plugin_load (plugin);
 
     return TRUE;
 }
@@ -543,10 +705,86 @@ as_plugin_init (ASPlugin   *plugin)
 static void
 as_plugin_deinit (ASPlugin   *plugin)
 {
-    as_set_unref (plugin->set);
-    plugin->set = NULL;
+    as_set_unref (plugin->any_lang);
+    g_hash_table_destroy (plugin->lang_sets);
     g_object_unref (plugin->ctx);
+    plugin->any_lang = NULL;
+    plugin->lang_sets = NULL;
     plugin->ctx = NULL;
+}
+
+
+static void
+free_sets_list (GSList *list)
+{
+    g_slist_foreach (list, (GFunc) as_set_unref, NULL);
+    g_slist_free (list);
+}
+
+
+static GSList *
+as_plugin_get_doc_sets (ASPlugin   *plugin,
+                        MooEdit    *doc)
+{
+    char *lang = NULL;
+    GSList *list = NULL;
+
+    if (plugin->any_lang)
+        list = g_slist_prepend (list, as_set_ref (plugin->any_lang));
+
+    moo_edit_config_get (doc->config, "lang", &lang, NULL);
+
+    if (lang)
+    {
+        ASSet *set = g_hash_table_lookup (plugin->lang_sets, lang);
+
+        if (set)
+            list = g_slist_prepend (list, as_set_ref (set));
+    }
+
+    g_free (lang);
+    return list;
+}
+
+
+static void
+as_plugin_connect_doc (ASPlugin   *plugin,
+                       MooEdit    *doc)
+{
+    GSList *sets = as_plugin_get_doc_sets (plugin, doc);
+
+    if (sets)
+    {
+        g_object_set_data_full (G_OBJECT (doc), AS_DATA, sets,
+                                (GDestroyNotify) free_sets_list);
+        g_signal_connect (doc, "char-inserted",
+                          G_CALLBACK (char_inserted_cb), sets);
+    }
+}
+
+
+static void
+as_plugin_disconnect_doc (G_GNUC_UNUSED ASPlugin *plugin,
+                          MooEdit    *doc)
+{
+    GSList *sets = g_object_get_data (G_OBJECT (doc), AS_DATA);
+
+    if (sets)
+    {
+        g_signal_handlers_disconnect_by_func (doc, (gpointer) char_inserted_cb, sets);
+        g_object_set_data (G_OBJECT (doc), AS_DATA, NULL);
+    }
+}
+
+
+static void
+lang_changed (MooEdit    *doc,
+              G_GNUC_UNUSED guint var_id,
+              G_GNUC_UNUSED GParamSpec *pspec,
+              ASPlugin   *plugin)
+{
+    as_plugin_disconnect_doc (plugin, doc);
+    as_plugin_connect_doc (plugin, doc);
 }
 
 
@@ -554,21 +792,18 @@ static void
 as_plugin_attach (ASPlugin   *plugin,
                   MooEdit    *doc)
 {
-    ASSet *set = as_set_ref (plugin->set);
-    g_object_set_data (G_OBJECT (doc), AS_DATA, set);
-    g_signal_connect (doc, "char-inserted",
-                      G_CALLBACK (char_inserted_cb), set);
+    as_plugin_connect_doc (plugin, doc);
+    g_signal_connect (doc, "config_notify::lang",
+                      G_CALLBACK (lang_changed), plugin);
 }
 
 
 static void
-as_plugin_detach (G_GNUC_UNUSED ASPlugin *plugin,
+as_plugin_detach (ASPlugin   *plugin,
                   MooEdit    *doc)
 {
-    ASSet *set = g_object_get_data (G_OBJECT (doc), AS_DATA);
-    g_object_set_data (G_OBJECT (doc), AS_DATA, NULL);
-    g_signal_handlers_disconnect_by_func (doc, (gpointer) char_inserted_cb, set);
-    as_set_unref (set);
+    as_plugin_disconnect_doc (plugin, doc);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) lang_changed, plugin);
 }
 
 
@@ -576,32 +811,40 @@ static gboolean
 char_inserted_cb (MooEdit        *doc,
                   GtkTextIter    *where,
                   guint           character,
-                  ASSet          *set)
+                  GSList         *sets)
 {
     GtkTextIter iter;
     char *slice;
     gboolean found;
     ASMatch match;
+    GSList *l;
 
-    g_return_val_if_fail (set != NULL, FALSE);
+    g_return_val_if_fail (sets != NULL, FALSE);
 
-    if (!as_set_check_last (set, character))
-        return FALSE;
+    for (l = sets; l != NULL; l = l->next)
+    {
+        ASSet *set = l->data;
 
-    iter = *where;
-    gtk_text_iter_set_line_offset (&iter, 0);
+        if (!as_set_check_last (set, character))
+            continue;
 
-    /* get extra char here */
-    slice = gtk_text_iter_get_slice (&iter, where);
-    found = as_set_match (set, slice, &match);
-    g_free (slice);
+        iter = *where;
+        gtk_text_iter_set_line_offset (&iter, 0);
 
-    if (!found)
-        return FALSE;
+        /* get extra char here */
+        slice = gtk_text_iter_get_slice (&iter, where);
+        found = as_set_match (set, slice, &match);
+        g_free (slice);
 
-    process_match (doc, where, set, &match);
-    as_match_destroy (&match);
-    return TRUE;
+        if (!found)
+            continue;
+
+        process_match (doc, where, set, &match);
+        as_match_destroy (&match);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
@@ -661,20 +904,24 @@ static void
 as_plugin_do_action (ASPlugin       *plugin,
                      MooEdit        *doc,
                      GtkTextIter    *insert,
-                     G_GNUC_UNUSED ASSet *set,
+                     ASSet          *set,
                      ASMatch        *match,
                      char           *full_text,
                      char          **parens_text)
 {
     ASNode *script;
-    const char *code =
-            "bs #$0;"
-            "if $1 then ins '=== %s ===\\n' % $1;"
-            "ins '=== %s ===' % $0;"
-            "left #' ===';"
-            "sel -#$0;";
+    const char *code = set->scripts[match->string_no];
+
+    if (!code)
+        return;
 
     script = as_script_parse (code);
+
+    if (!script)
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return;
+    }
 
     _as_plugin_context_exec (plugin->ctx, script, doc, insert,
                              full_text, parens_text, match->n_parens);
