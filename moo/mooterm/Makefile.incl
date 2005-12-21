@@ -90,5 +90,11 @@ moo_extra_dist += $(mooterm_extra_dist)
 if MOO_OS_CYGWIN
 noinst_PROGRAMS += termhelper
 termhelper_SOURCES = $(termhelper_sources)
-termhelper_CFLAGS =
+termhelper_CFLAGS =                         \
+    -I$(top_builddir)                       \
+    -I$(top_srcdir)                         \
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
+    $(MOO_DEBUG_CFLAGS)                     \
+    $(CFLAGS)
 endif

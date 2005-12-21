@@ -1157,7 +1157,7 @@ def main(argv):
     errorfilename = None
     opts, args = getopt.getopt(argv[1:], "o:p:r:t:D:",
                         ["override=", "prefix=", "register=", "outfilename=",
-                         "load-types=", "errorfilename="])
+                         "load-types=", "errorfilename=", "platform="])
     defines = {} # -Dkey[=val] options
     for opt, arg in opts:
         if opt in ('-o', '--override'):
@@ -1174,6 +1174,8 @@ def main(argv):
             outfilename = arg
         elif opt == '--errorfilename':
             errorfilename = arg
+        elif opt == '--platform':
+            sys.platform = arg
         elif opt in ('-t', '--load-types'):
             globals = {}
             execfile(arg, globals)

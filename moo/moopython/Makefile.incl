@@ -103,10 +103,14 @@ moopython_built_sources += $(moopython)/mooapp-pygtk.c
 moopython_cleanfiles += $(moopython)/mooapp-pygtk.c
 endif MOO_BUILD_APP
 
+if MOO_OS_MINGW
+codegen_platform = --platform win32
+endif
+
 $(moopython)/mooutils-pygtk.c: $(moopython)/mooutils-pygtk.defs $(moopython)/mooutils-pygtk.override $(mooutils_override_files)
 	mkdir -p $(moopython)
 	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_utils \
+	--prefix _moo_utils $(codegen_platform) \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--override $(moopython_srcdir)/mooutils-pygtk.override \
@@ -116,7 +120,7 @@ $(moopython)/mooutils-pygtk.c: $(moopython)/mooutils-pygtk.defs $(moopython)/moo
 $(moopython)/mooterm-pygtk.c: $(moopython)/mooterm-pygtk.defs $(moopython)/mooterm-pygtk.override
 	mkdir -p $(moopython)
 	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_term \
+	--prefix _moo_term $(codegen_platform) \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooutils-pygtk.defs \
@@ -127,7 +131,7 @@ $(moopython)/mooterm-pygtk.c: $(moopython)/mooterm-pygtk.defs $(moopython)/moote
 $(moopython)/mooedit-pygtk.c: $(moopython)/mooedit-pygtk.defs $(moopython)/mooedit-pygtk.override $(mooedit_defs_files)
 	mkdir -p $(moopython)
 	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_edit \
+	--prefix _moo_edit $(codegen_platform) \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooutils-pygtk.defs \
@@ -138,7 +142,7 @@ $(moopython)/mooedit-pygtk.c: $(moopython)/mooedit-pygtk.defs $(moopython)/mooed
 $(moopython)/mooapp-pygtk.c: $(moopython)/mooapp-pygtk.defs $(moopython)/mooapp-pygtk.override
 	mkdir -p $(moopython)
 	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_app \
+	--prefix _moo_app $(codegen_platform) \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopython_srcdir)/mooedit-pygtk.defs \

@@ -15,6 +15,16 @@ headers
 #include "moopython/moo-pygtk.h"
 
 
+#ifdef __WIN32__
+GType moo_cmd_view_get_type (void)
+{
+    static int n = 0;
+    g_return_val_if_fail (!n++, 0);
+    return 0;
+}
+#endif
+
+
 %%
 modulename _moo_edit
 %%
@@ -30,6 +40,11 @@ import _moo_utils.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type
+%%
+ignore-glob-win32
+  MOO_TYPE_CMD_VIEW
+  moo_cmd_view*
+  MooCmdView
 %%
 override moo_python_plugin_hook varargs
 static PyObject *
