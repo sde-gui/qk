@@ -175,9 +175,9 @@ as_node_var_eval (ASNode    *node,
     switch (var->type)
     {
         case AS_VAR_POSITIONAL:
-            return as_context_get_positional_var (ctx, var->num);
+            return as_context_eval_positional (ctx, var->num);
         case AS_VAR_NAMED:
-            return as_context_get_named_var (ctx, var->name);
+            return as_context_eval_named (ctx, var->name);
     }
 
     g_return_val_if_reached (NULL);
@@ -260,13 +260,14 @@ as_node_command_eval (ASNode    *node,
 
     g_return_val_if_fail (cmd->name != NULL, NULL);
 
-    func = as_context_get_func (ctx, cmd->name);
+    func = as_context_lookup_func (ctx, cmd->name);
 
     if (!func)
         return as_context_format_error (ctx, AS_ERROR_NAME,
                                         "unknown command '%s'",
                                         cmd->name);
 
+    g_object_ref (func);
     n_args = cmd->args ? cmd->args->n_nodes : 0;
     args = NULL;
     ret = NULL;

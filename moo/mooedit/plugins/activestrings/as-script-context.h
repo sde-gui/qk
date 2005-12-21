@@ -28,6 +28,13 @@ G_BEGIN_DECLS
 #define AS_CONTEXT_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_CONTEXT, ASContextClass))
 
 typedef struct _ASContextClass ASContextClass;
+typedef struct _ASVariable ASVariable;
+
+struct _ASVariable {
+    guint ref_count;
+    ASValue *value;
+    ASFunc *func; /* called with no arguments */
+};
 
 typedef enum {
     AS_ERROR_NONE = 0,
@@ -60,11 +67,16 @@ struct _ASContextClass {
 
 GType        as_context_get_type            (void) G_GNUC_CONST;
 
+ASVariable  *as_variable_new_value          (ASValue    *value);
+ASVariable  *as_variable_new_func           (ASFunc     *func);
+ASVariable  *as_variable_ref                (ASVariable *var);
+void         as_variable_unref              (ASVariable *var);
+
 ASContext   *as_context_new                 (void);
 
-ASValue     *as_context_get_positional_var  (ASContext  *ctx,
+ASValue     *as_context_eval_positional     (ASContext  *ctx,
                                              guint       num);
-ASValue     *as_context_get_named_var       (ASContext  *ctx,
+ASValue     *as_context_eval_named          (ASContext  *ctx,
                                              const char *name);
 gboolean     as_context_assign_positional   (ASContext  *ctx,
                                              guint       num,
@@ -73,7 +85,13 @@ gboolean     as_context_assign_named        (ASContext  *ctx,
                                              const char *name,
                                              ASValue    *value);
 
-ASFunc      *as_context_get_func            (ASContext  *ctx,
+ASVariable  *as_context_lookup_var          (ASContext  *ctx,
+                                             const char *name);
+gboolean     as_context_set_var             (ASContext  *ctx,
+                                             const char *name,
+                                             ASVariable *var);
+
+ASFunc      *as_context_lookup_func         (ASContext  *ctx,
                                              const char *name);
 gboolean     as_context_set_func            (ASContext  *ctx,
                                              const char *name,

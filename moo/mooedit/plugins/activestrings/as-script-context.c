@@ -79,7 +79,7 @@ as_context_init (ASContext *ctx)
     ctx->funcs = g_hash_table_new_full (g_str_hash, g_str_equal,
                                         g_free, g_object_unref);
     ctx->named_vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                             (GDestroyNotify) as_value_unref);
+                                             (GDestroyNotify) as_variable_unref);
     ctx->positional_vars = g_new0 (ASValue*, N_POS_VARS);
 
     ctx->print_func = default_print_func;
@@ -123,8 +123,8 @@ as_context_new (void)
 
 
 ASValue *
-as_context_get_positional_var (ASContext  *ctx,
-                               guint       num)
+as_context_eval_positional (ASContext  *ctx,
+                            guint       num)
 {
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (num < N_POS_VARS, NULL);
@@ -134,14 +134,23 @@ as_context_get_positional_var (ASContext  *ctx,
 
 
 ASValue *
-as_context_get_named_var (ASContext  *ctx,
-                          const char *name)
+as_context_eval_named (ASContext  *ctx,
+                       const char *name)
 {
-    ASValue *value;
+    ASVariable *var;
+
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (name != NULL, NULL);
-    value = g_hash_table_lookup (ctx->named_vars, name);
-    return value ? as_value_ref (value) : as_value_none ();
+
+    var = as_context_lookup_var (ctx, name);
+
+    if (!var)
+        return as_value_none ();
+
+    if (var->value)
+        return as_value_ref (var->value);
+
+    return as_func_call (var->func, NULL, 0, ctx);
 }
 
 
@@ -171,18 +180,63 @@ as_context_assign_named (ASContext  *ctx,
                          const char *name,
                          ASValue    *value)
 {
-    ASValue *old;
+    ASVariable *var;
+
+    g_return_val_if_fail (AS_IS_CONTEXT (ctx), FALSE);
+    g_return_val_if_fail (name != NULL, FALSE);
+
+    var = as_context_lookup_var (ctx, name);
+
+    if (value)
+    {
+        if (var->func)
+        {
+            g_object_unref (var->func);
+            var->func = NULL;
+        }
+
+        if (var->value != value)
+        {
+            as_value_unref (var->value);
+            var->value = as_value_ref (value);
+        }
+    }
+    else
+    {
+        as_context_set_var (ctx, name, NULL);
+    }
+
+    return TRUE;
+}
+
+
+ASVariable *
+as_context_lookup_var (ASContext  *ctx,
+                       const char *name)
+{
+    g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+    return g_hash_table_lookup (ctx->named_vars, name);
+}
+
+
+gboolean
+as_context_set_var (ASContext  *ctx,
+                    const char *name,
+                    ASVariable *var)
+{
+    ASVariable *old;
 
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
 
     old = g_hash_table_lookup (ctx->named_vars, name);
 
-    if (value != old)
+    if (var != old)
     {
-        if (value)
+        if (var)
             g_hash_table_insert (ctx->named_vars, g_strdup (name),
-                                 as_value_ref (value));
+                                 as_variable_ref (var));
         else
             g_hash_table_remove (ctx->named_vars, name);
     }
@@ -192,14 +246,12 @@ as_context_assign_named (ASContext  *ctx,
 
 
 ASFunc *
-as_context_get_func (ASContext  *ctx,
-                     const char *name)
+as_context_lookup_func (ASContext  *ctx,
+                        const char *name)
 {
-    ASFunc *func;
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
-    func = g_hash_table_lookup (ctx->funcs, name);
-    return func ? g_object_ref (func) : NULL;
+    return g_hash_table_lookup (ctx->funcs, name);
 }
 
 
@@ -312,4 +364,66 @@ as_context_get_error_msg (ASContext *ctx)
         return ctx->error_msg;
     else
         return msgs[ctx->error];
+}
+
+
+static ASVariable *
+as_variable_new (void)
+{
+    ASVariable *var = g_new0 (ASVariable, 1);
+    var->ref_count = 1;
+    return var;
+}
+
+
+ASVariable *
+as_variable_new_value (ASValue *value)
+{
+    ASVariable *var;
+
+    g_return_val_if_fail (value != NULL, NULL);
+
+    var = as_variable_new ();
+    var->value = as_value_ref (value);
+
+    return var;
+}
+
+
+ASVariable *
+as_variable_new_func (ASFunc *func)
+{
+    ASVariable *var;
+
+    g_return_val_if_fail (AS_IS_FUNC (func), NULL);
+
+    var = as_variable_new ();
+    var->func = g_object_ref (func);
+
+    return var;
+}
+
+
+ASVariable *
+as_variable_ref (ASVariable *var)
+{
+    g_return_val_if_fail (var != NULL, NULL);
+    var->ref_count++;
+    return var;
+}
+
+
+void
+as_variable_unref (ASVariable *var)
+{
+    g_return_if_fail (var != NULL);
+
+    if (!--var->ref_count)
+    {
+        if (var->value)
+            as_value_unref (var->value);
+        if (var->func)
+            g_object_unref (var->func);
+        g_free (var);
+    }
 }
