@@ -1006,6 +1006,16 @@ moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
 
     return found ? lang : NULL;
 }
+#else /* MOO_USE_XDGMIME */
+MooLang*
+moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
+                                     const char *mime)
+{
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (mime != NULL, NULL);
+    g_warning ("%s: implement me?", G_STRLOC);
+    return NULL;
+}
 #endif /* MOO_USE_XDGMIME */
 
 
