@@ -93,26 +93,32 @@ mooedit_built_sources =                       \
 
 
 $(mooedit)/mootextgotoline-glade.h: $(mooedit_srcdir)/glade/mootextgotoline.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_TEXT_GOTO_LINE_GLADE_UI $(mooedit_srcdir)/glade/mootextgotoline.glade \
 		> $(mooedit)/mootextgotoline-glade.h
 
 $(mooedit)/mootextfind-glade.h: $(mooedit_srcdir)/glade/mootextfind.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_TEXT_FIND_GLADE_UI $(mooedit_srcdir)/glade/mootextfind.glade \
 		> $(mooedit)/mootextfind-glade.h
 
 $(mooedit)/mooeditprefs-glade.h: $(mooedit_srcdir)/glade/mooeditprefs.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_EDIT_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditprefs.glade \
 		> $(mooedit)/mooeditprefs-glade.h
 
 $(mooedit)/mooeditcolorsprefs-glade.h: $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_EDIT_COLORS_PREFS_GLADE_UI $(mooedit_srcdir)/glade/mooeditcolorsprefs.glade \
 		> $(mooedit)/mooeditcolorsprefs-glade.h
 
 $(mooedit)/moopluginprefs-glade.h: $(mooedit_srcdir)/glade/moopluginprefs.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_PLUGIN_PREFS_GLADE_UI $(mooedit_srcdir)/glade/moopluginprefs.glade \
 		> $(mooedit)/moopluginprefs-glade.h
 
 $(mooedit)/mooeditsavemultiple-glade.h: $(mooedit_srcdir)/glade/mooeditsavemult.glade $(XML2H)
+	mkdir -p $(mooedit)
 	sh $(XML2H) MOO_EDIT_SAVE_MULTIPLE_GLADE_UI $(mooedit_srcdir)/glade/mooeditsavemult.glade \
 		> $(mooedit)/mooeditsavemultiple-glade.h
 
