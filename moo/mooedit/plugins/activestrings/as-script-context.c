@@ -129,7 +129,7 @@ as_context_get_positional_var (ASContext  *ctx,
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (num < N_POS_VARS, NULL);
     return ctx->positional_vars[num] ?
-            as_value_ref (ctx->positional_vars[num]) : NULL;
+            as_value_ref (ctx->positional_vars[num]) : as_value_none ();
 }
 
 
@@ -141,7 +141,7 @@ as_context_get_named_var (ASContext  *ctx,
     g_return_val_if_fail (AS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (name != NULL, NULL);
     value = g_hash_table_lookup (ctx->named_vars, name);
-    return value ? as_value_ref (value) : NULL;
+    return value ? as_value_ref (value) : as_value_none ();
 }
 
 

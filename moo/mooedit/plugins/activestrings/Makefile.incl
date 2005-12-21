@@ -17,6 +17,8 @@ astrings_sources =                      \
     $(astrings)/as-plugin.c             \
     $(astrings)/as-plugin-script.c      \
     $(astrings)/as-plugin-script.h      \
+    $(astrings)/as-plugin-xml.c         \
+    $(astrings)/as-plugin-xml.h         \
     $(astrings)/as-script-context.c     \
     $(astrings)/as-script-context.h     \
     $(astrings)/as-script-func.c        \

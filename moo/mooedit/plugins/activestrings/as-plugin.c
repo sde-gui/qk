@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   activestrings.c
+ *   as-plugin.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -356,6 +356,11 @@ as_set_new (ASStringInfo **strings,
     set->last_chars = g_memdup (last_chars, len * sizeof (gunichar));
     set->n_last_chars = len;
 
+    g_print ("last chars:");
+    for (i = 0; i < set->n_last_chars; ++i)
+        g_print (" %c", set->last_chars[i]);
+    g_print ("\n");
+
     for (i = 0; i < n_strings; ++i)
     {
         int no;
@@ -664,7 +669,7 @@ as_plugin_do_action (ASPlugin       *plugin,
     ASNode *script;
     const char *code =
             "bs #$0;"
-            "ins '=== %s ===\\n' % $1;"
+            "if $1 then ins '=== %s ===\\n' % $1;"
             "ins '=== %s ===' % $0;"
             "left #' ===';"
             "sel -#$0;";

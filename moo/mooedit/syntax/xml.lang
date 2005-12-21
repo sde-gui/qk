@@ -142,5 +142,6 @@
     <comments>
       <multi-line start="&lt;!--" end="--&gt;"/>
     </comments>
+    <brackets>(){}[]&lt;&gt;</brackets>
   </general>
 </language>
