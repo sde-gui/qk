@@ -50,8 +50,8 @@ export STRINGS="/usr/bin/i586-mingw32msvc-strings"
 export STRIP="/usr/bin/i586-mingw32msvc-strip"
 export WINDRES="/usr/bin/i586-mingw32msvc-windres"
 
-export CFLAGS="$CFLAGS -O0 -g3 -mms-bitfields -march=i686"
-export CXXFLAGS="$CXXFLAGS -O0 -g3 -mms-bitfields -march=i686"
+export CFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
+export CXXFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
 
 export PATH=$MINGW_BIN:/usr/i586-mingw32msvc/bin:$PATH
 

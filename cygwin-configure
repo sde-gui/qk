@@ -29,8 +29,8 @@ export STRINGS="$CYGWIN_BIN_DIR/$TARGET-strings"
 export STRIP="$CYGWIN_BIN_DIR/$TARGET-strip"
 export WINDRES="$CYGWIN_BIN_DIR/$TARGET-windres"
 
-export CFLAGS="-O3 -g0 -march=i686 -mms-bitfields"
-export CXXFLAGS="-O3 -g0 -march=i686 -mms-bitfields"
+export CFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
+export CXXFLAGS="${CFLAGS:-"-O2 -g"} -mms-bitfields -march=i686"
 
 if [ "x$CONFIGURE" = "x" ]; then
     CONFIGURE="configure"
