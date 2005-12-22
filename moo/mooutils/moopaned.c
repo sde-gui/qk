@@ -1593,12 +1593,9 @@ draw_handle (MooPaned       *paned,
 {
     GtkWidget *widget = GTK_WIDGET (paned);
     GtkStateType state;
-    GdkRectangle area;
+    GdkRectangle area = {0, 0, 0, 0};
     GtkOrientation orientation = GTK_ORIENTATION_VERTICAL;
     int shadow_size = 0;
-
-    area.x = 0;
-    area.y = 0;
 
     switch (paned->priv->pane_position)
     {
