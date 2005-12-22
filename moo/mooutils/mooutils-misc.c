@@ -346,6 +346,7 @@ moo_open_url (const char *url)
 
 /* TODO TODO is it 64-bits safe? */
 /* TODO TODO rewrite all of this */
+/* TODO TODO is X needed here at all? */
 
 static void
 add_xid (GtkWindow  *window,
