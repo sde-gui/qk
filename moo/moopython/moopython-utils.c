@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooutils-python.c
+ *   moopython/moopython-utils.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -15,7 +15,7 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-#include "mooutils/mooutils-python.h"
+#include "moopython/moopython-utils.h"
 #include "mooutils/moocompat.h"
 #ifdef MOO_USE_PYGTK
 # define NO_IMPORT_PYGOBJECT

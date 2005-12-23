@@ -11,7 +11,7 @@ headers
 #include "mooedit/mootextiter.h"
 #include "mooedit/mooeditprefs.h"
 #include "moopython/mooplugin-python.h"
-#include "mooutils/mooutils-python.h"
+#include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
 

@@ -8,6 +8,8 @@ moopython_srcdir = $(srcdir)/$(moopython)
 moopython_sources =                             \
     $(moopython)/moopython.c                    \
     $(moopython)/moopython.h                    \
+    $(moopython)/moopython-utils.c              \
+    $(moopython)/moopython-utils.h              \
     $(moopython)/mooplugin-python.c             \
     $(moopython)/mooplugin-python.h
 

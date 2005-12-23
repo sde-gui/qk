@@ -10,7 +10,7 @@ headers
 #include "mooterm/mooterm-text.h"
 #include "mooterm/mootermbuffer.h"
 #include "mooterm/mooterm-prefs.h"
-#include "mooutils/mooutils-python.h"
+#include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 
 

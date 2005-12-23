@@ -17,8 +17,8 @@
 #include <glib.h>
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/pygtk/mooutils-mod.h"
+#include "moopython/moopython-utils.h"
 #include "mooutils/moostock.h"
-#include "mooutils/mooutils-python.h"
 
 
 static char *moo_utils_module_doc = (char*)"_moo_utils module.";

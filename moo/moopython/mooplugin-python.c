@@ -21,8 +21,8 @@
 #endif
 
 #include "moopython/mooplugin-python.h"
+#include "moopython/moopython-utils.h"
 #include "mooedit/mooplugin-macro.h"
-#include "mooutils/mooutils-python.h"
 
 #define PLUGIN_SUFFIX ".py"
 

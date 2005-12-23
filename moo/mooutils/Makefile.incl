@@ -36,7 +36,6 @@ mooutils_include_headers =                     \
     $(mooutils)/mooundomanager.h               \
     $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
-    $(mooutils)/mooutils-python.h              \
     $(mooutils)/moowindow.h
 
 mooutils_sources =                             \
@@ -87,23 +86,14 @@ mooutils_sources =                             \
     $(mooutils)/stock-select-all-24.h          \
     $(mooutils)/stock-terminal-24.h
 
-mooutils_python_sources =                      \
-    $(mooutils)/mooutils-python.c              \
-    $(mooutils)/mooutils-python.h
-
 mooutils_unix_sources =                        \
     $(mooutils)/moocmd.c
-
-if MOO_USE_PYTHON
-mooutils_sources += $(mooutils_python_sources)
-endif
 
 nodist_mooutils_sources =                      \
     $(mooutils)/moomarshals.c                  \
     $(mooutils)/moomarshals.h
 
 mooutils_extra_dist =                          \
-    $(mooutils_python_sources)                 \
     $(mooutils)/moomarshals.list               \
     $(mooutils)/py2h.sh                        \
     $(mooutils)/xml2h.sh

@@ -1,5 +1,5 @@
 /*
- *   mooutils/mooutils-python.h
+ *   moopython/moopython-utils.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef MOOUTILS_MOOUTILS_PYTHON_H
-#define MOOUTILS_MOOUTILS_PYTHON_H
+#ifndef __MOO_PYTHON_UTILS_H__
+#define __MOO_PYTHON_UTILS_H__
 
 #include <Python.h>
 #include <glib-object.h>
@@ -71,4 +71,4 @@ G_STMT_START {                  \
 
 G_END_DECLS
 
-#endif /* MOOUTILS_MOOUTILS_PYTHON_H */
+#endif /* __MOO_PYTHON_UTILS_H__ */
