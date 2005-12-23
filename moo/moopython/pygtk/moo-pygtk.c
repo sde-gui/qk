@@ -106,3 +106,11 @@ _moo_pygtk_init (void)
 
     return TRUE;
 }
+
+
+#ifdef MOO_PYTHON_MODULE
+void initmoo (void)
+{
+    _moo_pygtk_init ();
+}
+#endif
