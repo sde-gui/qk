@@ -920,7 +920,7 @@ moo_plugin_init_builtin (void)
 #endif
 #endif
     _moo_active_strings_plugin_init ();
-#ifdef MOO_USE_PYGTK
+#if defined(MOO_USE_PYGTK) && !defined(__WIN32__)
     _moo_python_plugin_init ();
 #endif
 }

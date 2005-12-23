@@ -92,15 +92,18 @@ err_print (void)
 static gboolean
 moo_python_api_init (void)
 {
-    static MooPyAPI moo_py_api = {
+    static MooPyAPI api = {
         incref, decref, err_print,
         run_string, run_file
     };
 
     g_return_val_if_fail (!moo_python_running(), FALSE);
 
-    if (!moo_python_init (MOO_PY_API_VERSION, &moo_py_api))
+    if (!moo_python_init (MOO_PY_API_VERSION, &api))
+    {
+        g_warning ("%s: oops", G_STRLOC);
         return FALSE;
+    }
 
     Py_Initialize ();
 
@@ -119,6 +122,8 @@ moo_python_plugin_read_file (const char *path)
     GError *error = NULL;
 
     g_return_if_fail (path != NULL);
+
+    g_message ("%s: reading %s", G_STRLOC, path);
 
     if (!g_file_get_contents (path, &content, NULL, &error))
     {
@@ -161,6 +166,8 @@ moo_python_plugin_read_dir (const char      *path)
     const char *name;
 
     g_return_if_fail (path != NULL);
+
+    g_message ("%s: reading dir %s", G_STRLOC, path);
 
     dir = g_dir_open (path, 0, NULL);
 
@@ -208,7 +215,10 @@ _moo_python_plugin_init (void)
         return FALSE;
 
     if (!_moo_pygtk_init ())
+    {
+        PyErr_Print ();
         return FALSE;
+    }
 
     moo_python_plugin_read_dirs ();
     return TRUE;
@@ -223,6 +233,15 @@ _moo_python_plugin_deinit (void)
     g_slist_free (python_plugin.plugins);
     python_plugin.plugins = NULL;
 }
+
+
+#ifdef MOO_PYTHON_PLUGIN
+gboolean MOO_PYTHON_INIT_FUNC (void)
+{
+    g_message ("%s: hi there", G_STRLOC);
+    return _moo_python_plugin_init ();
+}
+#endif
 
 
 /***************************************************************************/

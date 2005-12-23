@@ -35,19 +35,19 @@ struct _MooPyAPI {
 };
 
 
-extern MooPyAPI *_moo_py_api;
+extern MooPyAPI *moo_py_api;
 gboolean moo_python_init (guint     version,
                           MooPyAPI *api);
 
 
-#define moo_python_running() (_moo_py_api != NULL)
+#define moo_python_running() (moo_py_api != NULL)
 
-#define moo_Py_INCREF               _moo_py_api->incref
-#define moo_Py_DECREF               _moo_py_api->decref
-#define moo_PyErr_Print             _moo_py_api->err_print
+#define moo_Py_INCREF               moo_py_api->incref
+#define moo_Py_DECREF               moo_py_api->decref
+#define moo_PyErr_Print             moo_py_api->err_print
 
-#define moo_python_run_string       _moo_py_api->run_string
-#define moo_python_run_file         _moo_py_api->run_file
+#define moo_python_run_string       moo_py_api->run_string
+#define moo_python_run_file         moo_py_api->run_file
 
 
 G_END_DECLS

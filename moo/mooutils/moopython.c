@@ -14,7 +14,7 @@
 #include "mooutils/moopython.h"
 
 
-MooPyAPI *_moo_py_api = NULL;
+MooPyAPI *moo_py_api = NULL;
 
 gboolean
 moo_python_init (guint     version,
@@ -23,8 +23,8 @@ moo_python_init (guint     version,
     if (version != MOO_PY_API_VERSION)
         return FALSE;
 
-    g_return_val_if_fail (!_moo_py_api || !api, FALSE);
+    g_return_val_if_fail (!moo_py_api || !api, FALSE);
 
-    _moo_py_api = api;
+    moo_py_api = api;
     return TRUE;
 }

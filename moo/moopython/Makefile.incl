@@ -11,6 +11,11 @@ moopython_sources =                             \
     $(moopython)/mooplugin-python.c             \
     $(moopython)/mooplugin-python.h
 
+moopython_built_sources =
+moopython_nodist_sources =
+moopython_cleanfiles =
+
 if MOO_USE_PYGTK
-moo_sources += $(moopython_sources)
+if !MOO_OS_MINGW
+endif
 endif
