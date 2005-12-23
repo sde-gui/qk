@@ -218,7 +218,7 @@ Makefile
 moo/moo-config.h
 moo/mooterm/termhelper_res.rc
 moo/mooutils/pcre/pcre.h
-moo/moopython/module/moo-mod.py
+moo/moopython/pygtk/moo-mod.py
 moo/moo.pc
 tests/pyapp.py
 m4/Makefile

@@ -18,7 +18,7 @@
 #endif
 
 #include "moopython/moo-mod.h"
-#include "moopython/moo-pygtk.h"
+#include "moopython/pygtk/moo-pygtk.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
 #include <pygtk/pygtk.h>
 #include <glib.h>

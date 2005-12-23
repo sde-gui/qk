@@ -6,7 +6,7 @@ headers
 #include "pygobject.h"
 #include "mooapp/mooapp.h"
 #include "mooapp/mooapp-python.h"
-#include "moopython/moo-pygtk.h"
+#include "moopython/pygtk/moo-pygtk.h"
 
 %%
 modulename _moo_app

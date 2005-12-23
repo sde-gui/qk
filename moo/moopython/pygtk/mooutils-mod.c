@@ -15,8 +15,8 @@
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 #include <glib.h>
-#include "moopython/moo-pygtk.h"
-#include "moopython/mooutils-mod.h"
+#include "moopython/pygtk/moo-pygtk.h"
+#include "moopython/pygtk/mooutils-mod.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-python.h"
 

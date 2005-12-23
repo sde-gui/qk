@@ -61,7 +61,7 @@ include moo/mooapp/glade/Makefile.incl
 # moopython
 include moo/moopython/Makefile.incl
 include moo/moopython/codegen/Makefile.incl
-include moo/moopython/module/Makefile.incl
+include moo/moopython/pygtk/Makefile.incl
 include moo/moopython/plugins/Makefile.incl
 
 # moo_libincludedir = $(libdir)/moo-1.0/include

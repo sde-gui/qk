@@ -11,7 +11,7 @@ headers
 #include "mooterm/mootermbuffer.h"
 #include "mooterm/mooterm-prefs.h"
 #include "mooutils/mooutils-python.h"
-#include "moopython/moo-pygtk.h"
+#include "moopython/pygtk/moo-pygtk.h"
 
 
 static GdkAtom

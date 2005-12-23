@@ -1,0 +1,158 @@
+#
+# moo/moopython/Makefile.incl
+#
+
+moopygtk = $(moopython)/pygtk
+moopygtk_srcdir = $(srcdir)/$(moopygtk)
+
+moopygtk_sources =                           \
+    $(moopygtk)/moo-pygtk.c                  \
+    $(moopygtk)/moo-pygtk.h                  \
+    $(moopygtk)/mooapp-mod.h                 \
+    $(moopygtk)/mooedit-mod.h                \
+    $(moopygtk)/mooterm-mod.h                \
+    $(moopygtk)/mooutils-mod.h               \
+    $(moopygtk)/moo-mod.h
+
+moopygtk_built_sources =                     \
+    $(moopygtk)/mooapp-mod.h                 \
+    $(moopygtk)/mooedit-mod.h                \
+    $(moopygtk)/mooterm-mod.h                \
+    $(moopygtk)/mooutils-mod.h               \
+    $(moopygtk)/moo-mod.h
+
+nodist_moopygtk_sources =
+moopygtk_cleanfiles = $(moopygtk)/moo-mod.h
+
+mooedit_defs_files =                         \
+    $(moopygtk)/mooeditor.defs               \
+    $(moopygtk)/mooplugin.defs
+
+# mooutils_override_files =                    \
+#     $(moopygtk)/moowindow.override
+
+moopygtk_extra_dist =                        \
+    $(moopygtk)/moo-mod.py                   \
+    $(moopygtk)/moo-pygtk.c                  \
+    $(moopygtk)/mooapp-mod.py                \
+    $(moopygtk)/mooapp-pygtk.defs            \
+    $(moopygtk)/mooapp-pygtk.override        \
+    $(moopygtk)/mooapp-mod.c                 \
+    $(mooedit_defs_files)                    \
+    $(moopygtk)/mooedit-mod.py               \
+    $(moopygtk)/mooedit-pygtk.defs           \
+    $(moopygtk)/mooedit-pygtk.override       \
+    $(moopygtk)/mooedit-mod.c                \
+    $(moopygtk)/mooterm-mod.py               \
+    $(moopygtk)/mooterm-pygtk.defs           \
+    $(moopygtk)/mooterm-pygtk.override       \
+    $(moopygtk)/mooterm-mod.c                \
+    $(moopygtk)/mooutils-mod.py              \
+    $(moopygtk)/mooutils-pygtk.defs          \
+    $(moopygtk)/mooutils-pygtk.override      \
+    $(moopygtk)/mooutils-mod.c               \
+    $(mooutils_defs_files)                   \
+    $(mooutils_override_files)
+
+
+if MOO_BUILD_UTILS
+moopygtk_sources += $(moopygtk)/mooutils-mod.c
+nodist_moopygtk_sources += $(moopygtk)/mooutils-pygtk.c
+moopygtk_built_sources += $(moopygtk)/mooutils-pygtk.c
+moopygtk_cleanfiles += $(moopygtk)/mooutils-pygtk.c
+endif MOO_BUILD_UTILS
+
+if MOO_BUILD_TERM
+moopygtk_sources += $(moopygtk)/mooterm-mod.c
+nodist_moopygtk_sources += $(moopygtk)/mooterm-pygtk.c
+moopygtk_built_sources += $(moopygtk)/mooterm-pygtk.c
+moopygtk_cleanfiles += $(moopygtk)/mooterm-pygtk.c
+endif MOO_BUILD_TERM
+
+if MOO_BUILD_EDIT
+moopygtk_sources += $(moopygtk)/mooedit-mod.c
+nodist_moopygtk_sources += $(moopygtk)/mooedit-pygtk.c
+moopygtk_built_sources += $(moopygtk)/mooedit-pygtk.c
+moopygtk_cleanfiles += $(moopygtk)/mooedit-pygtk.c
+endif MOO_BUILD_EDIT
+
+if MOO_BUILD_APP
+moopygtk_sources += $(moopygtk)/mooapp-mod.c
+nodist_moopygtk_sources += $(moopygtk)/mooapp-pygtk.c
+moopygtk_built_sources += $(moopygtk)/mooapp-pygtk.c
+moopygtk_cleanfiles += $(moopygtk)/mooapp-pygtk.c
+endif MOO_BUILD_APP
+
+if MOO_OS_MINGW
+codegen_platform = --platform win32
+endif
+
+$(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files)
+	mkdir -p $(moopygtk)
+	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
+	--prefix _moo_utils $(codegen_platform) \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--override $(moopygtk_srcdir)/mooutils-pygtk.override \
+	--outfilename $(moopygtk)/mooutils-pygtk.c \
+	$(moopygtk_srcdir)/mooutils-pygtk.defs > $(moopygtk)/mooutils-pygtk.c
+
+$(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-pygtk.override
+	mkdir -p $(moopygtk)
+	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
+	--prefix _moo_term $(codegen_platform) \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopygtk_srcdir)/mooutils-pygtk.defs \
+	--override $(moopygtk_srcdir)/mooterm-pygtk.override \
+	--outfilename $(moopygtk)/mooterm-pygtk.c \
+	$(moopygtk_srcdir)/mooterm-pygtk.defs > $(moopygtk)/mooterm-pygtk.c
+
+$(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-pygtk.override $(mooedit_defs_files)
+	mkdir -p $(moopygtk)
+	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
+	--prefix _moo_edit $(codegen_platform) \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopygtk_srcdir)/mooutils-pygtk.defs \
+	--override $(moopygtk_srcdir)/mooedit-pygtk.override \
+	--outfilename $(moopygtk)/mooedit-pygtk.c \
+	$(moopygtk_srcdir)/mooedit-pygtk.defs > $(moopygtk)/mooedit-pygtk.c
+
+$(moopygtk)/mooapp-pygtk.c: $(moopygtk)/mooapp-pygtk.defs $(moopygtk)/mooapp-pygtk.override
+	mkdir -p $(moopygtk)
+	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
+	--prefix _moo_app $(codegen_platform) \
+	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
+	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
+	--register $(moopygtk_srcdir)/mooedit-pygtk.defs \
+	--register $(moopygtk_srcdir)/mooterm-pygtk.defs \
+	--register $(moopygtk_srcdir)/mooutils-pygtk.defs \
+	--override $(moopygtk_srcdir)/mooapp-pygtk.override \
+	--outfilename $(moopygtk)/mooapp-pygtk.c \
+	$(moopygtk_srcdir)/mooapp-pygtk.defs > $(moopygtk)/mooapp-pygtk.c
+
+$(moopygtk)/moo-mod.h: $(moopygtk)/moo-mod.py $(PY2H)
+	mkdir -p $(moopygtk)
+	sh $(PY2H) MOO_PY $(moopygtk)/moo-mod.py > $(moopygtk)/moo-mod.h
+$(moopygtk)/mooedit-mod.h: $(moopygtk)/mooedit-mod.py $(PY2H)
+	mkdir -p $(moopygtk)
+	sh $(PY2H) MOO_EDIT_PY $(moopygtk_srcdir)/mooedit-mod.py > $(moopygtk)/mooedit-mod.h
+$(moopygtk)/mooapp-mod.h: $(moopygtk)/mooapp-mod.py $(PY2H)
+	mkdir -p $(moopygtk)
+	sh $(PY2H) MOO_APP_PY $(moopygtk_srcdir)/mooapp-mod.py > $(moopygtk)/mooapp-mod.h
+$(moopygtk)/mooutils-mod.h: $(moopygtk)/mooutils-mod.py $(PY2H)
+	mkdir -p $(moopygtk)
+	sh $(PY2H) MOO_UTILS_PY $(moopygtk_srcdir)/mooutils-mod.py > $(moopygtk)/mooutils-mod.h
+$(moopygtk)/mooterm-mod.h: $(moopygtk)/mooterm-mod.py $(PY2H)
+	mkdir -p $(moopygtk)
+	sh $(PY2H) MOO_TERM_PY $(moopygtk_srcdir)/mooterm-mod.py > $(moopygtk)/mooterm-mod.h
+
+if MOO_USE_PYGTK
+moo_sources += $(moopygtk_sources)
+moo_built_sources += $(moopygtk_built_sources)
+moo_nodist_sources += $(nodist_moopygtk_sources)
+moo_cleanfiles += $(moopygtk_cleanfiles)
+endif
+
+moo_extra_dist += $(moopygtk_extra_dist)

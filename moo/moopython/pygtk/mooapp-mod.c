@@ -15,8 +15,8 @@
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 #include <glib.h>
-#include "moopython/moo-pygtk.h"
-#include "moopython/mooapp-mod.h"
+#include "moopython/pygtk/moo-pygtk.h"
+#include "moopython/pygtk/mooapp-mod.h"
 
 
 static char *moo_app_module_doc = (char*) "_moo_app module.";

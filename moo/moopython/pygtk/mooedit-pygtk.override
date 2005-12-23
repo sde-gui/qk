@@ -12,7 +12,7 @@ headers
 #include "mooedit/mooeditprefs.h"
 #include "moopython/mooplugin-python.h"
 #include "mooutils/mooutils-python.h"
-#include "moopython/moo-pygtk.h"
+#include "moopython/pygtk/moo-pygtk.h"
 
 
 #ifdef __WIN32__
