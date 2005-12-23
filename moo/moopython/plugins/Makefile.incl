@@ -1,0 +1,8 @@
+#
+# moo/moopython/plugins/Makefile.incl
+#
+
+moo_extra_dist +=                             \
+    $(moopython)/plugins/console.py           \
+    $(moopython)/plugins/pyconsole.py         \
+    $(moopython)/plugins/pystuff.py
