@@ -8,20 +8,6 @@
   (gtype-id "MOO_TYPE_APP")
 )
 
-;; (define-object Python
-;;   (in-module "Moo")
-;;   (parent "GObject")
-;;   (c-name "MooPython")
-;;   (gtype-id "MOO_TYPE_PYTHON")
-;; )
-;;
-;; (define-object PythonConsole
-;;   (in-module "Moo")
-;;   (parent "GtkWindow")
-;;   (c-name "MooPythonConsole")
-;;   (gtype-id "MOO_TYPE_PYTHON_CONSOLE")
-;; )
-
 
 ;; (define-boxed AppInfo
 ;;   (in-module "Moo")
@@ -38,54 +24,6 @@
 ;;     '("char*" "rc_file")
 ;;   )
 ;; )
-
-
-;; From mooapp-python.h
-
-(define-function python_execute_file
-  (c-name "moo_app_python_execute_file")
-  (return-type "none")
-  (parameters
-    '("GtkWindow*" "parent")
-  )
-)
-
-(define-method python_run_string
-  (of-object "MooApp")
-  (c-name "moo_app_python_run_string")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "string")
-  )
-)
-
-(define-method python_run_file
-  (of-object "MooApp")
-  (c-name "moo_app_python_run_file")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "filename")
-  )
-)
-
-(define-method get_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_get_python_console")
-  (return-type "GtkWidget*")
-)
-
-(define-method show_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_show_python_console")
-  (return-type "none")
-)
-
-(define-method hide_python_console
-  (of-object "MooApp")
-  (c-name "moo_app_hide_python_console")
-  (return-type "none")
-)
-
 
 
 ;; From mooapp.h

@@ -16,11 +16,7 @@
 #endif
 
 #ifdef MOO_USE_PYTHON
-#include <Python.h>
-#include "mooapp/moopythonconsole.h"
-#include "mooapp/mooapp-python.h"
-#include "mooapp/moopython.h"
-#include "moopython/mooplugin-python.h"
+#include "moopython/moopython.h"
 #endif
 
 #define WANT_MOO_APP_CMD_CHARS
@@ -36,6 +32,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include <string.h>
 
 
 #ifdef VERSION
@@ -52,9 +49,6 @@ gboolean initmoo (void);
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
 static MooAppOutput *moo_app_output = NULL;
-#ifdef MOO_USE_PYTHON
-static MooPython *moo_app_python = NULL;
-#endif
 
 
 struct _MooAppPrivate {
@@ -679,13 +673,14 @@ moo_app_get_rc_file_name (MooApp *app)
 
 
 #ifdef MOO_USE_PYTHON
-void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_window)
+void
+moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
 {
     GtkWidget *parent;
     const char *filename = NULL;
     FILE *file;
 
-    g_return_if_fail (moo_app_python != NULL);
+    g_return_if_fail (moo_python_running ());
 
     parent = parent_window ? GTK_WIDGET (parent_window) : NULL;
     if (!filename)
@@ -694,21 +689,25 @@ void             moo_app_python_execute_file   (G_GNUC_UNUSED GtkWindow *parent_
                                      "Choose Python Script to Execute",
                                      "python_exec_file", NULL);
 
-    if (!filename) return;
+    if (!filename)
+        return;
 
     file = fopen (filename, "r");
+
     if (!file)
     {
         moo_error_dialog (parent, "Could not open file", NULL);
     }
     else
     {
-        PyObject *res = (PyObject*)moo_python_run_file (moo_app_python, file, filename);
+        MooPyObject *res = moo_python_run_file (file, filename);
+
         fclose (file);
+
         if (res)
-            Py_XDECREF (res);
+            moo_Py_DECREF (res);
         else
-            PyErr_Print ();
+            moo_PyErr_Print ();
     }
 }
 
@@ -718,26 +717,27 @@ moo_app_python_run_file (MooApp      *app,
                          const char  *filename)
 {
     FILE *file;
-    PyObject *res;
+    MooPyObject *res;
 
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
-    g_return_val_if_fail (moo_app_python != NULL, FALSE);
+    g_return_val_if_fail (moo_python_running (), FALSE);
 
     file = fopen (filename, "r");
     g_return_val_if_fail (file != NULL, FALSE);
 
-    res = moo_python_run_file (moo_app_python, file, filename);
+    res = moo_python_run_file (file, filename);
+
     fclose (file);
 
     if (res)
     {
-        Py_XDECREF (res);
+        moo_Py_DECREF (res);
         return TRUE;
     }
     else
     {
-        PyErr_Print ();
+        moo_PyErr_Print ();
         return FALSE;
     }
 }
@@ -747,51 +747,24 @@ gboolean
 moo_app_python_run_string (MooApp      *app,
                            const char  *string)
 {
-    PyObject *res;
+    MooPyObject *res;
 
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
     g_return_val_if_fail (string != NULL, FALSE);
-    g_return_val_if_fail (moo_app_python != NULL, FALSE);
+    g_return_val_if_fail (moo_python_running (), FALSE);
 
-    res = moo_python_run_string (moo_app_python, string, FALSE);
+    res = moo_python_run_string (string, FALSE);
 
     if (res)
     {
-        Py_XDECREF (res);
+        moo_Py_DECREF (res);
         return TRUE;
     }
     else
     {
-        PyErr_Print ();
+        moo_PyErr_Print ();
         return FALSE;
     }
-}
-
-
-GtkWidget*
-moo_app_get_python_console (MooApp *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    g_return_val_if_fail (moo_app_python != NULL, NULL);
-    return moo_python_get_console (moo_app_python);
-}
-
-
-void
-moo_app_show_python_console (MooApp *app)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (moo_app_python != NULL);
-    gtk_window_present (GTK_WINDOW (moo_app_get_python_console (app)));
-}
-
-
-void
-moo_app_hide_python_console (MooApp *app)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (moo_app_python != NULL);
-    gtk_widget_hide (moo_app_get_python_console (app));
 }
 
 
@@ -1062,10 +1035,9 @@ start_python (G_GNUC_UNUSED MooApp *app)
     {
         G_GNUC_UNUSED char **plugin_dirs;
 
-        moo_app_python = moo_python_new (app->priv->use_python_console);
-        moo_python_start (moo_app_python,
-                          strv_length (app->priv->argv),
+        moo_python_start (strv_length (app->priv->argv),
                           app->priv->argv);
+
 #ifdef MOO_USE_PYGTK
         if (initmoo ())
         {
@@ -1076,15 +1048,9 @@ start_python (G_GNUC_UNUSED MooApp *app)
         }
         else
         {
-            PyErr_Print ();
+            moo_PyErr_Print ();
         }
 #endif
-    }
-    else
-    {
-        moo_app_python = moo_python_get_instance ();
-        if (moo_app_python)
-            g_object_ref (moo_app_python);
     }
 #endif /* !MOO_USE_PYTHON */
 }
@@ -1217,12 +1183,8 @@ static void     moo_app_quit_real       (MooApp         *app)
     }
 
 #ifdef MOO_USE_PYTHON
-    if (moo_app_python)
-    {
-        moo_python_shutdown (moo_app_python);
-        g_object_unref (moo_app_python);
-        moo_app_python = NULL;
-    }
+    if (moo_python_running ())
+        moo_python_shutdown ();
 #endif
 
     list = g_slist_copy (app->priv->terminals);

@@ -5,12 +5,14 @@
 moopython = $(moo_prefix)/moopython
 moopython_srcdir = $(srcdir)/$(moopython)
 
-mooplugin_python_sources =                      \
+moopython_sources =                             \
+    $(moopython)/moopython.c                    \
+    $(moopython)/moopython.h                    \
     $(moopython)/mooplugin-python.c             \
     $(moopython)/mooplugin-python.h
 
 if MOO_USE_PYGTK
-moo_sources += $(mooplugin_python_sources)
+moo_sources += $(moopython_sources)
 endif
 
-moo_extra_dist += $(mooplugin_python_sources)
+moo_extra_dist += $(moopython_sources)

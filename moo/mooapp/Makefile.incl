@@ -23,20 +23,8 @@ mooapp_sources =                              \
     $(mooapp)/mooappoutput.c                  \
     $(mooapp)/mooappoutput.h
 
-mooapp_python_sources =                       \
-    $(mooapp)/mooapp-python.h                 \
-    $(mooapp)/moopythonconsole.c              \
-    $(mooapp)/moopythonconsole.h              \
-    $(mooapp)/moopython.c                     \
-    $(mooapp)/moopython.h
-
-if MOO_USE_PYTHON
-mooapp_sources += $(mooapp_python_sources)
-endif MOO_USE_PYTHON
-
 mooapp_extra_dist =                           \
-    $(mooapp)/gpl                             \
-    $(mooapp_python_sources)
+    $(mooapp)/gpl
 
 $(mooapp)/mooappabout-glade.h: $(mooapp_srcdir)/glade/mooappabout.glade $(XML2H)
 	mkdir -p $(mooapp)
