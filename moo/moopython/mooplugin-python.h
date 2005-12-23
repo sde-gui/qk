@@ -15,22 +15,16 @@
 #ifndef __MOO_PLUGIN_PYTHON_H__
 #define __MOO_PLUGIN_PYTHON_H__
 
-#include <Python.h>
-#include "mooedit/mooplugin.h"
+#include <glib.h>
 
 G_BEGIN_DECLS
 
 
-void        _moo_python_plugin_init         (char      **dirs);
-void        _moo_python_plugin_deinit       (void);
-void        _moo_python_plugin_reload       (void);
+gboolean  _moo_python_plugin_init (void);
 
-PyObject   *_moo_python_plugin_hook         (const char *event,
-                                             PyObject   *callback,
-                                             PyObject   *data);
-PyObject   *_moo_python_plugin_register     (PyObject   *plugin_type,
-                                             PyObject   *win_plugin_type,
-                                             PyObject   *doc_plugin_type);
+gpointer  _moo_python_plugin_register   (gpointer   py_plugin_type,
+                                         gpointer   py_win_plugin_type,
+                                         gpointer   py_doc_plugin_type);
 
 
 G_END_DECLS

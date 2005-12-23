@@ -93,45 +93,12 @@ if MOO_OS_UNIX
 libmoo_sources += $(moo_unix_sources)
 endif
 
-if !MOO_OS_CYGWIN
-if MOO_BUILD_LIB
-# libmoo_1_0_la_LDFLAGS = $(libmoo_ldflags)
-# libmoo_1_0_la_SOURCES = $(libmoo_sources)
-# nodist_libmoo_1_0_la_SOURCES = $(nodist_libmoo_sources)
-endif
-endif
-
 EXTRA_DIST +=            \
 $(moo_sources)           \
 $(moo_win32_sources)     \
 $(moo_unix_sources)      \
 $(moo_built_sources)     \
 $(moo_extra_dist)
-
-
-##############################################################################
-# moo module
-#
-if BUILD_PYMOO
-
-# pyexec_LTLIBRARIES = moo.la
-#
-# moo_la_SOURCES = $(libmoo_sources)
-# nodist_moo_la_SOURCES = $(nodist_libmoo_sources)
-#
-# if MOO_OS_MINGW
-# mingw_flags = -no-undefined
-# endif MOO_OS_MINGW
-#
-# moo_la_LDFLAGS = -module -avoid-version -no-undefined -export-symbols-regex "initmoo"
-#
-# moo_la_LIBADD =         \
-#     $(GTK_LIBS)         \
-#     $(XML_LIBS)         \
-#     $(PYTHON_LDFLAGS)   \
-#     $(PYTHON_EXTRA_LIBS)
-
-endif BUILD_PYMOO
 
 
 ##############################################################################

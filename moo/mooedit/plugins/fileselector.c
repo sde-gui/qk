@@ -1158,7 +1158,7 @@ MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
 
 
 gboolean
-moo_file_selector_plugin_init (void)
+_moo_file_selector_plugin_init (void)
 {
     return moo_plugin_register (file_selector_plugin_get_type ());
 }

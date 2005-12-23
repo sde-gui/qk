@@ -22,131 +22,90 @@
 
 #include "moopython/mooplugin-python.h"
 #include "moopython/moopython-utils.h"
+#include "moopython/moopython.h"
+#include "moopython/pygtk/moo-pygtk.h"
 #include "mooedit/mooplugin-macro.h"
 
 #define PLUGIN_SUFFIX ".py"
 
-typedef enum {
-    HOOK_NEW_WINDOW = 0,
-    HOOK_CLOSE_WINDOW,
-    HOOK_NEW_DOC,
-    HOOK_CLOSE_DOC,
-    HOOK_LAST
-} HookType;
-
-typedef struct {
-    HookType type;
-    PyObject *callback;
-    PyObject *data;
-} Hook;
-
 typedef struct _MooPyPluginData MooPyPluginData;
 
 typedef struct {
-    char **dirs;
-    GHashTable *hook_ids;
-    GSList *hooks[HOOK_LAST];
-    int last_id;
     GSList *plugins; /* MooPyPluginInfo* */
 } MooPythonPlugin;
 
 static MooPythonPlugin python_plugin;
+static PyObject *main_mod;
 
-
-static Hook     *hook_new                       (HookType            type,
-                                                 PyObject           *callback,
-                                                 PyObject           *data);
-static void      hook_free                      (Hook               *hook);
-
-static PyObject *moo_python_plugin_add_hook     (MooPythonPlugin    *plugin,
-                                                 HookType            type,
-                                                 PyObject           *callback,
-                                                 PyObject           *data);
-static void      moo_python_plugin_remove_hook  (MooPythonPlugin    *plugin,
-                                                 int                 id);
 
 static void      moo_py_plugin_delete           (MooPyPluginData    *data);
 
 
-static void
-call_hooks (MooPythonPlugin *plugin,
-            MooEditWindow   *window,
-            MooEdit         *doc,
-            HookType         type)
+static MooPyObject*
+run_string (const char *str)
 {
-    GSList *l;
-    PyObject *py_win, *py_doc;
+    PyObject *dict;
+    g_return_val_if_fail (str != NULL, NULL);
+    dict = PyModule_GetDict (main_mod);
+    return (MooPyObject*) PyRun_String (str, Py_file_input, dict, dict);
+}
 
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (!doc || MOO_IS_EDIT (doc));
-    g_return_if_fail (type < HOOK_LAST);
 
-    py_win = pygobject_new (G_OBJECT (window));
-    py_doc = doc ? pygobject_new (G_OBJECT (doc)) : NULL;
+static MooPyObject*
+run_file (gpointer    fp,
+          const char *filename)
+{
+    PyObject *dict;
+    g_return_val_if_fail (fp != NULL && filename != NULL, NULL);
+    dict = PyModule_GetDict (main_mod);
+    return (MooPyObject*) PyRun_File (fp, filename, Py_file_input, dict, dict);
+}
 
-    for (l = plugin->hooks[type]; l != NULL; l = l->next)
+
+static MooPyObject*
+incref (MooPyObject *obj)
+{
+    if (obj)
     {
-        PyObject *result;
-        Hook *hook = l->data;
-
-        PyTuple_SET_ITEM (hook->data, 0, py_win);
-        if (py_doc)
-            PyTuple_SET_ITEM (hook->data, 1, py_doc);
-
-        result = PyObject_Call (hook->callback, hook->data, NULL);
-
-        PyTuple_SET_ITEM (hook->data, 0, NULL);
-        if (py_doc)
-            PyTuple_SET_ITEM (hook->data, 1, NULL);
-
-        if (result)
-        {
-            Py_DECREF (result);
-        }
-        else
-        {
-            PyErr_Print ();
-        }
+        Py_INCREF ((PyObject*) obj);
     }
 
-    Py_XDECREF (py_win);
-    Py_XDECREF (py_doc);
+    return obj;
+}
+
+static void
+decref (MooPyObject *obj)
+{
+    if (obj)
+    {
+        Py_DECREF ((PyObject*) obj);
+    }
+}
+
+static void
+err_print (void)
+{
+    PyErr_Print ();
 }
 
 
-void
-_moo_python_attach_win (MooEditWindow *window)
+static gboolean
+moo_python_api_init (void)
 {
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    call_hooks (&python_plugin, window, NULL, HOOK_NEW_WINDOW);
-}
+    static MooPyAPI moo_py_api = {
+        incref, decref, err_print,
+        run_string, run_file
+    };
 
+    g_return_val_if_fail (!moo_python_running(), FALSE);
+    moo_python_init (&moo_py_api);
 
-void
-_moo_python_detach_win (MooEditWindow *window)
-{
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    call_hooks (&python_plugin, window, NULL, HOOK_CLOSE_WINDOW);
-}
+    Py_Initialize ();
 
+    main_mod = PyImport_AddModule ((char*)"__main__");
+    Py_XINCREF ((PyObject*) main_mod);
 
-void
-_moo_python_attach_doc (MooEditWindow   *window,
-                        MooEdit         *doc)
-{
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    call_hooks (&python_plugin, window, doc, HOOK_NEW_DOC);
-}
-
-
-void
-_moo_python_detach_doc (MooEditWindow   *window,
-                        MooEdit         *doc)
-{
-    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    call_hooks (&python_plugin, window, doc, HOOK_CLOSE_DOC);
+    return TRUE;
 }
 
 
@@ -228,193 +187,39 @@ moo_python_plugin_read_dir (const char      *path)
 
 
 static void
-moo_python_plugin_read_dirs (char **dirs)
+moo_python_plugin_read_dirs ()
 {
-    for ( ; dirs && *dirs; ++dirs)
-        moo_python_plugin_read_dir (*dirs);
-}
+    char **d;
+    char **dirs = moo_get_plugin_dirs ();
 
+    for (d = dirs; d && *d; ++d)
+        moo_python_plugin_read_dir (*d);
 
-void
-_moo_python_plugin_init (char **dirs)
-{
-    if (!python_plugin.hook_ids)
-        python_plugin.hook_ids = g_hash_table_new (g_direct_hash, g_direct_equal);
-    if (python_plugin.dirs)
-        g_strfreev (python_plugin.dirs);
-    python_plugin.dirs = g_strdupv (dirs);
-    moo_python_plugin_read_dirs (dirs);
-}
-
-
-void
-_moo_python_plugin_reload (void)
-{
-    char **dirs = python_plugin.dirs;
-    python_plugin.dirs = NULL;
-    _moo_python_plugin_deinit ();
-    _moo_python_plugin_init (dirs);
     g_strfreev (dirs);
 }
 
 
-static void
-prepend_id (gpointer id,
-            G_GNUC_UNUSED gpointer hook,
-            GSList **list)
+gboolean
+_moo_python_plugin_init (void)
 {
-    *list = g_slist_prepend (*list, id);
+    if (!moo_python_api_init ())
+        return FALSE;
+
+    if (!_moo_pygtk_init ())
+        return FALSE;
+
+    moo_python_plugin_read_dirs ();
+    return TRUE;
 }
+
 
 void
 _moo_python_plugin_deinit (void)
 {
-    GSList *ids = NULL, *l;
-
-    g_return_if_fail (python_plugin.hook_ids != NULL);
-    g_hash_table_foreach (python_plugin.hook_ids, (GHFunc) prepend_id, &ids);
-
-    for (l = ids; l != NULL; l = l->next)
-        moo_python_plugin_remove_hook (&python_plugin, GPOINTER_TO_INT (l->data));
-
-    g_hash_table_destroy (python_plugin.hook_ids);
-    python_plugin.hook_ids = NULL;
-    g_slist_free (ids);
-
+    /* XXX */
     g_slist_foreach (python_plugin.plugins, (GFunc) moo_py_plugin_delete, NULL);
     g_slist_free (python_plugin.plugins);
     python_plugin.plugins = NULL;
-}
-
-
-static PyObject*
-moo_python_plugin_add_hook (MooPythonPlugin *plugin,
-                            HookType         type,
-                            PyObject        *callback,
-                            PyObject        *data)
-{
-    int id = ++plugin->last_id;
-    Hook *hook = hook_new (type, callback, data);
-    plugin->hooks[type] = g_slist_prepend (plugin->hooks[type], hook);
-    g_hash_table_insert (plugin->hook_ids, GINT_TO_POINTER (id), hook);
-    return_Int (id);
-}
-
-
-PyObject*
-_moo_python_plugin_hook (const char *event,
-                         PyObject   *callback,
-                         PyObject   *data)
-{
-    PyObject *result;
-
-    if (!strcmp (event, "new-window"))
-        result = moo_python_plugin_add_hook (&python_plugin, HOOK_NEW_WINDOW, callback, data);
-    else if (!strcmp (event, "close-window"))
-        result = moo_python_plugin_add_hook (&python_plugin, HOOK_CLOSE_WINDOW, callback, data);
-    else if (!strcmp (event, "new-doc"))
-        result = moo_python_plugin_add_hook (&python_plugin, HOOK_NEW_DOC, callback, data);
-    else if (!strcmp (event, "close-doc"))
-        result = moo_python_plugin_add_hook (&python_plugin, HOOK_CLOSE_DOC, callback, data);
-    else
-        return_TypeErr ("invalid event type");
-
-    return result;
-}
-
-
-static Hook*
-hook_new (HookType    type,
-          PyObject   *callback,
-          PyObject   *data)
-{
-    int data_len, extra = 0, i;
-    Hook *hook = g_new0 (Hook, 1);
-
-    hook->type = type;
-    hook->callback = callback;
-    Py_INCREF (callback);
-
-    data_len = data ? PyTuple_GET_SIZE (data) : 0;
-
-    switch (type)
-    {
-        case HOOK_NEW_WINDOW:
-        case HOOK_CLOSE_WINDOW:
-            extra = 1;
-            break;
-        case HOOK_NEW_DOC:
-        case HOOK_CLOSE_DOC:
-            extra = 2;
-            break;
-        case HOOK_LAST:
-            g_return_val_if_reached (NULL);
-    }
-
-    hook->data = PyTuple_New (data_len + extra);
-
-    for (i = 0; i < data_len; ++i)
-    {
-        PyTuple_SET_ITEM (hook->data, i + extra,
-                          PyTuple_GET_ITEM (data, i));
-        Py_INCREF (PyTuple_GET_ITEM (data, i));
-    }
-
-    return hook;
-}
-
-
-static void
-moo_python_plugin_remove_hook (MooPythonPlugin    *plugin,
-                               int                 id)
-{
-    Hook *hook;
-
-    g_return_if_fail (id > 0);
-
-    hook = g_hash_table_lookup (plugin->hook_ids, GINT_TO_POINTER (id));
-    g_return_if_fail (hook != NULL);
-
-    plugin->hooks[hook->type] = g_slist_remove (plugin->hooks[hook->type], hook);
-    g_hash_table_remove (plugin->hook_ids, GINT_TO_POINTER (id));
-
-    hook_free (hook);
-}
-
-
-static void
-hook_free (Hook *hook)
-{
-    if (hook)
-    {
-        int i, extra = 0;
-
-        switch (hook->type)
-        {
-            case HOOK_NEW_WINDOW:
-            case HOOK_CLOSE_WINDOW:
-                extra = 1;
-                break;
-            case HOOK_NEW_DOC:
-            case HOOK_CLOSE_DOC:
-                extra = 2;
-                break;
-            case HOOK_LAST:
-                g_critical ("%s: oops", G_STRLOC);
-                extra = 0;
-                break;
-        }
-
-        for (i = 0; i < extra; ++i)
-        {
-            PyTuple_SET_ITEM (hook->data, i, Py_None);
-            Py_INCREF (Py_None);
-        }
-
-        Py_XDECREF (hook->callback);
-        Py_XDECREF (hook->data);
-        g_free (hook);
-    }
 }
 
 
@@ -596,10 +401,10 @@ moo_py_plugin_finalize (GObject *object)
 }
 
 
-PyObject*
-_moo_python_plugin_register (PyObject   *py_plugin_type,
-                             PyObject   *py_win_plugin_type,
-                             PyObject   *py_doc_plugin_type)
+gpointer
+_moo_python_plugin_register (gpointer py_plugin_type,
+                             gpointer py_win_plugin_type,
+                             gpointer py_doc_plugin_type)
 {
     char *plugin_type_name = NULL;
     static GTypeInfo plugin_type_info;
@@ -607,9 +412,9 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
     int i;
 
     g_return_val_if_fail (py_plugin_type != NULL, NULL);
-    g_return_val_if_fail (PyType_Check (py_plugin_type), NULL);
-    g_return_val_if_fail (!py_win_plugin_type || PyType_Check (py_win_plugin_type), NULL);
-    g_return_val_if_fail (!py_doc_plugin_type || PyType_Check (py_doc_plugin_type), NULL);
+    g_return_val_if_fail (PyType_Check ((PyObject*) py_plugin_type), NULL);
+    g_return_val_if_fail (!py_win_plugin_type || PyType_Check ((PyObject*) py_win_plugin_type), NULL);
+    g_return_val_if_fail (!py_doc_plugin_type || PyType_Check ((PyObject*) py_doc_plugin_type), NULL);
 
     for (i = 0; i < 1000; ++i)
     {
@@ -627,9 +432,9 @@ _moo_python_plugin_register (PyObject   *py_plugin_type,
     class_data->py_plugin_type = py_plugin_type;
     class_data->py_win_plugin_type = py_win_plugin_type;
     class_data->py_doc_plugin_type = py_doc_plugin_type;
-    Py_XINCREF (py_plugin_type);
-    Py_XINCREF (py_win_plugin_type);
-    Py_XINCREF (py_doc_plugin_type);
+    Py_XINCREF ((PyObject*) py_plugin_type);
+    Py_XINCREF ((PyObject*) py_win_plugin_type);
+    Py_XINCREF ((PyObject*) py_doc_plugin_type);
 
     plugin_type_info.class_size = sizeof (MooPyPluginClass);
     plugin_type_info.class_init = (GClassInitFunc) moo_py_plugin_class_init;

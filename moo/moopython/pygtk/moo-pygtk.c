@@ -59,7 +59,7 @@ func_init_pygobject (void)
 }
 
 gboolean
-initmoo (void)
+_moo_pygtk_init (void)
 {
     PyObject *_moo_module, *code, *moo_mod;
 

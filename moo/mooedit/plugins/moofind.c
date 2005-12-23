@@ -909,7 +909,7 @@ MOO_PLUGIN_DEFINE_FULL (Find, find,
 
 
 gboolean
-moo_find_plugin_init (void)
+_moo_find_plugin_init (void)
 {
     return moo_plugin_register (find_plugin_get_type ());
 }

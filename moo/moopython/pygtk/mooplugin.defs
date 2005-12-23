@@ -1,12 +1,3 @@
-(define-function hook
-  (c-name "moo_python_plugin_hook")
-  (return-type "guint")
-  (parameters
-    '("const-char*" "event")
-    '("const-char*" "dummy")
-  )
-)
-
 (define-function plugin_register
   (c-name "moo_python_plugin_register")
   (return-type "none")

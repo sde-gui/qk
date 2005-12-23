@@ -942,7 +942,7 @@ MOO_PLUGIN_DEFINE_FULL (AS, as,
 
 
 gboolean
-moo_active_strings_plugin_init (void)
+_moo_active_strings_plugin_init (void)
 {
     return moo_plugin_register (as_plugin_get_type ());
 }

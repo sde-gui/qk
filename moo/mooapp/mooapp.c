@@ -15,10 +15,6 @@
 #include "config.h"
 #endif
 
-#ifdef MOO_USE_PYTHON
-#include "moopython/moopython.h"
-#endif
-
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooapp-private.h"
 #include "mooapp/mooappinput.h"
@@ -27,6 +23,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "moopython/moopython.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
@@ -40,10 +37,6 @@
 #else
 #define APP_VERSION "<uknown version>"
 #endif
-
-
-/* moo-pygtk.c */
-gboolean initmoo (void);
 
 
 static MooApp *moo_app_instance = NULL;
@@ -74,8 +67,6 @@ struct _MooAppPrivate {
     gboolean    use_terminal;
 
     char       *tmpdir;
-
-    gboolean    use_python_console;
 
     gboolean    new_app;
     char      **open_files;
@@ -127,11 +118,8 @@ static void     moo_app_set_description (MooApp             *app,
 
 static void     all_editors_closed      (MooApp             *app);
 
-static void     start_python            (MooApp             *app);
 static void     start_io                (MooApp             *app);
-#ifdef MOO_USE_PYTHON
 static void     execute_selection       (MooEditWindow      *window);
-#endif
 
 
 static GObjectClass *moo_app_parent_class;
@@ -176,7 +164,6 @@ enum {
     PROP_RUN_OUTPUT,
     PROP_USE_EDITOR,
     PROP_USE_TERMINAL,
-    PROP_USE_PYTHON_CONSOLE,
     PROP_OPEN_FILES,
     PROP_NEW_APP
 };
@@ -294,14 +281,6 @@ moo_app_class_init (MooAppClass *klass)
                                              "use-terminal",
                                              "use-terminal",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_USE_PYTHON_CONSOLE,
-                                     g_param_spec_boolean ("use-python-console",
-                                             "use-python-console",
-                                             "use-python-console",
-                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
@@ -505,10 +484,6 @@ moo_app_set_property (GObject        *object,
             app->priv->use_terminal = g_value_get_boolean (value);
             break;
 
-        case PROP_USE_PYTHON_CONSOLE:
-            app->priv->use_python_console = g_value_get_boolean (value);
-            break;
-
         case PROP_NEW_APP:
             app->priv->new_app = g_value_get_boolean (value);
             break;
@@ -672,7 +647,6 @@ moo_app_get_rc_file_name (MooApp *app)
 }
 
 
-#ifdef MOO_USE_PYTHON
 void
 moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
 {
@@ -753,7 +727,7 @@ moo_app_python_run_string (MooApp      *app,
     g_return_val_if_fail (string != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    res = moo_python_run_string (string, FALSE);
+    res = moo_python_run_string (string);
 
     if (res)
     {
@@ -766,23 +740,6 @@ moo_app_python_run_string (MooApp      *app,
         return FALSE;
     }
 }
-
-
-static guint strv_length (char **argv)
-{
-    guint len = 0;
-    char **c;
-
-    if (!argv)
-        return 0;
-
-    for (c = argv; *c != NULL; ++c)
-        ++len;
-
-    return len;
-}
-#endif /* !MOO_USE_PYTHON */
-
 
 MooEditor       *moo_app_get_editor            (MooApp          *app)
 {
@@ -969,8 +926,9 @@ moo_app_init_real (MooApp *app)
                                   app);
 
         plugin_dirs = moo_app_get_plugin_dirs (app);
+        moo_set_plugin_dirs (plugin_dirs);
         moo_plugin_init_builtin ();
-        moo_plugin_read_dirs (plugin_dirs);
+        moo_plugin_read_dirs ();
 
         g_strfreev (plugin_dirs);
         g_free (lang_dir);
@@ -986,7 +944,6 @@ moo_app_init_real (MooApp *app)
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
 
-    start_python (app);
     start_io (app);
 
     return TRUE;
@@ -997,63 +954,27 @@ exit:
 }
 
 
-#ifdef MOO_USE_PYTHON
-static void
-reload_python_plugins (void)
-{
-    _moo_python_plugin_reload ();
-}
-
-static void
-add_python_plugin_actions (MooApp *app)
-{
-    MooUIXML *xml;
-    MooWindowClass *klass;
-
-    klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    moo_window_class_new_action (klass, "ReloadPythonPlugins",
-                                 "name", "Reload Python Plugins",
-                                 "label", "Reload Python Plugins",
-                                 "icon-stock-id", GTK_STOCK_REFRESH,
-                                 "closure-callback", reload_python_plugins,
-                                 NULL);
-
-    xml = moo_app_get_ui_xml (app);
-    moo_ui_xml_add_item (xml, moo_ui_xml_new_merge_id (xml),
-                         "ToolsMenu", "ReloadPythonPlugins",
-                         "ReloadPythonPlugins", -1);
-
-    g_type_class_unref (klass);
-}
-#endif /* MOO_USE_PYTHON */
-
-static void
-start_python (G_GNUC_UNUSED MooApp *app)
-{
-#ifdef MOO_USE_PYTHON
-    if (app->priv->run_python)
-    {
-        G_GNUC_UNUSED char **plugin_dirs;
-
-        moo_python_start (strv_length (app->priv->argv),
-                          app->priv->argv);
-
-#ifdef MOO_USE_PYGTK
-        if (initmoo ())
-        {
-            plugin_dirs = moo_app_get_plugin_dirs (app);
-            _moo_python_plugin_init (plugin_dirs);
-            g_strfreev (plugin_dirs);
-            add_python_plugin_actions (app);
-        }
-        else
-        {
-            moo_PyErr_Print ();
-        }
-#endif
-    }
-#endif /* !MOO_USE_PYTHON */
-}
+// static void
+// add_python_plugin_actions (MooApp *app)
+// {
+//     MooUIXML *xml;
+//     MooWindowClass *klass;
+//
+//     klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+//     moo_window_class_new_action (klass, "ReloadPythonPlugins",
+//                                  "name", "Reload Python Plugins",
+//                                  "label", "Reload Python Plugins",
+//                                  "icon-stock-id", GTK_STOCK_REFRESH,
+//                                  "closure-callback", reload_python_plugins,
+//                                  NULL);
+//
+//     xml = moo_app_get_ui_xml (app);
+//     moo_ui_xml_add_item (xml, moo_ui_xml_new_merge_id (xml),
+//                          "ToolsMenu", "ReloadPythonPlugins",
+//                          "ReloadPythonPlugins", -1);
+//
+//     g_type_class_unref (klass);
+// }
 
 
 static void
@@ -1181,11 +1102,6 @@ static void     moo_app_quit_real       (MooApp         *app)
         moo_app_output_unref (moo_app_output);
         moo_app_output = NULL;
     }
-
-#ifdef MOO_USE_PYTHON
-    if (moo_python_running ())
-        moo_python_shutdown ();
-#endif
 
     list = g_slist_copy (app->priv->terminals);
     for (l = list; l != NULL; l = l->next)
@@ -1428,7 +1344,6 @@ static void install_editor_actions  (MooApp *app)
 
     install_actions (app, MOO_TYPE_EDIT_WINDOW);
 
-#ifdef MOO_USE_PYTHON
     moo_window_class_new_action (klass, "ExecuteSelection",
                                  "name", "Execute Selection",
                                  "label", "_Execute Selection",
@@ -1437,7 +1352,6 @@ static void install_editor_actions  (MooApp *app)
                                  "accel", "<shift><alt>Return",
                                  "closure-callback", execute_selection,
                                  NULL);
-#endif /* !MOO_USE_PYTHON */
 
     g_type_class_unref (klass);
 }
@@ -1621,7 +1535,6 @@ GType            moo_app_info_get_type          (void)
 }
 
 
-#ifdef MOO_USE_PYTHON
 static void     execute_selection       (MooEditWindow  *window)
 {
     MooEdit *edit;
@@ -1642,7 +1555,6 @@ static void     execute_selection       (MooEditWindow  *window)
         g_free (text);
     }
 }
-#endif
 
 
 void
@@ -1706,14 +1618,12 @@ moo_app_exec_cmd_real (MooApp             *app,
 
     switch (code)
     {
-#ifdef MOO_USE_PYTHON
         case MOO_APP_CMD_PYTHON_STRING:
             moo_app_python_run_string (app, data);
             break;
         case MOO_APP_CMD_PYTHON_FILE:
             moo_app_python_run_file (app, data);
             break;
-#endif
 
         case MOO_APP_CMD_OPEN_FILE:
             moo_app_open_file (app, data);

@@ -24,7 +24,7 @@ extern PyMethodDef _moo_term_functions[];
 extern PyMethodDef _moo_edit_functions[];
 extern PyMethodDef _moo_app_functions[];
 
-gboolean    initmoo                     (void);
+gboolean    _moo_pygtk_init             (void);
 
 gboolean    _moo_utils_mod_init         (void);
 gboolean    _moo_edit_mod_init          (void);

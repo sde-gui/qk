@@ -34,9 +34,6 @@ n  new-app      "Run new instance of application"
 #ifdef __WIN32__
 l  log          "[=FILE] Show debug output or write it to FILE" optarg
 #endif
-#ifdef MOO_USE_PYTHON
-p  log-python   "Redirect output to python console"
-#endif
    version      "Display version information and exit"          return
 h  help         "Display this help text and exit"               return
 %%
@@ -52,9 +49,6 @@ static void usage (void)
     g_print ("%s", STR_HELP_NEW_APP);
 #ifdef __WIN32__
     g_print ("%s", STR_HELP_LOG);
-#endif
-#ifdef MOO_USE_PYTHON
-    g_print ("%s", STR_HELP_LOG_PYTHON);
 #endif
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
@@ -72,7 +66,6 @@ int main (int argc, char *argv[])
     int opt_remain;
     MooUIXML *xml;
     MooEditor *editor;
-    G_GNUC_UNUSED gboolean use_python_console = FALSE;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -106,19 +99,11 @@ int main (int argc, char *argv[])
     }
 #endif
 
-#ifdef MOO_USE_PYTHON
-    if (_medit_opt_log_python)
-        use_python_console = TRUE;
-#endif
-
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", "medit is a text editor",
-#ifdef MOO_USE_PYTHON
-                        "use-python-console", use_python_console,
-#endif
                         "open-files", argv + opt_remain,
                         "new-app", (gboolean) _medit_opt_new_app,
                         NULL);

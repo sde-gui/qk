@@ -68,9 +68,6 @@ MOO_AC_PYGTK
 # pcre
 MOO_AC_PCRE
 
-#  Python module
-MOO_AC_MODULE
-
 
 ################################################################################
 #  Components
@@ -246,7 +243,6 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     echo "    prefix                                    = $mooprefix"
     echo "    python support                            = $MOO_USE_PYTHON"
     echo "    pygtk support                             = $MOO_USE_PYGTK"
-    echo "    standalone 'moo' python module            = $build_pymoo"
     echo "    xml support                               = $MOO_USE_XML"
     echo
     echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"

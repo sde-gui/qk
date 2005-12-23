@@ -18,50 +18,33 @@
 
 G_BEGIN_DECLS
 
-
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
 
-typedef void    (*MooPythonLogFunc) (const char *text,
-                                     int         len,
-                                     gpointer    data);
 
 struct _MooPyAPI {
-    MooPyObject* (*incref)      (MooPyObject       *obj);
-    void         (*decref)      (MooPyObject       *obj);
-    void         (*err_print)   (void);
+    MooPyObject* (*incref)        (MooPyObject *obj);
+    void         (*decref)        (MooPyObject *obj);
+    void         (*err_print)     (void);
 
-    void         (*set_log_func)(MooPythonLogFunc   in,
-                                 MooPythonLogFunc   out,
-                                 MooPythonLogFunc   err,
-                                 gpointer           data);
-    MooPyObject* (*run_string)  (const char        *str,
-                                 gboolean           silent);
-    MooPyObject* (*run_file)    (gpointer           fp,
-                                 const char        *filename);
+    MooPyObject* (*run_string)    (const char  *str);
+    MooPyObject* (*run_file)      (void        *fp,
+                                   const char  *filename);
 };
 
 
 extern MooPyAPI *_moo_py_api;
+void moo_python_init (MooPyAPI *api);
 
 
-gboolean     moo_python_start           (int     argc,
-                                         char  **argv);
-void         moo_python_shutdown        (void);
-gboolean     moo_python_running         (void);
+#define moo_python_running() (_moo_py_api != NULL)
 
-void        _moo_python_plugin_init     (char      **dirs);
-void        _moo_python_plugin_deinit   (void);
-void        _moo_python_plugin_reload   (void);
+#define moo_Py_INCREF               _moo_py_api->incref
+#define moo_Py_DECREF               _moo_py_api->decref
+#define moo_PyErr_Print             _moo_py_api->err_print
 
-
-#define moo_Py_INCREF   _moo_py_api->incref
-#define moo_Py_DECREF   _moo_py_api->decref
-#define moo_PyErr_Print _moo_py_api->err_print
-
-#define moo_python_set_log_func _moo_py_api->set_log_func
-#define moo_python_run_string   _moo_py_api->run_string
-#define moo_python_run_file     _moo_py_api->run_file
+#define moo_python_run_string       _moo_py_api->run_string
+#define moo_python_run_file         _moo_py_api->run_file
 
 
 G_END_DECLS

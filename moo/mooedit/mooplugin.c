@@ -19,6 +19,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/moopluginprefs-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "moopython/mooplugin-python.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include <string.h>
@@ -31,6 +32,7 @@ typedef struct {
     MooEditor *editor;
     GSList *list; /* MooPlugin* */
     GHashTable *names;
+    char **dirs;
 } PluginStore;
 
 static PluginStore *plugin_store = NULL;
@@ -821,11 +823,30 @@ moo_plugin_read_dir (const char *path)
 }
 
 
-void
-moo_plugin_read_dirs (char **dirs)
+char **
+moo_get_plugin_dirs (void)
 {
-    for ( ; dirs && *dirs; ++dirs)
-        moo_plugin_read_dir (*dirs);
+    plugin_store_init ();
+    return g_strdupv (plugin_store->dirs);
+}
+
+
+void
+moo_set_plugin_dirs (char **dirs)
+{
+    plugin_store_init ();
+    g_strfreev (plugin_store->dirs);
+    plugin_store->dirs = g_strdupv (dirs);
+}
+
+
+void
+moo_plugin_read_dirs (void)
+{
+    char **d;
+    plugin_store_init ();
+    for (d = plugin_store->dirs; d && *d; ++d)
+        moo_plugin_read_dir (*d);
 }
 
 
@@ -840,10 +861,6 @@ _moo_window_attach_plugins (MooEditWindow *window)
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_win (l->data, window);
-
-#ifdef MOO_USE_PYGTK
-    _moo_python_attach_win (window);
-#endif
 }
 
 
@@ -858,10 +875,6 @@ _moo_window_detach_plugins (MooEditWindow *window)
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_win (l->data, window);
-
-#ifdef MOO_USE_PYGTK
-    _moo_python_detach_win (window);
-#endif
 }
 
 
@@ -878,10 +891,6 @@ _moo_doc_attach_plugins (MooEditWindow *window,
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_doc (l->data, window, doc);
-
-#ifdef MOO_USE_PYGTK
-    _moo_python_attach_doc (window, doc);
-#endif
 }
 
 
@@ -898,10 +907,6 @@ _moo_doc_detach_plugins (MooEditWindow *window,
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_doc (l->data, window, doc);
-
-#ifdef MOO_USE_PYGTK
-    _moo_python_detach_doc (window, doc);
-#endif
 }
 
 
@@ -909,12 +914,15 @@ void
 moo_plugin_init_builtin (void)
 {
 #ifndef __WIN32__
-    moo_find_plugin_init ();
+    _moo_find_plugin_init ();
 #if GTK_CHECK_VERSION(2,6,0)
-    moo_file_selector_plugin_init ();
+    _moo_file_selector_plugin_init ();
 #endif
 #endif
-    moo_active_strings_plugin_init ();
+    _moo_active_strings_plugin_init ();
+#ifdef MOO_USE_PYGTK
+    _moo_python_plugin_init ();
+#endif
 }
 
 
