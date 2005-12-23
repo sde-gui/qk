@@ -1,5 +1,5 @@
 /*
- *   mooapp/moopython.c
+ *   mooutils/moopython.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,12 +11,20 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "moopython/moopython.h"
+#include "mooutils/moopython.h"
 
 
 MooPyAPI *_moo_py_api = NULL;
 
-void moo_python_init (MooPyAPI *api)
+gboolean
+moo_python_init (guint     version,
+                 MooPyAPI *api)
 {
+    if (version != MOO_PY_API_VERSION)
+        return FALSE;
+
+    g_return_val_if_fail (!_moo_py_api || !api, FALSE);
+
     _moo_py_api = api;
+    return TRUE;
 }

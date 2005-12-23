@@ -22,7 +22,7 @@
 
 #include "moopython/mooplugin-python.h"
 #include "moopython/moopython-utils.h"
-#include "moopython/moopython.h"
+#include "mooutils/moopython.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "mooedit/mooplugin-macro.h"
 
@@ -98,7 +98,9 @@ moo_python_api_init (void)
     };
 
     g_return_val_if_fail (!moo_python_running(), FALSE);
-    moo_python_init (&moo_py_api);
+
+    if (!moo_python_init (MOO_PY_API_VERSION, &moo_py_api))
+        return FALSE;
 
     Py_Initialize ();
 

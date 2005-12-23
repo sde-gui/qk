@@ -11,10 +11,6 @@ moopython_sources =                             \
     $(moopython)/mooplugin-python.c             \
     $(moopython)/mooplugin-python.h
 
-moo_sources +=                                  \
-    $(moopython)/moopython.c                    \
-    $(moopython)/moopython.h
-
 if MOO_USE_PYGTK
 moo_sources += $(moopython_sources)
 endif

@@ -23,7 +23,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "moopython/moopython.h"
+#include "mooutils/moopython.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"

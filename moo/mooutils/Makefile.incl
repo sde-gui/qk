@@ -70,6 +70,8 @@ mooutils_sources =                             \
     $(mooutils)/mooprefs.c                     \
     $(mooutils)/mooprefsdialog.c               \
     $(mooutils)/mooprefsdialogpage.c           \
+    $(mooutils)/moopython.c                    \
+    $(mooutils)/moopython.h                    \
     $(mooutils)/moostock.c                     \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \

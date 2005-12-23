@@ -1,5 +1,5 @@
 /*
- *   moopython/moopython.h
+ *   mooutils/moopython.h
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -18,6 +18,8 @@
 
 G_BEGIN_DECLS
 
+#define MOO_PY_API_VERSION 87
+
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
 
@@ -34,7 +36,8 @@ struct _MooPyAPI {
 
 
 extern MooPyAPI *_moo_py_api;
-void moo_python_init (MooPyAPI *api);
+gboolean moo_python_init (guint     version,
+                          MooPyAPI *api);
 
 
 #define moo_python_running() (_moo_py_api != NULL)
