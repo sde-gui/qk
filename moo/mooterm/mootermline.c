@@ -17,8 +17,8 @@
 
 
 #define EMPTY_CHAR MOO_TERM_EMPTY_CHAR
-static MooTermTextAttr ZERO_ATTR = MOO_TERM_ZERO_ATTR;
-static MooTermCell EMPTY_CELL = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
+G_GNUC_UNUSED static MooTermTextAttr ZERO_ATTR = MOO_TERM_ZERO_ATTR;
+G_GNUC_UNUSED static MooTermCell EMPTY_CELL = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
 
 #define CELLMOVE(dest__,src__,n__) memmove (dest__, src__, (n__) * sizeof (MooTermCell))
 #define CELLCPY(dest__,src__,n__)  memcpy (dest__, src__, (n__) * sizeof (MooTermCell))

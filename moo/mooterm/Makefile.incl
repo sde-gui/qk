@@ -53,6 +53,7 @@ mooterm_win32_sources =                       \
     $(mooterm)/mootermpt-win32.c
 
 termhelper_sources =                          \
+    termhelper_res.res                        \
     $(mooterm)/mootermhelper.c                \
     $(mooterm)/mootermhelper.h                \
     $(mooterm)/pty.c                          \
@@ -90,6 +91,8 @@ moo_extra_dist += $(mooterm_extra_dist)
 if MOO_OS_CYGWIN
 noinst_PROGRAMS += termhelper
 termhelper_SOURCES = $(termhelper_sources)
+nodist_termhelper_SOURCES = termhelper_res.res
+CLEANFILES += termhelper_res.res
 termhelper_CFLAGS =                         \
     -I$(top_builddir)                       \
     -I$(top_srcdir)                         \
@@ -97,4 +100,10 @@ termhelper_CFLAGS =                         \
     -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
     $(MOO_DEBUG_CFLAGS)                     \
     $(CFLAGS)
+termhelper_res.res: $(mooterm)/termhelper_res.rc
+	$(WINDRES) -i $(mooterm_srcdir)/termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
+termhelper_LDADD = termhelper_res.res
+else
+termhelper_res.res: $(mooterm)/termhelper_res.rc
+	touch termhelper_res.res
 endif
