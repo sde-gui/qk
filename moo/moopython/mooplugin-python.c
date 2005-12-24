@@ -123,8 +123,6 @@ moo_python_plugin_read_file (const char *path)
 
     g_return_if_fail (path != NULL);
 
-    g_message ("%s: reading %s", G_STRLOC, path);
-
     if (!g_file_get_contents (path, &content, NULL, &error))
     {
         g_warning ("%s: could not read plugin file", G_STRLOC);
@@ -166,8 +164,6 @@ moo_python_plugin_read_dir (const char      *path)
     const char *name;
 
     g_return_if_fail (path != NULL);
-
-    g_message ("%s: reading dir %s", G_STRLOC, path);
 
     dir = g_dir_open (path, 0, NULL);
 
