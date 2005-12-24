@@ -105,11 +105,43 @@ rm_fr (const char *path)
 #endif /* __WIN32__ */
 
 
+#ifdef __WIN32__
+static gboolean
+remove_dir_win32 (const char *path)
+{
+    gboolean success;
+    guint pathlen;
+    char *freeme;
+
+    /* better fail than crash */
+    SHFILEOPSTRUCTA fileop = {
+        NULL, /* HWND hwnd; */
+        FO_DELETE, /* UINT wFunc; */
+        NULL, /* LPCTSTR pFrom; */
+        NULL, /* LPCTSTR pTo; */
+        FOF_SILENT, /* FILEOP_FLAGS fFlags; */
+        FALSE, /* BOOL fAnyOperationsAborted; */
+        NULL, /* LPVOID hNameMappings; */
+        NULL /* LPCTSTR lpszProgressTitle; */
+    };
+
+    pathlen = strlen (path);
+    freeme = g_new0 (char, pathlen + 2);
+    memcpy (freeme, path, pathlen);
+    fileop.pFrom = freeme;
+
+    success = SHFileOperationA (&fileop) == 0;
+
+    g_free (freeme);
+    return success;
+}
+#endif
+
 gboolean
 moo_rmdir (const char *path,
            gboolean    recursive)
 {
-    g_return_val_if_fail (path != NULL, -1);
+    g_return_val_if_fail (path != NULL, FALSE);
 
     if (!recursive)
     {
@@ -123,9 +155,7 @@ moo_rmdir (const char *path,
 #ifndef __WIN32__
     return rm_fr (path);
 #else
-/* XXX */
-#warning "Implement me"
-    return FALSE;
+    return remove_dir_win32 (path);
 #endif
 }
 

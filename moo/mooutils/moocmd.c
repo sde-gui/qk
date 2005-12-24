@@ -14,8 +14,14 @@
 
 #include "mooutils/moocmd.h"
 #include "mooutils/moomarshals.h"
+
+#ifndef __WIN32__
 #include <sys/wait.h>
 #include <unistd.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 
 struct _MooCmdPrivate {
@@ -433,6 +439,7 @@ stderr_watch_removed (MooCmd *cmd)
 }
 
 
+#ifndef __WIN32__
 static void
 real_child_setup (gpointer user_data)
 {
@@ -446,6 +453,7 @@ real_child_setup (gpointer user_data)
     if (data->child_setup)
         data->child_setup (data->user_data);
 }
+#endif
 
 
 static gboolean
@@ -485,7 +493,11 @@ moo_cmd_run_command (MooCmd     *cmd,
     result = g_spawn_async_with_pipes (working_dir,
                                        argv, envp,
                                        flags | G_SPAWN_DO_NOT_REAP_CHILD,
+#ifndef __WIN32__
                                        real_child_setup, &data,
+#else
+                                       NULL, NULL,
+#endif
                                        &cmd->priv->pid,
                                        NULL, outp, errp, error);
 
@@ -575,7 +587,11 @@ moo_cmd_cleanup (MooCmd *cmd)
 
     if (cmd->priv->pid)
     {
+#ifndef __WIN32__
         kill (-cmd->priv->pid, SIGHUP);
+#else
+        TerminateProcess (cmd->priv->pid, 1);
+#endif
         g_spawn_close_pid (cmd->priv->pid);
         cmd->priv->pid = 0;
     }
@@ -599,7 +615,11 @@ moo_cmd_abort_real (MooCmd *cmd)
 
     g_return_val_if_fail (cmd->priv->pid != 0, TRUE);
 
+#ifndef __WIN32__
     kill (-cmd->priv->pid, SIGHUP);
+#else
+    TerminateProcess (cmd->priv->pid, 1);
+#endif
 
     if (cmd->priv->stdout_watch)
     {

@@ -49,6 +49,7 @@ mooutils_sources =                             \
     $(mooutils)/mooactiongroup.c               \
     $(mooutils)/moobigpaned.c                  \
     $(mooutils)/mooclosure.c                   \
+    $(mooutils)/moocmd.c                       \
     $(mooutils)/moocombo.c                     \
     $(mooutils)/moocompat.c                    \
     $(mooutils)/moocompat.h                    \
@@ -87,9 +88,6 @@ mooutils_sources =                             \
     $(mooutils)/stock-select-all-16.h          \
     $(mooutils)/stock-select-all-24.h          \
     $(mooutils)/stock-terminal-24.h
-
-mooutils_unix_sources =                        \
-    $(mooutils)/moocmd.c
 
 nodist_mooutils_sources =                      \
     $(mooutils)/moomarshals.c                  \

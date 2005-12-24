@@ -1899,6 +1899,7 @@ render_icon_for_path (const char     *path,
                       GtkIconSize     size)
 {
     MooIconType icon = MOO_ICON_BLANK;
+#ifndef __WIN32__
     const char *mime_type = xdg_mime_type_unknown;
 
     if (path)
@@ -1910,6 +1911,9 @@ render_icon_for_path (const char     *path,
             icon = MOO_ICON_MIME;
         }
     }
+#else
+    const char *mime_type = "application/octet-stream";
+#endif
 
     return _render_icon (icon, mime_type, 0, widget, size);
 }
@@ -2161,6 +2165,7 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     if (pixbuf)
         return pixbuf;
 
+#ifndef __WIN32__
     parent_types = xdg_mime_list_mime_parents (mime_type);
 
     if (parent_types && parent_types[0])
@@ -2172,6 +2177,7 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
 
     if (pixbuf)
         return pixbuf;
+#endif
 
     g_message ("%s: could not find icon for mime type '%s'",
                G_STRLOC, mime_type);

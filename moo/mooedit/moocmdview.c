@@ -15,8 +15,11 @@
 #include "mooedit/moocmdview.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocmd.h"
+
+#ifndef __WIN32__
 #include <sys/wait.h>
 #include <unistd.h>
+#endif /* !__WIN32__ */
 
 
 struct _MooCmdViewPrivate {
@@ -303,6 +306,7 @@ out:
 }
 
 
+#ifndef __WIN32__
 static gboolean
 moo_cmd_view_cmd_exit (MooCmdView *view,
                        int         status)
@@ -376,6 +380,29 @@ moo_cmd_view_cmd_exit (MooCmdView *view,
 
     return FALSE;
 }
+#else /* __WIN32__ */
+static gboolean
+moo_cmd_view_cmd_exit (MooCmdView *view,
+                       int         status)
+{
+    if (!status)
+    {
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
+                                  "*** Done ***", -1,
+                                  view->priv->message_tag);
+    }
+    else
+    {
+        char *msg = g_strdup_printf ("*** Exited with status %d ***", status);
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
+                                  msg, -1,
+                                  view->priv->error_tag);
+        g_free (msg);
+    }
+
+    return FALSE;
+}
+#endif /* __WIN32__ */
 
 
 static gboolean
