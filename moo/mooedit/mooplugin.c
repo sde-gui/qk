@@ -25,6 +25,10 @@
 #include <string.h>
 #include <gmodule.h>
 
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 #define PLUGIN_PREFS_ENABLED "enabled"
 
 
@@ -778,6 +782,25 @@ out:
 }
 
 
+static GModule *
+module_open (const char *path)
+{
+    GModule *module;
+    G_GNUC_UNUSED guint saved;
+
+#ifdef __WIN32__
+    saved = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
+
+    module = g_module_open (path, 0);
+
+#ifdef __WIN32__
+    SetErrorMode (saved);
+#endif
+
+    return module;
+}
+
 static void
 moo_plugin_read_dir (const char *path)
 {
@@ -803,7 +826,7 @@ moo_plugin_read_dir (const char *path)
         prefix = g_strndup (name, suffix - name);
 
         module_path = g_build_filename (path, name, NULL);
-        module = g_module_open (module_path, 0);
+        module = module_open (module_path);
 
         if (module)
         {
