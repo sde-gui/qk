@@ -29,6 +29,7 @@ endif
 
 ###########################################################################
 
+CLEANFILES =
 EXTRA_PROGRAMS =
 noinst_PROGRAMS =
 moo_prefix = moo
@@ -79,7 +80,7 @@ include moo/moopython/plugins/Makefile.incl
 
 ###########################################################################
 
-CLEANFILES = $(moo_cleanfiles)
+CLEANFILES += $(moo_cleanfiles)
 BUILT_SOURCES = $(moo_built_sources)
 
 libmoo_ldflags = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined

@@ -213,7 +213,7 @@ as_lex_parse_word (ASLex    *lex,
 
     g_assert (IS_WORD (lex->input[lex->ptr]) && !IS_DIGIT (lex->input[lex->ptr]));
 
-    string = &lex->input[lex->ptr];
+    string = (const char *) &lex->input[lex->ptr];
 
     for (i = 0; i < G_N_ELEMENTS (keywords); ++i)
     {
