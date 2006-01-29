@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 1.875d.  */
+/* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
    Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
@@ -45,8 +45,7 @@
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
-/* If NAME_PREFIX is specified substitute the variables and functions
-   names.  */
+/* Substitute the variable and function names.  */
 #define yyparse _as_script_yyparse
 #define yylex   _as_script_yylex
 #define yyerror _as_script_yyerror
@@ -105,7 +104,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+#line 1 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
 
 #include "as-script-parser.h"
 #include "as-script-yacc.h"
@@ -141,14 +140,14 @@
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 24 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+#line 24 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     ASNode *node;
 } YYSTYPE;
-/* Line 191 of yacc.c.  */
-#line 152 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.c"
+/* Line 190 of yacc.c.  */
+#line 151 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -159,8 +158,8 @@ typedef union YYSTYPE {
 /* Copy the second part of user declarations.  */
 
 
-/* Line 214 of yacc.c.  */
-#line 164 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.c"
+/* Line 213 of yacc.c.  */
+#line 163 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -175,14 +174,10 @@ typedef union YYSTYPE {
 
 # ifdef YYSTACK_USE_ALLOCA
 #  if YYSTACK_USE_ALLOCA
-#   define YYSTACK_ALLOC alloca
-#  endif
-# else
-#  if defined (alloca) || defined (_ALLOCA_H)
-#   define YYSTACK_ALLOC alloca
-#  else
 #   ifdef __GNUC__
 #    define YYSTACK_ALLOC __builtin_alloca
+#   else
+#    define YYSTACK_ALLOC alloca
 #   endif
 #  endif
 # endif
@@ -607,19 +602,52 @@ do								\
     }								\
 while (0)
 
+
 #define YYTERROR	1
 #define YYERRCODE	256
 
-/* YYLLOC_DEFAULT -- Compute the default location (before the actions
-   are run).  */
 
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
 #ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)		\
-   ((Current).first_line   = (Rhs)[1].first_line,	\
-    (Current).first_column = (Rhs)[1].first_column,	\
-    (Current).last_line    = (Rhs)[N].last_line,	\
-    (Current).last_column  = (Rhs)[N].last_column)
+# define YYLLOC_DEFAULT(Current, Rhs, N)				\
+    do									\
+      if (N)								\
+	{								\
+	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
+	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
+	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
+	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
+	}								\
+      else								\
+	{								\
+	  (Current).first_line   = (Current).last_line   =		\
+	    YYRHSLOC (Rhs, 0).last_line;				\
+	  (Current).first_column = (Current).last_column =		\
+	    YYRHSLOC (Rhs, 0).last_column;				\
+	}								\
+    while (0)
 #endif
+
+
+/* YY_LOCATION_PRINT -- Print the location on the stream.
+   This macro was not mandated originally: define only if we know
+   we won't break user code: when these are the locations we know.  */
+
+#ifndef YY_LOCATION_PRINT
+# if YYLTYPE_IS_TRIVIAL
+#  define YY_LOCATION_PRINT(File, Loc)			\
+     fprintf (File, "%d.%d-%d.%d",			\
+              (Loc).first_line, (Loc).first_column,	\
+              (Loc).last_line,  (Loc).last_column)
+# else
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
+#endif
+
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
 
@@ -643,19 +671,13 @@ do {						\
     YYFPRINTF Args;				\
 } while (0)
 
-# define YYDSYMPRINT(Args)			\
-do {						\
-  if (yydebug)					\
-    yysymprint Args;				\
-} while (0)
-
-# define YYDSYMPRINTF(Title, Token, Value, Location)		\
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)		\
 do {								\
   if (yydebug)							\
     {								\
       YYFPRINTF (stderr, "%s ", Title);				\
       yysymprint (stderr, 					\
-                  Token, Value);	\
+                  Type, Value);	\
       YYFPRINTF (stderr, "\n");					\
     }								\
 } while (0)
@@ -722,8 +744,7 @@ do {					\
 int yydebug;
 #else /* !YYDEBUG */
 # define YYDPRINTF(Args)
-# define YYDSYMPRINT(Args)
-# define YYDSYMPRINTF(Title, Token, Value, Location)
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -740,10 +761,6 @@ int yydebug;
    Do not make this value too large; the results are undefined if
    SIZE_MAX < YYSTACK_BYTES (YYMAXDEPTH)
    evaluated with infinite-precision integer arithmetic.  */
-
-#if defined (YYMAXDEPTH) && YYMAXDEPTH == 0
-# undef YYMAXDEPTH
-#endif
 
 #ifndef YYMAXDEPTH
 # define YYMAXDEPTH 10000
@@ -826,15 +843,15 @@ yysymprint (yyoutput, yytype, yyvaluep)
   (void) yyvaluep;
 
   if (yytype < YYNTOKENS)
-    {
-      YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
-# ifdef YYPRINT
-      YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
-# endif
-    }
+    YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
   else
     YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
 
+
+# ifdef YYPRINT
+  if (yytype < YYNTOKENS)
+    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+# endif
   switch (yytype)
     {
       default:
@@ -850,16 +867,21 @@ yysymprint (yyoutput, yytype, yyvaluep)
 
 #if defined (__STDC__) || defined (__cplusplus)
 static void
-yydestruct (int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
 #else
 static void
-yydestruct (yytype, yyvaluep)
+yydestruct (yymsg, yytype, yyvaluep)
+    const char *yymsg;
     int yytype;
     YYSTYPE *yyvaluep;
 #endif
 {
   /* Pacify ``unused variable'' warnings.  */
   (void) yyvaluep;
+
+  if (!yymsg)
+    yymsg = "Deleting";
+  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
   switch (yytype)
     {
@@ -888,10 +910,10 @@ int yyparse ();
 
 
 
-/* The lookahead symbol.  */
+/* The look-ahead symbol.  */
 int yychar;
 
-/* The semantic value of the lookahead symbol.  */
+/* The semantic value of the look-ahead symbol.  */
 YYSTYPE yylval;
 
 /* Number of syntax errors so far.  */
@@ -927,7 +949,7 @@ yyparse (parser)
   int yyresult;
   /* Number of tokens to shift before error messages enabled.  */
   int yyerrstatus;
-  /* Lookahead token as an internal (translated) token number.  */
+  /* Look-ahead token as an internal (translated) token number.  */
   int yytoken = 0;
 
   /* Three stacks and their tools:
@@ -978,6 +1000,8 @@ yyparse (parser)
   yyssp = yyss;
   yyvsp = yyvs;
 
+
+  yyvsp[0] = yylval;
 
   goto yysetstate;
 
@@ -1068,18 +1092,18 @@ yyparse (parser)
 yybackup:
 
 /* Do appropriate processing given the current state.  */
-/* Read a lookahead token if we need one and don't already have one.  */
+/* Read a look-ahead token if we need one and don't already have one.  */
 /* yyresume: */
 
-  /* First try to decide what to do without reference to lookahead token.  */
+  /* First try to decide what to do without reference to look-ahead token.  */
 
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a lookahead token if don't already have one.  */
+  /* Not known => get a look-ahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -1094,7 +1118,7 @@ yybackup:
   else
     {
       yytoken = YYTRANSLATE (yychar);
-      YYDSYMPRINTF ("Next token is", yytoken, &yylval, &yylloc);
+      YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
     }
 
   /* If the proper action on seeing token YYTOKEN is to reduce or to
@@ -1114,8 +1138,8 @@ yybackup:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  /* Shift the lookahead token.  */
-  YYDPRINTF ((stderr, "Shifting token %s, ", yytname[yytoken]));
+  /* Shift the look-ahead token.  */
+  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
   /* Discard the token being shifted unless it is eof.  */
   if (yychar != YYEOF)
@@ -1165,215 +1189,215 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 60 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { SET_TOP_NODE (yyvsp[0].node); ;}
+#line 60 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { SET_TOP_NODE ((yyvsp[0].node)); ;}
     break;
 
   case 3:
-#line 62 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (NULL, yyvsp[-1].node); ;}
+#line 62 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD (NULL, (yyvsp[-1].node)); ;}
     break;
 
   case 4:
-#line 63 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (yyvsp[-2].node, yyvsp[-1].node); ;}
+#line 63 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD ((yyvsp[-2].node), (yyvsp[-1].node)); ;}
     break;
 
   case 5:
-#line 67 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = yyvsp[-1].node; ;}
+#line 67 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = (yyvsp[-1].node); ;}
     break;
 
   case 12:
-#line 76 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NULL; ;}
+#line 76 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NULL; ;}
     break;
 
   case 14:
-#line 80 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NULL; ;}
+#line 80 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NULL; ;}
     break;
 
   case 17:
-#line 83 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (yyvsp[-1].node, yyvsp[0].node); ;}
+#line 83 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD ((yyvsp[-1].node), (yyvsp[0].node)); ;}
     break;
 
   case 18:
-#line 86 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_COMMAND (yyvsp[-1].str, yyvsp[0].node); ;}
+#line 86 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_COMMAND ((yyvsp[-1].str), (yyvsp[0].node)); ;}
     break;
 
   case 19:
-#line 89 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NULL; ;}
+#line 89 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NULL; ;}
     break;
 
   case 20:
-#line 90 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (yyvsp[-1].node, yyvsp[0].node); ;}
+#line 90 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD ((yyvsp[-1].node), (yyvsp[0].node)); ;}
     break;
 
   case 21:
-#line 93 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_IF_ELSE (yyvsp[-2].node, yyvsp[0].node, NULL); ;}
+#line 93 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_IF_ELSE ((yyvsp[-2].node), (yyvsp[0].node), NULL); ;}
     break;
 
   case 22:
-#line 95 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_IF_ELSE (yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 95 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_IF_ELSE ((yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 23:
-#line 98 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_IF_ELSE (yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 98 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_IF_ELSE ((yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 24:
-#line 101 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_REPEAT (yyvsp[-1].node, yyvsp[0].node); ;}
+#line 101 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_REPEAT ((yyvsp[-1].node), (yyvsp[0].node)); ;}
     break;
 
   case 25:
-#line 102 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_WHILE (yyvsp[-1].node, yyvsp[0].node); ;}
+#line 102 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_WHILE ((yyvsp[-1].node), (yyvsp[0].node)); ;}
     break;
 
   case 26:
-#line 106 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_ASSIGNMENT (yyvsp[-2].node, yyvsp[0].node); ;}
+#line 106 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_ASSIGNMENT ((yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 28:
-#line 110 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_PLUS, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 110 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_PLUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 29:
-#line 111 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_MINUS, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 111 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_MINUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 30:
-#line 112 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_DIV, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 112 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_DIV, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 31:
-#line 113 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_MULT, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 113 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_MULT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 32:
-#line 115 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_AND, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 115 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_AND, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 33:
-#line 116 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_OR, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 116 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_OR, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 34:
-#line 118 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_EQ, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 118 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_EQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 35:
-#line 119 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_NEQ, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 119 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_NEQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 36:
-#line 120 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_LT, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 120 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_LT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 37:
-#line 121 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_GT, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 121 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_GT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 38:
-#line 122 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_LE, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 122 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_LE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 39:
-#line 123 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_GE, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 123 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_GE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 40:
-#line 127 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_NUMBER (yyvsp[0].ival); ;}
+#line 127 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_NUMBER ((yyvsp[0].ival)); ;}
     break;
 
   case 41:
-#line 128 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_STRING (yyvsp[0].str); ;}
+#line 128 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_STRING ((yyvsp[0].str)); ;}
     break;
 
   case 43:
-#line 130 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = yyvsp[-1].node; ;}
+#line 130 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = (yyvsp[-1].node); ;}
     break;
 
   case 44:
-#line 131 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_VALUE_LIST (yyvsp[-1].node); ;}
+#line 131 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_VALUE_LIST ((yyvsp[-1].node)); ;}
     break;
 
   case 45:
-#line 132 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = BINARY_OP (AS_OP_FORMAT, yyvsp[-2].node, yyvsp[0].node); ;}
+#line 132 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = BINARY_OP (AS_OP_FORMAT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 46:
-#line 133 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = UNARY_OP (AS_OP_LEN, yyvsp[0].node); ;}
+#line 133 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = UNARY_OP (AS_OP_LEN, (yyvsp[0].node)); ;}
     break;
 
   case 47:
-#line 134 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = UNARY_OP (AS_OP_NOT, yyvsp[0].node); ;}
+#line 134 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = UNARY_OP (AS_OP_NOT, (yyvsp[0].node)); ;}
     break;
 
   case 48:
-#line 135 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = UNARY_OP (AS_OP_UMINUS, yyvsp[0].node); ;}
+#line 135 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = UNARY_OP (AS_OP_UMINUS, (yyvsp[0].node)); ;}
     break;
 
   case 49:
-#line 138 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NULL; ;}
+#line 138 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NULL; ;}
     break;
 
   case 50:
-#line 139 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (NULL, yyvsp[0].node); ;}
+#line 139 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD (NULL, (yyvsp[0].node)); ;}
     break;
 
   case 51:
-#line 140 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = NODE_LIST_ADD (yyvsp[-2].node, yyvsp[0].node); ;}
+#line 140 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = NODE_LIST_ADD ((yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 52:
-#line 143 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = VAR_POSITIONAL (yyvsp[0].ival); ;}
+#line 143 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = VAR_POSITIONAL ((yyvsp[0].ival)); ;}
     break;
 
   case 53:
-#line 144 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
-    { yyval.node = VAR_NAMED (yyvsp[0].str); ;}
+#line 144 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+    { (yyval.node) = VAR_NAMED ((yyvsp[0].str)); ;}
     break;
 
 
     }
 
-/* Line 1010 of yacc.c.  */
-#line 1377 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.c"
+/* Line 1037 of yacc.c.  */
+#line 1401 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1473,7 +1497,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse lookahead token after an
+      /* If just tried and failed to reuse look-ahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -1483,23 +1507,22 @@ yyerrlab:
 	  if (yychar == YYEOF)
 	     for (;;)
 	       {
+
 		 YYPOPSTACK;
 		 if (yyssp == yyss)
 		   YYABORT;
-		 YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-		 yydestruct (yystos[*yyssp], yyvsp);
+		 yydestruct ("Error: popping",
+                             yystos[*yyssp], yyvsp);
 	       }
         }
       else
 	{
-	  YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
-	  yydestruct (yytoken, &yylval);
+	  yydestruct ("Error: discarding", yytoken, &yylval);
 	  yychar = YYEMPTY;
-
 	}
     }
 
-  /* Else will try to reuse lookahead token after shifting the error
+  /* Else will try to reuse look-ahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -1516,7 +1539,7 @@ yyerrorlab:
      goto yyerrorlab;
 #endif
 
-  yyvsp -= yylen;
+yyvsp -= yylen;
   yyssp -= yylen;
   yystate = *yyssp;
   goto yyerrlab1;
@@ -1546,8 +1569,8 @@ yyerrlab1:
       if (yyssp == yyss)
 	YYABORT;
 
-      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-      yydestruct (yystos[yystate], yyvsp);
+
+      yydestruct ("Error: popping", yystos[yystate], yyvsp);
       YYPOPSTACK;
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -1556,10 +1579,11 @@ yyerrlab1:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  YYDPRINTF ((stderr, "Shifting error token, "));
-
   *++yyvsp = yylval;
 
+
+  /* Shift the error token. */
+  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -1576,6 +1600,9 @@ yyacceptlab:
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
 yyabortlab:
+  yydestruct ("Error: discarding lookahead",
+              yytoken, &yylval);
+  yychar = YYEMPTY;
   yyresult = 1;
   goto yyreturn;
 
@@ -1598,6 +1625,6 @@ yyreturn:
 }
 
 
-#line 147 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+#line 147 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
 
 

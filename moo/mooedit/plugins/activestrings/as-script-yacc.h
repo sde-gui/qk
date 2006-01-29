@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 1.875d.  */
+/* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
    Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
@@ -72,14 +72,14 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 24 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+#line 24 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     ASNode *node;
 } YYSTYPE;
-/* Line 1285 of yacc.c.  */
-#line 83 "/home/muntyan/projects/moo/moo/mooedit/plugins/activestrings/as-script-yacc.h"
+/* Line 1318 of yacc.c.  */
+#line 83 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
