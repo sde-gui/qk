@@ -289,7 +289,7 @@ as_lex_new (const char *string,
     if (len < 0)
         len = strlen (string);
 
-    lex->input = string;
+    lex->input = (const guchar *) string;
     lex->len = len;
     lex->hash = g_hash_table_new (g_str_hash, g_str_equal);
 
