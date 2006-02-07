@@ -64,7 +64,9 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
 # _MOO_AC_PYTHON_DEVEL(action-if-found,action-if-not-found)
 # checks python headers and libs. it's
 # http://www.gnu.org/software/ac-archive/htmldoc/ac_python_devel.html,
-# modified to allow actions if-found/if-not-found
+# modified to allow actions if-found/if-not-found;
+# also it uses distutils' LDFLAGS - at least on freebsd it must be used
+# to pick up -pthread option.
 #
 AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
     # Check for Python include path
@@ -106,10 +108,21 @@ AC_DEFUN([_MOO_AC_PYTHON_DEVEL],[
         if test -z "$python_path" ; then
             python_found=no
         else
+            AC_MSG_CHECKING(python linker flags)
+
             python_found=yes
-            AC_SUBST([PYTHON_LDFLAGS],["-L$python_path -lpython$PYTHON_VERSION"])
+            PYTHON_LDFLAGS="-L$python_path -lpython$PYTHON_VERSION"
             python_site=`echo $python_path | sed "s/config/site-packages/"`
             AC_SUBST([PYTHON_SITE_PKG],[$python_site])
+
+            # this picks up -pthread option on FreeBSD
+            PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
+                    conf = distutils.sysconfig.get_config_var; \
+                    print conf('LDFLAGS')"`
+
+            PYTHON_LDFLAGS="$PYTHON_LDFLAGS $PYTHON_EXTRA_LDFLAGS"
+            AC_MSG_RESULT($PYTHON_LDFLAGS)
+            AC_SUBST(PYTHON_LDFLAGS)
         fi
     fi
 
