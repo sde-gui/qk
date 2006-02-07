@@ -52,7 +52,7 @@ MOO_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_DEBUG_CFLAGS -W -Wall -Wpointer-ari
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization" #-Wunreachable-code
+-Wdisabled-optimization" -Wdeclaration-after-statement #-Wunreachable-code
 MOO_PYTHON_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wmissing-prototypes -Wmissing-declarations dnl
