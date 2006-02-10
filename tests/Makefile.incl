@@ -24,7 +24,9 @@ medit = medit
 endif
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
-#noinst_PROGRAMS += mterm #termbuffer
+if !MOO_BUILD_APP
+noinst_PROGRAMS += mterm #termbuffer
+endif
 endif
 endif
 if MOO_BUILD_UTILS
