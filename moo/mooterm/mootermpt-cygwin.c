@@ -1,5 +1,5 @@
 /*
- *   mooterm/mootermvt-win32.c
+ *   mooterm/mootermpt-cygwin.c
  *
  *   Copyright (C) 2004-2005 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -47,17 +47,17 @@ void        moo_term_set_helper_directory   (const char *dir)
 #define TERM_HEIGHT(pt__) (MOO_TERM_PT(pt__)->priv->term->priv->height)
 
 
-#define MOO_TERM_PT_WIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_PT_WIN, MooTermPtWin))
-#define MOO_TERM_PT_WIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_PT_WIN, MooTermPtWinClass))
+#define MOO_TERM_PT_WIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TERM_PT_WIN, MooTermPtCyg))
+#define MOO_TERM_PT_WIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  MOO_TYPE_TERM_PT_WIN, MooTermPtCygClass))
 #define MOO_IS_TERM_PT_WIN(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TERM_PT_WIN))
 #define MOO_IS_TERM_PT_WIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOO_TYPE_TERM_PT_WIN))
-#define MOO_TERM_PT_WIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_PT_WIN, MooTermPtWinClass))
+#define MOO_TERM_PT_WIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOO_TYPE_TERM_PT_WIN, MooTermPtCygClass))
 
-typedef struct _MooTermPtWin           MooTermPtWin;
-typedef struct _MooTermPtWinClass      MooTermPtWinClass;
+typedef struct _MooTermPtCyg           MooTermPtCyg;
+typedef struct _MooTermPtCygClass      MooTermPtCygClass;
 
 
-struct _MooTermPtWin {
+struct _MooTermPtCyg {
     MooTermPt   parent;
 
     GPid        pid;
@@ -71,15 +71,15 @@ struct _MooTermPtWin {
 };
 
 
-struct _MooTermPtWinClass {
+struct _MooTermPtCygClass {
     MooTermPtClass  parent_class;
 };
 
-static void moo_term_pt_win_finalize    (GObject    *object);
+static void moo_term_pt_cyg_finalize    (GObject    *object);
 
 static gboolean read_helper_out (GIOChannel *source,
                                  GIOCondition condition,
-                                 MooTermPtWin   *self);
+                                 MooTermPtCyg   *self);
 
 static void     set_size            (MooTermPt      *pt,
                                      guint           width,
@@ -104,16 +104,16 @@ static gboolean run_in_helper       (const char *cmd,
 
 
 /* MOO_TYPE_TERM_PT_WIN */
-G_DEFINE_TYPE (MooTermPtWin, moo_term_pt_win, MOO_TYPE_TERM_PT)
+G_DEFINE_TYPE (MooTermPtCyg, moo_term_pt_cyg, MOO_TYPE_TERM_PT)
 
 
 static void
-moo_term_pt_win_class_init (MooTermPtWinClass *klass)
+moo_term_pt_cyg_class_init (MooTermPtCygClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooTermPtClass *pt_class = MOO_TERM_PT_CLASS (klass);
 
-    gobject_class->finalize = moo_term_pt_win_finalize;
+    gobject_class->finalize = moo_term_pt_cyg_finalize;
 
     pt_class->set_size = set_size;
     pt_class->fork_command = fork_command;
@@ -123,7 +123,7 @@ moo_term_pt_win_class_init (MooTermPtWinClass *klass)
 
 
 static void
-moo_term_pt_win_init (MooTermPtWin      *pt)
+moo_term_pt_cyg_init (MooTermPtCyg      *pt)
 {
     MOO_TERM_PT(pt)->priv->child_alive = FALSE;
 
@@ -139,11 +139,11 @@ moo_term_pt_win_init (MooTermPtWin      *pt)
 
 
 static void
-moo_term_pt_win_finalize (GObject    *object)
+moo_term_pt_cyg_finalize (GObject    *object)
 {
-    MooTermPtWin *pt = MOO_TERM_PT_WIN (object);
+    MooTermPtCyg *pt = MOO_TERM_PT_WIN (object);
     kill_child (MOO_TERM_PT (pt));
-    G_OBJECT_CLASS (moo_term_pt_win_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_term_pt_cyg_parent_class)->finalize (object);
 }
 
 
@@ -161,7 +161,7 @@ fork_command (MooTermPt      *pt_gen,
               char          **envp,
               GError        **error)
 {
-    MooTermPtWin *pt;
+    MooTermPtCyg *pt;
     gboolean result;
 
     g_return_val_if_fail (!pt_gen->priv->child_alive, FALSE);
@@ -207,7 +207,7 @@ fork_command (MooTermPt      *pt_gen,
 static gboolean
 read_helper_out (GIOChannel     *source,
                  GIOCondition    condition,
-                 MooTermPtWin   *pt)
+                 MooTermPtCyg   *pt)
 {
     GError *err = NULL;
     gboolean error_occured = FALSE;
@@ -291,7 +291,7 @@ read_helper_out (GIOChannel     *source,
 static void
 kill_child (MooTermPt      *pt_gen)
 {
-    MooTermPtWin *pt = MOO_TERM_PT_WIN (pt_gen);
+    MooTermPtCyg *pt = MOO_TERM_PT_WIN (pt_gen);
 
     if (pt->in_io)
     {
@@ -372,7 +372,7 @@ do_write (MooTermPt      *pt_gen,
     GIOStatus status;
     guint written;
 
-    MooTermPtWin *pt = MOO_TERM_PT_WIN (pt_gen);
+    MooTermPtCyg *pt = MOO_TERM_PT_WIN (pt_gen);
 
     g_return_val_if_fail (pt->in_io != NULL, FALSE);
 

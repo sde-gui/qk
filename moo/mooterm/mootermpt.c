@@ -78,7 +78,7 @@ _moo_term_pt_new (MooTerm    *term)
 {
     MooTermPt *pt;
 #ifdef __WIN32__
-    pt = g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
+    pt = g_object_new (MOO_TYPE_TERM_PT_CYGWIN, NULL);
 #else /* !__WIN32__ */
     pt = g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
 #endif /* !__WIN32__ */
