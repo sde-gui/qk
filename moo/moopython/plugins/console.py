@@ -36,7 +36,7 @@ class WinPlugin(object):
     def start(self, *whatever):
         if not self.terminal.child_alive():
             self.terminal.soft_reset()
-            self.terminal.start_default_profile()
+            self.terminal.start_default_shell()
 
     def create(self, window):
         self.window = window

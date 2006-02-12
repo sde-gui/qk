@@ -47,14 +47,6 @@
   (release-func "moo_term_command_free")
 )
 
-(define-boxed TermProfile
-  (in-module "Moo")
-  (c-name "MooTermProfile")
-  (gtype-id "MOO_TYPE_TERM_PROFILE")
-  (copy-func "moo_term_profile_copy")
-  (release-func "moo_term_profile_free")
-)
-
 (define-pointer TermLine
   (in-module "Moo")
   (c-name "MooTermLine")
@@ -594,130 +586,11 @@
   (return-type "none")
 )
 
-(define-function moo_term_profile_new
-  (c-name "moo_term_profile_new")
-  (is-constructor-of "MooTermProfile")
-  (return-type "MooTermProfile*")
-  (parameters
-    '("const-char*" "name")
-    '("const-MooTermCommand*" "cmd")
-    '("strv" "env" (null-ok) (default "NULL"))
-    '("const-char*" "working_dir" (null-ok) (default "NULL"))
-  )
-)
-
-(define-method copy
-  (of-object "MooTermProfile")
-  (c-name "moo_term_profile_copy")
-  (return-type "MooTermProfile*")
-)
-
-(define-method free
-  (of-object "MooTermProfile")
-  (c-name "moo_term_profile_free")
-  (return-type "none")
-)
-
-(define-function moo_term_profile_array_new
-  (c-name "moo_term_profile_array_new")
-  (is-constructor-of "MooTermProfileArray")
-  (return-type "MooTermProfileArray*")
-)
-
-(define-method add
-  (of-object "MooTermProfileArray")
-  (c-name "moo_term_profile_array_add")
-  (return-type "none")
-  (parameters
-    '("const-MooTermProfile*" "profile")
-  )
-)
-
-(define-method copy
-  (of-object "MooTermProfileArray")
-  (c-name "moo_term_profile_array_copy")
-  (return-type "MooTermProfileArray*")
-)
-
-(define-method free
-  (of-object "MooTermProfileArray")
-  (c-name "moo_term_profile_array_free")
-  (return-type "none")
-)
-
-(define-method get_profiles
+(define-method start_default_shell
   (of-object "MooTerm")
-  (c-name "moo_term_get_profiles")
-  (return-type "MooTermProfileArray*")
-)
-
-(define-method get_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_get_profile")
-  (return-type "MooTermProfile*")
-  (parameters
-    '("guint" "index")
-  )
-)
-
-(define-method set_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_set_profile")
-  (return-type "none")
-  (parameters
-    '("guint" "index")
-    '("const-MooTermProfile*" "profile")
-  )
-)
-
-(define-method add_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_add_profile")
-  (return-type "none")
-  (parameters
-    '("const-MooTermProfile*" "profile")
-  )
-)
-
-(define-method remove_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_remove_profile")
-  (return-type "none")
-  (parameters
-    '("guint" "index")
-  )
-)
-
-(define-method set_default_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_set_default_profile")
-  (return-type "none")
-  (parameters
-    '("int" "profile")
-  )
-)
-
-(define-method get_default_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_get_default_profile")
-  (return-type "int")
-)
-
-(define-method start_default_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_start_default_profile")
+  (c-name "moo_term_start_default_shell")
   (return-type "gboolean")
   (parameters
-    '("GError**" "error")
-  )
-)
-
-(define-method start_profile
-  (of-object "MooTerm")
-  (c-name "moo_term_start_profile")
-  (return-type "gboolean")
-  (parameters
-    '("int" "profile")
     '("GError**" "error")
   )
 )

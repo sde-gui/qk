@@ -19,7 +19,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_TERM_PROFILE       (moo_term_profile_get_type ())
 #define MOO_TYPE_TERM_COMMAND       (moo_term_command_get_type ())
 #define MOO_TYPE_TERM_ERASE_BINDING (moo_term_erase_binding_get_type ())
 
@@ -33,9 +32,7 @@ G_BEGIN_DECLS
 typedef struct _MooTerm             MooTerm;
 typedef struct _MooTermPrivate      MooTermPrivate;
 typedef struct _MooTermClass        MooTermClass;
-typedef struct _MooTermProfile      MooTermProfile;
 typedef struct _MooTermCommand      MooTermCommand;
-typedef struct _MooTermProfileArray MooTermProfileArray;
 
 
 struct _MooTerm
@@ -74,21 +71,9 @@ typedef enum {
     MOO_TERM_ERASE_DELETE_SEQUENCE
 } MooTermEraseBinding;
 
-struct _MooTermProfile {
-    char            *name;
-    MooTermCommand  *cmd;
-    char           **envp;
-    char            *working_dir;
-};
-
 struct _MooTermCommand {
     char    *cmd_line;
     char   **argv;
-};
-
-struct _MooTermProfileArray {
-    MooTermProfile **data;
-    guint            len;
 };
 
 #define MOO_TERM_ERROR             (moo_term_error_quark())
@@ -96,8 +81,6 @@ GQuark      moo_term_error_quark            (void) G_GNUC_CONST;
 
 GType       moo_term_get_type               (void) G_GNUC_CONST;
 GType       moo_term_command_get_type       (void) G_GNUC_CONST;
-GType       moo_term_profile_get_type       (void) G_GNUC_CONST;
-GType       moo_term_profile_array_get_type (void) G_GNUC_CONST;
 GType       moo_term_erase_binding_get_type (void) G_GNUC_CONST;
 
 void        moo_term_set_adjustment         (MooTerm        *term,
@@ -164,39 +147,7 @@ void        moo_term_soft_reset             (MooTerm        *term);
 guint       moo_term_char_height            (MooTerm        *term);
 guint       moo_term_char_width             (MooTerm        *term);
 
-
-MooTermProfile      *moo_term_profile_new       (const char     *name,
-                                                 const MooTermCommand *cmd,
-                                                 char          **envp,
-                                                 const char     *working_dir);
-MooTermProfile      *moo_term_profile_copy      (const MooTermProfile *profile);
-void                 moo_term_profile_free      (MooTermProfile *profile);
-
-MooTermProfileArray *moo_term_profile_array_new (void);
-void                 moo_term_profile_array_add (MooTermProfileArray *array,
-                                                 const MooTermProfile *profile);
-MooTermProfileArray *moo_term_profile_array_copy(MooTermProfileArray *array);
-void                 moo_term_profile_array_free(MooTermProfileArray *array);
-
-MooTermProfileArray *moo_term_get_profiles      (MooTerm        *term);
-MooTermProfile      *moo_term_get_profile       (MooTerm        *term,
-                                                 guint           index);
-
-void        moo_term_set_profile            (MooTerm        *term,
-                                             guint           index,
-                                             const MooTermProfile *profile);
-void        moo_term_add_profile            (MooTerm        *term,
-                                             const MooTermProfile *profile);
-void        moo_term_remove_profile         (MooTerm        *term,
-                                             guint           index);
-
-void        moo_term_set_default_profile    (MooTerm        *term,
-                                             int             profile);
-int         moo_term_get_default_profile    (MooTerm        *term);
-gboolean    moo_term_start_default_profile  (MooTerm        *term,
-                                             GError        **error);
-gboolean    moo_term_start_profile          (MooTerm        *term,
-                                             int             profile,
+gboolean    moo_term_start_default_shell    (MooTerm        *term,
                                              GError        **error);
 
 MooTermCommand  *moo_term_command_new       (const char     *cmd_line,

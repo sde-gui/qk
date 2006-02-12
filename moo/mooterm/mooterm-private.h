@@ -154,10 +154,6 @@ struct _MooTermPrivate {
         gboolean            allow_bold;
     } settings;
 
-    MooTermProfileArray *profiles;
-    MooTermProfile      *default_shell;
-    int                  default_profile;
-
     struct {
         guint           drag_scroll_timeout;
         GdkEventType    drag_button;
