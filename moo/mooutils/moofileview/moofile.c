@@ -1801,14 +1801,13 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size,
                                                  int             pixel_size);
-static GdkPixbuf    *_create_named_icon_with_fallback
-                                                (GtkIconTheme   *icon_theme,
-                                                 const char     *name,
-                                                 const char     *fallback_name,
-                                                 const char     *fallback_stock,
+static GdkPixbuf    *_create_named_icon         (GtkIconTheme   *icon_theme,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size,
-                                                 int             pixel_size);
+                                                 int             pixel_size,
+                                                 const char     *fallback_stock,
+                                                 const char     *first_name,
+                                                 ...) G_GNUC_NULL_TERMINATED;
 static GdkPixbuf    *_create_broken_link_icon   (GtkIconTheme   *icon_theme,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size);
@@ -1948,69 +1947,83 @@ static GdkPixbuf    *_create_icon_simple        (GtkIconTheme   *icon_theme,
                                             NULL, widget, size);
 
         case MOO_ICON_HOME:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-home",
-                                                     NULL,
-                                                     GTK_STOCK_HOME,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_HOME,
+                                       "user-home",
+                                       "gnome-fs-home",
+                                       "folder",
+                                       "gnome-fs-directory",
+                                       NULL);
         case MOO_ICON_DESKTOP:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-desktop",
-                                                     "gnome-fs-directory",
-                                                     GTK_STOCK_DIRECTORY,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_DIRECTORY,
+                                       "user-desktop",
+                                       "gnome-fs-desktop",
+                                       "folder",
+                                       "gnome-fs-directory",
+                                       NULL);
         case MOO_ICON_TRASH:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-trash-full",
-                                                     "gnome-fs-directory",
-                                                     GTK_STOCK_DIRECTORY,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_DIRECTORY,
+                                       "user-trash",
+                                       "gnome-fs-trash-full",
+                                       "folder",
+                                       "gnome-fs-directory",
+                                       NULL);
         case MOO_ICON_DIRECTORY:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-directory",
-                                                     NULL,
-                                                     GTK_STOCK_DIRECTORY,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_DIRECTORY,
+                                       "folder",
+                                       "gnome-fs-directory",
+                                       NULL);
         case MOO_ICON_BROKEN_LINK:
             return _create_broken_link_icon (icon_theme, widget, size);
         case MOO_ICON_NONEXISTENT:
             return _create_broken_icon (icon_theme, widget, size);
         case MOO_ICON_BLOCK_DEVICE:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-blockdev",
-                                                     NULL,
-                                                     GTK_STOCK_HARDDISK,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_HARDDISK,
+                                       "drive-harddisk",
+                                       "gnome-fs-blockdev",
+                                       NULL);
         case MOO_ICON_CHARACTER_DEVICE:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-chardev",
-                                                     "gnome-fs-regular",
-                                                     GTK_STOCK_FILE,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_FILE,
+                                       "gnome-fs-chardev",
+                                       "gnome-fs-regular",
+                                       NULL);
         case MOO_ICON_FIFO:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-fifo",
-                                                     "gnome-fs-regular",
-                                                     GTK_STOCK_FILE,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_FILE,
+                                       "gnome-fs-fifo",
+                                       "gnome-fs-regular",
+                                       NULL);
         case MOO_ICON_SOCKET:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-socket",
-                                                     "gnome-fs-regular",
-                                                     GTK_STOCK_FILE,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_FILE,
+                                       "gnome-fs-socket",
+                                       "gnome-fs-regular",
+                                       NULL);
         case MOO_ICON_FILE:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-regular",
-                                                     NULL,
-                                                     GTK_STOCK_FILE,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_FILE,
+                                       "gnome-fs-regular",
+                                       NULL);
         case MOO_ICON_BLANK:
-            return _create_named_icon_with_fallback (icon_theme,
-                                                     "gnome-fs-regular",
-                                                     NULL,
-                                                     GTK_STOCK_FILE,
-                                                     widget, size, width);
+            return _create_named_icon (icon_theme,
+                                       widget, size, width,
+                                       GTK_STOCK_FILE,
+                                       "gnome-fs-regular",
+                                       NULL);
 
         case MOO_ICON_MAX:
             g_return_val_if_reached (NULL);
@@ -2020,34 +2033,41 @@ static GdkPixbuf    *_create_icon_simple        (GtkIconTheme   *icon_theme,
 }
 
 
-static GdkPixbuf    *_create_named_icon_with_fallback
-                                                (GtkIconTheme   *icon_theme,
-                                                 const char     *name,
-                                                 const char     *fallback_name,
-                                                 const char     *fallback_stock,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size)
+static GdkPixbuf *
+_create_named_icon (GtkIconTheme   *icon_theme,
+                    GtkWidget      *widget,
+                    GtkIconSize     size,
+                    int             pixel_size,
+                    const char     *fallback_stock,
+                    const char     *first_name,
+                    ...)
 {
-    GdkPixbuf *pixbuf;
+    GdkPixbuf *pixbuf = NULL;
+    va_list name_list;
+    const char *name;
 
-    g_return_val_if_fail (name != NULL, NULL);
+    g_return_val_if_fail (first_name != NULL, NULL);
 
-    pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
+    name = first_name;
+    va_start (name_list, first_name);
 
-    if (!pixbuf)
-        g_warning ("could not load '%s' icon", name);
-
-    if (!pixbuf && fallback_name)
+    while (name)
     {
-        pixbuf = gtk_icon_theme_load_icon (icon_theme, fallback_name, pixel_size, 0, NULL);
-        if (!pixbuf)
-            g_warning ("could not load '%s' icon", fallback_name);
+        pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
+
+        if (pixbuf)
+            break;
+
+        g_message ("could not load '%s' icon", name);
+        name = va_arg (name_list, char*);
     }
+
+    va_end (name_list);
 
     if (!pixbuf && fallback_stock)
     {
         pixbuf = gtk_widget_render_icon (widget, fallback_stock, size, NULL);
+
         if (!pixbuf)
             g_warning ("could not load stock '%s' icon", fallback_stock);
     }
@@ -2105,11 +2125,12 @@ static guint8   get_blank_icon              (void)
 }
 
 
-static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
-                                                 const char     *mime_type,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size)
+static GdkPixbuf *
+_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
+                            const char     *mime_type,
+                            GtkWidget      *widget,
+                            GtkIconSize     size,
+                            int             pixel_size)
 {
     const char *separator;
     GString *icon_name;
@@ -2117,6 +2138,7 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
     char **parent_types;
 
     separator = strchr (mime_type, '/');
+
     if (!separator)
     {
         g_warning ("%s: mime type '%s' is invalid",
@@ -2124,6 +2146,22 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
         return _create_icon_simple (icon_theme, MOO_ICON_FILE, NULL,
                                     widget, size);
     }
+
+    icon_name = g_string_new_len (mime_type, separator - mime_type);
+    g_string_append_c (icon_name, '-');
+    g_string_append (icon_name, separator + 1);
+    pixbuf = gtk_icon_theme_load_icon (icon_theme, icon_name->str,
+                                       pixel_size, 0, NULL);
+    g_string_free (icon_name, TRUE);
+
+    if (pixbuf)
+        return pixbuf;
+
+    pixbuf = gtk_icon_theme_load_icon (icon_theme, separator + 1,
+                                       pixel_size, 0, NULL);
+
+    if (pixbuf)
+        return pixbuf;
 
     icon_name = g_string_new ("gnome-mime-");
     g_string_append_len (icon_name, mime_type, separator - mime_type);
