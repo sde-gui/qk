@@ -288,7 +288,6 @@ static void     kill_child      (MooTermPt      *pt_gen)
 
     if (pt->io)
     {
-        pt_write (MOO_TERM_PT (pt), "\4", 1);
         g_io_channel_shutdown (pt->io, TRUE, NULL);
         g_io_channel_unref (pt->io);
         pt->io = NULL;

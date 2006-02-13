@@ -5,7 +5,7 @@ DIST_SUBDIRS = m4
 # pkgconfigdir = $(libdir)/pkgconfig
 # pkgconfig_DATA = moo.pc
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 $(ACLOCAL_FLAGS)
 
 
 DEFAULT_INCLUDES =

@@ -7,17 +7,17 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts>
+      <part>kdevopenwith</part>
       <part>kdevabbrev</part>
+      <part>kdevctags2</part>
       <part>kdevclassview</part>
       <part>kdevsnippet</part>
-      <part>kdevctags2</part>
       <part>kdevdocumentation</part>
       <part>kdevdoxygen</part>
       <part>kdevfilegroups</part>
-      <part>kdevfilelist</part>
       <part>kdevfileview</part>
+      <part>kdevfilelist</part>
       <part>kdevdistpart</part>
-      <part>kdevopenwith</part>
       <part>kdevregexptest</part>
       <part>kdevscripting</part>
       <part>kdevtexttools</part>
@@ -51,8 +51,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cflags>-O0 -g3 -pg</cflags>
-        <cxxflags>-O0 -g3 -pg</cxxflags>
+        <cflags>-O0 -g3</cflags>
+        <cxxflags>-O0 -g3</cxxflags>
         <envvars/>
         <topsourcedir/>
         <cppflags/>
@@ -166,8 +166,8 @@
   </kdevautoproject>
   <kdevdebugger>
     <general>
-      <dbgshell>libtool</dbgshell>
-      <programargs>--gdk-debug bash</programargs>
+      <dbgshell>/usr/local/gnu-autotools/bin/libtool</dbgshell>
+      <programargs>bash</programargs>
       <gdbpath/>
       <configGdbScript/>
       <runShellScript/>
@@ -236,16 +236,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" create="template" name="GAP source" >
+      <type icon="source" ext="g" name="GAP source" create="template" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
+      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
+      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" create="template" name="C Source" >
+      <type icon="source_c" ext="c" name="C Source" create="template" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>

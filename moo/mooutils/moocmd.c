@@ -18,6 +18,7 @@
 #ifndef __WIN32__
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
 #else
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -448,7 +449,7 @@ real_child_setup (gpointer user_data)
         gpointer user_data;
     } *data = user_data;
 
-    setpgrp ();
+    setpgid (0, 0);
 
     if (data->child_setup)
         data->child_setup (data->user_data);

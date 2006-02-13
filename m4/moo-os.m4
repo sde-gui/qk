@@ -6,6 +6,7 @@ AC_DEFUN([MOO_AC_CHECK_OS],[
     MOO_OS_MINGW="no"
     MOO_OS_DARWIN="no"
     MOO_OS_UNIX="no"
+    MOO_OS_BSD="no"
 
     case $host in
     *-*-mingw32*)
@@ -19,6 +20,12 @@ AC_DEFUN([MOO_AC_CHECK_OS],[
     *-*-darwin*)
         echo "++++ building for DARWIN ++++"
         MOO_OS_DARWIN="yes"
+        MOO_OS_BSD="yes"
+        MOO_OS_UNIX="yes"
+        ;;
+    *-*-freebsd*)
+        echo "++++ building for FREEBSD ++++"
+        MOO_OS_BSD="yes"
         MOO_OS_UNIX="yes"
         ;;
     *)
@@ -29,6 +36,9 @@ AC_DEFUN([MOO_AC_CHECK_OS],[
 
     if test x$MOO_OS_DARWIN = xyes; then
         AC_DEFINE(MOO_OS_DARWIN, 1, [darwin])
+    fi
+    if test x$MOO_OS_BSD = xyes; then
+        AC_DEFINE(MOO_OS_BSD, 1, [bsd])
     fi
     if test x$MOO_OS_UNIX = xyes; then
         AC_DEFINE(MOO_OS_UNIX, 1, [unix])
@@ -44,4 +54,5 @@ AC_DEFUN([MOO_AC_CHECK_OS],[
     AM_CONDITIONAL(MOO_OS_MINGW, test x$MOO_OS_MINGW = "xyes")
     AM_CONDITIONAL(MOO_OS_CYGWIN, test x$MOO_OS_CYGWIN = "xyes")
     AM_CONDITIONAL(MOO_OS_DARWIN, test x$MOO_OS_DARWIN = "xyes")
+    AM_CONDITIONAL(MOO_OS_BSD, test x$MOO_OS_BSD = "xyes")
 ])

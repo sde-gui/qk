@@ -75,7 +75,7 @@
 #ifdef HAVE_STROPTS_H
 #include <stropts.h>
 #endif
-/* for darwin */
+/* for darwin and bsd */
 #ifdef HAVE_UTIL_H
 #include <util.h>
 #endif
@@ -631,7 +631,7 @@ _vte_pty_get_size(int master, int *columns, int *rows)
 }
 
 
-#ifndef MOO_OS_DARWIN
+#ifndef MOO_OS_BSD
 static char *
 _vte_pty_ptsname(int master)
 {
@@ -667,10 +667,10 @@ _vte_pty_ptsname(int master)
 #endif
 	return NULL;
 }
-#endif /* MOO_OS_DARWIN */
+#endif /* MOO_OS_BSD */
 
 
-#ifndef MOO_OS_DARWIN
+#ifndef MOO_OS_BSD
 static int
 _vte_pty_getpt()
 {
@@ -694,7 +694,7 @@ _vte_pty_getpt()
 	fcntl(fd, F_SETFL, flags);
 	return fd;
 }
-#endif /* !MOO_OS_DARWIN */
+#endif /* !MOO_OS_BSD */
 
 static int
 _vte_pty_grantpt(int master)
@@ -715,16 +715,16 @@ _vte_pty_unlockpt(int fd)
 	int zero = 0;
 	return ioctl(fd, TIOCSPTLCK, &zero);
 #else
-#ifndef MOO_OS_DARWIN
+#ifndef MOO_OS_BSD
 	return -1;
-#else /* !MOO_OS_DARWIN */
+#else /* !MOO_OS_BSD */
 	return 0;
-#endif /* !MOO_OS_DARWIN */
+#endif /* !MOO_OS_BSD */
 #endif
 }
 
 
-#ifndef MOO_OS_DARWIN
+#ifndef MOO_OS_BSD
 
 static int
 _vte_pty_open_unix98(pid_t *child, char **env_add,
@@ -758,7 +758,7 @@ _vte_pty_open_unix98(pid_t *child, char **env_add,
 	return fd;
 }
 
-#else /* MOO_OS_DARWIN */
+#else /* MOO_OS_BSD */
 
 static int
 _vte_pty_open_bsd   (pid_t *child, char **env_add,
@@ -790,7 +790,7 @@ _vte_pty_open_bsd   (pid_t *child, char **env_add,
 	return master;
 }
 
-#endif /* MOO_OS_DARWIN */
+#endif /* MOO_OS_BSD */
 
 
 #if 0
@@ -889,17 +889,17 @@ _vte_pty_open(pid_t *child, char **env_add,
               G_GNUC_UNUSED int utmp,
               G_GNUC_UNUSED int wtmp)
 {
-#ifndef MOO_OS_DARWIN
+#ifndef MOO_OS_BSD
 	int ret = -1;
 	if (ret == -1) {
 		ret = _vte_pty_open_unix98(child, env_add, command, argv,
 					   directory, columns, rows);
 	}
 	return ret;
-#else /* MOO_OS_DARWIN */
+#else /* MOO_OS_BSD */
 	return _vte_pty_open_bsd (child, env_add, command, argv,
 				  directory, columns, rows);
-#endif /* MOO_OS_DARWIN */
+#endif /* MOO_OS_BSD */
 }
 
 /**

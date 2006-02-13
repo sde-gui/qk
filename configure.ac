@@ -10,6 +10,7 @@ m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version]
 
 AC_INIT(libmoo, [moo_version], [muntyan@math.tamu.edu], libmoo)
 AM_INIT_AUTOMAKE(libmoo, [moo_version])
+AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
 
@@ -40,6 +41,7 @@ AC_HEADER_STDC
 AC_PROG_INSTALL
 MOO_AC_PROG_WINDRES
 
+AC_SUBST(ACLOCAL_FLAGS)
 
 #  Misc stuff
 MOO_AC_FUNCS
@@ -132,6 +134,9 @@ fi
 if test "x$build_mooterm" != "xno"; then
     AC_DEFINE(MOO_BUILD_TERM,, [build mooterm])
     MOO_BUILD_TERM=1
+    if test "x$MOO_OS_BSD" = "xyes"; then
+        MOO_LIBS="-lutil $MOO_LIBS"
+    fi
 fi
 if test "x$build_mooapp" != "xno"; then
     AC_DEFINE(MOO_BUILD_APP,, [build mooapp])
@@ -146,10 +151,10 @@ AC_SUBST(MOO_BUILD_APP)
 moo_top_src_dir=`cd $srcdir && pwd`
 moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
 MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
-MOO_LIBS="$GTK_LIBS"
+MOO_LIBS="$GTK_LIBS $MOO_LIBS"
 
 if test x$MOO_USE_FAM = xyes; then
-    MOO_LIBS="$MOO_LIBS $FAM_LIBS"
+    MOO_LIBS="$FAM_LIBS $MOO_LIBS"
 fi
 
 AC_SUBST(MOO_CFLAGS)
