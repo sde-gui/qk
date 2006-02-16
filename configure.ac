@@ -122,14 +122,17 @@ MOO_BUILD_UTILS=0
 MOO_BUILD_EDIT=0
 MOO_BUILD_TERM=0
 MOO_BUILD_APP=0
+MOO_BUILD_COMPS=
 
 if test "x$build_mooutils" != "xno"; then
     AC_DEFINE(MOO_BUILD_UTILS,, [build mooutils])
     MOO_BUILD_UTILS=1
+    MOO_BUILD_COMPS="mooutils $MOO_BUILD_COMPS"
 fi
 if test "x$build_mooedit" != "xno"; then
     AC_DEFINE(MOO_BUILD_EDIT,, [build mooedit])
     MOO_BUILD_EDIT=1
+    MOO_BUILD_COMPS="mooedit $MOO_BUILD_COMPS"
 fi
 if test "x$build_mooterm" != "xno"; then
     AC_DEFINE(MOO_BUILD_TERM,, [build mooterm])
@@ -137,10 +140,12 @@ if test "x$build_mooterm" != "xno"; then
     if test "x$MOO_OS_BSD" = "xyes"; then
         MOO_LIBS="-lutil $MOO_LIBS"
     fi
+    MOO_BUILD_COMPS="mooterm $MOO_BUILD_COMPS"
 fi
 if test "x$build_mooapp" != "xno"; then
     AC_DEFINE(MOO_BUILD_APP,, [build mooapp])
     MOO_BUILD_APP=1
+    MOO_BUILD_COMPS="mooapp $MOO_BUILD_COMPS"
 fi
 
 AC_SUBST(MOO_BUILD_UTILS)
@@ -234,7 +239,9 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     if test "x$MOO_OS_MINGW" = "xyes"; then
         system="MINGW"
     elif test "x$MOO_OS_DARWIN" = "xyes"; then
-        system="DARWIN"
+        system="UNIX (DARWIN)"
+    elif test "x$MOO_OS_BSD" = "xyes"; then
+        system="UNIX (BSD)"
     else
         system="UNIX"
     fi
@@ -245,13 +252,17 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
 
     echo
     echo "    OS                                        = $system"
-    echo "    prefix                                    = $mooprefix"
     echo "    python support                            = $MOO_USE_PYTHON"
     echo "    pygtk support                             = $MOO_USE_PYGTK"
     echo "    xml support                               = $MOO_USE_XML"
+    echo "    fam support                               = $MOO_USE_FAM"
+    echo "    xdgmime support                           = $MOO_USE_XDGMIME"
     echo
+    echo "    prefix                                    = $mooprefix"
     echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
+    echo "    plugins go to                             = $MOO_PLUGINS_DIR"
     echo
+    echo "    components: $MOO_BUILD_COMPS"
 else
     echo
     echo "    Building termhelper.exe on CYGWIN"
