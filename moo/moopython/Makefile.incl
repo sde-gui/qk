@@ -7,15 +7,14 @@ moopython_srcdir = $(srcdir)/$(moopython)
 
 moopython_sources =                             \
     $(moopython)/moopython-utils.c              \
-    $(moopython)/moopython-utils.h              \
+    $(moopython)/moopython-utils.h
+
+if MOO_BUILD_EDIT
+moopython_sources +=                            \
     $(moopython)/mooplugin-python.c             \
     $(moopython)/mooplugin-python.h
+endif
 
 moopython_built_sources =
 moopython_nodist_sources =
 moopython_cleanfiles =
-
-if MOO_USE_PYGTK
-if !MOO_OS_MINGW
-endif
-endif

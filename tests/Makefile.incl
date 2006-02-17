@@ -29,8 +29,15 @@ noinst_PROGRAMS += mterm #termbuffer
 endif
 endif
 endif
+
 if MOO_BUILD_UTILS
-# noinst_PROGRAMS += testpanedfileview
+if !MOO_BUILD_EDIT
+if !MOO_BUILD_TERM
+if !MOO_OS_CYGWIN
+noinst_PROGRAMS += testfileview
+endif
+endif
+endif
 endif
 
 bin_PROGRAMS += $(medit)
