@@ -2421,7 +2421,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
         {
             MooEdit *doc;
             GtkTextBuffer *buf;
-            char *text = gtk_selection_data_get_text (data);
+            char *text = (char *) gtk_selection_data_get_text (data);
 
             if (!text)
                 goto out;
