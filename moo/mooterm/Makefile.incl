@@ -106,4 +106,5 @@ termhelper_LDADD = termhelper_res.res
 else
 termhelper_res.res: $(mooterm)/termhelper_res.rc
 	touch termhelper_res.res
+CLEANFILES += termhelper_res.res
 endif
