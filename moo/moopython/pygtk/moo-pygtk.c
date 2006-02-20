@@ -35,7 +35,6 @@ static PyObject *moo_detailed_version (void)
     g_return_val_if_fail (res != NULL, NULL);
 
     PyDict_SetItemString (res, "full", PyString_FromString (MOO_VERSION));
-    PyDict_SetItemString (res, "api", PyString_FromString (MOO_API_VERSION));
     PyDict_SetItemString (res, "major", PyInt_FromLong (MOO_VERSION_MAJOR));
     PyDict_SetItemString (res, "minor", PyInt_FromLong (MOO_VERSION_MINOR));
     PyDict_SetItemString (res, "micro", PyInt_FromLong (MOO_VERSION_MICRO));
