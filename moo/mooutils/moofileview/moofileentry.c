@@ -639,8 +639,6 @@ completion_tab_key (MooFileEntryCompletion *cmpl)
 static gboolean
 completion_popup_tab_key_press (MooFileEntryCompletion *cmpl)
 {
-    cmpl->priv->recheck_prefix = FALSE;
-
     int n_items;
     GtkTreePath *path;
     GtkTreeIter iter;
@@ -648,6 +646,8 @@ completion_popup_tab_key_press (MooFileEntryCompletion *cmpl)
     char *text;
     GString *prefix;
     gboolean unique;
+
+    cmpl->priv->recheck_prefix = FALSE;
 
     n_items = gtk_tree_model_iter_n_children (cmpl->priv->model, NULL);
 
