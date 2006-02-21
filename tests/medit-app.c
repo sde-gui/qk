@@ -295,5 +295,8 @@ int main (int argc, char *argv[])
     editor = moo_app_get_editor (app);
     moo_editor_new_window (editor);
 
+    g_signal_connect_swapped (editor, "all-windows-closed",
+                              G_CALLBACK (moo_app_quit), app);
+
     return moo_app_run (app);
 }

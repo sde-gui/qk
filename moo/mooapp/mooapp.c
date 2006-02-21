@@ -52,7 +52,6 @@ struct _MooAppPrivate {
     gboolean    run_python;
     gboolean    run_input;
     gboolean    run_output;
-    MooAppWindowPolicy window_policy;
 
     gboolean    running;
     gboolean    in_try_quit;
@@ -116,8 +115,6 @@ static void     moo_app_set_name        (MooApp             *app,
 static void     moo_app_set_description (MooApp             *app,
                                          const char         *description);
 
-static void     all_editors_closed      (MooApp             *app);
-
 static void     start_io                (MooApp             *app);
 static void     execute_selection       (MooEditWindow      *window);
 
@@ -158,7 +155,6 @@ enum {
     PROP_SHORT_NAME,
     PROP_FULL_NAME,
     PROP_DESCRIPTION,
-    PROP_WINDOW_POLICY,
     PROP_RUN_PYTHON,
     PROP_RUN_INPUT,
     PROP_RUN_OUTPUT,
@@ -233,15 +229,6 @@ moo_app_class_init (MooAppClass *klass)
                                              "description",
                                              NULL,
                                              G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_WINDOW_POLICY,
-                                     g_param_spec_flags ("window-policy",
-                                             "window-policy",
-                                             "window-policy",
-                                             MOO_TYPE_APP_WINDOW_POLICY,
-                                             MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
                                      PROP_RUN_PYTHON,
@@ -368,12 +355,8 @@ moo_app_instance_init (MooApp *app)
     app->priv->info = moo_app_info_new ();
 
     app->priv->info->version = g_strdup (APP_VERSION);
-    app->priv->info->website = g_strdup ("http://ggap.sourceforge.net/");
-    app->priv->info->website_label = g_strdup ("ggap.sourceforge.net");
-
-#ifdef MOO_BUILD_TERM
-    moo_app_set_terminal_type (app, MOO_TYPE_TERM_WINDOW);
-#endif
+    app->priv->info->website = g_strdup ("http://ggap.berlios.de/");
+    app->priv->info->website_label = g_strdup ("http://ggap.berlios.de");
 }
 
 
@@ -459,11 +442,6 @@ moo_app_set_property (GObject        *object,
             moo_app_set_description (app, g_value_get_string (value));
             break;
 
-        case PROP_WINDOW_POLICY:
-            app->priv->window_policy = g_value_get_flags (value);
-            g_object_notify (object, "window-policy");
-            break;
-
         case PROP_RUN_PYTHON:
             app->priv->run_python = g_value_get_boolean (value);
             break;
@@ -523,10 +501,6 @@ moo_app_get_property (GObject        *object,
 
         case PROP_DESCRIPTION:
             g_value_set_string (value, app->priv->info->description);
-            break;
-
-        case PROP_WINDOW_POLICY:
-            g_value_set_flags (value, app->priv->window_policy);
             break;
 
         case PROP_RUN_PYTHON:
@@ -920,11 +894,6 @@ moo_app_init_real (MooApp *app)
 
         moo_lang_mgr_read_dirs (lang_mgr);
 
-        g_signal_connect_swapped (app->priv->editor,
-                                  "all-windows-closed",
-                                  G_CALLBACK (all_editors_closed),
-                                  app);
-
         plugin_dirs = moo_app_get_plugin_dirs (app);
         moo_set_plugin_dirs (plugin_dirs);
         moo_plugin_init_builtin ();
@@ -1256,86 +1225,6 @@ static void install_actions (MooApp *app, GType  type)
 }
 
 
-#ifdef MOO_BUILD_TERM
-static void terminal_destroyed (MooTermWindow *term,
-                                MooApp        *app)
-{
-    MooAppWindowPolicy policy;
-    gboolean quit;
-
-    app->priv->terminals = g_slist_remove (app->priv->terminals,
-                                           term);
-
-    if (app->priv->term_window == term)
-        app->priv->term_window = app->priv->terminals ?
-                app->priv->terminals->data : NULL;
-
-    policy = app->priv->window_policy;
-    quit = (policy & MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS) ||
-            ((policy & MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS) &&
-             !moo_editor_get_active_window (app->priv->editor));
-
-    if (quit)
-        moo_app_quit (app);
-}
-
-
-static MooTermWindow *new_terminal (MooApp *app)
-{
-    MooTermWindow *term;
-
-    term = g_object_new (app->priv->term_window_type,
-                         "ui-xml", app->priv->ui_xml,
-                         NULL);
-    app->priv->terminals = g_slist_append (app->priv->terminals, term);
-
-    if (!app->priv->term_window)
-        app->priv->term_window = term;
-
-    g_signal_connect (term, "destroy",
-                      G_CALLBACK (terminal_destroyed), app);
-
-    return term;
-}
-
-
-void
-moo_app_set_terminal_type (MooApp     *app,
-                           GType       type)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (g_type_is_a (type, MOO_TYPE_TERM_WINDOW));
-    app->priv->term_window_type = type;
-}
-
-
-MooTermWindow*
-moo_app_get_terminal (MooApp *app)
-{
-    MooTermWindow *term;
-
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-    if (app->priv->terminals)
-    {
-        return app->priv->terminals->data;
-    }
-    else
-    {
-        term = new_terminal (app);
-        gtk_window_present (GTK_WINDOW (term));
-        return term;
-    }
-}
-#else /* !MOO_BUILD_TERM */
-MooTermWindow *moo_app_get_terminal (MooApp *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-    g_return_val_if_reached (NULL);
-}
-#endif /* !MOO_BUILD_TERM */
-
-
 static void install_editor_actions  (MooApp *app)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
@@ -1408,17 +1297,6 @@ static void install_terminal_actions (G_GNUC_UNUSED MooApp *app)
 #endif /* !MOO_BUILD_TERM */
 
 
-static void     all_editors_closed      (MooApp         *app)
-{
-    MooAppWindowPolicy policy = app->priv->window_policy;
-    gboolean quit = (policy & MOO_APP_QUIT_ON_CLOSE_ALL_EDITORS) ||
-            ((policy & MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS) && !app->priv->terminals);
-
-    if (quit)
-        moo_app_quit (app);
-}
-
-
 MooUIXML        *moo_app_get_ui_xml             (MooApp     *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
@@ -1453,27 +1331,6 @@ void             moo_app_set_ui_xml             (MooApp     *app,
 
     for (l = app->priv->terminals; l != NULL; l = l->next)
         moo_window_set_ui_xml (l->data, xml);
-}
-
-
-GType
-moo_app_window_policy_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GFlagsValue values[] = {
-            { MOO_APP_QUIT_ON_CLOSE_ALL_EDITORS, (char*)"MOO_APP_QUIT_ON_CLOSE_ALL_EDITORS", (char*)"quit-on-close-all-editors" },
-            { MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS, (char*)"MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS", (char*)"quit-on-close-all-terminals" },
-            { MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS, (char*)"MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS", (char*)"quit-on-close-all-windows" },
-            { 0, NULL, NULL }
-        };
-
-        type = g_flags_register_static ("MooAppWindowPolicy", values);
-    }
-
-    return type;
 }
 
 

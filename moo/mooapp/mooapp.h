@@ -21,7 +21,6 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_APP_INFO           (moo_app_info_get_type ())
-#define MOO_TYPE_APP_WINDOW_POLICY  (moo_app_window_policy_get_type ())
 
 #define MOO_TYPE_APP                (moo_app_get_type ())
 #define MOO_APP(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_APP, MooApp))
@@ -35,13 +34,6 @@ typedef struct _MooApp              MooApp;
 typedef struct _MooAppInfo          MooAppInfo;
 typedef struct _MooAppPrivate       MooAppPrivate;
 typedef struct _MooAppClass         MooAppClass;
-
-typedef enum _MooAppWindowPolicy
-{
-    MOO_APP_QUIT_ON_CLOSE_ALL_EDITORS   = 1 << 0,
-    MOO_APP_QUIT_ON_CLOSE_ALL_TERMINALS = 1 << 1,
-    MOO_APP_QUIT_ON_CLOSE_ALL_WINDOWS   = 1 << 2
-} MooAppWindowPolicy;
 
 struct _MooAppInfo
 {
@@ -83,7 +75,6 @@ struct _MooAppClass
 
 GType            moo_app_get_type               (void) G_GNUC_CONST;
 GType            moo_app_info_get_type          (void) G_GNUC_CONST;
-GType            moo_app_window_policy_get_type (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
@@ -103,10 +94,6 @@ const char      *moo_app_get_output_pipe_name   (MooApp     *app);
 const char      *moo_app_get_application_dir    (MooApp     *app);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
-
-MooTermWindow   *moo_app_get_terminal           (MooApp     *app);
-void             moo_app_set_terminal_type      (MooApp     *app,
-                                                 GType       type);
 
 void             moo_app_prefs_dialog           (GtkWidget  *parent);
 void             moo_app_about_dialog           (GtkWidget  *parent);

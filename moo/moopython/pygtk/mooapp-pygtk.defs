@@ -102,21 +102,6 @@
   (return-type "MooEditor*")
 )
 
-(define-method get_terminal
-  (of-object "MooApp")
-  (c-name "moo_app_get_terminal")
-  (return-type "MooTermWindow*")
-)
-
-(define-method set_terminal_type
-  (of-object "MooApp")
-  (c-name "moo_app_set_terminal_type")
-  (return-type "none")
-  (parameters
-    '("GType" "type")
-  )
-)
-
 (define-function prefs_dialog
   (c-name "moo_app_prefs_dialog")
   (return-type "none")
