@@ -4947,7 +4947,7 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
     }
     else
     {
-        char *text = gtk_selection_data_get_text (data);
+        char *text = (char*) gtk_selection_data_get_text (data);
 
         if (text)
             success = moo_file_view_drop_text (fileview, text, path, widget,
