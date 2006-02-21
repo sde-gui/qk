@@ -4,7 +4,6 @@
 AC_DEFUN([MOO_AC_DEBUG],[
     MOO_DEBUG="no"
     MOO_DEBUG_CFLAGS=
-    MOO_DEBUG_CXXFLAGS=
 
     AC_ARG_ENABLE(debug,
     AC_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
@@ -46,26 +45,19 @@ AC_DEFUN([MOO_AC_DEBUG],[
 
     if test x$all_intel_warnings = "xyes"; then
         MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -Wall -Wcheck -w2"
-        MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_CXXFLAGS -Wall -Wcheck -w2 -wd981,279,858,1418 -wd383"
     elif test x$all_gcc_warnings = "xyes"; then
 MOO_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_DEBUG_CFLAGS -W -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization" -Wdeclaration-after-statement #-Wunreachable-code
+-Wdisabled-optimization -Wdeclaration-after-statement -Wunreachable-code"
 MOO_PYTHON_DEBUG_CFLAGS="$MOO_DEBUG_GCC_CFLAGS $MOO_PYTHON_DEBUG_CFLAGS -Wall -Wpointer-arith dnl
 -Wcast-align -Wsign-compare -Winline -Wreturn-type dnl
 -Wmissing-prototypes -Wmissing-declarations dnl
 -Wmissing-noreturn -Wmissing-format-attribute -Wnested-externs dnl
--Wdisabled-optimization" #-Wunreachable-code
-MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_GCC_CXXFLAGS $MOO_DEBUG_CXXFLAGS -W -Wall -Woverloaded-virtual dnl
--Wpointer-arith -Wcast-align -Wsign-compare -Wnon-virtual-dtor dnl
--Wno-long-long -Wundef -Wconversion -Wchar-subscripts -Wwrite-strings dnl
--Wmissing-format-attribute -Wcast-align -Wdisabled-optimization dnl
--Wnon-template-friend -Wsign-promo -Wno-ctor-dtor-privacy"
+-Wdisabled-optimization -Wunreachable-code"
     elif test x$GCC = "xyes"; then
         MOO_DEBUG_CFLAGS=$MOO_DEBUG_GCC_CFLAGS
-        MOO_DEBUG_CXXFLAGS=$MOO_DEBUG_GCC_CXXFLAGS
     fi
 
     if test x$MOO_DEBUG = "xyes"; then
@@ -78,28 +70,14 @@ MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_GCC_CXXFLAGS $MOO_DEBUG_CXXFLAGS -W -Wall -Woverl
 
     MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS $moo_debug_flags"
     MOO_PYTHON_DEBUG_CFLAGS="$MOO_PYTHON_DEBUG_CFLAGS $moo_debug_flags"
-    MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_CXXFLAGS $moo_debug_flags"
-
-    if test "x$all_gcc_warnings" = "xyes" -a "x$warnings_fatal" = "xyes"; then
-        MOO_DEBUG_CXXFlAGS_NO_WERROR=$MOO_DEBUG_CXXFLAGS
-        MOO_DEBUG_CXXFLAGS="-Werror $MOO_DEBUG_CXXFLAGS"
-    fi
 
     AC_SUBST(MOO_DEBUG_CFLAGS)
     AC_SUBST(MOO_PYTHON_DEBUG_CFLAGS)
-    AC_SUBST(MOO_DEBUG_CXXFLAGS)
-    AC_SUBST(MOO_DEBUG_CXXFlAGS_NO_WERROR)
 
     AC_MSG_CHECKING(for C compiler debug options)
     if test "x$MOO_DEBUG_CFLAGS" = "x"; then
         AC_MSG_RESULT(None)
     else
         AC_MSG_RESULT($MOO_DEBUG_CFLAGS)
-    fi
-    AC_MSG_CHECKING(for C++ compiler debug options)
-    if test "x$MOO_DEBUG_CXXFLAGS" = "x"; then
-        AC_MSG_RESULT(None)
-    else
-        AC_MSG_RESULT($MOO_DEBUG_CXXFLAGS)
     fi
 ])
