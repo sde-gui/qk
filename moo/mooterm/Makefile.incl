@@ -101,7 +101,7 @@ termhelper_CFLAGS =                         \
     $(MOO_DEBUG_CFLAGS)                     \
     $(CFLAGS)
 termhelper_res.res: $(mooterm)/termhelper_res.rc
-	$(WINDRES) -i $(mooterm_srcdir)/termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
+	$(WINDRES) -i $(mooterm)/termhelper_res.rc --input-format=rc -o termhelper_res.res -O coff
 termhelper_LDADD = termhelper_res.res
 else
 termhelper_res.res: $(mooterm)/termhelper_res.rc
