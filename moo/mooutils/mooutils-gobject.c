@@ -361,8 +361,13 @@ moo_value_convert (const GValue   *src,
                 errno = 0;
                 v = strtol (string, NULL, 10);
 
-                if (errno || v > G_MAXINT || v < G_MININT)
+                if (errno)
                     return FALSE;
+
+#if G_MAXLONG > G_MAXINT
+                if (v > G_MAXINT || v < G_MININT)
+                    return FALSE;
+#endif
 
                 g_value_set_int (dest, v);
             }
@@ -383,8 +388,13 @@ moo_value_convert (const GValue   *src,
                 errno = 0;
                 v = strtoul (string, NULL, 10);
 
-                if (errno || v > G_MAXUINT)
+                if (errno)
                     return FALSE;
+
+#if G_MAXULONG > G_MAXUINT
+                if (v > G_MAXUINT)
+                    return FALSE;
+#endif
 
                 g_value_set_uint (dest, v);
             }
