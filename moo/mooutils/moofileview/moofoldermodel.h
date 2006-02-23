@@ -49,9 +49,10 @@ struct _MooFolderModelClass
 
 
 typedef enum {
-    MOO_FOLDER_MODEL_COLUMN_FILE = 0,
-    MOO_FOLDER_MODEL_N_COLUMNS   = 1
+    MOO_FOLDER_MODEL_COLUMN_FILE = 0
 } MooFolderModelColumn;
+
+#define MOO_FOLDER_MODEL_N_COLUMNS 1
 
 
 GType            moo_folder_model_get_type      (void) G_GNUC_CONST;

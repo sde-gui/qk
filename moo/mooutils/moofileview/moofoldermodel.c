@@ -640,7 +640,9 @@ moo_folder_model_get_flags (G_GNUC_UNUSED GtkTreeModel *tree_model)
 static gint
 moo_folder_model_get_n_columns (G_GNUC_UNUSED GtkTreeModel *tree_model)
 {
-    g_assert (MOO_FOLDER_MODEL_N_COLUMNS == 1);
+#if MOO_FOLDER_MODEL_N_COLUMNS != 1
+#error "Fix me!"
+#endif
     return MOO_FOLDER_MODEL_N_COLUMNS;
 }
 
