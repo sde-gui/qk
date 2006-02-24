@@ -584,6 +584,7 @@ typedef struct {
     guint               prefix_len;
     MooPrefsNotify      callback;
     gpointer            data;
+    GDestroyNotify      notify;
     guint               blocked : 1;
 } Closure;
 
@@ -594,7 +595,8 @@ static Closure  *closure_new    (MooPrefs           *prefs,
                                  const char         *pattern,
                                  MooPrefsMatchType   match_type,
                                  MooPrefsNotify      callback,
-                                 gpointer            data);
+                                 gpointer            data,
+                                 GDestroyNotify      notify);
 static void      closure_free   (Closure            *closure);
 static gboolean  closure_match  (Closure            *closure,
                                  const char         *key);
@@ -627,7 +629,8 @@ guint
 moo_prefs_notify_connect (const char         *pattern,
                           MooPrefsMatchType   match_type,
                           MooPrefsNotify      callback,
-                          gpointer            data)
+                          gpointer            data,
+                          GDestroyNotify      notify)
 {
     Closure *closure;
     MooPrefs *prefs = instance ();
@@ -638,7 +641,7 @@ moo_prefs_notify_connect (const char         *pattern,
                           match_type == MOO_PREFS_MATCH_REGEX, 0);
     g_return_val_if_fail (callback != NULL, 0);
 
-    closure = closure_new (prefs, pattern, match_type, callback, data);
+    closure = closure_new (prefs, pattern, match_type, callback, data, notify);
     g_return_val_if_fail (closure != NULL, 0);
 
     prefs->priv->closures = g_list_prepend (prefs->priv->closures, closure);
@@ -655,7 +658,8 @@ closure_new (MooPrefs           *prefs,
              const char         *pattern,
              MooPrefsMatchType   match_type,
              MooPrefsNotify      callback,
-             gpointer            data)
+             gpointer            data,
+             GDestroyNotify      notify)
 {
     EggRegex *regex;
     Closure *closure;
@@ -665,6 +669,7 @@ closure_new (MooPrefs           *prefs,
     closure->type = match_type;
     closure->callback = callback;
     closure->data = data;
+    closure->notify = notify;
     closure->blocked = FALSE;
 
     closure->id = ++prefs->priv->last_notify_id;
@@ -712,6 +717,8 @@ closure_free (Closure *closure)
 {
     if (closure)
     {
+        if (closure->notify)
+            closure->notify (closure->data);
         pattern_free (closure->pattern, closure->type);
         g_free (closure);
     }

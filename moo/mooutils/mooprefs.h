@@ -127,7 +127,8 @@ typedef enum
 guint           moo_prefs_notify_connect    (const char     *pattern,
                                              MooPrefsMatchType match_type,
                                              MooPrefsNotify  callback,
-                                             gpointer        data);
+                                             gpointer        data,
+                                             GDestroyNotify  notify);
 gboolean        moo_prefs_notify_block      (guint           id);
 gboolean        moo_prefs_notify_unblock    (guint           id);
 gboolean        moo_prefs_notify_disconnect (guint           id);

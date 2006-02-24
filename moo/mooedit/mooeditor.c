@@ -287,7 +287,7 @@ moo_editor_init (MooEditor *editor)
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
                                       MOO_PREFS_MATCH_REGEX,
                                       (MooPrefsNotify) prefs_changed,
-                                      editor);
+                                      editor, NULL);
 
     apply_prefs (editor);
 }

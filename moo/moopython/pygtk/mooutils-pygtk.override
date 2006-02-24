@@ -255,3 +255,133 @@ _wrap_moo_closure_new (G_GNUC_UNUSED PyObject *self, PyObject *args)
 
     return pyg_boxed_new (MOO_TYPE_CLOSURE, closure, FALSE, TRUE);
 }
+%%
+override moo_prefs_notify_connect varargs
+
+typedef struct {
+    PyObject *func;
+    PyObject *args;
+} PrefsClosure;
+
+#define prefs_closure_new() g_new0 (PrefsClosure, 1)
+
+static void
+prefs_closure_free (PrefsClosure *closure)
+{
+    if (closure)
+    {
+        Py_XDECREF (closure->func);
+        Py_XDECREF (closure->args);
+        g_free (closure);
+    }
+}
+
+static void
+prefs_notify (const char     *key,
+              const GValue   *newval,
+              PrefsClosure   *closure)
+{
+    PyObject *result, *args, *py_key, *py_newval;
+
+    if (newval)
+    {
+        py_newval = pyg_value_as_pyobject (newval, FALSE);
+
+        if (!py_newval)
+        {
+            PyErr_Print ();
+            return;
+        }
+    }
+    else
+    {
+        py_newval = Py_None;
+        Py_INCREF (py_newval);
+    }
+
+    py_key = PyString_FromString (key);
+    args = PyTuple_New (2 + (closure->args ? PyTuple_GET_SIZE (closure->args) : 0));
+
+    if (closure->args)
+    {
+        int i;
+
+        for (i = 0; i < PyTuple_GET_SIZE (closure->args); ++i)
+        {
+            PyTuple_SET_ITEM (args, i + 2, PyTuple_GET_ITEM (closure->args, i));
+            Py_INCREF (PyTuple_GET_ITEM (closure->args, i));
+        }
+    }
+
+    PyTuple_SET_ITEM (args, 0, py_key);
+    PyTuple_SET_ITEM (args, 1, py_newval);
+
+    result = PyObject_CallObject (closure->func, args);
+
+    Py_DECREF (args);
+
+    if (result)
+    {
+        Py_DECREF (result);
+    }
+    else
+    {
+        PyErr_Print ();
+    }
+}
+
+static PyObject *
+_wrap_moo_prefs_notify_connect (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_func, *py_pattern, *py_match_type;
+    PyObject *func_args = NULL;
+    PrefsClosure *closure;
+    guint id;
+
+    if (!args)
+        return_TypeErr ("arguments required");
+
+    if (PyTuple_GET_SIZE (args) < 3)
+        return_TypeErr ("three arguments required");
+
+    py_pattern = PyTuple_GET_ITEM (args, 0);
+    py_match_type = PyTuple_GET_ITEM (args, 1);
+    py_func = PyTuple_GET_ITEM (args, 2);
+
+    if (!PyString_Check (py_pattern))
+        return_TypeErr ("pattern must be a string");
+
+    if (!PyInt_Check (py_match_type))
+        return_TypeErr ("match_type must be an integer");
+
+    if (!PyCallable_Check (py_func))
+        return_TypeErr ("function must be callable");
+
+    if (PyTuple_GET_SIZE (args) > 1)
+    {
+        func_args = PyTuple_GetSlice (args, 3, PyTuple_GET_SIZE (args));
+
+        if (!func_args)
+            return NULL;
+    }
+
+    closure = prefs_closure_new ();
+    closure->func = py_func;
+    Py_INCREF (closure->func);
+    closure->args = func_args;
+
+    id = moo_prefs_notify_connect (PyString_AS_STRING (py_pattern),
+                                   PyInt_AS_LONG (py_match_type),
+                                   (MooPrefsNotify) prefs_notify,
+                                   closure, (GDestroyNotify) prefs_closure_free);
+
+    if (!id)
+    {
+        prefs_closure_free (closure);
+        return_Int (0);
+    }
+    else
+    {
+        return_Int (id);
+    }
+}
