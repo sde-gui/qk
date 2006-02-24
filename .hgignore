@@ -5,3 +5,15 @@
 ^berlios-hg.state$
 ^berlios-hg.state.old$
 ^berlios-hg.state.journal$
+build/.*
+Makefile\.in
+aclocal\.m4
+autom4te.*
+compile
+config.*
+depcomp
+install-sh
+ltmain\.sh
+missing
+.*\.pyc
+.*~

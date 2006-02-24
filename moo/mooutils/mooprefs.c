@@ -1373,3 +1373,40 @@ moo_prefs_match_type_get_type (void)
 
     return type;
 }
+
+
+static void
+add_key (const char  *key,
+         G_GNUC_UNUSED PrefsItem *item,
+         GPtrArray   *array)
+{
+    g_ptr_array_add (array, g_strdup (key));
+}
+
+char**
+moo_prefs_list_keys (guint *n_keys)
+{
+    MooPrefs *prefs = instance ();
+    GPtrArray *array;
+
+    array = g_ptr_array_new ();
+
+    g_hash_table_foreach (prefs->priv->data,
+                          (GHFunc) add_key,
+                          array);
+
+    if (!array->len)
+    {
+        g_ptr_array_free (array, TRUE);
+        if (n_keys)
+            *n_keys = 0;
+        return NULL;
+    }
+    else
+    {
+        if (n_keys)
+            *n_keys = array->len;
+        g_ptr_array_add (array, NULL);
+        return (char**) g_ptr_array_free (array, FALSE);
+    }
+}
