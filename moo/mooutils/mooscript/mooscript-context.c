@@ -12,7 +12,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-script-context.h"
+#include "mooscript-context.h"
 #include <glib/gprintf.h>
 
 #define N_POS_VARS 20

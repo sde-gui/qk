@@ -1,0 +1,36 @@
+#
+#   moo/mooutils/mooscript/Makefile.incl
+#
+
+mooscript = $(mooutils)/mooscript
+mooscript_srcdir = $(srcdir)/$(mooscript)
+
+mooscript_extra_dist =                  \
+    $(mooscript)/mooscript-yacc.y
+
+$(mooscript)/mooscript-yacc.c: $(mooscript)/mooscript-yacc.y
+	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
+$(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript-yacc.y
+	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
+
+mooscript_sources =                     \
+    $(mooscript)/mooscript-context.c    \
+    $(mooscript)/mooscript-context.h    \
+    $(mooscript)/mooscript-func.c       \
+    $(mooscript)/mooscript-func.h       \
+    $(mooscript)/mooscript-node.c       \
+    $(mooscript)/mooscript-node.h       \
+    $(mooscript)/mooscript-parser.c     \
+    $(mooscript)/mooscript-parser.h     \
+    $(mooscript)/mooscript-value.c      \
+    $(mooscript)/mooscript-value.h      \
+    $(mooscript)/mooscript-yacc.c       \
+    $(mooscript)/mooscript-yacc.h
+
+mooscript_built_sources =               \
+    $(mooscript)/mooscript-yacc.c       \
+    $(mooscript)/mooscript-yacc.h
+
+moo_sources += $(mooscript_sources)
+moo_built_sources += $(mooscript_built_sources)
+moo_extra_dist += $(mooscript_extra_dist)

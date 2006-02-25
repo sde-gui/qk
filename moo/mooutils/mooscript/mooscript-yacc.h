@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 2.0.  */
+/* A Bison parser, made by GNU Bison 2.1.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -49,6 +49,7 @@
      UMINUS = 275
    };
 #endif
+/* Tokens.  */
 #define IDENTIFIER 258
 #define LITERAL 259
 #define VARIABLE 260
@@ -72,14 +73,14 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 24 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.y"
+#line 24 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     ASNode *node;
 } YYSTYPE;
-/* Line 1318 of yacc.c.  */
-#line 83 "/home/muntyan/Projects/moo-svn/moo/mooedit/plugins/activestrings/as-script-yacc.h"
+/* Line 1447 of yacc.c.  */
+#line 84 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

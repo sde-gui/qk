@@ -12,9 +12,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-script-node.h"
-#include "as-script-func.h"
-#include "as-script-context.h"
+#include "mooscript-node.h"
+#include "mooscript-func.h"
+#include "mooscript-context.h"
 #include <string.h>
 
 

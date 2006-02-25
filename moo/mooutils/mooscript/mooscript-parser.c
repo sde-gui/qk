@@ -12,8 +12,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-script-parser.h"
-#include "as-script-yacc.h"
+#include "mooscript-parser.h"
+#include "mooscript-yacc.h"
 #include <string.h>
 
 

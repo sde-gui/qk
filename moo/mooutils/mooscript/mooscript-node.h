@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-node.h
+ *   mooscript-node.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,10 +12,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_SCRIPT_NODE_H__
-#define __AS_SCRIPT_NODE_H__
+#ifndef __MOO_SCRIPT_NODE_H__
+#define __MOO_SCRIPT_NODE_H__
 
-#include "as-script-func.h"
+#include "mooscript-func.h"
 
 G_BEGIN_DECLS
 
@@ -263,4 +263,4 @@ ASNodeVar      *as_node_var_new_named       (const char *name);
 
 G_END_DECLS
 
-#endif /* __AS_SCRIPT_NODE_H__ */
+#endif /* __MOO_SCRIPT_NODE_H__ */

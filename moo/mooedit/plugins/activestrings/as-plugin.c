@@ -25,7 +25,7 @@
 #include "mooutils/eggregex.h"
 #include "as-plugin-script.h"
 #include "as-plugin-xml.h"
-#include "as-script-parser.h"
+#include "mooutils/mooscript/mooscript-parser.h"
 #include <string.h>
 
 #define AS_PLUGIN_ID "ActiveStrings"

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-context.h
+ *   mooscript-context.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,10 +12,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_SCRIPT_CONTEXT_H__
-#define __AS_SCRIPT_CONTEXT_H__
+#ifndef __MOO_SCRIPT_CONTEXT_H__
+#define __MOO_SCRIPT_CONTEXT_H__
 
-#include "as-script-func.h"
+#include "mooscript-func.h"
 
 G_BEGIN_DECLS
 
@@ -111,4 +111,4 @@ void         as_context_clear_error         (ASContext  *ctx);
 
 G_END_DECLS
 
-#endif /* __AS_SCRIPT_CONTEXT_H__ */
+#endif /* __MOO_SCRIPT_CONTEXT_H__ */

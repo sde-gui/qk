@@ -1,6 +1,6 @@
 %{
-#include "as-script-parser.h"
-#include "as-script-yacc.h"
+#include "mooscript-parser.h"
+#include "mooscript-yacc.h"
 
 #define NODE_LIST_ADD(list, node)           _as_parser_node_list_add (parser, AS_NODE_LIST (list), node)
 #define NODE_COMMAND(id, node)              _as_parser_node_command (parser, id, AS_NODE_LIST (node))

@@ -12,8 +12,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-script-value.h"
-#include "as-script-context.h"
+#include "mooscript-value.h"
+#include "mooscript-context.h"
 #include <string.h>
 
 

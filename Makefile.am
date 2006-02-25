@@ -43,6 +43,7 @@ include moo/Makefile.incl
 include moo/mooutils/Makefile.incl
 include moo/mooutils/glade/Makefile.incl
 include moo/mooutils/moofileview/Makefile.incl
+include moo/mooutils/mooscript/Makefile.incl
 include moo/mooutils/newgtk/Makefile.incl
 include moo/mooutils/pcre/Makefile.incl
 include moo/mooutils/pixmaps/Makefile.incl

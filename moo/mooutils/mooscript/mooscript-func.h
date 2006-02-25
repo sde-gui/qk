@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-func.h
+ *   mooscript-func.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,10 +12,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_SCRIPT_FUNC_H__
-#define __AS_SCRIPT_FUNC_H__
+#ifndef __MOO_SCRIPT_FUNC_H__
+#define __MOO_SCRIPT_FUNC_H__
 
-#include "as-script-value.h"
+#include "mooscript-value.h"
 
 G_BEGIN_DECLS
 
@@ -98,4 +98,4 @@ ASFunc         *as_cfunc_new_3      (ASCFunc_3   cfunc);
 
 G_END_DECLS
 
-#endif /* __AS_SCRIPT_FUNC_H__ */
+#endif /* __MOO_SCRIPT_FUNC_H__ */

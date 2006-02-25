@@ -12,7 +12,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-script-func.h"
+#include "mooscript-func.h"
 
 
 ASValue *

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-parser.h
+ *   mooscript-parser.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,12 +12,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_SCRIPT_PARSER_H__
-#define __AS_SCRIPT_PARSER_H__
+#ifndef __MOO_SCRIPT_PARSER_H__
+#define __MOO_SCRIPT_PARSER_H__
 
 #include <glib-object.h>
-#include "as-script-node.h"
-#include "as-script-context.h"
+#include "mooscript-node.h"
+#include "mooscript-context.h"
 
 G_BEGIN_DECLS
 
@@ -76,4 +76,4 @@ ASNode     *_as_parser_node_var_named   (ASParser   *parser,
 
 G_END_DECLS
 
-#endif /* __AS_SCRIPT_PARSER_H__ */
+#endif /* __MOO_SCRIPT_PARSER_H__ */

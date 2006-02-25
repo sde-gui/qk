@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-value.h
+ *   mooscript-value.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,8 +12,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_SCRIPT_VALUE_H__
-#define __AS_SCRIPT_VALUE_H__
+#ifndef __MOO_SCRIPT_VALUE_H__
+#define __MOO_SCRIPT_VALUE_H__
 
 #include <glib-object.h>
 
@@ -108,4 +108,4 @@ int          as_value_cmp           (ASValue    *a,
 
 G_END_DECLS
 
-#endif /* __AS_SCRIPT_VALUE_H__ */
+#endif /* __MOO_SCRIPT_VALUE_H__ */
