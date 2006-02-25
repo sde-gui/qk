@@ -12,8 +12,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_PLUGIN_SCRIPT_H__
-#define __AS_PLUGIN_SCRIPT_H__
+#ifndef __MS_PLUGIN_SCRIPT_H__
+#define __MS_PLUGIN_SCRIPT_H__
 
 #include "mooutils/mooscript/mooscript-context.h"
 #include "mooutils/mooscript/mooscript-node.h"
@@ -22,33 +22,33 @@
 G_BEGIN_DECLS
 
 
-#define AS_TYPE_PLUGIN_CONTEXT              (_as_plugin_context_get_type ())
-#define AS_PLUGIN_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_PLUGIN_CONTEXT, ASPluginContext))
-#define AS_PLUGIN_CONTEXT_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_PLUGIN_CONTEXT, ASPluginContextClass))
-#define AS_IS_PLUGIN_CONTEXT(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_PLUGIN_CONTEXT))
-#define AS_IS_PLUGIN_CONTEXT_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_PLUGIN_CONTEXT))
-#define AS_PLUGIN_CONTEXT_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_PLUGIN_CONTEXT, ASPluginContextClass))
+#define MS_TYPE_PLUGIN_CONTEXT              (_ms_plugin_context_get_type ())
+#define MS_PLUGIN_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_PLUGIN_CONTEXT, MSPluginContext))
+#define MS_PLUGIN_CONTEXT_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_PLUGIN_CONTEXT, MSPluginContextClass))
+#define MS_IS_PLUGIN_CONTEXT(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_PLUGIN_CONTEXT))
+#define MS_IS_PLUGIN_CONTEXT_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_PLUGIN_CONTEXT))
+#define MS_PLUGIN_CONTEXT_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_PLUGIN_CONTEXT, MSPluginContextClass))
 
-typedef struct _ASPluginContext ASPluginContext;
-typedef struct _ASPluginContextClass ASPluginContextClass;
+typedef struct _MSPluginContext MSPluginContext;
+typedef struct _MSPluginContextClass MSPluginContextClass;
 
 
-struct _ASPluginContext {
-    ASContext context;
+struct _MSPluginContext {
+    MSContext context;
     MooEdit *doc;
 };
 
-struct _ASPluginContextClass {
-    ASContextClass context_class;
+struct _MSPluginContextClass {
+    MSContextClass context_class;
 };
 
 
-GType        _as_plugin_context_get_type    (void) G_GNUC_CONST;
+GType        _ms_plugin_context_get_type    (void) G_GNUC_CONST;
 
-ASContext   *_as_plugin_context_new         (void);
+MSContext   *_ms_plugin_context_new         (void);
 
-gboolean     _as_plugin_context_exec        (ASContext      *ctx,
-                                             ASNode         *script,
+gboolean     _ms_plugin_context_exec        (MSContext      *ctx,
+                                             MSNode         *script,
                                              MooEdit        *doc,
                                              GtkTextIter    *insert,
                                              char           *match,
@@ -58,4 +58,4 @@ gboolean     _as_plugin_context_exec        (ASContext      *ctx,
 
 G_END_DECLS
 
-#endif /* __AS_PLUGIN_SCRIPT_H__ */
+#endif /* __MS_PLUGIN_SCRIPT_H__ */

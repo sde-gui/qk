@@ -15,19 +15,19 @@
 #include "mooscript-func.h"
 
 
-ASValue *
-as_func_call (ASFunc     *func,
-              ASValue   **args,
+MSValue *
+ms_func_call (MSFunc     *func,
+              MSValue   **args,
               guint       n_args,
-              ASContext  *ctx)
+              MSContext  *ctx)
 {
-    ASFuncCall call;
+    MSFuncCall call;
 
-    g_return_val_if_fail (AS_IS_FUNC (func), NULL);
+    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
     g_return_val_if_fail (!n_args || args, NULL);
     g_return_val_if_fail (ctx != NULL, NULL);
 
-    call = AS_FUNC_GET_CLASS(func)->call;
+    call = MS_FUNC_GET_CLASS(func)->call;
     g_return_val_if_fail (call != NULL, NULL);
 
     return call (func, args, n_args, ctx);
@@ -35,48 +35,48 @@ as_func_call (ASFunc     *func,
 
 
 /******************************************************************/
-/* ASFunc
+/* MSFunc
  */
 
-G_DEFINE_TYPE (ASFunc, as_func, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MSFunc, ms_func, G_TYPE_OBJECT)
 
 static void
-as_func_init (G_GNUC_UNUSED ASFunc *func)
+ms_func_init (G_GNUC_UNUSED MSFunc *func)
 {
 }
 
 static void
-as_func_class_init (G_GNUC_UNUSED ASFuncClass *klass)
+ms_func_class_init (G_GNUC_UNUSED MSFuncClass *klass)
 {
 }
 
 
 /******************************************************************/
-/* ASCFunc
+/* MSCFunc
  */
 
-G_DEFINE_TYPE (ASCFunc, as_cfunc, AS_TYPE_FUNC)
+G_DEFINE_TYPE (MSCFunc, ms_cfunc, MS_TYPE_FUNC)
 
 
 static void
-as_cfunc_init (ASCFunc *func)
+ms_cfunc_init (MSCFunc *func)
 {
     func->n_args = -1;
 }
 
 
-static ASValue *
-as_cfunc_call (ASFunc     *func_,
-               ASValue   **args,
+static MSValue *
+ms_cfunc_call (MSFunc     *func_,
+               MSValue   **args,
                guint       n_args,
-               ASContext  *ctx)
+               MSContext  *ctx)
 {
-    ASCFunc_Var func_var;
-    ASCFunc_0 func_0;
-    ASCFunc_1 func_1;
-    ASCFunc_2 func_2;
-    ASCFunc_3 func_3;
-    ASCFunc *func = AS_CFUNC (func_);
+    MSCFunc_Var func_var;
+    MSCFunc_0 func_0;
+    MSCFunc_1 func_1;
+    MSCFunc_2 func_2;
+    MSCFunc_3 func_3;
+    MSCFunc *func = MS_CFUNC (func_);
 
     if (func->n_args >= 0 && func->n_args != (int) n_args)
     {
@@ -86,23 +86,23 @@ as_cfunc_call (ASFunc     *func_,
 
     if (func->n_args < 0)
     {
-        func_var = (ASCFunc_Var) func->cfunc;
+        func_var = (MSCFunc_Var) func->cfunc;
         return func_var (args, n_args, ctx);
     }
 
     switch (func->n_args)
     {
         case 0:
-            func_0 = (ASCFunc_0) func->cfunc;
+            func_0 = (MSCFunc_0) func->cfunc;
             return func_0 (ctx);
         case 1:
-            func_1 = (ASCFunc_1) func->cfunc;
+            func_1 = (MSCFunc_1) func->cfunc;
             return func_1 (args[0], ctx);
         case 2:
-            func_2 = (ASCFunc_2) func->cfunc;
+            func_2 = (MSCFunc_2) func->cfunc;
             return func_2 (args[0], args[1], ctx);
         case 3:
-            func_3 = (ASCFunc_3) func->cfunc;
+            func_3 = (MSCFunc_3) func->cfunc;
             return func_3 (args[0], args[1], args[2], ctx);
     }
 
@@ -112,58 +112,58 @@ as_cfunc_call (ASFunc     *func_,
 
 
 static void
-as_cfunc_class_init (ASCFuncClass *klass)
+ms_cfunc_class_init (MSCFuncClass *klass)
 {
-    AS_FUNC_CLASS(klass)->call = as_cfunc_call;
+    MS_FUNC_CLASS(klass)->call = ms_cfunc_call;
 }
 
 
-static ASFunc *
-as_cfunc_new (int       n_args,
+static MSFunc *
+ms_cfunc_new (int       n_args,
               GCallback cfunc)
 {
-    ASCFunc *func;
+    MSCFunc *func;
 
     g_return_val_if_fail (cfunc != NULL, NULL);
 
-    func = g_object_new (AS_TYPE_CFUNC, NULL);
+    func = g_object_new (MS_TYPE_CFUNC, NULL);
     func->n_args = n_args;
     func->cfunc = cfunc;
 
-    return AS_FUNC (func);
+    return MS_FUNC (func);
 }
 
 
-ASFunc *
-as_cfunc_new_var (ASCFunc_Var cfunc)
+MSFunc *
+ms_cfunc_new_var (MSCFunc_Var cfunc)
 {
-    return as_cfunc_new (-1, G_CALLBACK (cfunc));
+    return ms_cfunc_new (-1, G_CALLBACK (cfunc));
 }
 
 
-ASFunc *
-as_cfunc_new_0 (ASCFunc_0 cfunc)
+MSFunc *
+ms_cfunc_new_0 (MSCFunc_0 cfunc)
 {
-    return as_cfunc_new (0, G_CALLBACK (cfunc));
+    return ms_cfunc_new (0, G_CALLBACK (cfunc));
 }
 
 
-ASFunc *
-as_cfunc_new_1 (ASCFunc_1 cfunc)
+MSFunc *
+ms_cfunc_new_1 (MSCFunc_1 cfunc)
 {
-    return as_cfunc_new (1, G_CALLBACK (cfunc));
+    return ms_cfunc_new (1, G_CALLBACK (cfunc));
 }
 
 
-ASFunc *
-as_cfunc_new_2 (ASCFunc_2 cfunc)
+MSFunc *
+ms_cfunc_new_2 (MSCFunc_2 cfunc)
 {
-    return as_cfunc_new (2, G_CALLBACK (cfunc));
+    return ms_cfunc_new (2, G_CALLBACK (cfunc));
 }
 
 
-ASFunc *
-as_cfunc_new_3 (ASCFunc_3 cfunc)
+MSFunc *
+ms_cfunc_new_3 (MSCFunc_3 cfunc)
 {
-    return as_cfunc_new (3, G_CALLBACK (cfunc));
+    return ms_cfunc_new (3, G_CALLBACK (cfunc));
 }

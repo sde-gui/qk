@@ -22,55 +22,55 @@
 G_BEGIN_DECLS
 
 
-typedef struct _ASParser ASParser;
+typedef struct _MSParser MSParser;
 
 
-ASNode     *as_script_parse             (const char *string);
+MSNode     *ms_script_parse             (const char *string);
 
 
-int         _as_script_yyparse          (ASParser   *parser);
-int         _as_script_yylex            (ASParser   *parser);
-void        _as_script_yyerror          (ASParser   *parser,
+int         _ms_script_yyparse          (MSParser   *parser);
+int         _ms_script_yylex            (MSParser   *parser);
+void        _ms_script_yyerror          (MSParser   *parser,
                                          const char *string);
 
-void        _as_parser_set_top_node     (ASParser   *parser,
-                                         ASNode     *node);
+void        _ms_parser_set_top_node     (MSParser   *parser,
+                                         MSNode     *node);
 
-ASNode     *_as_parser_node_list_add    (ASParser   *parser,
-                                         ASNodeList *list,
-                                         ASNode     *node);
-ASNode     *_as_parser_node_command     (ASParser   *parser,
+MSNode     *_ms_parser_node_list_add    (MSParser   *parser,
+                                         MSNodeList *list,
+                                         MSNode     *node);
+MSNode     *_ms_parser_node_command     (MSParser   *parser,
                                          const char *name,
-                                         ASNodeList *list);
-ASNode     *_as_parser_node_if_else     (ASParser   *parser,
-                                         ASNode     *condition,
-                                         ASNode     *then_,
-                                         ASNode     *else_);
-ASNode     *_as_parser_node_repeat      (ASParser   *parser,
-                                         ASNode     *times,
-                                         ASNode     *what);
-ASNode     *_as_parser_node_while       (ASParser   *parser,
-                                         ASNode     *times,
-                                         ASNode     *what);
-ASNode     *_as_parser_node_assignment  (ASParser   *parser,
-                                         ASNodeVar  *var,
-                                         ASNode     *val);
-ASNode     *_as_parser_node_binary_op   (ASParser   *parser,
-                                         ASBinaryOp  op,
-                                         ASNode     *lval,
-                                         ASNode     *rval);
-ASNode     *_as_parser_node_unary_op    (ASParser   *parser,
-                                         ASUnaryOp   op,
-                                         ASNode     *val);
-ASNode     *_as_parser_node_int         (ASParser   *parser,
+                                         MSNodeList *list);
+MSNode     *_ms_parser_node_if_else     (MSParser   *parser,
+                                         MSNode     *condition,
+                                         MSNode     *then_,
+                                         MSNode     *else_);
+MSNode     *_ms_parser_node_repeat      (MSParser   *parser,
+                                         MSNode     *times,
+                                         MSNode     *what);
+MSNode     *_ms_parser_node_while       (MSParser   *parser,
+                                         MSNode     *times,
+                                         MSNode     *what);
+MSNode     *_ms_parser_node_assignment  (MSParser   *parser,
+                                         MSNodeVar  *var,
+                                         MSNode     *val);
+MSNode     *_ms_parser_node_binary_op   (MSParser   *parser,
+                                         MSBinaryOp  op,
+                                         MSNode     *lval,
+                                         MSNode     *rval);
+MSNode     *_ms_parser_node_unary_op    (MSParser   *parser,
+                                         MSUnaryOp   op,
+                                         MSNode     *val);
+MSNode     *_ms_parser_node_int         (MSParser   *parser,
                                          int         n);
-ASNode     *_as_parser_node_string      (ASParser   *parser,
+MSNode     *_ms_parser_node_string      (MSParser   *parser,
                                          const char *string);
-ASNode     *_as_parser_node_value_list  (ASParser   *parser,
-                                         ASNodeList *list);
-ASNode     *_as_parser_node_var_pos     (ASParser   *parser,
+MSNode     *_ms_parser_node_value_list  (MSParser   *parser,
+                                         MSNodeList *list);
+MSNode     *_ms_parser_node_var_pos     (MSParser   *parser,
                                          int         n);
-ASNode     *_as_parser_node_var_named   (ASParser   *parser,
+MSNode     *_ms_parser_node_var_named   (MSParser   *parser,
                                          const char *name);
 
 

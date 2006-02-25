@@ -77,7 +77,7 @@
 typedef union YYSTYPE {
     int ival;
     const char *str;
-    ASNode *node;
+    MSNode *node;
 } YYSTYPE;
 /* Line 1447 of yacc.c.  */
 #line 84 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
@@ -86,7 +86,7 @@ typedef union YYSTYPE {
 # define YYSTYPE_IS_TRIVIAL 1
 #endif
 
-extern YYSTYPE _as_script_yylval;
+extern YYSTYPE _ms_script_yylval;
 
 
 

@@ -12,36 +12,36 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __AS_PLUGIN_XML_H__
-#define __AS_PLUGIN_XML_H__
+#ifndef __MS_PLUGIN_XML_H__
+#define __MS_PLUGIN_XML_H__
 
 #include <glib.h>
 
 G_BEGIN_DECLS
 
 
-typedef struct _ASInfo ASInfo;
+typedef struct _MSInfo MSInfo;
 
-struct _ASInfo {
+struct _MSInfo {
     char *pattern;
     char *script;
     char *lang;
 };
 
 
-ASInfo     *_as_info_new    (const char *pattern,
+MSInfo     *_ms_info_new    (const char *pattern,
                              const char *script,
                              const char *lang);
-void        _as_info_free   (ASInfo     *info);
+void        _ms_info_free   (MSInfo     *info);
 
-gboolean    _as_load_file   (const char *filename,
+gboolean    _ms_load_file   (const char *filename,
                              GSList    **info);
-gboolean    _as_save        (const char *filename,
+gboolean    _ms_save        (const char *filename,
                              GSList     *info);
 
-char       *_as_format_xml  (GSList     *info);
+char       *_ms_format_xml  (GSList     *info);
 
 
 G_END_DECLS
 
-#endif /* __AS_PLUGIN_XML_H__ */
+#endif /* __MS_PLUGIN_XML_H__ */

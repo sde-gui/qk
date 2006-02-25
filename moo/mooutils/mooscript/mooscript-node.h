@@ -20,245 +20,245 @@
 G_BEGIN_DECLS
 
 
-#define AS_TYPE_NODE                    (as_node_get_type ())
-#define AS_NODE(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE, ASNode))
-#define AS_NODE_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE, ASNodeClass))
-#define AS_IS_NODE(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE))
-#define AS_IS_NODE_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE))
-#define AS_NODE_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE, ASNodeClass))
+#define MS_TYPE_NODE                    (ms_node_get_type ())
+#define MS_NODE(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE, MSNode))
+#define MS_NODE_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE, MSNodeClass))
+#define MS_IS_NODE(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE))
+#define MS_IS_NODE_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE))
+#define MS_NODE_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE, MSNodeClass))
 
-#define AS_TYPE_NODE_LIST               (as_node_list_get_type ())
-#define AS_NODE_LIST(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_LIST, ASNodeList))
-#define AS_NODE_LIST_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_LIST, ASNodeListClass))
-#define AS_IS_NODE_LIST(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_LIST))
-#define AS_IS_NODE_LIST_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_LIST))
-#define AS_NODE_LIST_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_LIST, ASNodeListClass))
+#define MS_TYPE_NODE_LIST               (ms_node_list_get_type ())
+#define MS_NODE_LIST(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_LIST, MSNodeList))
+#define MS_NODE_LIST_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_LIST, MSNodeListClass))
+#define MS_IS_NODE_LIST(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_LIST))
+#define MS_IS_NODE_LIST_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_LIST))
+#define MS_NODE_LIST_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_LIST, MSNodeListClass))
 
-#define AS_TYPE_NODE_VAR                (as_node_var_get_type ())
-#define AS_NODE_VAR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_VAR, ASNodeVar))
-#define AS_NODE_VAR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_VAR, ASNodeVarClass))
-#define AS_IS_NODE_VAR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_VAR))
-#define AS_IS_NODE_VAR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_VAR))
-#define AS_NODE_VAR_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_VAR, ASNodeVarClass))
+#define MS_TYPE_NODE_VAR                (ms_node_var_get_type ())
+#define MS_NODE_VAR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_VAR, MSNodeVar))
+#define MS_NODE_VAR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_VAR, MSNodeVarClass))
+#define MS_IS_NODE_VAR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_VAR))
+#define MS_IS_NODE_VAR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_VAR))
+#define MS_NODE_VAR_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_VAR, MSNodeVarClass))
 
-#define AS_TYPE_NODE_COMMAND            (as_node_command_get_type ())
-#define AS_NODE_COMMAND(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_COMMAND, ASNodeCommand))
-#define AS_NODE_COMMAND_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_COMMAND, ASNodeCommandClass))
-#define AS_IS_NODE_COMMAND(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_COMMAND))
-#define AS_IS_NODE_COMMAND_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_COMMAND))
-#define AS_NODE_COMMAND_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_COMMAND, ASNodeCommandClass))
+#define MS_TYPE_NODE_COMMAND            (ms_node_command_get_type ())
+#define MS_NODE_COMMAND(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_COMMAND, MSNodeCommand))
+#define MS_NODE_COMMAND_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_COMMAND, MSNodeCommandClass))
+#define MS_IS_NODE_COMMAND(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_COMMAND))
+#define MS_IS_NODE_COMMAND_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_COMMAND))
+#define MS_NODE_COMMAND_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_COMMAND, MSNodeCommandClass))
 
-#define AS_TYPE_NODE_IF_ELSE            (as_node_if_else_get_type ())
-#define AS_NODE_IF_ELSE(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_IF_ELSE, ASNodeIfElse))
-#define AS_NODE_IF_ELSE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_IF_ELSE, ASNodeIfElseClass))
-#define AS_IS_NODE_IF_ELSE(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_IF_ELSE))
-#define AS_IS_NODE_IF_ELSE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_IF_ELSE))
-#define AS_NODE_IF_ELSE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_IF_ELSE, ASNodeIfElseClass))
+#define MS_TYPE_NODE_IF_ELSE            (ms_node_if_else_get_type ())
+#define MS_NODE_IF_ELSE(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_IF_ELSE, MSNodeIfElse))
+#define MS_NODE_IF_ELSE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_IF_ELSE, MSNodeIfElseClass))
+#define MS_IS_NODE_IF_ELSE(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_IF_ELSE))
+#define MS_IS_NODE_IF_ELSE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_IF_ELSE))
+#define MS_NODE_IF_ELSE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_IF_ELSE, MSNodeIfElseClass))
 
-#define AS_TYPE_NODE_LOOP               (as_node_loop_get_type ())
-#define AS_NODE_LOOP(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_LOOP, ASNodeLoop))
-#define AS_NODE_LOOP_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_LOOP, ASNodeLoopClass))
-#define AS_IS_NODE_LOOP(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_LOOP))
-#define AS_IS_NODE_LOOP_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_LOOP))
-#define AS_NODE_LOOP_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_LOOP, ASNodeLoopClass))
+#define MS_TYPE_NODE_LOOP               (ms_node_loop_get_type ())
+#define MS_NODE_LOOP(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_LOOP, MSNodeLoop))
+#define MS_NODE_LOOP_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_LOOP, MSNodeLoopClass))
+#define MS_IS_NODE_LOOP(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_LOOP))
+#define MS_IS_NODE_LOOP_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_LOOP))
+#define MS_NODE_LOOP_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_LOOP, MSNodeLoopClass))
 
-#define AS_TYPE_NODE_ASSIGN             (as_node_assign_get_type ())
-#define AS_NODE_ASSIGN(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_ASSIGN, ASNodeAssign))
-#define AS_NODE_ASSIGN_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_ASSIGN, ASNodeAssignClass))
-#define AS_IS_NODE_ASSIGN(object)       (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_ASSIGN))
-#define AS_IS_NODE_ASSIGN_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_ASSIGN))
-#define AS_NODE_ASSIGN_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_ASSIGN, ASNodeAssignClass))
+#define MS_TYPE_NODE_ASSIGN             (ms_node_assign_get_type ())
+#define MS_NODE_ASSIGN(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_ASSIGN, MSNodeAssign))
+#define MS_NODE_ASSIGN_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_ASSIGN, MSNodeAssignClass))
+#define MS_IS_NODE_ASSIGN(object)       (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_ASSIGN))
+#define MS_IS_NODE_ASSIGN_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_ASSIGN))
+#define MS_NODE_ASSIGN_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_ASSIGN, MSNodeAssignClass))
 
-#define AS_TYPE_NODE_VALUE              (as_node_value_get_type ())
-#define AS_NODE_VALUE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_VALUE, ASNodeValue))
-#define AS_NODE_VALUE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_VALUE, ASNodeValueClass))
-#define AS_IS_NODE_VALUE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_VALUE))
-#define AS_IS_NODE_VALUE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_VALUE))
-#define AS_NODE_VALUE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_VALUE, ASNodeValueClass))
+#define MS_TYPE_NODE_VALUE              (ms_node_value_get_type ())
+#define MS_NODE_VALUE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_VALUE, MSNodeValue))
+#define MS_NODE_VALUE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_VALUE, MSNodeValueClass))
+#define MS_IS_NODE_VALUE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_VALUE))
+#define MS_IS_NODE_VALUE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_VALUE))
+#define MS_NODE_VALUE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_VALUE, MSNodeValueClass))
 
-#define AS_TYPE_NODE_VAL_LIST            (as_node_val_list_get_type ())
-#define AS_NODE_VAL_LIST(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_NODE_VAL_LIST, ASNodeValList))
-#define AS_NODE_VAL_LIST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_NODE_VAL_LIST, ASNodeValListClass))
-#define AS_IS_NODE_VAL_LIST(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_NODE_VAL_LIST))
-#define AS_IS_NODE_VAL_LIST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_NODE_VAL_LIST))
-#define AS_NODE_VAL_LIST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_NODE_VAL_LIST, ASNodeValListClass))
+#define MS_TYPE_NODE_VAL_LIST            (ms_node_val_list_get_type ())
+#define MS_NODE_VAL_LIST(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_VAL_LIST, MSNodeValList))
+#define MS_NODE_VAL_LIST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_VAL_LIST, MSNodeValListClass))
+#define MS_IS_NODE_VAL_LIST(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_VAL_LIST))
+#define MS_IS_NODE_VAL_LIST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_VAL_LIST))
+#define MS_NODE_VAL_LIST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_VAL_LIST, MSNodeValListClass))
 
-typedef struct _ASNode ASNode;
-typedef struct _ASNodeClass ASNodeClass;
-typedef struct _ASNodeList ASNodeList;
-typedef struct _ASNodeListClass ASNodeListClass;
-typedef struct _ASNodeVar ASNodeVar;
-typedef struct _ASNodeVarClass ASNodeVarClass;
-typedef struct _ASNodeCommand ASNodeCommand;
-typedef struct _ASNodeCommandClass ASNodeCommandClass;
-typedef struct _ASNodeIfElse ASNodeIfElse;
-typedef struct _ASNodeIfElseClass ASNodeIfElseClass;
-typedef struct _ASNodeLoop ASNodeLoop;
-typedef struct _ASNodeLoopClass ASNodeLoopClass;
-typedef struct _ASNodeAssign ASNodeAssign;
-typedef struct _ASNodeAssignClass ASNodeAssignClass;
-typedef struct _ASNodeValue ASNodeValue;
-typedef struct _ASNodeValueClass ASNodeValueClass;
-typedef struct _ASNodeValList ASNodeValList;
-typedef struct _ASNodeValListClass ASNodeValListClass;
-
-
-typedef ASValue* (*ASNodeEval) (ASNode *node, ASContext *ctx);
+typedef struct _MSNode MSNode;
+typedef struct _MSNodeClass MSNodeClass;
+typedef struct _MSNodeList MSNodeList;
+typedef struct _MSNodeListClass MSNodeListClass;
+typedef struct _MSNodeVar MSNodeVar;
+typedef struct _MSNodeVarClass MSNodeVarClass;
+typedef struct _MSNodeCommand MSNodeCommand;
+typedef struct _MSNodeCommandClass MSNodeCommandClass;
+typedef struct _MSNodeIfElse MSNodeIfElse;
+typedef struct _MSNodeIfElseClass MSNodeIfElseClass;
+typedef struct _MSNodeLoop MSNodeLoop;
+typedef struct _MSNodeLoopClass MSNodeLoopClass;
+typedef struct _MSNodeAssign MSNodeAssign;
+typedef struct _MSNodeAssignClass MSNodeAssignClass;
+typedef struct _MSNodeValue MSNodeValue;
+typedef struct _MSNodeValueClass MSNodeValueClass;
+typedef struct _MSNodeValList MSNodeValList;
+typedef struct _MSNodeValListClass MSNodeValListClass;
 
 
-struct _ASNode {
+typedef MSValue* (*MSNodeEval) (MSNode *node, MSContext *ctx);
+
+
+struct _MSNode {
     GObject object;
 };
 
-struct _ASNodeClass {
+struct _MSNodeClass {
     GObjectClass object_class;
-    ASNodeEval eval;
+    MSNodeEval eval;
 };
 
 
-struct _ASNodeList {
-    ASNode node;
-    ASNode **nodes;
+struct _MSNodeList {
+    MSNode node;
+    MSNode **nodes;
     guint n_nodes;
     guint n_nodes_allocd__;
 };
 
-struct _ASNodeListClass {
-    ASNodeClass node_class;
+struct _MSNodeListClass {
+    MSNodeClass node_class;
 };
 
 
 typedef enum {
-    AS_VAR_POSITIONAL,
-    AS_VAR_NAMED
-} ASNodeVarType;
+    MS_VAR_POSITIONAL,
+    MS_VAR_NAMED
+} MSNodeVarType;
 
-struct _ASNodeVar {
-    ASNode node;
-    ASNodeVarType type;
+struct _MSNodeVar {
+    MSNode node;
+    MSNodeVarType type;
     union {
         guint num;
         char *name;
     };
 };
 
-struct _ASNodeVarClass {
-    ASNodeClass node_class;
+struct _MSNodeVarClass {
+    MSNodeClass node_class;
 };
 
 
-struct _ASNodeCommand {
-    ASNode node;
+struct _MSNodeCommand {
+    MSNode node;
     char *name;
-    ASNodeList *args;
+    MSNodeList *args;
 };
 
-struct _ASNodeCommandClass {
-    ASNodeClass node_class;
+struct _MSNodeCommandClass {
+    MSNodeClass node_class;
 };
 
 
 typedef enum {
-    AS_LOOP_TIMES,
-    AS_LOOP_WHILE
-} ASLoopType;
+    MS_LOOP_TIMES,
+    MS_LOOP_WHILE
+} MSLoopType;
 
-struct _ASNodeLoop {
-    ASNode node;
-    ASLoopType type;
-    ASNode *condition;
-    ASNode *what;
+struct _MSNodeLoop {
+    MSNode node;
+    MSLoopType type;
+    MSNode *condition;
+    MSNode *what;
 };
 
-struct _ASNodeLoopClass {
-    ASNodeClass node_class;
-};
-
-
-struct _ASNodeIfElse {
-    ASNode node;
-    ASNode *condition;
-    ASNode *then_;
-    ASNode *else_;
-};
-
-struct _ASNodeIfElseClass {
-    ASNodeClass node_class;
+struct _MSNodeLoopClass {
+    MSNodeClass node_class;
 };
 
 
-struct _ASNodeAssign {
-    ASNode node;
-    ASNodeVar *var;
-    ASNode *val;
+struct _MSNodeIfElse {
+    MSNode node;
+    MSNode *condition;
+    MSNode *then_;
+    MSNode *else_;
 };
 
-struct _ASNodeAssignClass {
-    ASNodeClass node_class;
-};
-
-
-struct _ASNodeValue {
-    ASNode node;
-    ASValue *value;
-};
-
-struct _ASNodeValueClass {
-    ASNodeClass node_class;
+struct _MSNodeIfElseClass {
+    MSNodeClass node_class;
 };
 
 
-struct _ASNodeValList {
-    ASNode node;
-    ASNodeList *elms;
+struct _MSNodeAssign {
+    MSNode node;
+    MSNodeVar *var;
+    MSNode *val;
 };
 
-struct _ASNodeValListClass {
-    ASNodeClass node_class;
+struct _MSNodeAssignClass {
+    MSNodeClass node_class;
 };
 
 
-GType           as_node_get_type            (void) G_GNUC_CONST;
-GType           as_node_list_get_type       (void) G_GNUC_CONST;
-GType           as_node_var_get_type        (void) G_GNUC_CONST;
-GType           as_node_command_get_type    (void) G_GNUC_CONST;
-GType           as_node_if_else_get_type    (void) G_GNUC_CONST;
-GType           as_node_loop_get_type       (void) G_GNUC_CONST;
-GType           as_node_assign_get_type     (void) G_GNUC_CONST;
-GType           as_node_val_list_get_type   (void) G_GNUC_CONST;
-GType           as_node_value_get_type      (void) G_GNUC_CONST;
+struct _MSNodeValue {
+    MSNode node;
+    MSValue *value;
+};
 
-ASValue        *as_node_eval                (ASNode     *node,
-                                             ASContext  *ctx);
+struct _MSNodeValueClass {
+    MSNodeClass node_class;
+};
 
-ASNodeList     *as_node_list_new            (void);
-void            as_node_list_add            (ASNodeList *list,
-                                             ASNode     *node);
 
-ASNodeCommand  *as_node_command_new         (const char *name,
-                                             ASNodeList *args);
-ASNodeCommand  *as_node_binary_op_new       (ASBinaryOp  op,
-                                             ASNode     *lval,
-                                             ASNode     *rval);
-ASNodeCommand  *as_node_unary_op_new        (ASUnaryOp   op,
-                                             ASNode     *val);
+struct _MSNodeValList {
+    MSNode node;
+    MSNodeList *elms;
+};
 
-ASNodeIfElse   *as_node_if_else_new         (ASNode     *condition,
-                                             ASNode     *then_,
-                                             ASNode     *else_);
+struct _MSNodeValListClass {
+    MSNodeClass node_class;
+};
 
-ASNodeLoop     *as_node_loop_new            (ASLoopType  type,
-                                             ASNode     *times_or_cond,
-                                             ASNode     *what);
 
-ASNodeAssign   *as_node_assign_new          (ASNodeVar  *var,
-                                             ASNode     *val);
+GType           ms_node_get_type            (void) G_GNUC_CONST;
+GType           ms_node_list_get_type       (void) G_GNUC_CONST;
+GType           ms_node_var_get_type        (void) G_GNUC_CONST;
+GType           ms_node_command_get_type    (void) G_GNUC_CONST;
+GType           ms_node_if_else_get_type    (void) G_GNUC_CONST;
+GType           ms_node_loop_get_type       (void) G_GNUC_CONST;
+GType           ms_node_assign_get_type     (void) G_GNUC_CONST;
+GType           ms_node_val_list_get_type   (void) G_GNUC_CONST;
+GType           ms_node_value_get_type      (void) G_GNUC_CONST;
 
-ASNodeValue    *as_node_value_new           (ASValue    *value);
-ASNodeValList  *as_node_val_list_new        (ASNodeList *list);
+MSValue        *ms_node_eval                (MSNode     *node,
+                                             MSContext  *ctx);
 
-ASNodeVar      *as_node_var_new_positional  (guint       n);
-ASNodeVar      *as_node_var_new_named       (const char *name);
+MSNodeList     *ms_node_list_new            (void);
+void            ms_node_list_add            (MSNodeList *list,
+                                             MSNode     *node);
+
+MSNodeCommand  *ms_node_command_new         (const char *name,
+                                             MSNodeList *args);
+MSNodeCommand  *ms_node_binary_op_new       (MSBinaryOp  op,
+                                             MSNode     *lval,
+                                             MSNode     *rval);
+MSNodeCommand  *ms_node_unary_op_new        (MSUnaryOp   op,
+                                             MSNode     *val);
+
+MSNodeIfElse   *ms_node_if_else_new         (MSNode     *condition,
+                                             MSNode     *then_,
+                                             MSNode     *else_);
+
+MSNodeLoop     *ms_node_loop_new            (MSLoopType  type,
+                                             MSNode     *times_or_cond,
+                                             MSNode     *what);
+
+MSNodeAssign   *ms_node_assign_new          (MSNodeVar  *var,
+                                             MSNode     *val);
+
+MSNodeValue    *ms_node_value_new           (MSValue    *value);
+MSNodeValList  *ms_node_val_list_new        (MSNodeList *list);
+
+MSNodeVar      *ms_node_var_new_positional  (guint       n);
+MSNodeVar      *ms_node_var_new_named       (const char *name);
 
 
 G_END_DECLS

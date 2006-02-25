@@ -2,29 +2,29 @@
 #include "mooscript-parser.h"
 #include "mooscript-yacc.h"
 
-#define NODE_LIST_ADD(list, node)           _as_parser_node_list_add (parser, AS_NODE_LIST (list), node)
-#define NODE_COMMAND(id, node)              _as_parser_node_command (parser, id, AS_NODE_LIST (node))
-#define NODE_IF_ELSE(cond, then_, else_)    _as_parser_node_if_else (parser, cond, then_, else_)
-#define NODE_REPEAT(times, what)            _as_parser_node_repeat (parser, times, what)
-#define NODE_WHILE(cond, what)              _as_parser_node_while (parser, cond, what)
-#define NODE_ASSIGNMENT(var, val)           _as_parser_node_assignment (parser, AS_NODE_VAR (var), val)
-#define BINARY_OP(op, lval, rval)           _as_parser_node_binary_op (parser, op, lval, rval)
-#define UNARY_OP(op, val)                   _as_parser_node_unary_op (parser, op, val)
-#define NODE_NUMBER(n)                      _as_parser_node_int (parser, n)
-#define NODE_STRING(n)                      _as_parser_node_string (parser, n)
-#define NODE_VALUE_LIST(list)               _as_parser_node_value_list (parser, AS_NODE_LIST (list))
-#define VAR_POSITIONAL(n)                   _as_parser_node_var_pos (parser, n)
-#define VAR_NAMED(string)                   _as_parser_node_var_named (parser, string)
+#define NODE_LIST_ADD(list, node)           _ms_parser_node_list_add (parser, MS_NODE_LIST (list), node)
+#define NODE_COMMAND(id, node)              _ms_parser_node_command (parser, id, MS_NODE_LIST (node))
+#define NODE_IF_ELSE(cond, then_, else_)    _ms_parser_node_if_else (parser, cond, then_, else_)
+#define NODE_REPEAT(times, what)            _ms_parser_node_repeat (parser, times, what)
+#define NODE_WHILE(cond, what)              _ms_parser_node_while (parser, cond, what)
+#define NODE_MSSIGNMENT(var, val)           _ms_parser_node_assignment (parser, MS_NODE_VAR (var), val)
+#define BINARY_OP(op, lval, rval)           _ms_parser_node_binary_op (parser, op, lval, rval)
+#define UNARY_OP(op, val)                   _ms_parser_node_unary_op (parser, op, val)
+#define NODE_NUMBER(n)                      _ms_parser_node_int (parser, n)
+#define NODE_STRING(n)                      _ms_parser_node_string (parser, n)
+#define NODE_VALUE_LIST(list)               _ms_parser_node_value_list (parser, MS_NODE_LIST (list))
+#define VAR_POSITIONAL(n)                   _ms_parser_node_var_pos (parser, n)
+#define VAR_NAMED(string)                   _ms_parser_node_var_named (parser, string)
 
-#define SET_TOP_NODE(node)                  _as_parser_set_top_node (parser, node)
+#define SET_TOP_NODE(node)                  _ms_parser_set_top_node (parser, node)
 %}
 
-%name-prefix="_as_script_yy"
+%name-prefix="_ms_script_yy"
 
 %union {
     int ival;
     const char *str;
-    ASNode *node;
+    MSNode *node;
 }
 
 %token <str> IDENTIFIER
@@ -41,8 +41,8 @@
 %token AND OR NOT
 %token UMINUS
 
-%lex-param      {ASParser *parser}
-%parse-param    {ASParser *parser}
+%lex-param      {MSParser *parser}
+%parse-param    {MSParser *parser}
 %expect 1
 
 %left '-' '+'
@@ -103,24 +103,24 @@ loop:     REPEAT simple_expr non_empty_stmt { $$ = NODE_REPEAT ($2, $3); }
 ;
 
 assignment:
-        variable '=' expr                   { $$ = NODE_ASSIGNMENT ($1, $3); }
+        variable '=' expr                   { $$ = NODE_MSSIGNMENT ($1, $3); }
 ;
 
 expr:     simple_expr
-        | expr '+' expr                     { $$ = BINARY_OP (AS_OP_PLUS, $1, $3); }
-        | expr '-' expr                     { $$ = BINARY_OP (AS_OP_MINUS, $1, $3); }
-        | expr '/' expr                     { $$ = BINARY_OP (AS_OP_DIV, $1, $3); }
-        | expr '*' expr                     { $$ = BINARY_OP (AS_OP_MULT, $1, $3); }
+        | expr '+' expr                     { $$ = BINARY_OP (MS_OP_PLUS, $1, $3); }
+        | expr '-' expr                     { $$ = BINARY_OP (MS_OP_MINUS, $1, $3); }
+        | expr '/' expr                     { $$ = BINARY_OP (MS_OP_DIV, $1, $3); }
+        | expr '*' expr                     { $$ = BINARY_OP (MS_OP_MULT, $1, $3); }
 
-        | expr AND expr                     { $$ = BINARY_OP (AS_OP_AND, $1, $3); }
-        | expr OR expr                      { $$ = BINARY_OP (AS_OP_OR, $1, $3); }
+        | expr AND expr                     { $$ = BINARY_OP (MS_OP_AND, $1, $3); }
+        | expr OR expr                      { $$ = BINARY_OP (MS_OP_OR, $1, $3); }
 
-        | expr EQ expr                      { $$ = BINARY_OP (AS_OP_EQ, $1, $3); }
-        | expr NEQ expr                     { $$ = BINARY_OP (AS_OP_NEQ, $1, $3); }
-        | expr '<' expr                     { $$ = BINARY_OP (AS_OP_LT, $1, $3); }
-        | expr '>' expr                     { $$ = BINARY_OP (AS_OP_GT, $1, $3); }
-        | expr LE expr                      { $$ = BINARY_OP (AS_OP_LE, $1, $3); }
-        | expr GE expr                      { $$ = BINARY_OP (AS_OP_GE, $1, $3); }
+        | expr EQ expr                      { $$ = BINARY_OP (MS_OP_EQ, $1, $3); }
+        | expr NEQ expr                     { $$ = BINARY_OP (MS_OP_NEQ, $1, $3); }
+        | expr '<' expr                     { $$ = BINARY_OP (MS_OP_LT, $1, $3); }
+        | expr '>' expr                     { $$ = BINARY_OP (MS_OP_GT, $1, $3); }
+        | expr LE expr                      { $$ = BINARY_OP (MS_OP_LE, $1, $3); }
+        | expr GE expr                      { $$ = BINARY_OP (MS_OP_GE, $1, $3); }
 ;
 
 simple_expr:
@@ -129,10 +129,10 @@ simple_expr:
         | variable
         | '(' stmt_or_program ')'           { $$ = $2; }
         | '[' list_elms ']'                 { $$ = NODE_VALUE_LIST ($2); }
-        | simple_expr '%' simple_expr       { $$ = BINARY_OP (AS_OP_FORMAT, $1, $3); }
-        | '#' simple_expr                   { $$ = UNARY_OP (AS_OP_LEN, $2); }
-        | NOT simple_expr                   { $$ = UNARY_OP (AS_OP_NOT, $2); }
-        | '-' simple_expr %prec UMINUS      { $$ = UNARY_OP (AS_OP_UMINUS, $2); }
+        | simple_expr '%' simple_expr       { $$ = BINARY_OP (MS_OP_FORMAT, $1, $3); }
+        | '#' simple_expr                   { $$ = UNARY_OP (MS_OP_LEN, $2); }
+        | NOT simple_expr                   { $$ = UNARY_OP (MS_OP_NOT, $2); }
+        | '-' simple_expr %prec UMINUS      { $$ = UNARY_OP (MS_OP_UMINUS, $2); }
 ;
 
 list_elms: /* empty */                      { $$ = NULL; }

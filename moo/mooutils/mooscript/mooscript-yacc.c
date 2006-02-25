@@ -49,13 +49,13 @@
 #define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
-#define yyparse _as_script_yyparse
-#define yylex   _as_script_yylex
-#define yyerror _as_script_yyerror
-#define yylval  _as_script_yylval
-#define yychar  _as_script_yychar
-#define yydebug _as_script_yydebug
-#define yynerrs _as_script_yynerrs
+#define yyparse _ms_script_yyparse
+#define yylex   _ms_script_yylex
+#define yyerror _ms_script_yyerror
+#define yylval  _ms_script_yylval
+#define yychar  _ms_script_yychar
+#define yydebug _ms_script_yydebug
+#define yynerrs _ms_script_yynerrs
 
 
 /* Tokens.  */
@@ -113,21 +113,21 @@
 #include "mooscript-parser.h"
 #include "mooscript-yacc.h"
 
-#define NODE_LIST_ADD(list, node)           _as_parser_node_list_add (parser, AS_NODE_LIST (list), node)
-#define NODE_COMMAND(id, node)              _as_parser_node_command (parser, id, AS_NODE_LIST (node))
-#define NODE_IF_ELSE(cond, then_, else_)    _as_parser_node_if_else (parser, cond, then_, else_)
-#define NODE_REPEAT(times, what)            _as_parser_node_repeat (parser, times, what)
-#define NODE_WHILE(cond, what)              _as_parser_node_while (parser, cond, what)
-#define NODE_ASSIGNMENT(var, val)           _as_parser_node_assignment (parser, AS_NODE_VAR (var), val)
-#define BINARY_OP(op, lval, rval)           _as_parser_node_binary_op (parser, op, lval, rval)
-#define UNARY_OP(op, val)                   _as_parser_node_unary_op (parser, op, val)
-#define NODE_NUMBER(n)                      _as_parser_node_int (parser, n)
-#define NODE_STRING(n)                      _as_parser_node_string (parser, n)
-#define NODE_VALUE_LIST(list)               _as_parser_node_value_list (parser, AS_NODE_LIST (list))
-#define VAR_POSITIONAL(n)                   _as_parser_node_var_pos (parser, n)
-#define VAR_NAMED(string)                   _as_parser_node_var_named (parser, string)
+#define NODE_LIST_ADD(list, node)           _ms_parser_node_list_add (parser, MS_NODE_LIST (list), node)
+#define NODE_COMMAND(id, node)              _ms_parser_node_command (parser, id, MS_NODE_LIST (node))
+#define NODE_IF_ELSE(cond, then_, else_)    _ms_parser_node_if_else (parser, cond, then_, else_)
+#define NODE_REPEAT(times, what)            _ms_parser_node_repeat (parser, times, what)
+#define NODE_WHILE(cond, what)              _ms_parser_node_while (parser, cond, what)
+#define NODE_MSSIGNMENT(var, val)           _ms_parser_node_assignment (parser, MS_NODE_VAR (var), val)
+#define BINARY_OP(op, lval, rval)           _ms_parser_node_binary_op (parser, op, lval, rval)
+#define UNARY_OP(op, val)                   _ms_parser_node_unary_op (parser, op, val)
+#define NODE_NUMBER(n)                      _ms_parser_node_int (parser, n)
+#define NODE_STRING(n)                      _ms_parser_node_string (parser, n)
+#define NODE_VALUE_LIST(list)               _ms_parser_node_value_list (parser, MS_NODE_LIST (list))
+#define VAR_POSITIONAL(n)                   _ms_parser_node_var_pos (parser, n)
+#define VAR_NAMED(string)                   _ms_parser_node_var_named (parser, string)
 
-#define SET_TOP_NODE(node)                  _as_parser_set_top_node (parser, node)
+#define SET_TOP_NODE(node)                  _ms_parser_set_top_node (parser, node)
 
 
 /* Enabling traces.  */
@@ -153,7 +153,7 @@
 typedef union YYSTYPE {
     int ival;
     const char *str;
-    ASNode *node;
+    MSNode *node;
 } YYSTYPE;
 /* Line 196 of yacc.c.  */
 #line 160 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.c"
@@ -992,7 +992,7 @@ int yyparse ();
 # endif
 #else /* ! YYPARSE_PARAM */
 #if defined (__STDC__) || defined (__cplusplus)
-int yyparse (ASParser *parser);
+int yyparse (MSParser *parser);
 #else
 int yyparse ();
 #endif
@@ -1025,11 +1025,11 @@ int yyparse (YYPARSE_PARAM)
 #else /* ! YYPARSE_PARAM */
 #if defined (__STDC__) || defined (__cplusplus)
 int
-yyparse (ASParser *parser)
+yyparse (MSParser *parser)
 #else
 int
 yyparse (parser)
-    ASParser *parser;
+    MSParser *parser;
 #endif
 #endif
 {
@@ -1352,67 +1352,67 @@ yyreduce:
 
   case 26:
 #line 106 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = NODE_ASSIGNMENT ((yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = NODE_MSSIGNMENT ((yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 28:
 #line 110 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_PLUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_PLUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 29:
 #line 111 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_MINUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_MINUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 30:
 #line 112 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_DIV, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_DIV, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 31:
 #line 113 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_MULT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_MULT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 32:
 #line 115 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_AND, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_AND, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 33:
 #line 116 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_OR, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_OR, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 34:
 #line 118 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_EQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_EQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 35:
 #line 119 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_NEQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_NEQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 36:
 #line 120 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_LT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_LT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 37:
 #line 121 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_GT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_GT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 38:
 #line 122 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_LE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_LE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 39:
 #line 123 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_GE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_GE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 40:
@@ -1437,22 +1437,22 @@ yyreduce:
 
   case 45:
 #line 132 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = BINARY_OP (AS_OP_FORMAT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = BINARY_OP (MS_OP_FORMAT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 46:
 #line 133 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = UNARY_OP (AS_OP_LEN, (yyvsp[0].node)); ;}
+    { (yyval.node) = UNARY_OP (MS_OP_LEN, (yyvsp[0].node)); ;}
     break;
 
   case 47:
 #line 134 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = UNARY_OP (AS_OP_NOT, (yyvsp[0].node)); ;}
+    { (yyval.node) = UNARY_OP (MS_OP_NOT, (yyvsp[0].node)); ;}
     break;
 
   case 48:
 #line 135 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = UNARY_OP (AS_OP_UMINUS, (yyvsp[0].node)); ;}
+    { (yyval.node) = UNARY_OP (MS_OP_UMINUS, (yyvsp[0].node)); ;}
     break;
 
   case 49:

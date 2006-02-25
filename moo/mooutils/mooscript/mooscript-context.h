@@ -20,93 +20,93 @@
 G_BEGIN_DECLS
 
 
-#define AS_TYPE_CONTEXT                    (as_context_get_type ())
-#define AS_CONTEXT(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_CONTEXT, ASContext))
-#define AS_CONTEXT_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_CONTEXT, ASContextClass))
-#define AS_IS_CONTEXT(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_CONTEXT))
-#define AS_IS_CONTEXT_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_CONTEXT))
-#define AS_CONTEXT_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_CONTEXT, ASContextClass))
+#define MS_TYPE_CONTEXT                    (ms_context_get_type ())
+#define MS_CONTEXT(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_CONTEXT, MSContext))
+#define MS_CONTEXT_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_CONTEXT, MSContextClass))
+#define MS_IS_CONTEXT(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_CONTEXT))
+#define MS_IS_CONTEXT_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CONTEXT))
+#define MS_CONTEXT_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CONTEXT, MSContextClass))
 
-typedef struct _ASContextClass ASContextClass;
-typedef struct _ASVariable ASVariable;
+typedef struct _MSContextClass MSContextClass;
+typedef struct _MSVariable MSVariable;
 
-struct _ASVariable {
+struct _MSVariable {
     guint ref_count;
-    ASValue *value;
-    ASFunc *func; /* called with no arguments */
+    MSValue *value;
+    MSFunc *func; /* called with no arguments */
 };
 
 typedef enum {
-    AS_ERROR_NONE = 0,
-    AS_ERROR_TYPE,
-    AS_ERROR_VALUE,
-    AS_ERROR_NAME,
-    AS_ERROR_LAST
-} ASError;
+    MS_ERROR_NONE = 0,
+    MS_ERROR_TYPE,
+    MS_ERROR_VALUE,
+    MS_ERROR_NAME,
+    MS_ERROR_LMST
+} MSError;
 
-typedef void (*ASPrintFunc) (const char *string,
-                             ASContext  *ctx);
+typedef void (*MSPrintFunc) (const char *string,
+                             MSContext  *ctx);
 
-struct _ASContext {
+struct _MSContext {
     GObject object;
 
     GHashTable *funcs;
     GHashTable *named_vars;
-    ASValue **positional_vars;
+    MSValue **positional_vars;
 
-    ASError error;
+    MSError error;
     char *error_msg;
 
-    ASPrintFunc print_func;
+    MSPrintFunc print_func;
 };
 
-struct _ASContextClass {
+struct _MSContextClass {
     GObjectClass object_class;
 };
 
 
-GType        as_context_get_type            (void) G_GNUC_CONST;
+GType        ms_context_get_type            (void) G_GNUC_CONST;
 
-ASVariable  *as_variable_new_value          (ASValue    *value);
-ASVariable  *as_variable_new_func           (ASFunc     *func);
-ASVariable  *as_variable_ref                (ASVariable *var);
-void         as_variable_unref              (ASVariable *var);
+MSVariable  *ms_variable_new_value          (MSValue    *value);
+MSVariable  *ms_variable_new_func           (MSFunc     *func);
+MSVariable  *ms_variable_ref                (MSVariable *var);
+void         ms_variable_unref              (MSVariable *var);
 
-ASContext   *as_context_new                 (void);
+MSContext   *ms_context_new                 (void);
 
-ASValue     *as_context_eval_positional     (ASContext  *ctx,
+MSValue     *ms_context_eval_positional     (MSContext  *ctx,
                                              guint       num);
-ASValue     *as_context_eval_named          (ASContext  *ctx,
+MSValue     *ms_context_eval_named          (MSContext  *ctx,
                                              const char *name);
-gboolean     as_context_assign_positional   (ASContext  *ctx,
+gboolean     ms_context_assign_positional   (MSContext  *ctx,
                                              guint       num,
-                                             ASValue    *value);
-gboolean     as_context_assign_named        (ASContext  *ctx,
+                                             MSValue    *value);
+gboolean     ms_context_assign_named        (MSContext  *ctx,
                                              const char *name,
-                                             ASValue    *value);
+                                             MSValue    *value);
 
-ASVariable  *as_context_lookup_var          (ASContext  *ctx,
+MSVariable  *ms_context_lookup_var          (MSContext  *ctx,
                                              const char *name);
-gboolean     as_context_set_var             (ASContext  *ctx,
+gboolean     ms_context_set_var             (MSContext  *ctx,
                                              const char *name,
-                                             ASVariable *var);
+                                             MSVariable *var);
 
-ASFunc      *as_context_lookup_func         (ASContext  *ctx,
+MSFunc      *ms_context_lookup_func         (MSContext  *ctx,
                                              const char *name);
-gboolean     as_context_set_func            (ASContext  *ctx,
+gboolean     ms_context_set_func            (MSContext  *ctx,
                                              const char *name,
-                                             ASFunc     *func);
+                                             MSFunc     *func);
 
-ASValue     *as_context_set_error           (ASContext  *ctx,
-                                             ASError     error,
+MSValue     *ms_context_set_error           (MSContext  *ctx,
+                                             MSError     error,
                                              const char *message);
-ASValue     *as_context_format_error        (ASContext  *ctx,
-                                             ASError     error,
+MSValue     *ms_context_format_error        (MSContext  *ctx,
+                                             MSError     error,
                                              const char *format,
                                              ...);
 
-const char  *as_context_get_error_msg       (ASContext  *ctx);
-void         as_context_clear_error         (ASContext  *ctx);
+const char  *ms_context_get_error_msg       (MSContext  *ctx);
+void         ms_context_clear_error         (MSContext  *ctx);
 
 
 G_END_DECLS

@@ -38,14 +38,14 @@ typedef struct {
     guint len;
     guint ptr;
     GHashTable *hash;
-} ASLex;
+} MSLex;
 
-struct _ASParser {
-    ASLex *lex;
+struct _MSParser {
+    MSLex *lex;
     gboolean failed;
 
     GSList *nodes;
-    ASNode *script;
+    MSNode *script;
 };
 
 
@@ -57,7 +57,7 @@ struct _ASParser {
 
 
 static int
-as_lex_error (ASParser *parser)
+ms_lex_error (MSParser *parser)
 {
     parser->failed = TRUE;
     return -1;
@@ -65,7 +65,7 @@ as_lex_error (ASParser *parser)
 
 
 static char *
-as_lex_add_string (ASLex      *lex,
+ms_lex_add_string (MSLex      *lex,
                    const char *string,
                    guint       len)
 {
@@ -86,8 +86,8 @@ as_lex_add_string (ASLex      *lex,
 
 
 static int
-as_lex_parse_string (ASLex    *lex,
-                     ASParser *parser)
+ms_lex_parse_string (MSLex    *lex,
+                     MSParser *parser)
 {
     guint first, last;
     guchar quote, second;
@@ -111,7 +111,7 @@ as_lex_parse_string (ASLex    *lex,
 
         if (c == quote)
         {
-            _as_script_yylval.str = as_lex_add_string (lex, string->str, string->len);
+            _ms_script_yylval.str = ms_lex_add_string (lex, string->str, string->len);
             lex->ptr = last + 1;
             token = LITERAL;
             goto out;
@@ -156,7 +156,7 @@ as_lex_parse_string (ASLex    *lex,
     }
 
     g_warning ("unterminated string literal");
-    token = as_lex_error (parser);
+    token = ms_lex_error (parser);
 
 out:
     g_string_free (string, TRUE);
@@ -165,8 +165,8 @@ out:
 
 
 static int
-as_lex_parse_number (ASLex    *lex,
-                     ASParser *parser)
+ms_lex_parse_number (MSLex    *lex,
+                     MSParser *parser)
 {
     int value = 0;
 
@@ -181,7 +181,7 @@ as_lex_parse_number (ASLex    *lex,
             if (value > 1000000)
             {
                 g_warning ("number is too big");
-                return as_lex_error (parser);
+                return ms_lex_error (parser);
             }
 
             value = (value * 10) + (c - '0');
@@ -190,23 +190,23 @@ as_lex_parse_number (ASLex    *lex,
         else if (IS_WORD (c))
         {
             g_warning ("number followed by word char");
-            return as_lex_error (parser);
+            return ms_lex_error (parser);
         }
         else
         {
-            _as_script_yylval.ival = value;
+            _ms_script_yylval.ival = value;
             return NUMBER;
         }
     }
 
     g_critical ("oops");
-    return as_lex_error (parser);
+    return ms_lex_error (parser);
 }
 
 
 static int
-as_lex_parse_word (ASLex    *lex,
-                   G_GNUC_UNUSED ASParser *parser)
+ms_lex_parse_word (MSLex    *lex,
+                   G_GNUC_UNUSED MSParser *parser)
 {
     guint last, i;
     const char *string;
@@ -230,7 +230,7 @@ as_lex_parse_word (ASLex    *lex,
 
     for (last = lex->ptr + 1; last < lex->len && IS_WORD (lex->input[last]); ++last) ;
 
-    _as_script_yylval.str = as_lex_add_string (lex, string, last - lex->ptr);
+    _ms_script_yylval.str = ms_lex_add_string (lex, string, last - lex->ptr);
     lex->ptr = last;
 
     return IDENTIFIER;
@@ -238,9 +238,9 @@ as_lex_parse_word (ASLex    *lex,
 
 
 int
-_as_script_yylex (ASParser *parser)
+_ms_script_yylex (MSParser *parser)
 {
-    ASLex *lex = parser->lex;
+    MSLex *lex = parser->lex;
     guchar c;
 
     while (lex->ptr < lex->len && IS_SPACE(lex->input[lex->ptr]))
@@ -254,17 +254,17 @@ _as_script_yylex (ASParser *parser)
     if (c & 0x80)
     {
         g_warning ("got unicode character");
-        return as_lex_error (parser);
+        return ms_lex_error (parser);
     }
 
     if (IS_QUOTE (c))
-        return as_lex_parse_string (lex, parser);
+        return ms_lex_parse_string (lex, parser);
 
     if (IS_DIGIT (c))
-        return as_lex_parse_number (lex, parser);
+        return ms_lex_parse_number (lex, parser);
 
     if (IS_LETTER (c) || c == '_')
-        return as_lex_parse_word (lex, parser);
+        return ms_lex_parse_word (lex, parser);
 
     lex->ptr++;
     return c;
@@ -272,7 +272,7 @@ _as_script_yylex (ASParser *parser)
 
 
 void
-_as_script_yyerror (ASParser   *parser,
+_ms_script_yyerror (MSParser   *parser,
                     const char *string)
 {
     g_print ("error: %s\n", string);
@@ -280,11 +280,11 @@ _as_script_yyerror (ASParser   *parser,
 }
 
 
-static ASLex *
-as_lex_new (const char *string,
+static MSLex *
+ms_lex_new (const char *string,
             int         len)
 {
-    ASLex *lex = g_new0 (ASLex, 1);
+    MSLex *lex = g_new0 (MSLex, 1);
 
     if (len < 0)
         len = strlen (string);
@@ -298,7 +298,7 @@ as_lex_new (const char *string,
 
 
 static void
-as_lex_free (ASLex *lex)
+ms_lex_free (MSLex *lex)
 {
     if (lex)
     {
@@ -308,18 +308,18 @@ as_lex_free (ASLex *lex)
 }
 
 
-static ASParser *
-as_parser_new (void)
+static MSParser *
+ms_parser_new (void)
 {
-    ASParser *parser = g_new0 (ASParser, 1);
+    MSParser *parser = g_new0 (MSParser, 1);
     return parser;
 }
 
 
 static void
-as_parser_cleanup (ASParser *parser)
+ms_parser_cleanup (MSParser *parser)
 {
-    as_lex_free (parser->lex);
+    ms_lex_free (parser->lex);
     parser->lex = NULL;
     g_slist_foreach (parser->nodes, (GFunc) g_object_unref, NULL);
     g_slist_free (parser->nodes);
@@ -329,71 +329,71 @@ as_parser_cleanup (ASParser *parser)
 
 
 static void
-as_parser_free (ASParser *parser)
+ms_parser_free (MSParser *parser)
 {
     if (parser)
     {
-        as_parser_cleanup (parser);
+        ms_parser_cleanup (parser);
         g_free (parser);
     }
 }
 
 
-static ASNode *
-as_parser_parse (ASParser   *parser,
+static MSNode *
+ms_parser_parse (MSParser   *parser,
                  const char *string,
                  int         len)
 {
-    as_parser_cleanup (parser);
-    parser->lex = as_lex_new (string, len);
+    ms_parser_cleanup (parser);
+    parser->lex = ms_lex_new (string, len);
 
-    _as_script_yyparse (parser);
+    _ms_script_yyparse (parser);
 
     return parser->failed ? NULL : parser->script;
 }
 
 
-ASNode *
-as_script_parse (const char *string)
+MSNode *
+ms_script_parse (const char *string)
 {
-    ASParser *parser;
-    ASNode *script;
+    MSParser *parser;
+    MSNode *script;
 
     g_return_val_if_fail (string != NULL, FALSE);
 
     if (!string[0])
         return NULL;
 
-    parser = as_parser_new ();
-    script = as_parser_parse (parser, string, -1);
+    parser = ms_parser_new ();
+    script = ms_parser_parse (parser, string, -1);
 
     if (script)
         g_object_ref (script);
 
-    as_parser_free (parser);
+    ms_parser_free (parser);
     return script;
 }
 
 
 static void
-parser_add_node (ASParser   *parser,
+parser_add_node (MSParser   *parser,
                  gpointer    node)
 {
-    g_return_if_fail (AS_IS_NODE (node));
+    g_return_if_fail (MS_IS_NODE (node));
     parser->nodes = g_slist_prepend (parser->nodes, node);
 }
 
 
 void
-_as_parser_set_top_node (ASParser   *parser,
-                         ASNode     *node)
+_ms_parser_set_top_node (MSParser   *parser,
+                         MSNode     *node)
 {
     g_assert (parser != NULL);
     g_assert (parser->script == NULL);
 
     if (!node)
     {
-        node = (ASNode*) as_node_list_new ();
+        node = (MSNode*) ms_node_list_new ();
         parser_add_node (parser, node);
     }
 
@@ -401,213 +401,213 @@ _as_parser_set_top_node (ASParser   *parser,
 }
 
 
-ASNode *
-_as_parser_node_list_add (ASParser   *parser,
-                          ASNodeList *list,
-                          ASNode     *node)
+MSNode *
+_ms_parser_node_list_add (MSParser   *parser,
+                          MSNodeList *list,
+                          MSNode     *node)
 {
     if (!node)
         return NULL;
 
     if (!list)
     {
-        list = as_node_list_new ();
+        list = ms_node_list_new ();
         parser_add_node (parser, list);
     }
 
-    as_node_list_add (list, node);
-    return AS_NODE (list);
+    ms_node_list_add (list, node);
+    return MS_NODE (list);
 }
 
 
-ASNode *
-_as_parser_node_command (ASParser   *parser,
+MSNode *
+_ms_parser_node_command (MSParser   *parser,
                          const char *name,
-                         ASNodeList *list)
+                         MSNodeList *list)
 {
-    ASNodeCommand *cmd;
+    MSNodeCommand *cmd;
 
     g_return_val_if_fail (name != NULL, NULL);
-    g_return_val_if_fail (!list || AS_IS_NODE_LIST (list), NULL);
+    g_return_val_if_fail (!list || MS_IS_NODE_LIST (list), NULL);
 
-    cmd = as_node_command_new (name, list);
+    cmd = ms_node_command_new (name, list);
     parser_add_node (parser, cmd);
 
-    return AS_NODE (cmd);
+    return MS_NODE (cmd);
 }
 
 
-ASNode *
-_as_parser_node_if_else (ASParser   *parser,
-                         ASNode     *condition,
-                         ASNode     *then_,
-                         ASNode     *else_)
+MSNode *
+_ms_parser_node_if_else (MSParser   *parser,
+                         MSNode     *condition,
+                         MSNode     *then_,
+                         MSNode     *else_)
 {
-    ASNodeIfElse *node;
+    MSNodeIfElse *node;
 
-    g_return_val_if_fail (AS_IS_NODE (condition), NULL);
-    g_return_val_if_fail (AS_IS_NODE (then_), NULL);
-    g_return_val_if_fail (!else_ || AS_IS_NODE (else_), NULL);
+    g_return_val_if_fail (MS_IS_NODE (condition), NULL);
+    g_return_val_if_fail (MS_IS_NODE (then_), NULL);
+    g_return_val_if_fail (!else_ || MS_IS_NODE (else_), NULL);
 
-    node = as_node_if_else_new (condition, then_, else_);
+    node = ms_node_if_else_new (condition, then_, else_);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-static ASNode *
-as_parser_loop (ASParser   *parser,
-                ASLoopType  type,
-                ASNode     *times,
-                ASNode     *what)
+static MSNode *
+ms_parser_loop (MSParser   *parser,
+                MSLoopType  type,
+                MSNode     *times,
+                MSNode     *what)
 {
-    ASNodeLoop *loop;
+    MSNodeLoop *loop;
 
-    g_return_val_if_fail (AS_IS_NODE (times), NULL);
-    g_return_val_if_fail (AS_IS_NODE (what), NULL);
+    g_return_val_if_fail (MS_IS_NODE (times), NULL);
+    g_return_val_if_fail (MS_IS_NODE (what), NULL);
 
-    loop = as_node_loop_new (type, times, what);
+    loop = ms_node_loop_new (type, times, what);
     parser_add_node (parser, loop);
 
-    return AS_NODE (loop);
+    return MS_NODE (loop);
 }
 
-ASNode *
-_as_parser_node_repeat (ASParser   *parser,
-                        ASNode     *times,
-                        ASNode     *what)
+MSNode *
+_ms_parser_node_repeat (MSParser   *parser,
+                        MSNode     *times,
+                        MSNode     *what)
 {
-    return as_parser_loop (parser, AS_LOOP_TIMES, times, what);
-}
-
-
-ASNode *
-_as_parser_node_while (ASParser   *parser,
-                       ASNode     *cond,
-                       ASNode     *what)
-{
-    return as_parser_loop (parser, AS_LOOP_WHILE, cond, what);
+    return ms_parser_loop (parser, MS_LOOP_TIMES, times, what);
 }
 
 
-ASNode *
-_as_parser_node_assignment (ASParser   *parser,
-                            ASNodeVar  *var,
-                            ASNode     *val)
+MSNode *
+_ms_parser_node_while (MSParser   *parser,
+                       MSNode     *cond,
+                       MSNode     *what)
 {
-    ASNodeAssign *node;
+    return ms_parser_loop (parser, MS_LOOP_WHILE, cond, what);
+}
 
-    g_return_val_if_fail (AS_IS_NODE_VAR (var), NULL);
-    g_return_val_if_fail (AS_IS_NODE (val), NULL);
 
-    node = as_node_assign_new (var, val);
+MSNode *
+_ms_parser_node_assignment (MSParser   *parser,
+                            MSNodeVar  *var,
+                            MSNode     *val)
+{
+    MSNodeAssign *node;
+
+    g_return_val_if_fail (MS_IS_NODE_VAR (var), NULL);
+    g_return_val_if_fail (MS_IS_NODE (val), NULL);
+
+    node = ms_node_assign_new (var, val);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-ASNode *
-_as_parser_node_binary_op (ASParser   *parser,
-                           ASBinaryOp  op,
-                           ASNode     *lval,
-                           ASNode     *rval)
+MSNode *
+_ms_parser_node_binary_op (MSParser   *parser,
+                           MSBinaryOp  op,
+                           MSNode     *lval,
+                           MSNode     *rval)
 {
-    ASNodeCommand *cmd;
+    MSNodeCommand *cmd;
 
-    g_return_val_if_fail (AS_IS_NODE (lval), NULL);
-    g_return_val_if_fail (AS_IS_NODE (rval), NULL);
+    g_return_val_if_fail (MS_IS_NODE (lval), NULL);
+    g_return_val_if_fail (MS_IS_NODE (rval), NULL);
 
-    cmd = as_node_binary_op_new (op, lval, rval);
+    cmd = ms_node_binary_op_new (op, lval, rval);
     parser_add_node (parser, cmd);
 
-    return AS_NODE (cmd);
+    return MS_NODE (cmd);
 }
 
 
-ASNode *
-_as_parser_node_unary_op (ASParser   *parser,
-                          ASUnaryOp   op,
-                          ASNode     *val)
+MSNode *
+_ms_parser_node_unary_op (MSParser   *parser,
+                          MSUnaryOp   op,
+                          MSNode     *val)
 {
-    ASNodeCommand *cmd;
+    MSNodeCommand *cmd;
 
-    g_return_val_if_fail (AS_IS_NODE (val), NULL);
+    g_return_val_if_fail (MS_IS_NODE (val), NULL);
 
-    cmd = as_node_unary_op_new (op, val);
+    cmd = ms_node_unary_op_new (op, val);
     parser_add_node (parser, cmd);
 
-    return AS_NODE (cmd);
+    return MS_NODE (cmd);
 }
 
 
-ASNode *
-_as_parser_node_int (ASParser   *parser,
+MSNode *
+_ms_parser_node_int (MSParser   *parser,
                      int         n)
 {
-    ASNodeValue *node;
-    ASValue *value;
+    MSNodeValue *node;
+    MSValue *value;
 
-    value = as_value_int (n);
-    node = as_node_value_new (value);
-    as_value_unref (value);
+    value = ms_value_int (n);
+    node = ms_node_value_new (value);
+    ms_value_unref (value);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-ASNode *
-_as_parser_node_string (ASParser   *parser,
+MSNode *
+_ms_parser_node_string (MSParser   *parser,
                         const char *string)
 {
-    ASNodeValue *node;
-    ASValue *value;
+    MSNodeValue *node;
+    MSValue *value;
 
-    value = as_value_string (string);
-    node = as_node_value_new (value);
-    as_value_unref (value);
+    value = ms_value_string (string);
+    node = ms_node_value_new (value);
+    ms_value_unref (value);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-ASNode *
-_as_parser_node_var_pos (ASParser   *parser,
+MSNode *
+_ms_parser_node_var_pos (MSParser   *parser,
                          int         n)
 {
-    ASNodeVar *node;
+    MSNodeVar *node;
 
-    node = as_node_var_new_positional (n);
+    node = ms_node_var_new_positional (n);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-ASNode *
-_as_parser_node_var_named (ASParser   *parser,
+MSNode *
+_ms_parser_node_var_named (MSParser   *parser,
                            const char *name)
 {
-    ASNodeVar *node;
+    MSNodeVar *node;
 
-    node = as_node_var_new_named (name);
+    node = ms_node_var_new_named (name);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }
 
 
-ASNode *
-_as_parser_node_value_list (ASParser   *parser,
-                            ASNodeList *list)
+MSNode *
+_ms_parser_node_value_list (MSParser   *parser,
+                            MSNodeList *list)
 {
-    ASNodeValList *node;
+    MSNodeValList *node;
 
-    node = as_node_val_list_new (list);
+    node = ms_node_val_list_new (list);
     parser_add_node (parser, node);
 
-    return AS_NODE (node);
+    return MS_NODE (node);
 }

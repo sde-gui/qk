@@ -20,80 +20,80 @@
 G_BEGIN_DECLS
 
 
-#define AS_TYPE_FUNC                    (as_func_get_type ())
-#define AS_FUNC(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_FUNC, ASFunc))
-#define AS_FUNC_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_FUNC, ASFuncClass))
-#define AS_IS_FUNC(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_FUNC))
-#define AS_IS_FUNC_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_FUNC))
-#define AS_FUNC_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_FUNC, ASFuncClass))
+#define MS_TYPE_FUNC                    (ms_func_get_type ())
+#define MS_FUNC(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_FUNC, MSFunc))
+#define MS_FUNC_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_FUNC, MSFuncClass))
+#define MS_IS_FUNC(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_FUNC))
+#define MS_IS_FUNC_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_FUNC))
+#define MS_FUNC_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_FUNC, MSFuncClass))
 
-#define AS_TYPE_CFUNC                   (as_cfunc_get_type ())
-#define AS_CFUNC(object)                (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_CFUNC, ASCFunc))
-#define AS_CFUNC_CLASS(klass)           (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_CFUNC, ASCFuncClass))
-#define AS_IS_CFUNC(object)             (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_CFUNC))
-#define AS_IS_CFUNC_CLASS(klass)        (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_CFUNC))
-#define AS_CFUNC_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_CFUNC, ASCFuncClass))
+#define MS_TYPE_CFUNC                   (ms_cfunc_get_type ())
+#define MS_CFUNC(object)                (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_CFUNC, MSCFunc))
+#define MS_CFUNC_CLASS(klass)           (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_CFUNC, MSCFuncClass))
+#define MS_IS_CFUNC(object)             (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_CFUNC))
+#define MS_IS_CFUNC_CLASS(klass)        (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CFUNC))
+#define MS_CFUNC_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CFUNC, MSCFuncClass))
 
-typedef struct _ASContext ASContext;
+typedef struct _MSContext MSContext;
 
-typedef struct _ASFunc ASFunc;
-typedef struct _ASFuncClass ASFuncClass;
-typedef struct _ASCFunc ASCFunc;
-typedef struct _ASCFuncClass ASCFuncClass;
+typedef struct _MSFunc MSFunc;
+typedef struct _MSFuncClass MSFuncClass;
+typedef struct _MSCFunc MSCFunc;
+typedef struct _MSCFuncClass MSCFuncClass;
 
-struct _ASFunc {
+struct _MSFunc {
     GObject object;
 };
 
-typedef ASValue* (*ASFuncCall)  (ASFunc     *func,
-                                 ASValue   **args,
+typedef MSValue* (*MSFuncCall)  (MSFunc     *func,
+                                 MSValue   **args,
                                  guint       n_args,
-                                 ASContext  *ctx);
+                                 MSContext  *ctx);
 
-struct _ASFuncClass {
+struct _MSFuncClass {
     GObjectClass object_class;
-    ASFuncCall call;
+    MSFuncCall call;
 };
 
 
-typedef ASValue* (*ASCFunc_Var) (ASValue   **args,
+typedef MSValue* (*MSCFunc_Var) (MSValue   **args,
                                  guint       n_args,
-                                 ASContext  *ctx);
-typedef ASValue* (*ASCFunc_0)   (ASContext  *ctx);
-typedef ASValue* (*ASCFunc_1)   (ASValue    *arg1,
-                                 ASContext  *ctx);
-typedef ASValue* (*ASCFunc_2)   (ASValue    *arg1,
-                                 ASValue    *arg2,
-                                 ASContext  *ctx);
-typedef ASValue* (*ASCFunc_3)   (ASValue    *arg1,
-                                 ASValue    *arg2,
-                                 ASValue    *arg3,
-                                 ASContext  *ctx);
+                                 MSContext  *ctx);
+typedef MSValue* (*MSCFunc_0)   (MSContext  *ctx);
+typedef MSValue* (*MSCFunc_1)   (MSValue    *arg1,
+                                 MSContext  *ctx);
+typedef MSValue* (*MSCFunc_2)   (MSValue    *arg1,
+                                 MSValue    *arg2,
+                                 MSContext  *ctx);
+typedef MSValue* (*MSCFunc_3)   (MSValue    *arg1,
+                                 MSValue    *arg2,
+                                 MSValue    *arg3,
+                                 MSContext  *ctx);
 
-struct _ASCFunc {
-    ASFunc func;
+struct _MSCFunc {
+    MSFunc func;
     int n_args;
     void (*cfunc) (void);
 };
 
-struct _ASCFuncClass {
-    ASFuncClass func_class;
+struct _MSCFuncClass {
+    MSFuncClass func_class;
 };
 
 
-GType           as_func_get_type    (void) G_GNUC_CONST;
-GType           as_cfunc_get_type   (void) G_GNUC_CONST;
+GType           ms_func_get_type    (void) G_GNUC_CONST;
+GType           ms_cfunc_get_type   (void) G_GNUC_CONST;
 
-ASValue        *as_func_call        (ASFunc     *func,
-                                     ASValue   **args,
+MSValue        *ms_func_call        (MSFunc     *func,
+                                     MSValue   **args,
                                      guint       n_args,
-                                     ASContext  *ctx);
+                                     MSContext  *ctx);
 
-ASFunc         *as_cfunc_new_var    (ASCFunc_Var cfunc);
-ASFunc         *as_cfunc_new_0      (ASCFunc_0   cfunc);
-ASFunc         *as_cfunc_new_1      (ASCFunc_1   cfunc);
-ASFunc         *as_cfunc_new_2      (ASCFunc_2   cfunc);
-ASFunc         *as_cfunc_new_3      (ASCFunc_3   cfunc);
+MSFunc         *ms_cfunc_new_var    (MSCFunc_Var cfunc);
+MSFunc         *ms_cfunc_new_0      (MSCFunc_0   cfunc);
+MSFunc         *ms_cfunc_new_1      (MSCFunc_1   cfunc);
+MSFunc         *ms_cfunc_new_2      (MSCFunc_2   cfunc);
+MSFunc         *ms_cfunc_new_3      (MSCFunc_3   cfunc);
 
 
 G_END_DECLS

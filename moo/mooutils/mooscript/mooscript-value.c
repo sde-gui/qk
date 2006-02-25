@@ -17,102 +17,102 @@
 #include <string.h>
 
 
-static ASValue *AS_None;
-static ASValue *AS_True;
-static ASValue *AS_False;
+static MSValue *MS_None;
+static MSValue *MS_True;
+static MSValue *MS_False;
 
 
-static ASValue *
-as_value_new (ASValueType type)
+static MSValue *
+ms_value_new (MSValueType type)
 {
-    ASValue *val = g_new0 (ASValue, 1);
+    MSValue *val = g_new0 (MSValue, 1);
     val->ref_count = 1;
     val->type = type;
     return val;
 }
 
 
-ASValue *
-as_value_none (void)
+MSValue *
+ms_value_none (void)
 {
-    if (!AS_None)
-        return AS_None = as_value_new (AS_VALUE_NONE);
+    if (!MS_None)
+        return MS_None = ms_value_new (MS_VALUE_NONE);
     else
-        return as_value_ref (AS_None);
+        return ms_value_ref (MS_None);
 }
 
 
-ASValue *
-as_value_false (void)
+MSValue *
+ms_value_false (void)
 {
-    if (!AS_False)
-        return AS_False = as_value_int (FALSE);
+    if (!MS_False)
+        return MS_False = ms_value_int (FALSE);
     else
-        return as_value_ref (AS_False);
+        return ms_value_ref (MS_False);
 }
 
 
-ASValue *
-as_value_true (void)
+MSValue *
+ms_value_true (void)
 {
-    if (!AS_True)
-        return AS_True = as_value_int (TRUE);
+    if (!MS_True)
+        return MS_True = ms_value_int (TRUE);
     else
-        return as_value_ref (AS_True);
+        return ms_value_ref (MS_True);
 }
 
 
-ASValue *
-as_value_bool (gboolean val)
+MSValue *
+ms_value_bool (gboolean val)
 {
-    return val ? as_value_true () : as_value_false ();
+    return val ? ms_value_true () : ms_value_false ();
 }
 
 
-ASValue *
-as_value_int (int ival)
+MSValue *
+ms_value_int (int ival)
 {
-    ASValue *val = as_value_new (AS_VALUE_INT);
+    MSValue *val = ms_value_new (MS_VALUE_INT);
     val->ival = ival;
     return val;
 }
 
 
-ASValue *
-as_value_string (const char *string)
+MSValue *
+ms_value_string (const char *string)
 {
-    return as_value_take_string (g_strdup (string));
+    return ms_value_take_string (g_strdup (string));
 }
 
 
-ASValue *
-as_value_take_string (char *string)
+MSValue *
+ms_value_take_string (char *string)
 {
-    ASValue *val;
+    MSValue *val;
     g_return_val_if_fail (string != NULL, NULL);
-    val = as_value_new (AS_VALUE_STRING);
+    val = ms_value_new (MS_VALUE_STRING);
     val->str = string;
     return val;
 }
 
 
-ASValue *
-as_value_object (gpointer object)
+MSValue *
+ms_value_object (gpointer object)
 {
-    ASValue *val;
+    MSValue *val;
     g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    val = as_value_new (AS_VALUE_OBJECT);
+    val = ms_value_new (MS_VALUE_OBJECT);
     val->ptr = g_object_ref (object);
     return val;
 }
 
 
-ASValue *
-as_value_gvalue (GValue *gval)
+MSValue *
+ms_value_gvalue (GValue *gval)
 {
-    ASValue *val;
+    MSValue *val;
     g_return_val_if_fail (G_IS_VALUE (gval), NULL);
-    val = as_value_new (AS_VALUE_GVALUE);
+    val = ms_value_new (MS_VALUE_GVALUE);
 
     val->gval = g_new (GValue, 1);
     val->gval->g_type = 0;
@@ -123,43 +123,43 @@ as_value_gvalue (GValue *gval)
 }
 
 
-ASValue *
-as_value_list (guint n_elms)
+MSValue *
+ms_value_list (guint n_elms)
 {
-    ASValue *val;
+    MSValue *val;
     guint i;
 
-    val = as_value_new (AS_VALUE_LIST);
-    val->list.elms = g_new (ASValue*, n_elms);
+    val = ms_value_new (MS_VALUE_LIST);
+    val->list.elms = g_new (MSValue*, n_elms);
     val->list.n_elms = n_elms;
 
     for (i = 0; i < n_elms; ++i)
-        val->list.elms[i] = as_value_none ();
+        val->list.elms[i] = ms_value_none ();
 
     return val;
 }
 
 
 void
-as_value_list_set_elm (ASValue    *list,
+ms_value_list_set_elm (MSValue    *list,
                        guint       index,
-                       ASValue    *elm)
+                       MSValue    *elm)
 {
     g_return_if_fail (list != NULL);
     g_return_if_fail (elm != NULL);
-    g_return_if_fail (list->type == AS_VALUE_LIST);
+    g_return_if_fail (list->type == MS_VALUE_LIST);
     g_return_if_fail (index < list->list.n_elms);
 
     if (list->list.elms[index] != elm)
     {
-        as_value_unref (list->list.elms[index]);
-        list->list.elms[index] = as_value_ref (elm);
+        ms_value_unref (list->list.elms[index]);
+        list->list.elms[index] = ms_value_ref (elm);
     }
 }
 
 
-ASValue *
-as_value_ref (ASValue *val)
+MSValue *
+ms_value_ref (MSValue *val)
 {
     g_return_val_if_fail (val != NULL, NULL);
     val->ref_count++;
@@ -168,7 +168,7 @@ as_value_ref (ASValue *val)
 
 
 void
-as_value_unref (ASValue *val)
+ms_value_unref (MSValue *val)
 {
     guint i;
 
@@ -179,34 +179,34 @@ as_value_unref (ASValue *val)
 
     switch (val->type)
     {
-        case AS_VALUE_STRING:
+        case MS_VALUE_STRING:
             g_free (val->str);
             break;
 
-        case AS_VALUE_NONE:
-            if (val == AS_None)
-                AS_None = NULL;
+        case MS_VALUE_NONE:
+            if (val == MS_None)
+                MS_None = NULL;
             break;
 
-        case AS_VALUE_INT:
-            if (val == AS_False)
-                AS_False = NULL;
-            else if (val == AS_True)
-                AS_True = NULL;
+        case MS_VALUE_INT:
+            if (val == MS_False)
+                MS_False = NULL;
+            else if (val == MS_True)
+                MS_True = NULL;
             break;
 
-        case AS_VALUE_OBJECT:
+        case MS_VALUE_OBJECT:
             g_object_unref (val->ptr);
             break;
 
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             g_value_unset (val->gval);
             g_free (val->gval);
             break;
 
-        case AS_VALUE_LIST:
+        case MS_VALUE_LIST:
             for (i = 0; i < val->list.n_elms; ++i)
-                as_value_unref (val->list.elms[i]);
+                ms_value_unref (val->list.elms[i]);
             g_free (val->list.elms);
             break;
     }
@@ -216,48 +216,48 @@ as_value_unref (ASValue *val)
 
 
 const char *
-as_binary_op_name (ASBinaryOp op)
+ms_binary_op_name (MSBinaryOp op)
 {
-    static const char *names[AS_BINARY_OP_LAST] = {
+    static const char *names[MS_BINARY_OP_LMST] = {
         "@PLUS", "@MINUS", "@MULT", "@DIV", "@AND", "@OR",
         "@EQ", "@NEQ", "@LT", "@GT", "@LE", "@GE", "@FORMAT"
     };
 
-    g_return_val_if_fail (op < AS_BINARY_OP_LAST, NULL);
+    g_return_val_if_fail (op < MS_BINARY_OP_LMST, NULL);
     return names[op];
 }
 
 
 const char *
-as_unary_op_name (ASUnaryOp op)
+ms_unary_op_name (MSUnaryOp op)
 {
-    static const char *names[AS_UNARY_OP_LAST] = {
+    static const char *names[MS_UNARY_OP_LMST] = {
         "@UMINUS", "@NOT", "@LEN"
     };
 
-    g_return_val_if_fail (op < AS_UNARY_OP_LAST, NULL);
+    g_return_val_if_fail (op < MS_UNARY_OP_LMST, NULL);
     return names[op];
 }
 
 
 gboolean
-as_value_get_bool (ASValue *val)
+ms_value_get_bool (MSValue *val)
 {
     g_return_val_if_fail (val != NULL, FALSE);
 
     switch (val->type)
     {
-        case AS_VALUE_STRING:
+        case MS_VALUE_STRING:
             return val->str[0] != 0;
-        case AS_VALUE_INT:
+        case MS_VALUE_INT:
             return val->ival != 0;
-        case AS_VALUE_NONE:
+        case MS_VALUE_NONE:
             return FALSE;
-        case AS_VALUE_OBJECT:
+        case MS_VALUE_OBJECT:
             return val->ptr != NULL;
-        case AS_VALUE_LIST:
+        case MS_VALUE_LIST:
             return val->list.n_elms != 0;
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
                 case G_TYPE_NONE:
@@ -307,7 +307,7 @@ as_value_get_bool (ASValue *val)
 
 
 gboolean
-as_value_get_int (ASValue    *val,
+ms_value_get_int (MSValue    *val,
                   int        *ival)
 {
     g_return_val_if_fail (val != NULL, FALSE);
@@ -315,15 +315,15 @@ as_value_get_int (ASValue    *val,
 
     switch (val->type)
     {
-        case AS_VALUE_INT:
+        case MS_VALUE_INT:
             *ival = val->ival;
             return TRUE;
 
-        case AS_VALUE_NONE:
+        case MS_VALUE_NONE:
             *ival = 0;
             return TRUE;
 
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
                 case G_TYPE_NONE:
@@ -376,7 +376,7 @@ as_value_get_int (ASValue    *val,
 
 
 static char *
-print_list (ASValue **elms,
+print_list (MSValue **elms,
             guint     n_elms)
 {
     guint i;
@@ -389,7 +389,7 @@ print_list (ASValue **elms,
         char *s;
         if (i)
             g_string_append (string, ", ");
-        s = as_value_print (elms[i]);
+        s = ms_value_print (elms[i]);
         g_string_append (string, s);
         g_free (s);
     }
@@ -400,23 +400,23 @@ print_list (ASValue **elms,
 
 
 char *
-as_value_print (ASValue *val)
+ms_value_print (MSValue *val)
 {
     g_return_val_if_fail (val != NULL, NULL);
 
     switch (val->type)
     {
-        case AS_VALUE_STRING:
+        case MS_VALUE_STRING:
             return g_strdup (val->str);
-        case AS_VALUE_INT:
+        case MS_VALUE_INT:
             return g_strdup_printf ("%d", val->ival);
-        case AS_VALUE_NONE:
+        case MS_VALUE_NONE:
             return g_strdup ("None");
-        case AS_VALUE_OBJECT:
+        case MS_VALUE_OBJECT:
             return g_strdup_printf ("Object %p", val->ptr);
-        case AS_VALUE_LIST:
+        case MS_VALUE_LIST:
             return print_list (val->list.elms, val->list.n_elms);
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
                 case G_TYPE_NONE:
@@ -465,46 +465,46 @@ as_value_print (ASValue *val)
 }
 
 
-static ASValue *
-func_plus (ASValue *a, ASValue *b, ASContext *ctx)
+static MSValue *
+func_plus (MSValue *a, MSValue *b, MSContext *ctx)
 {
-    if (a->type == AS_VALUE_INT && b->type == AS_VALUE_INT)
-        return as_value_int (a->ival + b->ival);
-    else if (a->type == AS_VALUE_STRING && b->type == AS_VALUE_STRING)
-        return as_value_take_string (g_strdup_printf ("%s%s", a->str, b->str));
+    if (a->type == MS_VALUE_INT && b->type == MS_VALUE_INT)
+        return ms_value_int (a->ival + b->ival);
+    else if (a->type == MS_VALUE_STRING && b->type == MS_VALUE_STRING)
+        return ms_value_take_string (g_strdup_printf ("%s%s", a->str, b->str));
 
-    return as_context_set_error (ctx, AS_ERROR_TYPE,
+    return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid PLUS");
 }
 
 
-static ASValue *
-func_minus (ASValue *a, ASValue *b, ASContext *ctx)
+static MSValue *
+func_minus (MSValue *a, MSValue *b, MSContext *ctx)
 {
-    if (a->type == AS_VALUE_INT && b->type == AS_VALUE_INT)
-        return as_value_int (a->ival - b->ival);
-    return as_context_set_error (ctx, AS_ERROR_TYPE,
+    if (a->type == MS_VALUE_INT && b->type == MS_VALUE_INT)
+        return ms_value_int (a->ival - b->ival);
+    return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid MINUS");
 }
 
 
-static ASValue *
-func_mult (ASValue *a, ASValue *b, ASContext *ctx)
+static MSValue *
+func_mult (MSValue *a, MSValue *b, MSContext *ctx)
 {
-    if (a->type == AS_VALUE_INT && b->type == AS_VALUE_INT)
-        return as_value_int (a->ival * b->ival);
+    if (a->type == MS_VALUE_INT && b->type == MS_VALUE_INT)
+        return ms_value_int (a->ival * b->ival);
 
-    if (a->type == AS_VALUE_STRING && b->type == AS_VALUE_INT)
+    if (a->type == MS_VALUE_STRING && b->type == MS_VALUE_INT)
     {
         char *s;
         guint len;
         int i;
 
         if (b->ival < 0)
-            return as_context_set_error (ctx, AS_ERROR_TYPE,
+            return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                          "string * negative int");
         if (b->ival == 0)
-            return as_value_string ("");
+            return ms_value_string ("");
 
         len = strlen (a->str);
         s = g_new (char, len * b->ival + 1);
@@ -513,55 +513,55 @@ func_mult (ASValue *a, ASValue *b, ASContext *ctx)
         for (i = 0; i < b->ival; ++i)
             memcpy (&s[i*len], a->str, len);
 
-        return as_value_take_string (s);
+        return ms_value_take_string (s);
     }
 
-    return as_context_set_error (ctx, AS_ERROR_TYPE,
+    return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid MULT");
 }
 
 
-static ASValue *
-func_div (ASValue *a, ASValue *b, ASContext *ctx)
+static MSValue *
+func_div (MSValue *a, MSValue *b, MSContext *ctx)
 {
-    if (a->type == AS_VALUE_INT && b->type == AS_VALUE_INT)
+    if (a->type == MS_VALUE_INT && b->type == MS_VALUE_INT)
     {
         if (b->ival)
-            return as_value_int (a->ival / b->ival);
+            return ms_value_int (a->ival / b->ival);
         else
-            return as_context_set_error (ctx, AS_ERROR_VALUE,
+            return ms_context_set_error (ctx, MS_ERROR_VALUE,
                                          "division by zero");
     }
 
-    return as_context_set_error (ctx, AS_ERROR_TYPE,
+    return ms_context_set_error (ctx, MS_ERROR_TYPE,
                                  "invalid DIV");
 }
 
 
-static ASValue *
-func_and (ASValue *a, ASValue *b)
+static MSValue *
+func_and (MSValue *a, MSValue *b)
 {
-    if (as_value_get_bool (a) && as_value_get_bool (b))
-        return as_value_ref (b);
+    if (ms_value_get_bool (a) && ms_value_get_bool (b))
+        return ms_value_ref (b);
     else
-        return as_value_false ();
+        return ms_value_false ();
 }
 
 
-static ASValue *
-func_or (ASValue *a, ASValue *b)
+static MSValue *
+func_or (MSValue *a, MSValue *b)
 {
-    if (as_value_get_bool (a))
-        return as_value_ref (a);
-    else if (as_value_get_bool (b))
-        return as_value_ref (b);
+    if (ms_value_get_bool (a))
+        return ms_value_ref (a);
+    else if (ms_value_get_bool (b))
+        return ms_value_ref (b);
     else
-        return as_value_false ();
+        return ms_value_false ();
 }
 
 
 static gboolean
-list_equal (ASValue *a, ASValue *b)
+list_equal (MSValue *a, MSValue *b)
 {
     guint i;
 
@@ -569,7 +569,7 @@ list_equal (ASValue *a, ASValue *b)
         return FALSE;
 
     for (i = 0; i < a->list.n_elms; ++i)
-        if (!as_value_equal (a->list.elms[i], b->list.elms[i]))
+        if (!ms_value_equal (a->list.elms[i], b->list.elms[i]))
             return FALSE;
 
     return TRUE;
@@ -577,7 +577,7 @@ list_equal (ASValue *a, ASValue *b)
 
 
 gboolean
-as_value_equal (ASValue *a, ASValue *b)
+ms_value_equal (MSValue *a, MSValue *b)
 {
     if (a == b)
         return TRUE;
@@ -587,17 +587,17 @@ as_value_equal (ASValue *a, ASValue *b)
 
     switch (a->type)
     {
-        case AS_VALUE_INT:
+        case MS_VALUE_INT:
             return a->ival == b->ival;
-        case AS_VALUE_NONE:
+        case MS_VALUE_NONE:
             return TRUE;
-        case AS_VALUE_STRING:
+        case MS_VALUE_STRING:
             return !strcmp (a->str, b->str);
-        case AS_VALUE_OBJECT:
+        case MS_VALUE_OBJECT:
             return a->ptr == b->ptr;
-        case AS_VALUE_LIST:
+        case MS_VALUE_LIST:
             return list_equal (a, b);
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             g_return_val_if_reached (FALSE);
     }
 
@@ -608,13 +608,13 @@ as_value_equal (ASValue *a, ASValue *b)
 #define CMP(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
 
 static int
-list_cmp (ASValue *a, ASValue *b)
+list_cmp (MSValue *a, MSValue *b)
 {
     guint i;
 
     for (i = 0; i < a->list.n_elms && i < b->list.n_elms; ++i)
     {
-        int c = as_value_cmp (a->list.elms[i], b->list.elms[i]);
+        int c = ms_value_cmp (a->list.elms[i], b->list.elms[i]);
 
         if (c)
             return c;
@@ -625,7 +625,7 @@ list_cmp (ASValue *a, ASValue *b)
 
 
 int
-as_value_cmp (ASValue *a, ASValue *b)
+ms_value_cmp (MSValue *a, MSValue *b)
 {
     if (a == b)
         return 0;
@@ -635,17 +635,17 @@ as_value_cmp (ASValue *a, ASValue *b)
 
     switch (a->type)
     {
-        case AS_VALUE_INT:
+        case MS_VALUE_INT:
             return CMP (a->ival, b->ival);
-        case AS_VALUE_NONE:
+        case MS_VALUE_NONE:
             return 0;
-        case AS_VALUE_STRING:
+        case MS_VALUE_STRING:
             return strcmp (a->str, b->str);
-        case AS_VALUE_OBJECT:
+        case MS_VALUE_OBJECT:
             return CMP (a->ptr, b->ptr);
-        case AS_VALUE_LIST:
+        case MS_VALUE_LIST:
             return list_cmp (a, b);
-        case AS_VALUE_GVALUE:
+        case MS_VALUE_GVALUE:
             g_return_val_if_reached (CMP (a, b));
     }
 
@@ -653,85 +653,85 @@ as_value_cmp (ASValue *a, ASValue *b)
 }
 
 
-static ASValue *
-func_eq (ASValue *a, ASValue *b)
+static MSValue *
+func_eq (MSValue *a, MSValue *b)
 {
-    return as_value_bool (as_value_equal (a, b));
+    return ms_value_bool (ms_value_equal (a, b));
 }
 
 
-static ASValue *
-func_neq (ASValue *a, ASValue *b)
+static MSValue *
+func_neq (MSValue *a, MSValue *b)
 {
-    return as_value_bool (!as_value_equal (a, b));
+    return ms_value_bool (!ms_value_equal (a, b));
 }
 
 
-static ASValue *
-func_lt (ASValue *a, ASValue *b)
+static MSValue *
+func_lt (MSValue *a, MSValue *b)
 {
-    return as_value_bool (as_value_cmp (a, b) < 0);
+    return ms_value_bool (ms_value_cmp (a, b) < 0);
 }
 
-static ASValue *
-func_gt (ASValue *a, ASValue *b)
+static MSValue *
+func_gt (MSValue *a, MSValue *b)
 {
-    return as_value_bool (as_value_cmp (a, b) > 0);
+    return ms_value_bool (ms_value_cmp (a, b) > 0);
 }
 
-static ASValue *
-func_le (ASValue *a, ASValue *b)
+static MSValue *
+func_le (MSValue *a, MSValue *b)
 {
-    return as_value_bool (as_value_cmp (a, b) <= 0);
+    return ms_value_bool (ms_value_cmp (a, b) <= 0);
 }
 
-static ASValue *
-func_ge (ASValue *a, ASValue *b)
+static MSValue *
+func_ge (MSValue *a, MSValue *b)
 {
-    return as_value_bool (as_value_cmp (a, b) >= 0);
+    return ms_value_bool (ms_value_cmp (a, b) >= 0);
 }
 
 
 static char *
 format_value (char       format,
-              ASValue   *value,
-              ASContext *ctx)
+              MSValue   *value,
+              MSContext *ctx)
 {
     int ival;
 
     switch (format)
     {
         case 's':
-            return as_value_print (value);
+            return ms_value_print (value);
 
         case 'd':
-            if (!as_value_get_int (value, &ival))
+            if (!ms_value_get_int (value, &ival))
             {
-                as_context_set_error (ctx, AS_ERROR_TYPE, NULL);
+                ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
                 return NULL;
             }
 
             return g_strdup_printf ("%d", ival);
 
         default:
-            as_context_set_error (ctx, AS_ERROR_VALUE, "invalid format");
+            ms_context_set_error (ctx, MS_ERROR_VALUE, "invalid format");
             return NULL;
     }
 }
 
 
-static ASValue *
-func_format (ASValue *format, ASValue *tuple, ASContext *ctx)
+static MSValue *
+func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
 {
     GString *ret;
     guint n_items, items_written;
     char *str, *p, *s;
-    ASValue *val;
+    MSValue *val;
 
-    if (format->type != AS_VALUE_STRING)
-        return as_context_set_error (ctx, AS_ERROR_TYPE, "invalid '%'");
+    if (format->type != MS_VALUE_STRING)
+        return ms_context_set_error (ctx, MS_ERROR_TYPE, "invalid '%'");
 
-    if (tuple->type == AS_VALUE_LIST)
+    if (tuple->type == MS_VALUE_LIST)
         n_items = tuple->list.n_elms;
     else
         n_items = 1;
@@ -759,13 +759,13 @@ func_format (ASValue *format, ASValue *tuple, ASContext *ctx)
                 case 'd':
                     if (items_written == n_items)
                     {
-                        as_context_set_error (ctx, AS_ERROR_VALUE,
+                        ms_context_set_error (ctx, MS_ERROR_VALUE,
                                               "invalid conversion");
                         g_string_free (ret, TRUE);
                         return NULL;
                     }
 
-                    if (tuple->type == AS_VALUE_LIST)
+                    if (tuple->type == MS_VALUE_LIST)
                         val = tuple->list.elms[items_written];
                     else
                         val = tuple;
@@ -786,7 +786,7 @@ func_format (ASValue *format, ASValue *tuple, ASContext *ctx)
                     break;
 
                 default:
-                    as_context_set_error (ctx, AS_ERROR_VALUE,
+                    ms_context_set_error (ctx, MS_ERROR_VALUE,
                                           "invalid conversion");
                     g_string_free (ret, TRUE);
                     return NULL;
@@ -801,66 +801,66 @@ func_format (ASValue *format, ASValue *tuple, ASContext *ctx)
     if (str < p)
         g_string_append (ret, str);
 
-    return as_value_take_string (g_string_free (ret, FALSE));
+    return ms_value_take_string (g_string_free (ret, FALSE));
 }
 
 
 gpointer
-as_binary_op_cfunc (ASBinaryOp op)
+ms_binary_op_cfunc (MSBinaryOp op)
 {
-    static gpointer funcs[AS_BINARY_OP_LAST] = {
+    static gpointer funcs[MS_BINARY_OP_LMST] = {
         func_plus, func_minus, func_mult, func_div,
         func_and, func_or,
         func_eq, func_neq, func_lt, func_gt, func_le, func_ge,
         func_format
     };
 
-    g_return_val_if_fail (op < AS_BINARY_OP_LAST, NULL);
+    g_return_val_if_fail (op < MS_BINARY_OP_LMST, NULL);
     return funcs[op];
 }
 
 
-static ASValue *
-func_uminus (ASValue    *val,
-             ASContext  *ctx)
+static MSValue *
+func_uminus (MSValue    *val,
+             MSContext  *ctx)
 {
-    if (val->type == AS_VALUE_INT)
-        return as_value_int (-val->ival);
-    return as_context_set_error (ctx, AS_ERROR_TYPE, NULL);
+    if (val->type == MS_VALUE_INT)
+        return ms_value_int (-val->ival);
+    return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
 }
 
 
-static ASValue *
-func_not (ASValue *val)
+static MSValue *
+func_not (MSValue *val)
 {
-    return !as_value_get_bool (val) ?
-            as_value_true () : as_value_false ();
+    return !ms_value_get_bool (val) ?
+            ms_value_true () : ms_value_false ();
 }
 
 
-static ASValue *
-func_len (ASValue    *val,
-          ASContext  *ctx)
+static MSValue *
+func_len (MSValue    *val,
+          MSContext  *ctx)
 {
     switch (val->type)
     {
-        case AS_VALUE_STRING:
-            return as_value_int (strlen (val->str));
-        case AS_VALUE_LIST:
-            return as_value_int (val->list.n_elms);
+        case MS_VALUE_STRING:
+            return ms_value_int (strlen (val->str));
+        case MS_VALUE_LIST:
+            return ms_value_int (val->list.n_elms);
         default:
-            return as_context_set_error (ctx, AS_ERROR_TYPE, NULL);
+            return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
     }
 }
 
 
 gpointer
-as_unary_op_cfunc (ASUnaryOp op)
+ms_unary_op_cfunc (MSUnaryOp op)
 {
-    static gpointer funcs[AS_UNARY_OP_LAST] = {
+    static gpointer funcs[MS_UNARY_OP_LMST] = {
         func_uminus, func_not, func_len
     };
 
-    g_return_val_if_fail (op < AS_UNARY_OP_LAST, NULL);
+    g_return_val_if_fail (op < MS_UNARY_OP_LMST, NULL);
     return funcs[op];
 }

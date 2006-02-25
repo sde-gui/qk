@@ -28,29 +28,29 @@
 #include "mooutils/mooscript/mooscript-parser.h"
 #include <string.h>
 
-#define AS_PLUGIN_ID "ActiveStrings"
-#define AS_DATA "moo-active-strings"
-#define AS_WILDCARD '?'
+#define MS_PLUGIN_ID "ActiveStrings"
+#define MS_DATA "moo-active-strings"
+#define MS_WILDCARD '?'
 
-#define PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID
+#define PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" MS_PLUGIN_ID
 #define FILE_PREFS_KEY PREFS_ROOT "/file"
 
 
-typedef struct _ASPlugin ASPlugin;
-typedef struct _ASSet ASSet;
-typedef struct _ASString ASString;
-typedef struct _ASStringInfo ASStringInfo;
-typedef struct _ASMatch ASMatch;
+typedef struct _MSPlugin MSPlugin;
+typedef struct _MSSet MSSet;
+typedef struct _MSString MSString;
+typedef struct _MSStringInfo MSStringInfo;
+typedef struct _MSMatch MSMatch;
 
 
-struct _ASPlugin {
+struct _MSPlugin {
     MooPlugin parent;
-    ASContext *ctx;
+    MSContext *ctx;
     GHashTable *lang_sets;
-    ASSet *any_lang;
+    MSSet *any_lang;
 };
 
-struct _ASStringInfo {
+struct _MSStringInfo {
     guint n_wildcards;
     char *pattern;
     guint pattern_len;
@@ -58,14 +58,14 @@ struct _ASStringInfo {
     char *script;
 };
 
-struct _ASString {
+struct _MSString {
     guint whole;
     guint *parens;
     guint n_parens;
 };
 
-struct _ASSet {
-    ASString **strings;
+struct _MSSet {
+    MSString **strings;
     char **scripts;
     guint n_strings;
     EggRegex *regex;
@@ -76,7 +76,7 @@ struct _ASSet {
     guint n_last_chars;
 };
 
-struct _ASMatch {
+struct _MSMatch {
     guint string_no;
     /* all offsets are in chars here */
     guint start_offset;
@@ -86,23 +86,23 @@ struct _ASMatch {
 };
 
 typedef enum {
-    AS_WORD_BOUNDARY        = 1 << 0,
-    AS_NOT_WORD_BOUNDARY    = 1 << 1
-} ASOptions;
+    MS_WORD_BOUNDARY        = 1 << 0,
+    MS_NOT_WORD_BOUNDARY    = 1 << 1
+} MSOptions;
 
 
-static gboolean as_plugin_init      (ASPlugin       *plugin);
-static void     as_plugin_deinit    (ASPlugin       *plugin);
-static void     as_plugin_attach    (ASPlugin       *plugin,
+static gboolean ms_plugin_init      (MSPlugin       *plugin);
+static void     ms_plugin_deinit    (MSPlugin       *plugin);
+static void     ms_plugin_attach    (MSPlugin       *plugin,
                                      MooEdit        *doc);
-static void     as_plugin_detach    (ASPlugin       *plugin,
+static void     ms_plugin_detach    (MSPlugin       *plugin,
                                      MooEdit        *doc);
 
-static void     as_plugin_do_action (ASPlugin       *plugin,
+static void     ms_plugin_do_action (MSPlugin       *plugin,
                                      MooEdit        *doc,
                                      GtkTextIter    *insert,
-                                     ASSet          *set,
-                                     ASMatch        *match,
+                                     MSSet          *set,
+                                     MSMatch        *match,
                                      char           *full_text,
                                      char          **parens_text);
 
@@ -112,26 +112,26 @@ static gboolean char_inserted_cb    (MooEdit        *doc,
                                      GSList         *sets);
 static void     process_match       (MooEdit        *doc,
                                      GtkTextIter    *end,
-                                     ASSet          *set,
-                                     ASMatch        *match);
+                                     MSSet          *set,
+                                     MSMatch        *match);
 
-static ASSet   *as_set_new          (ASStringInfo  **strings,
+static MSSet   *ms_set_new          (MSStringInfo  **strings,
                                      guint           n_strings);
-static void     as_set_unref        (ASSet          *set);
-static ASSet   *as_set_ref          (ASSet          *set);
-static gboolean as_set_check_last   (ASSet          *set,
+static void     ms_set_unref        (MSSet          *set);
+static MSSet   *ms_set_ref          (MSSet          *set);
+static gboolean ms_set_check_last   (MSSet          *set,
                                      gunichar        c);
-static gboolean as_set_match        (ASSet          *set,
+static gboolean ms_set_match        (MSSet          *set,
                                      const char     *text,
-                                     ASMatch        *match);
+                                     MSMatch        *match);
 
-static void     as_string_info_set_script (ASStringInfo *info,
+static void     ms_string_info_set_script (MSStringInfo *info,
                                      const char     *script);
-static void     as_string_info_free (ASStringInfo   *info);
+static void     ms_string_info_free (MSStringInfo   *info);
 
-static void     as_match_destroy    (ASMatch        *match);
-static ASString *as_string_new      (guint           n_wildcards);
-static void     as_string_free      (ASString       *s);
+static void     ms_match_destroy    (MSMatch        *match);
+static MSString *ms_string_new      (guint           n_wildcards);
+static void     ms_string_free      (MSString       *s);
 
 
 static int
@@ -143,11 +143,11 @@ cmp_ints (gunichar *c1, gunichar *c2)
 
 static void
 append_options (GString  *pattern,
-                ASOptions opts)
+                MSOptions opts)
 {
-    if (opts & AS_WORD_BOUNDARY)
+    if (opts & MS_WORD_BOUNDARY)
         g_string_append (pattern, "\\b");
-    else if (opts & AS_NOT_WORD_BOUNDARY)
+    else if (opts & MS_NOT_WORD_BOUNDARY)
         g_string_append (pattern, "\\B");
 }
 
@@ -164,15 +164,15 @@ append_escaped (GString    *pattern,
 }
 
 
-static ASStringInfo *
-as_string_get_info (const char *string,
-                    ASOptions   start_opts,
-                    ASOptions   end_opts,
+static MSStringInfo *
+ms_string_get_info (const char *string,
+                    MSOptions   start_opts,
+                    MSOptions   end_opts,
                     guint       string_no)
 {
     char *wc, *p;
     guint rev_len;
-    ASStringInfo *info = NULL;
+    MSStringInfo *info = NULL;
     char *rev = NULL;
     GString *pattern = NULL;
 
@@ -184,17 +184,17 @@ as_string_get_info (const char *string,
 
     rev = g_utf8_strreverse (string, -1);
     rev_len = strlen (rev);
-    info = g_new0 (ASStringInfo, 1);
+    info = g_new0 (MSStringInfo, 1);
 
-    if (string[0] == AS_WILDCARD && string[1] != AS_WILDCARD)
+    if (string[0] == MS_WILDCARD && string[1] != MS_WILDCARD)
     {
-        g_critical ("%s: leading '%c' symbol", G_STRLOC, AS_WILDCARD);
+        g_critical ("%s: leading '%c' symbol", G_STRLOC, MS_WILDCARD);
         goto error;
     }
 
-    if (rev[0] == AS_WILDCARD && rev[1] != AS_WILDCARD)
+    if (rev[0] == MS_WILDCARD && rev[1] != MS_WILDCARD)
     {
-        g_critical ("%s: trailing '%c' symbol", G_STRLOC, AS_WILDCARD);
+        g_critical ("%s: trailing '%c' symbol", G_STRLOC, MS_WILDCARD);
         goto error;
     }
 
@@ -208,7 +208,7 @@ as_string_get_info (const char *string,
 
     for (p = rev; *p; )
     {
-        wc = strchr (p, AS_WILDCARD);
+        wc = strchr (p, MS_WILDCARD);
 
         if (!wc)
         {
@@ -216,7 +216,7 @@ as_string_get_info (const char *string,
             break;
         }
 
-        if (wc[1] == AS_WILDCARD)
+        if (wc[1] == MS_WILDCARD)
         {
             append_escaped (pattern, p, wc - p + 1);
             p = wc + 2;
@@ -242,7 +242,7 @@ as_string_get_info (const char *string,
     return info;
 
 error:
-    as_string_info_free (info);
+    ms_string_info_free (info);
     g_free (rev);
     if (pattern)
         g_string_free (pattern, TRUE);
@@ -251,7 +251,7 @@ error:
 
 
 static void
-as_string_info_free (ASStringInfo *info)
+ms_string_info_free (MSStringInfo *info)
 {
     if (info)
     {
@@ -263,7 +263,7 @@ as_string_info_free (ASStringInfo *info)
 
 
 static void
-as_string_info_set_script (ASStringInfo *info,
+ms_string_info_set_script (MSStringInfo *info,
                            const char   *script)
 {
     g_return_if_fail (info != NULL);
@@ -272,10 +272,10 @@ as_string_info_set_script (ASStringInfo *info,
 }
 
 
-static ASString *
-as_string_new (guint n_wildcards)
+static MSString *
+ms_string_new (guint n_wildcards)
 {
-    ASString *s = g_new0 (ASString, 1);
+    MSString *s = g_new0 (MSString, 1);
 
     if (n_wildcards)
     {
@@ -288,7 +288,7 @@ as_string_new (guint n_wildcards)
 
 
 static void
-as_string_free (ASString *s)
+ms_string_free (MSString *s)
 {
     if (s)
     {
@@ -298,25 +298,25 @@ as_string_free (ASString *s)
 }
 
 
-static ASSet*
-as_set_new (ASStringInfo **strings,
+static MSSet*
+ms_set_new (MSStringInfo **strings,
             guint          n_strings)
 {
-    ASSet *set = NULL;
+    MSSet *set = NULL;
     GString *pattern;
     guint i, len;
     GError *error = NULL;
     gunichar *last_chars;
     gunichar min_last = 0, max_last = 0;
-    gboolean has_wildcard = FALSE;
+    gboolean hms_wildcard = FALSE;
 
     g_return_val_if_fail (strings != NULL, NULL);
     g_return_val_if_fail (n_strings != 0, NULL);
 
-    set = g_new0 (ASSet, 1);
+    set = g_new0 (MSSet, 1);
     set->ref_count = 1;
     set->n_strings = n_strings;
-    set->strings = g_new (ASString*, n_strings);
+    set->strings = g_new (MSString*, n_strings);
 
     len = n_strings + 2; /* (||||) */
     last_chars = g_new (gunichar, n_strings);
@@ -329,10 +329,10 @@ as_set_new (ASStringInfo **strings,
 
         len += strings[i]->pattern_len;
 
-        set->strings[i] = as_string_new (strings[i]->n_wildcards);
+        set->strings[i] = ms_string_new (strings[i]->n_wildcards);
 
         if (strings[i]->n_wildcards)
-            has_wildcard = TRUE;
+            hms_wildcard = TRUE;
     }
 
     set->min_last = min_last;
@@ -423,13 +423,13 @@ as_set_new (ASStringInfo **strings,
 error:
     g_free (last_chars);
     g_string_free (pattern, TRUE);
-    as_set_unref (set);
+    ms_set_unref (set);
     return NULL;
 }
 
 
 static void
-as_match_destroy (ASMatch *match)
+ms_match_destroy (MSMatch *match)
 {
     if (match->n_parens)
         g_free (match->parens);
@@ -437,9 +437,9 @@ as_match_destroy (ASMatch *match)
 
 
 static gboolean
-as_set_match (ASSet      *set,
+ms_set_match (MSSet      *set,
               const char *text,
-              ASMatch    *match)
+              MSMatch    *match)
 {
     char *reversed;
     int start_pos, end_pos;
@@ -509,7 +509,7 @@ out:
 
 
 static gboolean
-as_set_check_last (ASSet    *set,
+ms_set_check_last (MSSet    *set,
                    gunichar  c)
 {
     guint i;
@@ -526,7 +526,7 @@ as_set_check_last (ASSet    *set,
 
 
 static void
-as_set_unref (ASSet *set)
+ms_set_unref (MSSet *set)
 {
     guint i;
 
@@ -537,7 +537,7 @@ as_set_unref (ASSet *set)
     {
         for (i = 0; i < set->n_strings; ++i)
         {
-            as_string_free (set->strings[i]);
+            ms_string_free (set->strings[i]);
             g_free (set->scripts[i]);
         }
 
@@ -550,7 +550,7 @@ as_set_unref (ASSet *set)
 }
 
 
-static ASSet *as_set_ref (ASSet *set)
+static MSSet *ms_set_ref (MSSet *set)
 {
     g_return_val_if_fail (set != NULL, NULL);
     set->ref_count++;
@@ -559,9 +559,9 @@ static ASSet *as_set_ref (ASSet *set)
 
 
 static void
-as_string_info_array_free (GPtrArray *ar)
+ms_string_info_array_free (GPtrArray *ar)
 {
-    g_ptr_array_foreach (ar, (GFunc) as_string_info_free, NULL);
+    g_ptr_array_foreach (ar, (GFunc) ms_string_info_free, NULL);
     g_ptr_array_free (ar, TRUE);
 }
 
@@ -569,13 +569,13 @@ as_string_info_array_free (GPtrArray *ar)
 static void
 add_lang_sets (const char *lang,
                GPtrArray  *strings,
-               ASPlugin   *plugin)
+               MSPlugin   *plugin)
 {
-    ASSet *set;
+    MSSet *set;
 
     g_return_if_fail (strings && strings->len);
 
-    set = as_set_new ((ASStringInfo**) strings->pdata, strings->len);
+    set = ms_set_new ((MSStringInfo**) strings->pdata, strings->len);
 
     if (set)
         g_hash_table_insert (plugin->lang_sets, g_strdup (lang), set);
@@ -600,7 +600,7 @@ is_nonblank_string (const char *string)
 
 
 static void
-as_plugin_load_info (ASPlugin *plugin,
+ms_plugin_load_info (MSPlugin *plugin,
                      GSList   *list)
 {
     GPtrArray *any_lang;
@@ -612,13 +612,13 @@ as_plugin_load_info (ASPlugin *plugin,
 
     any_lang = g_ptr_array_new ();
     lang_strings = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                          (GDestroyNotify) as_string_info_array_free);
+                                          (GDestroyNotify) ms_string_info_array_free);
 
     for (l = list; l != NULL; l = l->next)
     {
-        ASInfo *info = l->data;
-        ASStringInfo *sinfo;
         GPtrArray *ar;
+        MSStringInfo *sinfo;
+        MSInfo *info = l->data;
 
         if (info->lang)
         {
@@ -635,7 +635,7 @@ as_plugin_load_info (ASPlugin *plugin,
             ar = any_lang;
         }
 
-        sinfo = as_string_get_info (info->pattern, 0, 0, ar->len);
+        sinfo = ms_string_get_info (info->pattern, 0, 0, ar->len);
 
         if (!sinfo)
         {
@@ -645,11 +645,11 @@ as_plugin_load_info (ASPlugin *plugin,
 
         if (is_nonblank_string (info->script))
         {
-            ASNode *script = as_script_parse (info->script);
+            MSNode *script = ms_script_parse (info->script);
 
             if (script)
             {
-                as_string_info_set_script (sinfo, info->script);
+                ms_string_info_set_script (sinfo, info->script);
                 g_object_unref (script);
             }
         }
@@ -658,18 +658,18 @@ as_plugin_load_info (ASPlugin *plugin,
     }
 
     if (any_lang->len)
-        plugin->any_lang = as_set_new ((ASStringInfo**) any_lang->pdata,
+        plugin->any_lang = ms_set_new ((MSStringInfo**) any_lang->pdata,
                                         any_lang->len);
 
     g_hash_table_foreach (lang_strings, (GHFunc) add_lang_sets, plugin);
 
-    as_string_info_array_free (any_lang);
+    ms_string_info_array_free (any_lang);
     g_hash_table_destroy (lang_strings);
 }
 
 
 static void
-as_plugin_load (ASPlugin *plugin)
+ms_plugin_load (MSPlugin *plugin)
 {
     const char *file;
     GSList *info = NULL;
@@ -679,33 +679,33 @@ as_plugin_load (ASPlugin *plugin)
     file = moo_prefs_get_filename (FILE_PREFS_KEY);
 
     if (file)
-        _as_load_file (file, &info);
+        _ms_load_file (file, &info);
 
     if (info)
-        as_plugin_load_info (plugin, info);
+        ms_plugin_load_info (plugin, info);
 
-    g_slist_foreach (info, (GFunc) _as_info_free, NULL);
+    g_slist_foreach (info, (GFunc) _ms_info_free, NULL);
     g_slist_free (info);
 }
 
 
 static gboolean
-as_plugin_init (ASPlugin *plugin)
+ms_plugin_init (MSPlugin *plugin)
 {
     plugin->lang_sets = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                               (GDestroyNotify) as_set_unref);
-    plugin->ctx = _as_plugin_context_new ();
+                                               (GDestroyNotify) ms_set_unref);
+    plugin->ctx = _ms_plugin_context_new ();
 
-    as_plugin_load (plugin);
+    ms_plugin_load (plugin);
 
     return TRUE;
 }
 
 
 static void
-as_plugin_deinit (ASPlugin   *plugin)
+ms_plugin_deinit (MSPlugin   *plugin)
 {
-    as_set_unref (plugin->any_lang);
+    ms_set_unref (plugin->any_lang);
     g_hash_table_destroy (plugin->lang_sets);
     g_object_unref (plugin->ctx);
     plugin->any_lang = NULL;
@@ -717,29 +717,29 @@ as_plugin_deinit (ASPlugin   *plugin)
 static void
 free_sets_list (GSList *list)
 {
-    g_slist_foreach (list, (GFunc) as_set_unref, NULL);
+    g_slist_foreach (list, (GFunc) ms_set_unref, NULL);
     g_slist_free (list);
 }
 
 
 static GSList *
-as_plugin_get_doc_sets (ASPlugin   *plugin,
+ms_plugin_get_doc_sets (MSPlugin   *plugin,
                         MooEdit    *doc)
 {
     char *lang = NULL;
     GSList *list = NULL;
 
     if (plugin->any_lang)
-        list = g_slist_prepend (list, as_set_ref (plugin->any_lang));
+        list = g_slist_prepend (list, ms_set_ref (plugin->any_lang));
 
     moo_edit_config_get (doc->config, "lang", &lang, NULL);
 
     if (lang)
     {
-        ASSet *set = g_hash_table_lookup (plugin->lang_sets, lang);
+        MSSet *set = g_hash_table_lookup (plugin->lang_sets, lang);
 
         if (set)
-            list = g_slist_prepend (list, as_set_ref (set));
+            list = g_slist_prepend (list, ms_set_ref (set));
     }
 
     g_free (lang);
@@ -748,14 +748,14 @@ as_plugin_get_doc_sets (ASPlugin   *plugin,
 
 
 static void
-as_plugin_connect_doc (ASPlugin   *plugin,
+ms_plugin_connect_doc (MSPlugin   *plugin,
                        MooEdit    *doc)
 {
-    GSList *sets = as_plugin_get_doc_sets (plugin, doc);
+    GSList *sets = ms_plugin_get_doc_sets (plugin, doc);
 
     if (sets)
     {
-        g_object_set_data_full (G_OBJECT (doc), AS_DATA, sets,
+        g_object_set_data_full (G_OBJECT (doc), MS_DATA, sets,
                                 (GDestroyNotify) free_sets_list);
         g_signal_connect (doc, "char-inserted",
                           G_CALLBACK (char_inserted_cb), sets);
@@ -764,15 +764,15 @@ as_plugin_connect_doc (ASPlugin   *plugin,
 
 
 static void
-as_plugin_disconnect_doc (G_GNUC_UNUSED ASPlugin *plugin,
+ms_plugin_disconnect_doc (G_GNUC_UNUSED MSPlugin *plugin,
                           MooEdit    *doc)
 {
-    GSList *sets = g_object_get_data (G_OBJECT (doc), AS_DATA);
+    GSList *sets = g_object_get_data (G_OBJECT (doc), MS_DATA);
 
     if (sets)
     {
         g_signal_handlers_disconnect_by_func (doc, (gpointer) char_inserted_cb, sets);
-        g_object_set_data (G_OBJECT (doc), AS_DATA, NULL);
+        g_object_set_data (G_OBJECT (doc), MS_DATA, NULL);
     }
 }
 
@@ -781,28 +781,28 @@ static void
 lang_changed (MooEdit    *doc,
               G_GNUC_UNUSED guint var_id,
               G_GNUC_UNUSED GParamSpec *pspec,
-              ASPlugin   *plugin)
+              MSPlugin   *plugin)
 {
-    as_plugin_disconnect_doc (plugin, doc);
-    as_plugin_connect_doc (plugin, doc);
+    ms_plugin_disconnect_doc (plugin, doc);
+    ms_plugin_connect_doc (plugin, doc);
 }
 
 
 static void
-as_plugin_attach (ASPlugin   *plugin,
+ms_plugin_attach (MSPlugin   *plugin,
                   MooEdit    *doc)
 {
-    as_plugin_connect_doc (plugin, doc);
+    ms_plugin_connect_doc (plugin, doc);
     g_signal_connect (doc, "config_notify::lang",
                       G_CALLBACK (lang_changed), plugin);
 }
 
 
 static void
-as_plugin_detach (ASPlugin   *plugin,
+ms_plugin_detach (MSPlugin   *plugin,
                   MooEdit    *doc)
 {
-    as_plugin_disconnect_doc (plugin, doc);
+    ms_plugin_disconnect_doc (plugin, doc);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) lang_changed, plugin);
 }
 
@@ -816,16 +816,16 @@ char_inserted_cb (MooEdit        *doc,
     GtkTextIter iter;
     char *slice;
     gboolean found;
-    ASMatch match;
+    MSMatch match;
     GSList *l;
 
     g_return_val_if_fail (sets != NULL, FALSE);
 
     for (l = sets; l != NULL; l = l->next)
     {
-        ASSet *set = l->data;
+        MSSet *set = l->data;
 
-        if (!as_set_check_last (set, character))
+        if (!ms_set_check_last (set, character))
             continue;
 
         iter = *where;
@@ -833,14 +833,14 @@ char_inserted_cb (MooEdit        *doc,
 
         /* get extra char here */
         slice = gtk_text_iter_get_slice (&iter, where);
-        found = as_set_match (set, slice, &match);
+        found = ms_set_match (set, slice, &match);
         g_free (slice);
 
         if (!found)
             continue;
 
         process_match (doc, where, set, &match);
-        as_match_destroy (&match);
+        ms_match_destroy (&match);
         return TRUE;
     }
 
@@ -851,14 +851,14 @@ char_inserted_cb (MooEdit        *doc,
 static void
 process_match (MooEdit        *doc,
                GtkTextIter    *end,
-               ASSet          *set,
-               ASMatch        *match)
+               MSSet          *set,
+               MSMatch        *match)
 {
     GtkTextIter start;
     char *full_text = NULL;
     char **parens_text = NULL;
     guint i;
-    ASPlugin *plugin;
+    MSPlugin *plugin;
 
     start = *end;
     gtk_text_iter_backward_chars (&start, match->end_offset);
@@ -890,9 +890,9 @@ process_match (MooEdit        *doc,
 
     g_print ("\n");
 
-    plugin = moo_plugin_lookup (AS_PLUGIN_ID);
+    plugin = moo_plugin_lookup (MS_PLUGIN_ID);
     g_return_if_fail (plugin != NULL);
-    as_plugin_do_action (plugin, doc, end, set, match,
+    ms_plugin_do_action (plugin, doc, end, set, match,
                          full_text, parens_text);
 
     g_free (full_text);
@@ -901,21 +901,21 @@ process_match (MooEdit        *doc,
 
 
 static void
-as_plugin_do_action (ASPlugin       *plugin,
+ms_plugin_do_action (MSPlugin       *plugin,
                      MooEdit        *doc,
                      GtkTextIter    *insert,
-                     ASSet          *set,
-                     ASMatch        *match,
+                     MSSet          *set,
+                     MSMatch        *match,
                      char           *full_text,
                      char          **parens_text)
 {
-    ASNode *script;
+    MSNode *script;
     const char *code = set->scripts[match->string_no];
 
     if (!code)
         return;
 
-    script = as_script_parse (code);
+    script = ms_script_parse (code);
 
     if (!script)
     {
@@ -923,26 +923,26 @@ as_plugin_do_action (ASPlugin       *plugin,
         return;
     }
 
-    _as_plugin_context_exec (plugin->ctx, script, doc, insert,
+    _ms_plugin_context_exec (plugin->ctx, script, doc, insert,
                              full_text, parens_text, match->n_parens);
 
     g_object_unref (script);
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (as, AS_PLUGIN_ID,
+MOO_PLUGIN_DEFINE_INFO (ms, MS_PLUGIN_ID,
                         "Active Strings", "Very active",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION);
-MOO_PLUGIN_DEFINE_FULL (AS, as,
-                        as_plugin_init, as_plugin_deinit,
+MOO_PLUGIN_DEFINE_FULL (MS, ms,
+                        ms_plugin_init, ms_plugin_deinit,
                         NULL, NULL,
-                        as_plugin_attach, as_plugin_detach,
+                        ms_plugin_attach, ms_plugin_detach,
                         NULL, 0, 0);
 
 
 gboolean
 _moo_active_strings_plugin_init (void)
 {
-    return moo_plugin_register (as_plugin_get_type ());
+    return moo_plugin_register (ms_plugin_get_type ());
 }

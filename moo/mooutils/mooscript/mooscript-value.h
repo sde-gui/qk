@@ -20,90 +20,90 @@
 G_BEGIN_DECLS
 
 
-typedef struct _ASValue ASValue;
+typedef struct _MSValue MSValue;
 
 typedef enum {
-    AS_VALUE_NONE,
-    AS_VALUE_INT,
-    AS_VALUE_STRING,
-    AS_VALUE_OBJECT,
-    AS_VALUE_GVALUE,
-    AS_VALUE_LIST
-} ASValueType;
+    MS_VALUE_NONE,
+    MS_VALUE_INT,
+    MS_VALUE_STRING,
+    MS_VALUE_OBJECT,
+    MS_VALUE_GVALUE,
+    MS_VALUE_LIST
+} MSValueType;
 
 typedef enum {
-    AS_OP_PLUS,
-    AS_OP_MINUS,
-    AS_OP_MULT,
-    AS_OP_DIV,
-    AS_OP_AND,
-    AS_OP_OR,
-    AS_OP_EQ,
-    AS_OP_NEQ,
-    AS_OP_LT,
-    AS_OP_GT,
-    AS_OP_LE,
-    AS_OP_GE,
-    AS_OP_FORMAT,
-    AS_BINARY_OP_LAST
-} ASBinaryOp;
+    MS_OP_PLUS,
+    MS_OP_MINUS,
+    MS_OP_MULT,
+    MS_OP_DIV,
+    MS_OP_AND,
+    MS_OP_OR,
+    MS_OP_EQ,
+    MS_OP_NEQ,
+    MS_OP_LT,
+    MS_OP_GT,
+    MS_OP_LE,
+    MS_OP_GE,
+    MS_OP_FORMAT,
+    MS_BINARY_OP_LMST
+} MSBinaryOp;
 
 typedef enum {
-    AS_OP_UMINUS,
-    AS_OP_NOT,
-    AS_OP_LEN,
-    AS_UNARY_OP_LAST
-} ASUnaryOp;
+    MS_OP_UMINUS,
+    MS_OP_NOT,
+    MS_OP_LEN,
+    MS_UNARY_OP_LMST
+} MSUnaryOp;
 
-struct _ASValue {
+struct _MSValue {
     guint ref_count;
-    ASValueType type;
+    MSValueType type;
     union {
         int ival;
         char *str;
         gpointer ptr;
         GValue *gval;
         struct {
-            ASValue **elms;
+            MSValue **elms;
             guint n_elms;
         } list;
     };
 };
 
 
-const char  *as_binary_op_name      (ASBinaryOp  op);
-gpointer     as_binary_op_cfunc     (ASBinaryOp  op);
-const char  *as_unary_op_name       (ASUnaryOp   op);
-gpointer     as_unary_op_cfunc      (ASUnaryOp   op);
+const char  *ms_binary_op_name      (MSBinaryOp  op);
+gpointer     ms_binary_op_cfunc     (MSBinaryOp  op);
+const char  *ms_unary_op_name       (MSUnaryOp   op);
+gpointer     ms_unary_op_cfunc      (MSUnaryOp   op);
 
-ASValue     *as_value_none          (void);
-ASValue     *as_value_false         (void);
-ASValue     *as_value_true          (void);
-ASValue     *as_value_bool          (gboolean    val);
+MSValue     *ms_value_none          (void);
+MSValue     *ms_value_false         (void);
+MSValue     *ms_value_true          (void);
+MSValue     *ms_value_bool          (gboolean    val);
 
-ASValue     *as_value_int           (int         val);
-ASValue     *as_value_string        (const char *string);
-ASValue     *as_value_take_string   (char       *string);
-ASValue     *as_value_object        (gpointer    object);
-ASValue     *as_value_gvalue        (GValue     *gval);
+MSValue     *ms_value_int           (int         val);
+MSValue     *ms_value_string        (const char *string);
+MSValue     *ms_value_take_string   (char       *string);
+MSValue     *ms_value_object        (gpointer    object);
+MSValue     *ms_value_gvalue        (GValue     *gval);
 
-ASValue     *as_value_list          (guint       n_elms);
-void         as_value_list_set_elm  (ASValue    *list,
+MSValue     *ms_value_list          (guint       n_elms);
+void         ms_value_list_set_elm  (MSValue    *list,
                                      guint       index,
-                                     ASValue    *elm);
+                                     MSValue    *elm);
 
-ASValue     *as_value_ref           (ASValue    *val);
-void         as_value_unref         (ASValue    *val);
+MSValue     *ms_value_ref           (MSValue    *val);
+void         ms_value_unref         (MSValue    *val);
 
-gboolean     as_value_get_bool      (ASValue    *val);
-gboolean     as_value_get_int       (ASValue    *val,
+gboolean     ms_value_get_bool      (MSValue    *val);
+gboolean     ms_value_get_int       (MSValue    *val,
                                      int        *ival);
-char        *as_value_print         (ASValue    *val);
+char        *ms_value_print         (MSValue    *val);
 
-gboolean     as_value_equal         (ASValue    *a,
-                                     ASValue    *b);
-int          as_value_cmp           (ASValue    *a,
-                                     ASValue    *b);
+gboolean     ms_value_equal         (MSValue    *a,
+                                     MSValue    *b);
+int          ms_value_cmp           (MSValue    *a,
+                                     MSValue    *b);
 
 
 G_END_DECLS

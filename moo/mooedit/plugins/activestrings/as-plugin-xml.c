@@ -17,22 +17,22 @@
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 
-#define AS_ROOT         "active-strings"
-#define AS_ELM          "as"
-#define AS_PROP_PATTERN "pattern"
-#define AS_PROP_LANG    "lang"
+#define MS_ROOT         "active-strings"
+#define MS_ELM          "as"
+#define MS_PROP_PATTERN "pattern"
+#define MS_PROP_LANG    "lang"
 
 
-ASInfo *
-_as_info_new (const char *pattern,
+MSInfo *
+_ms_info_new (const char *pattern,
               const char *script,
               const char *lang)
 {
-    ASInfo *info;
+    MSInfo *info;
 
     g_return_val_if_fail (pattern && pattern[0], NULL);
 
-    info = g_new0 (ASInfo, 1);
+    info = g_new0 (MSInfo, 1);
     info->pattern = g_strdup (pattern);
     info->script = g_strdup (script);
     info->lang = lang ? g_ascii_strdown (lang, -1) : NULL;
@@ -41,7 +41,7 @@ _as_info_new (const char *pattern,
 
 
 void
-_as_info_free (ASInfo *info)
+_ms_info_free (MSInfo *info)
 {
     if (info)
     {
@@ -53,30 +53,30 @@ _as_info_free (ASInfo *info)
 }
 
 
-static ASInfo *
-parse_as_elm (MooMarkupNode *node)
+static MSInfo *
+parse_ms_elm (MooMarkupNode *node)
 {
     const char *pattern;
     const char *script;
     const char *lang;
 
-    pattern = moo_markup_get_prop (node, AS_PROP_PATTERN);
-    lang = moo_markup_get_prop (node, AS_PROP_LANG);
+    pattern = moo_markup_get_prop (node, MS_PROP_PATTERN);
+    lang = moo_markup_get_prop (node, MS_PROP_LANG);
     script = moo_markup_get_content (node);
 
     if (!pattern || !pattern[0])
     {
         g_warning ("%s: '%s' attribute missing",
-                   G_STRLOC, AS_PROP_PATTERN);
+                   G_STRLOC, MS_PROP_PATTERN);
         return NULL;
     }
 
-    return _as_info_new (pattern, script, lang);
+    return _ms_info_new (pattern, script, lang);
 }
 
 
 gboolean
-_as_load_file (const char *filename,
+_ms_load_file (const char *filename,
                GSList    **list)
 {
     MooMarkupDoc *doc;
@@ -91,25 +91,25 @@ _as_load_file (const char *filename,
     if (!doc)
         return FALSE;
 
-    root = moo_markup_get_root_element (doc, AS_ROOT);
+    root = moo_markup_get_root_element (doc, MS_ROOT);
 
     if (!root)
         root = MOO_MARKUP_NODE (doc);
 
     for (node = root->children; node != NULL; node = node->next)
     {
-        ASInfo *info;
+        MSInfo *info;
 
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
 
-        if (strcmp (node->name, AS_ELM))
+        if (strcmp (node->name, MS_ELM))
         {
             g_warning ("%s: unknown element '%s'", G_STRLOC, node->name);
             continue;
         }
 
-        info = parse_as_elm (node);
+        info = parse_ms_elm (node);
 
         if (info)
             *list = g_slist_prepend (*list, info);
@@ -121,7 +121,7 @@ _as_load_file (const char *filename,
 
 
 char *
-_as_format_xml (GSList *list)
+_ms_format_xml (GSList *list)
 {
     GString *xml;
     GSList *l;
@@ -131,11 +131,11 @@ _as_format_xml (GSList *list)
 
     xml = g_string_sized_new (1024);
 
-    g_string_append (xml, "<" AS_ROOT ">\n");
+    g_string_append (xml, "<" MS_ROOT ">\n");
 
     for (l = list; l != NULL; l = l->next)
     {
-        ASInfo *info = l->data;
+        MSInfo *info = l->data;
         char *tmp;
 
         if (!info || !info->pattern)
@@ -144,7 +144,7 @@ _as_format_xml (GSList *list)
             continue;
         }
 
-        tmp = g_markup_printf_escaped ("<" AS_ELM "pattern=\"%s\"", info->pattern);
+        tmp = g_markup_printf_escaped ("<" MS_ELM "pattern=\"%s\"", info->pattern);
         g_string_append (xml, tmp);
         g_free (tmp);
 
@@ -157,7 +157,7 @@ _as_format_xml (GSList *list)
 
         if (info->script)
         {
-            tmp = g_markup_printf_escaped (">%s</" AS_ELM ">\n", info->script);
+            tmp = g_markup_printf_escaped (">%s</" MS_ELM ">\n", info->script);
             g_string_append (xml, tmp);
             g_free (tmp);
         }
@@ -167,14 +167,14 @@ _as_format_xml (GSList *list)
         }
     }
 
-    g_string_append (xml, "</" AS_ROOT ">\n");
+    g_string_append (xml, "</" MS_ROOT ">\n");
 
     return g_string_free (xml, FALSE);
 }
 
 
 gboolean
-_as_save (const char *filename,
+_ms_save (const char *filename,
           GSList     *info)
 {
     char *xml;
@@ -183,7 +183,7 @@ _as_save (const char *filename,
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    xml = _as_format_xml (info);
+    xml = _ms_format_xml (info);
 
     if (!xml)
         return moo_unlink (filename) == 0;

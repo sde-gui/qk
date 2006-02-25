@@ -15,51 +15,51 @@
 #include "as-plugin-script.h"
 
 
-static void as_plugin_context_init_api  (ASPluginContext    *ctx);
+static void ms_plugin_context_init_api  (MSPluginContext    *ctx);
 
 
-G_DEFINE_TYPE (ASPluginContext, _as_plugin_context, AS_TYPE_CONTEXT)
+G_DEFINE_TYPE (MSPluginContext, _ms_plugin_context, MS_TYPE_CONTEXT)
 
 
 static void
-_as_plugin_context_init (ASPluginContext *ctx)
+_ms_plugin_context_init (MSPluginContext *ctx)
 {
-    as_plugin_context_init_api (ctx);
+    ms_plugin_context_init_api (ctx);
 }
 
 
 static void
-_as_plugin_context_class_init (G_GNUC_UNUSED ASPluginContextClass *klass)
+_ms_plugin_context_class_init (G_GNUC_UNUSED MSPluginContextClass *klass)
 {
 }
 
 
-ASContext *
-_as_plugin_context_new (void)
+MSContext *
+_ms_plugin_context_new (void)
 {
-    return g_object_new (AS_TYPE_PLUGIN_CONTEXT, NULL);
+    return g_object_new (MS_TYPE_PLUGIN_CONTEXT, NULL);
 }
 
 
 static void
-as_plugin_context_setup (ASPluginContext *ctx,
+ms_plugin_context_setup (MSPluginContext *ctx,
                          MooEdit         *doc,
                          char            *match,
                          char           **parens,
                          guint            n_parens)
 {
     guint i;
-    ASValue *val;
+    MSValue *val;
 
-    val = as_value_string (match);
-    as_context_assign_positional (AS_CONTEXT (ctx), 0, val);
-    as_value_unref (val);
+    val = ms_value_string (match);
+    ms_context_assign_positional (MS_CONTEXT (ctx), 0, val);
+    ms_value_unref (val);
 
     for (i = 0; i < n_parens; ++i)
     {
-        val = as_value_string (parens[i]);
-        as_context_assign_positional (AS_CONTEXT (ctx), i + 1, val);
-        as_value_unref (val);
+        val = ms_value_string (parens[i]);
+        ms_context_assign_positional (MS_CONTEXT (ctx), i + 1, val);
+        ms_value_unref (val);
     }
 
     ctx->doc = g_object_ref (doc);
@@ -67,13 +67,13 @@ as_plugin_context_setup (ASPluginContext *ctx,
 
 
 static void
-as_plugin_context_clear (ASPluginContext *ctx,
+ms_plugin_context_clear (MSPluginContext *ctx,
                          guint            n_parens)
 {
     guint i;
 
     for (i = 0; i < n_parens + 1; ++i)
-        as_context_assign_positional (AS_CONTEXT (ctx), i, NULL);
+        ms_context_assign_positional (MS_CONTEXT (ctx), i, NULL);
 
     g_object_ref (ctx->doc);
     ctx->doc = NULL;
@@ -81,40 +81,40 @@ as_plugin_context_clear (ASPluginContext *ctx,
 
 
 gboolean
-_as_plugin_context_exec (ASContext      *ctx,
-                         ASNode         *script,
+_ms_plugin_context_exec (MSContext      *ctx,
+                         MSNode         *script,
                          MooEdit        *doc,
                          GtkTextIter    *insert,
                          char           *match,
                          char          **parens,
                          guint           n_parens)
 {
-    ASValue *val;
+    MSValue *val;
     gboolean success;
 
-    g_return_val_if_fail (AS_IS_PLUGIN_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (AS_IS_NODE (script), FALSE);
+    g_return_val_if_fail (MS_IS_PLUGIN_CONTEXT (ctx), FALSE);
+    g_return_val_if_fail (MS_IS_NODE (script), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
     g_return_val_if_fail (insert != NULL, FALSE);
     g_return_val_if_fail (match != NULL, FALSE);
     g_return_val_if_fail (!n_parens || parens, FALSE);
 
-    as_plugin_context_setup (AS_PLUGIN_CONTEXT (ctx),
+    ms_plugin_context_setup (MS_PLUGIN_CONTEXT (ctx),
                              doc, match, parens, n_parens);
 
-    val = as_node_eval (script, ctx);
+    val = ms_node_eval (script, ctx);
     success = val != NULL;
 
     if (val)
-        as_value_unref (val);
+        ms_value_unref (val);
 
     if (!success)
     {
-        g_print ("%s\n", as_context_get_error_msg (ctx));
-        as_context_clear_error (ctx);
+        g_print ("%s\n", ms_context_get_error_msg (ctx));
+        ms_context_clear_error (ctx);
     }
 
-    as_plugin_context_clear (AS_PLUGIN_CONTEXT (ctx), n_parens);
+    ms_plugin_context_clear (MS_PLUGIN_CONTEXT (ctx), n_parens);
 
     return success;
 }
@@ -137,13 +137,13 @@ static const char *builtin_func_names[N_BUILTIN_FUNCS] = {
     "bs", "del", "ins", "up", "down", "left", "right", "sel"
 };
 
-static ASFunc *builtin_funcs[N_BUILTIN_FUNCS];
+static MSFunc *builtin_funcs[N_BUILTIN_FUNCS];
 
 
 static gboolean
-check_one_arg (ASValue          **args,
+check_one_arg (MSValue          **args,
                guint              n_args,
-               ASPluginContext   *ctx,
+               MSPluginContext   *ctx,
                gboolean           nonnegative,
                int               *dest,
                int                default_val)
@@ -152,7 +152,7 @@ check_one_arg (ASValue          **args,
 
     if (n_args > 1)
     {
-        as_context_set_error (AS_CONTEXT (ctx), AS_ERROR_TYPE,
+        ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_TYPE,
                               "number of args must be zero or one");
         return FALSE;
     }
@@ -163,16 +163,16 @@ check_one_arg (ASValue          **args,
         return TRUE;
     }
 
-    if (!as_value_get_int (args[0], &val))
+    if (!ms_value_get_int (args[0], &val))
     {
-        as_context_set_error (AS_CONTEXT (ctx), AS_ERROR_TYPE,
+        ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_TYPE,
                               "argument must be integer");
         return FALSE;
     }
 
     if (nonnegative && val < 0)
     {
-        as_context_set_error (AS_CONTEXT (ctx), AS_ERROR_VALUE,
+        ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_VALUE,
                               "argument must be non-negative");
         return FALSE;
     }
@@ -182,10 +182,10 @@ check_one_arg (ASValue          **args,
 }
 
 
-static ASValue *
-cfunc_bs (ASValue          **args,
+static MSValue *
+cfunc_bs (MSValue          **args,
           guint              n_args,
-          ASPluginContext   *ctx)
+          MSPluginContext   *ctx)
 {
     int n;
     GtkTextIter start, end;
@@ -195,7 +195,7 @@ cfunc_bs (ASValue          **args,
         return NULL;
 
     if (!n)
-        return as_value_none ();
+        return ms_value_none ();
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (ctx->doc));
 
@@ -211,14 +211,14 @@ cfunc_bs (ASValue          **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
-static ASValue *
-cfunc_del (ASValue          **args,
+static MSValue *
+cfunc_del (MSValue          **args,
            guint              n_args,
-           ASPluginContext   *ctx)
+           MSPluginContext   *ctx)
 {
     int n;
     GtkTextIter start, end;
@@ -228,7 +228,7 @@ cfunc_del (ASValue          **args,
         return NULL;
 
     if (!n)
-        return as_value_none ();
+        return ms_value_none ();
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (ctx->doc));
 
@@ -244,7 +244,7 @@ cfunc_del (ASValue          **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
@@ -265,10 +265,10 @@ get_cursor (MooEdit *doc,
 }
 
 
-static ASValue *
-cfunc_up (ASValue          **args,
+static MSValue *
+cfunc_up (MSValue          **args,
           guint              n_args,
-          ASPluginContext   *ctx)
+          MSPluginContext   *ctx)
 {
     int line, col, n;
 
@@ -276,7 +276,7 @@ cfunc_up (ASValue          **args,
         return NULL;
 
     if (!n)
-        return as_value_none ();
+        return ms_value_none ();
 
     get_cursor (ctx->doc, &line, &col);
 
@@ -285,14 +285,14 @@ cfunc_up (ASValue          **args,
                                    MAX (line - n, 0), col,
                                    FALSE);
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
-static ASValue *
-cfunc_down (ASValue          **args,
+static MSValue *
+cfunc_down (MSValue          **args,
             guint              n_args,
-            ASPluginContext   *ctx)
+            MSPluginContext   *ctx)
 {
     int line, col, n, line_count;
     GtkTextBuffer *buffer;
@@ -301,7 +301,7 @@ cfunc_down (ASValue          **args,
         return NULL;
 
     if (!n)
-        return as_value_none ();
+        return ms_value_none ();
 
     get_cursor (ctx->doc, &line, &col);
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (ctx->doc));
@@ -311,24 +311,24 @@ cfunc_down (ASValue          **args,
                                MIN (line + n, line_count - 1), col,
                                FALSE);
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
-static ASValue *
-cfunc_sel (ASValue           *arg,
-           ASPluginContext   *ctx)
+static MSValue *
+cfunc_sel (MSValue           *arg,
+           MSPluginContext   *ctx)
 {
     int n;
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
 
-    if (!as_value_get_int (arg, &n))
-        return as_context_set_error (AS_CONTEXT (ctx), AS_ERROR_TYPE,
+    if (!ms_value_get_int (arg, &n))
+        return ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_TYPE,
                                      "argument must be integer");
 
     if (!n)
-        return as_context_set_error (AS_CONTEXT (ctx), AS_ERROR_TYPE,
+        return ms_context_set_error (MS_CONTEXT (ctx), MS_ERROR_TYPE,
                                      "argument must be non zero integer");
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (ctx->doc));
@@ -339,7 +339,7 @@ cfunc_sel (ASValue           *arg,
 
     gtk_text_buffer_select_range (buffer, &end, &start);
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
@@ -359,10 +359,10 @@ move_cursor (MooEdit *doc,
 }
 
 
-static ASValue *
-cfunc_left (ASValue          **args,
+static MSValue *
+cfunc_left (MSValue          **args,
             guint              n_args,
-            ASPluginContext   *ctx)
+            MSPluginContext   *ctx)
 {
     int n;
 
@@ -370,14 +370,14 @@ cfunc_left (ASValue          **args,
         return NULL;
 
     move_cursor (ctx->doc, -n);
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
-static ASValue *
-cfunc_right (ASValue          **args,
+static MSValue *
+cfunc_right (MSValue          **args,
              guint              n_args,
-             ASPluginContext   *ctx)
+             MSPluginContext   *ctx)
 {
     int n;
 
@@ -385,21 +385,21 @@ cfunc_right (ASValue          **args,
         return NULL;
 
     move_cursor (ctx->doc, n);
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
-static ASValue *
-cfunc_ins (ASValue          **args,
+static MSValue *
+cfunc_ins (MSValue          **args,
            guint              n_args,
-           ASPluginContext   *ctx)
+           MSPluginContext   *ctx)
 {
     guint i;
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
 
     if (!n_args)
-        return as_value_none ();
+        return ms_value_none ();
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (ctx->doc));
 
@@ -408,12 +408,12 @@ cfunc_ins (ASValue          **args,
 
     for (i = 0; i < n_args; ++i)
     {
-        char *s = as_value_print (args[i]);
+        char *s = ms_value_print (args[i]);
         gtk_text_buffer_insert (buffer, &start, s, -1);
         g_free (s);
     }
 
-    return as_value_none ();
+    return ms_value_none ();
 }
 
 
@@ -423,26 +423,26 @@ init_api (void)
     if (builtin_funcs[0])
         return;
 
-    builtin_funcs[FUNC_BS] = as_cfunc_new_var ((ASCFunc_Var) cfunc_bs);
-    builtin_funcs[FUNC_DEL] = as_cfunc_new_var ((ASCFunc_Var) cfunc_del);
-    builtin_funcs[FUNC_INS] = as_cfunc_new_var ((ASCFunc_Var) cfunc_ins);
-    builtin_funcs[FUNC_UP] = as_cfunc_new_var ((ASCFunc_Var) cfunc_up);
-    builtin_funcs[FUNC_DOWN] = as_cfunc_new_var ((ASCFunc_Var) cfunc_down);
-    builtin_funcs[FUNC_LEFT] = as_cfunc_new_var ((ASCFunc_Var) cfunc_left);
-    builtin_funcs[FUNC_RIGHT] = as_cfunc_new_var ((ASCFunc_Var) cfunc_right);
-    builtin_funcs[FUNC_SEL] = as_cfunc_new_1 ((ASCFunc_1) cfunc_sel);
+    builtin_funcs[FUNC_BS] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_bs);
+    builtin_funcs[FUNC_DEL] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_del);
+    builtin_funcs[FUNC_INS] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_ins);
+    builtin_funcs[FUNC_UP] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_up);
+    builtin_funcs[FUNC_DOWN] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_down);
+    builtin_funcs[FUNC_LEFT] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_left);
+    builtin_funcs[FUNC_RIGHT] = ms_cfunc_new_var ((MSCFunc_Var) cfunc_right);
+    builtin_funcs[FUNC_SEL] = ms_cfunc_new_1 ((MSCFunc_1) cfunc_sel);
 }
 
 
 static void
-as_plugin_context_init_api (ASPluginContext *ctx)
+ms_plugin_context_init_api (MSPluginContext *ctx)
 {
     guint i;
 
     init_api ();
 
     for (i = 0; i < N_BUILTIN_FUNCS; ++i)
-        as_context_set_func (AS_CONTEXT (ctx),
+        ms_context_set_func (MS_CONTEXT (ctx),
                              builtin_func_names[i],
                              builtin_funcs[i]);
 }
