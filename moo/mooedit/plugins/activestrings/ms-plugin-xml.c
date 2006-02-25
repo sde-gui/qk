@@ -116,6 +116,8 @@ _ms_load_file (const char *filename,
     }
 
     *list = g_slist_reverse (*list);
+
+    moo_markup_doc_unref (doc);
     return TRUE;
 }
 
