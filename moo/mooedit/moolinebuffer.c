@@ -460,7 +460,7 @@ node_get_index (BTNode* node)
 
 
 int
-moo_line_buffer_get_line_index (LineBuffer     *line_buf,
+moo_line_buffer_get_line_index (G_GNUC_UNUSED LineBuffer *line_buf,
                                 Line           *line)
 {
     guint index;

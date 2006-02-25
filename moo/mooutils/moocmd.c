@@ -464,17 +464,19 @@ moo_cmd_run_command (MooCmd     *cmd,
                      char      **envp,
                      GSpawnFlags flags,
                      MooCmdFlags cmd_flags,
-                     GSpawnChildSetupFunc child_setup,
-                     gpointer    user_data,
+                     G_GNUC_UNUSED GSpawnChildSetupFunc child_setup,
+                     G_GNUC_UNUSED gpointer    user_data,
                      GError    **error)
 {
     gboolean result;
     int *outp, *errp;
 
+#ifndef __WIN32__
     struct {
         GSpawnChildSetupFunc child_setup;
         gpointer user_data;
     } data = {child_setup, user_data};
+#endif
 
     g_return_val_if_fail (MOO_IS_CMD (cmd), FALSE);
     g_return_val_if_fail (argv && argv[0], FALSE);

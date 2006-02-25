@@ -203,11 +203,14 @@ moo_save_file_utf8 (const char *name,
 #ifdef __WIN32__
 
 static gboolean
-open_uri (const char *uri, gboolean email/* = FALSE */)
+open_uri (const char *uri,
+          G_GNUC_UNUSED gboolean email)
 {
+    HINSTANCE h;
+
     g_return_val_if_fail (uri != NULL, FALSE);
-    HINSTANCE h = ShellExecute (NULL, "open", uri, NULL, NULL,
-                                SW_SHOWNORMAL);
+
+    h = ShellExecute (NULL, "open", uri, NULL, NULL, SW_SHOWNORMAL);
     return (int)h > 32;
 }
 

@@ -185,7 +185,7 @@ moo_fold_tree_free (MooFoldTree *tree)
 }
 
 
-static int
+inline static int
 get_line_count (MooFoldTree *tree)
 {
     return gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (tree->buffer));
