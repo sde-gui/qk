@@ -55,12 +55,19 @@ G_BEGIN_DECLS
 #define MS_IS_NODE_IF_ELSE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_IF_ELSE))
 #define MS_NODE_IF_ELSE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_IF_ELSE, MSNodeIfElseClass))
 
-#define MS_TYPE_NODE_LOOP               (ms_node_loop_get_type ())
-#define MS_NODE_LOOP(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_LOOP, MSNodeLoop))
-#define MS_NODE_LOOP_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_LOOP, MSNodeLoopClass))
-#define MS_IS_NODE_LOOP(object)         (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_LOOP))
-#define MS_IS_NODE_LOOP_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_LOOP))
-#define MS_NODE_LOOP_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_LOOP, MSNodeLoopClass))
+#define MS_TYPE_NODE_WHILE              (ms_node_while_get_type ())
+#define MS_NODE_WHILE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_WHILE, MSNodeWhile))
+#define MS_NODE_WHILE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_WHILE, MSNodeWhileClass))
+#define MS_IS_NODE_WHILE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_WHILE))
+#define MS_IS_NODE_WHILE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_WHILE))
+#define MS_NODE_WHILE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_WHILE, MSNodeWhileClass))
+
+#define MS_TYPE_NODE_FOR                (ms_node_for_get_type ())
+#define MS_NODE_FOR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_FOR, MSNodeFor))
+#define MS_NODE_FOR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_FOR, MSNodeForClass))
+#define MS_IS_NODE_FOR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_FOR))
+#define MS_IS_NODE_FOR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_FOR))
+#define MS_NODE_FOR_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_FOR, MSNodeForClass))
 
 #define MS_TYPE_NODE_ASSIGN             (ms_node_assign_get_type ())
 #define MS_NODE_ASSIGN(object)          (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_ASSIGN, MSNodeAssign))
@@ -93,8 +100,10 @@ typedef struct _MSNodeCommand MSNodeCommand;
 typedef struct _MSNodeCommandClass MSNodeCommandClass;
 typedef struct _MSNodeIfElse MSNodeIfElse;
 typedef struct _MSNodeIfElseClass MSNodeIfElseClass;
-typedef struct _MSNodeLoop MSNodeLoop;
-typedef struct _MSNodeLoopClass MSNodeLoopClass;
+typedef struct _MSNodeWhile MSNodeWhile;
+typedef struct _MSNodeWhileClass MSNodeWhileClass;
+typedef struct _MSNodeFor MSNodeFor;
+typedef struct _MSNodeForClass MSNodeForClass;
 typedef struct _MSNodeAssign MSNodeAssign;
 typedef struct _MSNodeAssignClass MSNodeAssignClass;
 typedef struct _MSNodeValue MSNodeValue;
@@ -128,18 +137,9 @@ struct _MSNodeListClass {
 };
 
 
-typedef enum {
-    MS_VAR_POSITIONAL,
-    MS_VAR_NAMED
-} MSNodeVarType;
-
 struct _MSNodeVar {
     MSNode node;
-    MSNodeVarType type;
-    union {
-        guint num;
-        char *name;
-    };
+    char *name;
 };
 
 struct _MSNodeVarClass {
@@ -159,18 +159,30 @@ struct _MSNodeCommandClass {
 
 
 typedef enum {
-    MS_LOOP_TIMES,
-    MS_LOOP_WHILE
-} MSLoopType;
+    MS_COND_BEFORE,
+    MS_COND_AFTER
+} MSCondType;
 
-struct _MSNodeLoop {
+struct _MSNodeWhile {
     MSNode node;
-    MSLoopType type;
+    MSCondType type;
     MSNode *condition;
     MSNode *what;
 };
 
-struct _MSNodeLoopClass {
+struct _MSNodeWhileClass {
+    MSNodeClass node_class;
+};
+
+
+struct _MSNodeFor {
+    MSNode node;
+    MSNode *variable;
+    MSNode *list;
+    MSNode *what;
+};
+
+struct _MSNodeForClass {
     MSNodeClass node_class;
 };
 
@@ -223,7 +235,8 @@ GType           ms_node_list_get_type       (void) G_GNUC_CONST;
 GType           ms_node_var_get_type        (void) G_GNUC_CONST;
 GType           ms_node_command_get_type    (void) G_GNUC_CONST;
 GType           ms_node_if_else_get_type    (void) G_GNUC_CONST;
-GType           ms_node_loop_get_type       (void) G_GNUC_CONST;
+GType           ms_node_while_get_type      (void) G_GNUC_CONST;
+GType           ms_node_for_get_type        (void) G_GNUC_CONST;
 GType           ms_node_assign_get_type     (void) G_GNUC_CONST;
 GType           ms_node_val_list_get_type   (void) G_GNUC_CONST;
 GType           ms_node_value_get_type      (void) G_GNUC_CONST;
@@ -247,8 +260,11 @@ MSNodeIfElse   *ms_node_if_else_new         (MSNode     *condition,
                                              MSNode     *then_,
                                              MSNode     *else_);
 
-MSNodeLoop     *ms_node_loop_new            (MSLoopType  type,
-                                             MSNode     *times_or_cond,
+MSNodeWhile    *ms_node_while_new           (MSCondType  type,
+                                             MSNode     *cond,
+                                             MSNode     *what);
+MSNodeFor      *ms_node_for_new             (MSNode     *var,
+                                             MSNode     *list,
                                              MSNode     *what);
 
 MSNodeAssign   *ms_node_assign_new          (MSNodeVar  *var,
@@ -257,8 +273,7 @@ MSNodeAssign   *ms_node_assign_new          (MSNodeVar  *var,
 MSNodeValue    *ms_node_value_new           (MSValue    *value);
 MSNodeValList  *ms_node_val_list_new        (MSNodeList *list);
 
-MSNodeVar      *ms_node_var_new_positional  (guint       n);
-MSNodeVar      *ms_node_var_new_named       (const char *name);
+MSNodeVar      *ms_node_var_new             (const char *name);
 
 
 G_END_DECLS

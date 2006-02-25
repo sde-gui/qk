@@ -27,8 +27,12 @@ static Keyword keywords[] = {
     { "if",     2, IF },
     { "then",   4, THEN },
     { "else",   4, ELSE },
+    { "fi",     2, FI },
     { "while",  5, WHILE },
-    { "repeat", 6, REPEAT },
+    { "for",    3, FOR },
+    { "in",     2, IN },
+    { "do",     2, DO },
+    { "od",     2, OD },
     { "not",    3, NOT },
 };
 
@@ -457,37 +461,55 @@ _ms_parser_node_if_else (MSParser   *parser,
 
 
 static MSNode *
-ms_parser_loop (MSParser   *parser,
-                MSLoopType  type,
-                MSNode     *times,
-                MSNode     *what)
+ms_parser_while (MSParser   *parser,
+                 MSCondType  type,
+                 MSNode     *cond,
+                 MSNode     *what)
 {
-    MSNodeLoop *loop;
+    MSNodeWhile *loop;
 
-    g_return_val_if_fail (MS_IS_NODE (times), NULL);
-    g_return_val_if_fail (MS_IS_NODE (what), NULL);
+    g_return_val_if_fail (MS_IS_NODE (cond), NULL);
+    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
 
-    loop = ms_node_loop_new (type, times, what);
+    loop = ms_node_while_new (type, cond, what);
     parser_add_node (parser, loop);
 
     return MS_NODE (loop);
 }
 
 MSNode *
-_ms_parser_node_repeat (MSParser   *parser,
-                        MSNode     *times,
-                        MSNode     *what)
-{
-    return ms_parser_loop (parser, MS_LOOP_TIMES, times, what);
-}
-
-
-MSNode *
 _ms_parser_node_while (MSParser   *parser,
                        MSNode     *cond,
                        MSNode     *what)
 {
-    return ms_parser_loop (parser, MS_LOOP_WHILE, cond, what);
+    return ms_parser_while (parser, MS_COND_BEFORE, cond, what);
+}
+
+MSNode *
+_ms_parser_node_do_while (MSParser   *parser,
+                          MSNode     *cond,
+                          MSNode     *what)
+{
+    return ms_parser_while (parser, MS_COND_AFTER, cond, what);
+}
+
+
+MSNode *
+_ms_parser_node_for (MSParser   *parser,
+                     MSNode     *var,
+                     MSNode     *list,
+                     MSNode     *what)
+{
+    MSNodeFor *loop;
+
+    g_return_val_if_fail (MS_IS_NODE (var), NULL);
+    g_return_val_if_fail (MS_IS_NODE (list), NULL);
+    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
+
+    loop = ms_node_for_new (var, list, what);
+    parser_add_node (parser, loop);
+
+    return MS_NODE (loop);
 }
 
 
@@ -575,25 +597,12 @@ _ms_parser_node_string (MSParser   *parser,
 
 
 MSNode *
-_ms_parser_node_var_pos (MSParser   *parser,
-                         int         n)
+_ms_parser_node_var (MSParser   *parser,
+                     const char *name)
 {
     MSNodeVar *node;
 
-    node = ms_node_var_new_positional (n);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_var_named (MSParser   *parser,
-                           const char *name)
-{
-    MSNodeVar *node;
-
-    node = ms_node_var_new_named (name);
+    node = ms_node_var_new (name);
     parser_add_node (parser, node);
 
     return MS_NODE (node);

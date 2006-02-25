@@ -46,12 +46,18 @@ MSNode     *_ms_parser_node_if_else     (MSParser   *parser,
                                          MSNode     *condition,
                                          MSNode     *then_,
                                          MSNode     *else_);
-MSNode     *_ms_parser_node_repeat      (MSParser   *parser,
-                                         MSNode     *times,
-                                         MSNode     *what);
+
 MSNode     *_ms_parser_node_while       (MSParser   *parser,
-                                         MSNode     *times,
+                                         MSNode     *cond,
                                          MSNode     *what);
+MSNode     *_ms_parser_node_do_while    (MSParser   *parser,
+                                         MSNode     *cond,
+                                         MSNode     *what);
+MSNode     *_ms_parser_node_for         (MSParser   *parser,
+                                         MSNode     *var,
+                                         MSNode     *list,
+                                         MSNode     *what);
+
 MSNode     *_ms_parser_node_assignment  (MSParser   *parser,
                                          MSNodeVar  *var,
                                          MSNode     *val);
@@ -68,9 +74,7 @@ MSNode     *_ms_parser_node_string      (MSParser   *parser,
                                          const char *string);
 MSNode     *_ms_parser_node_value_list  (MSParser   *parser,
                                          MSNodeList *list);
-MSNode     *_ms_parser_node_var_pos     (MSParser   *parser,
-                                         int         n);
-MSNode     *_ms_parser_node_var_named   (MSParser   *parser,
+MSNode     *_ms_parser_node_var         (MSParser   *parser,
                                          const char *name);
 
 

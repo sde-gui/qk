@@ -36,17 +36,20 @@
      IF = 262,
      THEN = 263,
      ELSE = 264,
-     ELIF = 265,
+     FI = 265,
      WHILE = 266,
-     REPEAT = 267,
-     EQ = 268,
-     NEQ = 269,
-     LE = 270,
-     GE = 271,
-     AND = 272,
-     OR = 273,
-     NOT = 274,
-     UMINUS = 275
+     DO = 267,
+     OD = 268,
+     FOR = 269,
+     IN = 270,
+     EQ = 271,
+     NEQ = 272,
+     LE = 273,
+     GE = 274,
+     AND = 275,
+     OR = 276,
+     NOT = 277,
+     UMINUS = 278
    };
 #endif
 /* Tokens.  */
@@ -57,17 +60,20 @@
 #define IF 262
 #define THEN 263
 #define ELSE 264
-#define ELIF 265
+#define FI 265
 #define WHILE 266
-#define REPEAT 267
-#define EQ 268
-#define NEQ 269
-#define LE 270
-#define GE 271
-#define AND 272
-#define OR 273
-#define NOT 274
-#define UMINUS 275
+#define DO 267
+#define OD 268
+#define FOR 269
+#define IN 270
+#define EQ 271
+#define NEQ 272
+#define LE 273
+#define GE 274
+#define AND 275
+#define OR 276
+#define NOT 277
+#define UMINUS 278
 
 
 
@@ -80,7 +86,7 @@ typedef union YYSTYPE {
     MSNode *node;
 } YYSTYPE;
 /* Line 1447 of yacc.c.  */
-#line 84 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
+#line 90 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

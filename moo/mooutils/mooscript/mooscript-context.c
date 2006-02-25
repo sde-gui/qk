@@ -78,9 +78,8 @@ ms_context_init (MSContext *ctx)
 {
     ctx->funcs = g_hash_table_new_full (g_str_hash, g_str_equal,
                                         g_free, g_object_unref);
-    ctx->named_vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-                                             (GDestroyNotify) ms_variable_unref);
-    ctx->positional_vars = g_new0 (MSValue*, N_POS_VARS);
+    ctx->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                       (GDestroyNotify) ms_variable_unref);
 
     ctx->print_func = default_print_func;
     add_builtin_funcs (ctx);
@@ -90,16 +89,10 @@ ms_context_init (MSContext *ctx)
 static void
 ms_context_finalize (GObject *object)
 {
-    guint i;
     MSContext *ctx = MS_CONTEXT (object);
 
     g_hash_table_destroy (ctx->funcs);
-    g_hash_table_destroy (ctx->named_vars);
-
-    for (i = 0; i < N_POS_VARS; ++i)
-        if (ctx->positional_vars[i])
-            ms_value_unref (ctx->positional_vars[i]);
-    g_free (ctx->positional_vars);
+    g_hash_table_destroy (ctx->vars);
 
     g_free (ctx->error_msg);
 
@@ -123,19 +116,8 @@ ms_context_new (void)
 
 
 MSValue *
-ms_context_eval_positional (MSContext  *ctx,
-                            guint       num)
-{
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (num < N_POS_VARS, NULL);
-    return ctx->positional_vars[num] ?
-            ms_value_ref (ctx->positional_vars[num]) : ms_value_none ();
-}
-
-
-MSValue *
-ms_context_eval_named (MSContext  *ctx,
-                       const char *name)
+ms_context_eval_variable (MSContext  *ctx,
+                          const char *name)
 {
     MSVariable *var;
 
@@ -155,30 +137,9 @@ ms_context_eval_named (MSContext  *ctx,
 
 
 gboolean
-ms_context_assign_positional (MSContext  *ctx,
-                              guint       num,
-                              MSValue    *value)
-{
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (num < N_POS_VARS, FALSE);
-
-    if (value != ctx->positional_vars[num])
-    {
-        if (ctx->positional_vars[num])
-            ms_value_unref (ctx->positional_vars[num]);
-        ctx->positional_vars[num] = value;
-        if (value)
-            ms_value_ref (value);
-    }
-
-    return TRUE;
-}
-
-
-gboolean
-ms_context_assign_named (MSContext  *ctx,
-                         const char *name,
-                         MSValue    *value)
+ms_context_assign_variable (MSContext  *ctx,
+                            const char *name,
+                            MSValue    *value)
 {
     MSVariable *var;
 
@@ -219,13 +180,31 @@ ms_context_assign_named (MSContext  *ctx,
 }
 
 
+gboolean
+ms_context_assign_positional (MSContext  *ctx,
+                              guint       n,
+                              MSValue    *value)
+{
+    char *name;
+    gboolean result;
+
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
+
+    name = g_strdup_printf ("_%d", n);
+    result = ms_context_assign_variable (ctx, name, value);
+
+    g_free (name);
+    return result;
+}
+
+
 MSVariable *
 ms_context_lookup_var (MSContext  *ctx,
                        const char *name)
 {
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (name != NULL, NULL);
-    return g_hash_table_lookup (ctx->named_vars, name);
+    return g_hash_table_lookup (ctx->vars, name);
 }
 
 
@@ -239,15 +218,15 @@ ms_context_set_var (MSContext  *ctx,
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
 
-    old = g_hash_table_lookup (ctx->named_vars, name);
+    old = g_hash_table_lookup (ctx->vars, name);
 
     if (var != old)
     {
         if (var)
-            g_hash_table_insert (ctx->named_vars, g_strdup (name),
+            g_hash_table_insert (ctx->vars, g_strdup (name),
                                  ms_variable_ref (var));
         else
-            g_hash_table_remove (ctx->named_vars, name);
+            g_hash_table_remove (ctx->vars, name);
     }
 
     return TRUE;

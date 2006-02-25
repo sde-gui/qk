@@ -51,8 +51,7 @@ struct _MSContext {
     GObject object;
 
     GHashTable *funcs;
-    GHashTable *named_vars;
-    MSValue **positional_vars;
+    GHashTable *vars;
 
     MSError error;
     char *error_msg;
@@ -74,15 +73,13 @@ void         ms_variable_unref              (MSVariable *var);
 
 MSContext   *ms_context_new                 (void);
 
-MSValue     *ms_context_eval_positional     (MSContext  *ctx,
-                                             guint       num);
-MSValue     *ms_context_eval_named          (MSContext  *ctx,
+MSValue     *ms_context_eval_variable       (MSContext  *ctx,
                                              const char *name);
-gboolean     ms_context_assign_positional   (MSContext  *ctx,
-                                             guint       num,
-                                             MSValue    *value);
-gboolean     ms_context_assign_named        (MSContext  *ctx,
+gboolean     ms_context_assign_variable     (MSContext  *ctx,
                                              const char *name,
+                                             MSValue    *value);
+gboolean     ms_context_assign_positional   (MSContext  *ctx,
+                                             guint       n,
                                              MSValue    *value);
 
 MSVariable  *ms_context_lookup_var          (MSContext  *ctx,
