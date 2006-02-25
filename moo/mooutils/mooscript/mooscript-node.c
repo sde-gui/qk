@@ -862,8 +862,62 @@ ms_node_val_list_finalize (GObject *object)
     MSNodeValList *node = MS_NODE_VAL_LIST (object);
 
     UNREF (node->elms);
+    UNREF (node->first);
+    UNREF (node->last);
 
     G_OBJECT_CLASS(ms_node_val_list_parent_class)->finalize (object);
+}
+
+
+static MSValue *
+ms_node_val_range_eval (MSNodeValList *node,
+                        MSContext     *ctx)
+{
+    MSValue *ret;
+    guint n_elms, i;
+    MSValue *vfirst, *vlast;
+    int first, last;
+
+    g_assert (node->type == MS_VAL_RANGE);
+
+    vfirst = ms_node_eval (node->first, ctx);
+
+    if (!vfirst)
+        return NULL;
+
+    vlast = ms_node_eval (node->last, ctx);
+
+    if (!vlast)
+    {
+        ms_value_unref (vfirst);
+        return NULL;
+    }
+
+    if (!ms_value_get_int (vfirst, &first) || !ms_value_get_int (vlast, &last))
+    {
+        ms_value_unref (vfirst);
+        ms_value_unref (vlast);
+        return ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                        "illegal list bounds");
+    }
+
+    ms_value_unref (vfirst);
+    ms_value_unref (vlast);
+
+    if (first > last)
+        return ms_value_list (0);
+
+    n_elms = last - first + 1;
+    ret = ms_value_list (n_elms);
+
+    for (i = 0; i < n_elms; ++i)
+    {
+        MSValue *val = ms_value_int (first + i);
+        ms_value_list_set_elm (ret, i, val);
+        ms_value_unref (val);
+    }
+
+    return ret;
 }
 
 
@@ -875,24 +929,33 @@ ms_node_val_list_eval (MSNode    *node_,
     guint n_elms, i;
     MSNodeValList *node = MS_NODE_VAL_LIST (node_);
 
-    n_elms = node->elms ? node->elms->n_nodes : 0;
-    ret = ms_value_list (n_elms);
-
-    for (i = 0; i < n_elms; ++i)
+    switch (node->type)
     {
-        MSValue *elm = ms_node_eval (node->elms->nodes[i], ctx);
+        case MS_VAL_LIST:
+            n_elms = node->elms ? node->elms->n_nodes : 0;
+            ret = ms_value_list (n_elms);
 
-        if (!elm)
-        {
-            ms_value_unref (ret);
-            return NULL;
-        }
+            for (i = 0; i < n_elms; ++i)
+            {
+                MSValue *elm = ms_node_eval (node->elms->nodes[i], ctx);
 
-        ms_value_list_set_elm (ret, i, elm);
-        ms_value_unref (elm);
+                if (!elm)
+                {
+                    ms_value_unref (ret);
+                    return NULL;
+                }
+
+                ms_value_list_set_elm (ret, i, elm);
+                ms_value_unref (elm);
+            }
+
+            return ret;
+
+        case MS_VAL_RANGE:
+            return ms_node_val_range_eval (node, ctx);
     }
 
-    return ret;
+    g_return_val_if_reached (NULL);
 }
 
 
@@ -905,8 +968,9 @@ ms_node_val_list_class_init (MSNodeValListClass *klass)
 
 
 static void
-ms_node_val_list_init (G_GNUC_UNUSED MSNodeValList *node)
+ms_node_val_list_init (MSNodeValList *node)
 {
+    node->type = -1;
 }
 
 
@@ -921,7 +985,26 @@ ms_node_val_list_new (MSNodeList *list)
         list = NULL;
 
     node = g_object_new (MS_TYPE_NODE_VAL_LIST, NULL);
+    node->type = MS_VAL_LIST;
     node->elms = list ? g_object_ref (list) : NULL;
+
+    return node;
+}
+
+
+MSNodeValList *
+ms_node_val_range_new (MSNode *first,
+                       MSNode *last)
+{
+    MSNodeValList *node;
+
+    g_return_val_if_fail (MS_IS_NODE (first), NULL);
+    g_return_val_if_fail (MS_IS_NODE (last), NULL);
+
+    node = g_object_new (MS_TYPE_NODE_VAL_LIST, NULL);
+    node->type = MS_VAL_RANGE;
+    node->first = g_object_ref (first);
+    node->last = g_object_ref (last);
 
     return node;
 }

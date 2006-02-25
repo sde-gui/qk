@@ -644,40 +644,12 @@ _ms_parser_node_value_list (MSParser   *parser,
 
 MSNode *
 _ms_parser_node_value_range (MSParser   *parser,
-                             int         first,
-                             int         last)
+                             MSNode     *first,
+                             MSNode     *last)
 {
-    MSNodeValue *node;
-    MSValue *list;
-    guint n_elms, i;
+    MSNodeValList *node;
 
-    if (first <= last)
-    {
-        n_elms = last - first + 1;
-        list = ms_value_list (n_elms);
-
-        for (i = 0; i < n_elms; ++i)
-        {
-            MSValue *val = ms_value_int (first + i);
-            ms_value_list_set_elm (list, i, val);
-            ms_value_unref (val);
-        }
-    }
-    else
-    {
-        n_elms = first - last + 1;
-        list = ms_value_list (n_elms);
-
-        for (i = 0; i < n_elms; ++i)
-        {
-            MSValue *val = ms_value_int (last - i);
-            ms_value_list_set_elm (list, i, val);
-            ms_value_unref (val);
-        }
-    }
-
-    node = ms_node_value_new (list);
-    ms_value_unref (list);
+    node = ms_node_val_range_new (first, last);
     parser_add_node (parser, node);
 
     return MS_NODE (node);

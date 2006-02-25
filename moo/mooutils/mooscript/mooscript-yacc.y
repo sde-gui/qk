@@ -121,7 +121,7 @@ simple_expr:
         | variable
         | '(' stmt ')'                      { $$ = $2; }
         | '[' list_elms ']'                 { $$ = NODE_VALUE_LIST ($2); }
-        | '[' NUMBER TWODOTS NUMBER ']'     { $$ = NODE_VALUE_RANGE ($2, $4); }
+        | '[' expr TWODOTS expr ']'         { $$ = NODE_VALUE_RANGE ($2, $4); }
         | simple_expr '%' simple_expr       { $$ = BINARY_OP (MS_OP_FORMAT, $1, $3); }
         | '#' simple_expr                   { $$ = UNARY_OP (MS_OP_LEN, $2); }
         | NOT simple_expr                   { $$ = UNARY_OP (MS_OP_NOT, $2); }

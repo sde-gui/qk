@@ -220,9 +220,17 @@ struct _MSNodeValueClass {
 };
 
 
+typedef enum {
+    MS_VAL_LIST,
+    MS_VAL_RANGE
+} MSValListType;
+
 struct _MSNodeValList {
     MSNode node;
+    MSValListType type;
     MSNodeList *elms;
+    MSNode *first;
+    MSNode *last;
 };
 
 struct _MSNodeValListClass {
@@ -272,6 +280,8 @@ MSNodeAssign   *ms_node_assign_new          (MSNodeVar  *var,
 
 MSNodeValue    *ms_node_value_new           (MSValue    *value);
 MSNodeValList  *ms_node_val_list_new        (MSNodeList *list);
+MSNodeValList  *ms_node_val_range_new       (MSNode     *first,
+                                             MSNode     *last);
 
 MSNodeVar      *ms_node_var_new             (const char *name);
 
