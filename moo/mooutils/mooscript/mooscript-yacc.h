@@ -49,7 +49,8 @@
      AND = 275,
      OR = 276,
      NOT = 277,
-     UMINUS = 278
+     UMINUS = 278,
+     TWODOTS = 279
    };
 #endif
 /* Tokens.  */
@@ -74,19 +75,20 @@
 #define OR 276
 #define NOT 277
 #define UMINUS 278
+#define TWODOTS 279
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 24 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 25 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     MSNode *node;
 } YYSTYPE;
 /* Line 1447 of yacc.c.  */
-#line 90 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
+#line 92 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

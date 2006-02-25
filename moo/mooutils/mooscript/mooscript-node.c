@@ -638,11 +638,17 @@ ms_node_for_eval (MSNode    *node,
                                         "illegal loop variable");
 
     if (!MS_IS_NODE_VAL_LIST (loop->list))
-        return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal loop list");
+        if (!MS_IS_NODE_VALUE (loop->list) ||
+             MS_NODE_VALUE(loop->list)->value->type != MS_VALUE_LIST)
+            return ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                            "illegal loop list");
 
     var = MS_NODE_VAR (loop->variable);
-    vallist = ms_node_eval (loop->list, ctx);
+
+    if (MS_IS_NODE_VAL_LIST (loop->list))
+        vallist = ms_node_eval (loop->list, ctx);
+    else
+        vallist = ms_value_ref (MS_NODE_VALUE(loop->list)->value);
 
     if (!vallist)
         return NULL;

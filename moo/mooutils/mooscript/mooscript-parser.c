@@ -241,6 +241,23 @@ ms_lex_parse_word (MSLex    *lex,
 }
 
 
+static int
+ms_lex_parse_dot (MSLex    *lex,
+                  G_GNUC_UNUSED MSParser *parser)
+{
+    g_assert (lex->input[lex->ptr] == '.');
+
+    if (lex->input[lex->ptr+1] == '.')
+    {
+        lex->ptr += 2;
+        return TWODOTS;
+    }
+
+    lex->ptr++;
+    return '.';
+}
+
+
 int
 _ms_script_yylex (MSParser *parser)
 {
@@ -269,6 +286,9 @@ _ms_script_yylex (MSParser *parser)
 
     if (IS_LETTER (c) || c == '_')
         return ms_lex_parse_word (lex, parser);
+
+    if (c == '.')
+        return ms_lex_parse_dot (lex, parser);
 
     lex->ptr++;
     return c;
@@ -616,6 +636,48 @@ _ms_parser_node_value_list (MSParser   *parser,
     MSNodeValList *node;
 
     node = ms_node_val_list_new (list);
+    parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+MSNode *
+_ms_parser_node_value_range (MSParser   *parser,
+                             int         first,
+                             int         last)
+{
+    MSNodeValue *node;
+    MSValue *list;
+    guint n_elms, i;
+
+    if (first <= last)
+    {
+        n_elms = last - first + 1;
+        list = ms_value_list (n_elms);
+
+        for (i = 0; i < n_elms; ++i)
+        {
+            MSValue *val = ms_value_int (first + i);
+            ms_value_list_set_elm (list, i, val);
+            ms_value_unref (val);
+        }
+    }
+    else
+    {
+        n_elms = first - last + 1;
+        list = ms_value_list (n_elms);
+
+        for (i = 0; i < n_elms; ++i)
+        {
+            MSValue *val = ms_value_int (last - i);
+            ms_value_list_set_elm (list, i, val);
+            ms_value_unref (val);
+        }
+    }
+
+    node = ms_node_value_new (list);
+    ms_value_unref (list);
     parser_add_node (parser, node);
 
     return MS_NODE (node);

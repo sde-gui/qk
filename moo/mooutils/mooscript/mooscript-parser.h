@@ -74,6 +74,9 @@ MSNode     *_ms_parser_node_string      (MSParser   *parser,
                                          const char *string);
 MSNode     *_ms_parser_node_value_list  (MSParser   *parser,
                                          MSNodeList *list);
+MSNode     *_ms_parser_node_value_range (MSParser   *parser,
+                                         int         first,
+                                         int         last);
 MSNode     *_ms_parser_node_var         (MSParser   *parser,
                                          const char *name);
 
