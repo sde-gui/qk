@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-plugin-script.c
+ *   ms-plugin-script.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,7 +12,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-plugin-script.h"
+#include "ms-plugin-script.h"
 
 
 static void ms_plugin_context_init_api  (MSPluginContext    *ctx);

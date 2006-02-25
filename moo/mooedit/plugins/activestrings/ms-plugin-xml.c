@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-plugin-xml.c
+ *   ms-plugin-xml.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,13 +12,13 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "as-plugin-xml.h"
+#include "ms-plugin-xml.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 #define MS_ROOT         "active-strings"
-#define MS_ELM          "as"
+#define MS_ELM          "ms"
 #define MS_PROP_PATTERN "pattern"
 #define MS_PROP_LANG    "lang"
 

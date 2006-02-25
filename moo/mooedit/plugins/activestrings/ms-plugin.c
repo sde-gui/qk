@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-plugin.c
+ *   ms-plugin.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -23,8 +23,8 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/eggregex.h"
-#include "as-plugin-script.h"
-#include "as-plugin-xml.h"
+#include "ms-plugin-script.h"
+#include "ms-plugin-xml.h"
 #include "mooutils/mooscript/mooscript-parser.h"
 #include <string.h>
 
