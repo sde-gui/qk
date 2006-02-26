@@ -1268,8 +1268,8 @@ widget_props_new (MooMarkupNode  *node,
             else if (!strcmp (name, "items") &&
                       GTK_IS_COMBO_BOX_CLASS (klass))
             {
-                if (value && value[0])
-                    g_message ("%s: ignoring ComboBox items property", G_STRLOC);
+//                 if (value && value[0])
+//                     g_message ("%s: ignoring ComboBox items property", G_STRLOC);
             }
 #endif /* GTK_CHECK_VERSION(2,4,0) */
             else
