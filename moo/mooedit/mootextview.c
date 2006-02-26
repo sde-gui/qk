@@ -590,6 +590,7 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv->last_search_stamp = -1;
 
+    view->priv->saved_cursor_visible = TRUE;
     view->priv->tab_indents = TRUE;
     view->priv->shift_tab_unindents = TRUE;
     view->priv->backspace_indents = TRUE;
