@@ -304,7 +304,7 @@ MooIndenter*
 moo_indenter_new (gpointer      doc,
                   G_GNUC_UNUSED const char *name)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
     return g_object_new (MOO_TYPE_INDENTER, "doc", doc, NULL);
 }
 
