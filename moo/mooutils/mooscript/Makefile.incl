@@ -25,7 +25,9 @@ mooscript_sources =                     \
     $(mooscript)/mooscript-value.c      \
     $(mooscript)/mooscript-value.h      \
     $(mooscript)/mooscript-yacc.c       \
-    $(mooscript)/mooscript-yacc.h
+    $(mooscript)/mooscript-yacc.h       \
+    $(mooscript)/mooscript-zenity.c     \
+    $(mooscript)/mooscript-zenity.h
 
 mooscript_built_sources =               \
     $(mooscript)/mooscript-yacc.c       \
