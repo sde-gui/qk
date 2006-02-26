@@ -52,11 +52,10 @@ struct _MSContext {
 
     GHashTable *funcs;
     GHashTable *vars;
-
     MSError error;
     char *error_msg;
-
     MSPrintFunc print_func;
+    gpointer window;
 };
 
 struct _MSContextClass {

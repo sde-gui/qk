@@ -14,10 +14,57 @@
 
 #include "mooscript-context.h"
 #include <glib/gprintf.h>
+#include <gtk/gtkwindow.h>
 
 #define N_POS_VARS 20
 
+enum {
+    PROP_0,
+    PROP_WINDOW
+};
+
 G_DEFINE_TYPE (MSContext, ms_context, G_TYPE_OBJECT)
+
+
+static void
+ms_context_set_property (GObject        *object,
+                         guint           prop_id,
+                         const GValue   *value,
+                         GParamSpec     *pspec)
+{
+    MSContext *ctx = MS_CONTEXT (object);
+
+    switch (prop_id)
+    {
+        case PROP_WINDOW:
+            ctx->window = g_value_get_object (value);
+            g_object_notify (object, "window");
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+
+static void
+ms_context_get_property (GObject        *object,
+                         guint           prop_id,
+                         GValue         *value,
+                         GParamSpec     *pspec)
+{
+    MSContext *ctx = MS_CONTEXT (object);
+
+    switch (prop_id)
+    {
+        case PROP_WINDOW:
+            g_value_set_object (value, ctx->window);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
 
 
 static void
@@ -103,7 +150,19 @@ ms_context_finalize (GObject *object)
 static void
 ms_context_class_init (MSContextClass *klass)
 {
-    G_OBJECT_CLASS(klass)->finalize = ms_context_finalize;
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+    object_class->finalize = ms_context_finalize;
+    object_class->set_property = ms_context_set_property;
+    object_class->get_property = ms_context_get_property;
+
+    g_object_class_install_property (object_class,
+                                     PROP_WINDOW,
+                                     g_param_spec_object ("window",
+                                             "window",
+                                             "window",
+                                             GTK_TYPE_WINDOW,
+                                             G_PARAM_READWRITE));
 }
 
 
