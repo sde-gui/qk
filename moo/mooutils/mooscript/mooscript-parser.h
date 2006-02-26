@@ -59,7 +59,7 @@ MSNode     *_ms_parser_node_for         (MSParser   *parser,
                                          MSNode     *what);
 
 MSNode     *_ms_parser_node_assignment  (MSParser   *parser,
-                                         MSNodeVar  *var,
+                                         const char *name,
                                          MSNode     *val);
 MSNode     *_ms_parser_node_binary_op   (MSParser   *parser,
                                          MSBinaryOp  op,

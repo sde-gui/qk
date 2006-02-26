@@ -535,15 +535,17 @@ _ms_parser_node_for (MSParser   *parser,
 
 MSNode *
 _ms_parser_node_assignment (MSParser   *parser,
-                            MSNodeVar  *var,
+                            const char *name,
                             MSNode     *val)
 {
     MSNodeAssign *node;
+    MSNode *var;
 
-    g_return_val_if_fail (MS_IS_NODE_VAR (var), NULL);
+    g_return_val_if_fail (name && name[0], NULL);
     g_return_val_if_fail (MS_IS_NODE (val), NULL);
 
-    node = ms_node_assign_new (var, val);
+    var = _ms_parser_node_var (parser, name);
+    node = ms_node_assign_new (MS_NODE_VAR (var), val);
     parser_add_node (parser, node);
 
     return MS_NODE (node);

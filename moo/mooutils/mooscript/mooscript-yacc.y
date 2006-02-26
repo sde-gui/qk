@@ -8,7 +8,7 @@
 #define NODE_WHILE(cond, what)              _ms_parser_node_while (parser, cond, what)
 #define NODE_DO_WHILE(cond, what)           _ms_parser_node_do_while (parser, cond, what)
 #define NODE_FOR(var, list, what)           _ms_parser_node_for (parser, var, list, what)
-#define NODE_ASSIGNMENT(var, val)           _ms_parser_node_assignment (parser, MS_NODE_VAR (var), val)
+#define NODE_ASSIGNMENT(var, val)           _ms_parser_node_assignment (parser, var, val)
 #define BINARY_OP(op, lval, rval)           _ms_parser_node_binary_op (parser, op, lval, rval)
 #define UNARY_OP(op, val)                   _ms_parser_node_unary_op (parser, op, val)
 #define NODE_NUMBER(n)                      _ms_parser_node_int (parser, n)
