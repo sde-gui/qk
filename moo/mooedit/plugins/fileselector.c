@@ -664,7 +664,7 @@ save_as_dialog (GtkWidget   *parent,
 
 out:
     if (xml)
-        moo_glade_xml_unref (xml);
+        g_object_unref (xml);
     if (dialog)
         gtk_widget_destroy (dialog);
     return fullname;

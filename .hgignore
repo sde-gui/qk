@@ -17,3 +17,5 @@ ltmain\.sh
 missing
 .*\.pyc
 .*~
+.*\.pcs
+.*\.kdevses

@@ -18,9 +18,29 @@
 
 G_BEGIN_DECLS
 
-typedef struct _MooGladeXML MooGladeXML;
 
-#define MOO_TYPE_GLADE_XML (moo_glade_xml_get_type ())
+#define MOO_TYPE_GLADE_XML              (moo_glade_xml_get_type ())
+#define MOO_GLADE_XML(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_GLADE_XML, MooGladeXML))
+#define MOO_GLADE_XML_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_GLADE_XML, MooGladeXMLClass))
+#define MOO_IS_GLADE_XML(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_GLADE_XML))
+#define MOO_IS_GLADE_XML_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_GLADE_XML))
+#define MOO_GLADE_XML_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_GLADE_XML, MooGladeXMLClass))
+
+
+typedef struct _MooGladeXML        MooGladeXML;
+typedef struct _MooGladeXMLPrivate MooGladeXMLPrivate;
+typedef struct _MooGladeXMLClass   MooGladeXMLClass;
+
+
+struct _MooGladeXML {
+    GObject base;
+    MooGladeXMLPrivate *priv;
+};
+
+struct _MooGladeXMLClass {
+    GObjectClass base_class;
+};
+
 
 typedef GtkWidget* (*MooGladeCreateFunc)    (MooGladeXML    *xml,
                                              const char     *id,
@@ -67,9 +87,6 @@ MooGladeXML *moo_glade_xml_new_from_buf     (const char     *buffer,
                                              int             size,
                                              const char     *root,
                                              const char     *unused);
-
-MooGladeXML *moo_glade_xml_ref              (MooGladeXML    *xml);
-void         moo_glade_xml_unref            (MooGladeXML    *xml);
 
 gpointer     moo_glade_xml_get_widget       (MooGladeXML    *xml,
                                              const char     *id);

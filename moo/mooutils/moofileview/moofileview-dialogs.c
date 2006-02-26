@@ -55,7 +55,7 @@ moo_file_props_dialog_init (MooFilePropsDialog *dialog)
 
     if (!moo_glade_xml_parse_memory (dialog->xml, MOO_FILE_PROPS_GLADE_UI, -1, "notebook"))
     {
-        moo_glade_xml_unref (dialog->xml);
+        g_object_unref (dialog->xml);
         dialog->xml = NULL;
         g_return_if_reached ();
     }
@@ -263,7 +263,7 @@ moo_file_props_dialog_destroy (GtkObject *object)
 
     if (dialog->xml)
     {
-        moo_glade_xml_unref (dialog->xml);
+        g_object_unref (dialog->xml);
         if (dialog->file)
             moo_file_unref (dialog->file);
         if (dialog->folder)
@@ -341,7 +341,7 @@ moo_create_folder_dialog (GtkWidget  *parent,
     else
         new_folder_name = NULL;
 
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
     gtk_widget_destroy (dialog);
     return new_folder_name;
 }
@@ -484,7 +484,7 @@ moo_file_view_save_drop_dialog (GtkWidget          *parent,
     }
 
 out:
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
     gtk_widget_destroy (dialog);
     g_free (start_name);
     return fullname;

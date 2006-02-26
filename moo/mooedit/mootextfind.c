@@ -89,7 +89,7 @@ moo_find_init (MooFind *find)
 
     if (!moo_glade_xml_parse_memory (find->xml, MOO_TEXT_FIND_GLADE_UI, -1, "vbox"))
     {
-        moo_glade_xml_unref (find->xml);
+        g_object_unref (find->xml);
         find->xml = NULL;
         g_return_if_reached ();
     }
@@ -196,7 +196,7 @@ moo_find_finalize (GObject *object)
 {
     MooFind *find = MOO_FIND (object);
 
-    moo_glade_xml_unref (find->xml);
+    g_object_unref (find->xml);
     egg_regex_unref (find->regex);
 
     G_OBJECT_CLASS(moo_find_parent_class)->finalize (object);
@@ -972,7 +972,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
 
     moo_position_window (dialog, GTK_WIDGET (view), FALSE, FALSE, 0, 0);
 
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
 
     if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_OK)
     {

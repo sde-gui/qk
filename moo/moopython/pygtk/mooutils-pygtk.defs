@@ -36,6 +36,13 @@
   (gtype-id "MOO_TYPE_FILTER_MGR")
 )
 
+(define-object GladeXML
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooGladeXML")
+  (gtype-id "MOO_TYPE_GLADE_XML")
+)
+
 (define-object HistoryEntry
   (in-module "Moo")
   (parent "MooCombo")
@@ -847,18 +854,6 @@
     '("const-char*" "root")
     '("const-char*" "unused")
   )
-)
-
-(define-method ref
-  (of-object "MooGladeXML")
-  (c-name "moo_glade_xml_ref")
-  (return-type "MooGladeXML*")
-)
-
-(define-method unref
-  (of-object "MooGladeXML")
-  (c-name "moo_glade_xml_unref")
-  (return-type "none")
 )
 
 (define-method get_widget

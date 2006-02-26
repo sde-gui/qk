@@ -820,7 +820,7 @@ GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
     g_assert (dialog != NULL);
 
     g_object_set_data_full (G_OBJECT (dialog), "dialog-glade-xml",
-                            xml, (GDestroyNotify) moo_glade_xml_unref);
+                            xml, (GDestroyNotify) g_object_unref);
 
     gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 

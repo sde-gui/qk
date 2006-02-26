@@ -815,9 +815,9 @@ find_window_plugin_destroy (WindowStuff *stuff)
     if (stuff->find_dialog)
         gtk_widget_destroy (stuff->find_dialog);
     if (stuff->grep_xml)
-        moo_glade_xml_unref (stuff->grep_xml);
+        g_object_unref (stuff->grep_xml);
     if (stuff->find_xml)
-        moo_glade_xml_unref (stuff->find_xml);
+        g_object_unref (stuff->find_xml);
     if (stuff->grep_completion)
         g_object_unref (stuff->grep_completion);
     if (stuff->find_completion)

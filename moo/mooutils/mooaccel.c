@@ -579,7 +579,7 @@ moo_accel_prefs_page_new (MooActionGroup *actions)
     stuff->shortcut = moo_glade_xml_get_widget (xml, "shortcut");
     stuff->default_label = moo_glade_xml_get_widget (xml, "default_label");
 
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
 
     stuff->store = gtk_tree_store_new (N_COLUMNS,
                                        G_TYPE_STRING,
@@ -1055,7 +1055,7 @@ moo_accel_prefs_dialog_new (MooActionGroup *group)
     page_holder = moo_glade_xml_get_widget (xml, "page_holder");
     gtk_container_add (GTK_CONTAINER (page_holder), page);
 
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
 
 #if GTK_MINOR_VERSION >= 6
     gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),

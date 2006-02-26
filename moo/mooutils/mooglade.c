@@ -32,6 +32,9 @@
 #endif
 
 
+G_DEFINE_TYPE (MooGladeXML, moo_glade_xml, G_TYPE_OBJECT)
+
+
 #define FOREACH_ELM_START(parent,elm)                           \
 G_STMT_START {                                                  \
     MooMarkupNode *elm;                                         \
@@ -117,8 +120,7 @@ struct _PackingProps {
     PackPropMask mask;
 };
 
-struct _MooGladeXML {
-    guint ref_count;
+struct _MooGladeXMLPrivate {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
     GHashTable *widgets;
@@ -181,7 +183,7 @@ static gboolean      parse_property             (GParamSpec     *param_spec,
 static gboolean      moo_glade_xml_parse_markup (MooGladeXML    *xml,
                                                  MooMarkupDoc   *doc,
                                                  const char     *root);
-static void          moo_glade_xml_free         (MooGladeXML    *xml);
+static void          moo_glade_xml_dispose      (GObject        *object);
 static void          moo_glade_xml_add_widget   (MooGladeXML    *xml,
                                                  const char     *id,
                                                  GtkWidget      *widget);
@@ -408,14 +410,15 @@ connect_signals (MooGladeXML    *xml,
         if (connect_special_signal (xml, node, signal))
             continue;
 
-        if (xml->signal_func)
+        if (xml->priv->signal_func)
         {
-            connected = xml->signal_func (xml, node->id,
-                                          node->widget,
-                                          signal->name,
-                                          signal->handler,
-                                          signal->object,
-                                          xml->signal_func_data);
+            connected = xml->priv->signal_func (xml, node->id,
+                                                node->widget,
+                                                signal->name,
+                                                signal->handler,
+                                                signal->object,
+                                                xml->priv->signal_func_data);
+
             if (connected)
                 continue;
         }
@@ -548,7 +551,7 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
 
     g_return_val_if_fail (node != NULL, NULL);
 
-    pair = g_hash_table_lookup (xml->id_to_func, node->id);
+    pair = g_hash_table_lookup (xml->priv->id_to_func, node->id);
 
     if (pair)
     {
@@ -976,20 +979,20 @@ widget_new (MooGladeXML    *xml,
 
     id = moo_markup_get_prop (node, "id");
 
-    if (g_hash_table_lookup (xml->id_to_func, id))
+    if (g_hash_table_lookup (xml->priv->id_to_func, id))
     {
         type = GTK_TYPE_WIDGET;
     }
     else
     {
-        type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->id_to_type, id));
+        type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->id_to_type, id));
 
         if (!type)
         {
             class_name = moo_markup_get_prop (node, "class");
             g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
 
-            type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->class_to_type, class_name));
+            type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->class_to_type, class_name));
 
             if (!type)
             {
@@ -1688,55 +1691,33 @@ out:
 }
 
 
-GType
-moo_glade_xml_get_type (void)
+static void
+moo_glade_xml_class_init (MooGladeXMLClass *klass)
 {
-    static GType type = 0;
-
-    if (!type)
-        type = g_boxed_type_register_static ("MooGladeXML",
-                                             (GBoxedCopyFunc) moo_glade_xml_ref,
-                                             (GBoxedFreeFunc) moo_glade_xml_unref);
-
-    return type;
+    G_OBJECT_CLASS(klass)->dispose = moo_glade_xml_dispose;
 }
 
 
-MooGladeXML*
-moo_glade_xml_ref (MooGladeXML *xml)
+static void
+moo_glade_xml_init (MooGladeXML *xml)
 {
-    if (xml)
-        ++xml->ref_count;
-    return xml;
+    xml->priv = g_new0 (MooGladeXMLPrivate, 1);
+
+    xml->priv->widgets = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                g_free, NULL);
+    xml->priv->class_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                      g_free, NULL);
+    xml->priv->id_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                   g_free, NULL);
+    xml->priv->id_to_func = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                   g_free, (GDestroyNotify) func_data_pair_free);
 }
 
 
-void
-moo_glade_xml_unref (MooGladeXML *xml)
-{
-    if (xml && !--xml->ref_count)
-        moo_glade_xml_free (xml);
-}
-
-
-MooGladeXML*
+MooGladeXML *
 moo_glade_xml_new_empty (void)
 {
-    MooGladeXML *xml;
-
-    xml = g_new0 (MooGladeXML, 1);
-
-    xml->widgets = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                          g_free, NULL);
-    xml->class_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                g_free, NULL);
-    xml->id_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                             g_free, NULL);
-    xml->id_to_func = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                             g_free,
-                                             (GDestroyNotify) func_data_pair_free);
-
-    return xml;
+    return g_object_new (MOO_TYPE_GLADE_XML, NULL);
 }
 
 
@@ -1822,7 +1803,7 @@ moo_glade_xml_new (const char     *file,
 
     if (!moo_glade_xml_parse_file (xml, file, root))
     {
-        moo_glade_xml_unref (xml);
+        g_object_unref (xml);
         return NULL;
     }
 
@@ -1844,7 +1825,7 @@ moo_glade_xml_new_from_buf (const char     *buffer,
 
     if (!moo_glade_xml_parse_memory (xml, buffer, size, root))
     {
-        moo_glade_xml_unref (xml);
+        g_object_unref (xml);
         return NULL;
     }
 
@@ -1898,7 +1879,7 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
     Widget *widget;
 
     g_return_val_if_fail (doc != NULL, FALSE);
-    g_return_val_if_fail (xml->doc == NULL, FALSE);
+    g_return_val_if_fail (xml->priv->doc == NULL, FALSE);
 
     glade_elm = moo_markup_get_root_element (doc, "glade-interface");
     g_return_val_if_fail (glade_elm != NULL, FALSE);
@@ -1942,16 +1923,16 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
         return FALSE;
     }
 
-    xml->doc = moo_markup_doc_ref (doc);
-    xml->root = root;
+    xml->priv->doc = moo_markup_doc_ref (doc);
+    xml->priv->root = root;
 
-    widget = widget_new (xml, NULL, xml->root);
+    widget = widget_new (xml, NULL, xml->priv->root);
 
     if (!widget)
     {
-        moo_markup_doc_unref (xml->doc);
-        xml->doc = NULL;
-        xml->root = NULL;
+        moo_markup_doc_unref (xml->priv->doc);
+        xml->priv->doc = NULL;
+        xml->priv->root = NULL;
         return FALSE;
     }
 
@@ -1959,9 +1940,9 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
 
     if (!moo_glade_xml_build (xml, widget))
     {
-        moo_markup_doc_unref (xml->doc);
-        xml->doc = NULL;
-        xml->root = NULL;
+        moo_markup_doc_unref (xml->priv->doc);
+        xml->priv->doc = NULL;
+        xml->priv->root = NULL;
         widget_free (widget);
         return FALSE;
     }
@@ -1970,27 +1951,9 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
     gtk_widget_show_all (widget->widget);
 #endif
 
-    xml->root_id = g_strdup (widget->id);
+    xml->priv->root_id = g_strdup (widget->id);
 
     return TRUE;
-}
-
-
-static gboolean
-cmp_widget (G_GNUC_UNUSED gpointer key,
-            gpointer value,
-            gpointer widget)
-{
-    return widget == value;
-}
-
-static const char*
-get_widget_id (MooGladeXML    *xml,
-               GtkWidget      *widget)
-{
-    return g_hash_table_find (xml->widgets,
-                              (GHRFunc) cmp_widget,
-                              widget);
 }
 
 
@@ -1998,17 +1961,26 @@ GtkWidget*
 moo_glade_xml_get_root (MooGladeXML *xml)
 {
     g_return_val_if_fail (xml != NULL, NULL);
-    return moo_glade_xml_get_widget (xml, xml->root_id);
+    return moo_glade_xml_get_widget (xml, xml->priv->root_id);
 }
 
+
+static gboolean
+cmp_widget (G_GNUC_UNUSED gpointer key,
+            gpointer widget,
+            gpointer dead)
+{
+    return widget == dead;
+}
 
 static void
 widget_destroyed (MooGladeXML *xml,
                   gpointer     widget)
 {
-    const char *id = get_widget_id (xml, widget);
-    g_return_if_fail (id != NULL);
-    g_hash_table_remove (xml->widgets, id);
+    guint removed;
+    removed = g_hash_table_foreach_remove (xml->priv->widgets,
+                                           (GHRFunc) cmp_widget, widget);
+    g_return_if_fail (removed == 1);
 }
 
 static void
@@ -2018,8 +1990,8 @@ moo_glade_xml_add_widget (MooGladeXML    *xml,
 {
     g_return_if_fail (id != NULL);
     g_return_if_fail (GTK_IS_WIDGET (widget));
-
-    g_hash_table_insert (xml->widgets, g_strdup (id), widget);
+    g_assert (!g_hash_table_lookup (xml->priv->widgets, id));
+    g_hash_table_insert (xml->priv->widgets, g_strdup (id), widget);
     g_object_weak_ref (G_OBJECT (widget), (GWeakNotify) widget_destroyed, xml);
 }
 
@@ -2033,20 +2005,25 @@ unref_widget (G_GNUC_UNUSED gpointer key,
 }
 
 static void
-moo_glade_xml_free (MooGladeXML *xml)
+moo_glade_xml_dispose (GObject *object)
 {
-    if (xml)
+    MooGladeXML *xml = MOO_GLADE_XML (object);
+
+    if (xml->priv)
     {
-        g_hash_table_foreach (xml->widgets,
-                              (GHFunc) unref_widget, NULL);
-        g_hash_table_destroy (xml->widgets);
-        g_hash_table_destroy (xml->class_to_type);
-        g_hash_table_destroy (xml->id_to_type);
-        g_hash_table_destroy (xml->id_to_func);
-        moo_markup_doc_unref (xml->doc);
-        g_free (xml->root_id);
-        g_free (xml);
+        g_hash_table_foreach (xml->priv->widgets,
+                              (GHFunc) unref_widget, xml);
+        g_hash_table_destroy (xml->priv->widgets);
+        g_hash_table_destroy (xml->priv->class_to_type);
+        g_hash_table_destroy (xml->priv->id_to_type);
+        g_hash_table_destroy (xml->priv->id_to_func);
+        moo_markup_doc_unref (xml->priv->doc);
+        g_free (xml->priv->root_id);
+        g_free (xml->priv);
+        xml->priv = NULL;
     }
+
+    G_OBJECT_CLASS(moo_glade_xml_parent_class)->dispose (object);
 }
 
 
@@ -2056,7 +2033,7 @@ moo_glade_xml_get_widget (MooGladeXML    *xml,
 {
     g_return_val_if_fail (xml != NULL, NULL);
     g_return_val_if_fail (id != NULL, NULL);
-    return g_hash_table_lookup (xml->widgets, id);
+    return g_hash_table_lookup (xml->priv->widgets, id);
 }
 
 
@@ -2069,11 +2046,11 @@ moo_glade_xml_map_class (MooGladeXML    *xml,
     g_return_if_fail (class_name != NULL);
 
     if (type)
-        g_hash_table_insert (xml->class_to_type,
+        g_hash_table_insert (xml->priv->class_to_type,
                              g_strdup (class_name),
                              GSIZE_TO_POINTER (type));
     else
-        g_hash_table_remove (xml->class_to_type,
+        g_hash_table_remove (xml->priv->class_to_type,
                              class_name);
 }
 
@@ -2087,11 +2064,11 @@ moo_glade_xml_map_id (MooGladeXML    *xml,
     g_return_if_fail (id != NULL);
 
     if (use_type)
-        g_hash_table_insert (xml->id_to_type,
+        g_hash_table_insert (xml->priv->id_to_type,
                              g_strdup (id),
                              GSIZE_TO_POINTER (use_type));
     else
-        g_hash_table_remove (xml->id_to_type, id);
+        g_hash_table_remove (xml->priv->id_to_type, id);
 }
 
 
@@ -2104,11 +2081,11 @@ void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
     g_return_if_fail (id != NULL);
 
     if (func)
-        g_hash_table_insert (xml->id_to_func,
+        g_hash_table_insert (xml->priv->id_to_func,
                              g_strdup (id),
                              func_data_pair_new (func, data));
     else
-        g_hash_table_remove (xml->id_to_func, id);
+        g_hash_table_remove (xml->priv->id_to_func, id);
 }
 
 
@@ -2118,8 +2095,8 @@ moo_glade_xml_map_signal (MooGladeXML    *xml,
                           gpointer        data)
 {
     g_return_if_fail (xml != NULL);
-    xml->signal_func = func;
-    xml->signal_func_data = data;
+    xml->priv->signal_func = func;
+    xml->priv->signal_func_data = data;
 }
 
 

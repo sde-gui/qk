@@ -292,7 +292,7 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
     response = gtk_dialog_run (GTK_DIALOG (dialog));
 
     gtk_widget_destroy (dialog);
-    moo_glade_xml_unref (xml);
+    g_object_unref (xml);
 
     if (response == GTK_RESPONSE_OK)
     {

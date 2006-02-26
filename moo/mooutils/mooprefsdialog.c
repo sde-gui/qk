@@ -179,6 +179,10 @@ moo_prefs_dialog_destroy (GtkObject *object)
 
     if (dialog->store)
     {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (dialog->pages_list);
+        g_signal_handlers_disconnect_by_func (selection,
+                                              (gpointer) pages_list_selection_changed,
+                                              dialog);
         gtk_tree_view_set_model (dialog->pages_list, NULL);
         gtk_tree_model_foreach (GTK_TREE_MODEL (dialog->store),
                                 (GtkTreeModelForeachFunc) destroy_page, NULL);

@@ -149,7 +149,7 @@ static void moo_prefs_dialog_page_finalize       (GObject      *object)
     if (page->icon)
         g_object_unref (page->icon);
     if (page->xml)
-        moo_glade_xml_unref (page->xml);
+        g_object_unref (page->xml);
     g_slist_free (page->widgets);
 
     G_OBJECT_CLASS (moo_prefs_dialog_page_parent_class)->finalize (object);
@@ -324,7 +324,7 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
     if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id))
     {
         g_critical ("%s: could not parse xml", G_STRLOC);
-        moo_glade_xml_unref (xml);
+        g_object_unref (xml);
         return NULL;
     }
 
