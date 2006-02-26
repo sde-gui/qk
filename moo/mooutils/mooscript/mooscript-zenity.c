@@ -76,3 +76,62 @@ ms_zenity_entry (void)
 {
     return ms_cfunc_new_var (entry_func);
 }
+
+
+static MSValue*
+message_dialog (MSValue      **args,
+                guint          n_args,
+                MSContext     *ctx,
+                GtkMessageType type)
+{
+    char *dialog_text = NULL;
+    GtkWidget *dialog;
+
+    if (n_args > 0)
+        dialog_text = ms_value_print (args[0]);
+
+    dialog = gtk_message_dialog_new (ctx->window,
+                                     GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+                                     type, GTK_BUTTONS_NONE,
+                                     "%s", dialog_text ? dialog_text : "");
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
+                            NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+
+    g_free (dialog_text);
+    return ms_value_none ();
+}
+
+
+static MSValue*
+info_func (MSValue   **args,
+           guint       n_args,
+           MSContext  *ctx)
+{
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_INFO);
+}
+
+MSFunc *
+ms_zenity_info (void)
+{
+    return ms_cfunc_new_var (info_func);
+}
+
+
+static MSValue*
+error_func (MSValue   **args,
+            guint       n_args,
+            MSContext  *ctx)
+{
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_ERROR);
+}
+
+MSFunc *
+ms_zenity_error (void)
+{
+    return ms_cfunc_new_var (error_func);
+}
