@@ -1018,8 +1018,7 @@ cmp_page_and_id (GObject    *page,
 }
 
 static void
-sync_pages (MooPrefsDialog      *dialog,
-            MooPrefsDialogPage  *main_page)
+sync_pages (MooPrefsDialog *dialog)
 {
     GSList *old_plugin_pages, *plugin_pages, *plugin_ids, *l, *plugins;
 
@@ -1058,7 +1057,7 @@ sync_pages (MooPrefsDialog      *dialog,
                                             g_strdup (moo_plugin_id (plugin)),
                                             g_free);
                     plugin_pages = g_slist_append (plugin_pages, plugin_page);
-                    moo_prefs_dialog_insert_page (dialog, plugin_page, GTK_WIDGET (main_page), -1);
+                    moo_prefs_dialog_insert_page (dialog, plugin_page, -1);
                 }
             }
         }
@@ -1112,7 +1111,7 @@ prefs_init (MooPrefsDialog      *dialog,
     selection_changed (gtk_tree_view_get_selection (treeview), page);
 
     g_slist_free (plugins);
-    sync_pages (dialog, page);
+    sync_pages (dialog);
 }
 
 
@@ -1153,7 +1152,7 @@ prefs_apply (MooPrefsDialog      *dialog,
     }
     while (gtk_tree_model_iter_next (model, &iter));
 
-    sync_pages (dialog, page);
+    sync_pages (dialog);
 }
 
 

@@ -202,7 +202,7 @@ setup_pages_list (MooPrefsDialog *dialog)
     GtkTreeViewColumn *icon_column, *label_column;
     GtkTreeSelection *selection;
 
-    dialog->store = gtk_tree_store_new (N_COLUMNS,
+    dialog->store = gtk_list_store_new (N_COLUMNS,
                                         GDK_TYPE_PIXBUF,
                                         G_TYPE_STRING,
                                         G_TYPE_STRING,
@@ -396,41 +396,29 @@ void
 moo_prefs_dialog_append_page (MooPrefsDialog     *dialog,
                               GtkWidget          *page)
 {
-    moo_prefs_dialog_insert_page (dialog, page, NULL, -1);
+    moo_prefs_dialog_insert_page (dialog, page, -1);
 }
 
 
 void
 moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
                               GtkWidget          *page,
-                              GtkWidget          *parent_page,
                               int                 position)
 {
     char *label = NULL, *icon_id = NULL;
     GdkPixbuf *icon = NULL;
-    GtkTreeIter iter, parent_iter;
+    GtkTreeIter iter;
     GtkTreeRowReference *ref;
     GtkTreePath *path = NULL;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
     g_return_if_fail (MOO_IS_PREFS_DIALOG_PAGE (page));
     g_return_if_fail (page->parent == NULL);
-    g_return_if_fail (!parent_page || MOO_IS_PREFS_DIALOG_PAGE (parent_page));
-    g_return_if_fail (!parent_page || parent_page->parent == GTK_WIDGET (dialog->notebook));
 
-    if (parent_page)
-    {
-        ref = g_object_get_data (G_OBJECT (parent_page), "moo-prefs-dialog-row");
-        g_return_if_fail (ref && gtk_tree_row_reference_valid (ref));
-        path = gtk_tree_row_reference_get_path (ref);
-        gtk_tree_model_get_iter (GTK_TREE_MODEL (dialog->store), &parent_iter, path);
-        gtk_tree_store_insert (dialog->store, &iter, &parent_iter, position);
-        gtk_tree_path_free (path);
-    }
-    else
-    {
-        gtk_tree_store_insert (dialog->store, &iter, NULL, position);
-    }
+    if (position < 0)
+        position = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (dialog->store), NULL);
+
+    gtk_list_store_insert (dialog->store, &iter, position);
 
     gtk_widget_show (page);
     gtk_notebook_insert_page (dialog->notebook, page, NULL, -1);
@@ -441,7 +429,7 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
                   "icon-stock-id", &icon_id,
                   NULL);
 
-    gtk_tree_store_set (dialog->store, &iter,
+    gtk_list_store_set (dialog->store, &iter,
                         ICON_ID_COLUMN, icon_id,
                         ICON_COLUMN, icon,
                         LABEL_COLUMN, label,
@@ -479,7 +467,7 @@ moo_prefs_dialog_remove_page (MooPrefsDialog     *dialog,
 
     path = gtk_tree_row_reference_get_path (ref);
     gtk_tree_model_get_iter (GTK_TREE_MODEL (dialog->store), &iter, path);
-    gtk_tree_store_remove (dialog->store, &iter);
+    gtk_list_store_remove (dialog->store, &iter);
 
     g_object_set_data (G_OBJECT (page), "moo-prefs-dialog-row", NULL);
     gtk_tree_path_free (path);

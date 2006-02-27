@@ -34,7 +34,7 @@ struct _MooPrefsDialog
 {
     GtkDialog     dialog;
     GtkNotebook  *notebook;
-    GtkTreeStore *store;
+    GtkListStore *store;
     GtkTreeView  *pages_list;
     gboolean      hide_on_delete;
 };
@@ -61,7 +61,6 @@ void        moo_prefs_dialog_remove_page    (MooPrefsDialog     *dialog,
                                              GtkWidget          *page);
 void        moo_prefs_dialog_insert_page    (MooPrefsDialog     *dialog,
                                              GtkWidget          *page,
-                                             GtkWidget          *parent_page,
                                              int                 position);
 
 
