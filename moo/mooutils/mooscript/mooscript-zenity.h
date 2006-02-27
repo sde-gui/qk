@@ -21,13 +21,19 @@ G_BEGIN_DECLS
 
 
 /* Entry(dialog_text = none, entry_text = none, hide_text = false) */
-MSFunc  *ms_zenity_entry    (void);
+MSFunc  *ms_zenity_entry            (void);
+/* Text(text = none, dialog_text = none) */
+MSFunc  *ms_zenity_text             (void);
 
-/* Info(text = none) */
-MSFunc  *ms_zenity_info     (void);
+MSFunc  *ms_zenity_info             (void); /* Info(text = none) */
+MSFunc  *ms_zenity_error            (void); /* Error(text = none) */
+MSFunc  *ms_zenity_question         (void); /* Question(text = none) */
+MSFunc  *ms_zenity_warning          (void); /* Warning(text = none) */
 
-/* Error(text = none) */
-MSFunc  *ms_zenity_error    (void);
+MSFunc  *ms_zenity_choose_file      (void); /* ChooseFile(title = none, start = none) */
+MSFunc  *ms_zenity_choose_files     (void); /* ChooseFile(title = none, start = none) */
+MSFunc  *ms_zenity_choose_dir       (void); /* ChooseDir(title = none, start = none) */
+MSFunc  *ms_zenity_choose_file_save (void); /* ChooseFileSave(title = none, start = none) */
 
 
 G_END_DECLS

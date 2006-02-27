@@ -14,6 +14,7 @@
 
 #include "mooscript-zenity.h"
 #include "mooscript-context.h"
+#include "mooutils/moodialogs.h"
 #include <gtk/gtk.h>
 
 
@@ -79,13 +80,90 @@ ms_zenity_entry (void)
 
 
 static MSValue*
+text_func (MSValue   **args,
+           guint       n_args,
+           MSContext  *ctx)
+{
+    char *dialog_text = NULL, *text = NULL;
+    int response;
+    GtkWidget *dialog, *textview, *swin;
+    GtkTextBuffer *buffer;
+    MSValue *result;
+
+    if (n_args > 0)
+        text = ms_value_print (args[0]);
+    if (n_args > 1)
+        dialog_text = ms_value_print (args[1]);
+
+    dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
+                                          GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                          NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+
+    if (dialog_text)
+    {
+        GtkWidget *label;
+        label = gtk_label_new (dialog_text);
+        gtk_widget_show (label);
+        gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, FALSE, 0);
+    }
+
+    swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
+                                         GTK_SHADOW_ETCHED_IN);
+
+    textview = gtk_text_view_new ();
+    gtk_container_add (GTK_CONTAINER (swin), textview);
+    gtk_widget_show_all (swin);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+    gtk_text_buffer_set_text (buffer, text ? text : "", -1);
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), swin, FALSE, FALSE, 0);
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        GtkTextIter start, end;
+        char *content;
+        gtk_text_buffer_get_bounds (buffer, &start, &end);
+        content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+        result = ms_value_take_string (content);
+    }
+    else
+    {
+        result = ms_value_none ();
+    }
+
+    gtk_widget_destroy (dialog);
+    g_free (dialog_text);
+    g_free (text);
+
+    return result;
+}
+
+MSFunc*
+ms_zenity_text (void)
+{
+    return ms_cfunc_new_var (text_func);
+}
+
+
+static MSValue*
 message_dialog (MSValue      **args,
                 guint          n_args,
                 MSContext     *ctx,
-                GtkMessageType type)
+                GtkMessageType type,
+                gboolean       question)
 {
     char *dialog_text = NULL;
     GtkWidget *dialog;
+    int response;
 
     if (n_args > 0)
         dialog_text = ms_value_print (args[0]);
@@ -94,16 +172,34 @@ message_dialog (MSValue      **args,
                                      GTK_DIALOG_MODAL,
                                      type, GTK_BUTTONS_NONE,
                                      "%s", dialog_text ? dialog_text : "");
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                            GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
-                            NULL);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
 
-    gtk_dialog_run (GTK_DIALOG (dialog));
+    if (question)
+    {
+        gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                NULL);
+        gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+    }
+    else
+    {
+        gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                                GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
+                                NULL);
+        gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+    }
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
 
     g_free (dialog_text);
-    return ms_value_none ();
+
+    if (!question)
+        return ms_value_none ();
+    else if (response == GTK_RESPONSE_OK)
+        return ms_value_true ();
+    else
+        return ms_value_false ();
 }
 
 
@@ -112,7 +208,7 @@ info_func (MSValue   **args,
            guint       n_args,
            MSContext  *ctx)
 {
-    return message_dialog (args, n_args, ctx, GTK_MESSAGE_INFO);
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_INFO, FALSE);
 }
 
 MSFunc *
@@ -127,11 +223,166 @@ error_func (MSValue   **args,
             guint       n_args,
             MSContext  *ctx)
 {
-    return message_dialog (args, n_args, ctx, GTK_MESSAGE_ERROR);
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_ERROR, FALSE);
 }
 
 MSFunc *
 ms_zenity_error (void)
 {
     return ms_cfunc_new_var (error_func);
+}
+
+
+static MSValue*
+question_func (MSValue   **args,
+               guint       n_args,
+               MSContext  *ctx)
+{
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_QUESTION, TRUE);
+}
+
+MSFunc *
+ms_zenity_question (void)
+{
+    return ms_cfunc_new_var (question_func);
+}
+
+
+static MSValue*
+warning_func (MSValue   **args,
+              guint       n_args,
+              MSContext  *ctx)
+{
+    return message_dialog (args, n_args, ctx, GTK_MESSAGE_WARNING, TRUE);
+}
+
+MSFunc *
+ms_zenity_warning (void)
+{
+    return ms_cfunc_new_var (warning_func);
+}
+
+
+static MSValue*
+file_selector_func (MSValue   **args,
+                    guint       n_args,
+                    MSContext  *ctx,
+                    MooFileDialogType type,
+                    gboolean    multiple)
+{
+    GtkWidget *dialog;
+    MSValue *ret;
+    char *start = NULL, *title = NULL;
+
+    if (n_args > 0)
+        title = ms_value_print (args[0]);
+
+    if (n_args > 1)
+        start = ms_value_print (args[1]);
+
+    dialog = moo_file_dialog_create (ctx->window ? GTK_WIDGET (ctx->window) : NULL,
+                                     type, multiple, title, start);
+
+    g_free (title);
+    g_free (start);
+
+    if (!moo_file_dialog_run (dialog))
+    {
+        gtk_widget_destroy (dialog);
+        return ms_value_none ();
+    }
+
+    if (!multiple)
+    {
+        ret = ms_value_string (moo_file_dialog_get_filename (dialog));
+    }
+    else
+    {
+        GSList *names, *l;
+        guint n_names, i;
+
+        names = moo_file_dialog_get_filenames (dialog);
+        n_names = g_slist_length (names);
+        ret = ms_value_list (n_names);
+
+        for (i = 0, l = names; i < n_names; ++i, l = l->next)
+        {
+            MSValue *n = ms_value_take_string (l->data);
+            ms_value_list_set_elm (ret, i, n);
+            ms_value_unref (n);
+        }
+
+        g_slist_free (names);
+    }
+
+    gtk_widget_destroy (dialog);
+    return ret;
+}
+
+
+static MSValue*
+choose_file_func (MSValue   **args,
+                  guint       n_args,
+                  MSContext  *ctx)
+{
+    return file_selector_func (args, n_args, ctx,
+                               MOO_DIALOG_FILE_OPEN_EXISTING,
+                               FALSE);
+}
+
+MSFunc*
+ms_zenity_choose_file (void)
+{
+    return ms_cfunc_new_var (choose_file_func);
+}
+
+
+static MSValue*
+choose_files_func (MSValue   **args,
+                   guint       n_args,
+                   MSContext  *ctx)
+{
+    return file_selector_func (args, n_args, ctx,
+                               MOO_DIALOG_FILE_OPEN_EXISTING,
+                               TRUE);
+}
+
+MSFunc*
+ms_zenity_choose_files (void)
+{
+    return ms_cfunc_new_var (choose_files_func);
+}
+
+
+static MSValue*
+choose_dir_func (MSValue   **args,
+                 guint       n_args,
+                 MSContext  *ctx)
+{
+    return file_selector_func (args, n_args, ctx,
+                               MOO_DIALOG_DIR_OPEN,
+                               FALSE);
+}
+
+MSFunc*
+ms_zenity_choose_dir (void)
+{
+    return ms_cfunc_new_var (choose_dir_func);
+}
+
+
+static MSValue*
+choose_file_save_func (MSValue   **args,
+                       guint       n_args,
+                       MSContext  *ctx)
+{
+    return file_selector_func (args, n_args, ctx,
+                               MOO_DIALOG_FILE_SAVE,
+                               FALSE);
+}
+
+MSFunc*
+ms_zenity_choose_file_save (void)
+{
+    return ms_cfunc_new_var (choose_file_save_func);
 }

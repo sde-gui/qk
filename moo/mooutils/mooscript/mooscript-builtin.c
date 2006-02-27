@@ -38,6 +38,13 @@ print_func (MSValue   **args,
 
 
 static MSValue*
+abort_func (MSContext *ctx)
+{
+    return ms_context_format_error (ctx, MS_ERROR_RUNTIME, "Aborted");
+}
+
+
+static MSValue*
 str_func (MSValue    *arg,
           G_GNUC_UNUSED MSContext *ctx)
 {
@@ -194,10 +201,18 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC (ms_cfunc_new_var, print_func, "Print");
     ADD_FUNC (ms_cfunc_new_1, python_func, "Python");
     ADD_FUNC (ms_cfunc_new_1, include_func, "Include");
+    ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
     ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
     ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
 
+    ADD_FUNC_OBJ (ms_zenity_text, "Text");
     ADD_FUNC_OBJ (ms_zenity_entry, "Entry");
     ADD_FUNC_OBJ (ms_zenity_info, "Info");
     ADD_FUNC_OBJ (ms_zenity_error, "Error");
+    ADD_FUNC_OBJ (ms_zenity_question, "Question");
+    ADD_FUNC_OBJ (ms_zenity_warning, "Warning");
+    ADD_FUNC_OBJ (ms_zenity_choose_file, "ChooseFile");
+    ADD_FUNC_OBJ (ms_zenity_choose_files, "ChooseFiles");
+    ADD_FUNC_OBJ (ms_zenity_choose_dir, "ChooseDir");
+    ADD_FUNC_OBJ (ms_zenity_choose_file_save, "ChooseFileSave");
 }
