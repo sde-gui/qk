@@ -253,7 +253,7 @@ G_STMT_START {                      \
 #define CHECK1(c_, what_)           \
 G_STMT_START {                      \
     if (THIS == c_)                 \
-        RETURN2 (what_);            \
+        RETURN1 (what_);            \
 } G_STMT_END
 
 #define RETURN2(what)               \
