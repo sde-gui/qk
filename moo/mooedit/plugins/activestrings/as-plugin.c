@@ -35,6 +35,7 @@
 #define PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID
 #define FILE_PREFS_KEY PREFS_ROOT "/file"
 
+#define AS_DEBUG 0
 
 typedef struct _ASPlugin ASPlugin;
 typedef struct _ASSet ASSet;
@@ -389,7 +390,9 @@ as_set_new (ASStringInfo **strings,
     }
 
     set->regex = egg_regex_new (pattern->str, EGG_REGEX_ANCHORED, 0, &error);
+#if AS_DEBUG
     g_print ("pattern: %s\n", pattern->str);
+#endif
 
     if (error)
     {
@@ -427,10 +430,12 @@ as_set_new (ASStringInfo **strings,
     set->last_chars = g_memdup (last_chars, len * sizeof (gunichar));
     set->n_last_chars = len;
 
+#if AS_DEBUG
     g_print ("last chars:");
     for (i = 0; i < set->n_last_chars; ++i)
         g_print (" %c", set->last_chars[i]);
     g_print ("\n");
+#endif
 
     for (i = 0; i < n_strings; ++i)
     {
@@ -936,6 +941,7 @@ process_match (MooEdit        *doc,
         }
     }
 
+#if AS_DEBUG
     g_print ("found '%s'", full_text);
 
     if (match->n_parens)
@@ -946,6 +952,7 @@ process_match (MooEdit        *doc,
     }
 
     g_print ("\n");
+#endif
 
     plugin = moo_plugin_lookup (AS_PLUGIN_ID);
     g_return_if_fail (plugin != NULL);
