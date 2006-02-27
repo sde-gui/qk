@@ -355,8 +355,8 @@ moo_app_instance_init (MooApp *app)
     app->priv->info = moo_app_info_new ();
 
     app->priv->info->version = g_strdup (APP_VERSION);
-    app->priv->info->website = g_strdup ("http://ggap.berlios.de/");
-    app->priv->info->website_label = g_strdup ("http://ggap.berlios.de");
+    app->priv->info->website = g_strdup ("http://ggap.sourceforge.net/");
+    app->priv->info->website_label = g_strdup ("http://ggap.sourceforge.net");
 }
 
 
