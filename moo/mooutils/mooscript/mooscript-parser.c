@@ -241,21 +241,32 @@ ms_lex_parse_word (MSLex    *lex,
 }
 
 
-static int
-ms_lex_parse_dot (MSLex    *lex,
-                  G_GNUC_UNUSED MSParser *parser)
-{
-    g_assert (lex->input[lex->ptr] == '.');
+#define THIS            (lex->input[lex->ptr])
+#define NEXT            (lex->input[lex->ptr+1])
 
-    if (lex->input[lex->ptr+1] == '.')
-    {
-        lex->ptr += 2;
-        return TWODOTS;
-    }
+#define RETURN1(what)               \
+G_STMT_START {                      \
+    lex->ptr += 1;                  \
+    return what;                    \
+} G_STMT_END
 
-    lex->ptr++;
-    return '.';
-}
+#define CHECK1(c_, what_)           \
+G_STMT_START {                      \
+    if (THIS == c_)                 \
+        RETURN2 (what_);            \
+} G_STMT_END
+
+#define RETURN2(what)               \
+G_STMT_START {                      \
+    lex->ptr += 2;                  \
+    return what;                    \
+} G_STMT_END
+
+#define CHECK2(c1_, c2_, what_)     \
+G_STMT_START {                      \
+    if (THIS == c1_ && NEXT == c2_) \
+        RETURN2 (what_);            \
+} G_STMT_END
 
 
 int
@@ -287,8 +298,15 @@ _ms_script_yylex (MSParser *parser)
     if (IS_LETTER (c) || c == '_')
         return ms_lex_parse_word (lex, parser);
 
-    if (c == '.')
-        return ms_lex_parse_dot (lex, parser);
+    CHECK2 ('.', '.', TWODOTS);
+    CHECK2 ('=', '=', EQ);
+    CHECK2 ('!', '=', NEQ);
+    CHECK2 ('&', '&', AND);
+    CHECK2 ('|', '|', OR);
+    CHECK2 ('<', '=', LE);
+    CHECK2 ('>', '=', GE);
+
+    CHECK1 ('!', NOT);
 
     lex->ptr++;
     return c;

@@ -1,4 +1,4 @@
-EXTRA_PROGRAMS += medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold
+EXTRA_PROGRAMS += medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold script
 bin_PROGRAMS =
 
 
@@ -95,6 +95,18 @@ langparser_SOURCES = tests/testparser.c
 if !MOO_BUILD_LIB
 langparser_SOURCES += $(libmoo_sources)
 nodist_langparser_SOURCES = $(nodist_libmoo_sources)
+endif
+
+
+##############################################################################
+##  script
+##
+script_LDFLAGS = $(ldflags)
+script_LDADD = $(ldadd)
+script_SOURCES = tests/script.c
+if !MOO_BUILD_LIB
+script_SOURCES += $(libmoo_sources)
+nodist_script_SOURCES = $(nodist_libmoo_sources)
 endif
 
 
