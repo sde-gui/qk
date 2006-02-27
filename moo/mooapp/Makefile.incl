@@ -21,10 +21,20 @@ mooapp_sources =                              \
     $(mooapp)/mooappinput.c                   \
     $(mooapp)/mooappinput.h                   \
     $(mooapp)/mooappoutput.c                  \
-    $(mooapp)/mooappoutput.h
+    $(mooapp)/mooappoutput.h                  \
+    $(mooapp)/moohelp.c                       \
+    $(mooapp)/moohelp.h
+
+if MOO_USE_XML
+mooapp_sources +=                             \
+    $(mooapp)/moohtml.c                       \
+    $(mooapp)/moohtml.h
+endif
 
 mooapp_extra_dist =                           \
-    $(mooapp)/gpl
+    $(mooapp)/gpl                             \
+    $(mooapp)/moohtml.c                       \
+    $(mooapp)/moohtml.h
 
 $(mooapp)/mooappabout-glade.h: $(mooapp_srcdir)/glade/mooappabout.glade $(XML2H)
 	mkdir -p $(mooapp)
