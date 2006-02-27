@@ -15,6 +15,7 @@
 #include "mooscript-node.h"
 #include "mooscript-func.h"
 #include "mooscript-context.h"
+#include "mooutils/moopython.h"
 #include <string.h>
 
 #define UNREF(obj_)             \
@@ -1005,6 +1006,76 @@ ms_node_val_range_new (MSNode *first,
     node->type = MS_VAL_RANGE;
     node->first = g_object_ref (first);
     node->last = g_object_ref (last);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodePython
+ */
+
+G_DEFINE_TYPE(MSNodePython, ms_node_python, MS_TYPE_NODE)
+
+
+static void
+ms_node_python_finalize (GObject *object)
+{
+    g_free (MS_NODE_PYTHON(object)->script);
+    G_OBJECT_CLASS(ms_node_python_parent_class)->finalize (object);
+}
+
+
+static MSValue *
+ms_node_python_eval (MSNode    *node_,
+                     MSContext *ctx)
+{
+    MSNodePython *node = MS_NODE_PYTHON (node_);
+    MooPyObject *ret;
+
+    if (!moo_python_running())
+        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                        "Python support not available");
+
+    ret = moo_python_run_string (node->script);
+
+    if (ret)
+    {
+        moo_Py_DECREF (ret);
+        return ms_value_none ();
+    }
+    else
+    {
+        moo_PyErr_Print ();
+        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                        "python script raised exception");
+    }
+}
+
+
+static void
+ms_node_python_class_init (MSNodePythonClass *klass)
+{
+    G_OBJECT_CLASS(klass)->finalize = ms_node_python_finalize;
+    MS_NODE_CLASS(klass)->eval = ms_node_python_eval;
+}
+
+
+static void
+ms_node_python_init (G_GNUC_UNUSED MSNodePython *node)
+{
+}
+
+
+MSNodePython *
+ms_node_python_new (const char *script)
+{
+    MSNodePython *node;
+
+    g_return_val_if_fail (script != NULL, NULL);
+
+    node = g_object_new (MS_TYPE_NODE_PYTHON, NULL);
+    node->script = g_strdup (script);
 
     return node;
 }

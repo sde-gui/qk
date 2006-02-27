@@ -218,12 +218,12 @@ ms_value_unref (MSValue *val)
 const char *
 ms_binary_op_name (MSBinaryOp op)
 {
-    static const char *names[MS_BINARY_OP_LMST] = {
+    static const char *names[MS_BINARY_OP_LAST] = {
         "@PLUS", "@MINUS", "@MULT", "@DIV", "@AND", "@OR",
         "@EQ", "@NEQ", "@LT", "@GT", "@LE", "@GE", "@FORMAT"
     };
 
-    g_return_val_if_fail (op < MS_BINARY_OP_LMST, NULL);
+    g_return_val_if_fail (op < MS_BINARY_OP_LAST, NULL);
     return names[op];
 }
 
@@ -231,11 +231,11 @@ ms_binary_op_name (MSBinaryOp op)
 const char *
 ms_unary_op_name (MSUnaryOp op)
 {
-    static const char *names[MS_UNARY_OP_LMST] = {
+    static const char *names[MS_UNARY_OP_LAST] = {
         "@UMINUS", "@NOT", "@LEN"
     };
 
-    g_return_val_if_fail (op < MS_UNARY_OP_LMST, NULL);
+    g_return_val_if_fail (op < MS_UNARY_OP_LAST, NULL);
     return names[op];
 }
 
@@ -808,14 +808,14 @@ func_format (MSValue *format, MSValue *tuple, MSContext *ctx)
 gpointer
 ms_binary_op_cfunc (MSBinaryOp op)
 {
-    static gpointer funcs[MS_BINARY_OP_LMST] = {
+    static gpointer funcs[MS_BINARY_OP_LAST] = {
         func_plus, func_minus, func_mult, func_div,
         func_and, func_or,
         func_eq, func_neq, func_lt, func_gt, func_le, func_ge,
         func_format
     };
 
-    g_return_val_if_fail (op < MS_BINARY_OP_LMST, NULL);
+    g_return_val_if_fail (op < MS_BINARY_OP_LAST, NULL);
     return funcs[op];
 }
 
@@ -857,10 +857,10 @@ func_len (MSValue    *val,
 gpointer
 ms_unary_op_cfunc (MSUnaryOp op)
 {
-    static gpointer funcs[MS_UNARY_OP_LMST] = {
+    static gpointer funcs[MS_UNARY_OP_LAST] = {
         func_uminus, func_not, func_len
     };
 
-    g_return_val_if_fail (op < MS_UNARY_OP_LMST, NULL);
+    g_return_val_if_fail (op < MS_UNARY_OP_LAST, NULL);
     return funcs[op];
 }

@@ -72,6 +72,8 @@ MSNode     *_ms_parser_node_int         (MSParser   *parser,
                                          int         n);
 MSNode     *_ms_parser_node_string      (MSParser   *parser,
                                          const char *string);
+MSNode     *_ms_parser_node_python      (MSParser   *parser,
+                                         const char *string);
 MSNode     *_ms_parser_node_value_list  (MSParser   *parser,
                                          MSNodeList *list);
 MSNode     *_ms_parser_node_value_range (MSParser   *parser,

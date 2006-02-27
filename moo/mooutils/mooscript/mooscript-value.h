@@ -45,14 +45,14 @@ typedef enum {
     MS_OP_LE,
     MS_OP_GE,
     MS_OP_FORMAT,
-    MS_BINARY_OP_LMST
+    MS_BINARY_OP_LAST
 } MSBinaryOp;
 
 typedef enum {
     MS_OP_UMINUS,
     MS_OP_NOT,
     MS_OP_LEN,
-    MS_UNARY_OP_LMST
+    MS_UNARY_OP_LAST
 } MSUnaryOp;
 
 struct _MSValue {

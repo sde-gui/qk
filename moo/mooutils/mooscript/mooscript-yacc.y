@@ -13,6 +13,7 @@
 #define UNARY_OP(op, val)                   _ms_parser_node_unary_op (parser, op, val)
 #define NODE_NUMBER(n)                      _ms_parser_node_int (parser, n)
 #define NODE_STRING(n)                      _ms_parser_node_string (parser, n)
+#define NODE_PYTHON(string)                 _ms_parser_node_python (parser, string)
 #define NODE_VALUE_LIST(list)               _ms_parser_node_value_list (parser, MS_NODE_LIST (list))
 #define NODE_VALUE_RANGE(first,second)      _ms_parser_node_value_range (parser, first, second)
 #define NODE_VAR(string)                    _ms_parser_node_var (parser, string)
@@ -31,9 +32,10 @@
 %token <str> IDENTIFIER
 %token <str> LITERAL
 %token <str> VARIABLE
+%token <str> PYTHON
 %token <ival> NUMBER
 
-%type <node> program stmt
+%type <node> program stmt stmt_or_python
 %type <node> function if_stmt ternary loop assignment
 %type <node> simple_expr compound_expr expr variable list_elms
 
@@ -64,8 +66,13 @@
 script:   program           { SET_TOP_NODE ($1); }
 ;
 
-program:  stmt ';'          { $$ = NODE_LIST_ADD (NULL, $1); }
-        | program stmt ';'  { $$ = NODE_LIST_ADD ($1, $2); }
+program:  stmt_or_python            { $$ = NODE_LIST_ADD (NULL, $1); }
+        | program stmt_or_python    { $$ = NODE_LIST_ADD ($1, $2); }
+;
+
+stmt_or_python:
+          stmt ';'          { $$ = $1; }
+        | PYTHON            { $$ = NODE_PYTHON ($1); }
 ;
 
 stmt:   /* empty */         { $$ = NULL; }

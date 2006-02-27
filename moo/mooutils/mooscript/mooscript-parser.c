@@ -54,7 +54,8 @@ struct _MSParser {
 
 
 #define IS_QUOTE(c__)   (c__ == '"' || c__ == '\'')
-#define IS_SPACE(c__)   (c__ == ' ' || c__ == '\t' || c__ == '\r' || c__ == '\n')
+#define IS_EOL(c__)     (c__ == '\r' || c__ == '\n')
+#define IS_SPACE(c__)   (c__ == ' ' || c__ == '\t' || IS_EOL (c__))
 #define IS_DIGIT(c__)   ('0' <= c__ && c__ <= '9')
 #define IS_LETTER(c__)  (('a' <= c__ && c__ <= 'z') || ('A' <= c__ && c__ <= 'Z'))
 #define IS_WORD(c__)    (IS_LETTER (c__) || IS_DIGIT (c__) || c__ == '_')
@@ -71,10 +72,15 @@ ms_lex_error (MSParser *parser)
 static char *
 ms_lex_add_string (MSLex      *lex,
                    const char *string,
-                   guint       len)
+                   int         len)
 {
     gpointer orig, dummy;
-    char *copy = g_strndup (string, len);
+    char *copy;
+
+    if (len < 0)
+        len = strlen (string);
+
+    copy = g_strndup (string, len);
 
     if (g_hash_table_lookup_extended (lex->hash, copy, &orig, &dummy))
     {
@@ -241,8 +247,45 @@ ms_lex_parse_word (MSLex    *lex,
 }
 
 
+static int
+ms_lex_parse_python (MSLex *lex)
+{
+    guint ptr = lex->ptr;
+    const char *input = (const char *) lex->input;
+
+    g_assert (input[ptr] == input[ptr+1] &&
+              input[ptr+1] == input[ptr+2] &&
+              input[ptr] == '=');
+
+    while (TRUE)
+    {
+        while (ptr < lex->len && !IS_EOL(input[ptr]))
+            ptr++;
+
+        if (ptr == lex->len)
+        {
+            _ms_script_yylval.str = ms_lex_add_string (lex, input + lex->ptr + 3, -1);
+            lex->ptr = lex->len;
+            return PYTHON;
+        }
+
+        while (IS_EOL (input[ptr]))
+            ptr++;
+
+        if (input[ptr] == '=' && input[ptr+1] == '=' && input[ptr+2] == '=')
+        {
+            _ms_script_yylval.str = ms_lex_add_string (lex, input + lex->ptr + 3,
+                                                       ptr - lex->ptr - 3);
+            lex->ptr = ptr + 3;
+            return PYTHON;
+        }
+    }
+}
+
+
 #define THIS            (lex->input[lex->ptr])
 #define NEXT            (lex->input[lex->ptr+1])
+#define NEXT2           (lex->input[lex->ptr+2])
 
 #define RETURN1(what)               \
 G_STMT_START {                      \
@@ -287,6 +330,21 @@ _ms_script_yylex (MSParser *parser)
     {
         g_warning ("got unicode character");
         return ms_lex_error (parser);
+    }
+
+    if (c == '=' && NEXT == '=' && NEXT2 == '=')
+        return ms_lex_parse_python (lex);
+
+    if (c == '#')
+    {
+        while (lex->ptr < lex->len && !IS_EOL(lex->input[lex->ptr]))
+            lex->ptr++;
+
+        if (lex->ptr == lex->len)
+            return 0;
+
+        lex->ptr++;
+        return _ms_script_yylex (parser);
     }
 
     if (IS_QUOTE (c))
@@ -630,6 +688,19 @@ _ms_parser_node_string (MSParser   *parser,
     value = ms_value_string (string);
     node = ms_node_value_new (value);
     ms_value_unref (value);
+    parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+MSNode *
+_ms_parser_node_python (MSParser   *parser,
+                        const char *string)
+{
+    MSNodePython *node;
+
+    node = ms_node_python_new (string);
     parser_add_node (parser, node);
 
     return MS_NODE (node);

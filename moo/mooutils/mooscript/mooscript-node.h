@@ -90,6 +90,13 @@ G_BEGIN_DECLS
 #define MS_IS_NODE_VAL_LIST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_VAL_LIST))
 #define MS_NODE_VAL_LIST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_VAL_LIST, MSNodeValListClass))
 
+#define MS_TYPE_NODE_PYTHON              (ms_node_python_get_type ())
+#define MS_NODE_PYTHON(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_NODE_PYTHON, MSNodePython))
+#define MS_NODE_PYTHON_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_NODE_PYTHON, MSNodePythonClass))
+#define MS_IS_NODE_PYTHON(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_NODE_PYTHON))
+#define MS_IS_NODE_PYTHON_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_NODE_PYTHON))
+#define MS_NODE_PYTHON_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_NODE_PYTHON, MSNodePythonClass))
+
 typedef struct _MSNode MSNode;
 typedef struct _MSNodeClass MSNodeClass;
 typedef struct _MSNodeList MSNodeList;
@@ -110,6 +117,8 @@ typedef struct _MSNodeValue MSNodeValue;
 typedef struct _MSNodeValueClass MSNodeValueClass;
 typedef struct _MSNodeValList MSNodeValList;
 typedef struct _MSNodeValListClass MSNodeValListClass;
+typedef struct _MSNodePython MSNodePython;
+typedef struct _MSNodePythonClass MSNodePythonClass;
 
 
 typedef MSValue* (*MSNodeEval) (MSNode *node, MSContext *ctx);
@@ -220,6 +229,16 @@ struct _MSNodeValueClass {
 };
 
 
+struct _MSNodePython {
+    MSNode node;
+    char *script;
+};
+
+struct _MSNodePythonClass {
+    MSNodeClass node_class;
+};
+
+
 typedef enum {
     MS_VAL_LIST,
     MS_VAL_RANGE
@@ -248,6 +267,7 @@ GType           ms_node_for_get_type        (void) G_GNUC_CONST;
 GType           ms_node_assign_get_type     (void) G_GNUC_CONST;
 GType           ms_node_val_list_get_type   (void) G_GNUC_CONST;
 GType           ms_node_value_get_type      (void) G_GNUC_CONST;
+GType           ms_node_python_get_type     (void) G_GNUC_CONST;
 
 MSValue        *ms_node_eval                (MSNode     *node,
                                              MSContext  *ctx);
@@ -284,6 +304,8 @@ MSNodeValList  *ms_node_val_range_new       (MSNode     *first,
                                              MSNode     *last);
 
 MSNodeVar      *ms_node_var_new             (const char *name);
+
+MSNodePython   *ms_node_python_new          (const char *script);
 
 
 G_END_DECLS

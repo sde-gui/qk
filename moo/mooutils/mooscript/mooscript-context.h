@@ -41,7 +41,8 @@ typedef enum {
     MS_ERROR_TYPE,
     MS_ERROR_VALUE,
     MS_ERROR_NAME,
-    MS_ERROR_LMST
+    MS_ERROR_RUNTIME,
+    MS_ERROR_LAST
 } MSError;
 
 typedef void (*MSPrintFunc) (const char *string,
@@ -71,6 +72,7 @@ MSVariable  *ms_variable_ref                (MSVariable *var);
 void         ms_variable_unref              (MSVariable *var);
 
 MSContext   *ms_context_new                 (void);
+void         _ms_context_add_builtin        (MSContext  *ctx);
 
 MSValue     *ms_context_eval_variable       (MSContext  *ctx,
                                              const char *name);

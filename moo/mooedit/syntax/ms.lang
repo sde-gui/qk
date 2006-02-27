@@ -6,12 +6,17 @@
 
   <syntax>
     <context name="Normal">
+      <String string="===" bol-only="TRUE" context="Python" style="Python"/>
       <Char char="&quot;" context="String" style="String"/>
       <Char char="&apos;" context="String" style="String"/>
       <Char char="#" context="Comment" style="Comment"/>
       <Keyword keyword="Keyword" style="Keyword"/>
       <Keyword keyword="SpecialVars" style="SpecialVars"/>
       <Regex pattern="\b[_\w][_\w\d]*(?=[\s]*[(])" style="Function"/>
+    </context>
+    <context name="Python" eol-context="#stay">
+      <String string="===" bol-only="TRUE" context="#pop" style="Python"/>
+      <IncludeRules from="##Python##Normal"/>
     </context>
     <context name="String" style="String" eol-context="#pop">
       <Char char="&quot;" context="#pop" style="String"/>
@@ -49,9 +54,11 @@
     <style name="Keyword"     default-style="Keyword"/>
     <style name="SpecialVars" default-style="Others" bold="TRUE"/>
     <style name="Function"    default-style="Function"/>
+    <style name="Python"      default-style="Others" bold="TRUE"/>
   </styles>
 
   <general>
+    <brackets>()[]</brackets>
     <comments>
       <single-line start="#"/>
     </comments>

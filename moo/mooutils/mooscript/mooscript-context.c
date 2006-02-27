@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-script-context.c
+ *   mooscript-context.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -75,51 +75,6 @@ default_print_func (const char  *string,
 }
 
 
-static MSValue*
-print_func (MSValue   **args,
-            guint       n_args,
-            MSContext  *ctx)
-{
-    guint i;
-
-    for (i = 0; i < n_args; ++i)
-    {
-        char *s = ms_value_print (args[i]);
-        ctx->print_func (s, ctx);
-        g_free (s);
-    }
-
-    ctx->print_func ("\n", ctx);
-    return ms_value_none ();
-}
-
-
-static void
-add_builtin_funcs (MSContext *ctx)
-{
-    guint i;
-    MSFunc *func;
-
-    for (i = 0; i < MS_BINARY_OP_LMST; ++i)
-    {
-        func = ms_cfunc_new_2 (ms_binary_op_cfunc (i));
-        ms_context_set_func (ctx, ms_binary_op_name (i), func);
-        g_object_unref (func);
-    }
-
-    for (i = 0; i < MS_UNARY_OP_LMST; ++i)
-    {
-        func = ms_cfunc_new_1 (ms_unary_op_cfunc (i));
-        ms_context_set_func (ctx, ms_unary_op_name (i), func);
-        g_object_unref (func);
-    }
-
-    func = ms_cfunc_new_var (print_func);
-    ms_context_set_func (ctx, "print", func);
-    g_object_unref (func);
-}
-
-
 static void
 ms_context_init (MSContext *ctx)
 {
@@ -129,7 +84,8 @@ ms_context_init (MSContext *ctx)
                                        (GDestroyNotify) ms_variable_unref);
 
     ctx->print_func = default_print_func;
-    add_builtin_funcs (ctx);
+
+    _ms_context_add_builtin (ctx);
 }
 
 
@@ -400,12 +356,13 @@ ms_context_clear_error (MSContext *ctx)
 const char *
 ms_context_get_error_msg (MSContext *ctx)
 {
-    static const char *msgs[MS_ERROR_LMST] = {
-        NULL, "Type error", "Value error", "Name error"
+    static const char *msgs[MS_ERROR_LAST] = {
+        NULL, "Type error", "Value error", "Name error",
+        "Runtime error"
     };
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (ctx->error < MS_ERROR_LMST, NULL);
+    g_return_val_if_fail (ctx->error < MS_ERROR_LAST, NULL);
 
     if (ctx->error_msg)
         return ctx->error_msg;

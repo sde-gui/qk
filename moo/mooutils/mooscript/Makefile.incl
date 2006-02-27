@@ -14,6 +14,7 @@ $(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript-yacc.y
 	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
 
 mooscript_sources =                     \
+    $(mooscript)/mooscript-builtin.c    \
     $(mooscript)/mooscript-context.c    \
     $(mooscript)/mooscript-context.h    \
     $(mooscript)/mooscript-func.c       \
