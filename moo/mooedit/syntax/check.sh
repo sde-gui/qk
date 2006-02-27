@@ -1,6 +1,6 @@
 #!/bin/sh
 
-langs="c.lang diff.lang misc.lang make.lang python.lang python-console.lang sh.lang xml.lang sci.lang gap.lang scheme.lang"
+langs="c.lang diff.lang misc.lang make.lang ms.lang python.lang python-console.lang sh.lang xml.lang sci.lang gap.lang scheme.lang"
 styles="garnacho.styles gvim.styles"
 files="$langs $styles"
 

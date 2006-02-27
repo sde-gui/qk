@@ -11,6 +11,7 @@ mooedit_syntax_DATA =                         \
     $(mooedit_syntax)/gap.lang                \
     $(mooedit_syntax)/make.lang               \
     $(mooedit_syntax)/misc.lang               \
+    $(mooedit_syntax)/ms.lang                 \
     $(mooedit_syntax)/python.lang             \
     $(mooedit_syntax)/python-console.lang     \
     $(mooedit_syntax)/scheme.lang             \

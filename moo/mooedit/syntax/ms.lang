@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- kate: space-indent on; indent-width 2; strip on; -->
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="MooScript" version="1.0" section="Scripts"
+          mimetypes="text/x-mooscript;application/x-mooscript"
+          extensions="*.ms">
+
+  <syntax>
+    <context name="Normal">
+      <Char char="&quot;" context="String" style="String"/>
+      <Char char="&apos;" context="String" style="String"/>
+      <Char char="#" context="Comment" style="Comment"/>
+      <Keyword keyword="Keyword" style="Keyword"/>
+      <Keyword keyword="SpecialVars" style="SpecialVars"/>
+      <Regex pattern="\b[_\w][_\w\d]*(?=[\s]*[(])" style="Function"/>
+    </context>
+    <context name="String" style="String" eol-context="#pop">
+      <Char char="&quot;" context="#pop" style="String"/>
+    </context>
+    <context name="Comment" style="Comment" eol-context="#pop">
+      <IncludeRules from="##Misc##AlertRules"/>
+    </context>
+
+    <keyword-list name="Keyword">
+      <keyword>and</keyword>
+      <keyword>do</keyword>
+      <keyword>elif</keyword>
+      <keyword>else</keyword>
+      <keyword>fi</keyword>
+      <keyword>for</keyword>
+      <keyword>if</keyword>
+      <keyword>in</keyword>
+      <keyword>not</keyword>
+      <keyword>od</keyword>
+      <keyword>or</keyword>
+      <keyword>then</keyword>
+      <keyword>while</keyword>
+    </keyword-list>
+
+    <keyword-list name="SpecialVars">
+      <keyword>false</keyword>
+      <keyword>none</keyword>
+      <keyword>true</keyword>
+    </keyword-list>
+  </syntax>
+
+  <styles>
+    <style name="String"      default-style="String"/>
+    <style name="Comment"     default-style="Comment"/>
+    <style name="Keyword"     default-style="Keyword"/>
+    <style name="SpecialVars" default-style="Others" bold="TRUE"/>
+    <style name="Function"    default-style="Function"/>
+  </styles>
+
+  <general>
+    <comments>
+      <single-line start="#"/>
+    </comments>
+  </general>
+
+  <sample-code>## This is a comment
+## TODO: do something
+  for i in [1..100] do
+    Print("Hello world!");
+  od;
+</sample-code>
+
+</language>
