@@ -91,7 +91,7 @@ message_dialog (MSValue      **args,
         dialog_text = ms_value_print (args[0]);
 
     dialog = gtk_message_dialog_new (ctx->window,
-                                     GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+                                     GTK_DIALOG_MODAL,
                                      type, GTK_BUTTONS_NONE,
                                      "%s", dialog_text ? dialog_text : "");
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
