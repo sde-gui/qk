@@ -597,7 +597,7 @@ hl_compute_range (MooHighlighter *hl,
         Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
         MatchData match_data;
 
-        g_assert (line->hl_info->tags || !line->hl_info->tags_applied || !line->hl_info->n_segments);
+//         g_assert (line->hl_info->tags || !line->hl_info->tags_applied || !line->hl_info->n_segments);
         g_assert (line_no == gtk_text_iter_get_line (&iter));
 
         line->hl_info->start_node = node;
