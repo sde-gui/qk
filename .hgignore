@@ -19,3 +19,5 @@ missing
 .*~
 .*\.pcs
 .*\.kdevses
+.*\.gladep
+.*\.bak

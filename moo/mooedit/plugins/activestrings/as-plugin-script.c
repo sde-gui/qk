@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   ms-plugin-script.c
+ *   as-plugin-script.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,37 +12,37 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "ms-plugin-script.h"
+#include "as-plugin-script.h"
 
 
-static void ms_plugin_context_init_api  (MSPluginContext    *ctx);
+static void as_plugin_context_init_api  (ASPluginContext    *ctx);
 
 
-G_DEFINE_TYPE (MSPluginContext, _ms_plugin_context, MS_TYPE_CONTEXT)
+G_DEFINE_TYPE (ASPluginContext, _as_plugin_context, MS_TYPE_CONTEXT)
 
 
 static void
-_ms_plugin_context_init (MSPluginContext *ctx)
+_as_plugin_context_init (ASPluginContext *ctx)
 {
-    ms_plugin_context_init_api (ctx);
+    as_plugin_context_init_api (ctx);
 }
 
 
 static void
-_ms_plugin_context_class_init (G_GNUC_UNUSED MSPluginContextClass *klass)
+_as_plugin_context_class_init (G_GNUC_UNUSED ASPluginContextClass *klass)
 {
 }
 
 
 MSContext *
-_ms_plugin_context_new (void)
+_as_plugin_context_new (void)
 {
-    return g_object_new (MS_TYPE_PLUGIN_CONTEXT, NULL);
+    return g_object_new (AS_TYPE_PLUGIN_CONTEXT, NULL);
 }
 
 
 static void
-ms_plugin_context_setup (MSPluginContext *ctx,
+as_plugin_context_setup (ASPluginContext *ctx,
                          MooEdit         *doc,
                          char            *match,
                          char           **parens,
@@ -67,7 +67,7 @@ ms_plugin_context_setup (MSPluginContext *ctx,
 
 
 static void
-ms_plugin_context_clear (MSPluginContext *ctx,
+as_plugin_context_clear (ASPluginContext *ctx,
                          guint            n_parens)
 {
     guint i;
@@ -81,7 +81,7 @@ ms_plugin_context_clear (MSPluginContext *ctx,
 
 
 gboolean
-_ms_plugin_context_exec (MSContext      *ctx,
+_as_plugin_context_exec (MSContext      *ctx,
                          MSNode         *script,
                          MooEdit        *doc,
                          GtkTextIter    *insert,
@@ -92,14 +92,14 @@ _ms_plugin_context_exec (MSContext      *ctx,
     MSValue *val;
     gboolean success;
 
-    g_return_val_if_fail (MS_IS_PLUGIN_CONTEXT (ctx), FALSE);
+    g_return_val_if_fail (AS_IS_PLUGIN_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (MS_IS_NODE (script), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
     g_return_val_if_fail (insert != NULL, FALSE);
     g_return_val_if_fail (match != NULL, FALSE);
     g_return_val_if_fail (!n_parens || parens, FALSE);
 
-    ms_plugin_context_setup (MS_PLUGIN_CONTEXT (ctx),
+    as_plugin_context_setup (AS_PLUGIN_CONTEXT (ctx),
                              doc, match, parens, n_parens);
 
     val = ms_node_eval (script, ctx);
@@ -114,7 +114,7 @@ _ms_plugin_context_exec (MSContext      *ctx,
         ms_context_clear_error (ctx);
     }
 
-    ms_plugin_context_clear (MS_PLUGIN_CONTEXT (ctx), n_parens);
+    as_plugin_context_clear (AS_PLUGIN_CONTEXT (ctx), n_parens);
 
     return success;
 }
@@ -134,7 +134,7 @@ enum {
 
 
 static const char *builtin_func_names[N_BUILTIN_FUNCS] = {
-    "bs", "del", "ins", "up", "down", "left", "right", "sel"
+    "Bs", "Del", "Ins", "Up", "Down", "Left", "Right", "Sel"
 };
 
 static MSFunc *builtin_funcs[N_BUILTIN_FUNCS];
@@ -143,7 +143,7 @@ static MSFunc *builtin_funcs[N_BUILTIN_FUNCS];
 static gboolean
 check_one_arg (MSValue          **args,
                guint              n_args,
-               MSPluginContext   *ctx,
+               ASPluginContext   *ctx,
                gboolean           nonnegative,
                int               *dest,
                int                default_val)
@@ -185,7 +185,7 @@ check_one_arg (MSValue          **args,
 static MSValue *
 cfunc_bs (MSValue          **args,
           guint              n_args,
-          MSPluginContext   *ctx)
+          ASPluginContext   *ctx)
 {
     int n;
     GtkTextIter start, end;
@@ -218,7 +218,7 @@ cfunc_bs (MSValue          **args,
 static MSValue *
 cfunc_del (MSValue          **args,
            guint              n_args,
-           MSPluginContext   *ctx)
+           ASPluginContext   *ctx)
 {
     int n;
     GtkTextIter start, end;
@@ -268,7 +268,7 @@ get_cursor (MooEdit *doc,
 static MSValue *
 cfunc_up (MSValue          **args,
           guint              n_args,
-          MSPluginContext   *ctx)
+          ASPluginContext   *ctx)
 {
     int line, col, n;
 
@@ -292,7 +292,7 @@ cfunc_up (MSValue          **args,
 static MSValue *
 cfunc_down (MSValue          **args,
             guint              n_args,
-            MSPluginContext   *ctx)
+            ASPluginContext   *ctx)
 {
     int line, col, n, line_count;
     GtkTextBuffer *buffer;
@@ -317,7 +317,7 @@ cfunc_down (MSValue          **args,
 
 static MSValue *
 cfunc_sel (MSValue           *arg,
-           MSPluginContext   *ctx)
+           ASPluginContext   *ctx)
 {
     int n;
     GtkTextBuffer *buffer;
@@ -362,7 +362,7 @@ move_cursor (MooEdit *doc,
 static MSValue *
 cfunc_left (MSValue          **args,
             guint              n_args,
-            MSPluginContext   *ctx)
+            ASPluginContext   *ctx)
 {
     int n;
 
@@ -377,7 +377,7 @@ cfunc_left (MSValue          **args,
 static MSValue *
 cfunc_right (MSValue          **args,
              guint              n_args,
-             MSPluginContext   *ctx)
+             ASPluginContext   *ctx)
 {
     int n;
 
@@ -392,7 +392,7 @@ cfunc_right (MSValue          **args,
 static MSValue *
 cfunc_ins (MSValue          **args,
            guint              n_args,
-           MSPluginContext   *ctx)
+           ASPluginContext   *ctx)
 {
     guint i;
     GtkTextIter start, end;
@@ -435,7 +435,7 @@ init_api (void)
 
 
 static void
-ms_plugin_context_init_api (MSPluginContext *ctx)
+as_plugin_context_init_api (ASPluginContext *ctx)
 {
     guint i;
 
