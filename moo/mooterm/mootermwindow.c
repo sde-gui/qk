@@ -21,12 +21,15 @@
 
 
 static void         moo_term_window_class_init          (MooTermWindowClass *klass);
-static void         moo_term_window_init                (MooTermWindow     *window);
-static GObject     *moo_term_window_constructor         (GType                  type,
-                                                         guint                  n_props,
+static void         moo_term_window_init                (MooTermWindow      *window);
+static GObject     *moo_term_window_constructor         (GType               type,
+                                                         guint               n_props,
                                                          GObjectConstructParam *props);
 
-static void         moo_term_window_save_selection      (MooTermWindow *window);
+static void         moo_term_window_save_selection      (MooTermWindow      *window);
+
+static void         copy_clipboard                      (MooTerm            *term);
+static void         paste_clipboard                     (MooTerm            *term);
 
 
 /* MOO_TYPE_TERM_WINDOW */
@@ -57,7 +60,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "tooltip", "Copy",
                                  "icon-stock-id", GTK_STOCK_COPY,
                                  "accel", "<alt>C",
-                                 "closure-callback", moo_term_copy_clipboard,
+                                 "closure-callback", copy_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
@@ -67,7 +70,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
                                  "tooltip", "Paste",
                                  "icon-stock-id", GTK_STOCK_PASTE,
                                  "accel", "<alt>V",
-                                 "closure-callback", moo_term_paste_clipboard,
+                                 "closure-callback", paste_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
@@ -216,4 +219,18 @@ moo_term_window_set_term_type (MooTermWindow  *window,
     g_return_if_fail (g_type_is_a (type, MOO_TYPE_TERM));
     g_return_if_fail (window->terminal == NULL);
     window->term_type = type;
+}
+
+
+static void
+copy_clipboard (MooTerm *term)
+{
+    moo_term_copy_clipboard (term, GDK_SELECTION_CLIPBOARD);
+}
+
+
+static void
+paste_clipboard (MooTerm *term)
+{
+    moo_term_paste_clipboard (term, GDK_SELECTION_CLIPBOARD);
 }
