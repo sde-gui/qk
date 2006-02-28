@@ -57,6 +57,7 @@ struct _ASPlugin {
     MSContext *ctx;
     GHashTable *lang_sets;
     ASSet *any_lang;
+    GSList *docs;
 };
 
 struct _ASStringInfo {
@@ -768,22 +769,6 @@ as_plugin_deinit (ASPlugin   *plugin)
 }
 
 
-void
-_as_plugin_reload (MooPlugin *plugin)
-{
-    as_plugin_deinit ((ASPlugin*) plugin);
-    as_plugin_init ((ASPlugin*) plugin);
-}
-
-
-static void
-free_sets_list (GSList *list)
-{
-    g_slist_foreach (list, (GFunc) as_set_unref, NULL);
-    g_slist_free (list);
-}
-
-
 static GSList *
 as_plugin_get_doc_sets (ASPlugin   *plugin,
                         MooEdit    *doc)
@@ -806,6 +791,14 @@ as_plugin_get_doc_sets (ASPlugin   *plugin,
 
     g_free (lang);
     return list;
+}
+
+
+static void
+free_sets_list (GSList *list)
+{
+    g_slist_foreach (list, (GFunc) as_set_unref, NULL);
+    g_slist_free (list);
 }
 
 
@@ -840,13 +833,33 @@ as_plugin_disconnect_doc (G_GNUC_UNUSED ASPlugin *plugin,
 
 
 static void
+as_plugin_reconnect_doc (MooEdit  *doc,
+                         ASPlugin *plugin)
+{
+    as_plugin_disconnect_doc (plugin, doc);
+    as_plugin_connect_doc (plugin, doc);
+}
+
+
+void
+_as_plugin_reload (MooPlugin *mplugin)
+{
+    ASPlugin *plugin = (ASPlugin*) mplugin;
+    as_plugin_deinit (plugin);
+    as_plugin_init (plugin);
+    g_slist_foreach (plugin->docs,
+                     (GFunc) as_plugin_reconnect_doc,
+                     plugin);
+}
+
+
+static void
 lang_changed (MooEdit    *doc,
               G_GNUC_UNUSED guint var_id,
               G_GNUC_UNUSED GParamSpec *pspec,
               ASPlugin   *plugin)
 {
-    as_plugin_disconnect_doc (plugin, doc);
-    as_plugin_connect_doc (plugin, doc);
+    as_plugin_reconnect_doc (doc, plugin);
 }
 
 
@@ -857,6 +870,7 @@ as_plugin_attach (ASPlugin   *plugin,
     as_plugin_connect_doc (plugin, doc);
     g_signal_connect (doc, "config_notify::lang",
                       G_CALLBACK (lang_changed), plugin);
+    plugin->docs = g_slist_prepend (plugin->docs, doc);
 }
 
 
@@ -864,6 +878,7 @@ static void
 as_plugin_detach (ASPlugin   *plugin,
                   MooEdit    *doc)
 {
+    plugin->docs = g_slist_remove (plugin->docs, doc);
     as_plugin_disconnect_doc (plugin, doc);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) lang_changed, plugin);
 }
