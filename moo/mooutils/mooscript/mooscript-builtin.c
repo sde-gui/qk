@@ -37,6 +37,22 @@ print_func (MSValue   **args,
 }
 
 
+static MSValue *
+len_func (MSValue    *val,
+          MSContext  *ctx)
+{
+    switch (val->type)
+    {
+        case MS_VALUE_STRING:
+            return ms_value_int (g_utf8_strlen (val->str, -1));
+        case MS_VALUE_LIST:
+            return ms_value_int (val->list.n_elms);
+        default:
+            return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
+    }
+}
+
+
 static MSValue*
 abort_func (MSContext *ctx)
 {
@@ -204,6 +220,7 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
     ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
     ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
+    ADD_FUNC (ms_cfunc_new_1, len_func, "Len");
 
     ADD_FUNC_OBJ (ms_zenity_text, "Text");
     ADD_FUNC_OBJ (ms_zenity_entry, "Entry");
