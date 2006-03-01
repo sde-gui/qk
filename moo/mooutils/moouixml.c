@@ -177,8 +177,12 @@ static gboolean fill_menu_shell         (MooUIXML       *xml,
                                          Toplevel       *toplevel,
                                          Node           *menu_node,
                                          GtkMenuShell   *menu);
-static void     update_separators       (Node           *parent,
+
+static void     check_separators        (Node           *parent,
                                          Toplevel       *toplevel);
+static void     check_empty             (Node           *parent,
+                                         GtkWidget      *widget);
+
 static gboolean create_tool_separator   (MooUIXML       *xml,
                                          Toplevel       *toplevel,
                                          GtkToolbar     *toolbar,
@@ -1189,11 +1193,14 @@ moo_ui_xml_remove_node (MooUIXML       *xml,
     parent->children = g_slist_remove (parent->children, node);
     node->parent = NULL;
 
+    while (parent && parent->type == MOO_UI_NODE_PLACEHOLDER)
+        parent = parent->parent;
+
     SLIST_FOREACH (xml->priv->toplevels, l)
     {
         Toplevel *toplevel = l->data;
         if (node_is_ancestor (parent, toplevel->node))
-            update_separators (parent, toplevel);
+            check_separators (parent, toplevel);
     }
     SLIST_FOREACH_END;
 
@@ -1419,13 +1426,28 @@ static GQuark node_quark (void)
 }
 
 
+static Node *
+get_effective_parent (Node *node)
+{
+    Node *parent;
+
+    g_return_val_if_fail (node != NULL && node->parent != NULL, NULL);
+
+    for (parent = node->parent;
+         parent && parent->type == PLACEHOLDER;
+         parent = parent->parent) ;
+
+    return parent;
+}
+
+
 static void
 visibility_notify (GtkWidget *widget,
                    G_GNUC_UNUSED gpointer whatever,
                    MooUIXML  *xml)
 {
     Toplevel *toplevel;
-    Node *node, *parent;
+    Node *node;
 
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
@@ -1437,12 +1459,7 @@ visibility_notify (GtkWidget *widget,
     g_return_if_fail (node != NULL && node->parent != NULL);
     g_return_if_fail (node->type == ITEM);
 
-    parent = node->parent;
-    while (parent->type == PLACEHOLDER)
-        parent = parent->parent;
-
-    /* XXX submenu */
-    update_separators (parent, toplevel);
+    check_separators (get_effective_parent (node), toplevel);
 }
 
 static void
@@ -1688,13 +1705,16 @@ create_menu_item (MooUIXML       *xml,
     if (!node_is_empty (node))
     {
         GtkWidget *submenu = gtk_menu_new ();
-        /* XXX empty menu */
         gtk_widget_show (submenu);
         gtk_menu_set_accel_group (GTK_MENU (submenu), toplevel->accel_group);
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), submenu);
         fill_menu_shell (xml, toplevel, node,
                          GTK_MENU_SHELL (submenu));
     }
+
+    /* XXX completely empty menus? */
+    if (node->children)
+        check_empty (node, menu_item);
 }
 
 
@@ -1787,12 +1807,41 @@ toplevel_get_widget (Toplevel  *toplevel,
 
 
 static void
-update_separators (Node           *parent,
-                   Toplevel       *toplevel)
+check_empty (Node           *parent,
+             GtkWidget      *widget)
+{
+    GSList *children, *l;
+    gboolean has_children = FALSE;
+
+    children = node_list_children (parent);
+
+    for (l = children; l != NULL; l = l->next)
+    {
+        Node *node = l->data;
+
+        if (node->type == MOO_UI_NODE_ITEM)
+        {
+            has_children = TRUE;
+            break;
+        }
+    }
+
+    /* XXX decide something on this stuff */
+    if (!(parent->flags & MOO_UI_NODE_ENABLE_EMPTY))
+        gtk_widget_set_sensitive (widget, has_children);
+
+    g_slist_free (children);
+}
+
+
+static void
+check_separators (Node           *parent,
+                  Toplevel       *toplevel)
 {
     GSList *children, *l;
     Node *separator = NULL;
     gboolean first = TRUE;
+    gboolean has_children = FALSE;
     GtkWidget *widget;
 
     children = node_list_children (parent);
@@ -1808,6 +1857,8 @@ update_separators (Node           *parent,
 
                 if (!widget || !GTK_WIDGET_VISIBLE (widget))
                     continue;
+
+                has_children = TRUE;
 
                 if (!first)
                 {
@@ -1837,6 +1888,11 @@ update_separators (Node           *parent,
                 g_return_if_reached ();
         }
     }
+
+    widget = toplevel_get_widget (toplevel, parent);
+
+    if (widget)
+        check_empty (parent, widget);
 
     g_slist_free (children);
 }
@@ -1873,7 +1929,7 @@ fill_menu_shell (MooUIXML       *xml,
     }
     SLIST_FOREACH_END;
 
-    update_separators (menu_node, toplevel);
+    check_separators (menu_node, toplevel);
 
     return TRUE;
 }
@@ -2077,7 +2133,7 @@ fill_toolbar (MooUIXML       *xml,
     }
     SLIST_FOREACH_END;
 
-    update_separators (toolbar_node, toplevel);
+    check_separators (toolbar_node, toplevel);
 
     return TRUE;
 }
@@ -2242,7 +2298,7 @@ toplevel_add_node (MooUIXML *xml,
                     g_return_if_reached ();
             }
 
-            update_separators (parent, toplevel);
+            check_separators (parent, toplevel);
         }
         else if (IS_MENU_TOOL_BUTTON (parent_widget))
         {
@@ -2271,7 +2327,7 @@ toplevel_add_node (MooUIXML *xml,
                     g_return_if_reached ();
             }
 
-            update_separators (parent, toplevel);
+            check_separators (parent, toplevel);
         }
         else
         {
@@ -2317,7 +2373,7 @@ toplevel_add_node (MooUIXML *xml,
                 g_return_if_reached ();
         }
 
-        update_separators (parent, toplevel);
+        check_separators (parent, toplevel);
     }
     else
     {

@@ -29,6 +29,10 @@ typedef enum {
     MOO_UI_NODE_PLACEHOLDER
 } MooUINodeType;
 
+typedef enum {
+    MOO_UI_NODE_ENABLE_EMPTY = 1 << 0
+} MooUINodeFlags;
+
 typedef struct _MooUINode            MooUINode;
 typedef struct _MooUIWidgetNode      MooUIWidgetNode;
 typedef struct _MooUIItemNode        MooUIItemNode;
@@ -36,39 +40,31 @@ typedef struct _MooUISeparatorNode   MooUISeparatorNode;
 typedef struct _MooUIPlaceholderNode MooUIPlaceholderNode;
 
 
+#define MOO_UI_NODE_STRUCT      \
+    MooUINodeType type;         \
+    char *name;                 \
+    MooUINode *parent;          \
+    GSList *children;           \
+    MooUINodeFlags flags : 1
+
 struct _MooUINode {
-    MooUINodeType type;
-    char *name;
-    MooUINode *parent;
-    GSList *children;
+    MOO_UI_NODE_STRUCT;
 };
 
 struct _MooUIWidgetNode {
-    MooUINodeType type;
-    char *name;
-    MooUINode *parent;
-    GSList *children;
+    MOO_UI_NODE_STRUCT;
 };
 
 struct _MooUISeparatorNode {
-    MooUINodeType type;
-    char *name;
-    MooUINode *parent;
-    GSList *children;
+    MOO_UI_NODE_STRUCT;
 };
 
 struct _MooUIPlaceholderNode {
-    MooUINodeType type;
-    char *name;
-    MooUINode *parent;
-    GSList *children;
+    MOO_UI_NODE_STRUCT;
 };
 
 struct _MooUIItemNode {
-    MooUINodeType type;
-    char *name;
-    MooUINode *parent;
-    GSList *children;
+    MOO_UI_NODE_STRUCT;
 
     char *action;
 
