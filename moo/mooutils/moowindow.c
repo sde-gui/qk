@@ -307,7 +307,6 @@ GObject    *moo_window_constructor      (GType                  type,
     window->menubar = NULL;
     window->toolbar = NULL;
 
-    window->vbox = gtk_vbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (vbox), window->vbox, TRUE, TRUE, 0);
     window->statusbar = gtk_statusbar_new ();
     gtk_box_pack_start (GTK_BOX (vbox), window->statusbar, FALSE, FALSE, 0);
@@ -344,6 +343,7 @@ GObject    *moo_window_constructor      (GType                  type,
 static void moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
+    window->vbox = gtk_vbox_new (FALSE, 0);
 }
 
 
