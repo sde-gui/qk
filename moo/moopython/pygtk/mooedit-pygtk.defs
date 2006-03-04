@@ -353,7 +353,7 @@
   (parameters
     '("GError**" "error")
   )
-  (return-type "none")
+  (return-type "gboolean")
   (docstring "save() -> None - saves document.\n"
              "\n"
              "Saves document and raises gobject.GError on error.\n"
