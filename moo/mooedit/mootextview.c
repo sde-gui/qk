@@ -423,7 +423,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("enable-quick-search",
                                              "enable-quick-search",
                                              "enable-quick-search",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
