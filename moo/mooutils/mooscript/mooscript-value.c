@@ -42,6 +42,14 @@ ms_value_none (void)
 }
 
 
+gboolean
+ms_value_is_none (MSValue *value)
+{
+    g_return_val_if_fail (value != NULL, FALSE);
+    return value->type == MS_VALUE_NONE;
+}
+
+
 MSValue *
 ms_value_false (void)
 {

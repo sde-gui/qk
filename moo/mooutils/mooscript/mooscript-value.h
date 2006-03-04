@@ -81,6 +81,8 @@ MSValue     *ms_value_false         (void);
 MSValue     *ms_value_true          (void);
 MSValue     *ms_value_bool          (gboolean    val);
 
+gboolean     ms_value_is_none       (MSValue    *value);
+
 MSValue     *ms_value_int           (int         val);
 MSValue     *ms_value_string        (const char *string);
 MSValue     *ms_value_take_string   (char       *string);
