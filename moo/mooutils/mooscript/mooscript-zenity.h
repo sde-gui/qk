@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 
-/* Entry(dialog_text = none, entry_text = none, hide_text = false) */
+/* Entry(entry_text = none, dialog_text = none, hide_text = false) */
 MSFunc  *ms_zenity_entry            (void);
 /* Text(text = none, dialog_text = none) */
 MSFunc  *ms_zenity_text             (void);

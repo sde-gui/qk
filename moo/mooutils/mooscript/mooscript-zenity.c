@@ -29,11 +29,11 @@ entry_func (MSValue   **args,
     GtkWidget *dialog, *entry;
     MSValue *result;
 
-    if (n_args > 0)
-        dialog_text = ms_value_print (args[0]);
-    if (n_args > 1)
-        entry_text = ms_value_print (args[1]);
-    if (n_args > 2)
+    if (n_args > 0 && !ms_value_is_none (args[0]))
+        entry_text = ms_value_print (args[0]);
+    if (n_args > 1 && !ms_value_is_none (args[1]))
+        dialog_text = ms_value_print (args[1]);
+    if (n_args > 2 && !ms_value_is_none (args[2]))
         hide_text = ms_value_get_bool (args[2]);
 
     dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
