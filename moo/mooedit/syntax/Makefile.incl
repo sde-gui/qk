@@ -9,6 +9,7 @@ mooedit_syntax_DATA =                         \
     $(mooedit_syntax)/c.lang                  \
     $(mooedit_syntax)/diff.lang               \
     $(mooedit_syntax)/gap.lang                \
+    $(mooedit_syntax)/latex.lang              \
     $(mooedit_syntax)/make.lang               \
     $(mooedit_syntax)/misc.lang               \
     $(mooedit_syntax)/ms.lang                 \

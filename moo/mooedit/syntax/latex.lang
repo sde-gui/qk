@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="LaTeX" section="Markup"
+          extensions="*.tex; *.ltx; *.dtx; *.sty; *.cls;"
+          mimetypes="text/x-tex"
+          author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)" license="LGPL">
+<!-- taken from kate distriution -->
+  <syntax>
+    <context name="Normal Text" style="Normal Text" eol-context="#stay">
+      <Regex pattern="\\begin(?=[^a-zA-Z])" style="Structure" context="FindEnvironment" beginRegion="block"/>
+      <Regex pattern="\\end(?=[^a-zA-Z])" style="Structure" context="FindEnvironment" endRegion="block"/>
+      <Regex pattern="\\(label|pageref|ref|cite)(?=[^a-zA-Z])" style="Structure" context="Label"/>
+      <Regex pattern="\\(part|chapter|section|subsection|subsubsection|paragraph|subparagraph)(?=[^a-zA-Z])" style="Structure" context="#stay"/>
+      <String string="\renewcommand" style="Keyword" context="ToEndOfLine"/>
+      <String string="\newcommand" style="Keyword" context="ToEndOfLine"/>
+      <String string="\(" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <String string="\[" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Char char="\" style="Keyword" context="ContrSeq"/>
+
+      <String string="$$" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Char char="$" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Regex pattern="%\s*BEGIN.*$" style="Region Marker" context="#stay" beginRegion="regionMarker" first-non-blank-only="true"/>
+      <Regex pattern="%\s*END.*$" style="Region Marker" context="#stay" endRegion="regionMarker" first-non-blank-only="true"/>
+      <Char char="%" style="Comment" context="Comment"/>
+    </context>
+    <context name="ContrSeq" style="Keyword" eol-context="#pop">
+      <String string="verb*" style="Keyword" context="Verb"/>
+      <String string="verb" style="Keyword" context="Verb"/>
+      <Regex pattern="[a-zA-Z]+" style="Keyword" context="#pop"/>
+      <Regex pattern="[^a-zA-Z]" style="Keyword" context="#pop"/>
+    </context>
+    <context name="ToEndOfLine" style="Normal Text" eol-context="#pop">
+    </context>
+
+    <context name="FindEnvironment" style="Normal Text" eol-context="#stay">
+      <Char char="{" style="Normal Text" context="Environment"/>
+      <Regex pattern="\S" style="Normal Text" context="#pop"/>
+    </context>
+    <context name="Environment" style="Environment" eol-context="#stay">
+      <Char char="}" style="Normal Text" context="#pop#pop"/>
+      <Char char="]" style="Normal Text" context="#pop#pop"/>
+      <Regex pattern="(semiverbatim|verbatim|lstlisting|boxedverbatim|Verbatim)\*?" style="Environment" context="VerbatimEnv"/>
+      <Regex pattern="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|alignat|flalign)\*?" style="Environment" context="MathEnv"/>
+    </context>
+
+<!--     <context name="Label" style="Normal Text" eol-context="#pop#pop" fallthrough="true" fallthroughContext="#pop#pop"> -->
+    <context name="Label" style="Normal Text" eol-context="#pop#pop">
+      <Regex pattern="\s*\{\s*" style="Normal Text" context="#stay"/>
+      <Regex pattern="[^\}\{]+" style="Environment" context="#stay"/>
+      <Regex pattern="\s*\}\s*" style="Normal Text" context="#pop"/>
+    </context>
+
+<!--     <context name="Verb" style="Verbatim" eol-context="#pop" fallthrough="true" fallthroughContext="#pop"> -->
+    <context name="Verb" style="Verbatim" eol-context="#pop">
+<!--       <Regex pattern="(.).*\1" style="Verbatim" context="#pop#pop" minimal="true"/> -->
+      <Regex pattern="(.).*\1" style="Verbatim" context="#pop#pop"/>
+    </context>
+    <context name="VerbatimEnv" style="Environment" eol-context="#stay">
+      <Char char="*" style="Normal Text" context="#stay"/>
+      <Char char="}" style="Normal Text" context="Verbatim"/>
+      <Regex pattern="\S" style="Normal Text" context="#pop"/>
+    </context>
+    <context name="Verbatim" style="Verbatim" eol-context="#stay">
+      <Regex pattern="\\end(?=\{(semiverbatim|verbatim|lstlisting|boxedverbatim|Verbatim)\*?\})" style="Structure"  context="VerbFindEnd"/>
+    </context>
+<!--     <context name="VerbFindEnd" style="Normal Text" eol-context="#pop" fallthrough="true" fallthroughContext="#pop"> -->
+    <context name="VerbFindEnd" style="Normal Text" eol-context="#pop">
+      <Char char="{" style="Normal Text" context="#stay"/>
+      <Regex pattern="(semiverbatim|verbatim|lstlisting|boxedverbatim|Verbatim)\*?" style="Environment" context="#stay"/>
+      <Char char="}" style="Normal Text" context="#pop#pop#pop#pop#pop" endRegion="block"/>
+    </context>
+
+    <context name="MathMode" style="Math" eol-context="#stay">
+      <TwoChars char1="\" char2="]" style="Math" context="#pop" endRegion="mathMode"/>
+      <TwoChars char1="\" char2=")" style="Math" context="#pop" endRegion="mathMode"/>
+      <Regex pattern="\\begin(?=[^a-zA-Z])" style="Keyword Mathmode" context="#stay" beginRegion="block"/>
+      <Regex pattern="\\end(?=[^a-zA-Z])" style="Keyword Mathmode" context="#stay" endRegion="block"/>
+      <Char char="\" style="Keyword Mathmode" context="MathContrSeq"/>
+      <String string="$$" style="Math" context="#pop" endRegion="mathMode"/>
+      <Char char="$" style="Math" context="#pop" endRegion="mathMode"/>
+      <Regex pattern="%\s*BEGIN.*$" style="Region Marker" context="#stay" beginRegion="regionMarker" first-non-blank-only="true"/>
+      <Regex pattern="%\s*END.*$" style="Region Marker" context="#stay" endRegion="regionMarker" first-non-blank-only="true"/>
+      <Char char="%" style="Comment" context="Comment"/>
+    </context>
+    <context name="MathModeEnv" style="Math" eol-context="#stay">
+      <Regex pattern="\\end(?=\s*\{\s*[a-zA-Z]*(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|alignat|flalign)\*?\s*\})" style="Structure" context="MathFindEnd"/>
+      <Regex pattern="\\begin(?=[^a-zA-Z])" style="Keyword Mathmode" context="#stay" beginRegion="block"/>
+      <Regex pattern="\\end(?=[^a-zA-Z])" style="Keyword Mathmode" context="#stay" endRegion="block"/>
+      <String string="\(" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <String string="\[" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Char char="\" style="Keyword Mathmode" context="MathContrSeq"/>
+      <String string="$$" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Char char="$" style="Math" context="MathMode" beginRegion="mathMode"/>
+      <Regex pattern="%\s*BEGIN.*$" style="Region Marker" context="#stay" beginRegion="regionMarker" first-non-blank-only="true"/>
+      <Regex pattern="%\s*END.*$" style="Region Marker" context="#stay" endRegion="regionMarker" first-non-blank-only="true"/>
+      <Char char="%" style="Comment" context="Comment"/>
+    </context>
+    <context name="MathEnv" style="Environment" eol-context="#stay">
+      <Char char="}" style="Normal Text" context="MathModeEnv"/>
+      <Regex pattern="\S" style="Normal Text" context="#pop"/>
+    </context>
+<!--     <context name="MathFindEnd" style="Normal Text" eol-context="#pop" fallthrough="true" fallthroughContext="#pop"> -->
+    <context name="MathFindEnd" style="Normal Text" eol-context="#pop">
+      <Char char="{" style="Normal Text" context="#stay"/>
+      <Regex pattern="[a-zA-Z]*(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|alignat|flalign)\*?" style="Environment" context="#stay"/>
+<!--       <DetectSpaces/> -->
+      <Char char="}" style="Normal Text" context="#pop#pop#pop#pop#pop"  endRegion="block"/>
+    </context>
+    <context name="MathContrSeq" style="Keyword Mathmode" eol-context="#pop">
+      <Regex pattern="[a-zA-Z]+" style="Keyword Mathmode" context="#pop"/>
+      <Regex pattern="[^a-zA-Z]" style="Keyword Mathmode" context="#pop"/>
+    </context>
+
+    <context name="Comment" style="Comment" eol-context="#pop">
+    </context>
+  </syntax>
+  <styles>
+    <style name="Normal Text" default-style="Normal"/>
+    <style name="Keyword" default-style="Normal" foreground="#800000" bold="0" italic="0"/>
+    <style name="Comment" default-style="Comment"/>
+    <style name="Math" default-style="Normal" foreground="#00A000" bold="0" italic="0"/>
+    <style name="Structure" default-style="Normal" foreground="#F00000" bold="0" italic="0"/>
+    <style name="Keyword Mathmode" default-style="Normal" foreground="#606000" bold="0" italic="0"/>
+    <style name="Environment" default-style="Normal" foreground="#0000D0" bold="0" italic="0"/>
+    <style name="Verbatim" default-style="Normal" foreground="#a08000" bold="0" italic="0"/>
+    <style name="Region Marker" default-style="RegionMarker"/>
+  </styles>
+  <general>
+    <comments>
+      <single-line start="%"/>
+    </comments>
+<!--     <keywords weakDeliminator="\" wordWrapDeliminator=",{}[]"/> -->
+  </general>
+</language>
