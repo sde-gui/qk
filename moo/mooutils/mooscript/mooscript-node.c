@@ -18,54 +18,90 @@
 #include "mooutils/moopython.h"
 #include <string.h>
 
-#define UNREF(obj_)             \
-G_STMT_START {                  \
-    if (obj_)                   \
-        g_object_unref (obj_);  \
-} G_STMT_END
 
-
-G_DEFINE_TYPE(MSNode, ms_node, G_TYPE_OBJECT)
-
-
-static void
-ms_node_class_init (G_GNUC_UNUSED MSNodeClass *klass)
+MSValue *
+_ms_node_eval (MSNode     *node,
+               MSContext  *ctx)
 {
-}
-
-static void
-ms_node_init (G_GNUC_UNUSED MSNode *node)
-{
+    g_return_val_if_fail (node != NULL, NULL);
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (node->eval != NULL, NULL);
+    return node->eval (node, ctx);
 }
 
 
 MSValue *
-ms_node_eval (MSNode     *node,
-              MSContext  *ctx)
+ms_top_node_eval (MSNode     *node,
+                  MSContext  *ctx)
 {
-    MSNodeEval eval;
+    MSValue *ret;
 
-    g_return_val_if_fail (MS_IS_NODE (node), NULL);
-    g_return_val_if_fail (ctx != NULL, NULL);
+    g_return_val_if_fail (node != NULL, NULL);
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (node->eval != NULL, NULL);
 
-    eval = MS_NODE_GET_CLASS(node)->eval;
+    ret = _ms_node_eval (node, ctx);
 
-    if (!eval)
+    if (ctx->return_set)
+        ms_context_unset_return (ctx);
+    if (ctx->break_set)
+        ms_context_unset_break (ctx);
+    if (ctx->continue_set)
+        ms_context_unset_continue (ctx);
+
+    return ret;
+}
+
+
+static MSNode *
+ms_node_new (gsize         node_size,
+             MSNodeType    type,
+             MSNodeEval    eval,
+             MSNodeDestroy destroy)
+{
+    MSNode *node;
+
+    g_assert (node_size >= sizeof (MSNode));
+    g_assert (eval != NULL);
+    g_assert (type && type < MS_TYPE_NODE_LAST);
+
+    node = g_malloc0 (node_size);
+    node->ref_count = 1;
+    node->type = type;
+    node->eval = eval;
+    node->destroy = destroy;
+
+    return node;
+}
+
+#define NODE_NEW(Type_,type_,eval_,destroy_)                        \
+    ((Type_*) ms_node_new (sizeof (Type_), type_, eval_, destroy_))
+
+
+gpointer
+ms_node_ref (gpointer node)
+{
+    if (node)
+        MS_NODE(node)->ref_count++;
+    return node;
+}
+
+
+void
+ms_node_unref (gpointer node)
+{
+    if (node && !--MS_NODE(node)->ref_count)
     {
-        g_critical ("eval method missing");
-        return NULL;
+        if (MS_NODE(node)->destroy)
+            MS_NODE(node)->destroy (node);
+        g_free (node);
     }
-
-    return eval (node, ctx);
 }
 
 
 /****************************************************************************/
 /* MSNodeList
  */
-
-G_DEFINE_TYPE(MSNodeList, ms_node_list, MS_TYPE_NODE)
-
 
 static MSValue*
 ms_node_list_eval (MSNode    *node,
@@ -80,10 +116,20 @@ ms_node_list_eval (MSNode    *node,
 
     for (i = 0; i < list->n_nodes; ++i)
     {
-        ret = ms_node_eval (list->nodes[i], ctx);
+        ret = _ms_node_eval (list->nodes[i], ctx);
 
         if (!ret)
             return NULL;
+
+        if (ctx->return_set)
+        {
+            ms_value_unref (ret);
+            ret = ms_value_ref (ctx->return_val);
+            break;
+        }
+
+        if (ctx->break_set || ctx->continue_set)
+            break;
 
         if (i + 1 < list->n_nodes)
             ms_value_unref (ret);
@@ -94,40 +140,23 @@ ms_node_list_eval (MSNode    *node,
 
 
 static void
-ms_node_list_finalize (GObject *object)
+ms_node_list_destroy (MSNode *node)
 {
     guint i;
-    MSNodeList *list = MS_NODE_LIST (object);
-
+    MSNodeList *list = MS_NODE_LIST (node);
     for (i = 0; i < list->n_nodes; ++i)
-        g_object_unref (list->nodes[i]);
+        ms_node_unref (list->nodes[i]);
     g_free (list->nodes);
-
-    G_OBJECT_CLASS(ms_node_list_parent_class)->finalize (object);
-}
-
-
-static void
-ms_node_list_class_init (MSNodeListClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    MSNodeClass *node_class = MS_NODE_CLASS (klass);
-
-    object_class->finalize = ms_node_list_finalize;
-    node_class->eval = ms_node_list_eval;
-}
-
-
-static void
-ms_node_list_init (G_GNUC_UNUSED MSNodeList *list)
-{
 }
 
 
 MSNodeList *
 ms_node_list_new (void)
 {
-    return g_object_new (MS_TYPE_NODE_LIST, NULL);
+    return NODE_NEW (MSNodeList,
+                     MS_TYPE_NODE_LIST,
+                     ms_node_list_eval,
+                     ms_node_list_destroy);
 }
 
 
@@ -135,8 +164,8 @@ void
 ms_node_list_add (MSNodeList *list,
                   MSNode     *node)
 {
-    g_return_if_fail (MS_IS_NODE_LIST (list));
-    g_return_if_fail (MS_IS_NODE (node));
+    g_return_if_fail (list != NULL && node != NULL);
+    g_return_if_fail (MS_NODE_TYPE (list) == MS_TYPE_NODE_LIST);
 
     if (list->n_nodes_allocd__ == list->n_nodes)
     {
@@ -150,7 +179,7 @@ ms_node_list_add (MSNodeList *list,
         list->nodes = tmp;
     }
 
-    list->nodes[list->n_nodes++] = g_object_ref (node);
+    list->nodes[list->n_nodes++] = ms_node_ref (node);
 }
 
 
@@ -158,17 +187,11 @@ ms_node_list_add (MSNodeList *list,
 /* MSNodeVar
  */
 
-G_DEFINE_TYPE(MSNodeVar, ms_node_var, MS_TYPE_NODE)
-
-
 static void
-ms_node_var_finalize (GObject *object)
+ms_node_var_destroy (MSNode *node)
 {
-    MSNodeVar *var = MS_NODE_VAR (object);
-
+    MSNodeVar *var = MS_NODE_VAR (node);
     g_free (var->name);
-
-    G_OBJECT_CLASS(ms_node_var_parent_class)->finalize (object);
 }
 
 
@@ -181,20 +204,6 @@ ms_node_var_eval (MSNode    *node,
 }
 
 
-static void
-ms_node_var_class_init (MSNodeVarClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_var_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_var_eval;
-}
-
-
-static void
-ms_node_var_init (G_GNUC_UNUSED MSNodeVar *var)
-{
-}
-
-
 MSNodeVar *
 ms_node_var_new (const char *name)
 {
@@ -202,7 +211,11 @@ ms_node_var_new (const char *name)
 
     g_return_val_if_fail (name && name[0], NULL);
 
-    var = g_object_new (MS_TYPE_NODE_VAR, NULL);
+    var = NODE_NEW (MSNodeVar,
+                    MS_TYPE_NODE_VAR,
+                    ms_node_var_eval,
+                    ms_node_var_destroy);
+
     var->name = g_strdup (name);
 
     return var;
@@ -213,20 +226,15 @@ ms_node_var_new (const char *name)
 /* MSNodeCommand
  */
 
-G_DEFINE_TYPE(MSNodeCommand, ms_node_command, MS_TYPE_NODE)
-
-
 static void
-ms_node_command_finalize (GObject *object)
+ms_node_command_destroy (MSNode *node)
 {
-    MSNodeCommand *cmd = MS_NODE_COMMAND (object);
+    MSNodeCommand *cmd = MS_NODE_COMMAND (node);
 
     g_free (cmd->name);
 
     if (cmd->args)
-        g_object_unref (cmd->args);
-
-    G_OBJECT_CLASS(ms_node_command_parent_class)->finalize (object);
+        ms_node_unref (MS_NODE (cmd->args));
 }
 
 
@@ -260,7 +268,7 @@ ms_node_command_eval (MSNode    *node,
 
         for (i = 0; i < n_args; ++i)
         {
-            args[i] = ms_node_eval (cmd->args->nodes[i], ctx);
+            args[i] = _ms_node_eval (cmd->args->nodes[i], ctx);
 
             if (!args[i])
                 goto out;
@@ -279,20 +287,6 @@ out:
 }
 
 
-static void
-ms_node_command_class_init (MSNodeCommandClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_command_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_command_eval;
-}
-
-
-static void
-ms_node_command_init (G_GNUC_UNUSED MSNodeCommand *cmd)
-{
-}
-
-
 MSNodeCommand *
 ms_node_command_new (const char *name,
                      MSNodeList *args)
@@ -300,15 +294,18 @@ ms_node_command_new (const char *name,
     MSNodeCommand *cmd;
 
     g_return_val_if_fail (name && name[0], NULL);
-    g_return_val_if_fail (!args || MS_IS_NODE_LIST (args), NULL);
+    g_return_val_if_fail (!args || MS_NODE_TYPE (args) == MS_TYPE_NODE_LIST, NULL);
 
     if (args && !args->n_nodes)
         args = NULL;
 
-    cmd = g_object_new (MS_TYPE_NODE_COMMAND, NULL);
+    cmd = NODE_NEW (MSNodeCommand,
+                    MS_TYPE_NODE_COMMAND,
+                    ms_node_command_eval,
+                    ms_node_command_destroy);
 
     cmd->name = g_strdup (name);
-    cmd->args = args ? g_object_ref (args) : NULL;
+    cmd->args = args ? ms_node_ref (args) : NULL;
 
     return cmd;
 }
@@ -323,8 +320,7 @@ ms_node_binary_op_new (MSBinaryOp  op,
     MSNodeList *args;
     const char *name;
 
-    g_return_val_if_fail (MS_IS_NODE (lval), NULL);
-    g_return_val_if_fail (MS_IS_NODE (rval), NULL);
+    g_return_val_if_fail (lval && rval, NULL);
 
     name = ms_binary_op_name (op);
     g_return_val_if_fail (name != NULL, NULL);
@@ -335,7 +331,7 @@ ms_node_binary_op_new (MSBinaryOp  op,
 
     cmd = ms_node_command_new (name, args);
 
-    g_object_unref (args);
+    ms_node_unref (args);
     return cmd;
 }
 
@@ -348,7 +344,7 @@ ms_node_unary_op_new (MSUnaryOp   op,
     MSNodeList *args;
     const char *name;
 
-    g_return_val_if_fail (MS_IS_NODE (val), NULL);
+    g_return_val_if_fail (val != NULL, NULL);
 
     name = ms_unary_op_name (op);
     g_return_val_if_fail (name != NULL, NULL);
@@ -358,7 +354,7 @@ ms_node_unary_op_new (MSUnaryOp   op,
 
     cmd = ms_node_command_new (name, args);
 
-    g_object_unref (args);
+    ms_node_unref (args);
     return cmd;
 }
 
@@ -367,19 +363,13 @@ ms_node_unary_op_new (MSUnaryOp   op,
 /* MSNodeIfElse
  */
 
-G_DEFINE_TYPE(MSNodeIfElse, ms_node_if_else, MS_TYPE_NODE)
-
-
 static void
-ms_node_if_else_finalize (GObject *object)
+ms_node_if_else_destroy (MSNode *node_)
 {
-    MSNodeIfElse *node = MS_NODE_IF_ELSE (object);
-
-    UNREF (node->condition);
-    UNREF (node->then_);
-    UNREF (node->else_);
-
-    G_OBJECT_CLASS(ms_node_if_else_parent_class)->finalize (object);
+    MSNodeIfElse *node = MS_NODE_IF_ELSE (node_);
+    ms_node_unref (node->condition);
+    ms_node_unref (node->then_);
+    ms_node_unref (node->else_);
 }
 
 
@@ -393,34 +383,26 @@ ms_node_if_else_eval (MSNode    *node_,
     g_return_val_if_fail (node->condition != NULL, NULL);
     g_return_val_if_fail (node->then_ != NULL, NULL);
 
-    cond = ms_node_eval (node->condition, ctx);
+    cond = _ms_node_eval (node->condition, ctx);
 
     if (!cond)
         return NULL;
 
     if (ms_value_get_bool (cond))
-        ret = ms_node_eval (node->then_, ctx);
+        ret = _ms_node_eval (node->then_, ctx);
     else if (node->else_)
-        ret = ms_node_eval (node->else_, ctx);
+        ret = _ms_node_eval (node->else_, ctx);
     else
         ret = ms_value_none ();
 
+    if (ctx->return_set)
+    {
+        ms_value_unref (ret);
+        ret = ms_value_ref (ctx->return_val);
+    }
+
     ms_value_unref (cond);
     return ret;
-}
-
-
-static void
-ms_node_if_else_class_init (MSNodeIfElseClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_if_else_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_if_else_eval;
-}
-
-
-static void
-ms_node_if_else_init (G_GNUC_UNUSED MSNodeIfElse *node)
-{
 }
 
 
@@ -431,14 +413,16 @@ ms_node_if_else_new (MSNode     *condition,
 {
     MSNodeIfElse *node;
 
-    g_return_val_if_fail (MS_IS_NODE (condition), NULL);
-    g_return_val_if_fail (MS_IS_NODE (then_), NULL);
-    g_return_val_if_fail (!else_ || MS_IS_NODE (else_), NULL);
+    g_return_val_if_fail (condition && then_, NULL);
 
-    node = g_object_new (MS_TYPE_NODE_IF_ELSE, NULL);
-    node->condition = g_object_ref (condition);
-    node->then_ = g_object_ref (then_);
-    node->else_ = else_ ? g_object_ref (else_) : NULL;
+    node = NODE_NEW (MSNodeIfElse,
+                     MS_TYPE_NODE_IF_ELSE,
+                     ms_node_if_else_eval,
+                     ms_node_if_else_destroy);
+
+    node->condition = ms_node_ref (condition);
+    node->then_ = ms_node_ref (then_);
+    node->else_ = else_ ? ms_node_ref (else_) : NULL;
 
     return node;
 }
@@ -448,18 +432,12 @@ ms_node_if_else_new (MSNode     *condition,
 /* MSNodeWhile
  */
 
-G_DEFINE_TYPE (MSNodeWhile, ms_node_while, MS_TYPE_NODE)
-
-
 static void
-ms_node_while_finalize (GObject *object)
+ms_node_while_destroy (MSNode *node)
 {
-    MSNodeWhile *wh = MS_NODE_WHILE (object);
-
-    UNREF (wh->condition);
-    UNREF (wh->what);
-
-    G_OBJECT_CLASS(ms_node_while_parent_class)->finalize (object);
+    MSNodeWhile *wh = MS_NODE_WHILE (node);
+    ms_node_unref (wh->condition);
+    ms_node_unref (wh->what);
 }
 
 
@@ -476,7 +454,7 @@ ms_loop_while (MSContext  *ctx,
 
     while (TRUE)
     {
-        MSValue *cond = ms_node_eval (condition, ctx);
+        MSValue *cond = _ms_node_eval (condition, ctx);
         gboolean doit;
 
         if (!cond)
@@ -491,18 +469,36 @@ ms_loop_while (MSContext  *ctx,
                 ms_value_unref (ret);
 
             if (what)
-                ret = ms_node_eval (what, ctx);
+                ret = _ms_node_eval (what, ctx);
             else
                 ret = ms_value_none ();
 
             if (!ret)
                 return NULL;
+
+            if (ctx->return_set)
+            {
+                ms_value_unref (ret);
+                ret = ms_value_ref (ctx->return_val);
+                break;
+            }
+
+            if (ctx->break_set)
+            {
+                ms_context_unset_break (ctx);
+                break;
+            }
+
+            if (ctx->continue_set)
+                ms_context_unset_continue (ctx);
         }
         else
         {
-            return ret ? ret : ms_value_none ();
+            break;
         }
     }
+
+    return ret ? ret : ms_value_none ();
 }
 
 
@@ -526,14 +522,30 @@ ms_loop_do_while (MSContext  *ctx,
             ms_value_unref (ret);
 
         if (what)
-            ret = ms_node_eval (what, ctx);
+            ret = _ms_node_eval (what, ctx);
         else
             ret = ms_value_none ();
 
         if (!ret)
             return NULL;
 
-        cond = ms_node_eval (condition, ctx);
+        if (ctx->return_set)
+        {
+            ms_value_unref (ret);
+            ret = ms_value_ref (ctx->return_val);
+            break;
+        }
+
+        if (ctx->break_set)
+        {
+            ms_context_unset_break (ctx);
+            break;
+        }
+
+        if (ctx->continue_set)
+            ms_context_unset_continue (ctx);
+
+        cond = _ms_node_eval (condition, ctx);
 
         if (!cond)
             return NULL;
@@ -542,8 +554,10 @@ ms_loop_do_while (MSContext  *ctx,
         ms_value_unref (cond);
 
         if (stop)
-            return ret ? ret : ms_value_none ();
+            break;
     }
+
+    return ret ? ret : ms_value_none ();
 }
 
 
@@ -567,21 +581,6 @@ ms_node_while_eval (MSNode    *node,
 }
 
 
-static void
-ms_node_while_class_init (MSNodeWhileClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_while_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_while_eval;
-}
-
-
-static void
-ms_node_while_init (MSNodeWhile *wh)
-{
-    wh->type = -1;
-}
-
-
 MSNodeWhile*
 ms_node_while_new (MSCondType  type,
                    MSNode     *cond,
@@ -589,13 +588,16 @@ ms_node_while_new (MSCondType  type,
 {
     MSNodeWhile *wh;
 
-    g_return_val_if_fail (MS_IS_NODE (cond), NULL);
-    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
+    g_return_val_if_fail (cond != NULL, NULL);
 
-    wh = g_object_new (MS_TYPE_NODE_WHILE, NULL);
+    wh = NODE_NEW (MSNodeWhile,
+                   MS_TYPE_NODE_WHILE,
+                   ms_node_while_eval,
+                   ms_node_while_destroy);
+
     wh->type = type;
-    wh->condition = g_object_ref (cond);
-    wh->what = what ? g_object_ref (what) : NULL;
+    wh->condition = ms_node_ref (cond);
+    wh->what = what ? ms_node_ref (what) : NULL;
 
     return wh;
 }
@@ -605,19 +607,13 @@ ms_node_while_new (MSCondType  type,
 /* MSNodeFor
  */
 
-G_DEFINE_TYPE (MSNodeFor, ms_node_for, MS_TYPE_NODE)
-
-
 static void
-ms_node_for_finalize (GObject *object)
+ms_node_for_destroy (MSNode *node)
 {
-    MSNodeFor *loop = MS_NODE_FOR (object);
-
-    UNREF (loop->variable);
-    UNREF (loop->list);
-    UNREF (loop->what);
-
-    G_OBJECT_CLASS(ms_node_for_parent_class)->finalize (object);
+    MSNodeFor *loop = MS_NODE_FOR (node);
+    ms_node_unref (loop->variable);
+    ms_node_unref (loop->list);
+    ms_node_unref (loop->what);
 }
 
 
@@ -647,7 +643,7 @@ ms_node_for_eval (MSNode    *node,
     var = MS_NODE_VAR (loop->variable);
 
     if (MS_IS_NODE_VAL_LIST (loop->list))
-        vallist = ms_node_eval (loop->list, ctx);
+        vallist = _ms_node_eval (loop->list, ctx);
     else
         vallist = ms_value_ref (MS_NODE_VALUE(loop->list)->value);
 
@@ -665,12 +661,28 @@ ms_node_for_eval (MSNode    *node,
             ms_value_unref (ret);
 
         if (loop->what)
-            ret = ms_node_eval (loop->what, ctx);
+            ret = _ms_node_eval (loop->what, ctx);
         else
             ret = ms_value_none ();
 
         if (!ret)
             goto error;
+
+        if (ctx->return_set)
+        {
+            ms_value_unref (ret);
+            ret = ms_value_ref (ctx->return_val);
+            break;
+        }
+
+        if (ctx->break_set)
+        {
+            ms_context_unset_break (ctx);
+            break;
+        }
+
+        if (ctx->continue_set)
+            ms_context_unset_continue (ctx);
     }
 
     if (!ret)
@@ -687,20 +699,6 @@ error:
 }
 
 
-static void
-ms_node_for_class_init (MSNodeForClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_for_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_for_eval;
-}
-
-
-static void
-ms_node_for_init (G_GNUC_UNUSED MSNodeFor *loop)
-{
-}
-
-
 MSNodeFor*
 ms_node_for_new (MSNode     *var,
                  MSNode     *list,
@@ -708,14 +706,16 @@ ms_node_for_new (MSNode     *var,
 {
     MSNodeFor *loop;
 
-    g_return_val_if_fail (MS_IS_NODE (var), NULL);
-    g_return_val_if_fail (MS_IS_NODE (list), NULL);
-    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
+    g_return_val_if_fail (var && list, NULL);
 
-    loop = g_object_new (MS_TYPE_NODE_FOR, NULL);
-    loop->variable = g_object_ref (var);
-    loop->list = g_object_ref (list);
-    loop->what = what ? g_object_ref (what) : NULL;
+    loop = NODE_NEW (MSNodeFor,
+                     MS_TYPE_NODE_FOR,
+                     ms_node_for_eval,
+                     ms_node_for_destroy);
+
+    loop->variable = ms_node_ref (var);
+    loop->list = ms_node_ref (list);
+    loop->what = what ? ms_node_ref (what) : NULL;
 
     return loop;
 }
@@ -725,18 +725,12 @@ ms_node_for_new (MSNode     *var,
 /* MSNodeAssign
  */
 
-G_DEFINE_TYPE(MSNodeAssign, ms_node_assign, MS_TYPE_NODE)
-
-
 static void
-ms_node_assign_finalize (GObject *object)
+ms_node_assign_destroy (MSNode *node_)
 {
-    MSNodeAssign *node = MS_NODE_ASSIGN (object);
-
-    UNREF (node->var);
-    UNREF (node->val);
-
-    G_OBJECT_CLASS(ms_node_assign_parent_class)->finalize (object);
+    MSNodeAssign *node = MS_NODE_ASSIGN (node_);
+    ms_node_unref (node->var);
+    ms_node_unref (node->val);
 }
 
 
@@ -750,7 +744,7 @@ ms_node_assign_eval (MSNode    *node_,
     g_return_val_if_fail (node->var != NULL, NULL);
     g_return_val_if_fail (node->val != NULL, NULL);
 
-    value = ms_node_eval (node->val, ctx);
+    value = _ms_node_eval (node->val, ctx);
 
     if (!value)
         return NULL;
@@ -765,20 +759,6 @@ ms_node_assign_eval (MSNode    *node_,
 }
 
 
-static void
-ms_node_assign_class_init (MSNodeAssignClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_assign_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_assign_eval;
-}
-
-
-static void
-ms_node_assign_init (G_GNUC_UNUSED MSNodeAssign *node)
-{
-}
-
-
 MSNodeAssign *
 ms_node_assign_new (MSNodeVar  *var,
                     MSNode     *val)
@@ -786,11 +766,15 @@ ms_node_assign_new (MSNodeVar  *var,
     MSNodeAssign *node;
 
     g_return_val_if_fail (MS_IS_NODE_VAR (var), NULL);
-    g_return_val_if_fail (MS_IS_NODE (val), NULL);
+    g_return_val_if_fail (val != NULL, NULL);
 
-    node = g_object_new (MS_TYPE_NODE_ASSIGN, NULL);
-    node->var = g_object_ref (var);
-    node->val = g_object_ref (val);
+    node = NODE_NEW (MSNodeAssign,
+                     MS_TYPE_NODE_ASSIGN,
+                     ms_node_assign_eval,
+                     ms_node_assign_destroy);
+
+    node->var = ms_node_ref (var);
+    node->val = ms_node_ref (val);
 
     return node;
 }
@@ -800,17 +784,11 @@ ms_node_assign_new (MSNodeVar  *var,
 /* MSNodeValue
  */
 
-G_DEFINE_TYPE(MSNodeValue, ms_node_value, MS_TYPE_NODE)
-
-
 static void
-ms_node_value_finalize (GObject *object)
+ms_node_value_destroy (MSNode *node)
 {
-    MSNodeValue *val = MS_NODE_VALUE (object);
-
+    MSNodeValue *val = MS_NODE_VALUE (node);
     ms_value_unref (val->value);
-
-    G_OBJECT_CLASS(ms_node_value_parent_class)->finalize (object);
 }
 
 
@@ -822,20 +800,6 @@ ms_node_value_eval (MSNode    *node,
 }
 
 
-static void
-ms_node_value_class_init (MSNodeValueClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_value_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_value_eval;
-}
-
-
-static void
-ms_node_value_init (G_GNUC_UNUSED MSNodeValue *node)
-{
-}
-
-
 MSNodeValue *
 ms_node_value_new (MSValue *value)
 {
@@ -843,7 +807,11 @@ ms_node_value_new (MSValue *value)
 
     g_return_val_if_fail (value != NULL, NULL);
 
-    node = g_object_new (MS_TYPE_NODE_VALUE, NULL);
+    node = NODE_NEW (MSNodeValue,
+                     MS_TYPE_NODE_VALUE,
+                     ms_node_value_eval,
+                     ms_node_value_destroy);
+
     node->value = ms_value_ref (value);
 
     return node;
@@ -854,19 +822,13 @@ ms_node_value_new (MSValue *value)
 /* MSNodeValList
  */
 
-G_DEFINE_TYPE(MSNodeValList, ms_node_val_list, MS_TYPE_NODE)
-
-
 static void
-ms_node_val_list_finalize (GObject *object)
+ms_node_val_list_destroy (MSNode *node_)
 {
-    MSNodeValList *node = MS_NODE_VAL_LIST (object);
-
-    UNREF (node->elms);
-    UNREF (node->first);
-    UNREF (node->last);
-
-    G_OBJECT_CLASS(ms_node_val_list_parent_class)->finalize (object);
+    MSNodeValList *node = MS_NODE_VAL_LIST (node_);
+    ms_node_unref (node->elms);
+    ms_node_unref (node->first);
+    ms_node_unref (node->last);
 }
 
 
@@ -881,12 +843,12 @@ ms_node_val_range_eval (MSNodeValList *node,
 
     g_assert (node->type == MS_VAL_RANGE);
 
-    vfirst = ms_node_eval (node->first, ctx);
+    vfirst = _ms_node_eval (node->first, ctx);
 
     if (!vfirst)
         return NULL;
 
-    vlast = ms_node_eval (node->last, ctx);
+    vlast = _ms_node_eval (node->last, ctx);
 
     if (!vlast)
     {
@@ -938,7 +900,7 @@ ms_node_val_list_eval (MSNode    *node_,
 
             for (i = 0; i < n_elms; ++i)
             {
-                MSValue *elm = ms_node_eval (node->elms->nodes[i], ctx);
+                MSValue *elm = _ms_node_eval (node->elms->nodes[i], ctx);
 
                 if (!elm)
                 {
@@ -960,18 +922,13 @@ ms_node_val_list_eval (MSNode    *node_,
 }
 
 
-static void
-ms_node_val_list_class_init (MSNodeValListClass *klass)
+static MSNodeValList *
+ms_node_val_list_new_ (void)
 {
-    G_OBJECT_CLASS(klass)->finalize = ms_node_val_list_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_val_list_eval;
-}
-
-
-static void
-ms_node_val_list_init (MSNodeValList *node)
-{
-    node->type = -1;
+    return NODE_NEW (MSNodeValList,
+                     MS_TYPE_NODE_VAL_LIST,
+                     ms_node_val_list_eval,
+                     ms_node_val_list_destroy);
 }
 
 
@@ -985,9 +942,9 @@ ms_node_val_list_new (MSNodeList *list)
     if (list && !list->n_nodes)
         list = NULL;
 
-    node = g_object_new (MS_TYPE_NODE_VAL_LIST, NULL);
+    node = ms_node_val_list_new_ ();
     node->type = MS_VAL_LIST;
-    node->elms = list ? g_object_ref (list) : NULL;
+    node->elms = list ? ms_node_ref (list) : NULL;
 
     return node;
 }
@@ -999,13 +956,12 @@ ms_node_val_range_new (MSNode *first,
 {
     MSNodeValList *node;
 
-    g_return_val_if_fail (MS_IS_NODE (first), NULL);
-    g_return_val_if_fail (MS_IS_NODE (last), NULL);
+    g_return_val_if_fail (first && last, NULL);
 
-    node = g_object_new (MS_TYPE_NODE_VAL_LIST, NULL);
+    node = ms_node_val_list_new_ ();
     node->type = MS_VAL_RANGE;
-    node->first = g_object_ref (first);
-    node->last = g_object_ref (last);
+    node->first = ms_node_ref (first);
+    node->last = ms_node_ref (last);
 
     return node;
 }
@@ -1015,14 +971,10 @@ ms_node_val_range_new (MSNode *first,
 /* MSNodePython
  */
 
-G_DEFINE_TYPE(MSNodePython, ms_node_python, MS_TYPE_NODE)
-
-
 static void
-ms_node_python_finalize (GObject *object)
+ms_node_python_destroy (MSNode *node)
 {
-    g_free (MS_NODE_PYTHON(object)->script);
-    G_OBJECT_CLASS(ms_node_python_parent_class)->finalize (object);
+    g_free (MS_NODE_PYTHON(node)->script);
 }
 
 
@@ -1053,20 +1005,6 @@ ms_node_python_eval (MSNode    *node_,
 }
 
 
-static void
-ms_node_python_class_init (MSNodePythonClass *klass)
-{
-    G_OBJECT_CLASS(klass)->finalize = ms_node_python_finalize;
-    MS_NODE_CLASS(klass)->eval = ms_node_python_eval;
-}
-
-
-static void
-ms_node_python_init (G_GNUC_UNUSED MSNodePython *node)
-{
-}
-
-
 MSNodePython *
 ms_node_python_new (const char *script)
 {
@@ -1074,8 +1012,333 @@ ms_node_python_new (const char *script)
 
     g_return_val_if_fail (script != NULL, NULL);
 
-    node = g_object_new (MS_TYPE_NODE_PYTHON, NULL);
+    node = NODE_NEW (MSNodePython,
+                     MS_TYPE_NODE_PYTHON,
+                     ms_node_python_eval,
+                     ms_node_python_destroy);
+
     node->script = g_strdup (script);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeListElm
+ */
+
+static void
+ms_node_list_elm_destroy (MSNode *node)
+{
+    ms_node_unref (MS_NODE_LIST_ELM(node)->list);
+    ms_node_unref (MS_NODE_LIST_ELM(node)->ind);
+}
+
+
+static MSValue *
+ms_node_list_elm_eval (MSNode    *node_,
+                       MSContext *ctx)
+{
+    MSNodeListElm *node = MS_NODE_LIST_ELM (node_);
+    MSValue *list = NULL, *ind = NULL, *ret;
+    guint len;
+    int index;
+
+    list = _ms_node_eval (node->list, ctx);
+
+    if (!list)
+        goto error;
+
+    ind = _ms_node_eval (node->ind, ctx);
+
+    if (!ind)
+        goto error;
+
+    if (!ms_value_get_int (ind, &index))
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "invalid list index");
+        goto error;
+    }
+
+    if (index < 0)
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "index out of range");
+        goto error;
+    }
+
+    switch (list->type)
+    {
+        case MS_VALUE_STRING:
+            len = g_utf8_strlen (list->str, -1);
+            break;
+
+        case MS_VALUE_LIST:
+            len = list->list.n_elms;
+            break;
+
+        default:
+            ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                     "invalid subscript");
+            goto error;
+    }
+
+    if ((guint) index >= len)
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "index out of range");
+        goto error;
+    }
+
+    switch (list->type)
+    {
+        case MS_VALUE_STRING:
+            ret = ms_value_string_len (g_utf8_offset_to_pointer (list->str, index), 1);
+            break;
+
+        case MS_VALUE_LIST:
+            ret = ms_value_ref (list->list.elms[index]);
+            break;
+
+        default:
+            g_assert_not_reached ();
+    }
+
+    ms_node_unref (list);
+    ms_node_unref (ind);
+    return ret;
+
+error:
+    ms_node_unref (list);
+    ms_node_unref (ind);
+    return NULL;
+}
+
+
+MSNodeListElm *
+ms_node_list_elm_new (MSNode     *list,
+                      MSNode     *ind)
+{
+    MSNodeListElm *node;
+
+    g_return_val_if_fail (list && ind, NULL);
+
+    node = NODE_NEW (MSNodeListElm,
+                     MS_TYPE_NODE_LIST_ELM,
+                     ms_node_list_elm_eval,
+                     ms_node_list_elm_destroy);
+
+    node->list = ms_node_ref (list);
+    node->ind = ms_node_ref (ind);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeListAssign
+ */
+
+static void
+ms_node_list_assign_destroy (MSNode *node)
+{
+    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->list);
+    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->ind);
+    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->val);
+}
+
+
+static MSValue *
+ms_node_list_assign_eval (MSNode    *node_,
+                          MSContext *ctx)
+{
+    MSNodeListAssign *node = MS_NODE_LIST_ASSIGN (node_);
+    MSValue *list = NULL, *ind = NULL, *val = NULL;
+    guint len;
+    int index;
+
+    list = _ms_node_eval (node->list, ctx);
+
+    if (!list)
+        goto error;
+
+    ind = _ms_node_eval (node->ind, ctx);
+
+    if (!ind)
+        goto error;
+
+    if (!ms_value_get_int (ind, &index))
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "invalid list index");
+        goto error;
+    }
+
+    if (index < 0)
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "index out of range");
+        goto error;
+    }
+
+    switch (list->type)
+    {
+        case MS_VALUE_LIST:
+            len = list->list.n_elms;
+            break;
+
+        default:
+            ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                     "invalid list assignment");
+            goto error;
+    }
+
+    if ((guint) index >= len)
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "index out of range");
+        goto error;
+    }
+
+    val = _ms_node_eval (node->val, ctx);
+
+    if (!val)
+        goto error;
+
+    switch (node->list->type)
+    {
+        case MS_VALUE_LIST:
+            ms_value_list_set_elm (list, index, val);
+            break;
+
+        default:
+            g_assert_not_reached ();
+    }
+
+    ms_value_unref (list);
+    ms_value_unref (ind);
+    return val;
+
+error:
+    if (list) ms_value_unref (list);
+    if (ind) ms_node_unref (ind);
+    if (val) ms_value_unref (val);
+    return NULL;
+}
+
+
+MSNodeListAssign *
+ms_node_list_assign_new (MSNode     *list,
+                         MSNode     *ind,
+                         MSNode     *val)
+{
+    MSNodeListAssign *node;
+
+    g_return_val_if_fail (list && ind && val, NULL);
+
+    node = NODE_NEW (MSNodeListAssign,
+                     MS_TYPE_NODE_LIST_ASSIGN,
+                     ms_node_list_assign_eval,
+                     ms_node_list_assign_destroy);
+
+    node->list = ms_node_ref (list);
+    node->ind = ms_node_ref (ind);
+    node->val = ms_node_ref (val);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeReturn
+ */
+
+static void
+ms_node_return_destroy (MSNode *node)
+{
+    ms_node_unref (MS_NODE_RETURN(node)->val);
+}
+
+
+static MSValue *
+ms_node_return_eval (MSNode    *node_,
+                     MSContext *ctx)
+{
+    MSNodeReturn *node = MS_NODE_RETURN (node_);
+    MSValue *ret;
+
+    if (node->val)
+    {
+        ret = _ms_node_eval (node->val, ctx);
+
+        if (!ret)
+            return NULL;
+    }
+    else
+    {
+        ret = ms_value_none ();
+    }
+
+    ms_context_set_return (ctx, ret);
+
+    return ret;
+}
+
+
+MSNodeReturn *
+ms_node_return_new (MSNode *val)
+{
+    MSNodeReturn *node;
+
+    node = NODE_NEW (MSNodeReturn,
+                     MS_TYPE_NODE_RETURN,
+                     ms_node_return_eval,
+                     ms_node_return_destroy);
+
+    node->val = ms_node_ref (val);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeBreak
+ */
+
+static MSValue *
+ms_node_break_eval (MSNode    *node_,
+                    MSContext *ctx)
+{
+    MSNodeBreak *node = MS_NODE_BREAK (node_);
+
+    switch (node->type)
+    {
+        case MS_BREAK_BREAK:
+            ms_context_set_break (ctx);
+            break;
+        case MS_BREAK_CONTINUE:
+            ms_context_set_continue (ctx);
+            break;
+        default:
+            g_assert_not_reached ();
+    }
+
+    return ms_value_none ();
+}
+
+
+MSNodeBreak *
+ms_node_break_new (MSBreakType type)
+{
+    MSNodeBreak *node;
+
+    node = NODE_NEW (MSNodeBreak,
+                     MS_TYPE_NODE_BREAK,
+                     ms_node_break_eval,
+                     NULL);
+
+    node->type = type;
 
     return node;
 }

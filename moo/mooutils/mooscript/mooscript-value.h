@@ -85,6 +85,8 @@ gboolean     ms_value_is_none       (MSValue    *value);
 
 MSValue     *ms_value_int           (int         val);
 MSValue     *ms_value_string        (const char *string);
+MSValue     *ms_value_string_len    (const char *string,
+                                     int         len);
 MSValue     *ms_value_take_string   (char       *string);
 MSValue     *ms_value_object        (gpointer    object);
 MSValue     *ms_value_gvalue        (GValue     *gval);

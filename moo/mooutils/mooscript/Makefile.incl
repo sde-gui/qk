@@ -23,6 +23,7 @@ mooscript_sources =                     \
     $(mooscript)/mooscript-node.h       \
     $(mooscript)/mooscript-parser.c     \
     $(mooscript)/mooscript-parser.h     \
+    $(mooscript)/mooscript-parser-priv.h\
     $(mooscript)/mooscript-value.c      \
     $(mooscript)/mooscript-value.h      \
     $(mooscript)/mooscript-yacc.c       \

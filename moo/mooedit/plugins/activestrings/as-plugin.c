@@ -693,7 +693,7 @@ as_plugin_load_info (ASPlugin *plugin,
             if (script)
             {
                 as_string_info_set_script (sinfo, info->script);
-                g_object_unref (script);
+                ms_node_unref (script);
             }
         }
 
@@ -1005,7 +1005,7 @@ as_plugin_do_action (ASPlugin       *plugin,
     _as_plugin_context_exec (plugin->ctx, script, doc, insert,
                              full_text, parens_text, match->n_parens);
 
-    g_object_unref (script);
+    ms_node_unref (script);
 }
 
 

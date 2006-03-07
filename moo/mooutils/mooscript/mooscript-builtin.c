@@ -150,11 +150,11 @@ include_func (MSValue    *arg,
         goto error;
     }
 
-    ret = ms_node_eval (node, ctx);
+    ret = ms_top_node_eval (node, ctx);
 
     g_free (file);
     g_free (script);
-    g_object_unref (node);
+    ms_node_unref (node);
 
     return ret;
 

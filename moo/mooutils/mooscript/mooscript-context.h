@@ -57,6 +57,11 @@ struct _MSContext {
     char *error_msg;
     MSPrintFunc print_func;
     gpointer window;
+
+    MSValue *return_val;
+    guint break_set : 1;
+    guint continue_set : 1;
+    guint return_set : 1;
 };
 
 struct _MSContextClass {
@@ -105,6 +110,14 @@ MSValue     *ms_context_format_error        (MSContext  *ctx,
 
 const char  *ms_context_get_error_msg       (MSContext  *ctx);
 void         ms_context_clear_error         (MSContext  *ctx);
+
+void         ms_context_set_return          (MSContext  *ctx,
+                                             MSValue    *val);
+void         ms_context_set_break           (MSContext  *ctx);
+void         ms_context_set_continue        (MSContext  *ctx);
+void         ms_context_unset_return        (MSContext  *ctx);
+void         ms_context_unset_break         (MSContext  *ctx);
+void         ms_context_unset_continue      (MSContext  *ctx);
 
 
 G_END_DECLS

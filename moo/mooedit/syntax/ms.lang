@@ -30,6 +30,8 @@
 
     <keyword-list name="Keyword">
       <keyword>and</keyword>
+      <keyword>break</keyword>
+      <keyword>continue</keyword>
       <keyword>do</keyword>
       <keyword>elif</keyword>
       <keyword>else</keyword>
@@ -40,6 +42,7 @@
       <keyword>not</keyword>
       <keyword>od</keyword>
       <keyword>or</keyword>
+      <keyword>return</keyword>
       <keyword>then</keyword>
       <keyword>while</keyword>
     </keyword-list>

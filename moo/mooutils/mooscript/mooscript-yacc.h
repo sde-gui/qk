@@ -43,15 +43,18 @@
      OD = 269,
      FOR = 270,
      IN = 271,
-     EQ = 272,
-     NEQ = 273,
-     LE = 274,
-     GE = 275,
-     AND = 276,
-     OR = 277,
-     NOT = 278,
-     UMINUS = 279,
-     TWODOTS = 280
+     CONTINUE = 272,
+     BREAK = 273,
+     RETURN = 274,
+     EQ = 275,
+     NEQ = 276,
+     LE = 277,
+     GE = 278,
+     AND = 279,
+     OR = 280,
+     NOT = 281,
+     UMINUS = 282,
+     TWODOTS = 283
    };
 #endif
 /* Tokens.  */
@@ -69,28 +72,31 @@
 #define OD 269
 #define FOR 270
 #define IN 271
-#define EQ 272
-#define NEQ 273
-#define LE 274
-#define GE 275
-#define AND 276
-#define OR 277
-#define NOT 278
-#define UMINUS 279
-#define TWODOTS 280
+#define CONTINUE 272
+#define BREAK 273
+#define RETURN 274
+#define EQ 275
+#define NEQ 276
+#define LE 277
+#define GE 278
+#define AND 279
+#define OR 280
+#define NOT 281
+#define UMINUS 282
+#define TWODOTS 283
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 26 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 298 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     MSNode *node;
 } YYSTYPE;
 /* Line 1447 of yacc.c.  */
-#line 94 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
+#line 100 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

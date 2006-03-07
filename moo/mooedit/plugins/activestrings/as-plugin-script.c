@@ -93,7 +93,7 @@ _as_plugin_context_exec (MSContext      *ctx,
     gboolean success;
 
     g_return_val_if_fail (AS_IS_PLUGIN_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (MS_IS_NODE (script), FALSE);
+    g_return_val_if_fail (script != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
     g_return_val_if_fail (insert != NULL, FALSE);
     g_return_val_if_fail (match != NULL, FALSE);
@@ -102,7 +102,7 @@ _as_plugin_context_exec (MSContext      *ctx,
     as_plugin_context_setup (AS_PLUGIN_CONTEXT (ctx),
                              doc, match, parens, n_parens);
 
-    val = ms_node_eval (script, ctx);
+    val = ms_top_node_eval (script, ctx);
     success = val != NULL;
 
     if (val)

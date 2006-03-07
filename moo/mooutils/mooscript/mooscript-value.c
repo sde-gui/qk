@@ -94,6 +94,18 @@ ms_value_string (const char *string)
 
 
 MSValue *
+ms_value_string_len (const char *string,
+                     int         chars)
+{
+    if (chars < 0)
+        return ms_value_string (string);
+    else
+        return ms_value_take_string (g_strndup (string,
+                                     g_utf8_offset_to_pointer (string, chars) - string));
+}
+
+
+MSValue *
 ms_value_take_string (char *string)
 {
     MSValue *val;

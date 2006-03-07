@@ -99,6 +99,9 @@ ms_context_finalize (GObject *object)
 
     g_free (ctx->error_msg);
 
+    if (ctx->return_val)
+        ms_value_unref (ctx->return_val);
+
     G_OBJECT_CLASS(ms_context_parent_class)->finalize (object);
 }
 
@@ -142,7 +145,9 @@ ms_context_eval_variable (MSContext  *ctx,
     var = ms_context_lookup_var (ctx, name);
 
     if (!var)
-        return ms_value_none ();
+        return ms_context_format_error (ctx, MS_ERROR_NAME,
+                                        "no variable named '%s'",
+                                        name);
 
     if (var->value)
         return ms_value_ref (var->value);
@@ -430,4 +435,63 @@ ms_variable_unref (MSVariable *var)
             g_object_unref (var->func);
         g_free (var);
     }
+}
+
+
+void
+ms_context_set_return (MSContext  *ctx,
+                       MSValue    *val)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->return_set);
+    ctx->return_set = TRUE;
+    ctx->return_val = val ? ms_value_ref (val) : ms_value_none ();
+}
+
+
+void
+ms_context_set_break (MSContext  *ctx)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->break_set);
+    ctx->break_set = TRUE;
+}
+
+
+void
+ms_context_set_continue (MSContext *ctx)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (!ctx->continue_set);
+    ctx->continue_set = TRUE;
+}
+
+
+void
+ms_context_unset_return (MSContext *ctx)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->return_set);
+    ctx->return_set = FALSE;
+    if (ctx->return_val)
+        ms_value_unref (ctx->return_val);
+    ctx->return_val = NULL;
+}
+
+
+void
+ms_context_unset_break (MSContext  *ctx)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->break_set);
+    ctx->break_set = FALSE;
+}
+
+
+void
+ms_context_unset_continue (MSContext *ctx)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->continue_set);
+    ctx->continue_set = FALSE;
 }

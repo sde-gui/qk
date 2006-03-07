@@ -12,6 +12,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "mooscript-parser-priv.h"
 #include "mooscript-parser.h"
 #include "mooscript-yacc.h"
 #include <string.h>
@@ -24,16 +25,19 @@ typedef struct {
 } Keyword;
 
 static Keyword keywords[] = {
-    { "if",     2, IF },
-    { "then",   4, THEN },
-    { "else",   4, ELSE },
-    { "fi",     2, FI },
-    { "while",  5, WHILE },
-    { "for",    3, FOR },
-    { "in",     2, IN },
-    { "do",     2, DO },
-    { "od",     2, OD },
-    { "not",    3, NOT },
+    { "if",       2, IF },
+    { "then",     4, THEN },
+    { "else",     4, ELSE },
+    { "fi",       2, FI },
+    { "while",    5, WHILE },
+    { "for",      3, FOR },
+    { "in",       2, IN },
+    { "do",       2, DO },
+    { "od",       2, OD },
+    { "not",      3, NOT },
+    { "return",   6, RETURN },
+    { "continue", 8, CONTINUE },
+    { "break",    5, BREAK }
 };
 
 
@@ -421,7 +425,7 @@ ms_parser_cleanup (MSParser *parser)
 {
     ms_lex_free (parser->lex);
     parser->lex = NULL;
-    g_slist_foreach (parser->nodes, (GFunc) g_object_unref, NULL);
+    g_slist_foreach (parser->nodes, (GFunc) ms_node_unref, NULL);
     g_slist_free (parser->nodes);
     parser->nodes = NULL;
     parser->script = NULL;
@@ -468,18 +472,18 @@ ms_script_parse (const char *string)
     script = ms_parser_parse (parser, string, -1);
 
     if (script)
-        g_object_ref (script);
+        ms_node_ref (script);
 
     ms_parser_free (parser);
     return script;
 }
 
 
-static void
-parser_add_node (MSParser   *parser,
-                 gpointer    node)
+void
+_ms_parser_add_node (MSParser   *parser,
+                     gpointer    node)
 {
-    g_return_if_fail (MS_IS_NODE (node));
+    g_return_if_fail (node != NULL);
     parser->nodes = g_slist_prepend (parser->nodes, node);
 }
 
@@ -494,254 +498,8 @@ _ms_parser_set_top_node (MSParser   *parser,
     if (!node)
     {
         node = (MSNode*) ms_node_list_new ();
-        parser_add_node (parser, node);
+        _ms_parser_add_node (parser, node);
     }
 
     parser->script = node;
-}
-
-
-MSNode *
-_ms_parser_node_list_add (MSParser   *parser,
-                          MSNodeList *list,
-                          MSNode     *node)
-{
-    if (!node)
-        return NULL;
-
-    if (!list)
-    {
-        list = ms_node_list_new ();
-        parser_add_node (parser, list);
-    }
-
-    ms_node_list_add (list, node);
-    return MS_NODE (list);
-}
-
-
-MSNode *
-_ms_parser_node_command (MSParser   *parser,
-                         const char *name,
-                         MSNodeList *list)
-{
-    MSNodeCommand *cmd;
-
-    g_return_val_if_fail (name != NULL, NULL);
-    g_return_val_if_fail (!list || MS_IS_NODE_LIST (list), NULL);
-
-    cmd = ms_node_command_new (name, list);
-    parser_add_node (parser, cmd);
-
-    return MS_NODE (cmd);
-}
-
-
-MSNode *
-_ms_parser_node_if_else (MSParser   *parser,
-                         MSNode     *condition,
-                         MSNode     *then_,
-                         MSNode     *else_)
-{
-    MSNodeIfElse *node;
-
-    g_return_val_if_fail (MS_IS_NODE (condition), NULL);
-    g_return_val_if_fail (MS_IS_NODE (then_), NULL);
-    g_return_val_if_fail (!else_ || MS_IS_NODE (else_), NULL);
-
-    node = ms_node_if_else_new (condition, then_, else_);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-static MSNode *
-ms_parser_while (MSParser   *parser,
-                 MSCondType  type,
-                 MSNode     *cond,
-                 MSNode     *what)
-{
-    MSNodeWhile *loop;
-
-    g_return_val_if_fail (MS_IS_NODE (cond), NULL);
-    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
-
-    loop = ms_node_while_new (type, cond, what);
-    parser_add_node (parser, loop);
-
-    return MS_NODE (loop);
-}
-
-MSNode *
-_ms_parser_node_while (MSParser   *parser,
-                       MSNode     *cond,
-                       MSNode     *what)
-{
-    return ms_parser_while (parser, MS_COND_BEFORE, cond, what);
-}
-
-MSNode *
-_ms_parser_node_do_while (MSParser   *parser,
-                          MSNode     *cond,
-                          MSNode     *what)
-{
-    return ms_parser_while (parser, MS_COND_AFTER, cond, what);
-}
-
-
-MSNode *
-_ms_parser_node_for (MSParser   *parser,
-                     MSNode     *var,
-                     MSNode     *list,
-                     MSNode     *what)
-{
-    MSNodeFor *loop;
-
-    g_return_val_if_fail (MS_IS_NODE (var), NULL);
-    g_return_val_if_fail (MS_IS_NODE (list), NULL);
-    g_return_val_if_fail (!what || MS_IS_NODE (what), NULL);
-
-    loop = ms_node_for_new (var, list, what);
-    parser_add_node (parser, loop);
-
-    return MS_NODE (loop);
-}
-
-
-MSNode *
-_ms_parser_node_assignment (MSParser   *parser,
-                            const char *name,
-                            MSNode     *val)
-{
-    MSNodeAssign *node;
-    MSNode *var;
-
-    g_return_val_if_fail (name && name[0], NULL);
-    g_return_val_if_fail (MS_IS_NODE (val), NULL);
-
-    var = _ms_parser_node_var (parser, name);
-    node = ms_node_assign_new (MS_NODE_VAR (var), val);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_binary_op (MSParser   *parser,
-                           MSBinaryOp  op,
-                           MSNode     *lval,
-                           MSNode     *rval)
-{
-    MSNodeCommand *cmd;
-
-    g_return_val_if_fail (MS_IS_NODE (lval), NULL);
-    g_return_val_if_fail (MS_IS_NODE (rval), NULL);
-
-    cmd = ms_node_binary_op_new (op, lval, rval);
-    parser_add_node (parser, cmd);
-
-    return MS_NODE (cmd);
-}
-
-
-MSNode *
-_ms_parser_node_unary_op (MSParser   *parser,
-                          MSUnaryOp   op,
-                          MSNode     *val)
-{
-    MSNodeCommand *cmd;
-
-    g_return_val_if_fail (MS_IS_NODE (val), NULL);
-
-    cmd = ms_node_unary_op_new (op, val);
-    parser_add_node (parser, cmd);
-
-    return MS_NODE (cmd);
-}
-
-
-MSNode *
-_ms_parser_node_int (MSParser   *parser,
-                     int         n)
-{
-    MSNodeValue *node;
-    MSValue *value;
-
-    value = ms_value_int (n);
-    node = ms_node_value_new (value);
-    ms_value_unref (value);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_string (MSParser   *parser,
-                        const char *string)
-{
-    MSNodeValue *node;
-    MSValue *value;
-
-    value = ms_value_string (string);
-    node = ms_node_value_new (value);
-    ms_value_unref (value);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_python (MSParser   *parser,
-                        const char *string)
-{
-    MSNodePython *node;
-
-    node = ms_node_python_new (string);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_var (MSParser   *parser,
-                     const char *name)
-{
-    MSNodeVar *node;
-
-    node = ms_node_var_new (name);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_value_list (MSParser   *parser,
-                            MSNodeList *list)
-{
-    MSNodeValList *node;
-
-    node = ms_node_val_list_new (list);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
-}
-
-
-MSNode *
-_ms_parser_node_value_range (MSParser   *parser,
-                             MSNode     *first,
-                             MSNode     *last)
-{
-    MSNodeValList *node;
-
-    node = ms_node_val_range_new (first, last);
-    parser_add_node (parser, node);
-
-    return MS_NODE (node);
 }
