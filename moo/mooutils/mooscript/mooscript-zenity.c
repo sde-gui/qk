@@ -18,6 +18,14 @@
 #include <gtk/gtk.h>
 
 
+#define CHECK_GTK(ctx)                                              \
+G_STMT_START {                                                      \
+    if (!gtk_init_check (&ctx->argc, &ctx->argv))                   \
+        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,      \
+                                        "could not open display");  \
+} G_STMT_END
+
+
 static MSValue*
 entry_func (MSValue   **args,
             guint       n_args,
@@ -28,6 +36,8 @@ entry_func (MSValue   **args,
     int response;
     GtkWidget *dialog, *entry;
     MSValue *result;
+
+    CHECK_GTK (ctx);
 
     if (n_args > 0 && !ms_value_is_none (args[0]))
         entry_text = ms_value_print (args[0]);
@@ -89,6 +99,8 @@ text_func (MSValue   **args,
     GtkWidget *dialog, *textview, *swin;
     GtkTextBuffer *buffer;
     MSValue *result;
+
+    CHECK_GTK (ctx);
 
     if (n_args > 0)
         text = ms_value_print (args[0]);
@@ -164,6 +176,8 @@ message_dialog (MSValue      **args,
     char *dialog_text = NULL;
     GtkWidget *dialog;
     int response;
+
+    CHECK_GTK (ctx);
 
     if (n_args > 0)
         dialog_text = ms_value_print (args[0]);
@@ -273,6 +287,8 @@ file_selector_func (MSValue   **args,
     GtkWidget *dialog;
     MSValue *ret;
     char *start = NULL, *title = NULL;
+
+    CHECK_GTK (ctx);
 
     if (n_args > 0)
         title = ms_value_print (args[0]);

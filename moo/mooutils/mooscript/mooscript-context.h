@@ -62,6 +62,10 @@ struct _MSContext {
     guint break_set : 1;
     guint continue_set : 1;
     guint return_set : 1;
+
+    int argc;
+    char **argv;
+    char *name;
 };
 
 struct _MSContextClass {

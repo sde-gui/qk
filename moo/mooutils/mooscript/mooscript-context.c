@@ -20,7 +20,9 @@
 
 enum {
     PROP_0,
-    PROP_WINDOW
+    PROP_WINDOW,
+    PROP_NAME,
+    PROP_ARGV
 };
 
 G_DEFINE_TYPE (MSContext, ms_context, G_TYPE_OBJECT)
@@ -39,6 +41,19 @@ ms_context_set_property (GObject        *object,
         case PROP_WINDOW:
             ctx->window = g_value_get_object (value);
             g_object_notify (object, "window");
+            break;
+
+        case PROP_NAME:
+            g_free (ctx->name);
+            ctx->window = g_strdup (g_value_get_string (value));
+            g_object_notify (object, "name");
+            break;
+
+        case PROP_ARGV:
+            g_strfreev (ctx->argv);
+            ctx->argv = g_strdupv (g_value_get_pointer (value));
+            ctx->argc = ctx->argv ? g_strv_length (ctx->argv) : 0;
+            g_object_notify (object, "argv");
             break;
 
         default:
@@ -61,6 +76,14 @@ ms_context_get_property (GObject        *object,
             g_value_set_object (value, ctx->window);
             break;
 
+        case PROP_NAME:
+            g_value_set_string (value, ctx->name);
+            break;
+
+        case PROP_ARGV:
+            g_value_set_pointer (value, ctx->argv);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -72,6 +95,37 @@ default_print_func (const char  *string,
                     G_GNUC_UNUSED MSContext *ctx)
 {
     g_print ("%s", string);
+}
+
+
+static GObject *
+ms_context_constructor (GType                  type,
+                        guint                  n_props,
+                        GObjectConstructParam *props)
+{
+    GObject *obj;
+    MSContext *ctx;
+
+    obj = G_OBJECT_CLASS(ms_context_parent_class)->constructor (type, n_props, props);
+    ctx = MS_CONTEXT (obj);
+
+    if (!ctx->name)
+    {
+        if (ctx->argv && ctx->argc)
+            ctx->name = g_strdup (ctx->argv[0]);
+        else
+            ctx->name = g_strdup ("script");
+    }
+
+    if (!ctx->argv || !ctx->argc)
+    {
+        g_strfreev (ctx->argv);
+        ctx->argv = g_new0 (char*, 2);
+        ctx->argv[0] = g_strdup (ctx->name);
+        ctx->argc = 1;
+    }
+
+    return obj;
 }
 
 
@@ -102,6 +156,9 @@ ms_context_finalize (GObject *object)
     if (ctx->return_val)
         ms_value_unref (ctx->return_val);
 
+    g_free (ctx->name);
+    g_strfreev (ctx->argv);
+
     G_OBJECT_CLASS(ms_context_parent_class)->finalize (object);
 }
 
@@ -114,6 +171,7 @@ ms_context_class_init (MSContextClass *klass)
     object_class->finalize = ms_context_finalize;
     object_class->set_property = ms_context_set_property;
     object_class->get_property = ms_context_get_property;
+    object_class->constructor = ms_context_constructor;
 
     g_object_class_install_property (object_class,
                                      PROP_WINDOW,

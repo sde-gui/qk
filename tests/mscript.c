@@ -32,7 +32,8 @@ int main (int argc, char *argv[])
     MSValue *val;
     MSContext *ctx;
 
-    gtk_init (&argc, &argv);
+//    gtk_init (&argc, &argv);
+    g_type_init ();
 
     if (argc < 2)
         usage (argv[0]);
