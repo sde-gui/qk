@@ -8,13 +8,18 @@ node_list_add (MSParser   *parser,
                MSNodeList *list,
                MSNode     *node)
 {
-    if (!node)
-        return NULL;
-
     if (!list)
     {
         list = ms_node_list_new ();
         _ms_parser_add_node (parser, list);
+    }
+
+    if (!node)
+    {
+        MSValue *none = ms_value_none ();
+        node = MS_NODE (ms_node_value_new (none));
+        ms_value_unref (none);
+        _ms_parser_add_node (parser, node);
     }
 
     ms_node_list_add (list, node);

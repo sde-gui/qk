@@ -1216,14 +1216,13 @@ ms_value_call (MSValue    *func,
     real_args = g_new (MSValue*, n_args + 1);
     real_args[0] = ms_value_ref (func->func.obj);
 
-    if (n_args)
-        for (i = 0; i < n_args; ++i)
-            real_args[i+1] = ms_value_ref (args[i]);
+    for (i = 0; i < n_args; ++i)
+        real_args[i+1] = ms_value_ref (args[i]);
 
     ret = ms_func_call (func->func.func, real_args, n_args + 1, ctx);
 
     for (i = 0; i < n_args + 1; ++i)
-        ms_value_unref (real_args[i+1]);
+        ms_value_unref (real_args[i]);
     g_free (real_args);
 
     return ret;

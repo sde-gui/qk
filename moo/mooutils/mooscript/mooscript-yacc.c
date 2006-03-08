@@ -124,7 +124,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 1 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 1 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 
 #include "mooscript-parser-priv.h"
 #include "mooscript-yacc.h"
@@ -135,13 +135,18 @@ node_list_add (MSParser   *parser,
                MSNodeList *list,
                MSNode     *node)
 {
-    if (!node)
-        return NULL;
-
     if (!list)
     {
         list = ms_node_list_new ();
         _ms_parser_add_node (parser, list);
+    }
+
+    if (!node)
+    {
+        MSValue *none = ms_value_none ();
+        node = MS_NODE (ms_node_value_new (none));
+        ms_value_unref (none);
+        _ms_parser_add_node (parser, node);
     }
 
     ms_node_list_add (list, node);
@@ -496,14 +501,14 @@ node_dict_assign (MSParser   *parser,
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 355 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 360 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
     MSNode *node;
 } YYSTYPE;
 /* Line 196 of yacc.c.  */
-#line 507 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.c"
+#line 512 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -515,7 +520,7 @@ typedef union YYSTYPE {
 
 
 /* Line 219 of yacc.c.  */
-#line 519 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.c"
+#line 524 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.c"
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
 # define YYSIZE_T __SIZE_TYPE__
@@ -762,13 +767,13 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   396,   396,   399,   400,   404,   405,   408,   409,   410,
-     411,   412,   413,   414,   415,   416,   419,   420,   421,   425,
-     426,   429,   430,   431,   435,   436,   437,   440,   444,   445,
-     446,   447,   449,   450,   452,   453,   454,   455,   456,   457,
-     458,   459,   460,   461,   465,   466,   467,   468,   469,   470,
-     471,   472,   473,   474,   477,   478,   479,   482,   483,   484,
-     487,   490
+       0,   401,   401,   404,   405,   409,   410,   413,   414,   415,
+     416,   417,   418,   419,   420,   421,   424,   425,   426,   430,
+     431,   434,   435,   436,   440,   441,   442,   445,   449,   450,
+     451,   452,   454,   455,   457,   458,   459,   460,   461,   462,
+     463,   464,   465,   466,   470,   471,   472,   473,   474,   475,
+     476,   477,   478,   479,   482,   483,   484,   487,   488,   489,
+     492,   495
 };
 #endif
 
@@ -1711,262 +1716,262 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 396 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 401 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { _ms_parser_set_top_node (parser, (yyvsp[0].node)); ;}
     break;
 
   case 3:
-#line 399 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 404 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, NULL, (yyvsp[0].node)); ;}
     break;
 
   case 4:
-#line 400 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 405 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, MS_NODE_LIST ((yyvsp[-1].node)), (yyvsp[0].node)); ;}
     break;
 
   case 5:
-#line 404 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 409 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = (yyvsp[-1].node); ;}
     break;
 
   case 6:
-#line 405 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 410 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_python (parser, (yyvsp[0].str)); ;}
     break;
 
   case 7:
-#line 408 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 413 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 12:
-#line 413 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 418 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_continue (parser); ;}
     break;
 
   case 13:
-#line 414 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 419 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_break (parser); ;}
     break;
 
   case 14:
-#line 415 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 420 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_return (parser, NULL); ;}
     break;
 
   case 15:
-#line 416 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 421 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_return (parser, (yyvsp[0].node)); ;}
     break;
 
   case 16:
-#line 419 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 424 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_while (parser, MS_COND_BEFORE, (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 17:
-#line 420 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 425 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_while (parser, MS_COND_AFTER, (yyvsp[0].node), (yyvsp[-2].node)); ;}
     break;
 
   case 18:
-#line 421 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 426 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_for (parser, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 19:
-#line 425 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 430 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_if_else (parser, (yyvsp[-3].node), (yyvsp[-1].node), NULL); ;}
     break;
 
   case 20:
-#line 426 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 431 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_if_else (parser, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 24:
-#line 435 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 440 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_assignment (parser, (yyvsp[-2].str), (yyvsp[0].node)); ;}
     break;
 
   case 25:
-#line 436 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 441 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_assign (parser, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[0].node)); ;}
     break;
 
   case 26:
-#line 437 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 442 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_dict_assign (parser, (yyvsp[-4].node), (yyvsp[-2].str), (yyvsp[0].node)); ;}
     break;
 
   case 27:
-#line 440 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 445 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_if_else (parser, (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 28:
-#line 444 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 449 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_PLUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 29:
-#line 445 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 450 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_MINUS, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 30:
-#line 446 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 451 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_DIV, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 31:
-#line 447 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 452 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_MULT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 32:
-#line 449 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 454 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_AND, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 33:
-#line 450 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 455 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_OR, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 34:
-#line 452 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 457 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_EQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 35:
-#line 453 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 458 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_NEQ, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 36:
-#line 454 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 459 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_LT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 37:
-#line 455 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 460 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_GT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 38:
-#line 456 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 461 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_LE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 39:
-#line 457 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 462 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_GE, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 40:
-#line 458 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 463 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_unary_op (parser, MS_OP_UMINUS, (yyvsp[0].node)); ;}
     break;
 
   case 41:
-#line 459 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 464 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_unary_op (parser, MS_OP_NOT, (yyvsp[0].node)); ;}
     break;
 
   case 42:
-#line 460 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 465 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_unary_op (parser, MS_OP_LEN, (yyvsp[0].node)); ;}
     break;
 
   case 43:
-#line 461 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 466 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_binary_op (parser, MS_OP_FORMAT, (yyvsp[-2].node), (yyvsp[0].node)); ;}
     break;
 
   case 44:
-#line 465 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 470 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_int (parser, (yyvsp[0].ival)); ;}
     break;
 
   case 45:
-#line 466 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 471 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_string (parser, (yyvsp[0].str)); ;}
     break;
 
   case 47:
-#line 468 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 473 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = (yyvsp[-1].node); ;}
     break;
 
   case 48:
-#line 469 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 474 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_value_list (parser, MS_NODE_LIST ((yyvsp[-1].node))); ;}
     break;
 
   case 49:
-#line 470 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 475 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_dict (parser, (yyvsp[-1].node) ? MS_NODE_LIST ((yyvsp[-1].node)) : NULL); ;}
     break;
 
   case 50:
-#line 471 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 476 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_value_range (parser, (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 51:
-#line 472 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 477 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_function (parser, (yyvsp[-3].node), (yyvsp[-1].node) ? MS_NODE_LIST ((yyvsp[-1].node)) : NULL); ;}
     break;
 
   case 52:
-#line 473 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 478 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_elm (parser, (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 53:
-#line 474 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 479 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_dict_elm (parser, (yyvsp[-2].node), (yyvsp[0].str)); ;}
     break;
 
   case 54:
-#line 477 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 482 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 55:
-#line 478 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 483 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, NULL, (yyvsp[0].node)); ;}
     break;
 
   case 56:
-#line 479 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 484 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, MS_NODE_LIST ((yyvsp[-2].node)), (yyvsp[0].node)); ;}
     break;
 
   case 57:
-#line 482 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 487 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 58:
-#line 483 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 488 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, NULL, (yyvsp[0].node)); ;}
     break;
 
   case 59:
-#line 484 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 489 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_list_add (parser, MS_NODE_LIST ((yyvsp[-2].node)), (yyvsp[0].node)); ;}
     break;
 
   case 60:
-#line 487 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 492 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_dict_entry (parser, (yyvsp[-2].str), (yyvsp[0].node)); ;}
     break;
 
   case 61:
-#line 490 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 495 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
     { (yyval.node) = node_var (parser, (yyvsp[0].str)); ;}
     break;
 
@@ -1975,7 +1980,7 @@ yyreduce:
     }
 
 /* Line 1126 of yacc.c.  */
-#line 1979 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.c"
+#line 1984 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2243,6 +2248,6 @@ yyreturn:
 }
 
 
-#line 493 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 498 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 
 
