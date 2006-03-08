@@ -12,7 +12,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooscript-func.h"
+#include "mooscript-context.h"
 
 
 MSValue *
@@ -81,7 +81,9 @@ ms_cfunc_call (MSFunc     *func_,
 
     if (func->n_args >= 0 && func->n_args != (int) n_args)
     {
-        g_warning ("wrong number of arguments");
+        ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                 "function takes %d arguments, but %d given",
+                                 func->n_args, n_args);
         return NULL;
     }
 

@@ -235,3 +235,83 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC_OBJ (ms_zenity_choose_dir, "ChooseDir");
     ADD_FUNC_OBJ (ms_zenity_choose_file_save, "ChooseFileSave");
 }
+
+
+/**********************************************************************/
+/* Methods
+ */
+
+static void
+add_meth (MSValueClass *klass,
+          const char   *name,
+          MSFunc       *func)
+{
+    ms_value_class_add_method (klass, name, func);
+    g_object_unref (func);
+}
+
+#define add_meth0(type, name, cfunc)                        \
+    add_meth (&types[type], name, ms_cfunc_new_1 (cfunc))
+#define add_meth1(type, name, cfunc)                        \
+    add_meth (&types[type], name, ms_cfunc_new_2 (cfunc))
+
+
+static void
+dict_add_key (const char *key,
+              G_GNUC_UNUSED gpointer val,
+              gpointer user_data)
+{
+    MSValue *vkey;
+    struct {
+        MSValue *list;
+        guint i;
+    } *data = user_data;
+
+    vkey = ms_value_string (key);
+    ms_value_list_set_elm (data->list, data->i++, vkey);
+    ms_value_unref (vkey);
+}
+
+static MSValue *
+dict_keys_func (MSValue *dict,
+                G_GNUC_UNUSED MSContext *ctx)
+{
+    guint n_keys;
+    struct {
+        MSValue *list;
+        guint i;
+    } data;
+
+    n_keys = g_hash_table_size (dict->hash);
+    data.list = ms_value_list (n_keys);
+    data.i = 0;
+    g_hash_table_foreach (dict->hash, (GHFunc) dict_add_key, &data);
+
+    return data.list;
+}
+
+
+static MSValue *
+dict_has_key_func (MSValue *dict,
+                   MSValue *key,
+                   G_GNUC_UNUSED MSContext *ctx)
+{
+    MSValue *val, *ret;
+
+    if (MS_VALUE_TYPE (key) != MS_VALUE_STRING)
+        return ms_value_false ();
+
+    val = ms_value_dict_get_elm (dict, key->str);
+    ret = val ? ms_value_true () : ms_value_false ();
+    ms_value_unref (val);
+
+    return ret;
+}
+
+
+void
+_ms_type_init_builtin (MSValueClass *types)
+{
+    add_meth0 (MS_VALUE_DICT, "keys", dict_keys_func);
+    add_meth1 (MS_VALUE_DICT, "has_key", dict_has_key_func);
+}

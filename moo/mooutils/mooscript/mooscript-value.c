@@ -1243,6 +1243,8 @@ ms_type_init (void)
 
     for (i = 0; i < MS_VALUE_INVALID; ++i)
         types[i].type = i;
+
+    _ms_type_init_builtin (types);
 }
 
 

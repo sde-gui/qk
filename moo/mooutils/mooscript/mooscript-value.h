@@ -93,6 +93,7 @@ struct _MSValue {
 
 
 void         ms_type_init               (void);
+void         _ms_type_init_builtin      (MSValueClass   *types);
 
 void         ms_value_class_add_method  (MSValueClass   *klass,
                                          const char     *name,
