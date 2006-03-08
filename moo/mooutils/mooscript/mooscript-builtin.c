@@ -84,9 +84,9 @@ int_func (MSValue    *arg,
 
     if (!ms_value_get_int (arg, &ival))
     {
-        char *str = ms_value_print (arg);
+        char *str = ms_value_repr (arg);
         ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "could not convert '%s' to int",
+                                 "could not convert %s to int",
                                  str);
         g_free (str);
         return NULL;

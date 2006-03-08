@@ -142,6 +142,7 @@ gboolean     ms_value_get_bool          (MSValue        *val);
 gboolean     ms_value_get_int           (MSValue        *val,
                                          int            *ival);
 char        *ms_value_print             (MSValue        *val);
+char        *ms_value_repr              (MSValue        *val);
 
 gboolean     ms_value_equal             (MSValue        *a,
                                          MSValue        *b);

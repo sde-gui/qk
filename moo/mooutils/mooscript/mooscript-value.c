@@ -332,8 +332,6 @@ ms_value_get_bool (MSValue *val)
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
-                case G_TYPE_NONE:
-                    return FALSE;
                 case G_TYPE_CHAR:
                     return g_value_get_char (val->gval) != 0;
                 case G_TYPE_UCHAR:
@@ -401,9 +399,6 @@ ms_value_get_int (MSValue    *val,
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
-                case G_TYPE_NONE:
-                    *ival = 0;
-                    return TRUE;
                 case G_TYPE_CHAR:
                     *ival = g_value_get_char (val->gval) != 0;
                     return TRUE;
@@ -464,7 +459,7 @@ print_list (MSValue **elms,
         char *s;
         if (i)
             g_string_append (string, ", ");
-        s = ms_value_print (elms[i]);
+        s = ms_value_repr (elms[i]);
         g_string_append (string, s);
         g_free (s);
     }
@@ -548,7 +543,7 @@ print_dict_elm (KeyValPair *pair,
         g_string_append (data->string, ", ");
     data->first = FALSE;
 
-    strval = ms_value_print (pair->val);
+    strval = ms_value_repr (pair->val);
     g_string_append_printf (data->string, "%s = %s", pair->key, strval);
     g_free (strval);
 }
@@ -590,7 +585,7 @@ print_func (MSValue *val)
     else if (!val->func.obj)
         return g_strdup ("<method>");
 
-    obj = ms_value_print (val->func.obj);
+    obj = ms_value_repr (val->func.obj);
     str = g_strdup_printf ("<method of %s>", obj);
     g_free (obj);
 
@@ -620,8 +615,6 @@ ms_value_print (MSValue *val)
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
-                case G_TYPE_NONE:
-                    return g_strdup ("None");
                 case G_TYPE_CHAR:
                     return g_strdup_printf ("%c", g_value_get_char (val->gval));
                 case G_TYPE_UCHAR:
@@ -657,6 +650,89 @@ ms_value_print (MSValue *val)
                     return g_strdup_printf ("Boxed %p", g_value_get_boxed (val->gval));
                 case G_TYPE_OBJECT:
                     return g_strdup_printf ("Object %p", g_value_get_object (val->gval));
+                default:
+                    g_return_val_if_reached (NULL);
+            }
+
+        case MS_VALUE_INVALID:
+            g_assert_not_reached ();
+    }
+
+    g_return_val_if_reached (NULL);
+}
+
+
+char *
+ms_value_repr (MSValue *val)
+{
+    char *tmp, *ret;
+
+    g_return_val_if_fail (val != NULL, NULL);
+
+    switch (MS_VALUE_TYPE (val))
+    {
+        case MS_VALUE_STRING:
+            tmp = g_strescape (val->str, NULL);
+            ret = g_strdup_printf ("\"%s\"", tmp);
+            g_free (tmp);
+            return ret;
+
+        case MS_VALUE_INT:
+            return g_strdup_printf ("%d", val->ival);
+
+        case MS_VALUE_NONE:
+            return g_strdup ("none");
+
+        case MS_VALUE_LIST:
+            return print_list (val->list.elms, val->list.n_elms);
+
+        case MS_VALUE_DICT:
+            return print_dict (val->hash);
+
+        case MS_VALUE_FUNC:
+            return print_func (val);
+
+        case MS_VALUE_GVALUE:
+            switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
+            {
+                case G_TYPE_CHAR:
+                    return g_strdup_printf ("'%c'", g_value_get_char (val->gval));
+                case G_TYPE_UCHAR:
+                    return g_strdup_printf ("'%c'", g_value_get_uchar (val->gval));
+                case G_TYPE_BOOLEAN:
+                    return g_strdup_printf ("%d", g_value_get_boolean (val->gval));
+                case G_TYPE_INT:
+                    return g_strdup_printf ("%d", g_value_get_int (val->gval));
+                case G_TYPE_UINT:
+                    return g_strdup_printf ("%d", g_value_get_uint (val->gval));
+                case G_TYPE_LONG:
+                    return g_strdup_printf ("%ld", g_value_get_long (val->gval));
+                case G_TYPE_ULONG:
+                    return g_strdup_printf ("%ld", g_value_get_ulong (val->gval));
+                case G_TYPE_INT64:
+                    return g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (val->gval));
+                case G_TYPE_UINT64:
+                    return g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (val->gval));
+                case G_TYPE_ENUM:
+                    return g_strdup_printf ("<%d>", g_value_get_enum (val->gval));
+                case G_TYPE_FLAGS:
+                    return g_strdup_printf ("<%d>", g_value_get_flags (val->gval));
+                case G_TYPE_FLOAT:
+                    return g_strdup_printf ("%f", g_value_get_float (val->gval));
+                case G_TYPE_DOUBLE:
+                    return g_strdup_printf ("%f", g_value_get_double (val->gval));
+                case G_TYPE_STRING:
+                    tmp = (char*) g_value_get_string (val->gval);
+                    tmp = tmp ? g_strescape (tmp, NULL) : NULL;
+                    ret = tmp ? g_strdup_printf ("\"%s\"", tmp) : g_strdup ("(null)");
+                    g_free (tmp);
+                    return ret;
+                case G_TYPE_POINTER:
+                    return g_strdup_printf ("<pointer %p>", g_value_get_pointer (val->gval));
+                case G_TYPE_BOXED:
+                    return g_strdup_printf ("<boxed %p>", g_value_get_boxed (val->gval));
+                case G_TYPE_OBJECT:
+                    return g_strdup_printf ("<object %p>", g_value_get_object (val->gval));
                 default:
                     g_return_val_if_reached (NULL);
             }
