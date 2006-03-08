@@ -409,7 +409,7 @@ simple_expr:
         | '(' stmt ')'                      { $$ = $2; }
         | '[' list_elms ']'                 { $$ = node_value_list (parser, MS_NODE_LIST ($2)); }
         | '[' expr TWODOTS expr ']'         { $$ = node_value_range (parser, $2, $4); }
-        | IDENTIFIER '(' list_elms ')'      { $$ = node_command (parser, $1, MS_NODE_LIST ($3)); }
+        | IDENTIFIER '(' list_elms ')'      { $$ = node_command (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
         | simple_expr '[' expr ']'          { $$ = node_list_elm (parser, $1, $3); }
 ;
 
