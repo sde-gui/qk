@@ -25,7 +25,7 @@ typedef enum {
     MS_TYPE_NODE_LIST,
     MS_TYPE_NODE_LIST_ELM,
     MS_TYPE_NODE_VAR,
-    MS_TYPE_NODE_COMMAND,
+    MS_TYPE_NODE_FUNCTION,
     MS_TYPE_NODE_IF_ELSE,
     MS_TYPE_NODE_WHILE,
     MS_TYPE_NODE_FOR,
@@ -48,7 +48,7 @@ typedef struct _MSNode MSNode;
 typedef struct _MSNodeList MSNodeList;
 typedef struct _MSNodeListElm MSNodeListElm;
 typedef struct _MSNodeVar MSNodeVar;
-typedef struct _MSNodeCommand MSNodeCommand;
+typedef struct _MSNodeFunction MSNodeFunction;
 typedef struct _MSNodeIfElse MSNodeIfElse;
 typedef struct _MSNodeWhile MSNodeWhile;
 typedef struct _MSNodeFor MSNodeFor;
@@ -111,7 +111,7 @@ _ms_node_check_type (gpointer   pnode,
 #define MS_NODE_LIST(node_)         MS_NODE_CAST (node_, MS_TYPE_NODE_LIST, MSNodeList)
 #define MS_NODE_LIST_ELM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_LIST_ELM, MSNodeListElm)
 #define MS_NODE_VAR(node_)          MS_NODE_CAST (node_, MS_TYPE_NODE_VAR, MSNodeVar)
-#define MS_NODE_COMMAND(node_)      MS_NODE_CAST (node_, MS_TYPE_NODE_COMMAND, MSNodeCommand)
+#define MS_NODE_FUNCTION(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_FUNCTION, MSNodeFunction)
 #define MS_NODE_IF_ELSE(node_)      MS_NODE_CAST (node_, MS_TYPE_NODE_IF_ELSE, MSNodeIfElse)
 #define MS_NODE_WHILE(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_WHILE, MSNodeWhile)
 #define MS_NODE_FOR(node_)          MS_NODE_CAST (node_, MS_TYPE_NODE_FOR, MSNodeFor)
@@ -156,9 +156,9 @@ struct _MSNodeVar {
 };
 
 
-struct _MSNodeCommand {
+struct _MSNodeFunction {
     MSNode node;
-    char *name;
+    MSNode *func;
     MSNodeList *args;
 };
 
@@ -287,12 +287,12 @@ MSNodeList     *ms_node_list_new            (void);
 void            ms_node_list_add            (MSNodeList *list,
                                              MSNode     *node);
 
-MSNodeCommand  *ms_node_command_new         (const char *name,
+MSNodeFunction *ms_node_function_new        (MSNode     *func,
                                              MSNodeList *args);
-MSNodeCommand  *ms_node_binary_op_new       (MSBinaryOp  op,
-                                             MSNode     *lval,
-                                             MSNode     *rval);
-MSNodeCommand  *ms_node_unary_op_new        (MSUnaryOp   op,
+MSNodeFunction *ms_node_binary_op_new       (MSBinaryOp  op,
+                                             MSNode     *a,
+                                             MSNode     *b);
+MSNodeFunction *ms_node_unary_op_new        (MSUnaryOp   op,
                                              MSNode     *val);
 
 MSNodeIfElse   *ms_node_if_else_new         (MSNode     *condition,

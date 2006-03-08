@@ -222,42 +222,41 @@ ms_node_var_new (const char *name)
 
 
 /****************************************************************************/
-/* MSNodeCommand
+/* MSNodeFunction
  */
 
 static void
-ms_node_command_destroy (MSNode *node)
+ms_node_function_destroy (MSNode *node)
 {
-    MSNodeCommand *cmd = MS_NODE_COMMAND (node);
-
-    g_free (cmd->name);
-
-    if (cmd->args)
-        ms_node_unref (MS_NODE (cmd->args));
+    ms_node_unref (MS_NODE_FUNCTION(node)->func);
+    ms_node_unref (MS_NODE_FUNCTION(node)->args);
 }
 
 
 static MSValue *
-ms_node_command_eval (MSNode    *node,
-                      MSContext *ctx)
+ms_node_function_eval (MSNode    *node_,
+                       MSContext *ctx)
 {
     guint i, n_args;
     MSValue **args;
-    MSValue *ret;
-    MSNodeCommand *cmd = MS_NODE_COMMAND (node);
-    MSFunc *func;
+    MSValue *ret, *func;
+    MSNodeFunction *node = MS_NODE_FUNCTION (node_);
 
-    g_return_val_if_fail (cmd->name != NULL, NULL);
+    g_return_val_if_fail (node->func != NULL, NULL);
 
-    func = ms_context_lookup_func (ctx, cmd->name);
+    func = _ms_node_eval (node->func, ctx);
 
     if (!func)
-        return ms_context_format_error (ctx, MS_ERROR_NAME,
-                                        "unknown command '%s'",
-                                        cmd->name);
+        return NULL;
 
-    g_object_ref (func);
-    n_args = cmd->args ? cmd->args->n_nodes : 0;
+    if (!ms_value_is_func (func))
+    {
+        ms_value_unref (func);
+        return ms_context_format_error (ctx, MS_ERROR_NAME,
+                                        "not a function");
+    }
+
+    n_args = node->args ? node->args->n_nodes : 0;
     args = NULL;
     ret = NULL;
 
@@ -267,94 +266,100 @@ ms_node_command_eval (MSNode    *node,
 
         for (i = 0; i < n_args; ++i)
         {
-            args[i] = _ms_node_eval (cmd->args->nodes[i], ctx);
+            args[i] = _ms_node_eval (node->args->nodes[i], ctx);
 
             if (!args[i])
                 goto out;
         }
     }
 
-    ret = ms_func_call (func, args, n_args, ctx);
+    ret = ms_value_call (func, args, n_args, ctx);
 
 out:
     for (i = 0; i < n_args; ++i)
         if (args[i])
             ms_value_unref (args[i]);
     g_free (args);
-    g_object_unref (func);
+    ms_value_unref (func);
     return ret;
 }
 
 
-MSNodeCommand *
-ms_node_command_new (const char *name,
-                     MSNodeList *args)
+MSNodeFunction *
+ms_node_function_new (MSNode     *func,
+                      MSNodeList *args)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
 
-    g_return_val_if_fail (name && name[0], NULL);
-    g_return_val_if_fail (!args || MS_NODE_TYPE (args) == MS_TYPE_NODE_LIST, NULL);
+    g_return_val_if_fail (func != NULL, NULL);
+    g_return_val_if_fail (!args || MS_IS_NODE_LIST (args), NULL);
 
     if (args && !args->n_nodes)
         args = NULL;
 
-    cmd = NODE_NEW (MSNodeCommand,
-                    MS_TYPE_NODE_COMMAND,
-                    ms_node_command_eval,
-                    ms_node_command_destroy);
+    node = NODE_NEW (MSNodeFunction,
+                     MS_TYPE_NODE_FUNCTION,
+                     ms_node_function_eval,
+                     ms_node_function_destroy);
 
-    cmd->name = g_strdup (name);
-    cmd->args = args ? ms_node_ref (args) : NULL;
+    node->func = ms_node_ref (func);
+    node->args = ms_node_ref (args);
 
-    return cmd;
+    return node;
 }
 
 
-MSNodeCommand *
+MSNodeFunction *
 ms_node_binary_op_new (MSBinaryOp  op,
-                       MSNode     *lval,
-                       MSNode     *rval)
+                       MSNode     *a,
+                       MSNode     *b)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
     MSNodeList *args;
     const char *name;
+    MSNodeVar *func;
 
-    g_return_val_if_fail (lval && rval, NULL);
+    g_return_val_if_fail (a && b, NULL);
 
     name = ms_binary_op_name (op);
     g_return_val_if_fail (name != NULL, NULL);
+    func = ms_node_var_new (name);
 
     args = ms_node_list_new ();
-    ms_node_list_add (args, lval);
-    ms_node_list_add (args, rval);
+    ms_node_list_add (args, a);
+    ms_node_list_add (args, b);
 
-    cmd = ms_node_command_new (name, args);
+    node = ms_node_function_new (MS_NODE (func), args);
 
     ms_node_unref (args);
-    return cmd;
+    ms_node_unref (func);
+    return node;
 }
 
 
-MSNodeCommand *
+MSNodeFunction *
 ms_node_unary_op_new (MSUnaryOp   op,
                       MSNode     *val)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
     MSNodeList *args;
     const char *name;
+    MSNodeVar *func;
 
     g_return_val_if_fail (val != NULL, NULL);
 
     name = ms_unary_op_name (op);
     g_return_val_if_fail (name != NULL, NULL);
+    func = ms_node_var_new (name);
 
     args = ms_node_list_new ();
     ms_node_list_add (args, val);
 
-    cmd = ms_node_command_new (name, args);
+    node = ms_node_function_new (MS_NODE (func), args);
 
     ms_node_unref (args);
-    return cmd;
+    ms_node_unref (func);
+    return node;
 }
 
 

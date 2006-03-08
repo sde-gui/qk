@@ -51,7 +51,6 @@ typedef void (*MSPrintFunc) (const char *string,
 struct _MSContext {
     GObject object;
 
-    GHashTable *funcs;
     GHashTable *vars;
     MSError error;
     char *error_msg;
@@ -98,8 +97,6 @@ gboolean     ms_context_set_var             (MSContext  *ctx,
                                              const char *name,
                                              MSVariable *var);
 
-MSFunc      *ms_context_lookup_func         (MSContext  *ctx,
-                                             const char *name);
 gboolean     ms_context_set_func            (MSContext  *ctx,
                                              const char *name,
                                              MSFunc     *func);

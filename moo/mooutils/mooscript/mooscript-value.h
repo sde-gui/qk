@@ -21,15 +21,18 @@ G_BEGIN_DECLS
 
 
 typedef struct _MSValue MSValue;
+typedef struct _MSFunc MSFunc;
+typedef struct _MSContext MSContext;
+
 
 typedef enum {
     MS_VALUE_NONE,
     MS_VALUE_INT,
     MS_VALUE_STRING,
-    MS_VALUE_OBJECT,
     MS_VALUE_GVALUE,
     MS_VALUE_LIST,
-    MS_VALUE_DICT
+    MS_VALUE_DICT,
+    MS_VALUE_FUNC
 } MSValueType;
 
 typedef enum {
@@ -59,16 +62,23 @@ typedef enum {
 struct _MSValue {
     guint ref_count;
     MSValueType type;
+
     union {
         int ival;
         char *str;
-        gpointer ptr;
         GValue *gval;
+        GHashTable *hash;
+
         struct {
             MSValue **elms;
             guint n_elms;
         } list;
-        GHashTable *hash;
+
+        struct {
+            MSFunc *func;
+            MSValue *obj;
+            guint meth : 1;
+        } func;
     };
 };
 
@@ -90,8 +100,7 @@ MSValue     *ms_value_string        (const char *string);
 MSValue     *ms_value_string_len    (const char *string,
                                      int         len);
 MSValue     *ms_value_take_string   (char       *string);
-MSValue     *ms_value_object        (gpointer    object);
-MSValue     *ms_value_gvalue        (GValue     *gval);
+MSValue     *ms_value_gvalue        (const GValue *gval);
 
 MSValue     *ms_value_list          (guint       n_elms);
 void         ms_value_list_set_elm  (MSValue    *list,
@@ -117,6 +126,16 @@ gboolean     ms_value_equal         (MSValue    *a,
                                      MSValue    *b);
 int          ms_value_cmp           (MSValue    *a,
                                      MSValue    *b);
+
+MSValue     *ms_value_func          (MSFunc     *func);
+MSValue     *ms_value_meth          (MSFunc     *func);
+MSValue     *ms_value_bound_meth    (MSFunc     *func,
+                                     MSValue    *obj);
+gboolean     ms_value_is_func       (MSValue    *val);
+MSValue     *ms_value_call          (MSValue    *func,
+                                     MSValue   **args,
+                                     guint       n_args,
+                                     MSContext  *ctx);
 
 
 G_END_DECLS

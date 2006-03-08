@@ -34,9 +34,7 @@ G_BEGIN_DECLS
 #define MS_IS_CFUNC_CLASS(klass)        (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CFUNC))
 #define MS_CFUNC_GET_CLASS(obj)         (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CFUNC, MSCFuncClass))
 
-typedef struct _MSContext MSContext;
 
-typedef struct _MSFunc MSFunc;
 typedef struct _MSFuncClass MSFuncClass;
 typedef struct _MSCFunc MSCFunc;
 typedef struct _MSCFuncClass MSCFuncClass;

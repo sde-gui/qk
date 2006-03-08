@@ -23,19 +23,19 @@ node_list_add (MSParser   *parser,
 
 
 static MSNode *
-node_command (MSParser   *parser,
-              const char *name,
-              MSNodeList *list)
+node_function (MSParser   *parser,
+               MSNode     *func,
+               MSNodeList *args)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
 
-    g_return_val_if_fail (name != NULL, NULL);
-    g_return_val_if_fail (!list || MS_IS_NODE_LIST (list), NULL);
+    g_return_val_if_fail (func != NULL, NULL);
+    g_return_val_if_fail (!args || MS_IS_NODE_LIST (args), NULL);
 
-    cmd = ms_node_command_new (name, list);
-    _ms_parser_add_node (parser, cmd);
+    node = ms_node_function_new (func, args);
+    _ms_parser_add_node (parser, node);
 
-    return MS_NODE (cmd);
+    return MS_NODE (node);
 }
 
 
@@ -128,14 +128,14 @@ node_binary_op (MSParser   *parser,
                 MSNode     *lval,
                 MSNode     *rval)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
 
     g_return_val_if_fail (lval && rval, NULL);
 
-    cmd = ms_node_binary_op_new (op, lval, rval);
-    _ms_parser_add_node (parser, cmd);
+    node = ms_node_binary_op_new (op, lval, rval);
+    _ms_parser_add_node (parser, node);
 
-    return MS_NODE (cmd);
+    return MS_NODE (node);
 }
 
 
@@ -144,14 +144,14 @@ node_unary_op (MSParser   *parser,
                MSUnaryOp   op,
                MSNode     *val)
 {
-    MSNodeCommand *cmd;
+    MSNodeFunction *node;
 
     g_return_val_if_fail (val != NULL, NULL);
 
-    cmd = ms_node_unary_op_new (op, val);
-    _ms_parser_add_node (parser, cmd);
+    node = ms_node_unary_op_new (op, val);
+    _ms_parser_add_node (parser, node);
 
-    return MS_NODE (cmd);
+    return MS_NODE (node);
 }
 
 
@@ -469,7 +469,7 @@ simple_expr:
         | '[' list_elms ']'                 { $$ = node_value_list (parser, MS_NODE_LIST ($2)); }
         | '{' dict_elms '}'                 { $$ = node_dict (parser, $2 ? MS_NODE_LIST ($2) : NULL); }
         | '[' expr TWODOTS expr ']'         { $$ = node_value_range (parser, $2, $4); }
-        | IDENTIFIER '(' list_elms ')'      { $$ = node_command (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
+        | simple_expr '(' list_elms ')'     { $$ = node_function (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
         | simple_expr '[' expr ']'          { $$ = node_list_elm (parser, $1, $3); }
         | simple_expr '.' IDENTIFIER        { $$ = node_dict_elm (parser, $1, $3); }
 ;

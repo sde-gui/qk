@@ -132,8 +132,6 @@ ms_context_constructor (GType                  type,
 static void
 ms_context_init (MSContext *ctx)
 {
-    ctx->funcs = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                        g_free, g_object_unref);
     ctx->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                        (GDestroyNotify) ms_variable_unref);
 
@@ -148,9 +146,7 @@ ms_context_finalize (GObject *object)
 {
     MSContext *ctx = MS_CONTEXT (object);
 
-    g_hash_table_destroy (ctx->funcs);
     g_hash_table_destroy (ctx->vars);
-
     g_free (ctx->error_msg);
 
     if (ctx->return_val)
@@ -311,39 +307,23 @@ ms_context_set_var (MSContext  *ctx,
 }
 
 
-MSFunc *
-ms_context_lookup_func (MSContext  *ctx,
-                        const char *name)
-{
-    g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (name != NULL, FALSE);
-    return g_hash_table_lookup (ctx->funcs, name);
-}
-
-
 gboolean
 ms_context_set_func (MSContext  *ctx,
                      const char *name,
                      MSFunc     *func)
 {
-    MSFunc *old;
+    MSValue *vfunc;
+    gboolean ret;
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
     g_return_val_if_fail (!func || MS_IS_FUNC (func), FALSE);
 
-    old = g_hash_table_lookup (ctx->funcs, name);
+    vfunc = ms_value_func (func);
+    ret = ms_context_assign_variable (ctx, name, vfunc);
+    ms_value_unref (vfunc);
 
-    if (func != old)
-    {
-        if (func)
-            g_hash_table_insert (ctx->funcs, g_strdup (name),
-                                 g_object_ref (func));
-        else
-            g_hash_table_remove (ctx->funcs, name);
-    }
-
-    return TRUE;
+    return ret;
 }
 
 

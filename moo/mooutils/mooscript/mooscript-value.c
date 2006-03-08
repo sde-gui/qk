@@ -117,18 +117,7 @@ ms_value_take_string (char *string)
 
 
 MSValue *
-ms_value_object (gpointer object)
-{
-    MSValue *val;
-    g_return_val_if_fail (G_IS_OBJECT (object), NULL);
-    val = ms_value_new (MS_VALUE_OBJECT);
-    val->ptr = g_object_ref (object);
-    return val;
-}
-
-
-MSValue *
-ms_value_gvalue (GValue *gval)
+ms_value_gvalue (const GValue *gval)
 {
     MSValue *val;
     g_return_val_if_fail (G_IS_VALUE (gval), NULL);
@@ -265,10 +254,6 @@ ms_value_unref (MSValue *val)
                 MS_True = NULL;
             break;
 
-        case MS_VALUE_OBJECT:
-            g_object_unref (val->ptr);
-            break;
-
         case MS_VALUE_GVALUE:
             g_value_unset (val->gval);
             g_free (val->gval);
@@ -282,6 +267,12 @@ ms_value_unref (MSValue *val)
 
         case MS_VALUE_DICT:
             g_hash_table_destroy (val->hash);
+            break;
+
+        case MS_VALUE_FUNC:
+            g_object_unref (val->func.func);
+            if (val->func.obj)
+                ms_value_unref (val->func.obj);
             break;
     }
 
@@ -327,12 +318,12 @@ ms_value_get_bool (MSValue *val)
             return val->ival != 0;
         case MS_VALUE_NONE:
             return FALSE;
-        case MS_VALUE_OBJECT:
-            return val->ptr != NULL;
         case MS_VALUE_LIST:
             return val->list.n_elms != 0;
         case MS_VALUE_DICT:
             return g_hash_table_size (val->hash) != 0;
+        case MS_VALUE_FUNC:
+            return TRUE;
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
@@ -579,6 +570,26 @@ print_dict (GHashTable *table)
 }
 
 
+static char *
+print_func (MSValue *val)
+{
+    char *obj, *str;
+
+    g_assert (val->type == MS_VALUE_FUNC);
+
+    if (!val->func.meth)
+        return g_strdup ("<function>");
+    else if (!val->func.obj)
+        return g_strdup ("<method>");
+
+    obj = ms_value_print (val->func.obj);
+    str = g_strdup_printf ("<method of %s>", obj);
+    g_free (obj);
+
+    return str;
+}
+
+
 char *
 ms_value_print (MSValue *val)
 {
@@ -591,13 +602,13 @@ ms_value_print (MSValue *val)
         case MS_VALUE_INT:
             return g_strdup_printf ("%d", val->ival);
         case MS_VALUE_NONE:
-            return g_strdup ("None");
-        case MS_VALUE_OBJECT:
-            return g_strdup_printf ("Object %p", val->ptr);
+            return g_strdup ("none");
         case MS_VALUE_LIST:
             return print_list (val->list.elms, val->list.n_elms);
         case MS_VALUE_DICT:
             return print_dict (val->hash);
+        case MS_VALUE_FUNC:
+            return print_func (val);
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
@@ -810,14 +821,15 @@ ms_value_equal (MSValue *a, MSValue *b)
             return TRUE;
         case MS_VALUE_STRING:
             return !strcmp (a->str, b->str);
-        case MS_VALUE_OBJECT:
-            return a->ptr == b->ptr;
         case MS_VALUE_LIST:
             return list_equal (a, b);
         case MS_VALUE_DICT:
             return dict_equal (a->hash, b->hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (FALSE);
+        case MS_VALUE_FUNC:
+            return a->func.func == b->func.func &&
+                    a->func.obj == b->func.obj;
     }
 
     g_return_val_if_reached (FALSE);
@@ -896,14 +908,16 @@ ms_value_cmp (MSValue *a, MSValue *b)
             return 0;
         case MS_VALUE_STRING:
             return strcmp (a->str, b->str);
-        case MS_VALUE_OBJECT:
-            return CMP (a->ptr, b->ptr);
         case MS_VALUE_LIST:
             return list_cmp (a, b);
         case MS_VALUE_DICT:
             return dict_cmp (a->hash, b->hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (CMP (a, b));
+        case MS_VALUE_FUNC:
+            return a->func.func < b->func.func ? -1 :
+                    (a->func.func > b->func.func ? 1 :
+                        CMP (a->func.obj, b->func.obj));
     }
 
     g_return_val_if_reached (CMP (a, b));
@@ -1120,4 +1134,82 @@ ms_unary_op_cfunc (MSUnaryOp op)
 
     g_return_val_if_fail (op < MS_UNARY_OP_LAST, NULL);
     return funcs[op];
+}
+
+
+MSValue *
+ms_value_func (MSFunc *func)
+{
+    MSValue *val;
+    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    val = ms_value_new (MS_VALUE_FUNC);
+    val->func.func = g_object_ref (func);
+    return val;
+}
+
+
+MSValue *
+ms_value_meth (MSFunc *func)
+{
+    MSValue *val;
+    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    val = ms_value_func (func);
+    val->func.meth = TRUE;
+    return val;
+}
+
+
+MSValue *
+ms_value_bound_meth (MSFunc  *func,
+                     MSValue *obj)
+{
+    MSValue *val;
+    g_return_val_if_fail (MS_IS_FUNC (func), NULL);
+    g_return_val_if_fail (obj != NULL, NULL);
+    val = ms_value_meth (func);
+    val->func.obj = ms_value_ref (obj);
+    return val;
+}
+
+
+gboolean
+ms_value_is_func (MSValue *val)
+{
+    g_return_val_if_fail (val != NULL, FALSE);
+    return val->type == MS_VALUE_FUNC;
+}
+
+
+MSValue *
+ms_value_call (MSValue    *func,
+               MSValue   **args,
+               guint       n_args,
+               MSContext  *ctx)
+{
+    MSValue *ret;
+    MSValue **real_args;
+    guint i;
+
+    g_return_val_if_fail (func != NULL, NULL);
+    g_return_val_if_fail (!n_args || args, NULL);
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (func->type == MS_VALUE_FUNC, NULL);
+
+    if (!func->func.meth || !func->func.obj)
+        return ms_func_call (func->func.func, args, n_args, ctx);
+
+    real_args = g_new (MSValue*, n_args + 1);
+    real_args[0] = ms_value_ref (func->func.obj);
+
+    if (n_args)
+        for (i = 0; i < n_args; ++i)
+            real_args[i+1] = ms_value_ref (args[i]);
+
+    ret = ms_func_call (func->func.func, real_args, n_args + 1, ctx);
+
+    for (i = 0; i < n_args + 1; ++i)
+        ms_value_unref (real_args[i+1]);
+    g_free (real_args);
+
+    return ret;
 }
