@@ -251,7 +251,7 @@ ms_node_function_eval (MSNode    *node_,
 
     if (!ms_value_is_func (func))
     {
-        char *str = ms_value_print (func);
+        char *str = ms_value_repr (func);
         ms_value_unref (func);
         ms_context_format_error (ctx, MS_ERROR_TYPE,
                                  "object <%s> is not a function",
@@ -639,23 +639,16 @@ ms_node_for_eval (MSNode    *node,
         return ms_context_format_error (ctx, MS_ERROR_TYPE,
                                         "illegal loop variable");
 
-    if (!MS_IS_NODE_VAL_LIST (loop->list))
-        if (!MS_IS_NODE_VALUE (loop->list) ||
-             MS_VALUE_TYPE (MS_NODE_VALUE(loop->list)->value) != MS_VALUE_LIST)
-            return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                            "illegal loop list");
-
-    var = MS_NODE_VAR (loop->variable);
-
-    if (MS_IS_NODE_VAL_LIST (loop->list))
-        vallist = _ms_node_eval (loop->list, ctx);
-    else
-        vallist = ms_value_ref (MS_NODE_VALUE(loop->list)->value);
+    vallist = _ms_node_eval (loop->list, ctx);
 
     if (!vallist)
         return NULL;
 
-    g_return_val_if_fail (MS_VALUE_TYPE (vallist) == MS_VALUE_LIST, NULL);
+    if (MS_VALUE_TYPE (vallist) != MS_VALUE_LIST)
+        return ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                        "illegal loop list");
+
+    var = MS_NODE_VAR (loop->variable);
 
     for (i = 0; i < vallist->list.n_elms; ++i)
     {
