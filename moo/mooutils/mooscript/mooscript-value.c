@@ -179,6 +179,56 @@ ms_value_list_set_elm (MSValue    *list,
 
 
 MSValue *
+ms_value_dict (void)
+{
+    MSValue *val;
+
+    val = ms_value_new (MS_VALUE_DICT);
+    val->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                       (GDestroyNotify) ms_value_unref);
+
+    return val;
+}
+
+
+MSValue *
+ms_value_dict_get_elm (MSValue    *dict,
+                       const char *key)
+{
+    MSValue *val;
+    g_return_val_if_fail (dict != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+    g_return_val_if_fail (dict->type == MS_VALUE_DICT, NULL);
+    val = g_hash_table_lookup (dict->hash, key);
+    return val ? ms_value_ref (val) : NULL;
+}
+
+
+void
+ms_value_dict_set_elm (MSValue    *dict,
+                       const char *key,
+                       MSValue    *val)
+{
+    MSValue *old;
+
+    g_return_if_fail (dict != NULL);
+    g_return_if_fail (key != NULL);
+    g_return_if_fail (dict->type == MS_VALUE_DICT);
+
+    old = g_hash_table_lookup (dict->hash, key);
+
+    if (old == val)
+        return;
+
+    if (!val)
+        g_hash_table_remove (dict->hash, key);
+    else
+        g_hash_table_insert (dict->hash, g_strdup (key),
+                             ms_value_ref (val));
+}
+
+
+MSValue *
 ms_value_ref (MSValue *val)
 {
     g_return_val_if_fail (val != NULL, NULL);
@@ -229,6 +279,10 @@ ms_value_unref (MSValue *val)
                 ms_value_unref (val->list.elms[i]);
             g_free (val->list.elms);
             break;
+
+        case MS_VALUE_DICT:
+            g_hash_table_destroy (val->hash);
+            break;
     }
 
     g_free (val);
@@ -277,6 +331,8 @@ ms_value_get_bool (MSValue *val)
             return val->ptr != NULL;
         case MS_VALUE_LIST:
             return val->list.n_elms != 0;
+        case MS_VALUE_DICT:
+            return g_hash_table_size (val->hash) != 0;
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
@@ -419,6 +475,110 @@ print_list (MSValue **elms,
 }
 
 
+typedef struct {
+    const char *key;
+    MSValue *val;
+} KeyValPair;
+
+static KeyValPair *
+key_val_pair_new (const char *key,
+                  MSValue    *val)
+{
+    KeyValPair *p;
+
+    g_assert (key != NULL);
+    g_assert (val != NULL);
+
+    p = g_new (KeyValPair, 1);
+    p->key = key;
+    p->val = val;
+
+    return p;
+}
+
+static void
+key_val_pair_free (KeyValPair *pair)
+{
+    g_free (pair);
+}
+
+static void
+add_key_val (const char *key,
+             MSValue    *val,
+             GSList    **list)
+{
+    *list = g_slist_prepend (*list, key_val_pair_new (key, val));
+}
+
+static int
+compare_key_val (KeyValPair *a,
+                 KeyValPair *b)
+{
+    int ret;
+
+    ret = strcmp (a->key, b->key);
+
+    if (ret)
+        return ret;
+
+    return ms_value_cmp (a->val, b->val);
+}
+
+static GSList *
+dict_get_pairs (GHashTable *table)
+{
+    GSList *list = NULL;
+    g_hash_table_foreach (table, (GHFunc) add_key_val, &list);
+    list = g_slist_sort (list, (GCompareFunc) compare_key_val);
+    return list;
+}
+
+
+static void
+print_dict_elm (KeyValPair *pair,
+                gpointer    user_data)
+{
+    char *strval;
+
+    struct {
+        GString *string;
+        gboolean first;
+    } *data = user_data;
+
+    if (!data->first)
+        g_string_append (data->string, ", ");
+    data->first = FALSE;
+
+    strval = ms_value_print (pair->val);
+    g_string_append_printf (data->string, "%s = %s", pair->key, strval);
+    g_free (strval);
+}
+
+static char *
+print_dict (GHashTable *table)
+{
+    GSList *list;
+    GString *string;
+    struct {
+        GString *string;
+        gboolean first;
+    } data;
+
+    string = g_string_sized_new (6 * g_hash_table_size (table) + 2);
+    g_string_append_c (string, '{');
+
+    list = dict_get_pairs (table);
+    data.string = string;
+    data.first = TRUE;
+    g_slist_foreach (list, (GFunc) print_dict_elm, &data);
+    g_slist_foreach (list, (GFunc) key_val_pair_free, NULL);
+    g_slist_free (list);
+
+    g_string_append_c (string, '}');
+    return g_string_free (string, FALSE);
+}
+
+
 char *
 ms_value_print (MSValue *val)
 {
@@ -436,6 +596,8 @@ ms_value_print (MSValue *val)
             return g_strdup_printf ("Object %p", val->ptr);
         case MS_VALUE_LIST:
             return print_list (val->list.elms, val->list.n_elms);
+        case MS_VALUE_DICT:
+            return print_dict (val->hash);
         case MS_VALUE_GVALUE:
             switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (val->gval)))
             {
@@ -596,6 +758,41 @@ list_equal (MSValue *a, MSValue *b)
 }
 
 
+static gboolean
+check_key (const char *key,
+           G_GNUC_UNUSED MSValue *val,
+           GHashTable *table)
+{
+    return g_hash_table_lookup (table, key) == NULL;
+}
+
+static gboolean
+check_key_and_val (const char *key,
+                   MSValue    *val,
+                   GHashTable *table)
+{
+    MSValue *other = g_hash_table_lookup (table, key);
+
+    if (!other)
+        return TRUE;
+    else
+        return !ms_value_equal (val, other);
+}
+
+static gboolean
+dict_equal (GHashTable *a,
+            GHashTable *b)
+{
+    if (g_hash_table_find (a, (GHRFunc) check_key_and_val, b))
+        return FALSE;
+
+    if (g_hash_table_find (b, (GHRFunc) check_key, a))
+        return FALSE;
+
+    return TRUE;
+}
+
+
 gboolean
 ms_value_equal (MSValue *a, MSValue *b)
 {
@@ -617,6 +814,8 @@ ms_value_equal (MSValue *a, MSValue *b)
             return a->ptr == b->ptr;
         case MS_VALUE_LIST:
             return list_equal (a, b);
+        case MS_VALUE_DICT:
+            return dict_equal (a->hash, b->hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (FALSE);
     }
@@ -644,6 +843,42 @@ list_cmp (MSValue *a, MSValue *b)
 }
 
 
+static int
+dict_cmp (GHashTable *a,
+          GHashTable *b)
+{
+    int ret;
+    GSList *list_a, *list_b, *la, *lb;
+
+    list_a = dict_get_pairs (a);
+    list_b = dict_get_pairs (b);
+
+    for (la = list_a, lb = list_b; la && lb; la = la->next, lb = lb->next)
+    {
+        KeyValPair *pa = la->data, *pb = lb->data;
+
+        ret = compare_key_val (pa, pb);
+
+        if (ret)
+            goto out;
+    }
+
+    if (la)
+        ret = 1;
+    else if (lb)
+        ret = -1;
+    else
+        ret = 0;
+
+out:
+    g_slist_foreach (list_a, (GFunc) key_val_pair_free, NULL);
+    g_slist_foreach (list_b, (GFunc) key_val_pair_free, NULL);
+    g_slist_free (list_a);
+    g_slist_free (list_b);
+    return ret;
+}
+
+
 int
 ms_value_cmp (MSValue *a, MSValue *b)
 {
@@ -665,6 +900,8 @@ ms_value_cmp (MSValue *a, MSValue *b)
             return CMP (a->ptr, b->ptr);
         case MS_VALUE_LIST:
             return list_cmp (a, b);
+        case MS_VALUE_DICT:
+            return dict_cmp (a->hash, b->hash);
         case MS_VALUE_GVALUE:
             g_return_val_if_reached (CMP (a, b));
     }

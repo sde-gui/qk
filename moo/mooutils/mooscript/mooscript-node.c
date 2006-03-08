@@ -62,7 +62,6 @@ ms_node_new (gsize         node_size,
     MSNode *node;
 
     g_assert (node_size >= sizeof (MSNode));
-    g_assert (eval != NULL);
     g_assert (type && type < MS_TYPE_NODE_LAST);
 
     node = g_malloc0 (node_size);
@@ -1339,6 +1338,235 @@ ms_node_break_new (MSBreakType type)
                      NULL);
 
     node->type = type;
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeDictElm
+ */
+
+static void
+ms_node_dict_elm_destroy (MSNode *node_)
+{
+    ms_node_unref (MS_NODE_DICT_ELM(node_)->dict);
+    g_free (MS_NODE_DICT_ELM(node_)->key);
+}
+
+
+static MSValue *
+ms_node_dict_elm_eval (MSNode    *node_,
+                       MSContext *ctx)
+{
+    MSValue *dict, *val;
+    MSNodeDictElm *node = MS_NODE_DICT_ELM (node_);
+
+    dict = _ms_node_eval (node->dict, ctx);
+
+    if (!dict)
+        return NULL;
+
+    if (dict->type != MS_VALUE_DICT)
+    {
+        ms_value_unref (dict);
+        return ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                        "not a dict object");
+    }
+
+    val = ms_value_dict_get_elm (dict, node->key);
+
+    if (!val)
+    {
+        ms_value_unref (dict);
+        return ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                        "no key '%s'", node->key);
+    }
+
+    ms_value_unref (dict);
+    return val;
+}
+
+
+MSNodeDictElm *
+ms_node_dict_elm_new (MSNode     *dict,
+                      const char *key)
+{
+    MSNodeDictElm *node;
+
+    g_return_val_if_fail (dict != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+
+    node = NODE_NEW (MSNodeDictElm,
+                     MS_TYPE_NODE_DICT_ELM,
+                     ms_node_dict_elm_eval,
+                     ms_node_dict_elm_destroy);
+
+    node->dict = ms_node_ref (dict);
+    node->key = g_strdup (key);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeDictAssign
+ */
+
+static void
+ms_node_dict_assign_destroy (MSNode *node_)
+{
+    ms_node_unref (MS_NODE_DICT_ASSIGN(node_)->dict);
+    g_free (MS_NODE_DICT_ASSIGN(node_)->key);
+    ms_node_unref (MS_NODE_DICT_ASSIGN(node_)->val);
+}
+
+
+static MSValue *
+ms_node_dict_assign_eval (MSNode    *node_,
+                          MSContext *ctx)
+{
+    MSValue *dict = NULL, *val = NULL;
+    MSNodeDictAssign *node = MS_NODE_DICT_ASSIGN (node_);
+
+    dict = _ms_node_eval (node->dict, ctx);
+
+    if (!dict)
+        goto error;
+
+    val = _ms_node_eval (node->val, ctx);
+
+    if (!val)
+        goto error;
+
+    ms_value_dict_set_elm (dict, node->key, val);
+
+    ms_value_unref (dict);
+    return val;
+
+error:
+    if (dict)
+        ms_value_unref (dict);
+    if (val)
+        ms_value_unref (val);
+    return NULL;
+}
+
+
+MSNodeDictAssign *
+ms_node_dict_assign_new (MSNode     *dict,
+                         const char *key,
+                         MSNode     *val)
+{
+    MSNodeDictAssign *node;
+
+    g_return_val_if_fail (dict != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+    g_return_val_if_fail (val != NULL, NULL);
+
+    node = NODE_NEW (MSNodeDictAssign,
+                     MS_TYPE_NODE_DICT_ASSIGN,
+                     ms_node_dict_assign_eval,
+                     ms_node_dict_assign_destroy);
+
+    node->dict = ms_node_ref (dict);
+    node->key = g_strdup (key);
+    node->val = ms_node_ref (val);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeDictEntry
+ */
+
+static void
+ms_node_dict_entry_destroy (MSNode *node_)
+{
+    ms_node_unref (MS_NODE_DICT_ENTRY(node_)->val);
+    g_free (MS_NODE_DICT_ENTRY(node_)->key);
+}
+
+
+MSNodeDictEntry *
+ms_node_dict_entry_new (const char *key,
+                        MSNode     *val)
+{
+    MSNodeDictEntry *node;
+
+    g_return_val_if_fail (key != NULL, NULL);
+    g_return_val_if_fail (val != NULL, NULL);
+
+    node = NODE_NEW (MSNodeDictEntry,
+                     MS_TYPE_NODE_DICT_ENTRY,
+                     NULL,
+                     ms_node_dict_entry_destroy);
+
+    node->key = g_strdup (key);
+    node->val = ms_node_ref (val);
+
+    return node;
+}
+
+
+/****************************************************************************/
+/* MSNodeDict
+ */
+
+static void
+ms_node_dict_destroy (MSNode *node_)
+{
+    ms_node_unref (MS_NODE_DICT(node_)->entries);
+}
+
+
+static MSValue *
+ms_node_dict_eval (MSNode     *node_,
+                   MSContext  *ctx)
+{
+    MSValue *ret;
+    MSNodeDict *node = MS_NODE_DICT (node_);
+
+    ret = ms_value_dict ();
+
+    if (node->entries)
+    {
+        guint i;
+
+        for (i = 0; i < node->entries->n_nodes; ++i)
+        {
+            MSNodeDictEntry *entry = MS_NODE_DICT_ENTRY (node->entries->nodes[i]);
+            MSValue *val = _ms_node_eval (entry->val, ctx);
+
+            if (!val)
+            {
+                ms_value_unref (val);
+                return NULL;
+            }
+
+            ms_value_dict_set_elm (ret, entry->key, val);
+            ms_value_unref (val);
+        }
+    }
+
+    return ret;
+}
+
+
+MSNodeDict *
+ms_node_dict_new (MSNodeList *entries)
+{
+    MSNodeDict *node;
+
+    g_return_val_if_fail (!entries || MS_IS_NODE_LIST (entries), NULL);
+
+    node = NODE_NEW (MSNodeDict,
+                     MS_TYPE_NODE_DICT,
+                     ms_node_dict_eval,
+                     ms_node_dict_destroy);
+
+    node->entries = ms_node_ref (entries);
 
     return node;
 }

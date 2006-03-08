@@ -28,7 +28,8 @@ typedef enum {
     MS_VALUE_STRING,
     MS_VALUE_OBJECT,
     MS_VALUE_GVALUE,
-    MS_VALUE_LIST
+    MS_VALUE_LIST,
+    MS_VALUE_DICT
 } MSValueType;
 
 typedef enum {
@@ -67,6 +68,7 @@ struct _MSValue {
             MSValue **elms;
             guint n_elms;
         } list;
+        GHashTable *hash;
     };
 };
 
@@ -95,6 +97,13 @@ MSValue     *ms_value_list          (guint       n_elms);
 void         ms_value_list_set_elm  (MSValue    *list,
                                      guint       index,
                                      MSValue    *elm);
+
+MSValue     *ms_value_dict          (void);
+void         ms_value_dict_set_elm  (MSValue    *dict,
+                                     const char *key,
+                                     MSValue    *val);
+MSValue     *ms_value_dict_get_elm  (MSValue    *dict,
+                                     const char *key);
 
 MSValue     *ms_value_ref           (MSValue    *val);
 void         ms_value_unref         (MSValue    *val);

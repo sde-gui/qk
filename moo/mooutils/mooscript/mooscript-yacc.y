@@ -5,8 +5,8 @@
 
 static MSNode *
 node_list_add (MSParser   *parser,
-                      MSNodeList *list,
-                      MSNode     *node)
+               MSNodeList *list,
+               MSNode     *node)
 {
     if (!node)
         return NULL;
@@ -257,6 +257,33 @@ node_list_assign (MSParser   *parser,
 
 
 static MSNode *
+node_dict (MSParser   *parser,
+           MSNodeList *list)
+{
+    MSNodeDict *node;
+
+    node = ms_node_dict_new (list);
+    _ms_parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+static MSNode *
+node_dict_entry (MSParser   *parser,
+                 const char *key,
+                 MSNode     *val)
+{
+    MSNodeDictEntry *node;
+
+    node = ms_node_dict_entry_new (key, val);
+    _ms_parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+static MSNode *
 node_return (MSParser   *parser,
              MSNode     *val)
 {
@@ -291,6 +318,36 @@ node_continue (MSParser *parser)
 
     return MS_NODE (node);
 }
+
+
+static MSNode *
+node_dict_elm (MSParser   *parser,
+               MSNode     *dict,
+               const char *key)
+{
+    MSNodeDictElm *node;
+
+    node = ms_node_dict_elm_new (dict, key);
+    _ms_parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+static MSNode *
+node_dict_assign (MSParser   *parser,
+                  MSNode     *dict,
+                  const char *key,
+                  MSNode     *val)
+{
+    MSNodeDictAssign *node;
+
+    node = ms_node_dict_assign_new (dict, key, val);
+    _ms_parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
 %}
 
 %name-prefix="_ms_script_yy"
@@ -309,7 +366,8 @@ node_continue (MSParser *parser)
 
 %type <node> program stmt stmt_or_python
 %type <node> if_stmt ternary loop assignment
-%type <node> simple_expr compound_expr expr variable list_elms
+%type <node> simple_expr compound_expr expr variable
+%type <node> list_elms dict_elms dict_entry
 
 %token IF THEN ELSE FI
 %token WHILE DO OD FOR IN
@@ -374,8 +432,9 @@ expr:     simple_expr
 ;
 
 assignment:
-          IDENTIFIER '=' expr               { $$ = node_assignment (parser, $1, $3); }
-        | simple_expr '[' expr ']' '=' expr { $$ = node_list_assign (parser, $1, $3, $6); }
+          IDENTIFIER '=' expr                   { $$ = node_assignment (parser, $1, $3); }
+        | simple_expr '[' expr ']' '=' expr     { $$ = node_list_assign (parser, $1, $3, $6); }
+        | simple_expr '.' IDENTIFIER '=' expr   { $$ = node_dict_assign (parser, $1, $3, $5); }
 ;
 
 ternary:  simple_expr '?' simple_expr ':' simple_expr { $$ = node_if_else (parser, $1, $3, $5); }
@@ -408,14 +467,24 @@ simple_expr:
         | variable
         | '(' stmt ')'                      { $$ = $2; }
         | '[' list_elms ']'                 { $$ = node_value_list (parser, MS_NODE_LIST ($2)); }
+        | '{' dict_elms '}'                 { $$ = node_dict (parser, $2 ? MS_NODE_LIST ($2) : NULL); }
         | '[' expr TWODOTS expr ']'         { $$ = node_value_range (parser, $2, $4); }
         | IDENTIFIER '(' list_elms ')'      { $$ = node_command (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
         | simple_expr '[' expr ']'          { $$ = node_list_elm (parser, $1, $3); }
+        | simple_expr '.' IDENTIFIER        { $$ = node_dict_elm (parser, $1, $3); }
 ;
 
 list_elms: /* empty */                      { $$ = NULL; }
         | expr                              { $$ = node_list_add (parser, NULL, $1); }
         | list_elms ',' expr                { $$ = node_list_add (parser, MS_NODE_LIST ($1), $3); }
+;
+
+dict_elms: /* empty */                      { $$ = NULL; }
+        | dict_entry                        { $$ = node_list_add (parser, NULL, $1); }
+        | dict_elms ',' dict_entry          { $$ = node_list_add (parser, MS_NODE_LIST ($1), $3); }
+;
+
+dict_entry: IDENTIFIER '=' expr             { $$ = node_dict_entry (parser, $1, $3); }
 ;
 
 variable: IDENTIFIER                        { $$ = node_var (parser, $1); }

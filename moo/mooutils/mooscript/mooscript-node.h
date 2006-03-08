@@ -36,6 +36,10 @@ typedef enum {
     MS_TYPE_NODE_PYTHON,
     MS_TYPE_NODE_RETURN,
     MS_TYPE_NODE_BREAK,
+    MS_TYPE_NODE_DICT_ELM,
+    MS_TYPE_NODE_DICT_ASSIGN,
+    MS_TYPE_NODE_DICT,
+    MS_TYPE_NODE_DICT_ENTRY,
     MS_TYPE_NODE_LAST
 } MSNodeType;
 
@@ -55,6 +59,10 @@ typedef struct _MSNodeValList MSNodeValList;
 typedef struct _MSNodePython MSNodePython;
 typedef struct _MSNodeBreak MSNodeBreak;
 typedef struct _MSNodeReturn MSNodeReturn;
+typedef struct _MSNodeDict MSNodeDict;
+typedef struct _MSNodeDictEntry MSNodeDictEntry;
+typedef struct _MSNodeDictElm MSNodeDictElm;
+typedef struct _MSNodeDictAssign MSNodeDictAssign;
 
 
 typedef MSValue* (*MSNodeEval)    (MSNode *node, MSContext *ctx);
@@ -65,7 +73,7 @@ struct _MSNode {
     guint ref_count;
     MSNodeEval eval;
     MSNodeDestroy destroy;
-    MSNodeType type : 4;
+    MSNodeType type : 5;
 };
 
 #if 0
@@ -114,6 +122,10 @@ _ms_node_check_type (gpointer   pnode,
 #define MS_NODE_PYTHON(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_PYTHON, MSNodePython)
 #define MS_NODE_BREAK(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_BREAK, MSNodeBreak)
 #define MS_NODE_RETURN(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_RETURN, MSNodeReturn)
+#define MS_NODE_DICT(node_)         MS_NODE_CAST (node_, MS_TYPE_NODE_DICT, MSNodeDict)
+#define MS_NODE_DICT_ENTRY(node_)   MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ENTRY, MSNodeDictEntry)
+#define MS_NODE_DICT_ELM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ELM, MSNodeDictElm)
+#define MS_NODE_DICT_ASSIGN(node_)  MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ASSIGN, MSNodeDictAssign)
 
 #define MS_IS_NODE_VAR(node) (node && MS_NODE_TYPE(node) == MS_TYPE_NODE_VAR)
 #define MS_IS_NODE_VALUE(node) (node && MS_NODE_TYPE(node) == MS_TYPE_NODE_VALUE)
@@ -238,6 +250,31 @@ struct _MSNodeReturn {
 };
 
 
+struct _MSNodeDict {
+    MSNode node;
+    MSNodeList *entries;
+};
+
+struct _MSNodeDictEntry {
+    MSNode node;
+    char *key;
+    MSNode *val;
+};
+
+struct _MSNodeDictElm {
+    MSNode node;
+    MSNode *dict;
+    char *key;
+};
+
+struct _MSNodeDictAssign {
+    MSNode node;
+    MSNode *dict;
+    char *key;
+    MSNode *val;
+};
+
+
 gpointer        ms_node_ref                 (gpointer    node);
 void            ms_node_unref               (gpointer    node);
 
@@ -289,6 +326,15 @@ MSNodeListAssign *ms_node_list_assign_new   (MSNode     *list,
 
 MSNodeBreak    *ms_node_break_new           (MSBreakType type);
 MSNodeReturn   *ms_node_return_new          (MSNode     *val);
+
+MSNodeDict     *ms_node_dict_new            (MSNodeList *entries);
+MSNodeDictEntry *ms_node_dict_entry_new     (const char *key,
+                                             MSNode     *val);
+MSNodeDictElm  *ms_node_dict_elm_new        (MSNode     *dict,
+                                             const char *key);
+MSNodeDictAssign *ms_node_dict_assign_new   (MSNode     *dict,
+                                             const char *key,
+                                             MSNode     *val);
 
 
 G_END_DECLS

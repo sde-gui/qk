@@ -89,7 +89,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 298 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 355 "/home/muntyan/projects/ggap/ggap/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;
