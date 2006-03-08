@@ -492,7 +492,7 @@ node_dict_assign (MSParser   *parser,
 # undef YYERROR_VERBOSE
 # define YYERROR_VERBOSE 1
 #else
-# define YYERROR_VERBOSE 0
+# define YYERROR_VERBOSE 1
 #endif
 
 /* Enabling the token table.  */
@@ -501,7 +501,7 @@ node_dict_assign (MSParser   *parser,
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 360 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
+#line 364 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
 typedef union YYSTYPE {
     int ival;
     const char *str;

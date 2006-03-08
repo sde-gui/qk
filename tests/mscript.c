@@ -54,10 +54,7 @@ static int run_interactive (void)
         free (line);
 
         if (!node)
-        {
-            g_print ("syntax error\n");
             continue;
-        }
 
         val = ms_top_node_eval (node, ctx);
         ms_node_unref (node);
@@ -91,6 +88,21 @@ int main (int argc, char *argv[])
 
     g_type_init ();
     ms_type_init ();
+
+    if (argc > 1 && !strcmp (argv[1], "--g-fatal-warnings"))
+    {
+        GLogLevelFlags fatal_mask;
+        int i;
+
+        fatal_mask = g_log_set_always_fatal (G_LOG_FATAL_MASK);
+        fatal_mask |= G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL;
+        g_log_set_always_fatal (fatal_mask);
+
+        for (i = 1; i < argc - 1; ++i)
+            argv[i] = argv[i+1];
+        argv[argc-1] = NULL;
+        argc -= 1;
+    }
 
     if (argc < 2)
         return run_interactive ();

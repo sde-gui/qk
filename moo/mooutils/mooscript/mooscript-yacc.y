@@ -356,6 +356,10 @@ node_dict_assign (MSParser   *parser,
 %}
 
 %name-prefix="_ms_script_yy"
+%error-verbose
+%lex-param      {MSParser *parser}
+%parse-param    {MSParser *parser}
+/* %expect 1 */
 
 %union {
     int ival;
@@ -381,10 +385,6 @@ node_dict_assign (MSParser   *parser,
 %token AND OR NOT
 %token UMINUS
 %token TWODOTS
-
-%lex-param      {MSParser *parser}
-%parse-param    {MSParser *parser}
-/* %expect 1 */
 
 %left '-' '+'
 %left '*' '/'

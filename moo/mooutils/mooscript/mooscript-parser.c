@@ -194,7 +194,7 @@ ms_lex_parse_number (MSLex    *lex,
         {
             if (value > 1000000)
             {
-                g_warning ("number is too big");
+                g_print ("syntax error, number is too big\n", G_STRLOC);
                 return ms_lex_error (parser);
             }
 
@@ -203,7 +203,7 @@ ms_lex_parse_number (MSLex    *lex,
         }
         else if (IS_WORD (c))
         {
-            g_warning ("number followed by word char");
+            g_print ("syntax error, number followed by word char\n", G_STRLOC);
             return ms_lex_error (parser);
         }
         else
@@ -213,8 +213,8 @@ ms_lex_parse_number (MSLex    *lex,
         }
     }
 
-    g_critical ("oops");
-    return ms_lex_error (parser);
+    _ms_script_yylval.ival = value;
+    return NUMBER;
 }
 
 
@@ -379,7 +379,7 @@ void
 _ms_script_yyerror (MSParser   *parser,
                     const char *string)
 {
-    g_print ("error: %s\n", string);
+    g_print ("%s\n", string);
     parser->failed = TRUE;
 }
 
