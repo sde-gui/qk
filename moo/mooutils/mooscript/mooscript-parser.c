@@ -468,6 +468,8 @@ ms_script_parse (const char *string)
     if (!string[0])
         return NULL;
 
+    ms_type_init ();
+
     parser = ms_parser_new ();
     script = ms_parser_parse (parser, string, -1);
 

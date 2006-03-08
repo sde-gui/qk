@@ -41,12 +41,14 @@ static MSValue *
 len_func (MSValue    *val,
           MSContext  *ctx)
 {
-    switch (val->type)
+    switch (val->klass->type)
     {
         case MS_VALUE_STRING:
             return ms_value_int (g_utf8_strlen (val->str, -1));
         case MS_VALUE_LIST:
             return ms_value_int (val->list.n_elms);
+        case MS_VALUE_DICT:
+            return ms_value_int (g_hash_table_size (val->hash));
         default:
             return ms_context_set_error (ctx, MS_ERROR_TYPE, NULL);
     }

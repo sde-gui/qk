@@ -104,9 +104,7 @@ _as_plugin_context_exec (MSContext      *ctx,
 
     val = ms_top_node_eval (script, ctx);
     success = val != NULL;
-
-    if (val)
-        ms_value_unref (val);
+    ms_value_unref (val);
 
     if (!success)
     {

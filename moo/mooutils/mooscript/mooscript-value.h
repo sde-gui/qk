@@ -21,9 +21,11 @@ G_BEGIN_DECLS
 
 
 typedef struct _MSValue MSValue;
+typedef struct _MSValueClass MSValueClass;
 typedef struct _MSFunc MSFunc;
 typedef struct _MSContext MSContext;
 
+#define MS_VALUE_TYPE(val) ((val)->klass->type)
 
 typedef enum {
     MS_VALUE_NONE,
@@ -32,7 +34,8 @@ typedef enum {
     MS_VALUE_GVALUE,
     MS_VALUE_LIST,
     MS_VALUE_DICT,
-    MS_VALUE_FUNC
+    MS_VALUE_FUNC,
+    MS_VALUE_INVALID
 } MSValueType;
 
 typedef enum {
@@ -59,9 +62,15 @@ typedef enum {
     MS_UNARY_OP_LAST
 } MSUnaryOp;
 
+struct _MSValueClass {
+    MSValueType type;
+    GHashTable *methods;
+};
+
 struct _MSValue {
     guint ref_count;
-    MSValueType type;
+    MSValueClass *klass;
+    GHashTable *methods;
 
     union {
         int ival;
@@ -83,59 +92,70 @@ struct _MSValue {
 };
 
 
-const char  *ms_binary_op_name      (MSBinaryOp  op);
-gpointer     ms_binary_op_cfunc     (MSBinaryOp  op);
-const char  *ms_unary_op_name       (MSUnaryOp   op);
-gpointer     ms_unary_op_cfunc      (MSUnaryOp   op);
+void         ms_type_init               (void);
 
-MSValue     *ms_value_none          (void);
-MSValue     *ms_value_false         (void);
-MSValue     *ms_value_true          (void);
-MSValue     *ms_value_bool          (gboolean    val);
+void         ms_value_class_add_method  (MSValueClass   *klass,
+                                         const char     *name,
+                                         MSFunc         *func);
+void         ms_value_add_method        (MSValue        *value,
+                                         const char     *name,
+                                         MSFunc         *func);
+MSValue     *ms_value_get_method        (MSValue        *value,
+                                         const char     *name);
 
-gboolean     ms_value_is_none       (MSValue    *value);
+const char  *ms_binary_op_name          (MSBinaryOp      op);
+gpointer     ms_binary_op_cfunc         (MSBinaryOp      op);
+const char  *ms_unary_op_name           (MSUnaryOp       op);
+gpointer     ms_unary_op_cfunc          (MSUnaryOp       op);
 
-MSValue     *ms_value_int           (int         val);
-MSValue     *ms_value_string        (const char *string);
-MSValue     *ms_value_string_len    (const char *string,
-                                     int         len);
-MSValue     *ms_value_take_string   (char       *string);
-MSValue     *ms_value_gvalue        (const GValue *gval);
+MSValue     *ms_value_none              (void);
+MSValue     *ms_value_false             (void);
+MSValue     *ms_value_true              (void);
+MSValue     *ms_value_bool              (gboolean        val);
 
-MSValue     *ms_value_list          (guint       n_elms);
-void         ms_value_list_set_elm  (MSValue    *list,
-                                     guint       index,
-                                     MSValue    *elm);
+gboolean     ms_value_is_none           (MSValue        *value);
 
-MSValue     *ms_value_dict          (void);
-void         ms_value_dict_set_elm  (MSValue    *dict,
-                                     const char *key,
-                                     MSValue    *val);
-MSValue     *ms_value_dict_get_elm  (MSValue    *dict,
-                                     const char *key);
+MSValue     *ms_value_int               (int             val);
+MSValue     *ms_value_string            (const char     *string);
+MSValue     *ms_value_string_len        (const char     *string,
+                                         int             chars);
+MSValue     *ms_value_take_string       (char           *string);
+MSValue     *ms_value_gvalue            (const GValue   *gval);
 
-MSValue     *ms_value_ref           (MSValue    *val);
-void         ms_value_unref         (MSValue    *val);
+MSValue     *ms_value_list              (guint           n_elms);
+void         ms_value_list_set_elm      (MSValue        *list,
+                                         guint           index,
+                                         MSValue        *elm);
 
-gboolean     ms_value_get_bool      (MSValue    *val);
-gboolean     ms_value_get_int       (MSValue    *val,
-                                     int        *ival);
-char        *ms_value_print         (MSValue    *val);
+MSValue     *ms_value_dict              (void);
+void         ms_value_dict_set_elm      (MSValue        *dict,
+                                         const char     *key,
+                                         MSValue        *val);
+MSValue     *ms_value_dict_get_elm      (MSValue        *dict,
+                                         const char     *key);
 
-gboolean     ms_value_equal         (MSValue    *a,
-                                     MSValue    *b);
-int          ms_value_cmp           (MSValue    *a,
-                                     MSValue    *b);
+MSValue     *ms_value_ref               (MSValue        *val);
+void         ms_value_unref             (MSValue        *val);
 
-MSValue     *ms_value_func          (MSFunc     *func);
-MSValue     *ms_value_meth          (MSFunc     *func);
-MSValue     *ms_value_bound_meth    (MSFunc     *func,
-                                     MSValue    *obj);
-gboolean     ms_value_is_func       (MSValue    *val);
-MSValue     *ms_value_call          (MSValue    *func,
-                                     MSValue   **args,
-                                     guint       n_args,
-                                     MSContext  *ctx);
+gboolean     ms_value_get_bool          (MSValue        *val);
+gboolean     ms_value_get_int           (MSValue        *val,
+                                         int            *ival);
+char        *ms_value_print             (MSValue        *val);
+
+gboolean     ms_value_equal             (MSValue        *a,
+                                         MSValue        *b);
+int          ms_value_cmp               (MSValue        *a,
+                                         MSValue        *b);
+
+MSValue     *ms_value_func              (MSFunc         *func);
+MSValue     *ms_value_meth              (MSFunc         *func);
+MSValue     *ms_value_bound_meth        (MSFunc         *func,
+                                         MSValue        *obj);
+gboolean     ms_value_is_func           (MSValue        *val);
+MSValue     *ms_value_call              (MSValue        *func,
+                                         MSValue       **args,
+                                         guint           n_args,
+                                         MSContext      *ctx);
 
 
 G_END_DECLS

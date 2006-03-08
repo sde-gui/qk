@@ -277,8 +277,7 @@ ms_node_function_eval (MSNode    *node_,
 
 out:
     for (i = 0; i < n_args; ++i)
-        if (args[i])
-            ms_value_unref (args[i]);
+        ms_value_unref (args[i]);
     g_free (args);
     ms_value_unref (func);
     return ret;
@@ -469,8 +468,7 @@ ms_loop_while (MSContext  *ctx,
 
         if (doit)
         {
-            if (ret)
-                ms_value_unref (ret);
+            ms_value_unref (ret);
 
             if (what)
                 ret = _ms_node_eval (what, ctx);
@@ -522,8 +520,7 @@ ms_loop_do_while (MSContext  *ctx,
         MSValue *cond;
         gboolean stop;
 
-        if (ret)
-            ms_value_unref (ret);
+        ms_value_unref (ret);
 
         if (what)
             ret = _ms_node_eval (what, ctx);
@@ -640,7 +637,7 @@ ms_node_for_eval (MSNode    *node,
 
     if (!MS_IS_NODE_VAL_LIST (loop->list))
         if (!MS_IS_NODE_VALUE (loop->list) ||
-             MS_NODE_VALUE(loop->list)->value->type != MS_VALUE_LIST)
+             MS_VALUE_TYPE (MS_NODE_VALUE(loop->list)->value) != MS_VALUE_LIST)
             return ms_context_format_error (ctx, MS_ERROR_TYPE,
                                             "illegal loop list");
 
@@ -654,15 +651,14 @@ ms_node_for_eval (MSNode    *node,
     if (!vallist)
         return NULL;
 
-    g_return_val_if_fail (vallist->type == MS_VALUE_LIST, NULL);
+    g_return_val_if_fail (MS_VALUE_TYPE (vallist) == MS_VALUE_LIST, NULL);
 
     for (i = 0; i < vallist->list.n_elms; ++i)
     {
         if (!ms_context_assign_variable (ctx, var->name, vallist->list.elms[i]))
             goto error;
 
-        if (ret)
-            ms_value_unref (ret);
+        ms_value_unref (ret);
 
         if (loop->what)
             ret = _ms_node_eval (loop->what, ctx);
@@ -696,8 +692,7 @@ ms_node_for_eval (MSNode    *node,
     return ret;
 
 error:
-    if (ret)
-        ms_value_unref (ret);
+    ms_value_unref (ret);
     ms_value_unref (vallist);
     return NULL;
 }
@@ -1072,7 +1067,7 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->type)
+    switch (list->klass->type)
     {
         case MS_VALUE_STRING:
             len = g_utf8_strlen (list->str, -1);
@@ -1095,7 +1090,7 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->type)
+    switch (list->klass->type)
     {
         case MS_VALUE_STRING:
             ret = ms_value_string_len (g_utf8_offset_to_pointer (list->str, index), 1);
@@ -1186,7 +1181,7 @@ ms_node_list_assign_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->type)
+    switch (list->klass->type)
     {
         case MS_VALUE_LIST:
             len = list->list.n_elms;
@@ -1210,7 +1205,7 @@ ms_node_list_assign_eval (MSNode    *node_,
     if (!val)
         goto error;
 
-    switch (node->list->type)
+    switch (list->klass->type)
     {
         case MS_VALUE_LIST:
             ms_value_list_set_elm (list, index, val);
@@ -1225,9 +1220,9 @@ ms_node_list_assign_eval (MSNode    *node_,
     return val;
 
 error:
-    if (list) ms_value_unref (list);
-    if (ind) ms_node_unref (ind);
-    if (val) ms_value_unref (val);
+    ms_value_unref (list);
+    ms_node_unref (ind);
+    ms_value_unref (val);
     return NULL;
 }
 
@@ -1364,32 +1359,27 @@ static MSValue *
 ms_node_dict_elm_eval (MSNode    *node_,
                        MSContext *ctx)
 {
-    MSValue *dict, *val;
+    MSValue *obj, *val = NULL;
     MSNodeDictElm *node = MS_NODE_DICT_ELM (node_);
 
-    dict = _ms_node_eval (node->dict, ctx);
+    obj = _ms_node_eval (node->dict, ctx);
 
-    if (!dict)
+    if (!obj)
         return NULL;
 
-    if (dict->type != MS_VALUE_DICT)
-    {
-        ms_value_unref (dict);
-        return ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                        "not a dict object");
-    }
-
-    val = ms_value_dict_get_elm (dict, node->key);
+    if (MS_VALUE_TYPE (obj) == MS_VALUE_DICT)
+        val = ms_value_dict_get_elm (obj, node->key);
 
     if (!val)
-    {
-        ms_value_unref (dict);
+        val = ms_value_get_method (obj, node->key);
+
+    ms_value_unref (obj);
+
+    if (!val)
         return ms_context_format_error (ctx, MS_ERROR_VALUE,
                                         "no key '%s'", node->key);
-    }
-
-    ms_value_unref (dict);
-    return val;
+    else
+        return val;
 }
 
 
@@ -1431,12 +1421,12 @@ static MSValue *
 ms_node_dict_assign_eval (MSNode    *node_,
                           MSContext *ctx)
 {
-    MSValue *dict = NULL, *val = NULL;
+    MSValue *obj = NULL, *val = NULL;
     MSNodeDictAssign *node = MS_NODE_DICT_ASSIGN (node_);
 
-    dict = _ms_node_eval (node->dict, ctx);
+    obj = _ms_node_eval (node->dict, ctx);
 
-    if (!dict)
+    if (!obj)
         goto error;
 
     val = _ms_node_eval (node->val, ctx);
@@ -1444,16 +1434,21 @@ ms_node_dict_assign_eval (MSNode    *node_,
     if (!val)
         goto error;
 
-    ms_value_dict_set_elm (dict, node->key, val);
+    if (MS_VALUE_TYPE (obj) != MS_VALUE_DICT)
+    {
+        ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                 "not a dict object");
+        goto error;
+    }
 
-    ms_value_unref (dict);
+    ms_value_dict_set_elm (obj, node->key, val);
+
+    ms_value_unref (obj);
     return val;
 
 error:
-    if (dict)
-        ms_value_unref (dict);
-    if (val)
-        ms_value_unref (val);
+    ms_value_unref (obj);
+    ms_value_unref (val);
     return NULL;
 }
 

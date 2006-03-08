@@ -149,8 +149,7 @@ ms_context_finalize (GObject *object)
     g_hash_table_destroy (ctx->vars);
     g_free (ctx->error_msg);
 
-    if (ctx->return_val)
-        ms_value_unref (ctx->return_val);
+    ms_value_unref (ctx->return_val);
 
     g_free (ctx->name);
     g_strfreev (ctx->argv);
@@ -168,6 +167,8 @@ ms_context_class_init (MSContextClass *klass)
     object_class->set_property = ms_context_set_property;
     object_class->get_property = ms_context_get_property;
     object_class->constructor = ms_context_constructor;
+
+    ms_type_init ();
 
     g_object_class_install_property (object_class,
                                      PROP_WINDOW,
@@ -467,8 +468,7 @@ ms_variable_unref (MSVariable *var)
 
     if (!--var->ref_count)
     {
-        if (var->value)
-            ms_value_unref (var->value);
+        ms_value_unref (var->value);
         if (var->func)
             g_object_unref (var->func);
         g_free (var);
@@ -511,8 +511,7 @@ ms_context_unset_return (MSContext *ctx)
     g_return_if_fail (MS_IS_CONTEXT (ctx));
     g_return_if_fail (ctx->return_set);
     ctx->return_set = FALSE;
-    if (ctx->return_val)
-        ms_value_unref (ctx->return_val);
+    ms_value_unref (ctx->return_val);
     ctx->return_val = NULL;
 }
 

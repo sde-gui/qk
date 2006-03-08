@@ -48,6 +48,7 @@ ms_func_init (G_GNUC_UNUSED MSFunc *func)
 static void
 ms_func_class_init (G_GNUC_UNUSED MSFuncClass *klass)
 {
+    ms_type_init ();
 }
 
 
