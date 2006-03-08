@@ -406,7 +406,8 @@ program:  stmt_or_python            { $$ = node_list_add (parser, NULL, $1); }
 ;
 
 stmt_or_python:
-          stmt ';'          { $$ = $1; }
+          error ';'         { $$ = NULL; }
+        | stmt ';'          { $$ = $1; }
         | PYTHON            { $$ = node_python (parser, $1); }
 ;
 
@@ -439,6 +440,7 @@ expr:     simple_expr
 assignment:
           IDENTIFIER '=' expr                   { $$ = node_assignment (parser, $1, $3); }
         | simple_expr '[' expr ']' '=' expr     { $$ = node_list_assign (parser, $1, $3, $6); }
+        | simple_expr '[' error ']' '=' expr    { $$ = NULL; }
         | simple_expr '.' IDENTIFIER '=' expr   { $$ = node_dict_assign (parser, $1, $3, $5); }
 ;
 
@@ -471,8 +473,11 @@ simple_expr:
         | LITERAL                           { $$ = node_string (parser, $1); }
         | variable
         | '(' stmt ')'                      { $$ = $2; }
+        | '(' error ')'                     { $$ = NULL; }
         | '[' list_elms ']'                 { $$ = node_value_list (parser, MS_NODE_LIST ($2)); }
+        | '[' error ']'                     { $$ = NULL; }
         | '{' dict_elms '}'                 { $$ = node_dict (parser, $2 ? MS_NODE_LIST ($2) : NULL); }
+        | '{' error '}'                     { $$ = NULL; }
         | '[' expr TWODOTS expr ']'         { $$ = node_value_range (parser, $2, $4); }
         | simple_expr '(' list_elms ')'     { $$ = node_function (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
         | simple_expr '[' expr ']'          { $$ = node_list_elm (parser, $1, $3); }

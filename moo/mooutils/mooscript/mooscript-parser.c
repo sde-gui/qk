@@ -194,7 +194,7 @@ ms_lex_parse_number (MSLex    *lex,
         {
             if (value > 1000000)
             {
-                g_print ("syntax error, number is too big\n", G_STRLOC);
+                g_print ("syntax error, number is too big\n");
                 return ms_lex_error (parser);
             }
 
@@ -203,7 +203,7 @@ ms_lex_parse_number (MSLex    *lex,
         }
         else if (IS_WORD (c))
         {
-            g_print ("syntax error, number followed by word char\n", G_STRLOC);
+            g_print ("syntax error, number followed by word char\n");
             return ms_lex_error (parser);
         }
         else
