@@ -233,13 +233,13 @@ node_value_range (MSParser   *parser,
 
 
 static MSNode *
-node_list_elm (MSParser   *parser,
-               MSNode     *list,
-               MSNode     *ind)
+node_get_item (MSParser   *parser,
+               MSNode     *obj,
+               MSNode     *key)
 {
-    MSNodeListElm *node;
+    MSNodeGetItem *node;
 
-    node = ms_node_list_elm_new (list, ind);
+    node = ms_node_get_item_new (obj, key);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -247,14 +247,14 @@ node_list_elm (MSParser   *parser,
 
 
 static MSNode *
-node_list_assign (MSParser   *parser,
-                  MSNode     *list,
-                  MSNode     *ind,
-                  MSNode     *val)
+node_set_item (MSParser   *parser,
+               MSNode     *obj,
+               MSNode     *key,
+               MSNode     *val)
 {
-    MSNodeListAssign *node;
+    MSNodeSetItem *node;
 
-    node = ms_node_list_assign_new (list, ind, val);
+    node = ms_node_set_item_new (obj, key, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -439,7 +439,7 @@ expr:     simple_expr
 
 assignment:
           IDENTIFIER '=' expr                   { $$ = node_assignment (parser, $1, $3); }
-        | simple_expr '[' expr ']' '=' expr     { $$ = node_list_assign (parser, $1, $3, $6); }
+        | simple_expr '[' expr ']' '=' expr     { $$ = node_set_item (parser, $1, $3, $6); }
         | simple_expr '[' error ']' '=' expr    { $$ = NULL; }
         | simple_expr '.' IDENTIFIER '=' expr   { $$ = node_dict_assign (parser, $1, $3, $5); }
 ;
@@ -480,7 +480,7 @@ simple_expr:
         | '{' error '}'                     { $$ = NULL; }
         | '[' expr TWODOTS expr ']'         { $$ = node_value_range (parser, $2, $4); }
         | simple_expr '(' list_elms ')'     { $$ = node_function (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
-        | simple_expr '[' expr ']'          { $$ = node_list_elm (parser, $1, $3); }
+        | simple_expr '[' expr ']'          { $$ = node_get_item (parser, $1, $3); }
         | simple_expr '.' IDENTIFIER        { $$ = node_dict_elm (parser, $1, $3); }
 ;
 

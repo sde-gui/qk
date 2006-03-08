@@ -1020,37 +1020,60 @@ ms_node_python_new (const char *script)
 
 
 /****************************************************************************/
-/* MSNodeListElm
+/* MSNodeGetItem
  */
 
 static void
-ms_node_list_elm_destroy (MSNode *node)
+ms_node_get_item_destroy (MSNode *node)
 {
-    ms_node_unref (MS_NODE_LIST_ELM(node)->list);
-    ms_node_unref (MS_NODE_LIST_ELM(node)->ind);
+    ms_node_unref (MS_NODE_GET_ITEM(node)->obj);
+    ms_node_unref (MS_NODE_GET_ITEM(node)->key);
 }
 
 
 static MSValue *
-ms_node_list_elm_eval (MSNode    *node_,
+ms_node_get_item_eval (MSNode    *node_,
                        MSContext *ctx)
 {
-    MSNodeListElm *node = MS_NODE_LIST_ELM (node_);
-    MSValue *list = NULL, *ind = NULL, *ret;
+    MSNodeGetItem *node = MS_NODE_GET_ITEM (node_);
+    MSValue *obj = NULL, *key = NULL, *val;
     guint len;
     int index;
 
-    list = _ms_node_eval (node->list, ctx);
+    obj = _ms_node_eval (node->obj, ctx);
 
-    if (!list)
+    if (!obj)
         goto error;
 
-    ind = _ms_node_eval (node->ind, ctx);
+    key = _ms_node_eval (node->key, ctx);
 
-    if (!ind)
+    if (!key)
         goto error;
 
-    if (!ms_value_get_int (ind, &index))
+    if (MS_VALUE_TYPE (obj) == MS_VALUE_DICT)
+    {
+        if (MS_VALUE_TYPE (key) == MS_VALUE_STRING)
+        {
+            val = ms_value_dict_get_elm (obj, key->str);
+
+            if (!val)
+            {
+                ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                         "no key '%s'", key->str);
+                goto error;
+            }
+
+            goto out;
+        }
+        else
+        {
+            ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                     "invalid dict key");
+            goto error;
+        }
+    }
+
+    if (!ms_value_get_int (key, &index))
     {
         ms_context_format_error (ctx, MS_ERROR_VALUE,
                                  "invalid list index");
@@ -1064,14 +1087,14 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (MS_VALUE_TYPE (list))
+    switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_STRING:
-            len = g_utf8_strlen (list->str, -1);
+            len = g_utf8_strlen (obj->str, -1);
             break;
 
         case MS_VALUE_LIST:
-            len = list->list.n_elms;
+            len = obj->list.n_elms;
             break;
 
         default:
@@ -1087,84 +1110,105 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (MS_VALUE_TYPE (list))
+    switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_STRING:
-            ret = ms_value_string_len (g_utf8_offset_to_pointer (list->str, index), 1);
+            val = ms_value_string_len (g_utf8_offset_to_pointer (obj->str, index), 1);
             break;
 
         case MS_VALUE_LIST:
-            ret = ms_value_ref (list->list.elms[index]);
+            val = ms_value_ref (obj->list.elms[index]);
             break;
 
         default:
             g_assert_not_reached ();
     }
 
-    ms_value_unref (list);
-    ms_value_unref (ind);
-    return ret;
+out:
+    ms_value_unref (obj);
+    ms_value_unref (key);
+    return val;
 
 error:
-    ms_value_unref (list);
-    ms_value_unref (ind);
+    ms_value_unref (obj);
+    ms_value_unref (key);
     return NULL;
 }
 
 
-MSNodeListElm *
-ms_node_list_elm_new (MSNode     *list,
-                      MSNode     *ind)
+MSNodeGetItem *
+ms_node_get_item_new (MSNode     *obj,
+                      MSNode     *key)
 {
-    MSNodeListElm *node;
+    MSNodeGetItem *node;
 
-    g_return_val_if_fail (list && ind, NULL);
+    g_return_val_if_fail (obj && key, NULL);
 
-    node = NODE_NEW (MSNodeListElm,
-                     MS_TYPE_NODE_LIST_ELM,
-                     ms_node_list_elm_eval,
-                     ms_node_list_elm_destroy);
+    node = NODE_NEW (MSNodeGetItem,
+                     MS_TYPE_NODE_GET_ITEM,
+                     ms_node_get_item_eval,
+                     ms_node_get_item_destroy);
 
-    node->list = ms_node_ref (list);
-    node->ind = ms_node_ref (ind);
+    node->obj = ms_node_ref (obj);
+    node->key = ms_node_ref (key);
 
     return node;
 }
 
 
 /****************************************************************************/
-/* MSNodeListAssign
+/* MSNodeSetItem
  */
 
 static void
-ms_node_list_assign_destroy (MSNode *node)
+ms_node_set_item_destroy (MSNode *node)
 {
-    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->list);
-    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->ind);
-    ms_node_unref (MS_NODE_LIST_ASSIGN(node)->val);
+    ms_node_unref (MS_NODE_SET_ITEM(node)->obj);
+    ms_node_unref (MS_NODE_SET_ITEM(node)->key);
+    ms_node_unref (MS_NODE_SET_ITEM(node)->val);
 }
 
 
 static MSValue *
-ms_node_list_assign_eval (MSNode    *node_,
-                          MSContext *ctx)
+ms_node_set_item_eval (MSNode    *node_,
+                       MSContext *ctx)
 {
-    MSNodeListAssign *node = MS_NODE_LIST_ASSIGN (node_);
-    MSValue *list = NULL, *ind = NULL, *val = NULL;
+    MSNodeSetItem *node = MS_NODE_SET_ITEM (node_);
+    MSValue *obj = NULL, *key = NULL, *val = NULL;
     guint len;
     int index;
 
-    list = _ms_node_eval (node->list, ctx);
+    obj = _ms_node_eval (node->obj, ctx);
 
-    if (!list)
+    if (!obj)
         goto error;
 
-    ind = _ms_node_eval (node->ind, ctx);
+    key = _ms_node_eval (node->key, ctx);
 
-    if (!ind)
+    if (!key)
         goto error;
 
-    if (!ms_value_get_int (ind, &index))
+    val = _ms_node_eval (node->val, ctx);
+
+    if (!val)
+        goto error;
+
+    if (MS_VALUE_TYPE (obj) == MS_VALUE_DICT)
+    {
+        if (MS_VALUE_TYPE (key) == MS_VALUE_STRING)
+        {
+            ms_value_dict_set_elm (obj, key->str, val);
+            goto out;
+        }
+        else
+        {
+            ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                     "invalid dict key");
+            goto error;
+        }
+    }
+
+    if (!ms_value_get_int (key, &index))
     {
         ms_context_format_error (ctx, MS_ERROR_VALUE,
                                  "invalid list index");
@@ -1178,10 +1222,10 @@ ms_node_list_assign_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (MS_VALUE_TYPE (list))
+    switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_LIST:
-            len = list->list.n_elms;
+            len = obj->list.n_elms;
             break;
 
         default:
@@ -1197,49 +1241,45 @@ ms_node_list_assign_eval (MSNode    *node_,
         goto error;
     }
 
-    val = _ms_node_eval (node->val, ctx);
-
-    if (!val)
-        goto error;
-
-    switch (MS_VALUE_TYPE (list))
+    switch (MS_VALUE_TYPE (obj))
     {
         case MS_VALUE_LIST:
-            ms_value_list_set_elm (list, index, val);
+            ms_value_list_set_elm (obj, index, val);
             break;
 
         default:
             g_assert_not_reached ();
     }
 
-    ms_value_unref (list);
-    ms_value_unref (ind);
+out:
+    ms_value_unref (obj);
+    ms_value_unref (key);
     return val;
 
 error:
-    ms_value_unref (list);
-    ms_node_unref (ind);
+    ms_value_unref (obj);
+    ms_node_unref (key);
     ms_value_unref (val);
     return NULL;
 }
 
 
-MSNodeListAssign *
-ms_node_list_assign_new (MSNode     *list,
-                         MSNode     *ind,
-                         MSNode     *val)
+MSNodeSetItem *
+ms_node_set_item_new (MSNode     *obj,
+                      MSNode     *key,
+                      MSNode     *val)
 {
-    MSNodeListAssign *node;
+    MSNodeSetItem *node;
 
-    g_return_val_if_fail (list && ind && val, NULL);
+    g_return_val_if_fail (obj && key && val, NULL);
 
-    node = NODE_NEW (MSNodeListAssign,
-                     MS_TYPE_NODE_LIST_ASSIGN,
-                     ms_node_list_assign_eval,
-                     ms_node_list_assign_destroy);
+    node = NODE_NEW (MSNodeSetItem,
+                     MS_TYPE_NODE_SET_ITEM,
+                     ms_node_set_item_eval,
+                     ms_node_set_item_destroy);
 
-    node->list = ms_node_ref (list);
-    node->ind = ms_node_ref (ind);
+    node->obj = ms_node_ref (obj);
+    node->key = ms_node_ref (key);
     node->val = ms_node_ref (val);
 
     return node;

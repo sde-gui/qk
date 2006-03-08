@@ -360,13 +360,13 @@ node_value_range (MSParser   *parser,
 
 
 static MSNode *
-node_list_elm (MSParser   *parser,
-               MSNode     *list,
-               MSNode     *ind)
+node_get_item (MSParser   *parser,
+               MSNode     *obj,
+               MSNode     *key)
 {
-    MSNodeListElm *node;
+    MSNodeGetItem *node;
 
-    node = ms_node_list_elm_new (list, ind);
+    node = ms_node_get_item_new (obj, key);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -374,14 +374,14 @@ node_list_elm (MSParser   *parser,
 
 
 static MSNode *
-node_list_assign (MSParser   *parser,
-                  MSNode     *list,
-                  MSNode     *ind,
-                  MSNode     *val)
+node_set_item (MSParser   *parser,
+               MSNode     *obj,
+               MSNode     *key,
+               MSNode     *val)
 {
-    MSNodeListAssign *node;
+    MSNodeSetItem *node;
 
-    node = ms_node_list_assign_new (list, ind, val);
+    node = ms_node_set_item_new (obj, key, val);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -1819,7 +1819,7 @@ yyreduce:
 
   case 26:
 #line 442 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = node_list_assign (parser, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[0].node)); ;}
+    { (yyval.node) = node_set_item (parser, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[0].node)); ;}
     break;
 
   case 27:
@@ -1969,7 +1969,7 @@ yyreduce:
 
   case 57:
 #line 483 "/home/muntyan/projects/moo/moo/mooutils/mooscript/mooscript-yacc.y"
-    { (yyval.node) = node_list_elm (parser, (yyvsp[-3].node), (yyvsp[-1].node)); ;}
+    { (yyval.node) = node_get_item (parser, (yyvsp[-3].node), (yyvsp[-1].node)); ;}
     break;
 
   case 58:

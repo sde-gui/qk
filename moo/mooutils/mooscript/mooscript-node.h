@@ -23,14 +23,12 @@ G_BEGIN_DECLS
 typedef enum {
     MS_TYPE_NODE_0,
     MS_TYPE_NODE_LIST,
-    MS_TYPE_NODE_LIST_ELM,
     MS_TYPE_NODE_VAR,
     MS_TYPE_NODE_FUNCTION,
     MS_TYPE_NODE_IF_ELSE,
     MS_TYPE_NODE_WHILE,
     MS_TYPE_NODE_FOR,
     MS_TYPE_NODE_ASSIGN,
-    MS_TYPE_NODE_LIST_ASSIGN,
     MS_TYPE_NODE_VALUE,
     MS_TYPE_NODE_VAL_LIST,
     MS_TYPE_NODE_PYTHON,
@@ -40,20 +38,20 @@ typedef enum {
     MS_TYPE_NODE_DICT_ASSIGN,
     MS_TYPE_NODE_DICT,
     MS_TYPE_NODE_DICT_ENTRY,
+    MS_TYPE_NODE_GET_ITEM,
+    MS_TYPE_NODE_SET_ITEM,
     MS_TYPE_NODE_LAST
 } MSNodeType;
 
 
 typedef struct _MSNode MSNode;
 typedef struct _MSNodeList MSNodeList;
-typedef struct _MSNodeListElm MSNodeListElm;
 typedef struct _MSNodeVar MSNodeVar;
 typedef struct _MSNodeFunction MSNodeFunction;
 typedef struct _MSNodeIfElse MSNodeIfElse;
 typedef struct _MSNodeWhile MSNodeWhile;
 typedef struct _MSNodeFor MSNodeFor;
 typedef struct _MSNodeAssign MSNodeAssign;
-typedef struct _MSNodeListAssign MSNodeListAssign;
 typedef struct _MSNodeValue MSNodeValue;
 typedef struct _MSNodeValList MSNodeValList;
 typedef struct _MSNodePython MSNodePython;
@@ -63,6 +61,8 @@ typedef struct _MSNodeDict MSNodeDict;
 typedef struct _MSNodeDictEntry MSNodeDictEntry;
 typedef struct _MSNodeDictElm MSNodeDictElm;
 typedef struct _MSNodeDictAssign MSNodeDictAssign;
+typedef struct _MSNodeGetItem MSNodeGetItem;
+typedef struct _MSNodeSetItem MSNodeSetItem;
 
 
 typedef MSValue* (*MSNodeEval)    (MSNode *node, MSContext *ctx);
@@ -109,14 +109,12 @@ _ms_node_check_type (gpointer   pnode,
 #endif
 
 #define MS_NODE_LIST(node_)         MS_NODE_CAST (node_, MS_TYPE_NODE_LIST, MSNodeList)
-#define MS_NODE_LIST_ELM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_LIST_ELM, MSNodeListElm)
 #define MS_NODE_VAR(node_)          MS_NODE_CAST (node_, MS_TYPE_NODE_VAR, MSNodeVar)
 #define MS_NODE_FUNCTION(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_FUNCTION, MSNodeFunction)
 #define MS_NODE_IF_ELSE(node_)      MS_NODE_CAST (node_, MS_TYPE_NODE_IF_ELSE, MSNodeIfElse)
 #define MS_NODE_WHILE(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_WHILE, MSNodeWhile)
 #define MS_NODE_FOR(node_)          MS_NODE_CAST (node_, MS_TYPE_NODE_FOR, MSNodeFor)
 #define MS_NODE_ASSIGN(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_ASSIGN, MSNodeAssign)
-#define MS_NODE_LIST_ASSIGN(node_)  MS_NODE_CAST (node_, MS_TYPE_NODE_LIST_ASSIGN, MSNodeListAssign)
 #define MS_NODE_VALUE(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_VALUE, MSNodeValue)
 #define MS_NODE_VAL_LIST(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_VAL_LIST, MSNodeValList)
 #define MS_NODE_PYTHON(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_PYTHON, MSNodePython)
@@ -126,6 +124,8 @@ _ms_node_check_type (gpointer   pnode,
 #define MS_NODE_DICT_ENTRY(node_)   MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ENTRY, MSNodeDictEntry)
 #define MS_NODE_DICT_ELM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ELM, MSNodeDictElm)
 #define MS_NODE_DICT_ASSIGN(node_)  MS_NODE_CAST (node_, MS_TYPE_NODE_DICT_ASSIGN, MSNodeDictAssign)
+#define MS_NODE_GET_ITEM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_GET_ITEM, MSNodeGetItem)
+#define MS_NODE_SET_ITEM(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_SET_ITEM, MSNodeSetItem)
 
 #define MS_IS_NODE_VAR(node) (node && MS_NODE_TYPE(node) == MS_TYPE_NODE_VAR)
 #define MS_IS_NODE_VALUE(node) (node && MS_NODE_TYPE(node) == MS_TYPE_NODE_VALUE)
@@ -140,13 +140,6 @@ struct _MSNodeList {
     MSNode **nodes;
     guint n_nodes;
     guint n_nodes_allocd__;
-};
-
-
-struct _MSNodeListElm {
-    MSNode node;
-    MSNode *list;
-    MSNode *ind;
 };
 
 
@@ -199,10 +192,16 @@ struct _MSNodeAssign {
 };
 
 
-struct _MSNodeListAssign {
+struct _MSNodeGetItem {
     MSNode node;
-    MSNode *list;
-    MSNode *ind;
+    MSNode *obj;
+    MSNode *key;
+};
+
+struct _MSNodeSetItem {
+    MSNode node;
+    MSNode *obj;
+    MSNode *key;
     MSNode *val;
 };
 
@@ -318,10 +317,10 @@ MSNodeVar      *ms_node_var_new             (const char *name);
 
 MSNodePython   *ms_node_python_new          (const char *script);
 
-MSNodeListElm  *ms_node_list_elm_new        (MSNode     *list,
-                                             MSNode     *ind);
-MSNodeListAssign *ms_node_list_assign_new   (MSNode     *list,
-                                             MSNode     *ind,
+MSNodeGetItem  *ms_node_get_item_new        (MSNode     *obj,
+                                             MSNode     *key);
+MSNodeSetItem  *ms_node_set_item_new        (MSNode     *obj,
+                                             MSNode     *key,
                                              MSNode     *val);
 
 MSNodeBreak    *ms_node_break_new           (MSBreakType type);
