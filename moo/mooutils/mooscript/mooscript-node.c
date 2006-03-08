@@ -251,9 +251,13 @@ ms_node_function_eval (MSNode    *node_,
 
     if (!ms_value_is_func (func))
     {
+        char *str = ms_value_print (func);
         ms_value_unref (func);
-        return ms_context_format_error (ctx, MS_ERROR_NAME,
-                                        "not a function");
+        ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                 "object <%s> is not a function",
+                                 str);
+        g_free (str);
+        return NULL;
     }
 
     n_args = node->args ? node->args->n_nodes : 0;
@@ -1067,7 +1071,7 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->klass->type)
+    switch (MS_VALUE_TYPE (list))
     {
         case MS_VALUE_STRING:
             len = g_utf8_strlen (list->str, -1);
@@ -1090,7 +1094,7 @@ ms_node_list_elm_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->klass->type)
+    switch (MS_VALUE_TYPE (list))
     {
         case MS_VALUE_STRING:
             ret = ms_value_string_len (g_utf8_offset_to_pointer (list->str, index), 1);
@@ -1104,13 +1108,13 @@ ms_node_list_elm_eval (MSNode    *node_,
             g_assert_not_reached ();
     }
 
-    ms_node_unref (list);
-    ms_node_unref (ind);
+    ms_value_unref (list);
+    ms_value_unref (ind);
     return ret;
 
 error:
-    ms_node_unref (list);
-    ms_node_unref (ind);
+    ms_value_unref (list);
+    ms_value_unref (ind);
     return NULL;
 }
 
@@ -1181,7 +1185,7 @@ ms_node_list_assign_eval (MSNode    *node_,
         goto error;
     }
 
-    switch (list->klass->type)
+    switch (MS_VALUE_TYPE (list))
     {
         case MS_VALUE_LIST:
             len = list->list.n_elms;
@@ -1205,7 +1209,7 @@ ms_node_list_assign_eval (MSNode    *node_,
     if (!val)
         goto error;
 
-    switch (list->klass->type)
+    switch (MS_VALUE_TYPE (list))
     {
         case MS_VALUE_LIST:
             ms_value_list_set_elm (list, index, val);
