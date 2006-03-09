@@ -309,9 +309,98 @@ dict_has_key_func (MSValue *dict,
 }
 
 
+static MSValue *
+str_len_func (MSValue *val,
+              G_GNUC_UNUSED MSContext *ctx)
+{
+    return ms_value_int (g_utf8_strlen (val->str, -1));
+}
+
+static MSValue *
+dict_len_func (MSValue *val,
+               G_GNUC_UNUSED MSContext *ctx)
+{
+    return ms_value_int (g_hash_table_size (val->hash));
+}
+
+static MSValue *
+list_len_func (MSValue *val,
+               G_GNUC_UNUSED MSContext *ctx)
+{
+    return ms_value_int (val->list.n_elms);
+}
+
+static MSValue *
+list_max_func (MSValue   *val,
+               MSContext *ctx)
+{
+    guint i;
+    MSValue *max;
+
+    if (!val->list.n_elms)
+        return ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                        "requested MAX of empty list");
+
+    max = val->list.elms[0];
+
+    for (i = 1; i < val->list.n_elms; ++i)
+        if (ms_value_cmp (max, val->list.elms[i]) < 0)
+            max = val->list.elms[i];
+
+    return ms_value_ref (max);
+}
+
+static MSValue *
+list_min_func (MSValue   *val,
+               MSContext *ctx)
+{
+    guint i;
+    MSValue *min;
+
+    if (!val->list.n_elms)
+        return ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                        "requested MIN of empty list");
+
+    min = val->list.elms[0];
+
+    for (i = 1; i < val->list.n_elms; ++i)
+        if (ms_value_cmp (min, val->list.elms[i]) > 0)
+            min = val->list.elms[i];
+
+    return ms_value_ref (min);
+}
+
+
+static MSValue *
+list_copy_func (MSValue   *val,
+                G_GNUC_UNUSED MSContext *ctx)
+{
+    MSValue *copy;
+    guint i;
+
+    copy = ms_value_list (val->list.n_elms);
+
+    for (i = 0; i < val->list.n_elms; ++i)
+        ms_value_list_set_elm (copy, i, val->list.elms[i]);
+
+    return copy;
+}
+
+
 void
 _ms_type_init_builtin (MSValueClass *types)
 {
+    add_meth0 (MS_VALUE_STRING, "len", str_len_func);
+
+    add_meth0 (MS_VALUE_LIST, "len", list_len_func);
+    add_meth0 (MS_VALUE_LIST, "max", list_max_func);
+    add_meth0 (MS_VALUE_LIST, "min", list_min_func);
+    add_meth0 (MS_VALUE_LIST, "copy", list_copy_func);
+//     add_meth0 (MS_VALUE_LIST, "deep_copy", list_deep_copy_func);
+
+    add_meth0 (MS_VALUE_DICT, "len", dict_len_func);
     add_meth0 (MS_VALUE_DICT, "keys", dict_keys_func);
     add_meth1 (MS_VALUE_DICT, "has_key", dict_has_key_func);
+//     add_meth0 (MS_VALUE_DICT, "copy", dict_copy_func);
+//     add_meth0 (MS_VALUE_DICT, "deep_copy", dict_deep_copy_func);
 }
