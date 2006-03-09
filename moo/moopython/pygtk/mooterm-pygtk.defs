@@ -37,6 +37,13 @@
   (gtype-id "MOO_TYPE_TERM_ITER")
   (copy-func "moo_term_iter_copy")
   (release-func "moo_term_iter_free")
+  (fields
+    '("MooTerm*" "term")
+    '("MooTermLine*" "line")
+    '("int" "row")
+    '("int" "col")
+    '("int" "width")
+  )
 )
 
 (define-boxed TermCommand
