@@ -1,3 +1,4 @@
+AUTOMAKE_OPTIONS = dist-bzip2
 EXTRA_DIST = mingw-configure cygwin-configure
 
 DIST_SUBDIRS = m4
@@ -95,12 +96,14 @@ if MOO_OS_UNIX
 libmoo_sources += $(moo_unix_sources)
 endif
 
-EXTRA_DIST +=            \
-$(moo_sources)           \
-$(moo_win32_sources)     \
-$(moo_unix_sources)      \
-$(moo_built_sources)     \
-$(moo_extra_dist)
+
+EXTRA_DIST += $(moo_extra_dist)
+
+if MOO_OS_MINGW
+EXTRA_DIST += $(moo_unix_sources)
+else
+EXTRA_DIST += $(moo_win32_sources)
+endif
 
 
 ##############################################################################

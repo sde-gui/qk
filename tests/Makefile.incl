@@ -81,8 +81,7 @@ testfold_LDFLAGS = $(ldflags)
 testfold_LDADD = $(ldadd)
 testfold_SOURCES = tests/testfold.c
 if !MOO_BUILD_LIB
-testfold_SOURCES += $(libmoo_sources)
-nodist_testfold_SOURCES = $(nodist_libmoo_sources)
+nodist_testfold_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -93,8 +92,7 @@ langparser_LDFLAGS = $(ldflags)
 langparser_LDADD = $(ldadd)
 langparser_SOURCES = tests/testparser.c
 if !MOO_BUILD_LIB
-langparser_SOURCES += $(libmoo_sources)
-nodist_langparser_SOURCES = $(nodist_libmoo_sources)
+nodist_langparser_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -105,8 +103,7 @@ ms_LDFLAGS = $(ldflags)
 ms_LDADD = $(ldadd) -lreadline
 ms_SOURCES = tests/mscript.c
 if !MOO_BUILD_LIB
-ms_SOURCES += $(libmoo_sources)
-nodist_ms_SOURCES = $(nodist_libmoo_sources)
+nodist_ms_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -121,10 +118,8 @@ termbuffer_LDADD = $(ldadd)
 mterm_SOURCES = tests/mterm.c
 termbuffer_SOURCES = tests/termbuffer.c
 if !MOO_BUILD_LIB
-mterm_SOURCES += $(libmoo_sources)
-nodist_mterm_SOURCES = $(nodist_libmoo_sources)
-termbuffer_SOURCES += $(libmoo_sources)
-nodist_termbuffer_SOURCES = $(nodist_libmoo_sources)
+nodist_mterm_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_termbuffer_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -136,8 +131,7 @@ markup_LDADD = $(ldadd)
 
 markup_SOURCES = tests/markup.c
 if !MOO_BUILD_LIB
-markup_SOURCES += $(libmoo_sources)
-nodist_markup_SOURCES = $(nodist_libmoo_sources)
+nodist_markup_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -149,8 +143,7 @@ miniglade_LDADD = $(ldadd)
 
 miniglade_SOURCES = tests/miniglade.c
 if !MOO_BUILD_LIB
-miniglade_SOURCES += $(libmoo_sources)
-nodist_miniglade_SOURCES = $(nodist_libmoo_sources)
+nodist_miniglade_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
@@ -173,14 +166,10 @@ testobject_LDADD = $(ldadd)
 testobject_SOURCES = tests/testobject.c
 
 if !MOO_BUILD_LIB
-testpaned_SOURCES += $(libmoo_sources)
-testfileview_SOURCES += $(libmoo_sources)
-testpanedfileview_SOURCES += $(libmoo_sources)
-testobject_SOURCES += $(libmoo_sources)
-nodist_testpaned_SOURCES = $(nodist_libmoo_sources)
-nodist_testfileview_SOURCES = $(nodist_libmoo_sources)
-nodist_testpanedfileview_SOURCES = $(nodist_libmoo_sources)
-nodist_testobject_SOURCES = $(nodist_libmoo_sources)
+nodist_testpaned_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testfileview_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testpanedfileview_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testobject_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 #####################################################################
