@@ -82,12 +82,13 @@ typedef enum {
 
 
 struct _MooTermTagTable {
+    MooTermBuffer *buffer;
     GHashTable *named_tags;
     GSList *tags;
 };
 
 
-MooTermTagTable *_moo_term_tag_table_new        (void);
+MooTermTagTable *_moo_term_tag_table_new        (MooTermBuffer   *buffer);
 void    _moo_term_tag_table_free                (MooTermTagTable *table);
 
 void    _moo_term_buffer_set_line_data          (MooTermBuffer  *buf,

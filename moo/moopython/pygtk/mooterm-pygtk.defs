@@ -9,21 +9,25 @@
   (gtype-id "MOO_TYPE_TERM")
 )
 
-(define-object TermBuffer
+(define-object Buffer
   (in-module "Moo")
   (parent "GObject")
   (c-name "MooTermBuffer")
   (gtype-id "MOO_TYPE_TERM_BUFFER")
 )
 
-(define-object TermTag
+(define-object Tag
   (in-module "Moo")
   (parent "GObject")
   (c-name "MooTermTag")
   (gtype-id "MOO_TYPE_TERM_TAG")
+  (fields
+    '("char*" "name")
+    '("MooTermTextAttr" "attr")
+  )
 )
 
-(define-object TermWindow
+(define-object Window
   (in-module "Moo")
   (parent "MooWindow")
   (c-name "MooTermWindow")
@@ -31,7 +35,7 @@
 )
 
 
-(define-boxed TermIter
+(define-boxed Iter
   (in-module "Moo")
   (c-name "MooTermIter")
   (gtype-id "MOO_TYPE_TERM_ITER")
@@ -46,7 +50,7 @@
   )
 )
 
-(define-boxed TermCommand
+(define-boxed Command
   (in-module "Moo")
   (c-name "MooTermCommand")
   (gtype-id "MOO_TYPE_TERM_COMMAND")
@@ -54,16 +58,27 @@
   (release-func "moo_term_command_free")
 )
 
-(define-pointer TermLine
+(define-pointer Line
   (in-module "Moo")
   (c-name "MooTermLine")
   (gtype-id "MOO_TYPE_TERM_LINE")
 )
 
+(define-boxed Attr
+  (in-module "Moo")
+  (c-name "MooTermTextAttr")
+  (gtype-id "MOO_TYPE_TERM_TEXT_ATTR")
+  (fields
+    '("MooTermTextAttrMask" "mask")
+    '("MooTermTextColor" "foreground")
+    '("MooTermTextColor" "background")
+  )
+)
+
 
 ;; Enumerations and flags ...
 
-(define-enum TermEraseBinding
+(define-enum EraseBinding
   (in-module "Moo")
   (c-name "MooTermEraseBinding")
   (gtype-id "MOO_TYPE_TERM_ERASE_BINDING")
@@ -75,7 +90,7 @@
   )
 )
 
-(define-flags TermTextAttrMask
+(define-flags TextAttrMask
   (in-module "Moo")
   (c-name "MooTermTextAttrMask")
   (gtype-id "MOO_TYPE_TERM_TEXT_ATTR_MASK")
@@ -89,7 +104,7 @@
   )
 )
 
-(define-enum TermTextColor
+(define-enum TextColor
   (in-module "Moo")
   (c-name "MooTermTextColor")
   (gtype-id "MOO_TYPE_TERM_TEXT_COLOR")
@@ -688,10 +703,47 @@
   (c-name "moo_term_tag_set_attr")
   (return-type "none")
   (parameters
-    '("MooTermTextAttr" "attr")
+    '("MooTermTextAttr*" "attr")
+  )
+  (docstring "Tag.set_attr(attr) -> None.\n"
+             "\n"
+             "attr - TextAttr instance\n"
   )
 )
 
+(define-method set_attributes
+  (of-object "MooTermTag")
+  (c-name "moo_term_tag_set_attributes")
+  (return-type "none")
+  (parameters
+    '("MooTermTextAttrMask" "mask")
+    '("MooTermTextColor" "foreground" (null-ok) (default "0"))
+    '("MooTermTextColor" "background" (null-ok) (default "0"))
+  )
+  (docstring "Tag.set_attributes(mask, foreground=0, background=0) -> None. Sets tag attributes\n"
+             "\n"
+             "mask - combination of TextAttrMask values\n"
+             "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"
+             "background - background color as TextColor value, has effect only if TEXT_BACKGROUND mask is set\n"
+  )
+)
+
+(define-function moo_term_text_attr_new
+  (c-name "moo_term_text_attr_new")
+  (is-constructor-of "MooTermTextAttr")
+  (return-type "MooTermTextAttr*")
+  (parameters
+    '("MooTermTextAttrMask" "mask")
+    '("MooTermTextColor" "foreground")
+    '("MooTermTextColor" "background")
+  )
+  (docstring "TextAttr(mask, foreground=0, background=0) -> TextAttr.\n"
+             "\n"
+             "mask - combination of TextAttrMask values\n"
+             "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"
+             "background - background color as TextColor value, has effect only if TEXT_BACKGROUND mask is set\n"
+  )
+)
 
 
 ;; From mootermwindow.h

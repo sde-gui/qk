@@ -16,6 +16,7 @@
 #include "mooterm/mooterm-private.h"
 #include "mooterm/mootermline-private.h"
 #include "mooterm/mooterm-text.h"
+#include "mooutils/moomarshals.h"
 
 
 static void     moo_term_tag_finalize       (GObject        *object);
@@ -27,6 +28,13 @@ static void     moo_term_tag_get_property   (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
+
+enum {
+    CHANGED,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
 
 static int
 ptr_cmp (gconstpointer a,
@@ -78,6 +86,15 @@ moo_term_tag_class_init (MooTermTagClass *klass)
                                              "name",
                                              NULL,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+    signals[CHANGED] =
+            g_signal_new ("changed",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooTermTagClass, changed),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -179,11 +196,12 @@ _moo_term_tag_remove_line (MooTermTag *tag,
 
 
 MooTermTagTable*
-_moo_term_tag_table_new (void)
+_moo_term_tag_table_new (MooTermBuffer *buffer)
 {
     MooTermTagTable *table = g_new0 (MooTermTagTable, 1);
 
     table->named_tags = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    table->buffer = buffer;
 
     return table;
 }
@@ -292,11 +310,34 @@ moo_term_get_tag_table (MooTerm *term)
 
 void
 moo_term_tag_set_attr (MooTermTag         *tag,
-                       MooTermTextAttr     attr)
+                       MooTermTextAttr    *attr)
 {
-    /* TODO */
     g_return_if_fail (MOO_IS_TERM_TAG (tag));
-    tag->attr = attr;
+    g_return_if_fail (attr != NULL);
+    tag->attr = *attr;
+    g_signal_emit (tag, signals[CHANGED], 0);
+
+    /* XXX */
+    buf_changed_set_all (tag->table->buffer);
+    _moo_term_buffer_changed (tag->table->buffer);
+}
+
+
+void
+moo_term_tag_set_attributes (MooTermTag         *tag,
+                             MooTermTextAttrMask mask,
+                             MooTermTextColor    foreground,
+                             MooTermTextColor    background)
+{
+    MooTermTextAttr attr;
+
+    g_return_if_fail (MOO_IS_TERM_TAG (tag));
+
+    attr.mask = mask;
+    attr.foreground = foreground;
+    attr.background = background;
+
+    moo_term_tag_set_attr (tag, &attr);
 }
 
 
@@ -345,6 +386,47 @@ moo_term_text_color_get_type (void)
 
         type = g_enum_register_static ("MooTermTextColor", values);
     }
+
+    return type;
+}
+
+
+MooTermTextAttr*
+moo_term_text_attr_new (MooTermTextAttrMask mask,
+                        MooTermTextColor    foreground,
+                        MooTermTextColor    background)
+{
+    MooTermTextAttr *attr = g_new (MooTermTextAttr, 1);
+    attr->mask = mask;
+    attr->foreground = foreground;
+    attr->background = background;
+    return attr;
+}
+
+
+static gpointer
+copy_attr (gpointer a)
+{
+    MooTermTextAttr *attr = a;
+    MooTermTextAttr *copy = g_new (MooTermTextAttr, 1);
+    *copy = *attr;
+    return copy;
+}
+
+static void
+free_attr (gpointer a)
+{
+    g_free (a);
+}
+
+GType
+moo_term_text_attr_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooTermTextAttr",
+                                             copy_attr, free_attr);
 
     return type;
 }

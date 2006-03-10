@@ -278,7 +278,7 @@ moo_term_update_text_colors (MooTerm *term)
 
     gdk_window_set_background (widget->window, &term->priv->bg_color);
 
-    gtk_widget_queue_draw (widget);
+    _moo_term_invalidate_all (term);
 }
 
 

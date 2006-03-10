@@ -19,6 +19,7 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_TERM_TEXT_ATTR         (moo_term_text_attr_get_type ())
 #define MOO_TYPE_TERM_TEXT_ATTR_MASK    (moo_term_text_attr_mask_get_type ())
 #define MOO_TYPE_TERM_TEXT_COLOR        (moo_term_text_color_get_type ())
 
@@ -37,10 +38,10 @@ typedef struct _MooTermTagTable      MooTermTagTable;
 typedef enum {
     MOO_TERM_TEXT_REVERSE       = 1 << 0,
     MOO_TERM_TEXT_BLINK         = 1 << 1,
-    MOO_TERM_TEXT_FOREGROUND    = 1 << 2,
-    MOO_TERM_TEXT_BACKGROUND    = 1 << 3,
-    MOO_TERM_TEXT_BOLD          = 1 << 4,
-    MOO_TERM_TEXT_UNDERLINE     = 1 << 5
+    MOO_TERM_TEXT_BOLD          = 1 << 2,
+    MOO_TERM_TEXT_UNDERLINE     = 1 << 3,
+    MOO_TERM_TEXT_FOREGROUND    = 1 << 4,
+    MOO_TERM_TEXT_BACKGROUND    = 1 << 5
 } MooTermTextAttrMask;
 
 typedef enum {
@@ -78,11 +79,20 @@ struct _MooTermTagClass {
 
 
 GType   moo_term_text_attr_mask_get_type    (void) G_GNUC_CONST;
+GType   moo_term_text_attr_get_type         (void) G_GNUC_CONST;
 GType   moo_term_text_color_get_type        (void) G_GNUC_CONST;
 GType   moo_term_tag_get_type               (void) G_GNUC_CONST;
 
+MooTermTextAttr *moo_term_text_attr_new     (MooTermTextAttrMask mask,
+                                             MooTermTextColor    fg,
+                                             MooTermTextColor    bg);
+
 void    moo_term_tag_set_attr               (MooTermTag         *tag,
-                                             MooTermTextAttr     attr);
+                                             MooTermTextAttr    *attr);
+void    moo_term_tag_set_attributes         (MooTermTag         *tag,
+                                             MooTermTextAttrMask mask,
+                                             MooTermTextColor    fg,
+                                             MooTermTextColor    bg);
 
 void    _moo_term_tag_add_line              (MooTermTag         *tag,
                                              gpointer            line);

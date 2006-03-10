@@ -1416,8 +1416,13 @@ moo_term_apply_tag (MooTerm            *term,
         line = buf_line (buf, ITER_ROW (start));
         _moo_term_line_apply_tag (line, tag, ITER_COL (start),
                                   _moo_term_line_width (line) - ITER_COL (start));
-        line = buf_line (buf, ITER_ROW (end));
-        _moo_term_line_apply_tag (line, tag, 0, ITER_COL (end));
+
+        if (ITER_COL (end))
+        {
+            line = buf_line (buf, ITER_ROW (end));
+            _moo_term_line_apply_tag (line, tag, 0, ITER_COL (end));
+        }
+
         if (ITER_ROW (start) + 1 < ITER_ROW (end))
         {
             for (i = ITER_ROW (start) + 1; i < ITER_ROW (end); ++i)

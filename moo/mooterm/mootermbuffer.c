@@ -189,7 +189,7 @@ static void     moo_term_buffer_init            (MooTermBuffer      *buf)
     buf->priv->changed = NULL;
     buf->priv->changed_all = FALSE;
 
-    buf->priv->tag_table = _moo_term_tag_table_new ();
+    buf->priv->tag_table = _moo_term_tag_table_new (buf);
     buf->priv->data_sets = g_hash_table_new (g_direct_hash, g_direct_equal);
 
     set_defaults (buf);
