@@ -48,3 +48,4 @@ moo_extra_dist += $(mooapp_sources)
 endif
 
 moo_extra_dist += $(mooapp_extra_dist)
+moo_cleanfiles += $(mooapp_built_sources)
