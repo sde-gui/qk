@@ -274,8 +274,12 @@ static gboolean read_input              (GIOChannel     *source,
     guint bytes_read;
 
     if (condition & (G_IO_ERR | G_IO_HUP))
+    {
         if (errno != EAGAIN)
             error_occured = TRUE;
+        else
+            again = FALSE;
+    }
 
     g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
 
@@ -297,8 +301,10 @@ static gboolean read_input              (GIOChannel     *source,
 
     while (again && !error_occured && !err)
     {
-        if (g_io_channel_get_buffer_condition (source) & G_IO_IN) {
+        if (g_io_channel_get_buffer_condition (source) & G_IO_IN)
+        {
             g_io_channel_read_chars (source, &c, 1, &bytes_read, &err);
+
             if (bytes_read == 1)
             {
                 if (c != '\r')
@@ -311,19 +317,26 @@ static gboolean read_input              (GIOChannel     *source,
                 }
             }
             else
+            {
                 again = FALSE;
+            }
         }
         else
+        {
             again = FALSE;
+        }
     }
 
     if (error_occured || err)
     {
         g_critical ("%s: error", G_STRLOC);
-        if (err) {
+
+        if (err)
+        {
             g_critical ("%s: %s", G_STRLOC, err->message);
             g_error_free (err);
         }
+
         moo_app_input_shutdown (self);
         return FALSE;
     }
@@ -569,8 +582,12 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
     gboolean got_zero = FALSE;
 
     if (condition & (G_IO_ERR | G_IO_HUP))
+    {
         if (errno != EINTR && errno != EAGAIN)
             error_occured = TRUE;
+        else if (!(condition & (G_IO_IN | G_IO_PRI)))
+            again = FALSE;
+    }
 
     while (again && !error_occured && !err)
     {
@@ -581,12 +598,15 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
 
         int res = poll (&fd, 1, 0);
 
+        g_print ("polling\n");
+
         switch (res)
         {
             case -1:
                 if (errno != EINTR && errno != EAGAIN)
                     error_occured = TRUE;
                 perror ("poll");
+                again = FALSE;
                 break;
 
             case 0:
@@ -617,8 +637,11 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
                     else if (bytes_read == -1)
                     {
                         perror ("read");
+
                         if (errno != EINTR && errno != EAGAIN)
                             error_occured = TRUE;
+
+                        again = FALSE;
                     }
                     else
                     {
