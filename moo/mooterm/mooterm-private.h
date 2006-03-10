@@ -184,7 +184,9 @@ void        _moo_term_size_changed          (MooTerm        *term);
 
 void        _moo_term_init_font_stuff       (MooTerm        *term);
 void        _moo_term_init_palette          (MooTerm        *term);
-void        _moo_term_setup_palette         (MooTerm        *term);
+void        _moo_term_update_palette        (MooTerm        *term);
+void        _moo_term_style_set             (GtkWidget      *widget,
+                                             GtkStyle       *previous_style);
 
 void        _moo_term_update_pointer        (MooTerm        *term);
 void        _moo_term_set_pointer_visible   (MooTerm        *term,

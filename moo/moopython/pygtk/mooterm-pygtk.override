@@ -232,3 +232,47 @@ _wrap_moo_term_command_copy (PyObject *self)
 
     return pyg_boxed_new (MOO_TYPE_TERM_COMMAND, ret, FALSE, TRUE);
 }
+%%
+override moo_term_set_colors varargs
+static PyObject *
+_wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
+{
+    GdkColor colors[2*MOO_TERM_COLOR_MAX];
+    guint i, n_colors;
+    PyObject *py_colors;
+
+    if (!PyArg_ParseTuple (args, (char*) "O:MooTerm.set_colors", &py_colors))
+        return NULL;
+
+    if (!PySequence_Check (py_colors))
+        return_TypeErr ("colors must be a list or tuple");
+
+    n_colors = PySequence_Size (py_colors);
+
+    if (n_colors != MOO_TERM_COLOR_MAX && n_colors != 2 * MOO_TERM_COLOR_MAX)
+    {
+        PyErr_Format (PyExc_ValueError, "number of colors must be %d or %d",
+                      MOO_TERM_COLOR_MAX, MOO_TERM_COLOR_MAX * 2);
+        return NULL;
+    }
+
+    for (i = 0; i < n_colors; ++i)
+    {
+        PyObject *c;
+
+        c = PySequence_GetItem (py_colors, i);
+
+        if (!pyg_boxed_check (c, GDK_TYPE_COLOR))
+        {
+            Py_XDECREF (c);
+            PyErr_SetString (PyExc_ValueError, "colors must be a sequence of gdk.Color");
+            return NULL;
+        }
+
+        colors[i] = *pyg_boxed_get (c, GdkColor);
+        Py_XDECREF (c);
+    }
+
+    moo_term_set_colors (MOO_TERM (self->obj), colors, n_colors);
+    return_None;
+}

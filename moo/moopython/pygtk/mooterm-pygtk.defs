@@ -618,6 +618,15 @@
   (return-type "MooTermCommand*")
 )
 
+(define-method set_colors
+  (of-object "MooTerm")
+  (c-name "moo_term_set_colors")
+  (return-type "none")
+  (parameters
+    '("GdkColor*" "colors")
+    '("guint" "n_colors")
+  )
+)
 
 
 ;; From mootermbuffer.h

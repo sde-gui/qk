@@ -102,32 +102,7 @@ enum {
 
 
 /* MOO_TYPE_TERM */
-static gpointer moo_term_parent_class = NULL;
-GType moo_term_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GTypeInfo info = {
-            sizeof (MooTermClass),
-            (GBaseInitFunc) NULL,
-            (GBaseFinalizeFunc) NULL,
-            (GClassInitFunc) moo_term_class_init,
-            (GClassFinalizeFunc) NULL,
-            NULL,   /* class_data */
-            sizeof (MooTerm),
-            0,      /* n_preallocs */
-            (GInstanceInitFunc) moo_term_init,
-            NULL    /* value_table */
-        };
-
-        type = g_type_register_static (GTK_TYPE_WIDGET, "MooTerm",
-                                       &info, (GTypeFlags) 0);
-    }
-
-    return type;
-}
+G_DEFINE_TYPE (MooTerm, moo_term, GTK_TYPE_WIDGET)
 
 
 static guint signals[LAST_SIGNAL];
@@ -154,6 +129,7 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->button_press_event = _moo_term_button_press;
     widget_class->button_release_event = _moo_term_button_release;
     widget_class->motion_notify_event = _moo_term_motion_notify;
+    widget_class->style_set = _moo_term_style_set;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
     klass->apply_settings = _moo_term_apply_settings;
@@ -546,7 +522,7 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     gtk_widget_set_double_buffered (widget, FALSE);
 
-    _moo_term_setup_palette (term);
+    _moo_term_update_palette (term);
     _moo_term_init_back_pixmap (term);
     _moo_term_size_changed (term);
 

@@ -212,33 +212,132 @@ _moo_term_invalidate_rect (MooTerm        *term,
 
 
 void
-_moo_term_init_palette (MooTerm        *term)
+moo_term_set_colors (MooTerm  *term,
+                     GdkColor *colors,
+                     guint     n_colors)
 {
-    int i;
-    GtkWidget *widget = GTK_WIDGET (term);
+    guint i;
 
-    gtk_widget_ensure_style (widget);
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (colors != NULL);
+    g_return_if_fail (n_colors == MOO_TERM_COLOR_MAX ||
+                      n_colors == 2*MOO_TERM_COLOR_MAX);
 
-    term->priv->fg_color[0] = widget->style->text[GTK_STATE_NORMAL];
-    term->priv->fg_color[1] = widget->style->text[GTK_STATE_NORMAL];
-    term->priv->bg_color = widget->style->base[GTK_STATE_NORMAL];
-
-    for (i = 0; i < 2; ++i)
+    for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
     {
-        gdk_color_parse ("black", &term->priv->palette[8*i + MOO_TERM_BLACK]);
-        gdk_color_parse ("red", &term->priv->palette[8*i + MOO_TERM_RED]);
-        gdk_color_parse ("green", &term->priv->palette[8*i + MOO_TERM_GREEN]);
-        gdk_color_parse ("yellow", &term->priv->palette[8*i + MOO_TERM_YELLOW]);
-        gdk_color_parse ("blue", &term->priv->palette[8*i + MOO_TERM_BLUE]);
-        gdk_color_parse ("magenta", &term->priv->palette[8*i + MOO_TERM_MAGENTA]);
-        gdk_color_parse ("cyan", &term->priv->palette[8*i + MOO_TERM_CYAN]);
-        gdk_color_parse ("white", &term->priv->palette[8*i + MOO_TERM_WHITE]);
+        term->priv->palette[i] = colors[i];
+
+        if (n_colors > MOO_TERM_COLOR_MAX)
+            term->priv->palette[i + MOO_TERM_COLOR_MAX] = colors[i + MOO_TERM_COLOR_MAX];
+        else
+            term->priv->palette[ + MOO_TERM_COLOR_MAX] = colors[i];
     }
+
+    if (GTK_WIDGET_REALIZED (term))
+        _moo_term_update_palette (term);
+}
+
+
+static void
+moo_term_update_text_colors (MooTerm *term)
+{
+    GtkWidget *widget = GTK_WIDGET (term);
+    GdkColormap *colormap;
+    GdkGCValues vals;
+
+    if (!GTK_WIDGET_REALIZED (widget))
+        return;
+
+    colormap = gdk_colormap_get_system ();
+    g_return_if_fail (colormap != NULL);
+
+    gdk_colormap_alloc_color (colormap, &term->priv->fg_color[0],
+                              TRUE, TRUE);
+    gdk_colormap_alloc_color (colormap, &term->priv->fg_color[1],
+                              TRUE, TRUE);
+    gdk_colormap_alloc_color (colormap, &term->priv->bg_color,
+                              TRUE, TRUE);
+
+    if (term->priv->fg[0])
+    {
+        g_object_unref (term->priv->fg[0]);
+        g_object_unref (term->priv->fg[1]);
+        g_object_unref (term->priv->bg);
+    }
+
+    term->priv->fg[0] =
+            gdk_gc_new_with_values (widget->window, &vals, 0);
+    term->priv->fg[1] =
+            gdk_gc_new_with_values (widget->window, &vals, 0);
+    term->priv->bg =
+            gdk_gc_new_with_values (widget->window, &vals, 0);
+
+    gdk_gc_set_foreground (term->priv->fg[0], &term->priv->fg_color[0]);
+    gdk_gc_set_foreground (term->priv->fg[1], &term->priv->fg_color[1]);
+    gdk_gc_set_foreground (term->priv->bg, &term->priv->bg_color);
+
+    gdk_window_set_background (widget->window, &term->priv->bg_color);
+
+    gtk_widget_queue_draw (widget);
+}
+
+
+static void
+moo_term_set_text_colors (MooTerm  *term,
+                          GdkColor *fg,
+                          GdkColor *fg_bold,
+                          GdkColor *bg)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    if (fg)
+        term->priv->fg_color[0] = *fg;
+
+    if (fg_bold)
+        term->priv->fg_color[1] = *fg_bold;
+    else if (fg)
+        term->priv->fg_color[1] = *fg;
+
+    if (bg)
+        term->priv->bg_color = *bg;
+
+    if (GTK_WIDGET_REALIZED (term))
+        moo_term_update_text_colors (term);
 }
 
 
 void
-_moo_term_setup_palette (MooTerm        *term)
+_moo_term_init_palette (MooTerm        *term)
+{
+    int i;
+    GdkColor colors[2 * MOO_TERM_COLOR_MAX];
+    GtkWidget *widget = GTK_WIDGET (term);
+
+    gtk_widget_ensure_style (widget);
+
+    moo_term_set_text_colors (term,
+                              &widget->style->text[GTK_STATE_NORMAL],
+                              &widget->style->text[GTK_STATE_NORMAL],
+                              &widget->style->base[GTK_STATE_NORMAL]);
+
+    for (i = 0; i < 2; ++i)
+    {
+        gdk_color_parse ("black", &colors[8*i + MOO_TERM_BLACK]);
+        gdk_color_parse ("red", &colors[8*i + MOO_TERM_RED]);
+        gdk_color_parse ("green", &colors[8*i + MOO_TERM_GREEN]);
+        gdk_color_parse ("yellow", &colors[8*i + MOO_TERM_YELLOW]);
+        gdk_color_parse ("blue", &colors[8*i + MOO_TERM_BLUE]);
+        gdk_color_parse ("magenta", &colors[8*i + MOO_TERM_MAGENTA]);
+        gdk_color_parse ("cyan", &colors[8*i + MOO_TERM_CYAN]);
+        gdk_color_parse ("white", &colors[8*i + MOO_TERM_WHITE]);
+    }
+
+    moo_term_set_colors (term, colors, 2 * MOO_TERM_COLOR_MAX);
+}
+
+
+void
+_moo_term_update_palette (MooTerm *term)
 {
     int i, j;
     GtkWidget *widget = GTK_WIDGET (term);
@@ -257,18 +356,9 @@ _moo_term_setup_palette (MooTerm        *term)
     gdk_colormap_alloc_color (colormap, &term->priv->bg_color,
                               TRUE, TRUE);
 
-    term->priv->fg[0] =
-            gdk_gc_new_with_values (widget->window, &vals, 0);
-    term->priv->fg[1] =
-            gdk_gc_new_with_values (widget->window, &vals, 0);
-    term->priv->bg =
-            gdk_gc_new_with_values (widget->window, &vals, 0);
-
-    gdk_gc_set_foreground (term->priv->fg[0], &term->priv->fg_color[0]);
-    gdk_gc_set_foreground (term->priv->fg[1], &term->priv->fg_color[1]);
-    gdk_gc_set_foreground (term->priv->bg, &term->priv->bg_color);
-
-    gdk_window_set_background (widget->window, &term->priv->bg_color);
+    if (term->priv->color[0])
+        for (i = 0; i < 2*MOO_TERM_COLOR_MAX; ++i)
+            g_object_unref (term->priv->color[i]);
 
     for (i = 0; i < MOO_TERM_COLOR_MAX; ++i)
         for (j = 0; j < 2; ++j)
@@ -285,6 +375,21 @@ _moo_term_setup_palette (MooTerm        *term)
                                         &vals,
                                         GDK_GC_FOREGROUND);
     }
+
+    moo_term_update_text_colors (term);
+}
+
+
+void
+_moo_term_style_set (GtkWidget *widget,
+                     G_GNUC_UNUSED GtkStyle *previous_style)
+{
+    g_return_if_fail (widget->style != NULL);
+    moo_term_set_text_colors (MOO_TERM (widget),
+                              &widget->style->text[GTK_STATE_NORMAL],
+                              &widget->style->text[GTK_STATE_NORMAL],
+                              &widget->style->base[GTK_STATE_NORMAL]);
+    moo_term_update_text_colors (MOO_TERM (widget));
 }
 
 

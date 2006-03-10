@@ -155,6 +155,10 @@ MooTermCommand  *moo_term_command_new       (const char     *cmd_line,
 MooTermCommand  *moo_term_command_copy      (const MooTermCommand *cmd);
 void             moo_term_command_free      (MooTermCommand *cmd);
 
+void        moo_term_set_colors             (MooTerm        *term,
+                                             GdkColor       *colors,
+                                             guint           n_colors);
+
 
 G_END_DECLS
 
