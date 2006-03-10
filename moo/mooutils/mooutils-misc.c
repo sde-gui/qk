@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #ifdef __WIN32__
 # define WIN32_LEAN_AND_MEAN
@@ -107,32 +109,62 @@ rm_fr (const char *path)
 
 #ifdef __WIN32__
 static gboolean
-remove_dir_win32 (const char *path)
+rm_r (const char *path)
 {
-    gboolean success;
-    guint pathlen;
-    char *freeme;
+    GDir *dir;
+    GError *error = NULL;
+    const char *file;
+    char *file_path;
+    gboolean success = TRUE;
 
-    /* better fail than crash */
-    SHFILEOPSTRUCTA fileop = {
-        NULL, /* HWND hwnd; */
-        FO_DELETE, /* UINT wFunc; */
-        NULL, /* LPCTSTR pFrom; */
-        NULL, /* LPCTSTR pTo; */
-        FOF_SILENT, /* FILEOP_FLAGS fFlags; */
-        FALSE, /* BOOL fAnyOperationsAborted; */
-        NULL, /* LPVOID hNameMappings; */
-        NULL /* LPCTSTR lpszProgressTitle; */
-    };
+    g_return_val_if_fail (path != NULL, FALSE);
 
-    pathlen = strlen (path);
-    freeme = g_new0 (char, pathlen + 2);
-    memcpy (freeme, path, pathlen);
-    fileop.pFrom = freeme;
+    dir = g_dir_open (path, 0, &error);
 
-    success = SHFileOperationA (&fileop) == 0;
+    if (!dir)
+    {
+        g_critical ("%s: could not open directory '%s'", G_STRLOC, path);
+        g_critical ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        return FALSE;
+    }
 
-    g_free (freeme);
+    while ((file = g_dir_read_name (dir)))
+    {
+        char *file_path = g_build_filename (path, file, NULL);
+
+        if (g_remove (file_path))
+        {
+            int err = errno;
+
+            switch (err)
+            {
+                case ENOTEMPTY:
+                case EEXIST:
+                    if (!rm_r (file_path))
+                        success = FALSE;
+                    break;
+
+                default:
+                    success = FALSE;
+                    g_warning ("%s: could not remove '%s'", G_STRLOC, file_path);
+                    g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+            }
+        }
+
+        g_free (file_path);
+    }
+
+    g_dir_close (dir);
+
+    if (g_remove (path))
+    {
+        int err = errno;
+        success = FALSE;
+        g_warning ("%s: could not remove '%s'", G_STRLOC, path);
+        g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+    }
+
     return success;
 }
 #endif
@@ -155,7 +187,7 @@ moo_rmdir (const char *path,
 #ifndef __WIN32__
     return rm_fr (path);
 #else
-    return remove_dir_win32 (path);
+    return rm_r (path);
 #endif
 }
 
