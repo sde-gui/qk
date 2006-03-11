@@ -276,3 +276,75 @@ _wrap_moo_term_set_colors (PyGObject *self, PyObject *args)
     moo_term_set_colors (MOO_TERM (self->obj), colors, n_colors);
     return_None;
 }
+%%
+override-slot MooTermTextAttr.tp_setattr
+static int
+_wrap_moo_term_text_attr_tp_setattr (PyGBoxed *self, char *attr, PyObject *value)
+{
+    if (!value)
+        return_TypeErrInt ("can't delete attributes");
+
+    if (!strcmp (attr, "foreground") || !strcmp (attr, "background"))
+    {
+        int color;
+
+        if (pyg_enum_get_value (MOO_TYPE_TERM_TEXT_COLOR, value, &color))
+            return -1;
+
+        if (!strcmp (attr, "foreground"))
+            pyg_boxed_get (self, MooTermTextAttr)->foreground = color;
+        else
+            pyg_boxed_get (self, MooTermTextAttr)->background = color;
+
+        return 0;
+    }
+
+    if (!strcmp (attr, "mask"))
+    {
+        int mask;
+
+        if (pyg_enum_get_value (MOO_TYPE_TERM_TEXT_COLOR, value, &mask))
+            return -1;
+
+        pyg_boxed_get (self, MooTermTextAttr)->mask = mask;
+        return 0;
+    }
+
+    PyErr_Format (PyExc_AttributeError, "no attribute '%s'", attr);
+    return -1;
+}
+%%
+override-slot MooTermIter.tp_setattr
+static int
+_wrap_moo_term_iter_tp_setattr (PyGBoxed *self, char *attr, PyObject *value)
+{
+    if (!value)
+        return_TypeErrInt ("can't delete attributes");
+
+    if (!strcmp (attr, "row") || !strcmp (attr, "col"))
+    {
+        if (PyInt_Check (value))
+        {
+            int val = PyInt_AsLong(value);
+
+            if (!strcmp(attr, "row"))
+                pyg_boxed_get(self, MooTermIter)->row = val;
+            else
+                pyg_boxed_get(self, MooTermIter)->col = val;
+
+            return 0;
+        }
+
+        PyErr_Format (PyExc_TypeError, "Iter.%s must be an integer", attr);
+        return -1;
+    }
+
+    if (!strcmp (attr, "term") || !strcmp (attr, "line") || !strcmp (attr, "width"))
+    {
+        PyErr_Format (PyExc_AttributeError, "Iter.%s is not writable", attr);
+        return -1;
+    }
+
+    PyErr_Format (PyExc_AttributeError, "no attribute '%s'", attr);
+    return -1;
+}

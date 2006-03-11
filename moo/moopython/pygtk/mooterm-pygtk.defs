@@ -707,7 +707,7 @@
   )
   (docstring "Tag.set_attr(attr) -> None.\n"
              "\n"
-             "attr - TextAttr instance\n"
+             "attr - TextAttr instance or None\n"
   )
 )
 
@@ -716,11 +716,11 @@
   (c-name "moo_term_tag_set_attributes")
   (return-type "none")
   (parameters
-    '("MooTermTextAttrMask" "mask")
+    '("MooTermTextAttrMask" "mask" (null-ok) (default "0"))
     '("MooTermTextColor" "foreground" (null-ok) (default "0"))
     '("MooTermTextColor" "background" (null-ok) (default "0"))
   )
-  (docstring "Tag.set_attributes(mask, foreground=0, background=0) -> None. Sets tag attributes\n"
+  (docstring "Tag.set_attributes(mask=0, foreground=0, background=0) -> None. Sets tag attributes\n"
              "\n"
              "mask - combination of TextAttrMask values\n"
              "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"
@@ -733,11 +733,11 @@
   (is-constructor-of "MooTermTextAttr")
   (return-type "MooTermTextAttr*")
   (parameters
-    '("MooTermTextAttrMask" "mask")
+    '("MooTermTextAttrMask" "mask" (null-ok) (default "0"))
     '("MooTermTextColor" "foreground" (null-ok) (default "0"))
     '("MooTermTextColor" "background" (null-ok) (default "0"))
   )
-  (docstring "TextAttr(mask, foreground=0, background=0) -> TextAttr.\n"
+  (docstring "TextAttr(mask=0, foreground=0, background=0) -> TextAttr.\n"
              "\n"
              "mask - combination of TextAttrMask values\n"
              "foreground - text color as TextColor value, has effect only if TEXT_FOREGROUND mask is set\n"

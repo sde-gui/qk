@@ -313,8 +313,12 @@ moo_term_tag_set_attr (MooTermTag         *tag,
                        MooTermTextAttr    *attr)
 {
     g_return_if_fail (MOO_IS_TERM_TAG (tag));
-    g_return_if_fail (attr != NULL);
-    tag->attr = *attr;
+
+    if (attr)
+        tag->attr = *attr;
+    else
+        tag->attr.mask = 0;
+
     g_signal_emit (tag, signals[CHANGED], 0);
 
     /* XXX */

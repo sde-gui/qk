@@ -72,7 +72,7 @@ _moo_pygtk_init (void)
     if (PyErr_Occurred ())
         return FALSE;
 
-    PyImport_AddModule ("moo");
+    PyImport_AddModule ((char*) "moo");
 
     PyModule_AddObject (_moo_module, (char*)"version", moo_version());
     PyModule_AddObject (_moo_module, (char*)"detailed_version", moo_detailed_version());
@@ -80,26 +80,26 @@ _moo_pygtk_init (void)
 #ifdef MOO_BUILD_UTILS
     if (!_moo_utils_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ("moo.utils");
-    PyModule_AddObject (_moo_module, "utils", submod);
+    submod = PyImport_ImportModule ((char*) "moo.utils");
+    PyModule_AddObject (_moo_module, (char*) "utils", submod);
 #endif
 #ifdef MOO_BUILD_TERM
     if (!_moo_term_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ("moo.term");
-    PyModule_AddObject (_moo_module, "term", submod);
+    submod = PyImport_ImportModule ((char*) "moo.term");
+    PyModule_AddObject (_moo_module, (char*) "term", submod);
 #endif
 #ifdef MOO_BUILD_EDIT
     if (!_moo_edit_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ("moo.edit");
-    PyModule_AddObject (_moo_module, "edit", submod);
+    submod = PyImport_ImportModule ((char*) "moo.edit");
+    PyModule_AddObject (_moo_module, (char*) "edit", submod);
 #endif
 #ifdef MOO_BUILD_APP
     if (!_moo_app_mod_init ())
         return FALSE;
-    submod = PyImport_ImportModule ("moo.app");
-    PyModule_AddObject (_moo_module, "app", submod);
+    submod = PyImport_ImportModule ((char*) "moo.app");
+    PyModule_AddObject (_moo_module, (char*) "app", submod);
 #endif
 
     code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);

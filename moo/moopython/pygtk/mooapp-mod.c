@@ -28,7 +28,7 @@ _moo_app_mod_init (void)
     PyObject *mod;
 
     mod = Py_InitModule3 ((char*) "_moo_app", _moo_app_functions, moo_app_module_doc);
-    PyImport_AddModule ("moo.app");
+    PyImport_AddModule ((char*) "moo.app");
 
     if (!mod)
         return FALSE;
