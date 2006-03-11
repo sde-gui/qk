@@ -494,7 +494,7 @@ get_parent_folder (MooFileSystem  *fs,
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     g_return_val_if_fail (moo_folder_get_file_system (folder) == fs, NULL);
 
-    parent_path = g_strdup_printf ("%s " G_DIR_SEPARATOR_S "..",
+    parent_path = g_strdup_printf ("%s" G_DIR_SEPARATOR_S "..",
                                    moo_folder_get_path (folder));
 
     parent = moo_file_system_get_folder (fs, parent_path, wanted, NULL);
