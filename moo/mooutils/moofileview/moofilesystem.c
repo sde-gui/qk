@@ -41,13 +41,13 @@ static MooFolder   *get_folder              (MooFileSystem  *fs,
 static gboolean     create_folder           (MooFileSystem  *fs,
                                              const char     *path,
                                              GError        **error);
+static MooFolder   *get_parent_folder       (MooFileSystem  *fs,
+                                             MooFolder      *folder,
+                                             MooFileFlags    flags);
 
 #ifndef __WIN32__
 static MooFolder   *get_root_folder_unix    (MooFileSystem  *fs,
                                              MooFileFlags    wanted);
-static MooFolder   *get_parent_folder_unix  (MooFileSystem  *fs,
-                                             MooFolder      *folder,
-                                             MooFileFlags    flags);
 static gboolean     delete_file_unix        (MooFileSystem  *fs,
                                              const char     *path,
                                              gboolean        recursive,
@@ -78,9 +78,6 @@ static char        *get_absolute_path_unix  (MooFileSystem  *fs,
 
 static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
                                              MooFileFlags    wanted);
-static MooFolder   *get_parent_folder_win32 (MooFileSystem  *fs,
-                                             MooFolder      *folder,
-                                             MooFileFlags    flags);
 static gboolean     create_folder_win32     (MooFileSystem  *fs,
                                              const char     *path,
                                              GError        **error);
@@ -124,10 +121,10 @@ static void moo_file_system_class_init (MooFileSystemClass *klass)
 
     klass->get_folder = get_folder;
     klass->create_folder = create_folder;
+    klass->get_parent_folder = get_parent_folder;
 
 #ifdef __WIN32__
     klass->get_root_folder = get_root_folder_win32;
-    klass->get_parent_folder = get_parent_folder_win32;
     klass->delete_file = delete_file_win32;
     klass->move_file = move_file_win32;
     klass->normalize_path = normalize_path_win32;
@@ -136,7 +133,6 @@ static void moo_file_system_class_init (MooFileSystemClass *klass)
     klass->get_absolute_path = get_absolute_path_win32;
 #else /* !__WIN32__ */
     klass->get_root_folder = get_root_folder_unix;
-    klass->get_parent_folder = get_parent_folder_unix;
     klass->delete_file = delete_file_unix;
     klass->move_file = move_file_unix;
     klass->normalize_path = normalize_path_unix;
@@ -480,6 +476,35 @@ GQuark  moo_file_error_quark (void)
 
 
 /***************************************************************************/
+/* common methods
+ */
+
+
+/* folder may be deleted, but this function returns parent
+   folder anyway, if that exists */
+static MooFolder *
+get_parent_folder (MooFileSystem  *fs,
+                   MooFolder      *folder,
+                   MooFileFlags    wanted)
+{
+    char *parent_path;
+    MooFolder *parent;
+
+    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
+    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
+    g_return_val_if_fail (moo_folder_get_file_system (folder) == fs, NULL);
+
+    parent_path = g_strdup_printf ("%s " G_DIR_SEPARATOR_S "..",
+                                   moo_folder_get_path (folder));
+
+    parent = moo_file_system_get_folder (fs, parent_path, wanted, NULL);
+
+    g_free (parent_path);
+    return parent;
+}
+
+
+/***************************************************************************/
 /* UNIX methods
  */
 #ifndef __WIN32__
@@ -491,29 +516,6 @@ static MooFolder   *get_root_folder_unix    (MooFileSystem  *fs,
 }
 
 
-/* folder may be deleted, but this function returns parent
-   folder anyway, if that exists */
-static MooFolder   *get_parent_folder_unix      (MooFileSystem  *fs,
-                                                 MooFolder      *folder,
-                                                 MooFileFlags    wanted)
-{
-    char *parent_path;
-    MooFolder *parent;
-
-    g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
-    g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
-    g_return_val_if_fail (moo_folder_get_file_system (folder) == fs, NULL);
-
-    parent_path = g_strdup_printf ("%s/..", moo_folder_get_path (folder));
-
-    parent = moo_file_system_get_folder (fs, parent_path, wanted, NULL);
-
-    g_free (parent_path);
-    return parent;
-}
-
-
-#ifndef __WIN32__
 static gboolean rm_fr   (const char     *path,
                          GError        **error)
 {
@@ -555,13 +557,13 @@ static gboolean rm_fr   (const char     *path,
         return TRUE;
     }
 }
-#endif /* __WIN32__ */
 
 
-gboolean            delete_file_unix            (G_GNUC_UNUSED MooFileSystem *fs,
-                                                 const char     *path,
-                                                 gboolean        recursive,
-                                                 GError        **error)
+gboolean
+delete_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
+                  const char     *path,
+                  gboolean        recursive,
+                  GError        **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (g_path_is_absolute (path), FALSE);
@@ -890,33 +892,61 @@ static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
 }
 
 
-static MooFolder   *get_parent_folder_win32 (MooFileSystem  *fs,
-                                             MooFolder      *folder,
-                                             MooFileFlags    flags);
 static gboolean     create_folder_win32     (MooFileSystem  *fs,
                                              const char     *path,
                                              GError        **error);
-static gboolean     delete_file_win32       (MooFileSystem  *fs,
-                                             const char     *path,
-                                             gboolean        recursive,
-                                             GError        **error);
-static gboolean     move_file_win32         (MooFileSystem  *fs,
-                                             const char     *old_path,
-                                             const char     *new_path,
-                                             GError        **error);
-static char        *normalize_path_win32    (MooFileSystem  *fs,
-                                             const char     *path,
-                                             gboolean        is_folder,
-                                             GError        **error);
-static char        *make_path_win32         (MooFileSystem  *fs,
-                                             const char     *base_path,
-                                             const char     *display_name,
-                                             GError        **error);
-static gboolean     parse_path_win32        (MooFileSystem  *fs,
-                                             const char     *path_utf8,
-                                             char          **dirname,
-                                             char          **display_dirname,
-                                             char          **display_basename,
-                                             GError        **error);
+
+
+static gboolean
+delete_file_win32 (MooFileSystem  *fs,
+                   const char     *path,
+                   gboolean        recursive,
+                   GError        **error)
+{
+#warning "Implement me"
+    g_set_error (error, MOO_FILE_ERROR,
+                 MOO_FILE_ERROR_NOT_IMPLEMENTED,
+                 "Removing files is not implemented on win32");
+    return FALSE;
+}
+
+
+static gboolean
+move_file_win32 (MooFileSystem  *fs,
+                 const char     *old_path,
+                 const char     *new_path,
+                 GError        **error)
+{
+#warning "Implement me"
+    g_set_error (error, MOO_FILE_ERROR,
+                 MOO_FILE_ERROR_NOT_IMPLEMENTED,
+                 "Renaming files is not implemented on win32");
+    return FALSE;
+}
+
+
+static char *
+normalize_path_win32 (MooFileSystem  *fs,
+                      const char     *path,
+                      gboolean        is_folder,
+                      GError        **error);
+
+static char *
+make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
+                 const char     *base_path,
+                 const char     *display_name,
+                 G_GNUC_UNUSED GError **error)
+{
+    return g_strdup_printf ("%s\\%s", base_path, display_name);
+}
+
+
+static gboolean
+parse_path_win32 (MooFileSystem  *fs,
+                  const char     *path_utf8,
+                  char          **dirname,
+                  char          **display_dirname,
+                  char          **display_basename,
+                  GError        **error);
 
 #endif /* __WIN32__ */
