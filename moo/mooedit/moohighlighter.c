@@ -208,7 +208,8 @@ apply_tag (MooHighlighter     *hl,
 }
 
 
-#if !GTK_CHECK_VERSION(2,8,0)
+// #if !GTK_CHECK_VERSION(2,8,0)
+// apparently http://bugzilla.gnome.org/show_bug.cgi?id=143537 is not completely fixed yet
 static void
 check_last_tag (MooHighlighter *hl)
 {
@@ -221,9 +222,9 @@ check_last_tag (MooHighlighter *hl)
 
     hl->last_tag = NULL;
 }
-#else
-#define check_last_tag(hl)
-#endif
+// #else
+// #define check_last_tag(hl)
+// #endif
 
 
 MooHighlighter*
@@ -240,7 +241,7 @@ moo_highlighter_new (GtkTextBuffer *buffer,
     hl->buffer = buffer;
     hl->line_buf = line_buf;
 
-    if (gtk_check_version (2, 8, 0))
+//     if (gtk_check_version (2, 8, 0))
         hl->need_last_tag = TRUE;
 
     return hl;
@@ -592,6 +593,11 @@ hl_compute_range (MooHighlighter *hl,
     hl->last_tag = NULL;
     gtk_text_buffer_get_iter_at_line (hl->buffer, &iter, lines->first);
 
+//     g_print ("hl_compute_range: %d to %d\n", lines->first, lines->last);
+//     g_print ("hl_compute_range: invalid %d to %d\n",
+//              hl->line_buf->invalid.first,
+//              hl->line_buf->invalid.last);
+
     for (line_no = lines->first; line_no <= lines->last; ++line_no)
     {
         Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
@@ -674,6 +680,7 @@ hl_compute_range (MooHighlighter *hl,
     check_last_tag (hl);
     _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
                                            lines->first, line_no);
+//     g_print ("changed %d to %d\n", lines->first, line_no);
     return done;
 }
 
