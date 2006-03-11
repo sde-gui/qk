@@ -64,7 +64,7 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
 
 
 #define COPYRIGHT_SYMBOL "\302\251"
-static const char *copyright = COPYRIGHT_SYMBOL " 2004-2005 Yevgen Muntyan";
+static const char *copyright = COPYRIGHT_SYMBOL " 2004-2006 Yevgen Muntyan";
 
 
 static void show_about_dialog (GtkWidget *dialog,
