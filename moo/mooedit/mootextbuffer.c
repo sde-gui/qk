@@ -1344,26 +1344,34 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
 
         if (c == bracket_to_find && !stack)
         {
+#if 0
             if (ctx == _moo_text_iter_get_context (&b))
             {
+#endif
                 *iter = b;
                 return MOO_BRACKET_MATCH_CORRECT;
+#if 0
             }
             else
             {
                 continue;
             }
+#endif
         }
 
         if (find (same_direction, buffer->priv->num_brackets, c))
         {
+#if 0
             if (ctx == _moo_text_iter_get_context (&b))
+#endif
                 ++stack;
         }
         else if (find (inverse_direction, buffer->priv->num_brackets, c))
         {
+#if 0
             if (ctx == _moo_text_iter_get_context (&b))
             {
+#endif
                 if (stack)
                 {
                     --stack;
@@ -1373,7 +1381,9 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
                     *iter = b;
                     return MOO_BRACKET_MATCH_INCORRECT;
                 }
+#if 0
             }
+#endif
         }
     }
 
