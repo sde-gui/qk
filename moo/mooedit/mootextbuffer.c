@@ -530,8 +530,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
 
     if (length == 1)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
-    else
-        moo_text_buffer_queue_highlight (buffer);
+    moo_text_buffer_queue_highlight (buffer);
 
     cursor_moved (buffer, pos);
 
@@ -638,8 +637,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
 
     if (last_line == first_line && offset == 1)
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
-    else
-        moo_text_buffer_queue_highlight (buffer);
+    moo_text_buffer_queue_highlight (buffer);
 
     update_selection (buffer);
     cursor_moved (buffer, start);
@@ -1342,21 +1340,29 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
 
     while (gtk_text_iter_forward_chars (&b, addition) && count++ < limit)
     {
-        if (ctx == _moo_text_iter_get_context (&b))
-        {
-            gunichar c = gtk_text_iter_get_char (&b);
+        gunichar c = gtk_text_iter_get_char (&b);
 
-            if (c == bracket_to_find && !stack)
+        if (c == bracket_to_find && !stack)
+        {
+            if (ctx == _moo_text_iter_get_context (&b))
             {
                 *iter = b;
                 return MOO_BRACKET_MATCH_CORRECT;
             }
-
-            if (find (same_direction, buffer->priv->num_brackets, c))
+            else
             {
-                ++stack;
+                continue;
             }
-            else if (find (inverse_direction, buffer->priv->num_brackets, c))
+        }
+
+        if (find (same_direction, buffer->priv->num_brackets, c))
+        {
+            if (ctx == _moo_text_iter_get_context (&b))
+                ++stack;
+        }
+        else if (find (inverse_direction, buffer->priv->num_brackets, c))
+        {
+            if (ctx == _moo_text_iter_get_context (&b))
             {
                 if (stack)
                 {

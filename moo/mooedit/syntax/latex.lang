@@ -4,7 +4,7 @@
           extensions="*.tex; *.ltx; *.dtx; *.sty; *.cls;"
           mimetypes="text/x-tex"
           author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)" license="LGPL">
-<!-- taken from kate distriution -->
+<!-- taken from kate distribution -->
   <syntax>
     <context name="Normal Text" style="Normal Text" eol-context="#stay">
       <Regex pattern="\\begin(?=[^a-zA-Z])" style="Structure" context="FindEnvironment" beginRegion="block"/>
