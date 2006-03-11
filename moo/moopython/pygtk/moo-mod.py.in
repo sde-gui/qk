@@ -1,12 +1,3 @@
 """moo module"""
 
 from _moo import *
-
-#if @MOO_BUILD_UTILS@:
-#    import moo_utils as utils
-#if @MOO_BUILD_TERM@:
-#    import moo_term as term
-#if @MOO_BUILD_EDIT@:
-#    import moo_edit as edit
-#if @MOO_BUILD_APP@:
-#    import moo_app as app
