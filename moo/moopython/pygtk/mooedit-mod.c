@@ -28,6 +28,7 @@ _moo_edit_mod_init (void)
     PyObject *mod;
 
     mod = Py_InitModule3 ((char*) "_moo_edit", _moo_edit_functions, moo_edit_module_doc);
+    PyImport_AddModule ("moo.edit");
 
     if (!mod)
         return FALSE;
@@ -44,7 +45,7 @@ _moo_edit_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo_edit", code);
+        fake_mod = PyImport_ExecCodeModule ((char*) "moo.edit", code);
         Py_DECREF (code);
 
         if (!fake_mod)

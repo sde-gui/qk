@@ -28,6 +28,7 @@ _moo_term_mod_init (void)
     PyObject *mod;
 
     mod = Py_InitModule3 ((char*) "_moo_term", _moo_term_functions, moo_term_module_doc);
+    PyImport_AddModule ("moo.term");
 
     if (!mod)
         return FALSE;
@@ -44,7 +45,7 @@ _moo_term_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo_term", code);
+        fake_mod = PyImport_ExecCodeModule ((char*) "moo.term", code);
         Py_DECREF (code);
 
         if (!fake_mod)

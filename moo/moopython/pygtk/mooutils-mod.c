@@ -51,6 +51,7 @@ _moo_utils_mod_init (void)
     pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT, pyobj_from_gval, gval_from_pyobj);
 
     mod = Py_InitModule3 ((char*) "_moo_utils", _moo_utils_functions, moo_utils_module_doc);
+    PyImport_AddModule ("moo.utils");
 
     if (!mod)
         return FALSE;
@@ -98,7 +99,7 @@ _moo_utils_mod_init (void)
         if (!code)
             return FALSE;
 
-        fake_mod = PyImport_ExecCodeModule ((char*) "moo_utils", code);
+        fake_mod = PyImport_ExecCodeModule ((char*) "moo.utils", code);
         Py_DECREF (code);
 
         if (!fake_mod)

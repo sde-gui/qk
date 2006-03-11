@@ -64,7 +64,7 @@
   (gtype-id "MOO_TYPE_TERM_LINE")
 )
 
-(define-boxed Attr
+(define-boxed TextAttr
   (in-module "Moo")
   (c-name "MooTermTextAttr")
   (gtype-id "MOO_TYPE_TERM_TEXT_ATTR")
@@ -734,8 +734,8 @@
   (return-type "MooTermTextAttr*")
   (parameters
     '("MooTermTextAttrMask" "mask")
-    '("MooTermTextColor" "foreground")
-    '("MooTermTextColor" "background")
+    '("MooTermTextColor" "foreground" (null-ok) (default "0"))
+    '("MooTermTextColor" "background" (null-ok) (default "0"))
   )
   (docstring "TextAttr(mask, foreground=0, background=0) -> TextAttr.\n"
              "\n"
