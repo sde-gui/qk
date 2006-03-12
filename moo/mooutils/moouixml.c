@@ -181,7 +181,8 @@ static gboolean fill_menu_shell         (MooUIXML       *xml,
 static void     check_separators        (Node           *parent,
                                          Toplevel       *toplevel);
 static void     check_empty             (Node           *parent,
-                                         GtkWidget      *widget);
+                                         GtkWidget      *widget,
+                                         Toplevel       *toplevel);
 
 static gboolean create_tool_separator   (MooUIXML       *xml,
                                          Toplevel       *toplevel,
@@ -1714,7 +1715,7 @@ create_menu_item (MooUIXML       *xml,
 
     /* XXX completely empty menus? */
     if (node->children)
-        check_empty (node, menu_item);
+        check_empty (node, menu_item, toplevel);
 }
 
 
@@ -1808,7 +1809,8 @@ toplevel_get_widget (Toplevel  *toplevel,
 
 static void
 check_empty (Node           *parent,
-             GtkWidget      *widget)
+             GtkWidget      *widget,
+             Toplevel       *toplevel)
 {
     GSList *children, *l;
     gboolean has_children = FALSE;
@@ -1821,14 +1823,20 @@ check_empty (Node           *parent,
 
         if (node->type == MOO_UI_NODE_ITEM)
         {
-            has_children = TRUE;
-            break;
+            GtkWidget *nw = toplevel_get_widget (toplevel, node);
+
+            if (nw && GTK_WIDGET_VISIBLE (nw))
+            {
+                has_children = TRUE;
+                break;
+            }
         }
     }
 
     /* XXX decide something on this stuff */
-    if (!(parent->flags & MOO_UI_NODE_ENABLE_EMPTY))
-        gtk_widget_set_sensitive (widget, has_children);
+//     if (!(parent->flags & MOO_UI_NODE_ENABLE_EMPTY))
+//         gtk_widget_set_sensitive (widget, has_children);
+    g_object_set (widget, "visible", has_children, NULL);
 
     g_slist_free (children);
 }
@@ -1892,7 +1900,7 @@ check_separators (Node           *parent,
     widget = toplevel_get_widget (toplevel, parent);
 
     if (widget)
-        check_empty (parent, widget);
+        check_empty (parent, widget, toplevel);
 
     g_slist_free (children);
 }

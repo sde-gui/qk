@@ -6,3 +6,5 @@ mooedit/moohighlighter.c:iter_get_syntax_tag(): #if 0 ...
 mooedit/moolang.h; mooedit/moolang-rules.c: Rule::debug_string
 mooedit/mooeditprefs.c: remove Courier New
 mooedit/moofold.c: check in moo_fold_tree_remove()
+mooutils/mooscript/mooscript-node.h:_ms_node_check
+mooutils/mooscript/mooscript-node.h:_ms_node_check_type
