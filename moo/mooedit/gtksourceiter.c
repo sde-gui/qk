@@ -204,7 +204,7 @@ finally_2:
 static void
 forward_chars_with_skipping (GtkTextIter *iter,
 			     gint         count,
-			     gboolean     skip_invisible,
+			     G_GNUC_UNUSED gboolean skip_invisible,
 			     gboolean     skip_nontext,
 			     gboolean     skip_decomp)
 {
