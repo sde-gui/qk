@@ -55,7 +55,6 @@ GtkWidget *_moo_app_create_prefs_dialog (MooApp *app)
 
 #ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
-//     moo_prefs_dialog_append_page (dialog, moo_edit_colors_prefs_page_new (moo_app_get_editor (app)));
     _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 #endif
 
