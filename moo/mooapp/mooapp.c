@@ -564,13 +564,6 @@ moo_app_set_argv (MooApp         *app,
 }
 
 
-int
-moo_app_get_exit_code (MooApp      *app)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), -1);
-    return app->priv->exit_code;
-}
-
 void
 moo_app_set_exit_code (MooApp      *app,
                        int          code)
@@ -1646,4 +1639,24 @@ moo_app_tempnam (MooApp     *app)
 
     g_warning ("%s: could not generate temp file name", G_STRLOC);
     return NULL;
+}
+
+
+GType
+moo_app_data_type_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_APP_DATA_SHARE, (char*) "MOO_APP_DATA_SHARE", (char*) "share" },
+            { MOO_APP_DATA_LIB, (char*) "MOO_APP_DATA_LIB", (char*) "lib" },
+            { 0, NULL, NULL },
+        };
+
+        type = g_enum_register_static ("MooAppDataType", values);
+    }
+
+    return type;
 }

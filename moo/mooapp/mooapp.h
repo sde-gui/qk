@@ -21,6 +21,7 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_APP_INFO           (moo_app_info_get_type ())
+#define MOO_TYPE_APP_DATA_TYPE      (moo_app_data_type_get_type ())
 
 #define MOO_TYPE_APP                (moo_app_get_type ())
 #define MOO_APP(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_APP, MooApp))
@@ -79,6 +80,7 @@ struct _MooAppClass
 
 GType            moo_app_get_type               (void) G_GNUC_CONST;
 GType            moo_app_info_get_type          (void) G_GNUC_CONST;
+GType            moo_app_data_type_get_type     (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
@@ -86,7 +88,6 @@ gboolean         moo_app_init                   (MooApp     *app);
 int              moo_app_run                    (MooApp     *app);
 gboolean         moo_app_quit                   (MooApp     *app);
 
-int              moo_app_get_exit_code          (MooApp     *app);
 void             moo_app_set_exit_code          (MooApp     *app,
                                                  int         code);
 

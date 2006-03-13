@@ -25,6 +25,15 @@
 ;;   )
 ;; )
 
+(define-enum DataType
+  (in-module "Moo")
+  (c-name "MooAppDataType")
+  (gtype-id "MOO_TYPE_APP_DATA_TYPE")
+  (values
+    '("share" "MOO_APP_DATA_SHARE")
+    '("lib" "MOO_APP_DATA_LIB")
+  )
+)
 
 ;; From mooapp.h
 
@@ -49,12 +58,6 @@
   (of-object "MooApp")
   (c-name "moo_app_quit")
   (return-type "gboolean")
-)
-
-(define-method get_exit_code
-  (of-object "MooApp")
-  (c-name "moo_app_get_exit_code")
-  (return-type "int")
 )
 
 (define-method set_exit_code
@@ -140,5 +143,44 @@
   (parameters
     '("const-char*" "data")
     '("int" "len")
+  )
+)
+
+(define-method get_data_dir
+  (of-object "MooApp")
+  (c-name "moo_app_get_data_dir")
+  (return-type "char*")
+  (parameters
+    '("MooAppDataType" "type")
+  )
+)
+
+(define-method get_user_data_dir
+  (of-object "MooApp")
+  (c-name "moo_app_get_user_data_dir")
+  (return-type "char*")
+  (parameters
+    '("MooAppDataType" "type")
+  )
+)
+
+(define-method get_data_dirs
+  (of-object "MooApp")
+  (c-name "moo_app_get_data_dirs")
+  (return-type "char*")
+  (parameters
+    '("MooAppDataType" "type")
+    '("guint*" "n_dirs")
+  )
+)
+
+(define-method get_data_subdirs
+  (of-object "MooApp")
+  (c-name "moo_app_get_data_subdirs")
+  (return-type "char*")
+  (parameters
+    '("const-char*" "subdir")
+    '("MooAppDataType" "type")
+    '("guint*" "n_dirs")
   )
 )
