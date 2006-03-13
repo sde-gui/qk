@@ -132,10 +132,10 @@ $(moopygtk)/mooapp-pygtk.c: $(moopygtk)/mooapp-pygtk.defs $(moopygtk)/mooapp-pyg
 	--outfilename $(moopygtk)/mooapp-pygtk.c \
 	$(moopygtk_srcdir)/mooapp-pygtk.defs > $(moopygtk)/mooapp-pygtk.c
 
-$(moopygtk)/moo-mod.h: $(moopygtk)/moo-mod.py $(PY2H)
+$(moopygtk)/moo-mod.h: $(moopygtk_srcdir)/moo-mod.py $(PY2H)
 	mkdir -p $(moopygtk)
-	sh $(PY2H) MOO_PY $(moopygtk)/moo-mod.py > $(moopygtk)/moo-mod.h
-$(moopygtk)/mooedit-mod.h: $(moopygtk)/mooedit-mod.py $(PY2H)
+	sh $(PY2H) MOO_PY $(moopygtk_srcdir)/moo-mod.py > $(moopygtk)/moo-mod.h
+$(moopygtk)/mooedit-mod.h: $(moopygtk_srcdir)/mooedit-mod.py $(PY2H)
 	mkdir -p $(moopygtk)
 	sh $(PY2H) MOO_EDIT_PY $(moopygtk_srcdir)/mooedit-mod.py > $(moopygtk)/mooedit-mod.h
 $(moopygtk)/mooapp-mod.h: $(moopygtk)/mooapp-mod.py $(PY2H)

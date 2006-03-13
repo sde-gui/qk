@@ -52,30 +52,8 @@ MOO_AC_PYGTK
 MOO_AC_PCRE
 
 
-# Components
 MOO_COMPONENTS
-
-
-moo_top_src_dir=`cd $srcdir && pwd`
-moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
-MOO_CFLAGS="-I$moo_top_src_dir/moo $GTK_CFLAGS -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\" -D__MOO__ -DMOO_MARSHALS_H=\\\"mooutils/moomarshals.h\\\""
-MOO_LIBS="$GTK_LIBS $MOO_LIBS"
-
-if test x$MOO_USE_FAM = xyes; then
-    MOO_LIBS="$FAM_LIBS $MOO_LIBS"
-fi
-
-AC_SUBST(MOO_CFLAGS)
-AC_SUBST(MOO_LIBS)
-
-
-################################################################################
-#  MooEdit stuff
-#
-if test "x$build_mooedit" != "xno"; then
-    MOO_CFLAGS="$MOO_CFLAGS $XML_CFLAGS"
-    MOO_LIBS="$MOO_LIBS $XML_LIBS"
-fi
+MOO_AC_FLAGS
 
 
 ################################################################################
@@ -94,7 +72,6 @@ AC_OUTPUT([
 Makefile
 moo/mooterm/termhelper_res.rc
 moo/mooutils/pcre/pcre.h
-moo/moopython/pygtk/moo-mod.py
 moo/moo.pc
 tests/pyapp.py
 m4/Makefile
@@ -127,9 +104,8 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     echo "    fam support                               = $MOO_USE_FAM"
     echo "    xdgmime support                           = $MOO_USE_XDGMIME"
     echo
-    echo "    prefix                                    = $mooprefix"
+    echo "    prefix                                    = $prefix"
     echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
-    echo "    plugins go to                             = $MOO_PLUGINS_DIR"
     echo
     echo "    components: $MOO_BUILD_COMPS"
 else
