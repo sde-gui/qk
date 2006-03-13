@@ -579,7 +579,7 @@ moo_app_get_data_dir (MooApp        *app,
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
-#ifdef MOO_OS_WIN32
+#ifdef __WIN32__
     g_return_val_if_fail (app->priv->argv && app->priv->argv[0], g_strdup ("."));
     return g_path_get_dirname (app->priv->argv[0]);
 #else
@@ -603,7 +603,7 @@ moo_app_get_user_data_dir (MooApp *app,
     G_GNUC_UNUSED char *basename;
     char *dir;
 
-#ifdef MOO_OS_WIN32
+#ifdef __WIN32__
     dir = g_build_filename (g_get_home_dir (), app->priv->info->short_name, NULL);
 #else
     basename = g_strdup_printf (".%s", app->priv->info->short_name);
@@ -966,10 +966,6 @@ moo_app_init_real (MooApp *app)
     app->priv->new_app = TRUE;
     gdk_set_program_class (app->priv->info->full_name);
 
-#ifdef __WIN32__
-    app_dir = moo_app_get_application_dir (app);
-#endif
-
     rc_file = moo_app_get_rc_file_name (app);
 
     if (!moo_prefs_load (rc_file, &error))
@@ -991,8 +987,9 @@ moo_app_init_real (MooApp *app)
 #if defined(__WIN32__) && defined(MOO_BUILD_TERM)
     if (app->priv->use_terminal)
     {
-        moo_term_set_helper_directory (app_dir);
-        g_message ("app dir: %s", app_dir);
+        char *dir = moo_app_get_data_dir (app, MOO_APP_DATA_LIB);
+        moo_term_set_helper_directory (dir);
+        g_free (dir);
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
 

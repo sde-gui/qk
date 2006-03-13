@@ -13,6 +13,7 @@
 
 #include "mooutils/moouseractions.h"
 #include "mooutils/mooscript/mooscript-parser.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 
 

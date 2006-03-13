@@ -105,6 +105,7 @@ moo_python_api_init (void)
         return FALSE;
     }
 
+    g_assert (moo_python_running ());
     Py_Initialize ();
 
     main_mod = PyImport_AddModule ((char*)"__main__");

@@ -15,16 +15,6 @@ headers
 #include "moopython/pygtk/moo-pygtk.h"
 
 
-#ifdef __WIN32__
-GType moo_cmd_view_get_type (void)
-{
-    static int n = 0;
-    g_return_val_if_fail (!n++, 0);
-    return 0;
-}
-#endif
-
-
 %%
 modulename _moo_edit
 %%

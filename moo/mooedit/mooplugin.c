@@ -943,7 +943,7 @@ moo_plugin_init_builtin (void)
 #endif
 #endif
     _moo_active_strings_plugin_init ();
-#if defined(MOO_USE_PYGTK) && !defined(__WIN32__)
+#ifdef MOO_USE_PYGTK
     _moo_python_plugin_init ();
 #endif
 }
