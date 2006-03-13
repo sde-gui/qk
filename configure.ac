@@ -83,39 +83,7 @@ fi
 #
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
-
-if test "x${prefix}" = "xNONE"; then
-  mooprefix=${ac_default_prefix}
-else
-  mooprefix=${prefix}
-fi
-
-moodatadir=share
-
-moorootdir=${moodatadir}/moo-1.0
-NO_PREFIX_MOO_ROOT_DIR="${moorootdir}"
-AC_SUBST(NO_PREFIX_MOO_ROOT_DIR)
-MOO_ROOT_DIR="${mooprefix}/${moorootdir}"
-AC_SUBST(MOO_ROOT_DIR)
-
-AC_DEFINE_UNQUOTED(MOO_ROOT_DIR, "${mooprefix}/${moorootdir}", [data files go to MOO_ROOT_DIR])
-
-MOO_TEXT_LANG_FILES_DIR="${mooprefix}/${moorootdir}/syntax"
-AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
-AC_DEFINE_UNQUOTED(MOO_TEXT_LANG_FILES_DIR, "${mooprefix}/${moorootdir}/syntax", [lang files dir])
-
-
-moolibdir=lib/moo-1.0
-NO_PREFIX_MOO_LIB_DIR="${moolibdir}"
-AC_SUBST(NO_PREFIX_MOO_LIB_DIR)
-MOO_LIB_DIR="${mooprefix}/${moolibdir}"
-AC_SUBST(MOO_LIB_DIR)
-AC_DEFINE_UNQUOTED(MOO_LIB_DIR, "${mooprefix}/${moolibdir}", [plugins and stuff go to MOO_LIB_DIR])
-MOO_PLUGINS_DIR="${mooprefix}/${moolibdir}/plugins"
-AC_SUBST(MOO_PLUGINS_DIR)
-AC_DEFINE_UNQUOTED(MOO_PLUGINS_DIR, "${mooprefix}/${moolibdir}/plugins", [plugins dir])
-
-
+MOO_AC_SET_DIRS([moo-1.0])
 AM_CONDITIONAL(MOO_BUILD_LIB, false)
 
 

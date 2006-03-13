@@ -1,6 +1,7 @@
 EXTRA_DIST =        \
     moo-comps.m4    \
     moo-debug.m4    \
+    moo-dirs.m4     \
     moo-fam.m4      \
     moo-funcs.m4    \
     moo-gtk.m4      \
