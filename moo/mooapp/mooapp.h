@@ -35,6 +35,11 @@ typedef struct _MooAppInfo          MooAppInfo;
 typedef struct _MooAppPrivate       MooAppPrivate;
 typedef struct _MooAppClass         MooAppClass;
 
+typedef enum {
+    MOO_APP_DATA_SHARE,
+    MOO_APP_DATA_LIB
+} MooAppDataType;
+
 struct _MooAppInfo
 {
     char *short_name;
@@ -44,7 +49,6 @@ struct _MooAppInfo
     char *website;
     char *website_label;
 
-    char *app_dir;
     char *rc_file;
 };
 
@@ -91,7 +95,18 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app);
 const char      *moo_app_get_rc_file_name       (MooApp     *app);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_output_pipe_name   (MooApp     *app);
-const char      *moo_app_get_application_dir    (MooApp     *app);
+
+char            *moo_app_get_data_dir           (MooApp     *app,
+                                                 MooAppDataType type);
+char            *moo_app_get_user_data_dir      (MooApp     *app,
+                                                 MooAppDataType type);
+char           **moo_app_get_data_dirs          (MooApp     *app,
+                                                 MooAppDataType type,
+                                                 guint      *n_dirs);
+char           **moo_app_get_data_subdirs       (MooApp     *app,
+                                                 const char *subdir,
+                                                 MooAppDataType type,
+                                                 guint      *n_dirs);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 

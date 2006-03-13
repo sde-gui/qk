@@ -90,12 +90,6 @@
   (return-type "const-char*")
 )
 
-(define-method get_application_dir
-  (of-object "MooApp")
-  (c-name "moo_app_get_application_dir")
-  (return-type "const-char*")
-)
-
 (define-method get_editor
   (of-object "MooApp")
   (c-name "moo_app_get_editor")

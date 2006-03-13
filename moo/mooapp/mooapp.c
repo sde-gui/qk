@@ -29,6 +29,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moouseractions.h"
 #include <string.h>
 
 
@@ -37,6 +38,8 @@
 #else
 #define APP_VERSION "<uknown version>"
 #endif
+
+#define MOO_UI_XML_FILE "ui.xml"
 
 
 static MooApp *moo_app_instance = NULL;
@@ -61,6 +64,7 @@ struct _MooAppPrivate {
     MooTermWindow *term_window;
 
     MooUIXML   *ui_xml;
+    char       *default_ui;
     guint       quit_handler_id;
     gboolean    use_editor;
     gboolean    use_terminal;
@@ -161,7 +165,8 @@ enum {
     PROP_USE_EDITOR,
     PROP_USE_TERMINAL,
     PROP_OPEN_FILES,
-    PROP_NEW_APP
+    PROP_NEW_APP,
+    PROP_DEFAULT_UI
 };
 
 enum {
@@ -285,6 +290,14 @@ moo_app_class_init (MooAppClass *klass)
                                              FALSE,
                                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_DEFAULT_UI,
+                                     g_param_spec_string ("default-ui",
+                                             "default-ui",
+                                             "default-ui",
+                                             NULL,
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
     signals[INIT] =
             g_signal_new ("init",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -399,9 +412,9 @@ moo_app_finalize (GObject *object)
 
     g_free (app->priv->info->short_name);
     g_free (app->priv->info->full_name);
-    g_free (app->priv->info->app_dir);
     g_free (app->priv->info->rc_file);
     g_free (app->priv->info);
+    g_free (app->priv->default_ui);
 
     if (app->priv->argv)
         g_strfreev (app->priv->argv);
@@ -464,6 +477,11 @@ moo_app_set_property (GObject        *object,
 
         case PROP_NEW_APP:
             app->priv->new_app = g_value_get_boolean (value);
+            break;
+
+        case PROP_DEFAULT_UI:
+            g_free (app->priv->default_ui);
+            app->priv->default_ui = g_strdup (g_value_get_string (value));
             break;
 
         case PROP_OPEN_FILES:
@@ -562,18 +580,92 @@ moo_app_set_exit_code (MooApp      *app,
 }
 
 
-const char*
-moo_app_get_application_dir (MooApp      *app)
+char *
+moo_app_get_data_dir (MooApp        *app,
+                      MooAppDataType type)
 {
-    g_return_val_if_fail (MOO_IS_APP (app), ".");
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
-    if (!app->priv->info->app_dir)
+#ifdef MOO_OS_WIN32
+    g_return_val_if_fail (app->priv->argv && app->priv->argv[0], g_strdup ("."));
+    return g_path_get_dirname (app->priv->argv[0]);
+#else
+    switch (type)
     {
-        g_return_val_if_fail (app->priv->argv && app->priv->argv[0], ".");
-        app->priv->info->app_dir = g_path_get_dirname (app->priv->argv[0]);
+        case MOO_APP_DATA_SHARE:
+            return g_strdup (MOO_DATA_DIR);
+        case MOO_APP_DATA_LIB:
+            return g_strdup (MOO_LIB_DIR);
     }
 
-    return app->priv->info->app_dir;
+    g_return_val_if_reached (NULL);
+#endif
+}
+
+
+char *
+moo_app_get_user_data_dir (MooApp *app,
+                           G_GNUC_UNUSED MooAppDataType type)
+{
+    G_GNUC_UNUSED char *basename;
+    char *dir;
+
+#ifdef MOO_OS_WIN32
+    dir = g_build_filename (g_get_home_dir (), app->priv->info->short_name, NULL);
+#else
+    basename = g_strdup_printf (".%s", app->priv->info->short_name);
+    dir = g_build_filename (g_get_home_dir (), basename, NULL);
+    g_free (basename);
+#endif
+
+    return dir;
+}
+
+
+char **
+moo_app_get_data_dirs (MooApp *app,
+                       MooAppDataType type,
+                       guint  *n_dirs)
+{
+    char **dirs;
+
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+
+    dirs = g_new0 (char*, 3);
+
+    dirs[0] = moo_app_get_data_dir (app, type);
+    dirs[1] = moo_app_get_user_data_dir (app, type);
+
+    if (n_dirs)
+        *n_dirs = 2;
+
+    return dirs;
+}
+
+
+char **
+moo_app_get_data_subdirs (MooApp     *app,
+                          const char *subdir,
+                          MooAppDataType type,
+                          guint      *n_dirs_p)
+{
+    char **data_dirs, **dirs;
+    guint n_dirs, i;
+
+    g_return_val_if_fail (subdir != NULL, NULL);
+
+    data_dirs = moo_app_get_data_dirs (app, type, &n_dirs);
+    g_return_val_if_fail (data_dirs != NULL, NULL);
+
+    if (n_dirs_p)
+        *n_dirs_p = n_dirs;
+
+    dirs = g_new0 (char*, n_dirs + 1);
+
+    for (i = 0; i < n_dirs; ++i)
+        dirs[i] = g_build_filename (data_dirs[i], subdir, NULL);
+
+    return dirs;
 }
 
 
@@ -621,6 +713,7 @@ moo_app_get_rc_file_name (MooApp *app)
 }
 
 
+#if 0
 void
 moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
 {
@@ -658,9 +751,10 @@ moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
             moo_PyErr_Print ();
     }
 }
+#endif
 
 
-gboolean
+static gboolean
 moo_app_python_run_file (MooApp      *app,
                          const char  *filename)
 {
@@ -691,7 +785,7 @@ moo_app_python_run_file (MooApp      *app,
 }
 
 
-gboolean
+static gboolean
 moo_app_python_run_string (MooApp      *app,
                            const char  *string)
 {
@@ -729,63 +823,109 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app)
 }
 
 
-static char *
-moo_app_get_user_data_dir (MooApp *app)
+static void
+moo_app_load_user_actions (MooApp *app)
 {
-    char *basename = g_strdup_printf (".%s", app->priv->info->short_name);
-    char *dir = g_build_filename (g_get_home_dir (), basename, NULL);
-    g_free (basename);
-    return dir;
+    char **dirs;
+    guint n_dirs, i;
+
+    dirs = moo_app_get_data_dirs (app, MOO_APP_DATA_SHARE, &n_dirs);
+    g_return_if_fail (dirs != NULL);
+
+    for (i = 0; i < n_dirs; i++)
+    {
+        char *file = g_build_filename (dirs[i], "actions", NULL);
+
+        if (g_file_test (file, G_FILE_TEST_EXISTS))
+            moo_parse_user_actions (file);
+
+        g_free (file);
+    }
+
+    g_strfreev (dirs);
 }
 
 
-static char **
-moo_app_get_plugin_dirs (MooApp *app)
+static void
+moo_app_init_editor (MooApp *app)
 {
     char **dirs;
+    guint n_dirs, i;
+    MooLangMgr *lang_mgr;
 
-#ifdef __WIN32__
+    app->priv->editor = moo_editor_instance ();
+    moo_editor_set_ui_xml (app->priv->editor,
+                           moo_app_get_ui_xml (app));
+    moo_editor_set_app_name (app->priv->editor,
+                             app->priv->info->short_name);
 
-    const char *data_dir;
-    const char *app_dir = moo_app_get_application_dir (app);
+    lang_mgr = moo_editor_get_lang_mgr (app->priv->editor);
 
-    if (app_dir[0])
-        data_dir = app_dir;
-    else
-        data_dir = ".";
+    dirs = moo_app_get_data_subdirs (app, MOO_LANG_DIR_BASENAME,
+                                     MOO_APP_DATA_SHARE, &n_dirs);
+    for (i = 0; i < n_dirs; ++i)
+        moo_lang_mgr_add_dir (lang_mgr, dirs[i]);
+    moo_lang_mgr_read_dirs (lang_mgr);
+    g_strfreev (dirs);
 
-    dirs = g_new0 (char*, 2);
-    dirs[0] = g_build_filename (data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
+    dirs = moo_app_get_data_subdirs (app, MOO_PLUGIN_DIR_BASENAME,
+                                     MOO_APP_DATA_LIB, &n_dirs);
+    moo_set_plugin_dirs (dirs);
+    moo_plugin_init_builtin ();
+    moo_plugin_read_dirs ();
+    g_strfreev (dirs);
+}
 
-#else /* !__WIN32__ */
 
-    char *user_data_dir;
+static void
+moo_app_init_ui (MooApp *app)
+{
+    MooUIXML *xml;
+    char **dirs;
+    guint n_dirs;
+    int i;
 
-    dirs = g_new0 (char*, 3);
+    xml = moo_app_get_ui_xml (app);
+    dirs = moo_app_get_data_dirs (app, MOO_APP_DATA_SHARE, &n_dirs);
 
-#ifdef MOO_PLUGINS_DIR
-    dirs[0] = g_strdup (MOO_PLUGINS_DIR);
-#else
-    dirs[0] = g_build_filename (".", MOO_PLUGIN_DIR_BASENAME, NULL);
-#endif
+    for (i = n_dirs - 1; i >= 0; --i)
+    {
+        char *filename;
+        GError *error = NULL;
+        GMappedFile *file;
 
-    user_data_dir = moo_app_get_user_data_dir (app);
-    dirs[1] = g_build_filename (user_data_dir, MOO_PLUGIN_DIR_BASENAME, NULL);
-    g_free (user_data_dir);
+        filename = g_build_filename (dirs[i], MOO_UI_XML_FILE, NULL);
+        file = g_mapped_file_new (filename, FALSE, &error);
 
-#endif /* !__WIN32__ */
+        if (file)
+        {
+            moo_ui_xml_add_ui_from_string (xml,
+                                           g_mapped_file_get_contents (file),
+                                           g_mapped_file_get_length (file));
+            g_mapped_file_free (file);
+            g_free (filename);
+            return;
+        }
 
-    return dirs;
+        if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT)
+        {
+            g_warning ("%s: could not open file '%s'", G_STRLOC, filename);
+            g_warning ("%s: %s", G_STRLOC, error->message);
+        }
+
+        g_error_free (error);
+        g_free (filename);
+    }
+
+    if (app->priv->default_ui)
+        moo_ui_xml_add_ui_from_string (xml, app->priv->default_ui, -1);
 }
 
 
 static gboolean
 moo_app_init_real (MooApp *app)
 {
-    G_GNUC_UNUSED const char *app_dir;
     const char *rc_file;
-    MooLangMgr *lang_mgr;
-    MooUIXML *ui_xml;
     GError *error = NULL;
 
     if (!app->priv->new_app)
@@ -842,6 +982,7 @@ moo_app_init_real (MooApp *app)
     if (!moo_prefs_load (rc_file, &error))
     {
         g_warning ("%s: could not read config file", G_STRLOC);
+
         if (error)
         {
             g_warning ("%s: %s", G_STRLOC, error->message);
@@ -849,61 +990,10 @@ moo_app_init_real (MooApp *app)
         }
     }
 
-    ui_xml = moo_app_get_ui_xml (app);
+    moo_app_init_ui (app);
 
     if (app->priv->use_editor)
-    {
-        char *lang_dir = NULL, *user_lang_dir = NULL;
-        char *user_data_dir = NULL;
-        char **plugin_dirs;
-
-#ifdef __WIN32__
-
-        const char *data_dir;
-
-        if (app_dir[0])
-            data_dir = app_dir;
-        else
-            data_dir = ".";
-
-        lang_dir = g_build_filename (data_dir, MOO_LANG_DIR_BASENAME, NULL);
-
-#else /* !__WIN32__ */
-
-#ifdef MOO_TEXT_LANG_FILES_DIR
-        lang_dir = g_strdup (MOO_TEXT_LANG_FILES_DIR);
-#else
-        lang_dir = g_build_filename (".", MOO_LANG_DIR_BASENAME, NULL);
-#endif
-
-        user_data_dir = moo_app_get_user_data_dir (app);
-        user_lang_dir = g_build_filename (user_data_dir, MOO_LANG_DIR_BASENAME, NULL);
-
-#endif /* !__WIN32__ */
-
-        app->priv->editor = moo_editor_instance ();
-        moo_editor_set_ui_xml (app->priv->editor, ui_xml);
-        moo_editor_set_app_name (app->priv->editor,
-                                 app->priv->info->short_name);
-
-        lang_mgr = moo_editor_get_lang_mgr (app->priv->editor);
-        moo_lang_mgr_add_dir (lang_mgr, lang_dir);
-
-        if (user_lang_dir)
-            moo_lang_mgr_add_dir (lang_mgr, user_lang_dir);
-
-        moo_lang_mgr_read_dirs (lang_mgr);
-
-        plugin_dirs = moo_app_get_plugin_dirs (app);
-        moo_set_plugin_dirs (plugin_dirs);
-        moo_plugin_init_builtin ();
-        moo_plugin_read_dirs ();
-
-        g_strfreev (plugin_dirs);
-        g_free (lang_dir);
-        g_free (user_lang_dir);
-        g_free (user_data_dir);
-    }
+        moo_app_init_editor (app);
 
 #if defined(__WIN32__) && defined(MOO_BUILD_TERM)
     if (app->priv->use_terminal)
@@ -912,6 +1002,8 @@ moo_app_init_real (MooApp *app)
         g_message ("app dir: %s", app_dir);
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
+
+    moo_app_load_user_actions (app);
 
     start_io (app);
 
@@ -1308,8 +1400,9 @@ MooUIXML        *moo_app_get_ui_xml             (MooApp     *app)
 }
 
 
-void             moo_app_set_ui_xml             (MooApp     *app,
-                                                 MooUIXML   *xml)
+void
+moo_app_set_ui_xml (MooApp     *app,
+                    MooUIXML   *xml)
 {
     GSList *l;
 
@@ -1356,7 +1449,6 @@ moo_app_info_copy (const MooAppInfo *info)
     copy->version = g_strdup (info->version);
     copy->website = g_strdup (info->website);
     copy->website_label = g_strdup (info->website_label);
-    copy->app_dir = g_strdup (info->app_dir);
     copy->rc_file = g_strdup (info->rc_file);
 
     return copy;
@@ -1374,14 +1466,14 @@ moo_app_info_free (MooAppInfo *info)
         g_free (info->version);
         g_free (info->website);
         g_free (info->website_label);
-        g_free (info->app_dir);
         g_free (info->rc_file);
         g_free (info);
     }
 }
 
 
-GType            moo_app_info_get_type          (void)
+GType
+moo_app_info_get_type (void)
 {
     static GType type = 0;
     if (!type)
@@ -1392,7 +1484,8 @@ GType            moo_app_info_get_type          (void)
 }
 
 
-static void     execute_selection       (MooEditWindow  *window)
+static void
+execute_selection (MooEditWindow *window)
 {
     MooEdit *edit;
     char *text;
@@ -1450,7 +1543,8 @@ moo_app_present (MooApp *app)
 }
 
 
-static MooAppCmdCode get_cmd_code (char cmd)
+static MooAppCmdCode
+get_cmd_code (char cmd)
 {
     guint i;
 

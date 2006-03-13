@@ -77,6 +77,8 @@ mooutils_sources =                             \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
     $(mooutils)/mooundomanager.c               \
+    $(mooutils)/moouseractions.c               \
+    $(mooutils)/moouseractions.h               \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \
     $(mooutils)/moowindow.c                    \

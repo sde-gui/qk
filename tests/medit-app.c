@@ -242,7 +242,6 @@ int main (int argc, char *argv[])
 {
     MooApp *app;
     int opt_remain;
-    MooUIXML *xml;
     MooEditor *editor;
 
     gtk_init (&argc, &argv);
@@ -284,10 +283,8 @@ int main (int argc, char *argv[])
                         "description", "medit is a text editor",
                         "open-files", argv + opt_remain,
                         "new-app", (gboolean) _medit_opt_new_app,
+                        "default-ui", MEDIT_UI,
                         NULL);
-
-    xml = moo_app_get_ui_xml (app);
-    moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1);
 
     if (!moo_app_init (app))
         return 0;
