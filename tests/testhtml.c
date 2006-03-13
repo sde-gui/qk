@@ -1,5 +1,6 @@
-#include "moohtml.h"
+#include "mooapp/moohtml.h"
 #include <gtk/gtk.h>
+#include <stdlib.h>
 
 
 static void
@@ -47,7 +48,7 @@ int main (int argc, char *argv[])
     gtk_text_view_set_left_margin (GTK_TEXT_VIEW (html), 6);
     gtk_text_view_set_right_margin (GTK_TEXT_VIEW (html), 6);
     gtk_container_add (GTK_CONTAINER (swin), html);
-//     moo_html_set_font (MOO_HTML (html), "Tahoma 12");
+    moo_html_set_font (MOO_HTML (html), "Tahoma 12");
 
     statusbar = gtk_statusbar_new ();
     gtk_box_pack_start (GTK_BOX (vbox), statusbar, FALSE, FALSE, 0);
@@ -58,10 +59,15 @@ int main (int argc, char *argv[])
                               G_CALLBACK (hover_link), statusbar);
 
     if (!argv[1])
-        g_error ("usage: %s <file.html>", argv[0]);
+    {
+        g_print ("usage: %s <file.html>\n", argv[0]);
+        exit (1);
+    }
 
     if (!moo_html_load_file (MOO_HTML (html), argv[1], NULL))
+    {
         g_error ("ERROR");
+    }
 
     gtk_widget_show_all (window);
     gtk_main ();
