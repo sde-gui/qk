@@ -97,7 +97,7 @@ action_new (const char *name,
 
     if (!script)
     {
-        g_print ("could not parse script\n%s\n", code);
+        g_warning ("could not parse script\n%s\n", code);
         return NULL;
     }
 
@@ -200,7 +200,7 @@ parse_header_line (Parser *parser,
         }
 
         parser->action = value;
-        g_print ("action %s\n", value);
+//         g_print ("action %s\n", value);
     }
     else if (!g_ascii_strcasecmp (line, "label"))
     {
@@ -218,7 +218,7 @@ parse_header_line (Parser *parser,
         }
 
         parser->label = value;
-        g_print ("in action %s: label %s\n", parser->action, value);
+//         g_print ("in action %s: label %s\n", parser->action, value);
     }
     else if (!g_ascii_strcasecmp (line, "accel"))
     {
@@ -236,7 +236,7 @@ parse_header_line (Parser *parser,
         }
 
         parser->accel = value;
-        g_print ("in action %s: accel %s\n", parser->action, value);
+//         g_print ("in action %s: accel %s\n", parser->action, value);
     }
     else
     {
@@ -269,8 +269,8 @@ parser_end_code (Parser *parser)
         goto out;
     }
 
-    g_print ("in action %s\n-----------------\n%s\n----------------\n",
-             parser->action, parser->code->str);
+//     g_print ("in action %s\n-----------------\n%s\n----------------\n",
+//              parser->action, parser->code->str);
 
     action = action_new (parser->action, parser->label,
                          parser->accel, parser->code->str);
