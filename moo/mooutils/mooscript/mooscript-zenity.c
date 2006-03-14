@@ -156,6 +156,10 @@ text_func (MSValue   **args,
     g_free (dialog_text);
     g_free (text);
 
+    if (!gtk_main_level ())
+        while (gtk_events_pending ())
+            gtk_main_iteration ();
+
     return result;
 }
 
@@ -205,6 +209,10 @@ message_dialog (MSValue      **args,
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
+
+    if (!gtk_main_level ())
+        while (gtk_events_pending ())
+            gtk_main_iteration ();
 
     g_free (dialog_text);
 
