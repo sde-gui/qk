@@ -135,6 +135,9 @@ ms_context_init (MSContext *ctx)
     ctx->vars = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                        (GDestroyNotify) ms_variable_unref);
 
+    if (moo_python_running ())
+        ctx->py_dict = moo_py_get_script_dict ("__moo_script__");
+
     ctx->print_func = default_print_func;
 
     _ms_context_add_builtin (ctx);
@@ -146,6 +149,7 @@ ms_context_finalize (GObject *object)
 {
     MSContext *ctx = MS_CONTEXT (object);
 
+    moo_Py_DECREF (ctx->py_dict);
     g_hash_table_destroy (ctx->vars);
     g_free (ctx->error_msg);
 
@@ -377,7 +381,10 @@ ms_context_format_error (MSContext  *ctx,
     g_return_val_if_fail (!ctx->error_msg, NULL);
 
     if (!format || !format[0])
+    {
         ms_context_set_error (ctx, error, NULL);
+        return NULL;
+    }
 
     va_start (args, format);
     ms_context_format_error_valist (ctx, error, format, args);
@@ -531,4 +538,69 @@ ms_context_unset_continue (MSContext *ctx)
     g_return_if_fail (MS_IS_CONTEXT (ctx));
     g_return_if_fail (ctx->continue_set);
     ctx->continue_set = FALSE;
+}
+
+
+/************************************************************************/
+/* Python
+ */
+
+void
+ms_context_assign_py_var (MSContext  *ctx,
+                          const char *var,
+                          MooPyObject *obj)
+{
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (var != NULL);
+    g_return_if_fail (obj != NULL);
+    g_return_if_fail (ctx->py_dict != NULL);
+    moo_py_dict_set_item (ctx->py_dict, var, obj);
+}
+
+
+void
+ms_context_assign_py_object (MSContext  *ctx,
+                             const char *var,
+                             gpointer    gobj)
+{
+    MooPyObject *pyobj;
+
+    g_return_if_fail (moo_python_running ());
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (var != NULL);
+    g_return_if_fail (G_IS_OBJECT (gobj));
+
+    pyobj = moo_py_object_from_gobject (gobj);
+    g_return_if_fail (pyobj != NULL);
+    ms_context_assign_py_var (ctx, var, pyobj);
+    moo_Py_DECREF (pyobj);
+}
+
+
+MSValue *
+ms_context_run_python (MSContext  *ctx,
+                       const char *script)
+{
+    MooPyObject *py_ret;
+
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (script != NULL, NULL);
+
+    if (!moo_python_running())
+        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                        "Python support not available");
+
+    py_ret = moo_python_run_string (script, ctx->py_dict, ctx->py_dict);
+
+    if (py_ret)
+    {
+        moo_Py_DECREF (py_ret);
+        return ms_value_none ();
+    }
+    else
+    {
+        moo_PyErr_Print ();
+        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                        "python script raised exception");
+    }
 }

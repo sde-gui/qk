@@ -2474,4 +2474,51 @@ out:
 }
 
 
-/* kate: space-indent: on; indent-width: 4; strip on; */
+/*****************************************************************************/
+/* MooScript
+ */
+
+#define VAR_DOC         "doc"
+#define DOC_ATTR_FILE   "file"
+
+static void
+moo_edit_window_setup_python (MooEditWindow  *window,
+                              MSContext      *ctx)
+{
+    MooEdit *doc;
+
+    doc = ACTIVE_DOC (window);
+
+    ms_context_assign_py_object (ctx, VAR_DOC, doc);
+}
+
+void
+moo_edit_window_setup_context (MooEditWindow  *window,
+                               MSContext      *ctx)
+{
+    MooEdit *doc;
+    MSValue *val;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MS_IS_CONTEXT (ctx));
+    g_return_if_fail (ctx->window == MOO_WINDOW (window));
+
+    doc = ACTIVE_DOC (window);
+
+    if (doc)
+    {
+        val = ms_value_dict ();
+        ms_value_dict_set_string (val, DOC_ATTR_FILE,
+                                  moo_edit_get_filename (doc));
+    }
+    else
+    {
+        val = ms_value_none ();
+    }
+
+    ms_context_assign_variable (ctx, VAR_DOC, val);
+    ms_value_unref (val);
+
+    if (moo_python_running ())
+        moo_edit_window_setup_python (window, ctx);
+}

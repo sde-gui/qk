@@ -16,6 +16,7 @@
 #define __MOO_SCRIPT_CONTEXT_H__
 
 #include "mooscript-func.h"
+#include <mooutils/moopython.h>
 
 G_BEGIN_DECLS
 
@@ -51,6 +52,7 @@ typedef void (*MSPrintFunc) (const char *string,
 struct _MSContext {
     GObject object;
 
+    MooPyObject *py_dict;
     GHashTable *vars;
     MSError error;
     char *error_msg;
@@ -119,6 +121,16 @@ void         ms_context_set_continue        (MSContext  *ctx);
 void         ms_context_unset_return        (MSContext  *ctx);
 void         ms_context_unset_break         (MSContext  *ctx);
 void         ms_context_unset_continue      (MSContext  *ctx);
+
+
+MSValue     *ms_context_run_python          (MSContext  *ctx,
+                                             const char *script);
+void         ms_context_assign_py_var       (MSContext  *ctx,
+                                             const char *var,
+                                             MooPyObject *obj);
+void         ms_context_assign_py_object    (MSContext  *ctx,
+                                             const char *var,
+                                             gpointer    gobj);
 
 
 G_END_DECLS

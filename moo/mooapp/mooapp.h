@@ -16,6 +16,7 @@
 
 #include <mooterm/mootermwindow.h>
 #include <mooedit/mooeditor.h>
+#include <mooutils/moouseractions.h>
 
 G_BEGIN_DECLS
 
@@ -123,6 +124,9 @@ char            *moo_app_tempnam                (MooApp     *app);
 gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *data,
                                                  int         len);
+
+void             moo_app_set_user_action_ctx_func (MooApp   *app,
+                                                 MooUserActionCtxFunc func);
 
 void             _moo_app_exec_cmd              (MooApp     *app,
                                                  char        cmd,

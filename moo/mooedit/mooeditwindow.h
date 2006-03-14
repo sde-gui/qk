@@ -18,6 +18,7 @@
 #include <mooedit/mooedit.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
+#include <mooutils/mooscript/mooscript-context.h>
 
 G_BEGIN_DECLS
 
@@ -91,6 +92,10 @@ void         moo_edit_window_job_started        (MooEditWindow  *window,
                                                  gpointer        job);
 void         moo_edit_window_job_finished       (MooEditWindow  *window,
                                                  gpointer        job);
+
+
+void         moo_edit_window_setup_context      (MooEditWindow  *window,
+                                                 MSContext      *ctx);
 
 
 G_END_DECLS

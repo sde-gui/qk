@@ -218,6 +218,21 @@ ms_value_dict_set_elm (MSValue    *dict,
                              ms_value_ref (val));
 }
 
+void
+ms_value_dict_set_string (MSValue        *dict,
+                          const char     *key,
+                          const char     *val)
+{
+    MSValue *value;
+
+    g_return_if_fail (dict != NULL);
+    g_return_if_fail (key != NULL);
+
+    value = val ? ms_value_string (val) : ms_value_none ();
+    ms_value_dict_set_elm (dict, key, value);
+    ms_value_unref (value);
+}
+
 
 MSValue *
 ms_value_ref (MSValue *val)

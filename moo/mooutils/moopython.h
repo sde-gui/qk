@@ -18,20 +18,35 @@
 
 G_BEGIN_DECLS
 
-#define MOO_PY_API_VERSION 87
+#define MOO_PY_API_VERSION 89
 
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
 
 
 struct _MooPyAPI {
-    MooPyObject* (*incref)        (MooPyObject *obj);
-    void         (*decref)        (MooPyObject *obj);
-    void         (*err_print)     (void);
+    MooPyObject* (*incref)              (MooPyObject *obj);
+    void         (*decref)              (MooPyObject *obj);
+    void         (*err_print)           (void);
 
-    MooPyObject* (*run_string)    (const char  *str);
-    MooPyObject* (*run_file)      (void        *fp,
-                                   const char  *filename);
+    MooPyObject* (*run_simple_string)   (const char  *str);
+    MooPyObject* (*run_string)          (const char  *str,
+                                         MooPyObject *locals,
+                                         MooPyObject *globals);
+    MooPyObject* (*run_file)            (void        *fp,
+                                         const char  *filename);
+
+    MooPyObject* (*py_object_from_gobject) (gpointer gobj);
+
+    MooPyObject* (*get_script_dict)     (const char  *name);
+
+    MooPyObject* (*dict_get_item)       (MooPyObject *dict,
+                                         const char  *key);
+    gboolean     (*dict_set_item)       (MooPyObject *dict,
+                                         const char  *key,
+                                         MooPyObject *val);
+    gboolean     (*dict_del_item)       (MooPyObject *dict,
+                                         const char  *key);
 };
 
 
@@ -42,12 +57,21 @@ gboolean moo_python_init (guint     version,
 
 #define moo_python_running() (moo_py_api != NULL)
 
-#define moo_Py_INCREF               moo_py_api->incref
-#define moo_Py_DECREF               moo_py_api->decref
-#define moo_PyErr_Print             moo_py_api->err_print
+#define moo_Py_INCREF                   moo_py_api->incref
+#define moo_Py_DECREF                   moo_py_api->decref
+#define moo_PyErr_Print                 moo_py_api->err_print
 
-#define moo_python_run_string       moo_py_api->run_string
-#define moo_python_run_file         moo_py_api->run_file
+#define moo_python_run_simple_string    moo_py_api->run_simple_string
+#define moo_python_run_string           moo_py_api->run_string
+#define moo_python_run_file             moo_py_api->run_file
+
+#define moo_py_get_script_dict          moo_py_api->get_script_dict
+
+#define moo_py_dict_get_item            moo_py_api->dict_get_item
+#define moo_py_dict_set_item            moo_py_api->dict_set_item
+#define moo_py_dict_del_item            moo_py_api->dict_del_item
+
+#define moo_py_object_from_gobject      moo_py_api->py_object_from_gobject
 
 
 G_END_DECLS

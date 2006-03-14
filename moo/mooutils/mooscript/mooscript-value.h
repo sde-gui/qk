@@ -135,6 +135,11 @@ void         ms_value_dict_set_elm      (MSValue        *dict,
 MSValue     *ms_value_dict_get_elm      (MSValue        *dict,
                                          const char     *key);
 
+void         ms_value_dict_set_string   (MSValue        *dict,
+                                         const char     *key,
+                                         const char     *val);
+
+
 MSValue     *ms_value_ref               (MSValue        *val);
 void         ms_value_unref             (MSValue        *val);
 

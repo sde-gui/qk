@@ -16,6 +16,7 @@
 #include "mooutils/moocompat.h"
 #include <string.h>
 
+typedef MooUserActionCtxFunc CtxFunc;
 
 typedef struct {
     const char *filename;
@@ -32,12 +33,14 @@ typedef struct {
     char *label;
     char *accel;
     MSNode *script;
+    CtxFunc ctx_func;
 } Action;
 
 typedef struct {
     MooAction base;
     MooWindow *window;
     MSNode *script;
+    CtxFunc ctx_func;
 } MooUserAction;
 
 typedef struct {
@@ -86,7 +89,8 @@ static Action *
 action_new (const char *name,
             const char *label,
             const char *accel,
-            const char *code)
+            const char *code,
+            CtxFunc     ctx_func)
 {
     Action *action;
     MSNode *script;
@@ -107,6 +111,7 @@ action_new (const char *name,
     action->label = label ? g_strdup (label) : g_strdup (name);
     action->accel = parse_accel (accel);
     action->script = script;
+    action->ctx_func = ctx_func;
 
     return action;
 }
@@ -259,7 +264,8 @@ parser_add_code (Parser *parser,
 
 
 static void
-parser_end_code (Parser *parser)
+parser_end_code (Parser *parser,
+                 CtxFunc func)
 {
     Action *action;
 
@@ -274,7 +280,8 @@ parser_end_code (Parser *parser)
 //              parser->action, parser->code->str);
 
     action = action_new (parser->action, parser->label,
-                         parser->accel, parser->code->str);
+                         parser->accel, parser->code->str,
+                         func);
 
     if (!action)
         goto out;
@@ -367,7 +374,8 @@ splitlines (const char *string,
 
 
 void
-moo_parse_user_actions (const char *filename)
+moo_parse_user_actions (const char          *filename,
+                        MooUserActionCtxFunc ctx_func)
 {
     GMappedFile *file;
     GError *error = NULL;
@@ -376,6 +384,7 @@ moo_parse_user_actions (const char *filename)
     guint n_lines, i;
 
     g_return_if_fail (filename != NULL);
+    g_return_if_fail (ctx_func != NULL);
 
     file = g_mapped_file_new (filename, FALSE, &error);
 
@@ -442,7 +451,7 @@ moo_parse_user_actions (const char *filename)
             if ((!lines[i][0] || lines[i][0] == '\r') &&
                   (i == n_lines - 1 || starts_action (lines[i+1])))
             {
-                parser_end_code (&parser);
+                parser_end_code (&parser, ctx_func);
                 break;
             }
 
@@ -450,7 +459,7 @@ moo_parse_user_actions (const char *filename)
         }
 
         if (i == n_lines)
-            parser_end_code (&parser);
+            parser_end_code (&parser, ctx_func);
     }
 
     parser.actions = g_slist_reverse (parser.actions);
@@ -484,7 +493,7 @@ moo_user_action_activate (MooAction *_action)
     MSValue *value;
     MooUserAction *action = (MooUserAction*) _action;
 
-    ctx = g_object_new (MS_TYPE_CONTEXT, "window", action->window, NULL);
+    ctx = action->ctx_func (action->window);
     value = ms_top_node_eval (action->script, ctx);
 
     if (!value)
@@ -520,6 +529,7 @@ create_action (MooWindow *window,
 
     action->window = window;
     action->script = ms_node_ref (data->script);
+    action->ctx_func = data->ctx_func;
 
     return MOO_ACTION (action);
 }

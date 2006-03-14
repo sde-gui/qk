@@ -39,8 +39,12 @@
 #define APP_VERSION "<uknown version>"
 #endif
 
-#define MOO_UI_XML_FILE "ui.xml"
-
+#define MOO_UI_XML_FILE     "ui.xml"
+#ifdef __WIN32__
+#define MOO_ACTIONS_FILE    "actions.ini"
+#else
+#define MOO_ACTIONS_FILE    "actions"
+#endif
 
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
@@ -68,6 +72,8 @@ struct _MooAppPrivate {
     guint       quit_handler_id;
     gboolean    use_editor;
     gboolean    use_terminal;
+
+    MooUserActionCtxFunc ctx_func;
 
     char       *tmpdir;
 
@@ -121,6 +127,8 @@ static void     moo_app_set_description (MooApp             *app,
 
 static void     start_io                (MooApp             *app);
 static void     execute_selection       (MooEditWindow      *window);
+
+static MSContext *default_ctx_func      (MooWindow          *window);
 
 
 static GObjectClass *moo_app_parent_class;
@@ -391,6 +399,8 @@ moo_app_constructor (GType           type,
     object = moo_app_parent_class->constructor (type, n_params, params);
     app = MOO_APP (object);
 
+    app->priv->ctx_func = default_ctx_func;
+
     if (!app->priv->info->full_name)
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
 
@@ -570,6 +580,15 @@ moo_app_set_exit_code (MooApp      *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_code = code;
+}
+
+
+void
+moo_app_set_user_action_ctx_func (MooApp              *app,
+                                  MooUserActionCtxFunc func)
+{
+    g_return_if_fail (MOO_IS_APP (app));
+    app->priv->ctx_func = func ? func : default_ctx_func;
 }
 
 
@@ -788,7 +807,7 @@ moo_app_python_run_string (MooApp      *app,
     g_return_val_if_fail (string != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    res = moo_python_run_string (string);
+    res = moo_python_run_simple_string (string);
 
     if (res)
     {
@@ -827,10 +846,10 @@ moo_app_load_user_actions (MooApp *app)
 
     for (i = 0; i < n_dirs; i++)
     {
-        char *file = g_build_filename (dirs[i], "actions", NULL);
+        char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
 
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            moo_parse_user_actions (file);
+            moo_parse_user_actions (file, app->priv->ctx_func);
 
         g_free (file);
     }
@@ -1656,4 +1675,18 @@ moo_app_data_type_get_type (void)
     }
 
     return type;
+}
+
+
+static MSContext *
+default_ctx_func (MooWindow *window)
+{
+    MSContext *ctx;
+
+    ctx = g_object_new (MS_TYPE_CONTEXT, "window", window, NULL);
+
+    if (MOO_IS_EDIT_WINDOW (window))
+        moo_edit_window_setup_context (MOO_EDIT_WINDOW (window), ctx);
+
+    return ctx;
 }

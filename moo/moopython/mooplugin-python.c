@@ -42,12 +42,26 @@ static void      moo_py_plugin_delete           (MooPyPluginData    *data);
 
 
 static MooPyObject*
-run_string (const char *str)
+run_simple_string (const char *str)
 {
     PyObject *dict;
     g_return_val_if_fail (str != NULL, NULL);
     dict = PyModule_GetDict (main_mod);
     return (MooPyObject*) PyRun_String (str, Py_file_input, dict, dict);
+}
+
+
+static MooPyObject*
+run_string (const char  *str,
+            MooPyObject *locals,
+            MooPyObject *globals)
+{
+    g_return_val_if_fail (str != NULL, NULL);
+    g_return_val_if_fail (locals != NULL, NULL);
+    g_return_val_if_fail (globals != NULL, NULL);
+    return (MooPyObject*) PyRun_String (str, Py_file_input,
+                                        (PyObject*) locals,
+                                        (PyObject*) globals);
 }
 
 
@@ -89,12 +103,94 @@ err_print (void)
 }
 
 
+static MooPyObject *
+py_object_from_gobject (gpointer gobj)
+{
+    g_return_val_if_fail (!gobj || G_IS_OBJECT (gobj), NULL);
+
+    if (gobj)
+        return (MooPyObject*) pygobject_new (gobj);
+    else
+        return (MooPyObject*) Py_INCREF (Py_None);
+}
+
+
+static MooPyObject *
+dict_get_item (MooPyObject *dict,
+               const char  *key)
+{
+    g_return_val_if_fail (dict != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+    return (MooPyObject*) PyDict_GetItemString ((PyObject*) dict, (char*) key);
+}
+
+static gboolean
+dict_set_item (MooPyObject *dict,
+               const char  *key,
+               MooPyObject *val)
+{
+    g_return_val_if_fail (dict != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+    g_return_val_if_fail (val != NULL, FALSE);
+
+    if (PyDict_SetItemString ((PyObject*) dict, (char*) key, (PyObject*) val))
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static gboolean
+dict_del_item (MooPyObject *dict,
+               const char  *key)
+{
+    g_return_val_if_fail (dict != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    if (PyDict_DelItemString ((PyObject*) dict, (char*) key))
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+static MooPyObject *
+get_script_dict (const char *name)
+{
+    PyObject *dict, *builtins;
+
+    builtins = PyImport_ImportModule ((char*) "__builtin__");
+    g_return_val_if_fail (builtins != NULL, NULL);
+
+    dict = PyDict_New ();
+    PyDict_SetItemString (dict, (char*) "__builtins__", builtins);
+
+    if (name)
+    {
+        PyObject *py_name = PyString_FromString (name);
+        PyDict_SetItemString (dict, (char*) "__name__", py_name);
+        Py_XDECREF (py_name);
+    }
+
+    Py_XDECREF (builtins);
+    return (MooPyObject*) dict;
+}
+
+
 static gboolean
 moo_python_api_init (void)
 {
     static MooPyAPI api = {
         incref, decref, err_print,
-        run_string, run_file
+        run_simple_string, run_string, run_file,
+        py_object_from_gobject,
+        get_script_dict,
+        dict_get_item, dict_set_item, dict_del_item
     };
 
     g_return_val_if_fail (!moo_python_running(), FALSE);

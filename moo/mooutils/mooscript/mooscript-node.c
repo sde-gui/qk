@@ -978,26 +978,7 @@ static MSValue *
 ms_node_python_eval (MSNode    *node_,
                      MSContext *ctx)
 {
-    MSNodePython *node = MS_NODE_PYTHON (node_);
-    MooPyObject *ret;
-
-    if (!moo_python_running())
-        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                        "Python support not available");
-
-    ret = moo_python_run_string (node->script);
-
-    if (ret)
-    {
-        moo_Py_DECREF (ret);
-        return ms_value_none ();
-    }
-    else
-    {
-        moo_PyErr_Print ();
-        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                        "python script raised exception");
-    }
+    return ms_context_run_python (ctx, MS_NODE_PYTHON(node_)->script);
 }
 
 

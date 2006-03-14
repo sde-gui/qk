@@ -101,27 +101,13 @@ python_func (MSValue    *arg,
              MSContext  *ctx)
 {
     char *script;
-    MooPyObject *ret;
-
-    if (!moo_python_running())
-        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                        "Python support not available");
+    MSValue *ret;
 
     script = ms_value_print (arg);
-    ret = moo_python_run_string (script);
-    g_free (script);
+    ret = ms_context_run_python (ctx, script);
 
-    if (ret)
-    {
-        moo_Py_DECREF (ret);
-        return ms_value_none ();
-    }
-    else
-    {
-        moo_PyErr_Print ();
-        return ms_context_format_error (ctx, MS_ERROR_RUNTIME,
-                                        "python script raised exception");
-    }
+    g_free (script);
+    return ret;
 }
 
 
