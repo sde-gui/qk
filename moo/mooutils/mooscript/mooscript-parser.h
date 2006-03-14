@@ -21,7 +21,14 @@
 G_BEGIN_DECLS
 
 
-MSNode  *ms_script_parse    (const char *string);
+typedef enum {
+    MS_SCRIPT_COMPLETE,
+    MS_SCRIPT_INCOMPLETE,
+    MS_SCRIPT_ERROR
+} MSScriptCheckResult;
+
+MSNode              *ms_script_parse    (const char *string);
+MSScriptCheckResult  ms_script_check    (const char *string);
 
 
 G_END_DECLS

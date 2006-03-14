@@ -481,6 +481,107 @@ ms_script_parse (const char *string)
 }
 
 
+#define HEAD        (stack ? GPOINTER_TO_INT (stack->data) : 0)
+#define PUSH(tok)   stack = g_slist_prepend (stack, GINT_TO_POINTER (tok))
+#define POP()       stack = g_slist_delete_link (stack, stack)
+
+MSScriptCheckResult
+ms_script_check (const char *string)
+{
+    MSParser *parser;
+    MSScriptCheckResult ret;
+    GSList *stack;
+    gboolean semicolon;
+
+    g_return_val_if_fail (string != NULL, MS_SCRIPT_ERROR);
+
+    if (!string[0])
+        return MS_SCRIPT_INCOMPLETE;
+
+    ms_type_init ();
+    parser = ms_parser_new ();
+    parser->lex = ms_lex_new (string, -1);
+
+    ret = MS_SCRIPT_ERROR;
+    stack = NULL;
+
+    while (TRUE)
+    {
+        int token = _ms_script_yylex (parser);
+
+        switch (token)
+        {
+            case 0:
+                if (!HEAD && semicolon)
+                    ret = MS_SCRIPT_COMPLETE;
+                else
+                    ret = MS_SCRIPT_INCOMPLETE;
+                goto out;
+
+            case IF:
+                PUSH (IF);
+                semicolon = FALSE;
+                break;
+
+            case FI:
+                if (HEAD != IF)
+                    goto out;
+                POP ();
+                semicolon = FALSE;
+                break;
+
+            case WHILE:
+                if (HEAD == DO)
+                    POP ();
+                else
+                    PUSH (WHILE);
+                semicolon = FALSE;
+                break;
+
+            case DO:
+                switch (HEAD)
+                {
+                    case 0:
+                        PUSH (DO);
+                        break;
+                    case WHILE:
+                    case FOR:
+                        break;
+                    default:
+                        goto out;
+                }
+                semicolon = FALSE;
+                break;
+
+            case OD:
+                switch (HEAD)
+                {
+                    case WHILE:
+                    case FOR:
+                        POP ();
+                        break;
+                    default:
+                        goto out;
+                }
+                semicolon = FALSE;
+                break;
+
+            case ';':
+                semicolon = TRUE;
+                break;
+
+            default:
+                semicolon = FALSE;
+        }
+    }
+
+out:
+    g_slist_free (stack);
+    ms_parser_free (parser);
+    return ret;
+}
+
+
 void
 _ms_parser_add_node (MSParser   *parser,
                      gpointer    node)

@@ -49,6 +49,33 @@ static int run_interactive (void)
             return 0;
         }
 
+        if (ms_script_check (line) == MS_SCRIPT_INCOMPLETE)
+        {
+            GString *input = g_string_new (line);
+            free (line);
+
+            while (TRUE)
+            {
+                line = readline ("... ");
+
+                if (!line)
+                {
+                    g_print ("\n");
+                    return 0;
+                }
+
+                g_string_append (input, " ");
+                g_string_append (input, line);
+                free (line);
+
+                if (ms_script_check (input->str) != MS_SCRIPT_INCOMPLETE)
+                {
+                    line = g_string_free (input, FALSE);
+                    break;
+                }
+            }
+        }
+
         node = ms_script_parse (line);
         add_history (line);
         free (line);
