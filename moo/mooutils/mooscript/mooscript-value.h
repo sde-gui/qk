@@ -116,8 +116,15 @@ MSValue     *ms_value_bool              (gboolean        val);
 
 gboolean     ms_value_is_none           (MSValue        *value);
 
+char        *ms_printf                  (const char     *format,
+                                         ...) G_GNUC_PRINTF (1, 2);
+char        *ms_vaprintf                (const char     *format,
+                                         va_list         args);
+
 MSValue     *ms_value_int               (int             val);
 MSValue     *ms_value_string            (const char     *string);
+MSValue     *ms_value_string_printf     (const char     *format,
+                                         ...) G_GNUC_PRINTF (1, 2);
 MSValue     *ms_value_string_len        (const char     *string,
                                          int             chars);
 MSValue     *ms_value_take_string       (char           *string);

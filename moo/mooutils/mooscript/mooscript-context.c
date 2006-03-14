@@ -355,19 +355,6 @@ ms_context_set_error (MSContext  *ctx,
 }
 
 
-static void
-ms_context_format_error_valist (MSContext  *ctx,
-                                MSError     error,
-                                const char *format,
-                                va_list     args)
-{
-    char *buffer = NULL;
-    g_vasprintf (&buffer, format, args);
-    ms_context_set_error (ctx, error, buffer);
-    g_free (buffer);
-}
-
-
 MSValue *
 ms_context_format_error (MSContext  *ctx,
                          MSError     error,
@@ -375,6 +362,7 @@ ms_context_format_error (MSContext  *ctx,
                          ...)
 {
     va_list args;
+    char *string;
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (!ctx->error && error, NULL);
@@ -387,8 +375,11 @@ ms_context_format_error (MSContext  *ctx,
     }
 
     va_start (args, format);
-    ms_context_format_error_valist (ctx, error, format, args);
+    string = ms_vaprintf (format, args);
     va_end (args);
+
+    ms_context_set_error (ctx, error, string);
+    g_free (string);
 
     return NULL;
 }

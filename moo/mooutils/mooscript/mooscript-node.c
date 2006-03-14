@@ -251,12 +251,10 @@ ms_node_function_eval (MSNode    *node_,
 
     if (!ms_value_is_func (func))
     {
-        char *str = ms_value_repr (func);
-        ms_value_unref (func);
         ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "object <%s> is not a function",
-                                 str);
-        g_free (str);
+                                 "object <%r> is not a function",
+                                 func);
+        ms_value_unref (func);
         return NULL;
     }
 
@@ -637,7 +635,8 @@ ms_node_for_eval (MSNode    *node,
 
     if (!MS_IS_NODE_VAR (loop->variable))
         return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal loop variable");
+                                        "illegal loop variable <%r>",
+                                        loop->variable);
 
     vallist = _ms_node_eval (loop->list, ctx);
 
@@ -646,7 +645,8 @@ ms_node_for_eval (MSNode    *node,
 
     if (MS_VALUE_TYPE (vallist) != MS_VALUE_LIST)
         return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal loop list");
+                                        "illegal loop list <%r>",
+                                        vallist);
 
     var = MS_NODE_VAR (loop->variable);
 
@@ -854,10 +854,12 @@ ms_node_val_range_eval (MSNodeValList *node,
 
     if (!ms_value_get_int (vfirst, &first) || !ms_value_get_int (vlast, &last))
     {
+        ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                 "illegal list bounds <%r> and <%r>",
+                                 vfirst, vlast);
         ms_value_unref (vfirst);
         ms_value_unref (vlast);
-        return ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                        "illegal list bounds");
+        return NULL;
     }
 
     ms_value_unref (vfirst);
@@ -1049,7 +1051,8 @@ ms_node_get_item_eval (MSNode    *node_,
         else
         {
             ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid dict key");
+                                     "invalid dict key <%r>",
+                                     key);
             goto error;
         }
     }
@@ -1057,7 +1060,8 @@ ms_node_get_item_eval (MSNode    *node_,
     if (!ms_value_get_int (key, &index))
     {
         ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "invalid list index");
+                                 "invalid list index <%r>",
+                                 key);
         goto error;
     }
 
@@ -1080,7 +1084,8 @@ ms_node_get_item_eval (MSNode    *node_,
 
         default:
             ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid subscript");
+                                     "<%r> is not subscriptable",
+                                     obj);
             goto error;
     }
 
@@ -1184,7 +1189,8 @@ ms_node_set_item_eval (MSNode    *node_,
         else
         {
             ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid dict key");
+                                     "invalid dict key <%r>",
+                                     key);
             goto error;
         }
     }
@@ -1192,7 +1198,7 @@ ms_node_set_item_eval (MSNode    *node_,
     if (!ms_value_get_int (key, &index))
     {
         ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                 "invalid list index");
+                                 "invalid list index <%r>", key);
         goto error;
     }
 
@@ -1211,7 +1217,8 @@ ms_node_set_item_eval (MSNode    *node_,
 
         default:
             ms_context_format_error (ctx, MS_ERROR_VALUE,
-                                     "invalid list assignment");
+                                     "invalid list assignment for <%r>",
+                                     obj);
             goto error;
     }
 
@@ -1455,7 +1462,8 @@ ms_node_dict_assign_eval (MSNode    *node_,
     if (MS_VALUE_TYPE (obj) != MS_VALUE_DICT)
     {
         ms_context_format_error (ctx, MS_ERROR_TYPE,
-                                 "not a dict object");
+                                 "<%r> is not a dict object",
+                                 obj);
         goto error;
     }
 

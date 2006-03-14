@@ -94,6 +94,20 @@ ms_value_string (const char *string)
     return ms_value_take_string (g_strdup (string));
 }
 
+MSValue *
+ms_value_string_printf (const char *format,
+                        ...)
+{
+    MSValue *value;
+    va_list args;
+
+    va_start (args, format);
+    value = ms_value_take_string (ms_vaprintf (format, args));
+    va_end (args);
+
+    return value;
+}
+
 
 MSValue *
 ms_value_string_len (const char *string,
@@ -1393,4 +1407,113 @@ ms_value_get_method (MSValue    *value,
         return ms_value_bound_meth (func, value);
     else
         return NULL;
+}
+
+
+char *
+ms_printf (const char     *format,
+           ...)
+{
+    char *string;
+    va_list args;
+
+    va_start (args, format);
+    string = ms_vaprintf (format, args);
+    va_end (args);
+
+    return string;
+}
+
+
+char *
+ms_vaprintf (const char *format,
+             va_list     args)
+{
+    GString *buffer;
+    char *arg_s;
+    int arg_i;
+    MSValue *arg_v;
+    char c;
+
+    buffer = g_string_new (NULL);
+
+    while ((c = *format++))
+    {
+        switch (c)
+        {
+            case '\\':
+                c = *format++;
+
+                switch (c)
+                {
+                    case 0:
+                        g_warning ("%s: trailing backslash", G_STRLOC);
+                        break;
+                    case '\\':
+                        g_string_append_c (buffer, '\\');
+                        break;
+                    case 'b':
+                        g_string_append_c (buffer, '\b');
+                        break;
+                    case 'r':
+                        g_string_append_c (buffer, '\r');
+                        break;
+                    case 'n':
+                        g_string_append_c (buffer, '\n');
+                        break;
+                    default:
+                        g_warning ("%s: unknown escaped symbol '%c'", G_STRLOC, c);
+                        break;
+                }
+
+                break;
+
+            case '%':
+                c = *format++;
+
+                switch (c)
+                {
+                    case 0:
+                        g_warning ("%s: trailing '%%'", G_STRLOC);
+                        break;
+                    case '%':
+                        g_string_append_c (buffer, '%');
+                        break;
+                    case 's':
+                        arg_s = va_arg (args, char*);
+                        g_string_append (buffer, arg_s);
+                        break;
+                    case 'c':
+                        arg_i = va_arg (args, int);
+                        g_string_append_c (buffer, arg_i);
+                        break;
+                    case 'd':
+                    case 'i':
+                        arg_i = va_arg (args, int);
+                        g_string_append_printf (buffer, "%d", arg_i);
+                        break;
+                    case 'v':
+                        arg_v = va_arg (args, MSValue*);
+                        arg_s = ms_value_print (arg_v);
+                        g_string_append (buffer, arg_s);
+                        g_free (arg_s);
+                        break;
+                    case 'r':
+                        arg_v = va_arg (args, MSValue*);
+                        arg_s = ms_value_repr (arg_v);
+                        g_string_append (buffer, arg_s);
+                        g_free (arg_s);
+                        break;
+                    default:
+                        g_warning ("%s: unknown format modifier %c", G_STRLOC, c);
+                }
+
+                break;
+
+            default:
+                g_string_append_c (buffer, c);
+        }
+    }
+
+    return g_string_free (buffer, FALSE);
 }
