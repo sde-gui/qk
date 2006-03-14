@@ -511,6 +511,9 @@ ms_script_check (const char *string)
 
         switch (token)
         {
+            case -1:
+                goto out;
+
             case 0:
                 if (!HEAD && semicolon)
                     ret = MS_SCRIPT_COMPLETE;
