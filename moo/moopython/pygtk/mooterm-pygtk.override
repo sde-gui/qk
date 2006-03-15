@@ -348,3 +348,22 @@ _wrap_moo_term_iter_tp_setattr (PyGBoxed *self, char *attr, PyObject *value)
     PyErr_Format (PyExc_AttributeError, "no attribute '%s'", attr);
     return -1;
 }
+%%
+override moo_term_get_selection_bounds noargs
+static PyObject *
+_wrap_moo_term_get_selection_bounds (PyGObject *self)
+{
+    MooTermIter start, end;
+
+    if (moo_term_get_selection_bounds (MOO_TERM (self->obj), &start, &end))
+    {
+        PyObject *tuple = PyTuple_New (2);
+        PyTuple_SET_ITEM (tuple, 0, pyg_boxed_new (MOO_TYPE_TERM_ITER, &start, TRUE, TRUE));
+        PyTuple_SET_ITEM (tuple, 1, pyg_boxed_new (MOO_TYPE_TERM_ITER, &end, TRUE, TRUE));
+        return tuple;
+    }
+    else
+    {
+        return_None;
+    }
+}

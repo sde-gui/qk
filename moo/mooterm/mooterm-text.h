@@ -43,6 +43,10 @@ guint        moo_term_get_line_count            (MooTerm            *term);
 MooTermLine *moo_term_get_line                  (MooTerm            *term,
                                                  guint               line_no);
 
+gboolean     moo_term_get_selection_bounds      (MooTerm            *term,
+                                                 MooTermIter        *start,
+                                                 MooTermIter        *end);
+
 void         moo_term_set_line_data             (MooTerm            *term,
                                                  MooTermLine        *line,
                                                  const char         *key,

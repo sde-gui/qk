@@ -399,7 +399,7 @@ _moo_term_button_press (GtkWidget      *widget,
 #if 0
             /* TODO: implement drag'n'drop */
             /* if clicked in selected, start drag */
-            if (_moo_term_get_selection_bounds (term, &sel_start, &sel_end))
+            if (moo_term_get_selection_bounds (term, &sel_start, &sel_end))
             {
                 moo_term_iter_order (&sel_start, &sel_end);
                 if (_moo_term_iter_in_range (&iter, &sel_start, &sel_end)
@@ -438,7 +438,7 @@ _moo_term_button_press (GtkWidget      *widget,
     {
         MooTermIter bound;
 
-        if (_moo_term_get_selection_bounds (term, NULL, NULL))
+        if (moo_term_get_selection_bounds (term, NULL, NULL))
         {
             /* it may happen sometimes, if you click fast enough */
             _moo_term_select_range (term, &iter, &iter);
@@ -864,11 +864,15 @@ moo_term_get_iter_at_pos (MooTerm            *term,
 
 
 gboolean
-_moo_term_get_selection_bounds (MooTerm            *term,
-                                MooTermIter        *sel_start,
-                                MooTermIter        *sel_end)
+moo_term_get_selection_bounds (MooTerm            *term,
+                               MooTermIter        *sel_start,
+                               MooTermIter        *sel_end)
 {
     Segment *selection = term->priv->selection;
+
+    g_return_val_if_fail (MOO_IS_TERM (term), FALSE);
+
+    selection = term->priv->selection;
 
     if (sel_start)
         *sel_start = selection->start;
@@ -958,7 +962,7 @@ _moo_term_cell_selected (MooTerm    *term,
 {
     MooTermIter start, end, iter;
 
-    if (_moo_term_get_selection_bounds (term, &start, &end))
+    if (moo_term_get_selection_bounds (term, &start, &end))
     {
         _moo_term_iter_order  (&start, &end);
         FILL_ITER (&iter, term, row, col);

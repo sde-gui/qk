@@ -369,6 +369,15 @@
   )
 )
 
+(define-method get_selection_bounds
+  (of-object "MooTerm")
+  (c-name "moo_term_get_selection_bounds")
+  (return-type "gboolean")
+  (parameters
+    '("MooTermIter*" "start")
+    '("MooTermIter*" "end")
+  )
+)
 
 
 ;; From mooterm.h

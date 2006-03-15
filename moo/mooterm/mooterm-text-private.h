@@ -22,9 +22,6 @@
 #include "mooedit/mootextview.h"
 
 
-gboolean    _moo_term_get_selection_bounds  (MooTerm            *term,
-                                             MooTermIter        *sel_start,
-                                             MooTermIter        *sel_end);
 void        _moo_term_iter_order            (MooTermIter        *first,
                                              MooTermIter        *second);
 gboolean    _moo_term_iter_in_range         (const MooTermIter  *iter,
