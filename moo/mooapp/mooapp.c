@@ -118,6 +118,7 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          guint               len);
 static MSContext *moo_app_get_context_real (MooApp          *app,
                                          MooWindow          *window);
+static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
 static void     moo_app_set_name        (MooApp             *app,
                                          const char         *short_name,
@@ -208,7 +209,7 @@ moo_app_class_init (MooAppClass *klass)
     klass->run = moo_app_run_real;
     klass->quit = moo_app_quit_real;
     klass->try_quit = moo_app_try_quit_real;
-    klass->prefs_dialog = _moo_app_create_prefs_dialog;
+    klass->prefs_dialog = moo_app_create_prefs_dialog;
     klass->exec_cmd = moo_app_exec_cmd_real;
     klass->get_context = moo_app_get_context_real;
 
@@ -1703,4 +1704,43 @@ moo_app_get_context_real (G_GNUC_UNUSED MooApp *app,
         moo_edit_window_setup_context (MOO_EDIT_WINDOW (window), ctx);
 
     return ctx;
+}
+
+
+void
+moo_app_prefs_dialog (GtkWidget *parent)
+{
+    MooApp *app;
+    GtkWidget *dialog;
+
+    app = moo_app_get_instance ();
+    dialog = MOO_APP_GET_CLASS(app)->prefs_dialog (app);
+    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
+
+    moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), parent);
+}
+
+
+static GtkWidget *
+moo_app_create_prefs_dialog (MooApp *app)
+{
+    char *title;
+    const MooAppInfo *info;
+    MooPrefsDialog *dialog;
+
+    info = moo_app_get_info (app);
+    title = g_strdup_printf ("%s Preferences", info->full_name);
+    dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
+    g_free (title);
+
+#ifdef MOO_BUILD_TERM
+//     moo_prefs_dialog_append_page (dialog, moo_term_prefs_page_new ());
+#endif
+
+#ifdef MOO_BUILD_EDIT
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
+    _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
+#endif
+
+    return GTK_WIDGET (dialog);
 }
