@@ -841,7 +841,6 @@
   (parameters
     '("const-char*" "file")
     '("const-char*" "root")
-    '("const-char*" "unused")
   )
 )
 
@@ -852,7 +851,6 @@
     '("const-char*" "buffer")
     '("int" "size")
     '("const-char*" "root")
-    '("const-char*" "unused")
   )
 )
 

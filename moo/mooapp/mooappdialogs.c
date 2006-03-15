@@ -86,7 +86,7 @@ show_license (void)
         return;
     }
 
-    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license");
 
     license_dialog = moo_glade_xml_get_widget (xml, "license");
     g_return_if_fail (license_dialog != NULL);

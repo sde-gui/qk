@@ -942,8 +942,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
     buffer = gtk_text_view_get_buffer (view);
     line_count = gtk_text_buffer_get_line_count (buffer);
 
-    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI,
-                                      -1, NULL, NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_TEXT_GOTO_LINE_GLADE_UI, -1, NULL);
     g_return_if_fail (xml != NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

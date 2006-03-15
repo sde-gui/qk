@@ -1044,8 +1044,7 @@ moo_accel_prefs_dialog_new (MooActionGroup *group)
     GtkWidget *page, *dialog, *page_holder;
     MooGladeXML *xml;
 
-    xml = moo_glade_xml_new_from_buf (MOO_SHORTCUTS_PREFS_GLADE_UI,
-                                      -1, "dialog", NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_SHORTCUTS_PREFS_GLADE_UI, -1, "dialog");
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");

@@ -1786,8 +1786,7 @@ moo_glade_xml_parse_memory (MooGladeXML    *xml,
 
 MooGladeXML*
 moo_glade_xml_new (const char     *file,
-                   const char     *root,
-                   G_GNUC_UNUSED const char *unused)
+                   const char     *root)
 {
     MooGladeXML *xml;
 
@@ -1808,8 +1807,7 @@ moo_glade_xml_new (const char     *file,
 MooGladeXML*
 moo_glade_xml_new_from_buf (const char     *buffer,
                             int             size,
-                            const char     *root,
-                            G_GNUC_UNUSED const char *unused)
+                            const char     *root)
 {
     MooGladeXML *xml;
 

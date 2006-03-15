@@ -381,8 +381,7 @@ moo_edit_save_multiple_changes_dialog (GSList  *docs,
     for (l = docs; l != NULL; l = l->next)
         g_return_val_if_fail (MOO_IS_EDIT (l->data), MOO_EDIT_RESPONSE_CANCEL);
 
-    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1,
-                                      "dialog", NULL);
+    xml = moo_glade_xml_new_from_buf (MOO_EDIT_SAVE_MULTIPLE_GLADE_UI, -1, "dialog");
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
     moo_position_window (dialog, docs->data, FALSE, FALSE, 0, 0);
@@ -743,7 +742,7 @@ moo_text_prompt_on_replace_dialog (GtkWidget *parent)
     MooGladeXML *xml;
 
     xml = moo_glade_xml_new_from_buf (MOO_TEXT_FIND_GLADE_UI, -1,
-                                      "prompt_on_replace_dialog", NULL);
+                                      "prompt_on_replace_dialog");
     dialog = moo_glade_xml_get_widget (xml, "prompt_on_replace_dialog");
     g_object_unref (xml);
 
