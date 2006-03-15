@@ -20,6 +20,7 @@
 #include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <string.h>
 
 #ifdef MOO_USE_XML
@@ -191,6 +192,20 @@ show_system_info (void)
 static const char *copyright = COPYRIGHT_SYMBOL " 2004-2006 Yevgen Muntyan";
 
 
+static gboolean
+about_dialog_key_press (GtkWidget   *dialog,
+                        GdkEventKey *event)
+{
+    if (event->keyval == GDK_Escape)
+    {
+        gtk_widget_hide (dialog);
+        return TRUE;
+    }
+
+    return TRUE;
+}
+
+
 static GtkWidget *
 create_about_dialog (void)
 {
@@ -208,6 +223,7 @@ create_about_dialog (void)
     g_return_val_if_fail (xml != NULL, NULL);
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
+    g_signal_connect (dialog, "key-press-event", G_CALLBACK (about_dialog_key_press), NULL);
 
     title = g_strdup_printf ("About %s", info->full_name);
     gtk_window_set_title (GTK_WINDOW (dialog), title);
