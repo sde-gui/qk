@@ -1,0 +1,26 @@
+2006-03-15  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.3 ===
+
+    Added customizable menus, with user-defined actions using MooScript.
+
+    MooApp:
+        Fixed input pipe eating all cpu time.
+        Use recursive g_remove on windows for removing directories, to avoid
+        shell api asking user if he wants t remove temporary directory.
+        Custom About dialog.
+
+    MooEdit:
+        Reenabled force-tag-redraw hack in highlighter, due to GTK bug.
+        Fixed unreal slowness of highlighting matching brackets.
+
+    MooTerm:
+        Made moo_term_get_selection_bounds() public.
+
+    MooFileView:
+        Unbroke get_parent_folder
+
+    Python module:
+        Made moo module behave like a package.
+        Made atributes of TermIter and TermTextAttr writable.
+        Added file-like objects which use g_print* for sys.stdout and sys.stderr.
