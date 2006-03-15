@@ -22,6 +22,7 @@
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moolinklabel.h"
 #include <gtk/gtk.h>
 
 
@@ -84,7 +85,7 @@ static void dialog_destroyed (void)
 }
 
 
-#if GTK_CHECK_VERSION(2,6,0)
+#if !GTK_CHECK_VERSION(2,6,0)
 
 static void open_link (G_GNUC_UNUSED GtkAboutDialog *about,
                        const gchar *link,
@@ -160,11 +161,70 @@ void             moo_app_about_dialog           (GtkWidget  *parent)
 #include "mooapp/mooappabout-glade.h"
 #include "mooutils/mooglade.h"
 
+static GtkWidget *
+create_about_dialog (void)
+{
+    MooGladeXML *xml;
+    GtkWidget *dialog, *logo;
+    const MooAppInfo *info;
+    char *markup, *title;
+    GtkLabel *label;
+    MooLinkLabel *url;
+
+    info = moo_app_get_info (moo_app_get_instance());
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "url", MOO_TYPE_LINK_LABEL);
+    moo_glade_xml_parse_memory (xml, MOO_APP_ABOUT_GLADE_UI, -1, "dialog");
+    g_return_val_if_fail (xml != NULL, NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
+
+    title = g_strdup_printf ("About %s", info->full_name);
+    gtk_window_set_title (GTK_WINDOW (dialog), title);
+
+    g_object_set_data (G_OBJECT (moo_app_get_instance()),
+                       "moo-app-about-dialog",
+                       dialog);
+    g_signal_connect (dialog, "delete-event",
+                      G_CALLBACK (gtk_widget_hide_on_delete),
+                      NULL);
+    g_signal_connect (dialog, "destroy",
+                      G_CALLBACK (dialog_destroyed),
+                      NULL);
+
+    label = moo_glade_xml_get_widget (xml, "name");
+    markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s-%s</b></span>",
+                              info->full_name, info->version);
+    gtk_label_set_markup (label, markup);
+    g_free (markup);
+
+    label = moo_glade_xml_get_widget (xml, "description");
+    gtk_label_set_text (label, info->description);
+
+    label = moo_glade_xml_get_widget (xml, "copyright");
+    markup = g_strdup_printf ("<small>%s</small>", copyright);
+    gtk_label_set_markup (label, markup);
+    g_free (markup);
+
+    url = moo_glade_xml_get_widget (xml, "url");
+    moo_link_label_set_url (url, info->website);
+    moo_link_label_set_text (url, info->website_label);
+
+    logo = moo_glade_xml_get_widget (xml, "logo");
+    gtk_image_set_from_stock (GTK_IMAGE (logo), MOO_STOCK_APP,
+                              GTK_ICON_SIZE_DIALOG);
+
+    g_free (title);
+    g_object_unref (xml);
+
+    return dialog;
+}
+
+
 void moo_app_about_dialog (GtkWidget *parent)
 {
     GtkWindow *parent_window = NULL;
     GtkWidget *dialog;
-    MooGladeXML *xml;
 
     if (parent)
         parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
@@ -173,50 +233,7 @@ void moo_app_about_dialog (GtkWidget *parent)
                                 "moo-app-about-dialog");
 
     if (!dialog)
-    {
-        const MooAppInfo *info;
-        char *name_markup, *copyright_markup, *title;
-        GtkLabel *name_label, *copyright_label;
-        GtkWidget *dialog, *logo;
-
-        info = moo_app_get_info (moo_app_get_instance());
-
-        xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI,
-                                          -1, "dialog", NULL);
-        g_return_if_fail (xml != NULL);
-
-        dialog = moo_glade_xml_get_widget (xml, "dialog");
-
-        title = g_strdup_printf ("About %s", info->full_name);
-        gtk_window_set_title (GTK_WINDOW (dialog), title);
-
-        g_object_set_data (G_OBJECT (moo_app_get_instance()),
-                           "moo-app-about-dialog",
-                           dialog);
-        g_signal_connect (dialog, "delete-event",
-                          G_CALLBACK (gtk_widget_hide_on_delete),
-                          NULL);
-        g_signal_connect (dialog, "destroy",
-                          G_CALLBACK (dialog_destroyed),
-                          NULL);
-
-        name_label = moo_glade_xml_get_widget (xml, "name_label");
-        name_markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s</b></span>",
-                                       info->full_name);
-        gtk_label_set_markup (name_label, name_markup);
-
-        copyright_label = moo_glade_xml_get_widget (xml, "copyright_label");
-        copyright_markup = g_strdup_printf ("<small>%s</small>", copyright);
-        gtk_label_set_markup (copyright_label, copyright_markup);
-
-        logo = moo_glade_xml_get_widget (xml, "logo");
-        gtk_image_set_from_stock (GTK_IMAGE (logo), MOO_STOCK_APP, GTK_ICON_SIZE_DIALOG);
-
-        g_free (name_markup);
-        g_free (copyright_markup);
-        g_free (title);
-        moo_glade_xml_unref (xml);
-    }
+        dialog = create_about_dialog ();
 
     show_about_dialog (dialog, parent_window);
 }

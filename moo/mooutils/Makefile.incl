@@ -21,6 +21,7 @@ mooutils_include_headers =                     \
     $(mooutils)/mooglade.h                     \
     $(mooutils)/moohistoryentry.h              \
     $(mooutils)/moohistorylist.h               \
+    $(mooutils)/moolinklabel.h                 \
     $(mooutils)/moomarkup.h                    \
     $(mooutils)/moomenuaction.h                \
     $(mooutils)/moomenumgr.h                   \
@@ -62,6 +63,7 @@ mooutils_sources =                             \
     $(mooutils)/mooglade.c                     \
     $(mooutils)/moohistoryentry.c              \
     $(mooutils)/moohistorylist.c               \
+    $(mooutils)/moolinklabel.c                 \
     $(mooutils)/moologwindow-glade.h           \
     $(mooutils)/moomarkup.c                    \
     $(mooutils)/moomenuaction.c                \
