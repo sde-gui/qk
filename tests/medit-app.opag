@@ -31,9 +31,7 @@ int _medit_parse_options (const char *const program_name,
  */
 %%
 n  new-app      "Run new instance of application"
-#ifdef __WIN32__
 l  log          "[=FILE] Show debug output or write it to FILE" optarg
-#endif
    version      "Display version information and exit"          return
 h  help         "Display this help text and exit"               return
 %%
@@ -47,9 +45,7 @@ static void usage (void)
     g_print ("Options:\n");
 
     g_print ("%s", STR_HELP_NEW_APP);
-#ifdef __WIN32__
     g_print ("%s", STR_HELP_LOG);
-#endif
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
 }
@@ -88,7 +84,6 @@ int main (int argc, char *argv[])
         return 0;
     }
 
-#ifdef __WIN32__
     if (_medit_opt_log)
     {
         if (_medit_arg_log)
@@ -96,7 +91,6 @@ int main (int argc, char *argv[])
         else
             moo_set_log_func_window (TRUE);
     }
-#endif
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
@@ -105,9 +99,8 @@ int main (int argc, char *argv[])
                         "description", "medit is a text editor",
                         "open-files", argv + opt_remain,
                         "new-app", (gboolean) _medit_opt_new_app,
+                        "default-ui", MEDIT_UI,
                         NULL);
-
-    moo_app_set_default_ui (app, MEDIT_UI);
 
     if (!moo_app_init (app))
         return 0;

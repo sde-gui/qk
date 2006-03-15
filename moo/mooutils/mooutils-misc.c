@@ -16,6 +16,8 @@
 #endif
 
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moologwindow-glade.h"
+#include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
 #include <unistd.h>
 #include <string.h>
@@ -786,7 +788,7 @@ moo_get_toplevel_window (void)
 
 
 /***************************************************************************/
-/* Custom log handlers
+/* Log window
  */
 
 typedef struct {
@@ -807,42 +809,22 @@ static GtkWidget    *moo_log_window_get_widget  (void);
 static MooLogWindow*
 moo_log_window_new (void)
 {
+    MooGladeXML *xml;
     MooLogWindow *log;
-    GtkWidget *vbox, *scrolledwindow;
     PangoFontDescription *font;
 
+    xml = moo_glade_xml_new_from_buf (MOO_LOG_WINDOW_GLADE_UI, -1, NULL, NULL);
     log = g_new (MooLogWindow, 1);
 
-    log->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (log->window), "Log Window");
-    gtk_window_set_default_size (GTK_WINDOW (log->window), 400, 300);
-
-    vbox = gtk_vbox_new (FALSE, 0);
-    gtk_widget_show (vbox);
-    gtk_container_add (GTK_CONTAINER (log->window), vbox);
-
-    scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-    gtk_widget_show (scrolledwindow);
-    gtk_box_pack_start (GTK_BOX (vbox), scrolledwindow, TRUE, TRUE, 0);
-    GTK_WIDGET_UNSET_FLAGS (scrolledwindow, GTK_CAN_FOCUS);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow),
-                                    GTK_POLICY_AUTOMATIC,
-                                    GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
-                                         GTK_SHADOW_ETCHED_IN);
-
-    log->textview = GTK_TEXT_VIEW (gtk_text_view_new ());
-    gtk_widget_show (GTK_WIDGET (log->textview));
-    gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (log->textview));
-    GTK_WIDGET_UNSET_FLAGS (GTK_WIDGET (log->textview), GTK_CAN_FOCUS);
-    gtk_text_view_set_editable (log->textview, FALSE);
-    gtk_text_view_set_wrap_mode (log->textview, GTK_WRAP_WORD);
+    log->window = moo_glade_xml_get_widget (xml, "window");
+    log->textview = moo_glade_xml_get_widget (xml, "textview");
 
     g_signal_connect (log->window, "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
     log->buf = gtk_text_view_get_buffer (log->textview);
     log->insert = gtk_text_buffer_get_insert (log->buf);
+
     log->message_tag =
             gtk_text_buffer_create_tag (log->buf, "message", "foreground", "blue", NULL);
     log->warning_tag =
@@ -851,7 +833,7 @@ moo_log_window_new (void)
             gtk_text_buffer_create_tag (log->buf, "critical", "foreground", "red",
                                         "weight", PANGO_WEIGHT_BOLD, NULL);
 
-    font = pango_font_description_from_string ("Courier New 9");
+    font = pango_font_description_from_string ("Monospace");
 
     if (font)
     {
@@ -863,47 +845,17 @@ moo_log_window_new (void)
 }
 
 
-void
-moo_log_window_write (const gchar    *log_domain,
-                      GLogLevelFlags  flags,
-                      const gchar    *message)
-{
-    char *text;
-    GtkTextTag *tag = NULL;
-    GtkTextIter end;
-    MooLogWindow *log = moo_log_window ();
-
-#ifdef __WIN32__
-    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
-    {
-        moo_show_fatal_error (log_domain, message);
-        return;
-    }
-#endif /* __WIN32__ */
-
-    if (log_domain)
-        text = g_strdup_printf ("%s: %s\n", log_domain, message);
-    else
-        text = g_strdup_printf ("%s\n", message);
-
-    if (flags >= G_LOG_LEVEL_MESSAGE)
-        tag = log->message_tag;
-    else if (flags >= G_LOG_LEVEL_WARNING)
-        tag = log->warning_tag;
-    else
-        tag = log->critical_tag;
-
-    gtk_text_buffer_get_end_iter (log->buf, &end);
-    gtk_text_buffer_insert_with_tags (log->buf, &end, text, -1, tag, NULL);
-    gtk_text_view_scroll_mark_onscreen (log->textview, log->insert);
-}
-
-
 static MooLogWindow*
 moo_log_window (void)
 {
     static MooLogWindow *log = NULL;
-    if (!log) log = moo_log_window_new ();
+
+    if (!log)
+    {
+        log = moo_log_window_new ();
+        g_object_add_weak_pointer (G_OBJECT (log->window), (gpointer*) &log);
+    }
+
     return log;
 }
 
@@ -929,71 +881,203 @@ moo_log_window_hide (void)
 }
 
 
-/****************************************************************************/
+static void
+moo_log_window_insert (MooLogWindow *log,
+                       const char   *text,
+                       GtkTextTag   *tag)
+{
+    GtkTextIter iter;
+    gtk_text_buffer_get_end_iter (log->buf, &iter);
+    gtk_text_buffer_insert_with_tags (log->buf, &iter, text, -1, tag, NULL);
+    gtk_text_view_scroll_mark_onscreen (log->textview, log->insert);
+}
+
+
+/******************************************************************************/
+/* Custom g_log and g_print handlers
+ */
+
+static GLogFunc moo_log_func;
+static GPrintFunc moo_print_func;
+static GPrintFunc moo_printerr_func;
+static char *moo_log_file;
+static gboolean moo_log_file_written;
+static gboolean moo_log_handlers_set;
+
+
+static void
+set_print_funcs (GLogFunc   log_func,
+                 GPrintFunc print_func,
+                 GPrintFunc printerr_func)
+{
+    moo_log_func = log_func;
+    moo_print_func = print_func;
+    moo_printerr_func = printerr_func;
+    moo_log_handlers_set = TRUE;
+
+    g_set_print_handler (print_func);
+    g_set_printerr_handler (printerr_func);
+
+    g_log_set_handler ("Glib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Glib-GObject", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("GModule", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("GThread", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Gdk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Gdk-Pixbuf-CSource", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("GdkPixbuf", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Pango", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler ("Moo", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+    g_log_set_handler (NULL, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+#if GLIB_CHECK_VERSION(2,6,0)
+    g_log_set_default_handler (log_func, NULL);
+#endif /* GLIB_CHECK_VERSION(2,6,0) */
+}
+
+
+void
+moo_reset_log_func (void)
+{
+    if (moo_log_handlers_set)
+        set_print_funcs (moo_log_func, moo_print_func, moo_printerr_func);
+}
+
+
+void
+moo_print (const char *string)
+{
+    g_print ("%s", string);
+}
+
+void
+moo_print_err (const char *string)
+{
+    g_printerr ("%s", string);
+}
+
+
+/*
+ * Win32 message box for fatal errors
+ */
+
+#ifdef __WIN32__
 
 #define PLEASE_REPORT \
     "Please report it to emuntyan@sourceforge.net and provide "\
     "steps needed to reproduce this error."
 
-#ifdef __WIN32__
-void
-moo_show_fatal_error (const char *logdomain, const char *logmsg)
+static void
+show_fatal_error_win32 (const char *domain,
+                        const char *logmsg)
 {
     char *msg = NULL;
 
-    if (logdomain)
+    if (domain)
         msg = g_strdup_printf ("Fatal GGAP error:\n---\n%s: %s\n---\n"
-                PLEASE_REPORT, logdomain, logmsg);
+                PLEASE_REPORT, domain, logmsg);
     else
         msg = g_strdup_printf ("Fatal GGAP error:\n---\n%s\n---\n"
                 PLEASE_REPORT, logmsg);
 
-    MessageBox (NULL, msg, "Error", MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
+    MessageBox (NULL, msg, "Error",
+                MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
 
     g_free (msg);
 }
 #endif /* __WIN32__ */
 
 
-static void
-log_func_file (const char       *log_domain,
-               G_GNUC_UNUSED GLogLevelFlags flags,
-               const char       *message,
-               gpointer          filename)
-{
-    static gboolean firsttime = TRUE;
-    static char *name = NULL;
-    FILE *logfile;
+/*
+ * Display log messages in a window
+ */
 
-    g_return_if_fail (filename != NULL);
+static void
+log_func_window (const gchar    *log_domain,
+                 GLogLevelFlags  flags,
+                 const gchar    *message,
+                 G_GNUC_UNUSED gpointer dummy)
+{
+    char *text;
+    GtkTextTag *tag;
+    MooLogWindow *log;
 
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
-        moo_show_fatal_error (log_domain, message);
+        show_fatal_error_win32 (log_domain, message);
         return;
     }
 #endif /* __WIN32__ */
 
-    if (firsttime)
+    if (log_domain)
+        text = g_strdup_printf ("%s: %s\n", log_domain, message);
+    else
+        text = g_strdup_printf ("%s\n", message);
+
+    log = moo_log_window ();
+
+    if (flags >= G_LOG_LEVEL_MESSAGE)
+        tag = log->message_tag;
+    else if (flags >= G_LOG_LEVEL_WARNING)
+        tag = log->warning_tag;
+    else
+        tag = log->critical_tag;
+
+    moo_log_window_insert (log, text, tag);
+    g_free (text);
+}
+
+
+static void
+print_func_window (const char *string)
+{
+    MooLogWindow *log = moo_log_window ();
+    moo_log_window_insert (log, string, NULL);
+}
+
+static void
+printerr_func_window (const char *string)
+{
+    MooLogWindow *log = moo_log_window ();
+    moo_log_window_insert (log, string, log->warning_tag);
+}
+
+
+void
+moo_set_log_func_window (gboolean show_now)
+{
+    if (show_now)
+        gtk_widget_show (GTK_WIDGET (moo_log_window()->window));
+
+    set_print_funcs (log_func_window, print_func_window, printerr_func_window);
+}
+
+
+/*
+ * Write to a file
+ */
+
+static void
+print_func_file (const char *string)
+{
+    FILE *file;
+
+    g_return_if_fail (moo_log_file != NULL);
+
+    if (!moo_log_file_written)
     {
-        name = g_strdup ((char*)filename);
-        logfile = fopen (name, "w+");
-        firsttime = FALSE;
+        file = fopen (moo_log_file, "w+");
+        moo_log_file_written = TRUE;
     }
     else
     {
-        logfile = fopen (name, "a+");
+        file = fopen (moo_log_file, "a+");
     }
 
-    if (logfile)
+    if (file)
     {
-        if (log_domain)
-            fprintf (logfile, "%s: %s\r\n", log_domain, message);
-        else
-            fprintf (logfile, "%s\r\n", message);
-
-        fclose (logfile);
+        fprintf (file, "%s", string);
+        fclose (file);
     }
     else
     {
@@ -1001,6 +1085,51 @@ log_func_file (const char       *log_domain,
     }
 }
 
+
+static void
+log_func_file (const char       *log_domain,
+               G_GNUC_UNUSED GLogLevelFlags flags,
+               const char       *message,
+               G_GNUC_UNUSED gpointer dummy)
+{
+    char *string;
+
+#ifdef __WIN32__
+    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
+    {
+        show_fatal_error_win32 (log_domain, message);
+        return;
+    }
+#endif /* __WIN32__ */
+
+#ifdef __WIN32__
+#define LT "\r\n"
+#else
+#define LT "\n"
+#endif
+    if (log_domain)
+        string = g_strdup_printf ("%s: %s" LT, log_domain, message);
+    else
+        string = g_strdup_printf ("%s" LT, message);
+#undef LT
+
+    print_func_file (string);
+    g_free (string);
+}
+
+
+void
+moo_set_log_func_file (const char *log_file)
+{
+    g_free (moo_log_file);
+    moo_log_file = g_strdup (log_file);
+    set_print_funcs (log_func_file, print_func_file, print_func_file);
+}
+
+
+/*
+ * Do nothing
+ */
 
 static void
 log_func_silent (G_GNUC_UNUSED const gchar    *log_domain,
@@ -1011,71 +1140,29 @@ log_func_silent (G_GNUC_UNUSED const gchar    *log_domain,
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
-        moo_show_fatal_error (log_domain, message);
+        show_fatal_error_win32 (log_domain, message);
         return;
     }
 #endif /* __WIN32__ */
 }
 
-
-typedef void (*LogFunc) (const gchar    *log_domain,
-                         GLogLevelFlags  flags,
-                         const gchar    *message,
-                         gpointer        data);
-
-
 static void
-set_handler (LogFunc func, gpointer data)
+print_func_silent (G_GNUC_UNUSED const char *s)
 {
-#if !GLIB_CHECK_VERSION(2,6,0)
-    g_log_set_handler ("Glib",
-                       G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                       func, data);
-    g_log_set_handler ("Gtk",
-                       G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                       func, data);
-    g_log_set_handler ("Pango",
-                       G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                       func, data);
-    g_log_set_handler ("Moo",
-                       G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                       func, data);
-    g_log_set_handler (NULL,
-                       G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-                       func, data);
-#else /* GLIB_CHECK_VERSION(2,6,0) */
-    g_log_set_default_handler (func, data);
-#endif /* GLIB_CHECK_VERSION(2,6,0) */
-}
-
-
-void
-moo_set_log_func_window (int show)
-{
-    if (show)
-        moo_log_window_show ();
-    set_handler ((LogFunc)moo_log_window_write, NULL);
-}
-
-
-void
-moo_set_log_func_file (const char *log_file)
-{
-    g_return_if_fail (log_file != NULL);
-    set_handler (log_func_file, (char*)log_file);
 }
 
 void
-moo_set_log_func (int show_log)
+moo_set_log_func_silent (void)
 {
-    if (!show_log)
-        set_handler (log_func_silent, NULL);
-#ifdef __WIN32__
-    else
-        moo_set_log_func_window (FALSE);
-#endif /* __WIN32__ */
+    set_print_funcs ((GLogFunc) log_func_silent,
+                      (GPrintFunc) print_func_silent,
+                      (GPrintFunc) print_func_silent);
 }
 
+
+/***************************************************************************/
+/* Very useful function
+ */
 
 void
 moo_segfault (void)
@@ -1084,6 +1171,10 @@ moo_segfault (void)
     var[18] = 8;
 }
 
+
+/***************************************************************************/
+/* GtkSelection helpers
+ */
 
 void
 moo_selection_data_set_pointer (GtkSelectionData *data,
@@ -1112,6 +1203,10 @@ moo_selection_data_get_pointer (GtkSelectionData *data,
 }
 
 
+/***************************************************************************/
+/* Get currently pressed modifier keys
+ */
+
 GdkModifierType
 moo_get_modifiers (GtkWidget *widget)
 {
@@ -1129,6 +1224,10 @@ moo_get_modifiers (GtkWidget *widget)
     return mask;
 }
 
+
+/***************************************************************************/
+/* GtkAccelLabel helpers
+ */
 
 void
 moo_menu_item_set_accel_label (GtkWidget      *menu_item,

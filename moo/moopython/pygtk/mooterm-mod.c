@@ -17,6 +17,7 @@
 #include <glib.h>
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/pygtk/mooterm-mod.h"
+#include "moopython/moopython-utils.h"
 
 
 static char *moo_term_module_doc = (char*)"_moo_term module.";

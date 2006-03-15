@@ -27,6 +27,7 @@
 #include "mooedit/mooplugin-macro.h"
 
 #define PLUGIN_SUFFIX ".py"
+#define LIBDIR "lib"
 
 typedef struct _MooPyPluginData MooPyPluginData;
 
@@ -94,12 +95,6 @@ decref (MooPyObject *obj)
     {
         Py_DECREF ((PyObject*) obj);
     }
-}
-
-static void
-err_print (void)
-{
-    PyErr_Print ();
 }
 
 
@@ -182,6 +177,13 @@ get_script_dict (const char *name)
 }
 
 
+static void
+err_print (void)
+{
+    PyErr_Print ();
+}
+
+
 static gboolean
 moo_python_api_init (void)
 {
@@ -202,11 +204,21 @@ moo_python_api_init (void)
     }
 
     g_assert (moo_python_running ());
+
     Py_Initialize ();
+    moo_py_init_print_funcs ();
 
     main_mod = PyImport_AddModule ((char*)"__main__");
-    Py_XINCREF ((PyObject*) main_mod);
 
+    if (!main_mod)
+    {
+        g_warning ("%s: could not import __main__", G_STRLOC);
+        PyErr_Print ();
+        moo_python_init (MOO_PY_API_VERSION, NULL);
+        return FALSE;
+    }
+
+    Py_XINCREF ((PyObject*) main_mod);
     return TRUE;
 }
 
@@ -255,7 +267,7 @@ out:
 
 
 static void
-moo_python_plugin_read_dir (const char      *path)
+moo_python_plugin_read_dir (const char *path)
 {
     GDir *dir;
     const char *name;
@@ -289,10 +301,32 @@ moo_python_plugin_read_dir (const char      *path)
 
 
 static void
-moo_python_plugin_read_dirs ()
+moo_python_plugin_read_dirs (void)
 {
     char **d;
     char **dirs = moo_get_plugin_dirs ();
+    PyObject *sys = NULL, *path = NULL;
+
+    sys = PyImport_ImportModule ((char*) "sys");
+
+    if (sys)
+        path = PyObject_GetAttrString (sys, (char*) "path");
+
+    if (!path || !PyList_Check (path))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+    }
+    else
+    {
+        for (d = dirs; d && *d; ++d)
+        {
+            char *libdir = g_build_filename (*d, LIBDIR, NULL);
+            PyObject *s = PyString_FromString (libdir);
+            PyList_Append (path, s);
+            Py_XDECREF (s);
+            g_free (libdir);
+        }
+    }
 
     for (d = dirs; d && *d; ++d)
         moo_python_plugin_read_dir (*d);
@@ -310,6 +344,7 @@ _moo_python_plugin_init (void)
     if (!_moo_pygtk_init ())
     {
         PyErr_Print ();
+        moo_python_init (MOO_PY_API_VERSION, NULL);
         return FALSE;
     }
 

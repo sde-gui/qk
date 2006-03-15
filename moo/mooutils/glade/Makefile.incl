@@ -7,5 +7,4 @@ mooutils_glade = $(mooutils)/glade
 moo_extra_dist +=                             \
     $(mooutils_glade)/shortcutdialog.glade    \
     $(mooutils_glade)/shortcutsprefs.glade    \
-    $(mooutils_glade)/toolbar.sh              \
-    $(mooutils_glade)/support.sh
+    $(mooutils_glade)/moologwindow.glade

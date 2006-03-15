@@ -20,7 +20,7 @@ AC_DEFUN([MOO_AC_SET_DIRS],[
     AC_SUBST(MOO_DATA_DIR)
     AC_DEFINE_UNQUOTED(MOO_DATA_DIR, "${MOO_DATA_DIR}", [data dir])
 
-    MOO_LIB_DIR="${prefix}/${datadir}/$1"
+    MOO_LIB_DIR="${prefix}/${libdir}/$1"
     AC_SUBST(MOO_LIB_DIR)
     AC_DEFINE_UNQUOTED(MOO_LIB_DIR, "${MOO_LIB_DIR}", [lib dir])
 

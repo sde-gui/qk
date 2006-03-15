@@ -39,6 +39,10 @@ PyObject    *moo_string_slist_to_pyobject   (GSList         *list);
 PyObject    *moo_gvalue_to_pyobject         (const GValue   *val);
 
 
+char        *moo_py_err_string              (void);
+void         moo_py_init_print_funcs        (void);
+
+
 #define return_None     G_STMT_START {Py_INCREF(Py_None); return Py_None;} G_STMT_END
 #define return_Self     G_STMT_START {Py_INCREF((PyObject*)self); return (PyObject*)self;} G_STMT_END
 

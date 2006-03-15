@@ -149,7 +149,9 @@ ms_context_finalize (GObject *object)
 {
     MSContext *ctx = MS_CONTEXT (object);
 
-    moo_Py_DECREF (ctx->py_dict);
+    if (moo_python_running ())
+        moo_Py_DECREF (ctx->py_dict);
+
     g_hash_table_destroy (ctx->vars);
     g_free (ctx->error_msg);
 
@@ -545,6 +547,7 @@ ms_context_assign_py_var (MSContext  *ctx,
     g_return_if_fail (var != NULL);
     g_return_if_fail (obj != NULL);
     g_return_if_fail (ctx->py_dict != NULL);
+    g_return_if_fail (moo_python_running ());
     moo_py_dict_set_item (ctx->py_dict, var, obj);
 }
 

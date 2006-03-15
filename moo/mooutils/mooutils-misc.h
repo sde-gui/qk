@@ -46,18 +46,13 @@ gboolean    moo_window_set_icon_from_stock  (GtkWindow  *window,
 void        moo_log_window_show             (void);
 void        moo_log_window_hide             (void);
 
-void        moo_log_window_write            (const char *log_domain,
-                                             GLogLevelFlags flags,
-                                             const char *message);
+void        moo_print                       (const char     *string);
+void        moo_print_err                   (const char     *string);
 
-
-void        moo_set_log_func_window         (gboolean        show);
+void        moo_set_log_func_window         (gboolean        show_now);
 void        moo_set_log_func_file           (const char     *log_file);
-void        moo_set_log_func                (gboolean        show_log);
-#ifdef __WIN32__
-void        moo_show_fatal_error            (const char     *logdomain,
-                                             const char     *logmsg);
-#endif /* __WIN32__ */
+void        moo_set_log_func_silent         (void);
+void        moo_reset_log_func              (void);
 
 void        moo_segfault                    (void);
 

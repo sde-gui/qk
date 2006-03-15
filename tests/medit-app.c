@@ -75,10 +75,8 @@ int _medit_parse_options (const char *const program_name,
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
 
-#ifdef __WIN32__
 /* Set to 1 if option --log (-l) has been specified.  */
 char _medit_opt_log;
-#endif
 
 /* Set to 1 if option --version has been specified.  */
 char _medit_opt_version;
@@ -86,10 +84,8 @@ char _medit_opt_version;
 /* Set to 1 if option --help (-h) has been specified.  */
 char _medit_opt_help;
 
-#ifdef __WIN32__
 /* Argument to option --log (-l), or a null pointer if no argument.  */
 const char *_medit_arg_log;
-#endif
 
 /* Parse command line options.  Return index of first non-option argument,
    or -1 if an error is encountered.  */
@@ -100,14 +96,10 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
   static const char *const optstr__help = "help";
   int i = 0;
   _medit_opt_new_app = 0;
-#ifdef __WIN32__
   _medit_opt_log = 0;
-#endif
   _medit_opt_version = 0;
   _medit_opt_help = 0;
-#ifdef __WIN32__
   _medit_arg_log = 0;
-#endif
   while (++i < argc)
   {
     const char *option = argv [i];
@@ -143,14 +135,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'l':
-#ifdef __WIN32__
         if (strncmp (option + 1, "og", option_len - 1) == 0)
         {
           _medit_arg_log = argument;
           _medit_opt_log = 1;
           break;
         }
-#endif
         goto error_unknown_long_opt;
        case 'n':
         if (strncmp (option + 1, optstr__new_app + 1, option_len - 1) == 0)
@@ -192,7 +182,6 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
          case 'h':
           _medit_opt_help = 1;
           return i + 1;
-#ifdef __WIN32__
          case 'l':
           if (option [1] != '\0')
           {
@@ -203,7 +192,6 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
             _medit_arg_log = 0;
           _medit_opt_log = 1;
           break;
-#endif
          case 'n':
           _medit_opt_new_app = 1;
           break;
@@ -225,9 +213,7 @@ static void usage (void)
     g_print ("Options:\n");
 
     g_print ("%s", STR_HELP_NEW_APP);
-#ifdef __WIN32__
     g_print ("%s", STR_HELP_LOG);
-#endif
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
 }
@@ -266,7 +252,6 @@ int main (int argc, char *argv[])
         return 0;
     }
 
-#ifdef __WIN32__
     if (_medit_opt_log)
     {
         if (_medit_arg_log)
@@ -274,7 +259,6 @@ int main (int argc, char *argv[])
         else
             moo_set_log_func_window (TRUE);
     }
-#endif
 
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,

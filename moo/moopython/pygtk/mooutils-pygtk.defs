@@ -1063,21 +1063,11 @@
   (return-type "none")
 )
 
-(define-function log_window_write
-  (c-name "moo_log_window_write")
-  (return-type "none")
-  (parameters
-    '("const-gchar*" "log_domain")
-    '("GLogLevelFlags" "flags")
-    '("const-gchar*" "message")
-  )
-)
-
 (define-function set_log_func_window
   (c-name "moo_set_log_func_window")
   (return-type "none")
   (parameters
-    '("int" "show")
+    '("gboolean" "show_now")
   )
 )
 
@@ -1089,12 +1079,14 @@
   )
 )
 
-(define-function set_log_func
-  (c-name "moo_set_log_func")
+(define-function set_log_func_silent
+  (c-name "moo_set_log_func_silent")
   (return-type "none")
-  (parameters
-    '("int" "show_log")
-  )
+)
+
+(define-function reset_log_func
+  (c-name "moo_reset_log_func")
+  (return-type "none")
 )
 
 
