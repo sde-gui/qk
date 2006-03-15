@@ -22,6 +22,9 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
+#ifdef MOO_USE_XML
+#include <libxml/xmlversion.h>
+#endif
 
 static GtkWidget *about_dialog;
 static GtkWidget *license_dialog;
@@ -157,9 +160,22 @@ show_system_info (void)
                             GTK_MINOR_VERSION,
                             GTK_MICRO_VERSION);
 
+#ifdef MOO_USE_PYGTK
+    g_string_append (text, "Python support: yes\n");
     string = get_python_info ();
     g_string_append_printf (text, "Python: %s\n", string ? string : "None");
     g_free (string);
+#else
+    g_string_append (text, "Python support: no\n");
+#endif
+
+#ifdef MOO_USE_XML
+    g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
+#endif
+
+#ifdef MOO_USE_FAM
+    g_string_append_printf (text, "FAM support: yes\n");
+#endif
 
     gtk_text_buffer_set_text (buffer, text->str, -1);
     g_string_free (text, TRUE);
