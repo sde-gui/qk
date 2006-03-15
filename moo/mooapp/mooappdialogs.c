@@ -32,16 +32,17 @@ static GtkWidget *system_info_dialog;
 
 
 static void
-show_credits (GtkWidget *button)
+show_credits (void)
 {
     MooGladeXML *xml;
-    GtkWidget *toplevel;
     MooHtml *written_by;
 
     if (credits_dialog)
     {
+        if (about_dialog)
+            gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),
+                                          GTK_WINDOW (about_dialog));
         gtk_window_present (GTK_WINDOW (credits_dialog));
-        return;
     }
 
     xml = moo_glade_xml_new_empty ();
@@ -59,30 +60,51 @@ show_credits (GtkWidget *button)
                           "&lt;muntyan@math.tamu.edu&gt;</a>",
                           -1, NULL, NULL);
 
-    toplevel = gtk_widget_get_toplevel (button);
-
-    if (toplevel)
-        gtk_window_set_transient_for (GTK_WINDOW (credits_dialog), GTK_WINDOW (toplevel));
-
+    if (about_dialog)
+        gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),
+                                      GTK_WINDOW (about_dialog));
     gtk_window_present (GTK_WINDOW (credits_dialog));
+}
+
+
+static void
+show_license (void)
+{
+    MooGladeXML *xml;
+    GtkTextView *textview;
+
+    const char *gpl =
+#include "mooapp/gpl"
+    ;
+
+    if (license_dialog)
+    {
+        if (about_dialog)
+            gtk_window_set_transient_for (GTK_WINDOW (license_dialog),
+                                          GTK_WINDOW (about_dialog));
+        gtk_window_present (GTK_WINDOW (license_dialog));
+        return;
+    }
+
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "license", NULL);
+
+    license_dialog = moo_glade_xml_get_widget (xml, "license");
+    g_return_if_fail (license_dialog != NULL);
+    g_object_add_weak_pointer (G_OBJECT (license_dialog), (gpointer*) &license_dialog);
+    g_signal_connect (license_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+
+    textview = moo_glade_xml_get_widget (xml, "textview");
+    gtk_text_buffer_set_text (gtk_text_view_get_buffer (textview), gpl, -1);
+
+    if (about_dialog)
+        gtk_window_set_transient_for (GTK_WINDOW (license_dialog),
+                                      GTK_WINDOW (about_dialog));
+    gtk_window_present (GTK_WINDOW (license_dialog));
 }
 
 
 #define COPYRIGHT_SYMBOL "\302\251"
 static const char *copyright = COPYRIGHT_SYMBOL " 2004-2006 Yevgen Muntyan";
-
-
-static void
-show_about_dialog (GtkWidget *dialog,
-                   GtkWindow *parent)
-{
-    g_return_if_fail (dialog != NULL);
-
-    if (parent)
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
-
-    gtk_window_present (GTK_WINDOW (dialog));
-}
 
 
 static GtkWidget *
@@ -133,8 +155,8 @@ create_about_dialog (void)
 
     button = moo_glade_xml_get_widget (xml, "credits_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
-//     button = moo_glade_xml_get_widget (xml, "license_button");
-//     g_signal_connect (button, "clicked", G_CALLBACK (show_license), NULL);
+    button = moo_glade_xml_get_widget (xml, "license_button");
+    g_signal_connect (button, "clicked", G_CALLBACK (show_license), NULL);
 //     button = moo_glade_xml_get_widget (xml, "system_button");
 //     g_signal_connect (button, "clicked", G_CALLBACK (show_system_info), NULL);
 
@@ -148,13 +170,14 @@ create_about_dialog (void)
 void
 moo_app_about_dialog (GtkWidget *parent)
 {
-    GtkWindow *parent_window = NULL;
-
-    if (parent)
-        parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
-
     if (!about_dialog)
         about_dialog = create_about_dialog ();
 
-    show_about_dialog (about_dialog, parent_window);
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+
+    if (parent && GTK_WIDGET_TOPLEVEL (parent))
+        gtk_window_set_transient_for (GTK_WINDOW (about_dialog), GTK_WINDOW (parent));
+
+    gtk_window_present (GTK_WINDOW (about_dialog));
 }
