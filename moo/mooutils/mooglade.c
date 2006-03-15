@@ -1292,7 +1292,8 @@ widget_props_new (MooMarkupNode  *node,
                 }
                 else
                 {
-                    g_warning ("%s: could not convert '%s' to property '%s'", value, name);
+                    g_warning ("%s: could not convert '%s' to property '%s'",
+                               G_STRLOC, value, name);
                     moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
