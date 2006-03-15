@@ -13,7 +13,8 @@ mooapp_include_headers =                      \
 
 mooapp_sources =                              \
     $(mooapp_include_headers)                 \
-    $(mooapp)/mooappdialogs.c                 \
+    $(mooapp)/mooappabout.c                   \
+    $(mooapp)/mooappabout.h                   \
     $(mooapp)/mooapp-prefs.c                  \
     $(mooapp)/mooapp-private.h                \
     $(mooapp)/mooapp.c                        \

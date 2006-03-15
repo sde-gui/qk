@@ -184,11 +184,19 @@ err_print (void)
 }
 
 
+static char *
+get_info (void)
+{
+    return g_strdup_printf ("%s %s", Py_GetVersion (), Py_GetPlatform ());
+}
+
+
 static gboolean
 moo_python_api_init (void)
 {
     static MooPyAPI api = {
         incref, decref, err_print,
+        get_info,
         run_simple_string, run_string, run_file,
         py_object_from_gobject,
         get_script_dict,

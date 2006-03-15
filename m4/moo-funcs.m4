@@ -13,6 +13,9 @@ AC_DEFUN([MOO_AC_FUNCS],[
     #for moofileutils.c
     AC_CHECK_FUNCS(unlink)
 
+    #for mooappabout.h
+    AC_CHECK_HEADERS(sys/utsname.h)
+
     ################################################################################
     #  Terminal stuff
     AC_CHECK_HEADERS([poll.h errno.h io.h fcntl.h sys/types.h sys/wait.h signal.h])

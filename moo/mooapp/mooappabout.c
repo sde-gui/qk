@@ -1,5 +1,5 @@
 /*
- *   mooapp/mooappdialogs.c
+ *   mooapp/mooappabout.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,18 +11,16 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "mooapp/mooapp-private.h"
 #include "mooapp/mooappabout-glade.h"
+#include "mooapp/mooappabout.h"
 #include "mooapp/moohtml.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
+#include <string.h>
 
 
 static GtkWidget *about_dialog;
@@ -103,6 +101,76 @@ show_license (void)
 }
 
 
+static void
+show_system_info (void)
+{
+    MooGladeXML *xml;
+    GtkTextView *textview;
+    GtkTextBuffer *buffer;
+    GString *text;
+    char *string;
+
+    if (system_info_dialog)
+    {
+        if (about_dialog)
+            gtk_window_set_transient_for (GTK_WINDOW (system_info_dialog),
+                                          GTK_WINDOW (about_dialog));
+        gtk_window_present (GTK_WINDOW (system_info_dialog));
+        return;
+    }
+
+    xml = moo_glade_xml_new_from_buf (MOO_APP_ABOUT_GLADE_UI, -1, "system");
+
+    system_info_dialog = moo_glade_xml_get_widget (xml, "system");
+    g_return_if_fail (system_info_dialog != NULL);
+    g_object_add_weak_pointer (G_OBJECT (system_info_dialog), (gpointer*) &system_info_dialog);
+    g_signal_connect (system_info_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
+
+    textview = moo_glade_xml_get_widget (xml, "textview");
+    buffer = gtk_text_view_get_buffer (textview);
+    text = g_string_new (NULL);
+
+#ifdef __WIN32__
+    string = get_windows_name ();
+    g_string_append_printf (text, "OS: %s\n", string ? string : "Win32");
+    g_free (string);
+#else
+    g_string_append (text, "OS: " MOO_OS_NAME "\n");
+
+    if ((string = get_uname ()))
+    {
+        g_string_append_printf (text, "OS details: %s", string);
+
+        if (!*string || string[strlen(string) - 1] != '\n')
+            g_string_append (text, "\n");
+
+        g_free (string);
+    }
+#endif
+
+    g_string_append_printf (text, "GTK version: %d.%d.%d\n",
+                            gtk_major_version,
+                            gtk_minor_version,
+                            gtk_micro_version);
+    g_string_append_printf (text, "Built with GTK %d.%d.%d\n",
+                            GTK_MAJOR_VERSION,
+                            GTK_MINOR_VERSION,
+                            GTK_MICRO_VERSION);
+
+    string = get_python_info ();
+    g_string_append_printf (text, "Python: %s\n", string ? string : "None");
+    g_free (string);
+
+    gtk_text_buffer_set_text (buffer, text->str, -1);
+    g_string_free (text, TRUE);
+
+    if (about_dialog)
+        gtk_window_set_transient_for (GTK_WINDOW (system_info_dialog),
+                                      GTK_WINDOW (about_dialog));
+    gtk_window_present (GTK_WINDOW (system_info_dialog));
+}
+
+
 #define COPYRIGHT_SYMBOL "\302\251"
 static const char *copyright = COPYRIGHT_SYMBOL " 2004-2006 Yevgen Muntyan";
 
@@ -157,8 +225,8 @@ create_about_dialog (void)
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);
     button = moo_glade_xml_get_widget (xml, "license_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_license), NULL);
-//     button = moo_glade_xml_get_widget (xml, "system_button");
-//     g_signal_connect (button, "clicked", G_CALLBACK (show_system_info), NULL);
+    button = moo_glade_xml_get_widget (xml, "system_button");
+    g_signal_connect (button, "clicked", G_CALLBACK (show_system_info), NULL);
 
     g_free (title);
     g_object_unref (xml);

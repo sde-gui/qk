@@ -18,7 +18,7 @@
 
 G_BEGIN_DECLS
 
-#define MOO_PY_API_VERSION 89
+#define MOO_PY_API_VERSION 90
 
 typedef struct _MooPyAPI MooPyAPI;
 typedef struct _MooPyObject MooPyObject;
@@ -28,6 +28,8 @@ struct _MooPyAPI {
     MooPyObject* (*incref)              (MooPyObject *obj);
     void         (*decref)              (MooPyObject *obj);
     void         (*err_print)           (void);
+
+    char*        (*get_info)            (void);
 
     MooPyObject* (*run_simple_string)   (const char  *str);
     MooPyObject* (*run_string)          (const char  *str,
@@ -60,6 +62,8 @@ gboolean moo_python_init (guint     version,
 #define moo_Py_INCREF                   moo_py_api->incref
 #define moo_Py_DECREF                   moo_py_api->decref
 #define moo_PyErr_Print                 moo_py_api->err_print
+
+#define moo_python_get_info             moo_py_api->get_info
 
 #define moo_python_run_simple_string    moo_py_api->run_simple_string
 #define moo_python_run_string           moo_py_api->run_string
