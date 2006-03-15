@@ -73,8 +73,6 @@ struct _MooAppPrivate {
     gboolean    use_editor;
     gboolean    use_terminal;
 
-    MooUserActionCtxFunc ctx_func;
-
     char       *tmpdir;
 
     gboolean    new_app;
@@ -118,6 +116,8 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
+static MSContext *moo_app_get_context_real (MooApp          *app,
+                                         MooWindow          *window);
 
 static void     moo_app_set_name        (MooApp             *app,
                                          const char         *short_name,
@@ -127,8 +127,6 @@ static void     moo_app_set_description (MooApp             *app,
 
 static void     start_io                (MooApp             *app);
 static void     execute_selection       (MooEditWindow      *window);
-
-static MSContext *default_ctx_func      (MooWindow          *window);
 
 
 static GObjectClass *moo_app_parent_class;
@@ -184,6 +182,7 @@ enum {
     TRY_QUIT,
     PREFS_DIALOG,
     EXEC_CMD,
+    GET_CONTEXT,
     LAST_SIGNAL
 };
 
@@ -211,6 +210,7 @@ moo_app_class_init (MooAppClass *klass)
     klass->try_quit = moo_app_try_quit_real;
     klass->prefs_dialog = _moo_app_create_prefs_dialog;
     klass->exec_cmd = moo_app_exec_cmd_real;
+    klass->get_context = moo_app_get_context_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ARGV,
@@ -362,6 +362,16 @@ moo_app_class_init (MooAppClass *klass)
                           G_TYPE_CHAR,
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           G_TYPE_UINT);
+
+    signals[GET_CONTEXT] =
+            g_signal_new ("get-context",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooAppClass, get_context),
+                          NULL, NULL,
+                          _moo_marshal_OBJECT__OBJECT,
+                          MS_TYPE_CONTEXT, 1,
+                          MOO_TYPE_WINDOW);
 }
 
 
@@ -398,8 +408,6 @@ moo_app_constructor (GType           type,
 
     object = moo_app_parent_class->constructor (type, n_params, params);
     app = MOO_APP (object);
-
-    app->priv->ctx_func = default_ctx_func;
 
     if (!app->priv->info->full_name)
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
@@ -580,15 +588,6 @@ moo_app_set_exit_code (MooApp      *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_code = code;
-}
-
-
-void
-moo_app_set_user_action_ctx_func (MooApp              *app,
-                                  MooUserActionCtxFunc func)
-{
-    g_return_if_fail (MOO_IS_APP (app));
-    app->priv->ctx_func = func ? func : default_ctx_func;
 }
 
 
@@ -835,6 +834,20 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app)
 }
 
 
+static MSContext *
+moo_app_get_context (MooWindow *window)
+{
+    MSContext *ctx;
+    MooApp *app;
+
+    app = moo_app_get_instance ();
+    g_return_val_if_fail (app != NULL, NULL);
+
+    g_signal_emit (app, signals[GET_CONTEXT], 0, window, &ctx);
+
+    return ctx;
+}
+
 static void
 moo_app_load_user_actions (MooApp *app)
 {
@@ -849,7 +862,7 @@ moo_app_load_user_actions (MooApp *app)
         char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
 
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            moo_parse_user_actions (file, app->priv->ctx_func);
+            moo_parse_user_actions (file, moo_app_get_context);
 
         g_free (file);
     }
@@ -1679,7 +1692,8 @@ moo_app_data_type_get_type (void)
 
 
 static MSContext *
-default_ctx_func (MooWindow *window)
+moo_app_get_context_real (G_GNUC_UNUSED MooApp *app,
+                          MooWindow *window)
 {
     MSContext *ctx;
 

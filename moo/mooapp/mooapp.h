@@ -76,6 +76,8 @@ struct _MooAppClass
                                  char        cmd,
                                  const char *data,
                                  guint       len);
+    MSContext*  (*get_context)  (MooApp     *app,
+                                 MooWindow  *window);
 };
 
 
@@ -124,9 +126,6 @@ char            *moo_app_tempnam                (MooApp     *app);
 gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *data,
                                                  int         len);
-
-void             moo_app_set_user_action_ctx_func (MooApp   *app,
-                                                 MooUserActionCtxFunc func);
 
 void             _moo_app_exec_cmd              (MooApp     *app,
                                                  char        cmd,
