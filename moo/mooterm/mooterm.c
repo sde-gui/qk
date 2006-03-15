@@ -1706,6 +1706,7 @@ _moo_term_do_popup_menu (MooTerm        *term,
                       G_CALLBACK (destroy_menu), NULL);
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
+    gtk_widget_set_sensitive (item, moo_term_get_selection_bounds (term, NULL, NULL));
     gtk_widget_show (item);
     g_signal_connect_swapped (item, "activate",
                               G_CALLBACK (menu_copy), term);
