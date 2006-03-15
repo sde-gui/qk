@@ -1284,14 +1284,7 @@ widget_props_new (MooMarkupNode  *node,
                 if (!param_spec)
                 {
                     if (!ignore_errors)
-                    {
-                        g_warning ("could not find property '%s'", name);
-                        moo_param_array_free ((GParameter*) params->data, params->len);
-                        g_array_free (params, FALSE);
-                        g_type_class_unref (klass);
-                        widget_props_free (props);
-                        return FALSE;
-                    }
+                        g_warning ("%s: could not find property '%s'", G_STRLOC, name);
                 }
                 else if (parse_property (param_spec, value, &param))
                 {
@@ -1299,7 +1292,7 @@ widget_props_new (MooMarkupNode  *node,
                 }
                 else
                 {
-                    g_warning ("could not convert '%s' to property '%s'", value, name);
+                    g_warning ("%s: could not convert '%s' to property '%s'", value, name);
                     moo_param_array_free ((GParameter*) params->data, params->len);
                     g_array_free (params, FALSE);
                     g_type_class_unref (klass);
