@@ -15,7 +15,7 @@
 #include "config.h"
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
-#include <mooutils/mooutils-misc.h>
+#include <mooutils/mooutils-fs.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -229,6 +229,7 @@ int main (int argc, char *argv[])
     MooApp *app;
     int opt_remain;
     MooEditor *editor;
+    char **files;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -260,16 +261,19 @@ int main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
-    /* XXX convert filenames to glib filename encoding */
+    files = moo_filenames_from_locale (argv + opt_remain);
+
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", "medit is a text editor",
-                        "open-files", argv + opt_remain,
+                        "open-files", files && *files ? files : NULL,
                         "new-app", (gboolean) _medit_opt_new_app,
                         "default-ui", MEDIT_UI,
                         NULL);
+
+    g_free (files);
 
     if (!moo_app_init (app))
         return 0;

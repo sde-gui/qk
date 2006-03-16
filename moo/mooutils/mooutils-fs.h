@@ -26,6 +26,8 @@ gboolean    moo_save_file_utf8              (const char *name,
 gboolean    moo_rmdir                       (const char *path,
                                              gboolean    recursive);
 
+char      **moo_filenames_from_locale       (char      **files);
+
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h
  */

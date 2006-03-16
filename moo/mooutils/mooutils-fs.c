@@ -201,6 +201,35 @@ moo_rmdir (const char *path,
 }
 
 
+char **
+moo_filenames_from_locale (char **files)
+{
+    guint i;
+    char **conv;
+
+    if (!files)
+        return NULL;
+
+    conv = g_new0 (char*, g_strv_length (files) + 1);
+
+    for (i = 0; files && *files; ++files)
+    {
+#ifdef __WIN32__
+        conv[i] = g_locale_to_utf8 (*files, -1, NULL, NULL, NULL);
+
+        if (!conv[i])
+            g_warning ("%s: could not convert '%s' to UTF8", G_STRLOC, *files);
+        else
+            ++i;
+#else
+        conv[i++] = g_strdup (*files);
+#endif
+    }
+
+    return conv;
+}
+
+
 /**********************************************************************/
 /* MSLU for poor
  */
