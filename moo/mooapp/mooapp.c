@@ -28,6 +28,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moouseractions.h"
 #include <string.h>
@@ -745,7 +746,7 @@ moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
     if (!filename)
         return;
 
-    file = fopen (filename, "r");
+    file = m_fopen (filename, "r");
 
     if (!file)
     {
@@ -777,7 +778,7 @@ moo_app_python_run_file (MooApp      *app,
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
-    file = fopen (filename, "r");
+    file = m_fopen (filename, "r");
     g_return_val_if_fail (file != NULL, FALSE);
 
     res = moo_python_run_file (file, filename);
@@ -1640,7 +1641,7 @@ moo_app_tempnam (MooApp     *app)
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (moo_mkdir (dirname))
+            if (m_mkdir (dirname))
             {
                 g_free (dirname);
                 dirname = NULL;

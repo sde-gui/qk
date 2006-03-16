@@ -16,7 +16,7 @@
 #include "mooutils/eggregex.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomarkup.h"
-#include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>
 #include <errno.h>
@@ -1024,7 +1024,7 @@ moo_prefs_save (const char     *file,
     if (empty)
     {
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            if (moo_unlink (file))
+            if (m_unlink (file))
                 g_critical ("%s: %s", G_STRLOC,
                             g_strerror (errno));
         return TRUE;

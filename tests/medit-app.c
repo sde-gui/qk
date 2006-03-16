@@ -260,6 +260,7 @@ int main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
+    /* XXX convert filenames to glib filename encoding */
     app = g_object_new (MOO_TYPE_APP,
                         "argv", argv,
                         "short-name", "medit",

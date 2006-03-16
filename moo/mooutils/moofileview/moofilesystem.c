@@ -13,6 +13,7 @@
 
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofilesystem.h"
+#include "mooutils/mooutils-fs.h"
 #include MOO_MARSHALS_H
 #include <string.h>
 #include <errno.h>
@@ -452,7 +453,7 @@ gboolean            create_folder       (G_GNUC_UNUSED MooFileSystem *fs,
 #ifndef __WIN32__
     if (mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO))
 #else
-    if (_mkdir (path))
+    if (moo_mkdir (path))
 #endif
     {
         int saved_errno = errno;
@@ -603,7 +604,7 @@ gboolean            move_file_unix              (G_GNUC_UNUSED MooFileSystem *fs
     g_return_val_if_fail (g_path_is_absolute (new_path), FALSE);
 
     /* XXX */
-    if (rename (old_path, new_path))
+    if (m_rename (old_path, new_path))
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,

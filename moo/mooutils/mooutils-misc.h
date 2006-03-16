@@ -19,15 +19,6 @@
 G_BEGIN_DECLS
 
 
-gboolean    moo_save_file_utf8              (const char *name,
-                                             const char *text,
-                                             gssize      len,
-                                             GError    **error);
-int         moo_unlink                      (const char *filename);
-int         moo_mkdir                       (const char *path);
-gboolean    moo_rmdir                       (const char *path,
-                                             gboolean    recursive);
-
 gboolean    moo_open_url                    (const char *url);
 gboolean    moo_open_email                  (const char *address,
                                              const char *subject,

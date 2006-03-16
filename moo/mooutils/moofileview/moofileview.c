@@ -30,6 +30,7 @@
 #include "mooutils/moofileview/mootreeview.h"
 #include "mooutils/moofileview/moobookmarkview.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moofiltermgr.h"

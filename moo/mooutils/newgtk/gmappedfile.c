@@ -41,7 +41,8 @@
 #if GLIB_CHECK_VERSION(2,6,0)
 #include <glib/gstdio.h>
 #else
-#define g_open open
+#include "mooutils/mooutils-fs.h"
+#define g_open m_open
 #endif
 #include "mooutils/moocompat.h"
 

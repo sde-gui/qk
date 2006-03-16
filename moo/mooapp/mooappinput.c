@@ -388,10 +388,14 @@ static DWORD WINAPI listener_main (ListenerInfo *info)
         if (!ConnectNamedPipe (input, NULL))
         {
             DWORD err = GetLastError();
+
             if (err != ERROR_PIPE_CONNECTED)
             {
+                char *msg = g_win32_error_message (err);
                 g_critical ("%s: error in ConnectNamedPipe()", G_STRLOC);
+                g_critical ("%s: %s", G_STRLOC, msg);
                 CloseHandle (input);
+                g_free (msg);
                 break;
             }
         }

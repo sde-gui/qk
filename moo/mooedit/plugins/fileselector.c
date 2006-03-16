@@ -21,6 +21,7 @@
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/plugins/moofileselector-glade.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooentry.h"
@@ -779,7 +780,7 @@ doc_move (MooFileSelector *filesel,
     {
         if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
         {
-            moo_unlink (old_filename);
+            m_unlink (old_filename);
             select_file (filesel, filename, destdir);
         }
 
