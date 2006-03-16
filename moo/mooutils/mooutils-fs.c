@@ -290,7 +290,37 @@ int
 m_remove (const char *path)
 {
 #ifdef __WIN32__
-    CCALL_1 (remove, _wremove, path);
+    gboolean use_wide_char_api;
+    gpointer converted;
+    int retval;
+    int save_errno;
+
+    converted = convert_filename (path, &use_wide_char_api);
+
+    if (!converted)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (use_wide_char_api)
+        retval = _wremove (converted);
+    else
+        retval = remove (converted);
+
+    if (retval && errno == ENOENT)
+    {
+        if (use_wide_char_api)
+            retval = _wrmdir (converted);
+        else
+            retval = rmdir (converted);
+    }
+
+    save_errno = errno;
+    g_free (converted);
+    errno = save_errno;
+
+    return retval;
 #else
     return remove (path);
 #endif
