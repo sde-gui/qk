@@ -17,6 +17,7 @@
 #include "mooterm/mootermparser.h"
 #include "mooterm/mootermpt.h"
 #include "mooterm/mootermbuffer-private.h"
+#include "mooterm/mooterm-text.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
