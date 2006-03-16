@@ -327,8 +327,16 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
 
     if (condition & G_IO_HUP)
     {
+        int r;
+
         g_message ("%s: G_IO_HUP", G_STRLOC);
         error_no = errno;
+
+        r = read (pt->master, buf, READ_CHUNK_SIZE);
+
+        if (r > 0)
+            feed_buffer (pt, buf, r);
+
         goto error;
     }
     else if (condition & G_IO_ERR)
