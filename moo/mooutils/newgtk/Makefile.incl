@@ -5,7 +5,7 @@
 moonewgtk = $(mooutils)/newgtk
 moonewgtk_sources =
 
-moonewgtk_glib_2_8_sources =                   \
+gmappedfile_sources =                          \
     $(moonewgtk)/gmappedfile.c                 \
     $(moonewgtk)/gmappedfile.h
 
@@ -15,9 +15,9 @@ moonewgtk_gtk_2_4_sources =                    \
     $(moonewgtk)/gtkfontbutton.c               \
     $(moonewgtk)/gtkfontbutton.h
 
-if !GLIB_2_8
-moonewgtk_sources += $(moonewgtk_glib_2_8_sources)
-endif !GLIB_2_8
+if !GLIB_2_10
+moonewgtk_sources += $(gmappedfile_sources)
+endif
 
 if !GTK_2_4
 moonewgtk_sources += $(moonewgtk_gtk_2_4_sources)
@@ -27,5 +27,5 @@ endif
 moo_sources += $(moonewgtk_sources)
 
 moo_extra_dist +=                              \
-    $(moonewgtk_glib_2_8_sources)              \
+    $(gmappedfile_sources)                     \
     $(moonewgtk_gtk_2_4_sources)
