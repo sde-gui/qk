@@ -403,7 +403,6 @@ do_load (MooEdit        *edit,
         }
         else
         {
-            g_warning ("%s: could not create mapped file", G_STRLOC);
             g_warning ("%s: %s", G_STRLOC, (*error)->message);
             g_clear_error (error);
         }
