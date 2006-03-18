@@ -15,7 +15,7 @@ tests/medit-app.c: tests/medit-app.opag medit-ui.h
 	opag -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/tests/medit-app.opag $(srcdir)/tests/medit-app.c
 
 if MOO_OS_MINGW
-medit: tests/medit.win
+medit.win: tests/medit.win
 	cp $(srcdir)/tests/medit.win medit
 	chmod +x medit
 endif
