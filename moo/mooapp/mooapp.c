@@ -640,19 +640,44 @@ moo_app_get_data_dirs (MooApp *app,
                        MooAppDataType type,
                        guint  *n_dirs)
 {
-    char **dirs;
+    const char *env;
+    GPtrArray *dirs;
 
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
-    dirs = g_new0 (char*, 3);
+    dirs = g_ptr_array_sized_new (3);
+    env = g_getenv ("MOO_APP_DIRS");
 
-    dirs[0] = moo_app_get_data_dir (app, type);
-    dirs[1] = moo_app_get_user_data_dir (app, type);
+    if (env && *env)
+    {
+        char **env_dirs, **p;
+
+#ifdef __WIN32__
+        env_dirs = g_strsplit (env, ";", 0);
+        p = moo_filenames_from_locale (env_dirs);
+        g_strfreev (env_dirs);
+        env_dirs = p;
+#else
+        env_dirs = g_strsplit (env, ":", 0);
+#endif
+
+        for (p = env_dirs; p && *p; ++p)
+            if (**p)
+                g_ptr_array_add (dirs, *p);
+            else
+                g_free (*p);
+
+        g_free (env_dirs);
+    }
+
+    g_ptr_array_add (dirs, moo_app_get_data_dir (app, type));
+    g_ptr_array_add (dirs, moo_app_get_user_data_dir (app, type));
+    g_ptr_array_add (dirs, NULL);
 
     if (n_dirs)
-        *n_dirs = 2;
+        *n_dirs = dirs->len - 1;
 
-    return dirs;
+    return (char**) g_ptr_array_free (dirs, FALSE);
 }
 
 
