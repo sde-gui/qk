@@ -453,7 +453,7 @@ gboolean            create_folder       (G_GNUC_UNUSED MooFileSystem *fs,
 #ifndef __WIN32__
     if (mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO))
 #else
-    if (moo_mkdir (path))
+    if (m_mkdir (path))
 #endif
     {
         int saved_errno = errno;
@@ -930,7 +930,14 @@ static char *
 normalize_path_win32 (MooFileSystem  *fs,
                       const char     *path,
                       gboolean        is_folder,
-                      GError        **error);
+                      GError        **error)
+{
+#warning "Implement me"
+    g_return_val_if_fail (path && *path, g_strdup (""));
+    return is_folder && path[strlen(path)-1] != '\\' ?
+            g_strdup_printf ("%s\\", path) : g_strdup (path);
+}
+
 
 static char *
 make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
@@ -938,6 +945,7 @@ make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
                  const char     *display_name,
                  G_GNUC_UNUSED GError **error)
 {
+#warning "Implement me"
     return g_strdup_printf ("%s\\%s", base_path, display_name);
 }
 
@@ -945,9 +953,70 @@ make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
 static gboolean
 parse_path_win32 (MooFileSystem  *fs,
                   const char     *path_utf8,
-                  char          **dirname,
-                  char          **display_dirname,
-                  char          **display_basename,
-                  GError        **error);
+                  char          **dirname_p,
+                  char          **display_dirname_p,
+                  char          **display_basename_p,
+                  GError        **error)
+{
+#warning "Implement me"
+    const char *separator;
+    char *dirname = NULL, *norm_dirname = NULL;
+    char *display_dirname = NULL, *display_basename = NULL;
+
+    g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
+    g_return_val_if_fail (g_path_is_absolute (path_utf8), FALSE);
+
+    separator = strrchr (path_utf8, '\\');
+    g_return_val_if_fail (separator != NULL, FALSE);
+
+    display_dirname = g_strndup (path_utf8, separator - path_utf8 + 1);
+    display_basename = g_strdup (separator + 1);
+    dirname = g_filename_from_utf8 (display_dirname, -1, NULL, NULL, error);
+
+    if (!dirname)
+        goto error_label;
+
+    norm_dirname = moo_file_system_normalize_path (fs, dirname, TRUE, error);
+
+    if (!norm_dirname)
+        goto error_label;
+    else
+        goto success;
+
+    /* no fallthrough */
+    g_assert_not_reached ();
+
+error_label:
+    g_free (dirname);
+    g_free (norm_dirname);
+    g_free (display_dirname);
+    g_free (display_basename);
+    return FALSE;
+
+success:
+    g_clear_error (error);
+    g_free (dirname);
+    *dirname_p = norm_dirname;
+    *display_dirname_p = display_dirname;
+    *display_basename_p = display_basename;
+    return TRUE;
+}
+
+
+static char *
+get_absolute_path_win32 (MooFileSystem  *fs,
+                         const char     *short_name,
+                         const char     *current_dir)
+{
+    g_return_val_if_fail (short_name && short_name[0], NULL);
+
+    if (g_path_is_absolute (short_name))
+        return g_strdup (short_name);
+
+    if (current_dir)
+        return g_build_filename (current_dir, short_name, NULL);
+
+    return NULL;
+}
 
 #endif /* __WIN32__ */

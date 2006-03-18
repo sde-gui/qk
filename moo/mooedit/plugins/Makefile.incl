@@ -27,14 +27,14 @@ mooedit_plugins_unix_sources =                \
     $(mooedit_plugins)/moofind.c              \
     $(mooedit_plugins)/moofind-glade.h
 
+mooedit_plugins_sources =                     \
+    $(mooedit_plugins)/mooeditplugins.h
+
 if GTK_2_6
-mooedit_plugins_unix_sources +=               \
+mooedit_plugins_sources +=                    \
     $(mooedit_plugins)/moofileselector-glade.h\
     $(mooedit_plugins)/fileselector.c
 endif
-
-mooedit_plugins_sources =                     \
-    $(mooedit_plugins)/mooeditplugins.h
 
 if MOO_BUILD_EDIT
 moo_sources += $(mooedit_plugins_sources)
