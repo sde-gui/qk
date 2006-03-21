@@ -528,10 +528,21 @@ moo_get_top_window (GSList *windows)
 
 /* TODO use gtk_window_present_with_time(), use Xlib? */
 void
-moo_window_present (GtkWindow  *window)
+moo_window_present (GtkWindow *window)
 {
+    guint32 stamp;
+
     g_return_if_fail (GTK_IS_WINDOW (window));
+
+#if !GTK_CHECK_VERSION(2,8,0) || !defined(GDK_WINDOWING_X11)
     gtk_window_present (window);
+#else
+    if (!GTK_WIDGET_REALIZED (window))
+        return gtk_window_present (window);
+
+    stamp = gdk_x11_get_server_time (GTK_WIDGET(window)->window);
+    gtk_window_present_with_time (window, stamp);
+#endif
 }
 
 
