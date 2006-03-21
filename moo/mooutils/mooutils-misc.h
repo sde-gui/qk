@@ -14,7 +14,7 @@
 #ifndef __MOO_UTILS_MISC_H__
 #define __MOO_UTILS_MISC_H__
 
-#include <gtk/gtkwindow.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -37,6 +37,7 @@ gboolean    moo_window_set_icon_from_stock  (GtkWindow  *window,
 void        moo_log_window_show             (void);
 void        moo_log_window_hide             (void);
 
+/* these two are wrappers for g_print, needed for python stdout/stderr */
 void        moo_print                       (const char     *string);
 void        moo_print_err                   (const char     *string);
 
