@@ -550,7 +550,6 @@ gboolean
 moo_window_set_icon_from_stock (G_GNUC_UNUSED GtkWindow      *window,
                                 G_GNUC_UNUSED const char     *stock_id)
 {
-#ifndef __WIN32__
     GdkPixbuf *icon;
 
     g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
@@ -569,9 +568,6 @@ moo_window_set_icon_from_stock (G_GNUC_UNUSED GtkWindow      *window,
     {
         return FALSE;
     }
-#else /* __WIN32__ */
-    return TRUE;
-#endif /* __WIN32__ */
 }
 
 
