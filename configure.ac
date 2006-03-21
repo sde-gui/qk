@@ -52,17 +52,12 @@ MOO_AC_PYGTK
 MOO_AC_PCRE
 
 
-MOO_COMPONENTS
-MOO_AC_FLAGS
-
-
-################################################################################
-#  Installation directories, etc.
-#
 MOO_SRC_PREFIX="moo"
 AC_SUBST(MOO_SRC_PREFIX)
-MOO_AC_SET_DIRS([moo-1.0])
 AM_CONDITIONAL(MOO_BUILD_LIB, false)
+MOO_COMPONENTS
+MOO_AC_SET_DIRS([moo-1.0])
+MOO_AC_FLAGS
 
 
 ################################################################################
