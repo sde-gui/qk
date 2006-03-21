@@ -526,7 +526,6 @@ moo_get_top_window (GSList *windows)
 #endif
 
 
-/* TODO use gtk_window_present_with_time(), use Xlib? */
 void
 moo_window_present (GtkWindow *window)
 {
