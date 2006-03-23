@@ -126,7 +126,7 @@ int main (int argc, char *argv[])
                                      "font-name", "Courier New 11",
                                      NULL));
 
-    g_timeout_add (1000, invalidate, term);
+//     g_timeout_add (1000, invalidate, term);
 
     gtk_container_add (GTK_CONTAINER (swin), term);
 
