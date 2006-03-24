@@ -68,7 +68,6 @@ struct _MooTermBufferPrivate {
     GList          *tab_stops;
 
     GdkRegion      *changed;
-    gboolean        changed_all;
 
     gboolean        freeze_changed_notify;
     gboolean        freeze_cursor_notify;
@@ -205,34 +204,24 @@ inline static GdkRegion *buf_get_changed(MooTermBuffer  *buf)
 
 #define buf_changed_add_rect(buf,rect)                              \
 G_STMT_START {                                                      \
-    if (!buf->priv->changed_all)                                    \
-    {                                                               \
-        if (buf->priv->changed)                                     \
-            gdk_region_union_with_rect (buf->priv->changed, &rect); \
-        else                                                        \
-            buf->priv->changed = gdk_region_rectangle (&rect);      \
-    }                                                               \
+    if (buf->priv->changed)                                         \
+        gdk_region_union_with_rect (buf->priv->changed, &rect);     \
+    else                                                            \
+        buf->priv->changed = gdk_region_rectangle (&rect);          \
 } G_STMT_END
 
 #define buf_changed_add_range(buf, row, start, len)                 \
 G_STMT_START {                                                      \
-    if (!buf->priv->changed_all)                                    \
-{                                                               \
-        GdkRectangle rec = {start, row, len, 1};                    \
-        buf_changed_add_rect (buf, rec);                            \
-    }                                                               \
+    GdkRectangle rec_ = {start, row, len, 1};                       \
+    buf_changed_add_rect (buf, rec_);                               \
 } G_STMT_END
 
 #define buf_changed_set_all(buf)                                    \
 G_STMT_START {                                                      \
-    if (!buf->priv->changed_all)                                    \
-    {                                                               \
-        GdkRectangle rec = {                                        \
-            0, 0, buf->priv->screen_width, buf->priv->screen_height \
-        };                                                          \
-        buf_changed_add_rect (buf, rec);                            \
-        buf->priv->changed_all = TRUE;                              \
-    }                                                               \
+    GdkRectangle rec_ = {                                           \
+        0, 0, buf->priv->screen_width, buf->priv->screen_height     \
+    };                                                              \
+    buf_changed_add_rect (buf, rec_);                               \
 } G_STMT_END
 
 
