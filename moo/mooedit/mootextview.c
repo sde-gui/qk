@@ -1301,6 +1301,17 @@ typedef struct {
 } Scroll;
 
 
+static int
+iter_get_chars_in_line (const GtkTextIter *iter)
+{
+    GtkTextIter i = *iter;
+
+    if (!gtk_text_iter_ends_line (&i))
+        gtk_text_iter_forward_to_line_end (&i);
+
+    return gtk_text_iter_get_line_offset (&i);
+}
+
 static gboolean
 do_move_cursor (Scroll *scroll)
 {
@@ -1320,11 +1331,22 @@ do_move_cursor (Scroll *scroll)
 
     if (scroll->character >= 0)
     {
-        if (scroll->character > gtk_text_iter_get_chars_in_line (&iter))
-            scroll->character = gtk_text_iter_get_chars_in_line (&iter);
-        if (scroll->character < 0)
+        int line_len = iter_get_chars_in_line (&iter);
+
+        if (scroll->character > line_len)
+            scroll->character = line_len;
+        else if (scroll->character < 0)
             scroll->character = 0;
-        gtk_text_iter_set_line_offset (&iter, scroll->character);
+
+        if (scroll->character == line_len)
+        {
+            if (!gtk_text_iter_ends_line (&iter))
+                gtk_text_iter_forward_to_line_end (&iter);
+        }
+        else
+        {
+            gtk_text_iter_set_line_offset (&iter, scroll->character);
+        }
     }
 
     gtk_text_buffer_place_cursor (buffer, &iter);
