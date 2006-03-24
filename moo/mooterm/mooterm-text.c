@@ -233,7 +233,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = term->priv->width - rect.x;
                 rect.y = ITER_ROW (&start) - top_line;
                 rect.height = 1;
-                _moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_screen_rect (term, &rect);
             }
 
             if (ITER_ROW (&start) + 1 < ITER_ROW (&end))
@@ -242,7 +242,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = term->priv->width;
                 rect.y = ITER_ROW (&start) + 1 - top_line;
                 rect.height = ITER_ROW (&end) - ITER_ROW (&start) - 1;
-                _moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_screen_rect (term, &rect);
             }
 
             if (ITER_COL (&end) > 0)
@@ -251,7 +251,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = ITER_COL (&end);
                 rect.y = ITER_ROW (&end) - top_line;
                 rect.height = 1;
-                _moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_screen_rect (term, &rect);
             }
         }
         else
@@ -262,7 +262,7 @@ static void invalidate_segment (Segment *segm, guint num)
                 rect.width = ITER_COL (&end) - ITER_COL (&start);
                 rect.y = ITER_ROW (&start) - top_line;
                 rect.height = 1;
-                _moo_term_invalidate_rect (term, &rect);
+                _moo_term_invalidate_screen_rect (term, &rect);
             }
         }
     }
