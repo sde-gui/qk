@@ -55,6 +55,7 @@ enum {
     TABS_CHANGED,
     SCREEN_SIZE_CHANGED,
     NEW_LINE,
+    SCROLLED,
     LAST_SIGNAL
 };
 
@@ -145,6 +146,16 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
 
+    signals[SCROLLED] =
+            moo_signal_new_cb ("scrolled",
+                               G_OBJECT_CLASS_TYPE (gobject_class),
+                               G_SIGNAL_RUN_LAST,
+                               NULL,
+                               NULL, NULL,
+                               _moo_marshal_VOID__UINT,
+                               G_TYPE_NONE, 1,
+                               G_TYPE_UINT);
+
     g_object_class_install_property (gobject_class,
                                      PROP_SCREEN_WIDTH,
                                      g_param_spec_uint ("screen-width",
@@ -179,15 +190,14 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 }
 
 
-static void     moo_term_buffer_init            (MooTermBuffer      *buf)
+static void
+moo_term_buffer_init (MooTermBuffer *buf)
 {
     _moo_term_line_mem_init ();
 
     buf->priv = g_new0 (MooTermBufferPrivate, 1);
 
     buf->priv->lines = g_ptr_array_new ();
-    buf->priv->changed = NULL;
-    buf->priv->changed_all = FALSE;
 
     buf->priv->tag_table = _moo_term_tag_table_new (buf);
     buf->priv->data_sets = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -1065,6 +1075,14 @@ _moo_term_buffer_new_line (MooTermBuffer  *buf)
 }
 
 
+static void
+buf_scrolled (MooTermBuffer *buf,
+              guint          lines)
+{
+    g_signal_emit (buf, signals[SCROLLED], 0, lines);
+}
+
+
 void
 _moo_term_buffer_index (MooTermBuffer  *buf)
 {
@@ -1124,7 +1142,7 @@ _moo_term_buffer_index (MooTermBuffer  *buf)
             buf->priv->screen_offset += 1;
             _moo_term_buffer_scrollback_changed (buf);
 
-            buf_changed_set_all (buf);
+            buf_scrolled (buf, 1);
         }
         else
         {
