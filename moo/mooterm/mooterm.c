@@ -37,6 +37,7 @@ static void moo_term_get_property   (GObject        *object,
                                      GParamSpec     *pspec);
 
 static void moo_term_realize        (GtkWidget      *widget);
+static void moo_term_unrealize      (GtkWidget      *widget);
 static void moo_term_size_allocate  (GtkWidget      *widget,
                                      GtkAllocation  *allocation);
 
@@ -121,6 +122,7 @@ static void moo_term_class_init (MooTermClass *klass)
     gobject_class->get_property = moo_term_get_property;
 
     widget_class->realize = moo_term_realize;
+    widget_class->unrealize = moo_term_unrealize;
     widget_class->size_allocate = moo_term_size_allocate;
     widget_class->expose_event = _moo_term_expose_event;
     widget_class->key_press_event = _moo_term_key_press;
@@ -300,6 +302,15 @@ moo_term_init (MooTerm *term)
                               G_CALLBACK (scrollback_changed),
                               term);
 
+    g_signal_connect (term->priv->primary_buffer,
+                      "scrolled",
+                      G_CALLBACK (_moo_term_buffer_scrolled),
+                      term);
+    g_signal_connect (term->priv->alternate_buffer,
+                      "scrolled",
+                      G_CALLBACK (_moo_term_buffer_scrolled),
+                      term);
+
     g_signal_connect_swapped (term->priv->primary_buffer,
                               "screen-size-changed",
                               G_CALLBACK (buf_size_changed),
@@ -359,15 +370,9 @@ static void moo_term_finalize               (GObject        *object)
     g_free (term->priv->selection);
     _moo_term_font_free (term->priv->font);
 
-    OBJECT_UNREF (term->priv->back_pixmap);
+    if (term->priv->changed)
+        gdk_region_destroy (term->priv->changed);
 
-    if (term->priv->changed_content)
-        gdk_region_destroy (term->priv->changed_content);
-
-    if (term->priv->pending_expose)
-        g_source_remove (term->priv->pending_expose);
-
-    OBJECT_UNREF (term->priv->clip);
     OBJECT_UNREF (term->priv->layout);
 
     OBJECT_UNREF (term->priv->im);
@@ -469,7 +474,8 @@ static void moo_term_size_allocate          (GtkWidget          *widget,
 }
 
 
-static void moo_term_realize                (GtkWidget          *widget)
+static void
+moo_term_realize (GtkWidget *widget)
 {
     MooTerm *term;
     GdkWindowAttr attributes;
@@ -521,10 +527,7 @@ static void moo_term_realize                (GtkWidget          *widget)
 
     widget->style = gtk_style_attach (widget->style, widget->window);
 
-    gtk_widget_set_double_buffered (widget, FALSE);
-
     _moo_term_update_palette (term);
-    _moo_term_init_back_pixmap (term);
     _moo_term_size_changed (term);
 
     _moo_term_apply_settings (term);
@@ -539,6 +542,19 @@ static void moo_term_realize                (GtkWidget          *widget)
     g_signal_connect_swapped (term->priv->im, "preedit-end",
                               G_CALLBACK (im_preedit_end), term);
     gtk_im_context_focus_in (term->priv->im);
+}
+
+
+static void
+moo_term_unrealize (GtkWidget *widget)
+{
+    MooTerm *term = MOO_TERM (widget);
+
+    if (term->priv->update_timeout)
+        g_source_remove (term->priv->update_timeout);
+    term->priv->update_timeout = 0;
+
+    GTK_WIDGET_CLASS(moo_term_parent_class)->unrealize (widget);
 }
 
 
@@ -598,9 +614,10 @@ void             moo_term_set_adjustment    (MooTerm        *term,
 }
 
 
-static void     scrollback_changed              (MooTerm        *term,
-                                                 G_GNUC_UNUSED GParamSpec *pspec,
-                                                 MooTermBuffer  *buf)
+static void
+scrollback_changed (MooTerm        *term,
+                    G_GNUC_UNUSED GParamSpec *pspec,
+                    MooTermBuffer  *buf)
 {
     g_assert (!strcmp (pspec->name, "scrollback"));
 
@@ -630,9 +647,6 @@ static void     buf_size_changed                (MooTerm        *term,
 
         term->priv->width = buf_screen_width (buf);
         term->priv->height = buf_screen_height (buf);
-
-        if (GTK_WIDGET_REALIZED (term))
-            _moo_term_resize_back_pixmap (term);
 
         if (!term->priv->scrolled || term->priv->top_line > scrollback)
             scroll_to_bottom (term, TRUE);
@@ -799,7 +813,7 @@ static void     scroll_abs                      (MooTerm        *term,
     term->priv->top_line = line;
     term->priv->scrolled = TRUE;
 
-    _moo_term_invalidate_all (term);
+    _moo_term_invalidate (term);
 
     if (update_adj)
         update_adjustment_value (term);
@@ -827,7 +841,7 @@ static void     scroll_to_bottom                (MooTerm        *term,
 
     term->priv->scrolled = FALSE;
 
-    _moo_term_invalidate_all (term);
+    _moo_term_invalidate (term);
 
     if (update_full)
         update_adjustment (term);
@@ -1430,7 +1444,7 @@ moo_term_set_alternate_buffer (MooTerm        *term,
     else
         term->priv->buffer = term->priv->primary_buffer;
 
-    _moo_term_invalidate_all (term);
+    _moo_term_invalidate (term);
     _moo_term_buffer_scrollback_changed (term->priv->buffer);
 }
 

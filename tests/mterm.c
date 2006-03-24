@@ -1,5 +1,5 @@
 /*
- *   tests/markup.c
+ *   tests/mterm.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,33 +12,17 @@
  */
 
 #include <gtk/gtk.h>
-#define MOOTERM_COMPILATION
-#include "mooterm/mooterm-private.h"
-#include "mooterm/mootermbuffer-private.h"
+#include "mooterm/mooterm.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <stdlib.h>
 
 
-static void breakpoint_log_handler (const gchar   *log_domain,
-                                    GLogLevelFlags log_level,
-                                    const gchar   *message,
-                                    gpointer       user_data)
-{
-    g_log_default_handler (log_domain, log_level, message, user_data);
-
-    if (log_level &
-        (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL))
-    {
-        G_BREAKPOINT ();
-    }
-}
-
-
-static void init (int *argc, char ***argv, const char **cmd)
+static void
+init (int *argc, char ***argv, const char **cmd)
 {
     int i;
     gboolean gdk_debug = FALSE;
-    gboolean set_breakpoint = FALSE;
 
     gtk_init (argc, argv);
 
@@ -46,8 +30,6 @@ static void init (int *argc, char ***argv, const char **cmd)
     {
         if (!strcmp ((*argv)[i], "--gdk-debug"))
             gdk_debug = TRUE;
-        else if (!strcmp ((*argv)[i], "--set-breakpoint"))
-            set_breakpoint = TRUE;
         else
             *cmd = (*argv)[i];
     }
@@ -55,45 +37,20 @@ static void init (int *argc, char ***argv, const char **cmd)
     if (gdk_debug)
         gdk_window_set_debug_updates (TRUE);
 
-    if (set_breakpoint)
-    {
-#if GLIB_CHECK_VERSION(2,6,0)
-        g_log_set_default_handler (breakpoint_log_handler, NULL);
-#else
-        g_log_set_handler ("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                     | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-        g_log_set_handler ("Glib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-        g_log_set_handler ("Pango", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-        g_log_set_handler ("Gdk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-        g_log_set_handler ("Moo", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-        g_log_set_handler (NULL, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                | G_LOG_FLAG_RECURSION, breakpoint_log_handler, NULL);
-#endif
-    }
+    moo_set_log_func_file ("/tmp/mterm");
 }
 
 
-static void set_width (MooTerm *term, guint width, GtkWindow *window)
+static void
+set_width (MooTerm *term, guint width, GtkWindow *window)
 {
     guint height;
-    height = term_char_height (term) * 25;
-    width *= term_char_width (term);
+    height = moo_term_char_height (term) * 25;
+    width *= moo_term_char_width (term);
     gtk_widget_set_size_request (GTK_WIDGET (term), width, height);
     gtk_window_resize (window, 10, 10);
     gtk_container_check_resize (GTK_CONTAINER (window));
     gdk_window_process_updates (GTK_WIDGET(window)->window, TRUE);
-}
-
-
-static gboolean
-invalidate (gpointer term)
-{
-    _moo_term_invalidate_all (term);
-    return TRUE;
 }
 
 
@@ -125,8 +82,6 @@ int main (int argc, char *argv[])
                                      "cursor-blinks", FALSE,
                                      "font-name", "Courier New 11",
                                      NULL));
-
-//     g_timeout_add (1000, invalidate, term);
 
     gtk_container_add (GTK_CONTAINER (swin), term);
 

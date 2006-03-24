@@ -37,8 +37,8 @@ G_BEGIN_DECLS
 
 #define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
 #define ADJUSTMENT_DELTA            30.0
-#define EXPOSE_PRIORITY             G_PRIORITY_DEFAULT
-#define EXPOSE_TIMEOUT              2
+#define UPDATE_PRIORITY             G_PRIORITY_DEFAULT
+#define UPDATE_TIMEOUT              30
 
 #define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
 #define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
@@ -109,12 +109,15 @@ struct _MooTermPrivate {
 
     MooTermFont    *font;
 
-    GdkPixmap      *back_pixmap;
-    GdkRegion      *changed_content; /* buffer coordinates, relative to top_line */
+    GdkRegion      *changed; /* screen coordinates */
+    guint           update_timeout;
+    guint           cursor_row_old; /* cursor has been here, and it's been invalidated */
+    guint           cursor_col_old;
+    int             scroll;
+
     GdkGC          *clip;
     gboolean        font_changed;
     PangoLayout    *layout;
-    guint           pending_expose;
     gboolean        colors_inverted;
     gboolean        cursor_visible;
 
@@ -179,6 +182,9 @@ void        _moo_term_buf_content_changed   (MooTerm        *term,
                                              MooTermBuffer  *buf);
 void        _moo_term_cursor_moved          (MooTerm        *term,
                                              MooTermBuffer  *buf);
+void        _moo_term_buffer_scrolled       (MooTermBuffer  *buf,
+                                             guint           lines,
+                                             MooTerm        *term);
 
 void        _moo_term_size_changed          (MooTerm        *term);
 
@@ -208,16 +214,16 @@ void        _moo_term_im_commit             (GtkIMContext   *imcontext,
                                              gchar          *arg,
                                              MooTerm        *term);
 
-void        _moo_term_init_back_pixmap      (MooTerm        *term);
-void        _moo_term_resize_back_pixmap    (MooTerm        *term);
-void        _moo_term_update_back_pixmap    (MooTerm        *term);
-
 gboolean    _moo_term_expose_event          (GtkWidget      *widget,
                                              GdkEventExpose *event);
-void        _moo_term_invalidate_rect       (MooTerm        *term,
+
+/* (row, col) coordinates relative to visible part of buffer,
+   i.e. _moo_term_invalidate is equivalent to
+   _moo_term_invalidate_screen_rect ({0, 0, width, height}) */
+void        _moo_term_invalidate_screen_rect(MooTerm        *term,
                                              GdkRectangle   *rect);
-void        _moo_term_invalidate_all        (MooTerm        *term);
-void        _moo_term_force_update          (MooTerm        *term);
+/* invalidate whole window */
+void        _moo_term_invalidate            (MooTerm        *term);
 
 void        _moo_term_release_selection     (MooTerm        *term);
 void        _moo_term_grab_selection        (MooTerm        *term);
