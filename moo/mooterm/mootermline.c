@@ -25,8 +25,6 @@ G_GNUC_UNUSED static MooTermCell EMPTY_CELL = {EMPTY_CHAR, MOO_TERM_ZERO_ATTR};
 #define PTRCPY(dest__,src__,n__) memcpy (dest__, src__, (n__) * sizeof (gpointer))
 #define PTRSET(s__,c__,n__) memset (s__, c__, (n__) * sizeof (gpointer))
 
-static GMemChunk *LINE_MEM_CHUNK__ = NULL;
-
 
 static gboolean line_has_tag_in_range   (MooTermLine    *line,
                                          MooTermTag     *tag,
@@ -42,14 +40,6 @@ static int ptr_cmp (gconstpointer a,
 }
 
 
-void
-_moo_term_line_mem_init (void)
-{
-    if (!LINE_MEM_CHUNK__)
-        LINE_MEM_CHUNK__ = g_mem_chunk_create (MooTermLine, 512, G_ALLOC_AND_FREE);
-}
-
-
 MooTermLine*
 _moo_term_line_new (guint            width,
                     MooTermTextAttr  attr)
@@ -60,7 +50,7 @@ _moo_term_line_new (guint            width,
     g_assert (width != 0);
     g_assert (width <= MOO_TERM_LINE_MAX_LEN);
 
-    line = g_chunk_new0 (MooTermLine, LINE_MEM_CHUNK__);
+    line = g_new0 (MooTermLine, 1);
     line->cells = g_new (MooTermCell, width);
     line->width = line->width_allocd__ = width;
 
@@ -122,7 +112,7 @@ _moo_term_line_free (MooTermLine *line,
         }
 
         g_free (line->cells);
-        g_chunk_free (line, LINE_MEM_CHUNK__);
+        g_free (line);
     }
 }
 

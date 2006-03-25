@@ -42,8 +42,6 @@ struct _MooTermLine {
 #define MOO_TERM_LINE_MAX_LEN (1 << 16)
 
 
-void         _moo_term_line_mem_init        (void);
-
 MooTermLine *_moo_term_line_new             (guint           width,
                                              MooTermTextAttr fill);
 void         _moo_term_line_free            (MooTermLine    *line,

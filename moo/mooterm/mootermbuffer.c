@@ -193,8 +193,6 @@ static void moo_term_buffer_class_init (MooTermBufferClass *klass)
 static void
 moo_term_buffer_init (MooTermBuffer *buf)
 {
-    _moo_term_line_mem_init ();
-
     buf->priv = g_new0 (MooTermBufferPrivate, 1);
 
     buf->priv->lines = g_ptr_array_new ();
