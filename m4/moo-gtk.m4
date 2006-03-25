@@ -24,9 +24,9 @@ AC_DEFUN([_MOO_CHECK_VERSION],[
             fi
         done
 
-        if test $[]$1[]_MINOR_VERSION -ge 9; then
-            eval moo_ver_2_10=yes
-        fi
+        #if test $[]$1[]_MINOR_VERSION -ge 9; then
+        #    eval moo_ver_2_10=yes
+        #fi
 
         AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
     fi

@@ -26,7 +26,7 @@
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
-#if GTK_CHECK_VERSION(2,9,0)
+#if GTK_CHECK_VERSION(2,10,0)
 #include "mooedit/mootextprint.h"
 #endif
 #include <string.h>
@@ -171,7 +171,7 @@ static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
 static void moo_edit_window_next_bookmark (MooEditWindow    *window);
 static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
 
-#if GTK_CHECK_VERSION(2,9,0)
+#if GTK_CHECK_VERSION(2,10,0)
 static void moo_edit_window_page_setup  (MooEditWindow    *window);
 static void moo_edit_window_print       (MooEditWindow    *window);
 #endif
@@ -587,7 +587,7 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
-#if GTK_CHECK_VERSION(2,9,0)
+#if GTK_CHECK_VERSION(2,10,0)
     moo_window_class_new_action (window_class, "PageSetup",
                                  "name", "Page Setup",
                                  "label", "Page Setup",
@@ -1018,7 +1018,7 @@ moo_edit_window_prev_bookmark (MooEditWindow *window)
 }
 
 
-#if GTK_CHECK_VERSION(2,9,0)
+#if GTK_CHECK_VERSION(2,10,0)
 static void
 moo_edit_window_page_setup (MooEditWindow *window)
 {
