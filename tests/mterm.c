@@ -37,7 +37,7 @@ init (int *argc, char ***argv, const char **cmd)
     if (gdk_debug)
         gdk_window_set_debug_updates (TRUE);
 
-    moo_set_log_func_file ("/tmp/mterm");
+//     moo_set_log_func_file ("/tmp/mterm");
 }
 
 

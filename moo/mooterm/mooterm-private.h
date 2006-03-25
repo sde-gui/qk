@@ -35,13 +35,14 @@ G_BEGIN_DECLS
 #define TERM_IMPLEMENT_ME TERM_IMPLEMENT_ME_WARNING ("%s: implement me", G_STRLOC)
 
 
+#define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
+#define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
+
 #define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
 #define ADJUSTMENT_DELTA            30.0
 #define UPDATE_PRIORITY             G_PRIORITY_DEFAULT
 #define UPDATE_TIMEOUT              30
-
-#define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
-#define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
+#define REDRAW_INTERVAL             0.6
 
 #define MIN_TERMINAL_WIDTH          8
 #define MIN_TERMINAL_HEIGHT         4
@@ -111,6 +112,7 @@ struct _MooTermPrivate {
 
     GdkRegion      *changed; /* screen coordinates */
     guint           update_timeout;
+    GTimer         *redraw_timer;
     guint           cursor_row_old; /* cursor has been here, and it's been invalidated */
     guint           cursor_col_old;
     int             scroll;

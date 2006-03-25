@@ -269,6 +269,9 @@ moo_term_init (MooTerm *term)
     term->priv->width = 80;
     term->priv->height = 24;
 
+    term->priv->redraw_timer = g_timer_new ();
+    g_timer_stop (term->priv->redraw_timer);
+
     term->priv->selection = _moo_term_selection_new (term);
 
     term->priv->cursor_visible = TRUE;
@@ -372,6 +375,8 @@ static void moo_term_finalize               (GObject        *object)
 
     if (term->priv->changed)
         gdk_region_destroy (term->priv->changed);
+
+    g_timer_destroy (term->priv->redraw_timer);
 
     OBJECT_UNREF (term->priv->layout);
 
