@@ -146,6 +146,8 @@ moo_print_operation_set_doc (MooPrintOperation  *print,
 
     if (print->doc)
         g_object_unref (print->doc);
+    if (print->buffer)
+        g_object_unref (print->buffer);
 
     print->doc = doc;
 
@@ -153,6 +155,7 @@ moo_print_operation_set_doc (MooPrintOperation  *print,
     {
         g_object_ref (print->doc);
         print->buffer = gtk_text_view_get_buffer (print->doc);
+        g_object_ref (print->buffer);
     }
     else
     {
