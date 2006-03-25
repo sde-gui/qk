@@ -491,7 +491,7 @@ ms_script_check (const char *string)
     MSParser *parser;
     MSScriptCheckResult ret;
     GSList *stack;
-    gboolean semicolon;
+    gboolean semicolon = FALSE;
 
     g_return_val_if_fail (string != NULL, MS_SCRIPT_ERROR);
 

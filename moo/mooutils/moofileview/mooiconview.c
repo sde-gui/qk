@@ -1712,7 +1712,7 @@ static void invalidate_path_rectangle       (MooIconView    *view,
                                              GtkTreePath    *path)
 {
     Column *column;
-    int index_;
+    int index_ = 0;
 
     if (!GTK_WIDGET_REALIZED (view) || view->priv->update_idle)
         return;

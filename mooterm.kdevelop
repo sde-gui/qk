@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>optimized</useconfiguration>
     </general>
     <run>
       <mainprogram>mterm</mainprogram>
@@ -82,7 +82,7 @@
         <f77flags/>
       </gcc-4.0>
       <optimized>
-        <configargs>--enable-all-gcc-warnings=fatal --enable-developer-mode --without-mooedit --without-mooapp --without-python</configargs>
+        <configargs>--enable-all-gcc-warnings --without-mooedit --without-mooapp --without-python</configargs>
         <builddir>build/mooterm-optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -90,13 +90,13 @@
         <cflags>-O3 -g3</cflags>
         <cxxflags>-O3 -g3</cxxflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
       </optimized>
       <mingw>
         <envvars>

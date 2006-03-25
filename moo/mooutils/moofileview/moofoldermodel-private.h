@@ -176,7 +176,7 @@ static int       file_list_add          (FileList   *flist,
 static int       file_list_remove       (FileList   *flist,
                                          MooFile    *file)
 {
-    int index_;
+    int index_ = 0;
     GList *link;
 
     link = _list_find (flist, file, &index_);

@@ -1019,7 +1019,7 @@ ms_node_get_item_eval (MSNode    *node_,
                        MSContext *ctx)
 {
     MSNodeGetItem *node = MS_NODE_GET_ITEM (node_);
-    MSValue *obj = NULL, *key = NULL, *val;
+    MSValue *obj = NULL, *key = NULL, *val = NULL;
     guint len;
     int index;
 

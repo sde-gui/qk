@@ -339,7 +339,7 @@ splitlines (const char *string,
 
     while (len)
     {
-        guint term_len;
+        guint term_len = 0;
         const char *term = find_line_term (string, len, &term_len);
 
         n_lines++;
@@ -381,7 +381,7 @@ moo_parse_user_actions (const char          *filename,
     GError *error = NULL;
     Parser parser;
     char **lines;
-    guint n_lines, i;
+    guint n_lines = 0, i;
 
     g_return_if_fail (filename != NULL);
     g_return_if_fail (ctx_func != NULL);
