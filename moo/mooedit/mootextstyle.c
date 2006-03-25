@@ -19,33 +19,22 @@
 #include <string.h>
 
 
-static GMemChunk *style_chunk__ = NULL;
-
-inline static void
-init_style_chunk__ (void)
-{
-    if (!style_chunk__)
-        style_chunk__ = g_mem_chunk_create (MooTextStyle, 128, G_ALLOC_AND_FREE);
-}
-
 inline static MooTextStyle*
 style_new (void)
 {
-    init_style_chunk__ ();
-    return g_chunk_new (MooTextStyle, style_chunk__);
+    return g_new (MooTextStyle, 1);
 }
 
 inline static MooTextStyle*
 style_new0 (void)
 {
-    init_style_chunk__ ();
-    return g_chunk_new0 (MooTextStyle, style_chunk__);
+    return g_new0 (MooTextStyle, 1);
 }
 
 inline static void
 style_free (MooTextStyle *style)
 {
-    g_chunk_free (style, style_chunk__);
+    g_free (style);
 }
 
 
