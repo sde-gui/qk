@@ -26,6 +26,9 @@
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
+#if GTK_CHECK_VERSION(2,9,0)
+#include "mooedit/mootextprint.h"
+#endif
 #include <string.h>
 #include <gtk/gtk.h>
 
@@ -167,6 +170,11 @@ static void moo_edit_window_next_tab    (MooEditWindow      *window);
 static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
 static void moo_edit_window_next_bookmark (MooEditWindow    *window);
 static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
+
+#if GTK_CHECK_VERSION(2,9,0)
+static void moo_edit_window_page_setup  (MooEditWindow    *window);
+static void moo_edit_window_print       (MooEditWindow    *window);
+#endif
 
 
 /* MOO_TYPE_EDIT_WINDOW */
@@ -579,6 +587,26 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+#if GTK_CHECK_VERSION(2,9,0)
+    moo_window_class_new_action (window_class, "PageSetup",
+                                 "name", "Page Setup",
+                                 "label", "Page Setup",
+                                 "tooltip", "Page Setup",
+                                 "accel", "<ctrl><shift>P",
+                                 "closure-callback", moo_edit_window_page_setup,
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "Print",
+                                 "name", "Print",
+                                 "label", "Print",
+                                 "tooltip", "Print",
+                                 "accel", "<ctrl>P",
+                                 "icon-stock-id", GTK_STOCK_PRINT,
+                                 "closure-callback", moo_edit_window_print,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+#endif
+
     moo_window_class_new_action_custom (window_class, LANG_ACTION_ID,
                                         (MooWindowActionFunc) create_lang_action,
                                         NULL, NULL);
@@ -988,6 +1016,25 @@ moo_edit_window_prev_bookmark (MooEditWindow *window)
         g_slist_free (bookmarks);
     }
 }
+
+
+#if GTK_CHECK_VERSION(2,9,0)
+static void
+moo_edit_window_page_setup (MooEditWindow *window)
+{
+    gpointer doc = moo_edit_window_get_active_doc (window);
+    moo_edit_page_setup (doc, GTK_WIDGET (window));
+}
+
+
+static void
+moo_edit_window_print (MooEditWindow *window)
+{
+    gpointer doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+    moo_edit_print (doc, GTK_WIDGET (window));
+}
+#endif
 
 
 /****************************************************************************/

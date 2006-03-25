@@ -15,6 +15,9 @@
       <separator/>
       <item action="Reload"/>
       <separator/>
+      <item action="PageSetup"/>
+      <item action="Print"/>
+      <separator/>
       <item action="Close"/>
       <item action="CloseAll"/>
       <separator/>

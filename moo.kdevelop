@@ -54,16 +54,33 @@
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <cflags>-O0 -g3</cflags>
-        <cxxflags>-O0 -g3</cxxflags>
-        <envvars/>
         <topsourcedir/>
         <cppflags/>
-        <ldflags/>
         <ccompilerbinary/>
         <cxxcompilerbinary/>
         <f77compilerbinary/>
         <f77flags/>
       </debug>
+      <gtk-print>
+        <configargs>--enable-debug --enable-all-gcc-warnings --without-python --prefix=/usr/local/gtk-print</configargs>
+        <builddir>build/gtk-print</builddir>
+        <ccompiler>kdevgccoptions</ccompiler>
+        <cxxcompiler>kdevgppoptions</cxxcompiler>
+        <f77compiler>kdevg77options</f77compiler>
+        <cflags>-O0 -g3 -I/usr/local/gtk-print/include</cflags>
+        <envvars>
+          <envvar value="/usr/local/gtk-print/lib/pkgconfig" name="PKG_CONFIG_PATH"/>
+          <envvar value="/usr/local/gtk-print/lib" name="LD_LIBRARY_PATH"/>
+          <envvar value="/usr/local/gtk-print/bin:$PATH" name="PATH"/>
+        </envvars>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags>-L/usr/local/gtk-print/lib</ldflags>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
+        <f77compilerbinary/>
+        <f77flags/>
+      </gtk-print>
       <gtk-cvs>
         <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --enable-developer-mode --disable-moo-module --without-python --without-mooterm --without-mooapp</configargs>
         <builddir>build/gtk-cvs</builddir>
