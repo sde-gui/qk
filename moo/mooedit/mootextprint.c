@@ -134,6 +134,8 @@ moo_print_operation_init (MooPrintOperation *print)
     if (page_setup)
         gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (print),
                                                     page_setup);
+
+    print->last_line = -1;
 }
 
 
@@ -208,58 +210,95 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
                                  GtkPrintContext    *context)
 {
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
-    PangoFontDescription *desc;
+    PangoFontDescription *font = NULL;
     PangoLayoutLine *layout_line;
-    double width, height;
     double page_height;
     GList *page_breaks;
     int num_lines;
     int line;
+    GtkTextIter iter;
+    GTimer *timer;
 
     g_return_if_fail (print->doc != NULL);
+    g_return_if_fail (print->first_line >= 0);
+    g_return_if_fail (print->last_line < 0 || print->last_line >= print->first_line);
+    g_return_if_fail (print->first_line < gtk_text_buffer_get_line_count (print->buffer));
+    g_return_if_fail (print->last_line < gtk_text_buffer_get_line_count (print->buffer));
 
-    width = gtk_print_context_get_width (context);
-    height = gtk_print_context_get_height (context);
+    timer = g_timer_new ();
 
-    g_object_get (print->buffer, "text", &print->text, NULL);
+    if (print->last_line < 0)
+        print->last_line = gtk_text_buffer_get_line_count (print->buffer) - 1;
+
+    print->page.x = print->page.y = 0;
+    print->page.width = gtk_print_context_get_width (context);
+    print->page.height = gtk_print_context_get_height (context);
+
+    if (print->font)
+        font = pango_font_description_from_string (print->font);
+
+    if (!font)
+    {
+        PangoContext *widget_ctx;
+
+        widget_ctx = gtk_widget_get_pango_context (GTK_WIDGET (print->doc));
+
+        if (widget_ctx)
+        {
+            font = pango_context_get_font_description (widget_ctx);
+
+            if (font)
+                font = pango_font_description_copy_static (font);
+        }
+    }
+
     print->layout = gtk_print_context_create_layout (context);
 
-    desc = pango_font_description_from_string ("Courier New 12");
-    pango_layout_set_font_description (print->layout, desc);
-    pango_font_description_free (desc);
+    if (font)
+    {
+        pango_layout_set_font_description (print->layout, font);
+        pango_font_description_free (font);
+    }
 
-    pango_layout_set_width (print->layout, width * PANGO_SCALE);
-
-    pango_layout_set_text (print->layout, print->text, -1);
-
-    num_lines = pango_layout_get_line_count (print->layout);
-
-    page_breaks = NULL;
+    print->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
+    gtk_text_buffer_get_iter_at_line (print->buffer, &iter,
+                                      print->first_line);
+    g_array_append_val (print->pages, iter);
     page_height = 0;
 
-    for (line = 0; line < num_lines; line++)
+    for (line = print->first_line; line <= print->last_line; line++)
     {
-        PangoRectangle ink_rect, logical_rect;
+        GtkTextIter end;
+        PangoRectangle line_rect;
         double line_height;
+        char *text;
 
-        layout_line = pango_layout_get_line (print->layout, line);
-        pango_layout_line_get_extents (layout_line, &ink_rect, &logical_rect);
+        end = iter;
 
-        line_height = logical_rect.height / 1024.0;
+        if (!gtk_text_iter_ends_line (&end))
+            gtk_text_iter_forward_to_line_end (&end);
 
-        if (page_height + line_height > height)
+        text = gtk_text_buffer_get_text (print->buffer, &iter, &end, FALSE);
+        pango_layout_set_text (print->layout, text, -1);
+        g_free (text);
+
+        pango_layout_get_pixel_extents (print->layout, NULL, &line_rect);
+
+        if (page_height + line_rect.height > print->page.height)
         {
-            page_breaks = g_list_prepend (page_breaks, GINT_TO_POINTER (line));
+            g_array_append_val (print->pages, iter);
             page_height = 0;
         }
 
-        page_height += line_height;
+        page_height += line_rect.height;
+        gtk_text_iter_forward_line (&iter);
     }
 
-    page_breaks = g_list_reverse (page_breaks);
-    gtk_print_operation_set_nr_of_pages (operation, g_list_length (page_breaks) + 1);
+    gtk_print_operation_set_nr_of_pages (operation, print->pages->len);
 
-    print->page_breaks = page_breaks;
+    g_message ("begin_print: %d pages in %f s", print->pages->len,
+               g_timer_elapsed (timer, NULL));
+    g_timer_destroy (timer);
 }
 
 
@@ -269,63 +308,37 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
                                int                 page_nr)
 {
     cairo_t *cr;
-    GList *pagebreak;
-    int start, end, i;
-    PangoLayoutIter *iter;
-    double start_pos;
+    GtkTextIter start, end;
+    char *text;
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
+    GTimer *timer;
 
     g_return_if_fail (print->doc != NULL);
+    g_return_if_fail (print->pages != NULL);
+    g_return_if_fail (print->layout != NULL);
+    g_return_if_fail (page_nr < print->pages->len);
 
-    if (page_nr == 0)
-    {
-        start = 0;
-    }
-    else
-    {
-        pagebreak = g_list_nth (print->page_breaks, page_nr - 1);
-        start = GPOINTER_TO_INT (pagebreak->data);
-    }
-
-    pagebreak = g_list_nth (print->page_breaks, page_nr);
-
-    if (pagebreak == NULL)
-        end = pango_layout_get_line_count (print->layout);
-    else
-        end = GPOINTER_TO_INT (pagebreak->data);
+    timer = g_timer_new ();
 
     cr = gtk_print_context_get_cairo (context);
-
     cairo_set_source_rgb (cr, 0, 0, 0);
 
-    i = 0;
-    start_pos = 0;
-    iter = pango_layout_get_iter (print->layout);
+    start = g_array_index (print->pages, GtkTextIter, page_nr);
 
-    do
-    {
-        PangoRectangle   logical_rect;
-        PangoLayoutLine *line;
-        int              baseline;
+    if (page_nr + 1 < print->pages->len)
+        end = g_array_index (print->pages, GtkTextIter, page_nr + 1);
+    else
+        gtk_text_buffer_get_end_iter (print->buffer, &end);
 
-        if (i >= start)
-        {
-            line = pango_layout_iter_get_line (iter);
+    text = gtk_text_buffer_get_text (print->buffer, &start, &end, FALSE);
+    pango_layout_set_text (print->layout, text, -1);
+    g_free (text);
 
-            pango_layout_iter_get_line_extents (iter, NULL, &logical_rect);
-            baseline = pango_layout_iter_get_baseline (iter);
+    cairo_move_to (cr, print->page.x, print->page.y);
+    pango_cairo_show_layout (cr, print->layout);
 
-            if (i == start)
-                start_pos = logical_rect.y / 1024.0;
-
-            cairo_move_to (cr, logical_rect.x / 1024.0, baseline / 1024.0 - start_pos);
-
-            pango_cairo_show_layout_line  (cr, line);
-        }
-
-        i++;
-    }
-    while (i < end && pango_layout_iter_next_line (iter));
+    g_message ("page %d: %f s", page_nr, g_timer_elapsed (timer, NULL));
+    g_timer_destroy (timer);
 }
 
 
@@ -337,14 +350,11 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (print->doc != NULL);
 
-    if (print->layout)
-        g_object_unref (print->layout);
-    g_free (print->text);
-    g_list_free (print->page_breaks);
+    g_object_unref (print->layout);
+    g_array_free (print->pages, TRUE);
 
     print->layout = NULL;
-    print->text = NULL;
-    print->page_breaks = NULL;
+    print->pages = NULL;
 }
 
 
@@ -361,6 +371,14 @@ moo_edit_print (GtkTextView *view,
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     print = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+
+    {
+        GtkTextIter start, end;
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+        gtk_text_buffer_get_bounds (buffer, &start, &end);
+        g_assert (strlen (gtk_text_buffer_get_text (buffer, &start, &end, FALSE)) > 0);
+        g_assert (MOO_PRINT_OPERATION(print)->last_line < 0);
+    }
 
     if (!parent)
         parent = GTK_WIDGET (view);

@@ -35,9 +35,21 @@ struct _MooPrintOperation
     GtkTextView *doc;
     GtkTextBuffer *buffer;
 
+    /* print settings */
+    int first_line;
+    int last_line;          /* -1 to print everything after first_line */
+    char *font;             /* overrides font set in the doc */
+
+    /* aux stuff */
+    GArray *pages;          /* GtkTextIter's pointing to pages start */
     PangoLayout *layout;
-    char *text;
-    GList *page_breaks;
+
+    struct {
+        double x;
+        double y;
+        double width;
+        double height;
+    } page;                 /* text area */
 };
 
 struct _MooPrintOperationClass
