@@ -17,6 +17,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
+#include "mooutils/moofontsel.h"
 #include <string.h>
 
 
@@ -303,21 +304,26 @@ connect_signals (MooGladeXML    *xml,
 GtkWidget*
 moo_prefs_dialog_page_new_from_xml (const char         *label,
                                     const char         *icon_stock_id,
+                                    MooGladeXML        *xml,
                                     const char         *buffer,
                                     int                 buffer_size,
                                     const char         *page_id,
                                     const char         *prefs_root)
 {
     MooPrefsDialogPage *page;
-    MooGladeXML *xml;
     struct {
         const char *prefs_root;
         const char *page_id;
     } data = {prefs_root, page_id};
 
     g_return_val_if_fail (buffer != NULL && page_id != NULL, NULL);
+    g_return_val_if_fail (!xml || MOO_IS_GLADE_XML (xml), NULL);
 
-    xml = moo_glade_xml_new_empty ();
+    if (!xml)
+        xml = moo_glade_xml_new_empty ();
+    else
+        g_object_ref (xml);
+
     moo_glade_xml_map_id (xml, page_id, MOO_TYPE_PREFS_DIALOG_PAGE);
     moo_glade_xml_map_signal (xml, connect_signals, &data);
 
@@ -514,14 +520,14 @@ static void setting_set_value   (GtkWidget      *widget,
             return;
         }
     }
-    else if (GTK_IS_FONT_BUTTON (widget))
+    else if (GTK_IS_FONT_BUTTON (widget) || MOO_IS_FONT_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_STRING)
         {
             const char *val = g_value_get_string (value);
             if (!val)
                 val = "";
-            gtk_font_button_set_font_name (GTK_FONT_BUTTON (widget), val);
+            g_object_set (widget, "font-name", val, NULL);
             return;
         }
     }
