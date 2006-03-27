@@ -28,7 +28,7 @@ typedef struct _MooTermLine MooTermLine;
 #define MOO_TERM_EMPTY_CHAR  ' '
 #define MOO_TERM_ZERO_ATTR {0, 0, 0}
 
-/* FALSE if equal */
+
 #define MOO_TERM_TEXT_ATTR_EQUAL(a1__,a2__)             \
     ((a1__).mask == (a2__).mask &&                      \
     (!((a1__).mask & MOO_TERM_TEXT_FOREGROUND) ||       \
