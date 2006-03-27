@@ -17,7 +17,6 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
-#include "mooutils/moofontsel.h"
 #include <string.h>
 
 
@@ -520,7 +519,7 @@ static void setting_set_value   (GtkWidget      *widget,
             return;
         }
     }
-    else if (GTK_IS_FONT_BUTTON (widget) || MOO_IS_FONT_BUTTON (widget))
+    else if (GTK_IS_FONT_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_STRING)
         {

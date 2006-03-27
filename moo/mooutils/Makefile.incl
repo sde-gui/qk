@@ -61,8 +61,6 @@ mooutils_sources =                             \
     $(mooutils)/moofilewatch.c                 \
     $(mooutils)/moofilewatch.h                 \
     $(mooutils)/moofiltermgr.c                 \
-    $(mooutils)/moofontsel.c                   \
-    $(mooutils)/moofontsel.h                   \
     $(mooutils)/mooglade.c                     \
     $(mooutils)/moohistoryentry.c              \
     $(mooutils)/moohistorylist.c               \
