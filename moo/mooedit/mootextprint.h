@@ -32,6 +32,7 @@ typedef struct _MooPrintOperationClass    MooPrintOperationClass;
 struct _MooPrintOperation
 {
     GtkPrintOperation base;
+
     GtkTextView *doc;
     GtkTextBuffer *buffer;
 
@@ -39,6 +40,8 @@ struct _MooPrintOperation
     int first_line;
     int last_line;          /* -1 to print everything after first_line */
     char *font;             /* overrides font set in the doc */
+    gboolean wrap;
+    gboolean ellipsize;
 
     /* aux stuff */
     GArray *pages;          /* GtkTextIter's pointing to pages start */

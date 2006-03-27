@@ -136,6 +136,8 @@ moo_print_operation_init (MooPrintOperation *print)
                                                     page_setup);
 
     print->last_line = -1;
+    print->wrap = FALSE;
+    print->ellipsize = TRUE;
 }
 
 
@@ -216,7 +218,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     GList *page_breaks;
     int num_lines;
     int line;
-    GtkTextIter iter;
+    GtkTextIter iter, print_end;
     GTimer *timer;
 
     g_return_if_fail (print->doc != NULL);
@@ -254,6 +256,17 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 
     print->layout = gtk_print_context_create_layout (context);
 
+    if (print->wrap)
+    {
+        pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
+        pango_layout_set_wrap (print->layout, PANGO_WRAP_CHAR);
+    }
+    else if (print->ellipsize)
+    {
+        pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
+        pango_layout_set_ellipsize (print->layout, PANGO_ELLIPSIZE_END);
+    }
+
     if (font)
     {
         pango_layout_set_font_description (print->layout, font);
@@ -263,10 +276,13 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     print->pages = g_array_new (FALSE, FALSE, sizeof (GtkTextIter));
     gtk_text_buffer_get_iter_at_line (print->buffer, &iter,
                                       print->first_line);
+    gtk_text_buffer_get_iter_at_line (print->buffer, &print_end,
+                                      print->last_line);
+    gtk_text_iter_forward_line (&print_end);
     g_array_append_val (print->pages, iter);
     page_height = 0;
 
-    for (line = print->first_line; line <= print->last_line; line++)
+    while (gtk_text_iter_compare (&iter, &print_end) < 0)
     {
         GtkTextIter end;
         PangoRectangle line_rect;
@@ -283,15 +299,52 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         g_free (text);
 
         pango_layout_get_pixel_extents (print->layout, NULL, &line_rect);
+        line_height = line_rect.height;
 
-        if (page_height + line_rect.height > print->page.height)
+        gtk_text_iter_forward_line (&iter);
+
+        if (page_height + line_height > print->page.height)
         {
+            gboolean part = FALSE;
+            PangoLayoutIter *layout_iter;
+
+            layout_iter = pango_layout_get_iter (print->layout);
+
+            if (print->wrap && pango_layout_get_line_count (print->layout) > 1)
+            {
+                double part_height = 0;
+
+                do
+                {
+                    PangoLayoutLine *layout_line;
+
+                    layout_line = pango_layout_iter_get_line (layout_iter);
+                    pango_layout_line_get_pixel_extents (layout_line, NULL, &line_rect);
+
+                    if (page_height + part_height + line_rect.height > print->page.height)
+                        break;
+
+                    part_height += line_rect.height;
+                    part = TRUE;
+                }
+                while (pango_layout_iter_next_line (layout_iter));
+            }
+
+            if (part)
+            {
+                int index = pango_layout_iter_get_index (layout_iter);
+                iter = end;
+                gtk_text_iter_set_line_index (&iter, index);
+                line_height = 0;
+            }
+
+            pango_layout_iter_free (layout_iter);
+
             g_array_append_val (print->pages, iter);
             page_height = 0;
         }
 
-        page_height += line_rect.height;
-        gtk_text_iter_forward_line (&iter);
+        page_height += line_height;
     }
 
     gtk_print_operation_set_nr_of_pages (operation, print->pages->len);
