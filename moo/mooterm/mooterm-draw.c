@@ -856,17 +856,19 @@ term_draw_range_simple (MooTerm        *term,
 
     while (len)
     {
-        guint i;
+        guint n = 1;
         MooTermTextAttr attr = _moo_term_line_get_attr (line, start);
 
-        for (i = 1; i < len &&
-             MOO_TERM_TEXT_ATTR_EQUAL (attr, _moo_term_line_get_attr (line, start + i));
-             ++i) ;
+        while (n < len)
+            if (MOO_TERM_TEXT_ATTR_EQUAL (attr, _moo_term_line_get_attr (line, start + n)))
+                n++;
+            else
+                break;
 
-        term_draw_cells (term, drawable, abs_row, start, i, attr, selected);
+        term_draw_cells (term, drawable, abs_row, start, n, attr, selected);
 
-        len -= i;
-        start += i;
+        len -= n;
+        start += n;
     }
 }
 
