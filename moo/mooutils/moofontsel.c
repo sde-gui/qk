@@ -46,14 +46,6 @@
 #define N_(s) _(s)
 
 
-/* We don't enable the font and style entries because they don't add
- * much in terms of visible effect and have a weird effect on keynav.
- * the Windows font selector has entries similarly positioned but they
- * act in conjunction with the associated lists to form a single focus
- * location.
- */
-#undef INCLUDE_FONT_ENTRIES
-
 /* This is the default text shown in the preview entry, though the user
    can set it. Remember that some fonts only have capital letters. */
 #define PREVIEW_TEXT N_("abcdefghijk ABCDEFGHIJK")
@@ -118,8 +110,7 @@ static void     moo_font_selection_select_font           (GtkTreeSelection *sele
 static void     moo_font_selection_show_available_fonts  (MooFontSelection *fs);
 
 static void     moo_font_selection_show_available_styles (MooFontSelection *fs);
-static void     moo_font_selection_select_best_style     (MooFontSelection *fs,
-							  gboolean          use_first);
+static void     moo_font_selection_select_best_style     (MooFontSelection *fs);
 static void     moo_font_selection_select_style          (GtkTreeSelection *selection,
 							  gpointer          data);
 
@@ -128,17 +119,13 @@ static void     moo_font_selection_show_available_sizes  (MooFontSelection *fs,
 							  gboolean          first_time);
 static void     moo_font_selection_size_activate         (GtkWidget        *w,
 							  gpointer          data);
-static gboolean moo_font_selection_size_focus_out        (GtkWidget        *w,
-							  GdkEventFocus    *event,
-							  gpointer          data);
+static gboolean moo_font_selection_size_focus_out        (MooFontSelection *fs);
 static void     moo_font_selection_select_size           (GtkTreeSelection *selection,
 							  gpointer          data);
 
-static void     moo_font_selection_scroll_on_map         (GtkWidget        *w,
-							  gpointer          data);
+static void     moo_font_selection_scroll_on_map         (MooFontSelection *fs);
 
-static void     moo_font_selection_preview_changed       (GtkWidget        *entry,
-							  MooFontSelection *fontsel);
+static void     moo_font_selection_preview_changed       (MooFontSelection *fontsel);
 
 /* Misc. utility functions. */
 static void    moo_font_selection_load_font          (MooFontSelection *fs);
@@ -151,34 +138,8 @@ static void    moo_font_selection_dialog_init	     (MooFontSelectionDialog *font
 static GtkVBoxClass *font_selection_parent_class = NULL;
 static GtkWindowClass *font_selection_dialog_parent_class = NULL;
 
+G_DEFINE_TYPE(MooFontSelection, moo_font_selection, GTK_TYPE_VBOX)
 
-GType
-moo_font_selection_get_type (void)
-{
-  static GType font_selection_type = 0;
-
-  if (!font_selection_type)
-    {
-      static const GTypeInfo fontsel_type_info =
-      {
-	sizeof (MooFontSelectionClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-	(GClassInitFunc) moo_font_selection_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-	sizeof (MooFontSelection),
-	0,		/* n_preallocs */
-	(GInstanceInitFunc) moo_font_selection_init,
-      };
-
-      font_selection_type =
-	g_type_register_static (GTK_TYPE_VBOX, "MooFontSelection",
-				&fontsel_type_info, 0);
-    }
-
-  return font_selection_type;
-}
 
 static void
 moo_font_selection_class_init (MooFontSelectionClass *klass)
@@ -300,7 +261,6 @@ static void
 moo_font_selection_init (MooFontSelection *fontsel)
 {
   GtkWidget *scrolled_win;
-  GtkWidget *text_frame;
   GtkWidget *text_box;
   GtkWidget *table, *label;
   GtkWidget *font_label, *style_label;
@@ -322,22 +282,6 @@ moo_font_selection_init (MooFontSelection *fontsel)
   gtk_table_set_col_spacings (GTK_TABLE (table), 12);
   gtk_box_pack_start (GTK_BOX (fontsel), table, TRUE, TRUE, 0);
 
-#ifdef INCLUDE_FONT_ENTRIES
-  fontsel->font_entry = gtk_entry_new ();
-  gtk_editable_set_editable (GTK_EDITABLE (fontsel->font_entry), FALSE);
-  gtk_widget_set_size_request (fontsel->font_entry, 20, -1);
-  gtk_widget_show (fontsel->font_entry);
-  gtk_table_attach (GTK_TABLE (table), fontsel->font_entry, 0, 1, 1, 2,
-		    GTK_FILL, 0, 0, 0);
-
-  fontsel->font_style_entry = gtk_entry_new ();
-  gtk_editable_set_editable (GTK_EDITABLE (fontsel->font_style_entry), FALSE);
-  gtk_widget_set_size_request (fontsel->font_style_entry, 20, -1);
-  gtk_widget_show (fontsel->font_style_entry);
-  gtk_table_attach (GTK_TABLE (table), fontsel->font_style_entry, 1, 2, 1, 2,
-		    GTK_FILL, 0, 0, 0);
-#endif /* INCLUDE_FONT_ENTRIES */
-
   fontsel->size_entry = gtk_entry_new ();
   gtk_widget_set_size_request (fontsel->size_entry, 20, -1);
   gtk_widget_show (fontsel->size_entry);
@@ -346,9 +290,10 @@ moo_font_selection_init (MooFontSelection *fontsel)
   g_signal_connect (fontsel->size_entry, "activate",
 		    G_CALLBACK (moo_font_selection_size_activate),
 		    fontsel);
-  g_signal_connect_after (fontsel->size_entry, "focus_out_event",
-			  G_CALLBACK (moo_font_selection_size_focus_out),
-			  fontsel);
+  g_signal_connect_data (fontsel->size_entry, "focus_out_event",
+                         G_CALLBACK (moo_font_selection_size_focus_out),
+                         fontsel, NULL,
+                         G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
   font_label = gtk_label_new_with_mnemonic (_("_Family:"));
   gtk_misc_set_alignment (GTK_MISC (font_label), 0.0, 0.5);
@@ -483,9 +428,10 @@ moo_font_selection_init (MooFontSelection *fontsel)
   g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (fontsel->family_list)), "changed",
 		    G_CALLBACK (moo_font_selection_select_font), fontsel);
 
-  g_signal_connect_after (fontsel->family_list, "map",
-			  G_CALLBACK (moo_font_selection_scroll_on_map),
-			  fontsel);
+  g_signal_connect_data (fontsel->family_list, "map",
+                         G_CALLBACK (moo_font_selection_scroll_on_map),
+                         fontsel, NULL,
+                         G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
   g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (fontsel->face_list)), "changed",
 		    G_CALLBACK (moo_font_selection_select_style), fontsel);
@@ -555,8 +501,8 @@ moo_font_selection_init (MooFontSelection *fontsel)
   gtk_label_set_mnemonic_widget (GTK_LABEL (label), fontsel->preview_entry);
 
   gtk_widget_show (fontsel->preview_entry);
-  g_signal_connect (fontsel->preview_entry, "changed",
-		    G_CALLBACK (moo_font_selection_preview_changed), fontsel);
+  g_signal_connect_swapped (fontsel->preview_entry, "changed",
+                            G_CALLBACK (moo_font_selection_preview_changed), fontsel);
   gtk_widget_set_size_request (fontsel->preview_entry,
 			       -1, INITIAL_PREVIEW_HEIGHT);
   gtk_box_pack_start (GTK_BOX (text_box), fontsel->preview_entry,
@@ -607,8 +553,7 @@ moo_font_selection_screen_changed (GtkWidget *widget,
 }
 
 static void
-moo_font_selection_preview_changed (GtkWidget        *entry,
-				    MooFontSelection *fontsel)
+moo_font_selection_preview_changed (MooFontSelection *fontsel)
 {
   g_object_notify (G_OBJECT (fontsel), "preview_text");
 }
@@ -643,16 +588,8 @@ set_cursor_to_iter (GtkTreeView *view,
 /* This is called when the list is mapped. Here we scroll to the current
    font if necessary. */
 static void
-moo_font_selection_scroll_on_map (GtkWidget		*widget,
-                                  gpointer		 data)
+moo_font_selection_scroll_on_map (MooFontSelection *fontsel)
 {
-  MooFontSelection *fontsel;
-
-#ifdef FONTSEL_DEBUG
-  g_message ("In expose_list\n");
-#endif
-  fontsel = MOO_FONT_SELECTION (data);
-
   /* Try to scroll the font family list to the selected item */
   scroll_to_selection (GTK_TREE_VIEW (fontsel->family_list));
 
@@ -671,9 +608,6 @@ moo_font_selection_select_font (GtkTreeSelection *selection,
   MooFontSelection *fontsel;
   GtkTreeModel *model;
   GtkTreeIter iter;
-#ifdef INCLUDE_FONT_ENTRIES
-  const gchar *family_name;
-#endif
 
   fontsel = MOO_FONT_SELECTION (data);
 
@@ -686,13 +620,8 @@ moo_font_selection_select_font (GtkTreeSelection *selection,
 	{
 	  fontsel->family = family;
 
-#ifdef INCLUDE_FONT_ENTRIES
-	  family_name = pango_font_family_get_name (fontsel->family);
-	  gtk_entry_set_text (GTK_ENTRY (fontsel->font_entry), family_name);
-#endif
-
 	  moo_font_selection_show_available_styles (fontsel);
-	  moo_font_selection_select_best_style (fontsel, TRUE);
+	  moo_font_selection_select_best_style (fontsel);
 	}
 
       g_object_unref (family);
@@ -767,10 +696,6 @@ moo_font_selection_show_available_fonts (MooFontSelection *fontsel)
   if (match_family)
     {
       set_cursor_to_iter (GTK_TREE_VIEW (fontsel->family_list), &match_row);
-#ifdef INCLUDE_FONT_ENTRIES
-      gtk_entry_set_text (GTK_ENTRY (fontsel->font_entry),
-			  pango_font_family_get_name (match_family));
-#endif /* INCLUDE_FONT_ENTRIES */
     }
 
   g_free (families);
@@ -882,11 +807,6 @@ moo_font_selection_show_available_styles (MooFontSelection *fontsel)
   fontsel->face = match_face;
   if (match_face)
     {
-#ifdef INCLUDE_FONT_ENTRIES
-      const gchar *str = pango_font_face_get_face_name (fontsel->face);
-
-      gtk_entry_set_text (GTK_ENTRY (fontsel->font_style_entry), str);
-#endif
       set_cursor_to_iter (GTK_TREE_VIEW (fontsel->face_list), &match_row);
     }
 
@@ -899,8 +819,7 @@ moo_font_selection_show_available_styles (MooFontSelection *fontsel)
    However, the interface is so easy to use now I'm not sure it's worth it.
    Note: This will load a font. */
 static void
-moo_font_selection_select_best_style (MooFontSelection *fontsel,
-				      gboolean	        use_first)
+moo_font_selection_select_best_style (MooFontSelection *fontsel)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
@@ -945,7 +864,7 @@ static void
 moo_font_selection_show_available_sizes (MooFontSelection *fontsel,
 					 gboolean          first_time)
 {
-  gint i;
+  guint i;
   GtkListStore *model;
   gchar buffer[128];
   gchar *p;
@@ -1052,15 +971,10 @@ moo_font_selection_size_activate (GtkWidget   *w,
 }
 
 static gboolean
-moo_font_selection_size_focus_out (GtkWidget     *w,
-				   GdkEventFocus *event,
-				   gpointer       data)
+moo_font_selection_size_focus_out (MooFontSelection *fontsel)
 {
-  MooFontSelection *fontsel;
   gint new_size;
   const gchar *text;
-
-  fontsel = MOO_FONT_SELECTION (data);
 
   text = gtk_entry_get_text (GTK_ENTRY (fontsel->size_entry));
   new_size = MAX (0.1, atof (text) * PANGO_SCALE + 0.5);
@@ -1315,12 +1229,14 @@ moo_font_selection_set_preview_text  (MooFontSelection *fontsel,
 }
 
 
-gboolean
+void
 moo_font_selection_set_monospace (MooFontSelection *fontsel,
                                   gboolean          monospace)
 {
-  g_return_val_if_fail (MOO_IS_FONT_SELECTION (fontsel), FALSE);
+  g_return_if_fail (MOO_IS_FONT_SELECTION (fontsel));
+
   monospace = monospace ? TRUE : FALSE;
+
   if (monospace != fontsel->monospace)
     {
       fontsel->monospace = monospace;
@@ -1334,33 +1250,7 @@ moo_font_selection_set_monospace (MooFontSelection *fontsel,
  * MooFontSelectionDialog
  *****************************************************************************/
 
-GType
-moo_font_selection_dialog_get_type (void)
-{
-  static GType font_selection_dialog_type = 0;
-
-  if (!font_selection_dialog_type)
-    {
-      static const GTypeInfo fontsel_diag_info =
-      {
-	sizeof (MooFontSelectionDialogClass),
-	NULL,		/* base_init */
-	NULL,		/* base_finalize */
-	(GClassInitFunc) moo_font_selection_dialog_class_init,
-	NULL,		/* class_finalize */
-	NULL,		/* class_data */
-	sizeof (MooFontSelectionDialog),
-	0,		/* n_preallocs */
-	(GInstanceInitFunc) moo_font_selection_dialog_init,
-      };
-
-      font_selection_dialog_type =
-	g_type_register_static (GTK_TYPE_DIALOG, "MooFontSelectionDialog",
-				&fontsel_diag_info, 0);
-    }
-
-  return font_selection_dialog_type;
-}
+G_DEFINE_TYPE(MooFontSelectionDialog, moo_font_selection_dialog, GTK_TYPE_DIALOG)
 
 static void
 moo_font_selection_dialog_class_init (MooFontSelectionDialogClass *klass)
@@ -1536,12 +1426,9 @@ static void moo_font_button_set_property           (GObject            *object,
 static void moo_font_button_clicked                 (GtkButton         *button);
 
 /* Dialog response functions */
-static void dialog_ok_clicked                       (GtkWidget         *widget,
-                                                     gpointer           data);
-static void dialog_cancel_clicked                   (GtkWidget         *widget,
-                                                     gpointer           data);
-static void dialog_destroy                          (GtkWidget         *widget,
-                                                     gpointer           data);
+static void dialog_ok_clicked                       (MooFontButton     *font_button);
+static void dialog_cancel_clicked                   (MooFontButton     *font_button);
+static void dialog_destroy                          (MooFontButton     *font_button);
 
 /* Auxiliary functions */
 static GtkWidget *moo_font_button_create_inside     (MooFontButton     *gfs);
@@ -1551,33 +1438,7 @@ static void moo_font_button_update_font_info        (MooFontButton     *gfs);
 static gpointer parent_class = NULL;
 static guint font_button_signals[LAST_SIGNAL] = { 0 };
 
-GType
-moo_font_button_get_type (void)
-{
-  static GType font_button_type = 0;
-
-  if (!font_button_type)
-    {
-      static const GTypeInfo font_button_info =
-      {
-        sizeof (MooFontButtonClass),
-        NULL,           /* base_init */
-        NULL,           /* base_finalize */
-        (GClassInitFunc) moo_font_button_class_init,
-        NULL,           /* class_finalize */
-        NULL,           /* class_data */
-        sizeof (MooFontButton),
-        0,              /* n_preallocs */
-        (GInstanceInitFunc) moo_font_button_init,
-      };
-
-      font_button_type =
-        g_type_register_static (GTK_TYPE_BUTTON, "MooFontButton",
-                                &font_button_info, 0);
-    }
-
-  return font_button_type;
-}
+G_DEFINE_TYPE(MooFontButton, moo_font_button, GTK_TYPE_BUTTON)
 
 
 static void
@@ -2216,12 +2077,12 @@ moo_font_button_clicked (GtkButton *button)
       if (gtk_grab_get_current ())
         gtk_window_set_modal (GTK_WINDOW (font_dialog), TRUE);
 
-      g_signal_connect (font_dialog->ok_button, "clicked",
-                        G_CALLBACK (dialog_ok_clicked), font_button);
-      g_signal_connect (font_dialog->cancel_button, "clicked",
-                        G_CALLBACK (dialog_cancel_clicked), font_button);
-      g_signal_connect (font_dialog, "destroy",
-                        G_CALLBACK (dialog_destroy), font_button);
+      g_signal_connect_swapped (font_dialog->ok_button, "clicked",
+                                G_CALLBACK (dialog_ok_clicked), font_button);
+      g_signal_connect_swapped (font_dialog->cancel_button, "clicked",
+                                G_CALLBACK (dialog_cancel_clicked), font_button);
+      g_signal_connect_swapped (font_dialog, "destroy",
+                                G_CALLBACK (dialog_destroy), font_button);
     }
 
   if (!GTK_WIDGET_VISIBLE (font_button->priv->font_dialog))
@@ -2236,11 +2097,8 @@ moo_font_button_clicked (GtkButton *button)
 }
 
 static void
-dialog_ok_clicked (GtkWidget *widget,
-                   gpointer   data)
+dialog_ok_clicked (MooFontButton *font_button)
 {
-  MooFontButton *font_button = MOO_FONT_BUTTON (data);
-
   gtk_widget_hide (font_button->priv->font_dialog);
 
   g_free (font_button->priv->fontname);
@@ -2257,20 +2115,14 @@ dialog_ok_clicked (GtkWidget *widget,
 
 
 static void
-dialog_cancel_clicked (GtkWidget *widget,
-                       gpointer   data)
+dialog_cancel_clicked (MooFontButton *font_button)
 {
-  MooFontButton *font_button = MOO_FONT_BUTTON (data);
-
   gtk_widget_hide (font_button->priv->font_dialog);
 }
 
 static void
-dialog_destroy (GtkWidget *widget,
-                gpointer   data)
+dialog_destroy (MooFontButton *font_button)
 {
-  MooFontButton *font_button = MOO_FONT_BUTTON (data);
-
   /* Dialog will get destroyed so reference is not valid now */
   font_button->priv->font_dialog = NULL;
 }
