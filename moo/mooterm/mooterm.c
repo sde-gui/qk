@@ -97,7 +97,7 @@ enum {
 };
 
 enum {
-    PROP_0 = 0,
+    PROP_0,
     PROP_CURSOR_BLINKS,
     PROP_FONT_NAME
 };
@@ -151,7 +151,7 @@ static void moo_term_class_init (MooTermClass *klass)
                                              "font-name",
                                              "font-name",
                                              DEFAULT_MONOSPACE_FONT,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
     signals[SET_SCROLL_ADJUSTMENTS] =
             g_signal_new ("set-scroll-adjustments",
@@ -441,10 +441,6 @@ static void moo_term_get_property   (GObject        *object,
     switch (prop_id) {
         case PROP_CURSOR_BLINKS:
             g_value_set_boolean (value, term->priv->cursor_blinks);
-            break;
-
-        case PROP_FONT_NAME:
-            g_value_set_string (value, term->priv->font->name);
             break;
 
         default:

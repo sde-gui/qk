@@ -70,47 +70,47 @@ moo_term_font_new  (PangoContext   *ctx)
 }
 
 
-void
-moo_term_set_font_from_string (MooTerm        *term,
-                               const char     *font)
+static void
+moo_term_update_font (MooTerm *term)
 {
-    PangoFontDescription *font_desc;
+    PangoFontDescription *font;
+    GtkWidget *widget = GTK_WIDGET (term);
 
-    if (font)
-    {
-        font_desc = pango_font_description_from_string (font);
-    }
-    else
-    {
-        GtkWidget *widget = GTK_WIDGET (term);
-        gtk_widget_ensure_style (widget);
-        font_desc =
-                pango_font_description_copy_static (widget->style->font_desc);
-    }
+    _moo_term_init_font_stuff (term);
+    font = widget->style->font_desc;
 
-    g_return_if_fail (font_desc != NULL);
-
-    if (!pango_font_description_get_size (font_desc))
+    if (!pango_font_description_get_size (font))
     {
-        pango_font_description_free (font_desc);
         g_return_if_reached ();
     }
 
-    g_free (term->priv->font->name);
-    term->priv->font->name = g_strdup (font);
-    pango_context_set_font_description (term->priv->font->ctx, font_desc);
-
+    pango_context_set_font_description (term->priv->font->ctx, font);
     font_calculate (term->priv->font);
 
     if (GTK_WIDGET_REALIZED (term))
         _moo_term_size_changed (term);
-
-    pango_font_description_free (font_desc);
 }
 
 
 void
-_moo_term_init_font_stuff (MooTerm        *term)
+moo_term_set_font_from_string (MooTerm        *term,
+                               const char     *fontname)
+{
+    PangoFontDescription *font;
+
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_return_if_fail (fontname != NULL);
+
+    font = pango_font_description_from_string (fontname);
+    g_return_if_fail (font != NULL);
+
+    gtk_widget_modify_font (GTK_WIDGET (term), font);
+    pango_font_description_free (font);
+}
+
+
+void
+_moo_term_init_font_stuff (MooTerm *term)
 {
     PangoContext *ctx;
 
@@ -139,7 +139,6 @@ _moo_term_font_free (MooTermFont    *font)
     if (font)
     {
         g_object_unref (font->ctx);
-        g_free (font->name);
         g_free (font);
     }
 }
@@ -345,12 +344,16 @@ void
 _moo_term_style_set (GtkWidget *widget,
                      G_GNUC_UNUSED GtkStyle *previous_style)
 {
+    MooTerm *term = MOO_TERM (widget);
+
     g_return_if_fail (widget->style != NULL);
-    moo_term_set_text_colors (MOO_TERM (widget),
+
+    moo_term_set_text_colors (term,
                               &widget->style->text[GTK_STATE_NORMAL],
                               &widget->style->text[GTK_STATE_NORMAL],
                               &widget->style->base[GTK_STATE_NORMAL]);
-    moo_term_update_text_colors (MOO_TERM (widget));
+    moo_term_update_text_colors (term);
+    moo_term_update_font (term);
 }
 
 

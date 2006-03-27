@@ -50,7 +50,11 @@ G_BEGIN_DECLS
 
 #define SCROLL_GRANULARITY          3
 
-#define DEFAULT_MONOSPACE_FONT      "Monospace 10"
+#ifdef MOO_DEBUG
+#define DEFAULT_MONOSPACE_FONT "Courier New 11"
+#else
+#define DEFAULT_MONOSPACE_FONT "Monospace 10"
+#endif
 
 
 typedef enum {
@@ -291,7 +295,6 @@ void        _moo_term_dsr                   (MooTerm    *term,
 
 struct _MooTermFont {
     PangoContext   *ctx;
-    char           *name;
     guint           width;
     guint           height;
     guint           ascent;

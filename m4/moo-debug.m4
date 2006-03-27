@@ -11,7 +11,6 @@ AC_DEFUN([MOO_AC_DEBUG],[
             MOO_DEBUG="no"
         else
             MOO_DEBUG="yes"
-            MOO_DEBUG="yes"
         fi
     ],[
         MOO_DEBUG="no"
