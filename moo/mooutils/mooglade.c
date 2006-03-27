@@ -1275,7 +1275,7 @@ widget_props_add (WidgetProps  *props,
         if (!param_spec)
         {
             if (!ignore_unknown)
-                g_warning ("%s: could not find property '%s'in class '%s'",
+                g_message ("%s: could not find property '%s'in class '%s'",
                            G_STRLOC, name, G_OBJECT_CLASS_NAME (klass));
         }
         else if (parse_property (param_spec, value, &param))
