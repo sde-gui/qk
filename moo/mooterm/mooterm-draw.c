@@ -613,27 +613,8 @@ _moo_term_expose_event (GtkWidget      *widget,
                 g_timeout_add_full (UPDATE_PRIORITY, UPDATE_TIMEOUT,
                                     (GSourceFunc) update_timeout, term, NULL);
 
-    text_rec.width = PIXEL_WIDTH(term);
-    text_rec.height = PIXEL_HEIGHT(term);
-
-    if (event->area.x + event->area.width >= text_rec.width)
-    {
-        gdk_draw_rectangle (widget->window,
-                            term->priv->bg, TRUE,
-                            text_rec.width, 0,
-                            CHAR_WIDTH(term),
-                            widget->allocation.height);
-    }
-
-    if (event->area.y + event->area.height >= text_rec.height)
-    {
-        gdk_draw_rectangle (widget->window,
-                            term->priv->bg, TRUE,
-                            0, text_rec.height,
-                            widget->allocation.width,
-                            CHAR_HEIGHT(term));
-    }
-
+    text_rec.width = PIXEL_WIDTH (term);
+    text_rec.height = PIXEL_HEIGHT (term);
     text_region = gdk_region_rectangle (&text_rec);
     gdk_region_intersect (text_region, event->region);
 
@@ -814,7 +795,7 @@ term_draw_range_simple (MooTerm        *term,
 {
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
     int y = (abs_row - term_top_line (term)) * CHAR_HEIGHT(term);
-    GdkGC *bg;
+    GdkGC *bg = NULL;
     guint invert;
 
     g_assert (selected == 0 || selected == 1);
@@ -822,32 +803,28 @@ term_draw_range_simple (MooTerm        *term,
     invert = (selected ? 1 : 0) + (term->priv->colors_inverted ? 1 : 0);
     invert %= 2;
 
-    if (!invert)
-        bg = term->priv->bg;
-    else
+    if (invert)
         bg = term->priv->fg[COLOR_NORMAL];
 
     if (start >= _moo_term_line_width (line))
     {
-        gdk_draw_rectangle (drawable,
-                            bg,
-                            TRUE,
-                            start * CHAR_WIDTH(term),
-                            y,
-                            len * CHAR_WIDTH(term),
-                            CHAR_HEIGHT(term));
+        if (bg)
+            gdk_draw_rectangle (drawable, bg, TRUE,
+                                start * CHAR_WIDTH(term),
+                                y,
+                                len * CHAR_WIDTH(term),
+                                CHAR_HEIGHT(term));
 
         return;
     }
     else if (start + len > _moo_term_line_width (line))
     {
-        gdk_draw_rectangle (drawable,
-                            bg,
-                            TRUE,
-                            _moo_term_line_width (line) * CHAR_WIDTH(term),
-                            y,
-                            (start + len - _moo_term_line_width (line)) * CHAR_WIDTH(term),
-                            CHAR_HEIGHT(term));
+        if (bg)
+            gdk_draw_rectangle (drawable, bg, TRUE,
+                                _moo_term_line_width (line) * CHAR_WIDTH(term),
+                                y,
+                                (start + len - _moo_term_line_width (line)) * CHAR_WIDTH(term),
+                                CHAR_HEIGHT(term));
 
         len = _moo_term_line_width (line) - start;
     }
@@ -932,13 +909,15 @@ term_draw_cells (MooTerm        *term,
         bg = tmp;
     }
 
-    gdk_draw_rectangle (drawable,
-                        bg,
-                        TRUE,
-                        start * CHAR_WIDTH(term),
-                        (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
-                        len * CHAR_WIDTH(term),
-                        CHAR_HEIGHT(term));
+    if (bg == term->priv->bg)
+        bg = NULL;
+
+    if (bg)
+        gdk_draw_rectangle (drawable, bg, TRUE,
+                            start * CHAR_WIDTH(term),
+                            (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
+                            len * CHAR_WIDTH(term),
+                            CHAR_HEIGHT(term));
 
     if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.bold_pango)
     {
