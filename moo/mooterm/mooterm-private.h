@@ -115,7 +115,6 @@ struct _MooTermPrivate {
     GTimer         *redraw_timer;
     guint           cursor_row_old; /* cursor has been here, and it's been invalidated */
     guint           cursor_col_old;
-    int             scroll;
 
     GdkGC          *clip;
     gboolean        font_changed;

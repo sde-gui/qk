@@ -497,58 +497,6 @@ region_union_with_rect (GdkRegion   **region,
 
 
 static gboolean
-check_scroll (MooTerm  *term,
-              gboolean *need_redraw)
-{
-    int cursor_row;
-    int top_line = term_top_line (term);
-    int scrollback = buf_scrollback (term->priv->buffer);
-    int char_height = CHAR_HEIGHT (term);
-    int char_width = CHAR_WIDTH (term);
-    GdkWindow *window = GTK_WIDGET(term)->window;
-    GdkRectangle bottom = {0, 0, term->priv->width, term->priv->height};
-
-    if (!term->priv->scroll)
-        return FALSE;
-
-    if (need_redraw)
-        *need_redraw = TRUE;
-
-    if (term->priv->scroll >= (int) term->priv->height)
-    {
-        GdkRectangle all = {
-            0, 0, term->priv->width * char_width,
-            term->priv->height * char_height
-        };
-
-        region_destroy (&term->priv->changed);
-        gdk_window_invalidate_rect (window, &all, FALSE);
-
-        term->priv->scroll = 0;
-        return TRUE;
-    };
-
-    gdk_window_scroll (window, 0, -term->priv->scroll * char_height);
-
-    term->priv->cursor_row_old -= term->priv->scroll;
-    cursor_row = term->priv->cursor_row_old + scrollback - top_line;
-
-    if (0 <= cursor_row && cursor_row < (int) term->priv->height)
-    {
-        GdkRectangle cursor_rect = {term->priv->cursor_col_old, cursor_row, 1, 1};
-        region_union_with_rect (&term->priv->changed, &cursor_rect);
-    }
-
-    bottom.y = term->priv->height - term->priv->scroll;
-    bottom.height = term->priv->scroll;
-    region_union_with_rect (&term->priv->changed, &bottom);
-
-    term->priv->scroll = 0;
-    return FALSE;
-}
-
-
-static gboolean
 update_timeout (MooTerm *term)
 {
     GdkRegion *region, *changed, *clip_region;
@@ -565,10 +513,7 @@ update_timeout (MooTerm *term)
 
     gdk_window_freeze_updates (window);
 
-    if (check_scroll (term, &need_redraw))
-        goto out;
-
-    if (!term->priv->changed && !term->priv->scroll &&
+    if (!term->priv->changed &&
          term->priv->cursor_col == term->priv->cursor_col_old &&
          term->priv->cursor_row == term->priv->cursor_row_old)
         goto out;
@@ -667,8 +612,6 @@ _moo_term_expose_event (GtkWidget      *widget,
         term->priv->update_timeout =
                 g_timeout_add_full (UPDATE_PRIORITY, UPDATE_TIMEOUT,
                                     (GSourceFunc) update_timeout, term, NULL);
-
-    check_scroll (term, NULL);
 
     text_rec.width = PIXEL_WIDTH(term);
     text_rec.height = PIXEL_HEIGHT(term);
@@ -1131,14 +1074,10 @@ _moo_term_buffer_scrolled (MooTermBuffer  *buf,
                            guint           lines,
                            MooTerm        *term)
 {
-    if (term->priv->buffer == buf && GTK_WIDGET_DRAWABLE (term))
+    if (lines && term->priv->buffer == buf && GTK_WIDGET_DRAWABLE (term))
     {
-        _moo_term_buf_content_changed (term, buf);
-
-        if (term->priv->changed)
-            gdk_region_offset (term->priv->changed, 0, -lines);
-
-        term->priv->scroll += lines;
+        GdkRectangle rect = {0, 0, term->priv->width, term->priv->height};
+        region_union_with_rect (&term->priv->changed, &rect);
     }
 }
 
