@@ -285,6 +285,8 @@ moo_term_init (MooTerm *term)
     term->priv->settings.scroll_on_keystroke = TRUE;
     term->priv->settings.backspace_binding = MOO_TERM_ERASE_AUTO;
     term->priv->settings.delete_binding = MOO_TERM_ERASE_AUTO;
+    term->priv->settings.bold_pango = FALSE;
+    term->priv->settings.bold_offset = TRUE;
 
     term->priv->pointer_visible = TRUE;
 

@@ -943,7 +943,7 @@ term_draw_cells (MooTerm        *term,
     GdkGC *bg = NULL;
     guint bold;
     guint invert;
-
+    PangoLayout *layout = term->priv->layout;
     MooTermLine *line = buf_line (term->priv->buffer, abs_row);
 
     g_assert (len != 0);
@@ -995,13 +995,27 @@ term_draw_cells (MooTerm        *term,
                         len * CHAR_WIDTH(term),
                         CHAR_HEIGHT(term));
 
+    if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.bold_pango)
+    {
+        PangoAttrList *list = pango_attr_list_new ();
+        PangoAttribute *a = pango_attr_weight_new (PANGO_WEIGHT_BOLD);
+        a->start_index = 0;
+        a->end_index = buf_len;
+        pango_attr_list_insert (list, a);
+        pango_layout_set_attributes (layout, list);
+        pango_attr_list_unref (list);
+    }
+
     gdk_draw_layout (drawable,
                      fg,
                      start * CHAR_WIDTH(term),
                      (abs_row - term_top_line (term)) * CHAR_HEIGHT(term),
                      term->priv->layout);
 
-    if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.allow_bold)
+    if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.bold_pango)
+        pango_layout_set_attributes (layout, NULL);
+
+    if ((attr.mask & MOO_TERM_TEXT_BOLD) && term->priv->settings.bold_offset)
         gdk_draw_layout (drawable,
                          fg,
                          start * CHAR_WIDTH(term) + 1,

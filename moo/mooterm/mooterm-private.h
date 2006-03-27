@@ -151,12 +151,13 @@ struct _MooTermPrivate {
     guint           pending_adjustment_value_changed;
 
     struct {
-        gboolean            hide_pointer_on_keypress;   /* = TRUE */
-        gboolean            meta_sends_escape;          /* = TRUE */
-        gboolean            scroll_on_keystroke;        /* = TRUE */
         MooTermEraseBinding backspace_binding;
         MooTermEraseBinding delete_binding;
-        gboolean            allow_bold;
+        guint               hide_pointer_on_keypress : 1;   /* = TRUE */
+        guint               meta_sends_escape : 1;          /* = TRUE */
+        guint               scroll_on_keystroke : 1;        /* = TRUE */
+        guint               bold_pango : 1;
+        gboolean            bold_offset : 1;
     } settings;
 
     struct {
@@ -165,7 +166,7 @@ struct _MooTermPrivate {
         DragType        drag_type;
         int             drag_start_x;
         int             drag_start_y;
-        guint           drag_moved                      : 1;
+        guint           drag_moved : 1;
     } mouse_stuff;
 };
 
