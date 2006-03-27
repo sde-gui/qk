@@ -87,9 +87,13 @@ static void     moo_text_buffer_begin_user_action   (GtkTextBuffer      *buffer)
 static void     moo_text_buffer_end_user_action     (GtkTextBuffer      *buffer);
 static void     moo_text_buffer_modified_changed    (GtkTextBuffer      *buffer);
 
+static void     moo_text_buffer_highlight_brackets  (MooTextBuffer      *buffer,
+                                                     const GtkTextIter  *insert);
+static void     moo_text_buffer_unhighlight_brackets(MooTextBuffer      *buffer);
+
 static void     moo_text_buffer_queue_highlight     (MooTextBuffer      *buffer);
 
-static void     cursor_moved                        (MooTextBuffer      *buffer,
+static void     emit_cursor_moved                   (MooTextBuffer      *buffer,
                                                      const GtkTextIter  *iter);
 static void     freeze_cursor_moved                 (MooTextBuffer      *buffer);
 static void     thaw_cursor_moved                   (MooTextBuffer      *buffer);
@@ -462,7 +466,10 @@ moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
         update_selection (buffer);
 
     if (mark == insert)
-        cursor_moved (buffer, iter);
+    {
+        moo_text_buffer_unhighlight_brackets (buffer);
+        emit_cursor_moved (buffer, iter);
+    }
 }
 
 
@@ -494,16 +501,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
     }
 
-    if (((tag = buffer->priv->correct_match_tag) && gtk_text_iter_has_tag (pos, tag)) ||
-        ((tag = buffer->priv->incorrect_match_tag) && gtk_text_iter_has_tag (pos, tag)))
-    {
-        if (!gtk_text_iter_begins_tag (pos, tag))
-        {
-            GtkTextIter next = *pos;
-            gtk_text_iter_forward_char (&next);
-            gtk_text_buffer_remove_tag (text_buffer, tag, pos, &next);
-        }
-    }
+    moo_text_buffer_unhighlight_brackets (buffer);
 
     tag = _moo_text_iter_get_syntax_tag (pos);
 
@@ -532,7 +530,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         _moo_text_buffer_ensure_highlight (buffer, first_line, last_line);
     moo_text_buffer_queue_highlight (buffer);
 
-    cursor_moved (buffer, pos);
+    emit_cursor_moved (buffer, pos);
 
     if (!buffer->priv->has_text)
     {
@@ -589,6 +587,8 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     starts_line = gtk_text_iter_starts_line (start);
     offset = gtk_text_iter_get_line_offset (end) - gtk_text_iter_get_line_offset (start);
 
+    moo_text_buffer_unhighlight_brackets (buffer);
+
 #define MANY_LINES 1000
     if (buffer->priv->lang && buffer->priv->do_highlight &&
         last_line - first_line > MANY_LINES)
@@ -640,7 +640,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     moo_text_buffer_queue_highlight (buffer);
 
     update_selection (buffer);
-    cursor_moved (buffer, start);
+    emit_cursor_moved (buffer, start);
 
     if (buffer->priv->has_text)
     {
@@ -939,7 +939,7 @@ void
 moo_text_buffer_apply_scheme (MooTextBuffer      *buffer,
                               MooTextStyleScheme *scheme)
 {
-    g_return_if_fail (scheme != NULL);
+    g_return_if_fail (MOO_IS_TEXT_STYLE_SCHEME (scheme));
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
 
     moo_text_buffer_set_bracket_match_style (buffer, scheme->bracket_match);
@@ -1005,8 +1005,8 @@ moo_text_buffer_end_non_interactive_action (MooTextBuffer *buffer)
 #define FIND_BRACKETS_LIMIT 10000
 
 static void
-cursor_moved (MooTextBuffer      *buffer,
-              const GtkTextIter  *where)
+emit_cursor_moved (MooTextBuffer      *buffer,
+                   const GtkTextIter  *where)
 {
     if (!buffer->priv->cursor_moved_frozen)
         g_signal_emit (buffer, signals[CURSOR_MOVED], 0, where);
@@ -1031,15 +1031,15 @@ thaw_cursor_moved (MooTextBuffer *buffer)
         GtkTextIter iter;
         GtkTextMark *insert = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (buffer));
         gtk_text_buffer_get_iter_at_mark (GTK_TEXT_BUFFER (buffer), &iter, insert);
-        cursor_moved (buffer, &iter);
+        emit_cursor_moved (buffer, &iter);
         buffer->priv->cursor_moved = FALSE;
     }
 }
 
 
 static void
-moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
-                              const GtkTextIter  *where)
+moo_text_buffer_highlight_brackets (MooTextBuffer     *buffer,
+                                    const GtkTextIter *insert)
 {
     GtkTextIter iter[4];
     MooBracketMatchType bracket_match;
@@ -1047,36 +1047,21 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
     GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
     int i;
 
-    g_return_if_fail (where != NULL);
-
-    switch (buffer->priv->bracket_found)
+    if (!insert)
     {
-        case MOO_BRACKET_MATCH_CORRECT:
-            tag = buffer->priv->correct_match_tag;
-            break;
-        case MOO_BRACKET_MATCH_INCORRECT:
-            tag = buffer->priv->incorrect_match_tag;
-            break;
-        default:
-            tag = NULL;
+        static GtkTextIter insert_iter;
+        gtk_text_buffer_get_iter_at_mark (text_buffer, &insert_iter,
+                                          gtk_text_buffer_get_insert (text_buffer));
+        insert = &insert_iter;
     }
 
-    if (tag && buffer->priv->bracket_mark[0])
-    {
-        for (i = 0; i < 4; ++i)
-            gtk_text_buffer_get_iter_at_mark (text_buffer, &iter[i],
-                                              buffer->priv->bracket_mark[i]);
-        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[0], &iter[1]);
-        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[2], &iter[3]);
-    }
+    moo_text_buffer_unhighlight_brackets (buffer);
 
     if (!buffer->priv->highlight_matching_brackets &&
-         !buffer->priv->highlight_mismatching_brackets)
-        return;
+        !buffer->priv->highlight_mismatching_brackets)
+            return;
 
-    iter[0] = *where;
-
-    buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
+    iter[0] = *insert;
 
     if (!moo_text_iter_at_bracket (&iter[0]))
         return;
@@ -1100,17 +1085,18 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
             tag = NULL;
     }
 
-    if (tag != NULL)
+    if (tag)
     {
         iter[1] = iter[0];
         gtk_text_iter_forward_char (&iter[1]);
+
         iter[3] = iter[2];
         gtk_text_iter_forward_char (&iter[3]);
 
         if (!buffer->priv->bracket_mark[0])
             for (i = 0; i < 4; ++i)
                 buffer->priv->bracket_mark[i] =
-                        gtk_text_buffer_create_mark (text_buffer, NULL, &iter[i], FALSE);
+                        gtk_text_buffer_create_mark (text_buffer, NULL, &iter[i], i/2 == 0);
         else
             for (i = 0; i < 4; ++i)
                 gtk_text_buffer_move_mark (text_buffer, buffer->priv->bracket_mark[i], &iter[i]);
@@ -1118,6 +1104,50 @@ moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
         gtk_text_buffer_apply_tag (text_buffer, tag, &iter[0], &iter[1]);
         gtk_text_buffer_apply_tag (text_buffer, tag, &iter[2], &iter[3]);
     }
+}
+
+
+static void
+moo_text_buffer_unhighlight_brackets (MooTextBuffer *buffer)
+{
+    GtkTextTag *tag;
+    GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
+
+    switch (buffer->priv->bracket_found)
+    {
+        case MOO_BRACKET_MATCH_CORRECT:
+            tag = buffer->priv->correct_match_tag;
+            break;
+        case MOO_BRACKET_MATCH_INCORRECT:
+            tag = buffer->priv->incorrect_match_tag;
+            break;
+        default:
+            return;
+    }
+
+    if (tag && buffer->priv->bracket_mark[0])
+    {
+        GtkTextIter iter[4];
+        guint i;
+
+        for (i = 0; i < 4; ++i)
+            gtk_text_buffer_get_iter_at_mark (text_buffer, &iter[i],
+                                              buffer->priv->bracket_mark[i]);
+
+        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[0], &iter[1]);
+        gtk_text_buffer_remove_tag (text_buffer, tag, &iter[2], &iter[3]);
+    }
+
+    buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
+}
+
+
+static void
+moo_text_buffer_cursor_moved (MooTextBuffer      *buffer,
+                              const GtkTextIter  *where)
+{
+    g_return_if_fail (where != NULL);
+    moo_text_buffer_highlight_brackets (buffer, where);
 }
 
 
@@ -1249,34 +1279,32 @@ find (gunichar *vec, guint size, gunichar c)
 gboolean
 moo_text_iter_at_bracket (GtkTextIter *iter)
 {
-    gunichar c;
-    GtkTextIter b;
+    gunichar left, right;
+    GtkTextIter prev;
     MooTextBuffer *buffer;
 
     buffer = MOO_TEXT_BUFFER (gtk_text_iter_get_buffer (iter));
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
 
-    c = gtk_text_iter_get_char (iter);
+    left = 0;
+    right = gtk_text_iter_get_char (iter);
+    prev = *iter;
 
-    if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-        find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
+    if (!gtk_text_iter_starts_line (&prev) && gtk_text_iter_backward_char (&prev))
+        left = gtk_text_iter_get_char (&prev);
+
+    if (right && find (buffer->priv->left_brackets, buffer->priv->num_brackets, right))
+        return TRUE;
+
+    if (left && (find (buffer->priv->left_brackets, buffer->priv->num_brackets, left) ||
+        find (buffer->priv->right_brackets, buffer->priv->num_brackets, left)))
     {
+        *iter = prev;
         return TRUE;
     }
 
-    b = *iter;
-
-    if (!gtk_text_iter_starts_line (&b) && gtk_text_iter_backward_char (&b))
-    {
-        c = gtk_text_iter_get_char (&b);
-
-        if (find (buffer->priv->left_brackets, buffer->priv->num_brackets, c) ||
-            find (buffer->priv->right_brackets, buffer->priv->num_brackets, c))
-        {
-            *iter = b;
-            return TRUE;
-        }
-    }
+    if (right && find (buffer->priv->right_brackets, buffer->priv->num_brackets, right))
+        return TRUE;
 
     return FALSE;
 }
