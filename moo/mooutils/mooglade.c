@@ -130,6 +130,8 @@ struct _MooGladeXMLPrivate {
     GHashTable *id_to_type;
     GHashTable *id_to_func;
 
+    GHashTable *props; /* char* -> char** */
+
     MooGladeSignalFunc signal_func;
     gpointer signal_func_data;
 };
@@ -160,6 +162,8 @@ static Child        *child_new                  (MooGladeXML    *xml,
 static void          child_free                 (Child          *child);
 static WidgetProps  *widget_props_new           (MooMarkupNode  *node,
                                                  GType           widget_type,
+                                                 GHashTable     *add_props,
+                                                 gboolean        ignore_unknown,
                                                  gboolean        ignore_errors);
 static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
@@ -973,7 +977,8 @@ widget_new (MooGladeXML    *xml,
     WidgetProps *props;
     const char *id, *class_name;
     GType type;
-    gboolean ignore_errors = TRUE;
+    gboolean ignore_errors = FALSE;
+    gboolean ignore_unknown = FALSE;
 
     g_return_val_if_fail (NODE_IS_WIDGET (node), NULL);
 
@@ -1008,7 +1013,9 @@ widget_new (MooGladeXML    *xml,
         }
     }
 
-    props = widget_props_new (node, type, ignore_errors);
+    props = widget_props_new (node, type,
+                              g_hash_table_lookup (xml->priv->props, id),
+                              ignore_unknown, ignore_errors);
     g_return_val_if_fail (props != NULL, NULL);
 
     widget = g_new0 (Widget, 1);
@@ -1164,9 +1171,158 @@ child_new (MooGladeXML    *xml,
 }
 
 
+static gboolean
+widget_props_add (WidgetProps  *props,
+                  GArray       *params,
+                  GObjectClass *klass,
+                  const char   *name,
+                  const char   *value,
+                  gboolean      ignore_unknown,
+                  gboolean      ignore_errors)
+{
+    GParameter param = {NULL, {0, {{0}, {0}}}};
+    gboolean special = TRUE;
+
+    if (!strcmp (name, "visible"))
+    {
+        props->visible = parse_bool (value);
+    }
+    else if (!strcmp (name, "response_id"))
+    {
+        props->response_id = parse_int (value);
+        props->mask |= PROP_RESPONSE_ID;
+    }
+    else if (!strcmp (name, "has_default"))
+    {
+        props->has_default = parse_bool (value);
+        props->mask |= PROP_HAS_DEFAULT;
+    }
+    else if (!strcmp (name, "has_focus"))
+    {
+        props->has_focus = parse_bool (value);
+        props->mask |= PROP_HAS_FOCUS;
+    }
+    else if (!strcmp (name, "tooltip"))
+    {
+        props->tooltip = g_strdup (value);
+        props->mask |= PROP_TOOLTIP;
+    }
+    else if (!strcmp (name, "mnemonic_widget") &&
+              GTK_IS_LABEL_CLASS (klass))
+    {
+        props->mnemonic_widget = g_strdup (value);
+        props->mask |= PROP_MNEMONIC_WIDGET;
+    }
+    else if (!strcmp (name, "text") &&
+              GTK_IS_TEXT_VIEW_CLASS (klass))
+    {
+        if (value && value[0])
+            g_message ("%s: ignoring TextView text property", G_STRLOC);
+    }
+    else if (!strcmp (name, "group") &&
+              (GTK_IS_RADIO_BUTTON_CLASS (klass) ||
+                      GTK_IS_RADIO_MENU_ITEM_CLASS (klass)))
+    {
+        props->radio_group = g_strdup (value);
+        props->mask |= PROP_RADIO_GROUP;
+    }
+    else if (!strcmp (name, "label") &&
+              (GTK_IS_MENU_ITEM_CLASS (klass) ||
+                      GTK_IS_CHECK_BUTTON_CLASS (klass) ||
+                      GTK_IS_LIST_ITEM_CLASS (klass)))
+    {
+        props->label = g_strdup (value);
+        props->mask |= PROP_LABEL;
+    }
+    else if (!strcmp (name, "use_underline") &&
+              GTK_IS_MENU_ITEM_CLASS (klass))
+    {
+        props->mask |= PROP_USE_UNDERLINE;
+    }
+    else if (!strcmp (name, "use_stock") &&
+              GTK_IS_IMAGE_MENU_ITEM_CLASS (klass))
+    {
+        props->mask |= PROP_USE_STOCK;
+    }
+    else if (!strcmp (name, "tooltips") &&
+              GTK_IS_TOOLBAR_CLASS (klass))
+    {
+        props->mask |= PROP_ENABLE_TOOLTIPS;
+    }
+    else if (!strcmp (name, "history") &&
+              GTK_IS_OPTION_MENU_CLASS (klass))
+    {
+        props->mask |= PROP_HISTORY;
+        props->history = parse_int (value);
+    }
+#if GTK_CHECK_VERSION(2,4,0)
+    else if (!strcmp (name, "items") &&
+             GTK_IS_COMBO_BOX_CLASS (klass))
+    {
+//         if (value && value[0])
+//             g_message ("%s: ignoring ComboBox items property", G_STRLOC);
+    }
+#endif /* GTK_CHECK_VERSION(2,4,0) */
+    else
+    {
+        special = FALSE;
+    }
+
+    if (!special)
+    {
+        GParamSpec *param_spec = g_object_class_find_property (klass, name);
+
+        if (!param_spec)
+        {
+            if (!ignore_unknown)
+                g_warning ("%s: could not find property '%s'in class '%s'",
+                           G_STRLOC, name, G_OBJECT_CLASS_NAME (klass));
+        }
+        else if (parse_property (param_spec, value, &param))
+        {
+            g_array_append_val (params, param);
+        }
+        else if (!ignore_errors)
+        {
+            g_warning ("%s: could not convert '%s' to property '%s'",
+                       G_STRLOC, value, name);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+static void
+widget_props_add_one (const char *name,
+                      const char *value,
+                      gpointer    user_data)
+{
+    struct {
+        WidgetProps *props;
+        GArray *params;
+        GObjectClass *klass;
+        gboolean result;
+        gboolean ignore_unknown;
+        gboolean ignore_errors;
+    } *data = user_data;
+
+    if (!data->result)
+        return;
+
+    data->result = widget_props_add (data->props, data->params,
+                                     data->klass, name, value,
+                                     data->ignore_unknown,
+                                     data->ignore_errors);
+}
+
+
 static WidgetProps*
 widget_props_new (MooMarkupNode  *node,
                   GType           type,
+                  GHashTable     *add_props,
+                  gboolean        ignore_unknown,
                   gboolean        ignore_errors)
 {
     GArray *params;
@@ -1187,128 +1343,48 @@ widget_props_new (MooMarkupNode  *node,
     {
         if (NODE_IS_PROPERTY (elm))
         {
-            GParameter param = {NULL, {0, {{0}, {0}}}};
             const char *name = moo_markup_get_prop (elm, "name");
             const char *value = moo_markup_get_content (elm);
-            gboolean special = TRUE;
+            gboolean result;
 
-            if (!strcmp (name, "visible"))
-            {
-                props->visible = parse_bool (value);
-            }
-            else if (!strcmp (name, "response_id"))
-            {
-                props->response_id = parse_int (value);
-                props->mask |= PROP_RESPONSE_ID;
-            }
-            else if (!strcmp (name, "has_default"))
-            {
-                props->has_default = parse_bool (value);
-                props->mask |= PROP_HAS_DEFAULT;
-            }
-            else if (!strcmp (name, "has_focus"))
-            {
-                props->has_focus = parse_bool (value);
-                props->mask |= PROP_HAS_FOCUS;
-            }
-            else if (!strcmp (name, "tooltip"))
-            {
-                props->tooltip = g_strdup (value);
-                props->mask |= PROP_TOOLTIP;
-            }
-            else if (!strcmp (name, "mnemonic_widget") &&
-                      GTK_IS_LABEL_CLASS (klass))
-            {
-                props->mnemonic_widget = g_strdup (value);
-                props->mask |= PROP_MNEMONIC_WIDGET;
-            }
-            else if (!strcmp (name, "text") &&
-                      GTK_IS_TEXT_VIEW_CLASS (klass))
-            {
-                if (value && value[0])
-                    g_message ("%s: ignoring TextView text property", G_STRLOC);
-            }
-            else if (!strcmp (name, "group") &&
-                      (GTK_IS_RADIO_BUTTON_CLASS (klass) ||
-                              GTK_IS_RADIO_MENU_ITEM_CLASS (klass)))
-            {
-                props->radio_group = g_strdup (value);
-                props->mask |= PROP_RADIO_GROUP;
-            }
-            else if (!strcmp (name, "label") &&
-                      (GTK_IS_MENU_ITEM_CLASS (klass) ||
-                              GTK_IS_CHECK_BUTTON_CLASS (klass) ||
-                              GTK_IS_LIST_ITEM_CLASS (klass)))
-            {
-                props->label = g_strdup (value);
-                props->mask |= PROP_LABEL;
-            }
-            else if (!strcmp (name, "use_underline") &&
-                      GTK_IS_MENU_ITEM_CLASS (klass))
-            {
-                props->mask |= PROP_USE_UNDERLINE;
-            }
-            else if (!strcmp (name, "use_stock") &&
-                      GTK_IS_IMAGE_MENU_ITEM_CLASS (klass))
-            {
-                props->mask |= PROP_USE_STOCK;
-            }
-            else if (!strcmp (name, "tooltips") &&
-                      GTK_IS_TOOLBAR_CLASS (klass))
-            {
-                props->mask |= PROP_ENABLE_TOOLTIPS;
-            }
-            else if (!strcmp (name, "history") &&
-                      GTK_IS_OPTION_MENU_CLASS (klass))
-            {
-                props->mask |= PROP_HISTORY;
-                props->history = parse_int (value);
-            }
-#if GTK_CHECK_VERSION(2,4,0)
-            else if (!strcmp (name, "items") &&
-                      GTK_IS_COMBO_BOX_CLASS (klass))
-            {
-//                 if (value && value[0])
-//                     g_message ("%s: ignoring ComboBox items property", G_STRLOC);
-            }
-#endif /* GTK_CHECK_VERSION(2,4,0) */
-            else
-            {
-                special = FALSE;
-            }
+            result = widget_props_add (props, params, klass,
+                                       name, value, ignore_unknown,
+                                       ignore_errors);
 
-            if (!special)
-            {
-                GParamSpec *param_spec = g_object_class_find_property (klass, name);
-
-                if (!param_spec)
-                {
-                    if (!ignore_errors)
-                        g_warning ("%s: could not find property '%s'", G_STRLOC, name);
-                }
-                else if (parse_property (param_spec, value, &param))
-                {
-                    g_array_append_val (params, param);
-                }
-                else
-                {
-                    g_warning ("%s: could not convert '%s' to property '%s'",
-                               G_STRLOC, value, name);
-                    moo_param_array_free ((GParameter*) params->data, params->len);
-                    g_array_free (params, FALSE);
-                    g_type_class_unref (klass);
-                    widget_props_free (props);
-                    return FALSE;
-                }
-            }
+            if (!result)
+                goto error;
         }
     }
     FOREACH_ELM_END;
+
+    if (add_props)
+    {
+        struct {
+            WidgetProps *props;
+            GArray *params;
+            GObjectClass *klass;
+            gboolean result;
+            gboolean ignore_unknown;
+            gboolean ignore_errors;
+        } data = {props, params, klass, TRUE, ignore_unknown, ignore_errors};
+
+        g_hash_table_foreach (add_props, (GHFunc) widget_props_add_one, &data);
+
+        if (!data.result)
+            goto error;
+    }
 
     props->n_params = params->len;
     props->params = (GParameter*) g_array_free (params, FALSE);
     g_type_class_unref (klass);
     return props;
+
+error:
+    moo_param_array_free ((GParameter*) params->data, params->len);
+    g_array_free (params, FALSE);
+    g_type_class_unref (klass);
+    widget_props_free (props);
+    return FALSE;
 }
 
 
@@ -1703,8 +1779,63 @@ moo_glade_xml_init (MooGladeXML *xml)
                                                       g_free, NULL);
     xml->priv->id_to_type = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, NULL);
-    xml->priv->id_to_func = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                   g_free, (GDestroyNotify) func_data_pair_free);
+    xml->priv->id_to_func = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                                   (GDestroyNotify) func_data_pair_free);
+    xml->priv->props = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                              (GDestroyNotify) g_hash_table_destroy);
+}
+
+
+static char *
+normalize_prop_name (const char *prop_name)
+{
+    char *norm, *p;
+
+    norm = g_strdup (prop_name);
+    p = norm;
+
+    while ((p = strchr (p, '_')))
+        *p = '-';
+
+    return norm;
+}
+
+
+void
+moo_glade_xml_set_property (MooGladeXML    *xml,
+                            const char     *widget,
+                            const char     *prop_name,
+                            const char     *value)
+{
+    GHashTable *props;
+    char *norm_prop_name;
+
+    g_return_if_fail (MOO_IS_GLADE_XML (xml));
+    g_return_if_fail (widget != NULL && prop_name != NULL);
+
+    props = g_hash_table_lookup (xml->priv->props, widget);
+
+    if (!props && !value)
+        return;
+
+    norm_prop_name = normalize_prop_name (prop_name);
+
+    if (!props)
+    {
+        props = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                       g_free, g_free);
+        g_hash_table_insert (xml->priv->props, g_strdup (widget), props);
+    }
+
+    if (value)
+    {
+        g_hash_table_insert (props, norm_prop_name, g_strdup (value));
+    }
+    else
+    {
+        g_hash_table_remove (props, norm_prop_name);
+        g_free (norm_prop_name);
+    }
 }
 
 
@@ -2009,6 +2140,7 @@ moo_glade_xml_dispose (GObject *object)
         g_hash_table_destroy (xml->priv->class_to_type);
         g_hash_table_destroy (xml->priv->id_to_type);
         g_hash_table_destroy (xml->priv->id_to_func);
+        g_hash_table_destroy (xml->priv->props);
         moo_markup_doc_unref (xml->priv->doc);
         g_free (xml->priv->root_id);
         g_free (xml->priv);

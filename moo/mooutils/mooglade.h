@@ -72,6 +72,11 @@ void         moo_glade_xml_map_signal       (MooGladeXML    *xml,
                                              MooGladeSignalFunc func,
                                              gpointer        data);
 
+void         moo_glade_xml_set_property     (MooGladeXML    *xml,
+                                             const char     *widget,
+                                             const char     *prop_name,
+                                             const char     *value);
+
 gboolean     moo_glade_xml_parse_file       (MooGladeXML    *xml,
                                              const char     *file,
                                              const char     *root);
