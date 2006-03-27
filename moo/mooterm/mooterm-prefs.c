@@ -111,7 +111,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
 
     page = moo_prefs_dialog_page_new_from_xml ("Terminal",
                                                MOO_STOCK_TERMINAL,
-                                               MOO_TERM_PREFS_GLADE_UI,
+                                               NULL, MOO_TERM_PREFS_GLADE_UI,
                                                -1,
                                                "page",
                                                MOO_TERM_PREFS_PREFIX);

@@ -1320,6 +1320,7 @@
   (parameters
     '("const-char*" "label")
     '("const-char*" "icon_stock_id")
+    '("MooGladeXML*" "xml")
     '("const-char*" "buffer")
     '("int" "buffer_size")
     '("const-char*" "page_id")
