@@ -20,6 +20,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
+#include "mooutils/moofontsel.h"
 #include <string.h>
 
 
@@ -44,14 +45,19 @@ moo_edit_prefs_page_new (MooEditor *editor)
 {
     MooPrefsDialogPage *page;
     GtkWidget *page_widget, *scheme_combo;
+    MooGladeXML *xml;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     _moo_edit_init_settings ();
 
-    page_widget = moo_prefs_dialog_page_new_from_xml ("Editor", GTK_STOCK_EDIT,
+    xml = moo_glade_xml_new_empty ();
+    moo_glade_xml_map_id (xml, "fontbutton", MOO_TYPE_FONT_BUTTON);
+    moo_glade_xml_set_property (xml, "fontbutton", "monospace", "True");
+    page_widget = moo_prefs_dialog_page_new_from_xml ("Editor", GTK_STOCK_EDIT, xml,
                                                       MOO_EDIT_PREFS_GLADE_UI, -1, "page",
                                                       MOO_EDIT_PREFS_PREFIX);
+    g_object_unref (xml);
 
     page = MOO_PREFS_DIALOG_PAGE (page_widget);
 
