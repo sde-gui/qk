@@ -41,7 +41,9 @@ struct _MooPrintOperation
     int last_line;          /* -1 to print everything after first_line */
     char *font;             /* overrides font set in the doc */
     gboolean wrap;
+    PangoWrapMode wrap_mode;
     gboolean ellipsize;
+    gboolean use_styles;
 
     /* aux stuff */
     GArray *pages;          /* GtkTextIter's pointing to pages start */
@@ -65,6 +67,8 @@ GType   moo_print_operation_get_type    (void) G_GNUC_CONST;
 
 void    moo_print_operation_set_doc     (MooPrintOperation  *print,
                                          GtkTextView        *doc);
+void    moo_print_operation_set_buffer  (MooPrintOperation  *print,
+                                         GtkTextBuffer      *buffer);
 
 void    moo_edit_page_setup             (GtkTextView    *view,
                                          GtkWidget      *parent);
