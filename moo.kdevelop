@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>gtk-print</useconfiguration>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
       <mainprogram>./medit</mainprogram>
@@ -43,7 +43,6 @@
       <terminal>false</terminal>
       <autocompile>false</autocompile>
       <envvars>
-        <envvar value="/usr/local/gtk-print/lib" name="LD_LIBRARY_PATH" />
         <envvar value="c:\\medit\\" name="MOO_APP_DIRS" />
       </envvars>
     </run>
@@ -61,6 +60,7 @@
         <cxxcompilerbinary/>
         <f77compilerbinary/>
         <f77flags/>
+        <envvars/>
       </debug>
       <gtk-print>
         <configargs>--enable-debug --enable-all-gcc-warnings --without-python --prefix=/usr/local/gtk-print</configargs>

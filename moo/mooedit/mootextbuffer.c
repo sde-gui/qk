@@ -1043,7 +1043,7 @@ moo_text_buffer_highlight_brackets (MooTextBuffer     *buffer,
 {
     GtkTextIter iter[4];
     MooBracketMatchType bracket_match;
-    GtkTextTag *tag;
+    GtkTextTag *tag = NULL;
     GtkTextBuffer *text_buffer = GTK_TEXT_BUFFER (buffer);
     int i;
 
