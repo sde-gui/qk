@@ -116,6 +116,8 @@ _moo_term_init_font_stuff (MooTerm *term)
 
     if (term->priv->font)
         _moo_term_font_free (term->priv->font);
+    if (term->priv->layout)
+        g_object_unref (term->priv->layout);
 
     gtk_widget_ensure_style (GTK_WIDGET (term));
 
