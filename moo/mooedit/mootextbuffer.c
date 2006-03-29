@@ -1002,7 +1002,7 @@ moo_text_buffer_end_non_interactive_action (MooTextBuffer *buffer)
 /* Matching brackets
  */
 
-#define FIND_BRACKETS_LIMIT 10000
+#define FIND_BRACKETS_LIMIT 3000
 
 static void
 emit_cursor_moved (MooTextBuffer      *buffer,
