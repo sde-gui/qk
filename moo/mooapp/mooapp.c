@@ -411,6 +411,8 @@ moo_app_constructor (GType           type,
     object = moo_app_parent_class->constructor (type, n_params, params);
     app = MOO_APP (object);
 
+    g_set_prgname (app->priv->info->short_name);
+
     if (!app->priv->info->full_name)
         app->priv->info->full_name = g_strdup (app->priv->info->short_name);
 
@@ -593,120 +595,6 @@ moo_app_set_exit_code (MooApp      *app,
 }
 
 
-char *
-moo_app_get_data_dir (MooApp        *app,
-                      MooAppDataType type)
-{
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-#ifdef __WIN32__
-    g_return_val_if_fail (app->priv->argv && app->priv->argv[0], g_strdup ("."));
-    return g_path_get_dirname (app->priv->argv[0]);
-#else
-    switch (type)
-    {
-        case MOO_APP_DATA_SHARE:
-            return g_strdup (MOO_DATA_DIR);
-        case MOO_APP_DATA_LIB:
-            return g_strdup (MOO_LIB_DIR);
-    }
-
-    g_return_val_if_reached (NULL);
-#endif
-}
-
-
-char *
-moo_app_get_user_data_dir (MooApp *app,
-                           G_GNUC_UNUSED MooAppDataType type)
-{
-    G_GNUC_UNUSED char *basename;
-    char *dir;
-
-#ifdef __WIN32__
-    dir = g_build_filename (g_get_home_dir (), app->priv->info->short_name, NULL);
-#else
-    basename = g_strdup_printf (".%s", app->priv->info->short_name);
-    dir = g_build_filename (g_get_home_dir (), basename, NULL);
-    g_free (basename);
-#endif
-
-    return dir;
-}
-
-
-char **
-moo_app_get_data_dirs (MooApp *app,
-                       MooAppDataType type,
-                       guint  *n_dirs)
-{
-    const char *env;
-    GPtrArray *dirs;
-
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-    dirs = g_ptr_array_sized_new (3);
-    env = g_getenv ("MOO_APP_DIRS");
-
-    if (env && *env)
-    {
-        char **env_dirs, **p;
-
-#ifdef __WIN32__
-        env_dirs = g_strsplit (env, ";", 0);
-        p = moo_filenames_from_locale (env_dirs);
-        g_strfreev (env_dirs);
-        env_dirs = p;
-#else
-        env_dirs = g_strsplit (env, ":", 0);
-#endif
-
-        for (p = env_dirs; p && *p; ++p)
-            if (**p)
-                g_ptr_array_add (dirs, *p);
-            else
-                g_free (*p);
-
-        g_free (env_dirs);
-    }
-
-    g_ptr_array_add (dirs, moo_app_get_data_dir (app, type));
-    g_ptr_array_add (dirs, moo_app_get_user_data_dir (app, type));
-    g_ptr_array_add (dirs, NULL);
-
-    if (n_dirs)
-        *n_dirs = dirs->len - 1;
-
-    return (char**) g_ptr_array_free (dirs, FALSE);
-}
-
-
-char **
-moo_app_get_data_subdirs (MooApp     *app,
-                          const char *subdir,
-                          MooAppDataType type,
-                          guint      *n_dirs_p)
-{
-    char **data_dirs, **dirs;
-    guint n_dirs, i;
-
-    g_return_val_if_fail (subdir != NULL, NULL);
-
-    data_dirs = moo_app_get_data_dirs (app, type, &n_dirs);
-    g_return_val_if_fail (data_dirs != NULL, NULL);
-
-    if (n_dirs_p)
-        *n_dirs_p = n_dirs;
-
-    dirs = g_new0 (char*, n_dirs + 1);
-
-    for (i = 0; i < n_dirs; ++i)
-        dirs[i] = g_build_filename (data_dirs[i], subdir, NULL);
-
-    return dirs;
-}
-
-
 const char*
 moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 {
@@ -876,12 +764,12 @@ moo_app_get_context (MooWindow *window)
 }
 
 static void
-moo_app_load_user_actions (MooApp *app)
+moo_app_load_user_actions (void)
 {
     char **dirs;
     guint n_dirs, i;
 
-    dirs = moo_app_get_data_dirs (app, MOO_APP_DATA_SHARE, &n_dirs);
+    dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
     g_return_if_fail (dirs != NULL);
 
     for (i = 0; i < n_dirs; i++)
@@ -913,15 +801,15 @@ moo_app_init_editor (MooApp *app)
 
     lang_mgr = moo_editor_get_lang_mgr (app->priv->editor);
 
-    dirs = moo_app_get_data_subdirs (app, MOO_LANG_DIR_BASENAME,
-                                     MOO_APP_DATA_SHARE, &n_dirs);
+    dirs = moo_get_data_subdirs (MOO_LANG_DIR_BASENAME,
+                                 MOO_DATA_SHARE, &n_dirs);
     for (i = 0; i < n_dirs; ++i)
         moo_lang_mgr_add_dir (lang_mgr, dirs[i]);
     moo_lang_mgr_read_dirs (lang_mgr);
     g_strfreev (dirs);
 
-    dirs = moo_app_get_data_subdirs (app, MOO_PLUGIN_DIR_BASENAME,
-                                     MOO_APP_DATA_LIB, &n_dirs);
+    dirs = moo_get_data_subdirs (MOO_PLUGIN_DIR_BASENAME,
+                                 MOO_DATA_LIB, &n_dirs);
     moo_set_plugin_dirs (dirs);
     moo_plugin_init_builtin ();
     moo_plugin_read_dirs ();
@@ -938,7 +826,7 @@ moo_app_init_ui (MooApp *app)
     int i;
 
     xml = moo_app_get_ui_xml (app);
-    dirs = moo_app_get_data_dirs (app, MOO_APP_DATA_SHARE, &n_dirs);
+    dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
 
     for (i = n_dirs - 1; i >= 0; --i)
     {
@@ -1052,7 +940,7 @@ moo_app_init_real (MooApp *app)
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
 
-    moo_app_load_user_actions (app);
+    moo_app_load_user_actions ();
 
     start_io (app);
 
@@ -1695,26 +1583,6 @@ moo_app_tempnam (MooApp     *app)
 
     g_warning ("%s: could not generate temp file name", G_STRLOC);
     return NULL;
-}
-
-
-GType
-moo_app_data_type_get_type (void)
-{
-    static GType type = 0;
-
-    if (!type)
-    {
-        static const GEnumValue values[] = {
-            { MOO_APP_DATA_SHARE, (char*) "MOO_APP_DATA_SHARE", (char*) "share" },
-            { MOO_APP_DATA_LIB, (char*) "MOO_APP_DATA_LIB", (char*) "lib" },
-            { 0, NULL, NULL },
-        };
-
-        type = g_enum_register_static ("MooAppDataType", values);
-    }
-
-    return type;
 }
 
 

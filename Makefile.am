@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = dist-bzip2
-EXTRA_DIST = mingw-configure cygwin-configure
+EXTRA_DIST = autogen.sh mingw-configure cygwin-configure
 
 DIST_SUBDIRS = m4
 

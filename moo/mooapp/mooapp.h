@@ -22,7 +22,6 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_APP_INFO           (moo_app_info_get_type ())
-#define MOO_TYPE_APP_DATA_TYPE      (moo_app_data_type_get_type ())
 
 #define MOO_TYPE_APP                (moo_app_get_type ())
 #define MOO_APP(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_APP, MooApp))
@@ -37,11 +36,6 @@ typedef struct _MooAppInfo          MooAppInfo;
 typedef struct _MooAppPrivate       MooAppPrivate;
 typedef struct _MooAppClass         MooAppClass;
 
-typedef enum {
-    MOO_APP_DATA_SHARE,
-    MOO_APP_DATA_LIB
-} MooAppDataType;
-
 struct _MooAppInfo
 {
     char *short_name;
@@ -50,7 +44,6 @@ struct _MooAppInfo
     char *version;
     char *website;
     char *website_label;
-
     char *rc_file;
 };
 
@@ -83,7 +76,6 @@ struct _MooAppClass
 
 GType            moo_app_get_type               (void) G_GNUC_CONST;
 GType            moo_app_info_get_type          (void) G_GNUC_CONST;
-GType            moo_app_data_type_get_type     (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
@@ -99,18 +91,6 @@ const MooAppInfo*moo_app_get_info               (MooApp     *app);
 const char      *moo_app_get_rc_file_name       (MooApp     *app);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_output_pipe_name   (MooApp     *app);
-
-char            *moo_app_get_data_dir           (MooApp     *app,
-                                                 MooAppDataType type);
-char            *moo_app_get_user_data_dir      (MooApp     *app,
-                                                 MooAppDataType type);
-char           **moo_app_get_data_dirs          (MooApp     *app,
-                                                 MooAppDataType type,
-                                                 guint      *n_dirs);
-char           **moo_app_get_data_subdirs       (MooApp     *app,
-                                                 const char *subdir,
-                                                 MooAppDataType type,
-                                                 guint      *n_dirs);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 

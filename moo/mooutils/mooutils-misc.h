@@ -46,7 +46,28 @@ void        moo_set_log_func_file           (const char     *log_file);
 void        moo_set_log_func_silent         (void);
 void        moo_reset_log_func              (void);
 
+
 void        moo_segfault                    (void);
+
+
+#define MOO_TYPE_DATA_DIR_TYPE              (moo_data_dir_type_get_type ())
+
+typedef enum {
+    MOO_DATA_SHARE,
+    MOO_DATA_LIB
+} MooDataDirType;
+
+GType    moo_data_dir_type_get_type         (void) G_GNUC_CONST;
+
+/* ~/.appname */
+char    *moo_get_user_data_dir              (void);
+/* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
+   $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
+char   **moo_get_data_dirs                  (MooDataDirType  type,
+                                             guint          *n_dirs);
+char   **moo_get_data_subdirs               (const char     *subdir,
+                                             MooDataDirType  type,
+                                             guint          *n_dirs);
 
 
 void        moo_selection_data_set_pointer  (GtkSelectionData *data,

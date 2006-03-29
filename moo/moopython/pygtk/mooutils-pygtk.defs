@@ -262,6 +262,16 @@
   )
 )
 
+(define-enum DataDirType
+  (in-module "Moo")
+  (c-name "MooDataDirType")
+  (gtype-id "MOO_TYPE_DATA_DIR_TYPE")
+  (values
+    '("share" "MOO_DATA_SHARE")
+    '("lib" "MOO_DATA_LIB")
+  )
+)
+
 
 ;; From ../mooutils/moocombo.h
 
@@ -2634,5 +2644,29 @@
   (return-type "gboolean")
   (parameters
     '("guint" "id")
+  )
+)
+
+(define-function get_user_data_dir
+  (c-name "moo_get_user_data_dir")
+  (return-type "char*")
+)
+
+(define-function get_data_dirs
+  (c-name "moo_get_data_dirs")
+  (return-type "char**")
+  (parameters
+    '("MooDataDirType" "type")
+    '("guint*" "n_dirs")
+  )
+)
+
+(define-function get_data_subdirs
+  (c-name "moo_get_data_subdirs")
+  (return-type "char**")
+  (parameters
+    '("const char*" "name")
+    '("MooDataDirType" "type")
+    '("guint*" "n_dirs")
   )
 )

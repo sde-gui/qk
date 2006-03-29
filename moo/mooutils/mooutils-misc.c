@@ -1073,3 +1073,233 @@ moo_menu_item_set_label (GtkWidget      *item,
     else
         gtk_label_set_text (GTK_LABEL (label), text);
 }
+
+
+/***************************************************************************/
+/* data dirs
+ */
+
+#ifdef __WIN32__
+static char *
+moo_get_app_dir (void)
+{
+    static char *appdir;
+
+    if (!appdir)
+    {
+        gchar *appname = NULL;
+
+        if (G_WIN32_HAVE_WIDECHAR_API ())
+        {
+            wchar_t buf[MAX_PATH+1];
+
+            if (GetModuleFileNameW (GetModuleHandle (NULL), buf, G_N_ELEMENTS (buf)) > 0)
+                appname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+        }
+        else
+        {
+            gchar buf[MAX_PATH+1];
+
+            if (GetModuleFileNameA (GetModuleHandle (NULL), buf, G_N_ELEMENTS (buf)) > 0)
+                appname = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
+        }
+
+        if (appname)
+        {
+            appdir = g_path_get_basename (appname);
+            g_free (utf8_buf);
+        }
+        else
+        {
+            appdir = g_strdup (".");
+        }
+    }
+
+    return appdir;
+}
+#endif
+
+
+static char *
+moo_get_data_dir (MooDataDirType type)
+{
+#ifdef __WIN32__
+    return moo_get_app_dir ();
+#else
+    switch (type)
+    {
+        case MOO_DATA_SHARE:
+            return g_strdup (MOO_DATA_DIR);
+        case MOO_DATA_LIB:
+            return g_strdup (MOO_LIB_DIR);
+    }
+#endif
+
+    g_return_val_if_reached (NULL);
+}
+
+
+static const char *
+moo_get_prgname (void)
+{
+    static char *name;
+
+    if (!name)
+        name = g_strdup (g_get_prgname ());
+
+    if (!name)
+    {
+        g_critical ("%s: program name not set", G_STRLOC);
+        name = g_strdup ("ggap");
+    }
+
+    return name;
+}
+
+
+char *
+moo_get_user_data_dir (void)
+{
+#ifdef __WIN32__
+    return g_build_filename (g_get_home_dir (), moo_get_prgname (), NULL);
+#else
+    return g_strdup_printf ("%s/.%s", g_get_home_dir (), moo_get_prgname ());
+#endif
+}
+
+
+static gboolean
+cmp_dirs (const char *dir1,
+          const char *dir2)
+{
+    g_return_val_if_fail (dir1 != NULL, FALSE);
+    g_return_val_if_fail (dir2 != NULL, FALSE);
+    /* XXX */
+    return !strcmp (dir1, dir2);
+}
+
+
+char **
+moo_get_data_dirs (MooDataDirType type,
+                   guint         *n_dirs)
+{
+    const char *env[2];
+    GPtrArray *dirs;
+    GSList *list = NULL;
+    guint i;
+
+    dirs = g_ptr_array_sized_new (3);
+    env[0] = g_getenv ("MOO_APP_DIRS");
+    env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
+
+    for (i = 0; i < 2; ++i)
+    {
+        const char *var = env[i];
+        char **env_dirs, **p;
+
+        if (!var || !*var)
+            continue;
+
+#ifdef __WIN32__
+        env_dirs = g_strsplit (var, ";", 0);
+        p = moo_filenames_from_locale (env_dirs);
+        g_strfreev (env_dirs);
+        env_dirs = p;
+#else
+        env_dirs = g_strsplit (var, ":", 0);
+#endif
+
+        for (p = env_dirs; p && *p; ++p)
+        {
+            if (**p)
+                list = g_slist_prepend (list, *p);
+            else
+                g_free (*p);
+        }
+
+        g_free (env_dirs);
+    }
+
+    list = g_slist_prepend (list, moo_get_data_dir (type));
+    list = g_slist_prepend (list, moo_get_user_data_dir ());
+
+    list = g_slist_reverse (list);
+
+    while (list)
+    {
+        gboolean found = FALSE;
+
+        if (!list->data)
+        {
+            list = g_slist_delete_link (list, list);
+            continue;
+        }
+
+        for (i = 0; i < dirs->len; ++i)
+        {
+            if (cmp_dirs (list->data, dirs->pdata[i]))
+            {
+                found = TRUE;
+                break;
+            }
+        }
+
+        if (!found)
+            g_ptr_array_add (dirs, list->data);
+        else
+            g_free (list->data);
+
+        list = g_slist_delete_link (list, list);
+    }
+
+    if (n_dirs)
+        *n_dirs = dirs->len;
+
+    g_ptr_array_add (dirs, NULL);
+    return (char**) g_ptr_array_free (dirs, FALSE);
+}
+
+
+char **
+moo_get_data_subdirs (const char    *subdir,
+                      MooDataDirType type,
+                      guint         *n_dirs_p)
+{
+    char **data_dirs, **dirs;
+    guint n_dirs, i;
+
+    g_return_val_if_fail (subdir != NULL, NULL);
+
+    data_dirs = moo_get_data_dirs (type, &n_dirs);
+    g_return_val_if_fail (data_dirs != NULL, NULL);
+
+    if (n_dirs_p)
+        *n_dirs_p = n_dirs;
+
+    dirs = g_new0 (char*, n_dirs + 1);
+
+    for (i = 0; i < n_dirs; ++i)
+        dirs[i] = g_build_filename (data_dirs[i], subdir, NULL);
+
+    return dirs;
+}
+
+
+GType
+moo_data_dir_type_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_DATA_SHARE, (char*) "MOO_DATA_SHARE", (char*) "share" },
+            { MOO_DATA_LIB, (char*) "MOO_DATA_LIB", (char*) "lib" },
+            { 0, NULL, NULL },
+        };
+
+        type = g_enum_register_static ("MooDataDirType", values);
+    }
+
+    return type;
+}
