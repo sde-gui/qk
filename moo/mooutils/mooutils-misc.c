@@ -1142,15 +1142,14 @@ moo_get_data_dir (MooDataDirType type)
 static const char *
 moo_get_prgname (void)
 {
-    static char *name;
+    const char *name;
 
-    if (!name)
-        name = g_strdup (g_get_prgname ());
+    name = g_get_prgname ();
 
     if (!name)
     {
         g_critical ("%s: program name not set", G_STRLOC);
-        name = g_strdup ("ggap");
+        name = "ggap";
     }
 
     return name;
