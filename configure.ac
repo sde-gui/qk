@@ -4,7 +4,7 @@
 
 m4_define([moo_major_version], [0])
 m4_define([moo_minor_version], [6])
-m4_define([moo_micro_version], [4])
+m4_define([moo_micro_version], [5])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
 AC_INIT(libmoo, [moo_version], [muntyan@math.tamu.edu], libmoo)
