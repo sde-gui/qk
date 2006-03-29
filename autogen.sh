@@ -1,13 +1,17 @@
 #! /bin/sh
 
+builddir=`pwd`
+
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-echo "Generating configuration files..."
-
 if test -d $srcdir/m4 ; then
-    aclocal_extra="-I $srcdir/m4"
+    m4dir=`cd $srcdir/m4 && pwd`
+    aclocal_extra="-I $m4dir"
 fi
+
+cd $srcdir
+echo "Generating configuration files..."
 
 ACLOCAL=${ACLOCAL:-aclocal-1.9}
 AUTOMAKE=${AUTOMAKE:-automake-1.9}
@@ -32,6 +36,11 @@ $AUTOMAKE --add-missing --copy || exit $?
 echo $AUTOCONF
 $AUTOCONF || exit $?
 
-echo
-echo "run './configure ; make ; make install'"
-echo
+if test -z $1; then
+    echo
+    echo "run '$srcdir/configure ; make ; make install'"
+    echo
+else
+    cd $builddir
+    $srcdir/configure $*
+fi
