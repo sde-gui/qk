@@ -94,15 +94,11 @@
       <Whitespace/>
       <Regex style="Preprocessor" context="Outscoped" pattern="#\s*if\s+0" beginRegion="Outscoped" first-non-blank-only="true"/>
       <Char style="Preprocessor" context="Preprocessor" char="#" first-non-blank-only="true"/>
-      <String style="Region Marker" context="Region Marker" string="//BEGIN" beginRegion="Region1" first-non-blank-only="true"/>
-      <String style="Region Marker" context="Region Marker" string="//END" endRegion="Region1" first-non-blank-only="true"/>
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
       <Keyword style="Data Type" context="#stay" keyword="types"/>
       <Keyword keyword="CommonMacro" style="Common Macro" context="#stay"/>
       <Regex pattern="&func_pattern;" style="Function"/>
       <Identifier/>
-      <Char style="Symbol" context="#stay" char="{" beginRegion="Brace1"/>
-      <Char style="Symbol" context="#stay" char="}" endRegion="Brace1"/>
       <Float style="Float" context="#stay">
         <AnyChar chars="fF" style="Float" context="#stay"/>
       </Float>
@@ -129,8 +125,6 @@
       <LineContinue style="String" context="#stay"/>
       <EscapedChar style="String Char" context="#stay"/>
       <Char style="String" context="#pop" char="&quot;"/>
-    </context>
-    <context style="Region Marker" eol-context="#pop" name="Region Marker">
     </context>
     <context style="Comment" eol-context="#pop" name="Commentar 1">
       <IncludeRules from="##Misc##CommonCommentRules"/>
@@ -168,7 +162,7 @@
   </syntax>
 
   <styles>
-    <style name="Normal Text"  default-style="Normal"/>
+    <style name="Normal Text"  default-style="Nooormal"/>
     <style name="Keyword"      default-style="Keyword"/>
     <style name="Data Type"    default-style="DataType"/>
     <style name="Decimal"      default-style="Decimal"/>
@@ -181,8 +175,7 @@
     <style name="Comment"      default-style="Comment"/>
     <style name="Symbol"       default-style="Normal"/>
     <style name="Preprocessor" default-style="Others"/>
-    <style name="Prep. Lib"    default-style="Others"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
-    <style name="Region Marker" default-style="RegionMarker"/>
+    <style name="Prep. Lib"    default-style="Others"/>
     <style name="Common Macro" default-style="Keyword" foreground="#0095ff" bold="1" italic="0"/>
     <style name="Function"     default-style="Function"/>
   </styles>
