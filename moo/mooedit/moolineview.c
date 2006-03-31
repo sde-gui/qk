@@ -120,7 +120,7 @@ static void moo_line_view_init (MooLineView *view)
                   "editable", FALSE,
                   "cursor-visible", FALSE,
                   "current-line-color", "grey",
-                  "check-brackets", FALSE,
+                  "highlight-matching-brackets", FALSE,
                   NULL);
 }
 
