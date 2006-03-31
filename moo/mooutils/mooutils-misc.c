@@ -1280,6 +1280,7 @@ moo_get_data_subdirs (const char    *subdir,
     for (i = 0; i < n_dirs; ++i)
         dirs[i] = g_build_filename (data_dirs[i], subdir, NULL);
 
+    g_strfreev (data_dirs);
     return dirs;
 }
 

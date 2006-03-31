@@ -21,7 +21,7 @@
 #include "mooapp/mooappoutput.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
-#include "mooutils/mooplugin.h"
+#include "mooedit/mooplugin.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/moopython.h"
 #include "mooutils/moomarshals.h"
@@ -811,7 +811,7 @@ moo_app_init_editor (MooApp *app)
     dirs = moo_get_data_subdirs (MOO_PLUGIN_DIR_BASENAME,
                                  MOO_DATA_LIB, &n_dirs);
     moo_set_plugin_dirs (dirs);
-    moo_edit_plugin_init_builtin ();
+    moo_plugin_init_builtin ();
     moo_plugin_read_dirs ();
     g_strfreev (dirs);
 }
