@@ -1246,17 +1246,6 @@
   (parameters
     '("GtkWidget*" "child")
     '("GtkTextWindowType" "which_border")
-    '("double" "align" (null-ok) (default "0.0"))
-  )
-)
-
-(define-method align_child
-  (of-object "MooTextView")
-  (c-name "moo_text_view_align_child")
-  (return-type "none")
-  (parameters
-    '("GtkWidget*" "child")
-    '("double" "align")
   )
 )
 

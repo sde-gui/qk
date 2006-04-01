@@ -88,7 +88,7 @@ struct _MooTextViewClass
 GType        moo_text_view_get_type                 (void) G_GNUC_CONST;
 GType        moo_text_selection_type_get_type       (void) G_GNUC_CONST;
 
-MooTextView *moo_text_view_new                      (void);
+GtkWidget   *moo_text_view_new                      (void);
 
 void         moo_text_view_select_all               (MooTextView        *view);
 
@@ -154,11 +154,7 @@ void         moo_text_view_strip_whitespace         (MooTextView        *view);
 
 void         moo_text_view_add_child_in_border      (MooTextView        *view,
                                                      GtkWidget          *child,
-                                                     GtkTextWindowType   which_border,
-                                                     double              alignment);
-void         moo_text_view_align_child              (MooTextView        *view,
-                                                     GtkWidget          *child,
-                                                     double              alignment);
+                                                     GtkTextWindowType   which_border);
 
 void         moo_text_view_start_quick_search       (MooTextView        *view);
 void         moo_text_view_stop_quick_search        (MooTextView        *view);

@@ -53,7 +53,6 @@ static void     moo_text_view_get_property  (GObject            *object,
                                              GValue             *value,
                                              GParamSpec         *pspec);
 
-static void     moo_text_view_map           (GtkWidget          *widget);
 static void     moo_text_view_realize       (GtkWidget          *widget);
 static void     moo_text_view_unrealize     (GtkWidget          *widget);
 static gboolean moo_text_view_expose        (GtkWidget          *widget,
@@ -220,7 +219,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->button_press_event = _moo_text_view_button_press_event;
     widget_class->button_release_event = _moo_text_view_button_release_event;
     widget_class->motion_notify_event = _moo_text_view_motion_event;
-    widget_class->map = moo_text_view_map;
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
@@ -423,7 +421,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("enable-quick-search",
                                              "enable-quick-search",
                                              "enable-quick-search",
-                                             FALSE,
+                                             TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
@@ -713,7 +711,7 @@ moo_text_view_finalize (GObject *object)
 }
 
 
-MooTextView*
+GtkWidget *
 moo_text_view_new (void)
 {
     return g_object_new (MOO_TYPE_TEXT_VIEW, NULL);
@@ -1618,27 +1616,6 @@ update_line_mark_width (MooTextView *view)
             int pixbuf_width = gdk_pixbuf_get_width (pixbuf);
             view->priv->line_mark_width = MAX (view->priv->line_mark_width,
                                                pixbuf_width);
-        }
-    }
-}
-
-
-static void
-moo_text_view_map (GtkWidget *widget)
-{
-    if (!GTK_WIDGET_MAPPED (widget))
-    {
-        guint i;
-        MooTextView *view = MOO_TEXT_VIEW (widget);
-
-        GTK_WIDGET_CLASS(moo_text_view_parent_class)->map (widget);
-
-        for (i = 0; i < 4; ++i)
-        {
-            /* XXX what about windowless widgets? */
-            GtkWidget *child = view->priv->children[i].widget;
-            if (child && child->window && !GTK_WIDGET_NO_WINDOW (child))
-                gdk_window_show (child->window);
         }
     }
 }
@@ -3351,18 +3328,16 @@ get_border_window_size (GtkTextView      *text_view,
 void
 moo_text_view_add_child_in_border (MooTextView        *view,
                                    GtkWidget          *widget,
-                                   GtkTextWindowType   which_border,
-                                   double              align)
+                                   GtkTextWindowType   which_border)
 {
     MooTextViewPos pos = MOO_TEXT_VIEW_POS_INVALID;
-    MooTextViewChild *child;
+    GtkWidget **child;
     GtkRequisition child_req = {0, 0};
     int border_size = 0;
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (widget->parent == NULL);
-    g_return_if_fail (align >= 0. && align <= 1.);
 
     switch (which_border)
     {
@@ -3385,12 +3360,11 @@ moo_text_view_add_child_in_border (MooTextView        *view,
     g_return_if_fail (pos < MOO_TEXT_VIEW_POS_INVALID);
 
     child = &view->priv->children[pos];
-    g_return_if_fail (child->widget == NULL);
+    g_return_if_fail (*child == NULL);
 
     gtk_object_sink (g_object_ref (widget));
 
-    child->widget = widget;
-    child->align = align;
+    *child = widget;
 
     if (GTK_WIDGET_VISIBLE (widget))
     {
@@ -3409,14 +3383,11 @@ moo_text_view_add_child_in_border (MooTextView        *view,
             default:
                 g_assert_not_reached ();
         }
-    }
-    else
-    {
-        border_size = 0;
+
+        gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
+                                              which_border, MIN (1, border_size));
     }
 
-    gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
-                                          which_border, border_size);
     gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (view), widget,
                                        GTK_TEXT_WINDOW_WIDGET, 0, 0);
 }
@@ -3427,10 +3398,8 @@ moo_text_view_size_request (GtkWidget      *widget,
                             GtkRequisition *requisition)
 {
     guint i;
-    GtkRequisition child_req[4];
     MooTextView *view;
     GtkTextView *text_view;
-    GtkRequisition total_child_req = {0, 0};
 
     view = MOO_TEXT_VIEW (widget);
     text_view = GTK_TEXT_VIEW (widget);
@@ -3438,30 +3407,25 @@ moo_text_view_size_request (GtkWidget      *widget,
     for (i = 0; i < 4; i++)
     {
         int border_size = 0;
-        MooTextViewChild *child = &view->priv->children[i];
+        GtkWidget *child = view->priv->children[i];
+        GtkRequisition child_req;
 
-        if (child->widget && GTK_WIDGET_VISIBLE (child->widget))
-        {
-            gtk_widget_size_request (child->widget, &child_req[i]);
-        }
+        if (child && GTK_WIDGET_VISIBLE (child))
+            gtk_widget_size_request (child, &child_req);
         else
-        {
-            child_req[i].width = child_req[i].height = 0;
-        }
+            child_req.width = child_req.height = 0;
 
-        if (child->widget)
+        if (child)
         {
             switch (i)
             {
                 case MOO_TEXT_VIEW_POS_LEFT:
                 case MOO_TEXT_VIEW_POS_RIGHT:
-                    border_size = child_req[i].width;
-                    total_child_req.height = MAX (total_child_req.height, child_req[i].height);
+                    border_size = child_req.width;
                     break;
                 case MOO_TEXT_VIEW_POS_TOP:
                 case MOO_TEXT_VIEW_POS_BOTTOM:
-                    border_size = child_req[i].height;
-                    total_child_req.width = MAX (total_child_req.width, child_req[i].width);
+                    border_size = child_req.height;
                     break;
             }
 
@@ -3472,24 +3436,6 @@ moo_text_view_size_request (GtkWidget      *widget,
     }
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->size_request (widget, requisition);
-
-    total_child_req.width += get_border_window_size (text_view, GTK_TEXT_WINDOW_RIGHT) +
-                             get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
-    requisition->width = MAX (requisition->width, total_child_req.width);
-    requisition->height = MAX (requisition->height, total_child_req.height);
-}
-
-
-static int
-calc_pos (int    total,
-          int    request,
-          double align)
-{
-    if (total <= request)
-        /* oops */
-        return 0;
-    else
-        return align * (total - request);
 }
 
 
@@ -3498,7 +3444,7 @@ moo_text_view_size_allocate (GtkWidget     *widget,
                              GtkAllocation *allocation)
 {
     guint i;
-    int right_border, left_border, bottom_border;
+    int right, left, bottom, top, border_width;
     MooTextView *view;
     GtkTextView *text_view;
 
@@ -3507,59 +3453,51 @@ moo_text_view_size_allocate (GtkWidget     *widget,
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->size_allocate (widget, allocation);
 
-    right_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_RIGHT);
-    left_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
-    bottom_border = get_border_window_size (text_view, GTK_TEXT_WINDOW_BOTTOM);
+    border_width = GTK_CONTAINER(widget)->border_width;
+
+    right = get_border_window_size (text_view, GTK_TEXT_WINDOW_RIGHT);
+    left = get_border_window_size (text_view, GTK_TEXT_WINDOW_LEFT);
+    bottom = get_border_window_size (text_view, GTK_TEXT_WINDOW_BOTTOM);
+    top = get_border_window_size (text_view, GTK_TEXT_WINDOW_TOP);
 
     for (i = 0; i < 4; i++)
     {
-        int x = 0, y = 0;
+        GtkWidget *child = view->priv->children[i];
+        GtkAllocation child_alloc = {left + border_width, top + border_width, 0, 0};
         GtkRequisition child_req;
-        MooTextViewChild *child = &view->priv->children[i];
 
-        if (!child->widget || !GTK_WIDGET_VISIBLE (child->widget))
+        if (!child || !GTK_WIDGET_VISIBLE (child))
             continue;
 
-        gtk_widget_get_child_requisition (child->widget, &child_req);
+        gtk_widget_get_child_requisition (child, &child_req);
 
         switch (i)
         {
-            case MOO_TEXT_VIEW_POS_LEFT:
-                x = 0;
-                break;
             case MOO_TEXT_VIEW_POS_RIGHT:
-                x = allocation->width - right_border;
+                child_alloc.x = MAX (allocation->width - border_width - right, 0);
+            case MOO_TEXT_VIEW_POS_LEFT:
+                child_alloc.width = child_req.width;
+                child_alloc.height = MAX (allocation->height - 2*border_width - top - bottom, 1);
                 break;
-            case MOO_TEXT_VIEW_POS_TOP:
-                y = 0;
-                break;
+
             case MOO_TEXT_VIEW_POS_BOTTOM:
-                y = allocation->height - bottom_border;
+                child_alloc.y = MAX (allocation->height - bottom - border_width, 0);
+            case MOO_TEXT_VIEW_POS_TOP:
+                child_alloc.height = child_req.height;
+                child_alloc.width = MAX (allocation->width - 2*border_width - left - right, 1);
                 break;
         }
 
-        switch (i)
-        {
-            case MOO_TEXT_VIEW_POS_LEFT:
-            case MOO_TEXT_VIEW_POS_RIGHT:
-                y = calc_pos (allocation->height, child_req.height, child->align);
-                break;
-            case MOO_TEXT_VIEW_POS_TOP:
-            case MOO_TEXT_VIEW_POS_BOTTOM:
-                x = left_border + calc_pos (allocation->width - left_border - right_border,
-                                            child_req.width, child->align);
-                break;
-        }
-
-        gtk_text_view_move_child (text_view, child->widget, x, y);
+        gtk_text_view_move_child (text_view, child, child_alloc.x, child_alloc.y);
+        gtk_widget_size_allocate (child, &child_alloc);
     }
 
     for (i = 0; i < 4; ++i)
     {
         /* XXX what about windowless widgets? */
-        GtkWidget *child = view->priv->children[i].widget;
-        if (child && GTK_WIDGET_MAPPED (child) && child->window && !GTK_WIDGET_NO_WINDOW (child))
-            gdk_window_show (child->window);
+        GtkWidget *child = view->priv->children[i];
+        if (child && child->window && !GTK_WIDGET_NO_WINDOW (child))
+            gdk_window_raise (child->window);
     }
 }
 
@@ -3579,11 +3517,9 @@ moo_text_view_remove (GtkContainer *container,
 
     for (i = 0; i < 4; ++i)
     {
-        MooTextViewChild *child = &view->priv->children[i];
-
-        if (child->widget == widget)
+        if (view->priv->children[i] == widget)
         {
-            child->widget = NULL;
+            view->priv->children[i] = NULL;
             g_object_unref (widget);
             gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
                                                   window_types[i], 0);
@@ -3592,30 +3528,6 @@ moo_text_view_remove (GtkContainer *container,
     }
 
     GTK_CONTAINER_CLASS(moo_text_view_parent_class)->remove (container, widget);
-}
-
-
-void
-moo_text_view_align_child (MooTextView *view,
-                           GtkWidget   *child,
-                           double       align)
-{
-    guint i;
-
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_return_if_fail (align >= 0.0 && align <= 1.0);
-
-    for (i = 0; i < 4; ++i)
-    {
-        if (child == view->priv->children[i].widget)
-        {
-            view->priv->children[i].align = align;
-            gtk_widget_queue_resize (GTK_WIDGET (view));
-            return;
-        }
-    }
-
-    g_return_if_reached ();
 }
 
 
@@ -3798,7 +3710,7 @@ moo_text_view_start_quick_search (MooTextView *view)
         g_signal_connect_swapped (view->priv->entry, "key-press-event",
                                   G_CALLBACK (search_entry_key_press), view);
         moo_text_view_add_child_in_border (view, view->priv->entry,
-                                           GTK_TEXT_WINDOW_BOTTOM, 0);
+                                           GTK_TEXT_WINDOW_BOTTOM);
     }
 
     buffer = get_buffer (view);

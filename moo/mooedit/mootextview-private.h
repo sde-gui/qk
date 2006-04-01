@@ -97,11 +97,6 @@ typedef enum {
     MOO_TEXT_VIEW_POS_INVALID
 } MooTextViewPos;
 
-typedef struct {
-    GtkWidget *widget;
-    double align;
-} MooTextViewChild;
-
 
 struct _MooTextViewPrivate {
     gboolean constructed;
@@ -194,7 +189,7 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Children
     /*/
-    MooTextViewChild children[4];
+    GtkWidget *children[4];
 
     /***********************************************************************/
     /* Search
