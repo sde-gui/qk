@@ -1087,7 +1087,7 @@ moo_get_app_dir (void)
 
     if (!appdir)
     {
-        gchar *appname = NULL;
+        char *appname = NULL;
 
         if (G_WIN32_HAVE_WIDECHAR_API ())
         {
@@ -1106,8 +1106,8 @@ moo_get_app_dir (void)
 
         if (appname)
         {
-            appdir = g_path_get_basename (appname);
-            g_free (utf8_buf);
+            appdir = g_path_get_dirname (appname);
+            g_free (appname);
         }
         else
         {
