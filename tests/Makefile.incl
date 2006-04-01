@@ -1,4 +1,4 @@
-EXTRA_PROGRAMS += testhtml medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold ms
+EXTRA_PROGRAMS += testhtml testtext medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold ms
 bin_PROGRAMS =
 
 
@@ -27,7 +27,7 @@ medit = medit
 endif
 if MOO_BUILD_EDIT
 medit = medit
-#noinst_PROGRAMS += testfold
+# noinst_PROGRAMS += testtext
 endif
 if MOO_BUILD_TERM
 if !MOO_OS_CYGWIN
@@ -89,6 +89,14 @@ testfold_LDADD = $(ldadd)
 testfold_SOURCES = tests/testfold.c
 if !MOO_BUILD_LIB
 nodist_testfold_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+endif
+
+
+testtext_LDFLAGS = $(ldflags)
+testtext_LDADD = $(ldadd)
+testtext_SOURCES = tests/testtext.c
+if !MOO_BUILD_LIB
+nodist_testtext_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
 endif
 
 
