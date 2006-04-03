@@ -64,7 +64,7 @@ static void     moo_term_pt_finalize        (GObject            *object)
 {
     MooTermPt *pt = MOO_TERM_PT (object);
 
-    pt_flush_pending_write (pt);
+    pt_discard_pending_write (pt);
     g_queue_free (pt->priv->pending_write);
 
     g_free (pt->priv);
@@ -78,7 +78,7 @@ _moo_term_pt_new (MooTerm    *term)
 {
     MooTermPt *pt;
 #ifdef __WIN32__
-    pt = g_object_new (MOO_TYPE_TERM_PT_CYGWIN, NULL);
+    pt = g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
 #else /* !__WIN32__ */
     pt = g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
 #endif /* !__WIN32__ */
@@ -106,6 +106,22 @@ _moo_term_pt_fork_command (MooTermPt      *pt,
 {
     g_return_val_if_fail (MOO_IS_TERM_PT (pt), FALSE);
     return MOO_TERM_PT_GET_CLASS(pt)->fork_command (pt, cmd, working_dir, envp, error);
+}
+
+
+char            
+_moo_term_pt_get_erase_char (MooTermPt *pt)
+{
+    g_return_val_if_fail (MOO_IS_TERM_PT (pt), 0);
+    return MOO_TERM_PT_GET_CLASS(pt)->get_erase_char (pt);
+}
+
+
+void            
+_moo_term_pt_send_intr (MooTermPt *pt)
+{
+    g_return_if_fail (MOO_IS_TERM_PT (pt));
+    MOO_TERM_PT_GET_CLASS(pt)->send_intr (pt);
 }
 
 

@@ -92,6 +92,8 @@ static void     pt_write            (MooTermPt      *pt,
                                      const char     *string,
                                      gssize          len);
 static void     kill_child          (MooTermPt      *pt);
+static void     send_intr           (MooTermPt      *pt);
+static char     get_erase_char      (MooTermPt      *pt);
 
 static gboolean read_child_out      (GIOChannel     *source,
                                      GIOCondition    condition,
@@ -119,6 +121,8 @@ static void moo_term_pt_unix_class_init (MooTermPtUnixClass *klass)
     pt_class->fork_command = fork_command;
     pt_class->write = pt_write;
     pt_class->kill_child = kill_child;
+    pt_class->get_erase_char = get_erase_char;
+    pt_class->send_intr = send_intr;
 }
 
 
@@ -294,7 +298,7 @@ static void     kill_child      (MooTermPt      *pt_gen)
     }
 
     stop_writer (pt_gen);
-    pt_flush_pending_write (pt_gen);
+    pt_discard_pending_write (pt_gen);
 
     if (pt->master != -1)
     {
@@ -638,8 +642,8 @@ static void     pt_write        (MooTermPt      *pt,
 }
 
 
-char
-_moo_term_pt_get_erase_char (MooTermPt      *pt_gen)
+static char
+get_erase_char (MooTermPt *pt_gen)
 {
     MooTermPtUnix *pt = MOO_TERM_PT_UNIX (pt_gen);
     struct termios tio;
@@ -659,11 +663,11 @@ _moo_term_pt_get_erase_char (MooTermPt      *pt_gen)
 }
 
 
-void
-_moo_term_pt_send_intr (MooTermPt      *pt)
+static void
+send_intr (MooTermPt *pt)
 {
     g_return_if_fail (pt->priv->child_alive);
-    pt_flush_pending_write (pt);
+    pt_discard_pending_write (pt);
     pt_write (pt, "\003", 1);
 }
 

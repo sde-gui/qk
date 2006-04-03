@@ -43,7 +43,7 @@ inline static void pt_discard (GSList **list)
     *list = NULL;
 }
 
-inline static void pt_flush_pending_write (MooTermPt *pt)
+inline static void pt_discard_pending_write (MooTermPt *pt)
 {
     GList *l;
 
