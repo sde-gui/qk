@@ -19,6 +19,7 @@
 #include "mooapp/mooapp-private.h"
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooappoutput.h"
+#include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
