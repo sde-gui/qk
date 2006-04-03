@@ -14,7 +14,6 @@
 #ifndef __MOO_APP_H__
 #define __MOO_APP_H__
 
-#include <mooterm/mootermwindow.h>
 #include <mooedit/mooeditor.h>
 #include <mooutils/moouseractions.h>
 

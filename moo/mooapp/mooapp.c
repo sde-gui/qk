@@ -735,14 +735,17 @@ moo_app_python_run_string (MooApp      *app,
     }
 }
 
-MooEditor       *moo_app_get_editor            (MooApp          *app)
+
+MooEditor *
+moo_app_get_editor (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
     return app->priv->editor;
 }
 
 
-const MooAppInfo*moo_app_get_info               (MooApp     *app)
+const MooAppInfo *
+moo_app_get_info (MooApp     *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
     return app->priv->info;
@@ -928,6 +931,7 @@ moo_app_init_real (MooApp *app)
 
     moo_app_init_ui (app);
 
+#ifdef MOO_BUILD_EDIT
     if (app->priv->use_editor)
         moo_app_init_editor (app);
 
@@ -983,6 +987,7 @@ start_io (MooApp *app)
         moo_app_input = moo_app_input_new (app->priv->info->short_name);
         moo_app_input_start (moo_app_input);
     }
+#endif /* MOO_BUILD_EDIT */
 
     if (app->priv->run_output)
     {
@@ -1026,6 +1031,7 @@ moo_app_run_real (MooApp *app)
     app->priv->quit_handler_id =
             gtk_quit_add (0, (GtkFunction) on_gtk_main_quit, app);
 
+#ifdef MOO_BUILD_EDIT
     if (app->priv->open_files)
     {
         char **file;
@@ -1044,6 +1050,7 @@ moo_app_run_real (MooApp *app)
         g_strfreev (app->priv->open_files);
         app->priv->open_files = NULL;
     }
+#endif /* MOO_BUILD_EDIT */
 
     gtk_main ();
 
@@ -1059,8 +1066,10 @@ moo_app_try_quit_real (MooApp *app)
     if (!app->priv->running)
         return FALSE;
 
+#ifdef MOO_BUILD_EDIT
     if (!moo_editor_close_all (app->priv->editor, TRUE))
         return TRUE;
+#endif /* MOO_BUILD_EDIT */
 
     list = g_slist_copy (app->priv->terminals);
     for (l = list; l != NULL; l = l->next)
@@ -1109,9 +1118,11 @@ static void     moo_app_quit_real       (MooApp         *app)
     app->priv->terminals = NULL;
     app->priv->term_window = NULL;
 
+#ifdef MOO_BUILD_EDIT
     moo_editor_close_all (app->priv->editor, TRUE);
     g_object_unref (app->priv->editor);
     app->priv->editor = NULL;
+#endif /* MOO_BUILD_EDIT */
 
     if (!moo_prefs_save (moo_app_get_rc_file_name (app), &error))
     {
@@ -1256,6 +1267,7 @@ static void install_actions (MooApp *app, GType  type)
 
 static void install_editor_actions  (MooApp *app)
 {
+#ifdef MOO_BUILD_EDIT
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
     g_return_if_fail (klass != NULL);
@@ -1272,10 +1284,11 @@ static void install_editor_actions  (MooApp *app)
                                  NULL);
 
     g_type_class_unref (klass);
+#endif /* MOO_BUILD_EDIT */
 }
 
 
-#ifdef MOO_BUILD_TERM
+#if defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)
 static void new_editor (MooApp *app)
 {
     g_return_if_fail (app != NULL);
@@ -1319,11 +1332,11 @@ static void install_terminal_actions (MooApp *app)
 
     g_type_class_unref (klass);
 }
-#else /* !MOO_BUILD_TERM */
+#else /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
 static void install_terminal_actions (G_GNUC_UNUSED MooApp *app)
 {
 }
-#endif /* !MOO_BUILD_TERM */
+#endif /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
 
 
 MooUIXML        *moo_app_get_ui_xml             (MooApp     *app)
@@ -1356,8 +1369,10 @@ moo_app_set_ui_xml (MooApp     *app,
     if (xml)
         g_object_ref (app->priv->ui_xml);
 
+#ifdef MOO_BUILD_EDIT
     if (app->priv->editor)
         moo_editor_set_ui_xml (app->priv->editor, xml);
+#endif /* MOO_BUILD_EDIT */
 
     for (l = app->priv->terminals; l != NULL; l = l->next)
         moo_window_set_ui_xml (l->data, xml);
@@ -1421,6 +1436,7 @@ moo_app_info_get_type (void)
 }
 
 
+#ifdef MOO_BUILD_EDIT
 static void
 execute_selection (MooEditWindow *window)
 {
@@ -1442,6 +1458,7 @@ execute_selection (MooEditWindow *window)
         g_free (text);
     }
 }
+#endif /* MOO_BUILD_EDIT */
 
 
 void
@@ -1460,9 +1477,11 @@ static void
 moo_app_open_file (MooApp       *app,
                    const char   *filename)
 {
+#ifdef MOO_BUILD_EDIT
     MooEditor *editor = moo_app_get_editor (app);
     g_return_if_fail (editor != NULL);
     moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+#endif /* MOO_BUILD_EDIT */
 }
 
 
@@ -1471,8 +1490,10 @@ moo_app_present (MooApp *app)
 {
     gpointer window = app->priv->term_window;
 
+#ifdef MOO_BUILD_EDIT
     if (!window && app->priv->editor)
         window = moo_editor_get_active_window (app->priv->editor);
+#endif /* MOO_BUILD_EDIT */
 
     g_return_if_fail (window != NULL);
 
