@@ -2124,7 +2124,7 @@ fill_toolbar (MooUIXML       *xml,
         switch (node->type)
         {
             case MOO_UI_NODE_ITEM:
-                result = create_tool_item (xml, toplevel, toolbar, node, -1);
+                create_tool_item (xml, toplevel, toolbar, node, -1);
                 break;
             case MOO_UI_NODE_SEPARATOR:
                 create_tool_separator (xml, toplevel, toolbar, node, -1);

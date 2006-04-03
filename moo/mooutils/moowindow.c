@@ -39,10 +39,14 @@ static GSList *window_instances = NULL;
 
 struct _MooWindowPrivate {
     guint save_size_id;
+
     char *toolbar_ui_name;
+    GtkWidget *toolbar_holder;
+    gboolean toolbar_visible;
+
     char *menubar_ui_name;
     GtkWidget *menubar_holder;
-    GtkWidget *toolbar_holder;
+    gboolean menubar_visible;
 
     MooUIXML *ui_xml;
     MooActionGroup *actions;
@@ -166,7 +170,6 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  "name", "Show Toolbar",
                                  "label", "Show Toolbar",
                                  "tooltip", "Show Toolbar",
-                                 "toggled-callback", moo_window_set_toolbar_visible,
                                  "condition::active", "toolbar-visible",
                                  NULL);
 
@@ -175,7 +178,6 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  "name", "Show Menubar",
                                  "label", "Show Menubar",
                                  "tooltip", "Show Menubar",
-                                 "toggled-callback", moo_window_set_menubar_visible,
                                  "condition::active", "menubar-visible",
                                  NULL);
 
@@ -266,13 +268,15 @@ static void moo_window_class_init (MooWindowClass *klass)
 }
 
 
-GObject    *moo_window_constructor      (GType                  type,
-                                         guint                  n_props,
-                                         GObjectConstructParam *props)
+GObject *
+moo_window_constructor (GType                  type,
+                        guint                  n_props,
+                        GObjectConstructParam *props)
 {
     GtkWidget *vbox;
     MooWindow *window;
     MooWindowClass *klass;
+    MooAction *action;
 
     GObject *object =
         G_OBJECT_CLASS(moo_window_parent_class)->constructor (type, n_props, props);
@@ -335,6 +339,16 @@ GObject    *moo_window_constructor      (GType                  type,
     g_signal_connect (window, "configure-event",
                       G_CALLBACK (moo_window_save_size), NULL);
 
+    moo_window_set_toolbar_visible (window, 
+        moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
+    action = moo_window_get_action_by_id (window, "ShowToolbar");
+    moo_sync_bool_property (action, "active", window, "toolbar-visible", FALSE);
+    
+    moo_window_set_menubar_visible (window, 
+        moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
+    action = moo_window_get_action_by_id (window, "ShowMenubar");
+    moo_sync_bool_property (action, "active", window, "menubar-visible", FALSE);
+
     g_type_class_unref (klass);
     return object;
 }
@@ -344,6 +358,8 @@ static void moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
     window->vbox = gtk_vbox_new (FALSE, 0);
+    window->priv->toolbar_visible = TRUE;
+    window->priv->menubar_visible = TRUE;
 }
 
 
@@ -384,7 +400,8 @@ moo_window_delete_event (GtkWidget      *widget,
 }
 
 
-static gboolean save_size (MooWindow      *window)
+static gboolean 
+save_size (MooWindow *window)
 {
     window->priv->save_size_id = 0;
 
@@ -408,7 +425,8 @@ static gboolean save_size (MooWindow      *window)
 }
 
 
-static gboolean moo_window_save_size    (MooWindow      *window)
+static gboolean 
+moo_window_save_size (MooWindow *window)
 {
     if (!window->priv->save_size_id)
         window->priv->save_size_id =
@@ -417,7 +435,8 @@ static gboolean moo_window_save_size    (MooWindow      *window)
 }
 
 
-gboolean moo_window_close (MooWindow *window)
+gboolean 
+moo_window_close (MooWindow *window)
 {
     gboolean result = FALSE;
     g_signal_emit_by_name (window, "close", &result);
@@ -433,10 +452,11 @@ gboolean moo_window_close (MooWindow *window)
 }
 
 
-static void moo_window_set_property     (GObject      *object,
-                                         guint         prop_id,
-                                         const GValue *value,
-                                         GParamSpec   *pspec)
+static void 
+moo_window_set_property (GObject      *object,
+                         guint         prop_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
 {
     const char *name = NULL;
     MooWindow *window = MOO_WINDOW (object);
@@ -479,10 +499,12 @@ static void moo_window_set_property     (GObject      *object,
     }
 }
 
-static void moo_window_get_property     (GObject      *object,
-                                         guint         prop_id,
-                                         GValue       *value,
-                                         GParamSpec   *pspec)
+
+static void 
+moo_window_get_property (GObject      *object,
+                         guint         prop_id,
+                         GValue       *value,
+                         GParamSpec   *pspec)
 {
     MooWindow *window = MOO_WINDOW (object);
 
@@ -520,11 +542,11 @@ static void moo_window_get_property     (GObject      *object,
             break;
 
         case PROP_TOOLBAR_VISIBLE:
-            g_value_set_boolean (value, window->toolbar && GTK_WIDGET_VISIBLE (window->toolbar));
+            g_value_set_boolean (value, window->priv->toolbar_visible);
             break;
 
         case PROP_MENUBAR_VISIBLE:
-            g_value_set_boolean (value, window->menubar && GTK_WIDGET_VISIBLE (window->menubar));
+            g_value_set_boolean (value, window->priv->menubar_visible);
             break;
 
         default:
@@ -538,7 +560,6 @@ static gboolean
 moo_window_create_ui (MooWindow  *window)
 {
     MooUIXML *xml;
-    MooAction *show_toolbar, *show_menubar;
     GtkToolbarStyle style;
 
     g_return_val_if_fail (MOO_IS_WINDOW (window), FALSE);
@@ -571,11 +592,9 @@ moo_window_create_ui (MooWindow  *window)
 
         gtk_box_pack_start (GTK_BOX (window->priv->menubar_holder),
                             window->menubar, FALSE, FALSE, 0);
-        gtk_widget_show (window->menubar);
 
-        show_menubar = moo_action_group_get_action (actions, "ShowMenubar");
-        moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_menubar),
-                                      moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
+        if (window->priv->menubar_visible)
+            gtk_widget_show (window->menubar);
     }
 
     if (window->priv->toolbar_ui_name && window->priv->toolbar_ui_name[0])
@@ -592,11 +611,9 @@ moo_window_create_ui (MooWindow  *window)
 
         gtk_box_pack_start (GTK_BOX (window->priv->toolbar_holder),
                             window->toolbar, FALSE, FALSE, 0);
-        gtk_widget_show (window->toolbar);
 
-        show_toolbar = moo_action_group_get_action (actions, "ShowToolbar");
-        moo_toggle_action_set_active (MOO_TOGGLE_ACTION (show_toolbar),
-                                      moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
+        if (window->priv->toolbar_visible)
+            gtk_widget_show (window->toolbar);
 
         style = get_toolbar_style (window);
         gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
@@ -606,7 +623,8 @@ moo_window_create_ui (MooWindow  *window)
 }
 
 
-static void moo_window_shortcuts_prefs_dialog (MooWindow *window)
+static void 
+moo_window_shortcuts_prefs_dialog (MooWindow *window)
 {
     moo_accel_prefs_dialog_run (moo_window_get_actions (window),
                                 GTK_WIDGET (window));
@@ -617,12 +635,12 @@ static void
 moo_window_set_toolbar_visible (MooWindow  *window,
                                 gboolean    visible)
 {
-    if (window->toolbar && visible != GTK_WIDGET_VISIBLE (window->toolbar))
+    if (!visible != !window->priv->toolbar_visible)
     {
-        if (visible)
-            gtk_widget_show (window->toolbar);
-        else
-            gtk_widget_hide (window->toolbar);
+        window->priv->toolbar_visible = visible != 0;
+
+        if (window->toolbar)
+            g_object_set (window->toolbar, "visible", visible, NULL);
 
         moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), visible);
         g_object_notify (G_OBJECT (window), "toolbar-visible");
@@ -634,12 +652,12 @@ static void
 moo_window_set_menubar_visible (MooWindow  *window,
                                 gboolean    visible)
 {
-    if (window->menubar && visible != GTK_WIDGET_VISIBLE (window->menubar))
+    if (!visible != !window->priv->menubar_visible)
     {
-        if (visible)
-            gtk_widget_show (window->menubar);
-        else
-            gtk_widget_hide (window->menubar);
+        window->priv->menubar_visible = visible != 0;
+
+        if (window->menubar)
+            g_object_set (window->menubar, "visible", visible, NULL);
 
         moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), visible);
         g_object_notify (G_OBJECT (window), "menubar-visible");
