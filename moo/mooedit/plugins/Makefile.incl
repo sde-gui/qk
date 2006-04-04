@@ -7,17 +7,22 @@ mooedit_plugins_srcdir = $(srcdir)/$(mooedit_plugins)
 
 mooedit_plugins_built_sources =               \
     $(mooedit_plugins)/moofileselector-glade.h\
+    $(mooedit_plugins)/moofilechooser-glade.h \
     $(mooedit_plugins)/moofind-glade.h
 
 mooedit_plugins_extra_dist =                  \
     $(mooedit_plugins)/moofileselector.glade  \
+    $(mooedit_plugins)/moofilechooser.glade   \
     $(mooedit_plugins)/moofind.glade
 
 $(mooedit_plugins)/moofileselector-glade.h: $(mooedit_plugins)/moofileselector.glade $(XML2H)
 	mkdir -p $(mooedit_plugins)
 	sh $(XML2H) MOO_FILE_SELECTOR_GLADE_XML $(mooedit_plugins_srcdir)/moofileselector.glade > \
 	   $(mooedit_plugins)/moofileselector-glade.h
-
+$(mooedit_plugins)/moofilechooser-glade.h: $(mooedit_plugins)/moofilechooser.glade $(XML2H)
+	mkdir -p $(mooedit_plugins)
+	sh $(XML2H) MOO_FILE_CHOOSER_GLADE_XML $(mooedit_plugins_srcdir)/moofilechooser.glade > \
+	   $(mooedit_plugins)/moofilechooser-glade.h
 $(mooedit_plugins)/moofind-glade.h: $(mooedit_plugins)/moofind.glade $(XML2H)
 	mkdir -p $(mooedit_plugins)
 	sh $(XML2H) MOO_FIND_GLADE_XML $(mooedit_plugins_srcdir)/moofind.glade > \
@@ -33,6 +38,7 @@ mooedit_plugins_sources =                     \
 if GTK_2_6
 mooedit_plugins_sources +=                    \
     $(mooedit_plugins)/moofileselector-glade.h\
+    $(mooedit_plugins)/moofilechooser-glade.h \
     $(mooedit_plugins)/fileselector.c
 endif
 

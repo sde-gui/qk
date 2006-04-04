@@ -1,3 +1,6 @@
+;; -*- Mode: scheme; strip on; -*-
+;; hand-edited
+
 (define-function editor_instance
   (c-name "moo_editor_instance")
   (return-type "MooEditor*")

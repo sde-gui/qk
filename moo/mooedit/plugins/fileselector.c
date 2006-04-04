@@ -20,6 +20,7 @@
 #include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/plugins/moofileselector-glade.h"
+#include "mooedit/plugins/moofilechooser-glade.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
@@ -1064,6 +1065,34 @@ show_file_selector (MooEditWindow *window)
     pane = moo_edit_window_get_pane (window, PLUGIN_ID);
     moo_big_paned_present_pane (window->paned, pane);
 }
+
+
+// static void
+// show_file_chooser (MooEditWindow *window)
+// {
+//     GtkWidget *dialog;
+//     int response;
+//
+//     dialog = g_object_get_data (G_OBJECT (window), "moo-file-chooser");
+//
+//     if (!dialog)
+//     {
+//         MooGladeXML *xml;
+//
+//         xml = moo_glade_xml_new_empty ();
+//         moo_glade_xml_map_id (xml, "fielview", MOO_TYPE_FILE_SELECTOR);
+//         moo_glade_xml_parse_memory (*xml, MOO_FILE_CHOOSER_GLADE_XML, -1, NULL);
+//
+//         dialog = moo_glade_xml_get_widget (xml, "dialog");
+//         g_return_val_if_fail (dialog != NULL, NULL);
+//
+//         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+//         g_object_set_data_full (G_OBJECT (window), "moo-file-chooser",
+//                                 dialog, gtk_widget_destroy);
+//     }
+//
+//     response = gtk_dialog_run ();
+// }
 
 
 static gboolean
