@@ -6,7 +6,8 @@
 
     <item name="File" label="_File">
       <separator/>
-      <item action="NewTab"/>
+      <item action="NewDoc"/>
+      <item action="NewWindow"/>
       <separator/>
       <item action="Open"/>
       <item action="OpenRecent"/>
@@ -37,9 +38,9 @@
       <separator/>
       <item action="SelectAll"/>
       <separator/>
-      <item action="Comment"/>
+<!--      <item action="Comment"/>
       <item action="Uncomment"/>
-      <separator/>
+      <separator/>-->
     </item>
 
     <item name="Search" label="_Search">
@@ -101,7 +102,7 @@
 
   <widget name="Toolbar">
     <separator/>
-    <item action="NewTab"/>
+    <item action="NewDoc"/>
     <separator/>
     <item action="Open"/>
     <item action="Save"/>

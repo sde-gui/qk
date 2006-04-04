@@ -158,7 +158,7 @@ static gboolean notebook_drag_motion    (GtkWidget          *widget,
 
 /* actions */
 static void moo_edit_window_new         (MooEditWindow      *window);
-static void moo_edit_window_new_tab     (MooEditWindow      *window);
+static void moo_edit_window_new_doc     (MooEditWindow      *window);
 static void moo_edit_window_open        (MooEditWindow      *window);
 static void moo_edit_window_reload      (MooEditWindow      *window);
 static void moo_edit_window_save        (MooEditWindow      *window);
@@ -287,17 +287,17 @@ static void moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", "_New Window",
                                  "tooltip", "Open new editor window",
                                  "icon-stock-id", GTK_STOCK_NEW,
-                                 "accel", "<ctrl>N",
+                                 "accel", "<shift><ctrl>N",
                                  "closure-callback", moo_edit_window_new,
                                  NULL);
 
-    moo_window_class_new_action (window_class, "NewTab",
-                                 "name", "New Tab",
-                                 "label", "New _Tab",
-                                 "tooltip", "Create new document tab",
+    moo_window_class_new_action (window_class, "NewDoc",
+                                 "name", "New",
+                                 "label", "New",
+                                 "tooltip", "Create new document",
                                  "icon-stock-id", GTK_STOCK_NEW,
-                                 "accel", "<ctrl>T",
-                                 "closure-callback", moo_edit_window_new_tab,
+                                 "accel", "<ctrl>N",
+                                 "closure-callback", moo_edit_window_new_doc,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Open",
@@ -884,7 +884,7 @@ static void moo_edit_window_new             (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_new_tab         (MooEditWindow   *window)
+static void moo_edit_window_new_doc         (MooEditWindow   *window)
 {
     moo_editor_new_doc (window->priv->editor, window);
 }
