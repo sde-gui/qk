@@ -48,7 +48,8 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mootextgotoline-glade.h        \
     $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextview-private.h          \
-    $(mooedit)/quicksearch-glade.h
+    $(mooedit)/quicksearch-glade.h            \
+    $(mooedit)/statusbar-glade.h
 
 mooedit_sources =                             \
     $(mooedit_include_headers)                \
@@ -89,6 +90,7 @@ mooedit_gtk_2_10_sources =			\
 
 mooedit_built_sources =                       \
     $(mooedit)/quicksearch-glade.h            \
+    $(mooedit)/statusbar-glade.h              \
     $(mooedit)/mootextgotoline-glade.h        \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/moopluginprefs-glade.h         \
@@ -125,6 +127,10 @@ $(mooedit)/quicksearch-glade.h: $(mooedit_srcdir)/glade/quicksearch.glade $(XML2
 	mkdir -p $(mooedit)
 	sh $(XML2H) QUICK_SEARCH_GLADE_XML $(mooedit_srcdir)/glade/quicksearch.glade \
 		> $(mooedit)/quicksearch-glade.h
+$(mooedit)/statusbar-glade.h: $(mooedit_srcdir)/glade/statusbar.glade $(XML2H)
+	mkdir -p $(mooedit)
+	sh $(XML2H) STATUSBAR_GLADE_XML $(mooedit_srcdir)/glade/statusbar.glade \
+		> $(mooedit)/statusbar-glade.h
 
 if GTK_2_10
 mooedit_sources += $(mooedit_gtk_2_10_sources)

@@ -19,6 +19,7 @@
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooscript/mooscript-context.h>
+#include <gtk/gtkstatusbar.h>
 
 G_BEGIN_DECLS
 
@@ -38,8 +39,9 @@ typedef struct _MooEditWindowClass      MooEditWindowClass;
 struct _MooEditWindow
 {
     MooWindow               parent;
-    MooBigPaned            *paned;
     MooEditWindowPrivate   *priv;
+    MooBigPaned            *paned;
+    GtkStatusbar           *_statusbar;
 };
 
 struct _MooEditWindowClass
@@ -93,6 +95,11 @@ void         moo_edit_window_job_started        (MooEditWindow  *window,
 void         moo_edit_window_job_finished       (MooEditWindow  *window,
                                                  gpointer        job);
 
+guint        moo_edit_window_push_message       (MooEditWindow  *window,
+                                                 const char     *message,
+                                                 const char     *id);
+void         moo_edit_window_pop_message        (MooEditWindow  *window,
+                                                 const char     *id);
 
 void         moo_edit_window_setup_context      (MooEditWindow  *window,
                                                  MSContext      *ctx);

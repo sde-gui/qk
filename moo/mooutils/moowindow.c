@@ -312,9 +312,6 @@ moo_window_constructor (GType                  type,
     window->toolbar = NULL;
 
     gtk_box_pack_start (GTK_BOX (vbox), window->vbox, TRUE, TRUE, 0);
-    window->statusbar = gtk_statusbar_new ();
-    gtk_box_pack_start (GTK_BOX (vbox), window->statusbar, FALSE, FALSE, 0);
-    gtk_statusbar_set_has_resize_grip (GTK_STATUSBAR (window->statusbar), TRUE);
 
     g_signal_connect (window, "notify::toolbar-ui-name",
                       G_CALLBACK (moo_window_create_ui), NULL);
@@ -339,12 +336,12 @@ moo_window_constructor (GType                  type,
     g_signal_connect (window, "configure-event",
                       G_CALLBACK (moo_window_save_size), NULL);
 
-    moo_window_set_toolbar_visible (window, 
+    moo_window_set_toolbar_visible (window,
         moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
     action = moo_window_get_action_by_id (window, "ShowToolbar");
     moo_sync_bool_property (action, "active", window, "toolbar-visible", FALSE);
-    
-    moo_window_set_menubar_visible (window, 
+
+    moo_window_set_menubar_visible (window,
         moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
     action = moo_window_get_action_by_id (window, "ShowMenubar");
     moo_sync_bool_property (action, "active", window, "menubar-visible", FALSE);
@@ -358,6 +355,7 @@ static void moo_window_init (MooWindow *window)
 {
     window->priv = g_new0 (MooWindowPrivate, 1);
     window->vbox = gtk_vbox_new (FALSE, 0);
+    gtk_widget_show (window->vbox);
     window->priv->toolbar_visible = TRUE;
     window->priv->menubar_visible = TRUE;
 }
@@ -400,7 +398,7 @@ moo_window_delete_event (GtkWidget      *widget,
 }
 
 
-static gboolean 
+static gboolean
 save_size (MooWindow *window)
 {
     window->priv->save_size_id = 0;
@@ -425,7 +423,7 @@ save_size (MooWindow *window)
 }
 
 
-static gboolean 
+static gboolean
 moo_window_save_size (MooWindow *window)
 {
     if (!window->priv->save_size_id)
@@ -435,7 +433,7 @@ moo_window_save_size (MooWindow *window)
 }
 
 
-gboolean 
+gboolean
 moo_window_close (MooWindow *window)
 {
     gboolean result = FALSE;
@@ -452,7 +450,7 @@ moo_window_close (MooWindow *window)
 }
 
 
-static void 
+static void
 moo_window_set_property (GObject      *object,
                          guint         prop_id,
                          const GValue *value,
@@ -500,7 +498,7 @@ moo_window_set_property (GObject      *object,
 }
 
 
-static void 
+static void
 moo_window_get_property (GObject      *object,
                          guint         prop_id,
                          GValue       *value,
@@ -623,7 +621,7 @@ moo_window_create_ui (MooWindow  *window)
 }
 
 
-static void 
+static void
 moo_window_shortcuts_prefs_dialog (MooWindow *window)
 {
     moo_accel_prefs_dialog_run (moo_window_get_actions (window),

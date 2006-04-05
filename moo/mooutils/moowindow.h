@@ -45,7 +45,6 @@ struct _MooWindow
     GtkWidget           *menubar;
     GtkWidget           *toolbar;
     GtkWidget           *vbox;
-    GtkWidget           *statusbar;
 };
 
 struct _MooWindowClass
