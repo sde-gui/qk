@@ -39,6 +39,14 @@
 #define DEFAULT_EXPANDER_SIZE 12
 #define EXPANDER_PADDING 2
 
+static GtkTextWindowType window_types[4] = {
+    GTK_TEXT_WINDOW_LEFT,
+    GTK_TEXT_WINDOW_RIGHT,
+    GTK_TEXT_WINDOW_TOP,
+    GTK_TEXT_WINDOW_BOTTOM
+};
+
+
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
                                              GObjectConstructParam *construct_param);
@@ -1621,10 +1629,30 @@ update_line_mark_width (MooTextView *view)
 }
 
 
+/* XXX: workaround for http://bugzilla.gnome.org/show_bug.cgi?id=336796 */
+static void
+lower_border_window (GtkTextView   *view,
+                     MooTextViewPos pos)
+{
+    GdkWindow *window;
+
+    g_return_if_fail (pos < 4);
+
+    window = gtk_text_view_get_window (view, window_types[pos]);
+
+    if (window)
+        window = gdk_window_get_parent (window);
+
+    if (window)
+        gdk_window_lower (window);
+}
+
+
 static void
 moo_text_view_realize (GtkWidget *widget)
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
+    guint i;
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->realize (widget);
 
@@ -1638,6 +1666,13 @@ moo_text_view_realize (GtkWidget *widget)
     }
 
     update_line_mark_width (view);
+
+    /* workaround for http://bugzilla.gnome.org/show_bug.cgi?id=336796 */
+    for (i = 0; i < 4; ++i)
+    {
+        if (view->priv->children[i] && GTK_WIDGET_VISIBLE (view->priv->children[i]))
+            lower_border_window (GTK_TEXT_VIEW (view), i);
+    }
 }
 
 
@@ -3305,14 +3340,6 @@ fold_toggled (MooTextView        *view,
 /* Children
  */
 
-static GtkTextWindowType window_types[4] = {
-    GTK_TEXT_WINDOW_LEFT,
-    GTK_TEXT_WINDOW_RIGHT,
-    GTK_TEXT_WINDOW_TOP,
-    GTK_TEXT_WINDOW_BOTTOM
-};
-
-
 /* http://bugzilla.gnome.org/show_bug.cgi?id=323843 */
 static int
 get_border_window_size (GtkTextView      *text_view,
@@ -3386,6 +3413,7 @@ moo_text_view_add_child_in_border (MooTextView        *view,
 
         gtk_text_view_set_border_window_size (GTK_TEXT_VIEW (view),
                                               which_border, MIN (1, border_size));
+        lower_border_window (GTK_TEXT_VIEW (view), pos);
     }
 
     gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (view), widget,
@@ -3417,6 +3445,8 @@ moo_text_view_size_request (GtkWidget      *widget,
 
         if (child)
         {
+            int old_size;
+
             switch (i)
             {
                 case MOO_TEXT_VIEW_POS_LEFT:
@@ -3429,9 +3459,13 @@ moo_text_view_size_request (GtkWidget      *widget,
                     break;
             }
 
+            old_size = get_border_window_size (text_view,
+                                               window_types[i]);
             gtk_text_view_set_border_window_size (text_view,
                                                   window_types[i],
                                                   border_size);
+            if (!old_size)
+                lower_border_window (GTK_TEXT_VIEW (view), i);
         }
     }
 
@@ -3490,14 +3524,6 @@ moo_text_view_size_allocate (GtkWidget     *widget,
 
         gtk_text_view_move_child (text_view, child, child_alloc.x, child_alloc.y);
         gtk_widget_size_allocate (child, &child_alloc);
-    }
-
-    for (i = 0; i < 4; ++i)
-    {
-        /* XXX what about windowless widgets? */
-        GtkWidget *child = view->priv->children[i];
-        if (child && child->window && !GTK_WIDGET_NO_WINDOW (child))
-            gdk_window_raise (child->window);
     }
 }
 
