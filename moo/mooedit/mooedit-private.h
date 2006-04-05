@@ -52,9 +52,11 @@ MooEdit     *_moo_edit_new                  (MooEditor      *editor);
 
 
 typedef enum {
-    MOO_EDIT_LINE_END_UNIX  = 0,
-    MOO_EDIT_LINE_END_WIN32 = 1,
-    MOO_EDIT_LINE_END_MAC   = 2
+    MOO_EDIT_LINE_END_NONE,
+    MOO_EDIT_LINE_END_UNIX,
+    MOO_EDIT_LINE_END_WIN32,
+    MOO_EDIT_LINE_END_MAC,
+    MOO_EDIT_LINE_END_MIX
 } MooEditLineEndType;
 
 
