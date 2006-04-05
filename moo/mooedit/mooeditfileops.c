@@ -643,7 +643,6 @@ do_write (MooEdit        *edit,
     {
         gsize written;
         GtkTextIter line_end = line_start;
-        gboolean write_line_end = FALSE;
 
         if (!gtk_text_iter_ends_line (&line_start))
         {
@@ -665,12 +664,7 @@ do_write (MooEdit        *edit,
             }
         }
 
-        if (gtk_text_iter_ends_line (&line_start))
-            write_line_end = !gtk_text_iter_is_end (&line_start);
-        else
-            write_line_end = !gtk_text_iter_is_end (&line_end);
-
-        if (write_line_end)
+        if (!gtk_text_iter_is_end (&line_end))
         {
             status = g_io_channel_write_chars (file, le, le_len, &written, error);
 
