@@ -15,12 +15,12 @@
 #include "config.h"
 #endif
 
+#include "mooedit/plugins/moofileselector.h"
 #include "mooedit/mooplugin-macro.h"
-#include "mooutils/moofileview/moofileview.h"
 #include "mooutils/moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/plugins/moofileselector-glade.h"
-#include "mooedit/plugins/moofilechooser-glade.h"
+#include "mooedit/plugins/moofilechooser.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
@@ -49,28 +49,6 @@ typedef struct {
 #define Plugin FileSelectorPlugin
 
 
-#define MOO_TYPE_FILE_SELECTOR              (moo_file_selector_get_type ())
-#define MOO_FILE_SELECTOR(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SELECTOR, MooFileSelector))
-#define MOO_FILE_SELECTOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
-#define MOO_IS_FILE_SELECTOR(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SELECTOR))
-#define MOO_IS_FILE_SELECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_SELECTOR))
-#define MOO_FILE_SELECTOR_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
-
-typedef struct {
-    MooFileView base;
-    MooEditWindow *window;
-    GtkWidget *button;
-    guint open_pane_timeout;
-    gboolean button_highlight;
-
-    GtkTargetList *targets;
-    gboolean waiting_for_tab;
-} MooFileSelector;
-
-typedef struct {
-    MooFileViewClass base_class;
-} MooFileSelectorClass;
-
 enum {
     TARGET_MOO_EDIT_TAB = 1,
     TARGET_URI_LIST = 2
@@ -85,7 +63,6 @@ static GtkTargetEntry targets[] = {
 
 #define OPEN_PANE_TIMEOUT 300
 
-GType moo_file_selector_get_type (void) G_GNUC_CONST;
 G_DEFINE_TYPE (MooFileSelector, moo_file_selector, MOO_TYPE_FILE_VIEW)
 
 
@@ -1067,32 +1044,46 @@ show_file_selector (MooEditWindow *window)
 }
 
 
-// static void
-// show_file_chooser (MooEditWindow *window)
-// {
-//     GtkWidget *dialog;
-//     int response;
-//
-//     dialog = g_object_get_data (G_OBJECT (window), "moo-file-chooser");
-//
-//     if (!dialog)
-//     {
-//         MooGladeXML *xml;
-//
-//         xml = moo_glade_xml_new_empty ();
-//         moo_glade_xml_map_id (xml, "fielview", MOO_TYPE_FILE_SELECTOR);
-//         moo_glade_xml_parse_memory (*xml, MOO_FILE_CHOOSER_GLADE_XML, -1, NULL);
-//
-//         dialog = moo_glade_xml_get_widget (xml, "dialog");
-//         g_return_val_if_fail (dialog != NULL, NULL);
-//
-//         gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
-//         g_object_set_data_full (G_OBJECT (window), "moo-file-chooser",
-//                                 dialog, gtk_widget_destroy);
-//     }
-//
-//     response = gtk_dialog_run ();
-// }
+static void
+show_file_chooser (MooEditWindow *window)
+{
+    GtkWidget *dialog;
+    int response;
+
+    dialog = g_object_get_data (G_OBJECT (window), "moo-file-chooser");
+
+    if (!dialog)
+    {
+        dialog = moo_file_chooser_new ();
+        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+        g_object_set_data_full (G_OBJECT (window), "moo-file-chooser",
+                                dialog, (GDestroyNotify) gtk_widget_destroy);
+    }
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_hide (dialog);
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        GSList *files = NULL;
+        GList *filenames;
+
+        filenames = moo_file_view_get_filenames (MOO_FILE_CHOOSER (dialog)->fileview);
+
+        while (filenames)
+        {
+            MooEditFileInfo *info = moo_edit_file_info_new (filenames->data, NULL);
+            files = g_slist_prepend (files, info);
+            g_free (filenames->data);
+            filenames = g_list_delete_link (filenames, filenames);
+        }
+
+        moo_editor_open (moo_edit_window_get_editor (window), window, NULL, files);
+
+        g_slist_foreach (files, (GFunc) moo_edit_file_info_free, NULL);
+        g_slist_free (files);
+    }
+}
 
 
 static gboolean
@@ -1112,6 +1103,13 @@ file_selector_plugin_init (Plugin *plugin)
                                  "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
                                  "closure-callback", show_file_selector,
                                  NULL);
+    moo_window_class_new_action (klass, "ShowFileChooser",
+                                 "name", "Show File Chooser",
+                                 "label", "Show File Chooser",
+                                 "tooltip", "Show file chooser",
+                                 "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
+                                 "closure-callback", show_file_chooser,
+                                 NULL);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
 
@@ -1119,6 +1117,10 @@ file_selector_plugin_init (Plugin *plugin)
                          "Editor/Menubar/View",
                          "ShowFileSelector",
                          "ShowFileSelector", -1);
+    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                         "Editor/Menubar/View",
+                         "ShowFileChooser",
+                         "ShowFileChooser", -1);
 
     moo_prefs_new_key_string (DIR_PREFS, NULL);
 

@@ -39,6 +39,9 @@ if GTK_2_6
 mooedit_plugins_sources +=                    \
     $(mooedit_plugins)/moofileselector-glade.h\
     $(mooedit_plugins)/moofilechooser-glade.h \
+    $(mooedit_plugins)/moofileselector.h      \
+    $(mooedit_plugins)/moofilechooser.c       \
+    $(mooedit_plugins)/moofilechooser.h       \
     $(mooedit_plugins)/fileselector.c
 endif
 
