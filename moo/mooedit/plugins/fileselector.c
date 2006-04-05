@@ -1103,13 +1103,6 @@ file_selector_plugin_init (Plugin *plugin)
                                  "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
                                  "closure-callback", show_file_selector,
                                  NULL);
-    moo_window_class_new_action (klass, "ShowFileChooser",
-                                 "name", "Show File Chooser",
-                                 "label", "Show File Chooser",
-                                 "tooltip", "Show file chooser",
-                                 "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
-                                 "closure-callback", show_file_chooser,
-                                 NULL);
 
     plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
 
@@ -1117,10 +1110,6 @@ file_selector_plugin_init (Plugin *plugin)
                          "Editor/Menubar/View",
                          "ShowFileSelector",
                          "ShowFileSelector", -1);
-    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                         "Editor/Menubar/View",
-                         "ShowFileChooser",
-                         "ShowFileChooser", -1);
 
     moo_prefs_new_key_string (DIR_PREFS, NULL);
 
