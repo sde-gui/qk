@@ -84,6 +84,11 @@ gboolean     moo_glade_xml_parse_memory     (MooGladeXML    *xml,
                                              const char     *buffer,
                                              int             size,
                                              const char     *root);
+gboolean     moo_glade_xml_fill_widget      (MooGladeXML    *xml,
+                                             GtkWidget      *target,
+                                             const char     *buffer,
+                                             int             size,
+                                             const char     *target_name);
 
 MooGladeXML *moo_glade_xml_new              (const char     *file,
                                              const char     *root);
