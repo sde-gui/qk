@@ -653,7 +653,7 @@ resize_popup (MooCombo *combo)
     GtkRequisition combo_req;
     gboolean above;
     int width;
-    int separator_height = 0;
+    int separator_height = 0, vert_separator = 0;
     int selected;
 
     g_return_val_if_fail (GTK_WIDGET_REALIZED (combo->entry), FALSE);
@@ -682,7 +682,7 @@ resize_popup (MooCombo *combo)
         {
             matches -= data.count;
             gtk_widget_style_get (GTK_WIDGET (combo->priv->treeview),
-                                  "horizontal-separator", &separator_height,
+                                  "vertical-separator", &separator_height,
                                   "focus-line-width", &focus_line_width, NULL);
             separator_height *= data.count;
             separator_height += 2 * data.count * focus_line_width;
@@ -699,8 +699,10 @@ resize_popup (MooCombo *combo)
     gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
 
     width = MIN (GTK_WIDGET(combo)->allocation.width, monitor.width) - 2 * x_border;
+    gtk_widget_style_get (GTK_WIDGET (combo->priv->treeview), "vertical-separator",
+                          &vert_separator, NULL);
     gtk_widget_set_size_request (GTK_WIDGET (combo->priv->treeview), width,
-                                 separator_height + items * height);
+                                 separator_height + items * (height + vert_separator));
 
     gtk_widget_set_size_request (combo->priv->popup, -1, -1);
     gtk_widget_size_request (combo->priv->popup, &popup_req);

@@ -1241,7 +1241,7 @@ completion_resize_popup (MooFileEntryCompletion *cmpl)
     GtkRequisition popup_req;
     GtkRequisition entry_req;
     gboolean above;
-    gint width;
+    gint width, vert_separator = 0;
 
     g_return_val_if_fail (GTK_WIDGET_REALIZED (cmpl->priv->entry), FALSE);
 
@@ -1261,12 +1261,13 @@ completion_resize_popup (MooFileEntryCompletion *cmpl)
     gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
 
     width = MIN (widget->allocation.width, monitor.width) - 2 * x_border;
-    gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), width, items * height);
-    g_print ("%d\n", items * height);
+    gtk_widget_style_get (GTK_WIDGET (cmpl->priv->treeview), "vertical-separator",
+                          &vert_separator, NULL);
+    gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), width,
+                                 items * (height + vert_separator));
 
     gtk_widget_set_size_request (cmpl->priv->popup, -1, -1);
     gtk_widget_size_request (cmpl->priv->popup, &popup_req);
-    g_print ("%d %d \n", popup_req.width, popup_req.height);
     gtk_widget_size_request (widget, &entry_req);
 
     if (x < monitor.x)
