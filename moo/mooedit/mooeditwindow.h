@@ -41,7 +41,6 @@ struct _MooEditWindow
     MooWindow               parent;
     MooEditWindowPrivate   *priv;
     MooBigPaned            *paned;
-    GtkStatusbar           *_statusbar;
 };
 
 struct _MooEditWindowClass
@@ -95,6 +94,8 @@ void         moo_edit_window_job_started        (MooEditWindow  *window,
 void         moo_edit_window_job_finished       (MooEditWindow  *window,
                                                  gpointer        job);
 
+void         moo_edit_window_message            (MooEditWindow  *window,
+                                                 const char     *message);
 guint        moo_edit_window_push_message       (MooEditWindow  *window,
                                                  const char     *message,
                                                  const char     *id);

@@ -3647,6 +3647,19 @@ scroll_selection_onscreen (GtkTextView *text_view)
 
 
 static void
+quick_search_message (MooTextView *view,
+                      const char  *msg)
+{
+    GtkWidget *window;
+
+    window = gtk_widget_get_toplevel (GTK_WIDGET (view));
+
+    if (MOO_IS_EDIT_WINDOW (window))
+        moo_edit_window_message (MOO_EDIT_WINDOW (window), msg);
+}
+
+
+static void
 quick_search_find_from (MooTextView *view,
                         const char  *text,
                         GtkTextIter *start)
@@ -3654,6 +3667,23 @@ quick_search_find_from (MooTextView *view,
     gboolean found;
     GtkTextIter match_start, match_end;
     GtkTextBuffer *buffer;
+
+    if (view->priv->qs.flags & MOO_TEXT_SEARCH_REGEX)
+    {
+        GError *error = NULL;
+        EggRegex *re = egg_regex_new (text, 0, 0, &error);
+
+        if (error)
+        {
+            char *msg = g_strdup_printf ("Invalid pattern '%s'", text);
+            quick_search_message (view, msg);
+            egg_regex_unref (re);
+            g_free (msg);
+            return;
+        }
+
+        egg_regex_unref (re);
+    }
 
     buffer = get_buffer (view);
     found = moo_text_search_forward (start, text, view->priv->qs.flags,
@@ -3677,7 +3707,15 @@ quick_search_find_from (MooTextView *view,
     }
     else
     {
-        gdk_beep ();
+        char *message;
+
+        if (view->priv->qs.flags & MOO_TEXT_SEARCH_REGEX)
+            message = g_strdup_printf ("Pattern '%s' not found", text);
+        else
+            message = g_strdup_printf ("Text '%s' not found", text);
+
+        quick_search_message (view, message);
+        g_free (message);
     }
 }
 

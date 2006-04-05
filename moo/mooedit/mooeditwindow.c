@@ -44,7 +44,8 @@
 struct _MooEditWindowPrivate {
     MooEditor *editor;
 
-    guint statusbar_context_id;
+    GtkStatusbar *statusbar;
+    guint last_msg_id;
     GtkLabel *cursor_label;
     GtkLabel *insert_label;
     GtkWidget *info;
@@ -1993,12 +1994,20 @@ pane_size_changed (MooEditWindow      *window,
  */
 
 static void
+clear_statusbar_message (MooEditWindow *window)
+{
+    moo_edit_window_pop_message (window, NULL);
+}
+
+
+static void
 set_statusbar_numbers (MooEditWindow *window,
                        int            line,
                        int            column)
 {
     char *text = g_strdup_printf ("Line: %d Col: %d", line, column);
     gtk_label_set_text (window->priv->cursor_label, text);
+    clear_statusbar_message (window);
     g_free (text);
 }
 
@@ -2018,6 +2027,7 @@ update_statusbar (MooEditWindow *window)
     if (!edit)
     {
         gtk_widget_set_sensitive (window->priv->info, FALSE);
+        clear_statusbar_message (window);
         return;
     }
 
@@ -2064,14 +2074,50 @@ create_statusbar (MooEditWindow *window)
     gtk_box_pack_start (GTK_BOX (MOO_WINDOW (window)->vbox),
                         hbox, FALSE, FALSE, 0);
 
-    window->_statusbar = moo_glade_xml_get_widget (xml, "statusbar");
-    window->priv->statusbar_context_id =
-            gtk_statusbar_get_context_id (window->_statusbar,
-                                          "MooEditWindow");
+    window->priv->statusbar = moo_glade_xml_get_widget (xml, "statusbar");
 
     window->priv->cursor_label = moo_glade_xml_get_widget (xml, "cursor");
     window->priv->insert_label = moo_glade_xml_get_widget (xml, "insert");
     window->priv->info = moo_glade_xml_get_widget (xml, "info");
+}
+
+
+guint
+moo_edit_window_push_message (MooEditWindow  *window,
+                              const char     *message,
+                              const char     *id)
+{
+    guint ctx_id;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);
+    g_return_val_if_fail (message != NULL, 0);
+
+    ctx_id = id ? gtk_statusbar_get_context_id (window->priv->statusbar, id) : 0;
+    return gtk_statusbar_push (window->priv->statusbar, ctx_id, message);
+}
+
+
+void
+moo_edit_window_pop_message (MooEditWindow  *window,
+                             const char     *id)
+{
+    guint ctx_id;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    ctx_id = id ? gtk_statusbar_get_context_id (window->priv->statusbar, id) : 0;
+    gtk_statusbar_pop (window->priv->statusbar, ctx_id);
+}
+
+
+void
+moo_edit_window_message (MooEditWindow  *window,
+                         const char     *message)
+{
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (message != NULL);
+    moo_edit_window_pop_message (window, NULL);
+    moo_edit_window_push_message (window, message, NULL);
 }
 
 
@@ -2199,36 +2245,6 @@ edit_lang_changed (MooEditWindow      *window,
 {
     if (doc == ACTIVE_DOC (window))
         update_lang_menu (window);
-}
-
-
-guint
-moo_edit_window_push_message (MooEditWindow  *window,
-                              const char     *message,
-                              const char     *id)
-{
-    guint ctx_id;
-
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);
-    g_return_val_if_fail (message != NULL, 0);
-    g_return_val_if_fail (id != NULL, 0);
-
-    ctx_id = gtk_statusbar_get_context_id (window->_statusbar, id);
-    return gtk_statusbar_push (window->_statusbar, ctx_id, message);
-}
-
-
-void
-moo_edit_window_pop_message (MooEditWindow  *window,
-                             const char     *id)
-{
-    guint ctx_id;
-
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (id != NULL);
-
-    ctx_id = gtk_statusbar_get_context_id (window->_statusbar, id);
-    gtk_statusbar_pop (window->_statusbar, ctx_id);
 }
 
 
