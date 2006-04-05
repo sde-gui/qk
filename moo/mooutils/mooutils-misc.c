@@ -1080,7 +1080,7 @@ moo_menu_item_set_label (GtkWidget      *item,
  */
 
 #ifdef __WIN32__
-static char *
+char *
 moo_get_app_dir (void)
 {
     static char *appdir;
@@ -1116,6 +1116,12 @@ moo_get_app_dir (void)
     }
 
     return appdir;
+}
+#else
+char *
+moo_get_app_dir (void)
+{
+    g_return_val_if_reached (g_strdup ("."));
 }
 #endif
 
