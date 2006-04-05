@@ -939,7 +939,7 @@ moo_app_init_real (MooApp *app)
 #if defined(__WIN32__) && defined(MOO_BUILD_TERM)
     if (app->priv->use_terminal)
     {
-        char *dir = moo_app_get_data_dir (app, MOO_APP_DATA_LIB);
+        char *dir = moo_get_app_dir ();
         moo_term_set_helper_directory (dir);
         g_free (dir);
     }
