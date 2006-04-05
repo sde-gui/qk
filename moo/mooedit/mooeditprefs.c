@@ -43,11 +43,12 @@ const char *moo_edit_setting                (const char     *setting_name)
 }
 
 
-#define NEW_KEY_BOOL(s,v)   moo_prefs_new_key_bool (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_INT(s,v)    moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_STRING(s,v) moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_COLOR(s,v)  moo_prefs_new_key_color (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_ENUM(s,t,v) moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
+#define NEW_KEY_BOOL(s,v)    moo_prefs_new_key_bool (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_INT(s,v)     moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_STRING(s,v)  moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_COLOR(s,v)   moo_prefs_new_key_color (MOO_EDIT_PREFS_PREFIX "/" s, v)
+#define NEW_KEY_ENUM(s,t,v)  moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
+#define NEW_KEY_FLAGS(s,t,v) moo_prefs_new_key_flags (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 
 void
 _moo_edit_init_settings (void)
@@ -81,6 +82,9 @@ _moo_edit_init_settings (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES, FALSE); /* XXX does it work? */
     NEW_KEY_BOOL (MOO_EDIT_PREFS_USE_DEFAULT_FONT, TRUE);
     NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, "Monospace 12");
+    NEW_KEY_FLAGS (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS,
+                   MOO_TYPE_TEXT_SEARCH_FLAGS,
+                   MOO_TEXT_SEARCH_CASELESS);
 
 //     NEW_KEY_BOOL (MOO_EDIT_PREFS_SEARCH_SELECTED, FALSE);
 //     NEW_KEY_BOOL (MOO_EDIT_PREFS_AUTO_INDENT, FALSE);
@@ -97,6 +101,7 @@ _moo_edit_init_settings (void)
 #define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_enum(key) moo_prefs_get_enum (MOO_EDIT_PREFS_PREFIX "/" key)
+#define get_flags(key) moo_prefs_get_flags (MOO_EDIT_PREFS_PREFIX "/" key)
 
 void
 _moo_edit_apply_settings (MooEdit *edit)
@@ -118,6 +123,7 @@ _moo_edit_apply_settings (MooEdit *edit)
                   "show-line-numbers", get_bool (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS),
                   "draw-tabs", get_bool (MOO_EDIT_PREFS_SHOW_TABS),
                   "draw-trailing-spaces", get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES),
+                  "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
                   NULL);
 
     if (get_bool (MOO_EDIT_PREFS_WRAP_ENABLE))

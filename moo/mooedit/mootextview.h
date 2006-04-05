@@ -18,6 +18,7 @@
 #include <gtk/gtktextview.h>
 #include <mooedit/mooindenter.h>
 #include <mooedit/moolang.h>
+#include <mooedit/mootextsearch.h>
 
 G_BEGIN_DECLS
 
@@ -158,6 +159,8 @@ void         moo_text_view_add_child_in_border      (MooTextView        *view,
 
 void         moo_text_view_start_quick_search       (MooTextView        *view);
 void         moo_text_view_stop_quick_search        (MooTextView        *view);
+void         moo_text_view_set_quick_search_flags   (MooTextView        *view,
+                                                     MooTextSearchFlags  flags);
 
 
 G_END_DECLS

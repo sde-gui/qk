@@ -18,6 +18,8 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootext-private.h"
+#include "mooedit/quicksearch-glade.h"
+#include "mooedit/mooeditprefs.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooundomanager.h"
@@ -610,7 +612,7 @@ static void moo_text_view_init (MooTextView *view)
 
     view->priv->bold_current_line_number = TRUE;
 
-    view->priv->search_flags = MOO_TEXT_SEARCH_CASELESS;
+    view->priv->qs.flags = MOO_TEXT_SEARCH_CASELESS;
 
 #if 0
     gtk_drag_dest_unset (GTK_WIDGET (view));
@@ -1001,12 +1003,12 @@ moo_text_view_set_property (GObject        *object,
             break;
 
         case PROP_ENABLE_QUICK_SEARCH:
-            view->priv->enable_quick_search = g_value_get_boolean (value) != 0;
+            view->priv->qs.enable = g_value_get_boolean (value) != 0;
             g_object_notify (object, "enable-quick-search");
             break;
 
         case PROP_QUICK_SEARCH_FLAGS:
-            view->priv->search_flags = g_value_get_flags (value);
+            view->priv->qs.flags = g_value_get_flags (value);
             g_object_notify (object, "quick-search-flags");
             break;
 
@@ -1105,11 +1107,11 @@ moo_text_view_get_property (GObject        *object,
             break;
 
         case PROP_ENABLE_QUICK_SEARCH:
-            g_value_set_boolean (value, view->priv->enable_quick_search);
+            g_value_set_boolean (value, view->priv->qs.enable);
             break;
 
         case PROP_QUICK_SEARCH_FLAGS:
-            g_value_set_flags (value, view->priv->search_flags);
+            g_value_set_flags (value, view->priv->qs.flags);
             break;
 
         default:
@@ -3535,10 +3537,13 @@ moo_text_view_remove (GtkContainer *container,
     guint i;
     MooTextView *view = MOO_TEXT_VIEW (container);
 
-    if (widget == view->priv->entry)
+    if (widget == view->priv->qs.evbox)
     {
-        view->priv->in_search = FALSE;
-        view->priv->entry = NULL;
+        view->priv->qs.in_search = FALSE;
+        view->priv->qs.evbox = NULL;
+        view->priv->qs.entry = NULL;
+        view->priv->qs.case_sensitive = NULL;
+        view->priv->qs.regex = NULL;
     }
 
     for (i = 0; i < 4; ++i)
@@ -3560,6 +3565,61 @@ moo_text_view_remove (GtkContainer *container,
 /***************************************************************************/
 /* Search
  */
+
+static void
+quick_search_option_toggled (MooTextView *view)
+{
+    MooTextSearchFlags flags = 0;
+
+    if (!gtk_toggle_button_get_active (view->priv->qs.case_sensitive))
+        flags |= MOO_TEXT_SEARCH_CASELESS;
+    if (gtk_toggle_button_get_active (view->priv->qs.regex))
+        flags |= MOO_TEXT_SEARCH_REGEX;
+
+    moo_text_view_set_quick_search_flags (view, flags);
+
+    if (MOO_IS_EDIT (view))
+        moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS), flags);
+}
+
+
+static void
+quick_search_set_widgets_from_flags (MooTextView *view)
+{
+    g_signal_handlers_block_by_func (view->priv->qs.case_sensitive,
+                                     quick_search_option_toggled, view);
+    g_signal_handlers_block_by_func (view->priv->qs.regex,
+                                     quick_search_option_toggled, view);
+
+    gtk_toggle_button_set_active (view->priv->qs.case_sensitive,
+                                  !(view->priv->qs.flags & MOO_TEXT_SEARCH_CASELESS));
+    gtk_toggle_button_set_active (view->priv->qs.regex,
+                                  view->priv->qs.flags & MOO_TEXT_SEARCH_REGEX);
+
+    g_signal_handlers_unblock_by_func (view->priv->qs.case_sensitive,
+                                       quick_search_option_toggled, view);
+    g_signal_handlers_unblock_by_func (view->priv->qs.regex,
+                                       quick_search_option_toggled, view);
+}
+
+
+void
+moo_text_view_set_quick_search_flags (MooTextView        *view,
+                                      MooTextSearchFlags  flags)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (flags != view->priv->qs.flags)
+    {
+        view->priv->qs.flags = flags;
+
+        if (view->priv->qs.evbox)
+            quick_search_set_widgets_from_flags (view);
+
+        g_object_notify (G_OBJECT (view), "quick-search-flags");
+    }
+}
+
 
 static void
 scroll_selection_onscreen (GtkTextView *text_view)
@@ -3596,7 +3656,7 @@ quick_search_find_from (MooTextView *view,
     GtkTextBuffer *buffer;
 
     buffer = get_buffer (view);
-    found = moo_text_search_forward (start, text, view->priv->search_flags,
+    found = moo_text_search_forward (start, text, view->priv->qs.flags,
                                      &match_start, &match_end, NULL);
 
     if (!found)
@@ -3606,7 +3666,7 @@ quick_search_find_from (MooTextView *view,
         gtk_text_buffer_get_start_iter (buffer, &iter);
 
         if (!gtk_text_iter_equal (start, &iter))
-            found = moo_text_search_forward (&iter, text, view->priv->search_flags,
+            found = moo_text_search_forward (&iter, text, view->priv->qs.flags,
                                              &match_start, &match_end, NULL);
     }
 
@@ -3672,7 +3732,7 @@ search_entry_changed (MooTextView *view,
 {
     const char *text;
 
-    if (!view->priv->in_search)
+    if (!view->priv->qs.in_search)
         return;
 
     text = gtk_entry_get_text (entry);
@@ -3682,10 +3742,11 @@ search_entry_changed (MooTextView *view,
 }
 
 
-static void
+static gboolean
 search_entry_focus_out (MooTextView *view)
 {
     moo_text_view_stop_quick_search (view);
+    return FALSE;
 }
 
 
@@ -3694,7 +3755,7 @@ search_entry_key_press (MooTextView *view,
                         GdkEventKey *event,
                         GtkEntry    *entry)
 {
-    if (!view->priv->in_search)
+    if (!view->priv->qs.in_search)
         return FALSE;
 
     switch (event->keyval)
@@ -3723,20 +3784,41 @@ moo_text_view_start_quick_search (MooTextView *view)
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (view->priv->in_search)
+    if (view->priv->qs.in_search)
         return;
 
-    if (!view->priv->entry)
+    if (!view->priv->qs.entry)
     {
-        view->priv->entry = moo_entry_new ();
-        g_signal_connect_swapped (view->priv->entry, "changed",
+        MooGladeXML *xml;
+
+        xml = moo_glade_xml_new_empty ();
+        moo_glade_xml_map_class (xml, "GtkEntry", MOO_TYPE_ENTRY);
+        moo_glade_xml_parse_memory (xml, QUICK_SEARCH_GLADE_XML, -1, "evbox");
+
+        view->priv->qs.evbox = moo_glade_xml_get_widget (xml, "evbox");
+        g_return_if_fail (view->priv->qs.evbox != NULL);
+
+        view->priv->qs.entry = moo_glade_xml_get_widget (xml, "entry");
+        view->priv->qs.case_sensitive = moo_glade_xml_get_widget (xml, "case_sensitive");
+        view->priv->qs.regex = moo_glade_xml_get_widget (xml, "regex");
+
+        g_signal_connect_swapped (view->priv->qs.entry, "changed",
                                   G_CALLBACK (search_entry_changed), view);
-        g_signal_connect_swapped (view->priv->entry, "focus-out-event",
+        g_signal_connect_swapped (view->priv->qs.entry, "focus-out-event",
                                   G_CALLBACK (search_entry_focus_out), view);
-        g_signal_connect_swapped (view->priv->entry, "key-press-event",
+        g_signal_connect_swapped (view->priv->qs.entry, "key-press-event",
                                   G_CALLBACK (search_entry_key_press), view);
-        moo_text_view_add_child_in_border (view, view->priv->entry,
+
+        g_signal_connect_swapped (view->priv->qs.case_sensitive, "toggled",
+                                  G_CALLBACK (quick_search_option_toggled), view);
+        g_signal_connect_swapped (view->priv->qs.regex, "toggled",
+                                  G_CALLBACK (quick_search_option_toggled), view);
+        quick_search_set_widgets_from_flags (view);
+
+        moo_text_view_add_child_in_border (view, view->priv->qs.evbox,
                                            GTK_TEXT_WINDOW_BOTTOM);
+
+        g_object_unref (xml);
     }
 
     buffer = get_buffer (view);
@@ -3748,13 +3830,12 @@ moo_text_view_start_quick_search (MooTextView *view)
     }
 
     if (text)
-        gtk_entry_set_text (GTK_ENTRY (view->priv->entry), text);
+        gtk_entry_set_text (GTK_ENTRY (view->priv->qs.entry), text);
 
-    gtk_widget_show (view->priv->entry);
-    gtk_widget_grab_focus (view->priv->entry);
-    gtk_widget_queue_draw (view->priv->entry);
+    gtk_widget_show (view->priv->qs.evbox);
+    gtk_widget_grab_focus (view->priv->qs.entry);
 
-    view->priv->in_search = TRUE;
+    view->priv->qs.in_search = TRUE;
 
     g_free (text);
 }
@@ -3765,10 +3846,10 @@ moo_text_view_stop_quick_search (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (view->priv->in_search)
+    if (view->priv->qs.in_search)
     {
-        view->priv->in_search = FALSE;
-        gtk_widget_hide (view->priv->entry);
+        view->priv->qs.in_search = FALSE;
+        gtk_widget_hide (view->priv->qs.evbox);
         gtk_widget_grab_focus (GTK_WIDGET (view));
     }
 }
@@ -3777,7 +3858,7 @@ moo_text_view_stop_quick_search (MooTextView *view)
 static gboolean
 start_quick_search (MooTextView *view)
 {
-    if (view->priv->enable_quick_search)
+    if (view->priv->qs.enable)
     {
         moo_text_view_start_quick_search (view);
         return TRUE;

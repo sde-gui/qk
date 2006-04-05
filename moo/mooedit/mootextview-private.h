@@ -22,6 +22,7 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/mootextsearch.h"
 #include "mooutils/moohistorylist.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -194,10 +195,15 @@ struct _MooTextViewPrivate {
     /***********************************************************************/
     /* Search
     /*/
-    gboolean enable_quick_search;
-    gboolean in_search;
-    GtkWidget *entry;
-    MooTextSearchFlags search_flags;
+    struct {
+        gboolean enable;
+        gboolean in_search;
+        GtkWidget *evbox;
+        GtkWidget *entry;
+        GtkToggleButton *case_sensitive;
+        GtkToggleButton *regex;
+        MooTextSearchFlags flags;
+    } qs;
 };
 
 enum {
