@@ -68,6 +68,8 @@ gboolean        moo_value_convert_to_bool   (const GValue   *val);
 int             moo_value_convert_to_int    (const GValue   *val);
 int             moo_value_convert_to_enum   (const GValue   *val,
                                              GType           enum_type);
+int             moo_value_convert_to_flags  (const GValue   *val,
+                                             GType           flags_type);
 double          moo_value_convert_to_double (const GValue   *val);
 const GdkColor *moo_value_convert_to_color  (const GValue   *val);
 const char     *moo_value_convert_to_string (const GValue   *val);

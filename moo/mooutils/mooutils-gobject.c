@@ -219,6 +219,42 @@ GType       g_param_type_register_static    (const gchar *name,
 /* Converting values forth and back
  */
 
+/* TODO */
+static char *
+flags_to_string (int   flags,
+                 GType type)
+{
+    if (flags)
+        return g_strdup_printf ("%d", flags);
+    else
+        return g_strdup ("");
+}
+
+
+static gboolean
+string_to_flags (const char *string,
+                 int        *flags,
+                 GType       type)
+{
+    GValue ival;
+
+    if (!string || !string[0])
+    {
+        *flags = 0;
+        return TRUE;
+    }
+
+    ival.g_type = 0;
+    g_value_init (&ival, G_TYPE_INT);
+
+    if (!moo_value_convert_from_string (string, &ival))
+        return FALSE;
+
+    *flags = g_value_get_int (&ival);
+    return TRUE;
+}
+
+
 gboolean
 moo_value_convert (const GValue   *src,
                    GValue         *dest)
@@ -317,6 +353,14 @@ moo_value_convert (const GValue   *src,
 
             g_value_set_static_string (dest, enum_value->value_nick);
             g_type_class_unref (klass);
+            return TRUE;
+        }
+
+        if (G_TYPE_IS_FLAGS (src_type))
+        {
+            char *string = flags_to_string (g_value_get_flags (src), src_type);
+            g_value_set_string (dest, string);
+            g_free (string);
             return TRUE;
         }
 
@@ -461,6 +505,19 @@ moo_value_convert (const GValue   *src,
             return TRUE;
         }
 
+        if (G_TYPE_IS_FLAGS (dest_type))
+        {
+            int flags;
+
+            if (string_to_flags (string, &flags, dest_type))
+            {
+                g_value_set_flags (dest, flags);
+                return TRUE;
+            }
+
+            return FALSE;
+        }
+
         g_return_val_if_reached (FALSE);
     }
 
@@ -473,6 +530,18 @@ moo_value_convert (const GValue   *src,
     if (G_TYPE_IS_ENUM (dest_type) && src_type == G_TYPE_INT)
     {
         g_value_set_enum (dest, g_value_get_int (src));
+        return TRUE;
+    }
+
+    if (G_TYPE_IS_FLAGS (src_type) && dest_type == G_TYPE_INT)
+    {
+        g_value_set_int (dest, g_value_get_flags (src));
+        return TRUE;
+    }
+
+    if (G_TYPE_IS_FLAGS (dest_type) && src_type == G_TYPE_INT)
+    {
+        g_value_set_flags (dest, g_value_get_int (src));
         return TRUE;
     }
 
@@ -567,7 +636,8 @@ moo_value_type_supported (GType type)
             type == G_TYPE_DOUBLE ||
             type == G_TYPE_STRING ||
             type == GDK_TYPE_COLOR ||
-            G_TYPE_IS_ENUM (type);
+            G_TYPE_IS_ENUM (type) ||
+            G_TYPE_IS_FLAGS (type);
 }
 
 
@@ -602,6 +672,18 @@ moo_value_convert_to_enum (const GValue   *val,
     g_value_init (&result, enum_type);
     moo_value_convert (val, &result);
     return g_value_get_enum (&result);
+}
+
+
+int
+moo_value_convert_to_flags (const GValue   *val,
+                            GType           flags_type)
+{
+    GValue result;
+    result.g_type = 0;
+    g_value_init (&result, flags_type);
+    moo_value_convert (val, &result);
+    return g_value_get_flags (&result);
 }
 
 

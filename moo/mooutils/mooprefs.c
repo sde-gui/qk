@@ -1088,6 +1088,23 @@ moo_prefs_new_key_enum (const char     *key,
 
 
 void
+moo_prefs_new_key_flags (const char     *key,
+                         GType           flags_type,
+                         int             default_val)
+{
+    GValue val;
+
+    g_return_if_fail (key != NULL);
+
+    val.g_type = 0;
+    g_value_init (&val, flags_type);
+    g_value_set_flags (&val, default_val);
+
+    moo_prefs_new_key (key, flags_type, &val);
+}
+
+
+void
 moo_prefs_new_key_string (const char     *key,
                           const char     *default_val)
 {
@@ -1231,6 +1248,20 @@ moo_prefs_get_enum (const char *key)
 }
 
 
+int
+moo_prefs_get_flags (const char *key)
+{
+    const GValue *value;
+
+    g_return_val_if_fail (key != NULL, 0);
+
+    value = moo_prefs_get (key);
+    g_return_val_if_fail (value != NULL, 0);
+
+    return g_value_get_flags (value);
+}
+
+
 void
 moo_prefs_set_string (const char     *key,
                       const char     *val)
@@ -1357,6 +1388,26 @@ moo_prefs_set_enum (const char     *key,
     gval.g_type = 0;
     g_value_init (&gval, type);
     g_value_set_enum (&gval, value);
+
+    moo_prefs_set (key, &gval);
+}
+
+
+void
+moo_prefs_set_flags (const char     *key,
+                     int             value)
+{
+    GValue gval;
+    GType type;
+
+    g_return_if_fail (key != NULL);
+
+    type = moo_prefs_get_key_type (key);
+    g_return_if_fail (G_TYPE_IS_FLAGS (type));
+
+    gval.g_type = 0;
+    g_value_init (&gval, type);
+    g_value_set_flags (&gval, value);
 
     moo_prefs_set (key, &gval);
 }

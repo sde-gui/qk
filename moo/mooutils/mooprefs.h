@@ -84,6 +84,9 @@ void            moo_prefs_new_key_color (const char     *key,
 void            moo_prefs_new_key_enum  (const char     *key,
                                          GType           enum_type,
                                          int             default_val);
+void            moo_prefs_new_key_flags (const char     *key,
+                                         GType           flags_type,
+                                         int             default_val);
 
 char           *moo_prefs_make_key      (const char     *first_comp,
                                          ...);
@@ -97,6 +100,7 @@ gdouble         moo_prefs_get_number    (const char     *key);
 const GdkColor *moo_prefs_get_color     (const char     *key);
 int             moo_prefs_get_int       (const char     *key);
 int             moo_prefs_get_enum      (const char     *key);
+int             moo_prefs_get_flags     (const char     *key);
 
 void            moo_prefs_set_string    (const char     *key,
                                          const char     *val);
@@ -111,6 +115,8 @@ void            moo_prefs_set_bool      (const char     *key,
 void            moo_prefs_set_color     (const char     *key,
                                          const GdkColor *val);
 void            moo_prefs_set_enum      (const char     *key,
+                                         int             val);
+void            moo_prefs_set_flags     (const char     *key,
                                          int             val);
 
 typedef void  (*MooPrefsNotify)         (const char     *key,
