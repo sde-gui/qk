@@ -2039,13 +2039,13 @@ static GdkPixbuf    *_create_named_icon_with_fallback
     pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
 
     if (!pixbuf)
-        g_warning ("could not load '%s' icon", name);
+        g_message ("could not load '%s' icon", name);
 
     if (!pixbuf && fallback_name)
     {
         pixbuf = gtk_icon_theme_load_icon (icon_theme, fallback_name, pixel_size, 0, NULL);
         if (!pixbuf)
-            g_warning ("could not load '%s' icon", fallback_name);
+            g_message ("could not load '%s' icon", fallback_name);
     }
 
     if (!pixbuf && fallback_stock)
