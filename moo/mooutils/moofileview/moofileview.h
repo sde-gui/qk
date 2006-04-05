@@ -120,6 +120,9 @@ void        moo_file_view_drag_finish                   (MooFileView    *filevie
                                                          guint           time);
 
 
+GList      *moo_file_view_get_filenames                 (MooFileView    *fileview);
+
+
 G_END_DECLS
 
 #endif /* __MOO_FILE_VIEW_H__ */

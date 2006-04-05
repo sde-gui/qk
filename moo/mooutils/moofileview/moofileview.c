@@ -2794,6 +2794,30 @@ static void         fileview_set_use_filter (MooFileView    *fileview,
 /* File manager functionality
  */
 
+GList *
+moo_file_view_get_filenames (MooFileView *fileview)
+{
+    GList *files, *names = NULL;
+    MooFolder *folder;
+
+    g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);
+
+    folder = fileview->priv->current_dir;
+    g_return_val_if_fail (folder != NULL, NULL);
+
+    files = file_view_get_selected_files (fileview);
+
+    while (files)
+    {
+        names = g_list_prepend (names, moo_folder_get_file_path (folder, files->data));
+        moo_file_unref (files->data);
+        files = g_list_delete_link (files, files);
+    }
+
+    return g_list_reverse (names);
+}
+
+
 /* path in the filter model; result must be unrefed */
 static MooFile *
 file_view_get_file_at_path (MooFileView *fileview,
