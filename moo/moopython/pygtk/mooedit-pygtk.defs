@@ -667,21 +667,6 @@
   (return-type "GSList*")
 )
 
-(define-method add_dir
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_add_dir")
-  (return-type "none")
-  (parameters
-    '("const-char*" "dir")
-  )
-)
-
-(define-method read_dirs
-  (of-object "MooLangMgr")
-  (c-name "moo_lang_mgr_read_dirs")
-  (return-type "none")
-)
-
 (define-method get_style
   (of-object "MooLangMgr")
   (c-name "moo_lang_mgr_get_style")
