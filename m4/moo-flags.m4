@@ -5,6 +5,7 @@ AC_DEFUN([MOO_AC_FLAGS],[
     AC_REQUIRE([MOO_AC_FAM])
     AC_REQUIRE([MOO_PKG_CHECK_GTK_VERSIONS])
     AC_REQUIRE([MOO_AC_SET_DIRS])
+    AC_REQUIRE([MOO_AC_GTKHTML])
 
     moo_top_src_dir=`cd $srcdir && pwd`
     moo_top_build_dir=`cd ./$ac_top_builddir && pwd`
@@ -16,6 +17,11 @@ AC_DEFUN([MOO_AC_FLAGS],[
     fi
 
     MOO_CFLAGS="$MOO_CFLAGS -DMOO_DATA_DIR=\\\"${MOO_DATA_DIR}\\\" -DMOO_LIB_DIR=\\\"${MOO_LIB_DIR}\\\""
+
+    if test x$MOO_USE_GTKHTML = xyes; then
+        MOO_CFLAGS="$MOO_CFLAGS $GTKHTML_CFLAGS"
+        MOO_LIBS="$MOO_LIBS $GTKHTML_LIBS"
+    fi
 
     ################################################################################
     #  MooEdit stuff
