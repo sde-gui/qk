@@ -38,7 +38,11 @@ int main (int argc, char **argv)
 
     init_actions ();
 
+    xml = moo_ui_xml_new ();
+    moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1);
+
     editor = moo_editor_instance ();
+    moo_editor_set_ui_xml (editor, xml);
     lang_table = moo_editor_get_lang_table (editor);
     user_dir = g_build_filename (g_get_home_dir (), ".medit", "syntax", NULL);
     moo_lang_table_add_dir (lang_table, MOO_TEXT_LANG_FILES_DIR);
@@ -47,9 +51,6 @@ int main (int argc, char **argv)
     g_free (user_dir);
 
     g_signal_connect (editor, "all-windows-closed", G_CALLBACK (gtk_main_quit), NULL);
-
-    xml = moo_editor_get_ui_xml (editor);
-    moo_ui_xml_add_ui_from_string (xml, MEDIT_UI, -1);
 
     moo_plugin_init_builtin ();
 

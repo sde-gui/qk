@@ -1104,12 +1104,14 @@ file_selector_plugin_init (Plugin *plugin)
                                  "closure-callback", show_file_selector,
                                  NULL);
 
-    plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
-
-    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                         "Editor/Menubar/View",
-                         "ShowFileSelector",
-                         "ShowFileSelector", -1);
+    if (xml)
+    {
+        plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
+        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                             "Editor/Menubar/View",
+                             "ShowFileSelector",
+                             "ShowFileSelector", -1);
+    }
 
     moo_prefs_new_key_string (DIR_PREFS, NULL);
 

@@ -252,14 +252,16 @@ find_plugin_init (FindPlugin *plugin)
                                  "closure-callback", find_file_cb,
                                  NULL);
 
-    plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
-
-    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                         "Editor/Menubar/Search",
-                         "FindInFiles", "FindInFiles", -1);
-    moo_ui_xml_add_item (xml, plugin->ui_merge_id,
-                         "Editor/Menubar/Search",
-                         "FindFile", "FindFile", -1);
+    if (xml)
+    {
+        plugin->ui_merge_id = moo_ui_xml_new_merge_id (xml);
+        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                             "Editor/Menubar/Search",
+                             "FindInFiles", "FindInFiles", -1);
+        moo_ui_xml_add_item (xml, plugin->ui_merge_id,
+                             "Editor/Menubar/Search",
+                             "FindFile", "FindFile", -1);
+    }
 
     g_type_class_unref (klass);
     return TRUE;

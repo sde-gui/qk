@@ -572,10 +572,6 @@ MooUIXML*
 moo_editor_get_ui_xml (MooEditor      *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-
-    if (!editor->priv->ui_xml)
-        editor->priv->ui_xml = moo_ui_xml_new ();
-
     return editor->priv->ui_xml;
 }
 
