@@ -1,5 +1,11 @@
 2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
+    * === Released 0.6.7 ===
+
+    Reverted changes in windows terminal.
+
+2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
     * === Released 0.6.6 ===
 
     Lot of bugs fixed, lot of bugs introduced.
