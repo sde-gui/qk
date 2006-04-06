@@ -61,6 +61,7 @@ typedef struct {
     GHashTable *children; /* Node* -> GtkWidget* */
     MooActionGroup *actions;
     GtkAccelGroup *accel_group;
+    gboolean in_creation;
 } Toplevel;
 
 typedef struct {
@@ -1456,6 +1457,9 @@ visibility_notify (GtkWidget *widget,
     toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
     g_return_if_fail (toplevel != NULL);
 
+    if (toplevel->in_creation)
+        return;
+
     node = g_object_get_qdata (G_OBJECT (widget), NODE_QUARK);
     g_return_if_fail (node != NULL && node->parent != NULL);
     g_return_if_fail (node->type == ITEM);
@@ -1852,6 +1856,9 @@ check_separators (Node           *parent,
     gboolean has_children = FALSE;
     GtkWidget *widget;
 
+    if (!toplevel_get_widget (toplevel, parent))
+        return;
+
     children = node_list_children (parent);
 
     for (l = children; l != NULL; l = l->next)
@@ -2196,6 +2203,8 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
     }
 
     toplevel = toplevel_new (node, actions, accel_group);
+    toplevel->in_creation = TRUE;
+
     xml->priv->toplevels = g_slist_append (xml->priv->toplevels, toplevel);
 
     switch (type)
@@ -2210,6 +2219,8 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
             result = create_toolbar (xml, toplevel);
             break;
     }
+
+    toplevel->in_creation = FALSE;
 
     if (!result)
     {
