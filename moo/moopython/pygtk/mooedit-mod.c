@@ -17,6 +17,7 @@
 #include <glib.h>
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/pygtk/mooedit-mod.h"
+#include "mooedit/mooplugin.h"
 
 
 static char *moo_edit_module_doc = (char*) "_moo_edit module.";
@@ -52,5 +53,12 @@ _moo_edit_mod_init (void)
             PyErr_Print ();
     }
 
-    return PyErr_Occurred () == NULL;
+    if (!PyErr_Occurred ())
+    {
+        MooEditor *editor = moo_editor_instance ();
+        moo_lang_mgr_read_dirs (moo_editor_get_lang_mgr (editor));
+        moo_plugin_read_dirs ();
+    }
+
+    return !PyErr_Occurred ();
 }
