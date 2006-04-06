@@ -12,10 +12,6 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #define MOOEDIT_COMPILATION
 #include "mooedit/moolangmgr.h"
 #include "mooedit/moolang-rules.h"

@@ -14,10 +14,6 @@
 
 #define MOOEDIT_COMPILATION
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooeditdialogs.h"
@@ -239,15 +235,6 @@ moo_edit_init (MooEdit *edit)
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
-
-    /* XXX this is stupid */
-#if defined(__WIN32__)
-    edit->priv->line_end_type = MOO_EDIT_LINE_END_WIN32;
-#elif defined(MOO_OS_DARWIN)
-    edit->priv->line_end_type = MOO_EDIT_LINE_END_MAC;
-#else
-    edit->priv->line_end_type = MOO_EDIT_LINE_END_UNIX;
-#endif
 
     g_object_set (edit, "draw-tabs", TRUE, "draw-trailing-spaces", TRUE, NULL);
 }
