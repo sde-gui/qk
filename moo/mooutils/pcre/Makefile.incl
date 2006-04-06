@@ -24,6 +24,7 @@ moopcre_sources =                              \
     $(moopcre)/pcre_valid_utf8.c               \
     $(moopcre)/pcre_version.c                  \
     $(moopcre)/pcre_xclass.c                   \
+    $(moopcre)/pcre.h                          \
     $(moopcre)/ucp.h                           \
     $(moopcre)/ucpinternal.h
 
@@ -37,5 +38,4 @@ moo_extra_dist +=                              \
     $(moopcre)/NEWS                            \
     $(moopcre)/dftables.c                      \
     $(moopcre)/pcre_printint.src               \
-    $(moopcre)/ucptable.c                      \
-    $(moopcre)/pcre.h.in
+    $(moopcre)/ucptable.c

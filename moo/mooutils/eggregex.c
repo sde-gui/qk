@@ -51,9 +51,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "eggregex.h"
+#include "moo/mooutils/eggregex.h"
+#include "moo/mooutils/pcre/pcre.h"
 #include <glib.h>
-#include "pcre.h"
 
 /* FIXME when this is in glib */
 #define _(s) s

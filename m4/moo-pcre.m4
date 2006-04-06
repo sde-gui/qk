@@ -16,6 +16,10 @@ PCRE_MINOR=4
 PCRE_DATE=05-Sep-2005
 PCRE_VERSION=${PCRE_MAJOR}.${PCRE_MINOR}
 
+AC_DEFINE([PCRE_MAJOR], $PCRE_MAJOR, [pcre library major version])
+AC_DEFINE([PCRE_MINOR], $PCRE_MINOR, [pcre library minor version])
+AC_DEFINE([PCRE_DATE], $PCRE_DATE, [pcre library release date])
+
 dnl Default values for miscellaneous macros
 
 AC_DEFINE(POSIX_MALLOC_THRESHOLD, 10, [POSIX_MALLOC_THRESHOLD])

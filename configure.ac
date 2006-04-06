@@ -66,7 +66,6 @@ MOO_AC_FLAGS
 AC_OUTPUT([
 Makefile
 moo/mooterm/termhelper_res.rc
-moo/mooutils/pcre/pcre.h
 moo/moo.pc
 tests/pyapp.py
 m4/Makefile
