@@ -2,6 +2,8 @@
 # MOO_AC_SET_DIRS(base)
 #
 AC_DEFUN([MOO_AC_SET_DIRS],[
+    AC_REQUIRE([MOO_AC_RELOC])
+
     MOO_DATA_DIR="${datadir}/$1"
     AC_SUBST(MOO_DATA_DIR)
 
