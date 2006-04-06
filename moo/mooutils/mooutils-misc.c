@@ -1131,7 +1131,7 @@ moo_get_data_dir (MooDataDirType type)
 {
 #ifdef __WIN32__
     return moo_get_app_dir ();
-#else
+#elif !defined(MOO_ENABLE_RELOCATION)
     switch (type)
     {
         case MOO_DATA_SHARE:
@@ -1139,9 +1139,11 @@ moo_get_data_dir (MooDataDirType type)
         case MOO_DATA_LIB:
             return g_strdup (MOO_LIB_DIR);
     }
-#endif
 
     g_return_val_if_reached (NULL);
+#else
+    return NULL;
+#endif
 }
 
 
@@ -1192,6 +1194,7 @@ moo_get_data_dirs (MooDataDirType type,
     GPtrArray *dirs;
     GSList *list = NULL;
     guint i;
+    char *d;
 
     dirs = g_ptr_array_sized_new (3);
     env[0] = g_getenv ("MOO_APP_DIRS");
@@ -1225,7 +1228,26 @@ moo_get_data_dirs (MooDataDirType type,
         g_free (env_dirs);
     }
 
-    list = g_slist_prepend (list, moo_get_data_dir (type));
+    if ((d = moo_get_data_dir (type)))
+        list = g_slist_prepend (list, d);
+
+#ifdef __WIN32__
+    d = NULL;
+
+    switch (type)
+    {
+        case MOO_DATA_SHARE:
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "share/" MOO_PACKAGE_NAME);
+            break;
+        case MOO_DATA_LIB:
+            d = g_win32_get_package_installation_subdirectory (NULL, NULL, "lib/" MOO_PACKAGE_NAME);
+            break;
+    }
+
+    if (d)
+        list = g_slist_prepend (list, d);
+#endif
+
     list = g_slist_prepend (list, moo_get_user_data_dir ());
 
     list = g_slist_reverse (list);
