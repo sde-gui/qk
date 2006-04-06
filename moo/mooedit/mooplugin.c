@@ -1037,12 +1037,14 @@ sync_pages (MooPrefsDialog *dialog)
     for (l = plugins; l != NULL; l = l->next)
     {
         MooPlugin *plugin = l->data;
-        if (moo_plugin_enabled (l->data) &&
+
+        if (moo_plugin_enabled (plugin) &&
             MOO_PLUGIN_GET_CLASS(plugin)->create_prefs_page)
         {
             GSList *link = g_slist_find_custom (old_plugin_pages,
-                    moo_plugin_id (l->data),
-                    (GCompareFunc) cmp_page_and_id);
+                                                moo_plugin_id (l->data),
+                                                (GCompareFunc) cmp_page_and_id);
+
             if (link)
             {
                 plugin_pages = g_slist_append (plugin_pages, link->data);
@@ -1053,11 +1055,21 @@ sync_pages (MooPrefsDialog *dialog)
 
                 if (plugin_page)
                 {
-                    g_object_set_data_full (G_OBJECT (plugin_page), "moo-plugin-id",
-                                            g_strdup (moo_plugin_id (plugin)),
-                                            g_free);
-                    plugin_pages = g_slist_append (plugin_pages, plugin_page);
-                    moo_prefs_dialog_insert_page (dialog, plugin_page, -1);
+                    if (!MOO_IS_PREFS_DIALOG_PAGE (plugin_page))
+                    {
+                        g_critical ("%s: oops", G_STRLOC);
+                    }
+                    else
+                    {
+                        MOO_PREFS_DIALOG_PAGE (plugin_page)->auto_apply = FALSE;
+
+                        g_object_set_data_full (G_OBJECT (plugin_page), "moo-plugin-id",
+                                                g_strdup (moo_plugin_id (plugin)),
+                                                g_free);
+
+                        plugin_pages = g_slist_append (plugin_pages, plugin_page);
+                        moo_prefs_dialog_insert_page (dialog, plugin_page, -1);
+                    }
                 }
             }
         }
@@ -1122,6 +1134,7 @@ prefs_apply (MooPrefsDialog      *dialog,
     GtkTreeView *treeview;
     GtkTreeModel *model;
     GtkTreeIter iter;
+    GSList *plugin_pages;
 
     treeview = moo_glade_xml_get_widget (page->xml, "treeview");
     model = gtk_tree_view_get_model (treeview);
@@ -1153,6 +1166,15 @@ prefs_apply (MooPrefsDialog      *dialog,
     while (gtk_tree_model_iter_next (model, &iter));
 
     sync_pages (dialog);
+
+    plugin_pages = g_object_get_data (G_OBJECT (dialog),
+                                      "moo-plugin-prefs-pages");
+
+    while (plugin_pages)
+    {
+        g_signal_emit_by_name (plugin_pages->data, "apply");
+        plugin_pages = plugin_pages->next;
+    }
 }
 
 
