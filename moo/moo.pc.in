@@ -4,12 +4,12 @@ includedir=@includedir@
 datadir=@datadir@
 libdir=@libdir@
 
-langfilesdir=${datadir}/moo-1.0/syntax
-pluginsdir=${libdir}/moo-1.0/plugins
+langfilesdir=@MOO_TEXT_LANG_FILES_DIR@
+pluginsdir=@MOO_LIB_DIR@/plugins
 
-Name: libmoo
-Description: libmoo
-Requires: gtk+-2.0 @MOO_XML_PKG_NAME@ @MOO_GTHREAD_PKG_NAME@
+Name: moo
+Description: A text editor and terminal emulator library
+Requires: gtk+-2.0 @MOO_XML_PKG_NAME@
 Version: @MOO_VERSION_UNQUOTED@
-Cflags: -I${includedir}/moo-1.0 -I${libdir}/moo-1.0/include
-Libs: -L${libdir} -lmoo-1.0 @MOO_FAM_LIBS@
+Cflags: -I@moo_includedir@ -I@moo_libincludedir@
+Libs: -L${libdir} -lmoo @MOO_FAM_LIBS@ @PYTHON_LDFLAGS@

@@ -15,7 +15,7 @@
 #ifndef __MOO_SCRIPT_FUNC_H__
 #define __MOO_SCRIPT_FUNC_H__
 
-#include "mooscript-value.h"
+#include <mooscript/mooscript-value.h>
 
 G_BEGIN_DECLS
 

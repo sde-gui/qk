@@ -1,5 +1,5 @@
 /*
- *   moouseractions.h
+ *   moo-version.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,22 +11,14 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_USER_ACTIONS_H__
-#define __MOO_USER_ACTIONS_H__
-
-#include <mooscript/mooscript-context.h>
-#include <mooutils/moowindow.h>
-
-G_BEGIN_DECLS
+#ifndef __MOO_VERSION_H__
+#define __MOO_VERSION_H__
 
 
-typedef MSContext* (*MooUserActionCtxFunc) (MooWindow *window);
+#define MOO_VERSION         @MOO_VERSION@
+#define MOO_VERSION_MAJOR   @MOO_VERSION_MAJOR@
+#define MOO_VERSION_MINOR   @MOO_VERSION_MINOR@
+#define MOO_VERSION_MICRO   @MOO_VERSION_MICRO@
 
 
-void moo_parse_user_actions (const char          *file,
-                             MooUserActionCtxFunc ctx_func);
-
-
-G_END_DECLS
-
-#endif /* __MOO_USER_ACTIONS_H__ */
+#endif /* __MOO_VERSION_H__ */

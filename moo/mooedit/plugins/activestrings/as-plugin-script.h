@@ -15,9 +15,9 @@
 #ifndef __AS_PLUGIN_SCRIPT_H__
 #define __AS_PLUGIN_SCRIPT_H__
 
-#include "mooutils/mooscript/mooscript-context.h"
-#include "mooutils/mooscript/mooscript-node.h"
-#include "mooedit/mooedit.h"
+#include <mooscript/mooscript-context.h>
+#include <mooscript/mooscript-node.h>
+#include <mooedit/mooedit.h>
 
 G_BEGIN_DECLS
 

@@ -31,10 +31,12 @@ mooutils_include_headers =                     \
     $(mooutils)/mooprefs.h                     \
     $(mooutils)/mooprefsdialog.h               \
     $(mooutils)/mooprefsdialogpage.h           \
+    $(mooutils)/moopython.h                    \
     $(mooutils)/moostock.h                     \
     $(mooutils)/mootoggleaction.h              \
     $(mooutils)/moouixml.h                     \
     $(mooutils)/mooundomanager.h               \
+    $(mooutils)/moouseractions.h               \
     $(mooutils)/mooutils-fs.h                  \
     $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
@@ -76,13 +78,11 @@ mooutils_sources =                             \
     $(mooutils)/mooprefsdialog.c               \
     $(mooutils)/mooprefsdialogpage.c           \
     $(mooutils)/moopython.c                    \
-    $(mooutils)/moopython.h                    \
     $(mooutils)/moostock.c                     \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
     $(mooutils)/mooundomanager.c               \
     $(mooutils)/moouseractions.c               \
-    $(mooutils)/moouseractions.h               \
     $(mooutils)/mooutils-fs.c                  \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \

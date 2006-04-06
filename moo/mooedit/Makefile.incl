@@ -8,6 +8,7 @@ mooedit_srcdir = $(srcdir)/$(mooedit)
 mooedit_include_headers =                     \
     $(mooedit)/moocmdview.h                   \
     $(mooedit)/mooedit.h                      \
+    $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
     $(mooedit)/mootextsearch.h                \
@@ -28,7 +29,6 @@ mooedit_include_headers =                     \
 mooedit_noinst_headers =                      \
     $(mooedit)/gtksourceiter.h                \
     $(mooedit)/mooedit-private.h              \
-    $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditcolorsprefs-glade.h     \
     $(mooedit)/mooeditdialogs.h               \
     $(mooedit)/mooeditfileops.h               \

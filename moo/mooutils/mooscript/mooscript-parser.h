@@ -15,8 +15,8 @@
 #ifndef __MOO_SCRIPT_PARSER_H__
 #define __MOO_SCRIPT_PARSER_H__
 
-#include "mooscript-node.h"
-#include "mooscript-context.h"
+#include <mooscript/mooscript-node.h>
+#include <mooscript/mooscript-context.h>
 
 G_BEGIN_DECLS
 

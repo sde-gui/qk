@@ -13,23 +13,26 @@ $(mooscript)/mooscript-yacc.c: $(mooscript)/mooscript-yacc.y
 $(mooscript)/mooscript-yacc.h: $(mooscript)/mooscript-yacc.y
 	bison -d -o $(mooscript_srcdir)/mooscript-yacc.c $(mooscript_srcdir)/mooscript-yacc.y
 
+mooscript_headers =                     \
+    $(mooscript)/mooscript-context.h    \
+    $(mooscript)/mooscript-func.h       \
+    $(mooscript)/mooscript-node.h       \
+    $(mooscript)/mooscript-parser.h     \
+    $(mooscript)/mooscript-value.h      \
+    $(mooscript)/mooscript-zenity.h
+
 mooscript_sources =                     \
+    $(mooscript_headers)                \
     $(mooscript)/mooscript-builtin.c    \
     $(mooscript)/mooscript-context.c    \
-    $(mooscript)/mooscript-context.h    \
     $(mooscript)/mooscript-func.c       \
-    $(mooscript)/mooscript-func.h       \
     $(mooscript)/mooscript-node.c       \
-    $(mooscript)/mooscript-node.h       \
     $(mooscript)/mooscript-parser.c     \
-    $(mooscript)/mooscript-parser.h     \
     $(mooscript)/mooscript-parser-priv.h\
     $(mooscript)/mooscript-value.c      \
-    $(mooscript)/mooscript-value.h      \
     $(mooscript)/mooscript-yacc.c       \
     $(mooscript)/mooscript-yacc.h       \
-    $(mooscript)/mooscript-zenity.c     \
-    $(mooscript)/mooscript-zenity.h
+    $(mooscript)/mooscript-zenity.c
 
 mooscript_built_sources =               \
     $(mooscript)/mooscript-yacc.c       \

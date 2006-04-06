@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/mooscript/mooscript-parser.h"
+#include "mooscript/mooscript-parser.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdlib.h>

@@ -15,7 +15,6 @@
 #define __MOO_APP_H__
 
 #include <mooedit/mooeditor.h>
-#include <mooutils/moouseractions.h>
 
 G_BEGIN_DECLS
 

@@ -18,7 +18,7 @@
 #include <mooedit/mooedit.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
-#include <mooutils/mooscript/mooscript-context.h>
+#include <mooscript/mooscript-context.h>
 #include <gtk/gtkstatusbar.h>
 
 G_BEGIN_DECLS

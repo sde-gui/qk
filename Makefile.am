@@ -3,29 +3,21 @@ EXTRA_DIST = autogen.sh mingw-configure cygwin-configure
 
 DIST_SUBDIRS = m4
 
-# pkgconfigdir = $(libdir)/pkgconfig
-# pkgconfig_DATA = moo.pc
-
 ACLOCAL_AMFLAGS = -I m4 $(ACLOCAL_FLAGS)
 
-
 DEFAULT_INCLUDES =
-AM_CFLAGS =                                 \
-    -I$(top_builddir)                       \
-    -I$(top_srcdir)                         \
-    -I$(top_srcdir)/$(MOO_SRC_PREFIX)       \
-    -I$(top_builddir)/$(MOO_SRC_PREFIX)     \
-    $(MOO_CFLAGS)                           \
-    $(PYTHON_INCLUDES)                      \
-    $(PYGTK_CFLAGS)                         \
-    $(MOO_DEBUG_CFLAGS)                     \
+AM_CFLAGS =					\
+    -I$(top_builddir)				\
+    -I$(top_srcdir)				\
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)		\
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)		\
+    -I$(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils	\
+    $(MOO_CFLAGS)				\
+    $(PYTHON_INCLUDES)				\
+    $(PYGTK_CFLAGS)				\
+    $(MOO_DEBUG_CFLAGS)				\
     $(CFLAGS)
 
-if !MOO_OS_CYGWIN
-if MOO_BUILD_LIB
-# noinst_LTLIBRARIES = libmoo-1.0.la
-endif
-endif
 
 ###########################################################################
 
@@ -66,18 +58,29 @@ include moo/moopython/codegen/Makefile.incl
 include moo/moopython/pygtk/Makefile.incl
 include moo/moopython/plugins/Makefile.incl
 
-# moo_libincludedir = $(libdir)/moo-1.0/include
-# moo_libinclude_HEADERS = $(moo_libinclude_headers)
-# moo_includedir = $(includedir)/moo-1.0
-# moo_include_HEADERS = $(moo_include_headers)
-# mooedit_includedir = $(moo_includedir)/mooedit
-# mooedit_include_HEADERS = $(mooedit_include_headers)
-# mooterm_includedir = $(moo_includedir)/mooterm
-# mooterm_include_HEADERS = $(mooterm_include_headers)
-# mooapp_includedir = $(moo_includedir)/mooapp
-# mooapp_include_HEADERS = $(mooapp_include_headers)
-# mooutils_includedir = $(moo_includedir)/mooutils
-# mooutils_include_HEADERS = $(mooutils_include_headers)
+if MOO_BUILD_LIB
+moo_libinclude_HEADERS = $(moo_libinclude_headers)
+moo_include_HEADERS = $(moo_include_headers)
+mooedit_includedir = $(moo_includedir)/mooedit
+mooedit_include_HEADERS = $(mooedit_include_headers)
+mooterm_includedir = $(moo_includedir)/mooterm
+mooterm_include_HEADERS = $(mooterm_include_headers)
+mooapp_includedir = $(moo_includedir)/mooapp
+mooapp_include_HEADERS = $(mooapp_include_headers)
+mooutils_includedir = $(moo_includedir)/mooutils
+mooutils_include_HEADERS = $(mooutils_include_headers)
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = moo/moo.pc
+endif
+
+if MOO_OS_MINGW
+moo_sources += $(moo_win32_sources)
+moo_extra_dist += $(moo_unix_sources)
+endif
+if MOO_OS_UNIX
+moo_sources += $(moo_unix_sources)
+moo_extra_dist += $(moo_win32_sources)
+endif
 
 ###########################################################################
 
@@ -88,21 +91,7 @@ libmoo_ldflags = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-
 libmoo_sources = $(moo_sources)
 nodist_libmoo_sources = $(moo_nodist_sources)
 
-if MOO_OS_MINGW
-libmoo_sources += $(moo_win32_sources)
-endif
-if MOO_OS_UNIX
-libmoo_sources += $(moo_unix_sources)
-endif
-
-
 EXTRA_DIST += $(moo_extra_dist)
-
-if MOO_OS_MINGW
-EXTRA_DIST += $(moo_unix_sources)
-else
-EXTRA_DIST += $(moo_win32_sources)
-endif
 
 
 ##############################################################################

@@ -15,7 +15,7 @@
 #ifndef __MOO_SCRIPT_ZENITY_H__
 #define __MOO_SCRIPT_ZENITY_H__
 
-#include "mooscript-func.h"
+#include <mooscript/mooscript-func.h>
 
 G_BEGIN_DECLS
 

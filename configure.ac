@@ -7,8 +7,8 @@ m4_define([moo_minor_version], [6])
 m4_define([moo_micro_version], [6])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
-AC_INIT(libmoo, [moo_version], [muntyan@math.tamu.edu], libmoo)
-AM_INIT_AUTOMAKE(libmoo, [moo_version])
+AC_INIT(medit, [moo_version], [muntyan@math.tamu.edu], medit)
+AM_INIT_AUTOMAKE(medit, [moo_version])
 AC_CANONICAL_HOST
 
 AC_CONFIG_HEADERS(config.h)
@@ -57,7 +57,7 @@ AC_SUBST(MOO_SRC_PREFIX)
 AM_CONDITIONAL(MOO_BUILD_LIB, false)
 MOO_COMPONENTS
 MOO_AC_RELOC
-MOO_AC_SET_DIRS([moo-1.0])
+MOO_AC_SET_DIRS(moo)
 MOO_AC_FLAGS
 
 
@@ -68,6 +68,7 @@ AC_OUTPUT([
 Makefile
 moo/mooterm/termhelper_res.rc
 moo/moo.pc
+moo/moo-version.h
 tests/pyapp.py
 m4/Makefile
 ])

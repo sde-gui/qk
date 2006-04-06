@@ -14,6 +14,35 @@
 #ifndef __MOO_H__
 #define __MOO_H__
 
+
+#include <moo-version.h>
+
+#include <mooedit/moocmdview.h>
+#include <mooedit/mooedit.h>
+#include <mooedit/mooeditconfig.h>
+#include <mooedit/mooeditor.h>
+#include <mooedit/mooeditprefs.h>
+#include <mooedit/mootextsearch.h>
+#include <mooedit/mooeditwindow.h>
+#include <mooedit/mooindenter.h>
+#include <mooedit/moolang.h>
+#include <mooedit/moolangmgr.h>
+#include <mooedit/moolinemark.h>
+#include <mooedit/moolineview.h>
+#include <mooedit/mooplugin-macro.h>
+#include <mooedit/mooplugin.h>
+#include <mooedit/mootextbuffer.h>
+#include <mooedit/mootextiter.h>
+#include <mooedit/mootextstyle.h>
+#include <mooedit/mootextstylescheme.h>
+#include <mooedit/mootextview.h>
+
+#include <mooterm/mooterm.h>
+#include <mooterm/mootermwindow.h>
+#include <mooterm/mooterm-text.h>
+#include <mooterm/mootermline.h>
+#include <mooterm/mootermtag.h>
+
 #include <mooutils/eggregex.h>
 #include <mooutils/mooaccel.h>
 #include <mooutils/mooaccelbutton.h>
@@ -21,44 +50,41 @@
 #include <mooutils/mooactiongroup.h>
 #include <mooutils/moobigpaned.h>
 #include <mooutils/mooclosure.h>
+#include <mooutils/moocmd.h>
 #include <mooutils/moocombo.h>
-#include <mooutils/moodialogs.h>
 #include <mooutils/mooentry.h>
-#include <mooutils/mooutils-misc.h>
-#include <mooutils/moofilewatch.h>
 #include <mooutils/moofiltermgr.h>
 #include <mooutils/mooglade.h>
 #include <mooutils/moohistoryentry.h>
 #include <mooutils/moohistorylist.h>
+#include <mooutils/moolinklabel.h>
 #include <mooutils/moomarkup.h>
 #include <mooutils/moomenuaction.h>
 #include <mooutils/moomenumgr.h>
+#include <mooutils/moomenutoolbutton.h>
 #include <mooutils/moonotebook.h>
 #include <mooutils/moopaned.h>
 #include <mooutils/mooprefs.h>
 #include <mooutils/mooprefsdialog.h>
 #include <mooutils/mooprefsdialogpage.h>
+#include <mooutils/moopython.h>
 #include <mooutils/moostock.h>
 #include <mooutils/mootoggleaction.h>
 #include <mooutils/moouixml.h>
+#include <mooutils/mooundomanager.h>
+#include <mooutils/moouseractions.h>
+#include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-gobject.h>
+#include <mooutils/mooutils-misc.h>
 #include <mooutils/moowindow.h>
-#include <mooutils/moofileview/moobookmarkmgr.h>
-#include <mooutils/moofileview/moofile.h>
-#include <mooutils/moofileview/moofileentry.h>
-#include <mooutils/moofileview/moofilesystem.h>
-#include <mooutils/moofileview/moofileview.h>
-#include <mooutils/moofileview/moofoldermodel.h>
-#include <mooutils/moofileview/mooiconview.h>
 
-#include <mooedit/mooeditor.h>
-#include <mooedit/mooplugin.h>
-#include <mooedit/mootextbuffer.h>
-#include <mooedit/moocmdview.h>
-#include <mooedit/mooeditsearch.h>
-#include <mooedit/mootextiter.h>
+#include <mooscript/mooscript-context.h>
+#include <mooscript/mooscript-func.h>
+#include <mooscript/mooscript-node.h>
+#include <mooscript/mooscript-parser.h>
+#include <mooscript/mooscript-value.h>
+#include <mooscript/mooscript-zenity.h>
 
-#include <mooterm/mooterm.h>
 #include <mooapp/mooapp.h>
 
 

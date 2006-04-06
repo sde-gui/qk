@@ -1,7 +1,18 @@
+2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.6 ===
+
+    Lot of bugs fixed, lot of bugs introduced.
+
+    MooEdit:
+        Made quick search work.
+        Line ends type is detected automatically, and
+        used when saving file.
+
 2006-03-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
-    * === Released 0.6.4 ===
-    
+    * === Released 0.6.5 ===
+
     0.6.4 is broken
 
 2006-03-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
@@ -13,7 +24,7 @@
 
     MooTerm:
 	Rewritten drawing.
-	
+
     MooFileView:
 	Made it work (to some extent) on windows.
 
