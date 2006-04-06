@@ -1913,7 +1913,7 @@ render_icon_for_path (const char     *path,
     {
         mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
 
-        if (mime_type != xdg_mime_type_unknown)
+        if (mime_type && *mime_type && mime_type != xdg_mime_type_unknown)
         {
             icon = MOO_ICON_MIME;
         }
