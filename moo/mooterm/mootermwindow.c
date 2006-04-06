@@ -26,8 +26,6 @@ static GObject     *moo_term_window_constructor         (GType               typ
                                                          guint               n_props,
                                                          GObjectConstructParam *props);
 
-static void         moo_term_window_save_selection      (MooTermWindow      *window);
-
 static void         copy_clipboard                      (MooTerm            *term);
 static void         paste_clipboard                     (MooTerm            *term);
 
@@ -44,15 +42,6 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
     gobject_class->constructor = moo_term_window_constructor;
 
     moo_window_class_set_id (window_class, "Terminal", "Terminal");
-
-    moo_window_class_new_action (window_class, "SaveSelection",
-                                 "name", "Save Selection",
-                                 "label", "_Save Selection",
-                                 "tooltip", "Save selected text to a file",
-                                 "icon-stock-id", GTK_STOCK_SAVE,
-                                 "accel", "<alt>S",
-                                 "closure-callback", moo_term_window_save_selection,
-                                 NULL);
 
     moo_window_class_new_action (window_class, "Copy",
                                  "name", "Copy",
@@ -172,35 +161,6 @@ void        moo_term_window_apply_settings  (MooTermWindow     *window)
 GtkWidget *moo_term_window_new (void)
 {
     return GTK_WIDGET (g_object_new (MOO_TYPE_TERM_WINDOW, NULL));
-}
-
-
-static void moo_term_window_save_selection (MooTermWindow *self)
-{
-    char *text = moo_term_get_selection (self->terminal);
-
-    if (!text)
-        text = moo_term_get_content (self->terminal);
-
-    if (text)
-    {
-        const char *filename =
-                moo_file_dialogp (GTK_WIDGET (self),
-                                  MOO_DIALOG_FILE_SAVE,
-                                  "Save As",
-                                  MOO_TERM_PREFS_SAVE_SELECTION_DIR,
-                                  NULL);
-
-        if (filename)
-        {
-            char *new_start = g_path_get_dirname (filename);
-            moo_prefs_set_string (MOO_TERM_PREFS_SAVE_SELECTION_DIR, new_start);
-            g_free (new_start);
-            moo_save_file_utf8 (filename, text, -1, NULL);
-        }
-
-        g_free (text);
-    }
 }
 
 
