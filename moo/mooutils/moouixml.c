@@ -2049,9 +2049,8 @@ create_tool_item (MooUIXML       *xml,
         g_return_val_if_fail (toplevel->actions != NULL, FALSE);
 
         action = moo_action_group_get_action (toplevel->actions, item->action);
-        g_return_val_if_fail (action != NULL, FALSE);
 
-        if (action->dead)
+        if (!action || action->dead)
             return TRUE;
 
         tool_item = moo_action_create_tool_item (action, GTK_WIDGET (toolbar), index,
