@@ -50,8 +50,7 @@ mooterm_unix_sources =                        \
 
 mooterm_win32_sources =                       \
     $(mooterm)/mootermhelper.h                \
-    $(mooterm)/mootermpt-cygwin.c             \
-    $(mooterm)/mootermpt-win32.c
+    $(mooterm)/mootermpt-cygwin.c
 
 termhelper_sources =                          \
     termhelper_res.res                        \

@@ -78,7 +78,7 @@ _moo_term_pt_new (MooTerm    *term)
 {
     MooTermPt *pt;
 #ifdef __WIN32__
-    pt = g_object_new (MOO_TYPE_TERM_PT_WIN, NULL);
+    pt = g_object_new (MOO_TYPE_TERM_PT_CYG, NULL);
 #else /* !__WIN32__ */
     pt = g_object_new (MOO_TYPE_TERM_PT_UNIX, NULL);
 #endif /* !__WIN32__ */
@@ -109,7 +109,7 @@ _moo_term_pt_fork_command (MooTermPt      *pt,
 }
 
 
-char            
+char
 _moo_term_pt_get_erase_char (MooTermPt *pt)
 {
     g_return_val_if_fail (MOO_IS_TERM_PT (pt), 0);
@@ -117,7 +117,7 @@ _moo_term_pt_get_erase_char (MooTermPt *pt)
 }
 
 
-void            
+void
 _moo_term_pt_send_intr (MooTermPt *pt)
 {
     g_return_if_fail (MOO_IS_TERM_PT (pt));
