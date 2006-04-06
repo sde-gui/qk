@@ -22,6 +22,7 @@
 #include "moopython/mooplugin-python.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gmodule.h>
 
@@ -37,6 +38,7 @@ typedef struct {
     GSList *list; /* MooPlugin* */
     GHashTable *names;
     char **dirs;
+    gboolean dirs_read;
 } PluginStore;
 
 static PluginStore *plugin_store = NULL;
@@ -847,27 +849,49 @@ moo_plugin_read_dir (const char *path)
 
 
 char **
-moo_get_plugin_dirs (void)
+moo_plugin_get_dirs (void)
 {
     plugin_store_init ();
     return g_strdupv (plugin_store->dirs);
 }
 
 
-void
-moo_set_plugin_dirs (char **dirs)
+static void
+moo_plugin_init_builtin (void)
 {
-    plugin_store_init ();
-    g_strfreev (plugin_store->dirs);
-    plugin_store->dirs = g_strdupv (dirs);
+#ifndef __WIN32__
+    _moo_find_plugin_init ();
+#endif
+#if GTK_CHECK_VERSION(2,6,0)
+    _moo_file_selector_plugin_init ();
+#endif
+    _moo_active_strings_plugin_init ();
+#ifdef MOO_USE_PYGTK
+    _moo_python_plugin_init ();
+#endif
 }
 
 
 void
 moo_plugin_read_dirs (void)
 {
-    char **d;
+    char **d, **dirs;
+    guint n_dirs;
+
     plugin_store_init ();
+
+    if (plugin_store->dirs_read)
+        return;
+
+    plugin_store->dirs_read = TRUE;
+
+    dirs = moo_get_data_subdirs (MOO_PLUGIN_DIR_BASENAME,
+                                 MOO_DATA_LIB, &n_dirs);
+    g_strfreev (plugin_store->dirs);
+    plugin_store->dirs = dirs;
+
+    moo_plugin_init_builtin ();
+
     for (d = plugin_store->dirs; d && *d; ++d)
         moo_plugin_read_dir (*d);
 }
@@ -930,22 +954,6 @@ _moo_doc_detach_plugins (MooEditWindow *window,
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_doc (l->data, window, doc);
-}
-
-
-void
-moo_plugin_init_builtin (void)
-{
-#ifndef __WIN32__
-    _moo_find_plugin_init ();
-#endif
-#if GTK_CHECK_VERSION(2,6,0)
-    _moo_file_selector_plugin_init ();
-#endif
-    _moo_active_strings_plugin_init ();
-#ifdef MOO_USE_PYGTK
-    _moo_python_plugin_init ();
-#endif
 }
 
 

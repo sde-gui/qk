@@ -793,31 +793,15 @@ moo_app_load_user_actions (void)
 static void
 moo_app_init_editor (MooApp *app)
 {
-    char **dirs;
-    guint n_dirs, i;
-    MooLangMgr *lang_mgr;
-
     app->priv->editor = moo_editor_instance ();
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
     moo_editor_set_app_name (app->priv->editor,
                              app->priv->info->short_name);
 
-    lang_mgr = moo_editor_get_lang_mgr (app->priv->editor);
+    moo_lang_mgr_read_dirs (moo_editor_get_lang_mgr (app->priv->editor));
 
-    dirs = moo_get_data_subdirs (MOO_LANG_DIR_BASENAME,
-                                 MOO_DATA_SHARE, &n_dirs);
-    for (i = 0; i < n_dirs; ++i)
-        moo_lang_mgr_add_dir (lang_mgr, dirs[i]);
-    moo_lang_mgr_read_dirs (lang_mgr);
-    g_strfreev (dirs);
-
-    dirs = moo_get_data_subdirs (MOO_PLUGIN_DIR_BASENAME,
-                                 MOO_DATA_LIB, &n_dirs);
-    moo_set_plugin_dirs (dirs);
-    moo_plugin_init_builtin ();
     moo_plugin_read_dirs ();
-    g_strfreev (dirs);
 }
 
 
@@ -935,6 +919,7 @@ moo_app_init_real (MooApp *app)
 #ifdef MOO_BUILD_EDIT
     if (app->priv->use_editor)
         moo_app_init_editor (app);
+#endif
 
 #if defined(__WIN32__) && defined(MOO_BUILD_TERM)
     if (app->priv->use_terminal)
@@ -988,7 +973,6 @@ start_io (MooApp *app)
         moo_app_input = moo_app_input_new (app->priv->info->short_name);
         moo_app_input_start (moo_app_input);
     }
-#endif /* MOO_BUILD_EDIT */
 
     if (app->priv->run_output)
     {

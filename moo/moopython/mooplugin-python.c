@@ -312,7 +312,7 @@ static void
 moo_python_plugin_read_dirs (void)
 {
     char **d;
-    char **dirs = moo_get_plugin_dirs ();
+    char **dirs = moo_plugin_get_dirs ();
     PyObject *sys = NULL, *path = NULL;
 
     sys = PyImport_ImportModule ((char*) "sys");

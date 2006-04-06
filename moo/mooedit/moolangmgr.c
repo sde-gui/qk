@@ -24,6 +24,7 @@
 #include "mooutils/xdgmime/xdgmime.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
 
@@ -117,7 +118,7 @@ moo_lang_mgr_finalize (GObject *object)
 }
 
 
-void
+static void
 moo_lang_mgr_add_dir (MooLangMgr   *mgr,
                       const char   *dir)
 {
@@ -697,9 +698,19 @@ moo_lang_mgr_read_dirs (MooLangMgr   *mgr)
 {
     GHashTable *lang_xml_names;
     GSList *lang_xml_list, *l;
+    char **dirs;
+    guint n_dirs, i;
 
     g_return_if_fail (MOO_IS_LANG_MGR (mgr));
-    g_return_if_fail (!mgr->dirs_read);
+
+    if (mgr->dirs_read)
+        return;
+
+    dirs = moo_get_data_subdirs (MOO_LANG_DIR_BASENAME,
+                                 MOO_DATA_SHARE, &n_dirs);
+    for (i = 0; i < n_dirs; ++i)
+        moo_lang_mgr_add_dir (mgr, dirs[i]);
+    g_strfreev (dirs);
 
     if (!mgr->lang_dirs)
         return;

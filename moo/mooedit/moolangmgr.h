@@ -77,8 +77,6 @@ MooContext     *moo_lang_mgr_get_context            (MooLangMgr         *mgr,
 
 GSList         *moo_lang_mgr_list_schemes           (MooLangMgr         *mgr);
 
-void            moo_lang_mgr_add_dir                (MooLangMgr         *mgr,
-                                                     const char         *dir);
 void            moo_lang_mgr_read_dirs              (MooLangMgr         *mgr);
 
 MooTextStyle   *moo_lang_mgr_get_style              (MooLangMgr         *mgr,
