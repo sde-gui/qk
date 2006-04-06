@@ -45,7 +45,8 @@ enum {
     PROP_0,
     PROP_LABEL,
     PROP_ICON,
-    PROP_ICON_STOCK_ID
+    PROP_ICON_STOCK_ID,
+    PROP_AUTO_APPLY
 };
 
 enum {
@@ -102,6 +103,15 @@ static void moo_prefs_dialog_page_class_init (MooPrefsDialogPageClass *klass)
                                               GDK_TYPE_PIXBUF,
                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_AUTO_APPLY,
+                                     g_param_spec_boolean
+                                             ("auto-apply",
+                                              "auto-apply",
+                                              "auto-apply",
+                                              TRUE,
+                                              G_PARAM_READWRITE));
+
     prefs_dialog_page_signals[APPLY] =
         g_signal_new ("apply",
                       G_OBJECT_CLASS_TYPE (klass),
@@ -138,6 +148,7 @@ static void moo_prefs_dialog_page_init (MooPrefsDialogPage *page)
     page->icon_stock_id = NULL;
     page->xml = NULL;
     page->widgets = NULL;
+    page->auto_apply = TRUE;
 }
 
 
@@ -167,9 +178,12 @@ static void moo_prefs_dialog_page_set_property  (GObject            *object,
     {
         case PROP_LABEL:
             g_free (page->label);
-            /* XXX use GMarkup escaping here */
-            page->label = g_value_get_string (value) ?
-                g_strdup_printf ("<b>%s</b>", g_value_get_string (value)) : NULL;
+
+            if (g_value_get_string (value))
+                page->label = g_markup_printf_escaped ("<b>%s</b>", g_value_get_string (value));
+            else
+                page->label = NULL;
+
             g_object_notify (G_OBJECT (page), "label");
             break;
 
@@ -184,6 +198,11 @@ static void moo_prefs_dialog_page_set_property  (GObject            *object,
             g_free (page->icon_stock_id);
             page->icon_stock_id = g_strdup (g_value_get_string (value));
             g_object_notify (G_OBJECT (page), "icon-stock-id");
+            break;
+
+        case PROP_AUTO_APPLY:
+            page->auto_apply = g_value_get_boolean (value) != 0;
+            g_object_notify (object, "auto-apply");
             break;
 
         default:
@@ -211,6 +230,10 @@ static void moo_prefs_dialog_page_get_property  (GObject            *object,
 
         case PROP_ICON_STOCK_ID:
             g_value_set_string (value, page->icon_stock_id);
+            break;
+
+        case PROP_AUTO_APPLY:
+            g_value_set_boolean (value, page->auto_apply);
             break;
 
         default:

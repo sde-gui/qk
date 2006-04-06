@@ -37,6 +37,7 @@ struct _MooPrefsDialog
     GtkListStore *store;
     GtkTreeView  *pages_list;
     gboolean      hide_on_delete;
+    gboolean      running;
 };
 
 struct _MooPrefsDialogClass

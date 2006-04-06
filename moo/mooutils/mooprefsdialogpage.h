@@ -39,6 +39,7 @@ struct _MooPrefsDialogPage
     char        *icon_stock_id;
     MooGladeXML *xml;
     GSList      *widgets;
+    gboolean     auto_apply;
 };
 
 struct _MooPrefsDialogPageClass

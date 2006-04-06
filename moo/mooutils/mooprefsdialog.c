@@ -328,6 +328,7 @@ moo_prefs_dialog_run (MooPrefsDialog *dialog,
 
     moo_position_window (GTK_WIDGET (dialog), parent, FALSE, FALSE, 0, 0);
 
+    dialog->running = TRUE;
     g_signal_emit_by_name (dialog, "init");
     gtk_window_present (GTK_WINDOW (dialog));
 }
@@ -337,8 +338,6 @@ static void
 moo_prefs_dialog_response (GtkDialog      *dialog,
                            int             response)
 {
-    G_GNUC_UNUSED GtkWindow *parent;
-
     switch (response)
     {
         case GTK_RESPONSE_APPLY:
@@ -348,17 +347,38 @@ moo_prefs_dialog_response (GtkDialog      *dialog,
         case GTK_RESPONSE_OK:
             g_signal_emit_by_name (dialog, "apply");
             /* fallthrough */
+
         default:
+            MOO_PREFS_DIALOG(dialog)->running = FALSE;
+
             if (MOO_PREFS_DIALOG(dialog)->hide_on_delete)
                 gtk_widget_hide (GTK_WIDGET (dialog));
             else
                 gtk_widget_destroy (GTK_WIDGET (dialog));
+
 #ifdef __WIN32__
-            parent = gtk_window_get_transient_for (GTK_WINDOW (dialog));
-            if (parent)
-                gtk_window_present (parent);
+            {
+                GtkWindow *parent = gtk_window_get_transient_for (GTK_WINDOW (dialog));
+
+                if (parent)
+                    gtk_window_present (parent);
+            }
 #endif
     }
+}
+
+
+static int
+get_n_pages (MooPrefsDialog *dialog)
+{
+    return gtk_notebook_get_n_pages (dialog->notebook);
+}
+
+static GtkWidget *
+get_nth_page (MooPrefsDialog *dialog,
+              int             n)
+{
+    return gtk_notebook_get_nth_page (dialog->notebook, n);
 }
 
 
@@ -369,11 +389,10 @@ moo_prefs_dialog_init_sig (MooPrefsDialog *dialog)
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    n = gtk_notebook_get_n_pages (dialog->notebook);
+    n = get_n_pages (dialog);
 
     for (i = 0; i < n; ++i)
-        g_signal_emit_by_name (gtk_notebook_get_nth_page (dialog->notebook, i),
-                               "init", NULL);
+        g_signal_emit_by_name (get_nth_page (dialog, i), "init");
 }
 
 
@@ -381,14 +400,30 @@ static void
 moo_prefs_dialog_apply (MooPrefsDialog *dialog)
 {
     int n, i;
+    GSList *list = NULL;
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    n = gtk_notebook_get_n_pages (dialog->notebook);
+    n = get_n_pages (dialog);
 
     for (i = 0; i < n; ++i)
-        g_signal_emit_by_name (gtk_notebook_get_nth_page (dialog->notebook, i),
-                               "apply", NULL);
+    {
+        GtkWidget *page = get_nth_page (dialog, i);
+        list = g_slist_prepend (list, g_object_ref (page));
+    }
+
+    list = g_slist_reverse (list);
+
+    while (list)
+    {
+        MooPrefsDialogPage *page = list->data;
+
+        if (!(GTK_OBJECT_FLAGS (page) & GTK_IN_DESTRUCTION) && page->auto_apply)
+            g_signal_emit_by_name (page, "apply");
+
+        g_object_unref (page);
+        list = g_slist_delete_link (list, list);
+    }
 }
 
 
@@ -440,6 +475,9 @@ moo_prefs_dialog_insert_page (MooPrefsDialog     *dialog,
     ref = gtk_tree_row_reference_new (GTK_TREE_MODEL (dialog->store), path);
     g_object_set_data_full (G_OBJECT (page), "moo-prefs-dialog-row",
                             ref, (GDestroyNotify) gtk_tree_row_reference_free);
+
+    if (dialog->running)
+        g_signal_emit_by_name (page, "init");
 
     gtk_tree_path_free (path);
 
