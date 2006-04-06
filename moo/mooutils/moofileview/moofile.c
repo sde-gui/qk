@@ -627,6 +627,22 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
 }
 
 
+inline static void
+get_mime_type (MooFile    *file,
+               const char *path)
+{
+    if (file->flags & MOO_FILE_HAS_STAT)
+        file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
+    else
+        file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+
+    if (file->mime_type && file->mime_type[0])
+        file->flags |= MOO_FILE_HAS_MIME_TYPE;
+    else
+        g_message ("%s: oops", G_STRLOC);
+}
+
+
 static gboolean get_icons_a_bit             (MooFolder  *folder)
 {
     gboolean done = FALSE;
@@ -660,12 +676,8 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
         {
             char *path = FILE_PATH (folder, file);
 
-            if (file->flags & MOO_FILE_HAS_STAT)
-                file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
-            else
-                file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+            get_mime_type (file, path);
 
-            file->flags |= MOO_FILE_HAS_MIME_TYPE;
             file->flags |= MOO_FILE_HAS_ICON;
             file->icon = get_icon (file, folder->priv->path);
             folder_emit_files (folder, FILES_CHANGED, changed);
@@ -921,12 +933,8 @@ static void file_created    (MooFolder      *folder,
     {
         char *path = FILE_PATH (folder, file);
 
-        if (file->flags & MOO_FILE_HAS_STAT)
-            file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
-        else
-            file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+        get_mime_type (file, path);
 
-        file->flags |= MOO_FILE_HAS_MIME_TYPE;
         file->flags |= MOO_FILE_HAS_ICON;
         file->icon = get_icon (file, folder->priv->path);
         g_free (path);
@@ -1051,12 +1059,8 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
     {
         char *path = FILE_PATH (folder, file);
 
-        if (file->flags & MOO_FILE_HAS_STAT)
-            file->mime_type = xdg_mime_get_mime_type_for_file (path, &file->statbuf);
-        else
-            file->mime_type = xdg_mime_get_mime_type_for_file (path, NULL);
+        get_mime_type (file, path);
 
-        file->flags |= MOO_FILE_HAS_MIME_TYPE;
         file->flags |= MOO_FILE_HAS_ICON;
         file->icon = get_icon (file, folder->priv->path);
         g_free (path);
