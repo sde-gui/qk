@@ -22,7 +22,6 @@
 G_BEGIN_DECLS
 
 
-MSContext   *_as_plugin_context_new         (void);
 gboolean     _as_plugin_context_exec        (MSContext      *ctx,
                                              MSNode         *script,
                                              MooEdit        *doc,

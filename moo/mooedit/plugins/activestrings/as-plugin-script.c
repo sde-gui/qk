@@ -16,13 +16,6 @@
 #include "mooedit/mooedit-script.h"
 
 
-MSContext *
-_as_plugin_context_new (void)
-{
-    return g_object_new (MOO_TYPE_EDIT_CONTEXT, NULL);
-}
-
-
 static void
 as_plugin_context_setup (MSContext       *ctx,
                          MooEdit         *doc,

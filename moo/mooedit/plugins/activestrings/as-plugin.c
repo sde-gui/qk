@@ -20,8 +20,8 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "mooedit/mootextview.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "mooedit/mooedit-script.h"
 #include "mooutils/eggregex.h"
 #include "as-plugin-script.h"
 #include "as-plugin.h"
@@ -749,7 +749,7 @@ as_plugin_init (ASPlugin *plugin)
 {
     plugin->lang_sets = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                                (GDestroyNotify) as_set_unref);
-    plugin->ctx = _as_plugin_context_new ();
+    plugin->ctx = moo_edit_context_new (NULL);
 
     as_plugin_load (plugin);
 
