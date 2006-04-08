@@ -144,10 +144,11 @@ moo_edit_context_set_doc (MooEditContext *ctx,
 MSContext *
 moo_edit_context_new (MooEditWindow *window)
 {
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+
     return g_object_new (MOO_TYPE_EDIT_CONTEXT,
                          "window", window,
-                         "doc", moo_edit_window_get_active_doc (window),
+                         "doc", window ? moo_edit_window_get_active_doc (window) : NULL,
                          NULL);
 }
 
