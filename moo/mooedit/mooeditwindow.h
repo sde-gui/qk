@@ -18,7 +18,6 @@
 #include <mooedit/mooedit.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
-#include <mooscript/mooscript-context.h>
 #include <gtk/gtkstatusbar.h>
 
 G_BEGIN_DECLS
@@ -101,9 +100,6 @@ guint        moo_edit_window_push_message       (MooEditWindow  *window,
                                                  const char     *id);
 void         moo_edit_window_pop_message        (MooEditWindow  *window,
                                                  const char     *id);
-
-void         moo_edit_window_setup_context      (MooEditWindow  *window,
-                                                 MSContext      *ctx);
 
 
 G_END_DECLS

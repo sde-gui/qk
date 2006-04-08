@@ -231,6 +231,12 @@
 
 ;; From mooedit.h
 
+(define-method get_editor
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_editor")
+  (return-type "MooEditor*")
+)
+
 (define-method get_filename
   (of-object "MooEdit")
   (c-name "moo_edit_get_filename")

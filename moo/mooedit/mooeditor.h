@@ -115,6 +115,7 @@ void             moo_editor_set_ui_xml      (MooEditor      *editor,
                                              MooUIXML       *xml);
 
 MooEditor       *moo_edit_window_get_editor (MooEditWindow  *window);
+MooEditor       *moo_edit_get_editor        (MooEdit        *doc);
 
 MooLangMgr      *moo_editor_get_lang_mgr    (MooEditor      *editor);
 void             moo_editor_set_default_lang(MooEditor      *editor,

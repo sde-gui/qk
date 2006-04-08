@@ -22,31 +22,7 @@
 G_BEGIN_DECLS
 
 
-#define AS_TYPE_PLUGIN_CONTEXT              (_as_plugin_context_get_type ())
-#define AS_PLUGIN_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), AS_TYPE_PLUGIN_CONTEXT, ASPluginContext))
-#define AS_PLUGIN_CONTEXT_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), AS_TYPE_PLUGIN_CONTEXT, ASPluginContextClass))
-#define AS_IS_PLUGIN_CONTEXT(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), AS_TYPE_PLUGIN_CONTEXT))
-#define AS_IS_PLUGIN_CONTEXT_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), AS_TYPE_PLUGIN_CONTEXT))
-#define AS_PLUGIN_CONTEXT_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), AS_TYPE_PLUGIN_CONTEXT, ASPluginContextClass))
-
-typedef struct _ASPluginContext ASPluginContext;
-typedef struct _ASPluginContextClass ASPluginContextClass;
-
-
-struct _ASPluginContext {
-    MSContext context;
-    MooEdit *doc;
-};
-
-struct _ASPluginContextClass {
-    MSContextClass context_class;
-};
-
-
-GType        _as_plugin_context_get_type    (void) G_GNUC_CONST;
-
 MSContext   *_as_plugin_context_new         (void);
-
 gboolean     _as_plugin_context_exec        (MSContext      *ctx,
                                              MSNode         *script,
                                              MooEdit        *doc,

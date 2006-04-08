@@ -102,11 +102,7 @@ static MooPyObject *
 py_object_from_gobject (gpointer gobj)
 {
     g_return_val_if_fail (!gobj || G_IS_OBJECT (gobj), NULL);
-
-    if (gobj)
-        return (MooPyObject*) pygobject_new (gobj);
-    else
-        return (MooPyObject*) Py_INCREF (Py_None);
+    return (MooPyObject*) pygobject_new (gobj);
 }
 
 

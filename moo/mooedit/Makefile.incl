@@ -11,6 +11,7 @@ mooedit_include_headers =                     \
     $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
+    $(mooedit)/mooedit-script.h               \
     $(mooedit)/mootextsearch.h                \
     $(mooedit)/mooeditwindow.h                \
     $(mooedit)/mooindenter.h                  \
@@ -67,6 +68,7 @@ mooedit_sources =                             \
     $(mooedit)/mooeditprefspage.c             \
     $(mooedit)/mootextsearch.c                \
     $(mooedit)/mooeditwindow.c                \
+    $(mooedit)/mooedit-script.c               \
     $(mooedit)/moofold.c                      \
     $(mooedit)/moohighlighter.c               \
     $(mooedit)/mooindenter.c                  \

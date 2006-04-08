@@ -81,7 +81,7 @@ MSVariable  *ms_variable_new_func           (MSFunc     *func);
 MSVariable  *ms_variable_ref                (MSVariable *var);
 void         ms_variable_unref              (MSVariable *var);
 
-MSContext   *ms_context_new                 (void);
+MSContext   *ms_context_new                 (gpointer    window);
 void         _ms_context_add_builtin        (MSContext  *ctx);
 
 MSValue     *ms_context_eval_variable       (MSContext  *ctx,

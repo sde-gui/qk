@@ -15,6 +15,7 @@
 #define __MOO_APP_H__
 
 #include <mooedit/mooeditor.h>
+#include <mooscript/mooscript-context.h>
 
 G_BEGIN_DECLS
 

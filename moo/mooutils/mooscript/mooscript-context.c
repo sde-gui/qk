@@ -187,9 +187,10 @@ ms_context_class_init (MSContextClass *klass)
 
 
 MSContext *
-ms_context_new (void)
+ms_context_new (gpointer window)
 {
-    MSContext *ctx = g_object_new (MS_TYPE_CONTEXT, NULL);
+    MSContext *ctx = g_object_new (MS_TYPE_CONTEXT,
+                                   "window", window, NULL);
     return ctx;
 }
 
@@ -546,8 +547,11 @@ ms_context_assign_py_var (MSContext  *ctx,
     g_return_if_fail (MS_IS_CONTEXT (ctx));
     g_return_if_fail (var != NULL);
     g_return_if_fail (obj != NULL);
-    g_return_if_fail (ctx->py_dict != NULL);
     g_return_if_fail (moo_python_running ());
+
+    if (!ctx->py_dict)
+        ctx->py_dict = moo_py_get_script_dict ("__moo_script__");
+
     moo_py_dict_set_item (ctx->py_dict, var, obj);
 }
 
@@ -562,7 +566,7 @@ ms_context_assign_py_object (MSContext  *ctx,
     g_return_if_fail (moo_python_running ());
     g_return_if_fail (MS_IS_CONTEXT (ctx));
     g_return_if_fail (var != NULL);
-    g_return_if_fail (G_IS_OBJECT (gobj));
+    g_return_if_fail (!gobj || G_IS_OBJECT (gobj));
 
     pyobj = moo_py_object_from_gobject (gobj);
     g_return_if_fail (pyobj != NULL);

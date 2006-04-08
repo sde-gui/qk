@@ -36,6 +36,7 @@
 #include <mooedit/mootextstyle.h>
 #include <mooedit/mootextstylescheme.h>
 #include <mooedit/mootextview.h>
+#include <mooedit/mooedit-script.h>
 
 #include <mooterm/mooterm.h>
 #include <mooterm/mootermwindow.h>

@@ -635,6 +635,14 @@ get_moo_buffer (MooEdit *edit)
 }
 
 
+MooEditor *
+moo_edit_get_editor (MooEdit *doc)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    return doc->priv->editor;
+}
+
+
 static void
 moo_edit_set_lang (MooEdit        *edit,
                    MooLang        *lang)

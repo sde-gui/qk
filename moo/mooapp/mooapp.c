@@ -23,6 +23,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/mooedit-script.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/moopython.h"
 #include "mooutils/moomarshals.h"
@@ -1596,14 +1597,10 @@ static MSContext *
 moo_app_get_context_real (G_GNUC_UNUSED MooApp *app,
                           MooWindow *window)
 {
-    MSContext *ctx;
-
-    ctx = g_object_new (MS_TYPE_CONTEXT, "window", window, NULL);
-
     if (MOO_IS_EDIT_WINDOW (window))
-        moo_edit_window_setup_context (MOO_EDIT_WINDOW (window), ctx);
-
-    return ctx;
+        return moo_edit_context_new (MOO_EDIT_WINDOW (window));
+    else
+        return ms_context_new (window);
 }
 
 
