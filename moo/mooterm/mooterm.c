@@ -557,6 +557,10 @@ moo_term_unrealize (GtkWidget *widget)
         g_source_remove (term->priv->update_timeout);
     term->priv->update_timeout = 0;
 
+    if (term->priv->menu)
+        g_object_unref (term->priv->menu);
+    term->priv->menu = NULL;
+
     GTK_WIDGET_CLASS(moo_term_parent_class)->unrealize (widget);
 }
 
@@ -1705,44 +1709,41 @@ menu_paste (MooTerm *term)
     moo_term_paste_clipboard (term, GDK_SELECTION_CLIPBOARD);
 }
 
-static void
-destroy_menu (GtkWidget *menu)
-{
-    g_idle_add ((GSourceFunc)gtk_widget_destroy, menu);
-}
-
 void
 _moo_term_do_popup_menu (MooTerm        *term,
                          GdkEventButton *event)
 {
-    GtkWidget *menu;
     GtkWidget *item;
 
-    menu = gtk_menu_new ();
-    /* TODO: wtf? */
-    g_signal_connect (menu, "deactivate",
-                      G_CALLBACK (destroy_menu), NULL);
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    if (term->priv->menu)
+        g_object_unref (term->priv->menu);
+
+    term->priv->menu = gtk_menu_new ();
+    gtk_object_sink (g_object_ref (term->priv->menu));
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_COPY, NULL);
     gtk_widget_set_sensitive (item, moo_term_get_selection_bounds (term, NULL, NULL));
     gtk_widget_show (item);
     g_signal_connect_swapped (item, "activate",
                               G_CALLBACK (menu_copy), term);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (term->priv->menu), item);
 
     item = gtk_image_menu_item_new_from_stock (GTK_STOCK_PASTE, NULL);
     gtk_widget_show (item);
     g_signal_connect_swapped (item, "activate",
                               G_CALLBACK (menu_paste), term);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+    gtk_menu_shell_append (GTK_MENU_SHELL (term->priv->menu), item);
 
-    g_signal_emit (term, signals[POPULATE_POPUP], 0, menu);
+    g_signal_emit (term, signals[POPULATE_POPUP], 0, term->priv->menu);
 
     if (event)
-        gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL,
+        gtk_menu_popup (GTK_MENU (term->priv->menu),
+                        NULL, NULL, NULL, NULL,
                         event->button, event->time);
     else
-        gtk_menu_popup (GTK_MENU (menu), NULL, NULL,
+        gtk_menu_popup (GTK_MENU (term->priv->menu), NULL, NULL,
                         (GtkMenuPositionFunc) menu_position_func,
                         term, 0, gtk_get_current_event_time ());
 }

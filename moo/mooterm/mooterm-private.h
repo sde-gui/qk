@@ -145,6 +145,8 @@ struct _MooTermPrivate {
     gulong          track_release_id;
     gulong          track_scroll_id;
 
+    GtkWidget      *menu;
+
     GtkIMContext   *im;
     gboolean        im_preedit_active;
     GdkModifierType modifiers;
