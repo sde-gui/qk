@@ -14,19 +14,10 @@
 #include "mooutils/moouseractions.h"
 #include "mooscript/mooscript-parser.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooconfig.h"
 #include <string.h>
 
 typedef MooUserActionCtxFunc CtxFunc;
-
-typedef struct {
-    const char *filename;
-    GSList *actions;
-
-    char *action;
-    char *label;
-    char *accel;
-    GString *code;
-} Parser;
 
 typedef struct {
     char *name;
@@ -49,7 +40,7 @@ typedef struct {
 
 
 GType       _moo_user_action_get_type   (void) G_GNUC_CONST;
-static void parser_create_actions       (Parser *parser);
+
 
 G_DEFINE_TYPE (MooUserAction, _moo_user_action, MOO_TYPE_ACTION)
 
@@ -117,259 +108,25 @@ action_new (const char *name,
 }
 
 
-static void
-parser_init (Parser     *parser,
-             const char *filename)
+static MooAction *
+create_action (MooWindow *window,
+               Action    *data)
 {
-    memset (parser, 0, sizeof (Parser));
-    parser->filename = filename;
-    parser->code = g_string_new (NULL);
-}
+    MooUserAction *action;
 
+    g_return_val_if_fail (data != NULL, NULL);
 
-static gboolean
-is_blank_or_comment (const char *line)
-{
-    char c;
+    action = g_object_new (_moo_user_action_get_type (),
+                           "name", data->name,
+                           "accel", data->accel,
+                           "label", data->label,
+                           NULL);
 
-    while ((c = *line))
-    {
-        if (!c || c == '\r' || c == '#')
-            return TRUE;
+    action->window = window;
+    action->script = ms_node_ref (data->script);
+    action->ctx_func = data->ctx_func;
 
-        if (c != ' ' && c != '\t')
-            return FALSE;
-
-        line++;
-    }
-
-    return TRUE;
-}
-
-
-static void
-parser_cleanup (Parser *parser)
-{
-//     g_slist_foreach (parser->actions, (GFunc) action_free, NULL);
-    g_slist_free (parser->actions);
-    g_string_free (parser->code, TRUE);
-}
-
-
-static gboolean
-starts_action (const char *line)
-{
-    return !g_ascii_strncasecmp (line, "action:", strlen ("action:"));
-}
-
-
-static gboolean
-is_header_line (const char *line)
-{
-    return !g_ascii_strncasecmp (line, "action:", strlen ("action:")) ||
-            !g_ascii_strncasecmp (line, "label:", strlen ("label:")) ||
-            !g_ascii_strncasecmp (line, "accel:", strlen ("accel:"));
-}
-
-
-static gboolean
-parse_header_line (Parser *parser,
-                   char   *line,
-                   guint   line_no)
-{
-    char *colon, *value, *comment;
-
-    colon = strchr (line, ':');
-    g_assert (colon != NULL);
-    *colon = 0;
-
-    value = colon + 1;
-    comment = strchr (value, '#');
-    if (comment)
-        *comment = 0;
-    g_strstrip (value);
-
-    if (!value[0])
-    {
-        g_warning ("file %s, line %d: empty key value",
-                   parser->filename, line_no);
-        return FALSE;
-    }
-
-    if (!g_ascii_strcasecmp (line, "action"))
-    {
-        if (parser->action)
-        {
-            g_warning ("file %s, line %d: duplicated action field",
-                       parser->filename, line_no);
-            return FALSE;
-        }
-
-        parser->action = value;
-//         g_print ("action %s\n", value);
-    }
-    else if (!g_ascii_strcasecmp (line, "label"))
-    {
-        if (!parser->action)
-        {
-            g_warning ("file %s, line %d: missing action field",
-                       parser->filename, line_no);
-            return FALSE;
-        }
-        else if (parser->label)
-        {
-            g_warning ("file %s, line %d: duplicated label field",
-                       parser->filename, line_no);
-            return FALSE;
-        }
-
-        parser->label = value;
-//         g_print ("in action %s: label %s\n", parser->action, value);
-    }
-    else if (!g_ascii_strcasecmp (line, "accel"))
-    {
-        if (!parser->action)
-        {
-            g_warning ("file %s, line %d: missing action field",
-                       parser->filename, line_no);
-            return FALSE;
-        }
-        else if (parser->accel)
-        {
-            g_warning ("file %s, line %d: duplicated accel field",
-                       parser->filename, line_no);
-            return FALSE;
-        }
-
-        parser->accel = value;
-//         g_print ("in action %s: accel %s\n", parser->action, value);
-    }
-    else
-    {
-        g_return_val_if_reached (FALSE);
-    }
-
-    return TRUE;
-}
-
-
-static void
-parser_add_code (Parser *parser,
-                 char   *line)
-{
-    if (parser->code->len)
-        g_string_append_c (parser->code, '\n');
-    g_string_append (parser->code, line);
-}
-
-
-static void
-parser_end_code (Parser *parser,
-                 CtxFunc func)
-{
-    Action *action;
-
-    if (!parser->code->len)
-    {
-        g_warning ("file %s: missing code for action '%s'",
-                   parser->filename, parser->action);
-        goto out;
-    }
-
-//     g_print ("in action %s\n-----------------\n%s\n----------------\n",
-//              parser->action, parser->code->str);
-
-    action = action_new (parser->action, parser->label,
-                         parser->accel, parser->code->str,
-                         func);
-
-    if (!action)
-        goto out;
-
-    parser->actions = g_slist_prepend (parser->actions, action);
-
-out:
-    parser->action = NULL;
-    parser->label = NULL;
-    parser->accel = NULL;
-    g_string_truncate (parser->code, 0);
-}
-
-
-inline static const char *
-find_line_term (const char *string,
-                guint       len,
-                guint      *term_len)
-{
-    while (len)
-    {
-        switch (string[0])
-        {
-            case '\r':
-                if (len > 1 && string[1] == '\n')
-                    *term_len = 2;
-                else
-                    *term_len = 1;
-                return string;
-
-            case '\n':
-                *term_len = 1;
-                return string;
-
-            default:
-                len--;
-                string++;
-        }
-    }
-
-    return NULL;
-}
-
-static char **
-splitlines (const char *string,
-            guint       len,
-            guint      *n_lines_p)
-{
-    GSList *list = NULL;
-    char **lines;
-    guint n_lines = 0, i;
-
-    if (!len)
-        return NULL;
-
-    while (len)
-    {
-        guint term_len = 0;
-        const char *term = find_line_term (string, len, &term_len);
-
-        n_lines++;
-
-        if (term)
-        {
-            list = g_slist_prepend (list, g_strndup (string, term - string));
-            len -= (term - string + term_len);
-            string = term + term_len;
-        }
-        else
-        {
-            list = g_slist_prepend (list, g_strndup (string, len));
-            break;
-        }
-    }
-
-    list = g_slist_reverse (list);
-    lines = g_new (char*, n_lines + 1);
-    lines[n_lines] = NULL;
-    i = 0;
-
-    while (list)
-    {
-        lines[i++] = list->data;
-        list = g_slist_delete_link (list, list);
-    }
-
-    *n_lines_p = n_lines;
-    return lines;
+    return MOO_ACTION (action);
 }
 
 
@@ -377,97 +134,56 @@ void
 moo_parse_user_actions (const char          *filename,
                         MooUserActionCtxFunc ctx_func)
 {
-    GMappedFile *file;
-    GError *error = NULL;
-    Parser parser;
-    char **lines;
-    guint n_lines = 0, i;
+    guint n_items, i;
+    MooConfig *config;
+    MooWindowClass *klass;
 
     g_return_if_fail (filename != NULL);
     g_return_if_fail (ctx_func != NULL);
 
-    file = g_mapped_file_new (filename, FALSE, &error);
+    config = moo_config_parse_file (filename);
 
-    if (!file)
-    {
-        g_warning ("%s: could not open file %s", G_STRLOC, filename);
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
+    if (!config)
         return;
-    }
 
-    if (!g_mapped_file_get_length (file))
+    n_items = moo_config_n_items (config);
+    klass = g_type_class_ref (MOO_TYPE_WINDOW);
+
+    for (i = 0; i < n_items; ++i)
     {
-        g_mapped_file_free (file);
-        return;
+        Action *action;
+        const char *name, *label, *accel, *code;
+        MooConfigItem *item = moo_config_nth_item (config, i);
+
+        name = moo_config_item_get_value (item, "action");
+        label = moo_config_item_get_value (item, "label");
+        accel = moo_config_item_get_value (item, "accel");
+        code = moo_config_item_get_content (item);
+
+        if (!name)
+        {
+            g_warning ("%s: action name missing", G_STRLOC);
+            continue;
+        }
+
+        if (!label)
+            label = name;
+
+        if (!code)
+        {
+            g_warning ("%s: code missing", G_STRLOC);
+            continue;
+        }
+
+        action = action_new (name, label, accel, code, ctx_func);
+
+        if (action)
+            moo_window_class_new_action_custom (klass, action->name,
+                                                (MooWindowActionFunc) create_action,
+                                                action, (GDestroyNotify) action_free);
     }
 
-    lines = splitlines (g_mapped_file_get_contents (file),
-                        g_mapped_file_get_length (file),
-                        &n_lines);
-    g_mapped_file_free (file);
-
-    parser_init (&parser, filename);
-    i = 0;
-
-    while (i < n_lines)
-    {
-        while (i < n_lines && is_blank_or_comment (lines[i]))
-            i++;
-
-        if (i == n_lines)
-            break;
-
-        if (!starts_action (lines[i]))
-        {
-            g_warning ("file %s, line %d: invalid text '%s'",
-                       filename, i, lines[i]);
-            goto out;
-        }
-
-        while (TRUE)
-        {
-            if (is_header_line (lines[i]))
-            {
-                if (!parse_header_line (&parser, lines[i], i))
-                    goto out;
-
-            }
-            else if (!is_blank_or_comment (lines[i]))
-            {
-                break;
-            }
-
-            if (++i == n_lines)
-            {
-                g_warning ("file %s: missing code in action '%s'",
-                           filename, parser.action);
-                goto out;
-            }
-        }
-
-        while (i < n_lines)
-        {
-            if ((!lines[i][0] || lines[i][0] == '\r') &&
-                  (i == n_lines - 1 || starts_action (lines[i+1])))
-            {
-                parser_end_code (&parser, ctx_func);
-                break;
-            }
-
-            parser_add_code (&parser, lines[i++]);
-        }
-
-        if (i == n_lines)
-            parser_end_code (&parser, ctx_func);
-    }
-
-    parser.actions = g_slist_reverse (parser.actions);
-    parser_create_actions (&parser);
-
-out:
-    parser_cleanup (&parser);
-    g_strfreev (lines);
+    g_type_class_unref (klass);
 }
 
 
@@ -510,46 +226,4 @@ _moo_user_action_class_init (MooUserActionClass *klass)
 {
     G_OBJECT_CLASS(klass)->finalize = moo_user_action_finalize;
     MOO_ACTION_CLASS(klass)->activate = moo_user_action_activate;
-}
-
-
-static MooAction *
-create_action (MooWindow *window,
-               Action    *data)
-{
-    MooUserAction *action;
-
-    g_return_val_if_fail (data != NULL, NULL);
-
-    action = g_object_new (_moo_user_action_get_type (),
-                           "name", data->name,
-                           "accel", data->accel,
-                           "label", data->label,
-                           NULL);
-
-    action->window = window;
-    action->script = ms_node_ref (data->script);
-    action->ctx_func = data->ctx_func;
-
-    return MOO_ACTION (action);
-}
-
-
-static void
-parser_create_actions (Parser *parser)
-{
-    GSList *l;
-    MooWindowClass *klass;
-
-    klass = g_type_class_ref (MOO_TYPE_WINDOW);
-
-    for (l = parser->actions; l != NULL; l = l->next)
-    {
-        Action *action = l->data;
-        moo_window_class_new_action_custom (klass, action->name,
-                                            (MooWindowActionFunc) create_action,
-                                            action, (GDestroyNotify) action_free);
-    }
-
-    g_type_class_unref (klass);
 }
