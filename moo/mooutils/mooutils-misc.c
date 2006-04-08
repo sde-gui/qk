@@ -1115,7 +1115,7 @@ moo_get_app_dir (void)
         }
     }
 
-    return appdir;
+    return g_strdup (appdir);
 }
 #else
 char *
