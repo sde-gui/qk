@@ -28,3 +28,25 @@ moo_python_init (guint     version,
     moo_py_api = api;
     return TRUE;
 }
+
+
+MooPyObject *
+moo_Py_INCREF (MooPyObject *obj)
+{
+    g_return_val_if_fail (moo_python_running (), obj);
+
+    if (obj)
+        moo_py_api->incref (obj);
+
+    return obj;
+}
+
+
+void
+moo_Py_DECREF (MooPyObject *obj)
+{
+    g_return_if_fail (moo_python_running ());
+
+    if (obj)
+        moo_py_api->decref (obj);
+}

@@ -57,10 +57,11 @@ gboolean moo_python_init (guint     version,
                           MooPyAPI *api);
 
 
+MooPyObject *moo_Py_INCREF  (MooPyObject    *obj);
+void         moo_Py_DECREF  (MooPyObject    *obj);
+
 #define moo_python_running() (moo_py_api != NULL)
 
-#define moo_Py_INCREF                   moo_py_api->incref
-#define moo_Py_DECREF                   moo_py_api->decref
 #define moo_PyErr_Print                 moo_py_api->err_print
 
 #define moo_python_get_info             moo_py_api->get_info
