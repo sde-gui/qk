@@ -13,6 +13,7 @@
 
 #include "mooutils/mooconfig.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 
 
