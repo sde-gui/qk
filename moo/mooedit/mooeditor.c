@@ -282,6 +282,8 @@ moo_editor_init (MooEditor *editor)
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                    NULL, (GDestroyNotify) moo_edit_saver_unref);
 
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
+
     /* XXX use regex */
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
@@ -1868,7 +1870,6 @@ apply_prefs (MooEditor *editor)
 
     editor->priv->prefs_idle = 0;
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
     default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
 
     if (default_lang)
