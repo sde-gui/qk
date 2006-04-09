@@ -162,7 +162,7 @@
   </syntax>
 
   <styles>
-    <style name="Normal Text"  default-style="Nooormal"/>
+    <style name="Normal Text"  default-style="Normal"/>
     <style name="Keyword"      default-style="Keyword"/>
     <style name="Data Type"    default-style="DataType"/>
     <style name="Decimal"      default-style="Decimal"/>
