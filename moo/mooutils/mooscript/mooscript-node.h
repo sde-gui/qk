@@ -76,7 +76,7 @@ struct _MSNode {
     MSNodeType type : 5;
 };
 
-#if 0
+#if 1
 #define MS_NODE(node_) ((MSNode*) node_)
 #else
 inline static MSNode*
@@ -92,7 +92,7 @@ _ms_node_check (gpointer pnode)
 
 #define MS_NODE_TYPE(node_) (MS_NODE(node_)->type)
 
-#if 0
+#if 1
 #define MS_NODE_CAST(node_,type_,Type_) ((Type_*) node_)
 #else
 inline static gpointer
