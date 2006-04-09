@@ -16,24 +16,28 @@
 #include "mooscript/mooscript-context.h"
 #include "mooscript/mooscript-parser.h"
 #include <gtk/gtk.h>
+#include <string.h>
 
 
-static void moo_command_get_property    (GObject        *object,
+static void     moo_command_get_property(GObject        *object,
                                          guint           prop_id,
                                          GValue         *value,
                                          GParamSpec     *pspec);
-static void moo_command_set_property    (GObject        *object,
+static void     moo_command_set_property(GObject        *object,
                                          guint           prop_id,
                                          const GValue   *value,
                                          GParamSpec     *pspec);
 
-static void moo_command_finalize        (GObject        *object);
-static void moo_command_cleanup         (MooCommand     *cmd);
+static void     moo_command_finalize    (GObject        *object);
+static void     moo_command_cleanup     (MooCommand     *cmd);
 
-static void moo_command_run_real        (MooCommand     *cmd);
-static void moo_command_run_script      (MooCommand     *cmd);
-static void moo_command_run_python      (MooCommand     *cmd);
-static void moo_command_run_shell       (MooCommand     *cmd);
+static void     moo_command_run_real    (MooCommand     *cmd);
+static gboolean moo_command_run_shell   (MooCommand     *cmd,
+                                         const char     *cmd_line);
+
+static void     run_script              (MooCommand     *cmd);
+static void     run_python              (MooCommand     *cmd);
+static void     run_shell               (MooCommand     *cmd);
 
 
 G_DEFINE_TYPE(MooCommand, moo_command, G_TYPE_OBJECT)
@@ -52,6 +56,7 @@ enum {
 
 enum {
     RUN,
+    RUN_SHELL,
     LAST_SIGNAL
 };
 
@@ -68,6 +73,7 @@ moo_command_class_init (MooCommandClass *klass)
     gobject_class->get_property = moo_command_get_property;
 
     klass->run = moo_command_run_real;
+    klass->run_shell = moo_command_run_shell;
 
     g_object_class_install_property (gobject_class,
                                      PROP_CONTEXT,
@@ -131,6 +137,15 @@ moo_command_class_init (MooCommandClass *klass)
                                  NULL, NULL,
                                  _moo_marshal_VOID__VOID,
                                  G_TYPE_NONE, 0);
+
+    signals[RUN_SHELL] = g_signal_new ("run-shell",
+                                       G_TYPE_FROM_CLASS (gobject_class),
+                                       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                       G_STRUCT_OFFSET (MooCommandClass, run_shell),
+                                       g_signal_accumulator_true_handled, NULL,
+                                       _moo_marshal_BOOLEAN__STRING,
+                                       G_TYPE_BOOLEAN, 1,
+                                       G_TYPE_STRING);
 }
 
 
@@ -227,6 +242,8 @@ moo_command_finalize (GObject *object)
         g_object_unref (cmd->context);
     if (cmd->py_dict)
         moo_Py_DECREF (cmd->py_dict);
+    if (cmd->shell_vars)
+        g_hash_table_destroy (cmd->shell_vars);
     g_strfreev (cmd->shell_env);
 
     G_OBJECT_CLASS(moo_command_parent_class)->finalize (object);
@@ -253,13 +270,13 @@ moo_command_run_real (MooCommand *cmd)
     switch (cmd->type)
     {
         case MOO_COMMAND_SCRIPT:
-            return moo_command_run_script (cmd);
+            return run_script (cmd);
 
         case MOO_COMMAND_PYTHON:
-            return moo_command_run_python (cmd);
+            return run_python (cmd);
 
         case MOO_COMMAND_SHELL:
-            return moo_command_run_shell (cmd);
+            return run_shell (cmd);
     }
 
     g_return_if_reached ();
@@ -267,7 +284,7 @@ moo_command_run_real (MooCommand *cmd)
 
 
 static void
-moo_command_run_script (MooCommand *cmd)
+run_script (MooCommand *cmd)
 {
     MSValue *val;
 
@@ -290,7 +307,7 @@ moo_command_run_script (MooCommand *cmd)
 
 
 static void
-moo_command_run_python (MooCommand *cmd)
+run_python (MooCommand *cmd)
 {
     MooPyObject *result;
 
@@ -311,11 +328,101 @@ moo_command_run_python (MooCommand *cmd)
 }
 
 
+#ifdef __WIN32__
+#define VAR_CHAR '%'
+#else
+#define VAR_CHAR '$'
+#endif
+
+#define IS_VARIABLE(c) (c == '_' || g_ascii_isalnum (c))
+
 static void
-moo_command_run_shell (MooCommand *cmd)
+run_shell (MooCommand *cmd)
 {
-    g_return_if_fail (cmd->string);
+    GString *cmd_line;
+    const char *string;
+    gboolean result;
+
+    g_return_if_fail (cmd->string != NULL);
     g_critical ("%s: implement me", G_STRLOC);
+
+    cmd_line = g_string_new (NULL);
+    string = cmd->string;
+
+    while (*string)
+    {
+        const char *var_start = strchr (string, VAR_CHAR);
+        const char *var_end, *value;
+        char *variable;
+
+        if (!var_start)
+        {
+            g_string_append (cmd_line, string);
+            break;
+        }
+        else
+        {
+            g_string_append_len (cmd_line, string, var_start - string);
+        }
+
+        if (!var_start[1])
+        {
+            g_warning ("%s: trailing %c in '%s'", G_STRLOC,
+                       VAR_CHAR, cmd->string);
+            g_string_append_c (cmd_line, VAR_CHAR);
+            break;
+        }
+
+        if (var_start[1] == VAR_CHAR)
+        {
+            g_string_append_c (cmd_line, VAR_CHAR);
+            string = var_start + 2;
+            continue;
+        }
+
+        var_start++;
+        for (var_end = var_start; *var_end && IS_VARIABLE (*var_end); ++var_end) ;
+
+        variable = g_strndup (var_start, var_end - var_start);
+        value = moo_command_get_shell_var (cmd, variable);
+
+        if (!value)
+        {
+            g_warning ("%s: unbound variable '%s' in '%s'",
+                       G_STRLOC, variable, cmd->string);
+        }
+        else
+        {
+            g_string_append (cmd_line, value);
+        }
+
+        g_free (variable);
+        string = var_end;
+    }
+
+    if (!cmd_line->len)
+        g_warning ("%s: empty command line in '%s'",
+                   G_STRLOC, cmd->string);
+    else
+        g_signal_emit (cmd, signals[RUN_SHELL], 0, cmd_line->str, &result);
+
+    g_string_free (cmd_line, TRUE);
+}
+
+
+static gboolean
+moo_command_run_shell (G_GNUC_UNUSED MooCommand *cmd,
+                       const char *cmd_line)
+{
+    GError *error = NULL;
+
+    if (!g_spawn_command_line_async (cmd_line, &error))
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+    }
+
+    return TRUE;
 }
 
 
@@ -468,4 +575,52 @@ moo_command_new (MooCommandType type)
     }
 
     g_return_val_if_reached (NULL);
+}
+
+
+void
+moo_command_clear_shell_vars (MooCommand *cmd)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+
+    if (cmd->shell_vars)
+        g_hash_table_destroy (cmd->shell_vars);
+
+    cmd->shell_vars = NULL;
+}
+
+
+void
+moo_command_set_shell_var (MooCommand *cmd,
+                           const char *variable,
+                           const char *value)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    g_return_if_fail (variable != NULL);
+
+    if (value)
+    {
+        if (!cmd->shell_vars)
+            cmd->shell_vars = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                     g_free, g_free);
+        g_hash_table_insert (cmd->shell_vars, g_strdup (variable), g_strdup (value));
+    }
+    else if (cmd->shell_vars)
+    {
+        g_hash_table_remove (cmd->shell_vars, variable);
+    }
+}
+
+
+const char *
+moo_command_get_shell_var (MooCommand *cmd,
+                           const char *variable)
+{
+    g_return_val_if_fail (MOO_IS_COMMAND (cmd), NULL);
+    g_return_val_if_fail (variable != NULL, NULL);
+
+    if (cmd->shell_vars)
+        return g_hash_table_lookup (cmd->shell_vars, variable);
+    else
+        return NULL;
 }

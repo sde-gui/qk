@@ -153,6 +153,18 @@ moo_edit_context_new (MooEditWindow *window)
 }
 
 
+static void
+moo_edit_set_shell_vars (MooCommand     *cmd,
+                         MooEditWindow  *window)
+{
+    MooEdit *doc = window ? moo_edit_window_get_active_doc (window) : NULL;
+
+    if (doc)
+        moo_command_set_shell_var (cmd, DOC_ATTR_FILE,
+                                   moo_edit_get_filename (doc));
+}
+
+
 void
 moo_edit_setup_command (MooCommand     *cmd,
                         MooEditWindow  *window)
@@ -166,6 +178,8 @@ moo_edit_setup_command (MooCommand     *cmd,
     moo_command_set_context (cmd, ctx);
     moo_command_set_py_dict (cmd, ctx->py_dict);
     g_object_unref (ctx);
+
+    moo_edit_set_shell_vars (cmd, window);
 }
 
 
