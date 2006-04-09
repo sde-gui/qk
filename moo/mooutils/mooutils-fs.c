@@ -32,9 +32,6 @@
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
 
 
 /* XXX fix this */
@@ -198,6 +195,64 @@ moo_rmdir (const char *path,
 #else
     return rm_r (path);
 #endif
+}
+
+
+gboolean
+moo_mkdir (const char *path,
+           GError    **error)
+{
+    struct stat buf;
+    char *utf8_path;
+
+    g_return_val_if_fail (path != NULL, FALSE);
+
+    if (stat (path, &buf) == -1 && errno != ENOENT)
+    {
+        int err_code = errno;
+        utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+
+        g_set_error (error,
+                     G_FILE_ERROR, g_file_error_from_errno (err_code),
+                     "Could not create directory '%s': %s",
+                     utf8_path ? utf8_path : "<ERROR>",
+                     g_strerror (err_code));
+
+        g_free (utf8_path);
+        return FALSE;
+    }
+
+    if (errno != 0)
+    {
+        if (m_mkdir (path) == -1)
+        {
+            int err_code = errno;
+            utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+
+            g_set_error (error,
+                         G_FILE_ERROR, g_file_error_from_errno (err_code),
+                         "Could not create directory '%s': %s",
+                         utf8_path ? utf8_path : "<ERROR>",
+                         g_strerror (err_code));
+
+            g_free (utf8_path);
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    if (S_ISDIR (buf.st_mode))
+        return TRUE;
+
+    utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+    g_set_error (error,
+                 G_FILE_ERROR, g_file_error_from_errno (G_FILE_ERROR_EXIST),
+                 "Could not create directory '%s': %s",
+                 utf8_path ? utf8_path : "<ERROR>",
+                 g_strerror (EEXIST));
+    g_free (utf8_path);
+    return FALSE;
 }
 
 

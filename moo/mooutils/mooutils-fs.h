@@ -25,6 +25,8 @@ gboolean    moo_save_file_utf8              (const char *name,
                                              GError    **error);
 gboolean    moo_rmdir                       (const char *path,
                                              gboolean    recursive);
+gboolean    moo_mkdir                       (const char *path,
+                                             GError    **error);
 
 char      **moo_filenames_from_locale       (char      **files);
 
