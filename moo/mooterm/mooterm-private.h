@@ -160,7 +160,7 @@ struct _MooTermPrivate {
         MooTermEraseBinding delete_binding;
         guint               hide_pointer_on_keypress : 1;   /* = TRUE */
         guint               meta_sends_escape : 1;          /* = TRUE */
-        guint               scroll_on_keystroke : 1;        /* = TRUE */
+        guint               scroll_on_input : 1;            /* = TRUE */
         guint               bold_pango : 1;
         gboolean            bold_offset : 1;
     } settings;

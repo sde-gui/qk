@@ -39,6 +39,13 @@ _moo_term_im_commit (G_GNUC_UNUSED GtkIMContext   *imcontext,
 }
 
 
+static void
+maybe_scroll_to_bottom (MooTerm *term)
+{
+    if (term->priv->settings.scroll_on_input)
+        moo_term_scroll_to_bottom (term);
+}
+
 /* shamelessly taken from vte.c */
 gboolean
 _moo_term_key_press (GtkWidget      *widget,
@@ -104,8 +111,11 @@ _moo_term_key_press (GtkWidget      *widget,
     /* Let the input method at this one first. */
     if (!steal)
     {
-        if (gtk_im_context_filter_keypress(term->priv->im, event))
+        if (gtk_im_context_filter_keypress (term->priv->im, event))
+        {
+            maybe_scroll_to_bottom (term);
             return TRUE;
+        }
     }
 
     if (is_modifier)
@@ -270,6 +280,9 @@ _moo_term_key_press (GtkWidget      *widget,
         }
     }
 
+    if (!scrolled)
+        maybe_scroll_to_bottom (term);
+
     /* If we got normal characters, send them to the child. */
     if (string)
     {
@@ -285,10 +298,6 @@ _moo_term_key_press (GtkWidget      *widget,
         {
             moo_term_feed_child (term, string, string_length);
         }
-
-        /* Keep the cursor on-screen. */
-        if (!scrolled && term->priv->settings.scroll_on_keystroke)
-            moo_term_scroll_to_bottom (term);
 
         g_free(string);
     }

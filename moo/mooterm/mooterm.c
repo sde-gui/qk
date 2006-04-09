@@ -282,7 +282,7 @@ moo_term_init (MooTerm *term)
 
     term->priv->settings.hide_pointer_on_keypress = TRUE;
     term->priv->settings.meta_sends_escape = TRUE;
-    term->priv->settings.scroll_on_keystroke = TRUE;
+    term->priv->settings.scroll_on_input = TRUE;
     term->priv->settings.backspace_binding = MOO_TERM_ERASE_AUTO;
     term->priv->settings.delete_binding = MOO_TERM_ERASE_AUTO;
     term->priv->settings.bold_pango = TRUE;
