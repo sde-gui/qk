@@ -16,6 +16,12 @@
 #include <string.h>
 
 
+#ifdef __WIN32__
+#define LINE_TERM "\r\n"
+#else
+#define LINE_TERM "\n"
+#endif
+
 struct _MooConfig {
     GPtrArray *items;
 };
@@ -604,4 +610,63 @@ moo_config_item_set_bool (MooConfigItem  *item,
                           gboolean        value)
 {
     moo_config_item_set_value (item, key, moo_convert_bool_to_string (value));
+}
+
+
+static void
+format_key (const char *key,
+            const char *value,
+            GString    *string)
+{
+    g_string_append_printf (string, "%s: %s" LINE_TERM, key, value);
+}
+
+static void
+moo_config_item_format (MooConfigItem *item,
+                        GString       *string)
+{
+    char **lines;
+    guint n_lines, i;
+    char *indent;
+
+    g_return_if_fail (g_hash_table_size (item->dict) != 0);
+    g_hash_table_foreach (item->dict, (GHFunc) format_key, string);
+
+    if (!item->content)
+        return;
+
+    lines = splitlines (item->content, strlen (item->content), &n_lines);
+    indent = g_strnfill (2, ' ');
+
+    for (i = 0; i < n_lines; ++i)
+    {
+        g_string_append (string, indent);
+        g_string_append (string, lines[i]);
+        g_string_append (string, LINE_TERM);
+    }
+
+    g_free (indent);
+    g_strfreev (lines);
+}
+
+
+char *
+moo_config_format (MooConfig *config)
+{
+    GString *string;
+    guint i;
+
+    g_return_val_if_fail (config != NULL, NULL);
+
+    string = g_string_new (NULL);
+
+    for (i = 0; i < config->items->len; ++i)
+    {
+        if (i > 0)
+            g_string_append (string, LINE_TERM);
+
+        moo_config_item_format (config->items->pdata[i], string);
+    }
+
+    return g_string_free (string, FALSE);
 }
