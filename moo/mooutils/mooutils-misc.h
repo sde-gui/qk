@@ -57,19 +57,27 @@ typedef enum {
     MOO_DATA_LIB
 } MooDataDirType;
 
-GType    moo_data_dir_type_get_type         (void) G_GNUC_CONST;
+GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 
 /* application directory on win32 */
-char    *moo_get_app_dir                    (void);
+char       *moo_get_app_dir                 (void);
+
 /* ~/.appname */
-char    *moo_get_user_data_dir              (void);
+char       *moo_get_user_data_dir           (void);
+char       *moo_get_user_data_file          (const char     *basename);
+gboolean    moo_save_user_data_file         (const char     *basename,
+                                             const char     *content,
+                                             gssize          len,
+                                             GError        **error);
+
 /* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
    $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
-char   **moo_get_data_dirs                  (MooDataDirType  type,
+char      **moo_get_data_dirs               (MooDataDirType  type,
                                              guint          *n_dirs);
-char   **moo_get_data_subdirs               (const char     *subdir,
+char      **moo_get_data_subdirs            (const char     *subdir,
                                              MooDataDirType  type,
                                              guint          *n_dirs);
+#define moo_get_data_files moo_get_data_subdirs
 
 
 void        moo_selection_data_set_pointer  (GtkSelectionData *data,

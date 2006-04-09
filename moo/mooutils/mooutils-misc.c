@@ -16,6 +16,7 @@
 #endif
 
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
@@ -1310,6 +1311,54 @@ moo_get_data_subdirs (const char    *subdir,
 
     g_strfreev (data_dirs);
     return dirs;
+}
+
+
+char *
+moo_get_user_data_file (const char *basename)
+{
+    char *dir, *file;
+
+    g_return_val_if_fail (basename && basename[0], NULL);
+
+    dir = moo_get_user_data_dir ();
+    g_return_val_if_fail (dir != NULL, NULL);
+
+    file = g_build_filename (dir, basename, NULL);
+
+    g_free (dir);
+    return file;
+}
+
+
+gboolean
+moo_save_user_data_file (const char     *basename,
+                         const char     *content,
+                         gssize          len,
+                         GError        **error)
+{
+    char *dir, *file;
+    gboolean result = FALSE;
+
+    g_return_val_if_fail (basename != NULL, FALSE);
+    g_return_val_if_fail (content != NULL, FALSE);
+
+    dir = moo_get_user_data_dir ();
+    file = moo_get_user_data_file (basename);
+    g_return_val_if_fail (dir && file, FALSE);
+
+    if (!moo_mkdir (dir, error))
+        goto out;
+
+    if (!moo_save_file_utf8 (file, content, len, error))
+        goto out;
+
+    result = TRUE;
+
+out:
+    g_free (dir);
+    g_free (file);
+    return FALSE;
 }
 
 
