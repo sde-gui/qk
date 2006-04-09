@@ -792,12 +792,17 @@ GObject        *moo_edit_window_constructor (GType                  type,
 {
     GtkWidget *notebook;
     MooEditWindow *window;
+    GtkWindowGroup *group;
 
     GObject *object =
             G_OBJECT_CLASS(moo_edit_window_parent_class)->constructor (type, n_props, props);
 
     window = MOO_EDIT_WINDOW (object);
     g_return_val_if_fail (window->priv->editor != NULL, object);
+
+    group = gtk_window_group_new ();
+    gtk_window_group_add_window (group, GTK_WINDOW (window));
+    g_object_unref (group);
 
     create_paned (window);
 
