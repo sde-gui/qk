@@ -351,6 +351,8 @@ moo_term_init (MooTerm *term)
                               "feed-child",
                               G_CALLBACK (moo_term_feed_child),
                               term);
+
+    _moo_term_init_settings ();
 }
 
 
@@ -532,8 +534,6 @@ moo_term_realize (GtkWidget *widget)
 
     _moo_term_update_palette (term);
     _moo_term_size_changed (term);
-
-    _moo_term_apply_settings (term);
 
     term->priv->im = gtk_im_multicontext_new ();
     gtk_im_context_set_client_window (term->priv->im, widget->window);

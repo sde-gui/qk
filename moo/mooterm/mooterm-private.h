@@ -181,6 +181,7 @@ struct _MooTermPrivate {
         buf_scrollback ((term)->priv->buffer))
 
 void        _moo_term_apply_settings        (MooTerm        *term);
+void        _moo_term_init_settings         (void);
 void        _moo_term_set_window_title      (MooTerm        *term,
                                              const char     *title);
 void        _moo_term_set_icon_name         (MooTerm        *term,

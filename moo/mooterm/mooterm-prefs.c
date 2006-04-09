@@ -29,8 +29,6 @@
 #include <string.h>
 
 
-#define MOO_TERM_PREFS_PREFIX "Terminal"
-
 #define NEW_KEY_BOOL(s__,v__)   moo_prefs_new_key_bool (MOO_TERM_PREFS_PREFIX "/" s__, v__)
 #define NEW_KEY_INT(s__,v__)    moo_prefs_new_key_int (MOO_TERM_PREFS_PREFIX "/" s__, v__)
 #define NEW_KEY_STRING(s__,v__) moo_prefs_new_key_string (MOO_TERM_PREFS_PREFIX "/" s__, v__)
@@ -49,7 +47,8 @@
 #endif /* ! __WIN32__ */
 
 
-static void set_defaults (void)
+void
+_moo_term_init_settings (void)
 {
     GtkSettings *settings;
     GtkStyle *style;
@@ -78,9 +77,12 @@ static void set_defaults (void)
 void
 _moo_term_apply_settings (MooTerm *term)
 {
-    set_defaults ();
-
     moo_term_set_font_from_string (term, GET_STRING (MOO_TERM_PREFS_FONT));
+
+    gtk_widget_modify_text (GTK_WIDGET (term), GTK_STATE_NORMAL,
+                            GET_COLOR (MOO_TERM_PREFS_FOREGROUND));
+    gtk_widget_modify_base (GTK_WIDGET (term), GTK_STATE_NORMAL,
+                            GET_COLOR (MOO_TERM_PREFS_BACKGROUND));
 
     if (GET_BOOL (MOO_TERM_PREFS_CURSOR_BLINKS))
     {
@@ -116,7 +118,7 @@ GtkWidget  *moo_term_prefs_page_new   (void)
                                                "page",
                                                MOO_TERM_PREFS_PREFIX);
 
-    set_defaults ();
+    _moo_term_init_settings ();
 
     return page;
 }

@@ -35,9 +35,10 @@ typedef struct _MooTermWindowClass   MooTermWindowClass;
 struct _MooTermWindow
 {
     MooWindow       parent;
-
     GType           term_type;
     MooTerm        *terminal;
+    guint           prefs_notify_id;
+    guint           apply_prefs_idle;
 };
 
 struct _MooTermWindowClass

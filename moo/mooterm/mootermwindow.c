@@ -11,8 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOTERM_COMPILATION
 #include "mooterm/mootermwindow.h"
 #include "mooterm/mooterm-prefs.h"
+#include "mooterm/mooterm-private.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooutils-fs.h"
@@ -20,14 +22,19 @@
 #include "mooutils/mooprefs.h"
 
 
-static void         moo_term_window_class_init          (MooTermWindowClass *klass);
-static void         moo_term_window_init                (MooTermWindow      *window);
-static GObject     *moo_term_window_constructor         (GType               type,
-                                                         guint               n_props,
-                                                         GObjectConstructParam *props);
+static void         moo_term_window_class_init  (MooTermWindowClass *klass);
+static void         moo_term_window_init        (MooTermWindow      *window);
+static GObject     *moo_term_window_constructor (GType               type,
+                                                 guint               n_props,
+                                                 GObjectConstructParam *props);
+static void         moo_term_window_destroy     (GtkObject          *object);
 
-static void         copy_clipboard                      (MooTerm            *term);
-static void         paste_clipboard                     (MooTerm            *term);
+static void         copy_clipboard              (MooTerm        *term);
+static void         paste_clipboard             (MooTerm        *term);
+
+static void         prefs_notify                (const char     *key,
+                                                 const GValue   *newval,
+                                                 MooTermWindow  *window);
 
 
 /* MOO_TYPE_TERM_WINDOW */
@@ -40,6 +47,7 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
 
     gobject_class->constructor = moo_term_window_constructor;
+    GTK_OBJECT_CLASS(klass)->destroy = moo_term_window_destroy;
 
     moo_window_class_set_id (window_class, "Terminal", "Terminal");
 
@@ -137,6 +145,14 @@ static GObject     *moo_term_window_constructor         (GType                  
     window->terminal = MOO_TERM (terminal);
     gtk_widget_show (MOO_WINDOW(window)->vbox);
 
+    _moo_term_apply_settings (window->terminal);
+
+    window->prefs_notify_id =
+            moo_prefs_notify_connect (MOO_TERM_PREFS_PREFIX,
+                                      MOO_PREFS_MATCH_PREFIX,
+                                      (MooPrefsNotify) prefs_notify,
+                                      window, NULL);
+
 #if 0
 TODO TODO
 //     GtkWidget *popup =
@@ -151,20 +167,54 @@ TODO TODO
 }
 
 
-void        moo_term_window_apply_settings  (MooTermWindow     *window)
+static void
+moo_term_window_destroy (GtkObject *object)
+{
+    MooTermWindow *window = MOO_TERM_WINDOW (object);
+
+    if (window->prefs_notify_id)
+        moo_prefs_notify_disconnect (window->prefs_notify_id);
+    if (window->apply_prefs_idle)
+        g_source_remove (window->apply_prefs_idle);
+
+    window->prefs_notify_id = 0;
+    window->apply_prefs_idle = 0;
+
+    GTK_OBJECT_CLASS (moo_term_window_parent_class)->destroy (object);
+}
+
+
+static gboolean
+apply_prefs (MooTermWindow *window)
+{
+    window->apply_prefs_idle = 0;
+    _moo_term_apply_settings (window->terminal);
+    return FALSE;
+}
+
+
+static void
+prefs_notify (G_GNUC_UNUSED const char *key,
+              G_GNUC_UNUSED const GValue *newval,
+              MooTermWindow  *window)
 {
     g_return_if_fail (MOO_IS_TERM_WINDOW (window));
-    g_signal_emit_by_name (window->terminal, "apply_settings", NULL);
+
+    if (!window->apply_prefs_idle)
+        window->apply_prefs_idle =
+                g_idle_add ((GSourceFunc) apply_prefs, window);
 }
 
 
-GtkWidget *moo_term_window_new (void)
+GtkWidget *
+moo_term_window_new (void)
 {
-    return GTK_WIDGET (g_object_new (MOO_TYPE_TERM_WINDOW, NULL));
+    return g_object_new (MOO_TYPE_TERM_WINDOW, NULL);
 }
 
 
-MooTerm         *moo_term_window_get_term       (MooTermWindow  *window)
+MooTerm *
+moo_term_window_get_term (MooTermWindow *window)
 {
     g_return_val_if_fail (MOO_IS_TERM_WINDOW (window), NULL);
     return window->terminal;
