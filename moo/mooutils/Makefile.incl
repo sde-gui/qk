@@ -16,6 +16,7 @@ mooutils_include_headers =                     \
     $(mooutils)/mooclosure.h                   \
     $(mooutils)/moocmd.h                       \
     $(mooutils)/moocombo.h                     \
+    $(mooutils)/moocommand.h                   \
     $(mooutils)/mooconfig.h                    \
     $(mooutils)/mooentry.h                     \
     $(mooutils)/moofiltermgr.h                 \
@@ -58,6 +59,7 @@ mooutils_sources =                             \
     $(mooutils)/moocombo.c                     \
     $(mooutils)/moocompat.c                    \
     $(mooutils)/moocompat.h                    \
+    $(mooutils)/moocommand.c                   \
     $(mooutils)/mooconfig.c                    \
     $(mooutils)/moodialogs.c                   \
     $(mooutils)/moodialogs.h                   \

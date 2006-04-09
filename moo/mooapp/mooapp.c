@@ -119,8 +119,9 @@ static void     moo_app_exec_cmd_real   (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
-static MSContext *moo_app_get_context_real (MooApp          *app,
-                                         MooWindow          *window);
+static void     moo_app_cmd_setup_real  (MooApp             *app,
+                                         MooCommand         *cmd,
+                                         GtkWindow          *window);
 static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
 static void     moo_app_set_name        (MooApp             *app,
@@ -186,7 +187,7 @@ enum {
     TRY_QUIT,
     PREFS_DIALOG,
     EXEC_CMD,
-    GET_CONTEXT,
+    CMD_SETUP,
     LAST_SIGNAL
 };
 
@@ -214,7 +215,7 @@ moo_app_class_init (MooAppClass *klass)
     klass->try_quit = moo_app_try_quit_real;
     klass->prefs_dialog = moo_app_create_prefs_dialog;
     klass->exec_cmd = moo_app_exec_cmd_real;
-    klass->get_context = moo_app_get_context_real;
+    klass->cmd_setup = moo_app_cmd_setup_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_ARGV,
@@ -367,15 +368,16 @@ moo_app_class_init (MooAppClass *klass)
                           G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           G_TYPE_UINT);
 
-    signals[GET_CONTEXT] =
-            g_signal_new ("get-context",
+    signals[CMD_SETUP] =
+            g_signal_new ("cmd-setup",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, get_context),
+                          G_STRUCT_OFFSET (MooAppClass, cmd_setup),
                           NULL, NULL,
-                          _moo_marshal_OBJECT__OBJECT,
-                          MS_TYPE_CONTEXT, 1,
-                          MOO_TYPE_WINDOW);
+                          _moo_marshal_VOID__OBJECT_OBJECT,
+                          G_TYPE_NONE, 2,
+                          MOO_TYPE_COMMAND,
+                          GTK_TYPE_WINDOW);
 }
 
 
@@ -754,18 +756,13 @@ moo_app_get_info (MooApp     *app)
 }
 
 
-static MSContext *
-moo_app_get_context (MooWindow *window)
+static void
+moo_app_cmd_setup (MooCommand   *cmd,
+                   MooWindow    *window)
 {
-    MSContext *ctx;
-    MooApp *app;
-
-    app = moo_app_get_instance ();
-    g_return_val_if_fail (app != NULL, NULL);
-
-    g_signal_emit (app, signals[GET_CONTEXT], 0, window, &ctx);
-
-    return ctx;
+    MooApp *app = moo_app_get_instance ();
+    g_return_if_fail (app != NULL);
+    g_signal_emit (app, signals[CMD_SETUP], 0, cmd, window);
 }
 
 static void
@@ -782,7 +779,7 @@ moo_app_load_user_actions (void)
         char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
 
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            moo_parse_user_actions (file, moo_app_get_context);
+            moo_parse_user_actions (file, moo_app_cmd_setup);
 
         g_free (file);
     }
@@ -1593,14 +1590,13 @@ moo_app_tempnam (MooApp     *app)
 }
 
 
-static MSContext *
-moo_app_get_context_real (G_GNUC_UNUSED MooApp *app,
-                          MooWindow *window)
+static void
+moo_app_cmd_setup_real (MooApp     *app,
+                        MooCommand *cmd,
+                        GtkWindow  *window)
 {
     if (MOO_IS_EDIT_WINDOW (window))
-        return moo_edit_context_new (MOO_EDIT_WINDOW (window));
-    else
-        return ms_context_new (window);
+        return moo_edit_setup_command (cmd, MOO_EDIT_WINDOW (window));
 }
 
 

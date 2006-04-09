@@ -408,6 +408,7 @@ ms_context_get_error_msg (MSContext *ctx)
 
     g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
     g_return_val_if_fail (ctx->error < MS_ERROR_LAST, NULL);
+    g_return_val_if_fail (ctx->error != MS_ERROR_NONE, "ERROR");
 
     if (ctx->error_msg)
         return ctx->error_msg;

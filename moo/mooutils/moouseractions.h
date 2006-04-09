@@ -14,17 +14,17 @@
 #ifndef __MOO_USER_ACTIONS_H__
 #define __MOO_USER_ACTIONS_H__
 
-#include <mooscript/mooscript-context.h>
+#include <mooutils/moocommand.h>
 #include <mooutils/moowindow.h>
 
 G_BEGIN_DECLS
 
 
-typedef MSContext* (*MooUserActionCtxFunc) (MooWindow *window);
+typedef void (*MooUserActionSetup)      (MooCommand *command,
+                                         MooWindow  *window);
 
-
-void moo_parse_user_actions (const char          *file,
-                             MooUserActionCtxFunc ctx_func);
+void moo_parse_user_actions (const char         *file,
+                             MooUserActionSetup  setup);
 
 
 G_END_DECLS

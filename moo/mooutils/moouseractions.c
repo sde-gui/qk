@@ -17,21 +17,21 @@
 #include "mooutils/mooconfig.h"
 #include <string.h>
 
-typedef MooUserActionCtxFunc CtxFunc;
+typedef MooUserActionSetup SetupFunc;
 
 typedef struct {
     char *name;
     char *label;
     char *accel;
-    MSNode *script;
-    CtxFunc ctx_func;
+    MooCommand *cmd;
+    SetupFunc setup;
 } Action;
 
 typedef struct {
     MooAction base;
     MooWindow *window;
-    MSNode *script;
-    CtxFunc ctx_func;
+    MooCommand *cmd;
+    SetupFunc setup;
 } MooUserAction;
 
 typedef struct {
@@ -39,7 +39,7 @@ typedef struct {
 } MooUserActionClass;
 
 
-GType       _moo_user_action_get_type   (void) G_GNUC_CONST;
+GType   _moo_user_action_get_type   (void) G_GNUC_CONST;
 
 
 G_DEFINE_TYPE (MooUserAction, _moo_user_action, MOO_TYPE_ACTION)
@@ -53,7 +53,8 @@ action_free (Action *action)
         g_free (action->name);
         g_free (action->label);
         g_free (action->accel);
-        ms_node_unref (action->script);
+        if (action->cmd)
+            g_object_unref (action->cmd);
         g_free (action);
     }
 }
@@ -69,40 +70,41 @@ parse_accel (const char *string)
 }
 
 
-static MSNode *
-parse_code (const char *code)
-{
-    g_return_val_if_fail (code != NULL, NULL);
-    return ms_script_parse (code);
-}
-
 static Action *
 action_new (const char *name,
             const char *label,
             const char *accel,
+            MooCommandType cmd_type,
             const char *code,
-            CtxFunc     ctx_func)
+            MooUserActionSetup setup)
 {
     Action *action;
-    MSNode *script;
+    MooCommand *cmd = NULL;
 
     g_return_val_if_fail (name != NULL, NULL);
-    g_return_val_if_fail (code != NULL, NULL);
 
-    script = parse_code (code);
+    cmd = moo_command_new (cmd_type);
+    g_return_val_if_fail (cmd != NULL, NULL);
 
-    if (!script)
+    switch (cmd_type)
     {
-        g_warning ("could not parse script\n%s\n", code);
-        return NULL;
+        case MOO_COMMAND_SCRIPT:
+            moo_command_set_script (cmd, code);
+            break;
+        case MOO_COMMAND_PYTHON:
+            moo_command_set_python (cmd, code);
+            break;
+        case MOO_COMMAND_SHELL:
+            moo_command_set_shell (cmd, code);
+            break;
     }
 
     action = g_new0 (Action, 1);
     action->name = g_strdup (name);
     action->label = label ? g_strdup (label) : g_strdup (name);
     action->accel = parse_accel (accel);
-    action->script = script;
-    action->ctx_func = ctx_func;
+    action->cmd = cmd;
+    action->setup = setup;
 
     return action;
 }
@@ -123,23 +125,22 @@ create_action (MooWindow *window,
                            NULL);
 
     action->window = window;
-    action->script = ms_node_ref (data->script);
-    action->ctx_func = data->ctx_func;
+    action->cmd = g_object_ref (data->cmd);
+    action->setup = data->setup;
 
     return MOO_ACTION (action);
 }
 
 
 void
-moo_parse_user_actions (const char          *filename,
-                        MooUserActionCtxFunc ctx_func)
+moo_parse_user_actions (const char             *filename,
+                        MooUserActionSetup      setup)
 {
     guint n_items, i;
     MooConfig *config;
     MooWindowClass *klass;
 
     g_return_if_fail (filename != NULL);
-    g_return_if_fail (ctx_func != NULL);
 
     config = moo_config_parse_file (filename);
 
@@ -152,12 +153,14 @@ moo_parse_user_actions (const char          *filename,
     for (i = 0; i < n_items; ++i)
     {
         Action *action;
-        const char *name, *label, *accel, *code;
+        const char *name, *label, *accel, *code, *type;
+        MooCommandType cmd_type = 0;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
         name = moo_config_item_get_value (item, "action");
         label = moo_config_item_get_value (item, "label");
         accel = moo_config_item_get_value (item, "accel");
+        type = moo_config_item_get_value (item, "command");
         code = moo_config_item_get_content (item);
 
         if (!name)
@@ -169,13 +172,26 @@ moo_parse_user_actions (const char          *filename,
         if (!label)
             label = name;
 
-        if (!code)
+        if (code)
         {
-            g_warning ("%s: code missing", G_STRLOC);
-            continue;
+            if (!type || !g_ascii_strcasecmp (type, "script"))
+                cmd_type = MOO_COMMAND_SCRIPT;
+            else if (!g_ascii_strcasecmp (type, "shell") ||
+                      !g_ascii_strcasecmp (type, "bat") ||
+                      !g_ascii_strcasecmp (type, "exe"))
+                cmd_type = MOO_COMMAND_SHELL;
+            else if (!g_ascii_strcasecmp (type, "python"))
+                cmd_type = MOO_COMMAND_PYTHON;
+
+            if (!cmd_type)
+            {
+                g_warning ("%s: unknown command type '%s'", G_STRLOC, type);
+                continue;
+            }
         }
 
-        action = action_new (name, label, accel, code, ctx_func);
+        action = action_new (name, label, accel,
+                             cmd_type, code, setup);
 
         if (action)
             moo_window_class_new_action_custom (klass, action->name,
@@ -197,7 +213,7 @@ static void
 moo_user_action_finalize (GObject *object)
 {
     MooUserAction *action = (MooUserAction*) object;
-    ms_node_unref (action->script);
+    g_object_unref (action->cmd);
     G_OBJECT_CLASS(_moo_user_action_parent_class)->finalize (object);
 }
 
@@ -205,19 +221,21 @@ moo_user_action_finalize (GObject *object)
 static void
 moo_user_action_activate (MooAction *_action)
 {
-    MSContext *ctx;
-    MSValue *value;
     MooUserAction *action = (MooUserAction*) _action;
 
-    ctx = action->ctx_func (action->window);
-    value = ms_top_node_eval (action->script, ctx);
+    g_return_if_fail (action->cmd != NULL);
 
-    if (!value)
-        g_warning ("%s: %s", G_STRLOC, ms_context_get_error_msg (ctx));
-    else
-        ms_value_unref (value);
+    moo_command_set_window (action->cmd, action->window);
 
-    g_object_unref (ctx);
+    if (action->setup)
+        action->setup (action->cmd, action->window);
+
+    moo_command_run (action->cmd);
+
+    moo_command_set_context (action->cmd, NULL);
+    moo_command_set_py_dict (action->cmd, NULL);
+    moo_command_set_shell_env (action->cmd, NULL);
+    moo_command_set_window (action->cmd, NULL);
 }
 
 

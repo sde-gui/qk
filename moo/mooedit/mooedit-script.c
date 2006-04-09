@@ -153,6 +153,22 @@ moo_edit_context_new (MooEditWindow *window)
 }
 
 
+void
+moo_edit_setup_command (MooCommand     *cmd,
+                        MooEditWindow  *window)
+{
+    MSContext *ctx;
+
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
+
+    ctx = moo_edit_context_new (window);
+    moo_command_set_context (cmd, ctx);
+    moo_command_set_py_dict (cmd, ctx->py_dict);
+    g_object_unref (ctx);
+}
+
+
 /******************************************************************/
 /* API
  */

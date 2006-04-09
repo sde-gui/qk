@@ -15,7 +15,7 @@
 #define __MOO_APP_H__
 
 #include <mooedit/mooeditor.h>
-#include <mooscript/mooscript-context.h>
+#include <mooutils/moocommand.h>
 
 G_BEGIN_DECLS
 
@@ -68,8 +68,9 @@ struct _MooAppClass
                                  char        cmd,
                                  const char *data,
                                  guint       len);
-    MSContext*  (*get_context)  (MooApp     *app,
-                                 MooWindow  *window);
+    void        (*cmd_setup)    (MooApp     *app,
+                                 MooCommand *cmd,
+                                 GtkWindow  *window);
 };
 
 

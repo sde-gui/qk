@@ -14,6 +14,7 @@
 #ifndef __MOO_EDIT_SCRIPT_H__
 #define __MOO_EDIT_SCRIPT_H__
 
+#include <mooutils/moocommand.h>
 #include <mooscript/mooscript-context.h>
 #include <mooedit/mooeditor.h>
 
@@ -44,9 +45,11 @@ struct _MooEditContextClass {
 GType        moo_edit_context_get_type  (void) G_GNUC_CONST;
 
 MSContext   *moo_edit_context_new       (MooEditWindow  *window);
-
 void         moo_edit_context_set_doc   (MooEditContext *ctx,
                                          MooEdit        *doc);
+
+void         moo_edit_setup_command     (MooCommand     *cmd,
+                                         MooEditWindow  *window);
 
 
 G_END_DECLS
