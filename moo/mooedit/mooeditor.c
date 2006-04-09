@@ -862,7 +862,7 @@ moo_editor_add_doc (MooEditor      *editor,
          editor->priv->default_lang)
     {
         moo_edit_config_set (doc->config,
-                             "lang", MOO_EDIT_CONFIG_SOURCE_AUTO,
+                             "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME,
                              editor->priv->default_lang, NULL);
     }
 }
@@ -1864,9 +1864,15 @@ apply_prefs (MooEditor *editor)
     GSList *docs;
     gboolean use_tabs, autosave, backups, strip;
     int indent_width, autosave_interval;
-    const char *color_scheme;
+    const char *color_scheme, *default_lang;
 
     editor->priv->prefs_idle = 0;
+
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
+    default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
+
+    if (default_lang)
+        moo_editor_set_default_lang (editor, default_lang);
 
     use_tabs = !moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SPACES_NO_TABS));
     indent_width = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_INDENT_WIDTH));

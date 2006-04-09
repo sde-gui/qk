@@ -28,6 +28,7 @@ GtkWidget  *moo_edit_colors_prefs_page_new  (MooEditor      *editor);
 /* defined in mooeditprefs.c */
 const char *moo_edit_setting                (const char     *setting_name);
 
+#define MOO_EDIT_PREFS_DEFAULT_LANG             "default_lang"
 
 #define MOO_EDIT_PREFS_SPACES_NO_TABS           "spaces_instead_of_tabs"
 #define MOO_EDIT_PREFS_INDENT_WIDTH             "indent_width"
