@@ -23,17 +23,15 @@
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/mooedit-script.h"
 #include "mooutils/eggregex.h"
+#include "mooutils/mooconfig.h"
+#include "mooutils/mooutils-misc.h"
 #include "as-plugin-script.h"
 #include "as-plugin.h"
 #include "mooscript/mooscript-parser.h"
 #include <string.h>
 
-#define AS_PLUGIN_ID "ActiveStrings"
 #define AS_DATA "moo-active-strings"
 #define AS_WILDCARD '?'
-
-#define PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID
-#define FILE_PREFS_KEY PREFS_ROOT "/file"
 
 #define AS_DEBUG 0
 
@@ -1014,35 +1012,54 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
                  ASLoadFunc  func,
                  gpointer    data)
 {
-    MooMarkupDoc *doc;
-    MooMarkupNode *root, *node;
+    MooConfig *config;
+    char *file;
+    guint n_items, i;
 
-    doc = moo_prefs_get_markup ();
-    g_return_if_fail (doc != NULL);
+    moo_prefs_new_key_string (AS_FILE_PREFS_KEY, NULL);
+    file = g_strdup (moo_prefs_get_filename (AS_FILE_PREFS_KEY));
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), AS_XML_ROOT);
+    if (!file)
+    {
+        char **files;
+        guint n_files;
+        int i;
 
-    if (!root)
+        files = moo_get_data_files (AS_FILE, MOO_DATA_SHARE, &n_files);
+
+        for (i = n_files - 1; !file && i >= 0; --i)
+            if (g_file_test (files[i], G_FILE_TEST_EXISTS))
+                file = g_strdup (files[i]);
+
+        g_strfreev (files);
+    }
+    else if (!g_file_test (file, G_FILE_TEST_EXISTS))
+    {
+        g_free (file);
+        file = NULL;
+    }
+
+    if (!file)
         return;
 
-    for (node = root->children; node != NULL; node = node->next)
+    config = moo_config_parse_file (file);
+    g_free (file);
+
+    if (!config)
+        return;
+
+    n_items = moo_config_n_items (config);
+
+    for (i = 0; i < n_items; ++i)
     {
         const char *pattern, *lang, *script;
         gboolean enabled;
+        MooConfigItem *item = moo_config_nth_item (config, i);
 
-        if (!MOO_MARKUP_IS_ELEMENT (node))
-            continue;
-
-        if (strcmp (node->name, AS_XML_ITEM))
-        {
-            g_warning ("%s: invalid element '%s'", G_STRLOC, node->name);
-            continue;
-        }
-
-        pattern = moo_markup_get_prop (node, AS_XML_PROP_PATTERN);
-        lang = moo_markup_get_prop (node, AS_XML_PROP_LANG);
-        enabled = moo_markup_get_bool_prop (node, AS_XML_PROP_ENABLED, TRUE);
-        script = moo_markup_get_content (node);
+        pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
+        lang = moo_config_item_get_value (item, AS_KEY_LANG);
+        enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
+        script = moo_config_item_get_content (item);
 
         if (!pattern)
         {
@@ -1055,6 +1072,8 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
 
         func (pattern, script, lang, enabled, data);
     }
+
+    moo_config_free (config);
 }
 
 

@@ -11,9 +11,9 @@ astrings_extra_dist =                   \
 astrings_sources =                      \
     $(astrings)/as-plugin.c             \
     $(astrings)/as-plugin.h             \
+    $(astrings)/as-plugin-prefs.c       \
     $(astrings)/as-plugin-script.c      \
     $(astrings)/as-plugin-script.h      \
-    $(astrings)/as-plugin-prefs.c       \
     $(astrings)/as-plugin-glade.h
 
 astrings_built_sources =                \

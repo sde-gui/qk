@@ -20,11 +20,15 @@
 G_BEGIN_DECLS
 
 
-#define AS_XML_ROOT         "ActiveStrings"
-#define AS_XML_ITEM         "item"
-#define AS_XML_PROP_PATTERN "pattern"
-#define AS_XML_PROP_LANG    "lang"
-#define AS_XML_PROP_ENABLED "enabled"
+#define AS_FILE         "as.cfg"
+
+#define AS_KEY_PATTERN  "pattern"
+#define AS_KEY_LANG     "lang"
+#define AS_KEY_ENABLED  "enabled"
+
+#define AS_PLUGIN_ID "ActiveStrings"
+#define AS_PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID
+#define AS_FILE_PREFS_KEY AS_PREFS_ROOT "/file"
 
 
 typedef void (*ASLoadFunc) (const char   *pattern,
