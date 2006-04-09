@@ -763,12 +763,6 @@
   (return-type "GtkWidget*")
 )
 
-(define-method apply_settings
-  (of-object "MooTermWindow")
-  (c-name "moo_term_window_apply_settings")
-  (return-type "none")
-)
-
 (define-method get_term
   (of-object "MooTermWindow")
   (c-name "moo_term_window_get_term")
