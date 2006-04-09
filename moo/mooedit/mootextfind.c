@@ -539,6 +539,7 @@ moo_text_view_run_find (GtkTextView *view)
     regex = moo_find_get_regex (MOO_FIND (find));
 
     gtk_widget_destroy (find);
+
     buffer = gtk_text_view_get_buffer (view);
 
     get_search_bounds (buffer, flags, &start, &end);

@@ -126,6 +126,18 @@ position_window (GtkWindow *dialog)
 }
 
 
+#ifdef __WIN32__
+static void
+on_hide (GtkWindow *window)
+{
+    GtkWindow *parent = gtk_window_get_transient_for (window);
+
+    if (parent && GTK_WIDGET_DRAWABLE (parent))
+        gtk_window_present (parent);
+}
+#endif
+
+
 void
 moo_position_window (GtkWidget  *window,
                      GtkWidget  *parent,
@@ -145,7 +157,13 @@ moo_position_window (GtkWidget  *window,
         toplevel = NULL;
 
     if (toplevel)
+    {
         gtk_window_set_transient_for (GTK_WINDOW (window), GTK_WINDOW (toplevel));
+#ifdef __WIN32__
+        g_signal_connect (window, "unmap", on_hide, NULL);
+#endif
+    }
+
     if (toplevel && GTK_WINDOW(toplevel)->group)
         gtk_window_group_add_window (GTK_WINDOW(toplevel)->group, GTK_WINDOW (window));
 

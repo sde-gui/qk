@@ -355,15 +355,6 @@ moo_prefs_dialog_response (GtkDialog      *dialog,
                 gtk_widget_hide (GTK_WIDGET (dialog));
             else
                 gtk_widget_destroy (GTK_WIDGET (dialog));
-
-#ifdef __WIN32__
-            {
-                GtkWindow *parent = gtk_window_get_transient_for (GTK_WINDOW (dialog));
-
-                if (parent)
-                    gtk_window_present (parent);
-            }
-#endif
     }
 }
 
