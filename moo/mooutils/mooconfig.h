@@ -44,6 +44,13 @@ const char     *moo_config_item_get_value   (MooConfigItem  *item,
 void            moo_config_item_set_value   (MooConfigItem  *item,
                                              const char     *key,
                                              const char     *value);
+gboolean        moo_config_item_get_bool    (MooConfigItem  *item,
+                                             const char     *key,
+                                             gboolean        default_val);
+void            moo_config_item_set_bool    (MooConfigItem  *item,
+                                             const char     *key,
+                                             gboolean        value);
+
 const char     *moo_config_item_get_content (MooConfigItem  *item);
 void            moo_config_item_set_content (MooConfigItem  *item,
                                              const char     *content);

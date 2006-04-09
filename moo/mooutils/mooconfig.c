@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/mooconfig.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 
@@ -584,4 +585,23 @@ moo_config_parse_file (const char *path)
 
     g_mapped_file_free (file);
     return config;
+}
+
+
+gboolean
+moo_config_item_get_bool (MooConfigItem  *item,
+                          const char     *key,
+                          gboolean        default_val)
+{
+    return moo_convert_string_to_bool (moo_config_item_get_value (item, key),
+                                       default_val);
+}
+
+
+void
+moo_config_item_set_bool (MooConfigItem  *item,
+                          const char     *key,
+                          gboolean        value)
+{
+    moo_config_item_set_value (item, key, moo_convert_bool_to_string (value));
 }
