@@ -1059,6 +1059,7 @@ moo_combo_set_text_column (MooCombo       *combo,
     else
     {
         combo->priv->text_cell = gtk_cell_renderer_text_new ();
+        g_object_set (combo->priv->text_cell, "single-paragraph-mode", TRUE, NULL);
         gtk_tree_view_column_pack_start (combo->priv->column, combo->priv->text_cell, TRUE);
     }
 

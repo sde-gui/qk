@@ -148,6 +148,7 @@ moo_history_entry_init (MooHistoryEntry *entry)
 
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (entry));
     cell = gtk_cell_renderer_text_new ();
+    g_object_set (cell, "single-paragraph-mode", TRUE, NULL);
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (entry), cell, TRUE);
     gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (entry), cell,
                                         (GtkCellLayoutDataFunc) cell_data_func,
@@ -167,9 +168,9 @@ moo_history_entry_init (MooHistoryEntry *entry)
 
 static void
 moo_history_entry_set_property (GObject        *object,
-                        guint           prop_id,
-                        const GValue   *value,
-                        GParamSpec     *pspec)
+                                guint           prop_id,
+                                const GValue   *value,
+                                GParamSpec     *pspec)
 {
     MooHistoryEntry *entry = MOO_HISTORY_ENTRY (object);
 
@@ -198,9 +199,9 @@ moo_history_entry_set_property (GObject        *object,
 
 static void
 moo_history_entry_get_property (GObject        *object,
-                        guint           prop_id,
-                        GValue         *value,
-                        GParamSpec     *pspec)
+                                guint           prop_id,
+                                GValue         *value,
+                                GParamSpec     *pspec)
 {
     MooHistoryEntry *entry = MOO_HISTORY_ENTRY (object);
 

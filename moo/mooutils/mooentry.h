@@ -59,6 +59,9 @@ void        moo_entry_end_undo_group            (MooEntry   *entry);
 void        moo_entry_clear_undo                (MooEntry   *entry);
 MooUndoMgr *moo_entry_get_undo_mgr              (MooEntry   *entry);
 
+void        moo_entry_set_use_special_chars_menu(MooEntry   *entry,
+                                                 gboolean    use);
+
 
 G_END_DECLS
 

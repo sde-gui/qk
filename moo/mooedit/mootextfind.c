@@ -82,6 +82,7 @@ static void
 moo_find_init (MooFind *find)
 {
     GtkWidget *vbox;
+    MooCombo *search, *replace;
 
     find->xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (find->xml, "search_entry", MOO_TYPE_HISTORY_ENTRY);
@@ -99,8 +100,14 @@ moo_find_init (MooFind *find)
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(find)->vbox), vbox);
     gtk_dialog_set_has_separator (GTK_DIALOG (find), FALSE);
 
-    moo_history_entry_set_list (moo_glade_xml_get_widget (find->xml, "search_entry"), search_history);
-    moo_history_entry_set_list (moo_glade_xml_get_widget (find->xml, "replace_entry"), replace_history);
+    search = moo_glade_xml_get_widget (find->xml, "search_entry");
+    replace = moo_glade_xml_get_widget (find->xml, "replace_entry");
+
+    moo_entry_set_use_special_chars_menu (MOO_ENTRY (search->entry), TRUE);
+    moo_entry_set_use_special_chars_menu (MOO_ENTRY (replace->entry), TRUE);
+
+    moo_history_entry_set_list (MOO_HISTORY_ENTRY (search), search_history);
+    moo_history_entry_set_list (MOO_HISTORY_ENTRY (replace), replace_history);
 }
 
 

@@ -30,6 +30,7 @@ struct _MooEntryPrivate {
     guint grab_selection : 1;
     guint fool_entry : 1;
     guint empty : 1;
+    guint special_chars_menu : 1;
 };
 
 static guint INSERT_ACTION_TYPE;
@@ -131,7 +132,8 @@ enum {
     PROP_ENABLE_UNDO,
     PROP_ENABLE_UNDO_MENU,
     PROP_GRAB_SELECTION,
-    PROP_EMPTY
+    PROP_EMPTY,
+    PROP_USE_SPECIAL_CHARS_MENU
 };
 
 enum {
@@ -213,6 +215,14 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "empty",
                                              TRUE,
                                              G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USE_SPECIAL_CHARS_MENU,
+                                     g_param_spec_boolean ("use-special-chars-menu",
+                                             "use-special-chars-menu",
+                                             "use-special-chars-menu",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
 
     signals[UNDO] = g_signal_lookup ("undo", GTK_TYPE_ENTRY);
 
@@ -306,6 +316,10 @@ moo_entry_set_property (GObject        *object,
             g_object_notify (object, "grab-selection");
             break;
 
+        case PROP_USE_SPECIAL_CHARS_MENU:
+            moo_entry_set_use_special_chars_menu (entry, g_value_get_boolean (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -341,6 +355,10 @@ moo_entry_get_property (GObject        *object,
 
         case PROP_EMPTY:
             g_value_set_boolean (value, GTK_ENTRY(entry)->text_length == 0);
+            break;
+
+        case PROP_USE_SPECIAL_CHARS_MENU:
+            g_value_set_boolean (value, entry->priv->special_chars_menu != 0);
             break;
 
         default:
@@ -439,32 +457,124 @@ moo_entry_new (void)
 
 
 static void
+moo_entry_insert_at_cursor (GtkEntry   *entry,
+                            const char *text,
+                            int         len)
+{
+    int start, end, pos;
+
+    if (MOO_IS_ENTRY (entry))
+        moo_entry_begin_undo_group (MOO_ENTRY (entry));
+
+    if (gtk_editable_get_selection_bounds (GTK_EDITABLE (entry), &start, &end))
+        gtk_editable_delete_text (GTK_EDITABLE (entry), start, end);
+
+    pos = gtk_editable_get_position (GTK_EDITABLE (entry));
+    gtk_editable_insert_text (GTK_EDITABLE (entry), text, len, &pos);
+    gtk_editable_set_position (GTK_EDITABLE (entry), pos);
+
+    if (MOO_IS_ENTRY (entry))
+        moo_entry_end_undo_group (MOO_ENTRY (entry));
+}
+
+
+static void
+special_char_item_activated (GtkWidget *item,
+                             GtkEntry  *entry)
+{
+    const char *text;
+
+    text = g_object_get_data (G_OBJECT (item), "moo-entry-special-char");
+    g_return_if_fail (text != NULL);
+
+    moo_entry_insert_at_cursor (entry, text, -1);
+}
+
+static void
+create_special_char_item (MooEntry   *entry,
+                          GtkWidget  *menu,
+                          const char *label,
+                          const char *text)
+{
+    GtkWidget *item;
+
+    item = gtk_menu_item_new_with_label (label);
+    g_object_set_data (G_OBJECT (item), "moo-entry-special-char", (char*) text);
+    g_signal_connect (item, "activate",
+                      G_CALLBACK (special_char_item_activated),
+                      entry);
+
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+}
+
+static GtkWidget *
+create_special_chars_menu (MooEntry *entry)
+{
+    GtkWidget *menu = gtk_menu_new ();
+    create_special_char_item (entry, menu, "Line End", "\n");
+    create_special_char_item (entry, menu, "Tab", "\t");
+    gtk_widget_show_all (menu);
+    return menu;
+}
+
+
+static void
 moo_entry_populate_popup (GtkEntry           *gtkentry,
                           GtkMenu            *menu)
 {
     GtkWidget *item;
     MooEntry *entry = MOO_ENTRY (gtkentry);
 
-    if (!entry->priv->enable_undo_menu)
+    if (entry->priv->enable_undo_menu)
+    {
+        item = gtk_separator_menu_item_new ();
+        gtk_widget_show (item);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+
+        item = gtk_image_menu_item_new_from_stock (GTK_STOCK_REDO, NULL);
+        gtk_widget_show (item);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+        gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
+                moo_undo_mgr_can_redo (entry->priv->undo_mgr));
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_redo), entry);
+
+        item = gtk_image_menu_item_new_from_stock (GTK_STOCK_UNDO, NULL);
+        gtk_widget_show (item);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
+        gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
+                moo_undo_mgr_can_undo (entry->priv->undo_mgr));
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_undo), entry);
+    }
+
+    if (entry->priv->special_chars_menu)
+    {
+        GtkWidget *submenu;
+
+        item = gtk_separator_menu_item_new ();
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        item = gtk_menu_item_new_with_label ("Insert Special Character");
+        gtk_widget_show (item);
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+        submenu = create_special_chars_menu (entry);
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), submenu);
+    }
+}
+
+
+void
+moo_entry_set_use_special_chars_menu (MooEntry   *entry,
+                                      gboolean    use)
+{
+    g_return_if_fail (MOO_IS_ENTRY (entry));
+
+    if ((entry->priv->special_chars_menu != 0) == (use != 0))
         return;
 
-    item = gtk_separator_menu_item_new ();
-    gtk_widget_show (item);
-    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
-
-    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_REDO, NULL);
-    gtk_widget_show (item);
-    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
-    gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                                    moo_undo_mgr_can_redo (entry->priv->undo_mgr));
-    g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_redo), entry);
-
-    item = gtk_image_menu_item_new_from_stock (GTK_STOCK_UNDO, NULL);
-    gtk_widget_show (item);
-    gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
-    gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                                    moo_undo_mgr_can_undo (entry->priv->undo_mgr));
-    g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_undo), entry);
+    entry->priv->special_chars_menu = use != 0;
+    g_object_notify (G_OBJECT (entry), "use-special-chars-menu");
 }
 
 
