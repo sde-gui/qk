@@ -77,13 +77,13 @@ static PrefsItem    *item_new           (GType           type,
                                          const GValue   *value,
                                          const GValue   *default_value);
 static void          item_free          (PrefsItem      *item);
-static void          item_set_type      (PrefsItem      *item,
+static gboolean      item_set_type      (PrefsItem      *item,
                                          GType           type);
 static const GValue *item_value         (PrefsItem      *item);
 static const GValue *item_default_value (PrefsItem      *item);
-static void          item_set           (PrefsItem      *item,
+static gboolean      item_set           (PrefsItem      *item,
                                          const GValue   *value);
-static void          item_set_default   (PrefsItem      *item,
+static gboolean      item_set_default   (PrefsItem      *item,
                                          const GValue   *value);
 
 static void          moo_prefs_finalize (GObject        *object);
@@ -301,6 +301,7 @@ prefs_new_key (MooPrefs       *prefs,
                const GValue   *default_value)
 {
     PrefsItem *item;
+    gboolean changed;
 
     g_return_if_fail (key && key[0]);
     g_return_if_fail (g_utf8_validate (key, -1, NULL));
@@ -314,14 +315,18 @@ prefs_new_key (MooPrefs       *prefs,
     {
         item = item_new (type, default_value, default_value);
         g_hash_table_insert (prefs->priv->data, g_strdup (key), item);
+        changed = TRUE;
     }
     else
     {
-        item_set_type (item, type);
-        item_set_default (item, default_value);
+        changed = item_set_type (item, type);
+
+        if (item_set_default (item, default_value))
+            changed = TRUE;
     }
 
-    prefs_emit_notify (prefs, key, item_value (item));
+    if (changed)
+        prefs_emit_notify (prefs, key, item_value (item));
 }
 
 
@@ -422,8 +427,8 @@ prefs_set (MooPrefs       *prefs,
         return;
     }
 
-    item_set (item, value);
-    prefs_emit_notify (prefs, key, item_value (item));
+    if (item_set (item, value))
+        prefs_emit_notify (prefs, key, item_value (item));
 }
 
 
@@ -501,19 +506,22 @@ item_new (GType           type,
 }
 
 
-static void
+static gboolean
 item_set_type (PrefsItem      *item,
                GType           type)
 {
-    g_return_if_fail (item != NULL);
-    g_return_if_fail (moo_value_type_supported (type));
+    g_return_val_if_fail (item != NULL, FALSE);
+    g_return_val_if_fail (moo_value_type_supported (type), FALSE);
 
     if (type != item->type)
     {
         item->type = type;
         moo_value_change_type (&item->value, type);
         moo_value_change_type (&item->default_value, type);
+        return TRUE;
     }
+
+    return FALSE;
 }
 
 
@@ -546,25 +554,39 @@ item_default_value (PrefsItem *item)
 }
 
 
-static void
+static gboolean
 item_set (PrefsItem      *item,
           const GValue   *value)
 {
-    g_return_if_fail (item != NULL);
-    g_return_if_fail (G_IS_VALUE (value));
-    g_return_if_fail (item->type == G_VALUE_TYPE (value));
-    g_value_copy (value, &item->value);
+    g_return_val_if_fail (item != NULL, FALSE);
+    g_return_val_if_fail (G_IS_VALUE (value), FALSE);
+    g_return_val_if_fail (item->type == G_VALUE_TYPE (value), FALSE);
+
+    if (!moo_value_equal (value, &item->value))
+    {
+        g_value_copy (value, &item->value);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
-static void
+static gboolean
 item_set_default (PrefsItem      *item,
                   const GValue   *value)
 {
-    g_return_if_fail (item != NULL);
-    g_return_if_fail (G_IS_VALUE (value));
-    g_return_if_fail (item->type == G_VALUE_TYPE (value));
-    g_value_copy (value, &item->default_value);
+    g_return_val_if_fail (item != NULL, FALSE);
+    g_return_val_if_fail (G_IS_VALUE (value), FALSE);
+    g_return_val_if_fail (item->type == G_VALUE_TYPE (value), FALSE);
+
+    if (!moo_value_equal (value, &item->default_value))
+    {
+        g_value_copy (value, &item->default_value);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
