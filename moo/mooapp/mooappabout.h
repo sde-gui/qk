@@ -28,6 +28,7 @@
 #include <windows.h>
 #endif
 
+#include "mooutils/moopython.h"
 #include <errno.h>
 #include <gtk/gtk.h>
 
