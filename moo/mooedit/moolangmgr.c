@@ -857,10 +857,9 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
                                     const char *filename)
 {
     MooLang *lang = NULL;
-    char *base = NULL;
+    char *utf8_name, *utf8_base = NULL;
     int len;
     guint i;
-    char *utf8_name;
 
     static const char *bak_globs[] = {"*~", "*.bak", "*.in"};
 
@@ -875,20 +874,20 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
         if (len > ext_len && g_pattern_match_simple (bak_globs[i], utf8_name))
         {
-            base = g_strndup (utf8_name, len - ext_len);
+            utf8_base = g_strndup (utf8_name, len - ext_len);
             break;
         }
     }
 
-    if (base)
+    if (utf8_base)
     {
-        char *opsys_name = g_filename_from_utf8 (base, len, NULL, NULL, NULL);
+        char *base = g_filename_from_utf8 (utf8_base, -1, NULL, NULL, NULL);
 
-        if (opsys_name)
-            lang = moo_lang_mgr_get_lang_for_filename (mgr, opsys_name);
+        if (base)
+            lang = moo_lang_mgr_get_lang_for_filename (mgr, base);
 
-        g_free (opsys_name);
         g_free (base);
+        g_free (utf8_base);
     }
 
     g_free (utf8_name);
