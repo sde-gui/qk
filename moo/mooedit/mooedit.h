@@ -16,7 +16,6 @@
 #define __MOO_EDIT_H__
 
 #include <mooedit/mootextview.h>
-#include <mooedit/moolang.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/moolinemark.h>
 #include <mooutils/mooprefs.h>
