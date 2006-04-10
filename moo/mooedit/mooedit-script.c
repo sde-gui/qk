@@ -274,6 +274,35 @@ check_one_arg (MSValue          **args,
 }
 
 
+static void
+scroll_to_cursor (GtkTextView *view)
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+    GtkTextMark *insert = gtk_text_buffer_get_insert (buffer);
+    gtk_text_view_scroll_mark_onscreen (view, insert);
+}
+
+
+static void
+insert_text (GtkTextView *view,
+             const char  *text,
+             int          len)
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+    gtk_text_buffer_insert_at_cursor (buffer, text, len);
+}
+
+
+static void
+insert_and_scroll (GtkTextView *view,
+                   const char  *text,
+                   int          len)
+{
+    insert_text (view, text, len);
+    scroll_to_cursor (view);
+}
+
+
 static MSValue *
 cfunc_backspace (MSValue  **args,
                  guint      n_args,
@@ -306,6 +335,7 @@ cfunc_backspace (MSValue  **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
     return ms_value_none ();
 }
 
@@ -342,6 +372,7 @@ cfunc_delete (MSValue  **args,
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
     return ms_value_none ();
 }
 
@@ -371,7 +402,7 @@ cfunc_newline (MSValue  **args,
     if (n > 1)
         insert = freeme = g_strnfill (n, '\n');
 
-    gtk_text_buffer_insert_at_cursor (buffer, insert, n);
+    insert_and_scroll (GTK_TEXT_VIEW (doc), insert, n);
 
     g_free (freeme);
     return ms_value_none ();
@@ -417,6 +448,7 @@ cfunc_up (MSValue  **args,
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
                                    MAX (line - n, 0), col,
                                    FALSE);
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
 }
@@ -446,6 +478,7 @@ cfunc_down (MSValue  **args,
     moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
                                MIN (line + n, line_count - 1), col,
                                FALSE);
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
 }
@@ -473,6 +506,7 @@ cfunc_select (MSValue   *arg,
     gtk_text_iter_forward_chars (&end, n);
 
     gtk_text_buffer_select_range (buffer, &end, &start);
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
 }
@@ -491,6 +525,7 @@ move_cursor (MooEdit *doc,
 
     gtk_text_iter_forward_chars (&iter, howmany);
     gtk_text_buffer_place_cursor (buffer, &iter);
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
 }
 
 
@@ -557,6 +592,7 @@ cfunc_insert (MSValue  **args,
         g_free (s);
     }
 
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
     return ms_value_none ();
 }
 
