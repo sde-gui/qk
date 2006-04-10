@@ -16,6 +16,8 @@
 #include "mooscript-parser.h"
 #include "mooscript-zenity.h"
 #include "mooutils/moopython.h"
+#include "mooutils/mooprefs.h"
+#include <string.h>
 
 
 static MSValue*
@@ -156,6 +158,122 @@ error:
 }
 
 
+static MSValue*
+prefs_get_func (MSValue   *arg,
+                MSContext *ctx)
+{
+    char *key = NULL;
+    const char *val;
+    MSValue *ret = NULL;
+
+    key = ms_value_print (arg);
+
+    if (!key || !key[0])
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "empty prefs key");
+        goto out;
+    }
+
+    if (!moo_prefs_key_registered (key))
+        moo_prefs_new_key_string (key, NULL);
+
+    val = moo_prefs_get_string (key);
+
+    if (val)
+        ret = ms_value_string (val);
+    else
+        ret = ms_value_none ();
+
+out:
+    g_free (key);
+    return ret;
+}
+
+static MSValue*
+prefs_set_func (MSValue   *arg1,
+                MSValue   *arg2,
+                MSContext *ctx)
+{
+    char *key = NULL, *val = NULL;
+    MSValue *ret = NULL;
+
+    key = ms_value_print (arg1);
+
+    if (!ms_value_is_none (arg2))
+        val = ms_value_print (arg2);
+
+    if (!key || !key[0])
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "empty prefs key");
+        goto out;
+    }
+
+    if (!moo_prefs_key_registered (key))
+        moo_prefs_new_key_string (key, NULL);
+
+    moo_prefs_set_string (key, val);
+
+    ret = ms_value_none ();
+
+out:
+    g_free (key);
+    g_free (val);
+    return ret;
+}
+
+
+static MSValue*
+exec_func (MSValue   *arg,
+           MSContext *ctx)
+{
+    char *cmd = NULL, *cmd_out = NULL;
+    MSValue *ret = NULL;
+    GError *error = NULL;
+
+    cmd = ms_value_print (arg);
+
+    if (!cmd || !cmd[0])
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "empty command");
+        goto out;
+    }
+
+    if (!g_spawn_command_line_sync (cmd, &cmd_out, NULL, NULL, &error))
+    {
+        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                 "%s", error->message);
+        g_error_free (error);
+        goto out;
+    }
+
+    if (cmd_out)
+    {
+        guint len = strlen (cmd_out);
+
+        if (len && cmd_out[len-1] == '\n')
+        {
+            if (len > 1 && cmd_out[len-2] == '\r')
+                cmd_out[len-2] = 0;
+            else
+                cmd_out[len-1] = 0;
+        }
+    }
+
+    if (cmd_out)
+        ret = ms_value_string (cmd_out);
+    else
+        ret = ms_value_string ("");
+
+out:
+    g_free (cmd);
+    g_free (cmd_out);
+    return ret;
+}
+
+
 #define ADD_FUNC(type_,func_,name_)             \
 G_STMT_START {                                  \
     MSFunc *msfunc__;                           \
@@ -202,13 +320,18 @@ _ms_context_add_builtin (MSContext *ctx)
                   ms_unary_op_cfunc (i),
                   ms_unary_op_name (i));
 
+    ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
+    ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
+    ADD_FUNC (ms_cfunc_new_1, len_func, "Len");
+
     ADD_FUNC (ms_cfunc_new_var, print_func, "Print");
     ADD_FUNC (ms_cfunc_new_1, python_func, "Python");
     ADD_FUNC (ms_cfunc_new_1, include_func, "Include");
     ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
-    ADD_FUNC (ms_cfunc_new_1, str_func, "Str");
-    ADD_FUNC (ms_cfunc_new_1, int_func, "Int");
-    ADD_FUNC (ms_cfunc_new_1, len_func, "Len");
+    ADD_FUNC (ms_cfunc_new_1, exec_func, "Exec");
+
+    ADD_FUNC (ms_cfunc_new_1, prefs_get_func, "PrefsGet");
+    ADD_FUNC (ms_cfunc_new_2, prefs_set_func, "PrefsSet");
 
     ADD_FUNC_OBJ (ms_zenity_text, "Text");
     ADD_FUNC_OBJ (ms_zenity_entry, "Entry");
