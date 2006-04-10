@@ -1068,10 +1068,27 @@ moo_app_try_quit_real (MooApp *app)
 }
 
 
+static void
+moo_app_save_prefs (MooApp *app)
+{
+    GError *error = NULL;
+
+    if (!moo_prefs_save (moo_app_get_rc_file_name (app), &error))
+    {
+        g_warning ("%s: could not save config file", G_STRLOC);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+    }
+}
+
+
 static void     moo_app_quit_real       (MooApp         *app)
 {
     GSList *l, *list;
-    GError *error = NULL;
 
     if (!app->priv->running)
         return;
@@ -1106,15 +1123,7 @@ static void     moo_app_quit_real       (MooApp         *app)
     app->priv->editor = NULL;
 #endif /* MOO_BUILD_EDIT */
 
-    if (!moo_prefs_save (moo_app_get_rc_file_name (app), &error))
-    {
-        g_warning ("%s: could not save config file", G_STRLOC);
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-    }
+    moo_app_save_prefs (app);
 
     if (app->priv->quit_handler_id)
         gtk_quit_remove (app->priv->quit_handler_id);
@@ -1613,6 +1622,13 @@ moo_app_prefs_dialog (GtkWidget *parent)
 }
 
 
+static void
+prefs_dialog_apply (void)
+{
+    moo_app_save_prefs (moo_app_get_instance ());
+}
+
+
 static GtkWidget *
 moo_app_create_prefs_dialog (MooApp *app)
 {
@@ -1633,6 +1649,10 @@ moo_app_create_prefs_dialog (MooApp *app)
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new (moo_app_get_editor (app)));
     _moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 #endif
+
+    g_signal_connect_after (dialog, "apply",
+                            G_CALLBACK (prefs_dialog_apply),
+                            NULL);
 
     return GTK_WIDGET (dialog);
 }
