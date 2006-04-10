@@ -98,18 +98,12 @@ _as_plugin_prefs_page (MooPlugin *plugin)
 
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (xml, "script", MOO_TYPE_TEXT_VIEW);
-    moo_glade_xml_map_id (xml, "page", MOO_TYPE_PREFS_DIALOG_PAGE);
-    moo_glade_xml_parse_memory (xml, AS_PLUGIN_GLADE_UI, -1, "page");
-
-    page = moo_glade_xml_get_widget (xml, "page");
-    g_return_val_if_fail (page != NULL, NULL);
-    g_object_set (page, "label", "Active Strings",
-                  "icon-stock-id", GTK_STOCK_CONVERT, NULL);
+    page = moo_prefs_dialog_page_new_from_xml ("Active Strings", GTK_STOCK_CONVERT,
+                                               xml, AS_PLUGIN_GLADE_UI, -1,
+                                               "page", NULL);
 
     g_object_set_data_full (G_OBJECT (xml), "as-plugin",
                             g_object_ref (plugin), (GDestroyNotify) g_object_unref);
-    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml", xml,
-                            (GDestroyNotify) g_object_unref);
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), xml);
     g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), xml);
@@ -150,6 +144,7 @@ _as_plugin_prefs_page (MooPlugin *plugin)
     g_signal_connect_swapped (moo_glade_xml_get_widget (xml, "enabled"),
                               "toggled", G_CALLBACK (enabled_changed), xml);
 
+    g_object_unref (xml);
     return page;
 }
 
