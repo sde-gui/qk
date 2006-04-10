@@ -807,21 +807,19 @@ static void
 moo_app_init_ui (MooApp *app)
 {
     MooUIXML *xml;
-    char **dirs;
-    guint n_dirs;
+    char **files;
+    guint n_files;
     int i;
 
     xml = moo_app_get_ui_xml (app);
-    dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
+    files = moo_get_data_files (MOO_UI_XML_FILE, MOO_DATA_SHARE, &n_files);
 
-    for (i = n_dirs - 1; i >= 0; --i)
+    for (i = n_files - 1; i >= 0; --i)
     {
-        char *filename;
         GError *error = NULL;
         GMappedFile *file;
 
-        filename = g_build_filename (dirs[i], MOO_UI_XML_FILE, NULL);
-        file = g_mapped_file_new (filename, FALSE, &error);
+        file = g_mapped_file_new (files[i], FALSE, &error);
 
         if (file)
         {
@@ -829,22 +827,23 @@ moo_app_init_ui (MooApp *app)
                                            g_mapped_file_get_contents (file),
                                            g_mapped_file_get_length (file));
             g_mapped_file_free (file);
-            g_free (filename);
-            return;
+            goto out;
         }
 
         if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT)
         {
-            g_warning ("%s: could not open file '%s'", G_STRLOC, filename);
+            g_warning ("%s: could not open file '%s'", G_STRLOC, files[i]);
             g_warning ("%s: %s", G_STRLOC, error->message);
         }
 
         g_error_free (error);
-        g_free (filename);
     }
 
     if (app->priv->default_ui)
         moo_ui_xml_add_ui_from_string (xml, app->priv->default_ui, -1);
+
+out:
+    g_strfreev (files);
 }
 
 

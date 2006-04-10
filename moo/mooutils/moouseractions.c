@@ -199,6 +199,7 @@ moo_parse_user_actions (const char             *filename,
                                                 action, (GDestroyNotify) action_free);
     }
 
+    moo_config_free (config);
     g_type_class_unref (klass);
 }
 
