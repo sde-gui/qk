@@ -56,6 +56,7 @@ GQuark  moo_file_error_quark (void);
 typedef guint64 MooFileTime;
 #else
 /* time_t */
+/* XXX it's not time_t! */
 typedef GTime MooFileTime;
 #endif
 
