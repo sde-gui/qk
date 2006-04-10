@@ -234,7 +234,7 @@ moo_lang_new (MooLangMgr     *mgr,
     lang->styles = (MooTextStyleArray*) g_ptr_array_new ();
     style_cache_create (lang);
 
-    lang->id = g_ascii_strdown (name, -1);
+    lang->id = moo_lang_id_from_name (name);
     lang->display_name = g_strdup (name);
     lang->section = section ? g_strdup (section) : g_strdup ("Others");
     lang->version = version ? g_strdup (version) : g_strdup ("");
@@ -243,6 +243,14 @@ moo_lang_new (MooLangMgr     *mgr,
     _moo_lang_mgr_add_lang (mgr, lang);
 
     return lang;
+}
+
+
+char *
+moo_lang_id_from_name (const char *name)
+{
+    g_return_val_if_fail (name != NULL, NULL);
+    return g_ascii_strdown (name, -1);
 }
 
 

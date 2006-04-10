@@ -221,6 +221,8 @@ void        moo_lang_add_style                  (MooLang            *lang,
                                                  const char         *name,
                                                  const MooTextStyle *style);
 
+char       *moo_lang_id_from_name               (const char         *name);
+
 
 /*****************************************************************************/
 /* Auxiliary private methods

@@ -778,7 +778,7 @@ moo_lang_mgr_get_lang (MooLangMgr     *mgr,
     MooLang *lang;
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (name != NULL, NULL);
-    id = g_ascii_strdown (name, -1);
+    id = moo_lang_id_from_name (name);
     lang = g_hash_table_lookup (mgr->lang_names, id);
     g_free (id);
     return lang;
