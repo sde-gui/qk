@@ -71,6 +71,7 @@ moo/moo.pc
 moo/moo-version.h
 tests/pyapp.py
 m4/Makefile
+wininstaller/medit.iss
 ])
 
 

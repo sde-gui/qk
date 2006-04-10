@@ -1,0 +1,17 @@
+## weferger
+#rgreger
+#ergergerg
+action: DoSomething
+label: Do Something
+command: shell
+    ls $file
+
+action: DoSomethingElse
+label: Do Something Else
+accel: <ctrl>B
+    if doc.file then
+        output = Exec('ls ' + doc.file);
+    else
+        output = Exec('ls');
+    fi;
+    Insert(output);

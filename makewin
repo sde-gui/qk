@@ -1,0 +1,50 @@
+#!/bin/sh
+
+dir=`pwd`
+builddir=/home/muntyan/projects/moo/build
+medit_windir=/usr/local/win/medit
+
+if [ x$1 != x -a x$1 != x"--no-cygwin" ]; then
+    medit_builddir=`cd $1 && pwd`
+else
+    medit_builddir=$builddir/mingw
+fi
+config=`basename $medit_builddir`
+installdir=$dir/$config-root
+issdir=Z:$medit_builddir/wininstaller
+
+iss=$issdir/medit.iss
+installer=medit`echo $config | sed s/mingw//`.exe
+
+do_cmd () {
+    echo "*** " $*
+    $*
+    return $?
+}
+
+copy_files () {
+    do_cmd cp $1/usr/local/bin/medit.exe $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/ui.xml.example $2/ui.xml && \
+    do_cmd cp -r $1/usr/local/share/moo/actions.cfg.example $2/actions.cfg && \
+    do_cmd cp -r $1/usr/local/share/moo/syntax $2/
+}
+
+build () {
+    do_cmd mkdir $medit_windir && \
+    do_cmd mkdir $installdir && \
+    do_cmd cd $medit_builddir && \
+    do_cmd make install-strip DESTDIR=$installdir && \
+    copy_files $installdir $medit_windir && \
+    echo "*** " wine /usr/local/win/InnoSetup5/ISCC.exe $iss && \
+    wine /usr/local/win/InnoSetup5/ISCC.exe $iss && \
+    do_cmd mv $medit_builddir/wininstaller/Output/setup.exe $dir/$installer
+}
+
+clean () {
+    do_cmd rm -rf $medit_windir
+    do_cmd rm -rf $installdir
+    do_cmd rm -rf $medit_builddir/wininstaller/Output
+}
+
+build
+clean
