@@ -33,7 +33,7 @@ static int run_interactive (void)
 
     using_history ();
 
-    ctx = ms_context_new ();
+    ctx = ms_context_new (NULL);
 
     while (TRUE)
     {
@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
     if (!node)
         g_error ("could not parse script");
 
-    ctx = ms_context_new ();
+    ctx = ms_context_new (NULL);
     val = ms_top_node_eval (node, ctx);
 
     if (!val)
