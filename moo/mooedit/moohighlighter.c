@@ -627,7 +627,7 @@ hl_compute_range (MooHighlighter *hl,
                 if (s->match_node)
                     g_print (", match context '%s'", s->match_node->ctx->name);
                 if (s->rule)
-                    g_print (", rule '%s'", s->rule->debug_string);
+                    g_print (", rule '%s'", s->rule->description);
                 g_print ("\n");
             }
         }

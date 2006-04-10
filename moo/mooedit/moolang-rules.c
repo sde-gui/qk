@@ -17,10 +17,6 @@
 #include "mooedit/moolang-aux.h"
 
 
-#if 1
-#define USE_DEBUG_STRING
-#endif
-
 typedef MooRuleMatchFlags MatchFlags;
 #define MATCH_START_ONLY MOO_RULE_MATCH_START_ONLY
 
@@ -281,10 +277,7 @@ moo_rule_free (MooRule *rule)
         g_ptr_array_free ((GPtrArray*) rule->child_rules, TRUE);
     }
 
-#ifdef USE_DEBUG_STRING
-    g_free (rule->debug_string);
-#endif
-
+    g_free (rule->description);
     g_free (rule->style);
     g_free (rule);
 }
@@ -407,9 +400,7 @@ moo_rule_string_new (const char         *string,
     rule = rule_new (flags, style, rule_string_match, rule_string_destroy);
     g_return_val_if_fail (rule != NULL, NULL);
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("STRING %s", string);
-#endif
+    rule->description = g_strdup_printf ("STRING %s", string);
 
     rule->str.caseless = (flags & MOO_RULE_MATCH_CASELESS) ? TRUE : FALSE;
 
@@ -523,9 +514,7 @@ moo_rule_regex_new (const char         *pattern,
         return NULL;
     }
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("REGEX %s", pattern);
-#endif
+    rule->description = g_strdup_printf ("REGEX %s", pattern);
 
     rule->regex.regex = regex;
 
@@ -617,9 +606,7 @@ moo_rule_char_new (char                ch,
     rule = rule_new (flags, style, rule_char_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("CHAR %c", ch);
-#endif
+    rule->description = g_strdup_printf ("CHAR %c", ch);
 
     if (flags & MOO_RULE_MATCH_CASELESS)
     {
@@ -649,9 +636,7 @@ moo_rule_2char_new (char                ch1,
     rule = rule_new (flags, style, rule_2char_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("TWOCHARS %c%c", ch1, ch2);
-#endif
+    rule->description = g_strdup_printf ("TWOCHARS %c%c", ch1, ch2);
 
     if (flags & MOO_RULE_MATCH_CASELESS)
     {
@@ -755,9 +740,7 @@ moo_rule_any_char_new (const char         *string,
     rule = rule_new (flags, style, rule_any_char_match, rule_any_char_destroy);
     g_return_val_if_fail (rule != NULL, NULL);
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("ANYCHAR %s", string);
-#endif
+    rule->description = g_strdup_printf ("ANYCHAR %s", string);
 
     rule->anychar.n_chars = len;
     rule->anychar.chars = g_strdup (string);
@@ -833,9 +816,7 @@ moo_rule_include_new (MooContext *ctx)
     rule = rule_new (0, NULL, rule_include_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
 
-#ifdef USE_DEBUG_STRING
-    rule->debug_string = g_strdup_printf ("INCLUDE %s", ctx->name);
-#endif
+    rule->description = g_strdup_printf ("INCLUDE %s", ctx->name);
 
     rule->incl.ctx = ctx;
 

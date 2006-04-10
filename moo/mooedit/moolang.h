@@ -155,6 +155,7 @@ struct _MooRule
                          MooRuleMatchFlags   flags);
     void     (*destroy) (MooRule            *self);
 
+    char *description;
     char *style;
 
     MooContext *context;
@@ -174,10 +175,6 @@ struct _MooRule
         MooRuleAsciiAnyChar anychar;
         MooRuleInclude incl;
     };
-
-#if 1
-    char *debug_string;
-#endif
 };
 
 
