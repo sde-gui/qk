@@ -866,6 +866,7 @@ moo_plugin_init_builtin (void)
     _moo_file_selector_plugin_init ();
 #endif
     _moo_active_strings_plugin_init ();
+    _moo_completion_plugin_init ();
 #ifdef MOO_USE_PYGTK
     _moo_python_plugin_init ();
 #endif

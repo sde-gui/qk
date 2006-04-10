@@ -46,6 +46,7 @@ include moo/mooedit/glade/Makefile.incl
 include moo/mooedit/syntax/Makefile.incl
 include moo/mooedit/plugins/Makefile.incl
 include moo/mooedit/plugins/activestrings/Makefile.incl
+include moo/mooedit/plugins/completion/Makefile.incl
 # mooterm
 include moo/mooterm/Makefile.incl
 include moo/mooterm/glade/Makefile.incl

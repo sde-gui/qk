@@ -20,13 +20,14 @@ G_BEGIN_DECLS
 
 
 #ifndef __WIN32__
-gboolean _moo_find_plugin_init           (void);
+gboolean _moo_find_plugin_init              (void);
 #endif
 
-gboolean _moo_active_strings_plugin_init (void);
+gboolean _moo_active_strings_plugin_init    (void);
+gboolean _moo_completion_plugin_init        (void);
 
 #if GTK_CHECK_VERSION(2,6,0)
-gboolean _moo_file_selector_plugin_init  (void);
+gboolean _moo_file_selector_plugin_init     (void);
 #endif
 
 
