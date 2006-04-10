@@ -10,20 +10,20 @@
       <Char char="&apos;" context="Char" style="Char"/>
       <Char char="#" context="Comment" style="Comment"/>
       <Keyword keyword="Keyword" style="Keyword"/>
-      <Keyword keyword="Automata" style="Automata"/>
+<!--       <Keyword keyword="Automata" style="Automata"/> -->
       <!--pcre crashes on huge keyword lists-->
-      <Keyword keyword="Library1" style="Library"/>
-      <Keyword keyword="Library2" style="Library"/>
-      <Keyword keyword="Library3" style="Library"/>
-      <Keyword keyword="Library4" style="Library"/>
-      <Keyword keyword="Library5" style="Library"/>
-      <Keyword keyword="Library6" style="Library"/>
-      <Keyword keyword="Library7" style="Library"/>
-      <Keyword keyword="Library8" style="Library"/>
-      <Keyword keyword="Library9" style="Library"/>
+<!--       <Keyword keyword="Library1" style="Library"/> -->
+<!--       <Keyword keyword="Library2" style="Library"/> -->
+<!--       <Keyword keyword="Library3" style="Library"/> -->
+<!--       <Keyword keyword="Library4" style="Library"/> -->
+<!--       <Keyword keyword="Library5" style="Library"/> -->
+<!--       <Keyword keyword="Library6" style="Library"/> -->
+<!--       <Keyword keyword="Library7" style="Library"/> -->
+<!--       <Keyword keyword="Library8" style="Library"/> -->
+<!--       <Keyword keyword="Library9" style="Library"/> -->
       <Regex pattern="\b[_\w][_\w\d]*(?=[\s]*[(])" style="Function"/>
     </context>
-    <context name="String" style="String" eol-context="#pop">
+    <context name="String" style="String">
       <Char char="&quot;" context="#pop" style="String"/>
     </context>
     <context name="Char" style="Char" eol-context="#pop">
@@ -34,13 +34,6 @@
     </context>
 
     <keyword-list name="Keyword">
-      <keyword>&lt;</keyword>
-      <keyword>&gt;</keyword>
-      <keyword>&lt;=</keyword>
-      <keyword>&gt;=</keyword>
-      <keyword>&lt;&gt;</keyword>
-      <keyword>=</keyword>
-      <keyword>:=</keyword>
       <keyword>and</keyword>
       <keyword>break</keyword>
       <keyword>continue</keyword>
