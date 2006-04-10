@@ -22,6 +22,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moodialogs.h"
 #include <gtk/gtk.h>
+#include <glib/gprintf.h>
 
 
 static char *last_search;
@@ -251,8 +252,41 @@ moo_find_setup (MooFind        *find,
 }
 
 
+static void
+print_messagev (MooFindMsgFunc func,
+                gpointer       data,
+                const char    *format,
+                va_list        args)
+{
+    char *msg = NULL;
+    g_vasprintf (&msg, format, args);
+    g_return_if_fail (msg != NULL);
+    func (msg, data);
+    g_free (msg);
+}
+
+static void
+print_message (MooFindMsgFunc func,
+               gpointer       data,
+               const char    *format,
+               ...)
+{
+    va_list args;
+
+    if (func)
+    {
+        g_return_if_fail (format != NULL);
+        va_start (args, format);
+        print_messagev (func, data, format, args);
+        va_end (args);
+    }
+}
+
+
 gboolean
-moo_find_run (MooFind *find)
+moo_find_run (MooFind        *find,
+              MooFindMsgFunc  msg_func,
+              gpointer        data)
 {
     MooCombo *search_entry, *replace_entry;
     g_return_val_if_fail (MOO_IS_FIND (find), FALSE);
@@ -275,7 +309,11 @@ moo_find_run (MooFind *find)
         replace_with = moo_combo_entry_get_text (replace_entry);
 
         if (!search_for[0])
+        {
+            print_message (msg_func, data,
+                           "No search term entered");
             return FALSE;
+        }
 
         flags = moo_find_get_flags (find);
 
@@ -512,7 +550,9 @@ get_search_bounds2 (GtkTextBuffer *buffer,
 
 
 void
-moo_text_view_run_find (GtkTextView *view)
+moo_text_view_run_find (GtkTextView    *view,
+                        MooFindMsgFunc  msg_func,
+                        gpointer        data)
 {
     GtkWidget *find;
     MooFindFlags flags;
@@ -522,13 +562,14 @@ moo_text_view_run_find (GtkTextView *view)
     GtkTextIter match_start, match_end;
     GtkTextBuffer *buffer;
     gboolean found;
+    gboolean wrapped = FALSE;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     find = moo_find_new (FALSE);
     moo_find_setup (MOO_FIND (find), view);
 
-    if (!moo_find_run (MOO_FIND (find)))
+    if (!moo_find_run (MOO_FIND (find), msg_func, data))
     {
         gtk_widget_destroy (find);
         return;
@@ -547,13 +588,22 @@ moo_text_view_run_find (GtkTextView *view)
     found = do_find (&start, &end, flags, regex, text, &match_start, &match_end);
 
     if (!found && get_search_bounds2 (buffer, flags, &start, &end))
+    {
         found = do_find (&start, &end, flags, regex, text, &match_start, &match_end);
+        wrapped = TRUE;
+    }
 
     if (found)
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
                                       0, FALSE, 0, 0);
+
+        if (wrapped)
+            print_message (msg_func, data,
+                           "Search hit %s, continuing at %s",
+                           flags & MOO_FIND_BACKWARDS ? "top" : "bottom",
+                           flags & MOO_FIND_BACKWARDS ? "bottom" : "top");
     }
     else
     {
@@ -561,6 +611,7 @@ moo_text_view_run_find (GtkTextView *view)
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
+        print_message (msg_func, data, "Pattern not found: %s", text);
     }
 
     g_free (text);
@@ -569,7 +620,9 @@ moo_text_view_run_find (GtkTextView *view)
 
 
 void
-moo_text_view_run_find_next (GtkTextView *view)
+moo_text_view_run_find_next (GtkTextView    *view,
+                             MooFindMsgFunc  msg_func,
+                             gpointer        data)
 {
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
@@ -577,11 +630,12 @@ moo_text_view_run_find_next (GtkTextView *view)
     GtkTextIter match_start, match_end;
     gboolean found;
     gboolean has_selection;
+    gboolean wrapped = FALSE;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     if (!last_search)
-        return moo_text_view_run_find (view);
+        return moo_text_view_run_find (view, msg_func, data);
 
     buffer = gtk_text_view_get_buffer (view);
 
@@ -610,6 +664,7 @@ moo_text_view_run_find_next (GtkTextView *view)
 
     if (!found && !gtk_text_iter_is_start (&sel_start))
     {
+        wrapped = TRUE;
         gtk_text_buffer_get_start_iter (buffer, &start);
         end = sel_start;
         found = do_find (&start, &end, last_search_flags & ~MOO_FIND_BACKWARDS,
@@ -621,6 +676,9 @@ moo_text_view_run_find_next (GtkTextView *view)
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
                                       0, FALSE, 0, 0);
+        if (wrapped)
+            print_message (msg_func, data,
+                           "Search hit bottom, continuing at top");
     }
     else
     {
@@ -628,12 +686,15 @@ moo_text_view_run_find_next (GtkTextView *view)
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
+        print_message (msg_func, data, "Pattern not found: %s", last_search);
     }
 }
 
 
 void
-moo_text_view_run_find_prev (GtkTextView *view)
+moo_text_view_run_find_prev (GtkTextView    *view,
+                             MooFindMsgFunc  msg_func,
+                             gpointer        data)
 {
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
@@ -641,11 +702,12 @@ moo_text_view_run_find_prev (GtkTextView *view)
     GtkTextIter match_start, match_end;
     gboolean found;
     gboolean has_selection;
+    gboolean wrapped = FALSE;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     if (!last_search)
-        return moo_text_view_run_find (view);
+        return moo_text_view_run_find (view, msg_func, data);
 
     buffer = gtk_text_view_get_buffer (view);
 
@@ -678,6 +740,7 @@ moo_text_view_run_find_prev (GtkTextView *view)
         end = sel_end;
         found = do_find (&start, &end, last_search_flags | MOO_FIND_BACKWARDS,
                          last_regex, last_search, &match_start, &match_end);
+        wrapped = TRUE;
     }
 
     if (found)
@@ -685,6 +748,10 @@ moo_text_view_run_find_prev (GtkTextView *view)
         gtk_text_buffer_select_range (buffer, &match_start, &match_end);
         gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
                                       0, FALSE, 0, 0);
+
+        if (wrapped)
+            print_message (msg_func, data,
+                           "Search hit top, continuing at bottom");
     }
     else
     {
@@ -692,6 +759,7 @@ moo_text_view_run_find_prev (GtkTextView *view)
         gtk_text_buffer_get_iter_at_mark (buffer, &insert,
                                           gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_place_cursor (buffer, &insert);
+        print_message (msg_func, data, "Pattern not found: %s", last_search);
     }
 }
 
@@ -720,11 +788,27 @@ do_replace_silent (GtkTextIter       *start,
 
 
 static void
-run_replace_silent (GtkTextView *view,
-                    const char  *text,
-                    EggRegex    *regex,
-                    const char  *replacement,
-                    MooFindFlags flags)
+replaced_n_message (guint          n,
+                    MooFindMsgFunc msg_func,
+                    gpointer       data)
+{
+    if (!n)
+        print_message (msg_func, data, "No replacement made");
+    else if (n == 1)
+        print_message (msg_func, data, "1 replacement made");
+    else
+        print_message (msg_func, data, "%d replacements made", n);
+}
+
+
+static void
+run_replace_silent (GtkTextView   *view,
+                    const char    *text,
+                    EggRegex      *regex,
+                    const char    *replacement,
+                    MooFindFlags   flags,
+                    MooFindMsgFunc msg_func,
+                    gpointer       data)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -739,11 +823,11 @@ run_replace_silent (GtkTextView *view,
         moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
     {
         int replaced2 = do_replace_silent (&start, &end, flags, text, regex, replacement);
-        moo_text_replaced_n_dialog (GTK_WIDGET (view), replaced2);
+        replaced_n_message (replaced2, msg_func, data);
     }
     else
     {
-        moo_text_replaced_n_dialog (GTK_WIDGET (view), replaced);
+        replaced_n_message (replaced, msg_func, data);
     }
 }
 
@@ -831,11 +915,13 @@ do_replace_interactive (GtkTextView       *view,
 
 
 static void
-run_replace_interactive (GtkTextView *view,
-                         const char  *text,
-                         EggRegex    *regex,
-                         const char  *replacement,
-                         MooFindFlags flags)
+run_replace_interactive (GtkTextView   *view,
+                         const char    *text,
+                         EggRegex      *regex,
+                         const char    *replacement,
+                         MooFindFlags   flags,
+                         MooFindMsgFunc msg_func,
+                         gpointer       data)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -854,17 +940,19 @@ run_replace_interactive (GtkTextView *view,
         if (moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
             do_replace_interactive (view, &start, &end, flags, text, regex, replacement, &replaced2);
 
-        moo_text_replaced_n_dialog (GTK_WIDGET (view), replaced2);
+        replaced_n_message (replaced2, msg_func, data);
     }
     else
     {
-        moo_text_replaced_n_dialog (GTK_WIDGET (view), replaced);
+        replaced_n_message (replaced, msg_func, data);
     }
 }
 
 
 void
-moo_text_view_run_replace (GtkTextView *view)
+moo_text_view_run_replace (GtkTextView    *view,
+                           MooFindMsgFunc  msg_func,
+                           gpointer        data)
 {
     GtkWidget *find;
     MooFindFlags flags;
@@ -876,7 +964,7 @@ moo_text_view_run_replace (GtkTextView *view)
     find = moo_find_new (TRUE);
     moo_find_setup (MOO_FIND (find), view);
 
-    if (!moo_find_run (MOO_FIND (find)))
+    if (!moo_find_run (MOO_FIND (find), msg_func, data))
     {
         gtk_widget_destroy (find);
         return;
@@ -889,9 +977,11 @@ moo_text_view_run_replace (GtkTextView *view)
     gtk_widget_destroy (find);
 
     if (flags & MOO_FIND_DONT_PROMPT)
-        run_replace_silent (view, text, regex, replacement, flags);
+        run_replace_silent (view, text, regex, replacement,
+                            flags, msg_func, data);
     else
-        run_replace_interactive (view, text, regex, replacement, flags);
+        run_replace_interactive (view, text, regex, replacement,
+                                 flags, msg_func, data);
 
     g_free (text);
     g_free (replacement);

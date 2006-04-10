@@ -64,8 +64,6 @@ void             moo_text_regex_error_dialog        (GtkWidget      *parent,
 
 gboolean         moo_text_replace_from_start_dialog (GtkWidget      *parent,
                                                      int             replaced);
-void             moo_text_replaced_n_dialog         (GtkWidget      *parent,
-                                                     guint           n);
 GtkWidget       *moo_text_prompt_on_replace_dialog  (GtkWidget      *parent);
 
 

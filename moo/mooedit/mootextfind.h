@@ -58,6 +58,9 @@ struct _MooFindClass
     GtkDialogClass base_class;
 };
 
+typedef void (*MooFindMsgFunc) (const char *msg,
+                                gpointer    data);
+
 
 GType           moo_find_get_type           (void) G_GNUC_CONST;
 
@@ -65,7 +68,9 @@ GtkWidget      *moo_find_new                (gboolean        replace);
 
 void            moo_find_setup              (MooFind        *find,
                                              GtkTextView    *view);
-gboolean        moo_find_run                (MooFind        *find);
+gboolean        moo_find_run                (MooFind        *find,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
 
 void            moo_find_set_flags          (MooFind        *find,
                                              MooFindFlags    flags);
@@ -75,10 +80,18 @@ char           *moo_find_get_text           (MooFind        *find);
 EggRegex       *moo_find_get_regex          (MooFind        *find);
 char           *moo_find_get_replacement    (MooFind        *find);
 
-void            moo_text_view_run_find      (GtkTextView    *view);
-void            moo_text_view_run_replace   (GtkTextView    *view);
-void            moo_text_view_run_find_next (GtkTextView    *view);
-void            moo_text_view_run_find_prev (GtkTextView    *view);
+void            moo_text_view_run_find      (GtkTextView    *view,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
+void            moo_text_view_run_replace   (GtkTextView    *view,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
+void            moo_text_view_run_find_next (GtkTextView    *view,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
+void            moo_text_view_run_find_prev (GtkTextView    *view,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
 void            moo_text_view_run_goto_line (GtkTextView    *view);
 
 

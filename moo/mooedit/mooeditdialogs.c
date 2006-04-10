@@ -705,36 +705,6 @@ moo_text_regex_error_dialog (GtkWidget  *parent,
 }
 
 
-void
-moo_text_replaced_n_dialog (GtkWidget *parent,
-                            guint      n)
-{
-    GtkWidget *dialog;
-    char *msg_text;
-
-    if (!n)
-        msg_text = g_strdup_printf ("No replacement made");
-    else if (n == 1)
-        msg_text = g_strdup_printf ("1 replacement made");
-    else
-        msg_text = g_strdup_printf ("%d replacements made", n);
-
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
-                                     msg_text);
-    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_CLOSE,
-                            GTK_RESPONSE_CANCEL, NULL);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-
-    gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-
-    g_free (msg_text);
-}
-
-
 GtkWidget*
 moo_text_prompt_on_replace_dialog (GtkWidget *parent)
 {

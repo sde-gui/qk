@@ -737,27 +737,42 @@ moo_text_view_delete_selection (MooTextView *view)
 
 
 static void
+msg_to_statusbar (const char *message,
+                  gpointer    data)
+{
+    GtkWidget *toplevel = gtk_widget_get_toplevel (data);
+
+    if (MOO_IS_EDIT_WINDOW (toplevel))
+        moo_edit_window_message (MOO_EDIT_WINDOW (toplevel), message);
+}
+
+
+static void
 find_interactive (MooTextView *view)
 {
-    moo_text_view_run_find (GTK_TEXT_VIEW (view));
+    moo_text_view_run_find (GTK_TEXT_VIEW (view),
+                            msg_to_statusbar, view);
 }
 
 static void
 replace_interactive (MooTextView *view)
 {
-    moo_text_view_run_replace (GTK_TEXT_VIEW (view));
+    moo_text_view_run_replace (GTK_TEXT_VIEW (view),
+                               msg_to_statusbar, view);
 }
 
 static void
 find_next_interactive (MooTextView *view)
 {
-    moo_text_view_run_find_next (GTK_TEXT_VIEW (view));
+    moo_text_view_run_find_next (GTK_TEXT_VIEW (view),
+                                 msg_to_statusbar, view);
 }
 
 static void
 find_prev_interactive (MooTextView *view)
 {
-    moo_text_view_run_find_prev (GTK_TEXT_VIEW (view));
+    moo_text_view_run_find_prev (GTK_TEXT_VIEW (view),
+                                 msg_to_statusbar, view);
 }
 
 static void
