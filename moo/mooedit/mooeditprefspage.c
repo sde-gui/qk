@@ -35,15 +35,21 @@ static void     scheme_combo_data_func      (GtkCellLayout      *layout,
 static void     scheme_combo_set_scheme     (GtkComboBox        *combo,
                                              MooTextStyleScheme *scheme);
 
+static void     default_lang_combo_init     (GtkWidget          *combo,
+                                             MooEditor          *editor);
+static void     default_lang_combo_set_lang (GtkComboBox        *combo,
+                                             const char         *id);
+
 static MooEditor *page_get_editor           (MooPrefsDialogPage *page);
 static MooTextStyleScheme *page_get_scheme  (MooPrefsDialogPage *page);
+static char    *page_get_default_lang       (MooPrefsDialogPage *page);
 
 
 GtkWidget *
 moo_edit_prefs_page_new (MooEditor *editor)
 {
     MooPrefsDialogPage *page;
-    GtkWidget *page_widget, *scheme_combo;
+    GtkWidget *page_widget, *scheme_combo, *default_lang_combo;
     MooGladeXML *xml;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -70,6 +76,8 @@ moo_edit_prefs_page_new (MooEditor *editor)
 
     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");
     scheme_combo_init (scheme_combo, editor);
+    default_lang_combo = moo_glade_xml_get_widget (page->xml, "default_lang_combo");
+    default_lang_combo_init (default_lang_combo, editor);
 
     return page_widget;
 }
@@ -131,7 +139,8 @@ prefs_page_init (MooPrefsDialogPage *page)
     MooEditor *editor;
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
-    GtkComboBox *scheme_combo;
+    GtkComboBox *scheme_combo, *lang_combo;
+    const char *lang;
 
     editor = page_get_editor (page);
     mgr = moo_editor_get_lang_mgr (editor);
@@ -140,6 +149,10 @@ prefs_page_init (MooPrefsDialogPage *page)
 
     scheme_combo = moo_glade_xml_get_widget (page->xml, "color_scheme_combo");
     scheme_combo_set_scheme (scheme_combo, scheme);
+
+    lang_combo = moo_glade_xml_get_widget (page->xml, "default_lang_combo");
+    lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
+    default_lang_combo_set_lang (lang_combo, lang);
 }
 
 
@@ -202,10 +215,145 @@ static void
 prefs_page_apply (MooPrefsDialogPage *page)
 {
     MooTextStyleScheme *scheme;
+    char *lang;
 
     scheme = page_get_scheme (page);
     g_return_if_fail (scheme != NULL);
-
     moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME), scheme->name);
     g_object_unref (scheme);
+
+    lang = page_get_default_lang (page);
+    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
+    g_free (lang);
+}
+
+
+enum {
+    COLUMN_ID,
+    COLUMN_NAME
+};
+
+
+static gboolean
+separator_func (GtkTreeModel *model,
+                GtkTreeIter  *iter,
+                G_GNUC_UNUSED gpointer data)
+{
+    char *name = NULL;
+
+    gtk_tree_model_get (model, iter, COLUMN_NAME, &name, -1);
+
+    if (!name)
+        return TRUE;
+
+    g_free (name);
+    return FALSE;
+}
+
+static void
+default_lang_combo_init (GtkWidget *combo,
+                         MooEditor *editor)
+{
+    GtkListStore *store;
+    MooLangMgr *mgr;
+    GSList *list, *l;
+    GtkCellRenderer *cell;
+    GtkTreeIter iter;
+
+    mgr = moo_editor_get_lang_mgr (editor);
+    list = moo_lang_mgr_get_available_langs (mgr);
+
+    store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, COLUMN_ID, NULL,
+                        COLUMN_NAME, "None", -1);
+    /* separator */
+    gtk_list_store_append (store, &iter);
+
+    for (l = list; l != NULL; l = l->next)
+    {
+        MooLang *lang = l->data;
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter, COLUMN_ID, lang->id,
+                            COLUMN_NAME, lang->display_name, -1);
+    }
+
+    gtk_combo_box_set_model (GTK_COMBO_BOX (combo), GTK_TREE_MODEL (store));
+    gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (combo),
+                                          separator_func, NULL, NULL);
+
+    cell = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo), cell,
+                                    "text", COLUMN_NAME, NULL);
+
+    g_object_unref (store);
+    g_slist_free (list);
+}
+
+
+static gboolean
+str_equal (const char *s1, const char *s2)
+{
+    s1 = s1 ? s1 : "";
+    s2 = s2 ? s2 : "";
+    return !strcmp (s1, s2);
+}
+
+static void
+default_lang_combo_set_lang (GtkComboBox *combo,
+                             const char  *id)
+{
+    gboolean found = FALSE;
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+
+    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+
+    model = gtk_combo_box_get_model (combo);
+    gtk_tree_model_get_iter_first (model, &iter);
+
+    do
+    {
+        char *lang_id;
+
+        gtk_tree_model_get (model, &iter, COLUMN_ID, &lang_id, -1);
+
+        if (str_equal (id, lang_id))
+        {
+            found = TRUE;
+            g_free (lang_id);
+            break;
+        }
+
+        g_free (lang_id);
+    }
+    while (gtk_tree_model_iter_next (model, &iter));
+
+    g_return_if_fail (found);
+
+    gtk_combo_box_set_active_iter (combo, &iter);
+}
+
+
+static char *
+page_get_default_lang (MooPrefsDialogPage *page)
+{
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    char *lang = NULL;
+    GtkComboBox *combo;
+
+    combo = moo_glade_xml_get_widget (page->xml, "default_lang_combo");
+    g_return_val_if_fail (combo != NULL, NULL);
+
+    if (!gtk_combo_box_get_active_iter (combo, &iter))
+        g_return_val_if_reached (NULL);
+
+    model = gtk_combo_box_get_model (combo);
+    gtk_tree_model_get (model, &iter, COLUMN_ID, &lang, -1);
+
+    return lang;
 }
