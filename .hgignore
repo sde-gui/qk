@@ -29,5 +29,4 @@ devcpp.*\.layout
 .*\.bak
 .*-glade\.h
 moomarshals\.[ch]
-pcre\.h
 tests.*-ui\.h
