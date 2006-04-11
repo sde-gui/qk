@@ -468,9 +468,12 @@ parse_lines (char   **lines,
         }
 
         g_assert (item != NULL);
+
         start = content_start;
 
-        if (line_is_indented (lines[start]) && !line_is_blank (lines[start]))
+        if (start < n_lines &&
+            line_is_indented (lines[start]) &&
+            !line_is_blank (lines[start]))
         {
             while (start < n_lines)
             {
