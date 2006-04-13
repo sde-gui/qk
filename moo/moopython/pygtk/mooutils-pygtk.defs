@@ -137,6 +137,13 @@
   (gtype-id "MOO_TYPE_UNDO_MGR")
 )
 
+(define-object FileDialog
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooFileDialog")
+  (gtype-id "MOO_TYPE_FILE_DIALOG")
+)
+
 
 (define-pointer UINode
   (in-module "Moo")
@@ -433,65 +440,6 @@
 
 
 ;; From ../mooutils/moodialogs.h
-
-(define-function file_dialog
-  (c-name "moo_file_dialog")
-  (return-type "const-char*")
-  (parameters
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
-    '("MooFileDialogType" "type" (default "MOO_DIALOG_FILE_OPEN_EXISTING"))
-    '("const-char*" "title" (null-ok) (default "NULL"))
-    '("const-char*" "start_dir" (null-ok) (default "NULL"))
-  )
-)
-
-(define-function file_dialogp
-  (c-name "moo_file_dialogp")
-  (return-type "const-char*")
-  (parameters
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
-    '("MooFileDialogType" "type" (default "MOO_DIALOG_FILE_OPEN_EXISTING"))
-    '("const-char*" "title" (null-ok) (default "NULL"))
-    '("const-char*" "prefs_key")
-    '("const-char*" "alternate_prefs_key" (null-ok) (default "NULL"))
-  )
-)
-
-(define-function file_dialog_create
-  (c-name "moo_file_dialog_create")
-  (return-type "GtkWidget*")
-  (parameters
-    '("GtkWidget*" "parent")
-    '("MooFileDialogType" "type")
-    '("gboolean" "multiple")
-    '("const-char*" "title")
-    '("const-char*" "start_dir")
-  )
-)
-
-(define-function file_dialog_run
-  (c-name "moo_file_dialog_run")
-  (return-type "gboolean")
-  (parameters
-    '("GtkWidget*" "dialog")
-  )
-)
-
-(define-function file_dialog_get_filename
-  (c-name "moo_file_dialog_get_filename")
-  (return-type "const-char*")
-  (parameters
-    '("GtkWidget*" "dialog")
-  )
-)
-
-(define-function file_dialog_get_filenames
-  (c-name "moo_file_dialog_get_filenames")
-  (return-type "GSList*")
-  (parameters
-    '("GtkWidget*" "dialog")
-  )
-)
 
 (define-function font_dialog
   (c-name "moo_font_dialog")
@@ -2668,5 +2616,73 @@
     '("const char*" "name")
     '("MooDataDirType" "type")
     '("guint*" "n_dirs")
+  )
+)
+
+
+;; mooutils/moofiledialog.h
+
+(define-function moo_file_dialog_new
+  (c-name "moo_file_dialog_new")
+  (is-constructor-of "MooFileDialog")
+  (return-type "MooFileDialog*")
+  (parameters
+    '("MooFileDialogType" "type")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("gboolean" "multiple" (null-ok) (default "FALSE"))
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "dir" (null-ok) (default "NULL"))
+    '("const-char*" "name" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method set_filter_mgr
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_set_filter_mgr")
+  (return-type "none")
+  (parameters
+    '("MooFilterMgr*" "mgr")
+    '("const-char*" "id")
+  )
+)
+
+(define-method run
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_run")
+  (return-type "gboolean")
+)
+
+(define-method get_filename
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_get_filename")
+  (return-type "const-char*")
+)
+
+(define-method get_filenames
+  (of-object "MooFileDialog")
+  (c-name "moo_file_dialog_get_filenames")
+  (return-type "GSList*")
+)
+
+(define-function file_dialog
+  (c-name "moo_file_dialog")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type")
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "start_dir" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function file_dialogp
+  (c-name "moo_file_dialogp")
+  (return-type "const-char*")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("MooFileDialogType" "type")
+    '("const-char*" "title" (null-ok) (default "NULL"))
+    '("const-char*" "prefs_key")
+    '("const-char*" "alternate_prefs_key" (null-ok) (default "NULL"))
   )
 )

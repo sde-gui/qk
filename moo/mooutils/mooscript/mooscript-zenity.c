@@ -292,7 +292,7 @@ file_selector_func (MSValue   **args,
                     MooFileDialogType type,
                     gboolean    multiple)
 {
-    GtkWidget *dialog;
+    MooFileDialog *dialog;
     MSValue *ret;
     char *start = NULL, *title = NULL;
 
@@ -304,15 +304,15 @@ file_selector_func (MSValue   **args,
     if (n_args > 1)
         start = ms_value_print (args[1]);
 
-    dialog = moo_file_dialog_create (ctx->window ? GTK_WIDGET (ctx->window) : NULL,
-                                     type, multiple, title, start);
+    dialog = moo_file_dialog_new (type, ctx->window ? GTK_WIDGET (ctx->window) : NULL,
+                                  multiple, title, start, NULL);
 
     g_free (title);
     g_free (start);
 
     if (!moo_file_dialog_run (dialog))
     {
-        gtk_widget_destroy (dialog);
+        g_object_unref (dialog);
         return ms_value_none ();
     }
 
@@ -339,7 +339,7 @@ file_selector_func (MSValue   **args,
         g_slist_free (names);
     }
 
-    gtk_widget_destroy (dialog);
+    g_object_unref (dialog);
     return ret;
 }
 

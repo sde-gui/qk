@@ -29,22 +29,23 @@ GSList*
 moo_edit_open_dialog (GtkWidget      *widget,
                       MooFilterMgr   *mgr)
 {
+    MooFileDialog *dialog;
     const char *start;
     char *new_start;
-    GtkWidget *dialog;
     GSList *filenames, *infos = NULL, *l;
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), NULL);
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
-    dialog = moo_file_dialog_create (widget, MOO_DIALOG_FILE_OPEN_EXISTING,
-                                     TRUE, "Open", start);
+
+    dialog = moo_file_dialog_new (MOO_DIALOG_FILE_OPEN_EXISTING, widget,
+                                  TRUE, "Open", start, NULL);
 
     if (mgr)
-        moo_filter_mgr_attach (mgr, GTK_FILE_CHOOSER (dialog), "MooEdit");
+        moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
 
     if (!moo_file_dialog_run (dialog))
     {
-        gtk_widget_destroy (dialog);
+        g_object_unref (dialog);
         return NULL;
     }
 
@@ -59,7 +60,7 @@ moo_edit_open_dialog (GtkWidget      *widget,
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
     g_free (new_start);
 
-    gtk_widget_destroy (dialog);
+    g_object_unref (dialog);
     g_slist_foreach (filenames, (GFunc) g_free, NULL);
     return infos;
 }
@@ -74,7 +75,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     const char *start = NULL;
     const char *filename = NULL;
     char *new_start;
-    GtkWidget *dialog;
+    MooFileDialog *dialog;
     MooEditFileInfo *file_info;
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), NULL);
@@ -85,17 +86,15 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     if (!start)
         start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
 
-    dialog = moo_file_dialog_create (GTK_WIDGET (edit), MOO_DIALOG_FILE_SAVE,
-                                     FALSE, title, start);
-    if (display_basename)
-        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), display_basename);
+    dialog = moo_file_dialog_new (MOO_DIALOG_FILE_SAVE, GTK_WIDGET (edit),
+                                  FALSE, title, start, display_basename);
 
     if (mgr)
-        moo_filter_mgr_attach (mgr, GTK_FILE_CHOOSER (dialog), "MooEdit");
+        moo_file_dialog_set_filter_mgr (dialog, mgr, "MooEdit");
 
     if (!moo_file_dialog_run (dialog))
     {
-        gtk_widget_destroy (dialog);
+        g_object_unref (dialog);
         return NULL;
     }
 
@@ -107,7 +106,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
     g_free (new_start);
 
-    gtk_widget_destroy (dialog);
+    g_object_unref (dialog);
     return file_info;
 }
 

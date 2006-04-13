@@ -63,6 +63,8 @@ mooutils_sources =                             \
     $(mooutils)/mooconfig.c                    \
     $(mooutils)/moodialogs.c                   \
     $(mooutils)/moodialogs.h                   \
+    $(mooutils)/moofiledialog.c                \
+    $(mooutils)/moofiledialog.h                \
     $(mooutils)/mooentry.c                     \
     $(mooutils)/moofilewatch.c                 \
     $(mooutils)/moofilewatch.h                 \
