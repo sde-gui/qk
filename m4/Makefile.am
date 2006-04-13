@@ -9,10 +9,10 @@ EXTRA_DIST =        \
     moo-gtkhtml.m4  \
     moo-os.m4       \
     moo-pcre.m4     \
+    moo-progs.m4    \
     moo-pygtk.m4    \
     moo-python.m4   \
     moo-reloc.m4    \
     moo-version.m4  \
-    moo-windres.m4  \
     moo-xdgmime.m4  \
     moo-xml.m4
