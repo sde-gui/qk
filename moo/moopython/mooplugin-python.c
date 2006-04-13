@@ -294,7 +294,10 @@ moo_python_plugin_read_dir (const char *path)
         prefix = g_strndup (name, suffix - name);
 
         file_path = g_build_filename (path, name, NULL);
-        moo_python_plugin_read_file (file_path);
+
+        /* don't try broken links */
+        if (g_file_test (file_path, G_FILE_TEST_EXISTS))
+            moo_python_plugin_read_file (file_path);
 
         g_free (prefix);
         g_free (file_path);
