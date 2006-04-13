@@ -59,7 +59,6 @@ struct _MooAppPrivate {
     int         exit_code;
     MooEditor  *editor;
     MooAppInfo *info;
-    gboolean    run_python;
     gboolean    run_input;
     gboolean    run_output;
 
@@ -170,7 +169,6 @@ enum {
     PROP_SHORT_NAME,
     PROP_FULL_NAME,
     PROP_DESCRIPTION,
-    PROP_RUN_PYTHON,
     PROP_RUN_INPUT,
     PROP_RUN_OUTPUT,
     PROP_USE_EDITOR,
@@ -247,14 +245,6 @@ moo_app_class_init (MooAppClass *klass)
                                              "description",
                                              NULL,
                                              G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_RUN_PYTHON,
-                                     g_param_spec_boolean ("run-python",
-                                             "run-python",
-                                             "run-python",
-                                             TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
                                      PROP_RUN_INPUT,
@@ -481,10 +471,6 @@ moo_app_set_property (GObject        *object,
             moo_app_set_description (app, g_value_get_string (value));
             break;
 
-        case PROP_RUN_PYTHON:
-            app->priv->run_python = g_value_get_boolean (value);
-            break;
-
         case PROP_RUN_INPUT:
             app->priv->run_input = g_value_get_boolean (value);
             break;
@@ -545,10 +531,6 @@ moo_app_get_property (GObject        *object,
 
         case PROP_DESCRIPTION:
             g_value_set_string (value, app->priv->info->description);
-            break;
-
-        case PROP_RUN_PYTHON:
-            g_value_set_boolean (value, app->priv->run_python);
             break;
 
         case PROP_RUN_INPUT:
@@ -716,12 +698,10 @@ moo_app_python_run_file (MooApp      *app,
 
 
 static gboolean
-moo_app_python_run_string (MooApp      *app,
-                           const char  *string)
+run_python_string (const char *string)
 {
     MooPyObject *res;
 
-    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
     g_return_val_if_fail (string != NULL, FALSE);
     g_return_val_if_fail (moo_python_running (), FALSE);
 
@@ -937,29 +917,6 @@ exit:
     app->priv->new_app = FALSE;
     return FALSE;
 }
-
-
-// static void
-// add_python_plugin_actions (MooApp *app)
-// {
-//     MooUIXML *xml;
-//     MooWindowClass *klass;
-//
-//     klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-//     moo_window_class_new_action (klass, "ReloadPythonPlugins",
-//                                  "name", "Reload Python Plugins",
-//                                  "label", "Reload Python Plugins",
-//                                  "icon-stock-id", GTK_STOCK_REFRESH,
-//                                  "closure-callback", reload_python_plugins,
-//                                  NULL);
-//
-//     xml = moo_app_get_ui_xml (app);
-//     moo_ui_xml_add_item (xml, moo_ui_xml_new_merge_id (xml),
-//                          "ToolsMenu", "ReloadPythonPlugins",
-//                          "ReloadPythonPlugins", -1);
-//
-//     g_type_class_unref (klass);
-// }
 
 
 static void
@@ -1445,7 +1402,7 @@ execute_selection (MooEditWindow *window)
 
     if (text)
     {
-        moo_app_python_run_string (moo_app_get_instance (), text);
+        run_python_string (text);
         g_free (text);
     }
 }
@@ -1519,7 +1476,7 @@ moo_app_exec_cmd_real (MooApp             *app,
     switch (code)
     {
         case MOO_APP_CMD_PYTHON_STRING:
-            moo_app_python_run_string (app, data);
+            run_python_string (data);
             break;
         case MOO_APP_CMD_PYTHON_FILE:
             moo_app_python_run_file (app, data);
