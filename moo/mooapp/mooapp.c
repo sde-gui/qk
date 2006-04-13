@@ -16,15 +16,16 @@
 #endif
 
 #define WANT_MOO_APP_CMD_CHARS
-#include "mooapp/mooapp-private.h"
 #include "mooapp/mooappinput.h"
 #include "mooapp/mooappoutput.h"
+#include "mooapp/mooapp.h"
 #include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooedit-script.h"
 #include "mooedit/plugins/mooeditplugins.h"
+#include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"

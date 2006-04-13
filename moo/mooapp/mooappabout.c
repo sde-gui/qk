@@ -11,9 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooapp/mooapp-private.h"
 #include "mooapp/mooappabout-glade.h"
 #include "mooapp/mooappabout.h"
+#include "mooapp/mooapp.h"
 #include "mooapp/moohtml.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"

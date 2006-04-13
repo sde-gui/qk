@@ -15,7 +15,6 @@ mooapp_sources =                              \
     $(mooapp_include_headers)                 \
     $(mooapp)/mooappabout.c                   \
     $(mooapp)/mooappabout.h                   \
-    $(mooapp)/mooapp-private.h                \
     $(mooapp)/mooapp.c                        \
     $(mooapp)/mooapp.h                        \
     $(mooapp)/mooappinput.c                   \
