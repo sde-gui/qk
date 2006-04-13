@@ -67,7 +67,8 @@ moo_edit_open_dialog (GtkWidget      *widget,
 
 MooEditFileInfo*
 moo_edit_save_as_dialog (MooEdit        *edit,
-                         MooFilterMgr   *mgr)
+                         MooFilterMgr   *mgr,
+                         const char     *display_basename)
 {
     const char *title = "Save File";
     const char *start = NULL;
@@ -86,6 +87,8 @@ moo_edit_save_as_dialog (MooEdit        *edit,
 
     dialog = moo_file_dialog_create (GTK_WIDGET (edit), MOO_DIALOG_FILE_SAVE,
                                      FALSE, title, start);
+    if (display_basename)
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), display_basename);
 
     if (mgr)
         moo_filter_mgr_attach (mgr, GTK_FILE_CHOOSER (dialog), "MooEdit");

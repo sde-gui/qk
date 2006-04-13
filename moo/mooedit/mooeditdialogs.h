@@ -29,7 +29,8 @@ typedef enum {
 
 
 MooEditFileInfo *moo_edit_save_as_dialog            (MooEdit        *edit,
-                                                     MooFilterMgr   *mgr);
+                                                     MooFilterMgr   *mgr,
+                                                     const char     *display_basename);
 GSList          *moo_edit_open_dialog               (GtkWidget      *widget,
                                                      MooFilterMgr   *mgr);
 

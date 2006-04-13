@@ -1703,7 +1703,8 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!filename)
     {
-        file_info = moo_edit_save_as_dialog (doc, editor->priv->filter_mgr);
+        file_info = moo_edit_save_as_dialog (doc, editor->priv->filter_mgr,
+                                             moo_edit_get_display_basename (doc));
 
         if (!file_info)
             goto out;
