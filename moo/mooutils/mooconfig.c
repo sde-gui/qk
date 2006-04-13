@@ -255,7 +255,10 @@ splitlines (const char *string,
     guint n_lines = 0, i;
 
     if (!len)
-        return NULL;
+    {
+        *n_lines_p = 0;
+        return g_new0 (char*, 1);
+    }
 
     while (len)
     {
@@ -430,7 +433,7 @@ parse_lines (char   **lines,
     items = NULL;
     item = NULL;
 
-    while (TRUE)
+    while (start < n_lines)
     {
         guint content_start;
 
@@ -467,7 +470,8 @@ parse_lines (char   **lines,
             content_start++;
         }
 
-        g_assert (item != NULL);
+        if (!item)
+            break;
 
         start = content_start;
 
