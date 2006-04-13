@@ -138,10 +138,6 @@ void             moo_edit_set_clean             (MooEdit        *edit,
 MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
 void             moo_edit_status_changed        (MooEdit        *edit);
 
-gboolean         moo_edit_get_readonly          (MooEdit        *edit);
-void             moo_edit_set_readonly          (MooEdit        *edit,
-                                                 gboolean        readonly);
-
 MooEditFileInfo *moo_edit_file_info_new         (const char     *filename,
                                                  const char     *encoding);
 MooEditFileInfo *moo_edit_file_info_copy        (const MooEditFileInfo *info);

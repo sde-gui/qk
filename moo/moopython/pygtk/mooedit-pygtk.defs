@@ -303,21 +303,6 @@
   (return-type "none")
 )
 
-(define-method get_readonly
-  (of-object "MooEdit")
-  (c-name "moo_edit_get_readonly")
-  (return-type "gboolean")
-)
-
-(define-method set_readonly
-  (of-object "MooEdit")
-  (c-name "moo_edit_set_readonly")
-  (return-type "none")
-  (parameters
-    '("gboolean" "readonly")
-  )
-)
-
 (define-function moo_edit_file_info_new
   (c-name "moo_edit_file_info_new")
   (is-constructor-of "MooEditFileInfo")

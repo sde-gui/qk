@@ -73,8 +73,6 @@ struct _MooEditPrivate {
     char *display_filename;
     char *display_basename;
 
-    gboolean readonly;
-
     char *encoding;
     MooEditLineEndType line_end_type;
     MooEditStatus status;

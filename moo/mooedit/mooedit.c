@@ -426,25 +426,6 @@ moo_edit_file_info_free (MooEditFileInfo    *info)
 
 
 gboolean
-moo_edit_get_readonly (MooEdit *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
-    return edit->priv->readonly;
-}
-
-
-void
-moo_edit_set_readonly (MooEdit            *edit,
-                       gboolean            readonly)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    edit->priv->readonly = readonly;
-    gtk_text_view_set_editable (GTK_TEXT_VIEW (edit), !readonly);
-    moo_edit_status_changed (edit);
-}
-
-
-gboolean
 moo_edit_is_empty (MooEdit *edit)
 {
     GtkTextIter start, end;
