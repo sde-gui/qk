@@ -320,8 +320,6 @@ moo_window_constructor (GType                  type,
     g_signal_connect (window, "notify::ui-object-xml",
                       G_CALLBACK (moo_window_create_ui), NULL);
 
-    g_idle_add ((GSourceFunc) moo_window_create_ui, window);
-
     if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
     {
         int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
@@ -345,6 +343,8 @@ moo_window_constructor (GType                  type,
         moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
     action = moo_window_get_action_by_id (window, "ShowMenubar");
     moo_sync_bool_property (action, "active", window, "menubar-visible", FALSE);
+
+    moo_window_create_ui (window);
 
     g_type_class_unref (klass);
     return object;
