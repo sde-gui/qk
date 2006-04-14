@@ -36,6 +36,7 @@ struct _MooTextCompletionPrivate {
     GtkScrolledWindow *scrolled_window;
     guint working : 1;
     guint visible : 1;
+    guint in_update : 1;
 };
 
 
@@ -227,6 +228,11 @@ moo_text_completion_update (MooTextCompletion *cmpl)
     g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
     g_return_if_fail (cmpl->priv->working);
 
+    if (cmpl->priv->in_update)
+        return;
+
+    cmpl->priv->in_update = TRUE;
+
     gtk_text_buffer_get_iter_at_mark (cmpl->priv->buffer,
                                       &start, cmpl->priv->start);
     gtk_text_buffer_get_iter_at_mark (cmpl->priv->buffer,
@@ -238,6 +244,8 @@ moo_text_completion_update (MooTextCompletion *cmpl)
         moo_text_completion_hide (cmpl);
     else if (cmpl->priv->visible)
         moo_text_completion_resize_popup (cmpl);
+
+    cmpl->priv->in_update = FALSE;
 }
 
 
