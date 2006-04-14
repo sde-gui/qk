@@ -12,6 +12,7 @@
  */
 
 #include "moocompletion.h"
+#include "mooedit/mootextcompletion.h"
 #include "mooutils/mooutils-misc.h"
 #include <sys/stat.h>
 #include <errno.h>
@@ -289,6 +290,8 @@ _moo_completion_complete (CmplPlugin *plugin,
 {
     MooLang *lang;
     CmplData *data;
+    MooTextCompletion *cmpl;
+    GtkTextIter iter;
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
@@ -298,9 +301,31 @@ _moo_completion_complete (CmplPlugin *plugin,
     if (!data->words)
         return;
 
+    cmpl = g_object_get_data (G_OBJECT (doc), "moo-completion");
+
+    if (!cmpl)
     {
+        GtkListStore *store;
         char **p;
+
+        cmpl = moo_text_completion_new ();
+        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
+        g_object_set_data_full (G_OBJECT (doc), "moo-completion",
+                                cmpl, g_object_unref);
+
+        store = gtk_list_store_new (1, G_TYPE_STRING);
+
         for (p = data->words; p && *p; ++p)
-            g_print ("%s\n", *p);
+        {
+            GtkTreeIter iter;
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter, 0, *p, -1);
+        }
+
+        moo_text_completion_set_model (cmpl, GTK_TREE_MODEL (store), 0);
+        g_object_unref (store);
     }
+
+    moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
+    moo_text_completion_show (cmpl, &iter, &iter);
 }

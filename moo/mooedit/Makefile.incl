@@ -7,12 +7,11 @@ mooedit_srcdir = $(srcdir)/$(mooedit)
 
 mooedit_include_headers =                     \
     $(mooedit)/moocmdview.h                   \
+    $(mooedit)/mooedit-script.h               \
     $(mooedit)/mooedit.h                      \
     $(mooedit)/mooeditconfig.h                \
     $(mooedit)/mooeditor.h                    \
     $(mooedit)/mooeditprefs.h                 \
-    $(mooedit)/mooedit-script.h               \
-    $(mooedit)/mootextsearch.h                \
     $(mooedit)/mooeditwindow.h                \
     $(mooedit)/mooindenter.h                  \
     $(mooedit)/moolang.h                      \
@@ -22,7 +21,9 @@ mooedit_include_headers =                     \
     $(mooedit)/mooplugin-macro.h              \
     $(mooedit)/mooplugin.h                    \
     $(mooedit)/mootextbuffer.h                \
+    $(mooedit)/mootextcompletion.h            \
     $(mooedit)/mootextiter.h                  \
+    $(mooedit)/mootextsearch.h                \
     $(mooedit)/mootextstyle.h                 \
     $(mooedit)/mootextstylescheme.h           \
     $(mooedit)/mootextview.h
@@ -44,10 +45,10 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolinebuffer.h                \
     $(mooedit)/moopluginprefs-glade.h         \
     $(mooedit)/mootext-private.h              \
+    $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/mootextfind.h                  \
     $(mooedit)/mootextgotoline-glade.h        \
-    $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextview-private.h          \
     $(mooedit)/quicksearch-glade.h            \
     $(mooedit)/statusbar-glade.h
@@ -57,31 +58,32 @@ mooedit_sources =                             \
     $(mooedit_noinst_headers)                 \
     $(mooedit)/gtksourceiter.c                \
     $(mooedit)/moocmdview.c                   \
+    $(mooedit)/mooedit-script.c               \
     $(mooedit)/mooedit.c                      \
     $(mooedit)/mooeditconfig.c                \
     $(mooedit)/mooeditdialogs.c               \
     $(mooedit)/mooeditfileops.c               \
-    $(mooedit)/mootextfind.c                  \
     $(mooedit)/mooeditinput.c                 \
     $(mooedit)/mooeditor.c                    \
     $(mooedit)/mooeditprefs.c                 \
     $(mooedit)/mooeditprefspage.c             \
-    $(mooedit)/mootextsearch.c                \
     $(mooedit)/mooeditwindow.c                \
-    $(mooedit)/mooedit-script.c               \
     $(mooedit)/moofold.c                      \
     $(mooedit)/moohighlighter.c               \
     $(mooedit)/mooindenter.c                  \
-    $(mooedit)/moolang.c                      \
-    $(mooedit)/moolangmgr.c                   \
     $(mooedit)/moolang-parser.c               \
     $(mooedit)/moolang-rules.c                \
+    $(mooedit)/moolang.c                      \
+    $(mooedit)/moolangmgr.c                   \
     $(mooedit)/moolinebuffer.c                \
     $(mooedit)/moolinemark.c                  \
     $(mooedit)/moolineview.c                  \
     $(mooedit)/mooplugin.c                    \
     $(mooedit)/mootextbtree.c                 \
     $(mooedit)/mootextbuffer.c                \
+    $(mooedit)/mootextcompletion.c            \
+    $(mooedit)/mootextfind.c                  \
+    $(mooedit)/mootextsearch.c                \
     $(mooedit)/mootextstyle.c                 \
     $(mooedit)/mootextstylescheme.c           \
     $(mooedit)/mootextview.c
