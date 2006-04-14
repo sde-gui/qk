@@ -17,9 +17,6 @@
 #include <string.h>
 
 
-#define USE_MEM_CHUNK 0
-
-
 static BTNode  *bt_node_new         (BTNode     *parent,
                                      guint       n_children,
                                      guint       count,
@@ -41,67 +38,40 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #endif
 
 
-#if USE_MEM_CHUNK
-static GMemChunk *btree_data_chunk = NULL;
-static GMemChunk *btree_node_chunk = NULL;
-static GMemChunk *btree_hl_info_chunk = NULL;
-#endif
-
-#if !USE_MEM_CHUNK
-#undef g_chunk_free
-#undef g_chunk_new0
-#define g_chunk_free(m,c) g_free (m)
-#define g_chunk_new0(T,c) g_new0 (T, 1)
-#endif
-
 inline static void
 data_free__ (BTData *data)
 {
-    g_chunk_free (data, btree_data_chunk);
+    g_free (data);
 }
 
 inline static BTData*
 data_new__ (void)
 {
-    return g_chunk_new0 (BTData, btree_data_chunk);
+    return g_new0 (BTData, 1);
 }
 
 inline static void
 node_free__ (BTNode *node)
 {
-    g_chunk_free (node, btree_node_chunk);
+    g_free (node);
 }
 
 inline static BTNode*
 node_new__ (void)
 {
-    return g_chunk_new0 (BTNode, btree_node_chunk);
+    return g_new0 (BTNode, 1);
 }
 
 inline static void
 hl_info_free__ (HLInfo *info)
 {
-    g_chunk_free (info, btree_hl_info_chunk);
+    g_free (info);
 }
 
 inline static HLInfo*
 hl_info_new__ (void)
 {
-    return g_chunk_new0 (HLInfo, btree_hl_info_chunk);
-}
-
-
-static void
-init_mem_chunk (void)
-{
-#if USE_MEM_CHUNK
-    if (!btree_node_chunk)
-    {
-        btree_node_chunk = g_mem_chunk_create (BTNode, 512, G_ALLOC_AND_FREE);
-        btree_data_chunk = g_mem_chunk_create (BTData, 512, G_ALLOC_AND_FREE);
-        btree_hl_info_chunk = g_mem_chunk_create (HLInfo, 512, G_ALLOC_AND_FREE);
-    }
-#endif
+    return g_new0 (HLInfo, 1);
 }
 
 
@@ -109,8 +79,6 @@ BTree*
 moo_text_btree_new (void)
 {
     BTree *tree = g_new0 (BTree, 1);
-
-    init_mem_chunk ();
 
     tree->stamp = 1;
     tree->depth = 0;
