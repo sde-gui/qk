@@ -7,24 +7,24 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts>
+      <part>kdevopenwith</part>
       <part>kdevabbrev</part>
+      <part>kdevctags2</part>
       <part>kdevclassview</part>
       <part>kdevsnippet</part>
-      <part>kdevctags2</part>
       <part>kdevdocumentation</part>
       <part>kdevdoxygen</part>
       <part>kdevfilegroups</part>
-      <part>kdevfilelist</part>
       <part>kdevfileview</part>
+      <part>kdevfilelist</part>
       <part>kdevdistpart</part>
-      <part>kdevopenwith</part>
       <part>kdevregexptest</part>
       <part>kdevscripting</part>
       <part>kdevtexttools</part>
     </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <secondaryLanguages>
       <language>C</language>
     </secondaryLanguages>
@@ -33,7 +33,7 @@
   <kdevautoproject>
     <general>
       <activetarget>moo/libmoo.la</activetarget>
-      <useconfiguration>optimized</useconfiguration>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
       <mainprogram>./medit</mainprogram>
@@ -46,19 +46,21 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings=fatal --disable-moo-module</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings --without-python</configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <cflags>-O0 -g3</cflags>
-        <topsourcedir/>
-        <cppflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
         <envvars/>
+        <ldflags></ldflags>
+        <cxxflags></cxxflags>
       </debug>
       <gtk-print>
         <configargs>--enable-debug --enable-all-gcc-warnings --without-python --prefix=/usr/local/gtk-print</configargs>
@@ -216,15 +218,15 @@
   </kdevautoproject>
   <kdevdebugger>
     <general>
-      <dbgshell/>
+      <dbgshell></dbgshell>
       <programargs>--g-fatal-warnings</programargs>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>true</floatingtoolbar>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
     </general>
     <display>
       <staticmembers>true</staticmembers>
@@ -286,16 +288,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" create="template" name="GAP source" >
+      <type icon="source" ext="g" name="GAP source" create="template" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
+      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
+      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" create="template" name="C Source" >
+      <type icon="source_c" ext="c" name="C Source" create="template" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>
@@ -322,7 +324,7 @@
     </codecompletion>
     <references/>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>

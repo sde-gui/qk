@@ -8,7 +8,6 @@ completion_sources =				\
     $(completion)/moocompletion-plugin.c	\
     $(completion)/moocompletion.c		\
     $(completion)/moocompletion.h		\
-    $(completion)/moocompletion-popup.c		\
     $(completion)/moocompletion-prefs.c		\
     $(completion)/moocompletion-glade.h
 

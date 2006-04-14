@@ -24,6 +24,7 @@ typedef struct {
     time_t mtime;
     GCompletion *cmpl;
     char **words;
+    GtkListStore *store;
 } CmplData;
 
 static CmplData *cmpl_data_new              (void);
@@ -62,6 +63,7 @@ cmpl_data_read_file (CmplData *data)
     g_return_if_fail (data->path != NULL);
 
     data->cmpl = g_completion_new (NULL);
+    data->store = gtk_list_store_new (1, G_TYPE_STRING);
 
     g_file_get_contents (data->path, &contents, NULL, &error);
 
@@ -159,9 +161,12 @@ cmpl_data_clear (CmplData *data)
     g_free (data->path);
     if (data->cmpl)
         g_completion_free (data->cmpl);
+    if (data->store)
+        g_object_unref (data->store);
     data->words = NULL;
     data->path = NULL;
     data->cmpl = NULL;
+    data->store = NULL;
 }
 
 
@@ -284,6 +289,44 @@ _cmpl_plugin_clear (CmplPlugin *plugin)
 }
 
 
+inline static gboolean
+is_word (const char *p)
+{
+    gunichar c = g_utf8_get_char (p);
+    return c == '_' || g_unichar_isalnum (c);
+}
+
+
+static gboolean
+find_word_end (const char *text,
+               char      **word_start)
+{
+    char *p;
+    guint len = g_utf8_strlen (text, -1);
+
+    if (!len)
+        return FALSE;
+
+    p = g_utf8_offset_to_pointer (text, len - 1);
+    *word_start = NULL;
+
+    if (!is_word (p))
+        return FALSE;
+
+    while (is_word (p))
+    {
+        *word_start = p;
+
+        if (p > text)
+            p = g_utf8_prev_char (p);
+        else
+            break;
+    }
+
+    return *word_start != NULL;
+}
+
+
 void
 _moo_completion_complete (CmplPlugin *plugin,
                           MooEdit    *doc)
@@ -291,7 +334,8 @@ _moo_completion_complete (CmplPlugin *plugin,
     MooLang *lang;
     CmplData *data;
     MooTextCompletion *cmpl;
-    GtkTextIter iter;
+    GtkTextIter start, end;
+    gboolean get_all = TRUE;
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
@@ -301,31 +345,92 @@ _moo_completion_complete (CmplPlugin *plugin,
     if (!data->words)
         return;
 
-    cmpl = g_object_get_data (G_OBJECT (doc), "moo-completion");
+    moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &end);
+    start = end;
 
-    if (!cmpl)
+    if (!gtk_text_iter_starts_line (&end))
     {
-        GtkListStore *store;
+        char *text, *word_start;
+        GtkTextBuffer *buffer;
+        GtkTextIter line_start;
+
+        line_start = end;
+        gtk_text_iter_set_line_offset (&line_start, 0);
+
+        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+        text = gtk_text_buffer_get_slice (buffer, &line_start, &end, TRUE);
+
+        if (find_word_end (text, &word_start))
+        {
+            char *new_word_start;
+            GList *words;
+            int offset;
+
+            offset = g_utf8_pointer_to_offset (text, word_start);
+            gtk_text_iter_set_line_offset (&line_start, offset);
+
+            words = g_completion_complete_utf8 (data->cmpl, word_start, &new_word_start);
+
+            if (!words)
+            {
+                g_free (text);
+                return;
+            }
+
+            get_all = FALSE;
+
+            if (strcmp (new_word_start, word_start))
+            {
+                gtk_text_buffer_delete (buffer, &line_start, &end);
+                gtk_text_buffer_insert (buffer, &end, new_word_start, -1);
+            }
+
+            if (!words->next)
+                return;
+
+            start = end;
+            gtk_text_iter_set_line_offset (&start, offset);
+
+            gtk_list_store_clear (data->store);
+
+            while (words)
+            {
+                GtkTreeIter iter;
+                gtk_list_store_append (data->store, &iter);
+                gtk_list_store_set (data->store, &iter, 0, words->data, -1);
+                words = words->next;
+            }
+
+            g_free (new_word_start);
+        }
+
+        g_free (text);
+    }
+
+    if (get_all)
+    {
         char **p;
 
-        cmpl = moo_text_completion_new ();
-        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
-        g_object_set_data_full (G_OBJECT (doc), "moo-completion",
-                                cmpl, g_object_unref);
-
-        store = gtk_list_store_new (1, G_TYPE_STRING);
+        gtk_list_store_clear (data->store);
 
         for (p = data->words; p && *p; ++p)
         {
             GtkTreeIter iter;
-            gtk_list_store_append (store, &iter);
-            gtk_list_store_set (store, &iter, 0, *p, -1);
+            gtk_list_store_append (data->store, &iter);
+            gtk_list_store_set (data->store, &iter, 0, *p, -1);
         }
-
-        moo_text_completion_set_model (cmpl, GTK_TREE_MODEL (store), 0);
-        g_object_unref (store);
     }
 
-    moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
-    moo_text_completion_show (cmpl, &iter, &iter);
+    cmpl = g_object_get_data (G_OBJECT (doc), "moo-completion");
+
+    if (!cmpl)
+    {
+        cmpl = moo_text_completion_new ();
+        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
+        g_object_set_data_full (G_OBJECT (doc), "moo-completion",
+                                cmpl, g_object_unref);
+        moo_text_completion_set_model (cmpl, GTK_TREE_MODEL (data->store), 0);
+    }
+
+    moo_text_completion_show (cmpl, &start, &end);
 }
