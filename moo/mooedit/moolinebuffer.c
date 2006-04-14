@@ -468,3 +468,23 @@ moo_line_buffer_get_line_index (G_GNUC_UNUSED LineBuffer *line_buf,
     g_assert (line == moo_line_buffer_get_line (line_buf, index));
     return index;
 }
+
+
+void
+moo_line_buffer_cleanup (LineBuffer *line_buf)
+{
+    guint i, size;
+
+    g_return_if_fail (line_buf != NULL);
+
+    size = moo_text_btree_size (line_buf->tree);
+
+    for (i = 0; i < size; ++i)
+    {
+        Line *line = moo_line_buffer_get_line (line_buf, i);
+        moo_line_erase_segments (line);
+        g_slist_free (line->hl_info->tags);
+        line->hl_info->tags = NULL;
+        line->hl_info->tags_applied = FALSE;
+    }
+}

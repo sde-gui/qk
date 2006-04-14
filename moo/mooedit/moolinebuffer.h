@@ -67,6 +67,8 @@ struct _HLInfo {
 LineBuffer *moo_line_buffer_new         (void);
 void     moo_line_buffer_free           (LineBuffer     *line_buf);
 
+void     moo_line_buffer_cleanup        (LineBuffer     *line_buf);
+
 Line    *moo_line_buffer_get_line       (LineBuffer     *line_buf,
                                          int             index);
 

@@ -705,6 +705,7 @@ moo_text_buffer_set_lang (MooTextBuffer  *buffer,
         moo_lang_unref (old_lang);
 
     moo_highlighter_destroy (buffer->priv->hl, TRUE);
+    moo_line_buffer_cleanup (buffer->priv->line_buf);
 
     buffer->priv->lang = lang;
 
@@ -751,9 +752,14 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
         return;
 
     if (buffer->priv->do_highlight && buffer->priv->lang)
+    {
         moo_highlighter_destroy (buffer->priv->hl, TRUE);
+        moo_line_buffer_cleanup (buffer->priv->line_buf);
+    }
     else
+    {
         moo_highlighter_destroy (buffer->priv->hl, FALSE);
+    }
 
     buffer->priv->do_highlight = highlight;
 
