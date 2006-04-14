@@ -33,6 +33,7 @@ struct _MooTextCompletionPrivate {
     GtkTextMark *end;
 
     GtkWidget *popup;
+    GtkScrolledWindow *scrolled_window;
     guint working : 1;
     guint visible : 1;
 };
@@ -140,6 +141,7 @@ moo_text_completion_ensure_popup (MooTextCompletion *cmpl)
         gtk_widget_add_events (cmpl->priv->popup, GDK_KEY_PRESS_MASK | GDK_BUTTON_PRESS_MASK);
 
         scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+        cmpl->priv->scrolled_window = GTK_SCROLLED_WINDOW (scrolled_window);
         gtk_widget_set_size_request (scrolled_window, -1, -1);
         gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                         GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -350,9 +352,9 @@ moo_text_completion_resize_popup (MooTextCompletion *cmpl)
     int monitor_num;
     GdkRectangle monitor, iter_rect;
     GtkRequisition popup_req;
-    int width;
-    int vert_separator = 0;
+    int vert_separator, horiz_separator;
     GtkTextIter iter;
+    int width;
 
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (cmpl->priv->start && cmpl->priv->end);
@@ -370,15 +372,29 @@ moo_text_completion_resize_popup (MooTextCompletion *cmpl)
     items = MIN (total_items, MAX_POPUP_LEN);
 
     gtk_tree_view_column_cell_get_size (cmpl->priv->column, NULL,
-                                        NULL, NULL, NULL, &height);
+                                        NULL, NULL, &width, &height);
 
     screen = gtk_widget_get_screen (widget);
     monitor_num = gdk_screen_get_monitor_at_window (screen, widget->window);
     gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
 
-    width = MIN (100, monitor.width);
-    gtk_widget_style_get (GTK_WIDGET (cmpl->priv->treeview), "vertical-separator",
-                          &vert_separator, NULL);
+    gtk_widget_style_get (GTK_WIDGET (cmpl->priv->treeview),
+                          "vertical-separator", &vert_separator,
+                          "horizontal-separator", &horiz_separator,
+                          NULL);
+    width += 4 * horiz_separator;
+
+    if (total_items > items)
+    {
+        GtkRequisition scrollbar_req;
+        gtk_widget_size_request (cmpl->priv->scrolled_window->vscrollbar,
+                                 &scrollbar_req);
+        width += scrollbar_req.width;
+    }
+
+    width = MAX (width, 100);
+    width = MIN (monitor.width, width);
+
     gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), width,
                                  items * (height + vert_separator));
 
@@ -880,15 +896,16 @@ moo_text_completion_complete_real (MooTextCompletion  *cmpl,
                                    GtkTreeIter        *iter)
 {
     char *text = NULL;
-    GtkTextIter text_iter;
+    GtkTextIter start, end;
 
     gtk_tree_model_get (model, iter, cmpl->priv->text_column, &text, -1);
     g_return_val_if_fail (text != NULL, FALSE);
 
-    moo_text_completion_get_region (cmpl, NULL, &text_iter);
-    gtk_text_buffer_insert_interactive (cmpl->priv->buffer, &text_iter,
-                                        text, -1, TRUE);
+    moo_text_completion_get_region (cmpl, &start, &end);
+    gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
+    gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
 
+    g_free (text);
     return TRUE;
 }
 
