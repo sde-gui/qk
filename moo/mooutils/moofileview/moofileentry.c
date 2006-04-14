@@ -772,7 +772,7 @@ completion_popup (MooFileEntryCompletion *cmpl)
 
     if (GTK_WINDOW (window)->group)
         gtk_window_group_add_window (GTK_WINDOW (window)->group,
-                                     GTK_WINDOW (window));
+                                     GTK_WINDOW (cmpl->priv->popup));
     gtk_window_set_modal (GTK_WINDOW (cmpl->priv->popup), TRUE);
 
     completion_resize_popup (cmpl);
