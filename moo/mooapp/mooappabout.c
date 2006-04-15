@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moolinklabel.h"
 #include "mooutils/mooglade.h"
+#include "config.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -32,6 +33,12 @@ static GtkWidget *license_dialog;
 static GtkWidget *credits_dialog;
 static GtkWidget *system_info_dialog;
 
+
+#ifndef MOO_USE_XML
+#define MooHtml GtkTextView
+#undef MOO_TYPE_HTML
+#define MOO_TYPE_HTML GTK_TYPE_TEXT_VIEW
+#endif
 
 static void
 show_credits (void)
@@ -57,10 +64,19 @@ show_credits (void)
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
     written_by = moo_glade_xml_get_widget (xml, "written_by");
+#ifdef MOO_USE_XML
     moo_html_load_memory (written_by,
                           "Yevgen Muntyan <a href=\"mailto://muntyan@math.tamu.edu\">"
-                          "&lt;muntyan@math.tamu.edu&gt;</a>",
+                                  "&lt;muntyan@math.tamu.edu&gt;</a>",
                           -1, NULL, NULL);
+#else
+    /* XXX */
+    {
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (written_by);
+        gtk_text_buffer_insert_at_cursor (buffer,
+                                          "Yevgen Muntyan <muntyan@math.tamu.edu>", -1);
+    }
+#endif
 
     if (about_dialog)
         gtk_window_set_transient_for (GTK_WINDOW (credits_dialog),
