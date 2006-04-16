@@ -70,6 +70,7 @@ gboolean    moo_save_user_data_file         (const char     *basename,
                                              gssize          len,
                                              GError        **error);
 
+/* user data comes last; MOO_DATA_DIR comes first */
 /* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
    $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
 char      **moo_get_data_dirs               (MooDataDirType  type,
