@@ -142,23 +142,23 @@ moo_edit_context_set_doc (MooEditContext *ctx,
 
 
 MSContext *
-moo_edit_context_new (MooEditWindow *window)
+moo_edit_context_new (MooEdit       *doc,
+                      MooEditWindow *window)
 {
     g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
-
+    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
     return g_object_new (MOO_TYPE_EDIT_CONTEXT,
                          "window", window,
-                         "doc", window ? moo_edit_window_get_active_doc (window) : NULL,
+                         "doc", doc,
                          NULL);
 }
 
 
 static void
 moo_edit_set_shell_vars (MooCommand     *cmd,
+                         MooEdit        *doc,
                          MooEditWindow  *window)
 {
-    MooEdit *doc = window ? moo_edit_window_get_active_doc (window) : NULL;
-
     if (doc)
         moo_command_set_shell_var (cmd, DOC_ATTR_FILE,
                                    moo_edit_get_filename (doc));
@@ -167,19 +167,24 @@ moo_edit_set_shell_vars (MooCommand     *cmd,
 
 void
 moo_edit_setup_command (MooCommand     *cmd,
+                        MooEdit        *doc,
                         MooEditWindow  *window)
 {
     MSContext *ctx;
 
     g_return_if_fail (MOO_IS_COMMAND (cmd));
     g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (!doc || MOO_IS_EDIT (doc));
 
-    ctx = moo_edit_context_new (window);
+    if (!doc && window)
+        doc = moo_edit_window_get_active_doc (window);
+
+    ctx = moo_edit_context_new (doc, window);
     moo_command_set_context (cmd, ctx);
     moo_command_set_py_dict (cmd, ctx->py_dict);
     g_object_unref (ctx);
 
-    moo_edit_set_shell_vars (cmd, window);
+    moo_edit_set_shell_vars (cmd, doc, window);
 }
 
 
