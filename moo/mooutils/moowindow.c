@@ -911,8 +911,6 @@ moo_window_class_install_action (MooWindowClass     *klass,
     g_return_if_fail (MOO_IS_OBJECT_FACTORY (action));
     g_return_if_fail (action_id && action_id[0]);
 
-    /* XXX check if action with this id exists */
-
     type = G_OBJECT_CLASS_TYPE (klass);
     actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
 
@@ -922,6 +920,9 @@ moo_window_class_install_action (MooWindowClass     *klass,
                                          g_free, (GDestroyNotify) action_info_free);
         g_type_set_qdata (type, MOO_WINDOW_ACTIONS_QUARK, actions);
     }
+
+    if (g_hash_table_lookup (actions, action_id))
+        moo_window_class_remove_action (klass, action_id);
 
     info = action_info_new (action, conditions);
     g_hash_table_insert (actions, g_strdup (action_id), info);
@@ -985,6 +986,7 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
                             data, notify);
 
     moo_window_class_install_action (klass, action_id, action_factory, NULL);
+    g_object_unref (action_factory);
 }
 
 
