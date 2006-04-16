@@ -747,7 +747,7 @@ as_plugin_init (ASPlugin *plugin)
 {
     plugin->lang_sets = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                                (GDestroyNotify) as_set_unref);
-    plugin->ctx = moo_edit_context_new (NULL);
+    plugin->ctx = moo_edit_context_new (NULL, NULL);
 
     as_plugin_load (plugin);
 
