@@ -78,6 +78,10 @@ void            moo_text_popup_set_position (MooTextPopup       *popup,
 
 gboolean        moo_text_popup_visible      (MooTextPopup       *popup);
 
+gboolean        moo_text_popup_get_selected (MooTextPopup       *popup,
+                                             GtkTreeIter        *iter);
+void            moo_text_popup_select       (MooTextPopup       *popup,
+                                             GtkTreeIter        *iter);
 
 G_END_DECLS
 

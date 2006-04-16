@@ -59,6 +59,7 @@ static void     moo_text_popup_resize       (MooTextPopup   *popup);
 static void     moo_text_popup_connect      (MooTextPopup   *popup);
 static void     moo_text_popup_disconnect   (MooTextPopup   *popup);
 static void     moo_text_popup_emit_changed (MooTextPopup   *popup);
+static void     moo_text_popup_select_first (MooTextPopup   *popup);
 
 
 G_DEFINE_TYPE (MooTextPopup, moo_text_popup, G_TYPE_OBJECT)
@@ -287,9 +288,16 @@ moo_text_popup_update (MooTextPopup *popup)
     popup->priv->in_resize = TRUE;
 
     if (moo_text_popup_empty (popup))
+    {
         moo_text_popup_hide (popup);
+    }
     else
+    {
         moo_text_popup_resize (popup);
+
+        if (!moo_text_popup_get_selected (popup, NULL))
+            moo_text_popup_select_first (popup);
+    }
 
     popup->priv->in_resize = FALSE;
 }
@@ -372,6 +380,9 @@ moo_text_popup_show_real (MooTextPopup *popup)
                               GDK_BUTTON_RELEASE_MASK |
                               GDK_POINTER_MOTION_MASK,
                       NULL, NULL, GDK_CURRENT_TIME);
+
+    if (!moo_text_popup_get_selected (popup, NULL))
+        moo_text_popup_select_first (popup);
 
     moo_text_popup_connect (popup);
 }
@@ -986,4 +997,43 @@ moo_text_popup_get_property (GObject        *object,
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
+}
+
+
+gboolean
+moo_text_popup_get_selected (MooTextPopup *popup,
+                             GtkTreeIter  *iter)
+{
+    g_return_val_if_fail (MOO_IS_TEXT_POPUP (popup), FALSE);
+    g_return_val_if_fail (popup->priv->model != NULL, FALSE);
+    return gtk_tree_selection_get_selected (popup->priv->selection, NULL, iter);
+}
+
+
+void
+moo_text_popup_select (MooTextPopup *popup,
+                       GtkTreeIter  *iter)
+{
+    g_return_if_fail (MOO_IS_TEXT_POPUP (popup));
+    g_return_if_fail (popup->priv->model != NULL);
+
+    gtk_tree_selection_select_iter (popup->priv->selection, iter);
+
+    if (popup->priv->visible)
+    {
+        GtkTreePath *path;
+        path = gtk_tree_model_get_path (popup->priv->model, iter);
+        gtk_tree_view_scroll_to_cell (popup->priv->treeview, path,
+                                      NULL, FALSE, 0, 0);
+        gtk_tree_path_free (path);
+    }
+}
+
+
+static void
+moo_text_popup_select_first (MooTextPopup *popup)
+{
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter_first (popup->priv->model, &iter);
+    moo_text_popup_select (popup, &iter);
 }
