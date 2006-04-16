@@ -12,7 +12,7 @@
  */
 
 #include "completion.h"
-#include "mooedit/moocompletion.h"
+#include "mooedit/mootextcompletion.h"
 #include "mooutils/mooutils-misc.h"
 #include <sys/stat.h>
 #include <errno.h>
@@ -22,8 +22,6 @@
 typedef struct {
     char *path;
     time_t mtime;
-    GCompletion *cmpl;
-    char **words;
     GtkListStore *store;
 } CmplData;
 
@@ -57,12 +55,11 @@ cmpl_data_read_file (CmplData *data)
     GError *error = NULL;
     char *contents;
     char **words, **p;
-    GList *list = NULL;
+    GList *list = NULL, *l;
 
-    g_return_if_fail (data->cmpl == NULL);
+    g_return_if_fail (data->store == NULL);
     g_return_if_fail (data->path != NULL);
 
-    data->cmpl = g_completion_new (NULL);
     data->store = gtk_list_store_new (1, G_TYPE_STRING);
 
     g_file_get_contents (data->path, &contents, NULL, &error);
@@ -96,31 +93,19 @@ cmpl_data_read_file (CmplData *data)
         g_free (*p);
     }
 
-    if (list)
+    list = g_list_sort (list, (GCompareFunc) strcmp);
+    g_message ("read %d words from %s", g_list_length (list), data->path);
+
+    for (l = list; l != NULL; l = l->next)
     {
-        guint n_words, i;
-        GList *l;
-
-        g_completion_add_items (data->cmpl, list);
-
-        n_words = g_list_length (list);
-        data->words = g_new (char*, n_words + 1);
-        data->words[n_words] = 0;
-
-        g_message ("read %d words from %s", n_words, data->path);
-
-        for (i = 0, l = list; i < n_words; ++i, l = l->next)
-            data->words[i] = l->data;
-
-        g_list_free (list);
-    }
-    else
-    {
-        g_message ("read no words from %s", data->path);
+        GtkTreeIter iter;
+        gtk_list_store_append (data->store, &iter);
+        gtk_list_store_set (data->store, &iter, 0, l->data, -1);
+        g_free (l->data);
     }
 
     g_free (contents);
-    g_free (words);
+    g_strfreev (words);
 }
 
 
@@ -138,7 +123,7 @@ cmpl_plugin_load_data (CmplPlugin *plugin,
         data = cmpl_data_new ();
         g_hash_table_insert (plugin->data, g_strdup (id), data);
     }
-    else if (!data->cmpl && data->path)
+    else if (!data->store && data->path)
     {
         cmpl_data_read_file (data);
     }
@@ -157,15 +142,10 @@ cmpl_data_new (void)
 static void
 cmpl_data_clear (CmplData *data)
 {
-    g_strfreev (data->words);
     g_free (data->path);
-    if (data->cmpl)
-        g_completion_free (data->cmpl);
     if (data->store)
         g_object_unref (data->store);
-    data->words = NULL;
     data->path = NULL;
-    data->cmpl = NULL;
     data->store = NULL;
 }
 
@@ -289,148 +269,29 @@ _cmpl_plugin_clear (CmplPlugin *plugin)
 }
 
 
-inline static gboolean
-is_word (const char *p)
-{
-    gunichar c = g_utf8_get_char (p);
-    return c == '_' || g_unichar_isalnum (c);
-}
-
-
-static gboolean
-find_word_end (const char *text,
-               char      **word_start)
-{
-    char *p;
-    guint len = g_utf8_strlen (text, -1);
-
-    if (!len)
-        return FALSE;
-
-    p = g_utf8_offset_to_pointer (text, len - 1);
-    *word_start = NULL;
-
-    if (!is_word (p))
-        return FALSE;
-
-    while (is_word (p))
-    {
-        *word_start = p;
-
-        if (p > text)
-            p = g_utf8_prev_char (p);
-        else
-            break;
-    }
-
-    return *word_start != NULL;
-}
-
-
 void
 _completion_complete (CmplPlugin *plugin,
                       MooEdit    *doc)
 {
     MooLang *lang;
     CmplData *data;
-    MooCompletion *cmpl;
-    GtkTextIter start, end;
-    gboolean get_all = TRUE;
+    MooTextCompletion *cmpl;
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
     data = cmpl_plugin_load_data (plugin, lang ? lang->id : NULL);
     g_return_if_fail (data != NULL);
 
-    if (!data->words)
-        return;
-
-    moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &end);
-    start = end;
-
-    if (!gtk_text_iter_starts_line (&end))
-    {
-        char *text, *word_start;
-        GtkTextBuffer *buffer;
-        GtkTextIter line_start;
-
-        line_start = end;
-        gtk_text_iter_set_line_offset (&line_start, 0);
-
-        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
-        text = gtk_text_buffer_get_slice (buffer, &line_start, &end, TRUE);
-
-        if (find_word_end (text, &word_start))
-        {
-            char *new_word_start;
-            GList *words;
-            int offset;
-
-            offset = g_utf8_pointer_to_offset (text, word_start);
-            gtk_text_iter_set_line_offset (&line_start, offset);
-
-            words = g_completion_complete_utf8 (data->cmpl, word_start, &new_word_start);
-
-            if (!words)
-            {
-                g_free (text);
-                return;
-            }
-
-            get_all = FALSE;
-
-            if (strcmp (new_word_start, word_start))
-            {
-                gtk_text_buffer_delete (buffer, &line_start, &end);
-                gtk_text_buffer_insert (buffer, &end, new_word_start, -1);
-            }
-
-            if (!words->next)
-                return;
-
-            start = end;
-            gtk_text_iter_set_line_offset (&start, offset);
-
-            gtk_list_store_clear (data->store);
-
-            while (words)
-            {
-                GtkTreeIter iter;
-                gtk_list_store_append (data->store, &iter);
-                gtk_list_store_set (data->store, &iter, 0, words->data, -1);
-                words = words->next;
-            }
-
-            g_free (new_word_start);
-        }
-
-        g_free (text);
-    }
-
-    if (get_all)
-    {
-        char **p;
-
-        gtk_list_store_clear (data->store);
-
-        for (p = data->words; p && *p; ++p)
-        {
-            GtkTreeIter iter;
-            gtk_list_store_append (data->store, &iter);
-            gtk_list_store_set (data->store, &iter, 0, *p, -1);
-        }
-    }
-
     cmpl = g_object_get_data (G_OBJECT (doc), "moo-completion");
 
     if (!cmpl)
     {
-        cmpl = moo_completion_new ();
-        moo_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
+        cmpl = moo_text_completion_new_text (GTK_TEXT_VIEW (doc),
+                                             GTK_TREE_MODEL (data->store),
+                                             0);
         g_object_set_data_full (G_OBJECT (doc), "moo-completion",
                                 cmpl, g_object_unref);
-        moo_completion_set_model (cmpl, GTK_TREE_MODEL (data->store), 0);
     }
 
-    moo_completion_show (cmpl, &start, &end);
+    moo_text_completion_try_complete (cmpl);
 }
