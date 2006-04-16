@@ -24,6 +24,7 @@
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/symlink.h"
+#include "mooutils/mooutils-fs.h"
 #include MOO_MARSHALS_H
 #include <string.h>
 #include <sys/types.h>

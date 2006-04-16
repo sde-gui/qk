@@ -1090,7 +1090,15 @@ static void     moo_app_quit_real       (MooApp         *app)
 
     if (app->priv->tmpdir)
     {
-        moo_rmdir (app->priv->tmpdir, TRUE);
+        GError *error = NULL;
+        moo_rmdir (app->priv->tmpdir, TRUE, &error);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
         g_free (app->priv->tmpdir);
         app->priv->tmpdir = NULL;
     }

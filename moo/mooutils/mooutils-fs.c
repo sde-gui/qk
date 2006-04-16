@@ -33,6 +33,8 @@
 #include <sys/wait.h>
 #endif
 
+#define BROKEN_NAME "<" "????" ">"
+
 
 /* XXX fix this */
 gboolean
@@ -76,9 +78,10 @@ moo_save_file_utf8 (const char *name,
 
 #ifndef __WIN32__
 static gboolean
-rm_fr (const char *path)
+rm_fr (const char *path,
+       GError    **error)
 {
-    GError *error = NULL;
+    GError *error_here = NULL;
     char **argv;
     char *child_err;
     int status;
@@ -90,11 +93,12 @@ rm_fr (const char *path)
     argv[3] = g_strdup (path);
 
     if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_STDOUT_TO_DEV_NULL,
-         NULL, NULL, NULL, &child_err, &status, &error))
+                       NULL, NULL, NULL, &child_err, &status, &error_here))
     {
-        g_warning ("%s: could not run 'rm' command: %s",
-                   G_STRLOC, error->message);
-        g_error_free (error);
+        g_set_error (error, MOO_FILE_ERROR, MOO_FILE_ERROR_FAILED,
+                     "Could not run 'rm' command: %s",
+                     error_here->message);
+        g_error_free (error_here);
         g_strfreev (argv);
         return FALSE;
     }
@@ -103,8 +107,10 @@ rm_fr (const char *path)
 
     if (!WIFEXITED (status) || WEXITSTATUS (status))
     {
-        g_warning ("%s: 'rm' command failed: %s",
-                   G_STRLOC, child_err ? child_err : "");
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_FAILED,
+                     "'rm' command failed: %s",
+                     child_err ? child_err : "");
         g_free (child_err);
         return FALSE;
     }
@@ -119,23 +125,22 @@ rm_fr (const char *path)
 
 #ifdef __WIN32__
 static gboolean
-rm_r (const char *path)
+rm_r (const char *path,
+      GError    **error)
 {
     GDir *dir;
-    GError *error = NULL;
+    GError *error_here = NULL;
     const char *file;
     char *file_path;
     gboolean success = TRUE;
 
     g_return_val_if_fail (path != NULL, FALSE);
 
-    dir = g_dir_open (path, 0, &error);
+    dir = g_dir_open (path, 0, &error_here);
 
     if (!dir)
     {
-        g_critical ("%s: could not open directory '%s'", G_STRLOC, path);
-        g_critical ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
+        g_propagate_error (error, error_here);
         return FALSE;
     }
 
@@ -151,14 +156,16 @@ rm_r (const char *path)
             {
                 case ENOTEMPTY:
                 case EEXIST:
-                    if (!rm_r (file_path))
+                    if (!rm_r (file_path, error))
                         success = FALSE;
                     break;
 
                 default:
                     success = FALSE;
-                    g_warning ("%s: could not remove '%s'", G_STRLOC, file_path);
-                    g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+                    g_set_error (error, MOO_FILE_ERROR,
+                                 moo_file_error_from_errno (err),
+                                 "Could not remove '%s': %s", file_path,
+                                 g_strerror (err));
             }
         }
 
@@ -167,12 +174,14 @@ rm_r (const char *path)
 
     g_dir_close (dir);
 
-    if (m_remove (path))
+    if (success && m_remove (path))
     {
         int err = errno;
         success = FALSE;
-        g_warning ("%s: could not remove '%s'", G_STRLOC, path);
-        g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+        g_set_error (error, MOO_FILE_ERROR,
+                     moo_file_error_from_errno (err),
+                     "Could not remove '%s': %s", path,
+                     g_strerror (err));
     }
 
     return success;
@@ -180,20 +189,37 @@ rm_r (const char *path)
 #endif
 
 
-/* XXX set errno or use GError */
 gboolean
 moo_rmdir (const char *path,
-           gboolean    recursive)
+           gboolean    recursive,
+           GError    **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
 
     if (!recursive)
-        return m_rmdir (path) == 0;
+    {
+        if (m_rmdir (path))
+        {
+            int err = errno;
+            char *path_utf8 = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
+            g_set_error (error, MOO_FILE_ERROR,
+                         moo_file_error_from_errno (err),
+                         "Could not remove '%s': %s",
+                         path_utf8 ? path_utf8 : BROKEN_NAME,
+                         g_strerror (err));
+            g_free (path_utf8);
+            return FALSE;
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
 
 #ifndef __WIN32__
-    return rm_fr (path);
+    return rm_fr (path, error);
 #else
-    return rm_r (path);
+    return rm_r (path, error);
 #endif
 }
 
@@ -213,9 +239,10 @@ moo_mkdir (const char *path,
         utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
 
         g_set_error (error,
-                     G_FILE_ERROR, g_file_error_from_errno (err_code),
+                     MOO_FILE_ERROR,
+                     moo_file_error_from_errno (err_code),
                      "Could not create directory '%s': %s",
-                     utf8_path ? utf8_path : "<ERROR>",
+                     utf8_path ? utf8_path : BROKEN_NAME,
                      g_strerror (err_code));
 
         g_free (utf8_path);
@@ -230,9 +257,10 @@ moo_mkdir (const char *path,
             utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
 
             g_set_error (error,
-                         G_FILE_ERROR, g_file_error_from_errno (err_code),
+                         MOO_FILE_ERROR,
+                         moo_file_error_from_errno (err_code),
                          "Could not create directory '%s': %s",
-                         utf8_path ? utf8_path : "<ERROR>",
+                         utf8_path ? utf8_path : BROKEN_NAME,
                          g_strerror (err_code));
 
             g_free (utf8_path);
@@ -246,13 +274,55 @@ moo_mkdir (const char *path,
         return TRUE;
 
     utf8_path = g_filename_to_utf8 (path, -1, NULL, NULL, NULL);
-    g_set_error (error,
-                 G_FILE_ERROR, g_file_error_from_errno (G_FILE_ERROR_EXIST),
+    g_set_error (error, MOO_FILE_ERROR,
+                 MOO_FILE_ERROR_ALREADY_EXISTS,
                  "Could not create directory '%s': %s",
-                 utf8_path ? utf8_path : "<ERROR>",
+                 utf8_path ? utf8_path : BROKEN_NAME,
                  g_strerror (EEXIST));
     g_free (utf8_path);
+
     return FALSE;
+}
+
+
+GQuark
+moo_file_error_quark (void)
+{
+    static GQuark quark = 0;
+
+    if (quark == 0)
+        quark = g_quark_from_static_string ("moo-file-error-quark");
+
+    return quark;
+}
+
+
+MooFileError
+moo_file_error_from_errno (int code)
+{
+    switch (code)
+    {
+        case EACCES:
+        case EPERM:
+            return MOO_FILE_ERROR_ACCESS_DENIED;
+        case EEXIST:
+            return MOO_FILE_ERROR_ALREADY_EXISTS;
+#ifndef __WIN32__
+        case ELOOP:
+#endif
+        case ENAMETOOLONG:
+            return MOO_FILE_ERROR_BAD_FILENAME;
+        case ENOENT:
+            return MOO_FILE_ERROR_NONEXISTENT;
+        case ENOTDIR:
+            return MOO_FILE_ERROR_NOT_FOLDER;
+        case EROFS:
+            return MOO_FILE_ERROR_READONLY;
+        case EXDEV:
+            return MOO_FILE_ERROR_DIFFERENT_FS;
+    }
+
+    return MOO_FILE_ERROR_FAILED;
 }
 
 

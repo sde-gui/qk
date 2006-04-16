@@ -23,24 +23,6 @@
 G_BEGIN_DECLS
 
 
-#define MOO_FILE_ERROR (moo_file_error_quark ())
-
-typedef enum
-{
-    MOO_FILE_ERROR_NONEXISTENT,
-    MOO_FILE_ERROR_NOT_FOLDER,
-    MOO_FILE_ERROR_BAD_FILENAME,
-    MOO_FILE_ERROR_FAILED,
-    MOO_FILE_ERROR_ALREADY_EXISTS,
-    MOO_FILE_ERROR_ACCESS_DENIED,
-    MOO_FILE_ERROR_READONLY,
-    MOO_FILE_ERROR_DIFFERENT_FS,
-    MOO_FILE_ERROR_NOT_IMPLEMENTED
-} MooFileError;
-
-GQuark  moo_file_error_quark (void);
-
-
 #define MOO_TYPE_FILE               (moo_file_get_type ())
 #define MOO_TYPE_FILE_INFO          (moo_file_info_get_type ())
 #define MOO_TYPE_FILE_FLAGS         (moo_file_flags_get_type ())
