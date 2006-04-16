@@ -112,6 +112,7 @@ static void     edit_filename_changed   (MooEditWindow      *window,
                                          const char         *filename,
                                          MooEdit            *doc);
 static void     edit_lang_changed       (MooEditWindow      *window,
+                                         guint               var_id,
                                          GParamSpec         *pspec,
                                          MooEdit            *doc);
 static GtkWidget *create_tab_label      (MooEditWindow      *window,
@@ -1266,7 +1267,7 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-text",
                               G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "notify::lang",
+    g_signal_connect_swapped (edit, "config-notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (edit, "cursor-moved",
                               G_CALLBACK (edit_cursor_moved), window);
@@ -2245,6 +2246,7 @@ update_lang_menu (MooEditWindow      *window)
 
 static void
 edit_lang_changed (MooEditWindow      *window,
+                   G_GNUC_UNUSED guint var_id,
                    G_GNUC_UNUSED GParamSpec *pspec,
                    MooEdit            *doc)
 {
