@@ -231,7 +231,7 @@ moo_text_completion_try_complete (MooTextCompletion *cmpl)
     GtkTextIter start, end;
     GtkTreeIter iter;
     gboolean found = FALSE;
-    guint paren;
+    guint paren = 0;
 
     g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
     g_return_if_fail (cmpl->priv->buffer != NULL);
