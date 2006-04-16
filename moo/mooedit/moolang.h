@@ -24,6 +24,8 @@ G_BEGIN_DECLS
 #define MOO_LANG_DIR_BASENAME   "syntax"
 #define MOO_STYLES_PREFS_PREFIX MOO_EDIT_PREFS_PREFIX "/styles"
 
+#define MOO_LANG_NONE "none"
+
 #define MOO_TYPE_LANG       (moo_lang_get_type ())
 
 
