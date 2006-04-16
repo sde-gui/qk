@@ -66,7 +66,7 @@ G_GNUC_UNUSED static gboolean print_random_hard (MooTerm *term)
         moo_term_feed (term, s, -1);
         g_free (s);
 
-        moo_term_force_update (term);
+        gdk_window_process_updates (GTK_WIDGET(term)->window, FALSE);
     }
 
     g_print ("buffer: %dx%d\nterm: %dx%d\n",

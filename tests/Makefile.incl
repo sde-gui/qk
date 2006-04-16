@@ -1,6 +1,7 @@
 EXTRA_PROGRAMS += testhtml testtext medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold ms
 bin_PROGRAMS =
 
+all-tests: $(EXTRA_PROGRAMS)
 
 EXTRA_DIST +=           \
     tests/pyapp.py.in   \

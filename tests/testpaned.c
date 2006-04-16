@@ -1,5 +1,5 @@
 #include "mooutils/moobigpaned.h"
-#include "mooutils/moofileview/moofileview.h"
+#include "moofileview/moofileview.h"
 #include <gtk/gtk.h>
 
 

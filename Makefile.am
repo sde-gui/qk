@@ -12,6 +12,7 @@ AM_CFLAGS =					\
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)		\
     -I$(top_builddir)/$(MOO_SRC_PREFIX)		\
     -I$(top_srcdir)/$(MOO_SRC_PREFIX)/mooutils	\
+    -I$(top_builddir)/$(MOO_SRC_PREFIX)/mooutils\
     $(MOO_CFLAGS)				\
     $(PYTHON_INCLUDES)				\
     $(PYGTK_CFLAGS)				\
@@ -98,6 +99,7 @@ mooedit_datadir = ${MOO_DATA_DIR}
 mooedit_data_DATA = ui.xml.example actions.cfg.example
 ui.xml.example: tests/medit-ui.xml
 	cp $(srcdir)/tests/medit-ui.xml ui.xml.example
+CLEANFILES += ui.xml.example
 EXTRA_DIST += actions.cfg.example
 
 

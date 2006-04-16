@@ -37,7 +37,7 @@ int main (int argc, char *argv[])
         file = argv[1];
     }
 
-    my_xml = moo_glade_xml_new (file, NULL, NULL);
+    my_xml = moo_glade_xml_new (file, NULL);
 
     if (!my_xml)
     {
@@ -45,7 +45,6 @@ int main (int argc, char *argv[])
         exit (1);
     }
 
-    moo_glade_xml_unref (my_xml);
     g_print ("*** Success ***\n");
 
     if (!check)
@@ -59,5 +58,6 @@ int main (int argc, char *argv[])
         }
     }
 
+    g_object_unref (my_xml);
     return 0;
 }
