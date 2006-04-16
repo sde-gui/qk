@@ -354,7 +354,7 @@ static void
 moo_completion_resize_popup (MooCompletion *cmpl)
 {
     GtkWidget *widget = GTK_WIDGET (cmpl->priv->doc);
-    int x, y;
+    int x, y, width;
     int total_items, items, height;
     GdkScreen *screen;
     int monitor_num;
@@ -362,7 +362,6 @@ moo_completion_resize_popup (MooCompletion *cmpl)
     GtkRequisition popup_req;
     int vert_separator, horiz_separator;
     GtkTextIter iter;
-    int width;
 
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (cmpl->priv->start && cmpl->priv->end);
@@ -380,7 +379,7 @@ moo_completion_resize_popup (MooCompletion *cmpl)
     items = MIN (total_items, MAX_POPUP_LEN);
 
     gtk_tree_view_column_cell_get_size (cmpl->priv->column, NULL,
-                                        NULL, NULL, &width, &height);
+                                        NULL, NULL, NULL, &height);
 
     screen = gtk_widget_get_screen (widget);
     monitor_num = gdk_screen_get_monitor_at_window (screen, widget->window);
@@ -390,7 +389,9 @@ moo_completion_resize_popup (MooCompletion *cmpl)
                           "vertical-separator", &vert_separator,
                           "horizontal-separator", &horiz_separator,
                           NULL);
-    width += 4 * horiz_separator;
+
+    gtk_widget_size_request (GTK_WIDGET (cmpl->priv->treeview), &popup_req);
+    width = popup_req.width;
 
     if (total_items > items)
     {
@@ -403,8 +404,8 @@ moo_completion_resize_popup (MooCompletion *cmpl)
     width = MAX (width, 100);
     width = MIN (monitor.width, width);
 
-    gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), width,
-                                 items * (height + vert_separator));
+    gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview),
+                                 width, items * (height + vert_separator));
 
     gtk_widget_set_size_request (cmpl->priv->popup, -1, -1);
     gtk_widget_size_request (cmpl->priv->popup, &popup_req);
