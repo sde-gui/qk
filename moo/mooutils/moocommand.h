@@ -78,6 +78,8 @@ void        moo_command_set_shell_var   (MooCommand *cmd,
 const char *moo_command_get_shell_var   (MooCommand *cmd,
                                          const char *variable);
 
+void        moo_command_set_code        (MooCommand *cmd,
+                                         const char *code);
 void        moo_command_set_script      (MooCommand *cmd,
                                          const char *script);
 void        moo_command_set_python      (MooCommand *cmd,
@@ -86,6 +88,9 @@ void        moo_command_set_shell       (MooCommand *cmd,
                                          const char *cmd_line);
 
 void        moo_command_run             (MooCommand *cmd);
+
+
+MooCommandType moo_command_type_parse   (const char *string);
 
 
 G_END_DECLS

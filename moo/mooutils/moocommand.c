@@ -624,3 +624,45 @@ moo_command_get_shell_var (MooCommand *cmd,
     else
         return NULL;
 }
+
+
+MooCommandType
+moo_command_type_parse (const char *string)
+{
+    char *norm;
+    MooCommandType cmd_type = 0;
+
+    g_return_val_if_fail (string != NULL, 0);
+
+    norm = g_strstrip (g_ascii_strdown (string, -1));
+
+    if (!strcmp (norm, "script"))
+        cmd_type = MOO_COMMAND_SCRIPT;
+    else if (!strcmp (norm, "shell") || !strcmp (norm, "bat") || !strcmp (norm, "exe"))
+        cmd_type = MOO_COMMAND_SHELL;
+    else if (!strcmp (norm, "python"))
+        cmd_type = MOO_COMMAND_PYTHON;
+
+    return cmd_type;
+}
+
+
+void
+moo_command_set_code (MooCommand *cmd,
+                      const char *code)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    g_return_if_fail (code != NULL);
+
+    switch (cmd->type)
+    {
+        case MOO_COMMAND_SCRIPT:
+            return moo_command_set_script (cmd, code);
+        case MOO_COMMAND_PYTHON:
+            return moo_command_set_python (cmd, code);
+        case MOO_COMMAND_SHELL:
+            return moo_command_set_shell (cmd, code);
+    }
+
+    g_return_if_reached ();
+}
