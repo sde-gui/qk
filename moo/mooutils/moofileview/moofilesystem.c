@@ -505,6 +505,91 @@ get_parent_folder (MooFileSystem  *fs,
 }
 
 
+static char *
+normalize_path (const char *path)
+{
+    GPtrArray *comps;
+    gboolean first_slash;
+    char **pieces, **p;
+    char *normpath;
+
+    g_return_val_if_fail (path != NULL, NULL);
+
+    first_slash = (path[0] == G_DIR_SEPARATOR);
+
+    pieces = g_strsplit (path, G_DIR_SEPARATOR_S, 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    comps = g_ptr_array_new ();
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        char *s = *p;
+        gboolean push = TRUE;
+        gboolean pop = FALSE;
+
+        if (!strcmp (s, "") || !strcmp (s, "."))
+        {
+            push = FALSE;
+        }
+        else if (!strcmp (s, ".."))
+        {
+            if (!comps->len && first_slash)
+            {
+                push = FALSE;
+            }
+            else if (comps->len)
+            {
+                push = FALSE;
+                pop = TRUE;
+            }
+        }
+
+        if (pop)
+        {
+            g_free (comps->pdata[comps->len - 1]);
+            g_ptr_array_remove_index (comps, comps->len - 1);
+        }
+
+        if (push)
+            g_ptr_array_add (comps, g_strdup (s));
+    }
+
+    g_ptr_array_add (comps, NULL);
+
+    if (comps->len == 1)
+    {
+        if (first_slash)
+            normpath = g_strdup (G_DIR_SEPARATOR_S);
+        else
+            normpath = g_strdup (".");
+    }
+    else
+    {
+        char *tmp = g_strjoinv (G_DIR_SEPARATOR_S, (char**) comps->pdata);
+
+        if (first_slash)
+        {
+            guint len = strlen (tmp);
+            normpath = g_new (char, len + 2);
+            memcpy (normpath + 1, tmp, len + 1);
+            normpath[0] = G_DIR_SEPARATOR;
+            g_free (tmp);
+        }
+        else
+        {
+            normpath = tmp;
+        }
+    }
+
+    g_strfreev (pieces);
+    g_strfreev ((char**) comps->pdata);
+    g_ptr_array_free (comps, FALSE);
+
+    return normpath;
+}
+
+
 /***************************************************************************/
 /* UNIX methods
  */
@@ -625,9 +710,9 @@ char               *make_path_unix              (G_GNUC_UNUSED MooFileSystem *fs
     GError *error_here = NULL;
     char *path, *name;
 
-    g_return_val_if_fail (base_path != NULL, FALSE);
-    g_return_val_if_fail (g_path_is_absolute (base_path), FALSE);
-    g_return_val_if_fail (display_name != NULL, FALSE);
+    g_return_val_if_fail (base_path != NULL, NULL);
+    g_return_val_if_fail (g_path_is_absolute (base_path), NULL);
+    g_return_val_if_fail (display_name != NULL, NULL);
 
     name = g_filename_from_utf8 (display_name, -1, NULL, NULL, &error_here);
 
@@ -639,96 +724,12 @@ char               *make_path_unix              (G_GNUC_UNUSED MooFileSystem *fs
                      display_name, error_here->message);
         g_free (name);
         g_error_free (error_here);
-        return FALSE;
+        return NULL;
     }
 
     path = g_strdup_printf ("%s/%s", base_path, name);
     g_free (name);
     return path;
-}
-
-
-static char     *normalize_path     (const char     *path)
-{
-    GPtrArray *comps;
-    gboolean first_slash;
-    char **pieces, **p;
-    char *normpath;
-
-    g_return_val_if_fail (path != NULL, NULL);
-
-    first_slash = (path[0] == '/');
-
-    pieces = g_strsplit (path, "/", 0);
-    g_return_val_if_fail (pieces != NULL, NULL);
-
-    comps = g_ptr_array_new ();
-
-    for (p = pieces; *p != NULL; ++p)
-    {
-        char *s = *p;
-        gboolean push = TRUE;
-        gboolean pop = FALSE;
-
-        if (!strcmp (s, "") || !strcmp (s, "."))
-        {
-            push = FALSE;
-        }
-        else if (!strcmp (s, ".."))
-        {
-            if (!comps->len && first_slash)
-            {
-                push = FALSE;
-            }
-            else if (comps->len)
-            {
-                push = FALSE;
-                pop = TRUE;
-            }
-        }
-
-        if (pop)
-        {
-            g_free (comps->pdata[comps->len - 1]);
-            g_ptr_array_remove_index (comps, comps->len - 1);
-        }
-
-        if (push)
-            g_ptr_array_add (comps, g_strdup (s));
-    }
-
-    g_ptr_array_add (comps, NULL);
-
-    if (comps->len == 1)
-    {
-        if (first_slash)
-            normpath = g_strdup ("/");
-        else
-            normpath = g_strdup ("");
-    }
-    else
-    {
-        char *tmp = g_strjoinv ("/", (char**) comps->pdata);
-
-        if (first_slash)
-        {
-            guint len = strlen (tmp);
-            normpath = g_new (char, len + 2);
-            memcpy (normpath + 1, tmp, len + 1);
-            normpath[0] = '/';
-            g_free (tmp);
-        }
-        else
-        {
-            normpath = tmp;
-        }
-    }
-
-    g_strfreev (pieces);
-    g_strfreev ((char**) comps->pdata);
-    g_ptr_array_free (comps, FALSE);
-
-    return normpath;
 }
 
 
@@ -893,11 +894,6 @@ static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
 }
 
 
-static gboolean     create_folder_win32     (MooFileSystem  *fs,
-                                             const char     *path,
-                                             GError        **error);
-
-
 static gboolean
 delete_file_win32 (MooFileSystem  *fs,
                    const char     *path,
@@ -926,16 +922,91 @@ move_file_win32 (MooFileSystem  *fs,
 }
 
 
+static void
+splitdrive (const char *fullpath,
+            char      **drive,
+            char      **path)
+{
+    if (fullpath[0] && fullpath[1] == ':')
+    {
+        *drive = g_strndup (fullpath, 2);
+        *path = g_strdup (fullpath + 2);
+    }
+    else
+    {
+        *drive = NULL;
+        *path = g_strdup (fullpath);
+    }
+}
+
+
 static char *
 normalize_path_win32 (MooFileSystem  *fs,
-                      const char     *path,
-                      gboolean        is_folder,
+                      const char     *fullpath,
+                      gboolean        isdir,
                       GError        **error)
 {
-#warning "Implement me"
-    g_return_val_if_fail (path && *path, g_strdup (""));
-    return is_folder && path[strlen(path)-1] != '\\' ?
-            g_strdup_printf ("%s\\", path) : g_strdup (path);
+    char *drive, *path, *normpath;
+    guint slashes, i;
+    char **comps;
+
+    g_return_val_if_fail (fullpath != NULL, NULL);
+
+    splitdrive (fullpath, &prefix, &path);
+    g_strdelimit (path, "/", '\\');
+
+    for (slashes = 0; path[slashes] == '\\'; ++slashes) ;
+
+    if (!drive)
+    {
+        char *tmp = path;
+        drive = g_strndup (path, slashes);
+        path = g_strdup (tmp + slashes);
+        g_free (tmp);
+    }
+    else if (path[0] == '\\')
+    {
+        char *tmp;
+
+        tmp = drive;
+        drive = g_strdup_printf ("%s\\", drive);
+        g_free (tmp);
+
+        tmp = path;
+        path = g_strdup (path + slashes);
+        g_free (tmp);
+    }
+
+    normpath = normalize_path (path);
+
+    if (!normpath[0] && !drive)
+    {
+        char *tmp = normpath;
+        normpath = g_strdup (".");
+        g_free (tmp);
+    }
+    else if (drive)
+    {
+        char *tmp = normpath;
+        normpath = g_strdup_printf ("%s%s", drive, normpath);
+        g_free (tmp);
+    }
+
+    if (isdir)
+    {
+        guint len = strlen (normpath);
+
+        if (!len || normpath[len -1] != '\\')
+        {
+            char *tmp = normpath;
+            normpath = g_strdup_printf ("%s\\", normpath);
+            g_free (tmp);
+        }
+    }
+
+    g_free (drive);
+    g_free (path);
+    return normpath;
 }
 
 
@@ -945,7 +1016,8 @@ make_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
                  const char     *display_name,
                  G_GNUC_UNUSED GError **error)
 {
-#warning "Implement me"
+    g_return_val_if_fail (g_path_is_absolute (base_path), NULL);
+    g_return_val_if_fail (display_name != NULL, NULL);
     return g_strdup_printf ("%s\\%s", base_path, display_name);
 }
 
@@ -960,8 +1032,7 @@ parse_path_win32 (MooFileSystem  *fs,
 {
 #warning "Implement me"
     const char *separator;
-    char *dirname = NULL, *norm_dirname = NULL;
-    char *display_dirname = NULL, *display_basename = NULL;
+    char *norm_dirname = NULL, *dirname = NULL, *basename = NULL;
 
     g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
     g_return_val_if_fail (g_path_is_absolute (path_utf8), FALSE);
@@ -969,13 +1040,8 @@ parse_path_win32 (MooFileSystem  *fs,
     separator = strrchr (path_utf8, '\\');
     g_return_val_if_fail (separator != NULL, FALSE);
 
-    display_dirname = g_strndup (path_utf8, separator - path_utf8 + 1);
-    display_basename = g_strdup (separator + 1);
-    dirname = g_filename_from_utf8 (display_dirname, -1, NULL, NULL, error);
-
-    if (!dirname)
-        goto error_label;
-
+    dirname = g_path_get_dirname (path_utf8);
+    basename = g_path_get_basename (path_utf8);
     norm_dirname = moo_file_system_normalize_path (fs, dirname, TRUE, error);
 
     if (!norm_dirname)
@@ -988,17 +1054,15 @@ parse_path_win32 (MooFileSystem  *fs,
 
 error_label:
     g_free (dirname);
+    g_free (basename);
     g_free (norm_dirname);
-    g_free (display_dirname);
-    g_free (display_basename);
     return FALSE;
 
 success:
     g_clear_error (error);
-    g_free (dirname);
     *dirname_p = norm_dirname;
-    *display_dirname_p = display_dirname;
-    *display_basename_p = display_basename;
+    *display_dirname_p = dirname;
+    *display_basename_p = basename;
     return TRUE;
 }
 
