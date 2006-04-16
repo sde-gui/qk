@@ -19,15 +19,13 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
 #include "mooutils/moonotebook.h"
-#include "mooutils/moofileview/moofileview.h"
-#include "mooutils/moofileview/moobookmarkmgr.h"
-#include "mooutils/moofileview/moofile.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
+#include "moofileview/moofilesystem.h"
 #if GTK_CHECK_VERSION(2,10,0)
 #include "mooedit/mootextprint.h"
 #endif

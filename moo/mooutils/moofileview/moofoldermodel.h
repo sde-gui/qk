@@ -14,7 +14,7 @@
 #ifndef __MOO_FOLDER_MODEL_H__
 #define __MOO_FOLDER_MODEL_H__
 
-#include <mooutils/moofileview/moofile.h>
+#include <moofileview/moofile.h>
 #include <gtk/gtktreemodelfilter.h>
 
 G_BEGIN_DECLS

@@ -17,7 +17,7 @@
 
 #include "mooedit/plugins/moofileselector.h"
 #include "mooedit/mooplugin-macro.h"
-#include "mooutils/moofileview/moobookmarkmgr.h"
+#include "moofileview/moobookmarkmgr.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooedit/plugins/moofileselector-glade.h"
 #include "mooedit/plugins/moofilechooser.h"

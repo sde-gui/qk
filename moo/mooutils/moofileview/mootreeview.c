@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moofileview/mootreeview.h"
-#include MOO_MARSHALS_H
+#include "moofileview/mootreeview.h"
+#include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include <gtk/gtk.h>
 

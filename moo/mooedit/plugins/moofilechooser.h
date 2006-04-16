@@ -14,7 +14,7 @@
 #ifndef __MOO_FILE_CHOOSER_H__
 #define __MOO_FILE_CHOOSER_H__
 
-#include "mooutils/moofileview/moofileview.h"
+#include "moofileview/moofileview.h"
 #include <gtk/gtkdialog.h>
 
 G_BEGIN_DECLS

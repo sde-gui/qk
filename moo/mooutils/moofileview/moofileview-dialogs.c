@@ -12,11 +12,11 @@
  */
 
 #define MOO_FILE_SYSTEM_COMPILATION
-#include "mooutils/moofileview/moofileview-dialogs.h"
-#include "mooutils/moofileview/moofilesystem.h"
-#include "mooutils/moofileview/moofileprops-glade.h"
-#include "mooutils/moofileview/moocreatefolder-glade.h"
-#include "mooutils/moofileview/moofileviewdrop-glade.h"
+#include "moofileview/moofileview-dialogs.h"
+#include "moofileview/moofilesystem.h"
+#include "moofileview/moofileprops-glade.h"
+#include "moofileview/moocreatefolder-glade.h"
+#include "moofileview/moofileviewdrop-glade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moodialogs.h"

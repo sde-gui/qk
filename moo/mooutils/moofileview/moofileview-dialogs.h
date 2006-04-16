@@ -14,7 +14,7 @@
 #ifndef __MOO_FILE_VIEW_DIALOGS_H__
 #define __MOO_FILE_VIEW_DIALOGS_H__
 
-#include "mooutils/moofileview/moofile.h"
+#include "moofileview/moofile.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtkdialog.h>
 

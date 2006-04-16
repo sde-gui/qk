@@ -15,7 +15,7 @@
 #define __MOO_TREE_VIEW_H__
 
 #include <gtk/gtktreeview.h>
-#include "mooutils/moofileview/mooiconview.h"
+#include "moofileview/mooiconview.h"
 
 G_BEGIN_DECLS
 

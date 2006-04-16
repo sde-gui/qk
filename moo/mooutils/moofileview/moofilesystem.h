@@ -20,7 +20,7 @@
 #ifndef __MOO_FILE_SYSTEM_H__
 #define __MOO_FILE_SYSTEM_H__
 
-#include <mooutils/moofileview/moofile.h>
+#include <moofileview/moofile.h>
 #include <gtk/gtkwidget.h>
 #ifdef MOO_FILE_SYSTEM_COMPILATION
 #include "mooutils/moofilewatch.h"

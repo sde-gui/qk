@@ -22,7 +22,7 @@
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/moofind-glade.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "mooutils/moofileview/moofileentry.h"
+#include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"

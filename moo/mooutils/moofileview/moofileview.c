@@ -18,17 +18,17 @@
 #endif
 
 #define MOO_FILE_SYSTEM_COMPILATION
-#include "mooutils/moofileview/moofileview.h"
-#include "mooutils/moofileview/moofileview-dialogs.h"
-#include "mooutils/moofileview/moobookmarkmgr.h"
-#include "mooutils/moofileview/moofilesystem.h"
-#include "mooutils/moofileview/moofoldermodel.h"
-#include "mooutils/moofileview/moofileentry.h"
-#include "mooutils/moofileview/mooiconview.h"
-#include "mooutils/moofileview/moofileview-private.h"
-#include "mooutils/moofileview/moofileview-ui.h"
-#include "mooutils/moofileview/mootreeview.h"
-#include "mooutils/moofileview/moobookmarkview.h"
+#include "moofileview/moofileview.h"
+#include "moofileview/moofileview-dialogs.h"
+#include "moofileview/moobookmarkmgr.h"
+#include "moofileview/moofilesystem.h"
+#include "moofileview/moofoldermodel.h"
+#include "moofileview/moofileentry.h"
+#include "moofileview/mooiconview.h"
+#include "moofileview/moofileview-private.h"
+#include "moofileview/moofileview-ui.h"
+#include "moofileview/mootreeview.h"
+#include "moofileview/moobookmarkview.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
@@ -496,8 +496,7 @@ static void moo_file_view_class_init (MooFileViewClass *klass)
 #ifndef __WIN32__
                                              g_get_home_dir (),
 #else
-#warning "Do something here"
-                                             NULL,
+                                             "C:\\",
 #endif
                                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
 

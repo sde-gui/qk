@@ -11,9 +11,9 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/moofileview/moobookmarkmgr.h"
-#include "mooutils/moofileview/moobookmarkmgr-glade.h"
-#include "mooutils/moofileview/moofileentry.h"
+#include "moofileview/moobookmarkmgr.h"
+#include "moofileview/moobookmarkmgr-glade.h"
+#include "moofileview/moofileentry.h"
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moocompat.h"

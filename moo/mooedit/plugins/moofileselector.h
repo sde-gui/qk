@@ -15,7 +15,7 @@
 #define __MOO_FILE_SELECTOR_H__
 
 #include "mooedit/mooeditwindow.h"
-#include "mooutils/moofileview/moofileview.h"
+#include "moofileview/moofileview.h"
 
 G_BEGIN_DECLS
 
