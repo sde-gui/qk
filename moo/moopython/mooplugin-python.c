@@ -190,6 +190,9 @@ get_info (void)
 static gboolean
 moo_python_api_init (void)
 {
+    static int argc;
+    static char **argv;
+
     static MooPyAPI api = {
         incref, decref, err_print,
         get_info,
@@ -209,7 +212,17 @@ moo_python_api_init (void)
 
     g_assert (moo_python_running ());
 
+    if (!argv)
+    {
+        argc = 1;
+        argv = g_new0 (char*, 2);
+        argv[0] = g_strdup ("");
+    }
+
     Py_Initialize ();
+    /* pygtk wants sys.argv */
+    PySys_SetArgv (argc, argv);
+
     moo_py_init_print_funcs ();
 
     main_mod = PyImport_AddModule ((char*)"__main__");
