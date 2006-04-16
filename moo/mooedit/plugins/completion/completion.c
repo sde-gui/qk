@@ -1,5 +1,5 @@
 /*
- *   moocompletion.c
+ *   completion.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "moocompletion.h"
-#include "mooedit/mootextcompletion.h"
+#include "completion.h"
+#include "mooedit/moocompletion.h"
 #include "mooutils/mooutils-misc.h"
 #include <sys/stat.h>
 #include <errno.h>
@@ -36,7 +36,7 @@ static CmplData *cmpl_plugin_load_data      (CmplPlugin *plugin,
 
 
 void
-_moo_completion_callback (MooEditWindow *window)
+_completion_callback (MooEditWindow *window)
 {
     CmplPlugin *plugin;
     MooEdit *doc;
@@ -47,7 +47,7 @@ _moo_completion_callback (MooEditWindow *window)
     doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
 
-    _moo_completion_complete (plugin, doc);
+    _completion_complete (plugin, doc);
 }
 
 
@@ -328,12 +328,12 @@ find_word_end (const char *text,
 
 
 void
-_moo_completion_complete (CmplPlugin *plugin,
-                          MooEdit    *doc)
+_completion_complete (CmplPlugin *plugin,
+                      MooEdit    *doc)
 {
     MooLang *lang;
     CmplData *data;
-    MooTextCompletion *cmpl;
+    MooCompletion *cmpl;
     GtkTextIter start, end;
     gboolean get_all = TRUE;
 
@@ -425,12 +425,12 @@ _moo_completion_complete (CmplPlugin *plugin,
 
     if (!cmpl)
     {
-        cmpl = moo_text_completion_new ();
-        moo_text_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
+        cmpl = moo_completion_new ();
+        moo_completion_set_doc (cmpl, GTK_TEXT_VIEW (doc));
         g_object_set_data_full (G_OBJECT (doc), "moo-completion",
                                 cmpl, g_object_unref);
-        moo_text_completion_set_model (cmpl, GTK_TREE_MODEL (data->store), 0);
+        moo_completion_set_model (cmpl, GTK_TREE_MODEL (data->store), 0);
     }
 
-    moo_text_completion_show (cmpl, &start, &end);
+    moo_completion_show (cmpl, &start, &end);
 }

@@ -7,17 +7,17 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts>
-      <part>kdevopenwith</part>
       <part>kdevabbrev</part>
-      <part>kdevctags2</part>
       <part>kdevclassview</part>
       <part>kdevsnippet</part>
+      <part>kdevctags2</part>
       <part>kdevdocumentation</part>
       <part>kdevdoxygen</part>
       <part>kdevfilegroups</part>
-      <part>kdevfileview</part>
       <part>kdevfilelist</part>
+      <part>kdevfileview</part>
       <part>kdevdistpart</part>
+      <part>kdevopenwith</part>
       <part>kdevregexptest</part>
       <part>kdevscripting</part>
       <part>kdevtexttools</part>
@@ -46,7 +46,7 @@
     </run>
     <configurations>
       <debug>
-        <configargs>--enable-debug=full --enable-all-gcc-warnings --without-python</configargs>
+        <configargs>--enable-debug=full --enable-all-gcc-warnings </configargs>
         <builddir>build/debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -331,6 +331,11 @@
       <inlineGet>true</inlineGet>
       <inlineSet>true</inlineSet>
     </creategettersetter>
+    <qt>
+      <used>false</used>
+      <version>3</version>
+      <root></root>
+    </qt>
   </kdevcppsupport>
   <kdevdocumentation>
     <projectdoc>

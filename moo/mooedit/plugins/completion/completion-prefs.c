@@ -1,5 +1,5 @@
 /*
- *   moocompletion-prefs.c
+ *   completion-prefs.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "moocompletion.h"
-#include "mooedit/plugins/completion/moocompletion-glade.h"
+#include "completion.h"
+#include "mooedit/plugins/completion/completion-glade.h"
 #include "mooutils/mooprefsdialogpage.h"
 
 
@@ -25,7 +25,7 @@ _cmpl_plugin_prefs_page (MooPlugin *plugin)
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (xml, "page", MOO_TYPE_PREFS_DIALOG_PAGE);
     page = moo_prefs_dialog_page_new_from_xml ("Completion", GTK_STOCK_CONVERT,
-                                               xml, MOO_COMPLETION_GLADE_UI, -1,
+                                               xml, COMPLETION_GLADE_UI, -1,
                                                "page", NULL);
 
     g_object_set_data_full (G_OBJECT (xml), "cmpl-plugin",

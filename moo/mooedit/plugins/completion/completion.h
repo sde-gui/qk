@@ -1,5 +1,5 @@
 /*
- *   moocompletion.h
+ *   completion.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -13,8 +13,8 @@
 
 #include "mooedit/mooplugin.h"
 
-#ifndef __MOO_COMPLETION_H__
-#define __MOO_COMPLETION_H__
+#ifndef __COMPLETION_H__
+#define __COMPLETION_H__
 
 G_BEGIN_DECLS
 
@@ -35,8 +35,8 @@ typedef struct {
 
 GtkWidget  *_cmpl_plugin_prefs_page     (MooPlugin      *plugin);
 
-void        _moo_completion_callback    (MooEditWindow  *window);
-void        _moo_completion_complete    (CmplPlugin     *plugin,
+void        _completion_callback        (MooEditWindow  *window);
+void        _completion_complete        (CmplPlugin     *plugin,
                                          MooEdit        *doc);
 
 void        _cmpl_plugin_load           (CmplPlugin     *plugin);
@@ -45,4 +45,4 @@ void        _cmpl_plugin_clear          (CmplPlugin     *plugin);
 
 G_END_DECLS
 
-#endif /* __AS_PLUGIN_H__ */
+#endif /* __COMPLETION_H__ */

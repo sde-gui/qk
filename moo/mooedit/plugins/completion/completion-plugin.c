@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
  *
- *   as-plugin.c
+ *   completion-plugin.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -18,7 +18,7 @@
 
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "moocompletion.h"
+#include "completion.h"
 
 
 static gboolean cmpl_plugin_init        (CmplPlugin     *plugin);
@@ -40,7 +40,7 @@ cmpl_plugin_init (CmplPlugin *plugin)
                                  "label", "Complete Word",
                                  "tooltip", "Complete Word",
                                  "accel", "<Ctrl>space",
-                                 "closure-callback", _moo_completion_callback,
+                                 "closure-callback", _completion_callback,
                                  NULL);
 
     if (xml)

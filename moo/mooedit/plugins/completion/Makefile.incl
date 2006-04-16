@@ -1,23 +1,23 @@
 completion = $(mooedit_plugins)/completion
 completion_srcdir = $(srcdir)/$(completion)
 
-completion_extra_dist =				\
-    $(completion)/moocompletion.glade
+completion_extra_dist =			\
+    $(completion)/completion.glade
 
-completion_sources =				\
-    $(completion)/moocompletion-plugin.c	\
-    $(completion)/moocompletion.c		\
-    $(completion)/moocompletion.h		\
-    $(completion)/moocompletion-prefs.c		\
-    $(completion)/moocompletion-glade.h
+completion_sources =			\
+    $(completion)/completion-plugin.c	\
+    $(completion)/completion.c		\
+    $(completion)/completion.h		\
+    $(completion)/completion-prefs.c	\
+    $(completion)/completion-glade.h
 
-completion_built_sources =			\
-    $(completion)/moocompletion-glade.h
+completion_built_sources =		\
+    $(completion)/completion-glade.h
 
-$(completion)/moocompletion-glade.h: $(completion)/moocompletion.glade $(XML2H)
+$(completion)/completion-glade.h: $(completion)/completion.glade $(XML2H)
 	mkdir -p $(completion)
-	sh $(XML2H) MOO_COMPLETION_GLADE_UI $(completion_srcdir)/moocompletion.glade > \
-	   $(completion)/moocompletion-glade.h
+	sh $(XML2H) COMPLETION_GLADE_UI $(completion_srcdir)/completion.glade > \
+	   $(completion)/completion-glade.h
 
 if MOO_BUILD_EDIT
 moo_sources += $(completion_sources)

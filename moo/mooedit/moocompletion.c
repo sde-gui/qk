@@ -1,5 +1,5 @@
 /*
- *   mootextcompletion.c
+ *   moocompletion.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooedit/mootextcompletion.h"
+#include "mooedit/moocompletion.h"
 #include "mooutils/moomarshals.h"
 #include <gdk/gdkkeysyms.h>
 
@@ -19,7 +19,7 @@
 #define MAX_POPUP_LEN 10
 
 
-struct _MooTextCompletionPrivate {
+struct _MooCompletionPrivate {
     GtkTreeView *treeview;
     GtkTreeSelection *selection;
     GtkTreeViewColumn *column;
@@ -40,22 +40,22 @@ struct _MooTextCompletionPrivate {
 };
 
 
-static void     moo_text_completion_dispose         (GObject    *object);
+static void     moo_completion_dispose         (GObject         *object);
 
-static gboolean moo_text_completion_complete_real   (MooTextCompletion  *cmpl,
-                                                     GtkTreeModel       *model,
-                                                     GtkTreeIter        *iter);
+static gboolean moo_completion_complete_real   (MooCompletion   *cmpl,
+                                                GtkTreeModel    *model,
+                                                GtkTreeIter     *iter);
 
-static void     moo_text_completion_ensure_popup    (MooTextCompletion  *cmpl);
-static gboolean moo_text_completion_empty           (MooTextCompletion  *cmpl);
-static void     moo_text_completion_popup           (MooTextCompletion  *cmpl);
-static void     moo_text_completion_popdown         (MooTextCompletion  *cmpl);
-static void     moo_text_completion_resize_popup    (MooTextCompletion  *cmpl);
-static void     moo_text_completion_connect_popup   (MooTextCompletion  *cmpl);
-static void     moo_text_completion_disconnect_popup(MooTextCompletion  *cmpl);
+static void     moo_completion_ensure_popup    (MooCompletion   *cmpl);
+static gboolean moo_completion_empty           (MooCompletion   *cmpl);
+static void     moo_completion_popup           (MooCompletion   *cmpl);
+static void     moo_completion_popdown         (MooCompletion   *cmpl);
+static void     moo_completion_resize_popup    (MooCompletion   *cmpl);
+static void     moo_completion_connect_popup   (MooCompletion   *cmpl);
+static void     moo_completion_disconnect_popup(MooCompletion   *cmpl);
 
 
-G_DEFINE_TYPE (MooTextCompletion, moo_text_completion, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooCompletion, moo_completion, G_TYPE_OBJECT)
 
 enum {
     UPDATE,
@@ -67,15 +67,15 @@ static guint signals[NUM_SIGNALS];
 
 
 static void
-moo_text_completion_dispose (GObject *object)
+moo_completion_dispose (GObject *object)
 {
-    MooTextCompletion *cmpl = MOO_TEXT_COMPLETION (object);
+    MooCompletion *cmpl = MOO_COMPLETION (object);
 
     if (cmpl->priv)
     {
-        moo_text_completion_hide (cmpl);
-        moo_text_completion_set_doc (cmpl, NULL);
-        moo_text_completion_set_model (cmpl, NULL, 0);
+        moo_completion_hide (cmpl);
+        moo_completion_set_doc (cmpl, NULL);
+        moo_completion_set_model (cmpl, NULL, 0);
 
         if (cmpl->priv->popup)
             gtk_widget_destroy (cmpl->priv->popup);
@@ -84,23 +84,23 @@ moo_text_completion_dispose (GObject *object)
         cmpl->priv = NULL;
     }
 
-    G_OBJECT_CLASS(moo_text_completion_parent_class)->dispose (object);
+    G_OBJECT_CLASS(moo_completion_parent_class)->dispose (object);
 }
 
 
 static void
-moo_text_completion_class_init (MooTextCompletionClass *klass)
+moo_completion_class_init (MooCompletionClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->dispose = moo_text_completion_dispose;
-    klass->complete = moo_text_completion_complete_real;
+    gobject_class->dispose = moo_completion_dispose;
+    klass->complete = moo_completion_complete_real;
 
     signals[UPDATE] =
             g_signal_new ("update",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTextCompletionClass, update),
+                          G_STRUCT_OFFSET (MooCompletionClass, update),
                           NULL, NULL,
                           _moo_marshal_VOID__BOXED_BOXED,
                           G_TYPE_NONE, 2,
@@ -111,7 +111,7 @@ moo_text_completion_class_init (MooTextCompletionClass *klass)
             g_signal_new ("complete",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooTextCompletionClass, complete),
+                          G_STRUCT_OFFSET (MooCompletionClass, complete),
                           g_signal_accumulator_true_handled, NULL,
                           _moo_marshal_BOOLEAN__OBJECT_BOXED,
                           G_TYPE_BOOLEAN, 2,
@@ -121,15 +121,15 @@ moo_text_completion_class_init (MooTextCompletionClass *klass)
 
 
 static void
-moo_text_completion_init (MooTextCompletion *cmpl)
+moo_completion_init (MooCompletion *cmpl)
 {
-    cmpl->priv = g_new0 (MooTextCompletionPrivate, 1);
+    cmpl->priv = g_new0 (MooCompletionPrivate, 1);
     cmpl->priv->model = GTK_TREE_MODEL (gtk_list_store_new (1, G_TYPE_STRING));
 }
 
 
 static void
-moo_text_completion_ensure_popup (MooTextCompletion *cmpl)
+moo_completion_ensure_popup (MooCompletion *cmpl)
 {
     if (!cmpl->priv->popup)
     {
@@ -192,27 +192,27 @@ moo_text_completion_ensure_popup (MooTextCompletion *cmpl)
 
 
 gboolean
-moo_text_completion_show (MooTextCompletion  *cmpl,
-                          const GtkTextIter  *start,
-                          const GtkTextIter  *end)
+moo_completion_show (MooCompletion      *cmpl,
+                     const GtkTextIter  *start,
+                     const GtkTextIter  *end)
 {
-    g_return_val_if_fail (MOO_IS_TEXT_COMPLETION (cmpl), FALSE);
+    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), FALSE);
 
     if (cmpl->priv->working)
     {
-        moo_text_completion_set_region (cmpl, start, end);
+        moo_completion_set_region (cmpl, start, end);
         return cmpl->priv->working;
     }
 
     g_return_val_if_fail (cmpl->priv->doc != NULL, FALSE);
     g_return_val_if_fail (cmpl->priv->model != NULL, FALSE);
 
-    moo_text_completion_set_region (cmpl, start, end);
+    moo_completion_set_region (cmpl, start, end);
 
-    if (!moo_text_completion_empty (cmpl))
+    if (!moo_completion_empty (cmpl))
     {
         cmpl->priv->working = TRUE;
-        moo_text_completion_popup (cmpl);
+        moo_completion_popup (cmpl);
         return TRUE;
     }
 
@@ -221,11 +221,11 @@ moo_text_completion_show (MooTextCompletion  *cmpl,
 
 
 void
-moo_text_completion_update (MooTextCompletion *cmpl)
+moo_completion_update (MooCompletion *cmpl)
 {
     GtkTextIter start, end;
 
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
     g_return_if_fail (cmpl->priv->working);
 
     if (cmpl->priv->in_update)
@@ -240,50 +240,50 @@ moo_text_completion_update (MooTextCompletion *cmpl)
 
     g_signal_emit (cmpl, signals[UPDATE], 0, cmpl->priv->model);
 
-    if (moo_text_completion_empty (cmpl))
-        moo_text_completion_hide (cmpl);
+    if (moo_completion_empty (cmpl))
+        moo_completion_hide (cmpl);
     else if (cmpl->priv->visible)
-        moo_text_completion_resize_popup (cmpl);
+        moo_completion_resize_popup (cmpl);
 
     cmpl->priv->in_update = FALSE;
 }
 
 
 void
-moo_text_completion_hide (MooTextCompletion *cmpl)
+moo_completion_hide (MooCompletion *cmpl)
 {
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
 
     if (cmpl->priv->working)
     {
-        moo_text_completion_popdown (cmpl);
+        moo_completion_popdown (cmpl);
         cmpl->priv->working = FALSE;
     }
 }
 
 
 void
-moo_text_completion_complete (MooTextCompletion *cmpl)
+moo_completion_complete (MooCompletion *cmpl)
 {
     GtkTreeIter iter;
     gboolean got_selected, retval;
 
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
     g_return_if_fail (cmpl->priv->visible);
 
     got_selected = gtk_tree_selection_get_selected (cmpl->priv->selection, NULL, &iter);
 
-    moo_text_completion_popdown (cmpl);
+    moo_completion_popdown (cmpl);
 
     if (got_selected)
         g_signal_emit (cmpl, signals[COMPLETE], 0, cmpl->priv->model, &iter, &retval);
 
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
 }
 
 
 static gboolean
-moo_text_completion_empty (MooTextCompletion *cmpl)
+moo_completion_empty (MooCompletion *cmpl)
 {
     return !cmpl->priv->model ||
             gtk_tree_model_iter_n_children (cmpl->priv->model, NULL) == 0;
@@ -291,7 +291,7 @@ moo_text_completion_empty (MooTextCompletion *cmpl)
 
 
 static void
-moo_text_completion_popup (MooTextCompletion *cmpl)
+moo_completion_popup (MooCompletion *cmpl)
 {
     GtkWidget *toplevel;
 
@@ -300,7 +300,7 @@ moo_text_completion_popup (MooTextCompletion *cmpl)
 
     g_return_if_fail (cmpl->priv->doc != NULL);
 
-    moo_text_completion_ensure_popup (cmpl);
+    moo_completion_ensure_popup (cmpl);
 
     toplevel = gtk_widget_get_toplevel (GTK_WIDGET (cmpl->priv->doc));
     g_return_if_fail (GTK_IS_WINDOW (toplevel));
@@ -312,7 +312,7 @@ moo_text_completion_popup (MooTextCompletion *cmpl)
                                      GTK_WINDOW (cmpl->priv->popup));
     gtk_window_set_modal (GTK_WINDOW (cmpl->priv->popup), TRUE);
 
-    moo_text_completion_resize_popup (cmpl);
+    moo_completion_resize_popup (cmpl);
 
     gtk_widget_show (cmpl->priv->popup);
     cmpl->priv->visible = TRUE;
@@ -330,18 +330,18 @@ moo_text_completion_popup (MooTextCompletion *cmpl)
                               GDK_POINTER_MOTION_MASK,
                       NULL, NULL, GDK_CURRENT_TIME);
 
-    moo_text_completion_connect_popup (cmpl);
+    moo_completion_connect_popup (cmpl);
 }
 
 
 static void
-moo_text_completion_popdown (MooTextCompletion *cmpl)
+moo_completion_popdown (MooCompletion *cmpl)
 {
     if (cmpl->priv->visible)
     {
         cmpl->priv->visible = FALSE;
 
-        moo_text_completion_disconnect_popup (cmpl);
+        moo_completion_disconnect_popup (cmpl);
 
         gdk_pointer_ungrab (GDK_CURRENT_TIME);
         gtk_grab_remove (cmpl->priv->popup);
@@ -351,7 +351,7 @@ moo_text_completion_popdown (MooTextCompletion *cmpl)
 
 
 static void
-moo_text_completion_resize_popup (MooTextCompletion *cmpl)
+moo_completion_resize_popup (MooCompletion *cmpl)
 {
     GtkWidget *widget = GTK_WIDGET (cmpl->priv->doc);
     int x, y;
@@ -367,7 +367,7 @@ moo_text_completion_resize_popup (MooTextCompletion *cmpl)
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (cmpl->priv->start && cmpl->priv->end);
 
-    moo_text_completion_get_region (cmpl, &iter, NULL);
+    moo_completion_get_region (cmpl, &iter, NULL);
     gtk_text_view_get_iter_location (cmpl->priv->doc, &iter, &iter_rect);
     gtk_text_view_buffer_to_window_coords (cmpl->priv->doc, GTK_TEXT_WINDOW_TEXT,
                                            iter_rect.x, iter_rect.y,
@@ -428,16 +428,16 @@ moo_text_completion_resize_popup (MooTextCompletion *cmpl)
 
 
 void
-moo_text_completion_set_doc (MooTextCompletion *cmpl,
-                             GtkTextView       *doc)
+moo_completion_set_doc (MooCompletion *cmpl,
+                        GtkTextView   *doc)
 {
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
     g_return_if_fail (!doc || GTK_IS_TEXT_VIEW (doc));
 
     if (cmpl->priv->doc == doc)
         return;
 
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
 
     if (cmpl->priv->doc)
     {
@@ -463,19 +463,19 @@ moo_text_completion_set_doc (MooTextCompletion *cmpl,
 
 
 GtkTextView *
-moo_text_completion_get_doc (MooTextCompletion *cmpl)
+moo_completion_get_doc (MooCompletion *cmpl)
 {
-    g_return_val_if_fail (MOO_IS_TEXT_COMPLETION (cmpl), NULL);
+    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
     return cmpl->priv->doc;
 }
 
 
 void
-moo_text_completion_set_model (MooTextCompletion  *cmpl,
-                               GtkTreeModel       *model,
-                               int                 text_column)
+moo_completion_set_model (MooCompletion  *cmpl,
+                          GtkTreeModel   *model,
+                          int             text_column)
 {
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
     g_return_if_fail (!model || GTK_IS_TREE_MODEL (model));
 
     if (model && gtk_tree_model_get_column_type (model, text_column) != G_TYPE_STRING)
@@ -484,7 +484,7 @@ moo_text_completion_set_model (MooTextCompletion  *cmpl,
         return;
     }
 
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
 
     cmpl->priv->text_column = text_column;
 
@@ -511,10 +511,10 @@ moo_text_completion_set_model (MooTextCompletion  *cmpl,
 
 
 GtkTreeModel *
-moo_text_completion_get_model (MooTextCompletion  *cmpl,
-                               int                *text_column)
+moo_completion_get_model (MooCompletion  *cmpl,
+                          int            *text_column)
 {
-    g_return_val_if_fail (MOO_IS_TEXT_COMPLETION (cmpl), NULL);
+    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
 
     if (text_column && cmpl->priv->model)
         *text_column = cmpl->priv->text_column;
@@ -524,11 +524,11 @@ moo_text_completion_get_model (MooTextCompletion  *cmpl,
 
 
 gboolean
-moo_text_completion_get_region (MooTextCompletion  *cmpl,
-                                GtkTextIter        *start,
-                                GtkTextIter        *end)
+moo_completion_get_region (MooCompletion  *cmpl,
+                           GtkTextIter    *start,
+                           GtkTextIter    *end)
 {
-    g_return_val_if_fail (MOO_IS_TEXT_COMPLETION (cmpl), FALSE);
+    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), FALSE);
 
     if (cmpl->priv->start)
     {
@@ -546,11 +546,11 @@ moo_text_completion_get_region (MooTextCompletion  *cmpl,
 
 
 void
-moo_text_completion_set_region (MooTextCompletion  *cmpl,
-                                const GtkTextIter  *start,
-                                const GtkTextIter  *end)
+moo_completion_set_region (MooCompletion      *cmpl,
+                           const GtkTextIter  *start,
+                           const GtkTextIter  *end)
 {
-    g_return_if_fail (MOO_IS_TEXT_COMPLETION (cmpl));
+    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
     g_return_if_fail (start && end);
     g_return_if_fail (cmpl->priv->buffer != NULL);
 
@@ -579,7 +579,7 @@ moo_text_completion_set_region (MooTextCompletion  *cmpl,
     }
 
     if (cmpl->priv->working)
-        moo_text_completion_update (cmpl);
+        moo_completion_update (cmpl);
 }
 
 
@@ -588,16 +588,16 @@ moo_text_completion_set_region (MooTextCompletion  *cmpl,
  */
 
 static gboolean
-doc_focus_out (MooTextCompletion *cmpl)
+doc_focus_out (MooCompletion *cmpl)
 {
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
     return FALSE;
 }
 
 
 static gboolean
-popup_button_press (MooTextCompletion *cmpl,
-                    GdkEventButton    *event)
+popup_button_press (MooCompletion  *cmpl,
+                    GdkEventButton *event)
 {
     if (event->window == cmpl->priv->popup->window)
     {
@@ -609,22 +609,22 @@ popup_button_press (MooTextCompletion *cmpl,
         if (event->x < 0 || event->x >= width ||
             event->y < 0 || event->y >= height)
         {
-            moo_text_completion_hide (cmpl);
+            moo_completion_hide (cmpl);
         }
 
         return TRUE;
     }
     else
     {
-        moo_text_completion_hide (cmpl);
+        moo_completion_hide (cmpl);
         return FALSE;
     }
 }
 
 
 static void
-popup_move_selection (MooTextCompletion *cmpl,
-                      GdkEventKey       *event)
+popup_move_selection (MooCompletion *cmpl,
+                      GdkEventKey   *event)
 {
     int n_items, current_item, new_item = -1;
     GtkTreeIter iter;
@@ -710,8 +710,8 @@ popup_move_selection (MooTextCompletion *cmpl,
 
 
 static gboolean
-popup_key_press (MooTextCompletion *cmpl,
-                 GdkEventKey       *event)
+popup_key_press (MooCompletion *cmpl,
+                 GdkEventKey   *event)
 {
     switch (event->keyval)
     {
@@ -728,13 +728,13 @@ popup_key_press (MooTextCompletion *cmpl,
             return TRUE;
 
         case GDK_Escape:
-            moo_text_completion_hide (cmpl);
+            moo_completion_hide (cmpl);
             return TRUE;
 
         case GDK_Return:
         case GDK_ISO_Enter:
         case GDK_KP_Enter:
-            moo_text_completion_complete (cmpl);
+            moo_completion_complete (cmpl);
             return TRUE;
 
         default:
@@ -744,8 +744,8 @@ popup_key_press (MooTextCompletion *cmpl,
 
 
 static gboolean
-list_button_press (MooTextCompletion *cmpl,
-                   GdkEventButton    *event)
+list_button_press (MooCompletion  *cmpl,
+                   GdkEventButton *event)
 {
     GtkTreePath *path;
     GtkTreeIter iter;
@@ -756,7 +756,7 @@ list_button_press (MooTextCompletion *cmpl,
     {
         gtk_tree_model_get_iter (cmpl->priv->model, &iter, path);
         gtk_tree_selection_select_iter (cmpl->priv->selection, &iter);
-        moo_text_completion_complete (cmpl);
+        moo_completion_complete (cmpl);
         gtk_tree_path_free (path);
         return TRUE;
     }
@@ -766,9 +766,9 @@ list_button_press (MooTextCompletion *cmpl,
 
 
 static void
-buffer_delete_range (MooTextCompletion *cmpl,
-                     GtkTextIter       *start,
-                     GtkTextIter       *end)
+buffer_delete_range (MooCompletion *cmpl,
+                     GtkTextIter   *start,
+                     GtkTextIter   *end)
 {
     GtkTextIter region_end;
     int offset;
@@ -780,7 +780,7 @@ buffer_delete_range (MooTextCompletion *cmpl,
         end = tmp;
     }
 
-    moo_text_completion_get_region (cmpl, NULL, &region_end);
+    moo_completion_get_region (cmpl, NULL, &region_end);
 
     if (gtk_text_iter_compare (&region_end, end))
         goto hide;
@@ -793,20 +793,20 @@ buffer_delete_range (MooTextCompletion *cmpl,
     return;
 
 hide:
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
 }
 
 
 static void
-buffer_insert_text (MooTextCompletion *cmpl,
-                    GtkTextIter       *iter,
-                    const char        *text,
-                    int                len)
+buffer_insert_text (MooCompletion *cmpl,
+                    GtkTextIter   *iter,
+                    const char    *text,
+                    int            len)
 {
     GtkTextIter region_end;
     gunichar ch;
 
-    moo_text_completion_get_region (cmpl, NULL, &region_end);
+    moo_completion_get_region (cmpl, NULL, &region_end);
 
     if (gtk_text_iter_compare (&region_end, iter))
         goto hide;
@@ -835,12 +835,12 @@ buffer_insert_text (MooTextCompletion *cmpl,
     return;
 
 hide:
-    moo_text_completion_hide (cmpl);
+    moo_completion_hide (cmpl);
 }
 
 
 static void
-moo_text_completion_connect_popup (MooTextCompletion *cmpl)
+moo_completion_connect_popup (MooCompletion *cmpl)
 {
     g_return_if_fail (cmpl->priv->doc && cmpl->priv->treeview && cmpl->priv->popup);
 
@@ -860,16 +860,16 @@ moo_text_completion_connect_popup (MooTextCompletion *cmpl)
     g_signal_connect_swapped (cmpl->priv->buffer, "insert-text",
                               G_CALLBACK (buffer_insert_text), cmpl);
     g_signal_connect_data (cmpl->priv->buffer, "delete-range",
-                           G_CALLBACK (moo_text_completion_update), cmpl,
+                           G_CALLBACK (moo_completion_update), cmpl,
                            NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
     g_signal_connect_data (cmpl->priv->buffer, "insert-text",
-                           G_CALLBACK (moo_text_completion_update), cmpl,
+                           G_CALLBACK (moo_completion_update), cmpl,
                            NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 }
 
 
 static void
-moo_text_completion_disconnect_popup (MooTextCompletion *cmpl)
+moo_completion_disconnect_popup (MooCompletion *cmpl)
 {
     g_signal_handlers_disconnect_by_func (cmpl->priv->doc,
                                           (gpointer) doc_focus_out,
@@ -893,15 +893,15 @@ moo_text_completion_disconnect_popup (MooTextCompletion *cmpl)
                                           (gpointer) buffer_insert_text,
                                           cmpl);
     g_signal_handlers_disconnect_by_func (cmpl->priv->buffer,
-                                          (gpointer) moo_text_completion_update,
+                                          (gpointer) moo_completion_update,
                                           cmpl);
 }
 
 
 static gboolean
-moo_text_completion_complete_real (MooTextCompletion  *cmpl,
-                                   GtkTreeModel       *model,
-                                   GtkTreeIter        *iter)
+moo_completion_complete_real (MooCompletion  *cmpl,
+                              GtkTreeModel   *model,
+                              GtkTreeIter    *iter)
 {
     char *text = NULL;
     GtkTextIter start, end;
@@ -909,7 +909,7 @@ moo_text_completion_complete_real (MooTextCompletion  *cmpl,
     gtk_tree_model_get (model, iter, cmpl->priv->text_column, &text, -1);
     g_return_val_if_fail (text != NULL, FALSE);
 
-    moo_text_completion_get_region (cmpl, &start, &end);
+    moo_completion_get_region (cmpl, &start, &end);
     gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
     gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
 
@@ -918,8 +918,8 @@ moo_text_completion_complete_real (MooTextCompletion  *cmpl,
 }
 
 
-MooTextCompletion *
-moo_text_completion_new (void)
+MooCompletion *
+moo_completion_new (void)
 {
-    return g_object_new (MOO_TYPE_TEXT_COMPLETION, NULL);
+    return g_object_new (MOO_TYPE_COMPLETION, NULL);
 }
