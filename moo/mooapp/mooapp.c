@@ -24,6 +24,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooedit-script.h"
+#include "mooedit/moousertools.h"
 #include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moopython.h"
@@ -769,9 +770,13 @@ moo_app_load_user_actions (void)
 }
 
 
+#ifdef MOO_BUILD_EDIT
 static void
 moo_app_init_editor (MooApp *app)
 {
+    char **files;
+    guint n_files;
+
     app->priv->editor = moo_editor_instance ();
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
@@ -781,7 +786,16 @@ moo_app_init_editor (MooApp *app)
     moo_lang_mgr_read_dirs (moo_editor_get_lang_mgr (app->priv->editor));
 
     moo_plugin_read_dirs ();
+
+    if ((files = moo_edit_get_user_tools_files (&n_files)))
+    {
+        moo_edit_load_user_tools (files, n_files,
+                                  moo_app_get_ui_xml (app),
+                                  "Editor/Menubar/Tools/ToolsMenu");
+        g_strfreev (files);
+    }
 }
+#endif /* MOO_BUILD_EDIT */
 
 
 static void
@@ -1570,7 +1584,7 @@ moo_app_cmd_setup_real (MooApp     *app,
                         GtkWindow  *window)
 {
     if (MOO_IS_EDIT_WINDOW (window))
-        return moo_edit_setup_command (cmd, MOO_EDIT_WINDOW (window));
+        return moo_edit_setup_command (cmd, NULL, MOO_EDIT_WINDOW (window));
 }
 
 
