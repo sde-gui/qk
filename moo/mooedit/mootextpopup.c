@@ -651,22 +651,6 @@ popup_move_selection (MooTextPopup *popup,
 
     switch (event->keyval)
     {
-        case GDK_Down:
-        case GDK_KP_Down:
-            if (current_item < n_items - 1)
-                new_item = current_item + 1;
-            else
-                new_item = -1;
-            break;
-
-        case GDK_Up:
-        case GDK_KP_Up:
-            if (current_item < 0)
-                new_item = n_items - 1;
-            else
-                new_item = current_item - 1;
-            break;
-
         case GDK_Page_Down:
         case GDK_KP_Page_Down:
             new_item = current_item + popup->priv->max_len - 1;
@@ -683,6 +667,8 @@ popup_move_selection (MooTextPopup *popup,
 
         case GDK_Tab:
         case GDK_KP_Tab:
+        case GDK_Down:
+        case GDK_KP_Down:
             if (current_item < n_items - 1)
                 new_item = current_item + 1;
             else
@@ -690,6 +676,8 @@ popup_move_selection (MooTextPopup *popup,
             break;
 
         case GDK_ISO_Left_Tab:
+        case GDK_Up:
+        case GDK_KP_Up:
             if (current_item <= 0)
                 new_item = n_items - 1;
             else
