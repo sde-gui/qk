@@ -27,7 +27,8 @@ mooedit_include_headers =                     \
     $(mooedit)/mootextsearch.h                \
     $(mooedit)/mootextstyle.h                 \
     $(mooedit)/mootextstylescheme.h           \
-    $(mooedit)/mootextview.h
+    $(mooedit)/mootextview.h                  \
+    $(mooedit)/moousertools.h
 
 mooedit_noinst_headers =                      \
     $(mooedit)/gtksourceiter.h                \
@@ -88,7 +89,8 @@ mooedit_sources =                             \
     $(mooedit)/mootextsearch.c                \
     $(mooedit)/mootextstyle.c                 \
     $(mooedit)/mootextstylescheme.c           \
-    $(mooedit)/mootextview.c
+    $(mooedit)/mootextview.c                  \
+    $(mooedit)/moousertools.c
 
 mooedit_gtk_2_10_sources =                    \
     $(mooedit)/mootextprint.c                 \
