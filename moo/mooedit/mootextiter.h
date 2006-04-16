@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mootextiter.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -33,7 +32,7 @@ MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter,
                                                          int          limit);
 
 /* tries to find bracket near the iter, i.e. like |( or (|,
- *   and chooses right one in the case )|(                  */
+ *   and chooses the better one in the case )|( */
 gboolean    moo_text_iter_at_bracket    (GtkTextIter        *iter);
 
 
