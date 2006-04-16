@@ -1173,7 +1173,7 @@ file_selector_plugin_detach (G_GNUC_UNUSED Plugin *plugin,
 MOO_PLUGIN_DEFINE_INFO (file_selector, PLUGIN_ID,
                         "File Selector", "Selects files",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                        MOO_VERSION);
+                        MOO_VERSION, NULL);
 MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
                         file_selector_plugin_init, file_selector_plugin_deinit,
                         file_selector_plugin_attach, file_selector_plugin_detach,

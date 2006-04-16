@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 15
+#define MOO_PLUGIN_CURRENT_VERSION 16
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
 
@@ -101,6 +101,8 @@ struct _MooPluginInfo
     const char *author;
     const char *version;
 
+    const char *langs;
+
     MooPluginParams *params;
     MooPluginPrefsParams *prefs_params;
 };
@@ -114,6 +116,8 @@ struct _MooPlugin
 
     GQuark id_quark;
     MooPluginInfo *info;
+    GHashTable *langs;
+    GSList *docs;
     GType win_plugin_type;
     GType doc_plugin_type;
 };

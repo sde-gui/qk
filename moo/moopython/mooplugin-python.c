@@ -759,6 +759,7 @@ get_plugin_info (PyObject *object)
     info->description = dict_get_string (result, "description");
     info->author = dict_get_string (result, "author");
     info->version = dict_get_string (result, "version");
+    info->langs = dict_get_string (result, "langs");
 
     info->params->enabled = dict_get_bool (result, "enabled", TRUE);
     info->params->visible = dict_get_bool (result, "visible", TRUE);

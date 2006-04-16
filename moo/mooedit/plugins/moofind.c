@@ -900,7 +900,7 @@ output_activate (WindowStuff    *stuff,
 MOO_PLUGIN_DEFINE_INFO (find, FIND_PLUGIN_ID,
                         "Find", "Finds everything",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                        MOO_VERSION);
+                        MOO_VERSION, NULL);
 MOO_WIN_PLUGIN_DEFINE (Find, find,
                        find_window_plugin_create,
                        find_window_plugin_destroy);

@@ -80,7 +80,7 @@ cmpl_plugin_deinit (CmplPlugin *plugin)
 MOO_PLUGIN_DEFINE_INFO (cmpl, CMPL_PLUGIN_ID,
                         "Completion", "Makes it complete",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                        MOO_VERSION)
+                        MOO_VERSION, NULL)
 MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
                         cmpl_plugin_init, cmpl_plugin_deinit,
                         NULL, NULL, NULL, NULL,

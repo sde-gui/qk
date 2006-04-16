@@ -31,6 +31,7 @@
 #endif
 
 #define PLUGIN_PREFS_ENABLED "enabled"
+#define LANG_ID(lang) ((lang) ? (lang)->id : "none")
 
 
 typedef struct {
@@ -46,6 +47,7 @@ static PluginStore *plugin_store = NULL;
 static void     plugin_store_init       (void);
 static void     plugin_store_add        (MooPlugin      *plugin);
 
+static void     moo_plugin_class_init   (MooPluginClass *klass);
 static void     some_plugin_class_init  (gpointer        klass);
 
 static gboolean plugin_init             (MooPlugin      *plugin);
@@ -95,7 +97,7 @@ moo_plugin_get_type (void)
             sizeof (MooPluginClass),
             (GBaseInitFunc) NULL,
             (GBaseFinalizeFunc) NULL,
-            (GClassInitFunc) some_plugin_class_init,
+            (GClassInitFunc) moo_plugin_class_init,
             (GClassFinalizeFunc) NULL,
             NULL,   /* class_data */
             sizeof (MooPlugin),
@@ -172,6 +174,26 @@ some_plugin_class_init (gpointer klass)
 }
 
 
+static void
+moo_plugin_finalize (GObject *object)
+{
+    MooPlugin *plugin = MOO_PLUGIN (object);
+
+    if (plugin->langs)
+        g_hash_table_destroy (plugin->langs);
+
+    G_OBJECT_CLASS(parent_class)->finalize (object);
+}
+
+
+static void
+moo_plugin_class_init (MooPluginClass *klass)
+{
+    some_plugin_class_init (klass);
+    G_OBJECT_CLASS(klass)->finalize = moo_plugin_finalize;
+}
+
+
 gboolean
 moo_plugin_register (GType type)
 {
@@ -208,6 +230,42 @@ moo_plugin_register (GType type)
                    G_STRLOC, g_type_name (type));
         g_object_unref (plugin);
         return FALSE;
+    }
+
+    if (plugin->info->langs)
+    {
+        char **langs, **p;
+        GHashTable *table;
+
+        langs = g_strsplit_set (plugin->info->langs, " \t\r\n", 0);
+        table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+        for (p = langs; p && *p; ++p)
+        {
+            char *id;
+
+            if (!**p)
+                continue;
+
+            id = moo_lang_id_from_name (*p);
+
+            if (!g_hash_table_lookup (table, id))
+                g_hash_table_insert (table, id, id);
+            else
+                g_free (id);
+        }
+
+        if (!g_hash_table_size (table))
+        {
+            g_warning ("%s: invalid langs string '%s'", G_STRLOC, plugin->info->langs);
+            g_hash_table_destroy (table);
+        }
+        else
+        {
+            plugin->langs = table;
+        }
+
+        g_strfreev (langs);
     }
 
     if (moo_plugin_lookup (moo_plugin_id (plugin)))
@@ -387,6 +445,20 @@ plugin_attach_doc (MooPlugin      *plugin,
     if (!moo_plugin_enabled (plugin))
         return;
 
+    if (plugin->langs)
+    {
+        MooLang *lang;
+        const char *id;
+
+        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+        id = LANG_ID (lang);
+
+        if (!g_hash_table_lookup (plugin->langs, id))
+            return;
+    }
+
+    plugin->docs = g_slist_prepend (plugin->docs, doc);
+
     klass = MOO_PLUGIN_GET_CLASS (plugin);
 
     if (klass->attach_doc)
@@ -427,6 +499,11 @@ plugin_detach_doc (MooPlugin      *plugin,
 
     if (!moo_plugin_enabled (plugin))
         return;
+
+    if (!g_slist_find (plugin->docs, doc))
+        return;
+
+    plugin->docs = g_slist_remove (plugin->docs, doc);
 
     doc_plugin = doc_get_plugin (doc, plugin);
 
@@ -926,6 +1003,38 @@ _moo_window_detach_plugins (MooEditWindow *window)
 }
 
 
+static void
+doc_lang_changed (MooEdit *doc)
+{
+    GSList *l;
+    MooLang *lang;
+    const char *id;
+    GtkWidget *toplevel;
+    MooEditWindow *window = NULL;
+
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    id = LANG_ID (lang);
+
+    if ((toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc))))
+        window = MOO_EDIT_WINDOW (toplevel);
+
+    for (l = plugin_store->list; l != NULL; l = l->next)
+    {
+        MooPlugin *plugin = l->data;
+
+        if (moo_plugin_enabled (plugin) && plugin->langs)
+        {
+            if (g_hash_table_lookup (plugin->langs, id))
+                plugin_attach_doc (plugin, window, doc);
+            else
+                plugin_detach_doc (plugin, window, doc);
+        }
+    }
+}
+
+
 void
 _moo_doc_attach_plugins (MooEditWindow *window,
                          MooEdit       *doc)
@@ -936,6 +1045,10 @@ _moo_doc_attach_plugins (MooEditWindow *window,
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();
+
+    g_signal_connect (doc, "config-notify::lang",
+                      G_CALLBACK (doc_lang_changed),
+                      plugin_store);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_doc (l->data, window, doc);
@@ -952,6 +1065,10 @@ _moo_doc_detach_plugins (MooEditWindow *window,
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();
+
+    g_signal_handlers_disconnect_by_func (doc,
+                                          (gpointer) doc_lang_changed,
+                                          plugin_store);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_doc (l->data, window, doc);

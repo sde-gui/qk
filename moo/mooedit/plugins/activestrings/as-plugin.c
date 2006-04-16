@@ -1080,7 +1080,7 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
 MOO_PLUGIN_DEFINE_INFO (as, AS_PLUGIN_ID,
                         "Active Strings", "Very active",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
-                        MOO_VERSION);
+                        MOO_VERSION, NULL);
 MOO_PLUGIN_DEFINE_FULL (AS, as,
                         as_plugin_init, as_plugin_deinit,
                         NULL, NULL,

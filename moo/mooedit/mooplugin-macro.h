@@ -19,7 +19,8 @@
 
 
 #define MOO_PLUGIN_DEFINE_INFO(plugin_name__,id__,name__,                   \
-                               description__,author__,version__)            \
+                               description__,author__,version__,            \
+                               langs__)                                     \
                                                                             \
 static MooPluginParams plugin_name__##_plugin_params = {                    \
     TRUE,                                                                   \
@@ -36,6 +37,7 @@ static MooPluginInfo plugin_name__##_plugin_info = {                        \
     description__,                                                          \
     author__,                                                               \
     version__,                                                              \
+    langs__,                                                                \
     &plugin_name__##_plugin_params,                                         \
     &plugin_name__##_plugin_prefs_params                                    \
 };
