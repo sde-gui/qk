@@ -39,6 +39,16 @@
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
 
+typedef struct {
+    char *property;
+    MooEditWindowCheckActionFunc func;
+    gpointer data;
+    GDestroyNotify notify;
+} ActionCheck;
+
+static GHashTable *action_checks; /* char* -> GSList* */
+static GSList *windows;
+
 struct _MooEditWindowPrivate {
     MooEditor *editor;
 
@@ -72,95 +82,103 @@ static GtkTargetEntry dest_targets[] = {
 };
 
 
-GObject        *moo_edit_window_constructor (GType                  type,
-                                             guint                  n_props,
-                                             GObjectConstructParam *props);
-static void     moo_edit_window_finalize    (GObject        *object);
-static void     moo_edit_window_destroy     (GtkObject      *object);
+static ActionCheck *action_check_new            (const char         *action_prop,
+                                                 MooEditWindowCheckActionFunc func,
+                                                 gpointer            data,
+                                                 GDestroyNotify      notify);
+static void     action_check_free               (ActionCheck        *check);
+static void     action_checks_init              (void);
+static void     moo_edit_window_check_actions   (MooEditWindow      *window);
 
-static void     moo_edit_window_set_property(GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void     moo_edit_window_get_property(GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
+GObject        *moo_edit_window_constructor     (GType               type,
+                                                 guint               n_props,
+                                                 GObjectConstructParam *props);
+static void     moo_edit_window_finalize        (GObject            *object);
+static void     moo_edit_window_destroy         (GtkObject          *object);
+
+static void     moo_edit_window_set_property    (GObject            *object,
+                                                 guint               prop_id,
+                                                 const GValue       *value,
+                                                 GParamSpec         *pspec);
+static void     moo_edit_window_get_property    (GObject            *object,
+                                                 guint               prop_id,
+                                                 GValue             *value,
+                                                 GParamSpec         *pspec);
 
 
-static gboolean moo_edit_window_close       (MooEditWindow  *window);
+static gboolean moo_edit_window_close           (MooEditWindow      *window);
 
-static void     setup_notebook          (MooEditWindow      *window);
-static void     update_window_title     (MooEditWindow      *window);
+static void     setup_notebook                  (MooEditWindow      *window);
+static void     update_window_title             (MooEditWindow      *window);
 
-static void     notebook_switch_page    (MooNotebook        *notebook,
-                                         guint               page_num,
-                                         MooEditWindow      *window);
-static gboolean notebook_populate_popup (MooNotebook        *notebook,
-                                         GtkWidget          *child,
-                                         GtkMenu            *menu,
-                                         MooEditWindow      *window);
+static void     notebook_switch_page            (MooNotebook        *notebook,
+                                                 guint               page_num,
+                                                 MooEditWindow      *window);
+static gboolean notebook_populate_popup         (MooNotebook        *notebook,
+                                                 GtkWidget          *child,
+                                                 GtkMenu            *menu,
+                                                 MooEditWindow      *window);
 
-static void     proxy_boolean_property  (MooEditWindow      *window,
-                                         GParamSpec         *prop,
-                                         MooEdit            *doc);
-static void     edit_changed            (MooEditWindow      *window,
-                                         MooEdit            *doc);
-static void     edit_filename_changed   (MooEditWindow      *window,
-                                         const char         *filename,
-                                         MooEdit            *doc);
-static void     edit_lang_changed       (MooEditWindow      *window,
-                                         guint               var_id,
-                                         GParamSpec         *pspec,
-                                         MooEdit            *doc);
-static GtkWidget *create_tab_label      (MooEditWindow      *window,
-                                         MooEdit            *edit);
-static void     update_tab_label        (MooEditWindow      *window,
-                                         MooEdit            *doc);
-static void     edit_cursor_moved       (MooEditWindow      *window,
-                                         GtkTextIter        *iter,
-                                         MooEdit            *edit);
-static void     update_lang_menu        (MooEditWindow      *window);
+static void     proxy_boolean_property          (MooEditWindow      *window,
+                                                 GParamSpec         *prop,
+                                                 MooEdit            *doc);
+static void     edit_changed                    (MooEditWindow      *window,
+                                                 MooEdit            *doc);
+static void     edit_filename_changed           (MooEditWindow      *window,
+                                                 const char         *filename,
+                                                 MooEdit            *doc);
+static void     edit_lang_changed               (MooEditWindow      *window,
+                                                 guint               var_id,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
+static GtkWidget *create_tab_label              (MooEditWindow      *window,
+                                                 MooEdit            *edit);
+static void     update_tab_label                (MooEditWindow      *window,
+                                                 MooEdit            *doc);
+static void     edit_cursor_moved               (MooEditWindow      *window,
+                                                 GtkTextIter        *iter,
+                                                 MooEdit            *edit);
+static void     update_lang_menu                (MooEditWindow      *window);
 
-static void     create_statusbar        (MooEditWindow      *window);
-static void     update_statusbar        (MooEditWindow      *window);
-static MooEdit *get_nth_tab             (MooEditWindow      *window,
-                                         guint               n);
-static int      get_page_num            (MooEditWindow      *window,
-                                         MooEdit            *doc);
+static void     create_statusbar                (MooEditWindow      *window);
+static void     update_statusbar                (MooEditWindow      *window);
+static MooEdit *get_nth_tab                     (MooEditWindow      *window,
+                                                 guint               n);
+static int      get_page_num                    (MooEditWindow      *window,
+                                                 MooEdit            *doc);
 
-static MooAction *create_lang_action    (MooEditWindow      *window);
+static MooAction *create_lang_action            (MooEditWindow      *window);
 
-static void     create_paned            (MooEditWindow      *window);
-static MooPaneParams *load_pane_params  (const char         *pane_id);
-static gboolean save_pane_params        (const char         *pane_id,
-                                         MooPaneParams      *params);
-static void     pane_params_changed     (MooEditWindow      *window,
-                                         MooPanePosition     position,
-                                         guint               index);
-static void     pane_size_changed       (MooEditWindow      *window,
-                                         MooPanePosition     position);
+static void     create_paned                    (MooEditWindow      *window);
+static MooPaneParams *load_pane_params          (const char         *pane_id);
+static gboolean save_pane_params                (const char         *pane_id,
+                                                 MooPaneParams      *params);
+static void     pane_params_changed             (MooEditWindow      *window,
+                                                 MooPanePosition     position,
+                                                 guint               index);
+static void     pane_size_changed               (MooEditWindow      *window,
+                                                 MooPanePosition     position);
 
-static void     notebook_drag_data_recv (GtkWidget          *widget,
-                                         GdkDragContext     *context,
-                                         int                 x,
-                                         int                 y,
-                                         GtkSelectionData   *data,
-                                         guint               info,
-                                         guint               time,
-                                         MooEditWindow      *window);
-static gboolean notebook_drag_drop      (GtkWidget          *widget,
-                                         GdkDragContext     *context,
-                                         int                 x,
-                                         int                 y,
-                                         guint               time,
-                                         MooEditWindow      *window);
-static gboolean notebook_drag_motion    (GtkWidget          *widget,
-                                         GdkDragContext     *context,
-                                         int                 x,
-                                         int                 y,
-                                         guint               time,
-                                         MooEditWindow      *window);
+static void     notebook_drag_data_recv         (GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 GtkSelectionData   *data,
+                                                 guint               info,
+                                                 guint               time,
+                                                 MooEditWindow      *window);
+static gboolean notebook_drag_drop              (GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 guint               time,
+                                                 MooEditWindow      *window);
+static gboolean notebook_drag_motion            (GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 guint               time,
+                                                 MooEditWindow      *window);
 
 
 /* actions */
@@ -218,11 +236,14 @@ static guint signals[NUM_SIGNALS];
         g_param_spec_boolean (name, name, name, FALSE, G_PARAM_READABLE))
 
 
-static void moo_edit_window_class_init (MooEditWindowClass *klass)
+static void
+moo_edit_window_class_init (MooEditWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     MooWindowClass *window_class = MOO_WINDOW_CLASS (klass);
+
+    action_checks_init ();
 
     gobject_class->constructor = moo_edit_window_constructor;
     gobject_class->finalize = moo_edit_window_finalize;
@@ -634,6 +655,8 @@ moo_edit_window_init (MooEditWindow *window)
                   NULL);
 
     window->priv->use_fullname = TRUE;
+
+    windows = g_slist_prepend (windows, window);
 }
 
 
@@ -664,6 +687,8 @@ moo_edit_window_destroy (GtkObject *object)
         g_assert (window->priv->stop_clients == NULL);
         g_slist_free (list);
     }
+
+    windows = g_slist_remove (windows, window);
 
     GTK_OBJECT_CLASS(moo_edit_window_parent_class)->destroy (object);
 }
@@ -1090,6 +1115,7 @@ static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
                                          MooEditWindow *window)
 {
     edit_changed (window, get_nth_tab (window, page_num));
+    moo_edit_window_check_actions (window);
     g_object_notify (G_OBJECT (window), "active-doc");
 }
 
@@ -2249,7 +2275,200 @@ edit_lang_changed (MooEditWindow      *window,
                    MooEdit            *doc)
 {
     if (doc == ACTIVE_DOC (window))
+    {
         update_lang_menu (window);
+        moo_edit_window_check_actions (window);
+    }
+}
+
+
+/*****************************************************************************/
+/* Action properties checks
+ */
+
+static void
+moo_edit_window_check_action (MooEditWindow *window,
+                              MooEdit       *doc,
+                              MooAction     *action,
+                              ActionCheck   *check)
+{
+    gpointer klass;
+    GParamSpec *pspec;
+    GValue value;
+
+    klass = G_OBJECT_GET_CLASS (action);
+    pspec = g_object_class_find_property (klass, check->property);
+    g_return_if_fail (pspec != NULL);
+
+    value.g_type = 0;
+    g_value_init (&value, pspec->value_type);
+
+    check->func (action, doc, pspec, &value, check->data);
+    g_object_set_property (G_OBJECT (action), check->property, &value);
+
+    g_value_unset (&value);
+}
+
+
+static void
+window_check_actions (const char    *action_id,
+                      GSList        *checks,
+                      MooEditWindow *window)
+{
+    MooAction *action;
+    MooEdit *doc;
+
+    action = moo_window_get_action_by_id (MOO_WINDOW (window), action_id);
+
+    if (!action)
+        return;
+
+    doc = ACTIVE_DOC (window);
+
+    while (checks)
+    {
+        moo_edit_window_check_action (window, doc, action, checks->data);
+        checks = checks->next;
+    }
+}
+
+
+static void
+moo_edit_window_check_actions (MooEditWindow *window)
+{
+    g_message ("checking actions");
+    g_hash_table_foreach (action_checks,
+                          (GHFunc) window_check_actions,
+                          window);
+}
+
+
+static void
+check_action (const char  *action_id,
+              ActionCheck *check)
+{
+    GSList *l;
+
+    for (l = windows; l != NULL; l = l->next)
+    {
+        MooEditWindow *window = l->data;
+        MooEdit *doc = ACTIVE_DOC (window);
+        MooAction *action = moo_window_get_action_by_id (MOO_WINDOW (window), action_id);
+        if (action)
+            moo_edit_window_check_action (window, doc, action, check);
+    }
+}
+
+
+static int
+check_and_prop_cmp (ActionCheck *check,
+                    const char  *prop)
+{
+    return strcmp (check->property, prop);
+}
+
+void
+moo_edit_window_add_action_check (const char     *action_id,
+                                  const char     *action_prop,
+                                  MooEditWindowCheckActionFunc func,
+                                  gpointer        data,
+                                  GDestroyNotify  notify)
+{
+    ActionCheck *check;
+    GSList *list;
+
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (action_prop != NULL);
+    g_return_if_fail (func != NULL);
+
+    action_checks_init ();
+
+    list = g_hash_table_lookup (action_checks, action_id);
+
+    if (list)
+    {
+        GSList *old = g_slist_find_custom (list, action_prop,
+                                           (GCompareFunc) check_and_prop_cmp);
+
+        if (old)
+        {
+            action_check_free (old->data);
+            list = g_slist_delete_link (list, old);
+        }
+    }
+
+    check = action_check_new (action_prop, func, data, notify);
+    list = g_slist_prepend (list, check);
+    g_hash_table_insert (action_checks, g_strdup (action_id), list);
+
+    check_action (action_id, check);
+}
+
+
+void
+moo_edit_window_remove_action_check (const char *action_id,
+                                     const char *action_prop)
+{
+    GSList *list;
+
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (action_prop != NULL);
+
+    action_checks_init ();
+
+    list = g_hash_table_lookup (action_checks, action_id);
+
+    if (list)
+    {
+        GSList *old = g_slist_find_custom (list, action_prop,
+                                           (GCompareFunc) check_and_prop_cmp);
+
+        if (old)
+        {
+            action_check_free (old->data);
+            list = g_slist_delete_link (list, old);
+        }
+
+        if (!list)
+            g_hash_table_remove (action_checks, action_id);
+    }
+}
+
+
+static ActionCheck *
+action_check_new (const char     *action_prop,
+                  MooEditWindowCheckActionFunc func,
+                  gpointer        data,
+                  GDestroyNotify  notify)
+{
+    ActionCheck *check = g_new0 (ActionCheck, 1);
+    check->property = g_strdup (action_prop);
+    check->func = func;
+    check->data = data;
+    check->notify = notify;
+    return check;
+}
+
+
+static void
+action_check_free (ActionCheck *check)
+{
+    if (check)
+    {
+        if (check->notify)
+            check->notify (check->data);
+        g_free (check->property);
+        g_free (check);
+    }
+}
+
+
+static void
+action_checks_init (void)
+{
+    if (!action_checks)
+        action_checks =
+                g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 

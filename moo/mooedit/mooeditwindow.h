@@ -55,51 +55,65 @@ struct _MooEditWindowClass
 };
 
 
-GType        moo_edit_window_get_type           (void) G_GNUC_CONST;
+GType        moo_edit_window_get_type               (void) G_GNUC_CONST;
 
-MooEdit     *moo_edit_window_get_active_doc     (MooEditWindow  *window);
-void         moo_edit_window_set_active_doc     (MooEditWindow  *window,
-                                                 MooEdit        *edit);
+typedef void (*MooEditWindowCheckActionFunc)        (MooAction      *action,
+                                                     MooEdit        *doc,
+                                                     GParamSpec     *pspec,
+                                                     GValue         *prop_value,
+                                                     gpointer        data);
 
-GSList      *moo_edit_window_list_docs          (MooEditWindow  *window);
-guint        moo_edit_window_num_docs           (MooEditWindow  *window);
+void         moo_edit_window_add_action_check       (const char     *action_id,
+                                                     const char     *action_prop,
+                                                     MooEditWindowCheckActionFunc func,
+                                                     gpointer        data,
+                                                     GDestroyNotify  notify);
+void         moo_edit_window_remove_action_check    (const char     *action_id,
+                                                     const char     *action_prop);
 
-void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
-                                                 const char     *prefix);
+MooEdit     *moo_edit_window_get_active_doc         (MooEditWindow  *window);
+void         moo_edit_window_set_active_doc         (MooEditWindow  *window,
+                                                     MooEdit        *edit);
+
+GSList      *moo_edit_window_list_docs              (MooEditWindow  *window);
+guint        moo_edit_window_num_docs               (MooEditWindow  *window);
+
+void         moo_edit_window_set_title_prefix       (MooEditWindow  *window,
+                                                     const char     *prefix);
 
 /* sinks widget */
-gboolean     moo_edit_window_add_pane           (MooEditWindow  *window,
-                                                 const char     *user_id,
-                                                 GtkWidget      *widget,
-                                                 MooPaneLabel   *label,
-                                                 MooPanePosition position);
-gboolean     moo_edit_window_remove_pane        (MooEditWindow  *window,
-                                                 const char     *user_id);
-GtkWidget   *moo_edit_window_get_pane           (MooEditWindow  *window,
-                                                 const char     *user_id);
+gboolean     moo_edit_window_add_pane               (MooEditWindow  *window,
+                                                     const char     *user_id,
+                                                     GtkWidget      *widget,
+                                                     MooPaneLabel   *label,
+                                                     MooPanePosition position);
+gboolean     moo_edit_window_remove_pane            (MooEditWindow  *window,
+                                                     const char     *user_id);
+GtkWidget   *moo_edit_window_get_pane               (MooEditWindow  *window,
+                                                     const char     *user_id);
 
 
 typedef void (*MooAbortJobFunc) (gpointer job);
 
-void         moo_edit_window_add_stop_client    (MooEditWindow  *window,
-                                                 gpointer        client);
-void         moo_edit_window_remove_stop_client (MooEditWindow  *window,
-                                                 gpointer        client);
-void         moo_edit_window_abort_jobs         (MooEditWindow  *window);
-void         moo_edit_window_job_started        (MooEditWindow  *window,
-                                                 const char     *name,
-                                                 MooAbortJobFunc func,
-                                                 gpointer        job);
-void         moo_edit_window_job_finished       (MooEditWindow  *window,
-                                                 gpointer        job);
+void         moo_edit_window_add_stop_client        (MooEditWindow  *window,
+                                                     gpointer        client);
+void         moo_edit_window_remove_stop_client     (MooEditWindow  *window,
+                                                     gpointer        client);
+void         moo_edit_window_abort_jobs             (MooEditWindow  *window);
+void         moo_edit_window_job_started            (MooEditWindow  *window,
+                                                     const char     *name,
+                                                     MooAbortJobFunc func,
+                                                     gpointer        job);
+void         moo_edit_window_job_finished           (MooEditWindow  *window,
+                                                     gpointer        job);
 
-void         moo_edit_window_message            (MooEditWindow  *window,
-                                                 const char     *message);
-guint        moo_edit_window_push_message       (MooEditWindow  *window,
-                                                 const char     *message,
-                                                 const char     *id);
-void         moo_edit_window_pop_message        (MooEditWindow  *window,
-                                                 const char     *id);
+void         moo_edit_window_message                (MooEditWindow  *window,
+                                                     const char     *message);
+guint        moo_edit_window_push_message           (MooEditWindow  *window,
+                                                     const char     *message,
+                                                     const char     *id);
+void         moo_edit_window_pop_message            (MooEditWindow  *window,
+                                                     const char     *id);
 
 
 G_END_DECLS
