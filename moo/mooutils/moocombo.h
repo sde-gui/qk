@@ -105,13 +105,15 @@ void            moo_combo_set_use_button    (MooCombo       *combo,
 /* GtkEntry and GtkEditable interface
  */
 
-void            moo_combo_entry_set_text    (MooCombo       *combo,
-                                             const char     *text);
-const char     *moo_combo_entry_get_text    (MooCombo       *combo);
+void        moo_combo_entry_set_text                (MooCombo       *combo,
+                                                     const char     *text);
+const char *moo_combo_entry_get_text                (MooCombo       *combo);
 
-void            moo_combo_select_region     (MooCombo       *combo,
-                                             int             start,
-                                             int             end);
+void        moo_combo_select_region                 (MooCombo       *combo,
+                                                     int             start,
+                                                     int             end);
+void        moo_combo_entry_set_activates_default   (MooCombo       *combo,
+                                                     gboolean        setting);
 
 
 G_END_DECLS

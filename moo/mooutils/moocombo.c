@@ -1203,6 +1203,15 @@ moo_combo_select_region (MooCombo       *combo,
 }
 
 
+void
+moo_combo_entry_set_activates_default (MooCombo *combo,
+                                       gboolean  setting)
+{
+    g_return_if_fail (MOO_IS_COMBO (combo));
+    g_object_set (combo, "activates-default", setting, NULL);
+}
+
+
 static void
 moo_combo_cell_layout_pack_start (GtkCellLayout      *cell_layout,
                                   GtkCellRenderer    *cell,
