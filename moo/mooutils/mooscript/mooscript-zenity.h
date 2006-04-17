@@ -22,6 +22,8 @@ G_BEGIN_DECLS
 
 /* Entry(entry_text = none, dialog_text = none, hide_text = false) */
 MSFunc  *ms_zenity_entry            (void);
+/* HistoryEntry(entry_text = none, user_id = none, dialog_text = none) */
+MSFunc  *ms_zenity_history_entry    (void);
 /* Text(text = none, dialog_text = none) */
 MSFunc  *ms_zenity_text             (void);
 

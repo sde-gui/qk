@@ -335,6 +335,7 @@ _ms_context_add_builtin (MSContext *ctx)
 
     ADD_FUNC_OBJ (ms_zenity_text, "Text");
     ADD_FUNC_OBJ (ms_zenity_entry, "Entry");
+    ADD_FUNC_OBJ (ms_zenity_history_entry, "HistoryEntry");
     ADD_FUNC_OBJ (ms_zenity_info, "Info");
     ADD_FUNC_OBJ (ms_zenity_error, "Error");
     ADD_FUNC_OBJ (ms_zenity_question, "Question");

@@ -15,6 +15,7 @@
 #include "mooscript-zenity.h"
 #include "mooscript-context.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moohistoryentry.h"
 #include <gtk/gtk.h>
 
 
@@ -86,6 +87,91 @@ MSFunc *
 ms_zenity_entry (void)
 {
     return ms_cfunc_new_var (entry_func);
+}
+
+
+static MSValue*
+history_entry_func (MSValue   **args,
+                    guint       n_args,
+                    MSContext  *ctx)
+{
+    char *dialog_text = NULL, *entry_text = NULL, *user_id = NULL;
+    int response;
+    GtkWidget *dialog, *entry;
+    MSValue *result;
+    MooHistoryList *list;
+
+    CHECK_GTK (ctx);
+
+    if (n_args > 0 && !ms_value_is_none (args[0]))
+        entry_text = ms_value_print (args[0]);
+    if (n_args > 1 && !ms_value_is_none (args[1]))
+        user_id = ms_value_print (args[1]);
+    if (n_args > 2 && !ms_value_is_none (args[2]))
+        dialog_text = ms_value_print (args[2]);
+
+    dialog = gtk_dialog_new_with_buttons (NULL, ctx->window,
+                                          GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+                                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                          GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                          NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+
+    if (dialog_text)
+    {
+        GtkWidget *label;
+        label = gtk_label_new (dialog_text);
+        gtk_widget_show (label);
+        gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, FALSE, 0);
+    }
+
+    entry = moo_history_entry_new ();
+    moo_combo_set_use_button (MOO_COMBO (entry), FALSE);
+    gtk_widget_show (entry);
+    moo_combo_entry_set_text (MOO_COMBO (entry), entry_text ? entry_text : "");
+    moo_combo_entry_set_activates_default (MOO_COMBO (entry), TRUE);
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), entry, FALSE, FALSE, 0);
+
+    if (user_id)
+    {
+        list = moo_history_list_new (user_id);
+        moo_history_entry_set_list (MOO_HISTORY_ENTRY (entry), list);
+        g_object_unref (list);
+    }
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        const char *text = moo_combo_entry_get_text (MOO_COMBO (entry));
+
+        if (text[0])
+        {
+            moo_history_entry_add_text (MOO_HISTORY_ENTRY (entry), text);
+            result = ms_value_string (text);
+        }
+        else
+        {
+            result = ms_value_none ();
+        }
+    }
+    else
+    {
+        result = ms_value_none ();
+    }
+
+    gtk_widget_destroy (dialog);
+    g_free (dialog_text);
+    g_free (entry_text);
+    g_free (user_id);
+
+    return result;
+}
+
+MSFunc *
+ms_zenity_history_entry (void)
+{
+    return ms_cfunc_new_var (history_entry_func);
 }
 
 
