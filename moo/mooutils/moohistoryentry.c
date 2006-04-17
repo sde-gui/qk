@@ -442,9 +442,20 @@ default_filter_func (const char         *entry_text,
 
 
 GtkWidget*
-moo_history_entry_new (void)
+moo_history_entry_new (const char *user_id)
 {
-    return g_object_new (MOO_TYPE_HISTORY_ENTRY, NULL);
+    MooHistoryEntry *entry;
+
+    entry = g_object_new (MOO_TYPE_HISTORY_ENTRY, NULL);
+
+    if (user_id)
+    {
+        MooHistoryList *list = moo_history_list_new (user_id);
+        moo_history_entry_set_list (entry, list);
+        g_object_unref (list);
+    }
+
+    return GTK_WIDGET (entry);
 }
 
 

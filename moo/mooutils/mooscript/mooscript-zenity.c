@@ -99,7 +99,6 @@ history_entry_func (MSValue   **args,
     int response;
     GtkWidget *dialog, *entry;
     MSValue *result;
-    MooHistoryList *list;
 
     CHECK_GTK (ctx);
 
@@ -125,19 +124,12 @@ history_entry_func (MSValue   **args,
         gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), label, FALSE, FALSE, 0);
     }
 
-    entry = moo_history_entry_new ();
+    entry = moo_history_entry_new (user_id);
     moo_combo_set_use_button (MOO_COMBO (entry), FALSE);
     gtk_widget_show (entry);
     moo_combo_entry_set_text (MOO_COMBO (entry), entry_text ? entry_text : "");
     moo_combo_entry_set_activates_default (MOO_COMBO (entry), TRUE);
     gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), entry, FALSE, FALSE, 0);
-
-    if (user_id)
-    {
-        list = moo_history_list_new (user_id);
-        moo_history_entry_set_list (MOO_HISTORY_ENTRY (entry), list);
-        g_object_unref (list);
-    }
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
 

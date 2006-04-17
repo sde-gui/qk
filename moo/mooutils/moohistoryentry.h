@@ -51,7 +51,7 @@ typedef gboolean (*MooHistoryEntryFilterFunc)   (const char    *text,
 
 GType           moo_history_entry_get_type  (void) G_GNUC_CONST;
 
-GtkWidget      *moo_history_entry_new       (void);
+GtkWidget      *moo_history_entry_new       (const char         *user_id);
 
 void            moo_history_entry_set_list  (MooHistoryEntry    *entry,
                                              MooHistoryList     *list);
