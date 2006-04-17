@@ -84,7 +84,7 @@ MOO_PLUGIN_DEFINE_INFO (cmpl, CMPL_PLUGIN_ID,
 MOO_PLUGIN_DEFINE_FULL (Cmpl, cmpl,
                         cmpl_plugin_init, cmpl_plugin_deinit,
                         NULL, NULL, NULL, NULL,
-                        _cmpl_plugin_prefs_page, 0, 0)
+                        NULL, 0, 0)
 
 
 gboolean
