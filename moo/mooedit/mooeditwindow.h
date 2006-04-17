@@ -107,6 +107,9 @@ void         moo_edit_window_job_started            (MooEditWindow  *window,
 void         moo_edit_window_job_finished           (MooEditWindow  *window,
                                                      gpointer        job);
 
+GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);
+GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
+
 void         moo_edit_window_message                (MooEditWindow  *window,
                                                      const char     *message);
 guint        moo_edit_window_push_message           (MooEditWindow  *window,

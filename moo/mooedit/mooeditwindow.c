@@ -18,6 +18,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/moocmdview.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moomarshals.h"
@@ -2287,8 +2288,7 @@ edit_lang_changed (MooEditWindow      *window,
  */
 
 static void
-moo_edit_window_check_action (MooEditWindow *window,
-                              MooEdit       *doc,
+moo_edit_window_check_action (MooEdit       *doc,
                               MooAction     *action,
                               ActionCheck   *check)
 {
@@ -2327,7 +2327,7 @@ window_check_actions (const char    *action_id,
 
     while (checks)
     {
-        moo_edit_window_check_action (window, doc, action, checks->data);
+        moo_edit_window_check_action (doc, action, checks->data);
         checks = checks->next;
     }
 }
@@ -2355,7 +2355,7 @@ check_action (const char  *action_id,
         MooEdit *doc = ACTIVE_DOC (window);
         MooAction *action = moo_window_get_action_by_id (MOO_WINDOW (window), action_id);
         if (action)
-            moo_edit_window_check_action (window, doc, action, check);
+            moo_edit_window_check_action (doc, action, check);
     }
 }
 
@@ -2657,6 +2657,55 @@ moo_edit_window_job_finished (MooEditWindow  *window,
 
         g_free (j);
     }
+}
+
+
+GtkWidget *
+moo_edit_window_get_output (MooEditWindow *window)
+{
+    MooPaneLabel *label;
+    GtkWidget *cmd_view;
+    GtkWidget *scrolled_window;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    scrolled_window = moo_edit_window_get_pane (window, "moo-edit-window-output");
+
+    if (!scrolled_window)
+    {
+        scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+        gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+                                        GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+
+        cmd_view = moo_cmd_view_new ();
+        gtk_container_add (GTK_CONTAINER (scrolled_window), cmd_view);
+        gtk_widget_show_all (scrolled_window);
+        g_object_set_data (G_OBJECT (scrolled_window), "moo-output", cmd_view);
+
+        label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, NULL, "Output", "Output");
+
+        if (!moo_edit_window_add_pane (window, "moo-edit-window-output",
+                                       scrolled_window, label, MOO_PANE_POS_BOTTOM))
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            moo_pane_label_free (label);
+            return NULL;
+        }
+
+        moo_edit_window_add_stop_client (window, cmd_view);
+
+        moo_pane_label_free (label);
+        return cmd_view;
+    }
+
+    return g_object_get_data (G_OBJECT (scrolled_window), "moo-output");
+}
+
+
+GtkWidget *
+moo_edit_window_get_output_pane (MooEditWindow *window)
+{
+    return moo_edit_window_get_pane (window, "moo-edit-window-output");
 }
 
 
