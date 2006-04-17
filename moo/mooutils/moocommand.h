@@ -32,7 +32,8 @@ typedef struct _MooCommandClass MooCommandClass;
 typedef enum {
     MOO_COMMAND_SCRIPT = 1,
     MOO_COMMAND_PYTHON,
-    MOO_COMMAND_SHELL
+    MOO_COMMAND_SHELL,
+    MOO_COMMAND_EXE
 } MooCommandType;
 
 struct _MooCommand {
@@ -53,7 +54,7 @@ struct _MooCommand {
 struct _MooCommandClass {
     GObjectClass object_class;
     void        (*run)          (MooCommand *cmd);
-    gboolean    (*run_shell)    (MooCommand *cmd,
+    gboolean    (*run_exe)      (MooCommand *cmd,
                                  const char *cmd_line);
 };
 
@@ -85,6 +86,8 @@ void        moo_command_set_script      (MooCommand *cmd,
 void        moo_command_set_python      (MooCommand *cmd,
                                          const char *script);
 void        moo_command_set_shell       (MooCommand *cmd,
+                                         const char *cmd_line);
+void        moo_command_set_exe         (MooCommand *cmd,
                                          const char *cmd_line);
 
 void        moo_command_run             (MooCommand *cmd);
