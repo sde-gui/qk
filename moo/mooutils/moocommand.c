@@ -52,7 +52,9 @@ enum {
     PROP_WINDOW,
     PROP_SCRIPT,
     PROP_PYTHON_SCRIPT,
-    PROP_SHELL_COMMAND
+    PROP_SHELL_COMMAND,
+    PROP_TYPE,
+    PROP_CODE
 };
 
 enum {
@@ -131,6 +133,23 @@ moo_command_class_init (MooCommandClass *klass)
                                              NULL,
                                              G_PARAM_WRITABLE));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_TYPE,
+                                     g_param_spec_enum ("type",
+                                             "type",
+                                             "type",
+                                             MOO_TYPE_COMMAND_TYPE,
+                                             MOO_COMMAND_SCRIPT,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CODE,
+                                     g_param_spec_string ("code",
+                                             "code",
+                                             "code",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
     signals[RUN] = g_signal_new ("run",
                                  G_TYPE_FROM_CLASS (gobject_class),
                                  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
@@ -163,6 +182,7 @@ moo_command_set_property (GObject        *object,
                           GParamSpec     *pspec)
 {
     MooCommand *cmd = MOO_COMMAND (object);
+    char *tmp;
 
     switch (prop_id)
     {
@@ -192,6 +212,17 @@ moo_command_set_property (GObject        *object,
 
         case PROP_SHELL_COMMAND:
             moo_command_set_shell (cmd, g_value_get_string (value));
+            break;
+
+        case PROP_CODE:
+            moo_command_set_code (cmd, cmd->type, g_value_get_string (value));
+            break;
+
+        case PROP_TYPE:
+            tmp = cmd->string;
+            cmd->string = NULL;
+            moo_command_set_code (cmd, g_value_get_enum (value), tmp);
+            g_free (tmp);
             break;
 
         default:
@@ -479,6 +510,24 @@ moo_command_set_window (MooCommand *cmd,
 
 
 void
+moo_command_set_flags (MooCommand         *cmd,
+                       MooCommandFlags     flags)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    cmd->flags = flags;
+}
+
+
+void
+moo_command_add_flags (MooCommand         *cmd,
+                       MooCommandFlags     flags)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    cmd->flags |= flags;
+}
+
+
+void
 moo_command_set_context (MooCommand *cmd,
                          MSContext  *ctx)
 {
@@ -535,37 +584,6 @@ moo_command_set_shell_env (MooCommand *cmd,
 }
 
 
-void
-moo_command_set_script (MooCommand *cmd,
-                        const char *string)
-{
-    g_return_if_fail (MOO_IS_COMMAND (cmd));
-
-    moo_command_cleanup (cmd);
-
-    cmd->type = MOO_COMMAND_SCRIPT;
-
-    if (string)
-        cmd->script = ms_script_parse (string);
-}
-
-
-void
-moo_command_set_python (MooCommand *cmd,
-                        const char *string)
-{
-    g_return_if_fail (MOO_IS_COMMAND (cmd));
-
-    if (cmd->type == MOO_COMMAND_PYTHON && cmd->string == string)
-        return;
-
-    moo_command_cleanup (cmd);
-
-    cmd->type = MOO_COMMAND_PYTHON;
-    cmd->string = g_strdup (string);
-}
-
-
 static char *
 get_command (const char *string)
 {
@@ -588,19 +606,63 @@ get_command (const char *string)
 
 
 void
+moo_command_set_code (MooCommand     *cmd,
+                      MooCommandType  type,
+                      const char     *string)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+
+    if (cmd->type == type && cmd->string == string)
+        return;
+
+    moo_command_cleanup (cmd);
+
+    cmd->type = type;
+
+    if (string)
+    {
+        switch (type)
+        {
+            case MOO_COMMAND_SCRIPT:
+                cmd->script = ms_script_parse (string);
+            case MOO_COMMAND_PYTHON:
+                cmd->string = g_strdup (string);
+                break;
+
+            case MOO_COMMAND_EXE:
+            case MOO_COMMAND_SHELL:
+                cmd->string = get_command (string);
+                break;
+        }
+    }
+}
+
+
+void
+moo_command_set_script (MooCommand *cmd,
+                        const char *string)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    moo_command_set_code (cmd, MOO_COMMAND_SCRIPT, string);
+}
+
+
+void
+moo_command_set_python (MooCommand *cmd,
+                        const char *string)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    moo_command_set_code (cmd, MOO_COMMAND_PYTHON, string);
+}
+
+
+void
 moo_command_set_shell (MooCommand *cmd,
                        const char *string)
 {
     g_return_if_fail (MOO_IS_COMMAND (cmd));
     g_return_if_fail (string && string[0]);
-
-    if (cmd->type == MOO_COMMAND_SHELL && cmd->string == string)
-        return;
-
-    moo_command_cleanup (cmd);
-
-    cmd->type = MOO_COMMAND_SHELL;
-    cmd->string = get_command (string);
+    moo_command_set_code (cmd, MOO_COMMAND_SHELL, string);
 }
 
 
@@ -610,14 +672,7 @@ moo_command_set_exe (MooCommand *cmd,
 {
     g_return_if_fail (MOO_IS_COMMAND (cmd));
     g_return_if_fail (string && string[0]);
-
-    if (cmd->type == MOO_COMMAND_EXE && cmd->string == string)
-            return;
-
-    moo_command_cleanup (cmd);
-
-    cmd->type = MOO_COMMAND_EXE;
-    cmd->string = get_command (string);
+    moo_command_set_code (cmd, MOO_COMMAND_EXE, string);
 }
 
 
@@ -632,12 +687,12 @@ moo_command_cleanup (MooCommand *cmd)
 
 
 MooCommand *
-moo_command_new (MooCommandType type)
+moo_command_new (MooCommandType type,
+                 const char    *code)
 {
-    MooCommand *cmd;
-
     if (!type)
-        return g_object_new (MOO_TYPE_COMMAND, NULL);
+        return g_object_new (MOO_TYPE_COMMAND,
+                             "code", code, NULL);
 
     switch (type)
     {
@@ -645,9 +700,9 @@ moo_command_new (MooCommandType type)
         case MOO_COMMAND_PYTHON:
         case MOO_COMMAND_SHELL:
         case MOO_COMMAND_EXE:
-            cmd = g_object_new (MOO_TYPE_COMMAND, NULL);
-            cmd->type = type;
-            return cmd;
+            return g_object_new (MOO_TYPE_COMMAND,
+                                 "type", type,
+                                 "code", code, NULL);
     }
 
     g_return_val_if_reached (NULL);
@@ -726,24 +781,23 @@ moo_command_type_parse (const char *string)
 }
 
 
-void
-moo_command_set_code (MooCommand *cmd,
-                      const char *code)
+GType
+moo_command_type_get_type (void)
 {
-    g_return_if_fail (MOO_IS_COMMAND (cmd));
-    g_return_if_fail (code != NULL);
+    static GType type;
 
-    switch (cmd->type)
+    if (!type)
     {
-        case MOO_COMMAND_SCRIPT:
-            return moo_command_set_script (cmd, code);
-        case MOO_COMMAND_PYTHON:
-            return moo_command_set_python (cmd, code);
-        case MOO_COMMAND_SHELL:
-            return moo_command_set_shell (cmd, code);
-        case MOO_COMMAND_EXE:
-            return moo_command_set_exe (cmd, code);
+        static GEnumValue values[] = {
+            { MOO_COMMAND_SCRIPT, (char*) "MOO_COMMAND_SCRIPT", (char*) "script" },
+            { MOO_COMMAND_PYTHON, (char*) "MOO_COMMAND_PYTHON", (char*) "python" },
+            { MOO_COMMAND_SHELL, (char*) "MOO_COMMAND_SHELL", (char*) "shell" },
+            { MOO_COMMAND_EXE, (char*) "MOO_COMMAND_EXE", (char*) "exe" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooCommandType", values);
     }
 
-    g_return_if_reached ();
+    return type;
 }
