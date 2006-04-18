@@ -18,6 +18,7 @@
 
 
 #define MAX_POPUP_LEN 10
+#define MIN_POPUP_WIDTH 100
 
 
 struct _MooTextPopupPrivate {
@@ -35,7 +36,6 @@ struct _MooTextPopupPrivate {
 
     GtkWidget *window;
     GtkScrolledWindow *scrolled_window;
-    guint resize_idle;
     guint visible : 1;
     guint in_resize : 1;
 };
@@ -204,6 +204,8 @@ moo_text_popup_init (MooTextPopup *popup)
 {
     popup->priv = g_new0 (MooTextPopupPrivate, 1);
     popup->column = popup->priv->column = gtk_tree_view_column_new ();
+//     gtk_tree_view_column_set_sizing (popup->column,
+//                                      GTK_TREE_VIEW_COLUMN_FIXED);
     popup->priv->max_len = MAX_POPUP_LEN;
     popup->priv->hide_on_activate = TRUE;
 }
@@ -218,7 +220,6 @@ moo_text_popup_ensure_popup (MooTextPopup *popup)
 
         popup->priv->window = gtk_window_new (GTK_WINDOW_POPUP);
         gtk_window_set_default_size (GTK_WINDOW (popup->priv->window), 1, 1);
-        gtk_window_set_resizable (GTK_WINDOW (popup->priv->window), FALSE);
         gtk_widget_add_events (popup->priv->window, GDK_KEY_PRESS_MASK | GDK_BUTTON_PRESS_MASK);
 
         scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -226,10 +227,9 @@ moo_text_popup_ensure_popup (MooTextPopup *popup)
         gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                         GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
         gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
-                                             GTK_SHADOW_ETCHED_IN);
+                                             GTK_SHADOW_NONE);
         /* a nasty hack to get the completions treeview to size nicely */
         gtk_widget_set_size_request (GTK_SCROLLED_WINDOW (scrolled_window)->vscrollbar, -1, 0);
-        gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_NONE);
 
         frame = gtk_frame_new (NULL);
         gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_OUT);
@@ -403,32 +403,46 @@ moo_text_popup_hide_real (MooTextPopup *popup)
 
 
 static gboolean
-resize_in_idle (MooTextPopup *popup)
+cell_get_size (GtkTreeModel *model,
+               G_GNUC_UNUSED GtkTreePath *path,
+               GtkTreeIter *iter,
+               gpointer user_data)
 {
-    moo_text_popup_resize (popup);
+    int width, height;
+
+    struct {
+        GtkTreeViewColumn *column;
+        int               *width;
+        int               *height;
+    } *data = user_data;
+
+    gtk_tree_view_column_cell_set_cell_data (data->column, model, iter,
+                                             FALSE, FALSE);
+    gtk_tree_view_column_cell_get_size (data->column, NULL, NULL, NULL,
+                                        &width, &height);
+
+    *data->width = MAX (*data->width, width);
+    *data->height = MAX (*data->height, height);
+
     return FALSE;
 }
 
-
 static void
-window_size_request (MooTextPopup *popup)
+column_get_size (GtkTreeViewColumn *column,
+                 GtkTreeModel      *model,
+                 int               *width,
+                 int               *height)
 {
-    if (!popup->priv->resize_idle)
-        popup->priv->resize_idle = g_idle_add_full (GDK_PRIORITY_REDRAW + 20,
-                                                    (GSourceFunc) resize_in_idle,
-                                                    popup, NULL);
-}
+    struct {
+        GtkTreeViewColumn *column;
+        int               *width;
+        int               *height;
+    } data = {column, width, height};
 
+    *width = 1;
+    *height = 1;
 
-static void
-disconnect_window (MooTextPopup *popup)
-{
-    g_signal_handlers_disconnect_by_func (popup->priv->window,
-                                          (gpointer) window_size_request,
-                                          popup);
-    if (popup->priv->resize_idle)
-        g_source_remove (popup->priv->resize_idle);
-    popup->priv->resize_idle = 0;
+    gtk_tree_model_foreach (model, cell_get_size, &data);
 }
 
 
@@ -448,8 +462,6 @@ moo_text_popup_resize (MooTextPopup *popup)
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (popup->priv->pos);
 
-    disconnect_window (popup);
-
     moo_text_popup_get_position (popup, &iter);
     gtk_text_view_get_iter_location (popup->priv->doc, &iter, &iter_rect);
     gtk_text_view_buffer_to_window_coords (popup->priv->doc, GTK_TEXT_WINDOW_WIDGET,
@@ -462,8 +474,10 @@ moo_text_popup_resize (MooTextPopup *popup)
     total_items = gtk_tree_model_iter_n_children (popup->priv->model, NULL);
     items = MIN (total_items, popup->priv->max_len);
 
+//     column_get_size (popup->priv->column, popup->priv->model, &width, &height);
     gtk_tree_view_column_cell_get_size (popup->priv->column, NULL,
                                         NULL, NULL, &width, &height);
+//     gtk_tree_view_column_set_fixed_width (popup->priv->column, width);
 
     screen = gtk_widget_get_screen (widget);
     monitor_num = gdk_screen_get_monitor_at_window (screen, widget->window);
@@ -473,11 +487,12 @@ moo_text_popup_resize (MooTextPopup *popup)
                           "vertical-separator", &vert_separator,
                           NULL);
 
-    width = MAX (width, 100);
+    width = MAX (width, MIN_POPUP_WIDTH);
     width = MIN (monitor.width, width);
 
     gtk_widget_set_size_request (GTK_WIDGET (popup->priv->treeview),
                                  -1, items * (height + vert_separator));
+//     g_print ("list width: %d\n", width);
 
     gtk_widget_size_request (popup->priv->window, &popup_req);
 
@@ -491,13 +506,28 @@ moo_text_popup_resize (MooTextPopup *popup)
     else
         y -= popup_req.height;
 
-    gtk_window_resize (GTK_WINDOW (popup->priv->window),
-                       popup_req.width, popup_req.height);
-//     g_print ("resizing to %d, %d\n", popup_req.width, popup_req.height);
-    gtk_window_move (GTK_WINDOW (popup->priv->window), x, y);
+    {
+        int old_width, old_height;
 
-//     g_signal_connect_swapped (popup->priv->window, "size-request",
-//                               G_CALLBACK (window_size_request), popup);
+        gtk_window_get_size (GTK_WINDOW (popup->priv->window),
+                             &old_width, &old_height);
+
+        if (old_width != popup_req.width || old_height != popup_req.height)
+        {
+//             g_print ("resizing to %d, %d\n", popup_req.width, popup_req.height);
+            gtk_window_resize (GTK_WINDOW (popup->priv->window),
+                               popup_req.width, popup_req.height);
+        }
+    }
+
+    {
+        int old_x, old_y;
+
+        gdk_window_get_origin (popup->priv->window->window, &old_x, &old_y);
+
+        if (old_x != x || old_y != y)
+            gtk_window_move (GTK_WINDOW (popup->priv->window), x, y);
+    }
 }
 
 
@@ -869,6 +899,14 @@ hide:
 }
 
 
+static gboolean
+popup_expose (MooTextPopup *popup)
+{
+    moo_text_popup_resize (popup);
+    return FALSE;
+}
+
+
 static void
 moo_text_popup_connect (MooTextPopup *popup)
 {
@@ -881,6 +919,8 @@ moo_text_popup_connect (MooTextPopup *popup)
                               G_CALLBACK (popup_button_press), popup);
     g_signal_connect_swapped (popup->priv->window, "key-press-event",
                               G_CALLBACK (popup_key_press), popup);
+    g_signal_connect_swapped (popup->priv->window, "expose-event",
+                              G_CALLBACK (popup_expose), popup);
 
     g_signal_connect_swapped (popup->priv->treeview, "button-press-event",
                               G_CALLBACK (list_button_press), popup);
@@ -901,8 +941,6 @@ moo_text_popup_connect (MooTextPopup *popup)
 static void
 moo_text_popup_disconnect (MooTextPopup *popup)
 {
-    disconnect_window (popup);
-
     g_signal_handlers_disconnect_by_func (popup->priv->doc,
                                           (gpointer) doc_focus_out,
                                           popup);
@@ -912,6 +950,9 @@ moo_text_popup_disconnect (MooTextPopup *popup)
                                           popup);
     g_signal_handlers_disconnect_by_func (popup->priv->window,
                                           (gpointer) popup_key_press,
+                                          popup);
+    g_signal_handlers_disconnect_by_func (popup->priv->window,
+                                          (gpointer) popup_expose,
                                           popup);
 
     g_signal_handlers_disconnect_by_func (popup->priv->treeview,
