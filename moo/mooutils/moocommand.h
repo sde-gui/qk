@@ -19,6 +19,7 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_COMMAND_TYPE               (moo_command_type_get_type ())
 #define MOO_TYPE_COMMAND                    (moo_command_get_type ())
 #define MOO_COMMAND(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_COMMAND, MooCommand))
 #define MOO_COMMAND_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_COMMAND, MooCommandClass))
@@ -36,10 +37,16 @@ typedef enum {
     MOO_COMMAND_EXE
 } MooCommandType;
 
+typedef enum {
+    MOO_COMMAND_SILENT  = 1 << 0,
+    MOO_COMMAND_CONSOLE = 1 << 1
+} MooCommandFlags;
+
 struct _MooCommand {
     GObject object;
 
     MooCommandType type;
+    MooCommandFlags flags;
     gpointer window;
 
     MSContext *context;
@@ -60,40 +67,48 @@ struct _MooCommandClass {
 
 
 GType       moo_command_get_type        (void) G_GNUC_CONST;
+GType       moo_command_type_get_type   (void) G_GNUC_CONST;
 
-MooCommand *moo_command_new             (MooCommandType type);
+MooCommand *moo_command_new             (MooCommandType      type,
+                                         const char         *code);
 
-void        moo_command_set_context     (MooCommand *cmd,
-                                         MSContext  *ctx);
-void        moo_command_set_py_dict     (MooCommand *cmd,
-                                         gpointer    dict);
-void        moo_command_set_shell_env   (MooCommand *cmd,
-                                         char      **env);
-void        moo_command_set_window      (MooCommand *cmd,
-                                         gpointer    window);
+void        moo_command_set_flags       (MooCommand         *cmd,
+                                         MooCommandFlags     flags);
+void        moo_command_add_flags       (MooCommand         *cmd,
+                                         MooCommandFlags     flags);
 
-void        moo_command_clear_shell_vars(MooCommand *cmd);
-void        moo_command_set_shell_var   (MooCommand *cmd,
-                                         const char *variable,
-                                         const char *value);
-const char *moo_command_get_shell_var   (MooCommand *cmd,
-                                         const char *variable);
+void        moo_command_set_context     (MooCommand         *cmd,
+                                         MSContext          *ctx);
+void        moo_command_set_py_dict     (MooCommand         *cmd,
+                                         gpointer            dict);
+void        moo_command_set_shell_env   (MooCommand         *cmd,
+                                         char              **env);
+void        moo_command_set_window      (MooCommand         *cmd,
+                                         gpointer            window);
 
-void        moo_command_set_code        (MooCommand *cmd,
-                                         const char *code);
-void        moo_command_set_script      (MooCommand *cmd,
-                                         const char *script);
-void        moo_command_set_python      (MooCommand *cmd,
-                                         const char *script);
-void        moo_command_set_shell       (MooCommand *cmd,
-                                         const char *cmd_line);
-void        moo_command_set_exe         (MooCommand *cmd,
-                                         const char *cmd_line);
+void        moo_command_clear_shell_vars(MooCommand         *cmd);
+void        moo_command_set_shell_var   (MooCommand         *cmd,
+                                         const char         *variable,
+                                         const char         *value);
+const char *moo_command_get_shell_var   (MooCommand         *cmd,
+                                         const char         *variable);
 
-void        moo_command_run             (MooCommand *cmd);
+void        moo_command_set_code        (MooCommand         *cmd,
+                                         MooCommandType      type,
+                                         const char         *code);
+void        moo_command_set_script      (MooCommand         *cmd,
+                                         const char         *script);
+void        moo_command_set_python      (MooCommand         *cmd,
+                                         const char         *script);
+void        moo_command_set_shell       (MooCommand         *cmd,
+                                         const char         *cmd_line);
+void        moo_command_set_exe         (MooCommand         *cmd,
+                                         const char         *cmd_line);
+
+void        moo_command_run             (MooCommand         *cmd);
 
 
-MooCommandType moo_command_type_parse   (const char *string);
+MooCommandType moo_command_type_parse   (const char         *string);
 
 
 G_END_DECLS
