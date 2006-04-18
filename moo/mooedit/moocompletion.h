@@ -50,7 +50,7 @@ struct _MooCompletionClass
 
 
 /* same as GCompletionFunc - must not allocate a new string;
-   but, it's safe to return static string and rewrite it on each call */
+   must allow two simultaneous calls */
 typedef char* (*MooCompletionStringFunc)    (gpointer       data);
 typedef void  (*MooCompletionFreeFunc)      (gpointer       data);
 typedef int   (*MooCompletionCmpFunc)       (gpointer       data1,
