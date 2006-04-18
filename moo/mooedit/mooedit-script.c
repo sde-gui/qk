@@ -12,11 +12,7 @@
  */
 
 #include "mooedit/mooedit-script.h"
-
-
-#define VAR_DOC         "doc"
-#define DOC_ATTR_FILE   "file"
-#define VAR_WINDOW      "window"
+#include <string.h>
 
 
 static void moo_edit_context_init_api   (MSContext  *ctx);
@@ -96,6 +92,22 @@ moo_edit_context_init (MooEditContext *ctx)
 }
 
 
+static char *
+strip_extension (const char *string)
+{
+    char *dot;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    dot = strrchr (string, '.');
+
+    if (dot)
+        return g_strndup (string, dot - string);
+    else
+        return g_strdup (string);
+}
+
+
 void
 moo_edit_context_set_doc (MooEditContext *ctx,
                           MooEdit        *doc)
@@ -116,24 +128,43 @@ moo_edit_context_set_doc (MooEditContext *ctx,
 
     g_object_set (ctx, "window", window, NULL);
 
+    val = ms_value_dict ();
+
     if (doc)
     {
-        val = ms_value_dict ();
-        ms_value_dict_set_string (val, DOC_ATTR_FILE,
+        char *dirname = NULL, *base = NULL;
+
+        if (moo_edit_get_basename (doc))
+            base = strip_extension (moo_edit_get_basename (doc));
+
+        if (moo_edit_get_filename (doc))
+            dirname = g_path_get_dirname (moo_edit_get_filename (doc));
+
+        ms_value_dict_set_string (val, MS_VAR_FILE,
                                   moo_edit_get_filename (doc));
+        ms_value_dict_set_string (val, MS_VAR_NAME,
+                                  moo_edit_get_basename (doc));
+        ms_value_dict_set_string (val, MS_VAR_BASE, base);
+        ms_value_dict_set_string (val, MS_VAR_DIR, dirname);
+
+        g_free (base);
+        g_free (dirname);
     }
     else
     {
-        val = ms_value_none ();
+        ms_value_dict_set_string (val, MS_VAR_FILE, NULL);
+        ms_value_dict_set_string (val, MS_VAR_NAME, NULL);
+        ms_value_dict_set_string (val, MS_VAR_BASE, NULL);
+        ms_value_dict_set_string (val, MS_VAR_DIR, NULL);
     }
 
-    ms_context_assign_variable (MS_CONTEXT (ctx), VAR_DOC, val);
+    ms_context_assign_variable (MS_CONTEXT (ctx), MS_VAR_DOC, val);
     ms_value_unref (val);
 
     if (moo_python_running ())
     {
-        ms_context_assign_py_object (MS_CONTEXT (ctx), VAR_DOC, doc);
-        ms_context_assign_py_object (MS_CONTEXT (ctx), VAR_WINDOW, window);
+        ms_context_assign_py_object (MS_CONTEXT (ctx), MS_VAR_DOC, doc);
+        ms_context_assign_py_object (MS_CONTEXT (ctx), MS_VAR_WINDOW, window);
     }
 
     ctx->doc = doc;
@@ -160,8 +191,31 @@ moo_edit_set_shell_vars (MooCommand     *cmd,
                          MooEditWindow  *window)
 {
     if (doc)
-        moo_command_set_shell_var (cmd, DOC_ATTR_FILE,
+    {
+        char *dirname = NULL, *base = NULL;
+
+        if (moo_edit_get_filename (doc))
+            dirname = g_path_get_dirname (moo_edit_get_filename (doc));
+
+        if (moo_edit_get_basename (doc))
+            base = strip_extension (moo_edit_get_basename (doc));
+
+        moo_command_set_shell_var (cmd, MS_VAR_FILE,
                                    moo_edit_get_filename (doc));
+        moo_command_set_shell_var (cmd, MS_VAR_NAME,
+                                   moo_edit_get_basename (doc));
+        moo_command_set_shell_var (cmd, MS_VAR_BASE, base);
+        moo_command_set_shell_var (cmd, MS_VAR_DIR, dirname);
+
+        g_free (base);
+        g_free (dirname);
+    }
+    else
+    {
+        moo_command_set_shell_var (cmd, MS_VAR_FILE, NULL);
+        moo_command_set_shell_var (cmd, MS_VAR_BASE, NULL);
+        moo_command_set_shell_var (cmd, MS_VAR_DIR, NULL);
+    }
 }
 
 
