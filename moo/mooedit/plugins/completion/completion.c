@@ -246,7 +246,7 @@ cmpl_data_read_config_file (CmplData *data)
         g_message ("read %d words for patttern '%s' from %s",
                    g_list_length (words), pattern, data->path);
 
-        group = moo_completion_new_group (data->cmpl);
+        group = moo_completion_new_group (data->cmpl, NULL);
         moo_completion_group_add_data (group, words);
         moo_completion_group_set_pattern (group, pattern, parens, n_parens);
 

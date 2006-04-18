@@ -27,6 +27,10 @@ G_BEGIN_DECLS
 #define MOO_IS_COMPLETION_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMPLETION))
 #define MOO_COMPLETION_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMPLETION, MooCompletionClass))
 
+enum {
+    MOO_COMPLETION_COLUMN_DATA,
+    MOO_COMPLETION_COLUMN_GROUP
+};
 
 typedef struct _MooCompletion         MooCompletion;
 typedef struct _MooCompletionPrivate  MooCompletionPrivate;
@@ -68,6 +72,7 @@ void            moo_completion_group_set_pattern    (MooCompletionGroup *group,
                                                      guint               n_parens);
 void            moo_completion_group_set_suffix     (MooCompletionGroup *group,
                                                      const char         *suffix);
+const char     *moo_completion_group_get_name       (MooCompletionGroup *group);
 
 MooCompletion  *moo_completion_new                  (MooCompletionStringFunc string_func,
                                                      MooCompletionFreeFunc free_func,
@@ -75,7 +80,8 @@ MooCompletion  *moo_completion_new                  (MooCompletionStringFunc str
 /* steals words */
 MooCompletion  *moo_completion_new_text             (GList              *words);
 
-MooCompletionGroup *moo_completion_new_group        (MooCompletion      *cmpl);
+MooCompletionGroup *moo_completion_new_group        (MooCompletion      *cmpl,
+                                                     const char         *name);
 
 void            moo_completion_try_complete         (MooCompletion      *cmpl,
                                                      gboolean            insert_unique);

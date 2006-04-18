@@ -20,10 +20,8 @@
 #include <string.h>
 
 
-enum {
-    COLUMN_DATA,
-    COLUMN_GROUP
-};
+#define COLUMN_DATA  MOO_COMPLETION_COLUMN_DATA
+#define COLUMN_GROUP MOO_COMPLETION_COLUMN_GROUP
 
 struct _MooCompletionPrivate {
     GtkListStore *store;
@@ -46,6 +44,8 @@ struct _MooCompletionPrivate {
 };
 
 struct _MooCompletionGroup {
+    char *name;
+
     EggRegex *regex;
     guint *parens;
     guint n_parens;
@@ -80,7 +80,8 @@ static int      list_sort_func                  (GtkTreeModel       *model,
                                                  MooCompletion      *cmpl);
 
 static MooCompletionGroup *moo_completion_group_new
-                                                (MooCompletionStringFunc string_func,
+                                                (const char         *name,
+                                                 MooCompletionStringFunc string_func,
                                                  MooCompletionFreeFunc free_func);
 static void     moo_completion_group_free       (MooCompletionGroup *group);
 
@@ -320,13 +321,55 @@ moo_completion_complete (MooCompletion *cmpl,
 }
 
 
+static char *
+find_common_prefix (GSList *list)
+{
+    char *prefix = NULL;
+    guint prefix_len = 0;
+
+    g_return_val_if_fail (list != NULL, NULL);
+
+    while (list)
+    {
+        char *s = list->data;
+
+        if (!prefix)
+        {
+            prefix_len = strlen (s);
+            prefix = g_strndup (s, prefix_len);
+        }
+        else
+        {
+            guint i;
+
+            for (i = 0; i < prefix_len; ++i)
+            {
+                if (prefix[i] != s[i])
+                    break;
+            }
+
+            if (i < prefix_len)
+                prefix_len = i;
+        }
+
+        if (!prefix_len)
+            break;
+
+        list = list->next;
+    }
+
+    prefix[prefix_len] = 0;
+    return prefix;
+}
+
+
 static void
 moo_completion_populate (MooCompletion      *cmpl,
                          const char         *text,
                          char              **prefix)
 {
     GSList *l;
-    char *prefix_here = NULL;
+    GSList *prefixes = NULL;
 
     gtk_list_store_clear (cmpl->priv->store);
     gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (cmpl->priv->store),
@@ -337,10 +380,16 @@ moo_completion_populate (MooCompletion      *cmpl,
     {
         char *new_prefix = NULL;
         MooCompletionGroup *group = l->data;
-        GList *list = moo_completion_group_complete (group, text, &new_prefix);
 
-        if (list && !new_prefix)
-            new_prefix = g_strdup (text);
+        GList *list = moo_completion_group_complete (group, text,
+                                                     prefix ? &new_prefix : NULL);
+
+        if (prefix && list)
+        {
+            if (!new_prefix)
+                new_prefix = g_strdup (text);
+            prefixes = g_slist_prepend (prefixes, new_prefix);
+        }
 
         while (list)
         {
@@ -352,17 +401,6 @@ moo_completion_populate (MooCompletion      *cmpl,
                                 -1);
             list = list->next;
         }
-
-        if (!prefix_here ||
-             (prefix_here && new_prefix &&
-             strlen (new_prefix) < strlen (prefix_here)))
-        {
-            g_free (prefix_here);
-            prefix_here = new_prefix;
-            new_prefix = NULL;
-        }
-
-        g_free (new_prefix);
     }
 
     if (cmpl->priv->cmp_func)
@@ -370,9 +408,19 @@ moo_completion_populate (MooCompletion      *cmpl,
                                               COLUMN_DATA, GTK_SORT_ASCENDING);
 
     if (prefix)
-        *prefix = prefix_here;
-    else
-        g_free (prefix_here);
+    {
+        if (prefixes && prefixes->next)
+        {
+            *prefix = find_common_prefix (prefixes);
+            g_slist_foreach (prefixes, (GFunc) g_free, NULL);
+            g_slist_free (prefixes);
+        }
+        else
+        {
+            *prefix = prefixes->data;
+            g_slist_free (prefixes);
+        }
+    }
 }
 
 
@@ -592,7 +640,7 @@ moo_completion_new_text (GList *words)
 
     if (words)
     {
-        MooCompletionGroup *group = moo_completion_new_group (cmpl);
+        MooCompletionGroup *group = moo_completion_new_group (cmpl, NULL);
         moo_completion_group_add_data (group, words);
         moo_completion_group_set_pattern (group, "\\w*", NULL, 0);
     }
@@ -609,13 +657,15 @@ moo_completion_new_text (GList *words)
 
 
 MooCompletionGroup *
-moo_completion_new_group (MooCompletion *cmpl)
+moo_completion_new_group (MooCompletion *cmpl,
+                          const char    *name)
 {
     MooCompletionGroup *group;
 
     g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
 
-    group = moo_completion_group_new (cmpl->priv->string_func,
+    group = moo_completion_group_new (name,
+                                      cmpl->priv->string_func,
                                       cmpl->priv->free_func);
     cmpl->priv->groups = g_slist_append (cmpl->priv->groups, group);
 
@@ -628,12 +678,14 @@ moo_completion_new_group (MooCompletion *cmpl)
  */
 
 MooCompletionGroup *
-moo_completion_group_new (MooCompletionStringFunc string_func,
+moo_completion_group_new (const char *name,
+                          MooCompletionStringFunc string_func,
                           MooCompletionFreeFunc free_func)
 {
     MooCompletionGroup *group = g_new0 (MooCompletionGroup, 1);
     group->cmpl = g_completion_new (string_func);
     group->free_func = free_func;
+    group->name = g_strdup (name);
     return group;
 }
 
@@ -799,6 +851,14 @@ moo_completion_group_set_suffix (MooCompletionGroup *group,
 }
 
 
+const char *
+moo_completion_group_get_name (MooCompletionGroup *group)
+{
+    g_return_val_if_fail (group != NULL, NULL);
+    return group->name;
+}
+
+
 GType
 moo_completion_group_get_type (void)
 {
@@ -820,6 +880,7 @@ moo_completion_group_free (MooCompletionGroup *group)
     g_free (group->parens);
     g_completion_free (group->cmpl);
     g_free (group->suffix);
+    g_free (group->name);
 
     if (group->free_func)
         g_list_foreach (group->data, (GFunc) group->free_func, NULL);
