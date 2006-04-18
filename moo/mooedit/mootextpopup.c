@@ -341,7 +341,8 @@ moo_text_popup_empty (MooTextPopup *popup)
 static void
 moo_text_popup_show_real (MooTextPopup *popup)
 {
-    GtkWidget *toplevel;
+    GtkWidget *toplevel, *doc;
+    PangoFontDescription *font;
 
     g_return_if_fail (popup->priv->doc != NULL);
     g_return_if_fail (GTK_WIDGET_REALIZED (popup->priv->doc));
@@ -351,10 +352,25 @@ moo_text_popup_show_real (MooTextPopup *popup)
 
     moo_text_popup_ensure_popup (popup);
 
-    toplevel = gtk_widget_get_toplevel (GTK_WIDGET (popup->priv->doc));
+    doc = GTK_WIDGET (popup->priv->doc);
+    toplevel = gtk_widget_get_toplevel (doc);
     g_return_if_fail (GTK_IS_WINDOW (toplevel));
 
     gtk_widget_realize (popup->priv->window);
+
+    if (doc->style)
+    {
+        gtk_widget_modify_font (GTK_WIDGET (popup->priv->treeview),
+                                doc->style->font_desc);
+        gtk_widget_modify_base (GTK_WIDGET (popup->priv->treeview),
+                                GTK_STATE_NORMAL, &doc->style->base[GTK_STATE_NORMAL]);
+        gtk_widget_modify_base (GTK_WIDGET (popup->priv->treeview),
+                                GTK_STATE_SELECTED, &doc->style->base[GTK_STATE_SELECTED]);
+        gtk_widget_modify_text (GTK_WIDGET (popup->priv->treeview),
+                                GTK_STATE_NORMAL, &doc->style->text[GTK_STATE_NORMAL]);
+        gtk_widget_modify_text (GTK_WIDGET (popup->priv->treeview),
+                                GTK_STATE_SELECTED, &doc->style->text[GTK_STATE_SELECTED]);
+    }
 
     if (GTK_WINDOW (toplevel)->group)
         gtk_window_group_add_window (GTK_WINDOW (toplevel)->group,
@@ -492,6 +508,14 @@ moo_text_popup_resize (MooTextPopup *popup)
 
     gtk_widget_set_size_request (GTK_WIDGET (popup->priv->treeview),
                                  -1, items * (height + vert_separator));
+
+    if (total_items > items)
+        gtk_scrolled_window_set_policy (popup->priv->scrolled_window,
+                                        GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+    else
+        gtk_scrolled_window_set_policy (popup->priv->scrolled_window,
+                                        GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+
 //     g_print ("list width: %d\n", width);
 
     gtk_widget_size_request (popup->priv->window, &popup_req);
