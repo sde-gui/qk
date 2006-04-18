@@ -407,9 +407,9 @@ moo_completion_populate (MooCompletion      *cmpl,
         gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (cmpl->priv->store),
                                               COLUMN_DATA, GTK_SORT_ASCENDING);
 
-    if (prefix)
+    if (prefix && prefixes)
     {
-        if (prefixes && prefixes->next)
+        if (prefixes->next)
         {
             *prefix = find_common_prefix (prefixes);
             g_slist_foreach (prefixes, (GFunc) g_free, NULL);
