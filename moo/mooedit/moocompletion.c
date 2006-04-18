@@ -225,7 +225,7 @@ moo_completion_update (MooCompletion *cmpl)
         while (list)
         {
             GtkTreeIter iter;
-            gtk_list_store_append (cmpl->priv->store, &iter);
+            gtk_list_store_prepend (cmpl->priv->store, &iter);
             gtk_list_store_set (cmpl->priv->store, &iter, 0, list->data, -1);
             list = list->next;
         }
@@ -286,7 +286,7 @@ moo_completion_populate (MooCompletion      *cmpl,
     while (list)
     {
         GtkTreeIter iter;
-        gtk_list_store_append (cmpl->priv->store, &iter);
+        gtk_list_store_prepend (cmpl->priv->store, &iter);
         gtk_list_store_set (cmpl->priv->store, &iter, 0, list->data, -1);
         list = list->next;
     }
