@@ -20,15 +20,25 @@
 #include <string.h>
 
 
+enum {
+    COLUMN_DATA,
+    COLUMN_GROUP
+};
+
 struct _MooCompletionPrivate {
     GtkListStore *store;
     GSList *groups;
-    MooCompletionGroup *active_group;
+    GSList *active_groups;
+    GList *data;
 
     GtkTextView *doc;
     GtkTextBuffer *buffer;
     GtkTextMark *start;
     GtkTextMark *end;
+
+    MooCompletionStringFunc string_func;
+    MooCompletionFreeFunc free_func;
+    MooCompletionCmpFunc cmp_func;
 
     MooTextPopup *popup;
     guint working : 1;
@@ -36,19 +46,15 @@ struct _MooCompletionPrivate {
 };
 
 struct _MooCompletionGroup {
-    guint ref_count;
-
     EggRegex *regex;
     guint *parens;
     guint n_parens;
 
     GCompletion *cmpl;
     GList *data;
-    GList *tmp;
+    char *suffix;
 
-    MooCompletionStringFunc string_func;
     MooCompletionFreeFunc free_func;
-    MooCompletionCmpFunc cmp_func;
 };
 
 
@@ -56,11 +62,11 @@ static void     moo_completion_dispose          (GObject            *object);
 
 static void     moo_completion_update           (MooCompletion      *cmpl);
 static void     moo_completion_populate         (MooCompletion      *cmpl,
-                                                 MooCompletionGroup *group,
                                                  const char         *text,
                                                  char              **prefix);
 static void     moo_completion_complete         (MooCompletion      *cmpl,
-                                                 gpointer            data);
+                                                 GtkTreeModel       *model,
+                                                 GtkTreeIter        *iter);
 
 static void     moo_completion_connect_popup    (MooCompletion      *cmpl);
 static void     moo_completion_disconnect_popup (MooCompletion      *cmpl);
@@ -68,8 +74,15 @@ static void     moo_completion_disconnect_popup (MooCompletion      *cmpl);
 static gboolean moo_completion_empty            (MooCompletion      *cmpl);
 static gboolean moo_completion_unique           (MooCompletion      *cmpl,
                                                  GtkTreeIter        *iter);
-static gpointer moo_completion_get_data         (MooCompletion      *cmpl,
-                                                 GtkTreeIter        *iter);
+static int      list_sort_func                  (GtkTreeModel       *model,
+                                                 GtkTreeIter        *a,
+                                                 GtkTreeIter        *b,
+                                                 MooCompletion      *cmpl);
+
+static MooCompletionGroup *moo_completion_group_new
+                                                (MooCompletionStringFunc string_func,
+                                                 MooCompletionFreeFunc free_func);
+static void     moo_completion_group_free       (MooCompletionGroup *group);
 
 static gboolean moo_completion_group_find       (MooCompletionGroup *group,
                                                  const char         *line,
@@ -93,8 +106,9 @@ moo_completion_dispose (GObject *object)
         moo_completion_set_doc (cmpl, NULL);
 
         g_object_unref (cmpl->priv->store);
-        g_slist_foreach (cmpl->priv->groups, (GFunc) moo_completion_group_unref, NULL);
+        g_slist_foreach (cmpl->priv->groups, (GFunc) moo_completion_group_free, NULL);
         g_slist_free (cmpl->priv->groups);
+        g_slist_free (cmpl->priv->active_groups);
 
         if (cmpl->priv->popup)
         {
@@ -121,7 +135,12 @@ static void
 moo_completion_init (MooCompletion *cmpl)
 {
     cmpl->priv = g_new0 (MooCompletionPrivate, 1);
-    cmpl->priv->store = gtk_list_store_new (1, G_TYPE_POINTER);
+    cmpl->priv->store = gtk_list_store_new (2, G_TYPE_POINTER,
+                                            G_TYPE_POINTER);
+    gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (cmpl->priv->store),
+                                     COLUMN_DATA,
+                                     (GtkTreeIterCompareFunc) list_sort_func,
+                                     cmpl, NULL);
     cmpl->priv->popup = moo_text_popup_new (NULL);
     moo_completion_connect_popup (cmpl);
 }
@@ -132,11 +151,10 @@ moo_completion_try_complete (MooCompletion *cmpl,
                              gboolean       insert_unique)
 {
     GSList *l;
-    MooCompletionGroup *group;
     GtkTextIter start, end;
     GtkTreeIter iter;
     gboolean found = FALSE;
-    int start_pos, end_pos;
+    int start_pos = -1, end_pos = -1;
     char *prefix = NULL, *text = NULL, *line;
 
     g_return_if_fail (MOO_IS_COMPLETION (cmpl));
@@ -154,35 +172,49 @@ moo_completion_try_complete (MooCompletion *cmpl,
 
     line = gtk_text_buffer_get_slice (cmpl->priv->buffer, &start, &end, TRUE);
 
-    for (l = cmpl->priv->groups; !found && l != NULL; l = l->next)
+    for (l = cmpl->priv->groups; l != NULL; l = l->next)
     {
-        group = l->data;
-        found = moo_completion_group_find (group, line, &start_pos, &end_pos);
+        int start_pos_here, end_pos_here;
+        MooCompletionGroup *grp = l->data;
+
+        if (!moo_completion_group_find (grp, line, &start_pos_here, &end_pos_here))
+            continue;
+
+        if (!found)
+        {
+            found = TRUE;
+            start_pos = start_pos_here;
+            end_pos = end_pos_here;
+        }
+
+        if (start_pos_here == start_pos && end_pos_here == end_pos)
+            cmpl->priv->active_groups =
+                    g_slist_prepend (cmpl->priv->active_groups, grp);
     }
 
     if (found)
     {
-        cmpl->priv->active_group = group;
+        cmpl->priv->active_groups = g_slist_reverse (cmpl->priv->active_groups);
 
         gtk_text_iter_set_line_index (&start, start_pos);
         gtk_text_iter_set_line_index (&end, end_pos);
 
         text = gtk_text_buffer_get_slice (cmpl->priv->buffer, &start, &end, TRUE);
         moo_completion_set_region (cmpl, &start, &end);
-        moo_completion_populate (cmpl, group, text, &prefix);
+        moo_completion_populate (cmpl, text, &prefix);
     }
 
     if (!found || moo_completion_empty (cmpl))
     {
-        cmpl->priv->active_group = NULL;
+        g_slist_free (cmpl->priv->active_groups);
+        cmpl->priv->active_groups = NULL;
         cmpl->priv->working = FALSE;
         goto out;
     }
 
     if (insert_unique && moo_completion_unique (cmpl, &iter))
     {
-        gpointer data = moo_completion_get_data (cmpl, &iter);
-        moo_completion_complete (cmpl, data);
+        moo_completion_complete (cmpl, GTK_TREE_MODEL (cmpl->priv->store), &iter);
         cmpl->priv->working = FALSE;
         goto out;
     }
@@ -209,61 +241,76 @@ static void
 moo_completion_update (MooCompletion *cmpl)
 {
     GtkTextIter start, end;
-    GList *list;
     char *text;
 
     g_return_if_fail (cmpl->priv->working);
-    g_return_if_fail (cmpl->priv->active_group != NULL);
+    g_return_if_fail (cmpl->priv->active_groups != NULL);
 
     moo_completion_get_region (cmpl, &start, &end);
     text = gtk_text_buffer_get_slice (cmpl->priv->buffer, &start, &end, TRUE);
 
-    list = moo_completion_group_complete (cmpl->priv->active_group, text, NULL);
-    gtk_list_store_clear (cmpl->priv->store);
+    moo_completion_populate (cmpl, text, NULL);
 
-    if (list)
-    {
-        while (list)
-        {
-            GtkTreeIter iter;
-            gtk_list_store_append (cmpl->priv->store, &iter);
-            gtk_list_store_set (cmpl->priv->store, &iter, 0, list->data, -1);
-            list = list->next;
-        }
-
+    if (!moo_completion_empty (cmpl))
         moo_text_popup_update (cmpl->priv->popup);
-    }
     else
-    {
         moo_completion_hide (cmpl);
-    }
 
     g_free (text);
 }
 
 
+static int
+list_sort_func (GtkTreeModel       *model,
+                GtkTreeIter        *a,
+                GtkTreeIter        *b,
+                MooCompletion      *cmpl)
+{
+    gpointer data1, data2;
+
+    g_assert (MOO_IS_COMPLETION (cmpl));
+    g_assert (model == GTK_TREE_MODEL (cmpl->priv->store));
+    g_assert (cmpl->priv->cmp_func != NULL);
+
+    gtk_tree_model_get (model, a, COLUMN_DATA, &data1, -1);
+    gtk_tree_model_get (model, b, COLUMN_DATA, &data2, -1);
+
+    return cmpl->priv->cmp_func (data1, data2);
+}
+
+
 static void
 moo_completion_complete (MooCompletion *cmpl,
-                         gpointer       data)
+                         GtkTreeModel  *model,
+                         GtkTreeIter   *iter)
 {
     char *text, *old_text;
     GtkTextIter start, end;
+    gpointer data = NULL;
+    MooCompletionGroup *group = NULL;
 
-    g_return_if_fail (cmpl->priv->active_group != NULL);
+    g_return_if_fail (cmpl->priv->active_groups != NULL);
 
-    text = cmpl->priv->active_group->string_func ?
-            cmpl->priv->active_group->string_func (data) : data;
+    gtk_tree_model_get (model, iter, COLUMN_DATA, &data, COLUMN_GROUP, &group, -1);
+    g_assert (group != NULL);
+
+    text = cmpl->priv->string_func ? cmpl->priv->string_func (data) : data;
     g_return_if_fail (text != NULL);
 
     moo_completion_get_region (cmpl, &start, &end);
     old_text = gtk_text_buffer_get_slice (cmpl->priv->buffer,
                                           &start, &end, TRUE);
 
-    if (strcmp (text, old_text))
+    if (strcmp (text, old_text) || group->suffix)
     {
         gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
+
         gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
         gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
+
+        if (group->suffix)
+            gtk_text_buffer_insert (cmpl->priv->buffer, &start, group->suffix, -1);
+
         gtk_text_buffer_end_user_action (cmpl->priv->buffer);
     }
 
@@ -275,22 +322,54 @@ moo_completion_complete (MooCompletion *cmpl,
 
 static void
 moo_completion_populate (MooCompletion      *cmpl,
-                         MooCompletionGroup *group,
                          const char         *text,
                          char              **prefix)
 {
-    GList *list;
+    GSList *l;
+    char *prefix_here = NULL;
 
     gtk_list_store_clear (cmpl->priv->store);
-    list = moo_completion_group_complete (group, text, prefix);
+    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (cmpl->priv->store),
+                                          GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                          GTK_SORT_ASCENDING);
 
-    while (list)
+    for (l = cmpl->priv->active_groups; l != NULL; l = l->next)
     {
-        GtkTreeIter iter;
-        gtk_list_store_append (cmpl->priv->store, &iter);
-        gtk_list_store_set (cmpl->priv->store, &iter, 0, list->data, -1);
-        list = list->next;
+        char *new_prefix = NULL;
+        MooCompletionGroup *group = l->data;
+        GList *list = moo_completion_group_complete (group, text, &new_prefix);
+
+        while (list)
+        {
+            GtkTreeIter iter;
+            gtk_list_store_append (cmpl->priv->store, &iter);
+            gtk_list_store_set (cmpl->priv->store, &iter,
+                                COLUMN_DATA, list->data,
+                                COLUMN_GROUP, group,
+                                -1);
+            list = list->next;
+        }
+
+        if (!prefix_here ||
+             (prefix_here && new_prefix &&
+              strlen (prefix_here) < strlen (new_prefix)))
+        {
+            g_free (prefix_here);
+            prefix_here = new_prefix;
+            new_prefix = NULL;
+        }
+
+        g_free (new_prefix);
     }
+
+    if (cmpl->priv->cmp_func)
+        gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (cmpl->priv->store),
+                                              COLUMN_DATA, GTK_SORT_ASCENDING);
+
+    if (prefix)
+        *prefix = prefix_here;
+    else
+        g_free (prefix_here);
 }
 
 
@@ -310,24 +389,12 @@ moo_completion_unique (MooCompletion  *cmpl,
 }
 
 
-static gpointer
-moo_completion_get_data (MooCompletion *cmpl,
-                         GtkTreeIter   *iter)
-{
-    gpointer data = NULL;
-    gtk_tree_model_get (GTK_TREE_MODEL (cmpl->priv->store), iter, 0, &data, -1);
-    return data;
-}
-
-
 static void
 on_popup_activate (MooCompletion    *cmpl,
                    GtkTreeModel     *model,
                    GtkTreeIter      *iter)
 {
-    gpointer data = NULL;
-    gtk_tree_model_get (model, iter, 0, &data, -1);
-    moo_completion_complete (cmpl, data);
+    moo_completion_complete (cmpl, model, iter);
 }
 
 
@@ -371,6 +438,8 @@ moo_completion_hide (MooCompletion *cmpl)
         cmpl->priv->working = FALSE;
         moo_text_popup_hide (cmpl->priv->popup);
         gtk_list_store_clear (cmpl->priv->store);
+        g_slist_free (cmpl->priv->active_groups);
+        cmpl->priv->active_groups = NULL;
     }
 }
 
@@ -476,9 +545,17 @@ moo_completion_set_region (MooCompletion      *cmpl,
 
 
 MooCompletion *
-moo_completion_new (void)
+moo_completion_new (MooCompletionStringFunc string_func,
+                    MooCompletionFreeFunc free_func,
+                    MooCompletionCmpFunc cmp_func)
 {
-    return g_object_new (MOO_TYPE_COMPLETION, NULL);
+    MooCompletion *cmpl = g_object_new (MOO_TYPE_COMPLETION, NULL);
+
+    cmpl->priv->string_func = string_func;
+    cmpl->priv->free_func = free_func;
+    cmpl->priv->cmp_func = cmp_func;
+
+    return cmpl;
 }
 
 
@@ -487,15 +564,15 @@ text_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *tree_column,
                      GtkCellRenderer    *cell,
                      GtkTreeModel       *tree_model,
                      GtkTreeIter        *iter,
-                     MooCompletionGroup *group)
+                     MooCompletion      *cmpl)
 {
     gpointer data = NULL;
     char *text;
 
-    g_return_if_fail (group != NULL);
+    g_assert (MOO_IS_COMPLETION (cmpl));
 
     gtk_tree_model_get (tree_model, iter, 0, &data, -1);
-    text = group->string_func ? group->string_func (data) : data;
+    text = cmpl->priv->string_func ? cmpl->priv->string_func (data) : data;
     g_return_if_fail (text != NULL);
 
     g_object_set (cell, "text", text, NULL);
@@ -503,40 +580,43 @@ text_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *tree_column,
 
 
 MooCompletion *
-moo_completion_new_text (GList    *words,
-                         gboolean  sorted)
+moo_completion_new_text (GList *words)
 {
     MooCompletion *cmpl;
-    MooCompletionGroup *group;
     GtkCellRenderer *cell;
 
-    cmpl = moo_completion_new ();
-    group = moo_completion_group_new_text (sorted);
-    moo_completion_group_add_data (group, words);
-    moo_completion_group_set_pattern (group, "\\w*", NULL, 0);
-    moo_completion_add_group (cmpl, group);
-    moo_completion_group_unref (group);
+    cmpl = moo_completion_new (NULL, g_free, (MooCompletionCmpFunc) strcmp);
+
+    if (words)
+    {
+        MooCompletionGroup *group = moo_completion_new_group (cmpl);
+        moo_completion_group_add_data (group, words);
+        moo_completion_group_set_pattern (group, "\\w*", NULL, 0);
+    }
 
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (cmpl->priv->popup->column, cell, TRUE);
     gtk_tree_view_column_set_cell_data_func (cmpl->priv->popup->column, cell,
                                              (GtkTreeCellDataFunc) text_cell_data_func,
-                                             moo_completion_group_ref (group),
-                                             (GtkDestroyNotify) moo_completion_group_unref);
+                                             g_object_ref (cmpl),
+                                             g_object_unref);
 
     return cmpl;
 }
 
 
-void
-moo_completion_add_group (MooCompletion      *cmpl,
-                          MooCompletionGroup *group)
+MooCompletionGroup *
+moo_completion_new_group (MooCompletion *cmpl)
 {
-    g_return_if_fail (MOO_IS_COMPLETION (cmpl));
-    g_return_if_fail (group != NULL);
-    g_return_if_fail (g_slist_find (cmpl->priv->groups, group) == NULL);
-    cmpl->priv->groups = g_slist_append (cmpl->priv->groups,
-                                         moo_completion_group_ref (group));
+    MooCompletionGroup *group;
+
+    g_return_val_if_fail (MOO_IS_COMPLETION (cmpl), NULL);
+
+    group = moo_completion_group_new (cmpl->priv->string_func,
+                                      cmpl->priv->free_func);
+    cmpl->priv->groups = g_slist_append (cmpl->priv->groups, group);
+
+    return group;
 }
 
 
@@ -546,26 +626,12 @@ moo_completion_add_group (MooCompletion      *cmpl,
 
 MooCompletionGroup *
 moo_completion_group_new (MooCompletionStringFunc string_func,
-                          MooCompletionFreeFunc   free_func,
-                          MooCompletionCmpFunc    cmp_func)
+                          MooCompletionFreeFunc free_func)
 {
     MooCompletionGroup *group = g_new0 (MooCompletionGroup, 1);
-
-    group->ref_count = 1;
     group->cmpl = g_completion_new (string_func);
-    group->string_func = string_func;
     group->free_func = free_func;
-    group->cmp_func = cmp_func;
-
     return group;
-}
-
-
-MooCompletionGroup *
-moo_completion_group_new_text (gboolean sorted)
-{
-    return moo_completion_group_new (NULL, g_free,
-                                     sorted ? (MooCompletionCmpFunc) strcmp : NULL);
 }
 
 
@@ -650,15 +716,8 @@ moo_completion_group_complete (MooCompletionGroup *group,
     if (!prefix)
         prefix = &dummy;
 
+    /* g_completion_complete_utf8 wants prefix != NULL */
     list = g_completion_complete_utf8 (group->cmpl, text, prefix);
-
-    if (group->cmp_func)
-    {
-        g_list_free (group->tmp);
-        group->tmp = g_list_sort (g_list_copy (list),
-                                  (GCompareFunc) group->cmp_func);
-        list = group->tmp;
-    }
 
     g_free (dummy);
     return list;
@@ -723,45 +782,45 @@ err:
 }
 
 
+void
+moo_completion_group_set_suffix (MooCompletionGroup *group,
+                                 const char         *suffix)
+{
+    g_return_if_fail (group != NULL);
+
+    if (group->suffix != suffix)
+    {
+        g_free (group->suffix);
+        group->suffix = (suffix && suffix[0]) ? g_strdup (suffix) : NULL;
+    }
+}
+
+
 GType
 moo_completion_group_get_type (void)
 {
     static GType type;
 
     if (!type)
-        type = g_boxed_type_register_static ("MooCompletionGroup",
-                                             (GBoxedCopyFunc) moo_completion_group_ref,
-                                             (GBoxedFreeFunc) moo_completion_group_unref);
+        type = g_pointer_type_register_static ("MooCompletionGroup");
 
     return type;
 }
 
 
-MooCompletionGroup *
-moo_completion_group_ref (MooCompletionGroup *group)
-{
-    g_return_val_if_fail (group != NULL, NULL);
-    group->ref_count++;
-    return group;
-}
-
-
-void
-moo_completion_group_unref (MooCompletionGroup *group)
+static void
+moo_completion_group_free (MooCompletionGroup *group)
 {
     g_return_if_fail (group != NULL);
 
-    if (!(--group->ref_count))
-    {
-        egg_regex_unref (group->regex);
-        g_free (group->parens);
-        g_completion_free (group->cmpl);
+    egg_regex_unref (group->regex);
+    g_free (group->parens);
+    g_completion_free (group->cmpl);
+    g_free (group->suffix);
 
-        if (group->free_func)
-            g_list_foreach (group->data, (GFunc) group->free_func, NULL);
-        g_list_free (group->data);
-        g_list_free (group->tmp);
+    if (group->free_func)
+        g_list_foreach (group->data, (GFunc) group->free_func, NULL);
+    g_list_free (group->data);
 
-        g_free (group);
-    }
+    g_free (group);
 }

@@ -116,23 +116,10 @@ cmpl_data_read_simple_file (CmplData *data)
     }
 
     list = parse_words (contents, NULL, data->path);
-    data->cmpl = moo_completion_new_text (list, TRUE);
+    data->cmpl = moo_completion_new_text (list);
     g_message ("read %d words from %s", g_list_length (list), data->path);
 
     g_free (contents);
-}
-
-
-static void
-text_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *tree_column,
-                     GtkCellRenderer    *cell,
-                     GtkTreeModel       *tree_model,
-                     GtkTreeIter        *iter)
-{
-    gpointer data = NULL;
-    gtk_tree_model_get (tree_model, iter, 0, &data, -1);
-    g_return_if_fail (data != NULL);
-    g_object_set (cell, "text", data, NULL);
 }
 
 
@@ -199,9 +186,7 @@ cmpl_data_read_config_file (CmplData *data)
 {
     MooConfig *config;
     guint i, n_items;
-    GSList *completion_groups = NULL;
-    GtkCellRenderer *cell;
-    MooTextPopup *popup;
+    MooCompletionGroup *group = NULL;
 
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
@@ -212,20 +197,23 @@ cmpl_data_read_config_file (CmplData *data)
     n_items = moo_config_n_items (config);
     g_return_if_fail (n_items != 0);
 
+    data->cmpl = moo_completion_new_text (NULL);
+
     for (i = 0; i < n_items; ++i)
     {
         MooConfigItem *item;
-        const char *pattern, *prefix;
+        const char *pattern, *prefix, *suffix;
         const char *groups;
         guint *parens;
         guint n_parens;
         GList *words;
-        MooCompletionGroup *group;
 
         item = moo_config_nth_item (config, i);
 
         pattern = moo_config_item_get_value (item, "pattern");
         prefix = moo_config_item_get_value (item, "prefix");
+        suffix = moo_config_item_get_value (item, "insert-suffix");
+        suffix = suffix ? suffix : moo_config_item_get_value (item, "insert_suffix");
 
         groups = moo_config_item_get_value (item, "group");
         groups = groups ? groups : moo_config_item_get_value (item, "groups");
@@ -258,40 +246,23 @@ cmpl_data_read_config_file (CmplData *data)
         g_message ("read %d words for patttern '%s' from %s",
                    g_list_length (words), pattern, data->path);
 
-        group = moo_completion_group_new_text (TRUE);
+        group = moo_completion_new_group (data->cmpl);
         moo_completion_group_add_data (group, words);
         moo_completion_group_set_pattern (group, pattern, parens, n_parens);
-        g_free (parens);
 
-        completion_groups = g_slist_prepend (completion_groups, group);
+        if (suffix && suffix[0])
+            moo_completion_group_set_suffix (group, suffix);
+
+        g_free (parens);
     }
 
     moo_config_free (config);
 
-    if (!completion_groups)
+    if (!group)
     {
         g_warning ("%s: no completions", G_STRLOC);
-        data->cmpl = moo_completion_new_text (NULL, TRUE);
         return;
     }
-
-    completion_groups = g_slist_reverse (completion_groups);
-    data->cmpl = moo_completion_new ();
-
-    while (completion_groups)
-    {
-        moo_completion_add_group (data->cmpl, completion_groups->data);
-        moo_completion_group_unref (completion_groups->data);
-        completion_groups = g_slist_delete_link (completion_groups,
-                                                 completion_groups);
-    }
-
-    popup = moo_completion_get_popup (data->cmpl);
-    cell = gtk_cell_renderer_text_new ();
-    gtk_tree_view_column_pack_start (popup->column, cell, TRUE);
-    gtk_tree_view_column_set_cell_data_func (popup->column, cell,
-                                             (GtkTreeCellDataFunc) text_cell_data_func,
-                                             NULL, NULL);
 }
 
 

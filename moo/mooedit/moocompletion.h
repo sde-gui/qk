@@ -56,10 +56,6 @@ typedef int   (*MooCompletionCmpFunc)       (gpointer       data1,
 GType           moo_completion_get_type             (void) G_GNUC_CONST;
 GType           moo_completion_group_get_type       (void) G_GNUC_CONST;
 
-MooCompletionGroup *moo_completion_group_new_text   (gboolean            sorted);
-MooCompletionGroup *moo_completion_group_new        (MooCompletionStringFunc string_func,
-                                                     MooCompletionFreeFunc free_func,
-                                                     MooCompletionCmpFunc cmp_func);
 /* these two steal data */
 void            moo_completion_group_set_data       (MooCompletionGroup *group,
                                                      GList              *data);
@@ -70,14 +66,16 @@ void            moo_completion_group_set_pattern    (MooCompletionGroup *group,
                                                      const char         *pattern,
                                                      const guint        *parens,
                                                      guint               n_parens);
+void            moo_completion_group_set_suffix     (MooCompletionGroup *group,
+                                                     const char         *suffix);
 
-MooCompletionGroup *moo_completion_group_ref        (MooCompletionGroup *group);
-void            moo_completion_group_unref          (MooCompletionGroup *group);
-
-MooCompletion  *moo_completion_new                  (void);
+MooCompletion  *moo_completion_new                  (MooCompletionStringFunc string_func,
+                                                     MooCompletionFreeFunc free_func,
+                                                     MooCompletionCmpFunc cmp_func);
 /* steals words */
-MooCompletion  *moo_completion_new_text             (GList              *words,
-                                                     gboolean            sorted);
+MooCompletion  *moo_completion_new_text             (GList              *words);
+
+MooCompletionGroup *moo_completion_new_group        (MooCompletion      *cmpl);
 
 void            moo_completion_try_complete         (MooCompletion      *cmpl,
                                                      gboolean            insert_unique);
@@ -88,9 +86,6 @@ void            moo_completion_set_doc              (MooCompletion      *cmpl,
 GtkTextView    *moo_completion_get_doc              (MooCompletion      *cmpl);
 
 GtkListStore   *moo_completion_get_store            (MooCompletion      *cmpl);
-
-void            moo_completion_add_group            (MooCompletion      *cmpl,
-                                                     MooCompletionGroup *group);
 
 MooTextPopup   *moo_completion_get_popup            (MooCompletion      *cmpl);
 
