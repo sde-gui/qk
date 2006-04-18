@@ -448,10 +448,13 @@ moo_text_popup_resize (MooTextPopup *popup)
 
     if (total_items > items)
     {
+        int scrollbar_spacing;
         GtkRequisition scrollbar_req;
         gtk_widget_size_request (popup->priv->scrolled_window->vscrollbar,
                                  &scrollbar_req);
-        width += scrollbar_req.width;
+        gtk_widget_style_get (GTK_WIDGET (popup->priv->scrolled_window),
+                              "scrollbar-spacing", &scrollbar_spacing, NULL);
+        width += scrollbar_req.width + scrollbar_spacing;
     }
 
     width = MAX (width, 100);
@@ -469,13 +472,9 @@ moo_text_popup_resize (MooTextPopup *popup)
         x = monitor.x + monitor.width - popup_req.width;
 
     if (y + iter_rect.height + popup_req.height <= monitor.y + monitor.height)
-    {
         y += iter_rect.height;
-    }
     else
-    {
         y -= popup_req.height;
-    }
 
     gtk_window_move (GTK_WINDOW (popup->priv->window), x, y);
 }
