@@ -97,6 +97,9 @@ action_new (const char *name,
         case MOO_COMMAND_SHELL:
             moo_command_set_shell (cmd, code);
             break;
+        case MOO_COMMAND_EXE:
+            moo_command_set_exe (cmd, code);
+            break;
     }
 
     action = g_new0 (Action, 1);
@@ -174,14 +177,10 @@ moo_parse_user_actions (const char             *filename,
 
         if (code)
         {
-            if (!type || !g_ascii_strcasecmp (type, "script"))
+            if (!type)
                 cmd_type = MOO_COMMAND_SCRIPT;
-            else if (!g_ascii_strcasecmp (type, "shell") ||
-                      !g_ascii_strcasecmp (type, "bat") ||
-                      !g_ascii_strcasecmp (type, "exe"))
-                cmd_type = MOO_COMMAND_SHELL;
-            else if (!g_ascii_strcasecmp (type, "python"))
-                cmd_type = MOO_COMMAND_PYTHON;
+            else
+                cmd_type = moo_command_type_parse (type);
 
             if (!cmd_type)
             {
