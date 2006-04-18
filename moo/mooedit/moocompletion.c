@@ -339,6 +339,9 @@ moo_completion_populate (MooCompletion      *cmpl,
         MooCompletionGroup *group = l->data;
         GList *list = moo_completion_group_complete (group, text, &new_prefix);
 
+        if (list && !new_prefix)
+            new_prefix = g_strdup (text);
+
         while (list)
         {
             GtkTreeIter iter;
@@ -352,7 +355,7 @@ moo_completion_populate (MooCompletion      *cmpl,
 
         if (!prefix_here ||
              (prefix_here && new_prefix &&
-              strlen (prefix_here) < strlen (new_prefix)))
+             strlen (new_prefix) < strlen (prefix_here)))
         {
             g_free (prefix_here);
             prefix_here = new_prefix;
