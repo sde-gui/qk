@@ -608,49 +608,6 @@ static MooFolder   *get_root_folder_unix    (MooFileSystem  *fs,
 }
 
 
-static gboolean rm_fr   (const char     *path,
-                         GError        **error)
-{
-    GError *error_here = NULL;
-    char **argv;
-    char *child_err;
-    int status;
-
-    argv = g_new0 (char*, 5);
-    argv[0] = g_strdup ("/bin/rm");
-    argv[1] = g_strdup ("-fr");
-    argv[2] = g_strdup ("--");
-    argv[3] = g_strdup (path);
-
-    if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_STDOUT_TO_DEV_NULL,
-                       NULL, NULL, NULL, &child_err, &status, &error_here))
-    {
-        g_set_error (error, MOO_FILE_ERROR, MOO_FILE_ERROR_FAILED,
-                     "Could not run 'rm' command: %s",
-                     error_here->message);
-        g_error_free (error_here);
-        g_strfreev (argv);
-        return FALSE;
-    }
-
-    g_strfreev (argv);
-
-    if (!WIFEXITED (status) || WEXITSTATUS (status))
-    {
-        g_set_error (error, MOO_FILE_ERROR, MOO_FILE_ERROR_FAILED,
-                     "'rm' command failed: %s",
-                     child_err ? child_err : "");
-        g_free (child_err);
-        return FALSE;
-    }
-    else
-    {
-        g_free (child_err);
-        return TRUE;
-    }
-}
-
-
 gboolean            move_file_unix              (G_GNUC_UNUSED MooFileSystem *fs,
                                                  const char     *old_path,
                                                  const char     *new_path,
