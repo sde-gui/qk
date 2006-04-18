@@ -25,6 +25,7 @@ typedef enum {
     ACTION_NEED_DOC  = 1 << 0,
     ACTION_NEED_FILE = 1 << 1,
     ACTION_NEED_SAVE = 1 << 2,
+    ACTION_SILENT    = 1 << 3
 } ActionOptions;
 
 typedef struct {
@@ -38,7 +39,7 @@ typedef struct {
     MooUIXML *xml;
     guint merge_id;
 
-    ActionOptions options : 3;
+    ActionOptions options;
 } ActionData;
 
 static GSList *actions;
@@ -224,8 +225,7 @@ config_item_get_command (MooConfigItem *item)
 
     g_return_val_if_fail (cmd_type != 0, NULL);
 
-    cmd = moo_command_new (cmd_type);
-    moo_command_set_code (cmd, code);
+    cmd = moo_command_new (cmd_type, code);
 
     return cmd;
 }
@@ -260,6 +260,8 @@ config_item_get_options (MooConfigItem *item)
                 opts |= ACTION_NEED_FILE;
             else if (!strcmp (opt, "need-doc"))
                 opts |= ACTION_NEED_DOC;
+            else if (!strcmp (opt, "silent"))
+                opts |= ACTION_SILENT;
             else
                 g_warning ("%s: unknown option '%s'", G_STRLOC, opt);
 
@@ -371,6 +373,9 @@ action_data_new (const char     *name,
     data->cmd = cmd;
     data->options = options;
 
+    if (options & ACTION_SILENT)
+        moo_command_add_flags (cmd, MOO_COMMAND_SILENT);
+
     actions = g_slist_prepend (actions, data);
 
     return data;
@@ -469,6 +474,7 @@ run_exe (MooToolAction *action,
     cmd_view = moo_edit_window_get_output (action->window);
     g_return_val_if_fail (MOO_IS_CMD_VIEW (cmd_view), FALSE);
 
+    moo_line_view_clear (MOO_LINE_VIEW (cmd_view));
     moo_big_paned_present_pane (action->window->paned,
                                 moo_edit_window_get_output_pane (action->window));
     return moo_cmd_view_run_command (MOO_CMD_VIEW (cmd_view), cmd_line,
@@ -481,6 +487,7 @@ moo_tool_action_activate (MooAction *_action)
 {
     MooToolAction *action;
     MooEdit *doc;
+    gboolean silent;
 
     g_return_if_fail (MOO_IS_TOOL_ACTION (_action));
     action = MOO_TOOL_ACTION (_action);
@@ -500,14 +507,15 @@ moo_tool_action_activate (MooAction *_action)
             return;
 
     moo_edit_setup_command (action->data->cmd, doc, action->window);
+    silent = action->data->cmd->flags & MOO_COMMAND_SILENT;
 
-    if (action->window)
+    if (action->window && !silent)
         g_signal_connect_swapped (action->data->cmd, "run-exe",
                                   G_CALLBACK (run_exe), action);
 
     moo_command_run (action->data->cmd);
 
-    if (action->window)
+    if (action->window && !silent)
         g_signal_handlers_disconnect_by_func (action->data->cmd,
                                               (gpointer) run_exe,
                                               action);
