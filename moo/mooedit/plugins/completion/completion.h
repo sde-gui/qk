@@ -24,6 +24,7 @@ G_BEGIN_DECLS
 #define CMPL_DIR "completion"
 #define CMPL_FILE_NONE "none"
 #define CMPL_FILE_SUFFIX ".lst"
+#define CMPL_CONFIG_SUFFIX ".cfg"
 
 
 typedef struct {

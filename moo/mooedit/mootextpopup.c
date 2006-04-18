@@ -422,7 +422,7 @@ moo_text_popup_resize (MooTextPopup *popup)
 
     moo_text_popup_get_position (popup, &iter);
     gtk_text_view_get_iter_location (popup->priv->doc, &iter, &iter_rect);
-    gtk_text_view_buffer_to_window_coords (popup->priv->doc, GTK_TEXT_WINDOW_TEXT,
+    gtk_text_view_buffer_to_window_coords (popup->priv->doc, GTK_TEXT_WINDOW_WIDGET,
                                            iter_rect.x, iter_rect.y,
                                            &iter_rect.x, &iter_rect.y);
     gdk_window_get_origin (widget->window, &x, &y);
@@ -502,6 +502,7 @@ moo_text_popup_set_doc (MooTextPopup *popup,
             popup->priv->pos = NULL;
         }
 
+        g_object_unref (popup->priv->buffer);
         g_object_unref (popup->priv->doc);
         popup->priv->doc = NULL;
         popup->priv->buffer = NULL;
@@ -510,7 +511,7 @@ moo_text_popup_set_doc (MooTextPopup *popup,
     if (doc)
     {
         popup->priv->doc = g_object_ref (doc);
-        popup->priv->buffer = gtk_text_view_get_buffer (doc);
+        popup->priv->buffer = g_object_ref (gtk_text_view_get_buffer (doc));
     }
 
     g_object_notify (G_OBJECT (popup), "doc");

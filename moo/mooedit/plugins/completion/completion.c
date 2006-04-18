@@ -14,13 +14,19 @@
 #include "completion.h"
 #include "mooedit/moocompletion.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooconfig.h"
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
 
+typedef enum {
+    DATA_FILE_SIMPLE,
+    DATA_FILE_CONFIG
+} DataFileType;
 
 typedef struct {
     char *path;
+    DataFileType type;
     time_t mtime;
     MooCompletion *cmpl;
 } CmplData;
@@ -49,13 +55,52 @@ _completion_callback (MooEditWindow *window)
 }
 
 
+static GList *
+parse_words (const char *string,
+             const char *prefix,
+             const char *path)
+{
+    GList *list = NULL;
+    char **words, **p;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    words = g_strsplit_set (string, " \t\r\n", 0);
+
+    for (p = words; p && **p; ++p)
+    {
+        if (p[0][0] && p[0][1])
+        {
+            if (!g_utf8_validate (*p, -1, NULL))
+            {
+                g_critical ("%s: invalid utf8 in '%s'",
+                            G_STRLOC, path);
+            }
+            else if (prefix)
+            {
+                list = g_list_prepend (list, g_strdup_printf ("%s%s", prefix, *p));
+            }
+            else
+            {
+                list = g_list_prepend (list, *p);
+                *p = NULL;
+            }
+        }
+
+        g_free (*p);
+    }
+
+    g_free (words);
+    return g_list_reverse (list);
+}
+
+
 static void
-cmpl_data_read_file (CmplData *data)
+cmpl_data_read_simple_file (CmplData *data)
 {
     GError *error = NULL;
+    GList *list;
     char *contents;
-    char **words, **p;
-    GList *list = NULL;
 
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
@@ -70,32 +115,201 @@ cmpl_data_read_file (CmplData *data)
         return;
     }
 
-    words = g_strsplit_set (contents, " \t\r\n", 0);
-
-    for (p = words; p && **p; ++p)
-    {
-        if (p[0][0] && p[0][1])
-        {
-            if (!g_utf8_validate (*p, -1, NULL))
-            {
-                g_critical ("%s: invalid utf8 in '%s'",
-                            G_STRLOC, data->path);
-            }
-            else
-            {
-                list = g_list_prepend (list, *p);
-                *p = NULL;
-            }
-        }
-
-        g_free (*p);
-    }
-
+    list = parse_words (contents, NULL, data->path);
     data->cmpl = moo_completion_new_text (list, TRUE);
     g_message ("read %d words from %s", g_list_length (list), data->path);
 
     g_free (contents);
-    g_free (words);
+}
+
+
+static void
+text_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *tree_column,
+                     GtkCellRenderer    *cell,
+                     GtkTreeModel       *tree_model,
+                     GtkTreeIter        *iter)
+{
+    gpointer data = NULL;
+    gtk_tree_model_get (tree_model, iter, 0, &data, -1);
+    g_return_if_fail (data != NULL);
+    g_object_set (cell, "text", data, NULL);
+}
+
+
+static guint *
+parse_numbers (const char *string,
+               guint      *n_numbers_p)
+{
+    guint *numbers;
+    guint n_numbers, i;
+    char **pieces, **p;
+    GSList *list = NULL;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    pieces = g_strsplit_set (string, " \t,;:", 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    for (p = pieces; p && *p; ++p)
+    {
+        if (**p)
+        {
+            guint64 n64;
+            guint n;
+
+            errno = 0;
+            n64 = g_ascii_strtoull (*p, NULL, 10);
+
+            if (errno || n64 > 10000)
+            {
+                g_warning ("%s: could not parse number '%s'", G_STRLOC, *p);
+                goto error;
+            }
+
+            n = n64;
+            list = g_slist_prepend (list, GUINT_TO_POINTER (n));
+        }
+    }
+
+    list = g_slist_reverse (list);
+    n_numbers = g_slist_length (list);
+    numbers = g_new (guint, n_numbers);
+
+    for (i = 0; i < n_numbers; ++i)
+    {
+        numbers[i] = GPOINTER_TO_UINT (list->data);
+        list = g_slist_delete_link (list, list);
+    }
+
+    if (n_numbers_p)
+        *n_numbers_p = n_numbers;
+
+    g_strfreev (pieces);
+    return numbers;
+
+error:
+    g_strfreev (pieces);
+    g_slist_free (list);
+    return NULL;
+}
+
+
+static void
+cmpl_data_read_config_file (CmplData *data)
+{
+    MooConfig *config;
+    guint i, n_items;
+    GSList *completion_groups = NULL;
+    GtkCellRenderer *cell;
+    MooTextPopup *popup;
+
+    g_return_if_fail (data->cmpl == NULL);
+    g_return_if_fail (data->path != NULL);
+
+    config = moo_config_parse_file (data->path);
+    g_return_if_fail (config != NULL);
+
+    n_items = moo_config_n_items (config);
+    g_return_if_fail (n_items != 0);
+
+    for (i = 0; i < n_items; ++i)
+    {
+        MooConfigItem *item;
+        const char *pattern, *prefix;
+        const char *groups;
+        guint *parens;
+        guint n_parens;
+        GList *words;
+        MooCompletionGroup *group;
+
+        item = moo_config_nth_item (config, i);
+
+        pattern = moo_config_item_get_value (item, "pattern");
+        prefix = moo_config_item_get_value (item, "prefix");
+
+        groups = moo_config_item_get_value (item, "group");
+        groups = groups ? groups : moo_config_item_get_value (item, "groups");
+        groups = groups ? groups : "0";
+
+        if (!pattern)
+        {
+            g_warning ("%s: pattern missing", G_STRLOC);
+            continue;
+        }
+
+        parens = parse_numbers (groups, &n_parens);
+
+        if (!parens)
+        {
+            g_warning ("%s: invalid group string '%s'", G_STRLOC, groups);
+            continue;
+        }
+
+        words = parse_words (moo_config_item_get_content (item),
+                             prefix, data->path);
+
+        if (!words)
+        {
+            g_warning ("%s: empty group", G_STRLOC);
+            g_free (parens);
+            continue;
+        }
+
+        g_message ("read %d words for patttern '%s' from %s",
+                   g_list_length (words), pattern, data->path);
+
+        group = moo_completion_group_new_text (TRUE);
+        moo_completion_group_add_data (group, words);
+        moo_completion_group_set_pattern (group, pattern, parens, n_parens);
+        g_free (parens);
+
+        completion_groups = g_slist_prepend (completion_groups, group);
+    }
+
+    moo_config_free (config);
+
+    if (!completion_groups)
+    {
+        g_warning ("%s: no completions", G_STRLOC);
+        data->cmpl = moo_completion_new_text (NULL, TRUE);
+        return;
+    }
+
+    completion_groups = g_slist_reverse (completion_groups);
+    data->cmpl = moo_completion_new ();
+
+    while (completion_groups)
+    {
+        moo_completion_add_group (data->cmpl, completion_groups->data);
+        moo_completion_group_unref (completion_groups->data);
+        completion_groups = g_slist_delete_link (completion_groups,
+                                                 completion_groups);
+    }
+
+    popup = moo_completion_get_popup (data->cmpl);
+    cell = gtk_cell_renderer_text_new ();
+    gtk_tree_view_column_pack_start (popup->column, cell, TRUE);
+    gtk_tree_view_column_set_cell_data_func (popup->column, cell,
+                                             (GtkTreeCellDataFunc) text_cell_data_func,
+                                             NULL, NULL);
+}
+
+
+static void
+cmpl_data_read_file (CmplData *data)
+{
+    g_return_if_fail (data->path != NULL);
+    g_return_if_fail (data->cmpl == NULL);
+
+    switch (data->type)
+    {
+        case DATA_FILE_SIMPLE:
+            return cmpl_data_read_simple_file (data);
+        case DATA_FILE_CONFIG:
+            return cmpl_data_read_config_file (data);
+    }
+
+    g_return_if_reached ();
 }
 
 
@@ -152,9 +366,10 @@ cmpl_data_free (CmplData *data)
 
 
 static void
-cmpl_plugin_check_file (CmplPlugin *plugin,
-                        const char *path,
-                        const char *id)
+cmpl_plugin_check_file (CmplPlugin  *plugin,
+                        const char  *path,
+                        DataFileType type,
+                        const char  *id)
 {
     struct stat buf;
     CmplData *data;
@@ -192,6 +407,7 @@ cmpl_plugin_check_file (CmplPlugin *plugin,
     }
 
     data->path = g_strdup (path);
+    data->type = type;
     data->mtime = buf.st_mtime;
     g_message ("found file '%s' for lang '%s'", path, id);
 }
@@ -211,18 +427,25 @@ cmpl_plugin_load_dir (CmplPlugin *plugin,
     {
         char *file, *name, *id;
         guint base_len;
+        DataFileType type;
 
         base_len = strlen (base);
 
-        if (base_len <= strlen (CMPL_FILE_SUFFIX) ||
-            !g_str_has_suffix (base, CMPL_FILE_SUFFIX))
-                continue;
+        if (base_len <= strlen (CMPL_FILE_SUFFIX))
+            continue;
+
+        if (g_str_has_suffix (base, CMPL_FILE_SUFFIX))
+            type = DATA_FILE_SIMPLE;
+        else if (g_str_has_suffix (base, CMPL_CONFIG_SUFFIX))
+            type = DATA_FILE_CONFIG;
+        else
+            continue;
 
         name = g_strndup (base, base_len - strlen (CMPL_FILE_SUFFIX));
         id = moo_lang_id_from_name (name);
         file = g_build_filename (path, base, NULL);
 
-        cmpl_plugin_check_file (plugin, file, id);
+        cmpl_plugin_check_file (plugin, file, type, id);
 
         g_free (name);
         g_free (id);

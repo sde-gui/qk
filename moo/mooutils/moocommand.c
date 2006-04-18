@@ -721,6 +721,7 @@ moo_command_type_parse (const char *string)
     else if (!strcmp (norm, "python"))
         cmd_type = MOO_COMMAND_PYTHON;
 
+    g_free (norm);
     return cmd_type;
 }
 
