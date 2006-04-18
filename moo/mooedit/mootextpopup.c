@@ -461,7 +461,9 @@ moo_text_popup_resize (MooTextPopup *popup)
     width = MIN (monitor.width, width);
 
     gtk_widget_set_size_request (GTK_WIDGET (popup->priv->treeview),
-                                 width, items * (height + vert_separator));
+                                 -1, items * (height + vert_separator));
+    gtk_widget_set_size_request (GTK_WIDGET (popup->priv->scrolled_window),
+                                 width, -1);
 
     gtk_widget_set_size_request (popup->priv->window, -1, -1);
     gtk_widget_size_request (popup->priv->window, &popup_req);
