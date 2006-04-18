@@ -324,11 +324,11 @@ moo_text_popup_activate (MooTextPopup *popup)
 
     got_selected = gtk_tree_selection_get_selected (popup->priv->selection, NULL, &iter);
 
-    if (popup->priv->hide_on_activate)
-        moo_text_popup_hide (popup);
-
     if (got_selected)
         g_signal_emit (popup, signals[ACTIVATE], 0, popup->priv->model, &iter);
+
+    if (popup->priv->hide_on_activate)
+        moo_text_popup_hide (popup);
 }
 
 
