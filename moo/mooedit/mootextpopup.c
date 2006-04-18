@@ -342,7 +342,6 @@ static void
 moo_text_popup_show_real (MooTextPopup *popup)
 {
     GtkWidget *toplevel, *doc;
-    PangoFontDescription *font;
 
     g_return_if_fail (popup->priv->doc != NULL);
     g_return_if_fail (GTK_WIDGET_REALIZED (popup->priv->doc));
