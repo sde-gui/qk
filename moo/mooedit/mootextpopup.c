@@ -35,6 +35,7 @@ struct _MooTextPopupPrivate {
 
     GtkWidget *window;
     GtkScrolledWindow *scrolled_window;
+    guint resize_idle;
     guint visible : 1;
     guint in_resize : 1;
 };
@@ -216,16 +217,14 @@ moo_text_popup_ensure_popup (MooTextPopup *popup)
         GtkWidget *scrolled_window, *frame;
 
         popup->priv->window = gtk_window_new (GTK_WINDOW_POPUP);
-        gtk_widget_set_size_request (popup->priv->window, -1, -1);
         gtk_window_set_default_size (GTK_WINDOW (popup->priv->window), 1, 1);
         gtk_window_set_resizable (GTK_WINDOW (popup->priv->window), FALSE);
         gtk_widget_add_events (popup->priv->window, GDK_KEY_PRESS_MASK | GDK_BUTTON_PRESS_MASK);
 
         scrolled_window = gtk_scrolled_window_new (NULL, NULL);
         popup->priv->scrolled_window = GTK_SCROLLED_WINDOW (scrolled_window);
-        gtk_widget_set_size_request (scrolled_window, -1, -1);
         gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
-                                        GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+                                        GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
         gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window),
                                              GTK_SHADOW_ETCHED_IN);
         /* a nasty hack to get the completions treeview to size nicely */
@@ -238,7 +237,6 @@ moo_text_popup_ensure_popup (MooTextPopup *popup)
         gtk_container_add (GTK_CONTAINER (popup->priv->window), frame);
 
         popup->priv->treeview = GTK_TREE_VIEW (gtk_tree_view_new ());
-        gtk_widget_set_size_request (GTK_WIDGET (popup->priv->treeview), -1, -1);
         gtk_container_add (GTK_CONTAINER (scrolled_window),
                            GTK_WIDGET (popup->priv->treeview));
         gtk_tree_view_set_headers_visible (popup->priv->treeview, FALSE);
@@ -404,6 +402,36 @@ moo_text_popup_hide_real (MooTextPopup *popup)
 }
 
 
+static gboolean
+resize_in_idle (MooTextPopup *popup)
+{
+    moo_text_popup_resize (popup);
+    return FALSE;
+}
+
+
+static void
+window_size_request (MooTextPopup *popup)
+{
+    if (!popup->priv->resize_idle)
+        popup->priv->resize_idle = g_idle_add_full (GDK_PRIORITY_REDRAW + 20,
+                                                    (GSourceFunc) resize_in_idle,
+                                                    popup, NULL);
+}
+
+
+static void
+disconnect_window (MooTextPopup *popup)
+{
+    g_signal_handlers_disconnect_by_func (popup->priv->window,
+                                          (gpointer) window_size_request,
+                                          popup);
+    if (popup->priv->resize_idle)
+        g_source_remove (popup->priv->resize_idle);
+    popup->priv->resize_idle = 0;
+}
+
+
 static void
 moo_text_popup_resize (MooTextPopup *popup)
 {
@@ -420,6 +448,8 @@ moo_text_popup_resize (MooTextPopup *popup)
     g_return_if_fail (GTK_WIDGET_REALIZED (widget));
     g_return_if_fail (popup->priv->pos);
 
+    disconnect_window (popup);
+
     moo_text_popup_get_position (popup, &iter);
     gtk_text_view_get_iter_location (popup->priv->doc, &iter, &iter_rect);
     gtk_text_view_buffer_to_window_coords (popup->priv->doc, GTK_TEXT_WINDOW_WIDGET,
@@ -433,7 +463,7 @@ moo_text_popup_resize (MooTextPopup *popup)
     items = MIN (total_items, popup->priv->max_len);
 
     gtk_tree_view_column_cell_get_size (popup->priv->column, NULL,
-                                        NULL, NULL, NULL, &height);
+                                        NULL, NULL, &width, &height);
 
     screen = gtk_widget_get_screen (widget);
     monitor_num = gdk_screen_get_monitor_at_window (screen, widget->window);
@@ -443,29 +473,12 @@ moo_text_popup_resize (MooTextPopup *popup)
                           "vertical-separator", &vert_separator,
                           NULL);
 
-    gtk_widget_size_request (GTK_WIDGET (popup->priv->treeview), &popup_req);
-    width = popup_req.width;
-
-    if (total_items > items)
-    {
-        int scrollbar_spacing;
-        GtkRequisition scrollbar_req;
-        gtk_widget_size_request (popup->priv->scrolled_window->vscrollbar,
-                                 &scrollbar_req);
-        gtk_widget_style_get (GTK_WIDGET (popup->priv->scrolled_window),
-                              "scrollbar-spacing", &scrollbar_spacing, NULL);
-        width += scrollbar_req.width + scrollbar_spacing;
-    }
-
     width = MAX (width, 100);
     width = MIN (monitor.width, width);
 
     gtk_widget_set_size_request (GTK_WIDGET (popup->priv->treeview),
                                  -1, items * (height + vert_separator));
-    gtk_widget_set_size_request (GTK_WIDGET (popup->priv->scrolled_window),
-                                 width, -1);
 
-    gtk_widget_set_size_request (popup->priv->window, -1, -1);
     gtk_widget_size_request (popup->priv->window, &popup_req);
 
     if (x < monitor.x)
@@ -478,7 +491,13 @@ moo_text_popup_resize (MooTextPopup *popup)
     else
         y -= popup_req.height;
 
+    gtk_window_resize (GTK_WINDOW (popup->priv->window),
+                       popup_req.width, popup_req.height);
+//     g_print ("resizing to %d, %d\n", popup_req.width, popup_req.height);
     gtk_window_move (GTK_WINDOW (popup->priv->window), x, y);
+
+//     g_signal_connect_swapped (popup->priv->window, "size-request",
+//                               G_CALLBACK (window_size_request), popup);
 }
 
 
@@ -882,6 +901,8 @@ moo_text_popup_connect (MooTextPopup *popup)
 static void
 moo_text_popup_disconnect (MooTextPopup *popup)
 {
+    disconnect_window (popup);
+
     g_signal_handlers_disconnect_by_func (popup->priv->doc,
                                           (gpointer) doc_focus_out,
                                           popup);
