@@ -7,6 +7,7 @@ mooedit_srcdir = $(srcdir)/$(mooedit)
 
 mooedit_include_headers =                     \
     $(mooedit)/moocmdview.h                   \
+    $(mooedit)/moocompletion.h                \
     $(mooedit)/mooedit-script.h               \
     $(mooedit)/mooedit.h                      \
     $(mooedit)/mooeditconfig.h                \
@@ -21,7 +22,6 @@ mooedit_include_headers =                     \
     $(mooedit)/mooplugin-macro.h              \
     $(mooedit)/mooplugin.h                    \
     $(mooedit)/mootextbuffer.h                \
-    $(mooedit)/mootextcompletion.h            \
     $(mooedit)/mootextiter.h                  \
     $(mooedit)/mootextpopup.h                 \
     $(mooedit)/mootextsearch.h                \
@@ -60,6 +60,7 @@ mooedit_sources =                             \
     $(mooedit_noinst_headers)                 \
     $(mooedit)/gtksourceiter.c                \
     $(mooedit)/moocmdview.c                   \
+    $(mooedit)/moocompletion.c                \
     $(mooedit)/mooedit-script.c               \
     $(mooedit)/mooedit.c                      \
     $(mooedit)/mooeditconfig.c                \
@@ -83,7 +84,6 @@ mooedit_sources =                             \
     $(mooedit)/mooplugin.c                    \
     $(mooedit)/mootextbtree.c                 \
     $(mooedit)/mootextbuffer.c                \
-    $(mooedit)/mootextcompletion.c            \
     $(mooedit)/mootextfind.c                  \
     $(mooedit)/mootextpopup.c                 \
     $(mooedit)/mootextsearch.c                \

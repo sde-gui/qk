@@ -12,7 +12,7 @@
  */
 
 #include "completion.h"
-#include "mooedit/mootextcompletion.h"
+#include "mooedit/moocompletion.h"
 #include "mooutils/mooutils-misc.h"
 #include <sys/stat.h>
 #include <errno.h>
@@ -22,7 +22,7 @@
 typedef struct {
     char *path;
     time_t mtime;
-    GtkListStore *store;
+    MooCompletion *cmpl;
 } CmplData;
 
 static CmplData *cmpl_data_new              (void);
@@ -55,12 +55,10 @@ cmpl_data_read_file (CmplData *data)
     GError *error = NULL;
     char *contents;
     char **words, **p;
-    GList *list = NULL, *l;
+    GList *list = NULL;
 
-    g_return_if_fail (data->store == NULL);
+    g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
-
-    data->store = gtk_list_store_new (1, G_TYPE_STRING);
 
     g_file_get_contents (data->path, &contents, NULL, &error);
 
@@ -93,19 +91,11 @@ cmpl_data_read_file (CmplData *data)
         g_free (*p);
     }
 
-    list = g_list_sort (list, (GCompareFunc) strcmp);
+    data->cmpl = moo_completion_new_text (list, TRUE);
     g_message ("read %d words from %s", g_list_length (list), data->path);
 
-    for (l = list; l != NULL; l = l->next)
-    {
-        GtkTreeIter iter;
-        gtk_list_store_append (data->store, &iter);
-        gtk_list_store_set (data->store, &iter, 0, l->data, -1);
-        g_free (l->data);
-    }
-
     g_free (contents);
-    g_strfreev (words);
+    g_free (words);
 }
 
 
@@ -123,7 +113,7 @@ cmpl_plugin_load_data (CmplPlugin *plugin,
         data = cmpl_data_new ();
         g_hash_table_insert (plugin->data, g_strdup (id), data);
     }
-    else if (!data->store && data->path)
+    else if (!data->cmpl && data->path)
     {
         cmpl_data_read_file (data);
     }
@@ -143,10 +133,10 @@ static void
 cmpl_data_clear (CmplData *data)
 {
     g_free (data->path);
-    if (data->store)
-        g_object_unref (data->store);
+    if (data->cmpl)
+        g_object_unref (data->cmpl);
     data->path = NULL;
-    data->store = NULL;
+    data->cmpl = NULL;
 }
 
 
@@ -275,23 +265,15 @@ _completion_complete (CmplPlugin *plugin,
 {
     MooLang *lang;
     CmplData *data;
-    MooTextCompletion *cmpl;
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
     data = cmpl_plugin_load_data (plugin, lang ? lang->id : NULL);
     g_return_if_fail (data != NULL);
 
-    cmpl = g_object_get_data (G_OBJECT (doc), "moo-completion");
-
-    if (!cmpl)
+    if (data->cmpl)
     {
-        cmpl = moo_text_completion_new_text (GTK_TEXT_VIEW (doc),
-                                             GTK_TREE_MODEL (data->store),
-                                             0);
-        g_object_set_data_full (G_OBJECT (doc), "moo-completion",
-                                cmpl, g_object_unref);
+        moo_completion_set_doc (data->cmpl, GTK_TEXT_VIEW (doc));
+        moo_completion_try_complete (data->cmpl, TRUE);
     }
-
-    moo_text_completion_try_complete (cmpl);
 }
