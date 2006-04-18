@@ -83,24 +83,8 @@ action_new (const char *name,
 
     g_return_val_if_fail (name != NULL, NULL);
 
-    cmd = moo_command_new (cmd_type);
+    cmd = moo_command_new (cmd_type, code);
     g_return_val_if_fail (cmd != NULL, NULL);
-
-    switch (cmd_type)
-    {
-        case MOO_COMMAND_SCRIPT:
-            moo_command_set_script (cmd, code);
-            break;
-        case MOO_COMMAND_PYTHON:
-            moo_command_set_python (cmd, code);
-            break;
-        case MOO_COMMAND_SHELL:
-            moo_command_set_shell (cmd, code);
-            break;
-        case MOO_COMMAND_EXE:
-            moo_command_set_exe (cmd, code);
-            break;
-    }
 
     action = g_new0 (Action, 1);
     action->name = g_strdup (name);
