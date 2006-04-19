@@ -304,11 +304,9 @@ moo_completion_exec_script (MooCompletion      *cmpl,
     ms_context_assign_string (ctx, MOO_COMPLETION_VAR_MATCH, match);
     ms_context_assign_string (ctx, MOO_COMPLETION_VAR_COMPLETION, completion);
 
-    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
     gtk_text_buffer_delete (cmpl->priv->buffer, start, end);
     gtk_text_buffer_place_cursor (cmpl->priv->buffer, start);
     result = ms_top_node_eval (group->script, ctx);
-    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
 
     if (result)
         ms_value_unref (result);
@@ -330,6 +328,7 @@ moo_completion_complete (MooCompletion *cmpl,
     GtkTextIter start, end;
     gpointer data = NULL;
     MooCompletionGroup *group = NULL;
+    gboolean set_cursor = FALSE;
 
     g_return_if_fail (cmpl->priv->active_groups != NULL);
 
@@ -343,22 +342,48 @@ moo_completion_complete (MooCompletion *cmpl,
     old_text = gtk_text_buffer_get_slice (cmpl->priv->buffer,
                                           &start, &end, TRUE);
 
+    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
+
     if (group->script)
     {
         moo_completion_exec_script (cmpl, group, &start, &end, text);
     }
-    else if (group->suffix || strcmp (text, old_text))
+    else
     {
-        gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
-
-        gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
-        gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
+        if (strcmp (text, old_text))
+        {
+            gtk_text_buffer_delete (cmpl->priv->buffer, &start, &end);
+            gtk_text_buffer_insert (cmpl->priv->buffer, &start, text, -1);
+            set_cursor = TRUE;
+        }
 
         if (group->suffix)
-            gtk_text_buffer_insert (cmpl->priv->buffer, &start, group->suffix, -1);
+        {
+            gboolean do_insert = TRUE;
 
-        gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+            if (!gtk_text_iter_ends_line (&start))
+            {
+                char *old_suffix;
+                end = start;
+                gtk_text_iter_forward_to_line_end (&end);
+                old_suffix = gtk_text_buffer_get_slice (cmpl->priv->buffer, &start, &end, TRUE);
+                if (!strncmp (group->suffix, old_suffix, strlen (group->suffix)))
+                    do_insert = FALSE;
+                g_free (old_suffix);
+            }
+
+            if (do_insert)
+            {
+                gtk_text_buffer_insert (cmpl->priv->buffer, &start, group->suffix, -1);
+                set_cursor = TRUE;
+            }
+        }
     }
+
+    if (set_cursor)
+        gtk_text_buffer_place_cursor (cmpl->priv->buffer, &start);
+
+    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
 
     moo_completion_hide (cmpl);
 
