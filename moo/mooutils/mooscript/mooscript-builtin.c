@@ -274,6 +274,25 @@ out:
 }
 
 
+static MSValue*
+file_exists_func (MSValue   *arg,
+                  MSContext *ctx)
+{
+    char *filename;
+    MSValue *ret = NULL;
+
+    filename = ms_value_print (arg);
+
+    if (g_file_test (filename, G_FILE_TEST_EXISTS))
+        ret = ms_value_true ();
+    else
+        ret = ms_value_false ();
+
+    g_free (filename);
+    return ret;
+}
+
+
 #define ADD_FUNC(type_,func_,name_)             \
 G_STMT_START {                                  \
     MSFunc *msfunc__;                           \
@@ -328,7 +347,9 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC (ms_cfunc_new_1, python_func, "Python");
     ADD_FUNC (ms_cfunc_new_1, include_func, "Include");
     ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
+
     ADD_FUNC (ms_cfunc_new_1, exec_func, "Exec");
+    ADD_FUNC (ms_cfunc_new_1, file_exists_func, "FileExists");
 
     ADD_FUNC (ms_cfunc_new_1, prefs_get_func, "PrefsGet");
     ADD_FUNC (ms_cfunc_new_2, prefs_set_func, "PrefsSet");
