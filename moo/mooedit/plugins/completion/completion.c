@@ -202,7 +202,7 @@ cmpl_data_read_config_file (CmplData *data)
     for (i = 0; i < n_items; ++i)
     {
         MooConfigItem *item;
-        const char *pattern, *prefix, *suffix;
+        const char *pattern, *prefix, *suffix, *script;
         const char *groups;
         guint *parens;
         guint n_parens;
@@ -214,6 +214,8 @@ cmpl_data_read_config_file (CmplData *data)
         prefix = moo_config_item_get_value (item, "prefix");
         suffix = moo_config_item_get_value (item, "insert-suffix");
         suffix = suffix ? suffix : moo_config_item_get_value (item, "insert_suffix");
+        script = moo_config_item_get_value (item, "insert-script");
+        script = script ? script : moo_config_item_get_value (item, "insert_script");
 
         groups = moo_config_item_get_value (item, "group");
         groups = groups ? groups : moo_config_item_get_value (item, "groups");
@@ -250,7 +252,9 @@ cmpl_data_read_config_file (CmplData *data)
         moo_completion_group_add_data (group, words);
         moo_completion_group_set_pattern (group, pattern, parens, n_parens);
 
-        if (suffix && suffix[0])
+        if (script && script[0])
+            moo_completion_group_set_script (group, script);
+        else if (suffix && suffix[0])
             moo_completion_group_set_suffix (group, suffix);
 
         g_free (parens);
