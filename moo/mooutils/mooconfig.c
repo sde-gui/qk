@@ -237,7 +237,7 @@ normalize_indent (const char *line,
     norm = g_new (char, len - n_tabs + n_tabs * 8 + 1);
     norm[len - n_tabs + n_tabs * 8] = 0;
 
-    memset (norm, n_tabs * 8, ' ');
+    memset (norm, ' ', n_tabs * 8);
 
     if (n_tabs < len)
         memcpy (norm + n_tabs * 8, line + n_tabs, len - n_tabs);
