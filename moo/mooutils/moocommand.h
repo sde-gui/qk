@@ -53,6 +53,7 @@ struct _MooCommand {
     gpointer py_dict; /* PyObject* */
     char **shell_env;
     GHashTable *shell_vars;
+    char *working_dir;
 
     char *string;
     MSNode *script;
@@ -92,6 +93,8 @@ void        moo_command_set_shell_var   (MooCommand         *cmd,
                                          const char         *value);
 const char *moo_command_get_shell_var   (MooCommand         *cmd,
                                          const char         *variable);
+void        moo_command_set_working_dir (MooCommand         *cmd,
+                                         const char         *dir);
 
 void        moo_command_set_code        (MooCommand         *cmd,
                                          MooCommandType      type,

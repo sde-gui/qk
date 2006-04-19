@@ -13,6 +13,7 @@
 
 #include "mooutils/moocommand.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moocmd.h"
 #include "mooscript/mooscript-context.h"
 #include "mooscript/mooscript-parser.h"
 #include <gtk/gtk.h>
@@ -277,6 +278,7 @@ moo_command_finalize (GObject *object)
     if (cmd->shell_vars)
         g_hash_table_destroy (cmd->shell_vars);
     g_strfreev (cmd->shell_env);
+    g_free (cmd->working_dir);
 
     G_OBJECT_CLASS(moo_command_parent_class)->finalize (object);
 }
@@ -478,16 +480,52 @@ run_shell (MooCommand *cmd)
 
 
 static gboolean
-moo_command_run_exe (G_GNUC_UNUSED MooCommand *cmd,
+cmd_exit (MooCmd *cmd)
+{
+    g_object_unref (cmd);
+    return FALSE;
+}
+
+static gboolean
+moo_command_run_exe (MooCommand *cmd,
                      const char *cmd_line)
 {
     GError *error = NULL;
+    MooCmd *worker;
+    char **argv;
+    int argc;
 
-    if (!g_spawn_command_line_async (cmd_line, &error))
+    /* XXX */
+    if (!g_shell_parse_argv (cmd_line, &argc, &argv, &error))
     {
+        g_warning ("%s: could not parse '%s'", G_STRLOC, cmd_line);
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
+        return FALSE;
     }
+
+    worker = moo_cmd_new_full (cmd->working_dir,
+                               argv, cmd->shell_env,
+                               G_SPAWN_SEARCH_PATH,
+                               MOO_CMD_STDOUT_TO_PARENT | MOO_CMD_STDERR_TO_PARENT,
+                               NULL, NULL, &error);
+
+    g_strfreev (argv);
+
+    if (!worker)
+    {
+        g_warning ("%s: could not spawn '%s'", G_STRLOC, cmd_line);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
+        return FALSE;
+    }
+
+    g_signal_connect (cmd, "cmd_exit", G_CALLBACK (cmd_exit), NULL);
 
     return TRUE;
 }
@@ -754,6 +792,16 @@ moo_command_get_shell_var (MooCommand *cmd,
         return g_hash_table_lookup (cmd->shell_vars, variable);
     else
         return NULL;
+}
+
+
+void
+moo_command_set_working_dir (MooCommand *cmd,
+                             const char *dir)
+{
+    g_return_if_fail (MOO_IS_COMMAND (cmd));
+    g_free (cmd->working_dir);
+    cmd->working_dir = g_strdup (dir);
 }
 
 

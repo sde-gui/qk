@@ -258,6 +258,7 @@ stderr_text_cb (MooCmd     *cmd,
 gboolean
 moo_cmd_view_run_command (MooCmdView *view,
                           const char *cmd,
+                          const char *working_dir,
                           const char *job_name)
 {
     GError *error = NULL;
@@ -278,7 +279,7 @@ moo_cmd_view_run_command (MooCmdView *view,
     argv[2] = g_strdup (cmd);
     argv[3] = NULL;
 
-    view->priv->cmd = moo_cmd_new_full (NULL, argv, NULL,
+    view->priv->cmd = moo_cmd_new_full (working_dir, argv, NULL,
                                         G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
                                         MOO_CMD_UTF8_OUTPUT,
                                         NULL, NULL,
