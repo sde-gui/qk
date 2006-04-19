@@ -217,6 +217,7 @@
   (return-type "gboolean")
   (parameters
     '("const-char*" "cmd")
+    '("const-char*" "working_dir" (null-ok) (default "NULL"))
     '("const-char*" "job_name" (null-ok) (default "NULL"))
   )
 )

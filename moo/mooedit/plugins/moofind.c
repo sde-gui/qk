@@ -731,7 +731,7 @@ execute_grep (const char     *pattern,
                             !case_sensitive ? "-i " : "", pattern);
 
     stuff->cmd = CMD_GREP;
-    moo_cmd_view_run_command (stuff->output, command->str, "Find in Files");
+    moo_cmd_view_run_command (stuff->output, command->str, NULL, "Find in Files");
     g_string_free (command, TRUE);
 }
 
@@ -790,7 +790,7 @@ execute_find (const char     *pattern,
     }
 
     stuff->cmd = CMD_FIND;
-    moo_cmd_view_run_command (stuff->output, command->str, "Find File");
+    moo_cmd_view_run_command (stuff->output, command->str, NULL, "Find File");
     g_string_free (command, TRUE);
 }
 
