@@ -21,12 +21,13 @@
 G_BEGIN_DECLS
 
 
-#define MS_VAR_WINDOW   "window"
-#define MS_VAR_DOC      "doc"
-#define MS_VAR_FILE     "file"
-#define MS_VAR_NAME     "name"
-#define MS_VAR_BASE     "base"
-#define MS_VAR_DIR      "dir"
+#define MS_VAR_WINDOW       "window"
+#define MS_VAR_DOC          "doc"
+#define MS_VAR_FILE         "file"
+#define MS_VAR_NAME         "name"
+#define MS_VAR_BASE         "base"
+#define MS_VAR_DIR          "dir"
+#define MS_VAR_EXT          "ext"
 
 #define MOO_TYPE_EDIT_CONTEXT              (moo_edit_context_get_type ())
 #define MOO_EDIT_CONTEXT(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_CONTEXT, MooEditContext))

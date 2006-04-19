@@ -11,11 +11,14 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-script.h"
+#include "mooedit/mooedit-private.h"
 #include <string.h>
 
 
-static void moo_edit_context_init_api   (MSContext  *ctx);
+static void moo_edit_context_init_text_api      (MSContext  *ctx);
+static void moo_edit_context_init_editor_api    (MSContext  *ctx);
 
 
 G_DEFINE_TYPE (MooEditContext, moo_edit_context, MS_TYPE_CONTEXT)
@@ -88,23 +91,32 @@ moo_edit_context_class_init (MooEditContextClass *klass)
 static void
 moo_edit_context_init (MooEditContext *ctx)
 {
-    moo_edit_context_init_api (MS_CONTEXT (ctx));
+    moo_edit_context_init_text_api (MS_CONTEXT (ctx));
+    moo_edit_context_init_editor_api (MS_CONTEXT (ctx));
 }
 
 
-static char *
-strip_extension (const char *string)
+static void
+get_extension (const char *string,
+               char      **base,
+               char      **ext)
 {
     char *dot;
 
-    g_return_val_if_fail (string != NULL, NULL);
+    g_return_if_fail (string != NULL);
 
     dot = strrchr (string, '.');
 
     if (dot)
-        return g_strndup (string, dot - string);
+    {
+        *base = g_strndup (string, dot - string);
+        *ext = g_strdup (dot);
+    }
     else
-        return g_strdup (string);
+    {
+        *base = g_strdup (string);
+        *ext = g_strdup ("");
+    }
 }
 
 
@@ -132,10 +144,10 @@ moo_edit_context_set_doc (MooEditContext *ctx,
 
     if (doc)
     {
-        char *dirname = NULL, *base = NULL;
+        char *dirname = NULL, *base = NULL, *ext = NULL;
 
         if (moo_edit_get_basename (doc))
-            base = strip_extension (moo_edit_get_basename (doc));
+            get_extension (moo_edit_get_basename (doc), &base, &ext);
 
         if (moo_edit_get_filename (doc))
             dirname = g_path_get_dirname (moo_edit_get_filename (doc));
@@ -146,8 +158,10 @@ moo_edit_context_set_doc (MooEditContext *ctx,
                                   moo_edit_get_basename (doc));
         ms_value_dict_set_string (val, MS_VAR_BASE, base);
         ms_value_dict_set_string (val, MS_VAR_DIR, dirname);
+        ms_value_dict_set_string (val, MS_VAR_EXT, ext);
 
         g_free (base);
+        g_free (ext);
         g_free (dirname);
     }
     else
@@ -156,6 +170,7 @@ moo_edit_context_set_doc (MooEditContext *ctx,
         ms_value_dict_set_string (val, MS_VAR_NAME, NULL);
         ms_value_dict_set_string (val, MS_VAR_BASE, NULL);
         ms_value_dict_set_string (val, MS_VAR_DIR, NULL);
+        ms_value_dict_set_string (val, MS_VAR_EXT, NULL);
     }
 
     ms_context_assign_variable (MS_CONTEXT (ctx), MS_VAR_DOC, val);
@@ -201,7 +216,7 @@ moo_text_context_new (GtkTextView *doc)
                         "window", GTK_IS_WINDOW (window) ? window : NULL,
                         NULL);
 
-    moo_edit_context_init_api (ctx);
+    moo_edit_context_init_text_api (ctx);
 
     return ctx;
 }
@@ -214,28 +229,31 @@ moo_edit_set_shell_vars (MooCommand     *cmd,
 {
     if (doc)
     {
-        char *dirname = NULL, *base = NULL;
+        char *dirname = NULL, *base = NULL, *ext = NULL;
 
         if (moo_edit_get_filename (doc))
             dirname = g_path_get_dirname (moo_edit_get_filename (doc));
 
         if (moo_edit_get_basename (doc))
-            base = strip_extension (moo_edit_get_basename (doc));
+            get_extension (moo_edit_get_basename (doc), &base, &ext);
 
         moo_command_set_shell_var (cmd, MS_VAR_FILE,
                                    moo_edit_get_filename (doc));
         moo_command_set_shell_var (cmd, MS_VAR_NAME,
                                    moo_edit_get_basename (doc));
         moo_command_set_shell_var (cmd, MS_VAR_BASE, base);
+        moo_command_set_shell_var (cmd, MS_VAR_EXT, ext);
         moo_command_set_shell_var (cmd, MS_VAR_DIR, dirname);
 
         g_free (base);
+        g_free (ext);
         g_free (dirname);
     }
     else
     {
         moo_command_set_shell_var (cmd, MS_VAR_FILE, NULL);
         moo_command_set_shell_var (cmd, MS_VAR_BASE, NULL);
+        moo_command_set_shell_var (cmd, MS_VAR_EXT, NULL);
         moo_command_set_shell_var (cmd, MS_VAR_DIR, NULL);
     }
 }
@@ -265,7 +283,7 @@ moo_edit_setup_command (MooCommand     *cmd,
 
 
 /******************************************************************/
-/* API
+/* text API
  */
 
 enum {
@@ -729,7 +747,7 @@ init_api (void)
 
 
 static void
-moo_edit_context_init_api (MSContext *ctx)
+moo_edit_context_init_text_api (MSContext *ctx)
 {
     guint i;
 
@@ -738,4 +756,66 @@ moo_edit_context_init_api (MSContext *ctx)
     for (i = 0; i < N_BUILTIN_FUNCS; ++i)
         ms_context_set_func (ctx, builtin_func_names[i],
                              builtin_funcs[i]);
+}
+
+
+/******************************************************************/
+/* editor API
+ */
+
+enum {
+    FUNC_OPEN,
+    N_BUILTIN_EDITOR_FUNCS
+};
+
+
+static const char *builtin_editor_func_names[N_BUILTIN_EDITOR_FUNCS] = {
+    "Open"
+};
+
+static MSFunc *builtin_editor_funcs[N_BUILTIN_EDITOR_FUNCS];
+
+
+static MSValue *
+cfunc_open (MSValue   *arg,
+            MSContext *ctx)
+{
+    gboolean ret;
+    MooEdit *doc;
+    MooEditor *editor;
+    MooEditWindow *window;
+    char *filename;
+
+    doc = MOO_EDIT_CONTEXT(ctx)->doc;
+    editor = doc ? doc->priv->editor : moo_editor_instance ();
+    window = MOO_IS_EDIT_WINDOW (ctx->window) ? MOO_EDIT_WINDOW (ctx->window) : NULL;
+    filename = ms_value_print (arg);
+
+    ret = moo_editor_open_file (editor, window, ctx->window, filename, NULL);
+
+    g_free (filename);
+    return ms_value_bool (ret);
+}
+
+
+static void
+init_editor_api (void)
+{
+    if (builtin_editor_funcs[0])
+        return;
+
+    builtin_editor_funcs[FUNC_OPEN] = ms_cfunc_new_1 (cfunc_open);
+}
+
+
+static void
+moo_edit_context_init_editor_api (MSContext *ctx)
+{
+    guint i;
+
+    init_editor_api ();
+
+    for (i = 0; i < N_BUILTIN_EDITOR_FUNCS; ++i)
+        ms_context_set_func (ctx, builtin_editor_func_names[i],
+                             builtin_editor_funcs[i]);
 }
