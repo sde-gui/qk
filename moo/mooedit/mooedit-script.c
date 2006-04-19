@@ -185,6 +185,28 @@ moo_edit_context_new (MooEdit       *doc,
 }
 
 
+MSContext *
+moo_text_context_new (GtkTextView *doc)
+{
+    GtkWidget *window;
+    MSContext *ctx;
+
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (doc), NULL);
+
+    if (MOO_IS_EDIT (doc))
+        return moo_edit_context_new (MOO_EDIT (doc), NULL);
+
+    window = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+    ctx = g_object_new (MS_TYPE_CONTEXT,
+                        "window", GTK_IS_WINDOW (window) ? window : NULL,
+                        NULL);
+
+    moo_edit_context_init_api (ctx);
+
+    return ctx;
+}
+
+
 static void
 moo_edit_set_shell_vars (MooCommand     *cmd,
                          MooEdit        *doc,

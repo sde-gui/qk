@@ -51,6 +51,7 @@ struct _MooEditContextClass {
 
 GType        moo_edit_context_get_type  (void) G_GNUC_CONST;
 
+MSContext   *moo_text_context_new       (GtkTextView    *doc);
 MSContext   *moo_edit_context_new       (MooEdit        *doc,
                                          MooEditWindow  *window);
 void         moo_edit_context_set_doc   (MooEditContext *ctx,
