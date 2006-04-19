@@ -477,7 +477,9 @@ run_exe (MooToolAction *action,
     moo_line_view_clear (MOO_LINE_VIEW (cmd_view));
     moo_big_paned_present_pane (action->window->paned,
                                 moo_edit_window_get_output_pane (action->window));
+
     return moo_cmd_view_run_command (MOO_CMD_VIEW (cmd_view), cmd_line,
+                                     action->data->cmd->working_dir,
                                      moo_action_get_name (MOO_ACTION (action)));
 }
 
@@ -499,11 +501,11 @@ moo_tool_action_activate (MooAction *_action)
         return;
 
     if (action->data->options & ACTION_NEED_SAVE)
-        if (!moo_edit_save (doc, NULL))
+        if (!doc || !moo_edit_save (doc, NULL))
             return;
 
     if (action->data->options & ACTION_NEED_FILE)
-        if (!moo_edit_get_filename (doc))
+        if (!doc || !moo_edit_get_filename (doc))
             return;
 
     moo_edit_setup_command (action->data->cmd, doc, action->window);
@@ -512,6 +514,13 @@ moo_tool_action_activate (MooAction *_action)
     if (action->window && !silent)
         g_signal_connect_swapped (action->data->cmd, "run-exe",
                                   G_CALLBACK (run_exe), action);
+
+    if (doc && moo_edit_get_filename (doc))
+    {
+        char *dir = g_path_get_dirname (moo_edit_get_filename (doc));
+        moo_command_set_working_dir (action->data->cmd, dir);
+        g_free (dir);
+    }
 
     moo_command_run (action->data->cmd);
 
