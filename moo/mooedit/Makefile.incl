@@ -5,6 +5,9 @@
 mooedit = $(moo_prefix)/mooedit
 mooedit_srcdir = $(srcdir)/$(mooedit)
 
+mooedit_toolsdir = $(MOO_DATA_DIR)
+mooedit_tools_DATA = $(mooedit)/tools.cfg
+
 mooedit_include_headers =                     \
     $(mooedit)/moocmdview.h                   \
     $(mooedit)/moocompletion.h                \
@@ -146,7 +149,7 @@ else
 mooedit_extra_dist = $(mooedit_gtk_2_10_sources)
 endif
 
-moo_extra_dist += $(mooedit_extra_dist)
+moo_extra_dist += $(mooedit_extra_dist) $(mooedit_tools_DATA)
 
 if MOO_BUILD_EDIT
 moo_sources += $(mooedit_sources)
