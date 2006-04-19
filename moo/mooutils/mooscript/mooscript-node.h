@@ -179,9 +179,7 @@ struct _MSNodeFor {
 
 struct _MSNodeIfElse {
     MSNode node;
-    MSNode *condition;
-    MSNode *then_;
-    MSNode *else_;
+    MSNodeList *list; /* if a then b; elif c then d; else e -> (a, b, c, d, NULL, e) */
 };
 
 
@@ -296,6 +294,7 @@ MSNodeFunction *ms_node_unary_op_new        (MSUnaryOp   op,
 
 MSNodeIfElse   *ms_node_if_else_new         (MSNode     *condition,
                                              MSNode     *then_,
+                                             MSNodeList *elif_,
                                              MSNode     *else_);
 
 MSNodeWhile    *ms_node_while_new           (MSCondType  type,

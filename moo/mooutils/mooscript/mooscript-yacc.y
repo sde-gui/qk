@@ -48,6 +48,7 @@ static MSNode *
 node_if_else (MSParser   *parser,
               MSNode     *condition,
               MSNode     *then_,
+              MSNodeList *elif_,
               MSNode     *else_)
 {
     MSNodeIfElse *node;
@@ -58,6 +59,17 @@ node_if_else (MSParser   *parser,
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
+}
+
+static MSNode *
+node_condition (MSParser   *parser,
+                MSNode     *condition,
+                MSNode     *then_)
+{
+    MSNode *tuple;
+    tuple = node_list_add (parser, NULL, condition);
+    tuple = node_list_add (parser, MS_NODE_LIST (tuple), then_);
+    return tuple;
 }
 
 
@@ -374,11 +386,11 @@ node_dict_assign (MSParser   *parser,
 %token <ival> NUMBER
 
 %type <node> program stmt stmt_or_python
-%type <node> if_stmt ternary loop assignment
+%type <node> if_stmt elif_block ternary loop assignment
 %type <node> simple_expr compound_expr expr variable
 %type <node> list_elms dict_elms dict_entry
 
-%token IF THEN ELSE FI
+%token IF THEN ELSE ELIF FI
 %token WHILE DO OD FOR IN
 %token CONTINUE BREAK RETURN
 %token EQ NEQ LE GE
@@ -428,8 +440,15 @@ loop:     WHILE expr DO program OD              { $$ = node_while (parser, MS_CO
 ;
 
 if_stmt:
-          IF expr THEN program FI               { $$ = node_if_else (parser, $2, $4, NULL); }
-        | IF expr THEN program ELSE program FI  { $$ = node_if_else (parser, $2, $4, $6); }
+          IF expr THEN program FI               { $$ = node_if_else (parser, $2, $4, NULL, NULL); }
+        | IF expr THEN program elif_block FI    { $$ = node_if_else (parser, $2, $4, MS_NODE_LIST ($5), NULL); }
+        | IF expr THEN program elif_block ELSE program FI
+                                                { $$ = node_if_else (parser, $2, $4, MS_NODE_LIST ($5), $7); }
+;
+
+elif_block:
+          ELIF expr THEN program                { $$ = node_list_add (parser, NULL, node_condition (parser, $2, $4)); }
+        | elif_block ELIF expr THEN program     { $$ = node_list_add (parser, MS_NODE_LIST ($1), node_condition (parser, $3, $5)); }
 ;
 
 expr:     simple_expr
@@ -444,7 +463,7 @@ assignment:
         | simple_expr '.' IDENTIFIER '=' expr   { $$ = node_dict_assign (parser, $1, $3, $5); }
 ;
 
-ternary:  simple_expr '?' simple_expr ':' simple_expr { $$ = node_if_else (parser, $1, $3, $5); }
+ternary:  simple_expr '?' simple_expr ':' simple_expr { $$ = node_if_else (parser, $1, $3, NULL, $5); }
 ;
 
 compound_expr:
@@ -466,6 +485,8 @@ compound_expr:
         | NOT simple_expr                   { $$ = node_unary_op (parser, MS_OP_NOT, $2); }
         | '#' simple_expr                   { $$ = node_unary_op (parser, MS_OP_LEN, $2); }
         | simple_expr '%' simple_expr       { $$ = node_binary_op (parser, MS_OP_FORMAT, $1, $3); }
+
+        | simple_expr IN simple_expr        { $$ = node_binary_op (parser, MS_OP_IN, $1, $3); }
 ;
 
 simple_expr:

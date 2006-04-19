@@ -52,6 +52,7 @@ typedef enum {
     MS_OP_LE,
     MS_OP_GE,
     MS_OP_FORMAT,
+    MS_OP_IN,
     MS_BINARY_OP_LAST
 } MSBinaryOp;
 

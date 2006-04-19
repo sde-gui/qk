@@ -28,6 +28,7 @@ static Keyword keywords[] = {
     { "if",       2, IF },
     { "then",     4, THEN },
     { "else",     4, ELSE },
+    { "elif",     4, ELIF },
     { "fi",       2, FI },
     { "while",    5, WHILE },
     { "for",      3, FOR },
@@ -45,6 +46,8 @@ typedef struct {
     const guchar *input;
     guint len;
     guint ptr;
+    guint line_no;
+    guint line_ptr;
     GHashTable *hash;
 } MSLex;
 
@@ -323,7 +326,25 @@ _ms_script_yylex (MSParser *parser)
     guchar c;
 
     while (lex->ptr < lex->len && IS_SPACE(lex->input[lex->ptr]))
+    {
+        if (lex->input[lex->ptr] == '\r')
+        {
+            if (lex->input[lex->ptr+1] != '\n')
+                lex->line_ptr = lex->ptr + 1;
+            else
+                lex->line_ptr = lex->ptr + 2;
+
+            lex->line_no++;
+        }
+        else if (lex->input[lex->ptr] == '\n' &&
+                 (!lex->ptr || lex->input[lex->ptr-1] != '\r'))
+        {
+            lex->line_ptr = lex->ptr + 1;
+            lex->line_no++;
+        }
+
         lex->ptr++;
+    }
 
     if (lex->ptr == lex->len)
         return 0;
@@ -375,12 +396,28 @@ _ms_script_yylex (MSParser *parser)
 }
 
 
+static char *
+get_line (const char *string)
+{
+    guint le, len;
+
+    g_return_val_if_fail (string != NULL, g_strdup (string));
+
+    len = strlen (string);
+    for (le = 0; string[le] != '\n' && string[le] != '\r' && le < len; ++le) ;
+
+    return g_strndup (string, le);
+}
+
 void
 _ms_script_yyerror (MSParser   *parser,
                     const char *string)
 {
-    g_print ("%s\n", string);
+    char *line = get_line ((const char*) parser->lex->input + parser->lex->line_ptr);
+    g_print ("On line %d: %s\n", parser->lex->line_no, string);
+    g_print ("%s\n", line);
     parser->failed = TRUE;
+    g_free (line);
 }
 
 
@@ -396,6 +433,8 @@ ms_lex_new (const char *string,
     lex->input = (const guchar *) string;
     lex->len = len;
     lex->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    lex->line_no = 0;
+    lex->line_ptr = 0;
 
     return lex;
 }

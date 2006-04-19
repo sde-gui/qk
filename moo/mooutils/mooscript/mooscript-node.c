@@ -372,9 +372,7 @@ static void
 ms_node_if_else_destroy (MSNode *node_)
 {
     MSNodeIfElse *node = MS_NODE_IF_ELSE (node_);
-    ms_node_unref (node->condition);
-    ms_node_unref (node->then_);
-    ms_node_unref (node->else_);
+    ms_node_unref (node->list);
 }
 
 
@@ -382,23 +380,40 @@ static MSValue *
 ms_node_if_else_eval (MSNode    *node_,
                       MSContext *ctx)
 {
-    MSValue *ret = NULL, *cond;
+    MSValue *ret = NULL;
     MSNodeIfElse *node = MS_NODE_IF_ELSE (node_);
+    MSNode *node_action = NULL;
+    guint i = 0;
 
-    g_return_val_if_fail (node->condition != NULL, NULL);
-    g_return_val_if_fail (node->then_ != NULL, NULL);
+    g_return_val_if_fail (node->list != NULL, NULL);
 
-    cond = _ms_node_eval (node->condition, ctx);
+    while (!node_action && i < node->list->n_nodes)
+    {
+        MSNode *node_cond = node->list->nodes[i++];
+        MSNode *node_eval = node->list->nodes[i++];
 
-    if (!cond)
-        return NULL;
+        if (node_cond)
+        {
+            MSValue *cond = _ms_node_eval (node_cond, ctx);
 
-    if (ms_value_get_bool (cond))
-        ret = _ms_node_eval (node->then_, ctx);
-    else if (node->else_)
-        ret = _ms_node_eval (node->else_, ctx);
-    else
-        ret = ms_value_none ();
+            if (!cond)
+                return NULL;
+
+            if (ms_value_get_bool (cond))
+                node_action = node_eval;
+
+            ms_value_unref (cond);
+        }
+        else
+        {
+            node_action = node_eval;
+        }
+    }
+
+    if (!node_action)
+        return ms_value_none ();
+
+    ret = _ms_node_eval (node_action, ctx);
 
     if (ctx->return_set)
     {
@@ -406,7 +421,6 @@ ms_node_if_else_eval (MSNode    *node_,
         ret = ms_value_ref (ctx->return_val);
     }
 
-    ms_value_unref (cond);
     return ret;
 }
 
@@ -414,20 +428,47 @@ ms_node_if_else_eval (MSNode    *node_,
 MSNodeIfElse *
 ms_node_if_else_new (MSNode     *condition,
                      MSNode     *then_,
+                     MSNodeList *elif_,
                      MSNode     *else_)
 {
     MSNodeIfElse *node;
+    MSNodeList *list;
+    guint i;
 
     g_return_val_if_fail (condition && then_, NULL);
+
+    list = ms_node_list_new ();
+
+    ms_node_list_add (list, condition);
+    ms_node_list_add (list, then_);
+
+    if (elif_)
+    {
+        for (i = 0; i < elif_->n_nodes; ++i)
+        {
+            g_return_val_if_fail (MS_IS_NODE_LIST (elif_->nodes[i]), NULL);
+            g_return_val_if_fail (MS_NODE_LIST(elif_->nodes[i])->n_nodes == 2, NULL);
+            ms_node_list_add (list, MS_NODE_LIST(elif_->nodes[i])->nodes[0]);
+            ms_node_list_add (list, MS_NODE_LIST(elif_->nodes[i])->nodes[1]);
+        }
+    }
+
+    if (else_)
+    {
+        MSValue *v = ms_value_true ();
+        MSNode *n = MS_NODE (ms_node_value_new (v));
+        ms_node_list_add (list, n);
+        ms_node_list_add (list, else_);
+        ms_node_unref (n);
+        ms_value_unref (v);
+    }
 
     node = NODE_NEW (MSNodeIfElse,
                      MS_TYPE_NODE_IF_ELSE,
                      ms_node_if_else_eval,
                      ms_node_if_else_destroy);
 
-    node->condition = ms_node_ref (condition);
-    node->then_ = ms_node_ref (then_);
-    node->else_ = else_ ? ms_node_ref (else_) : NULL;
+    node->list = list;
 
     return node;
 }

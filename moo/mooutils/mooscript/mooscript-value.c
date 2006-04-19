@@ -319,7 +319,8 @@ ms_binary_op_name (MSBinaryOp op)
 {
     static const char *names[MS_BINARY_OP_LAST] = {
         "@PLUS", "@MINUS", "@MULT", "@DIV", "@AND", "@OR",
-        "@EQ", "@NEQ", "@LT", "@GT", "@LE", "@GE", "@FORMAT"
+        "@EQ", "@NEQ", "@LT", "@GT", "@LE", "@GE", "@FORMAT",
+        "@IN"
     };
 
     g_return_val_if_fail (op < MS_BINARY_OP_LAST, NULL);
@@ -1083,6 +1084,63 @@ func_ge (MSValue *a, MSValue *b)
 }
 
 
+static MSValue *
+list_in (MSValue   *list,
+         MSValue   *val)
+{
+    guint i;
+
+    for (i = 0; i < list->list.n_elms; ++i)
+        if (ms_value_equal (val, list->list.elms[i]))
+            return ms_value_true ();
+
+    return ms_value_false ();
+}
+
+static MSValue *
+dict_in (MSValue   *dict,
+         MSValue   *val)
+{
+    if (MS_VALUE_TYPE (val) != MS_VALUE_STRING)
+        return ms_value_false ();
+
+    return g_hash_table_lookup (dict->hash, val->str) ?
+            ms_value_true () : ms_value_false ();
+}
+
+static MSValue *
+string_in (MSValue   *string,
+           MSValue   *val)
+{
+    if (MS_VALUE_TYPE (val) != MS_VALUE_STRING)
+        return ms_value_false ();
+
+    return strstr (string->str, val->str) ?
+            ms_value_true () : ms_value_false ();
+}
+
+static MSValue *
+func_in (MSValue   *val,
+         MSValue   *list,
+         MSContext *ctx)
+{
+    switch (MS_VALUE_TYPE (list))
+    {
+        case MS_VALUE_LIST:
+            return list_in (list, val);
+        case MS_VALUE_DICT:
+            return dict_in (list, val);
+        case MS_VALUE_STRING:
+            return string_in (list, val);
+        default:
+            ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                     "invalid left hand side '%v' of operator in",
+                                     list);
+            return NULL;
+    }
+}
+
+
 static char *
 format_value (char       format,
               MSValue   *value,
@@ -1203,7 +1261,7 @@ ms_binary_op_cfunc (MSBinaryOp op)
         func_plus, func_minus, func_mult, func_div,
         func_and, func_or,
         func_eq, func_neq, func_lt, func_gt, func_le, func_ge,
-        func_format
+        func_format, func_in
     };
 
     g_return_val_if_fail (op < MS_BINARY_OP_LAST, NULL);
