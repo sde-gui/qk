@@ -13,8 +13,10 @@
 
 #include "mooedit/moocompletion.h"
 #include "mooedit/mootextpopup.h"
+#include "mooedit/mooedit-script.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/eggregex.h"
+#include "mooscript/mooscript-parser.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -53,6 +55,7 @@ struct _MooCompletionGroup {
     GCompletion *cmpl;
     GList *data;
     char *suffix;
+    MSNode *script;
 
     MooCompletionFreeFunc free_func;
 };
@@ -281,6 +284,44 @@ list_sort_func (GtkTreeModel       *model,
 
 
 static void
+moo_completion_exec_script (MooCompletion      *cmpl,
+                            MooCompletionGroup *group,
+                            GtkTextIter        *start,
+                            GtkTextIter        *end,
+                            const char         *completion)
+{
+    MSContext *ctx;
+    char *match;
+    MSValue *result;
+
+    if (MOO_IS_EDIT (cmpl->priv->doc))
+        ctx = moo_edit_context_new (MOO_EDIT (cmpl->priv->doc), NULL);
+    else
+        ctx = moo_text_context_new (cmpl->priv->doc);
+
+    match = gtk_text_buffer_get_slice (cmpl->priv->buffer, start, end, TRUE);
+
+    ms_context_assign_string (ctx, MOO_COMPLETION_VAR_MATCH, match);
+    ms_context_assign_string (ctx, MOO_COMPLETION_VAR_COMPLETION, completion);
+
+    gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
+    gtk_text_buffer_delete (cmpl->priv->buffer, start, end);
+    gtk_text_buffer_place_cursor (cmpl->priv->buffer, start);
+    result = ms_top_node_eval (group->script, ctx);
+    gtk_text_buffer_end_user_action (cmpl->priv->buffer);
+
+    if (result)
+        ms_value_unref (result);
+    else
+        g_warning ("%s: %s", G_STRLOC,
+                   ms_context_get_error_msg (ctx));
+
+    g_free (match);
+    g_object_unref (ctx);
+}
+
+
+static void
 moo_completion_complete (MooCompletion *cmpl,
                          GtkTreeModel  *model,
                          GtkTreeIter   *iter)
@@ -302,7 +343,11 @@ moo_completion_complete (MooCompletion *cmpl,
     old_text = gtk_text_buffer_get_slice (cmpl->priv->buffer,
                                           &start, &end, TRUE);
 
-    if (strcmp (text, old_text) || group->suffix)
+    if (group->script)
+    {
+        moo_completion_exec_script (cmpl, group, &start, &end, text);
+    }
+    else if (group->suffix || strcmp (text, old_text))
     {
         gtk_text_buffer_begin_user_action (cmpl->priv->buffer);
 
@@ -851,6 +896,23 @@ moo_completion_group_set_suffix (MooCompletionGroup *group,
 }
 
 
+void
+moo_completion_group_set_script (MooCompletionGroup *group,
+                                 const char         *script)
+{
+    g_return_if_fail (group != NULL);
+
+    if (group->script)
+    {
+        ms_node_unref (group->script);
+        group->script = NULL;
+    }
+
+    if (script)
+        group->script = ms_script_parse (script);
+}
+
+
 const char *
 moo_completion_group_get_name (MooCompletionGroup *group)
 {
@@ -881,6 +943,9 @@ moo_completion_group_free (MooCompletionGroup *group)
     g_completion_free (group->cmpl);
     g_free (group->suffix);
     g_free (group->name);
+
+    if (group->script)
+        ms_node_unref (group->script);
 
     if (group->free_func)
         g_list_foreach (group->data, (GFunc) group->free_func, NULL);

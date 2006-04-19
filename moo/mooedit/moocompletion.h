@@ -27,6 +27,9 @@ G_BEGIN_DECLS
 #define MOO_IS_COMPLETION_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_COMPLETION))
 #define MOO_COMPLETION_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_COMPLETION, MooCompletionClass))
 
+#define MOO_COMPLETION_VAR_MATCH "match"
+#define MOO_COMPLETION_VAR_COMPLETION "completion"
+
 enum {
     MOO_COMPLETION_COLUMN_DATA,
     MOO_COMPLETION_COLUMN_GROUP
@@ -72,6 +75,8 @@ void            moo_completion_group_set_pattern    (MooCompletionGroup *group,
                                                      guint               n_parens);
 void            moo_completion_group_set_suffix     (MooCompletionGroup *group,
                                                      const char         *suffix);
+void            moo_completion_group_set_script     (MooCompletionGroup *group,
+                                                     const char         *script);
 const char     *moo_completion_group_get_name       (MooCompletionGroup *group);
 
 MooCompletion  *moo_completion_new                  (MooCompletionStringFunc string_func,
