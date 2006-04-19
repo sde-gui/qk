@@ -1,8 +1,14 @@
 completion = $(mooedit_plugins)/completion
 completion_srcdir = $(srcdir)/$(completion)
 
-# completion_extra_dist =			\
+completiondir = $(MOO_DATA_DIR)/completion
+completion_DATA =			\
+	$(completion)/files/gap.lst	\
+	$(completion)/files/latex.cfg
+
 #     $(completion)/completion.glade
+completion_extra_dist =			\
+	$(completion_DATA)
 
 completion_sources =			\
     $(completion)/completion-plugin.c	\
