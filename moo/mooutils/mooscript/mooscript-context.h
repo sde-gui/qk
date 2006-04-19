@@ -92,6 +92,9 @@ gboolean     ms_context_assign_variable     (MSContext  *ctx,
 gboolean     ms_context_assign_positional   (MSContext  *ctx,
                                              guint       n,
                                              MSValue    *value);
+gboolean     ms_context_assign_string       (MSContext  *ctx,
+                                             const char *name,
+                                             const char *value);
 
 MSVariable  *ms_context_lookup_var          (MSContext  *ctx,
                                              const char *name);

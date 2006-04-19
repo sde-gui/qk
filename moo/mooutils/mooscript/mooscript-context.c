@@ -263,6 +263,27 @@ ms_context_assign_variable (MSContext  *ctx,
 
 
 gboolean
+ms_context_assign_string (MSContext  *ctx,
+                          const char *name,
+                          const char *str_value)
+{
+    MSValue *value = NULL;
+    gboolean retval;
+
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), FALSE);
+    g_return_val_if_fail (name != NULL, FALSE);
+
+    if (str_value)
+        value = ms_value_string (str_value);
+
+    retval = ms_context_assign_variable (ctx, name, value);
+
+    ms_value_unref (value);
+    return retval;
+}
+
+
+gboolean
 ms_context_assign_positional (MSContext  *ctx,
                               guint       n,
                               MSValue    *value)
