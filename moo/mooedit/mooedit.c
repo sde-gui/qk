@@ -181,7 +181,7 @@ moo_edit_class_init (MooEditClass *klass)
             moo_signal_new_cb ("comment",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               NULL, /* G_CALLBACK (moo_edit_comment), */
+                               G_CALLBACK (moo_edit_comment),
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
@@ -190,7 +190,7 @@ moo_edit_class_init (MooEditClass *klass)
             moo_signal_new_cb ("uncomment",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               NULL, /* G_CALLBACK (moo_edit_uncomment), */
+                               G_CALLBACK (moo_edit_uncomment),
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);

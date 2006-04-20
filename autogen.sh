@@ -30,8 +30,8 @@ $ACLOCAL $ACLOCAL_FLAGS $aclocal_extra || exit $?
 echo $AUTOHEADER
 $AUTOHEADER || exit $?
 
-echo $AUTOMAKE --add-missing --copy
-$AUTOMAKE --add-missing --copy || exit $?
+echo $AUTOMAKE --add-missing --copy --foreign
+$AUTOMAKE --add-missing --copy --foreign || exit $?
 
 echo $AUTOCONF
 $AUTOCONF || exit $?
