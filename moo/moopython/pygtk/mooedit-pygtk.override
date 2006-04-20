@@ -1,4 +1,3 @@
-/* kate: lang C; indent-width 4; space-indent on; strip on; */
 %%
 headers
 #include <Python.h>
@@ -7,9 +6,9 @@ headers
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextsearch.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooedit/moocmdview.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/moocmdview.h"
 #include "moopython/mooplugin-python.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
@@ -30,11 +29,6 @@ import _moo_utils.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type
-%%
-ignore-glob-win32
-  MOO_TYPE_CMD_VIEW
-  moo_cmd_view*
-  MooCmdView
 %%
 override moo_python_plugin_hook varargs
 static PyObject *

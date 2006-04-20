@@ -24,9 +24,13 @@ do_cmd () {
 
 copy_files () {
     do_cmd cp $1/usr/local/bin/medit.exe $2/ && \
-    do_cmd cp -r $1/usr/local/share/moo/ui.xml.example $2/ui.xml && \
-    do_cmd cp -r $1/usr/local/share/moo/actions.cfg.example $2/actions.cfg && \
-    do_cmd cp -r $1/usr/local/share/moo/syntax $2/
+    do_cmd cp -r $1/usr/local/share/moo/ui.xml.example $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/actions.cfg.example $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/syntax $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/completion $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/plugins $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/tools.cfg $2/ && \
+    do_cmd cp -r $1/usr/local/share/moo/menu.cfg $2/
 }
 
 build () {

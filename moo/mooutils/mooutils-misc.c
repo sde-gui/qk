@@ -444,13 +444,14 @@ gboolean
 moo_window_is_hidden (GtkWindow  *window)
 {
     HANDLE h;
-    WINDOWPLACEMENT info = {0};
+    WINDOWPLACEMENT info;
 
     g_return_val_if_fail (GTK_IS_WINDOW (window), FALSE);
 
     h = get_handle (window);
     g_return_val_if_fail (h != NULL, FALSE);
 
+    memset (&info, 0, sizeof (info));
     info.length = sizeof (WINDOWPLACEMENT);
 
     if (!GetWindowPlacement (h, &info))

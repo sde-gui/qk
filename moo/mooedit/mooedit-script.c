@@ -274,8 +274,12 @@ moo_edit_setup_command (MooCommand     *cmd,
         doc = moo_edit_window_get_active_doc (window);
 
     ctx = moo_edit_context_new (doc, window);
+
     moo_command_set_context (cmd, ctx);
-    moo_command_set_py_dict (cmd, ctx->py_dict);
+
+    if (ctx->py_dict)
+        moo_command_set_py_dict (cmd, ctx->py_dict);
+
     g_object_unref (ctx);
 
     moo_edit_set_shell_vars (cmd, doc, window);

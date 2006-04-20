@@ -470,7 +470,11 @@ run_shell (MooCommand *cmd)
     g_critical ("%s: implement me", G_STRLOC);
 
     cmd_line = expand_vars (cmd, cmd->string);
+#ifdef __WIN32__
     sh_command_line = g_strdup_printf ("sh -c '%s'", cmd_line);
+#else
+    sh_command_line = g_strdup_printf ("cmd.exe '%s'", cmd_line);
+#endif
 
     g_signal_emit (cmd, signals[RUN_EXE], 0, sh_command_line, &result);
 
@@ -593,7 +597,8 @@ moo_command_set_py_dict (MooCommand *cmd,
                          gpointer    dict)
 {
     g_return_if_fail (MOO_IS_COMMAND (cmd));
-    g_return_if_fail (moo_python_running ());
+    g_return_if_fail (!dict || moo_python_running ());
+    g_return_if_fail (!cmd->py_dict || moo_python_running ());
 
     if (cmd->py_dict != dict)
     {

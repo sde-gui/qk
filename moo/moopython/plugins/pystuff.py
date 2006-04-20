@@ -2,9 +2,16 @@ import moo
 import gtk
 import pango
 import re
+import sys
+import os
 
 ActionInfo = moo.edit.Plugin.ActionInfo
 UIInfo = moo.edit.Plugin.UIInfo
+
+if os.name == 'nt':
+    PYTHON_COMMAND = "'" + sys.exec_prefix + "\\python.exe'"
+else:
+    PYTHON_COMMAND = 'python'
 
 SHOW_LOG_WINDOW = False
 
@@ -151,7 +158,7 @@ class Plugin(moo.edit.Plugin):
         pane = self.ensure_output(window)
         pane.output.clear()
         window.paned.present_pane(pane)
-        pane.output.run_command("python '%s'" % doc.get_filename())
+        pane.output.run_command(PYTHON_COMMAND + " '%s'" % doc.get_filename())
 
     def detach_win(self, window):
         window.remove_pane(PLUGIN_ID)

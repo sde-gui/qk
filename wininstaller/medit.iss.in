@@ -19,8 +19,12 @@ Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription
 [Files]
 Source: C:\medit\medit.exe; DestDir: {app}; Flags: ignoreversion
 Source: C:\medit\syntax\*; DestDir: {app}\syntax; Flags: ignoreversion recursesubdirs
-Source: C:\medit\actions.cfg; DestDir: {app}; Flags: ignoreversion
-Source: C:\medit\ui.xml; DestDir: {app}; Flags: ignoreversion
+Source: C:\medit\completion\*; DestDir: {app}\completion; Flags: ignoreversion recursesubdirs
+Source: C:\medit\plugins\*; DestDir: {app}\plugins; Flags: ignoreversion recursesubdirs
+Source: C:\medit\actions.cfg.example; DestDir: {app}; Flags: ignoreversion
+Source: C:\medit\ui.xml.example; DestDir: {app}; Flags: ignoreversion
+Source: C:\medit\tools.cfg; DestDir: {app}; Flags: ignoreversion
+Source: C:\medit\menu.cfg; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

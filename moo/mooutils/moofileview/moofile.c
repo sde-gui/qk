@@ -628,6 +628,7 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
 }
 
 
+#ifndef __WIN32__
 inline static void
 get_mime_type (MooFile    *file,
                const char *path)
@@ -642,6 +643,7 @@ get_mime_type (MooFile    *file,
     else
         g_message ("%s: oops", G_STRLOC);
 }
+#endif /* !__WIN32__ */
 
 
 static gboolean get_icons_a_bit             (MooFolder  *folder)

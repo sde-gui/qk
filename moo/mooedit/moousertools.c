@@ -360,10 +360,27 @@ load_config_item (FileType       type,
     ActionData *data;
     ActionOptions options;
     GSList *langs;
-    const char *name, *label, *accel, *pos;
+    const char *name, *label, *accel, *pos, *os;
     gpointer klass;
 
     g_return_if_fail (item != NULL);
+
+    os = moo_config_item_get_value (item, "os");
+
+    if (os)
+    {
+        char *norm = g_ascii_strdown (os, -1);
+
+#ifdef __WIN32__
+        if (!strcmp (norm, "unix"))
+            return;
+#else
+        if (!strncmp (norm, "win", 3))
+            return;
+#endif
+
+        g_free (norm);
+    }
 
     name = moo_config_item_get_value (item, "action");
     label = moo_config_item_get_value (item, "label");

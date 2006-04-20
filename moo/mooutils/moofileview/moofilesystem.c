@@ -80,9 +80,6 @@ static char        *get_absolute_path_unix  (MooFileSystem  *fs,
 
 static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
                                              MooFileFlags    wanted);
-static gboolean     create_folder_win32     (MooFileSystem  *fs,
-                                             const char     *path,
-                                             GError        **error);
 static gboolean     move_file_win32         (MooFileSystem  *fs,
                                              const char     *old_path,
                                              const char     *new_path,
@@ -799,34 +796,19 @@ static char        *get_absolute_path_unix  (G_GNUC_UNUSED MooFileSystem *fs,
  */
 #ifdef __WIN32__
 
-static MooFolder   *get_root_folder_win32   (MooFileSystem  *fs,
-                                             MooFileFlags    wanted)
+static MooFolder *
+get_root_folder_win32 (MooFileSystem  *fs,
+                       MooFileFlags    wanted)
 {
-    MooFolder *folder;
-
-    folder = g_hash_table_lookup (fs->priv->folders, "");
-
-    if (folder)
-    {
-        g_object_ref (folder);
-        return folder;
-    }
-
-    // WIN32_XXX
-
-    g_hash_table_insert (fs->priv->folders,
-                         g_strdup (""), g_object_ref (folder));
-    g_signal_connect (folder, "deleted",
-                      G_CALLBACK (folder_deleted), fs);
-
-    return folder;
+#warning "Implement me"
+    return moo_file_system_get_folder (fs, "c:\\", wanted, NULL);
 }
 
 
 static gboolean
-move_file_win32 (MooFileSystem  *fs,
-                 const char     *old_path,
-                 const char     *new_path,
+move_file_win32 (G_GNUC_UNUSED MooFileSystem  *fs,
+                 G_GNUC_UNUSED const char *old_path,
+                 G_GNUC_UNUSED const char *new_path,
                  GError        **error)
 {
 #warning "Implement me"
@@ -856,21 +838,27 @@ splitdrive (const char *fullpath,
 
 
 static char *
-normalize_path_win32 (MooFileSystem  *fs,
+normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
                       const char     *fullpath,
                       gboolean        isdir,
-                      GError        **error)
+                      G_GNUC_UNUSED GError **error)
 {
     char *drive, *path, *normpath;
-    guint slashes, i;
-    char **comps;
+    guint slashes;
 
     g_return_val_if_fail (fullpath != NULL, NULL);
 
-    splitdrive (fullpath, &prefix, &path);
+    splitdrive (fullpath, &drive, &path);
     g_strdelimit (path, "/", '\\');
 
     for (slashes = 0; path[slashes] == '\\'; ++slashes) ;
+
+    if (drive && path[0] != '\\')
+    {
+        char *tmp = path;
+        path = g_strdup_printf ("\\%s", path);
+        g_free (tmp);
+    }
 
     if (!drive)
     {
@@ -879,18 +867,18 @@ normalize_path_win32 (MooFileSystem  *fs,
         path = g_strdup (tmp + slashes);
         g_free (tmp);
     }
-    else if (path[0] == '\\')
-    {
-        char *tmp;
-
-        tmp = drive;
-        drive = g_strdup_printf ("%s\\", drive);
-        g_free (tmp);
-
-        tmp = path;
-        path = g_strdup (path + slashes);
-        g_free (tmp);
-    }
+//     else if (path[0] == '\\')
+//     {
+//         char *tmp;
+//
+//         tmp = drive;
+//         drive = g_strdup_printf ("%s\\", drive);
+//         g_free (tmp);
+//
+//         tmp = path;
+//         path = g_strdup (path + slashes);
+//         g_free (tmp);
+//     }
 
     normpath = normalize_path (path);
 
@@ -983,7 +971,7 @@ success:
 
 
 static char *
-get_absolute_path_win32 (MooFileSystem  *fs,
+get_absolute_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
                          const char     *short_name,
                          const char     *current_dir)
 {

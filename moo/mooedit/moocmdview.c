@@ -273,11 +273,24 @@ moo_cmd_view_run_command (MooCmdView *view,
     moo_line_view_write_line (MOO_LINE_VIEW (view), cmd, -1,
                               view->priv->message_tag);
 
+#ifdef __WIN32__
+    g_shell_parse_argv (cmd, NULL, &argv, &error);
+
+    if (error)
+    {
+        moo_line_view_write_line (MOO_LINE_VIEW (view),
+                                  error->message, -1,
+                                  view->priv->error_tag);
+        g_error_free (error);
+        goto out;
+    }
+#else
     argv = g_new (char*, 4);
     argv[0] = g_strdup ("/bin/sh");
     argv[1] = g_strdup ("-c");
     argv[2] = g_strdup (cmd);
     argv[3] = NULL;
+#endif
 
     view->priv->cmd = moo_cmd_new_full (working_dir, argv, NULL,
                                         G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,

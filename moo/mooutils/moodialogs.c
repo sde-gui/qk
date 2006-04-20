@@ -162,7 +162,7 @@ moo_position_window (GtkWidget  *window,
     {
         gtk_window_set_transient_for (GTK_WINDOW (window), GTK_WINDOW (toplevel));
 #ifdef __WIN32__
-        g_signal_connect (window, "unmap", on_hide, NULL);
+        g_signal_connect (window, "unmap", G_CALLBACK (on_hide), NULL);
 #endif
     }
 

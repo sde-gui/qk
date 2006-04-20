@@ -2,7 +2,16 @@
 # moo/moopython/plugins/Makefile.incl
 #
 
-moo_extra_dist +=                             \
+moopython_pluginsdir = $(MOO_DATA_DIR)/plugins
+moopython_plugins_libdir = $(MOO_DATA_DIR)/plugins/lib
+
+moopython_plugins_DATA =                      \
     $(moopython)/plugins/console.py           \
-    $(moopython)/plugins/pyconsole.py         \
     $(moopython)/plugins/pystuff.py
+
+moopython_plugins_lib_DATA =                  \
+    $(moopython)/plugins/pyconsole.py
+
+moo_extra_dist +=                             \
+    $(moopython_plugins_DATA)                 \
+    $(moopython_plugins_lib_DATA)

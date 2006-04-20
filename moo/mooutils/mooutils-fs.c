@@ -27,6 +27,7 @@
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <io.h>
 #endif
 
 #ifdef HAVE_SYS_WAIT_H
@@ -131,7 +132,6 @@ rm_r (const char *path,
     GDir *dir;
     GError *error_here = NULL;
     const char *file;
-    char *file_path;
     gboolean success = TRUE;
 
     g_return_val_if_fail (path != NULL, FALSE);

@@ -1,3 +1,4 @@
+import os
 import moo
 import gtk
 
@@ -63,4 +64,5 @@ class WinPlugin(object):
         window.remove_pane(CONSOLE_PLUGIN_ID)
 
 
-moo.edit.plugin_register(Plugin, WinPlugin)
+if os.name == 'posix':
+    moo.edit.plugin_register(Plugin, WinPlugin)

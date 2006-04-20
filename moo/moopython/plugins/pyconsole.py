@@ -17,6 +17,11 @@
 # it creates the widget and 'starts' interactive session; see the end of
 # this file. If start_script is not empty, it pastes it as it was entered from keyboard.
 #
+# Console may subclass a type other than gtk.TextView, to allow syntax highlighting and stuff,
+# e.g.:
+#   console_type = pyconsole.ConsoleType(moo.edit.TextView)
+#   console = console_type(use_rlcompleter=False, start_script="import moo\nimport gtk\n")
+#
 # This widget is not a replacement for real terminal with python running
 # inside: GtkTextView is not a terminal.
 # The use case is: you have a python program, you create this widget,
