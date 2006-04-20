@@ -97,8 +97,8 @@ static char **
 get_files (FileType type,
            guint   *n_files_p)
 {
-    guint n_files, i;
-    char **files;
+    guint n_files = 0, i;
+    char **files = NULL;
     GSList *list = NULL;
 
     switch (type)
