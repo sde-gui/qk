@@ -384,7 +384,7 @@ _moo_python_plugin_deinit (void)
 
 
 #ifdef MOO_PYTHON_PLUGIN
-gboolean MOO_PYTHON_INIT_FUNC (void)
+MOO_PLUGIN_INIT_FUNC_DECL
 {
     g_message ("%s: hi there", G_STRLOC);
     return _moo_python_plugin_init ();

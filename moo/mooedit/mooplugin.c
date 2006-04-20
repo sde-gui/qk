@@ -845,9 +845,8 @@ moo_plugin_read_module (GModule     *module,
     g_return_val_if_fail (module != NULL, FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
 
-    init_func_name = g_strdup_printf ("%s_init", name);
-
-    if (!g_module_symbol (module, init_func_name, (gpointer*) &init_func))
+    if (!g_module_symbol (module, MOO_PLUGIN_INIT_FUNC_NAME,
+                          (gpointer*) &init_func))
         goto out;
 
     if (!init_func ())

@@ -20,9 +20,12 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 16
+#define MOO_PLUGIN_CURRENT_VERSION 17
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
+#define MOO_PLUGIN_INIT_FUNC moo_module_init
+#define MOO_PLUGIN_INIT_FUNC_NAME "moo_module_init"
+#define MOO_PLUGIN_INIT_FUNC_DECL G_MODULE_EXPORT gboolean MOO_PLUGIN_INIT_FUNC (void)
 
 #define MOO_TYPE_PLUGIN                 (moo_plugin_get_type ())
 #define MOO_PLUGIN(object)              (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PLUGIN, MooPlugin))
