@@ -703,9 +703,13 @@ create_edit_action (MooEdit *edit,
 {
     ActionData *data = user_data;
     MooToolAction *action;
+    MooEditActionFlags flags = 0;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     g_return_val_if_fail (data != NULL, NULL);
+
+    if (data->options & ACTION_NEED_FILE)
+        flags |= MOO_EDIT_ACTION_NEED_FILE;
 
     action = g_object_new (_moo_tool_action_get_type(),
                            "name", data->name,
@@ -713,6 +717,7 @@ create_edit_action (MooEdit *edit,
                            "accel", data->accel,
                            "doc", edit,
                            "langs", data->langs,
+                           "flags", flags,
                            NULL);
     action->window = moo_edit_get_window (edit);
     action->data = data;
