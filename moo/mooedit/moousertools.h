@@ -19,10 +19,25 @@
 G_BEGIN_DECLS
 
 
-#define MOO_USER_TOOLS_FILE     "tools.cfg"
-#define MOO_USER_TOOLS_ADD_FILE "tools-add.cfg"
-#define MOO_USER_MENU_FILE      "menu.cfg"
-#define MOO_USER_MENU_ADD_FILE  "menu-add.cfg"
+#define MOO_USER_TOOLS_FILE             "tools.cfg"
+#define MOO_USER_MENU_FILE              "menu.cfg"
+
+#define MOO_USER_TOOL_KEY_OS            "os"
+#define MOO_USER_TOOL_KEY_ACTION        "action"
+#define MOO_USER_TOOL_KEY_LABEL         "label"
+#define MOO_USER_TOOL_KEY_ACCEL         "accel"
+#define MOO_USER_TOOL_KEY_POSITION      "position"
+#define MOO_USER_TOOL_KEY_OPTIONS       "options"
+#define MOO_USER_TOOL_KEY_COMMAND       "command"
+#define MOO_USER_TOOL_KEY_LANG          "lang"
+
+#define MOO_USER_TOOL_POSITION_START    "start"
+#define MOO_USER_TOOL_POSITION_END      "end"
+
+#define MOO_USER_TOOL_OPTION_NEED_SAVE  "need-save"
+#define MOO_USER_TOOL_OPTION_NEED_FILE  "need-file"
+#define MOO_USER_TOOL_OPTION_NEED_DOC   "need-doc"
+#define MOO_USER_TOOL_OPTION_SILENT     "silent"
 
 
 char  **moo_edit_get_user_tools_files   (guint      *n_files);

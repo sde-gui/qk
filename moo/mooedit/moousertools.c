@@ -120,35 +120,6 @@ get_files (FileType type,
         for (i = n_files - 1; i >= 0; --i)
         {
             if (g_file_test (files[i], G_FILE_TEST_EXISTS))
-            {
-                list = g_slist_prepend (list, g_strdup (files[i]));
-                break;
-            }
-        }
-    }
-
-    g_strfreev (files);
-
-
-    switch (type)
-    {
-        case FILE_TOOLS:
-            files = moo_get_data_files (MOO_USER_TOOLS_ADD_FILE,
-                                        MOO_DATA_SHARE, &n_files);
-            break;
-        case FILE_MENU:
-            files = moo_get_data_files (MOO_USER_MENU_ADD_FILE,
-                                        MOO_DATA_SHARE, &n_files);
-            break;
-    }
-
-    if (n_files)
-    {
-        int i;
-
-        for (i = n_files - 1; i >= 0; --i)
-        {
-            if (g_file_test (files[i], G_FILE_TEST_EXISTS))
                 list = g_slist_prepend (list, g_strdup (files[i]));
         }
     }
@@ -261,10 +232,7 @@ config_item_get_langs (MooConfigItem *item)
     char **pieces, **p;
     GSList *list = NULL;
 
-    string = moo_config_item_get_value (item, "lang");
-
-    if (!string)
-        string = moo_config_item_get_value (item, "langs");
+    string = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LANG);
 
     if (!string)
         return NULL;
@@ -293,7 +261,7 @@ config_item_get_command (MooConfigItem *item)
     code = moo_config_item_get_content (item);
     g_return_val_if_fail (code != NULL, NULL);
 
-    type = moo_config_item_get_value (item, "command");
+    type = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_COMMAND);
 
     if (type)
         cmd_type = moo_command_type_parse (type);
@@ -313,7 +281,7 @@ config_item_get_options (MooConfigItem *item)
     char **pieces, **p;
     ActionOptions opts = 0;
 
-    string = moo_config_item_get_value (item, "options");
+    string = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_OPTIONS);
 
     if (!string)
         return 0;
@@ -329,13 +297,13 @@ config_item_get_options (MooConfigItem *item)
         {
             char *opt = g_ascii_strdown (g_strdelimit (*p, "_", '-'), -1);
 
-            if (!strcmp (opt, "need-save"))
+            if (!strcmp (opt, MOO_USER_TOOL_OPTION_NEED_SAVE))
                 opts |= ACTION_NEED_SAVE;
-            else if (!strcmp (opt, "need-file"))
+            else if (!strcmp (opt, MOO_USER_TOOL_OPTION_NEED_FILE))
                 opts |= ACTION_NEED_FILE;
-            else if (!strcmp (opt, "need-doc"))
+            else if (!strcmp (opt, MOO_USER_TOOL_OPTION_NEED_DOC))
                 opts |= ACTION_NEED_DOC;
-            else if (!strcmp (opt, "silent"))
+            else if (!strcmp (opt, MOO_USER_TOOL_OPTION_SILENT))
                 opts |= ACTION_SILENT;
             else
                 g_warning ("%s: unknown option '%s'", G_STRLOC, opt);
@@ -365,7 +333,7 @@ load_config_item (FileType       type,
 
     g_return_if_fail (item != NULL);
 
-    os = moo_config_item_get_value (item, "os");
+    os = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_OS);
 
     if (os)
     {
@@ -382,10 +350,10 @@ load_config_item (FileType       type,
         g_free (norm);
     }
 
-    name = moo_config_item_get_value (item, "action");
-    label = moo_config_item_get_value (item, "label");
-    accel = moo_config_item_get_value (item, "accel");
-    pos = moo_config_item_get_value (item, "position");
+    name = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACTION);
+    label = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LABEL);
+    accel = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACCEL);
+    pos = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_POSITION);
     g_return_if_fail (name != NULL);
 
     cmd = config_item_get_command (item);
@@ -441,8 +409,13 @@ load_config_item (FileType       type,
             {
                 char *c = g_ascii_strdown (pos, -1);
 
-                if (!strcmp (c, "end"))
+                if (!strcmp (c, MOO_USER_TOOL_POSITION_END))
                     ui_path = ui_path2;
+                else if (!strcmp (c, MOO_USER_TOOL_POSITION_START))
+                    ui_path = ui_path1;
+                else
+                    g_warning ("%s: unknown position type '%s'",
+                               G_STRLOC, c);
 
                 g_free (c);
             }
