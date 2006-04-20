@@ -76,12 +76,38 @@ action_info_free (ActionInfo *info)
 }
 
 
+static gboolean
+set_action_accel (G_GNUC_UNUSED MooActionGroup *group,
+                  MooAction *action,
+                  gpointer   data)
+{
+    if (!action->dead && data)
+    {
+        const char *accel_path;
+        accel_path = moo_action_make_accel_path (data, action->id);
+        _moo_action_set_accel_path (action, accel_path);
+    }
+
+    return FALSE;
+}
+
+void
+_moo_edit_set_action_accels (MooEdit       *edit,
+                             MooEditWindow *window)
+{
+    char *window_id;
+    window_id = moo_window_get_id (MOO_WINDOW (window));
+    moo_action_group_foreach (edit->priv->actions,
+                              set_action_accel, window_id);
+    g_free (window_id);
+}
+
+
 static void
 moo_edit_add_action (MooEdit   *edit,
                      MooAction *action)
 {
     MooActionGroup *group;
-    GtkWidget *toplevel;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (MOO_IS_ACTION (action));
@@ -90,18 +116,6 @@ moo_edit_add_action (MooEdit   *edit,
 
     group = moo_edit_get_actions (edit);
     moo_action_group_add (group, action);
-
-    toplevel = gtk_widget_get_toplevel (GTK_WIDGET (edit));
-
-    if (!action->dead && MOO_IS_EDIT_WINDOW (toplevel))
-    {
-        const char *accel_path;
-        char *window_id;
-        window_id = moo_window_get_id (MOO_WINDOW (toplevel));
-        accel_path = moo_action_make_accel_path (window_id, moo_action_get_id (action));
-        _moo_action_set_accel_path (action, accel_path);
-        g_free (window_id);
-    }
 }
 
 

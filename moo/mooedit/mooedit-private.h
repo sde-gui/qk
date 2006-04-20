@@ -29,6 +29,8 @@ extern GSList *_moo_edit_instances;
 void        _moo_edit_add_class_actions     (MooEdit        *edit);
 void        _moo_edit_check_actions         (MooEdit        *edit);
 void        _moo_edit_class_init_actions    (MooEditClass   *klass);
+void        _moo_edit_set_action_accels     (MooEdit        *edit,
+                                             MooEditWindow  *window);
 
 void        _moo_edit_do_popup              (MooEdit        *edit,
                                              GdkEventButton *event);

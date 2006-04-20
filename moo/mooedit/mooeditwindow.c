@@ -1280,6 +1280,8 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (edit));
 
+    _moo_edit_set_action_accels (edit, window);
+
     label = create_tab_label (window, edit);
     gtk_widget_show (label);
 
