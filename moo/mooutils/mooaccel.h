@@ -33,6 +33,10 @@ const char  *moo_get_default_accel          (const char     *accel_path);
 char        *moo_get_accel_label            (const char     *accel);
 char        *moo_get_accel_label_by_path    (const char     *accel_path);
 
+gboolean     moo_accel_parse                (const char     *accel,
+                                             guint          *key,
+                                             GdkModifierType *mods);
+char        *moo_accel_normalize            (const char     *accel);
 
 void         moo_accel_label_set_action     (GtkWidget      *label,
                                              MooAction      *action);

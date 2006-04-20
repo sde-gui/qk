@@ -20,6 +20,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include <string.h>
 
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
@@ -401,6 +402,212 @@ moo_accel_label_set_action (GtkWidget      *widget,
                       G_CALLBACK (action_accel_changed), widget);
     g_signal_connect (widget, "destroy",
                       G_CALLBACK (accel_label_destroyed), action);
+}
+
+
+/*****************************************************************************/
+/* Parsing accelerator strings
+ */
+
+/* TODO: multibyte symbols? */
+inline static guint
+keyval_from_symbol (char sym)
+{
+    switch (sym)
+    {
+        case ' ': return GDK_space;
+        case '!': return GDK_exclam;
+        case '"': return GDK_quotedbl;
+        case '#': return GDK_numbersign;
+        case '$': return GDK_dollar;
+        case '%': return GDK_percent;
+        case '&': return GDK_ampersand;
+        case '\'': return GDK_apostrophe;
+//         case '\'': return GDK_quoteright;
+        case '(': return GDK_parenleft;
+        case ')': return GDK_parenright;
+        case '*': return GDK_asterisk;
+        case '+': return GDK_plus;
+        case ',': return GDK_comma;
+        case '-': return GDK_minus;
+        case '.': return GDK_period;
+        case '/': return GDK_slash;
+        case ':': return GDK_colon;
+        case ';': return GDK_semicolon;
+        case '<': return GDK_less;
+        case '=': return GDK_equal;
+        case '>': return GDK_greater;
+        case '?': return GDK_question;
+        case '@': return GDK_at;
+        case '[': return GDK_bracketleft;
+        case '\\': return GDK_backslash;
+        case ']': return GDK_bracketright;
+// #define GDK_asciicircum 0x05e
+// #define GDK_grave 0x060
+        case '_': return GDK_underscore;
+        case '`': return GDK_quoteleft;
+        case '{': return GDK_braceleft;
+        case '|': return GDK_bar;
+        case '}': return GDK_braceright;
+        case '~': return GDK_asciitilde;
+    }
+
+    return 0;
+}
+
+
+inline static guint
+parse_key (const char *string)
+{
+    char *stripped = g_strstrip (g_strdup (string));
+    guint key = gdk_keyval_from_name (stripped);
+
+    if (!key)
+        key = keyval_from_symbol (stripped[0]);
+
+    g_free (stripped);
+    return key;
+}
+
+
+inline static GdkModifierType
+parse_mod (const char *string)
+{
+    GdkModifierType mod = 0;
+    char *stripped;
+
+    stripped = g_strstrip (g_ascii_strdown (string, -1));
+
+    if (!strcmp (stripped, "alt"))
+        mod = GDK_MOD1_MASK;
+    else if (!strcmp (stripped, "ctl") ||
+              !strcmp (stripped, "ctrl") ||
+              !strcmp (stripped, "control"))
+        mod = GDK_CONTROL_MASK;
+    else if (!strncmp (stripped, "mod", 3) &&
+              1 <= stripped[3] && stripped[3] <= 5 && !stripped[4])
+    {
+        switch (stripped[3])
+        {
+            case '1': mod = GDK_MOD1_MASK; break;
+            case '2': mod = GDK_MOD2_MASK; break;
+            case '3': mod = GDK_MOD3_MASK; break;
+            case '4': mod = GDK_MOD4_MASK; break;
+            case '5': mod = GDK_MOD5_MASK; break;
+        }
+    }
+    else if (!strcmp (stripped, "shift") ||
+              !strcmp (stripped, "shft"))
+        mod = GDK_SHIFT_MASK;
+    else if (!strcmp (stripped, "release"))
+        mod = GDK_RELEASE_MASK;
+
+    g_free (stripped);
+    return mod;
+}
+
+
+static gboolean
+accel_parse_sep (const char     *accel,
+                 const char     *sep,
+                 guint          *keyval,
+                 GdkModifierType *modifiers)
+{
+    char **pieces;
+    guint n_pieces, i;
+    GdkModifierType mod = 0;
+    guint key = 0;
+
+    pieces = g_strsplit (accel, sep, 0);
+    n_pieces = g_strv_length (pieces);
+    g_return_val_if_fail (n_pieces > 1, FALSE);
+
+    for (i = 0; i < n_pieces - 1; ++i)
+    {
+        GdkModifierType m = parse_mod (pieces[i]);
+
+        if (!m)
+            goto out;
+
+        mod |= m;
+    }
+
+    key = parse_key (pieces[n_pieces-1]);
+
+out:
+    g_strfreev (pieces);
+
+    if (!key)
+        mod = 0;
+
+    if (keyval)
+        *keyval = key;
+    if (modifiers)
+        *modifiers = mod;
+    return key != 0;
+}
+
+
+gboolean
+moo_accel_parse (const char     *accel,
+                 guint          *keyval,
+                 GdkModifierType *modifiers)
+{
+    guint key = 0;
+    guint len;
+    GdkModifierType mods = 0;
+    char *p;
+
+    g_return_val_if_fail (accel && accel[0], FALSE);
+
+    len = strlen (accel);
+
+    if (len == 1)
+    {
+        key = parse_key (accel);
+        goto out;
+    }
+
+    if (accel[0] == '<')
+    {
+        gtk_accelerator_parse (accel, &key, &mods);
+        goto out;
+    }
+
+    if ((p = strchr (accel, '+')) && p != accel + len - 1)
+        return accel_parse_sep (accel, "+", keyval, modifiers);
+    else if ((p = strchr (accel, '-')) && p != accel + len - 1)
+        return accel_parse_sep (accel, "-", keyval, modifiers);
+
+    key = parse_key (accel);
+
+out:
+    if (keyval)
+        *keyval = gdk_keyval_to_lower (key);
+    if (modifiers)
+        *modifiers = mods;
+    return key != 0;
+}
+
+
+char *
+moo_accel_normalize (const char *accel)
+{
+    guint key;
+    GdkModifierType mods;
+
+    if (!accel || !accel[0])
+        return NULL;
+
+    if (moo_accel_parse (accel, &key, &mods))
+    {
+        return gtk_accelerator_name (key, mods);
+    }
+    else
+    {
+        g_warning ("could not parse accelerator '%s'", accel);
+        return NULL;
+    }
 }
 
 
@@ -1096,4 +1303,3 @@ moo_accel_prefs_dialog_run (MooActionGroup *group,
 
     return;
 }
-

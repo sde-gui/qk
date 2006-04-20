@@ -13,6 +13,7 @@
 
 #include "mooutils/moouseractions.h"
 #include "mooscript/mooscript-parser.h"
+#include "mooutils/mooaccel.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooconfig.h"
 #include <string.h>
@@ -60,16 +61,6 @@ action_free (Action *action)
 }
 
 
-static char *
-parse_accel (const char *string)
-{
-    if (!string || !string[0])
-        return NULL;
-
-    return g_strdup (string);
-}
-
-
 static Action *
 action_new (const char *name,
             const char *label,
@@ -89,7 +80,7 @@ action_new (const char *name,
     action = g_new0 (Action, 1);
     action->name = g_strdup (name);
     action->label = label ? g_strdup (label) : g_strdup (name);
-    action->accel = parse_accel (accel);
+    action->accel = moo_accel_normalize (accel);
     action->cmd = cmd;
     action->setup = setup;
 

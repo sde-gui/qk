@@ -18,6 +18,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooconfig.h"
 #include "mooutils/moocommand.h"
+#include "mooutils/mooaccel.h"
 #include <string.h>
 
 
@@ -331,25 +332,6 @@ load_config_item (MooConfigItem *item,
 }
 
 
-static char *
-parse_accel (const char *string)
-{
-    char *accel;
-
-    if (!string)
-        return NULL;
-
-    accel = g_strdup (string);
-    g_strstrip (accel);
-
-    if (*accel)
-        return accel;
-
-    g_free (accel);
-    return NULL;
-}
-
-
 static ActionData *
 action_data_new (const char     *name,
                  const char     *label,
@@ -368,7 +350,7 @@ action_data_new (const char     *name,
     data->id = g_strdup (name);
     data->name = g_strdup (name);
     data->label = label ? g_strdup (label) : g_strdup (name);
-    data->accel = parse_accel (accel);
+    data->accel = moo_accel_normalize (accel);
     data->langs = langs;
     data->cmd = cmd;
     data->options = options;
