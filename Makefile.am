@@ -1,11 +1,10 @@
-AUTOMAKE_OPTIONS = dist-bzip2
+AUTOMAKE_OPTIONS = dist-bzip2 foreign nostdinc
 EXTRA_DIST = autogen.sh mingw-configure cygwin-configure
 
 DIST_SUBDIRS = m4
 
 ACLOCAL_AMFLAGS = -I m4 $(ACLOCAL_FLAGS)
 
-DEFAULT_INCLUDES =
 AM_CFLAGS =					\
     -I$(top_builddir)				\
     -I$(top_srcdir)				\
