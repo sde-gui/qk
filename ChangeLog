@@ -1,12 +1,18 @@
+2006-04-20  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.9 ===
+
+    User-defined completion, tools, and context menus.
+
 2006-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
     * === Released 0.6.8 ===
 
     Finally unbroke windows terminal, and finally fixed
     bug with terminal eating 100% of cpu time.
-    
+
     Active strings, user-defined commands:
-	Added support for python scripts and shell commands.
+        Added support for python scripts and shell commands.
 
 2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
