@@ -898,6 +898,22 @@ static void     update_window_title     (MooEditWindow      *window)
 }
 
 
+MooEditWindow *
+moo_edit_get_window (MooEdit *edit)
+{
+    GtkWidget *toplevel;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+
+    toplevel = gtk_widget_get_toplevel (GTK_WIDGET (edit));
+
+    if (MOO_IS_EDIT_WINDOW (toplevel))
+        return MOO_EDIT_WINDOW (toplevel);
+    else
+        return NULL;
+}
+
+
 /****************************************************************************/
 /* Actions
  */
@@ -1307,8 +1323,9 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
 }
 
 
-void             _moo_edit_window_remove_doc    (MooEditWindow  *window,
-                                                 MooEdit        *doc)
+void
+_moo_edit_window_remove_doc (MooEditWindow  *window,
+                             MooEdit        *doc)
 {
     int page;
 

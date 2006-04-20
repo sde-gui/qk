@@ -15,12 +15,18 @@
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/mooedit-script.h"
 #include "mooedit/moocmdview.h"
+#include "mooedit/mooedit-actions.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooconfig.h"
 #include "mooutils/moocommand.h"
 #include "mooutils/mooaccel.h"
 #include <string.h>
 
+
+typedef enum {
+    FILE_TOOLS,
+    FILE_MENU
+} FileType;
 
 typedef enum {
     ACTION_NEED_DOC  = 1 << 0,
@@ -40,20 +46,30 @@ typedef struct {
     MooUIXML *xml;
     guint merge_id;
 
+    FileType type;
     ActionOptions options;
 } ActionData;
 
-static GSList *actions;
+static GSList *tools_actions;
+static GSList *menu_actions;
 
 
-static void         remove_actions      (void);
-static void         load_file           (const char     *file,
+static void         remove_tools        (void);
+static void         remove_menu_actions (void);
+
+static void         load_file           (FileType        type,
+                                         const char     *file,
                                          MooUIXML       *xml,
-                                         const char     *ui_path);
-static void         load_config_item    (MooConfigItem  *item,
+                                         const char     *ui_path1,
+                                         const char     *ui_path2);
+static void         load_config_item    (FileType        type,
+                                         MooConfigItem  *item,
                                          MooUIXML       *xml,
-                                         const char     *ui_path);
-static MooAction   *create_action       (MooWindow      *window,
+                                         const char     *ui_path1,
+                                         const char     *ui_path2);
+static MooAction   *create_tool_action  (MooWindow      *window,
+                                         gpointer        user_data);
+static MooAction   *create_edit_action  (MooEdit        *edit,
                                          gpointer        user_data);
 
 static void         check_visible_func  (MooAction      *action,
@@ -67,7 +83,8 @@ static void         check_sensitive_func(MooAction      *action,
                                          GValue         *prop_value,
                                          gpointer        dummy);
 
-static ActionData  *action_data_new     (const char     *name,
+static ActionData  *action_data_new     (FileType        type,
+                                         const char     *name,
                                          const char     *label,
                                          const char     *accel,
                                          GSList         *langs,
@@ -76,15 +93,25 @@ static ActionData  *action_data_new     (const char     *name,
 static void         action_data_free    (ActionData     *data);
 
 
-char **
-moo_edit_get_user_tools_files (guint *n_files_p)
+static char **
+get_files (FileType type,
+           guint   *n_files_p)
 {
     guint n_files, i;
     char **files;
     GSList *list = NULL;
 
-    files = moo_get_data_files (MOO_USER_TOOLS_FILE,
-                                MOO_DATA_SHARE, &n_files);
+    switch (type)
+    {
+        case FILE_TOOLS:
+            files = moo_get_data_files (MOO_USER_TOOLS_FILE,
+                                        MOO_DATA_SHARE, &n_files);
+            break;
+        case FILE_MENU:
+            files = moo_get_data_files (MOO_USER_MENU_FILE,
+                                        MOO_DATA_SHARE, &n_files);
+            break;
+    }
 
     if (n_files)
     {
@@ -103,8 +130,17 @@ moo_edit_get_user_tools_files (guint *n_files_p)
     g_strfreev (files);
 
 
-    files = moo_get_data_files (MOO_USER_TOOLS_ADD_FILE,
-                                MOO_DATA_SHARE, &n_files);
+    switch (type)
+    {
+        case FILE_TOOLS:
+            files = moo_get_data_files (MOO_USER_TOOLS_ADD_FILE,
+                                        MOO_DATA_SHARE, &n_files);
+            break;
+        case FILE_MENU:
+            files = moo_get_data_files (MOO_USER_MENU_ADD_FILE,
+                                        MOO_DATA_SHARE, &n_files);
+            break;
+    }
 
     if (n_files)
     {
@@ -138,6 +174,20 @@ moo_edit_get_user_tools_files (guint *n_files_p)
 }
 
 
+char **
+moo_edit_get_user_tools_files (guint *n_files_p)
+{
+    return get_files (FILE_TOOLS, n_files_p);
+}
+
+
+char **
+moo_edit_get_user_menu_files (guint *n_files_p)
+{
+    return get_files (FILE_MENU, n_files_p);
+}
+
+
 void
 moo_edit_load_user_tools (char      **files,
                           guint       n_files,
@@ -151,17 +201,40 @@ moo_edit_load_user_tools (char      **files,
 
     g_return_if_fail (files || !n_files);
 
-    remove_actions ();
+    remove_tools ();
 
     for (i = 0; i < n_files; ++i)
-        load_file (files[i], xml, ui_path);
+        load_file (FILE_TOOLS, files[i], xml, ui_path, NULL);
+}
+
+
+void
+moo_edit_load_user_menu (char      **files,
+                         guint       n_files,
+                         MooUIXML   *xml,
+                         const char *start_path,
+                         const char *end_path)
+{
+    guint i;
+
+    if (!n_files)
+        return;
+
+    g_return_if_fail (files || !n_files);
+
+    remove_menu_actions ();
+
+    for (i = 0; i < n_files; ++i)
+        load_file (FILE_MENU, files[i], xml, start_path, end_path);
 }
 
 
 static void
-load_file (const char *file,
-           MooUIXML   *xml,
-           const char *ui_path)
+load_file (FileType        type,
+           const char     *file,
+           MooUIXML       *xml,
+           const char     *ui_path1,
+           const char     *ui_path2)
 {
     MooConfig *config;
     guint n_items, i;
@@ -174,7 +247,8 @@ load_file (const char *file,
     n_items = moo_config_n_items (config);
 
     for (i = 0; i < n_items; ++i)
-        load_config_item (moo_config_nth_item (config, i), xml, ui_path);
+        load_config_item (type, moo_config_nth_item (config, i),
+                          xml, ui_path1, ui_path2);
 
     moo_config_free (config);
 }
@@ -276,22 +350,25 @@ config_item_get_options (MooConfigItem *item)
 
 
 static void
-load_config_item (MooConfigItem *item,
+load_config_item (FileType       type,
+                  MooConfigItem *item,
                   MooUIXML      *xml,
-                  const char    *ui_path)
+                  const char     *ui_path1,
+                  const char     *ui_path2)
 {
     MooCommand *cmd;
     ActionData *data;
     ActionOptions options;
     GSList *langs;
-    const char *name, *label, *accel;
-    MooWindowClass *klass;
+    const char *name, *label, *accel, *pos;
+    gpointer klass;
 
     g_return_if_fail (item != NULL);
 
     name = moo_config_item_get_value (item, "action");
     label = moo_config_item_get_value (item, "label");
     accel = moo_config_item_get_value (item, "accel");
+    pos = moo_config_item_get_value (item, "position");
     g_return_if_fail (name != NULL);
 
     cmd = config_item_get_command (item);
@@ -300,40 +377,74 @@ load_config_item (MooConfigItem *item,
     options = config_item_get_options (item);
     langs = config_item_get_langs (item);
 
-    data = action_data_new (name, label, accel, langs, cmd, options);
+    data = action_data_new (type, name, label, accel, langs, cmd, options);
     g_return_if_fail (data != NULL);
 
-    klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+    switch (type)
+    {
+        case FILE_TOOLS:
+            klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
-    moo_window_class_new_action_custom (klass, data->id,
-                                        create_action, data,
-                                        (GDestroyNotify) action_data_free);
+            moo_window_class_new_action_custom (klass, data->id,
+                                                create_tool_action, data,
+                                                (GDestroyNotify) action_data_free);
 
-    if (data->langs)
-        moo_edit_window_add_action_check (data->id, "visible",
-                                          check_visible_func,
-                                          NULL, NULL);
-    if (data->options)
-        moo_edit_window_add_action_check (data->id, "sensitive",
-                                          check_sensitive_func,
-                                          NULL, NULL);
+            if (data->langs)
+                moo_edit_window_add_action_check (data->id, "visible",
+                                                  check_visible_func,
+                                                  NULL, NULL);
+            if (data->options)
+                moo_edit_window_add_action_check (data->id, "sensitive",
+                                                  check_sensitive_func,
+                                                  NULL, NULL);
+
+            g_type_class_unref (klass);
+            break;
+
+        case FILE_MENU:
+            klass = g_type_class_ref (MOO_TYPE_EDIT);
+            moo_edit_class_new_action_custom (klass, data->id,
+                                              create_edit_action, data,
+                                              (GDestroyNotify) action_data_free);
+            g_type_class_unref (klass);
+            break;
+    }
 
     if (xml)
     {
+        const char *ui_path = ui_path1;
         char *markup = g_markup_printf_escaped ("<item action=\"%s\"/>",
                                                 data->id);
         data->xml = g_object_ref (xml);
         data->merge_id = moo_ui_xml_new_merge_id (xml);
+
+        if (type == FILE_MENU)
+        {
+            if (pos)
+            {
+                char *c = g_ascii_strdown (pos, -1);
+
+                if (!strcmp (c, "end"))
+                    ui_path = ui_path2;
+
+                g_free (c);
+            }
+            else
+            {
+                ui_path = ui_path2;
+            }
+        }
+
         moo_ui_xml_insert_markup (xml, data->merge_id, ui_path, -1, markup);
         g_free (markup);
     }
 
-    g_type_class_unref (klass);
 }
 
 
 static ActionData *
-action_data_new (const char     *name,
+action_data_new (FileType        type,
+                 const char     *name,
                  const char     *label,
                  const char     *accel,
                  GSList         *langs,
@@ -347,6 +458,7 @@ action_data_new (const char     *name,
 
     data = g_new0 (ActionData, 1);
 
+    data->type = type;
     data->id = g_strdup (name);
     data->name = g_strdup (name);
     data->label = label ? g_strdup (label) : g_strdup (name);
@@ -358,7 +470,15 @@ action_data_new (const char     *name,
     if (options & ACTION_SILENT)
         moo_command_add_flags (cmd, MOO_COMMAND_SILENT);
 
-    actions = g_slist_prepend (actions, data);
+    switch (type)
+    {
+        case FILE_TOOLS:
+            tools_actions = g_slist_prepend (tools_actions, data);
+            break;
+        case FILE_MENU:
+            menu_actions = g_slist_prepend (menu_actions, data);
+            break;
+    }
 
     return data;
 }
@@ -369,13 +489,7 @@ action_data_free (ActionData *data)
 {
     if (data)
     {
-        MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-        /* XXX */
-        if (data->langs)
-            moo_edit_window_remove_action_check (data->id, "visible");
-        if (data->options)
-            moo_edit_window_remove_action_check (data->id, "sensitive");
-        g_type_class_unref (klass);
+        gpointer *klass;
 
         if (data->xml)
         {
@@ -383,7 +497,23 @@ action_data_free (ActionData *data)
             g_object_unref (data->xml);
         }
 
-        actions = g_slist_remove (actions, data);
+        switch (data->type)
+        {
+            case FILE_TOOLS:
+                tools_actions = g_slist_remove (tools_actions, data);
+
+                klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+                if (data->langs)
+                    moo_edit_window_remove_action_check (data->id, "visible");
+                if (data->options)
+                    moo_edit_window_remove_action_check (data->id, "sensitive");
+                g_type_class_unref (klass);
+                break;
+
+            case FILE_MENU:
+                menu_actions = g_slist_remove (menu_actions, data);
+                break;
+        }
 
         g_free (data->id);
         g_free (data->name);
@@ -406,16 +536,35 @@ add_id (ActionData *data,
 }
 
 static void
-remove_actions (void)
+remove_tools (void)
 {
     GSList *names = NULL;
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
-    g_slist_foreach (actions, (GFunc) add_id, &names);
+    g_slist_foreach (tools_actions, (GFunc) add_id, &names);
 
     while (names)
     {
         moo_window_class_remove_action (klass, names->data);
+        g_free (names->data);
+        names = g_slist_delete_link (names, names);
+    }
+
+    g_type_class_unref (klass);
+}
+
+
+static void
+remove_menu_actions (void)
+{
+    GSList *names = NULL;
+    MooEditClass *klass = g_type_class_ref (MOO_TYPE_EDIT);
+
+    g_slist_foreach (menu_actions, (GFunc) add_id, &names);
+
+    while (names)
+    {
+        moo_edit_class_remove_action (klass, names->data);
         g_free (names->data);
         names = g_slist_delete_link (names, names);
     }
@@ -429,16 +578,16 @@ remove_actions (void)
  */
 
 typedef struct {
-    MooAction parent;
+    MooEditAction parent;
     MooEditWindow *window;
     ActionData *data;
 } MooToolAction;
 
-typedef MooActionClass MooToolActionClass;
+typedef MooEditActionClass MooToolActionClass;
 
 GType _moo_tool_action_get_type (void) G_GNUC_CONST;
 
-G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_ACTION);
+G_DEFINE_TYPE (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION);
 #define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, _moo_tool_action_get_type()))
 #define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, _moo_tool_action_get_type(), MooToolAction))
 
@@ -477,7 +626,8 @@ moo_tool_action_activate (MooAction *_action)
     action = MOO_TOOL_ACTION (_action);
     g_return_if_fail (action->data != NULL);
 
-    doc = moo_edit_window_get_active_doc (action->window);
+    doc = MOO_EDIT_ACTION(action)->doc;
+    doc = doc ? doc : moo_edit_window_get_active_doc (action->window);
 
     if ((action->data->options & ACTION_NEED_DOC) && !doc)
         return;
@@ -514,9 +664,9 @@ moo_tool_action_activate (MooAction *_action)
 
 
 static void
-_moo_tool_action_class_init (MooActionClass *klass)
+_moo_tool_action_class_init (MooToolActionClass *klass)
 {
-    klass->activate = moo_tool_action_activate;
+    MOO_ACTION_CLASS(klass)->activate = moo_tool_action_activate;
 }
 
 static void
@@ -526,8 +676,8 @@ _moo_tool_action_init (G_GNUC_UNUSED MooToolAction *action)
 
 
 static MooAction *
-create_action (MooWindow *window,
-               gpointer   user_data)
+create_tool_action (MooWindow *window,
+                    gpointer   user_data)
 {
     ActionData *data = user_data;
     MooToolAction *action;
@@ -541,6 +691,30 @@ create_action (MooWindow *window,
                            "accel", data->accel,
                            NULL);
     action->window = MOO_EDIT_WINDOW (window);
+    action->data = data;
+
+    return MOO_ACTION (action);
+}
+
+
+static MooAction *
+create_edit_action (MooEdit *edit,
+                    gpointer user_data)
+{
+    ActionData *data = user_data;
+    MooToolAction *action;
+
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    g_return_val_if_fail (data != NULL, NULL);
+
+    action = g_object_new (_moo_tool_action_get_type(),
+                           "name", data->name,
+                           "label", data->label,
+                           "accel", data->accel,
+                           "doc", edit,
+                           "langs", data->langs,
+                           NULL);
+    action->window = moo_edit_get_window (edit);
     action->data = data;
 
     return MOO_ACTION (action);

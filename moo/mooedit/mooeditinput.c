@@ -14,6 +14,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextview-private.h"
+#include "mooedit/mooedit-private.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moocompat.h"
@@ -536,11 +537,17 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
                 gtk_text_buffer_place_cursor (buffer, &iter);
             view->priv->drag_type = MOO_TEXT_VIEW_DRAG_SELECT;
         }
-        else if (event->button == 2 || event->button == 3) {
-            /* let GtkSourceView worry about this */
+        else if (event->button == 3 && MOO_IS_EDIT (widget))
+        {
+            _moo_edit_do_popup (MOO_EDIT (widget), event);
+            return TRUE;
+        }
+        else if (event->button == 2 || event->button == 3)
+        {
             return parent_class()->button_press_event (widget, event);
         }
-        else {
+        else
+        {
             g_warning ("got button %d in button_press callback", event->button);
         }
     }

@@ -74,6 +74,7 @@ void         moo_edit_window_remove_action_check    (const char     *action_id,
 MooEdit     *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void         moo_edit_window_set_active_doc         (MooEditWindow  *window,
                                                      MooEdit        *edit);
+MooEditWindow *moo_edit_get_window                  (MooEdit        *edit);
 
 GSList      *moo_edit_window_list_docs              (MooEditWindow  *window);
 guint        moo_edit_window_num_docs               (MooEditWindow  *window);

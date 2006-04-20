@@ -794,6 +794,15 @@ moo_app_init_editor (MooApp *app)
                                   "Editor/Menubar/Tools/ToolsMenu");
         g_strfreev (files);
     }
+
+    if ((files = moo_edit_get_user_menu_files (&n_files)))
+    {
+        moo_edit_load_user_menu (files, n_files,
+                                 moo_app_get_ui_xml (app),
+                                 "Editor/Popup/PopupStart",
+                                 "Editor/Popup/PopupEnd");
+        g_strfreev (files);
+    }
 }
 #endif /* MOO_BUILD_EDIT */
 

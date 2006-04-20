@@ -127,6 +127,25 @@
 
   </widget> <!-- Toolbar -->
 
+  <widget name="Popup">
+    <separator/>
+    <placeholder name="PopupStart"/>
+    <separator/>
+    <item action="Undo"/>
+    <item action="Redo"/>
+    <separator/>
+    <item action="Cut"/>
+    <item action="Copy"/>
+    <item action="Paste"/>
+    <separator/>
+    <item action="SelectAll"/>
+    <separator/>
+    <item action="BookmarksMenu"/>
+    <separator/>
+    <placeholder name="PopupEnd"/>
+    <separator/>
+  </widget> <!-- Popup -->
+
 </object> <!-- Editor -->
 
 <object name="Terminal">

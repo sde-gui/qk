@@ -138,29 +138,15 @@ moo_closure_signal_call (MooClosure *cl)
 
     if (!closure->proxy)
     {
-        GValue ret_val;
-
-        if (closure->ret_type != G_TYPE_NONE)
-        {
-            ret_val.g_type = 0;
-            g_value_init (&ret_val, closure->ret_type);
-        }
-
-        g_object_ref (closure->object->target);
-        g_signal_emit (closure->object->target, closure->signal_id, 0);
-        g_object_unref (closure->object->target);
-
-        if (closure->ret_type != G_TYPE_NONE)
-            g_value_unset (&ret_val);
+        gboolean ret;
+        g_signal_emit (closure->object->target, closure->signal_id, 0, &ret);
     }
     else
     {
         gboolean ret;
         gpointer object = closure->proxy (closure->object->target);
         g_return_if_fail (object != NULL);
-        g_object_ref (object);
         g_signal_emit_by_name (object, closure->signal, &ret);
-        g_object_unref (object);
     }
 }
 

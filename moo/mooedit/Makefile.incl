@@ -6,11 +6,12 @@ mooedit = $(moo_prefix)/mooedit
 mooedit_srcdir = $(srcdir)/$(mooedit)
 
 mooedit_toolsdir = $(MOO_DATA_DIR)
-mooedit_tools_DATA = $(mooedit)/tools.cfg
+mooedit_tools_DATA = $(mooedit)/tools.cfg $(mooedit)/menu.cfg
 
 mooedit_include_headers =                     \
     $(mooedit)/moocmdview.h                   \
     $(mooedit)/moocompletion.h                \
+    $(mooedit)/mooedit-actions.h              \
     $(mooedit)/mooedit-script.h               \
     $(mooedit)/mooedit.h                      \
     $(mooedit)/mooeditconfig.h                \
@@ -64,6 +65,7 @@ mooedit_sources =                             \
     $(mooedit)/gtksourceiter.c                \
     $(mooedit)/moocmdview.c                   \
     $(mooedit)/moocompletion.c                \
+    $(mooedit)/mooedit-actions.c              \
     $(mooedit)/mooedit-script.c               \
     $(mooedit)/mooedit.c                      \
     $(mooedit)/mooeditconfig.c                \

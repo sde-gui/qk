@@ -21,6 +21,8 @@ G_BEGIN_DECLS
 
 #define MOO_USER_TOOLS_FILE     "tools.cfg"
 #define MOO_USER_TOOLS_ADD_FILE "tools-add.cfg"
+#define MOO_USER_MENU_FILE      "menu.cfg"
+#define MOO_USER_MENU_ADD_FILE  "menu-add.cfg"
 
 
 char  **moo_edit_get_user_tools_files   (guint      *n_files);
@@ -28,6 +30,13 @@ void    moo_edit_load_user_tools        (char      **files,
                                          guint       n_files,
                                          MooUIXML   *xml,
                                          const char *ui_path);
+
+char  **moo_edit_get_user_menu_files    (guint      *n_files);
+void    moo_edit_load_user_menu         (char      **files,
+                                         guint       n_files,
+                                         MooUIXML   *xml,
+                                         const char *start_path,
+                                         const char *end_path);
 
 
 G_END_DECLS

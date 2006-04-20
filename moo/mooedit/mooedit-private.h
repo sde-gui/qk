@@ -25,6 +25,15 @@
 G_BEGIN_DECLS
 
 
+extern GSList *_moo_edit_instances;
+void        _moo_edit_add_class_actions     (MooEdit        *edit);
+void        _moo_edit_check_actions         (MooEdit        *edit);
+void        _moo_edit_class_init_actions    (MooEditClass   *klass);
+
+void        _moo_edit_do_popup              (MooEdit        *edit,
+                                             GdkEventButton *event);
+
+
 /***********************************************************************/
 /* Preferences
 /*/
@@ -90,6 +99,12 @@ struct _MooEditPrivate {
     gboolean enable_bookmarks;
     GSList *bookmarks; /* sorted by line number */
     guint update_bookmarks_idle;
+
+    /***********************************************************************/
+    /* Actions
+    /*/
+    GtkMenu *menu;
+    MooActionGroup *actions;
 };
 
 

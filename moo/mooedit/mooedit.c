@@ -13,7 +13,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-
+#include "mooedit/mooedit-actions.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooeditdialogs.h"
@@ -23,6 +23,9 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>
+
+
+GSList *_moo_edit_instances = NULL;
 
 
 static GObject *moo_edit_constructor        (GType                  type,
@@ -38,6 +41,8 @@ static void     moo_edit_get_property       (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
+
+static gboolean moo_edit_popup_menu         (GtkWidget      *widget);
 
 static void     moo_edit_filename_changed   (MooEdit        *edit,
                                              const char     *new_filename);
@@ -100,14 +105,14 @@ static void
 moo_edit_class_init (MooEditClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    MooTextViewClass *view_class = MOO_TEXT_VIEW_CLASS (klass);
 
     gobject_class->set_property = moo_edit_set_property;
     gobject_class->get_property = moo_edit_get_property;
     gobject_class->constructor = moo_edit_constructor;
     gobject_class->finalize = moo_edit_finalize;
 
-    view_class->line_mark_clicked = moo_edit_line_mark_clicked;
+    MOO_TEXT_VIEW_CLASS(klass)->line_mark_clicked = moo_edit_line_mark_clicked;
+    GTK_WIDGET_CLASS(klass)->popup_menu = moo_edit_popup_menu;
 
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
@@ -140,6 +145,8 @@ moo_edit_class_init (MooEditClass *klass)
             g_param_spec_boolean ("strip", "strip", "strip",
                                   FALSE,
                                   G_PARAM_READWRITE));
+
+    _moo_edit_class_init_actions (klass);
 
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
@@ -232,6 +239,8 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
+    edit->priv->actions = moo_action_group_new ("MooEdit");
+
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
@@ -253,6 +262,9 @@ moo_edit_constructor (GType                  type,
         type, n_construct_properties, construct_param);
 
     edit = MOO_EDIT (object);
+
+    _moo_edit_add_class_actions (edit);
+    _moo_edit_instances = g_slist_prepend (_moo_edit_instances, edit);
 
     edit->priv->modified_changed_handler_id =
             g_signal_connect (get_buffer (edit),
@@ -284,6 +296,8 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
+    _moo_edit_instances = g_slist_remove (_moo_edit_instances, edit);
+
     g_signal_handlers_disconnect_by_func (edit->config,
                                           (gpointer) config_changed,
                                           edit);
@@ -304,6 +318,10 @@ moo_edit_finalize (GObject *object)
     g_slist_foreach (edit->priv->bookmarks, (GFunc) disconnect_bookmark, NULL);
     g_slist_foreach (edit->priv->bookmarks, (GFunc) g_object_unref, NULL);
     g_slist_free (edit->priv->bookmarks);
+
+    if (edit->priv->menu)
+        g_object_unref (edit->priv->menu);
+    g_object_unref (edit->priv->actions);
 
     g_free (edit->priv);
     edit->priv = NULL;
@@ -1599,4 +1617,133 @@ moo_edit_uncomment (MooEdit *edit)
                          lang->block_comment_end, &start, &end);
 
     end_comment_action (edit);
+}
+
+
+/*****************************************************************************/
+/* popup menu
+ */
+
+/* gtktextview.c */
+static void
+popup_position_func (GtkMenu   *menu,
+                     gint      *x,
+                     gint      *y,
+                     gboolean  *push_in,
+                     gpointer   user_data)
+{
+    GtkTextView *text_view;
+    GtkWidget *widget;
+    GdkRectangle cursor_rect;
+    GdkRectangle onscreen_rect;
+    gint root_x, root_y;
+    GtkTextIter iter;
+    GtkRequisition req;
+    GdkScreen *screen;
+    gint monitor_num;
+    GdkRectangle monitor;
+
+    text_view = GTK_TEXT_VIEW (user_data);
+    widget = GTK_WIDGET (text_view);
+
+    g_return_if_fail (GTK_WIDGET_REALIZED (text_view));
+
+    screen = gtk_widget_get_screen (widget);
+
+    gdk_window_get_origin (widget->window, &root_x, &root_y);
+
+    gtk_text_buffer_get_iter_at_mark (gtk_text_view_get_buffer (text_view),
+                                      &iter,
+                                      gtk_text_buffer_get_insert (gtk_text_view_get_buffer (text_view)));
+
+    gtk_text_view_get_iter_location (text_view,
+                                     &iter,
+                                     &cursor_rect);
+
+    gtk_text_view_get_visible_rect (text_view, &onscreen_rect);
+
+    gtk_widget_size_request (text_view->popup_menu, &req);
+
+    /* can't use rectangle_intersect since cursor rect can have 0 width */
+    if (cursor_rect.x >= onscreen_rect.x &&
+        cursor_rect.x < onscreen_rect.x + onscreen_rect.width &&
+        cursor_rect.y >= onscreen_rect.y &&
+        cursor_rect.y < onscreen_rect.y + onscreen_rect.height)
+    {
+        gtk_text_view_buffer_to_window_coords (text_view,
+                                               GTK_TEXT_WINDOW_WIDGET,
+                                               cursor_rect.x, cursor_rect.y,
+                                               &cursor_rect.x, &cursor_rect.y);
+
+        *x = root_x + cursor_rect.x + cursor_rect.width;
+        *y = root_y + cursor_rect.y + cursor_rect.height;
+    }
+    else
+    {
+        /* Just center the menu, since cursor is offscreen. */
+        *x = root_x + (widget->allocation.width / 2 - req.width / 2);
+        *y = root_y + (widget->allocation.height / 2 - req.height / 2);
+    }
+
+    /* Ensure sanity */
+    *x = CLAMP (*x, root_x, (root_x + widget->allocation.width));
+    *y = CLAMP (*y, root_y, (root_y + widget->allocation.height));
+
+    monitor_num = gdk_screen_get_monitor_at_point (screen, *x, *y);
+    gtk_menu_set_monitor (menu, monitor_num);
+    gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
+
+    *x = CLAMP (*x, monitor.x, monitor.x + MAX (0, monitor.width - req.width));
+    *y = CLAMP (*y, monitor.y, monitor.y + MAX (0, monitor.height - req.height));
+
+    *push_in = FALSE;
+}
+
+void
+_moo_edit_do_popup (MooEdit        *edit,
+                    GdkEventButton *event)
+{
+    GtkWidget *window;
+    MooUIXML *xml;
+
+    xml = moo_editor_get_ui_xml (edit->priv->editor);
+    g_return_if_fail (xml != NULL);
+
+    window = gtk_widget_get_toplevel (GTK_WIDGET (edit));
+
+    if (!edit->priv->menu)
+    {
+        edit->priv->menu =
+                moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
+                                          moo_edit_get_actions (edit),
+                                          MOO_IS_EDIT_WINDOW (window) ?
+                                                  MOO_WINDOW(window)->accel_group : NULL);
+        gtk_object_sink (g_object_ref (edit->priv->menu));
+    }
+
+    g_return_if_fail (edit->priv->menu != NULL);
+
+    _moo_edit_check_actions (edit);
+
+    if (event)
+    {
+        gtk_menu_popup (GTK_MENU (edit->priv->menu),
+                        NULL, NULL, NULL, NULL,
+                        event->button, event->time);
+    }
+    else
+    {
+        gtk_menu_popup (GTK_MENU (edit->priv->menu), NULL, NULL,
+                        popup_position_func, edit,
+                        0, gtk_get_current_event_time ());
+        gtk_menu_shell_select_first (GTK_MENU_SHELL (edit->priv->menu), FALSE);
+    }
+}
+
+
+static gboolean
+moo_edit_popup_menu (GtkWidget *widget)
+{
+    _moo_edit_do_popup (MOO_EDIT (widget), NULL);
+    return TRUE;
 }
