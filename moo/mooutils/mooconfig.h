@@ -70,6 +70,10 @@ gboolean        moo_config_save             (MooConfig  *config,
                                              const char *file,
                                              GError    **error);
 
+gboolean        moo_config_get_modified     (MooConfig  *config);
+void            moo_config_set_modified     (MooConfig  *config,
+                                             gboolean    modified);
+
 guint           moo_config_n_items          (MooConfig  *config);
 MooConfigItem  *moo_config_nth_item         (MooConfig  *config,
                                              guint       n);
@@ -80,6 +84,10 @@ MooConfigItem  *moo_config_new_item         (MooConfig  *config,
                                              gboolean    modify);
 void            moo_config_delete_item      (MooConfig  *config,
                                              const char *id,
+                                             gboolean    modify);
+void            moo_config_move_item        (MooConfig  *config,
+                                             guint       index,
+                                             guint       new_index,
                                              gboolean    modify);
 
 const char     *moo_config_item_get_id      (MooConfigItem  *item);

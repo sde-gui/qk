@@ -60,7 +60,8 @@ static GObjectClass *moo_config_parent_class;
 
 enum {
     PROP_0,
-    PROP_ITEM_ID_KEY
+    PROP_ITEM_ID_KEY,
+    PROP_MODIFIED
 };
 
 static ItemData        *item_data_new               (void);
@@ -149,6 +150,10 @@ moo_config_set_property (GObject        *object,
             g_object_notify (object, "item-id-key");
             break;
 
+        case PROP_MODIFIED:
+            moo_config_set_modified (config, g_value_get_boolean (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
             break;
@@ -168,6 +173,10 @@ moo_config_get_property (GObject        *object,
     {
         case PROP_ITEM_ID_KEY:
             g_value_set_string (value, config->priv->id_key);
+            break;
+
+        case PROP_MODIFIED:
+            g_value_set_boolean (value, config->priv->modified);
             break;
 
         default:
@@ -250,6 +259,24 @@ moo_config_get_type (void)
     }
 
     return type;
+}
+
+
+gboolean
+moo_config_get_modified (MooConfig *config)
+{
+    g_return_val_if_fail (MOO_IS_CONFIG (config), FALSE);
+    return config->priv->modified;
+}
+
+
+void
+moo_config_set_modified (MooConfig  *config,
+                         gboolean    modified)
+{
+    g_return_if_fail (MOO_IS_CONFIG (config));
+    config->priv->modified = modified != 0;
+    g_object_notify (G_OBJECT (config), "modified");
 }
 
 
@@ -379,7 +406,7 @@ emit_row_changed (MooConfig      *config,
     config->priv->model_stamp++;
     path = gtk_tree_path_new_from_indices (index, -1);
     ITER_SET (config, &iter, index);
-    g_signal_emit_by_name (config, "row-changed", path, &iter);
+    gtk_tree_model_row_changed (GTK_TREE_MODEL (config), path, &iter);
     gtk_tree_path_free (path);
 }
 
@@ -506,7 +533,61 @@ moo_config_delete_item (MooConfig  *config,
 
     config->priv->model_stamp++;
     path = gtk_tree_path_new_from_indices (index, -1);
-    g_signal_emit_by_name (config, "row-deleted", path);
+    gtk_tree_model_row_deleted (GTK_TREE_MODEL (config), path);
+    gtk_tree_path_free (path);
+}
+
+
+void
+moo_config_move_item (MooConfig  *config,
+                      guint       index,
+                      guint       new_index,
+                      gboolean    modify)
+{
+    MooConfigItem *item;
+    int *new_order;
+    guint i;
+    GtkTreePath *path;
+
+    g_return_if_fail (MOO_IS_CONFIG (config));
+    g_return_if_fail (index < config->priv->items->len);
+    g_return_if_fail (new_index < config->priv->items->len);
+
+    if (index == new_index)
+        return;
+
+    item = config->priv->items->pdata[index];
+    g_ptr_array_remove_index (config->priv->items, index);
+    g_ptr_array_add (config->priv->items, item);
+
+    if (new_index != config->priv->items->len - 1)
+    {
+        memmove (config->priv->items->pdata + new_index + 1,
+                 config->priv->items->pdata + new_index,
+                 sizeof (gpointer) * (config->priv->items->len - new_index - 1));
+        config->priv->items->pdata[new_index] = item;
+    }
+
+    if (modify)
+        config->priv->modified = TRUE;
+
+    new_order = g_new (int, config->priv->items->len);
+
+    for (i = 0; i < config->priv->items->len; ++i)
+        if (i < MIN (index, new_index) || i > MAX (index, new_index))
+            new_order[i] = i;
+        else if (i == new_index)
+            new_order[i] = index;
+        else if (index < new_index)
+            new_order[i] = i + 1;
+        else
+            new_order[i] = i - 1;
+
+    config->priv->model_stamp++;
+    path = gtk_tree_path_new ();
+    gtk_tree_model_rows_reordered (GTK_TREE_MODEL (config),
+                                   path, NULL, new_order);
+    g_free (new_order);
     gtk_tree_path_free (path);
 }
 
@@ -539,7 +620,7 @@ moo_config_new_item_real (MooConfig  *config,
     config->priv->model_stamp++;
     ITER_SET (config, &iter, config->priv->items->len - 1);
     path = gtk_tree_path_new_from_indices (config->priv->items->len - 1, -1);
-    g_signal_emit_by_name (config, "row-inserted", path, &iter);
+    gtk_tree_model_row_inserted (GTK_TREE_MODEL (config), path, &iter);
     gtk_tree_path_free (path);
 
     return item;
