@@ -193,7 +193,7 @@ cmpl_data_read_config_file (CmplData *data)
 
     config = moo_config_new ("pattern");
 
-    if (!moo_config_parse_file (config, data->path))
+    if (!moo_config_parse_file (config, data->path, FALSE))
     {
         g_object_unref (config);
         return;
@@ -218,9 +218,7 @@ cmpl_data_read_config_file (CmplData *data)
         pattern = moo_config_item_get_id (item);
         prefix = moo_config_item_get_value (item, "prefix");
         suffix = moo_config_item_get_value (item, "insert-suffix");
-        suffix = suffix ? suffix : moo_config_item_get_value (item, "insert_suffix");
         script = moo_config_item_get_value (item, "insert-script");
-        script = script ? script : moo_config_item_get_value (item, "insert_script");
 
         groups = moo_config_item_get_value (item, "group");
         groups = groups ? groups : moo_config_item_get_value (item, "groups");

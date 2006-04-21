@@ -1044,7 +1044,7 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
 
     config = moo_config_new (AS_KEY_PATTERN);
 
-    if (!moo_config_parse_file (config, file))
+    if (!moo_config_parse_file (config, file, FALSE))
     {
         g_object_unref (config);
         return;

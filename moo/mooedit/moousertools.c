@@ -189,10 +189,10 @@ moo_edit_load_tools (FileType    type,
     config = moo_config_new (MOO_USER_TOOL_KEY_ACTION);
 
     for (i = 0; i < n_files; ++i)
-        moo_config_parse_file (config, default_files[i]);
+        moo_config_parse_file (config, default_files[i], FALSE);
 
     if (user_file && g_file_test (user_file, G_FILE_TEST_EXISTS))
-        moo_config_parse_file (config, user_file);
+        moo_config_parse_file (config, user_file, FALSE);
 
     n_items = moo_config_n_items (config);
 

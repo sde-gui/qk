@@ -122,7 +122,7 @@ moo_parse_user_actions (const char             *filename,
 
     config = moo_config_new ("action");
 
-    if (!moo_config_parse_file (config, filename))
+    if (!moo_config_parse_file (config, filename, FALSE))
     {
         g_object_unref (config);
         return;

@@ -250,15 +250,15 @@ make_config (GtkTreeModel *model)
 
         if (pattern)
         {
-            item = moo_config_new_item (config, pattern);
+            item = moo_config_new_item (config, pattern, FALSE);
 
             if (script)
-                moo_config_set_item_content (config, item, script);
+                moo_config_set_item_content (config, item, script, FALSE);
 
             if (lang)
-                moo_config_set_value (config, item, AS_KEY_LANG, lang);
+                moo_config_set_value (config, item, AS_KEY_LANG, lang, FALSE);
             if (!enabled)
-                moo_config_set_value (config, item, AS_KEY_ENABLED, "no");
+                moo_config_set_value (config, item, AS_KEY_ENABLED, "no", FALSE);
         }
 
         g_free (pattern);
