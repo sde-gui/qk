@@ -240,6 +240,7 @@ find_plugin_init (FindPlugin *plugin)
                                  "name", "Find In Files",
                                  "label", "Find In Files",
                                  "tooltip", "Find In Files",
+                                 "accel", "<ctrl><alt>f",
                                  "icon-stock-id", MOO_STOCK_FIND_IN_FILES,
                                  "closure-callback", find_in_files_cb,
                                  NULL);
@@ -314,6 +315,7 @@ create_grep_dialog (MooEditWindow  *window,
     stuff->grep_dialog = moo_glade_xml_get_widget (stuff->grep_xml, "grep_dialog");
     g_return_if_fail (stuff->grep_dialog != NULL);
 
+    gtk_window_set_default_size (GTK_WINDOW (stuff->grep_dialog), 400, -1);
     gtk_dialog_set_default_response (GTK_DIALOG (stuff->grep_dialog),
                                      GTK_RESPONSE_OK);
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->grep_dialog),
@@ -358,6 +360,7 @@ create_find_dialog (MooEditWindow  *window,
     stuff->find_dialog = moo_glade_xml_get_widget (stuff->find_xml, "find_dialog");
     g_return_if_fail (stuff->find_dialog != NULL);
 
+    gtk_window_set_default_size (GTK_WINDOW (stuff->find_dialog), 400, -1);
     gtk_dialog_set_default_response (GTK_DIALOG (stuff->find_dialog),
                                      GTK_RESPONSE_OK);
     gtk_dialog_set_response_sensitive (GTK_DIALOG (stuff->find_dialog),
