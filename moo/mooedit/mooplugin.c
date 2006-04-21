@@ -1013,11 +1013,9 @@ doc_lang_changed (MooEdit *doc)
 
     g_return_if_fail (MOO_IS_EDIT (doc));
 
+    window = moo_edit_get_window (doc);
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
     id = LANG_ID (lang);
-
-    if ((toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc))))
-        window = MOO_EDIT_WINDOW (toplevel);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
     {

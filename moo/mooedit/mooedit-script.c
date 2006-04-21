@@ -125,18 +125,13 @@ moo_edit_context_set_doc (MooEditContext *ctx,
                           MooEdit        *doc)
 {
     MSValue *val;
-    GtkWidget *window = NULL;
+    MooEditWindow *window = NULL;
 
     g_return_if_fail (MOO_IS_EDIT_CONTEXT (ctx));
     g_return_if_fail (!doc || MOO_IS_EDIT (doc));
 
     if (doc)
-    {
-        GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (doc));
-
-        if (GTK_IS_WINDOW (toplevel))
-            window = toplevel;
-    }
+        window = moo_edit_get_window (doc);
 
     g_object_set (ctx, "window", window, NULL);
 
@@ -212,6 +207,7 @@ moo_text_context_new (GtkTextView *doc)
         return moo_edit_context_new (MOO_EDIT (doc), NULL);
 
     window = gtk_widget_get_toplevel (GTK_WIDGET (doc));
+
     ctx = g_object_new (MS_TYPE_CONTEXT,
                         "window", GTK_IS_WINDOW (window) ? window : NULL,
                         NULL);

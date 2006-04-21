@@ -1703,21 +1703,19 @@ void
 _moo_edit_do_popup (MooEdit        *edit,
                     GdkEventButton *event)
 {
-    GtkWidget *window;
     MooUIXML *xml;
+    MooEditWindow *window;
 
     xml = moo_editor_get_ui_xml (edit->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    window = gtk_widget_get_toplevel (GTK_WIDGET (edit));
-
     if (!edit->priv->menu)
     {
+        window = moo_edit_get_window (edit);
         edit->priv->menu =
                 moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
                                           moo_edit_get_actions (edit),
-                                          MOO_IS_EDIT_WINDOW (window) ?
-                                                  MOO_WINDOW(window)->accel_group : NULL);
+                                          window ? MOO_WINDOW(window)->accel_group : NULL);
         gtk_object_sink (g_object_ref (edit->priv->menu));
     }
 

@@ -288,16 +288,16 @@
   </kdevdoctreeview>
   <kdevfilecreate>
     <filetypes>
-      <type icon="source" ext="g" name="GAP source" create="template" >
+      <type icon="source" ext="g" create="template" name="GAP source" >
         <descr>A new empty GAP source file</descr>
       </type>
-      <type icon="source_cpp" ext="cpp" name="C++ Source" create="template" >
+      <type icon="source_cpp" ext="cpp" create="template" name="C++ Source" >
         <descr>A new empty C++ file.</descr>
       </type>
-      <type icon="source_h" ext="h" name="C/C++ Header" create="template" >
+      <type icon="source_h" ext="h" create="template" name="C/C++ Header" >
         <descr>A new empty header file for C/C++.</descr>
       </type>
-      <type icon="source_c" ext="c" name="C Source" create="template" >
+      <type icon="source_c" ext="c" create="template" name="C Source" >
         <descr>A new empty C file.</descr>
       </type>
     </filetypes>

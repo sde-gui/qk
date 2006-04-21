@@ -16,6 +16,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/moodialogs.h"
 #include <gtk/gtkaccelgroup.h>
 #include <gtk/gtkdialog.h>
 #include <gtk/gtklabel.h>
@@ -273,8 +274,10 @@ static void moo_accel_button_clicked       (MooAccelButton *button)
 
     if (button->title)
         gtk_window_set_title (GTK_WINDOW (dialog), button->title);
-    gtk_window_set_transient_for (GTK_WINDOW (dialog),
-        GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (button))));
+
+    moo_position_window (dialog,
+                         gtk_widget_get_toplevel (GTK_WIDGET (button)),
+                         FALSE, FALSE, 0, 0);
 
     ok_button = moo_glade_xml_get_widget (xml, "ok");
     cancel_button = moo_glade_xml_get_widget (xml, "cancel");
