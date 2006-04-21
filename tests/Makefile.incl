@@ -13,7 +13,11 @@ BUILT_SOURCES += medit-ui.h tests/medit-app.c
 medit-ui.h: tests/medit-ui.xml
 	sh $(srcdir)/moo/mooutils/xml2h.sh MEDIT_UI $(srcdir)/tests/medit-ui.xml > medit-ui.h
 tests/medit-app.c: tests/medit-app.opag medit-ui.h
-	opag -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/tests/medit-app.opag $(srcdir)/tests/medit-app.c
+	if test -z $(OPAG); then \
+		touch $(srcdir)/tests/medit-app.c; \
+	else \
+		$(OPAG) -f _medit_parse_options -O _medit_opt_ -A _medit_arg_ $(srcdir)/tests/medit-app.opag $(srcdir)/tests/medit-app.c; \
+	fi
 
 if MOO_OS_MINGW
 medit.win: tests/medit.win
