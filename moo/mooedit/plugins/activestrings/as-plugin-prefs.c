@@ -215,7 +215,7 @@ make_config (GtkTreeModel *model)
     if (!gtk_tree_model_get_iter_first (model, &iter))
         return NULL;
 
-    config = moo_config_new ();
+    config = moo_config_new (AS_KEY_PATTERN);
 
     do
     {
@@ -248,17 +248,18 @@ make_config (GtkTreeModel *model)
             pattern = NULL;
         }
 
-        item = moo_config_new_item (config);
-
-        if (script)
-            moo_config_item_set_content (item, script);
-
         if (pattern)
-            moo_config_item_set_value (item, AS_KEY_PATTERN, pattern);
-        if (lang)
-            moo_config_item_set_value (item, AS_KEY_LANG, lang);
-        if (!enabled)
-            moo_config_item_set_value (item, AS_KEY_ENABLED, "no");
+        {
+            item = moo_config_new_item (config, pattern);
+
+            if (script)
+                moo_config_set_item_content (config, item, script);
+
+            if (lang)
+                moo_config_set_value (config, item, AS_KEY_LANG, lang);
+            if (!enabled)
+                moo_config_set_value (config, item, AS_KEY_ENABLED, "no");
+        }
 
         g_free (pattern);
         g_free (lang);
@@ -316,6 +317,9 @@ prefs_page_apply (MooGladeXML *xml)
 
     set_changed (model, FALSE);
     _as_plugin_reload (get_plugin (xml));
+
+    if (config)
+        g_object_unref (config);
 }
 
 

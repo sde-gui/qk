@@ -14,21 +14,55 @@
 #ifndef __MOO_CONFIG_H__
 #define __MOO_CONFIG_H__
 
-#include <glib.h>
+#include <gtk/gtktreemodel.h>
 
 G_BEGIN_DECLS
 
 
+#define MOO_CONFIG_ERROR (moo_config_error_quark ())
+
+#define MOO_TYPE_CONFIG_ITEM        (moo_config_item_get_type ())
+#define MOO_TYPE_CONFIG             (moo_config_get_type ())
+#define MOO_CONFIG(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_CONFIG, MooConfig))
+#define MOO_CONFIG_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_CONFIG, MooConfigClass))
+#define MOO_IS_CONFIG(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_CONFIG))
+#define MOO_IS_CONFIG_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_CONFIG))
+#define MOO_CONFIG_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_CONFIG, MooConfigClass))
+
+
+typedef enum {
+    MOO_CONFIG_ERROR_FAILED
+} MooConfigError;
+
 typedef struct _MooConfig MooConfig;
+typedef struct _MooConfigPrivate MooConfigPrivate;
+typedef struct _MooConfigClass MooConfigClass;
 typedef struct _MooConfigItem MooConfigItem;
 
 
-MooConfig      *moo_config_new              (void);
+struct _MooConfig {
+    GObject parent;
+    MooConfigPrivate *priv;
+};
+
+struct _MooConfigClass {
+    GObjectClass parent_class;
+};
+
+
+GType           moo_config_get_type         (void) G_GNUC_CONST;
+GType           moo_config_item_get_type    (void) G_GNUC_CONST;
+GQuark          moo_config_error_quark      (void) G_GNUC_CONST;
+
+MooConfig      *moo_config_new              (const char *item_id_key);
 void            moo_config_free             (MooConfig  *config);
 
-MooConfig      *moo_config_parse            (const char *string,
+gboolean        moo_config_parse_buffer     (MooConfig  *config,
+                                             const char *string,
                                              int         len);
-MooConfig      *moo_config_parse_file       (const char *filename);
+gboolean        moo_config_parse_file       (MooConfig  *config,
+                                             const char *filename);
+
 char           *moo_config_format           (MooConfig  *config);
 gboolean        moo_config_save             (MooConfig  *config,
                                              const char *file,
@@ -37,22 +71,31 @@ gboolean        moo_config_save             (MooConfig  *config,
 guint           moo_config_n_items          (MooConfig  *config);
 MooConfigItem  *moo_config_nth_item         (MooConfig  *config,
                                              guint       n);
-MooConfigItem  *moo_config_new_item         (MooConfig  *config);
+MooConfigItem  *moo_config_get_item         (MooConfig  *config,
+                                             const char *id);
+MooConfigItem  *moo_config_new_item         (MooConfig  *config,
+                                             const char *id);
+void            moo_config_delete_item      (MooConfig  *config,
+                                             const char *id);
 
+const char     *moo_config_item_get_id      (MooConfigItem  *item);
 const char     *moo_config_item_get_value   (MooConfigItem  *item,
                                              const char     *key);
-void            moo_config_item_set_value   (MooConfigItem  *item,
+void            moo_config_set_value        (MooConfig      *config,
+                                             MooConfigItem  *item,
                                              const char     *key,
                                              const char     *value);
 gboolean        moo_config_item_get_bool    (MooConfigItem  *item,
                                              const char     *key,
                                              gboolean        default_val);
-void            moo_config_item_set_bool    (MooConfigItem  *item,
+void            moo_config_set_bool         (MooConfig      *config,
+                                             MooConfigItem  *item,
                                              const char     *key,
                                              gboolean        value);
 
 const char     *moo_config_item_get_content (MooConfigItem  *item);
-void            moo_config_item_set_content (MooConfigItem  *item,
+void            moo_config_set_item_content (MooConfig      *config,
+                                             MooConfigItem  *item,
                                              const char     *content);
 
 

@@ -1042,11 +1042,13 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
     if (!file)
         return;
 
-    config = moo_config_parse_file (file);
-    g_free (file);
+    config = moo_config_new (AS_KEY_PATTERN);
 
-    if (!config)
+    if (!moo_config_parse_file (config, file))
+    {
+        g_object_unref (config);
         return;
+    }
 
     n_items = moo_config_n_items (config);
 
@@ -1056,7 +1058,7 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
         gboolean enabled;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
-        pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
+        pattern = moo_config_item_get_id (item);
         lang = moo_config_item_get_value (item, AS_KEY_LANG);
         enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
         script = moo_config_item_get_content (item);
@@ -1073,7 +1075,7 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
         func (pattern, script, lang, enabled, data);
     }
 
-    moo_config_free (config);
+    g_object_unref (config);
 }
 
 

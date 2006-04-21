@@ -34,7 +34,6 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moouseractions.h"
 #include <string.h>
 
 
@@ -747,27 +746,27 @@ moo_app_cmd_setup (MooCommand   *cmd,
     g_signal_emit (app, signals[CMD_SETUP], 0, cmd, window);
 }
 
-static void
-moo_app_load_user_actions (void)
-{
-    char **dirs;
-    guint n_dirs, i;
-
-    dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
-    g_return_if_fail (dirs != NULL);
-
-    for (i = 0; i < n_dirs; i++)
-    {
-        char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
-
-        if (g_file_test (file, G_FILE_TEST_EXISTS))
-            moo_parse_user_actions (file, moo_app_cmd_setup);
-
-        g_free (file);
-    }
-
-    g_strfreev (dirs);
-}
+// static void
+// moo_app_load_user_actions (void)
+// {
+//     char **dirs;
+//     guint n_dirs, i;
+//
+//     dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
+//     g_return_if_fail (dirs != NULL);
+//
+//     for (i = 0; i < n_dirs; i++)
+//     {
+//         char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
+//
+//         if (g_file_test (file, G_FILE_TEST_EXISTS))
+//             moo_parse_user_actions (file, moo_app_cmd_setup);
+//
+//         g_free (file);
+//     }
+//
+//     g_strfreev (dirs);
+// }
 
 
 #ifdef MOO_BUILD_EDIT
@@ -776,6 +775,7 @@ moo_app_init_editor (MooApp *app)
 {
     char **files;
     guint n_files;
+    char *user_file;
 
     app->priv->editor = moo_editor_instance ();
     moo_editor_set_ui_xml (app->priv->editor,
@@ -787,22 +787,20 @@ moo_app_init_editor (MooApp *app)
 
     moo_plugin_read_dirs ();
 
-    if ((files = moo_edit_get_user_tools_files (&n_files)))
-    {
-        moo_edit_load_user_tools (files, n_files,
-                                  moo_app_get_ui_xml (app),
-                                  "Editor/Menubar/Tools/ToolsMenu");
-        g_strfreev (files);
-    }
+    moo_edit_get_user_tools_files (&files, &n_files, &user_file);
+    moo_edit_load_user_tools (files, n_files, user_file,
+                              moo_app_get_ui_xml (app),
+                              "Editor/Menubar/Tools/ToolsMenu");
+    g_strfreev (files);
+    g_free (user_file);
 
-    if ((files = moo_edit_get_user_menu_files (&n_files)))
-    {
-        moo_edit_load_user_menu (files, n_files,
-                                 moo_app_get_ui_xml (app),
-                                 "Editor/Popup/PopupStart",
-                                 "Editor/Popup/PopupEnd");
-        g_strfreev (files);
-    }
+    moo_edit_get_user_menu_files (&files, &n_files, &user_file);
+    moo_edit_load_user_menu (files, n_files, user_file,
+                             moo_app_get_ui_xml (app),
+                             "Editor/Popup/PopupStart",
+                             "Editor/Popup/PopupEnd");
+    g_strfreev (files);
+    g_free (user_file);
 }
 #endif /* MOO_BUILD_EDIT */
 
@@ -931,7 +929,7 @@ moo_app_init_real (MooApp *app)
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
 
-    moo_app_load_user_actions ();
+//     moo_app_load_user_actions ();
 
     start_io (app);
 

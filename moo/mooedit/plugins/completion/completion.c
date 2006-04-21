@@ -191,8 +191,13 @@ cmpl_data_read_config_file (CmplData *data)
     g_return_if_fail (data->cmpl == NULL);
     g_return_if_fail (data->path != NULL);
 
-    config = moo_config_parse_file (data->path);
-    g_return_if_fail (config != NULL);
+    config = moo_config_new ("pattern");
+
+    if (!moo_config_parse_file (config, data->path))
+    {
+        g_object_unref (config);
+        return;
+    }
 
     n_items = moo_config_n_items (config);
     g_return_if_fail (n_items != 0);
@@ -210,7 +215,7 @@ cmpl_data_read_config_file (CmplData *data)
 
         item = moo_config_nth_item (config, i);
 
-        pattern = moo_config_item_get_value (item, "pattern");
+        pattern = moo_config_item_get_id (item);
         prefix = moo_config_item_get_value (item, "prefix");
         suffix = moo_config_item_get_value (item, "insert-suffix");
         suffix = suffix ? suffix : moo_config_item_get_value (item, "insert_suffix");
@@ -260,7 +265,7 @@ cmpl_data_read_config_file (CmplData *data)
         g_free (parens);
     }
 
-    moo_config_free (config);
+    g_object_unref (config);
 
     if (!group)
     {

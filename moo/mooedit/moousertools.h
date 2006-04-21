@@ -40,15 +40,21 @@ G_BEGIN_DECLS
 #define MOO_USER_TOOL_OPTION_SILENT     "silent"
 
 
-char  **moo_edit_get_user_tools_files   (guint      *n_files);
-void    moo_edit_load_user_tools        (char      **files,
+void    moo_edit_get_user_tools_files   (char     ***default_files,
+                                         guint      *n_files,
+                                         char      **user_file);
+void    moo_edit_load_user_tools        (char      **default_files,
                                          guint       n_files,
+                                         char       *user_file,
                                          MooUIXML   *xml,
                                          const char *ui_path);
 
-char  **moo_edit_get_user_menu_files    (guint      *n_files);
-void    moo_edit_load_user_menu         (char      **files,
+void    moo_edit_get_user_menu_files    (char     ***default_files,
+                                         guint      *n_files,
+                                         char      **user_file);
+void    moo_edit_load_user_menu         (char      **default_files,
                                          guint       n_files,
+                                         char       *user_file,
                                          MooUIXML   *xml,
                                          const char *start_path,
                                          const char *end_path);

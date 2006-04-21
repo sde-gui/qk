@@ -57,11 +57,6 @@ static GSList *menu_actions;
 static void         remove_tools        (void);
 static void         remove_menu_actions (void);
 
-static void         load_file           (FileType        type,
-                                         const char     *file,
-                                         MooUIXML       *xml,
-                                         const char     *ui_path1,
-                                         const char     *ui_path2);
 static void         load_config_item    (FileType        type,
                                          MooConfigItem  *item,
                                          MooUIXML       *xml,
@@ -93,21 +88,26 @@ static ActionData  *action_data_new     (FileType        type,
 static void         action_data_free    (ActionData     *data);
 
 
-static char **
-get_files (FileType type,
-           guint   *n_files_p)
+static void
+get_files (FileType    type,
+           char     ***files_p,
+           guint      *n_files_p,
+           char      **user_file_p)
 {
     guint n_files = 0, i;
     char **files = NULL;
+    char *user_file = NULL;
     GSList *list = NULL;
 
     switch (type)
     {
         case FILE_TOOLS:
+            user_file = moo_get_user_data_file (MOO_USER_TOOLS_FILE);
             files = moo_get_data_files (MOO_USER_TOOLS_FILE,
                                         MOO_DATA_SHARE, &n_files);
             break;
         case FILE_MENU:
+            user_file = moo_get_user_data_file (MOO_USER_MENU_FILE);
             files = moo_get_data_files (MOO_USER_MENU_FILE,
                                         MOO_DATA_SHARE, &n_files);
             break;
@@ -118,10 +118,9 @@ get_files (FileType type,
         int i;
 
         for (i = n_files - 1; i >= 0; --i)
-        {
-            if (g_file_test (files[i], G_FILE_TEST_EXISTS))
-                list = g_slist_prepend (list, g_strdup (files[i]));
-        }
+            if (!user_file || strcmp (user_file, files[i]))
+                if (g_file_test (files[i], G_FILE_TEST_EXISTS))
+                    list = g_slist_prepend (list, g_strdup (files[i]));
     }
 
     g_strfreev (files);
@@ -138,82 +137,62 @@ get_files (FileType type,
         list = g_slist_delete_link (list, list);
     }
 
-    if (n_files_p)
-        *n_files_p = n_files;
-
-    return files;
-}
-
-
-char **
-moo_edit_get_user_tools_files (guint *n_files_p)
-{
-    return get_files (FILE_TOOLS, n_files_p);
-}
-
-
-char **
-moo_edit_get_user_menu_files (guint *n_files_p)
-{
-    return get_files (FILE_MENU, n_files_p);
+    *user_file_p = user_file;
+    *files_p = files;
+    *n_files_p = n_files;
 }
 
 
 void
-moo_edit_load_user_tools (char      **files,
-                          guint       n_files,
-                          MooUIXML   *xml,
-                          const char *ui_path)
+moo_edit_get_user_tools_files (char     ***default_files,
+                               guint      *n_files,
+                               char      **user_file)
 {
-    guint i;
-
-    if (!n_files)
-        return;
-
-    g_return_if_fail (files || !n_files);
-
-    remove_tools ();
-
-    for (i = 0; i < n_files; ++i)
-        load_file (FILE_TOOLS, files[i], xml, ui_path, NULL);
+    return get_files (FILE_TOOLS, default_files, n_files, user_file);
 }
 
 
 void
-moo_edit_load_user_menu (char      **files,
-                         guint       n_files,
-                         MooUIXML   *xml,
-                         const char *start_path,
-                         const char *end_path)
+moo_edit_get_user_menu_files (char     ***default_files,
+                              guint      *n_files,
+                              char      **user_file)
 {
-    guint i;
-
-    if (!n_files)
-        return;
-
-    g_return_if_fail (files || !n_files);
-
-    remove_menu_actions ();
-
-    for (i = 0; i < n_files; ++i)
-        load_file (FILE_MENU, files[i], xml, start_path, end_path);
+    return get_files (FILE_MENU, default_files, n_files, user_file);
 }
 
 
 static void
-load_file (FileType        type,
-           const char     *file,
-           MooUIXML       *xml,
-           const char     *ui_path1,
-           const char     *ui_path2)
+moo_edit_load_tools (FileType    type,
+                     char      **default_files,
+                     guint       n_files,
+                     char       *user_file,
+                     MooUIXML   *xml,
+                     const char *ui_path1,
+                     const char *ui_path2)
 {
+    guint i, n_items;
     MooConfig *config;
-    guint n_items, i;
 
-    g_return_if_fail (file != NULL);
+    if (!n_files && !user_file)
+        return;
 
-    config = moo_config_parse_file (file);
-    g_return_if_fail (config != NULL);
+    switch (type)
+    {
+        case FILE_TOOLS:
+            remove_tools ();
+            break;
+        case FILE_MENU:
+            remove_menu_actions ();
+            break;
+    }
+
+    config = moo_config_new (MOO_USER_TOOL_KEY_ACTION);
+
+    for (i = 0; i < n_files; ++i)
+        moo_config_parse_file (config, default_files[i]);
+
+    if (user_file && g_file_test (user_file, G_FILE_TEST_EXISTS))
+        moo_config_parse_file (config, user_file);
 
     n_items = moo_config_n_items (config);
 
@@ -221,7 +200,32 @@ load_file (FileType        type,
         load_config_item (type, moo_config_nth_item (config, i),
                           xml, ui_path1, ui_path2);
 
-    moo_config_free (config);
+    g_object_unref (config);
+}
+
+
+void
+moo_edit_load_user_tools (char      **default_files,
+                          guint       n_files,
+                          char       *user_file,
+                          MooUIXML   *xml,
+                          const char *ui_path)
+{
+    moo_edit_load_tools (FILE_TOOLS, default_files, n_files,
+                         user_file, xml, ui_path, NULL);
+}
+
+
+void
+moo_edit_load_user_menu (char      **default_files,
+                         guint       n_files,
+                         char       *user_file,
+                         MooUIXML   *xml,
+                         const char *start_path,
+                         const char *end_path)
+{
+    moo_edit_load_tools (FILE_MENU, default_files, n_files,
+                         user_file, xml, start_path, end_path);
 }
 
 
@@ -350,7 +354,7 @@ load_config_item (FileType       type,
         g_free (norm);
     }
 
-    name = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACTION);
+    name = moo_config_item_get_id (item);
     label = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LABEL);
     accel = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACCEL);
     pos = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_POSITION);

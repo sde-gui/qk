@@ -120,10 +120,13 @@ moo_parse_user_actions (const char             *filename,
 
     g_return_if_fail (filename != NULL);
 
-    config = moo_config_parse_file (filename);
+    config = moo_config_new ("action");
 
-    if (!config)
+    if (!moo_config_parse_file (config, filename))
+    {
+        g_object_unref (config);
         return;
+    }
 
     n_items = moo_config_n_items (config);
     klass = g_type_class_ref (MOO_TYPE_WINDOW);
@@ -135,7 +138,7 @@ moo_parse_user_actions (const char             *filename,
         MooCommandType cmd_type = 0;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
-        name = moo_config_item_get_value (item, "action");
+        name = moo_config_item_get_id (item);
         label = moo_config_item_get_value (item, "label");
         accel = moo_config_item_get_value (item, "accel");
         type = moo_config_item_get_value (item, "command");
@@ -173,7 +176,7 @@ moo_parse_user_actions (const char             *filename,
                                                 action, (GDestroyNotify) action_free);
     }
 
-    moo_config_free (config);
+    g_object_unref (config);
     g_type_class_unref (klass);
 }
 
