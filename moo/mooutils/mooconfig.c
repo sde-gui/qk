@@ -25,23 +25,13 @@
 
 struct _MooConfigPrivate {
     GPtrArray *items;
-    char *id_key;
     int model_stamp;
-    GHashTable *ids;
     gboolean modified;
 };
-
-typedef struct {
-    GHashTable *dict;
-    char *content;
-    guint start;
-    guint end;
-} ItemData;
 
 struct _MooConfigItem {
     GHashTable *dict;
     char *content;
-    char *id;
     guint start;
     guint end;
 };
@@ -60,15 +50,10 @@ static GObjectClass *moo_config_parent_class;
 
 enum {
     PROP_0,
-    PROP_ITEM_ID_KEY,
     PROP_MODIFIED
 };
 
-static ItemData        *item_data_new               (void);
-static void             item_data_free              (ItemData       *data);
-
-static MooConfigItem   *moo_config_item_new         (const char     *id,
-                                                     GHashTable     *dict);
+static MooConfigItem   *moo_config_item_new         (void);
 static void             moo_config_item_free        (MooConfigItem  *item);
 
 static int              get_item_index              (MooConfig     *config,
@@ -111,7 +96,6 @@ moo_config_init (MooConfig *config)
     config->priv = g_new0 (MooConfigPrivate, 1);
     config->priv->items = g_ptr_array_new ();
     config->priv->model_stamp = 1;
-    config->priv->ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 
@@ -124,9 +108,6 @@ moo_config_finalize (GObject *object)
                          (GFunc) moo_config_item_free,
                          NULL);
     g_ptr_array_free (config->priv->items, TRUE);
-    g_free (config->priv->id_key);
-
-    g_hash_table_destroy (config->priv->ids);
 
     g_free (config->priv);
 
@@ -144,12 +125,6 @@ moo_config_set_property (GObject        *object,
 
     switch (param_id)
     {
-        case PROP_ITEM_ID_KEY:
-            g_free (config->priv->id_key);
-            config->priv->id_key = g_strdup (g_value_get_string (value));
-            g_object_notify (object, "item-id-key");
-            break;
-
         case PROP_MODIFIED:
             moo_config_set_modified (config, g_value_get_boolean (value));
             break;
@@ -171,10 +146,6 @@ moo_config_get_property (GObject        *object,
 
     switch (param_id)
     {
-        case PROP_ITEM_ID_KEY:
-            g_value_set_string (value, config->priv->id_key);
-            break;
-
         case PROP_MODIFIED:
             g_value_set_boolean (value, config->priv->modified);
             break;
@@ -198,12 +169,12 @@ moo_config_class_init (MooConfigClass *klass)
     gobject_class->get_property = moo_config_get_property;
 
     g_object_class_install_property (gobject_class,
-                                     PROP_ITEM_ID_KEY,
-                                     g_param_spec_string ("item-id-key",
-                                             "item-id-key",
-                                             "item-id-key",
-                                             NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                     PROP_MODIFIED,
+                                     g_param_spec_boolean ("modified",
+                                             "modified",
+                                             "modified",
+                                             FALSE,
+                                             G_PARAM_READWRITE));
 }
 
 
@@ -275,8 +246,21 @@ moo_config_set_modified (MooConfig  *config,
                          gboolean    modified)
 {
     g_return_if_fail (MOO_IS_CONFIG (config));
-    config->priv->modified = modified != 0;
-    g_object_notify (G_OBJECT (config), "modified");
+
+    modified = modified != 0;
+
+    if (modified != config->priv->modified)
+    {
+        config->priv->modified = modified;
+        g_object_notify (G_OBJECT (config), "modified");
+    }
+}
+
+
+GQuark
+moo_config_error_quark (void)
+{
+    return g_quark_from_static_string ("moo-config-error-quark");
 }
 
 
@@ -293,13 +277,10 @@ moo_config_item_get_type (void)
 
 
 static MooConfigItem *
-moo_config_item_new (const char  *id,
-                     GHashTable  *dict)
+moo_config_item_new (void)
 {
     MooConfigItem *item = g_new0 (MooConfigItem, 1);
-    item->id = g_strdup (id);
-    item->dict = dict ? dict : g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                      g_free, g_free);
+    item->dict = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
     return item;
 }
 
@@ -310,41 +291,55 @@ moo_config_item_free (MooConfigItem *item)
     if (item)
     {
         g_hash_table_destroy (item->dict);
-        g_free (item->id);
         g_free (item->content);
         g_free (item);
     }
 }
 
 
-static ItemData *
-item_data_new (void)
+MooConfig *
+moo_config_new (void)
 {
-    ItemData *data = g_new0 (ItemData, 1);
-    data->dict = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-    return data;
-}
-
-
-static void
-item_data_free (ItemData *data)
-{
-    if (data)
-    {
-        if (data->dict)
-            g_hash_table_destroy (data->dict);
-        g_free (data->content);
-        g_free (data);
-    }
+    return g_object_new (MOO_TYPE_CONFIG, NULL);
 }
 
 
 MooConfig *
-moo_config_new (const char *item_id_key)
+moo_config_new_from_file (const char *filename,
+                          gboolean    modified,
+                          GError    **error)
 {
-    g_return_val_if_fail (item_id_key != NULL, NULL);
-    return g_object_new (MOO_TYPE_CONFIG, "item-id-key",
-                         item_id_key, NULL);
+    MooConfig *config;
+
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    config = moo_config_new ();
+
+    if (moo_config_parse_file (config, filename, modified, error))
+        return config;
+
+    g_object_unref (config);
+    return NULL;
+}
+
+
+MooConfig *
+moo_config_new_from_buffer (const char     *string,
+                            int             len,
+                            gboolean        modified,
+                            GError        **error)
+{
+    MooConfig *config;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    config = moo_config_new ();
+
+    if (moo_config_parse_buffer (config, string, len, modified, error))
+        return config;
+
+    g_object_unref (config);
+    return NULL;
 }
 
 
@@ -418,7 +413,7 @@ moo_config_set_value (MooConfig      *config,
                       const char     *value,
                       gboolean        modify)
 {
-    char *norm, *old_value;
+    char *norm, *old_value, *new_value = NULL;
     gboolean modified = FALSE;
 
     g_return_if_fail (item != NULL);
@@ -429,27 +424,38 @@ moo_config_set_value (MooConfig      *config,
 
     if (value)
     {
-        if (!old_value || strcmp (value, old_value))
+        new_value = g_strstrip (g_strdup (value));
+
+        if (!new_value[0])
         {
-            g_hash_table_insert (item->dict, norm, g_strdup (value));
+            g_free (new_value);
+            new_value = NULL;
+        }
+    }
+
+    if (new_value)
+    {
+        if (!old_value || strcmp (new_value, old_value))
+        {
+            g_hash_table_insert (item->dict, norm, new_value);
+            new_value = NULL;
             modified = TRUE;
         }
     }
-    else
+    else if (old_value)
     {
-        if (old_value)
-        {
-            g_hash_table_remove (item->dict, norm);
-            g_free (norm);
-            modified = TRUE;
-        }
+        g_hash_table_remove (item->dict, norm);
+        g_free (norm);
+        modified = TRUE;
     }
 
     if (modified && modify)
-        config->priv->modified = TRUE;
+        moo_config_set_modified (config, TRUE);
 
     if (modified)
         emit_row_changed (config, item);
+
+    g_free (new_value);
 }
 
 
@@ -483,7 +489,7 @@ moo_config_set_item_content (MooConfig      *config,
         g_free (tmp);
 
         if (modify)
-            config->priv->modified = TRUE;
+            moo_config_set_modified (config, TRUE);
 
         emit_row_changed (config, item);
     }
@@ -506,30 +512,21 @@ get_item_index (MooConfig     *config,
 
 void
 moo_config_delete_item (MooConfig  *config,
-                        const char *id,
+                        guint       index,
                         gboolean    modify)
 {
     MooConfigItem *item;
     GtkTreePath *path;
-    int index;
 
     g_return_if_fail (MOO_IS_CONFIG (config));
-    g_return_if_fail (id != NULL);
+    g_return_if_fail (index < config->priv->items->len);
 
-    item = g_hash_table_lookup (config->priv->ids, id);
-
-    if (!item)
-        return;
-
-    index = get_item_index (config, item);
-    g_return_if_fail (index >= 0);
-
+    item = config->priv->items->pdata[index];
     g_ptr_array_remove_index (config->priv->items, index);
-    g_hash_table_remove (config->priv->ids, id);
     moo_config_item_free (item);
 
     if (modify)
-        config->priv->modified = TRUE;
+        moo_config_set_modified (config, TRUE);
 
     config->priv->model_stamp++;
     path = gtk_tree_path_new_from_indices (index, -1);
@@ -569,7 +566,7 @@ moo_config_move_item (MooConfig  *config,
     }
 
     if (modify)
-        config->priv->modified = TRUE;
+        moo_config_set_modified (config, TRUE);
 
     new_order = g_new (int, config->priv->items->len);
 
@@ -593,33 +590,39 @@ moo_config_move_item (MooConfig  *config,
 
 
 static MooConfigItem *
-moo_config_new_item_real (MooConfig  *config,
-                          const char *id,
-                          GHashTable *dict,
-                          gboolean    modify)
+moo_config_new_item_real (MooConfig     *config,
+                          int            index,
+                          MooConfigItem *item,
+                          gboolean       modify)
 {
-    MooConfigItem *item;
     GtkTreePath *path;
     GtkTreeIter iter;
 
-    item = g_hash_table_lookup (config->priv->ids, id);
+    if (!item)
+        item = moo_config_item_new ();
 
-    if (item)
-        moo_config_delete_item (config, id, modify);
+    if (index >= (int) config->priv->items->len || index < 0)
+        index = config->priv->items->len;
 
-    if (dict)
-        g_hash_table_remove (dict, config->priv->id_key);
-
-    item = moo_config_item_new (id, dict);
-    g_ptr_array_add (config->priv->items, item);
-    g_hash_table_insert (config->priv->ids, g_strdup (id), item);
+    if (index == (int) config->priv->items->len)
+    {
+        g_ptr_array_add (config->priv->items, item);
+    }
+    else
+    {
+        g_ptr_array_add (config->priv->items, NULL);
+        memmove (config->priv->items->pdata + index + 1,
+                 config->priv->items->pdata + index,
+                 sizeof (gpointer) * (config->priv->items->len - index - 1));
+        config->priv->items->pdata[index] = item;
+    }
 
     if (modify)
-        config->priv->modified = TRUE;
+        moo_config_set_modified (config, TRUE);
 
     config->priv->model_stamp++;
-    ITER_SET (config, &iter, config->priv->items->len - 1);
-    path = gtk_tree_path_new_from_indices (config->priv->items->len - 1, -1);
+    ITER_SET (config, &iter, index);
+    path = gtk_tree_path_new_from_indices (index, -1);
     gtk_tree_model_row_inserted (GTK_TREE_MODEL (config), path, &iter);
     gtk_tree_path_free (path);
 
@@ -629,12 +632,11 @@ moo_config_new_item_real (MooConfig  *config,
 
 MooConfigItem *
 moo_config_new_item (MooConfig  *config,
-                     const char *id,
+                     int         index,
                      gboolean    modify)
 {
     g_return_val_if_fail (MOO_IS_CONFIG (config), NULL);
-    g_return_val_if_fail (id && id[0], NULL);
-    return moo_config_new_item_real (config, id, NULL, modify);
+    return moo_config_new_item_real (config, index, NULL, modify);
 }
 
 
@@ -818,7 +820,9 @@ line_is_indented (const char *line)
 static gboolean
 parse_header_line (char          **lines,
                    guint           n,
-                   ItemData       *data)
+                   MooConfigItem  *item,
+                   const char     *filename,
+                   GError        **error)
 {
     char *line = lines[n];
     char *value = NULL, *key = NULL;
@@ -827,7 +831,8 @@ parse_header_line (char          **lines,
 
     if (!value)
     {
-        g_warning ("%s: value missing on line %d", G_STRLOC, n+1);
+        g_set_error (error, MOO_CONFIG_ERROR, MOO_CONFIG_ERROR_PARSE,
+                     "In '%s': value missing on line %d", filename, n+1);
         goto error;
     }
 
@@ -836,23 +841,27 @@ parse_header_line (char          **lines,
 
     if (!key[0])
     {
-        g_warning ("%s: empty key on line %d", G_STRLOC, n+1);
+        g_set_error (error, MOO_CONFIG_ERROR, MOO_CONFIG_ERROR_PARSE,
+                     "In '%s': empty key on line %d", filename, n+1);
         goto error;
     }
 
     if (!value[0])
     {
-        g_warning ("%s: value missing on line %d", G_STRLOC, n+1);
+        g_set_error (error, MOO_CONFIG_ERROR, MOO_CONFIG_ERROR_PARSE,
+                     "In '%s': value missing on line %d", filename, n+1);
         goto error;
     }
 
-    if (g_hash_table_lookup (data->dict, key))
+    if (g_hash_table_lookup (item->dict, key))
     {
-        g_warning ("%s: duplicated key '%s' on line %d", G_STRLOC, key, n+1);
+        g_set_error (error, MOO_CONFIG_ERROR, MOO_CONFIG_ERROR_PARSE,
+                     "In '%s': duplicated key '%s' on line %d",
+                     filename, key, n+1);
         goto error;
     }
 
-    g_hash_table_insert (data->dict, key, value);
+    g_hash_table_insert (item->dict, key, value);
     return TRUE;
 
 error:
@@ -869,42 +878,21 @@ moo_config_add_items (MooConfig *config,
 {
     while (list)
     {
-        ItemData *data = list->data;
-        MooConfigItem *item;
-        char *id;
-
-        id = g_hash_table_lookup (data->dict, config->priv->id_key);
-
-        if (!id)
-        {
-            g_warning ("%s: '%s' missing on line %d",
-                       G_STRLOC, config->priv->id_key,
-                       data->start);
-            goto skip;
-        }
-
-        id = g_strdup (id);
-        item = moo_config_new_item_real (config, id, data->dict, modify);
-        item->content = data->content;
-        item->start = data->start;
-        item->end = data->end;
-        data->dict = NULL;
-        data->content = NULL;
-        g_free (id);
-
-skip:
-        list = list->next;
+        moo_config_new_item_real (config, -1, list->data, modify);
+        list = g_slist_delete_link (list, list);
     }
 }
 
 
 static gboolean
-moo_config_parse_lines (MooConfig *config,
-                        char     **lines,
-                        guint      n_lines,
-                        gboolean   modify)
+moo_config_parse_lines (MooConfig  *config,
+                        char      **lines,
+                        guint       n_lines,
+                        gboolean    modify,
+                        const char *filename,
+                        GError    **error)
 {
-    ItemData *data;
+    MooConfigItem *item;
     GPtrArray *content;
     guint start;
     GSList *items;
@@ -912,7 +900,7 @@ moo_config_parse_lines (MooConfig *config,
     content = g_ptr_array_new ();
     start = 0;
     items = NULL;
-    data = NULL;
+    item = NULL;
 
     while (start < n_lines)
     {
@@ -926,7 +914,9 @@ moo_config_parse_lines (MooConfig *config,
 
         if (line_is_indented (lines[start]))
         {
-            g_warning ("line %d", start+1);
+            g_set_error (error, MOO_CONFIG_ERROR, MOO_CONFIG_ERROR_PARSE,
+                         "In '%s', line %d: indented line without header",
+                         filename, start+1);
             goto error;
         }
 
@@ -945,16 +935,19 @@ moo_config_parse_lines (MooConfig *config,
                 continue;
             }
 
-            if (!data)
-                data = item_data_new ();
+            if (!item)
+            {
+                item = moo_config_item_new ();
+                item->start = start;
+            }
 
-            if (!parse_header_line (lines, content_start, data))
+            if (!parse_header_line (lines, content_start, item, filename, error))
                 goto error;
 
             content_start++;
         }
 
-        if (!data)
+        if (!item)
             break;
 
         start = content_start;
@@ -994,7 +987,9 @@ moo_config_parse_lines (MooConfig *config,
 
             if (!indent)
             {
-                g_critical ("%s: oops", G_STRLOC);
+                g_set_error (error, MOO_CONFIG_ERROR,
+                             MOO_CONFIG_ERROR_PARSE,
+                             "%s: oops", G_STRLOC);
                 goto error;
             }
 
@@ -1007,39 +1002,40 @@ moo_config_parse_lines (MooConfig *config,
                 g_string_append_c (str, '\n');
             }
 
-            data->content = str->str;
+            item->content = str->str;
             g_string_free (str, FALSE);
             g_ptr_array_set_size (content, 0);
         }
 
-        items = g_slist_prepend (items, data);
-        data = NULL;
+        item->end = start;
+        items = g_slist_prepend (items, item);
+        item = NULL;
     }
 
     items = g_slist_reverse (items);
 
     moo_config_add_items (config, items, modify);
 
-    g_slist_foreach (items, (GFunc) item_data_free, NULL);
-    g_slist_free (items);
     g_ptr_array_free (content, TRUE);
 
     return TRUE;
 
 error:
-    item_data_free (data);
+    moo_config_item_free (item);
     g_ptr_array_free (content, TRUE);
-    g_slist_foreach (items, (GFunc) item_data_free, NULL);
+    g_slist_foreach (items, (GFunc) moo_config_item_free, NULL);
     g_slist_free (items);
     return FALSE;
 }
 
 
-gboolean
-moo_config_parse_buffer (MooConfig  *config,
-                         const char *string,
-                         int         len,
-                         gboolean    modify)
+static gboolean
+moo_config_parse_buffer_real (MooConfig  *config,
+                              const char *filename,
+                              const char *string,
+                              int         len,
+                              gboolean    modify,
+                              GError    **error)
 {
     char **lines;
     guint n_lines;
@@ -1052,7 +1048,8 @@ moo_config_parse_buffer (MooConfig  *config,
         len = strlen (string);
 
     lines = splitlines (string, len, &n_lines);
-    result = moo_config_parse_lines (config, lines, n_lines, modify);
+    result = moo_config_parse_lines (config, lines, n_lines,
+                                     modify, filename, error);
 
     g_strfreev (lines);
     return result;
@@ -1060,28 +1057,48 @@ moo_config_parse_buffer (MooConfig  *config,
 
 
 gboolean
+moo_config_parse_buffer (MooConfig  *config,
+                         const char *string,
+                         int         len,
+                         gboolean    modify,
+                         GError    **error)
+{
+    g_return_val_if_fail (MOO_IS_CONFIG (config), FALSE);
+    g_return_val_if_fail (string != NULL, FALSE);
+    return moo_config_parse_buffer_real (config, "<input>",
+                                         string, len, modify,
+                                         error);
+}
+
+
+gboolean
 moo_config_parse_file (MooConfig  *config,
                        const char *filename,
-                       gboolean    modify)
+                       gboolean    modify,
+                       GError    **error)
 {
     GMappedFile *file;
-    GError *error = NULL;
+    GError *error_here = NULL;
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_CONFIG (config), FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    file = g_mapped_file_new (filename, FALSE, &error);
+    file = g_mapped_file_new (filename, FALSE, &error_here);
 
     if (!file)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
+        g_set_error (error, MOO_CONFIG_ERROR,
+                     MOO_CONFIG_ERROR_FILE,
+                     "%s", error_here->message);
+        g_error_free (error_here);
         return FALSE;
     }
 
-    result = moo_config_parse_buffer (config, g_mapped_file_get_contents (file),
-                                      g_mapped_file_get_length (file), modify);
+    result = moo_config_parse_buffer_real (config, filename,
+                                           g_mapped_file_get_contents (file),
+                                           g_mapped_file_get_length (file),
+                                           modify, error);
 
     g_mapped_file_free (file);
     return result;
@@ -1111,14 +1128,6 @@ moo_config_set_bool (MooConfig      *config,
 }
 
 
-const char *
-moo_config_item_get_id (MooConfigItem *item)
-{
-    g_return_val_if_fail (item != NULL, NULL);
-    return item->id;
-}
-
-
 static void
 format_key (const char *key,
             const char *value,
@@ -1129,14 +1138,13 @@ format_key (const char *key,
 
 static void
 moo_config_item_format (MooConfigItem *item,
-                        const char    *id_key,
                         GString       *string)
 {
     char **lines;
     guint n_lines, i;
     char *indent;
 
-    g_string_append_printf (string, "%s: %s" LINE_TERM, id_key, item->id);
+    g_return_if_fail (g_hash_table_size (item->dict) != 0);
 
     g_hash_table_foreach (item->dict, (GHFunc) format_key, string);
 
@@ -1173,8 +1181,7 @@ moo_config_format (MooConfig *config)
         if (i > 0)
             g_string_append (string, LINE_TERM);
 
-        moo_config_item_format (config->priv->items->pdata[i],
-                                config->priv->id_key, string);
+        moo_config_item_format (config->priv->items->pdata[i], string);
     }
 
     return g_string_free (string, FALSE);
@@ -1203,7 +1210,7 @@ static GType
 moo_config_get_column_type (G_GNUC_UNUSED GtkTreeModel *model,
                             int           index)
 {
-    g_return_val_if_fail (index != 1, 0);
+    g_return_val_if_fail (index == 0, 0);
     return MOO_TYPE_CONFIG_ITEM;
 }
 
@@ -1245,7 +1252,7 @@ moo_config_get_path (GtkTreeModel   *model,
                      GtkTreeIter    *iter)
 {
     MooConfig *config = MOO_CONFIG (model);
-    g_return_val_if_fail (config->priv->model_stamp != iter->stamp, NULL);
+    g_return_val_if_fail (config->priv->model_stamp == iter->stamp, NULL);
     return gtk_tree_path_new_from_indices (ITER_INDEX (iter), -1);
 }
 
@@ -1257,8 +1264,9 @@ moo_config_get_value (GtkTreeModel   *model,
                       GValue         *value)
 {
     MooConfig *config = MOO_CONFIG (model);
-    g_return_if_fail (config->priv->model_stamp != iter->stamp);
-    g_return_if_fail (column != 0);
+    g_return_if_fail (config->priv->model_stamp == iter->stamp);
+    g_return_if_fail (column == 0);
+    g_value_init (value, MOO_TYPE_CONFIG_ITEM);
     g_value_set_pointer (value, config->priv->items->pdata[ITER_INDEX (iter)]);
 }
 
@@ -1336,4 +1344,22 @@ moo_config_iter_parent (G_GNUC_UNUSED GtkTreeModel *model,
 {
     ITER_SET_INVALID (iter);
     return FALSE;
+}
+
+
+void
+moo_config_get_item_iter (MooConfig      *config,
+                          MooConfigItem  *item,
+                          GtkTreeIter    *iter)
+{
+    int index;
+
+    g_return_if_fail (MOO_IS_CONFIG (config));
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (iter != NULL);
+
+    index = get_item_index (config, item);
+    g_return_if_fail (index >= 0);
+
+    moo_config_get_iter_nth (config, iter, index);
 }

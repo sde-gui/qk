@@ -120,13 +120,8 @@ moo_parse_user_actions (const char             *filename,
 
     g_return_if_fail (filename != NULL);
 
-    config = moo_config_new ("action");
-
-    if (!moo_config_parse_file (config, filename, FALSE))
-    {
-        g_object_unref (config);
-        return;
-    }
+    config = moo_config_new_from_file (filename, FALSE, NULL);
+    g_return_if_fail (config != NULL);
 
     n_items = moo_config_n_items (config);
     klass = g_type_class_ref (MOO_TYPE_WINDOW);
@@ -138,7 +133,7 @@ moo_parse_user_actions (const char             *filename,
         MooCommandType cmd_type = 0;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
-        name = moo_config_item_get_id (item);
+        name = moo_config_item_get_value (item, "action");
         label = moo_config_item_get_value (item, "label");
         accel = moo_config_item_get_value (item, "accel");
         type = moo_config_item_get_value (item, "command");

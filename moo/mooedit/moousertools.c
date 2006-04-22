@@ -186,13 +186,13 @@ moo_edit_load_tools (FileType    type,
             break;
     }
 
-    config = moo_config_new (MOO_USER_TOOL_KEY_ACTION);
+    config = moo_config_new ();
 
     for (i = 0; i < n_files; ++i)
-        moo_config_parse_file (config, default_files[i], FALSE);
+        moo_config_parse_file (config, default_files[i], FALSE, NULL);
 
     if (user_file && g_file_test (user_file, G_FILE_TEST_EXISTS))
-        moo_config_parse_file (config, user_file, FALSE);
+        moo_config_parse_file (config, user_file, FALSE, NULL);
 
     n_items = moo_config_n_items (config);
 
@@ -354,7 +354,7 @@ load_config_item (FileType       type,
         g_free (norm);
     }
 
-    name = moo_config_item_get_id (item);
+    name = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACTION);
     label = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LABEL);
     accel = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACCEL);
     pos = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_POSITION);
