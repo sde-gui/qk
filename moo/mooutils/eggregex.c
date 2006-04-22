@@ -108,6 +108,9 @@ egg_regex_new (const gchar         *pattern,
   gint erroffset;
   gint capture_count;
 
+  _pcre_malloc = (gpointer (*) (size_t)) g_malloc;
+  _pcre_free = g_free;
+
   regex->ref_count = 1;
 
   /* preset the parts of gregex that need to be set, regardless of the
