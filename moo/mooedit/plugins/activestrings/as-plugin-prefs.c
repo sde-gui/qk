@@ -21,15 +21,6 @@
 #include <string.h>
 
 
-enum {
-    COLUMN_PATTERN,
-    COLUMN_SCRIPT,
-    COLUMN_LANG,
-    COLUMN_ENABLED,
-    N_COLUMNS
-};
-
-
 static void prefs_page_apply    (MooGladeXML        *xml);
 static void prefs_page_init     (MooGladeXML        *xml);
 static void prefs_page_destroy  (MooGladeXML        *xml);
@@ -93,7 +84,6 @@ _as_plugin_prefs_page (MooPlugin *plugin)
     GtkTreeSelection *selection;
     GtkTreeView *treeview;
     GtkTreeViewColumn *column;
-    GtkListStore *store;
     GtkCellRenderer *cell;
 
     xml = moo_glade_xml_new_empty ();
@@ -111,16 +101,10 @@ _as_plugin_prefs_page (MooPlugin *plugin)
 
     setup_script_view (moo_glade_xml_get_widget (xml, "script"));
 
-    store = gtk_list_store_new (N_COLUMNS,
-                                G_TYPE_STRING, G_TYPE_STRING,
-                                G_TYPE_STRING, G_TYPE_BOOLEAN);
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     selection = gtk_tree_view_get_selection (treeview);
     g_signal_connect (selection, "changed",
                       G_CALLBACK (selection_changed), xml);
-
-    gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
-    g_object_unref (store);
 
     column = gtk_tree_view_column_new ();
     gtk_tree_view_append_column (treeview, column);
@@ -156,18 +140,19 @@ pattern_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                    GtkTreeIter        *iter)
 {
     gboolean enabled;
-    char *pattern;
+    const char *pattern;
+    MooConfigItem *item = NULL;
 
-    gtk_tree_model_get (model, iter,
-                        COLUMN_ENABLED, &enabled,
-                        COLUMN_PATTERN, &pattern, -1);
+    gtk_tree_model_get (model, iter, 0, &item, -1);
+    g_return_if_fail (item != NULL);
+
+    pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
+    enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
 
     g_object_set (cell, "text", pattern,
                   "foreground", enabled ? NULL : "grey",
                   "style", enabled ? PANGO_STYLE_NORMAL : PANGO_STYLE_ITALIC,
                   NULL);
-
-    g_free (pattern);
 }
 
 
@@ -191,96 +176,13 @@ is_empty_string (const char *string)
 
 
 static void
-set_changed (GtkTreeModel *model,
-             gboolean      changed)
-{
-    g_object_set_data (G_OBJECT (model), "as-plugin-model-changed",
-                       GINT_TO_POINTER (changed));
-}
-
-static gboolean
-get_changed (GtkTreeModel *model)
-{
-    return g_object_get_data (G_OBJECT (model), "as-plugin-model-changed") ?
-            TRUE : FALSE;
-}
-
-
-static MooConfig *
-make_config (GtkTreeModel *model)
-{
-    GtkTreeIter iter;
-    MooConfig *config = NULL;
-
-    if (!gtk_tree_model_get_iter_first (model, &iter))
-        return NULL;
-
-    config = moo_config_new (AS_KEY_PATTERN);
-
-    do
-    {
-        MooConfigItem *item;
-        char *pattern, *lang, *script;
-        gboolean enabled;
-
-        gtk_tree_model_get (model, &iter,
-                            COLUMN_PATTERN, &pattern,
-                            COLUMN_LANG, &lang,
-                            COLUMN_SCRIPT, &script,
-                            COLUMN_ENABLED, &enabled,
-                            -1);
-
-        if (is_empty_string (script))
-        {
-            g_free (script);
-            script = NULL;
-        }
-
-        if (is_empty_string (lang))
-        {
-            g_free (lang);
-            lang = NULL;
-        }
-
-        if (is_empty_string (pattern))
-        {
-            g_free (pattern);
-            pattern = NULL;
-        }
-
-        if (pattern)
-        {
-            item = moo_config_new_item (config, pattern, FALSE);
-
-            if (script)
-                moo_config_set_item_content (config, item, script, FALSE);
-
-            if (lang)
-                moo_config_set_value (config, item, AS_KEY_LANG, lang, FALSE);
-            if (!enabled)
-                moo_config_set_value (config, item, AS_KEY_ENABLED, "no", FALSE);
-        }
-
-        g_free (pattern);
-        g_free (lang);
-        g_free (script);
-    }
-    while (gtk_tree_model_iter_next (model, &iter));
-
-    return config;
-}
-
-
-static void
 prefs_page_apply (MooGladeXML *xml)
 {
     GtkTreeIter iter;
     GtkTreeModel *model;
     GtkTreeSelection *selection;
     MooConfig *config;
-    char *cfg_string = NULL;
     GError *error = NULL;
-    const char *file;
 
     selection = gtk_tree_view_get_selection (moo_glade_xml_get_widget (xml, "treeview"));
 
@@ -291,22 +193,12 @@ prefs_page_apply (MooGladeXML *xml)
         gtk_tree_path_free (path);
     }
 
-    if (!get_changed (model))
+    config = MOO_CONFIG (model);
+
+    if (!moo_config_get_modified (config))
         return;
 
-    config = make_config (model);
-
-    if (config)
-        cfg_string = moo_config_format (config);
-    else
-        cfg_string = g_strdup ("");
-
-    file = moo_prefs_get_filename (AS_FILE_PREFS_KEY);
-
-    if (file)
-        moo_save_file_utf8 (file, cfg_string, -1, &error);
-    else
-        moo_save_user_data_file (AS_FILE, cfg_string, -1, &error);
+    _as_plugin_save_config (config, &error);
 
     if (error)
     {
@@ -315,49 +207,25 @@ prefs_page_apply (MooGladeXML *xml)
         g_error_free (error);
     }
 
-    set_changed (model, FALSE);
     _as_plugin_reload (get_plugin (xml));
-
-    if (config)
-        g_object_unref (config);
-}
-
-
-static void
-insert_item (const char   *pattern,
-             const char   *script,
-             const char   *lang,
-             gboolean      enabled,
-             GtkListStore *store)
-{
-    GtkTreeIter iter;
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-                        COLUMN_PATTERN, pattern,
-                        COLUMN_LANG, lang,
-                        COLUMN_SCRIPT, script,
-                        COLUMN_ENABLED, enabled,
-                        -1);
 }
 
 
 static void
 prefs_page_init (MooGladeXML *xml)
 {
-    GtkTreeIter iter;
-    GtkListStore *store;
-    GtkTreeModel *model;
+    MooConfig *config;
 
-    model = gtk_tree_view_get_model (moo_glade_xml_get_widget (xml, "treeview"));
-    store = GTK_LIST_STORE (model);
+    config = _as_plugin_load_config ();
 
-    if (gtk_tree_model_get_iter_first (model, &iter))
-        while (gtk_list_store_remove (store, &iter))
-            ;
+    if (!config)
+        config = moo_config_new ();
 
-    _as_plugin_load (get_plugin (xml), (ASLoadFunc) insert_item, model);
+    gtk_tree_view_set_model (moo_glade_xml_get_widget (xml, "treeview"),
+                             GTK_TREE_MODEL (config));
 
-    set_from_model (xml, model, NULL);
+    set_from_model (xml, GTK_TREE_MODEL (config), NULL);
+    g_object_unref (config);
 }
 
 
@@ -394,6 +262,7 @@ set_from_widgets (MooGladeXML  *xml,
     const char *pattern, *lang;
     char *script;
     gboolean enabled;
+    MooConfigItem *item = NULL;
 
     gtk_tree_model_get_iter (model, &iter, path);
 
@@ -406,44 +275,24 @@ set_from_widgets (MooGladeXML  *xml,
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     script = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
 
-    if (!get_changed (model))
-    {
-        char *old_pattern, *old_script, *old_lang;
-        gboolean old_enabled;
+    gtk_tree_model_get (model, &iter, 0, &item, -1);
+    g_return_if_fail (item != NULL);
 
-        gtk_tree_model_get (model, &iter,
-                            COLUMN_PATTERN, &old_pattern,
-                            COLUMN_SCRIPT, &old_script,
-                            COLUMN_LANG, &old_lang,
-                            COLUMN_ENABLED, &old_enabled,
-                            -1);
+    moo_config_set_value (MOO_CONFIG (model), item,
+                          AS_KEY_PATTERN, pattern, TRUE);
+    moo_config_set_value (MOO_CONFIG (model), item,
+                          AS_KEY_LANG, lang, TRUE);
 
-        if (strings_equal (old_pattern, pattern) &&
-            strings_equal (old_script, script) &&
-            strings_equal (old_lang, lang) &&
-            enabled == old_enabled)
-        {
-            g_free (old_pattern);
-            g_free (old_script);
-            g_free (old_lang);
-            goto out;
-        }
+    if (!enabled)
+        moo_config_set_bool (MOO_CONFIG (model), item,
+                             AS_KEY_ENABLED, enabled, TRUE);
+    else
+        moo_config_set_value (MOO_CONFIG (model), item,
+                              AS_KEY_ENABLED, NULL, TRUE);
 
-        set_changed (model, TRUE);
+    moo_config_set_item_content (MOO_CONFIG (model), item,
+                                 script, TRUE);
 
-        g_free (old_pattern);
-        g_free (old_script);
-        g_free (old_lang);
-    }
-
-    gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                        COLUMN_PATTERN, pattern,
-                        COLUMN_SCRIPT, script,
-                        COLUMN_LANG, lang,
-                        COLUMN_ENABLED, enabled,
-                        -1);
-
-out:
     g_free (script);
 }
 
@@ -471,6 +320,14 @@ set_from_model (MooGladeXML  *xml,
     GtkEntry *entry_pattern, *entry_lang;
     GtkTextView *script_view;
     GtkTextBuffer *buffer;
+    MooConfigItem *item = NULL;
+
+    if (path)
+    {
+        gtk_tree_model_get_iter (model, &iter, path);
+        gtk_tree_model_get (model, &iter, 0, &item, -1);
+        g_return_if_fail (item != NULL);
+    }
 
     g_signal_handlers_block_by_func (moo_glade_xml_get_widget (xml, "pattern"),
                                      (gpointer) pattern_changed, xml);
@@ -488,10 +345,7 @@ set_from_model (MooGladeXML  *xml,
     script_view = moo_glade_xml_get_widget (xml, "script");
     buffer = gtk_text_view_get_buffer (script_view);
 
-    if (path)
-        gtk_tree_model_get_iter (model, &iter, path);
-
-    if (!path)
+    if (!item)
     {
         gtk_widget_set_sensitive (button_delete, FALSE);
         gtk_widget_set_sensitive (button_up, FALSE);
@@ -505,16 +359,14 @@ set_from_model (MooGladeXML  *xml,
     }
     else
     {
-        char *pattern, *lang, *script;
+        const char *pattern, *lang, *script;
         gboolean enabled;
         int *indices;
 
-        gtk_tree_model_get (model, &iter,
-                            COLUMN_PATTERN, &pattern,
-                            COLUMN_LANG, &lang,
-                            COLUMN_SCRIPT, &script,
-                            COLUMN_ENABLED, &enabled,
-                            -1);
+        pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
+        lang = moo_config_item_get_value (item, AS_KEY_LANG);
+        script = moo_config_item_get_content (item);
+        enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
 
         gtk_widget_set_sensitive (button_delete, TRUE);
         gtk_widget_set_sensitive (GTK_WIDGET (button_enabled), TRUE);
@@ -597,27 +449,47 @@ selection_changed (GtkTreeSelection *selection,
 }
 
 
+static int
+iter_get_index (GtkTreeModel *model,
+                GtkTreeIter  *iter)
+{
+    int index;
+    GtkTreePath *path;
+
+    path = gtk_tree_model_get_path (model, iter);
+
+    if (!path)
+        return -1;
+
+    index = gtk_tree_path_get_indices(path)[0] + 1;
+
+    gtk_tree_path_free (path);
+    return index;
+}
+
+
 static void
 button_new (MooGladeXML *xml)
 {
     GtkTreeModel *model;
-    GtkTreeIter iter, after;
+    GtkTreeIter iter;
     GtkTreeSelection *selection;
     GtkTreeView *treeview;
+    MooConfigItem *item;
+    int index;
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
 
-    if (!get_selected (xml, &model, &after))
-        gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+    if (!get_selected (xml, &model, &iter))
+        index = -1;
     else
-        gtk_list_store_insert_after (GTK_LIST_STORE (model), &iter, &after);
+        index = iter_get_index (model, &iter);
 
-    gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                        COLUMN_PATTERN, "?",
-                        COLUMN_ENABLED, TRUE, -1);
+    item = moo_config_new_item (MOO_CONFIG (model), index, TRUE);
+    moo_config_set_value (MOO_CONFIG (model), item, AS_KEY_PATTERN, "?", TRUE);
 
-    set_changed (model, TRUE);
     selection = gtk_tree_view_get_selection (treeview);
+    moo_config_get_item_iter (MOO_CONFIG (model), item, &iter);
     gtk_tree_selection_select_iter (selection, &iter);
 }
 
@@ -629,29 +501,20 @@ button_delete (MooGladeXML *xml)
     GtkTreeIter iter;
     GtkTreeSelection *selection;
     GtkTreeView *treeview;
+    int index;
 
     if (!get_selected (xml, &model, &iter))
         g_return_if_reached ();
 
-    if (!gtk_list_store_remove (GTK_LIST_STORE (model), &iter))
-    {
-        int n_children;
+    index = iter_get_index (model, &iter);
+    moo_config_delete_item (MOO_CONFIG (model), index, TRUE);
 
-        n_children = gtk_tree_model_iter_n_children (model, NULL);
-
-        if (n_children)
-            gtk_tree_model_iter_nth_child (model, &iter, NULL,
-                                           n_children - 1);
-    }
-
-    if (gtk_tree_model_iter_n_children (model, NULL))
+    if (gtk_tree_model_iter_nth_child (model, &iter, NULL, index))
     {
         treeview = moo_glade_xml_get_widget (xml, "treeview");
         selection = gtk_tree_view_get_selection (treeview);
         gtk_tree_selection_select_iter (selection, &iter);
     }
-
-    set_changed (model, TRUE);
 }
 
 
@@ -660,7 +523,6 @@ button_up (MooGladeXML *xml)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
-    GtkTreeIter swap_with;
     GtkTreePath *path, *new_path;
     int *indices;
 
@@ -673,12 +535,9 @@ button_up (MooGladeXML *xml)
     if (!indices[0])
         g_return_if_reached ();
 
+    moo_config_move_item (MOO_CONFIG (model), indices[0], indices[0] - 1, TRUE);
     new_path = gtk_tree_path_new_from_indices (indices[0] - 1, -1);
-    gtk_tree_model_get_iter (model, &swap_with, new_path);
-    gtk_list_store_swap (GTK_LIST_STORE (model), &iter, &swap_with);
     set_from_model (xml, model, new_path);
-
-    set_changed (model, TRUE);
 
     gtk_tree_path_free (new_path);
     gtk_tree_path_free (path);
@@ -690,7 +549,6 @@ button_down (MooGladeXML *xml)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
-    GtkTreeIter swap_with;
     GtkTreePath *path, *new_path;
     int *indices;
     int n_children;
@@ -705,12 +563,9 @@ button_down (MooGladeXML *xml)
     if (indices[0] == n_children - 1)
         g_return_if_reached ();
 
+    moo_config_move_item (MOO_CONFIG (model), indices[0], indices[0] + 1, TRUE);
     new_path = gtk_tree_path_new_from_indices (indices[0] + 1, -1);
-    gtk_tree_model_get_iter (model, &swap_with, new_path);
-    gtk_list_store_swap (GTK_LIST_STORE (model), &iter, &swap_with);
     set_from_model (xml, model, new_path);
-
-    set_changed (model, TRUE);
 
     gtk_tree_path_free (new_path);
     gtk_tree_path_free (path);
@@ -724,15 +579,18 @@ pattern_changed (MooGladeXML *xml)
     GtkTreeModel *model;
     GtkTreeIter iter;
     const char *pattern;
+    MooConfigItem *item = NULL;
 
     if (!get_selected (xml, &model, &iter))
         return;
 
     entry = moo_glade_xml_get_widget (xml, "pattern");
     pattern = gtk_entry_get_text (entry);
+    gtk_tree_model_get (model, &iter, 0, &item, -1);
+    g_return_if_fail (item != NULL);
 
-    set_changed (model, TRUE);
-    gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_PATTERN, pattern, -1);
+    moo_config_set_value (MOO_CONFIG (model), item,
+                          AS_KEY_PATTERN, pattern, TRUE);
 }
 
 
@@ -742,14 +600,17 @@ enabled_changed (MooGladeXML *xml)
     GtkToggleButton *button;
     GtkTreeModel *model;
     GtkTreeIter iter;
+    MooConfigItem *item = NULL;
 
     if (!get_selected (xml, &model, &iter))
         return;
 
     button = moo_glade_xml_get_widget (xml, "enabled");
-    set_changed (model, TRUE);
-    gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                        COLUMN_ENABLED, gtk_toggle_button_get_active (button), -1);
+    gtk_tree_model_get (model, &iter, 0, &item, -1);
+    g_return_if_fail (item != NULL);
+
+    moo_config_set_bool (MOO_CONFIG (model), item, AS_KEY_ENABLED,
+                         gtk_toggle_button_get_active (button), TRUE);
 }
 
 

@@ -25,6 +25,7 @@
 #include "mooutils/eggregex.h"
 #include "mooutils/mooconfig.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-fs.h"
 #include "as-plugin-script.h"
 #include "as-plugin.h"
 #include "mooscript/mooscript-parser.h"
@@ -709,36 +710,66 @@ as_plugin_load_info (ASPlugin *plugin,
 }
 
 
-static void
-append_item (const char   *pattern,
-             const char   *script,
-             const char   *lang,
-             gboolean      enabled,
-             GSList      **list)
+static GSList *
+as_plugin_parse_config (MooConfig *config)
 {
-    ASInfo *info;
+    guint n_items, i;
+    GSList *list = NULL;
 
-    info = as_info_new (pattern, script, lang, enabled);
+    g_return_val_if_fail (config != NULL, NULL);
 
-    if (info)
-        *list = g_slist_prepend (*list, info);
+    n_items = moo_config_n_items (config);
+
+    for (i = 0; i < n_items; ++i)
+    {
+        const char *pattern, *lang, *script;
+        gboolean enabled;
+        ASInfo *info;
+        MooConfigItem *item = moo_config_nth_item (config, i);
+
+        pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
+        lang = moo_config_item_get_value (item, AS_KEY_LANG);
+        enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
+        script = moo_config_item_get_content (item);
+
+        if (!pattern)
+        {
+            g_warning ("%s: patern missing", G_STRLOC);
+            continue;
+        }
+
+        if (!script || !script[0])
+            script = NULL;
+
+        info = as_info_new (pattern, script, lang, enabled);
+
+        if (info)
+            list = g_slist_prepend (list, info);
+    }
+
+    return g_slist_reverse (list);
 }
+
 
 static void
 as_plugin_load (ASPlugin *plugin)
 {
     GSList *info = NULL;
+    MooConfig *config;
 
-    _as_plugin_load (MOO_PLUGIN (plugin),
-                     (ASLoadFunc) append_item,
-                     &info);
-    info = g_slist_reverse (info);
+    config = _as_plugin_load_config ();
+
+    if (!config)
+        return;
+
+    info = as_plugin_parse_config (config);
 
     if (info)
         as_plugin_load_info (plugin, info);
 
     g_slist_foreach (info, (GFunc) as_info_free, NULL);
     g_slist_free (info);
+    g_object_unref (config);
 }
 
 
@@ -1007,24 +1038,46 @@ as_plugin_do_action (ASPlugin       *plugin,
 }
 
 
-void
-_as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
-                 ASLoadFunc  func,
-                 gpointer    data)
+static char *
+as_plugin_get_user_file (gboolean *is_default)
 {
-    MooConfig *config;
     char *file;
-    guint n_items, i;
 
     moo_prefs_new_key_string (AS_FILE_PREFS_KEY, NULL);
     file = g_strdup (moo_prefs_get_filename (AS_FILE_PREFS_KEY));
 
     if (!file)
     {
+        if (is_default)
+            *is_default = TRUE;
+        file = moo_get_user_data_file (AS_FILE);
+    }
+    else if (is_default)
+    {
+        *is_default = FALSE;
+    }
+
+    return file;
+}
+
+
+MooConfig *
+_as_plugin_load_config (void)
+{
+    MooConfig *config;
+    char *file;
+    GError *error = NULL;
+
+    file = as_plugin_get_user_file (NULL);
+
+    if (!file || !g_file_test (file, G_FILE_TEST_EXISTS))
+    {
         char **files;
         guint n_files;
         int i;
 
+        g_free (file);
+        file = NULL;
         files = moo_get_data_files (AS_FILE, MOO_DATA_SHARE, &n_files);
 
         for (i = n_files - 1; !file && i >= 0; --i)
@@ -1033,49 +1086,44 @@ _as_plugin_load (G_GNUC_UNUSED MooPlugin  *plugin,
 
         g_strfreev (files);
     }
-    else if (!g_file_test (file, G_FILE_TEST_EXISTS))
-    {
-        g_free (file);
-        file = NULL;
-    }
 
     if (!file)
-        return;
+        return NULL;
 
-    config = moo_config_new (AS_KEY_PATTERN);
+    config = moo_config_new_from_file (file, FALSE, &error);
 
-    if (!moo_config_parse_file (config, file, FALSE))
+    if (!config)
     {
-        g_object_unref (config);
-        return;
+        g_critical ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
     }
 
-    n_items = moo_config_n_items (config);
+    g_free (file);
+    return config;
+}
 
-    for (i = 0; i < n_items; ++i)
-    {
-        const char *pattern, *lang, *script;
-        gboolean enabled;
-        MooConfigItem *item = moo_config_nth_item (config, i);
 
-        pattern = moo_config_item_get_id (item);
-        lang = moo_config_item_get_value (item, AS_KEY_LANG);
-        enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
-        script = moo_config_item_get_content (item);
+gboolean
+_as_plugin_save_config (MooConfig *config,
+                        GError   **error)
+{
+    char *file, *string;
+    gboolean is_default, result;
 
-        if (!pattern)
-        {
-            g_warning ("%s: patern missing", G_STRLOC);
-            continue;
-        }
+    g_return_val_if_fail (MOO_IS_CONFIG (config), FALSE);
 
-        if (!script || !script[0])
-            script = NULL;
+    file = as_plugin_get_user_file (&is_default);
+    g_return_val_if_fail (file != NULL, FALSE);
 
-        func (pattern, script, lang, enabled, data);
-    }
+    string = moo_config_format (config);
 
-    g_object_unref (config);
+    if (is_default)
+        result = moo_save_user_data_file (AS_FILE, string, -1, error);
+    else
+        result = moo_save_file_utf8 (file, string, -1, error);
+
+    g_free (string);
+    return result;
 }
 
 

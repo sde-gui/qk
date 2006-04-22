@@ -13,6 +13,7 @@
  */
 
 #include "mooedit/mooplugin.h"
+#include "mooutils/mooconfig.h"
 
 #ifndef __AS_PLUGIN_H__
 #define __AS_PLUGIN_H__
@@ -31,18 +32,11 @@ G_BEGIN_DECLS
 #define AS_FILE_PREFS_KEY AS_PREFS_ROOT "/file"
 
 
-typedef void (*ASLoadFunc) (const char   *pattern,
-                            const char   *script,
-                            const char   *lang,
-                            gboolean      enabled,
-                            gpointer      data);
-
-
 GtkWidget *_as_plugin_prefs_page    (MooPlugin  *plugin);
 void       _as_plugin_reload        (MooPlugin  *plugin);
-void       _as_plugin_load          (MooPlugin  *plugin,
-                                     ASLoadFunc  func,
-                                     gpointer    data);
+MooConfig *_as_plugin_load_config   (void);
+gboolean   _as_plugin_save_config   (MooConfig  *config,
+                                     GError    **error);
 
 
 G_END_DECLS
