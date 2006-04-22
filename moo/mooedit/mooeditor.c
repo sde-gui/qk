@@ -1567,7 +1567,7 @@ _moo_editor_reload (MooEditor      *editor,
 
     moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
     cursor_line = gtk_text_iter_get_line (&iter);
-    cursor_offset = gtk_text_iter_get_line_offset (&iter);
+    cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
 
     if (!moo_edit_loader_reload (loader, doc, &error_here))
     {
@@ -1581,7 +1581,7 @@ _moo_editor_reload (MooEditor      *editor,
     }
 
     moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor_line,
-                               cursor_offset, TRUE);
+                               cursor_offset, TRUE, TRUE);
 }
 
 

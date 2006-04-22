@@ -521,7 +521,7 @@ get_cursor (MooEdit *doc,
                                       gtk_text_buffer_get_insert (buffer));
 
     *line = gtk_text_iter_get_line (&iter);
-    *col = gtk_text_iter_get_line_offset (&iter);
+    *col = moo_text_iter_get_visual_line_offset (&iter, 8);
 }
 
 
@@ -546,7 +546,7 @@ cfunc_up (MSValue  **args,
     if (line > 0)
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
                                    MAX (line - n, 0), col,
-                                   FALSE);
+                                   TRUE, FALSE);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();
@@ -576,7 +576,7 @@ cfunc_down (MSValue  **args,
 
     moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
                                MIN (line + n, line_count - 1), col,
-                               FALSE);
+                               TRUE, FALSE);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 
     return ms_value_none ();

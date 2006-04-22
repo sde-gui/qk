@@ -1004,6 +1004,65 @@ moo_text_buffer_end_non_interactive_action (MooTextBuffer *buffer)
 }
 
 
+int
+moo_text_iter_get_visual_line_length (const GtkTextIter *iter,
+                                      int                tab_width)
+{
+    GtkTextIter end = *iter;
+
+    if (!gtk_text_iter_ends_line (iter))
+        gtk_text_iter_forward_to_line_end (&end);
+
+    return moo_text_iter_get_visual_line_offset (&end, tab_width);
+}
+
+
+int
+moo_text_iter_get_visual_line_offset (const GtkTextIter  *iter,
+                                      int                 tab_width)
+{
+    int offset = 0;
+    GtkTextIter start = *iter;
+
+    gtk_text_iter_set_line_offset (&start, 0);
+
+    while (gtk_text_iter_compare (&start, iter) < 0)
+    {
+        if (gtk_text_iter_get_char (&start) == '\t')
+            offset += tab_width - offset % tab_width;
+        else
+            offset += 1;
+        gtk_text_iter_forward_char (&start);
+    }
+
+    return offset;
+}
+
+
+void
+moo_text_iter_set_visual_line_offset (GtkTextIter *iter,
+                                      int          offset,
+                                      int          tab_width)
+{
+    int i = 0;
+
+    gtk_text_iter_set_line_offset (iter, 0);
+
+    while (!gtk_text_iter_ends_line (iter) && i < offset)
+    {
+        if (gtk_text_iter_get_char (iter) != '\t')
+            i += 1;
+        else
+            i += tab_width - i % tab_width;
+
+        if (i > offset)
+            break;
+
+        gtk_text_iter_forward_char (iter);
+    }
+}
+
+
 /*****************************************************************************/
 /* Matching brackets
  */

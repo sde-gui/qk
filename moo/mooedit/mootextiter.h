@@ -35,6 +35,16 @@ MooBracketMatchType moo_text_iter_find_matching_bracket (GtkTextIter *iter,
  *   and chooses the better one in the case )|( */
 gboolean    moo_text_iter_at_bracket    (GtkTextIter        *iter);
 
+/* like gtk_text_iter_get_chars_in_line, but tabs are translated to 8,
+   and line end is not included */
+int         moo_text_iter_get_visual_line_length    (const GtkTextIter  *iter,
+                                                     int                 tab_width);
+int         moo_text_iter_get_visual_line_offset    (const GtkTextIter  *iter,
+                                                     int                 tab_width);
+void        moo_text_iter_set_visual_line_offset    (GtkTextIter        *iter,
+                                                     int                 offset,
+                                                     int                 tab_width);
+
 
 G_END_DECLS
 

@@ -1157,7 +1157,8 @@
   (return-type "none")
   (parameters
     '("int" "line")
-    '("int" "character")
+    '("int" "offset")
+    '("int" "offset_visual")
     '("gboolean" "in_idle")
   )
 )

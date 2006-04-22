@@ -1082,7 +1082,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
 
     if (MOO_IS_TEXT_VIEW (view))
     {
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (view), line, 0, FALSE);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (view), line, 0, FALSE, FALSE);
     }
     else
     {

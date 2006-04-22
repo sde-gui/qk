@@ -122,7 +122,8 @@ void         moo_text_view_get_cursor               (MooTextView        *view,
 int          moo_text_view_get_cursor_line          (MooTextView        *view);
 void         moo_text_view_move_cursor              (MooTextView        *view,
                                                      int                 line,
-                                                     int                 character,
+                                                     int                 offset,
+                                                     gboolean            offset_visual,
                                                      gboolean            in_idle);
 
 void         moo_text_view_set_highlight_current_line

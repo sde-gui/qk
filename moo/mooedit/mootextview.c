@@ -1321,6 +1321,7 @@ typedef struct {
     MooTextView *view;
     int      line;
     int      character;
+    gboolean visual;
 } Scroll;
 
 
@@ -1354,21 +1355,43 @@ do_move_cursor (Scroll *scroll)
 
     if (scroll->character >= 0)
     {
-        int line_len = iter_get_chars_in_line (&iter);
-
-        if (scroll->character > line_len)
-            scroll->character = line_len;
-        else if (scroll->character < 0)
-            scroll->character = 0;
-
-        if (scroll->character == line_len)
+        if (scroll->visual)
         {
-            if (!gtk_text_iter_ends_line (&iter))
-                gtk_text_iter_forward_to_line_end (&iter);
+            int line_len = moo_text_iter_get_visual_line_length (&iter, 8);
+
+            if (scroll->character > line_len)
+                scroll->character = line_len;
+            else if (scroll->character < 0)
+                scroll->character = 0;
+
+            if (scroll->character == line_len)
+            {
+                if (!gtk_text_iter_ends_line (&iter))
+                    gtk_text_iter_forward_to_line_end (&iter);
+            }
+            else
+            {
+                moo_text_iter_set_visual_line_offset (&iter, scroll->character, 8);
+            }
         }
         else
         {
-            gtk_text_iter_set_line_offset (&iter, scroll->character);
+            int line_len = iter_get_chars_in_line (&iter);
+
+            if (scroll->character > line_len)
+                scroll->character = line_len;
+            else if (scroll->character < 0)
+                scroll->character = 0;
+
+            if (scroll->character == line_len)
+            {
+                if (!gtk_text_iter_ends_line (&iter))
+                    gtk_text_iter_forward_to_line_end (&iter);
+            }
+            else
+            {
+                gtk_text_iter_set_line_offset (&iter, scroll->character);
+            }
         }
     }
 
@@ -1385,7 +1408,8 @@ do_move_cursor (Scroll *scroll)
 void
 moo_text_view_move_cursor (MooTextView  *view,
                            int           line,
-                           int           character,
+                           int           offset,
+                           gboolean      offset_visual,
                            gboolean      in_idle)
 {
     Scroll *scroll;
@@ -1395,7 +1419,8 @@ moo_text_view_move_cursor (MooTextView  *view,
     scroll = g_new (Scroll, 1);
     scroll->view = view;
     scroll->line = line;
-    scroll->character = character;
+    scroll->character = offset;
+    scroll->visual = offset_visual;
 
     if (in_idle)
         g_idle_add ((GSourceFunc) do_move_cursor,
@@ -1411,10 +1436,10 @@ moo_text_view_get_cursor (MooTextView *view,
 {
     GtkTextBuffer *buffer;
 
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
     g_return_if_fail (iter != NULL);
 
-    buffer = get_buffer (view);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     gtk_text_buffer_get_iter_at_mark (buffer, iter,
                                       gtk_text_buffer_get_insert (buffer));
 }
@@ -1425,7 +1450,7 @@ moo_text_view_get_cursor_line (MooTextView *view)
 {
     GtkTextIter iter;
 
-    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), -1);
+    g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), -1);
 
     moo_text_view_get_cursor (view, &iter);
     return gtk_text_iter_get_line (&iter);

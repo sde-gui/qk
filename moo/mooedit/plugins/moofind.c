@@ -894,7 +894,7 @@ output_activate (WindowStuff    *stuff,
 
     if (line_data->line >= 0)
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc),
-                                   line_data->line, -1, TRUE);
+                                   line_data->line, -1, FALSE, TRUE);
 
     return TRUE;
 }

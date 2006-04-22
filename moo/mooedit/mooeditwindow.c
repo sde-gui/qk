@@ -1035,7 +1035,7 @@ moo_edit_window_next_bookmark (MooEditWindow *window)
     if (bookmarks)
     {
         cursor = moo_line_mark_get_line (bookmarks->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
         g_slist_free (bookmarks);
     }
 }
@@ -1059,7 +1059,7 @@ moo_edit_window_prev_bookmark (MooEditWindow *window)
     {
         GSList *last = g_slist_last (bookmarks);
         cursor = moo_line_mark_get_line (last->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE);
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
         g_slist_free (bookmarks);
     }
 }
@@ -2087,7 +2087,7 @@ update_statusbar (MooEditWindow *window)
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
     line = gtk_text_iter_get_line (&iter) + 1;
-    column = gtk_text_iter_get_line_offset (&iter) + 1;
+    column = moo_text_iter_get_visual_line_offset (&iter, 8) + 1;
 
     set_statusbar_numbers (window, line, column);
 
@@ -2105,7 +2105,7 @@ edit_cursor_moved (MooEditWindow      *window,
     if (edit == ACTIVE_DOC (window))
     {
         int line = gtk_text_iter_get_line (iter) + 1;
-        int column = gtk_text_iter_get_line_offset (iter) + 1;
+        int column = moo_text_iter_get_visual_line_offset (iter, 8) + 1;
         set_statusbar_numbers (window, line, column);
     }
 }
