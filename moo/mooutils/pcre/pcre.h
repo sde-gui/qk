@@ -223,6 +223,11 @@ typedef struct pcre_callout_block {
 #define pcre_refcount _pcre_refcount
 #define pcre_study _pcre_study
 #define pcre_version _pcre_version
+#define pcre_malloc _pcre_malloc
+#define pcre_free _pcre_free
+#define pcre_stack_malloc _pcre_stack_malloc
+#define pcre_stack_free _pcre_stack_free
+#define pcre_callout _pcre_callout
 
 
 /* Indirection for store get and free functions. These can be set to
