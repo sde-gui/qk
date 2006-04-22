@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   as-plugin-prefs.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -23,7 +22,6 @@
 
 static void prefs_page_apply    (MooGladeXML        *xml);
 static void prefs_page_init     (MooGladeXML        *xml);
-static void prefs_page_destroy  (MooGladeXML        *xml);
 
 static void pattern_data_func   (GtkTreeViewColumn  *column,
                                  GtkCellRenderer    *cell,
@@ -85,7 +83,6 @@ _as_plugin_prefs_page (MooPlugin *plugin)
 
     g_signal_connect_swapped (page, "apply", G_CALLBACK (prefs_page_apply), xml);
     g_signal_connect_swapped (page, "init", G_CALLBACK (prefs_page_init), xml);
-    g_signal_connect_swapped (page, "destroy", G_CALLBACK (prefs_page_destroy), xml);
 
     setup_script_view (moo_glade_xml_get_widget (xml, "script"));
 
@@ -147,24 +144,14 @@ pattern_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
 static void
 prefs_page_apply (MooGladeXML *xml)
 {
-    GtkTreeIter iter;
-    GtkTreeModel *model;
-    GtkTreeSelection *selection;
-    GtkTreeView *treeview;
+    GtkWidget *treeview;
     MooConfig *config;
     GError *error = NULL;
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
-    selection = gtk_tree_view_get_selection (treeview);
+    moo_config_update_tree_view (treeview, NULL, NULL);
 
-    if (gtk_tree_selection_get_selected (selection, &model, &iter))
-    {
-        GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
-        moo_config_update_tree_view (GTK_WIDGET (treeview), model, path);
-        gtk_tree_path_free (path);
-    }
-
-    config = MOO_CONFIG (model);
+    config = MOO_CONFIG (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
     if (!moo_config_get_modified (config))
         return;
@@ -207,11 +194,4 @@ new_item_func (MooConfig     *config,
                G_GNUC_UNUSED gpointer data)
 {
     moo_config_set_value (config, item, AS_KEY_PATTERN, "?", TRUE);
-}
-
-
-static void
-prefs_page_destroy (MooGladeXML *xml)
-{
-    moo_config_disconnect_widget (moo_glade_xml_get_widget (xml, "treeview"));
 }

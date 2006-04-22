@@ -2002,9 +2002,29 @@ moo_config_update_tree_view (GtkWidget      *treeview,
     widgets = get_widgets (treeview);
     g_return_if_fail (widgets != NULL);
 
-    gtk_tree_model_get_iter (model, &iter, path);
-    gtk_tree_model_get (model, &iter, 0, &item, -1);
-    g_return_if_fail (item != NULL);
+    if (!model)
+        model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+
+    if (!path)
+    {
+        GtkTreeSelection *selection =
+                gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+        if (gtk_tree_selection_get_selected (selection, NULL, &iter))
+        {
+            path = gtk_tree_model_get_path (model, &iter);
+            gtk_tree_model_get_iter (model, &iter, path);
+            gtk_tree_model_get (model, &iter, 0, &item, -1);
+            gtk_tree_path_free (path);
+        }
+    }
+    else
+    {
+        gtk_tree_model_get_iter (model, &iter, path);
+        gtk_tree_model_get (model, &iter, 0, &item, -1);
+    }
+
+    if (!item)
+        return;
 
     for (l = widgets->widgets; l != NULL; l = l->next)
     {
