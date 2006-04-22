@@ -14,6 +14,8 @@
 
 #include "mooapp/moohtml.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/eggregex.h"
+#include "mooutils/mooutils-misc.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <libxml/HTMLtree.h>
@@ -148,7 +150,8 @@ static MooHtmlTag *moo_html_get_link_tag    (MooHtml        *html,
 static MooHtmlTag *moo_html_get_tag         (MooHtml        *html,
                                              GtkTextIter    *iter);
 
-static void     moo_html_parse_url          (const char     *url,
+static gboolean moo_html_parse_url          (const char     *url,
+                                             char          **scheme,
                                              char          **base,
                                              char          **anchor);
 static gboolean moo_html_goto_anchor        (MooHtml        *html,
@@ -450,18 +453,28 @@ static gboolean
 moo_html_load_url_real (MooHtml        *html,
                         const char     *url)
 {
-    char *base, *anchor;
+    char *scheme, *base, *anchor;
     gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_HTML (html), FALSE);
     g_return_val_if_fail (url != NULL, FALSE);
 
-    if (!html->priv->filename)
-        return FALSE;
+    if (!moo_html_parse_url (url, &scheme, &base, &anchor))
+        g_return_val_if_reached (FALSE);
 
-    moo_html_parse_url (url, &base, &anchor);
+    if (!scheme)
+        scheme = g_strdup ("file://");
 
-    if (!base || !strcmp (html->priv->basename, base))
+    if (!strcmp (scheme, "mailto://"))
+    {
+        result = moo_open_email (base, NULL, NULL);
+        goto out;
+    }
+
+    if (strcmp (scheme, "file://"))
+        goto out;
+
+    if (!base || (html->priv->basename && !strcmp (html->priv->basename, base)))
     {
         if (anchor)
             result = moo_html_goto_anchor (html, anchor);
@@ -470,22 +483,28 @@ moo_html_load_url_real (MooHtml        *html,
     }
     else if (!g_path_is_absolute (base))
     {
-        char *filename = g_build_filename (html->priv->dirname, base, NULL);
+        if (html->priv->dirname)
+        {
+            char *filename = g_build_filename (html->priv->dirname, base, NULL);
 
-        result = moo_html_load_file (html, filename, NULL);
+            result = moo_html_load_file (html, filename, NULL);
 
-        if (result && anchor)
-            moo_html_goto_anchor (html, anchor);
+            if (result && anchor)
+                moo_html_goto_anchor (html, anchor);
 
-        g_free (filename);
+            g_free (filename);
+        }
     }
     else
     {
         result = moo_html_load_file (html, base, NULL);
+
         if (result && anchor)
             moo_html_goto_anchor (html, anchor);
     }
 
+out:
+    g_free (scheme);
     g_free (base);
     g_free (anchor);
     return result;
@@ -1091,31 +1110,36 @@ out:
 }
 
 
-static void
+static gboolean
 moo_html_parse_url (const char     *url,
+                    char          **scheme,
                     char          **base,
                     char          **anchor)
 {
-    const char *p;
+    EggRegex *regex;
+    GError *error = NULL;
 
-    g_return_if_fail (url != NULL);
-    g_return_if_fail (base != NULL && anchor != NULL);
+    g_return_val_if_fail (url != NULL, FALSE);
+    g_return_val_if_fail (scheme && base && anchor, FALSE);
 
-    p = strchr (url, '#');
+    regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, &error);
 
-    if (p)
+    if (egg_regex_match (regex, url, -1, 0) < 1)
     {
-        if (p == url)
-            *base = NULL;
-        else
-            *base = g_strndup (url, p - url);
-        *anchor = g_strdup (p + 1);
+        egg_regex_unref (regex);
+        return FALSE;
     }
-    else
-    {
-        *base = g_strdup (url);
-        *anchor = NULL;
-    }
+
+    *scheme = egg_regex_fetch (regex, url, 1);
+    *base = egg_regex_fetch (regex, url, 2);
+    *anchor = egg_regex_fetch (regex, url, 4);
+
+    if (!*scheme || !**scheme) {g_free (*scheme); *scheme = NULL;}
+    if (!*base || !**base) {g_free (*base); *base = NULL;}
+    if (!*anchor || !**anchor) {g_free (*anchor); *anchor = NULL;}
+
+    egg_regex_unref (regex);
+    return TRUE;
 }
 
 
