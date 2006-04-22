@@ -15,6 +15,7 @@
 #define __MOO_CONFIG_H__
 
 #include <gtk/gtktreemodel.h>
+#include <gtk/gtkwidget.h>
 
 G_BEGIN_DECLS
 
@@ -123,6 +124,28 @@ void            moo_config_set_item_content (MooConfig      *config,
 void            moo_config_get_item_iter    (MooConfig      *config,
                                              MooConfigItem  *item,
                                              GtkTreeIter    *iter);
+
+typedef void (*MooConfigSetupItemFunc) (MooConfig     *config,
+                                        MooConfigItem *item,
+                                        gpointer       data);
+
+void            moo_config_connect_widget   (GtkWidget      *tree_view,
+                                             GtkWidget      *new_btn,
+                                             GtkWidget      *delete_btn,
+                                             GtkWidget      *up_btn,
+                                             GtkWidget      *down_btn,
+                                             MooConfigSetupItemFunc func,
+                                             gpointer        data);
+void            moo_config_add_widget       (GtkWidget      *tree_view,
+                                             GtkWidget      *widget,
+                                             const char     *key,
+                                             gboolean        update_live,
+                                             gboolean        default_bool);
+void            moo_config_disconnect_widget(GtkWidget      *tree_view);
+void            moo_config_update_tree_view (GtkWidget      *tree_view,
+                                             GtkTreeModel   *model,
+                                             GtkTreePath    *path);
+void            moo_config_update_widgets   (GtkWidget      *tree_view);
 
 
 G_END_DECLS
