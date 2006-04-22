@@ -27,16 +27,6 @@ mooapp_extra_dist =                           \
     $(mooapp)/moohtml.c                       \
     $(mooapp)/moohtml.h
 
-if MOO_USE_GTKHTML
-mooapp_sources +=                             \
-    $(mooapp)/moohelp.c                       \
-    $(mooapp)/moohelp.h
-else
-mooapp_extra_dist +=                          \
-    $(mooapp)/moohelp.c                       \
-    $(mooapp)/moohelp.h
-endif
-
 if MOO_USE_XML
 mooapp_sources +=                             \
     $(mooapp)/moohtml.c                       \
