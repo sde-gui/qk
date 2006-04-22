@@ -54,6 +54,8 @@ mooutils_sources =                             \
     $(mooutils)/mooaction.c                    \
     $(mooutils)/mooactiongroup.c               \
     $(mooutils)/moobigpaned.c                  \
+    $(mooutils)/moocksum.h                     \
+    $(mooutils)/moocksum.c                     \
     $(mooutils)/mooclosure.c                   \
     $(mooutils)/moocmd.c                       \
     $(mooutils)/moocombo.c                     \

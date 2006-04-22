@@ -1,4 +1,4 @@
-EXTRA_PROGRAMS += testhtml testtext medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold ms
+EXTRA_PROGRAMS += testhtml testtext medit mterm markup termbuffer testfileview testpaned testpanedfileview miniglade langparser testobject testfold ms testcksum
 bin_PROGRAMS =
 
 all-tests: $(EXTRA_PROGRAMS)
@@ -74,6 +74,8 @@ ldflags += -mwindows
 endif MOO_OS_MINGW
 
 
+all_moo_sources = $(libmoo_sources) $(nodist_libmoo_sources)
+
 ##############################################################################
 ##  medit
 ##
@@ -97,7 +99,7 @@ testfold_LDFLAGS = $(ldflags)
 testfold_LDADD = $(ldadd)
 testfold_SOURCES = tests/testfold.c
 if !MOO_BUILD_LIB
-nodist_testfold_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testfold_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -105,7 +107,7 @@ testtext_LDFLAGS = $(ldflags)
 testtext_LDADD = $(ldadd)
 testtext_SOURCES = tests/testtext.c
 if !MOO_BUILD_LIB
-nodist_testtext_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testtext_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -113,21 +115,21 @@ langparser_LDFLAGS = $(ldflags)
 langparser_LDADD = $(ldadd)
 langparser_SOURCES = tests/testparser.c
 if !MOO_BUILD_LIB
-nodist_langparser_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_langparser_SOURCES = $(all_moo_sources)
 endif
 
 ms_LDFLAGS = $(ldflags)
 ms_LDADD = $(ldadd) -lreadline
 ms_SOURCES = tests/mscript.c
 if !MOO_BUILD_LIB
-nodist_ms_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_ms_SOURCES = $(all_moo_sources)
 endif
 
 testhtml_LDFLAGS = $(ldflags)
 testhtml_LDADD = $(ldadd)
 testhtml_SOURCES = tests/testhtml.c
 if !MOO_BUILD_LIB
-nodist_testhtml_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testhtml_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -135,14 +137,14 @@ mterm_LDFLAGS = $(ldflags)
 mterm_LDADD = $(ldadd)
 mterm_SOURCES = tests/mterm.c
 if !MOO_BUILD_LIB
-nodist_mterm_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_mterm_SOURCES = $(all_moo_sources)
 endif
 
 termbuffer_LDFLAGS = $(ldflags)
 termbuffer_LDADD = $(ldadd)
 termbuffer_SOURCES = tests/termbuffer.c
 if !MOO_BUILD_LIB
-nodist_termbuffer_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_termbuffer_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -154,7 +156,7 @@ markup_LDADD = $(ldadd)
 
 markup_SOURCES = tests/markup.c
 if !MOO_BUILD_LIB
-nodist_markup_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_markup_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -166,7 +168,7 @@ miniglade_LDADD = $(ldadd)
 
 miniglade_SOURCES = tests/miniglade.c
 if !MOO_BUILD_LIB
-nodist_miniglade_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_miniglade_SOURCES = $(all_moo_sources)
 endif
 
 
@@ -188,9 +190,14 @@ testobject_LDFLAGS = $(ldflags)
 testobject_LDADD = $(ldadd)
 testobject_SOURCES = tests/testobject.c
 
+testcksum_LDFLAGS = $(ldflags)
+testcksum_LDADD = $(ldadd)
+testcksum_SOURCES = tests/testcksum.c
+
 if !MOO_BUILD_LIB
-nodist_testpaned_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
-nodist_testfileview_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
-nodist_testpanedfileview_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
-nodist_testobject_SOURCES = $(libmoo_sources) $(nodist_libmoo_sources)
+nodist_testpaned_SOURCES = $(all_moo_sources)
+nodist_testfileview_SOURCES = $(all_moo_sources)
+nodist_testpanedfileview_SOURCES = $(all_moo_sources)
+nodist_testobject_SOURCES = $(all_moo_sources)
+nodist_testcksum_SOURCES = $(all_moo_sources)
 endif
