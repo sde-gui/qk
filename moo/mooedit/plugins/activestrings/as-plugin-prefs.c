@@ -27,9 +27,9 @@ static void pattern_data_func   (GtkTreeViewColumn  *column,
                                  GtkCellRenderer    *cell,
                                  GtkTreeModel       *model,
                                  GtkTreeIter        *iter);
-static void new_item_func       (MooConfig          *config,
-                                 MooConfigItem      *item,
-                                 gpointer            data);
+static void new_item            (MooConfigHelper    *helper,
+                                 MooConfig          *config,
+                                 MooConfigItem      *item);
 
 
 static MooPlugin *
@@ -71,6 +71,7 @@ _as_plugin_prefs_page (MooPlugin *plugin)
     GtkWidget *treeview;
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
+    MooConfigHelper *helper;
 
     xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_id (xml, "script", MOO_TYPE_TEXT_VIEW);
@@ -97,21 +98,26 @@ _as_plugin_prefs_page (MooPlugin *plugin)
                                              (GtkTreeCellDataFunc) pattern_data_func,
                                              NULL, NULL);
 
-    moo_config_connect_widget (treeview,
-                               moo_glade_xml_get_widget (xml, "new"),
-                               moo_glade_xml_get_widget (xml, "delete"),
-                               moo_glade_xml_get_widget (xml, "up"),
-                               moo_glade_xml_get_widget (xml, "down"),
-                               new_item_func, NULL);
+    helper = moo_config_helper_new (treeview,
+                                    moo_glade_xml_get_widget (xml, "new"),
+                                    moo_glade_xml_get_widget (xml, "delete"),
+                                    moo_glade_xml_get_widget (xml, "up"),
+                                    moo_glade_xml_get_widget (xml, "down"));
 
-    moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "pattern"),
-                           AS_KEY_PATTERN, TRUE);
-    moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "lang"),
-                           AS_KEY_LANG, FALSE);
-    moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "enabled"),
-                           AS_KEY_ENABLED, TRUE);
-    moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "script"),
-                           NULL, FALSE);
+    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "pattern"),
+                                  AS_KEY_PATTERN, TRUE);
+    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "lang"),
+                                  AS_KEY_LANG, FALSE);
+    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "enabled"),
+                                  AS_KEY_ENABLED, TRUE);
+    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "script"),
+                                  NULL, FALSE);
+
+    g_signal_connect (helper, "new-item",
+                      G_CALLBACK (new_item), NULL);
+    g_object_set_data_full (G_OBJECT (treeview),
+                            "as-plugin-config-helper",
+                            helper, g_object_unref);
 
     g_object_unref (xml);
     return page;
@@ -146,10 +152,12 @@ prefs_page_apply (MooGladeXML *xml)
 {
     GtkWidget *treeview;
     MooConfig *config;
+    MooConfigHelper *helper;
     GError *error = NULL;
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
-    moo_config_update_tree_view (treeview, NULL, NULL);
+    helper = g_object_get_data (G_OBJECT (treeview), "as-plugin-config-helper");
+    moo_config_helper_update_model (helper, NULL, NULL);
 
     config = MOO_CONFIG (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
@@ -191,9 +199,9 @@ prefs_page_init (MooGladeXML *xml)
 
 
 static void
-new_item_func (MooConfig     *config,
-               MooConfigItem *item,
-               G_GNUC_UNUSED gpointer data)
+new_item (G_GNUC_UNUSED MooConfigHelper *helper,
+          MooConfig          *config,
+          MooConfigItem      *item)
 {
     moo_config_set (config, item, AS_KEY_PATTERN, "?", TRUE);
 }
