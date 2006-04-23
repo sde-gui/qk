@@ -14,9 +14,9 @@
 #include "as-plugin.h"
 #include "mooedit/plugins/activestrings/as-plugin-glade.h"
 #include "mooutils/mooprefsdialogpage.h"
-#include "mooutils/mooconfig.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-treeview.h"
 #include <string.h>
 
 
@@ -182,7 +182,7 @@ prefs_page_init (MooGladeXML *xml)
 
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (config));
-    moo_config_update_widgets (treeview);
+    moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
 
     g_object_unref (config);
 }

@@ -92,6 +92,8 @@ mooutils_sources =                             \
     $(mooutils)/mooutils-fs.c                  \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \
+    $(mooutils)/mooutils-treeview.h            \
+    $(mooutils)/mooutils-treeview.c            \
     $(mooutils)/moowindow.c                    \
     $(mooutils)/stock-about-16.h               \
     $(mooutils)/stock-about-24.h               \
