@@ -105,13 +105,13 @@ _as_plugin_prefs_page (MooPlugin *plugin)
                                new_item_func, NULL);
 
     moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "pattern"),
-                           AS_KEY_PATTERN, TRUE, FALSE);
+                           AS_KEY_PATTERN, TRUE);
     moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "lang"),
-                           AS_KEY_LANG, FALSE, FALSE);
+                           AS_KEY_LANG, FALSE);
     moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "enabled"),
-                           AS_KEY_ENABLED, TRUE, TRUE);
+                           AS_KEY_ENABLED, TRUE);
     moo_config_add_widget (treeview, moo_glade_xml_get_widget (xml, "script"),
-                           NULL, FALSE, FALSE);
+                           NULL, FALSE);
 
     g_object_unref (xml);
     return page;
@@ -131,8 +131,8 @@ pattern_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
     gtk_tree_model_get (model, iter, 0, &item, -1);
     g_return_if_fail (item != NULL);
 
-    pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
-    enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
+    pattern = moo_config_item_get (item, AS_KEY_PATTERN);
+    enabled = moo_config_get_bool (MOO_CONFIG (model), item, AS_KEY_ENABLED);
 
     g_object_set (cell, "text", pattern,
                   "foreground", enabled ? NULL : "grey",
@@ -180,6 +180,8 @@ prefs_page_init (MooGladeXML *xml)
     if (!config)
         config = moo_config_new ();
 
+    moo_config_set_default_bool (config, AS_KEY_ENABLED, TRUE);
+
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (config));
     moo_tree_view_select_first (GTK_TREE_VIEW (treeview));
@@ -193,5 +195,5 @@ new_item_func (MooConfig     *config,
                MooConfigItem *item,
                G_GNUC_UNUSED gpointer data)
 {
-    moo_config_set_value (config, item, AS_KEY_PATTERN, "?", TRUE);
+    moo_config_set (config, item, AS_KEY_PATTERN, "?", TRUE);
 }

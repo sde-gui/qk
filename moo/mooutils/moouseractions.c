@@ -133,10 +133,10 @@ moo_parse_user_actions (const char             *filename,
         MooCommandType cmd_type = 0;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
-        name = moo_config_item_get_value (item, "action");
-        label = moo_config_item_get_value (item, "label");
-        accel = moo_config_item_get_value (item, "accel");
-        type = moo_config_item_get_value (item, "command");
+        name = moo_config_item_get (item, "action");
+        label = moo_config_item_get (item, "label");
+        accel = moo_config_item_get (item, "accel");
+        type = moo_config_item_get (item, "command");
         code = moo_config_item_get_content (item);
 
         if (!name)

@@ -727,9 +727,9 @@ as_plugin_parse_config (MooConfig *config)
         ASInfo *info;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
-        pattern = moo_config_item_get_value (item, AS_KEY_PATTERN);
-        lang = moo_config_item_get_value (item, AS_KEY_LANG);
-        enabled = moo_config_item_get_bool (item, AS_KEY_ENABLED, TRUE);
+        pattern = moo_config_item_get (item, AS_KEY_PATTERN);
+        lang = moo_config_item_get (item, AS_KEY_LANG);
+        enabled = moo_config_get_bool (config, item, AS_KEY_ENABLED);
         script = moo_config_item_get_content (item);
 
         if (!pattern)
@@ -1096,6 +1096,10 @@ _as_plugin_load_config (void)
     {
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
+    }
+    else
+    {
+        moo_config_set_default_bool (config, AS_KEY_ENABLED, TRUE);
     }
 
     g_free (file);

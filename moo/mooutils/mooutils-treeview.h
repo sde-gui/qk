@@ -27,7 +27,8 @@ typedef void (*MooConfigWidgetToItem)       (GtkWidget     *widget,
                                              MooConfig     *config,
                                              MooConfigItem *item,
                                              gpointer       data);
-typedef void (*MooConfigItemToWidget)       (MooConfigItem *item,
+typedef void (*MooConfigItemToWidget)       (MooConfig     *config,
+                                             MooConfigItem *item,
                                              GtkWidget     *widget,
                                              gpointer       data);
 
@@ -41,16 +42,14 @@ void            moo_config_connect_widget   (GtkWidget      *tree_view,
 void            moo_config_add_widget       (GtkWidget      *tree_view,
                                              GtkWidget      *widget,
                                              const char     *key,
-                                             gboolean        update_live,
-                                             gboolean        default_bool);
+                                             gboolean        update_live);
 void            moo_config_add_widget_full  (GtkWidget      *tree_view,
                                              GtkWidget      *widget,
                                              const char     *key,
                                              MooConfigWidgetToItem widget_to_item_func,
                                              MooConfigItemToWidget item_to_widget_func,
                                              gpointer        data,
-                                             gboolean        update_live,
-                                             gboolean        default_bool);
+                                             gboolean        update_live);
 void            moo_config_disconnect_widget(GtkWidget      *tree_view);
 void            moo_config_update_tree_view (GtkWidget      *tree_view,
                                              GtkTreeModel   *model,

@@ -33,7 +33,6 @@ moo_tree_view_select_first (GtkTreeView *tree_view)
 
 typedef struct {
     char *key;
-    gboolean default_val;
     gboolean update_live;
     gulong handler;
     MooConfigWidgetToItem widget_to_item;
@@ -53,8 +52,7 @@ typedef struct {
 } Widgets;
 
 static WidgetInfo  *widget_info_new     (const char         *key,
-                                         gboolean            update_live,
-                                         gboolean            default_bool);
+                                         gboolean            update_live);
 static void         widget_info_free    (WidgetInfo         *info);
 static Widgets     *widgets_new         (GtkWidget          *tree_view,
                                          GtkWidget          *new_btn,
@@ -142,11 +140,7 @@ toggle_button_to_item (GtkToggleButton *button,
     g_return_if_fail (info != NULL);
 
     value = gtk_toggle_button_get_active (button);
-
-    if (value == info->default_val)
-        moo_config_set_value (config, item, info->key, NULL, TRUE);
-    else
-        moo_config_set_bool (config, item, info->key, value, TRUE);
+    moo_config_set_bool (config, item, info->key, value, TRUE);
 }
 
 static void
@@ -162,7 +156,7 @@ entry_to_item (GtkEntry        *entry,
     text = gtk_entry_get_text (entry);
 
     if (info->key)
-        moo_config_set_value (config, item, info->key, text, TRUE);
+        moo_config_set (config, item, info->key, text, TRUE);
     else
         moo_config_set_item_content (config, item, text, TRUE);
 }
@@ -190,7 +184,7 @@ text_view_to_item (GtkTextView     *view,
     }
 
     if (info->key)
-        moo_config_set_value (config, item, info->key, text, TRUE);
+        moo_config_set (config, item, info->key, text, TRUE);
     else
         moo_config_set_item_content (config, item, text, TRUE);
 
@@ -212,7 +206,8 @@ get_widget_to_item_func (GtkWidget *widget)
 
 
 static void
-item_to_toggle_button (MooConfigItem   *item,
+item_to_toggle_button (MooConfig       *config,
+                       MooConfigItem   *item,
                        GtkToggleButton *button)
 {
     gboolean value;
@@ -220,12 +215,13 @@ item_to_toggle_button (MooConfigItem   *item,
 
     g_return_if_fail (info != NULL);
 
-    value = moo_config_item_get_bool (item, info->key, info->default_val);
+    value = moo_config_get_bool (config, item, info->key);
     gtk_toggle_button_set_active (button, value);
 }
 
 static void
-item_to_entry (MooConfigItem   *item,
+item_to_entry (G_GNUC_UNUSED MooConfig *config,
+               MooConfigItem   *item,
                GtkEntry        *entry)
 {
     const char *text;
@@ -234,7 +230,7 @@ item_to_entry (MooConfigItem   *item,
     g_return_if_fail (info != NULL);
 
     if (info->key)
-        text = moo_config_item_get_value (item, info->key);
+        text = moo_config_item_get (item, info->key);
     else
         text = moo_config_item_get_content (item);
 
@@ -242,7 +238,8 @@ item_to_entry (MooConfigItem   *item,
 }
 
 static void
-item_to_text_view (MooConfigItem   *item,
+item_to_text_view (G_GNUC_UNUSED MooConfig *config,
+                   MooConfigItem   *item,
                    GtkTextView     *view)
 {
     const char *text;
@@ -252,7 +249,7 @@ item_to_text_view (MooConfigItem   *item,
     g_return_if_fail (info != NULL);
 
     if (info->key)
-        text = moo_config_item_get_value (item, info->key);
+        text = moo_config_item_get (item, info->key);
     else
         text = moo_config_item_get_content (item);
 
@@ -281,8 +278,7 @@ moo_config_add_widget_full (GtkWidget      *tree_view,
                             MooConfigWidgetToItem widget_to_item_func,
                             MooConfigItemToWidget item_to_widget_func,
                             gpointer        data,
-                            gboolean        update_live,
-                            gboolean        default_bool)
+                            gboolean        update_live)
 {
     Widgets *widgets;
     WidgetInfo *info;
@@ -306,7 +302,7 @@ moo_config_add_widget_full (GtkWidget      *tree_view,
         g_return_if_fail (item_to_widget_func != NULL);
     }
 
-    info = widget_info_new (key, update_live, default_bool);
+    info = widget_info_new (key, update_live);
     info->widget_to_item = widget_to_item_func;
     info->item_to_widget = item_to_widget_func;
     info->data = data;
@@ -335,12 +331,10 @@ void
 moo_config_add_widget (GtkWidget      *tree_view,
                        GtkWidget      *widget,
                        const char     *key,
-                       gboolean        update_live,
-                       gboolean        default_bool)
+                       gboolean        update_live)
 {
     return moo_config_add_widget_full (tree_view, widget, key,
-                                       NULL, NULL, NULL,
-                                       update_live, default_bool);
+                                       NULL, NULL, NULL, update_live);
 }
 
 
@@ -389,14 +383,12 @@ moo_config_disconnect_widget (GtkWidget *treeview)
 
 static WidgetInfo *
 widget_info_new (const char *key,
-                 gboolean    update_live,
-                 gboolean    default_bool)
+                 gboolean    update_live)
 {
     WidgetInfo *info = g_new0 (WidgetInfo, 1);
 
     info->key = g_strdup (key);
     info->update_live = update_live;
-    info->default_val = default_bool;
 
     return info;
 }
@@ -534,7 +526,7 @@ set_from_model (Widgets      *widgets,
 
         if (item)
         {
-            info->item_to_widget (item, widget, info->data);
+            info->item_to_widget (MOO_CONFIG (model), item, widget, info->data);
         }
         else
         {
@@ -754,8 +746,8 @@ entry_changed (Widgets  *widgets,
     g_return_if_fail (item != NULL);
 
     if (info->key)
-        moo_config_set_value (MOO_CONFIG (model), item,
-                              info->key, text, TRUE);
+        moo_config_set (MOO_CONFIG (model), item,
+                        info->key, text, TRUE);
     else
         moo_config_set_item_content (MOO_CONFIG (model), item,
                                      text, TRUE);

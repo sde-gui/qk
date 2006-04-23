@@ -98,16 +98,20 @@ void            moo_config_move_item        (MooConfig      *config,
                                              guint           new_index,
                                              gboolean        modify);
 
-const char     *moo_config_item_get_value   (MooConfigItem  *item,
+void            moo_config_set_default_bool (MooConfig      *config,
+                                             const char     *key,
+                                             gboolean        value);
+
+const char     *moo_config_item_get         (MooConfigItem  *item,
                                              const char     *key);
-void            moo_config_set_value        (MooConfig      *config,
+void            moo_config_set              (MooConfig      *config,
                                              MooConfigItem  *item,
                                              const char     *key,
                                              const char     *value,
                                              gboolean        modify);
-gboolean        moo_config_item_get_bool    (MooConfigItem  *item,
-                                             const char     *key,
-                                             gboolean        default_val);
+gboolean        moo_config_get_bool         (MooConfig      *config,
+                                             MooConfigItem  *item,
+                                             const char     *key);
 void            moo_config_set_bool         (MooConfig      *config,
                                              MooConfigItem  *item,
                                              const char     *key,

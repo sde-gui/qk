@@ -27,6 +27,7 @@ struct _MooConfigPrivate {
     GPtrArray *items;
     int model_stamp;
     gboolean modified;
+    GHashTable *default_bool;
 };
 
 struct _MooConfigItem {
@@ -96,6 +97,8 @@ moo_config_init (MooConfig *config)
     config->priv = g_new0 (MooConfigPrivate, 1);
     config->priv->items = g_ptr_array_new ();
     config->priv->model_stamp = 1;
+    config->priv->default_bool =
+            g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 
@@ -108,7 +111,7 @@ moo_config_finalize (GObject *object)
                          (GFunc) moo_config_item_free,
                          NULL);
     g_ptr_array_free (config->priv->items, TRUE);
-
+    g_hash_table_destroy (config->priv->default_bool);
     g_free (config->priv);
 
     moo_config_parent_class->finalize (object);
@@ -370,8 +373,8 @@ normalize_key (const char *string)
 
 
 const char *
-moo_config_item_get_value (MooConfigItem  *item,
-                           const char     *key)
+moo_config_item_get (MooConfigItem  *item,
+                     const char     *key)
 {
     char *norm;
     const char *value;
@@ -426,11 +429,11 @@ is_empty_string (const char *string)
 
 
 void
-moo_config_set_value (MooConfig      *config,
-                      MooConfigItem  *item,
-                      const char     *key,
-                      const char     *value,
-                      gboolean        modify)
+moo_config_set (MooConfig      *config,
+                MooConfigItem  *item,
+                const char     *key,
+                const char     *value,
+                gboolean        modify)
 {
     char *norm, *old_value, *new_value = NULL;
     gboolean modified = FALSE;
@@ -1124,13 +1127,33 @@ moo_config_parse_file (MooConfig  *config,
 }
 
 
-gboolean
-moo_config_item_get_bool (MooConfigItem  *item,
-                          const char     *key,
-                          gboolean        default_val)
+static gboolean
+get_default_bool (MooConfig  *config,
+                  const char *key)
 {
-    return moo_convert_string_to_bool (moo_config_item_get_value (item, key),
-                                       default_val);
+    char *norm_key = normalize_key (key);
+    gpointer val = g_hash_table_lookup (config->priv->default_bool, key);
+    g_free (norm_key);
+    return GPOINTER_TO_INT (val);
+}
+
+
+gboolean
+moo_config_get_bool (MooConfig      *config,
+                     MooConfigItem  *item,
+                     const char     *key)
+{
+    const char *string;
+    gboolean default_val;
+
+    g_return_val_if_fail (MOO_IS_CONFIG (config), FALSE);
+    g_return_val_if_fail (item != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
+
+    string = moo_config_item_get (item, key);
+    default_val = get_default_bool (config, key);
+
+    return moo_convert_string_to_bool (string, default_val);
 }
 
 
@@ -1141,9 +1164,39 @@ moo_config_set_bool (MooConfig      *config,
                      gboolean        value,
                      gboolean        modify)
 {
-    moo_config_set_value (config, item, key,
-                          moo_convert_bool_to_string (value),
-                          modify);
+    gboolean default_val;
+
+    g_return_if_fail (MOO_IS_CONFIG (config));
+    g_return_if_fail (item != NULL);
+    g_return_if_fail (key != NULL);
+
+    default_val = get_default_bool (config, key);
+    value = value != 0;
+
+    if (default_val == value)
+        moo_config_set (config, item, key, NULL, modify);
+    else
+        moo_config_set (config, item, key,
+                        value ? "true" : "false",
+                        modify);
+}
+
+
+void
+moo_config_set_default_bool (MooConfig  *config,
+                             const char *key,
+                             gboolean    value)
+{
+    char *norm_key;
+
+    g_return_if_fail (MOO_IS_CONFIG (config));
+    g_return_if_fail (key != NULL);
+
+    norm_key = normalize_key (key);
+    value = value != 0;
+
+    g_hash_table_insert (config->priv->default_bool, norm_key,
+                         GINT_TO_POINTER (value));
 }
 
 

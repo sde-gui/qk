@@ -210,13 +210,13 @@ cmpl_data_read_config_file (CmplData *data)
 
         item = moo_config_nth_item (config, i);
 
-        pattern = moo_config_item_get_value (item, "pattern");
-        prefix = moo_config_item_get_value (item, "prefix");
-        suffix = moo_config_item_get_value (item, "insert-suffix");
-        script = moo_config_item_get_value (item, "insert-script");
+        pattern = moo_config_item_get (item, "pattern");
+        prefix = moo_config_item_get (item, "prefix");
+        suffix = moo_config_item_get (item, "insert-suffix");
+        script = moo_config_item_get (item, "insert-script");
 
-        groups = moo_config_item_get_value (item, "group");
-        groups = groups ? groups : moo_config_item_get_value (item, "groups");
+        groups = moo_config_item_get (item, "group");
+        groups = groups ? groups : moo_config_item_get (item, "groups");
         groups = groups ? groups : "0";
 
         if (!pattern)

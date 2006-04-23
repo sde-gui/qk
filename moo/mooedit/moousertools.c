@@ -236,7 +236,7 @@ config_item_get_langs (MooConfigItem *item)
     char **pieces, **p;
     GSList *list = NULL;
 
-    string = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LANG);
+    string = moo_config_item_get (item, MOO_USER_TOOL_KEY_LANG);
 
     if (!string)
         return NULL;
@@ -265,7 +265,7 @@ config_item_get_command (MooConfigItem *item)
     code = moo_config_item_get_content (item);
     g_return_val_if_fail (code != NULL, NULL);
 
-    type = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_COMMAND);
+    type = moo_config_item_get (item, MOO_USER_TOOL_KEY_COMMAND);
 
     if (type)
         cmd_type = moo_command_type_parse (type);
@@ -285,7 +285,7 @@ config_item_get_options (MooConfigItem *item)
     char **pieces, **p;
     ActionOptions opts = 0;
 
-    string = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_OPTIONS);
+    string = moo_config_item_get (item, MOO_USER_TOOL_KEY_OPTIONS);
 
     if (!string)
         return 0;
@@ -337,7 +337,7 @@ load_config_item (FileType       type,
 
     g_return_if_fail (item != NULL);
 
-    os = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_OS);
+    os = moo_config_item_get (item, MOO_USER_TOOL_KEY_OS);
 
     if (os)
     {
@@ -354,10 +354,10 @@ load_config_item (FileType       type,
         g_free (norm);
     }
 
-    name = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACTION);
-    label = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_LABEL);
-    accel = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_ACCEL);
-    pos = moo_config_item_get_value (item, MOO_USER_TOOL_KEY_POSITION);
+    name = moo_config_item_get (item, MOO_USER_TOOL_KEY_ACTION);
+    label = moo_config_item_get (item, MOO_USER_TOOL_KEY_LABEL);
+    accel = moo_config_item_get (item, MOO_USER_TOOL_KEY_ACCEL);
+    pos = moo_config_item_get (item, MOO_USER_TOOL_KEY_POSITION);
     g_return_if_fail (name != NULL);
 
     cmd = config_item_get_command (item);
