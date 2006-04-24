@@ -48,6 +48,7 @@ void        moo_reset_log_func              (void);
 
 
 void        moo_segfault                    (void);
+gboolean    moo_debug_enabled               (void) G_GNUC_CONST;
 
 
 #define MOO_TYPE_DATA_DIR_TYPE              (moo_data_dir_type_get_type ())

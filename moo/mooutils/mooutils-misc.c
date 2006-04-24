@@ -1381,3 +1381,19 @@ moo_data_dir_type_get_type (void)
 
     return type;
 }
+
+
+gboolean
+moo_debug_enabled (void)
+{
+    static gboolean enabled;
+    static gboolean been_here;
+
+    if (!been_here)
+    {
+        been_here = TRUE;
+        enabled = g_getenv ("MOO_DEBUG") != NULL;
+    }
+
+    return enabled;
+}
