@@ -16,7 +16,6 @@
 #include "mooedit/mootextiter.h"
 #include "mooedit/moohighlighter.h"
 #include "mooedit/mootext-private.h"
-#include "mooedit/mootexttag.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooundomanager.h"
 #include "mooutils/mooutils-gobject.h"
@@ -31,7 +30,6 @@ struct _MooTextBufferPrivate {
     MooLang *lang;
     gboolean may_apply_tag;
     gboolean do_highlight;
-    gboolean has_placeholders;
 
     gboolean highlight_matching_brackets;
     gboolean highlight_mismatching_brackets;
@@ -104,11 +102,11 @@ static void     thaw_cursor_moved                   (MooTextBuffer      *buffer)
 static guint    INSERT_ACTION_TYPE;
 static guint    DELETE_ACTION_TYPE;
 static void     init_undo_actions                   (void);
-static void     add_undo_insert                     (MooTextBuffer      *buffer,
+static MooUndoAction *insert_action_new             (GtkTextBuffer      *buffer,
                                                      GtkTextIter        *pos,
                                                      const char         *text,
                                                      int                 length);
-static void     add_undo_delete                     (MooTextBuffer      *buffer,
+static MooUndoAction *delete_action_new             (GtkTextBuffer      *buffer,
                                                      GtkTextIter        *start,
                                                      GtkTextIter        *end);
 #if 0
@@ -476,10 +474,10 @@ moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
 
 
 static void
-moo_text_buffer_insert_text_real (GtkTextBuffer      *text_buffer,
-                                  GtkTextIter        *pos,
-                                  const gchar        *text,
-                                  gint                length)
+moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
+                             GtkTextIter        *pos,
+                             const gchar        *text,
+                             gint                length)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     GtkTextTag *tag;
@@ -496,10 +494,14 @@ moo_text_buffer_insert_text_real (GtkTextBuffer      *text_buffer,
     starts_line = gtk_text_iter_starts_line (pos);
     ins_line = (text[0] == '\n' || text[0] == '\r');
 
-    moo_text_buffer_unhighlight_brackets (buffer);
-
     if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
-        add_undo_insert (buffer, pos, text, length);
+    {
+        MooUndoAction *action;
+        action = insert_action_new (text_buffer, pos, text, length);
+        moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
+    }
+
+    moo_text_buffer_unhighlight_brackets (buffer);
 
     tag = _moo_text_iter_get_syntax_tag (pos);
 
@@ -535,107 +537,6 @@ moo_text_buffer_insert_text_real (GtkTextBuffer      *text_buffer,
         buffer->priv->has_text = TRUE;
         g_object_notify (G_OBJECT (buffer), "has-text");
     }
-}
-
-
-static const char *
-find_placeholder (const char *string,
-                  const char *end)
-{
-    const char *p;
-
-    if (string >= end)
-        return NULL;
-
-    if (end - string < 6)
-        return NULL;
-
-    for (p = string; p <= end - 6; ++p)
-        if (!strncmp (p, MOO_PLACEHOLDER_STRING, 6))
-            return p;
-
-    return NULL;
-}
-
-
-static void
-moo_text_buffer_insert_text (GtkTextBuffer *text_buffer,
-                             GtkTextIter   *pos,
-                             const gchar   *text,
-                             gint           length)
-{
-    int pos_offset = 0;
-    const char *ph, *ptr, *end;
-    GArray *placeholders = NULL;
-
-    if (length < 0)
-        length = strlen (text);
-
-    if (!length)
-        return;
-
-    ptr = text;
-    end = ptr + length;
-
-    while ((ph = find_placeholder (ptr, end)))
-    {
-        long offset;
-
-        if (!placeholders)
-            placeholders = g_array_new (FALSE, FALSE, sizeof (long));
-
-        offset = g_utf8_pointer_to_offset (ptr, ph);
-        g_array_append_val (placeholders, offset);
-
-        ptr = g_utf8_offset_to_pointer (ph, 2);
-    }
-
-    if (placeholders)
-        pos_offset = gtk_text_iter_get_offset (pos);
-
-    moo_text_buffer_insert_text_real (text_buffer, pos, text, length);
-
-    if (placeholders)
-    {
-        guint i;
-        GtkTextIter start, end;
-
-        gtk_text_buffer_get_iter_at_offset (text_buffer, &start, pos_offset);
-
-        MOO_TEXT_BUFFER(text_buffer)->priv->has_placeholders = TRUE;
-        MOO_TEXT_BUFFER(text_buffer)->priv->may_apply_tag = TRUE;
-
-        for (i = 0; i < placeholders->len; ++i)
-        {
-            long offset = g_array_index (placeholders, long, i);
-
-            gtk_text_iter_forward_chars (&start, offset);
-            end = start;
-            gtk_text_iter_forward_chars (&end, 1);
-
-            gtk_text_buffer_apply_tag_by_name (text_buffer,
-                                               MOO_PLACEHOLDER_START,
-                                               &start, &end);
-
-            start = end;
-            gtk_text_iter_forward_chars (&start, 1);
-
-            gtk_text_buffer_apply_tag_by_name (text_buffer,
-                                               MOO_PLACEHOLDER_END,
-                                               &end, &start);
-        }
-
-        MOO_TEXT_BUFFER(text_buffer)->priv->may_apply_tag = FALSE;
-
-        g_array_free (placeholders, TRUE);
-    }
-}
-
-
-gboolean
-_moo_text_buffer_has_placeholders (MooTextBuffer *buffer)
-{
-    return buffer->priv->has_placeholders;
 }
 
 
@@ -697,7 +598,11 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
 #undef MANY_LINES
 
     if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
-        add_undo_delete (buffer, start, end);
+    {
+        MooUndoAction *action;
+        action = delete_action_new (text_buffer, start, end);
+        moo_undo_mgr_add_action (buffer->priv->undo_mgr, DELETE_ACTION_TYPE, action);
+    }
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
 
@@ -1016,9 +921,8 @@ moo_text_buffer_apply_tag (GtkTextBuffer      *buffer,
                            const GtkTextIter  *start,
                            const GtkTextIter  *end)
 {
-    if (!MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
-        if (MOO_IS_SYNTAX_TAG (tag) || MOO_IS_TEXT_TAG (tag))
-            return;
+    if (MOO_IS_SYNTAX_TAG (tag) && !MOO_TEXT_BUFFER(buffer)->priv->may_apply_tag)
+        return;
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->apply_tag (buffer, tag, start, end);
 }
@@ -1755,29 +1659,6 @@ delete_action_new (GtkTextBuffer      *buffer,
         edit_action->mergeable = TRUE;
 
     return (MooUndoAction*) action;
-}
-
-
-static void
-add_undo_insert (MooTextBuffer    *buffer,
-                 GtkTextIter      *pos,
-                 const char       *text,
-                 int               length)
-{
-    MooUndoAction *action;
-    action = insert_action_new (GTK_TEXT_BUFFER (buffer), pos, text, length);
-    moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
-}
-
-
-static void
-add_undo_delete (MooTextBuffer *buffer,
-                 GtkTextIter   *start,
-                 GtkTextIter   *end)
-{
-    MooUndoAction *action;
-    action = delete_action_new (GTK_TEXT_BUFFER (buffer), start, end);
-    moo_undo_mgr_add_action (buffer->priv->undo_mgr, DELETE_ACTION_TYPE, action);
 }
 
 

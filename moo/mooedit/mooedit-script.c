@@ -468,7 +468,7 @@ cfunc_delete (MSValue  **args,
 
     if (n)
     {
-        moo_text_iter_forward_chars (&end, n);
+        gtk_text_iter_forward_chars (&end, n);
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
@@ -603,7 +603,7 @@ cfunc_select (MSValue   *arg,
     gtk_text_buffer_get_iter_at_mark (buffer, &start,
                                       gtk_text_buffer_get_insert (buffer));
     end = start;
-    moo_text_iter_forward_chars (&end, n);
+    gtk_text_iter_forward_chars (&end, n);
 
     gtk_text_buffer_select_range (buffer, &end, &start);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
@@ -623,7 +623,7 @@ move_cursor (MooEdit *doc,
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
 
-    moo_text_iter_forward_chars (&iter, howmany);
+    gtk_text_iter_forward_chars (&iter, howmany);
     gtk_text_buffer_place_cursor (buffer, &iter);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 }

@@ -17,9 +17,20 @@
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
-#include "mooedit/mootexttag.h"
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
+
+
+inline static GtkWidgetClass*
+parent_class (void)
+{
+    static gpointer textview_class = NULL;
+
+    if (!textview_class)
+        textview_class = GTK_WIDGET_CLASS (gtk_type_class (GTK_TYPE_TEXT_VIEW));
+
+    return GTK_WIDGET_CLASS (textview_class);
+}
 
 
 inline static gboolean
@@ -64,17 +75,13 @@ text_iter_forward_word_start (GtkTextIter *iter)
      * stop at end of line
      */
 
-    if (is_word_char (iter))
-    {
+    if (is_word_char (iter)) {
         while (!gtk_text_iter_is_end (iter) && is_word_char (iter))
         {
             gtk_text_iter_forward_char (iter);
             moved = TRUE;
         }
-
-        if (gtk_text_iter_is_end (iter))
-            return FALSE;
-
+        if (gtk_text_iter_is_end (iter)) return FALSE;
         while (!gtk_text_iter_is_end (iter) &&
                is_space (iter) &&
                !gtk_text_iter_ends_line (iter))
@@ -83,15 +90,12 @@ text_iter_forward_word_start (GtkTextIter *iter)
             moved = TRUE;
         }
     }
-    else
-    {
-        if (gtk_text_iter_ends_line (iter))
-        {
+    else {
+        if (gtk_text_iter_ends_line (iter)) {
             gtk_text_iter_forward_char (iter);
             moved = TRUE;
         }
-        else
-        {
+        else {
             while (!gtk_text_iter_is_end (iter) &&
                    !is_word_char (iter) &&
                    !gtk_text_iter_ends_line (iter))
@@ -101,7 +105,6 @@ text_iter_forward_word_start (GtkTextIter *iter)
             }
         }
     }
-
     return moved && !gtk_text_iter_is_end (iter);
 }
 
@@ -109,18 +112,14 @@ inline static gboolean
 text_iter_forward_word_start_n (GtkTextIter *iter, guint count)
 {
     if (!count) return FALSE;
-
-    while (count)
-    {
-        if (!text_iter_forward_word_start (iter))
-        {
+    while (count) {
+        if (!text_iter_forward_word_start (iter)) {
             gtk_text_iter_forward_to_end (iter);
             return FALSE;
         }
-
-        --count;
+        else
+            --count;
     }
-
     return TRUE;
 }
 
@@ -129,38 +128,29 @@ inline static gboolean
 text_iter_backward_word_start (GtkTextIter *iter)
 {
     gboolean moved = FALSE;
-
-    if (gtk_text_iter_starts_line (iter))
-    {
+    if (gtk_text_iter_starts_line (iter)) {
         moved = gtk_text_iter_backward_char (iter);
         /* it may point now to \n in \r\n combination */
         if (moved && !gtk_text_iter_ends_line (iter))
             gtk_text_iter_backward_char (iter);
     }
-    else
-    {
+    else {
         while (gtk_text_iter_backward_char (iter) &&
                !is_word_start (iter) &&
                !gtk_text_iter_starts_line (iter))
             moved = TRUE;
     }
-
     return moved;
 }
 
-
 inline static gboolean
-text_iter_backward_word_start_n (GtkTextIter *iter,
-                                 guint        count)
+text_iter_backward_word_start_n (GtkTextIter *iter, guint count)
 {
     gboolean moved = FALSE;
-
-    while (count && text_iter_backward_word_start (iter))
-    {
+    while (count && text_iter_backward_word_start (iter)) {
         moved = TRUE;
         --count;
     }
-
     return moved;
 }
 
@@ -207,72 +197,6 @@ moo_text_view_move_cursor_words (G_GNUC_UNUSED MooTextView *view,
         text_iter_backward_word_start_n (iter, -count);
     else if (count > 0)
         text_iter_forward_word_start_n (iter, count);
-}
-
-
-static gboolean
-text_iter_forward_char (GtkTextIter *iter)
-{
-    if (_moo_text_iter_is_placeholder_start (iter))
-        return gtk_text_iter_forward_chars (iter, 2);
-
-    if (gtk_text_iter_ends_line (iter))
-        return gtk_text_iter_forward_line (iter);
-    else
-        return gtk_text_iter_forward_char (iter);
-}
-
-
-static gboolean
-text_iter_backward_char (GtkTextIter *iter)
-{
-    GtkTextIter prev;
-
-    if (gtk_text_iter_starts_line (iter))
-    {
-        if (!gtk_text_iter_backward_line (iter))
-            return FALSE;
-
-        if (!gtk_text_iter_ends_line (iter))
-            gtk_text_iter_forward_to_line_end (iter);
-
-        return TRUE;
-    }
-
-    gtk_text_iter_backward_char (iter);
-
-    if (gtk_text_iter_get_char (iter) != MOO_TEXT_UNKNOWN_CHAR)
-        return TRUE;
-
-    prev = *iter;
-
-    if (gtk_text_iter_backward_char (&prev) &&
-         gtk_text_iter_get_char (&prev) == MOO_TEXT_UNKNOWN_CHAR &&
-        _moo_text_iter_is_placeholder_start (&prev))
-            *iter = prev;
-
-    return TRUE;
-}
-
-
-void
-moo_text_iter_forward_chars (GtkTextIter *iter,
-                             int          count)
-{
-    int i;
-
-    if (count > 0)
-    {
-        for (i = 0; i < count; ++i)
-            if (!text_iter_forward_char (iter))
-                break;
-    }
-    else
-    {
-        for (i = 0; i < -count; ++i)
-            if (!text_iter_backward_char (iter))
-                break;
-    }
 }
 
 
@@ -352,10 +276,9 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     GtkTextMark *insert;
     GtkTextIter iter;
     MooTextView *view = MOO_TEXT_VIEW (text_view);
-    gboolean call_parent = FALSE;
 
     if (!text_view->cursor_visible && !view->priv->overwrite_mode)
-        return _moo_text_view_parent_class->move_cursor (text_view, step, count, extend_selection);
+        return GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
 
     buffer = gtk_text_view_get_buffer (text_view);
     insert = gtk_text_buffer_get_insert (buffer);
@@ -367,36 +290,21 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
             moo_text_view_move_cursor_words (MOO_TEXT_VIEW (text_view), &iter, count);
             break;
 
-        case GTK_MOVEMENT_VISUAL_POSITIONS:
-            if (_moo_text_view_has_placeholders (MOO_TEXT_VIEW (text_view)))
-                moo_text_iter_forward_chars (&iter, count);
-            else
-                call_parent = TRUE;
-            break;
-
         case GTK_MOVEMENT_DISPLAY_LINE_ENDS:
             moo_text_view_home_end (MOO_TEXT_VIEW (text_view), &iter, count);
             break;
 
         default:
-            call_parent = TRUE;
+            if (view->priv->overwrite_mode)
+                gtk_text_view_set_cursor_visible (text_view, TRUE);
+            GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+            if (view->priv->overwrite_mode)
+                gtk_text_view_set_cursor_visible (text_view, FALSE);
+            return;
     }
 
-    if (call_parent)
-    {
-        if (view->priv->overwrite_mode)
-            gtk_text_view_set_cursor_visible (text_view, TRUE);
-
-        _moo_text_view_parent_class->move_cursor (text_view, step, count, extend_selection);
-
-        if (view->priv->overwrite_mode)
-            gtk_text_view_set_cursor_visible (text_view, FALSE);
-    }
-    else
-    {
-        move_cursor_to (text_view, &iter, extend_selection);
-        _moo_text_view_pend_cursor_blink (view);
-    }
+    move_cursor_to (text_view, &iter, extend_selection);
+    _moo_text_view_pend_cursor_blink (view);
 }
 
 
@@ -406,72 +314,12 @@ _moo_text_view_page_horizontally (GtkTextView *text_view,
                                   gboolean     extend_selection)
 {
     MooTextView *view = MOO_TEXT_VIEW (text_view);
-
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, TRUE);
-
-    _moo_text_view_parent_class->page_horizontally (text_view, count, extend_selection);
-
+    GTK_TEXT_VIEW_CLASS (parent_class())->page_horizontally (text_view, count, extend_selection);
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, FALSE);
-
     _moo_text_view_pend_cursor_blink (view);
-}
-
-
-void
-_moo_text_view_backspace (GtkTextView *text_view)
-{
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
-
-    if (!_moo_text_view_has_placeholders (view))
-        return _moo_text_view_parent_class->backspace (text_view);
-
-    g_signal_emit_by_name (view, "delete-from-cursor",
-                           GTK_DELETE_CHARS, -1);
-}
-
-
-static gboolean
-text_iter_forward_cursor_position (GtkTextIter *iter)
-{
-    if (!gtk_text_iter_forward_cursor_position (iter))
-        return FALSE;
-    if (_moo_text_iter_is_placeholder_end (iter))
-        gtk_text_iter_forward_cursor_position (iter);
-    return TRUE;
-}
-
-
-static gboolean
-text_iter_backward_cursor_position (GtkTextIter *iter)
-{
-    if (!gtk_text_iter_backward_cursor_position (iter))
-        return FALSE;
-    if (_moo_text_iter_is_placeholder_end (iter))
-        gtk_text_iter_backward_cursor_position (iter);
-    return TRUE;
-}
-
-
-static void
-text_iter_move_cursor_positions (GtkTextIter *iter,
-                                 int          count)
-{
-    int i;
-
-    if (count > 0)
-    {
-        for (i = 0; i < count; ++i)
-            if (!text_iter_forward_cursor_position (iter))
-                break;
-    }
-    else
-    {
-        for (i = 0; i < -count; ++i)
-            if (!text_iter_backward_cursor_position (iter))
-                break;
-    }
 }
 
 
@@ -480,44 +328,38 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
                                    GtkDeleteType       type,
                                    gint                count)
 {
-    GtkTextBuffer *buffer;
+    GtkTextBuffer *buf;
     GtkTextMark *insert_mark;
     GtkTextIter insert, start, end;
 
-    if (type != GTK_DELETE_WORD_ENDS &&
-        (type != GTK_DELETE_CHARS || !_moo_text_view_has_placeholders (MOO_TEXT_VIEW (text_view))))
-            return _moo_text_view_parent_class->delete_from_cursor (text_view, type, count);
+    if (type != GTK_DELETE_WORD_ENDS)
+        return GTK_TEXT_VIEW_CLASS (parent_class())->delete_from_cursor (text_view, type, count);
 
     text_view_reset_im_context (text_view);
-    buffer = gtk_text_view_get_buffer (text_view);
 
-    if (type == GTK_DELETE_CHARS)
-        if (gtk_text_buffer_delete_selection (buffer, TRUE, text_view->editable))
-            return;
+    buf = gtk_text_view_get_buffer (text_view);
+    insert_mark = gtk_text_buffer_get_insert (buf);
 
-    insert_mark = gtk_text_buffer_get_insert (buffer);
-    gtk_text_buffer_get_iter_at_mark (buffer, &insert, insert_mark);
+    /* XXX */
+    if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
+    {
+        gtk_text_buffer_delete_interactive (buf, &start, &end, text_view->editable);
+        gtk_text_view_scroll_mark_onscreen (text_view, insert_mark);
+        return;
+    }
+
+    gtk_text_buffer_get_iter_at_mark (buf, &insert, insert_mark);
     start = insert;
     end = insert;
 
-    switch (type)
-    {
-        case GTK_DELETE_WORD_ENDS:
-            if (count > 0)
-                text_iter_forward_word_start_n (&end, count);
-            else if (count < 0)
-                text_iter_backward_word_start_n (&start, -count);
-            break;
-        case GTK_DELETE_CHARS:
-            text_iter_move_cursor_positions (&end, count);
-            break;
-        default:
-            g_return_if_reached ();
-    }
+    if (count > 0)
+        text_iter_forward_word_start_n (&end, count);
+    else if (count < 0)
+        text_iter_backward_word_start_n (&start, -count);
 
     if (!gtk_text_iter_equal (&start, &end))
     {
-        gtk_text_buffer_delete_interactive (buffer, &start, &end, text_view->editable);
+        gtk_text_buffer_delete_interactive (buf, &start, &end, text_view->editable);
         gtk_text_view_scroll_mark_onscreen (text_view, insert_mark);
     }
 }
@@ -629,20 +471,6 @@ static void     text_view_start_selection_dnd   (GtkTextView        *text_view,
 static const int SCROLL_TIMEOUT = 100;
 
 
-static void
-moo_text_view_get_iter_at_location (GtkTextView *text_view,
-                                    GtkTextIter *iter,
-                                    int          x,
-                                    int          y)
-{
-    gtk_text_view_get_iter_at_location (text_view, iter, x, y);
-
-    if (gtk_text_iter_get_char (iter) == MOO_TEXT_UNKNOWN_CHAR &&
-        _moo_text_iter_is_placeholder_end (iter))
-            gtk_text_iter_forward_char (iter);
-}
-
-
 int
 _moo_text_view_button_press_event (GtkWidget          *widget,
                                    GdkEventButton     *event)
@@ -677,7 +505,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
     gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
                                            (int)event->x, (int)event->y, &x, &y);
 
-    moo_text_view_get_iter_at_location (text_view, &iter, x, y);
+    gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
     if (event->type == GDK_BUTTON_PRESS)
     {
@@ -716,7 +544,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
         }
         else if (event->button == 2 || event->button == 3)
         {
-            return GTK_WIDGET_CLASS(_moo_text_view_parent_class)->button_press_event (widget, event);
+            return parent_class()->button_press_event (widget, event);
         }
         else
         {
@@ -781,7 +609,7 @@ _moo_text_view_button_release_event (GtkWidget          *widget,
             /* if we were really dragging, drop it
              * otherwise, it was just a single click in selected text */
             g_assert (!view->priv->drag_moved); /* parent should handle drag */
-            moo_text_view_get_iter_at_location (text_view, &iter,
+            gtk_text_view_get_iter_at_location (text_view, &iter,
                                                 view->priv->drag_start_x,
                                                 view->priv->drag_start_y);
             gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (text_view),
@@ -825,7 +653,7 @@ _moo_text_view_motion_event (GtkWidget          *widget,
     gtk_text_view_window_to_buffer_coords (text_view,
                                            gtk_text_view_get_window_type (text_view, event->window),
                                            event_x, event_y, &x, &y);
-    moo_text_view_get_iter_at_location (text_view, &iter, x, y);
+    gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
     if (view->priv->drag_type == MOO_TEXT_VIEW_DRAG_SELECT) {
         GdkRectangle rect;
@@ -845,7 +673,7 @@ _moo_text_view_motion_event (GtkWidget          *widget,
 
         buffer = gtk_text_view_get_buffer (text_view);
 
-        moo_text_view_get_iter_at_location (text_view, &start,
+        gtk_text_view_get_iter_at_location (text_view, &start,
                                             view->priv->drag_start_x,
                                             view->priv->drag_start_y);
 
@@ -882,7 +710,7 @@ _moo_text_view_motion_event (GtkWidget          *widget,
                                                    &buffer_x,
                                                    &buffer_y);
 
-            moo_text_view_get_iter_at_location (text_view, &iter, buffer_x, buffer_y);
+            gtk_text_view_get_iter_at_location (text_view, &iter, buffer_x, buffer_y);
 
             view->priv->drag_type = MOO_TEXT_VIEW_DRAG_NONE;
             text_view_start_selection_dnd (text_view, &iter, event);
@@ -926,16 +754,10 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
 inline static int
 char_class (const GtkTextIter *iter)
 {
-    if (gtk_text_iter_ends_line (iter))
-        return -1;
-    else if (gtk_text_iter_get_char (iter) == MOO_TEXT_UNKNOWN_CHAR)
-        return 3;
-    else if (is_space (iter))
-        return 0;
-    else if (is_word_char (iter))
-        return 1;
-    else
-        return 2;
+    if (gtk_text_iter_ends_line (iter)) return -1;
+    else if (is_space (iter)) return 0;
+    else if (is_word_char (iter)) return 1;
+    else return 2;
 }
 
 #define FIND_BRACKET_LIMIT 2000
@@ -1069,11 +891,11 @@ drag_scroll_timeout_func (MooTextView *view)
                             &px, &py, NULL);
     gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
                                            px, py, &x, &y);
-    moo_text_view_get_iter_at_location (text_view, &iter, x, y);
+    gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
 
     buffer = gtk_text_view_get_buffer (text_view);
 
-    moo_text_view_get_iter_at_location (text_view, &start,
+    gtk_text_view_get_iter_at_location (text_view, &start,
                                         view->priv->drag_start_x,
                                         view->priv->drag_start_y);
 
@@ -1106,7 +928,8 @@ static gboolean handle_tab          (MooTextView    *view,
                                      GdkEventKey    *event);
 static gboolean handle_backspace    (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_enter        (MooTextView    *view);
+static gboolean handle_enter        (MooTextView    *view,
+                                     GdkEventKey    *event);
 static gboolean handle_shift_tab    (MooTextView    *view,
                                      GdkEventKey    *event);
 static gboolean handle_ctrl_up      (MooTextView    *view,
@@ -1154,7 +977,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
             case GDK_KP_Enter:
             case GDK_Return:
                 moo_text_buffer_begin_interactive_action (buffer);
-                handled = handle_enter (view);
+                handled = handle_enter (view, event);
                 moo_text_buffer_end_interactive_action (buffer);
                 break;
         }
@@ -1210,9 +1033,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
 
     view->priv->in_key_press = TRUE;
     moo_text_buffer_begin_interactive_action (buffer);
-
-    handled = GTK_WIDGET_CLASS(_moo_text_view_parent_class)->key_press_event (widget, event);
-
+    handled = parent_class()->key_press_event (widget, event);
     moo_text_buffer_end_interactive_action (buffer);
     view->priv->in_key_press = FALSE;
 
@@ -1417,7 +1238,8 @@ handle_backspace (MooTextView        *view,
 
 
 static gboolean
-handle_enter (MooTextView *view)
+handle_enter (MooTextView        *view,
+              G_GNUC_UNUSED GdkEventKey    *event)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
@@ -1516,4 +1338,50 @@ handle_ctrl_pgup (MooTextView        *view,
     }
 
     return TRUE;
+}
+
+
+/***********************************************************************/
+/* Drag'n'drop
+/*/
+
+void
+_moo_text_view_drag_data_received (GtkWidget      *widget,
+                                   GdkDragContext *context,
+                                   int             x,
+                                   int             y,
+                                   GtkSelectionData *data,
+                                   guint           info,
+                                   guint           time)
+{
+}
+
+
+gboolean
+_moo_text_view_drag_drop (GtkWidget      *widget,
+                          GdkDragContext *context,
+                          int             x,
+                          int             y,
+                          guint           time)
+{
+    return FALSE;
+}
+
+
+void
+_moo_text_view_drag_leave (GtkWidget      *widget,
+                           GdkDragContext *context,
+                           guint           time)
+{
+}
+
+
+gboolean
+_moo_text_view_drag_motion (GtkWidget      *widget,
+                            GdkDragContext *context,
+                            int             x,
+                            int             y,
+                            guint           time)
+{
+    return FALSE;
 }

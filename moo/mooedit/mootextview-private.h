@@ -27,7 +27,29 @@
 G_BEGIN_DECLS
 
 
-extern GtkTextViewClass *_moo_text_view_parent_class;
+/***********************************************************************/
+/* Drag'n'drop
+/*/
+void     _moo_text_view_drag_data_received  (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             GtkSelectionData *data,
+                                             guint           info,
+                                             guint           time);
+gboolean _moo_text_view_drag_drop           (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
+void     _moo_text_view_drag_leave          (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             guint           time);
+gboolean _moo_text_view_drag_motion         (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             int             x,
+                                             int             y,
+                                             guint           time);
 
 
 /***********************************************************************/
@@ -43,7 +65,6 @@ void        _moo_text_view_page_horizontally    (GtkTextView        *text_view,
 void        _moo_text_view_delete_from_cursor   (GtkTextView        *text_view,
                                                  GtkDeleteType       type,
                                                  gint                count);
-void        _moo_text_view_backspace            (GtkTextView        *text_view);
 int         _moo_text_view_key_press_event      (GtkWidget          *widget,
                                                  GdkEventKey        *event);
 int         _moo_text_view_key_release_event    (GtkWidget          *widget,
@@ -61,8 +82,6 @@ int         _moo_text_view_extend_selection     (MooTextView        *view,
 
 void        _moo_text_view_check_char_inserted  (MooTextView        *view);
 void        _moo_text_view_pend_cursor_blink    (MooTextView        *view);
-
-gboolean    _moo_text_view_has_placeholders     (MooTextView        *view);
 
 
 typedef enum {

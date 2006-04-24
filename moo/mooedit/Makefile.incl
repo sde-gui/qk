@@ -49,13 +49,13 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolang-rules.h                \
     $(mooedit)/moolang-strings.h              \
     $(mooedit)/moolinebuffer.h                \
+    $(mooedit)/mooplaceholder.h               \
     $(mooedit)/moopluginprefs-glade.h         \
     $(mooedit)/mootext-private.h              \
     $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/mootextfind.h                  \
     $(mooedit)/mootextgotoline-glade.h        \
-    $(mooedit)/mootexttag.h                   \
     $(mooedit)/mootextview-private.h          \
     $(mooedit)/quicksearch-glade.h            \
     $(mooedit)/statusbar-glade.h
@@ -87,6 +87,7 @@ mooedit_sources =                             \
     $(mooedit)/moolinebuffer.c                \
     $(mooedit)/moolinemark.c                  \
     $(mooedit)/moolineview.c                  \
+    $(mooedit)/mooplaceholder.c               \
     $(mooedit)/mooplugin.c                    \
     $(mooedit)/mootextbtree.c                 \
     $(mooedit)/mootextbuffer.c                \
@@ -95,7 +96,6 @@ mooedit_sources =                             \
     $(mooedit)/mootextsearch.c                \
     $(mooedit)/mootextstyle.c                 \
     $(mooedit)/mootextstylescheme.c           \
-    $(mooedit)/mootexttag.c                   \
     $(mooedit)/mootextview.c                  \
     $(mooedit)/moousertools.c
 
