@@ -44,11 +44,17 @@ typedef struct _ASMatch ASMatch;
 typedef struct _ASInfo ASInfo;
 
 
+typedef enum {
+    AS_WORD_BOUNDARY        = 1 << 0
+} ASOptions;
+
 struct _ASInfo {
     char *pattern;
     char *script;
     char *lang;
     guint enabled : 1;
+    ASOptions start_opts : 1;
+    ASOptions end_opts : 1;
 };
 
 struct _ASPlugin {
@@ -93,11 +99,6 @@ struct _ASMatch {
     guint *parens;
     guint n_parens;
 };
-
-typedef enum {
-    AS_WORD_BOUNDARY        = 1 << 0,
-    AS_NOT_WORD_BOUNDARY    = 1 << 1
-} ASOptions;
 
 
 static gboolean as_plugin_init      (ASPlugin       *plugin);
@@ -147,6 +148,8 @@ static ASInfo *
 as_info_new (const char *pattern,
              const char *script,
              const char *lang,
+             ASOptions   start_opts,
+             ASOptions   end_opts,
              gboolean    enabled)
 {
     ASInfo *info;
@@ -158,6 +161,9 @@ as_info_new (const char *pattern,
     info->script = (script && script[0]) ? g_strdup (script) : NULL;
     info->lang = (lang && lang[0]) ? g_ascii_strdown (lang, -1) : NULL;
     info->enabled = enabled != 0;
+    info->start_opts = start_opts;
+    info->end_opts = end_opts;
+
     return info;
 }
 
@@ -184,12 +190,12 @@ cmp_ints (gunichar *c1, gunichar *c2)
 
 static void
 append_options (GString  *pattern,
-                ASOptions opts)
+                ASOptions opts,
+                gunichar  ch)
 {
-    if (opts & AS_WORD_BOUNDARY)
-        g_string_append (pattern, "\\b");
-    else if (opts & AS_NOT_WORD_BOUNDARY)
-        g_string_append (pattern, "\\B");
+    if ((opts & AS_WORD_BOUNDARY) &&
+         (ch == '_' || g_unichar_isalpha (ch)))
+            g_string_append (pattern, "\\b");
 }
 
 static void
@@ -216,6 +222,7 @@ as_string_get_info (const char *string,
     ASStringInfo *info = NULL;
     char *rev = NULL;
     GString *pattern = NULL;
+    gunichar first, last;
 
     if (!string || !string[0])
     {
@@ -226,6 +233,8 @@ as_string_get_info (const char *string,
     rev = g_utf8_strreverse (string, -1);
     rev_len = strlen (rev);
     info = g_new0 (ASStringInfo, 1);
+    first = g_utf8_get_char (string);
+    last = g_utf8_get_char (rev);
 
     if (string[0] == AS_WILDCARD && string[1] != AS_WILDCARD)
     {
@@ -243,7 +252,7 @@ as_string_get_info (const char *string,
     pattern = g_string_sized_new (rev_len + 16);
 
     if (end_opts)
-        append_options (pattern, end_opts);
+        append_options (pattern, end_opts, last);
 
     g_string_append_printf (pattern, "(?P<%d>", string_no);
 
@@ -275,7 +284,7 @@ as_string_get_info (const char *string,
     g_string_append (pattern, ")");
 
     if (start_opts)
-        append_options (pattern, start_opts);
+        append_options (pattern, start_opts, first);
 
     info->pattern_len = pattern->len;
     info->pattern = g_string_free (pattern, FALSE);
@@ -677,7 +686,10 @@ as_plugin_load_info (ASPlugin *plugin,
             ar = any_lang;
         }
 
-        sinfo = as_string_get_info (info->pattern, 0, 0, ar->len);
+        sinfo = as_string_get_info (info->pattern,
+                                    info->start_opts,
+                                    info->end_opts,
+                                    ar->len);
 
         if (!sinfo)
         {
@@ -723,14 +735,15 @@ as_plugin_parse_config (MooConfig *config)
     for (i = 0; i < n_items; ++i)
     {
         const char *pattern, *lang, *script;
-        gboolean enabled;
+        gboolean enabled, word_boundary;
         ASInfo *info;
         MooConfigItem *item = moo_config_nth_item (config, i);
 
         pattern = moo_config_item_get (item, AS_KEY_PATTERN);
         lang = moo_config_item_get (item, AS_KEY_LANG);
-        enabled = moo_config_get_bool (config, item, AS_KEY_ENABLED);
         script = moo_config_item_get_content (item);
+        enabled = moo_config_get_bool (config, item, AS_KEY_ENABLED);
+        word_boundary = moo_config_get_bool (config, item, AS_KEY_WORD_BOUNDARY);
 
         if (!pattern)
         {
@@ -741,7 +754,9 @@ as_plugin_parse_config (MooConfig *config)
         if (!script || !script[0])
             script = NULL;
 
-        info = as_info_new (pattern, script, lang, enabled);
+        info = as_info_new (pattern, script, lang,
+                            word_boundary ? AS_WORD_BOUNDARY : 0,
+                            0, enabled);
 
         if (info)
             list = g_slist_prepend (list, info);
@@ -1100,6 +1115,7 @@ _as_plugin_load_config (void)
     else
     {
         moo_config_set_default_bool (config, AS_KEY_ENABLED, TRUE);
+        moo_config_set_default_bool (config, AS_KEY_WORD_BOUNDARY, TRUE);
     }
 
     g_free (file);

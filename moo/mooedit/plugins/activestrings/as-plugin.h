@@ -21,11 +21,12 @@
 G_BEGIN_DECLS
 
 
-#define AS_FILE         "as.cfg"
+#define AS_FILE                 "as.cfg"
 
-#define AS_KEY_PATTERN  "pattern"
-#define AS_KEY_LANG     "lang"
-#define AS_KEY_ENABLED  "enabled"
+#define AS_KEY_PATTERN          "pattern"
+#define AS_KEY_LANG             "lang"
+#define AS_KEY_ENABLED          "enabled"
+#define AS_KEY_WORD_BOUNDARY    "word-boundary"
 
 #define AS_PLUGIN_ID "ActiveStrings"
 #define AS_PREFS_ROOT MOO_PLUGIN_PREFS_ROOT "/" AS_PLUGIN_ID

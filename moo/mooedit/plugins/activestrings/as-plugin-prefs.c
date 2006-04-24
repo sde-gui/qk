@@ -110,6 +110,8 @@ _as_plugin_prefs_page (MooPlugin *plugin)
                                   AS_KEY_LANG, FALSE);
     moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "enabled"),
                                   AS_KEY_ENABLED, TRUE);
+    moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "word_boundary"),
+                                  AS_KEY_WORD_BOUNDARY, FALSE);
     moo_config_helper_add_widget (helper, moo_glade_xml_get_widget (xml, "script"),
                                   NULL, FALSE);
 
