@@ -162,6 +162,8 @@ void         moo_text_view_insert_placeholder       (MooTextView        *view,
                                                      GtkTextIter        *iter);
 gboolean     moo_text_view_next_placeholder         (MooTextView        *view);
 gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
+gboolean     moo_text_view_has_placeholder_at_iter  (MooTextView        *view,
+                                                     GtkTextIter        *iter);
 
 void         moo_text_view_start_quick_search       (MooTextView        *view);
 void         moo_text_view_stop_quick_search        (MooTextView        *view);

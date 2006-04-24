@@ -196,6 +196,9 @@ static void moo_edit_window_next_tab    (MooEditWindow      *window);
 static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
 static void moo_edit_window_next_bookmark (MooEditWindow    *window);
 static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
+static void moo_edit_window_next_ph     (MooEditWindow      *window);
+static void moo_edit_window_prev_ph     (MooEditWindow      *window);
+
 
 #if GTK_CHECK_VERSION(2,10,0)
 static void moo_edit_window_page_setup  (MooEditWindow    *window);
@@ -584,6 +587,24 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "icon-stock-id", GTK_STOCK_GO_UP,
                                  "accel", "<alt>Up",
                                  "closure-callback", moo_edit_window_prev_bookmark,
+                                 "condition::visible", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "NextPlaceholder",
+                                 "name", "Next Placeholder",
+                                 "label", "Next Placeholder",
+                                 "tooltip", "Go to next placeholder",
+                                 "icon-stock-id", GTK_STOCK_GO_FORWARD,
+                                 "closure-callback", moo_edit_window_next_ph,
+                                 "condition::visible", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "PrevPlaceholder",
+                                 "name", "Previous Placeholder",
+                                 "label", "Previous Placeholder",
+                                 "tooltip", "Go to previous placeholder",
+                                 "icon-stock-id", GTK_STOCK_GO_BACK,
+                                 "closure-callback", moo_edit_window_prev_ph,
                                  "condition::visible", "has-open-document",
                                  NULL);
 
@@ -1062,6 +1083,24 @@ moo_edit_window_prev_bookmark (MooEditWindow *window)
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
         g_slist_free (bookmarks);
     }
+}
+
+
+static void
+moo_edit_window_next_ph (MooEditWindow *window)
+{
+    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+    moo_text_view_next_placeholder (MOO_TEXT_VIEW (doc));
+}
+
+
+static void
+moo_edit_window_prev_ph (MooEditWindow *window)
+{
+    MooEdit *doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+    moo_text_view_prev_placeholder (MOO_TEXT_VIEW (doc));
 }
 
 

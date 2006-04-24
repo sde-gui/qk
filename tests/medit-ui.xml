@@ -54,6 +54,9 @@
       <separator/>
       <item action="GoToLine"/>
       <separator/>
+      <item action="NextPlaceholder"/>
+      <item action="PrevPlaceholder"/>
+      <separator/>
     </item>
 
     <item name="View" label="_View">

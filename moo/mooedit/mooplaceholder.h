@@ -38,6 +38,9 @@ G_BEGIN_DECLS
 #define MOO_IS_TEXT_ANCHOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_TEXT_ANCHOR))
 #define MOO_TEXT_ANCHOR_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TEXT_ANCHOR, MooTextAnchorClass))
 
+#define MOO_TEXT_UNKNOWN_CHAR       0xFFFC
+#define MOO_TEXT_UNKNOWN_CHAR_S     "\xEF\xBF\xBC"
+
 
 typedef struct _MooPlaceholder          MooPlaceholder;
 typedef struct _MooPlaceholderPrivate   MooPlaceholderPrivate;

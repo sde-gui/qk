@@ -1928,15 +1928,8 @@ moo_text_view_draw_placeholders (GtkTextView       *text_view,
 
     while (gtk_text_iter_compare (&iter, end) < 0)
     {
-        if (gtk_text_iter_get_char (&iter) == 0xFFFC)
-        {
-            GtkTextChildAnchor *anchor;
-
-            anchor = gtk_text_iter_get_child_anchor (&iter);
-
-            if (MOO_IS_TEXT_ANCHOR (anchor))
-                draw_placeholder (text_view, event, &iter);
-        }
+        if (moo_text_view_has_placeholder_at_iter (MOO_TEXT_VIEW (text_view), &iter))
+            draw_placeholder (text_view, event, &iter);
 
         if (!gtk_text_iter_forward_char (&iter))
             break;
@@ -4121,5 +4114,91 @@ has_placeholders (MooTextView *view)
 }
 
 
-gboolean     moo_text_view_next_placeholder         (MooTextView        *view);
-gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
+gboolean
+moo_text_view_has_placeholder_at_iter (MooTextView *view,
+                                       GtkTextIter *iter)
+{
+    GtkTextChildAnchor *anchor;
+
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
+    g_return_val_if_fail (iter != NULL, FALSE);
+
+    if (gtk_text_iter_get_char (iter) != MOO_TEXT_UNKNOWN_CHAR)
+        return FALSE;
+
+    anchor = gtk_text_iter_get_child_anchor (iter);
+    return MOO_IS_TEXT_ANCHOR (anchor) &&
+            MOO_IS_PLACEHOLDER (MOO_TEXT_ANCHOR(anchor)->widget);
+}
+
+
+gboolean
+moo_text_view_next_placeholder (MooTextView *view)
+{
+    GtkTextIter start, end, match_start, match_end;
+    GtkTextBuffer *buffer;
+
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
+
+    buffer = get_buffer (view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+    {
+        if (moo_text_view_has_placeholder_at_iter (view, &start) &&
+            gtk_text_iter_get_line_offset (&end) == gtk_text_iter_get_line_offset (&start) + 1)
+                start = end;
+        else
+            moo_text_view_get_cursor (view, &start);
+    }
+
+    while (gtk_text_iter_forward_search (&start, MOO_TEXT_UNKNOWN_CHAR_S,
+                                         0, &match_start, &match_end, NULL))
+    {
+        if (moo_text_view_has_placeholder_at_iter (view, &match_start))
+        {
+            gtk_text_buffer_select_range (buffer, &match_end, &match_start);
+            return TRUE;
+        }
+        else
+        {
+            start = match_end;
+        }
+    }
+
+    return FALSE;
+}
+
+
+gboolean
+moo_text_view_prev_placeholder (MooTextView *view)
+{
+    GtkTextIter start, end, match_start, match_end;
+    GtkTextBuffer *buffer;
+
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
+
+    buffer = get_buffer (view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end) &&
+        !moo_text_view_has_placeholder_at_iter (view, &start) &&
+        gtk_text_iter_get_line_offset (&end) != gtk_text_iter_get_line_offset (&start) + 1)
+    {
+        moo_text_view_get_cursor (view, &start);
+    }
+
+    while (gtk_text_iter_backward_search (&start, MOO_TEXT_UNKNOWN_CHAR_S,
+                                          0, &match_start, &match_end, NULL))
+    {
+        if (moo_text_view_has_placeholder_at_iter (view, &match_start))
+        {
+            gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+            return TRUE;
+        }
+        else
+        {
+            start = match_start;
+        }
+    }
+
+    return FALSE;
+}
