@@ -49,8 +49,6 @@ typedef struct _MooTextAnchorClass      MooTextAnchorClass;
 struct _MooPlaceholder
 {
     GtkLabel parent;
-    GtkTextTagTable *table;
-    GtkTextTag *tag;
 };
 
 struct _MooPlaceholderClass

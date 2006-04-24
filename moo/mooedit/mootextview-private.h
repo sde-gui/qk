@@ -28,31 +28,6 @@ G_BEGIN_DECLS
 
 
 /***********************************************************************/
-/* Drag'n'drop
-/*/
-void     _moo_text_view_drag_data_received  (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             GtkSelectionData *data,
-                                             guint           info,
-                                             guint           time);
-gboolean _moo_text_view_drag_drop           (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time);
-void     _moo_text_view_drag_leave          (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             guint           time);
-gboolean _moo_text_view_drag_motion         (GtkWidget      *widget,
-                                             GdkDragContext *context,
-                                             int             x,
-                                             int             y,
-                                             guint           time);
-
-
-/***********************************************************************/
 /* GtkTextView stuff
 /*/
 void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
@@ -191,6 +166,7 @@ struct _MooTextViewPrivate {
     /* Children
     /*/
     GtkWidget *children[4];
+    GSList *placeholders;
 
     /***********************************************************************/
     /* Search

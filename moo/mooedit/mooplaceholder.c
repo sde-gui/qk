@@ -50,7 +50,7 @@ moo_placeholder_update_size (GtkWidget *ph)
         PangoLayout *layout;
         PangoLayoutLine *line;
         PangoRectangle rect;
-        int height, rise;
+        int height;
 
         ctx = gtk_widget_get_pango_context (parent);
         g_return_if_fail (ctx != NULL);
@@ -62,13 +62,9 @@ moo_placeholder_update_size (GtkWidget *ph)
         pango_layout_line_get_extents (line, NULL, &rect);
 
         height = rect.height / PANGO_SCALE;
-        rise = rect.y + rect.height;
 
         gtk_widget_set_size_request (ph, -1, height);
         gtk_widget_modify_font (ph, parent->style->font_desc);
-
-        if (MOO_PLACEHOLDER(ph)->tag)
-            g_object_set (MOO_PLACEHOLDER(ph)->tag, "rise", -rise, NULL);
 
         g_object_unref (layout);
     }
@@ -102,27 +98,8 @@ moo_placeholder_parent_set (GtkWidget *widget,
 
 
 static void
-moo_placeholder_destroy (GtkObject *object)
-{
-    MooPlaceholder *ph = MOO_PLACEHOLDER (object);
-
-    if (ph->tag)
-    {
-        gtk_text_tag_table_remove (ph->table, ph->tag);
-        g_object_unref (ph->tag);
-        g_object_unref (ph->table);
-        ph->tag = NULL;
-        ph->table = NULL;
-    }
-
-    GTK_OBJECT_CLASS(_moo_placeholder_parent_class)->destroy (object);
-}
-
-
-static void
 _moo_placeholder_class_init (MooPlaceholderClass *klass)
 {
-    GTK_OBJECT_CLASS(klass)->destroy = moo_placeholder_destroy;
     GTK_WIDGET_CLASS(klass)->parent_set = moo_placeholder_parent_set;
 }
 
@@ -131,16 +108,4 @@ static void
 _moo_placeholder_init (MooPlaceholder *ph)
 {
     gtk_label_set_text (GTK_LABEL (ph), "  ");
-}
-
-
-void
-_moo_placeholder_set_tag (MooPlaceholder     *ph,
-                          GtkTextTagTable    *table,
-                          GtkTextTag         *tag)
-{
-    g_return_if_fail (ph->tag == NULL);
-    ph->tag = g_object_ref (tag);
-    ph->table = g_object_ref (table);
-    moo_placeholder_update_size (GTK_WIDGET (ph));
 }

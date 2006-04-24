@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mootextview.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -158,6 +157,7 @@ static void     fold_toggled                (MooTextView        *view,
                                              MooFold            *fold);
 
 static gboolean has_placeholders            (MooTextView        *view);
+static void     update_placeholder_tag      (MooTextView        *view);
 
 
 enum {
@@ -240,12 +240,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->style_set = moo_text_view_style_set;
     widget_class->size_request = moo_text_view_size_request;
     widget_class->size_allocate = moo_text_view_size_allocate;
-#if 0
-    widget_class->drag_data_received = _moo_text_view_drag_data_received;
-    widget_class->drag_drop = _moo_text_view_drag_drop;
-    widget_class->drag_leave = _moo_text_view_drag_leave;
-    widget_class->drag_motion = _moo_text_view_drag_motion;
-#endif
 
     container_class->remove = moo_text_view_remove;
 
@@ -1718,6 +1712,8 @@ moo_text_view_realize (GtkWidget *widget)
         if (view->priv->children[i] && GTK_WIDGET_VISIBLE (view->priv->children[i]))
             lower_border_window (GTK_TEXT_VIEW (view), i);
     }
+
+    update_placeholder_tag (view);
 }
 
 
@@ -2809,6 +2805,8 @@ moo_text_view_style_set (GtkWidget *widget,
                           NULL);
     view->priv->expander_size += EXPANDER_PADDING;
 
+    update_placeholder_tag (view);
+
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->style_set (widget, prev_style);
 }
 
@@ -3654,6 +3652,10 @@ moo_text_view_remove (GtkContainer *container,
     guint i;
     MooTextView *view = MOO_TEXT_VIEW (container);
 
+    if (MOO_IS_PLACEHOLDER (widget))
+        view->priv->placeholders =
+                g_slist_remove (view->priv->placeholders, widget);
+
     if (widget == view->priv->qs.evbox)
     {
         view->priv->qs.in_search = FALSE;
@@ -4029,6 +4031,56 @@ start_quick_search (MooTextView *view)
 /* Placeholders
  */
 
+static void
+update_placeholder_tag (MooTextView *view)
+{
+    GtkTextTag *tag = moo_text_view_lookup_tag (view, "moo-placeholder");
+
+    if (tag && GTK_WIDGET_REALIZED (view))
+    {
+        PangoContext *ctx;
+        PangoLayout *layout;
+        PangoLayoutLine *line;
+        PangoRectangle rect;
+        int rise;
+
+        ctx = gtk_widget_get_pango_context (GTK_WIDGET (view));
+        g_return_if_fail (ctx != NULL);
+
+        layout = pango_layout_new (ctx);
+        pango_layout_set_text (layout, "AA", -1);
+        line = pango_layout_get_line (layout, 0);
+
+        pango_layout_line_get_extents (line, NULL, &rect);
+
+        rise = rect.y + rect.height;
+
+        if (tag)
+            g_object_set (tag, "rise", -rise, NULL);
+
+        g_object_unref (layout);
+    }
+}
+
+
+static GtkTextTag *
+create_placeholder_tag (MooTextView *view)
+{
+    GtkTextTag *tag;
+
+    tag = moo_text_view_lookup_tag (view, "moo-placeholder");
+
+    if (!tag)
+    {
+        GtkTextBuffer *buffer = get_buffer (view);
+        tag = gtk_text_buffer_create_tag (buffer, "moo-placeholder", NULL);
+        update_placeholder_tag (view);
+    }
+
+    return tag;
+}
+
+
 void
 moo_text_view_insert_placeholder (MooTextView *view,
                                   GtkTextIter *iter)
@@ -4037,7 +4089,6 @@ moo_text_view_insert_placeholder (MooTextView *view,
     GtkTextChildAnchor *anchor;
     GtkWidget *ph;
     GtkTextTag *tag;
-    GtkTextTagTable *table;
     GtkTextIter start;
 
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
@@ -4050,15 +4101,14 @@ moo_text_view_insert_placeholder (MooTextView *view,
     buffer = get_buffer (view);
     gtk_text_buffer_insert_child_anchor (buffer, iter, anchor);
 
-    gtk_widget_show (ph);
-    gtk_text_view_add_child_at_anchor (GTK_TEXT_VIEW (view), ph, anchor);
-
-    table = gtk_text_buffer_get_tag_table (buffer);
-    tag = gtk_text_buffer_create_tag (buffer, NULL, NULL);
-    _moo_placeholder_set_tag (MOO_PLACEHOLDER (ph), table, tag);
+    tag = create_placeholder_tag (view);
     start = *iter;
     gtk_text_iter_backward_char (&start);
     gtk_text_buffer_apply_tag (buffer, tag, &start, iter);
+
+    gtk_widget_show (ph);
+    gtk_text_view_add_child_at_anchor (GTK_TEXT_VIEW (view), ph, anchor);
+    view->priv->placeholders = g_slist_prepend (view->priv->placeholders, ph);
 
     g_object_unref (anchor);
 }
@@ -4067,7 +4117,7 @@ moo_text_view_insert_placeholder (MooTextView *view,
 static gboolean
 has_placeholders (MooTextView *view)
 {
-    return TRUE;
+    return view->priv->placeholders != NULL;
 }
 
 
