@@ -628,6 +628,23 @@ static void moo_text_view_init (MooTextView *view)
 }
 
 
+static void
+add_tag (MooTextView   *view,
+         MooTextTagType type,
+         const char    *name)
+{
+    GtkTextBuffer *buffer;
+    GtkTextTag *tag;
+    GtkTextTagTable *table;
+
+    buffer = get_buffer (view);
+    tag = _moo_text_tag_new (type, name);
+    table = gtk_text_buffer_get_tag_table (buffer);
+    gtk_text_tag_table_add (table, tag);
+    g_object_unref (tag);
+}
+
+
 static GObject*
 moo_text_view_constructor (GType                  type,
                            guint                  n_construct_properties,
@@ -689,6 +706,9 @@ moo_text_view_constructor (GType                  type,
     gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
 
     g_signal_connect (view, "notify::overwrite", G_CALLBACK (overwrite_changed), NULL);
+
+    add_tag (view, MOO_TEXT_TAG_PLACEHOLDER_START, MOO_PLACEHOLDER_START);
+    add_tag (view, MOO_TEXT_TAG_PLACEHOLDER_END, MOO_PLACEHOLDER_END);
 
     return object;
 }
@@ -4054,61 +4074,21 @@ start_quick_search (MooTextView *view)
 /* Placeholders
  */
 
-static void
-add_tag (MooTextView   *view,
-         MooTextTagType type,
-         const char    *name)
-{
-    GtkTextBuffer *buffer;
-    GtkTextTag *tag;
-    GtkTextTagTable *table;
-
-    buffer = get_buffer (view);
-    tag = _moo_text_tag_new (type, name);
-    table = gtk_text_buffer_get_tag_table (buffer);
-    gtk_text_tag_table_add (table, tag);
-
-    if (GTK_WIDGET (view)->style)
-        g_object_set (tag, "foreground-gdk",
-                      &GTK_WIDGET(view)->style->base[GTK_STATE_NORMAL],
-                      NULL);
-
-    g_object_unref (tag);
-}
-
-
 void
 moo_text_view_insert_placeholder (MooTextView *view,
                                   GtkTextIter *iter)
 {
-    GtkTextBuffer *buffer;
-
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_return_if_fail (iter != NULL);
-
-    buffer = get_buffer (view);
-
-    if (!moo_text_view_lookup_tag (view, MOO_PLACEHOLDER_START))
-    {
-        add_tag (view, MOO_TEXT_TAG_PLACEHOLDER_START, MOO_PLACEHOLDER_START);
-        add_tag (view, MOO_TEXT_TAG_PLACEHOLDER_END, MOO_PLACEHOLDER_END);
-    }
-
-    gtk_text_buffer_insert_with_tags_by_name (buffer, iter,
-                                              MOO_TEXT_UNKNOWN_CHAR_S,
-                                              -1, MOO_PLACEHOLDER_START,
-                                              NULL);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, iter,
-                                              MOO_TEXT_UNKNOWN_CHAR_S,
-                                              -1, MOO_PLACEHOLDER_END,
-                                              NULL);
+    gtk_text_buffer_insert (get_buffer (view), iter,
+                            MOO_PLACEHOLDER_STRING, -1);
 }
 
 
 gboolean
 _moo_text_view_has_placeholders (MooTextView *view)
 {
-    return moo_text_view_lookup_tag (view, MOO_PLACEHOLDER_START) != NULL;
+    return _moo_text_buffer_has_placeholders (get_moo_buffer (view));
 }
 
 

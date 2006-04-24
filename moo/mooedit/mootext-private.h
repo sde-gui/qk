@@ -56,6 +56,7 @@ void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
 void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
                                                      int                 first,
                                                      int                 last);
+gboolean    _moo_text_buffer_has_placeholders       (MooTextBuffer      *buffer);
 
 
 G_END_DECLS
