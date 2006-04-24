@@ -1008,7 +1008,6 @@ doc_lang_changed (MooEdit *doc)
     GSList *l;
     MooLang *lang;
     const char *id;
-    GtkWidget *toplevel;
     MooEditWindow *window = NULL;
 
     g_return_if_fail (MOO_IS_EDIT (doc));

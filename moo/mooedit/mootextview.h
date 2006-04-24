@@ -158,6 +158,11 @@ void         moo_text_view_add_child_in_border      (MooTextView        *view,
                                                      GtkWidget          *child,
                                                      GtkTextWindowType   which_border);
 
+void         moo_text_view_insert_placeholder       (MooTextView        *view,
+                                                     GtkTextIter        *iter);
+gboolean     moo_text_view_next_placeholder         (MooTextView        *view);
+gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
+
 void         moo_text_view_start_quick_search       (MooTextView        *view);
 void         moo_text_view_stop_quick_search        (MooTextView        *view);
 void         moo_text_view_set_quick_search_flags   (MooTextView        *view,

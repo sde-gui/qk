@@ -45,6 +45,10 @@ void        moo_text_iter_set_visual_line_offset    (GtkTextIter        *iter,
                                                      int                 offset,
                                                      int                 tab_width);
 
+/* in mooeditinput.c */
+void        moo_text_iter_forward_chars             (GtkTextIter        *iter,
+                                                     int                 chars);
+
 
 G_END_DECLS
 

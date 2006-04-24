@@ -55,6 +55,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/mootextfind.h                  \
     $(mooedit)/mootextgotoline-glade.h        \
+    $(mooedit)/mootexttag.h                   \
     $(mooedit)/mootextview-private.h          \
     $(mooedit)/quicksearch-glade.h            \
     $(mooedit)/statusbar-glade.h
@@ -94,6 +95,7 @@ mooedit_sources =                             \
     $(mooedit)/mootextsearch.c                \
     $(mooedit)/mootextstyle.c                 \
     $(mooedit)/mootextstylescheme.c           \
+    $(mooedit)/mootexttag.c                   \
     $(mooedit)/mootextview.c                  \
     $(mooedit)/moousertools.c
 

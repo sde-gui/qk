@@ -296,6 +296,7 @@ enum {
     FUNC_RIGHT,
 
     FUNC_INSERT,
+    FUNC_INSERT_PLACEHOLDER,
     FUNC_NEWLINE,
     FUNC_SELECT,
     FUNC_SELECTION,
@@ -310,7 +311,7 @@ enum {
 
 static const char *builtin_func_names[N_BUILTIN_FUNCS] = {
     "Backspace", "Delete", "Up", "Down", "Left", "Right",
-    "Insert", "NewLine", "Select", "Selection",
+    "Insert", "InsertPlaceholder", "NewLine", "Select", "Selection",
     "Cut", "Copy", "Paste"
 };
 
@@ -467,7 +468,7 @@ cfunc_delete (MSValue  **args,
 
     if (n)
     {
-        gtk_text_iter_forward_chars (&end, n);
+        moo_text_iter_forward_chars (&end, n);
         gtk_text_buffer_delete (buffer, &start, &end);
     }
 
@@ -602,7 +603,7 @@ cfunc_select (MSValue   *arg,
     gtk_text_buffer_get_iter_at_mark (buffer, &start,
                                       gtk_text_buffer_get_insert (buffer));
     end = start;
-    gtk_text_iter_forward_chars (&end, n);
+    moo_text_iter_forward_chars (&end, n);
 
     gtk_text_buffer_select_range (buffer, &end, &start);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
@@ -622,7 +623,7 @@ move_cursor (MooEdit *doc,
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
                                       gtk_text_buffer_get_insert (buffer));
 
-    gtk_text_iter_forward_chars (&iter, howmany);
+    moo_text_iter_forward_chars (&iter, howmany);
     gtk_text_buffer_place_cursor (buffer, &iter);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
 }
@@ -697,6 +698,27 @@ cfunc_insert (MSValue  **args,
 
 
 static MSValue *
+cfunc_insert_placeholder (MSContext *ctx)
+{
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+    MooEdit *doc;
+
+    CHECK_DOC (ctx, doc);
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+        gtk_text_buffer_delete (buffer, &start, &end);
+
+    moo_text_view_insert_placeholder (MOO_TEXT_VIEW (doc), &start);
+
+    scroll_to_cursor (GTK_TEXT_VIEW (doc));
+    return ms_value_none ();
+}
+
+
+static MSValue *
 cfunc_selection (MSContext *ctx)
 {
     MooEdit *doc;
@@ -733,6 +755,7 @@ init_api (void)
     builtin_funcs[FUNC_BACKSPACE] = ms_cfunc_new_var (cfunc_backspace);
     builtin_funcs[FUNC_DELETE] = ms_cfunc_new_var (cfunc_delete);
     builtin_funcs[FUNC_INSERT] = ms_cfunc_new_var (cfunc_insert);
+    builtin_funcs[FUNC_INSERT_PLACEHOLDER] = ms_cfunc_new_0 (cfunc_insert_placeholder);
     builtin_funcs[FUNC_UP] = ms_cfunc_new_var (cfunc_up);
     builtin_funcs[FUNC_DOWN] = ms_cfunc_new_var (cfunc_down);
     builtin_funcs[FUNC_LEFT] = ms_cfunc_new_var (cfunc_left);

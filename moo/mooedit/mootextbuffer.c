@@ -102,11 +102,11 @@ static void     thaw_cursor_moved                   (MooTextBuffer      *buffer)
 static guint    INSERT_ACTION_TYPE;
 static guint    DELETE_ACTION_TYPE;
 static void     init_undo_actions                   (void);
-static MooUndoAction *insert_action_new             (GtkTextBuffer      *buffer,
+static void     add_undo_insert                     (MooTextBuffer      *buffer,
                                                      GtkTextIter        *pos,
                                                      const char         *text,
                                                      int                 length);
-static MooUndoAction *delete_action_new             (GtkTextBuffer      *buffer,
+static void     add_undo_delete                     (MooTextBuffer      *buffer,
                                                      GtkTextIter        *start,
                                                      GtkTextIter        *end);
 #if 0
@@ -494,14 +494,10 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     starts_line = gtk_text_iter_starts_line (pos);
     ins_line = (text[0] == '\n' || text[0] == '\r');
 
-    if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
-    {
-        MooUndoAction *action;
-        action = insert_action_new (text_buffer, pos, text, length);
-        moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
-    }
-
     moo_text_buffer_unhighlight_brackets (buffer);
+
+    if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
+        add_undo_insert (buffer, pos, text, length);
 
     tag = _moo_text_iter_get_syntax_tag (pos);
 
@@ -598,11 +594,7 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
 #undef MANY_LINES
 
     if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
-    {
-        MooUndoAction *action;
-        action = delete_action_new (text_buffer, start, end);
-        moo_undo_mgr_add_action (buffer->priv->undo_mgr, DELETE_ACTION_TYPE, action);
-    }
+        add_undo_delete (buffer, start, end);
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
 
@@ -1659,6 +1651,29 @@ delete_action_new (GtkTextBuffer      *buffer,
         edit_action->mergeable = TRUE;
 
     return (MooUndoAction*) action;
+}
+
+
+static void
+add_undo_insert (MooTextBuffer    *buffer,
+                 GtkTextIter      *pos,
+                 const char       *text,
+                 int               length)
+{
+    MooUndoAction *action;
+    action = insert_action_new (GTK_TEXT_BUFFER (buffer), pos, text, length);
+    moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
+}
+
+
+static void
+add_undo_delete (MooTextBuffer *buffer,
+                 GtkTextIter   *start,
+                 GtkTextIter   *end)
+{
+    MooUndoAction *action;
+    action = delete_action_new (GTK_TEXT_BUFFER (buffer), start, end);
+    moo_undo_mgr_add_action (buffer->priv->undo_mgr, DELETE_ACTION_TYPE, action);
 }
 
 
