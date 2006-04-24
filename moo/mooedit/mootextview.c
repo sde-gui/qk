@@ -734,13 +734,26 @@ moo_text_view_delete_selection (MooTextView *view)
 
 
 static void
-msg_to_statusbar (const char *message,
-                  gpointer    data)
+moo_text_view_message (MooTextView *view,
+                       const char  *message)
 {
-    GtkWidget *toplevel = gtk_widget_get_toplevel (data);
+    GtkWidget *toplevel;
+
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    g_return_if_fail (message != NULL);
+
+    toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
 
     if (MOO_IS_EDIT_WINDOW (toplevel))
         moo_edit_window_message (MOO_EDIT_WINDOW (toplevel), message);
+}
+
+
+static void
+msg_to_statusbar (const char *message,
+                  gpointer    data)
+{
+    moo_text_view_message (data, message);
 }
 
 
@@ -4165,6 +4178,7 @@ moo_text_view_next_placeholder (MooTextView *view)
         }
     }
 
+    moo_text_view_message (view, "No placeholder found");
     return FALSE;
 }
 
@@ -4200,5 +4214,6 @@ moo_text_view_prev_placeholder (MooTextView *view)
         }
     }
 
+    moo_text_view_message (view, "No placeholder found");
     return FALSE;
 }
