@@ -177,6 +177,9 @@ gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
 gboolean     moo_text_view_has_box_at_iter          (MooTextView        *view,
                                                      GtkTextIter        *iter);
 
+void         moo_text_view_indent                   (MooTextView        *view);
+void         moo_text_view_unindent                 (MooTextView        *view);
+
 void         moo_text_view_start_quick_search       (MooTextView        *view);
 void         moo_text_view_stop_quick_search        (MooTextView        *view);
 void         moo_text_view_set_quick_search_flags   (MooTextView        *view,

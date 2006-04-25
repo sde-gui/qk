@@ -38,6 +38,9 @@
       <separator/>
       <item action="SelectAll"/>
       <separator/>
+      <item action="Indent"/>
+      <item action="Unindent"/>
+      <separator/>
       <item action="Comment"/>
       <item action="Uncomment"/>
       <separator/>

@@ -637,6 +637,26 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "Indent",
+                                 "name", "Indent",
+                                 "label", "Indent",
+                                 "tooltip", "Indent",
+                                 "accel", "<ctrl>i",
+                                 "closure-callback", moo_text_view_indent,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "Unindent",
+                                 "name", "Unindent",
+                                 "label", "Unindent",
+                                 "tooltip", "Unindent",
+                                 "accel", "<shift><ctrl>i",
+                                 "closure-callback", moo_text_view_unindent,
+                                 "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
 #if GTK_CHECK_VERSION(2,10,0)
     moo_window_class_new_action (window_class, "PageSetup",
                                  "name", "Page Setup",
@@ -1318,8 +1338,6 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (edit));
-
-    _moo_edit_set_action_accels (edit, window);
 
     label = create_tab_label (window, edit);
     gtk_widget_show (label);

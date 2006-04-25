@@ -1172,6 +1172,22 @@ tab_indent (MooTextView *view)
 }
 
 
+void
+moo_text_view_indent (MooTextView *view)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    tab_indent (view);
+}
+
+
+void
+moo_text_view_unindent (MooTextView *view)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    tab_unindent (view);
+}
+
+
 static void
 move_focus (GtkWidget       *widget,
             GtkDirectionType direction)
