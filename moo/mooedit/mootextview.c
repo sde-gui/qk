@@ -1277,21 +1277,26 @@ insert_text_cb (MooTextView        *view,
     {
         view->priv->in_key_press = FALSE;
         view->priv->char_inserted = g_utf8_get_char (text);
-        view->priv->char_inserted_pos = *iter;
+        view->priv->char_inserted_offset = gtk_text_iter_get_offset (iter);
     }
 }
 
 
 void
-_moo_text_view_check_char_inserted (MooTextView        *view)
+_moo_text_view_check_char_inserted (MooTextView *view)
 {
     if (view->priv->char_inserted)
     {
         gboolean result;
+        GtkTextIter iter;
+
+        gtk_text_buffer_get_iter_at_offset (get_buffer (view), &iter,
+                                            view->priv->char_inserted_offset);
+
         g_signal_emit (view, signals[CHAR_INSERTED], 0,
-                       &view->priv->char_inserted_pos,
-                       (guint) view->priv->char_inserted,
+                       &iter, (guint) view->priv->char_inserted,
                        &result);
+
         view->priv->char_inserted = 0;
     }
 }

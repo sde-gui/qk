@@ -139,7 +139,7 @@ struct _MooTextViewPrivate {
        characters in buffer's insert-text signal */
     gboolean in_key_press;
     gunichar char_inserted;
-    GtkTextIter char_inserted_pos;
+    int char_inserted_offset;
 
     /***********************************************************************/
     /* Selection and drag
