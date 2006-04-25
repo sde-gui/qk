@@ -183,7 +183,11 @@ static guint signals[LAST_SIGNAL];
 enum {
     PROP_0,
     PROP_BUFFER,
+
     PROP_INDENTER,
+    PROP_AUTO_INDENT,
+    PROP_BACKSPACE_INDENTS,
+
     PROP_HIGHLIGHT_CURRENT_LINE,
     PROP_HIGHLIGHT_MATCHING_BRACKETS,
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
@@ -450,6 +454,18 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              MOO_TEXT_TAB_KEY_INDENT,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+    g_object_class_install_property (gobject_class,
+                                     PROP_AUTO_INDENT,
+                                     g_param_spec_boolean ("auto-indent",
+                                             "auto-indent", "auto-indent",
+                                             TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_BACKSPACE_INDENTS,
+                                     g_param_spec_boolean ("backspace-indents",
+                                             "backspace-indents", "backspace-indents",
+                                             FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
     gtk_widget_class_install_style_property (widget_class,
                                              g_param_spec_int ("expander-size",
                                                      "Expander Size",
@@ -606,9 +622,8 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->last_search_stamp = -1;
 
     view->priv->saved_cursor_visible = TRUE;
-    view->priv->tab_indents = TRUE;
-    view->priv->shift_tab_unindents = TRUE;
-    view->priv->backspace_indents = TRUE;
+    view->priv->tab_key_action = MOO_TEXT_TAB_KEY_INDENT;
+    view->priv->backspace_indents = FALSE;
     view->priv->enter_indents = TRUE;
     view->priv->ctrl_up_down_scrolls = TRUE;
     view->priv->ctrl_page_up_down_scrolls = TRUE;
@@ -620,13 +635,6 @@ static void moo_text_view_init (MooTextView *view)
     view->priv->bold_current_line_number = TRUE;
 
     view->priv->qs.flags = MOO_TEXT_SEARCH_CASELESS;
-
-#if 0
-    gtk_drag_dest_unset (GTK_WIDGET (view));
-    gtk_drag_dest_set (GTK_WIDGET (view), 0, NULL, 0, GDK_ACTION_DEFAULT);
-    view->priv->targets = gtk_target_list_new (NULL, 0);
-    gtk_target_list_add_text_targets (view->priv->targets, DND_TARGET_TEXT);
-#endif
 
     name = g_strdup_printf ("moo-text-view-%p", view);
     gtk_widget_set_name (GTK_WIDGET (view), name);
@@ -1051,6 +1059,16 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_tab_key_action (view, g_value_get_enum (value));
             break;
 
+        case PROP_AUTO_INDENT:
+            view->priv->enter_indents = g_value_get_boolean (value);
+            g_object_notify (object, "auto-indent");
+            break;
+
+        case PROP_BACKSPACE_INDENTS:
+            view->priv->backspace_indents = g_value_get_boolean (value);
+            g_object_notify (object, "backspace-indents");
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -1071,92 +1089,77 @@ moo_text_view_get_property (GObject        *object,
         case PROP_BUFFER:
             g_value_set_object (value, get_buffer (view));
             break;
-
         case PROP_INDENTER:
             g_value_set_object (value, view->priv->indenter);
             break;
-
         case PROP_HIGHLIGHT_CURRENT_LINE:
             g_value_set_boolean (value, view->priv->highlight_current_line);
             break;
-
         case PROP_HIGHLIGHT_MATCHING_BRACKETS:
             g_object_get (get_buffer (view), "highlight-matching-brackets", &val, NULL);
             g_value_set_boolean (value, val);
             break;
-
         case PROP_HIGHLIGHT_MISMATCHING_BRACKETS:
             g_object_get (get_buffer (view), "highlight-mismatching-brackets", &val, NULL);
             g_value_set_boolean (value, val);
             break;
-
         case PROP_CURRENT_LINE_COLOR_GDK:
             g_value_set_boxed (value, &view->priv->current_line_color);
             break;
-
         case PROP_DRAW_TABS:
             g_value_set_boolean (value, view->priv->draw_tabs != 0);
             break;
         case PROP_DRAW_TRAILING_SPACES:
             g_value_set_boolean (value, view->priv->draw_trailing_spaces != 0);
             break;
-
         case PROP_HAS_TEXT:
             g_value_set_boolean (value, moo_text_view_has_text (view));
             break;
-
         case PROP_HAS_SELECTION:
             g_value_set_boolean (value, moo_text_view_has_selection (view));
             break;
-
         case PROP_CAN_UNDO:
             g_value_set_boolean (value, moo_text_view_can_undo (view));
             break;
-
         case PROP_CAN_REDO:
             g_value_set_boolean (value, moo_text_view_can_redo (view));
             break;
-
         case PROP_MANAGE_CLIPBOARD:
             g_value_set_boolean (value, view->priv->manage_clipboard != 0);
             break;
-
         case PROP_SMART_HOME_END:
             g_value_set_boolean (value, view->priv->smart_home_end != 0);
             break;
-
         case PROP_ENABLE_HIGHLIGHT:
             g_value_set_boolean (value, moo_text_buffer_get_highlight (get_moo_buffer (view)));
             break;
-
         case PROP_SHOW_LINE_NUMBERS:
             g_value_set_boolean (value, view->priv->show_line_numbers);
             break;
-
         case PROP_SHOW_SCROLLBAR_MARKS:
             g_value_set_boolean (value, view->priv->show_scrollbar_marks);
             break;
-
         case PROP_SHOW_LINE_MARKS:
             g_value_set_boolean (value, view->priv->show_line_marks);
             break;
-
         case PROP_ENABLE_FOLDING:
             g_value_set_boolean (value, view->priv->enable_folding);
             break;
-
         case PROP_ENABLE_QUICK_SEARCH:
             g_value_set_boolean (value, view->priv->qs.enable);
             break;
-
         case PROP_QUICK_SEARCH_FLAGS:
             g_value_set_flags (value, view->priv->qs.flags);
             break;
-
         case PROP_TAB_KEY_ACTION:
             g_value_set_enum (value, view->priv->tab_key_action);
             break;
-
+        case PROP_AUTO_INDENT:
+            g_value_set_boolean (value, view->priv->enter_indents != 0);
+            break;
+        case PROP_BACKSPACE_INDENTS:
+            g_value_set_boolean (value, view->priv->backspace_indents != 0);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;

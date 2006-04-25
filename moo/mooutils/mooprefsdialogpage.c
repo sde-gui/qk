@@ -17,6 +17,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialogpage.h"
+#include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
 
@@ -318,8 +319,16 @@ connect_signals (MooGladeXML    *xml,
 {
     if (!strcmp (signal, "moo-prefs-key"))
         return connect_prefs_key (xml, widget, handler, object, user_data);
-    else
-        return FALSE;
+
+    if (!strcmp (signal, "moo-prefs-value"))
+    {
+        g_return_val_if_fail (GTK_IS_RADIO_BUTTON (widget), FALSE);
+        g_object_set_data_full (G_OBJECT (widget), "moo-prefs-value",
+                                g_strdup (handler), g_free);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
@@ -447,6 +456,26 @@ setting_apply (GtkWidget *widget)
 }
 
 
+static int
+radio_button_get_value (GtkWidget *button,
+                        GType      type)
+{
+    const char *string;
+    GValue val;
+
+    string = g_object_get_data (G_OBJECT (button), "moo-prefs-value");
+    g_return_val_if_fail (string != NULL, -1);
+
+    val.g_type = 0;
+    g_value_init (&val, type);
+
+    if (moo_value_convert_from_string (string, &val))
+        return g_value_get_enum (&val);
+
+    g_return_val_if_reached (-1);
+}
+
+
 static gboolean
 setting_get_value (GtkWidget      *widget,
                    GValue         *value)
@@ -494,6 +523,22 @@ setting_get_value (GtkWidget      *widget,
             gtk_color_button_get_color (GTK_COLOR_BUTTON (widget), &val);
             g_value_set_boxed (value, &val);
             return TRUE;
+        }
+    }
+    else if (GTK_IS_RADIO_BUTTON (widget))
+    {
+        if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_ENUM))
+        {
+            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+            {
+                int val = radio_button_get_value (widget, G_VALUE_TYPE (value));
+                g_value_set_enum (value, val);
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
         }
     }
     else if (GTK_IS_TOGGLE_BUTTON (widget))
@@ -559,6 +604,19 @@ static void setting_set_value   (GtkWidget      *widget,
         {
             GdkColor *val = g_value_get_boxed (value);
             gtk_color_button_set_color (GTK_COLOR_BUTTON (widget), val);
+            return;
+        }
+    }
+    else if (GTK_IS_RADIO_BUTTON (widget))
+    {
+        if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_ENUM))
+        {
+            int val = g_value_get_enum (value);
+            int val_here = radio_button_get_value (widget, G_VALUE_TYPE (value));
+
+            if (val == val_here)
+                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
+
             return;
         }
     }

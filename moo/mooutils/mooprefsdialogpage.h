@@ -68,16 +68,6 @@ void        moo_prefs_dialog_page_bind_setting  (MooPrefsDialogPage *page,
                                                  const char         *setting,
                                                  GtkToggleButton    *set_or_not);
 
-void        moo_prefs_dialog_page_bind_radio_setting
-                                                (MooPrefsDialogPage *page,
-                                                 const char         *setting,
-                                                 GtkToggleButton   **btns,
-                                                 const char        **cvals);
-void        moo_prefs_dialog_page_bind_radio    (MooPrefsDialogPage *page,
-                                                 const char         *setting,
-                                                 GtkToggleButton    *btn,
-                                                 const char         *cval);
-
 
 G_END_DECLS
 

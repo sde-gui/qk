@@ -125,9 +125,6 @@ struct _MooTextViewPrivate {
     /* Indentation
     /*/
     MooIndenter *indenter;
-    gboolean tab_indents;
-    gboolean tab_inserts_indent_chars;
-    gboolean shift_tab_unindents;
     gboolean backspace_indents;
     gboolean enter_indents;
     MooTextTabKeyAction tab_key_action;

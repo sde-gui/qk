@@ -929,8 +929,6 @@ static gboolean handle_backspace    (MooTextView    *view,
                                      GdkEventKey    *event);
 static gboolean handle_enter        (MooTextView    *view,
                                      GdkEventKey    *event);
-static gboolean handle_shift_tab    (MooTextView    *view,
-                                     GdkEventKey    *event);
 static gboolean handle_ctrl_up      (MooTextView    *view,
                                      GdkEventKey    *event,
                                      gboolean        up);
@@ -988,7 +986,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
             /* TODO TODO stupid X and gtk !!! */
             case GDK_ISO_Left_Tab:
             case GDK_KP_Tab:
-                handled = handle_shift_tab (view, event);
+                handled = handle_tab (view, event);
                 break;
         }
     }
@@ -1085,41 +1083,41 @@ set_invisible_cursor (GdkWindow *window)
 }
 
 
-static void
-move_focus (GtkWidget       *widget,
-            GtkDirectionType direction)
+static gboolean
+tab_unindent (MooTextView *view)
 {
-    GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
-    g_signal_emit_by_name (toplevel, "move-focus", direction);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+    GtkTextIter start, end;
+    int first_line, last_line;
+
+    if (!view->priv->indenter)
+        return FALSE;
+
+    gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
+
+    first_line = gtk_text_iter_get_line (&start);
+    last_line = gtk_text_iter_get_line (&end);
+
+    if (gtk_text_iter_starts_line (&end) && first_line != last_line)
+        last_line -= 1;
+
+    gtk_text_buffer_begin_user_action (buffer);
+    moo_indenter_shift_lines (view->priv->indenter, buffer, first_line, last_line, -1);
+    gtk_text_buffer_end_user_action (buffer);
+
+    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
+                                        gtk_text_buffer_get_insert (buffer));
+    return TRUE;
 }
 
+
 static gboolean
-handle_tab (MooTextView *view,
-            GdkEventKey *event)
+tab_indent (MooTextView *view)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     GtkTextIter insert, bound, start, end;
     gboolean starts_line, insert_last, has_selection;
     int first_line, last_line;
-
-    switch (view->priv->tab_key_action)
-    {
-        case MOO_TEXT_TAB_KEY_DO_NOTHING:
-            move_focus (GTK_WIDGET (view),
-                        event->state & GDK_SHIFT_MASK ?
-                                GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
-            return TRUE;
-
-        case MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER:
-            if (event->state & GDK_SHIFT_MASK)
-                moo_text_view_prev_placeholder (view);
-            else
-                moo_text_view_next_placeholder (view);
-            return TRUE;
-
-        case MOO_TEXT_TAB_KEY_INDENT:
-            break;
-    }
 
     if (!view->priv->indenter)
         return FALSE;
@@ -1174,32 +1172,41 @@ handle_tab (MooTextView *view,
 }
 
 
-static gboolean
-handle_shift_tab (MooTextView        *view,
-                  G_GNUC_UNUSED GdkEventKey    *event)
+static void
+move_focus (GtkWidget       *widget,
+            GtkDirectionType direction)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
-    GtkTextIter start, end;
-    int first_line, last_line;
+    GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
+    g_signal_emit_by_name (toplevel, "move-focus", direction);
+}
 
-    if (!view->priv->shift_tab_unindents || !view->priv->indenter)
-        return FALSE;
+static gboolean
+handle_tab (MooTextView *view,
+            GdkEventKey *event)
+{
+    switch (view->priv->tab_key_action)
+    {
+        case MOO_TEXT_TAB_KEY_DO_NOTHING:
+            move_focus (GTK_WIDGET (view),
+                        event->state & GDK_SHIFT_MASK ?
+                                GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+            return TRUE;
 
-    gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
+        case MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER:
+            if (event->state & GDK_SHIFT_MASK)
+                moo_text_view_prev_placeholder (view);
+            else
+                moo_text_view_next_placeholder (view);
+            return TRUE;
 
-    first_line = gtk_text_iter_get_line (&start);
-    last_line = gtk_text_iter_get_line (&end);
+        case MOO_TEXT_TAB_KEY_INDENT:
+            if (event->state & GDK_SHIFT_MASK)
+                return tab_unindent (view);
+            else
+                return tab_indent (view);
+    }
 
-    if (gtk_text_iter_starts_line (&end) && first_line != last_line)
-        last_line -= 1;
-
-    gtk_text_buffer_begin_user_action (buffer);
-    moo_indenter_shift_lines (view->priv->indenter, buffer, first_line, last_line, -1);
-    gtk_text_buffer_end_user_action (buffer);
-
-    gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
-                                        gtk_text_buffer_get_insert (buffer));
-    return TRUE;
+    g_return_val_if_reached (FALSE);
 }
 
 
@@ -1268,7 +1275,7 @@ handle_enter (MooTextView        *view,
     GtkTextIter start, end;
     gboolean has_selection;
 
-    if (!view->priv->indenter)
+    if (!view->priv->indenter || !view->priv->enter_indents)
         return FALSE;
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));

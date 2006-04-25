@@ -5,7 +5,7 @@
 
 <widget class="GtkWindow" id="window">
   <property name="visible">True</property>
-  <property name="title" translatable="yes">window1</property>
+  <property name="title">window1</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
@@ -70,14 +70,14 @@
 			    <widget class="GtkCheckButton" id="smarthome">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Smart Home and End</property>
+			      <property name="label">Smart Home and End</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">False</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="smart_home_end" last_modification_time="Wed, 14 Sep 2005 09:40:47 GMT"/>
+			      <signal name="moo_prefs_key" handler="smart_home_end"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -87,17 +87,22 @@
 			  </child>
 
 			  <child>
-			    <widget class="GtkCheckButton" id="usespaces">
+			    <widget class="GtkLabel" id="label1">
 			      <property name="visible">True</property>
-			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Use spaces to indent</property>
-			      <property name="use_underline">True</property>
-			      <property name="relief">GTK_RELIEF_NORMAL</property>
-			      <property name="focus_on_click">False</property>
-			      <property name="active">False</property>
-			      <property name="inconsistent">False</property>
-			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="spaces_instead_of_tabs" last_modification_time="Wed, 14 Sep 2005 09:41:18 GMT"/>
+			      <property name="label">Tab key:</property>
+			      <property name="use_underline">False</property>
+			      <property name="use_markup">False</property>
+			      <property name="justify">GTK_JUSTIFY_LEFT</property>
+			      <property name="wrap">False</property>
+			      <property name="selectable">False</property>
+			      <property name="xalign">0</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+			      <property name="width_chars">-1</property>
+			      <property name="single_line_mode">False</property>
+			      <property name="angle">0</property>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -107,81 +112,139 @@
 			  </child>
 
 			  <child>
-			    <widget class="GtkHBox" id="hbox1">
+			    <widget class="GtkAlignment" id="alignment1">
 			      <property name="visible">True</property>
-			      <property name="homogeneous">False</property>
-			      <property name="spacing">3</property>
-			      <signal name="moo_sensitive" handler="usespaces" last_modification_time="Thu, 08 Dec 2005 03:50:41 GMT"/>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xscale">1</property>
+			      <property name="yscale">1</property>
+			      <property name="top_padding">0</property>
+			      <property name="bottom_padding">0</property>
+			      <property name="left_padding">6</property>
+			      <property name="right_padding">0</property>
 
 			      <child>
-				<widget class="GtkLabel" id="label32">
+				<widget class="GtkVBox" id="vbox1">
 				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">Tab key inserts</property>
-				  <property name="use_underline">False</property>
-				  <property name="use_markup">False</property>
-				  <property name="justify">GTK_JUSTIFY_LEFT</property>
-				  <property name="wrap">False</property>
-				  <property name="selectable">False</property>
-				  <property name="xalign">0.5</property>
-				  <property name="yalign">0.5</property>
-				  <property name="xpad">0</property>
-				  <property name="ypad">0</property>
-				  <property name="mnemonic_widget">tabswidth_spin</property>
-				  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-				  <property name="width_chars">-1</property>
-				  <property name="single_line_mode">False</property>
-				  <property name="angle">0</property>
-				</widget>
-				<packing>
-				  <property name="padding">0</property>
-				  <property name="expand">False</property>
-				  <property name="fill">False</property>
-				</packing>
-			      </child>
+				  <property name="homogeneous">False</property>
+				  <property name="spacing">0</property>
 
-			      <child>
-				<widget class="GtkSpinButton" id="tabswidth_spin">
-				  <property name="visible">True</property>
-				  <property name="can_focus">True</property>
-				  <property name="climb_rate">1</property>
-				  <property name="digits">0</property>
-				  <property name="numeric">True</property>
-				  <property name="update_policy">GTK_UPDATE_ALWAYS</property>
-				  <property name="snap_to_ticks">False</property>
-				  <property name="wrap">False</property>
-				  <property name="adjustment">4 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="indent_width" last_modification_time="Thu, 08 Dec 2005 14:12:42 GMT"/>
-				</widget>
-				<packing>
-				  <property name="padding">0</property>
-				  <property name="expand">False</property>
-				  <property name="fill">True</property>
-				</packing>
-			      </child>
+				  <child>
+				    <widget class="GtkRadioButton" id="tab_inserts_tab">
+				      <property name="visible">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">True</property>
+				      <signal name="moo_prefs_key" handler="tab_key_action" last_modification_time="Tue, 25 Apr 2006 04:34:42 GMT"/>
+				      <signal name="moo_prefs_value" handler="do-nothing" last_modification_time="Tue, 25 Apr 2006 04:35:27 GMT"/>
 
-			      <child>
-				<widget class="GtkLabel" id="label96">
-				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">spaces</property>
-				  <property name="use_underline">False</property>
-				  <property name="use_markup">False</property>
-				  <property name="justify">GTK_JUSTIFY_LEFT</property>
-				  <property name="wrap">False</property>
-				  <property name="selectable">False</property>
-				  <property name="xalign">0.5</property>
-				  <property name="yalign">0.5</property>
-				  <property name="xpad">0</property>
-				  <property name="ypad">0</property>
-				  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-				  <property name="width_chars">-1</property>
-				  <property name="single_line_mode">False</property>
-				  <property name="angle">0</property>
+				      <child>
+					<widget class="GtkLabel" id="label156">
+					  <property name="visible">True</property>
+					  <property name="label">Moves input focus</property>
+					  <property name="use_underline">False</property>
+					  <property name="use_markup">False</property>
+					  <property name="justify">GTK_JUSTIFY_LEFT</property>
+					  <property name="wrap">False</property>
+					  <property name="selectable">False</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+					  <property name="width_chars">-1</property>
+					  <property name="single_line_mode">False</property>
+					  <property name="angle">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">True</property>
+				      <property name="fill">True</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkRadioButton" id="tab_indents">
+				      <property name="visible">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">True</property>
+				      <property name="group">tab_inserts_tab</property>
+				      <signal name="moo_prefs_key" handler="tab_key_action" last_modification_time="Tue, 25 Apr 2006 04:36:32 GMT"/>
+				      <signal name="moo_prefs_value" handler="indent" last_modification_time="Tue, 25 Apr 2006 04:36:49 GMT"/>
+
+				      <child>
+					<widget class="GtkLabel" id="label2">
+					  <property name="visible">True</property>
+					  <property name="label">Indents text</property>
+					  <property name="use_underline">False</property>
+					  <property name="use_markup">False</property>
+					  <property name="justify">GTK_JUSTIFY_LEFT</property>
+					  <property name="wrap">False</property>
+					  <property name="selectable">False</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+					  <property name="width_chars">-1</property>
+					  <property name="single_line_mode">False</property>
+					  <property name="angle">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">True</property>
+				      <property name="fill">True</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkRadioButton" id="tab_placeholder">
+				      <property name="visible">True</property>
+				      <property name="relief">GTK_RELIEF_NORMAL</property>
+				      <property name="focus_on_click">True</property>
+				      <property name="active">False</property>
+				      <property name="inconsistent">False</property>
+				      <property name="draw_indicator">True</property>
+				      <property name="group">tab_inserts_tab</property>
+				      <signal name="moo_prefs_key" handler="tab_key_action" last_modification_time="Tue, 25 Apr 2006 04:37:01 GMT"/>
+				      <signal name="moo_prefs_value" handler="find-placeholder" last_modification_time="Tue, 25 Apr 2006 04:37:19 GMT"/>
+
+				      <child>
+					<widget class="GtkLabel" id="label3">
+					  <property name="visible">True</property>
+					  <property name="label">Moves cursor to next placeholder</property>
+					  <property name="use_underline">False</property>
+					  <property name="use_markup">False</property>
+					  <property name="justify">GTK_JUSTIFY_LEFT</property>
+					  <property name="wrap">False</property>
+					  <property name="selectable">False</property>
+					  <property name="xalign">0.5</property>
+					  <property name="yalign">0.5</property>
+					  <property name="xpad">0</property>
+					  <property name="ypad">0</property>
+					  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+					  <property name="width_chars">-1</property>
+					  <property name="single_line_mode">False</property>
+					  <property name="angle">0</property>
+					</widget>
+				      </child>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">True</property>
+				      <property name="fill">True</property>
+				    </packing>
+				  </child>
 				</widget>
-				<packing>
-				  <property name="padding">0</property>
-				  <property name="expand">False</property>
-				  <property name="fill">False</property>
-				</packing>
 			      </child>
 			    </widget>
 			    <packing>
@@ -198,7 +261,7 @@
 		  <child>
 		    <widget class="GtkLabel" id="label64">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Editing</property>
+		      <property name="label">Keyboard</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -226,14 +289,14 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkFrame" id="frame25">
+		<widget class="GtkFrame" id="frame38">
 		  <property name="visible">True</property>
 		  <property name="label_xalign">0</property>
 		  <property name="label_yalign">0.5</property>
 		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
 
 		  <child>
-		    <widget class="GtkAlignment" id="alignment37">
+		    <widget class="GtkAlignment" id="alignment251">
 		      <property name="visible">True</property>
 		      <property name="xalign">0.5</property>
 		      <property name="yalign">0.5</property>
@@ -245,14 +308,267 @@
 		      <property name="right_padding">3</property>
 
 		      <child>
-			<widget class="GtkVBox" id="vbox19">
+			<widget class="GtkVBox" id="vbox91">
 			  <property name="visible">True</property>
 			  <property name="homogeneous">False</property>
 			  <property name="spacing">0</property>
 
 			  <child>
-			    <widget class="GtkHBox" id="hbox11">
+			    <widget class="GtkCheckButton" id="enable_auto_indent">
 			      <property name="visible">True</property>
+			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
+			      <property name="active">False</property>
+			      <property name="inconsistent">False</property>
+			      <property name="draw_indicator">True</property>
+			      <signal name="moo_prefs_key" handler="auto_indent" last_modification_time="Tue, 25 Apr 2006 04:37:59 GMT"/>
+
+			      <child>
+				<widget class="GtkLabel" id="label4">
+				  <property name="visible">True</property>
+				  <property name="label">Enable auto indentation</property>
+				  <property name="use_underline">False</property>
+				  <property name="use_markup">False</property>
+				  <property name="justify">GTK_JUSTIFY_LEFT</property>
+				  <property name="wrap">False</property>
+				  <property name="selectable">False</property>
+				  <property name="xalign">0.5</property>
+				  <property name="yalign">0.5</property>
+				  <property name="xpad">0</property>
+				  <property name="ypad">0</property>
+				  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+				  <property name="width_chars">-1</property>
+				  <property name="single_line_mode">False</property>
+				  <property name="angle">0</property>
+				</widget>
+			      </child>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">False</property>
+			      <property name="fill">False</property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckButton" id="usespaces">
+			      <property name="visible">True</property>
+			      <property name="can_focus">True</property>
+			      <property name="label">Use spaces to indent</property>
+			      <property name="use_underline">True</property>
+			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">False</property>
+			      <property name="active">False</property>
+			      <property name="inconsistent">False</property>
+			      <property name="draw_indicator">True</property>
+			      <signal name="moo_prefs_key" handler="spaces_instead_of_tabs"/>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">False</property>
+			      <property name="fill">False</property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkAlignment" id="alignment2">
+			      <property name="visible">True</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xscale">1</property>
+			      <property name="yscale">1</property>
+			      <property name="top_padding">0</property>
+			      <property name="bottom_padding">0</property>
+			      <property name="left_padding">6</property>
+			      <property name="right_padding">0</property>
+
+			      <child>
+				<widget class="GtkHBox" id="hbox1">
+				  <property name="visible">True</property>
+				  <property name="homogeneous">False</property>
+				  <property name="spacing">3</property>
+				  <signal name="moo_sensitive" handler="usespaces"/>
+
+				  <child>
+				    <widget class="GtkLabel" id="label32">
+				      <property name="visible">True</property>
+				      <property name="label">Indent width:</property>
+				      <property name="use_underline">False</property>
+				      <property name="use_markup">False</property>
+				      <property name="justify">GTK_JUSTIFY_LEFT</property>
+				      <property name="wrap">False</property>
+				      <property name="selectable">False</property>
+				      <property name="xalign">0.5</property>
+				      <property name="yalign">0.5</property>
+				      <property name="xpad">0</property>
+				      <property name="ypad">0</property>
+				      <property name="mnemonic_widget">tabswidth_spin</property>
+				      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+				      <property name="width_chars">-1</property>
+				      <property name="single_line_mode">False</property>
+				      <property name="angle">0</property>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">False</property>
+				      <property name="fill">False</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkSpinButton" id="tabswidth_spin">
+				      <property name="visible">True</property>
+				      <property name="can_focus">True</property>
+				      <property name="climb_rate">1</property>
+				      <property name="digits">0</property>
+				      <property name="numeric">True</property>
+				      <property name="update_policy">GTK_UPDATE_ALWAYS</property>
+				      <property name="snap_to_ticks">False</property>
+				      <property name="wrap">False</property>
+				      <property name="adjustment">4 1 100 1 10 10</property>
+				      <signal name="moo_prefs_key" handler="indent_width"/>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">False</property>
+				      <property name="fill">True</property>
+				    </packing>
+				  </child>
+
+				  <child>
+				    <widget class="GtkLabel" id="label96">
+				      <property name="visible">True</property>
+				      <property name="label">spaces</property>
+				      <property name="use_underline">False</property>
+				      <property name="use_markup">False</property>
+				      <property name="justify">GTK_JUSTIFY_LEFT</property>
+				      <property name="wrap">False</property>
+				      <property name="selectable">False</property>
+				      <property name="xalign">0.5</property>
+				      <property name="yalign">0.5</property>
+				      <property name="xpad">0</property>
+				      <property name="ypad">0</property>
+				      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+				      <property name="width_chars">-1</property>
+				      <property name="single_line_mode">False</property>
+				      <property name="angle">0</property>
+				    </widget>
+				    <packing>
+				      <property name="padding">0</property>
+				      <property name="expand">False</property>
+				      <property name="fill">False</property>
+				    </packing>
+				  </child>
+				</widget>
+			      </child>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">True</property>
+			      <property name="fill">True</property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckButton" id="backspace_indents">
+			      <property name="visible">True</property>
+			      <property name="relief">GTK_RELIEF_NORMAL</property>
+			      <property name="focus_on_click">True</property>
+			      <property name="active">False</property>
+			      <property name="inconsistent">False</property>
+			      <property name="draw_indicator">True</property>
+			      <signal name="moo_prefs_key" handler="backspace_indents" last_modification_time="Tue, 25 Apr 2006 04:38:28 GMT"/>
+
+			      <child>
+				<widget class="GtkLabel" id="label5">
+				  <property name="visible">True</property>
+				  <property name="label">Backspace key indents</property>
+				  <property name="use_underline">False</property>
+				  <property name="use_markup">False</property>
+				  <property name="justify">GTK_JUSTIFY_LEFT</property>
+				  <property name="wrap">False</property>
+				  <property name="selectable">False</property>
+				  <property name="xalign">0.5</property>
+				  <property name="yalign">0.5</property>
+				  <property name="xpad">0</property>
+				  <property name="ypad">0</property>
+				  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+				  <property name="width_chars">-1</property>
+				  <property name="single_line_mode">False</property>
+				  <property name="angle">0</property>
+				</widget>
+			      </child>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">True</property>
+			      <property name="fill">True</property>
+			    </packing>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkLabel" id="label641">
+		      <property name="visible">True</property>
+		      <property name="label">Indentation</property>
+		      <property name="use_underline">False</property>
+		      <property name="use_markup">False</property>
+		      <property name="justify">GTK_JUSTIFY_LEFT</property>
+		      <property name="wrap">False</property>
+		      <property name="selectable">False</property>
+		      <property name="xalign">0.5</property>
+		      <property name="yalign">0.5</property>
+		      <property name="xpad">0</property>
+		      <property name="ypad">0</property>
+		      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+		      <property name="width_chars">-1</property>
+		      <property name="single_line_mode">False</property>
+		      <property name="angle">0</property>
+		    </widget>
+		    <packing>
+		      <property name="type">label_item</property>
+		    </packing>
+		  </child>
+		</widget>
+		<packing>
+		  <property name="padding">0</property>
+		  <property name="expand">False</property>
+		  <property name="fill">False</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkFrame" id="frame251">
+		  <property name="visible">True</property>
+		  <property name="label_xalign">0</property>
+		  <property name="label_yalign">0.5</property>
+		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
+
+		  <child>
+		    <widget class="GtkAlignment" id="alignment371">
+		      <property name="visible">True</property>
+		      <property name="xalign">0.5</property>
+		      <property name="yalign">0.5</property>
+		      <property name="xscale">1</property>
+		      <property name="yscale">1</property>
+		      <property name="top_padding">0</property>
+		      <property name="bottom_padding">3</property>
+		      <property name="left_padding">3</property>
+		      <property name="right_padding">3</property>
+
+		      <child>
+			<widget class="GtkVBox" id="vbox191">
+			  <property name="visible">True</property>
+			  <property name="homogeneous">False</property>
+			  <property name="spacing">0</property>
+
+			  <child>
+			    <widget class="GtkHBox" id="hbox111">
+			      <property name="visible">True</property>
+			      <property name="sensitive">False</property>
 			      <property name="homogeneous">False</property>
 			      <property name="spacing">0</property>
 
@@ -260,14 +576,14 @@
 				<widget class="GtkCheckButton" id="auto_save">
 				  <property name="visible">True</property>
 				  <property name="can_focus">True</property>
-				  <property name="label" translatable="yes">Auto save every </property>
+				  <property name="label">Auto save every </property>
 				  <property name="use_underline">True</property>
 				  <property name="relief">GTK_RELIEF_NORMAL</property>
 				  <property name="focus_on_click">False</property>
 				  <property name="active">False</property>
 				  <property name="inconsistent">False</property>
 				  <property name="draw_indicator">True</property>
-				  <signal name="moo_prefs_key" handler="auto_save" last_modification_time="Wed, 14 Sep 2005 09:42:58 GMT"/>
+				  <signal name="moo_prefs_key" handler="auto_save"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -287,8 +603,8 @@
 				  <property name="snap_to_ticks">False</property>
 				  <property name="wrap">False</property>
 				  <property name="adjustment">1 1 100 1 10 10</property>
-				  <signal name="moo_prefs_key" handler="auto_save_interval" last_modification_time="Wed, 14 Sep 2005 09:43:08 GMT"/>
-				  <signal name="moo_sensitive" handler="auto_save" last_modification_time="Sat, 19 Mar 2005 05:29:04 GMT"/>
+				  <signal name="moo_sensitive" handler="auto_save"/>
+				  <signal name="moo_prefs_key" handler="auto_save_interval"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -300,7 +616,7 @@
 			      <child>
 				<widget class="GtkLabel" id="auto_save_label">
 				  <property name="visible">True</property>
-				  <property name="label" translatable="yes"> minutes</property>
+				  <property name="label"> minutes</property>
 				  <property name="use_underline">False</property>
 				  <property name="use_markup">False</property>
 				  <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -314,7 +630,7 @@
 				  <property name="width_chars">-1</property>
 				  <property name="single_line_mode">False</property>
 				  <property name="angle">0</property>
-				  <signal name="moo_sensitive" handler="auto_save" last_modification_time="Sat, 19 Mar 2005 05:37:41 GMT"/>
+				  <signal name="moo_sensitive" handler="auto_save"/>
 				</widget>
 				<packing>
 				  <property name="padding">0</property>
@@ -331,17 +647,17 @@
 			  </child>
 
 			  <child>
-			    <widget class="GtkCheckButton" id="checkbutton1">
+			    <widget class="GtkCheckButton" id="checkbutton11">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Make backups</property>
+			      <property name="label">Make backups</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="make_backups" last_modification_time="Thu, 08 Dec 2005 14:13:29 GMT"/>
+			      <signal name="moo_prefs_key" handler="make_backups"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -351,17 +667,17 @@
 			  </child>
 
 			  <child>
-			    <widget class="GtkCheckButton" id="checkbutton2">
+			    <widget class="GtkCheckButton" id="checkbutton21">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Remove trailing spaces</property>
+			      <property name="label">Remove trailing spaces</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="strip" last_modification_time="Thu, 08 Dec 2005 14:13:46 GMT"/>
+			      <signal name="moo_prefs_key" handler="strip"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -375,9 +691,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkLabel" id="label95">
+		    <widget class="GtkLabel" id="label951">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Saving</property>
+		      <property name="label">Saving</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -405,14 +721,14 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkFrame" id="frame27">
+		<widget class="GtkFrame" id="frame271">
 		  <property name="visible">True</property>
 		  <property name="label_xalign">0</property>
 		  <property name="label_yalign">0.5</property>
 		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
 
 		  <child>
-		    <widget class="GtkAlignment" id="alignment39">
+		    <widget class="GtkAlignment" id="alignment391">
 		      <property name="visible">True</property>
 		      <property name="xalign">0.5</property>
 		      <property name="yalign">0.5</property>
@@ -424,21 +740,21 @@
 		      <property name="right_padding">3</property>
 
 		      <child>
-			<widget class="GtkVBox" id="vbox22">
+			<widget class="GtkVBox" id="vbox221">
 			  <property name="visible">True</property>
 			  <property name="homogeneous">False</property>
 			  <property name="spacing">0</property>
 
 			  <child>
-			    <widget class="GtkHBox" id="hbox13">
+			    <widget class="GtkHBox" id="hbox131">
 			      <property name="visible">True</property>
 			      <property name="homogeneous">False</property>
 			      <property name="spacing">0</property>
 
 			      <child>
-				<widget class="GtkLabel" id="label102">
+				<widget class="GtkLabel" id="label1021">
 				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">Default language: </property>
+				  <property name="label">Default language: </property>
 				  <property name="use_underline">False</property>
 				  <property name="use_markup">False</property>
 				  <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -493,9 +809,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkLabel" id="label101">
+		    <widget class="GtkLabel" id="label1011">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Misc</property>
+		      <property name="label">Misc</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">True</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -529,9 +845,9 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkLabel" id="label21">
+	    <widget class="GtkLabel" id="label211">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">General</property>
+	      <property name="label">General</property>
 	      <property name="use_underline">False</property>
 	      <property name="use_markup">False</property>
 	      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -552,13 +868,13 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkVBox" id="vbox12">
+	    <widget class="GtkVBox" id="vbox121">
 	      <property name="visible">True</property>
 	      <property name="homogeneous">False</property>
 	      <property name="spacing">0</property>
 
 	      <child>
-		<widget class="GtkFrame" id="frame18">
+		<widget class="GtkFrame" id="frame181">
 		  <property name="border_width">3</property>
 		  <property name="visible">True</property>
 		  <property name="label_xalign">0</property>
@@ -566,7 +882,7 @@
 		  <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
 
 		  <child>
-		    <widget class="GtkAlignment" id="alignment28">
+		    <widget class="GtkAlignment" id="alignment281">
 		      <property name="visible">True</property>
 		      <property name="xalign">0.5</property>
 		      <property name="yalign">0.5</property>
@@ -578,7 +894,7 @@
 		      <property name="right_padding">3</property>
 
 		      <child>
-			<widget class="GtkVBox" id="vbox13">
+			<widget class="GtkVBox" id="vbox131">
 			  <property name="visible">True</property>
 			  <property name="homogeneous">False</property>
 			  <property name="spacing">0</property>
@@ -587,14 +903,14 @@
 			    <widget class="GtkCheckButton" id="enable_wrapping">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Enable text wrapping</property>
+			      <property name="label">Enable text wrapping</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="wrapping_enable" last_modification_time="Wed, 14 Sep 2005 09:43:32 GMT"/>
+			      <signal name="moo_prefs_key" handler="wrapping_enable"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -607,15 +923,15 @@
 			    <widget class="GtkCheckButton" id="dont_split_words">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Do not split words</property>
+			      <property name="label">Do not split words</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="wrapping_dont_split_words" last_modification_time="Wed, 14 Sep 2005 09:43:46 GMT"/>
-			      <signal name="moo_sensitive" handler="enable_wrapping" last_modification_time="Sat, 19 Mar 2005 05:45:36 GMT"/>
+			      <signal name="moo_sensitive" handler="enable_wrapping"/>
+			      <signal name="moo_prefs_key" handler="wrapping_dont_split_words"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -629,9 +945,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkLabel" id="label70">
+		    <widget class="GtkLabel" id="label701">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Text wrapping</property>
+		      <property name="label">Text wrapping</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -688,14 +1004,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton5">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Enable syntax highlighting</property>
+			      <property name="label">Enable syntax highlighting</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="enable_highlighting" last_modification_time="Thu, 08 Dec 2005 16:30:11 GMT"/>
+			      <signal name="moo_prefs_key" handler="enable_highlighting"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -708,14 +1024,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton6">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Highlight matching brackets</property>
+			      <property name="label">Highlight matching brackets</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="highlight_matching_brackets" last_modification_time="Thu, 08 Dec 2005 14:16:58 GMT"/>
+			      <signal name="moo_prefs_key" handler="highlight_matching_brackets"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -728,14 +1044,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton7">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Highlight mismatching brackets</property>
+			      <property name="label">Highlight mismatching brackets</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="highlight_mismatching_brackets" last_modification_time="Thu, 08 Dec 2005 14:17:09 GMT"/>
+			      <signal name="moo_prefs_key" handler="highlight_mismatching_brackets"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -748,14 +1064,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton9">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Highlight current line</property>
+			      <property name="label">Highlight current line</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="highlight_current_line" last_modification_time="Thu, 08 Dec 2005 16:30:32 GMT"/>
+			      <signal name="moo_prefs_key" handler="highlight_current_line"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -771,7 +1087,7 @@
 		  <child>
 		    <widget class="GtkLabel" id="label98">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Highlighting</property>
+		      <property name="label">Highlighting</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -828,14 +1144,14 @@
 			    <widget class="GtkCheckButton" id="show_line_numbers">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Show line numbers</property>
+			      <property name="label">Show line numbers</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="show_line_numbers" last_modification_time="Wed, 14 Sep 2005 09:44:01 GMT"/>
+			      <signal name="moo_prefs_key" handler="show_line_numbers"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -848,14 +1164,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton3">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Show tabs</property>
+			      <property name="label">Show tabs</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="show_tabs" last_modification_time="Thu, 08 Dec 2005 14:17:21 GMT"/>
+			      <signal name="moo_prefs_key" handler="show_tabs"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -868,14 +1184,14 @@
 			    <widget class="GtkCheckButton" id="checkbutton4">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Show trailing spaces</property>
+			      <property name="label">Show trailing spaces</property>
 			      <property name="use_underline">True</property>
 			      <property name="relief">GTK_RELIEF_NORMAL</property>
 			      <property name="focus_on_click">True</property>
 			      <property name="active">False</property>
 			      <property name="inconsistent">False</property>
 			      <property name="draw_indicator">True</property>
-			      <signal name="moo_prefs_key" handler="show_trailing_spaces" last_modification_time="Thu, 08 Dec 2005 14:17:33 GMT"/>
+			      <signal name="moo_prefs_key" handler="show_trailing_spaces"/>
 			    </widget>
 			    <packing>
 			      <property name="padding">0</property>
@@ -891,7 +1207,7 @@
 		  <child>
 		    <widget class="GtkLabel" id="label73">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Misc</property>
+		      <property name="label">Misc</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -927,7 +1243,7 @@
 	  <child>
 	    <widget class="GtkLabel" id="label62">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">View</property>
+	      <property name="label">View</property>
 	      <property name="use_underline">False</property>
 	      <property name="use_markup">False</property>
 	      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -957,14 +1273,14 @@
 		<widget class="GtkCheckButton" id="use_default_font">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">Use default theme font</property>
+		  <property name="label">Use default theme font</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
-		  <signal name="moo_prefs_key" handler="use_default_font" last_modification_time="Thu, 08 Dec 2005 14:17:50 GMT"/>
+		  <signal name="moo_prefs_key" handler="use_default_font"/>
 		</widget>
 		<packing>
 		  <property name="padding">0</property>
@@ -985,7 +1301,7 @@
 		  <child>
 		    <widget class="GtkLabel" id="label99">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Font:</property>
+		      <property name="label">Font:</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -999,14 +1315,14 @@
 		      <property name="width_chars">-1</property>
 		      <property name="single_line_mode">False</property>
 		      <property name="angle">0</property>
-		      <signal name="moo_sensitive" handler="use_default_font" object="invert" last_modification_time="Thu, 08 Dec 2005 14:18:41 GMT"/>
+		      <signal name="moo_sensitive" handler="use_default_font" object="invert"/>
 		    </widget>
 		    <packing>
 		      <property name="left_attach">0</property>
 		      <property name="right_attach">1</property>
 		      <property name="top_attach">0</property>
 		      <property name="bottom_attach">1</property>
-		      <property name="x_options">fill</property>
+		      <property name="x_options"></property>
 		      <property name="y_options"></property>
 		    </packing>
 		  </child>
@@ -1020,8 +1336,8 @@
 		      <property name="use_font">True</property>
 		      <property name="use_size">True</property>
 		      <property name="focus_on_click">True</property>
-		      <signal name="moo_prefs_key" handler="font" last_modification_time="Thu, 08 Dec 2005 14:18:12 GMT"/>
-		      <signal name="moo_sensitive" handler="use_default_font" object="invert" last_modification_time="Thu, 08 Dec 2005 14:18:55 GMT"/>
+		      <signal name="moo_sensitive" handler="use_default_font" object="invert"/>
+		      <signal name="moo_prefs_key" handler="font"/>
 		    </widget>
 		    <packing>
 		      <property name="left_attach">1</property>
@@ -1035,7 +1351,7 @@
 		  <child>
 		    <widget class="GtkLabel" id="label100">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Color scheme:</property>
+		      <property name="label">Color scheme:</property>
 		      <property name="use_underline">False</property>
 		      <property name="use_markup">False</property>
 		      <property name="justify">GTK_JUSTIFY_LEFT</property>
@@ -1055,7 +1371,7 @@
 		      <property name="right_attach">1</property>
 		      <property name="top_attach">1</property>
 		      <property name="bottom_attach">2</property>
-		      <property name="x_options">fill</property>
+		      <property name="x_options"></property>
 		      <property name="y_options"></property>
 		    </packing>
 		  </child>
@@ -1075,7 +1391,7 @@ gvim
 		      <property name="top_attach">1</property>
 		      <property name="bottom_attach">2</property>
 		      <property name="x_options">fill</property>
-		      <property name="y_options">fill</property>
+		      <property name="y_options"></property>
 		    </packing>
 		  </child>
 		</widget>
@@ -1095,7 +1411,7 @@ gvim
 	  <child>
 	    <widget class="GtkLabel" id="label97">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">Font and colors</property>
+	      <property name="label">Font and colors</property>
 	      <property name="use_underline">False</property>
 	      <property name="use_markup">False</property>
 	      <property name="justify">GTK_JUSTIFY_LEFT</property>
