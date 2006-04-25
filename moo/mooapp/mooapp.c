@@ -746,28 +746,6 @@ moo_app_cmd_setup (MooCommand   *cmd,
     g_signal_emit (app, signals[CMD_SETUP], 0, cmd, window);
 }
 
-// static void
-// moo_app_load_user_actions (void)
-// {
-//     char **dirs;
-//     guint n_dirs, i;
-//
-//     dirs = moo_get_data_dirs (MOO_DATA_SHARE, &n_dirs);
-//     g_return_if_fail (dirs != NULL);
-//
-//     for (i = 0; i < n_dirs; i++)
-//     {
-//         char *file = g_build_filename (dirs[i], MOO_ACTIONS_FILE, NULL);
-//
-//         if (g_file_test (file, G_FILE_TEST_EXISTS))
-//             moo_parse_user_actions (file, moo_app_cmd_setup);
-//
-//         g_free (file);
-//     }
-//
-//     g_strfreev (dirs);
-// }
-
 
 #ifdef MOO_BUILD_EDIT
 static void
@@ -928,8 +906,6 @@ moo_app_init_real (MooApp *app)
         g_free (dir);
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
-
-//     moo_app_load_user_actions ();
 
     start_io (app);
 

@@ -38,7 +38,6 @@ mooutils_include_headers =                     \
     $(mooutils)/mootoggleaction.h              \
     $(mooutils)/moouixml.h                     \
     $(mooutils)/mooundomanager.h               \
-    $(mooutils)/moouseractions.h               \
     $(mooutils)/mooutils-fs.h                  \
     $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
@@ -88,7 +87,6 @@ mooutils_sources =                             \
     $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
     $(mooutils)/mooundomanager.c               \
-    $(mooutils)/moouseractions.c               \
     $(mooutils)/mooutils-fs.c                  \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \

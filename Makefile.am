@@ -94,13 +94,6 @@ nodist_libmoo_sources = $(moo_nodist_sources)
 
 EXTRA_DIST += $(moo_extra_dist)
 
-mooedit_datadir = ${MOO_DATA_DIR}
-mooedit_data_DATA = ui.xml.example actions.cfg.example
-ui.xml.example: tests/medit-ui.xml
-	cp $(srcdir)/tests/medit-ui.xml ui.xml.example
-CLEANFILES += ui.xml.example
-EXTRA_DIST += actions.cfg.example
-
 
 ##############################################################################
 # tests
