@@ -1711,12 +1711,33 @@ _moo_edit_do_popup (MooEdit        *edit,
 
     if (!edit->priv->menu)
     {
+        gboolean show_im_menu = TRUE;
+
         window = moo_edit_get_window (edit);
         edit->priv->menu =
                 moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
                                           moo_edit_get_actions (edit),
                                           window ? MOO_WINDOW(window)->accel_group : NULL);
         gtk_object_sink (g_object_ref (edit->priv->menu));
+
+        if (show_im_menu)
+        {
+            GtkWidget *item, *submenu;
+
+            item = gtk_separator_menu_item_new ();
+            gtk_widget_show (item);
+            gtk_menu_shell_append (GTK_MENU_SHELL (edit->priv->menu), item);
+
+            item = gtk_menu_item_new_with_label ("Input Methods");
+            gtk_widget_show (item);
+
+            submenu = gtk_menu_new ();
+            gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), submenu);
+            gtk_menu_shell_append (GTK_MENU_SHELL (edit->priv->menu), item);
+
+            gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (GTK_TEXT_VIEW (edit)->im_context),
+                                                  GTK_MENU_SHELL (submenu));
+        }
     }
 
     g_return_if_fail (edit->priv->menu != NULL);
