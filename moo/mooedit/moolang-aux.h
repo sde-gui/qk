@@ -10,6 +10,10 @@
  *
  *   See COPYING file that comes with this distribution.
  */
+/* g_utf8_offset_to_pointer, g_utf8_pointer_to_offset taken from glib
+ * Copyright (C) 1999 Tom Tromey
+ * Copyright (C) 2000 Red Hat, Inc.
+ */
 
 #ifndef MOOEDIT_COMPILATION
 #error "This file may not be included"
@@ -21,7 +25,66 @@
 
 #define CHAR_IS_ASCII(ch__) ((guint8) ch__ < 128)
 
-static gboolean
+#define ASCII_TOLOWER(c__)                              \
+    (g_ascii_isupper (c__) ? (c__) - 'A' + 'a' : (c__))
+
+
+inline static long
+utf8_pointer_to_offset (char *str, char *pos)
+{
+    char *s = str;
+    long offset = 0;
+
+    if (pos < str)
+    {
+        offset = - utf8_pointer_to_offset (pos, str);
+    }
+    else while (s < pos)
+    {
+        s = g_utf8_next_char (s);
+        offset++;
+    }
+
+    return offset;
+}
+
+
+inline static char *
+utf8_offset_to_pointer (char *str,
+                        long  offset)
+{
+    char *s = str;
+
+    if (offset > 0)
+    {
+        while (offset--)
+            s = g_utf8_next_char (s);
+    }
+    else
+    {
+        char *s1;
+
+        /* This nice technique for fast backwards stepping
+         * through a UTF-8 string was dubbed "stutter stepping"
+         * by its inventor, Larry Ewing.
+         */
+        while (offset)
+        {
+            s1 = s;
+            s += offset;
+
+            while ((*s & 0xc0) == 0x80)
+                s--;
+
+            offset += utf8_pointer_to_offset (s, s1);
+        }
+    }
+
+    return s;
+}
+
+
+inline static gboolean
 string_is_ascii (const char *string)
 {
     while (*string++)
@@ -31,30 +94,45 @@ string_is_ascii (const char *string)
 }
 
 
-static char*
-ascii_casestrstr (char *haystack, char *needle)
+inline static char*
+ascii_casestrstr (char *haystack, char *needle, char *limit)
 {
-    char *h = haystack;
-
-    while (*h)
+    while (haystack <= limit)
     {
-        if (g_ascii_strcasecmp (h, needle))
-            return h;
-        h++;
+        if (g_ascii_strcasecmp (haystack, needle))
+            return haystack;
+        haystack++;
     }
 
     return NULL;
 }
 
 
-static char*
-ascii_lower_strchr (char *string, char ch)
+inline static char*
+ascii_lower_strchr (char *string, char ch, char *limit)
 {
-    while (*string)
+    while (string <= limit)
     {
-        if (g_ascii_tolower (*string) == ch)
+        if (ASCII_TOLOWER (*string) == ch)
             return string;
         string++;
     }
+
+    return NULL;
+}
+
+
+inline static char*
+ascii_strchr (char *string, char ch, char *limit)
+{
+    g_assert (limit && string);
+
+    while (string <= limit)
+    {
+        if (*string == ch)
+            return string;
+        string++;
+    }
+
     return NULL;
 }

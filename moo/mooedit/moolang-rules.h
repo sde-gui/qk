@@ -37,7 +37,7 @@ struct _MooRuleMatchData {
     char *start; /* points to some byte in line_string */
     int start_offset; /* chars from line_start */
 
-    char *limit;
+    char *limit; /* rule matches only if match is <= limit */
     int limit_offset; /* chars from start */
 };
 

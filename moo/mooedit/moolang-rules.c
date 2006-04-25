@@ -132,6 +132,8 @@ rules_match_real (MooRuleArray       *array,
     if (!array->len)
         return NULL;
 
+    g_assert (data->line_string_len >= 0);
+
     if (flags & MATCH_START_ONLY)
     {
         data->limit = data->start;
@@ -139,7 +141,7 @@ rules_match_real (MooRuleArray       *array,
     }
     else
     {
-        data->limit = NULL;
+        data->limit = data->line_string + data->line_string_len; /* this points to the zero char, so it's fine */
         data->limit_offset = SIZE_NOT_SET;
     }
 
@@ -170,6 +172,16 @@ rules_match_real (MooRuleArray       *array,
                     *result = tmp;
                     data->limit = tmp.match_start;
                     data->limit_offset = tmp.match_offset;
+
+                    if (data->limit == data->start)
+                        break;
+
+                    g_assert (data->limit_offset != 0);
+
+                    data->limit = utf8_offset_to_pointer (data->limit, -1);
+
+                    if (data->limit_offset > 0)
+                        data->limit_offset -= 1;
                 }
 
                 if (tmp.match_start == data->start)
@@ -348,7 +360,7 @@ rule_string_match (MooRule        *rule,
         }
         else
         {
-            result->match_start = ascii_casestrstr (data->start, rule->str.string);
+            result->match_start = ascii_casestrstr (data->start, rule->str.string, data->limit);
         }
     }
     else
@@ -436,15 +448,19 @@ rule_regex_match (MooRule        *rule,
         regex_flags |= EGG_REGEX_MATCH_ANCHORED;
 
     n_matches = egg_regex_match_extended (rule->regex.regex,
-                                          data->line_string, data->line_string_len,
+                                          data->line_string,
+                                          data->line_string_len,
                                           data->start - data->line_string,
                                           regex_flags);
 
-    if (n_matches <= 0)
+    if (n_matches < 1)
         return NULL;
 
     egg_regex_fetch_pos (rule->regex.regex, data->line_string, 0,
                          &start_pos, &end_pos);
+
+    if (data->line_string + start_pos > data->limit)
+        return NULL;
 
     result->match_start = data->line_string + start_pos;
     result->match_end = data->line_string + end_pos;
@@ -486,12 +502,11 @@ moo_rule_regex_new (const char         *pattern,
     regex = egg_regex_new (pattern, regex_compile_options,
                            regex_match_options, &error);
 
-    if (error)
+    if (!regex)
     {
         g_warning ("could not compile pattern '%s': %s",
                    pattern, error->message);
         g_error_free (error);
-        egg_regex_unref (regex);
         return NULL;
     }
 
@@ -550,9 +565,9 @@ rule_char_match (MooRule        *rule,
     else
     {
         if (rule->_char.caseless)
-            result->match_start = ascii_lower_strchr (data->start, rule->_char.ch);
+            result->match_start = ascii_lower_strchr (data->start, rule->_char.ch, data->limit);
         else
-            result->match_start = strchr (data->start, rule->_char.ch);
+            result->match_start = ascii_strchr (data->start, rule->_char.ch, data->limit);
     }
 
     if (!result->match_start)
@@ -683,7 +698,7 @@ rule_any_char_match (MooRule        *rule,
         {
             if (!result->match_start)
             {
-                result->match_start = strchr (data->start, rule->anychar.chars[i]);
+                result->match_start = ascii_strchr (data->start, rule->anychar.chars[i], data->limit);
             }
             else if (result->match_start == data->start + 1)
             {
@@ -695,7 +710,7 @@ rule_any_char_match (MooRule        *rule,
             }
             else
             {
-                char *tmp = strchr (data->start, rule->anychar.chars[i]);
+                char *tmp = ascii_strchr (data->start, rule->anychar.chars[i], data->limit);
                 if (tmp < result->match_start)
                     result->match_start = tmp;
             }
