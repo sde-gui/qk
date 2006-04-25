@@ -24,6 +24,7 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_TEXT_SELECTION_TYPE    (moo_text_selection_type_get_type ())
+#define MOO_TYPE_TEXT_TAB_KEY_ACTION    (moo_text_tab_key_action_get_type ())
 
 #define MOO_TYPE_TEXT_VIEW              (moo_text_view_get_type ())
 #define MOO_TEXT_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_TEXT_VIEW, MooTextView))
@@ -42,6 +43,12 @@ typedef enum {
     MOO_TEXT_SELECT_WORDS,
     MOO_TEXT_SELECT_LINES
 } MooTextSelectionType;
+
+typedef enum {
+    MOO_TEXT_TAB_KEY_DO_NOTHING,
+    MOO_TEXT_TAB_KEY_INDENT,
+    MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER
+} MooTextTabKeyAction;
 
 struct _MooTextView
 {
@@ -88,6 +95,7 @@ struct _MooTextViewClass
 
 GType        moo_text_view_get_type                 (void) G_GNUC_CONST;
 GType        moo_text_selection_type_get_type       (void) G_GNUC_CONST;
+GType        moo_text_tab_key_action_get_type       (void) G_GNUC_CONST;
 
 GtkWidget   *moo_text_view_new                      (void);
 
@@ -157,6 +165,9 @@ void         moo_text_view_strip_whitespace         (MooTextView        *view);
 void         moo_text_view_add_child_in_border      (MooTextView        *view,
                                                      GtkWidget          *child,
                                                      GtkTextWindowType   which_border);
+
+void         moo_text_view_set_tab_key_action       (MooTextView        *view,
+                                                     MooTextTabKeyAction action);
 
 void         moo_text_view_insert_placeholder       (MooTextView        *view,
                                                      GtkTextIter        *iter);

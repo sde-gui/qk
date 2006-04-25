@@ -1,6 +1,5 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
- *   mooeditcursor.c
+/*
+ *   mooeditinput.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -1086,22 +1085,46 @@ set_invisible_cursor (GdkWindow *window)
 }
 
 
+static void
+move_focus (GtkWidget       *widget,
+            GtkDirectionType direction)
+{
+    GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
+    g_signal_emit_by_name (toplevel, "move-focus", direction);
+}
+
 static gboolean
-handle_tab (MooTextView        *view,
-            G_GNUC_UNUSED GdkEventKey    *event)
+handle_tab (MooTextView *view,
+            GdkEventKey *event)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
     GtkTextIter insert, bound, start, end;
     gboolean starts_line, insert_last, has_selection;
     int first_line, last_line;
 
-    if (!view->priv->indenter || !view->priv->tab_indents)
+    switch (view->priv->tab_key_action)
+    {
+        case MOO_TEXT_TAB_KEY_DO_NOTHING:
+            move_focus (GTK_WIDGET (view),
+                        event->state & GDK_SHIFT_MASK ?
+                                GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+            return TRUE;
+
+        case MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER:
+            if (event->state & GDK_SHIFT_MASK)
+                moo_text_view_prev_placeholder (view);
+            else
+                moo_text_view_next_placeholder (view);
+            return TRUE;
+
+        case MOO_TEXT_TAB_KEY_INDENT:
+            break;
+    }
+
+    if (!view->priv->indenter)
         return FALSE;
 
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
-
-    if (!has_selection && !view->priv->tab_indents && !view->priv->tab_inserts_indent_chars)
-        return FALSE;
 
     gtk_text_buffer_begin_user_action (buffer);
 
@@ -1275,6 +1298,7 @@ handle_ctrl_up (MooTextView        *view,
     GtkTextView *text_view;
     GtkAdjustment *adjustment;
     double value;
+    int line_height;
 
     if (!view->priv->ctrl_up_down_scrolls)
         return FALSE;
@@ -1285,20 +1309,24 @@ handle_ctrl_up (MooTextView        *view,
     if (!adjustment)
         return FALSE;
 
+    line_height = _moo_text_view_get_line_height (view);
+
     if (up)
     {
-        value = adjustment->value - adjustment->step_increment;
+        value = adjustment->value - line_height;
+
         if (value < adjustment->lower)
             value = adjustment->lower;
-        gtk_adjustment_set_value (adjustment, value);
     }
     else
     {
-        value = adjustment->value + adjustment->step_increment;
+        value = adjustment->value + line_height;
+
         if (value > adjustment->upper - adjustment->page_size)
             value = adjustment->upper - adjustment->page_size;
-        gtk_adjustment_set_value (adjustment, value);
     }
+
+    gtk_adjustment_set_value (adjustment, value);
 
     return TRUE;
 }

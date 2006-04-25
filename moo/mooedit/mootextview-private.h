@@ -57,6 +57,7 @@ int         _moo_text_view_extend_selection     (MooTextView        *view,
 
 void        _moo_text_view_check_char_inserted  (MooTextView        *view);
 void        _moo_text_view_pend_cursor_blink    (MooTextView        *view);
+int         _moo_text_view_get_line_height      (MooTextView        *view);
 
 
 typedef enum {
@@ -129,6 +130,7 @@ struct _MooTextViewPrivate {
     gboolean shift_tab_unindents;
     gboolean backspace_indents;
     gboolean enter_indents;
+    MooTextTabKeyAction tab_key_action;
 
     /***********************************************************************/
     /* Keyboard

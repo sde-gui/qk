@@ -203,7 +203,8 @@ enum {
     PROP_SHOW_LINE_MARKS,
     PROP_ENABLE_FOLDING,
     PROP_ENABLE_QUICK_SEARCH,
-    PROP_QUICK_SEARCH_FLAGS
+    PROP_QUICK_SEARCH_FLAGS,
+    PROP_TAB_KEY_ACTION
 };
 
 
@@ -438,6 +439,15 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "quick-search-flags",
                                              MOO_TYPE_TEXT_SEARCH_FLAGS,
                                              MOO_TEXT_SEARCH_CASELESS,
+                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_TAB_KEY_ACTION,
+                                     g_param_spec_enum ("tab-key-action",
+                                             "tab-key-action",
+                                             "tab-key-action",
+                                             MOO_TYPE_TEXT_TAB_KEY_ACTION,
+                                             MOO_TEXT_TAB_KEY_INDENT,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     gtk_widget_class_install_style_property (widget_class,
@@ -1037,6 +1047,10 @@ moo_text_view_set_property (GObject        *object,
             g_object_notify (object, "quick-search-flags");
             break;
 
+        case PROP_TAB_KEY_ACTION:
+            moo_text_view_set_tab_key_action (view, g_value_get_enum (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -1139,6 +1153,10 @@ moo_text_view_get_property (GObject        *object,
             g_value_set_flags (value, view->priv->qs.flags);
             break;
 
+        case PROP_TAB_KEY_ACTION:
+            g_value_set_enum (value, view->priv->tab_key_action);
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -1159,7 +1177,29 @@ moo_text_selection_type_get_type (void)
             { MOO_TEXT_SELECT_LINES, (char*)"MOO_TEXT_SELECT_LINES", (char*)"select-lines" },
             { 0, NULL, NULL }
         };
+
         type = g_enum_register_static ("MooTextSelectionType", values);
+    }
+
+    return type;
+}
+
+
+GType
+moo_text_tab_key_action_get_type (void)
+{
+    static GType type = 0;
+
+    if (!type)
+    {
+        static const GEnumValue values[] = {
+            { MOO_TEXT_TAB_KEY_DO_NOTHING, (char*)"MOO_TEXT_TAB_KEY_DO_NOTHING", (char*)"do-nothing" },
+            { MOO_TEXT_TAB_KEY_INDENT, (char*)"MOO_TEXT_TAB_KEY_INDENT", (char*)"indent" },
+            { MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER, (char*)"MOO_TEXT_TAB_KEY_FIND_PLACEHOLDER", (char*)"find-placeholder" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_enum_register_static ("MooTextTabKeyAction", values);
     }
 
     return type;
@@ -2623,6 +2663,44 @@ _moo_text_view_pend_cursor_blink (MooTextView *view)
         time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_PEND_MULTIPLIER;
         view->priv->blink_timeout = g_timeout_add (time, (GSourceFunc) blink_cb, view);
     }
+}
+
+
+void
+moo_text_view_set_tab_key_action (MooTextView        *view,
+                                  MooTextTabKeyAction action)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (view->priv->tab_key_action != action)
+    {
+        view->priv->tab_key_action = action;
+        g_object_notify (G_OBJECT (view), "tab-key-action");
+    }
+}
+
+
+int
+_moo_text_view_get_line_height (MooTextView *view)
+{
+    PangoContext *ctx;
+    PangoLayout *layout;
+    PangoRectangle rect;
+    int height;
+
+    g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), 10);
+
+    ctx = gtk_widget_get_pango_context (GTK_WIDGET (view));
+    g_return_val_if_fail (ctx != NULL, 10);
+
+    layout = pango_layout_new (ctx);
+    pango_layout_set_text (layout, "AA", -1);
+
+    pango_layout_get_extents (layout, NULL, &rect);
+    height = rect.height / PANGO_SCALE;
+
+    g_object_unref (layout);
+    return height;
 }
 
 
@@ -4170,6 +4248,7 @@ moo_text_view_next_placeholder (MooTextView *view)
         if (moo_text_view_has_placeholder_at_iter (view, &match_start))
         {
             gtk_text_buffer_select_range (buffer, &match_end, &match_start);
+            scroll_selection_onscreen (GTK_TEXT_VIEW (view));
             return TRUE;
         }
         else
@@ -4206,6 +4285,7 @@ moo_text_view_prev_placeholder (MooTextView *view)
         if (moo_text_view_has_placeholder_at_iter (view, &match_start))
         {
             gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+            scroll_selection_onscreen (GTK_TEXT_VIEW (view));
             return TRUE;
         }
         else
