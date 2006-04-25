@@ -403,7 +403,7 @@ as_set_new (ASStringInfo **strings,
     g_print ("pattern: %s\n", pattern->str);
 #endif
 
-    if (error)
+    if (!set->regex)
     {
         g_critical ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);

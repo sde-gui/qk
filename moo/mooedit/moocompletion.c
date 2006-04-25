@@ -866,7 +866,7 @@ moo_completion_group_set_pattern (MooCompletionGroup *group,
     real_pattern = g_strdup_printf ("%s$", pattern);
     regex = egg_regex_new (real_pattern, 0, 0, &error);
 
-    if (error)
+    if (!regex)
     {
         g_warning ("%s: %s", G_STRLOC, error->message);
         goto err;

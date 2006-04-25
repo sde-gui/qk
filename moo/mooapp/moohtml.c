@@ -1117,12 +1117,12 @@ moo_html_parse_url (const char     *url,
                     char          **anchor)
 {
     EggRegex *regex;
-    GError *error = NULL;
 
     g_return_val_if_fail (url != NULL, FALSE);
     g_return_val_if_fail (scheme && base && anchor, FALSE);
 
-    regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, &error);
+    regex = egg_regex_new ("^([a-zA-Z]+://)?([^#]*)(#(.*))?$", 0, 0, NULL);
+    g_return_val_if_fail (regex != NULL, FALSE);
 
     if (egg_regex_match (regex, url, -1, 0) < 1)
     {

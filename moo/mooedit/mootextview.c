@@ -3883,11 +3883,10 @@ quick_search_find_from (MooTextView *view,
         GError *error = NULL;
         EggRegex *re = egg_regex_new (text, 0, 0, &error);
 
-        if (error)
+        if (!re)
         {
             char *msg = g_strdup_printf ("Invalid pattern '%s'", text);
             quick_search_message (view, msg);
-            egg_regex_unref (re);
             g_free (msg);
             return;
         }

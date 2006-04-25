@@ -44,6 +44,7 @@
  * 07/25/2005: silent gcc
  * 10/03/2005: removed #include "config.h", removed odd 'break' after 'goto' to
  *             avoid warning
+ * 04/25/2006: made egg_regex_new return NULL on error
  *
  * mooutils/eggregex.c
  *****************************************************************************/
@@ -95,13 +96,13 @@ egg_regex_error_quark (void)
  * Compiles the regular expression to an internal form, and does the initial
  * setup of the #EggRegex structure.
  *
- * Returns: a #EggRegex structure
+ * Returns: a #EggRegex structure or NULL ion case of error
  */
 EggRegex *
 egg_regex_new (const gchar         *pattern,
- 	     EggRegexCompileFlags   compile_options,
-	     EggRegexMatchFlags     match_options,
-	     GError             **error)
+               EggRegexCompileFlags compile_options,
+               EggRegexMatchFlags   match_options,
+               GError             **error)
 {
   EggRegex *regex = g_new0 (EggRegex, 1);
   const gchar *errmsg;
@@ -132,14 +133,13 @@ egg_regex_new (const gchar         *pattern,
    * immediately */
   if (regex->regex == NULL)
     {
-      GError *tmp_error = g_error_new (EGG_REGEX_ERROR,
-				       EGG_REGEX_ERROR_COMPILE,
-				       _("Error while compiling regular "
-					 "expression %s at char %d: %s"),
-				       pattern, erroffset, errmsg);
-      g_propagate_error (error, tmp_error);
-
-      return regex;
+      g_set_error (error, EGG_REGEX_ERROR,
+                   EGG_REGEX_ERROR_COMPILE,
+                   _("Error while compiling regular "
+                     "expression %s at char %d: %s"),
+                   pattern, erroffset, errmsg);
+      egg_regex_unref (regex);
+      return NULL;
     }
 
   /* otherwise, find out how many sub patterns exist in this pattern,

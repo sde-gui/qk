@@ -214,7 +214,6 @@ get_regex (const char          *pattern,
     static EggRegex *saved_regex;
     static char *saved_pattern;
     static MooTextSearchFlags saved_flags;
-    GError *tmp_error = NULL;
 
     if (!saved_pattern || strcmp (saved_pattern, pattern) || saved_flags != flags)
     {
@@ -229,15 +228,12 @@ get_regex (const char          *pattern,
         if (flags & MOO_TEXT_SEARCH_CASELESS)
             re_flags |= EGG_REGEX_CASELESS;
 
-        saved_regex = egg_regex_new (saved_pattern, re_flags, 0, &tmp_error);
+        saved_regex = egg_regex_new (saved_pattern, re_flags, 0, error);
 
-        if (tmp_error)
+        if (!saved_regex)
         {
             g_free (saved_pattern);
             saved_pattern = NULL;
-            g_propagate_error (error, tmp_error);
-            egg_regex_unref (saved_regex);
-            saved_regex = NULL;
             return NULL;
         }
 

@@ -328,11 +328,10 @@ moo_find_run (MooFind        *find,
 
             regex = egg_regex_new (search_for, re_flags, 0, &error);
 
-            if (error)
+            if (!regex)
             {
                 moo_text_regex_error_dialog (GTK_WIDGET (find), error);
                 g_error_free (error);
-                egg_regex_unref (regex);
                 continue;
             }
 

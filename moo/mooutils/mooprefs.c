@@ -699,15 +699,17 @@ closure_new (MooPrefs           *prefs,
     switch (match_type) {
         case MOO_PREFS_MATCH_REGEX:
             regex = egg_regex_new (pattern, EGG_REGEX_EXTENDED, 0, &err);
-            if (err)
+
+            if (!regex)
             {
                 g_warning ("%s: %s", G_STRLOC, err->message);
                 g_error_free (err);
-                egg_regex_free (regex);
                 g_free (closure);
                 return NULL;
             }
+
             egg_regex_optimize (regex, &err);
+
             if (err)
             {
                 g_warning ("%s: %s", G_STRLOC, err->message);
