@@ -56,6 +56,10 @@ void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
 void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
                                                      int                 first,
                                                      int                 last);
+// void        _moo_text_buffer_insert_placeholder     (MooTextBuffer      *buffer,
+//                                                      GtkTextIter        *iter,
+//                                                      const char         *text,
+//                                                      GtkTextTag         *tag);
 
 
 G_END_DECLS

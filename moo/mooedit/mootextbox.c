@@ -1,5 +1,5 @@
 /*
- *   mooplaceholder.c
+ *   mootextbox.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -12,7 +12,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooplaceholder.h"
+#include "mooedit/mootextbox.h"
 #include <gtk/gtklabel.h>
 
 
@@ -33,16 +33,16 @@ _moo_text_anchor_init (MooTextAnchor *anchor)
 
 
 /***************************************************************************/
-/* MooPlaceholder
+/* MooTextBox
  */
 
-G_DEFINE_TYPE(MooPlaceholder, _moo_placeholder, GTK_TYPE_LABEL)
+G_DEFINE_TYPE(MooTextBox, _moo_text_box, GTK_TYPE_LABEL)
 
 
 static void
-moo_placeholder_update_size (GtkWidget *ph)
+moo_text_box_update_size (GtkWidget *box)
 {
-    GtkWidget *parent = ph->parent;
+    GtkWidget *parent = box->parent;
 
     if (parent && GTK_WIDGET_REALIZED (parent))
     {
@@ -63,8 +63,8 @@ moo_placeholder_update_size (GtkWidget *ph)
 
         height = rect.height / PANGO_SCALE;
 
-        gtk_widget_set_size_request (ph, -1, height);
-        gtk_widget_modify_font (ph, parent->style->font_desc);
+        gtk_widget_set_size_request (box, -1, height);
+        gtk_widget_modify_font (box, parent->style->font_desc);
 
         g_object_unref (layout);
     }
@@ -72,40 +72,40 @@ moo_placeholder_update_size (GtkWidget *ph)
 
 
 static void
-moo_placeholder_parent_set (GtkWidget *widget,
-                            GtkWidget *old_parent)
+moo_text_box_parent_set (GtkWidget *widget,
+                         GtkWidget *old_parent)
 {
-    if (GTK_WIDGET_CLASS (_moo_placeholder_parent_class)->parent_set)
-        GTK_WIDGET_CLASS (_moo_placeholder_parent_class)->parent_set (widget, old_parent);
+    if (GTK_WIDGET_CLASS (_moo_text_box_parent_class)->parent_set)
+        GTK_WIDGET_CLASS (_moo_text_box_parent_class)->parent_set (widget, old_parent);
 
     if (old_parent)
         g_signal_handlers_disconnect_by_func (old_parent,
-                                              (gpointer) moo_placeholder_update_size,
+                                              (gpointer) moo_text_box_update_size,
                                               widget);
 
     if (widget->parent)
     {
         g_signal_connect_swapped (widget->parent, "style-set",
-                                  G_CALLBACK (moo_placeholder_update_size),
+                                  G_CALLBACK (moo_text_box_update_size),
                                   widget);
         g_signal_connect_swapped (widget->parent, "realize",
-                                  G_CALLBACK (moo_placeholder_update_size),
+                                  G_CALLBACK (moo_text_box_update_size),
                                   widget);
 
-        moo_placeholder_update_size (widget);
+        moo_text_box_update_size (widget);
     }
 }
 
 
 static void
-_moo_placeholder_class_init (MooPlaceholderClass *klass)
+_moo_text_box_class_init (MooTextBoxClass *klass)
 {
-    GTK_WIDGET_CLASS(klass)->parent_set = moo_placeholder_parent_set;
+    GTK_WIDGET_CLASS(klass)->parent_set = moo_text_box_parent_set;
 }
 
 
 static void
-_moo_placeholder_init (MooPlaceholder *ph)
+_moo_text_box_init (MooTextBox *box)
 {
-    gtk_label_set_text (GTK_LABEL (ph), "  ");
+    gtk_label_set_text (GTK_LABEL (box), "  ");
 }

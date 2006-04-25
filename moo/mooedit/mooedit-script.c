@@ -698,22 +698,33 @@ cfunc_insert (MSValue  **args,
 
 
 static MSValue *
-cfunc_insert_placeholder (MSContext *ctx)
+cfunc_insert_placeholder (MSValue  **args,
+                          guint      n_args,
+                          MSContext *ctx)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
     MooEdit *doc;
+    char *text = NULL;
 
     CHECK_DOC (ctx, doc);
+
+    if (n_args > 1)
+        return ms_context_set_error (ctx, MS_ERROR_TYPE,
+                                     "number of args must be zero or one");
+
+    if (n_args)
+        text = ms_value_print (args[0]);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         gtk_text_buffer_delete (buffer, &start, &end);
 
-    moo_text_view_insert_placeholder (MOO_TEXT_VIEW (doc), &start);
-
+    moo_text_view_insert_placeholder (MOO_TEXT_VIEW (doc), &start, text);
     scroll_to_cursor (GTK_TEXT_VIEW (doc));
+
+    g_free (text);
     return ms_value_none ();
 }
 
@@ -745,6 +756,8 @@ DEFINE_CLIP_FUNC(cfunc_cut, "cut-clipboard")
 DEFINE_CLIP_FUNC(cfunc_copy, "copy-clipboard")
 DEFINE_CLIP_FUNC(cfunc_paste, "paste-clipboard")
 
+#undef DEFINE_CLIP_FUNC
+
 
 static void
 init_api (void)
@@ -755,7 +768,7 @@ init_api (void)
     builtin_funcs[FUNC_BACKSPACE] = ms_cfunc_new_var (cfunc_backspace);
     builtin_funcs[FUNC_DELETE] = ms_cfunc_new_var (cfunc_delete);
     builtin_funcs[FUNC_INSERT] = ms_cfunc_new_var (cfunc_insert);
-    builtin_funcs[FUNC_INSERT_PLACEHOLDER] = ms_cfunc_new_0 (cfunc_insert_placeholder);
+    builtin_funcs[FUNC_INSERT_PLACEHOLDER] = ms_cfunc_new_var (cfunc_insert_placeholder);
     builtin_funcs[FUNC_UP] = ms_cfunc_new_var (cfunc_up);
     builtin_funcs[FUNC_DOWN] = ms_cfunc_new_var (cfunc_down);
     builtin_funcs[FUNC_LEFT] = ms_cfunc_new_var (cfunc_left);

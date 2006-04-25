@@ -49,9 +49,9 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolang-rules.h                \
     $(mooedit)/moolang-strings.h              \
     $(mooedit)/moolinebuffer.h                \
-    $(mooedit)/mooplaceholder.h               \
     $(mooedit)/moopluginprefs-glade.h         \
     $(mooedit)/mootext-private.h              \
+    $(mooedit)/mootextbox.h                   \
     $(mooedit)/mootextbtree.h                 \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/mootextfind.h                  \
@@ -87,8 +87,8 @@ mooedit_sources =                             \
     $(mooedit)/moolinebuffer.c                \
     $(mooedit)/moolinemark.c                  \
     $(mooedit)/moolineview.c                  \
-    $(mooedit)/mooplaceholder.c               \
     $(mooedit)/mooplugin.c                    \
+    $(mooedit)/mootextbox.c                   \
     $(mooedit)/mootextbtree.c                 \
     $(mooedit)/mootextbuffer.c                \
     $(mooedit)/mootextfind.c                  \

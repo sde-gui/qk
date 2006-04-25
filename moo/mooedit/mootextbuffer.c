@@ -22,6 +22,15 @@
 #include <string.h>
 
 
+// #define MOO_PLACEHOLDER_MARK "moo-placeholder-mark"
+//
+// typedef struct {
+//     GtkTextMark *start;
+//     GtkTextMark *end;
+//     int len;
+//     GtkTextTag *tag;
+// } Placeholder;
+
 struct _MooTextBufferPrivate {
     gboolean has_selection;
     gboolean has_text;
@@ -42,6 +51,7 @@ struct _MooTextBufferPrivate {
 
     LineBuffer *line_buf;
     MooFoldTree *fold_tree;
+//     GSList *placeholders;
 
     guint interactive;
     guint non_interactive;
@@ -118,6 +128,9 @@ static void     line_mark_moved                     (MooTextBuffer      *buffer,
                                                      MooLineMark        *mark);
 static void     line_mark_deleted                   (MooTextBuffer      *buffer,
                                                      MooLineMark        *mark);
+
+// static void     placeholder_mark_set                (MooTextBuffer      *buffer,
+//                                                      GtkTextMark        *mark);
 
 
 enum {
@@ -470,6 +483,9 @@ moo_text_buffer_mark_set (GtkTextBuffer      *text_buffer,
         moo_text_buffer_unhighlight_brackets (buffer);
         emit_cursor_moved (buffer, iter);
     }
+
+//     if (g_object_get_data (G_OBJECT (mark), MOO_PLACEHOLDER_MARK))
+//         placeholder_mark_set (buffer, mark);
 }
 
 
@@ -2096,3 +2112,87 @@ moo_text_buffer_toggle_fold (MooTextBuffer *buffer,
 
     g_signal_emit (buffer, signals[FOLD_TOGGLED], 0, fold);
 }
+
+
+/************************************************************************/
+/* Placeholders
+ */
+
+// void
+// _moo_text_buffer_insert_placeholder (MooTextBuffer      *buffer,
+//                                      GtkTextIter        *iter,
+//                                      const char         *text,
+//                                      GtkTextTag         *tag)
+// {
+//     Placeholder *ph;
+//     int offset;
+//     GtkTextIter start;
+//     GtkTextBuffer *text_buffer;
+//
+//     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+//     g_return_if_fail (iter != NULL);
+//     g_return_if_fail (text && text[0]);
+//
+//     text_buffer = GTK_TEXT_BUFFER (buffer);
+//     offset = gtk_text_iter_get_offset (iter);
+//     gtk_text_buffer_insert_with_tags (text_buffer, iter, text, -1, tag, NULL);
+//     gtk_text_buffer_get_iter_at_offset (text_buffer, &start, offset);
+//
+//     ph = g_new0 (Placeholder, 1);
+//     ph->len = g_utf8_strlen (text, -1);
+//     ph->start = gtk_text_buffer_create_mark (text_buffer, NULL, &start, TRUE);
+//     ph->end = gtk_text_buffer_create_mark (text_buffer, NULL, iter, FALSE);
+//     ph->tag = tag ? g_object_ref (tag) : NULL;
+//     g_object_set_data (G_OBJECT (ph->start), MOO_PLACEHOLDER_MARK, GINT_TO_POINTER (TRUE));
+//     g_object_set_data (G_OBJECT (ph->end), MOO_PLACEHOLDER_MARK, GINT_TO_POINTER (TRUE));
+//
+//     buffer->priv->placeholders =
+//             g_slist_prepend (buffer->priv->placeholders, ph);
+// }
+//
+//
+// static void
+// placeholder_mark_set (MooTextBuffer *buffer,
+//                       GtkTextMark   *mark)
+// {
+//     Placeholder *ph;
+//     GSList *link;
+//     GtkTextIter start, end;
+//     int offset;
+//     GtkTextBuffer *text_buffer;
+//
+//     g_return_if_fail (buffer->priv->placeholders != NULL);
+//
+//     for (link = buffer->priv->placeholders; link != NULL; link = link->next)
+//     {
+//         ph = link->data;
+//
+//         if (ph->start == mark || ph->end == mark)
+//             break;
+//     }
+//
+//     g_return_if_fail (link != NULL);
+//
+//     text_buffer = GTK_TEXT_BUFFER (buffer);
+//     gtk_text_buffer_get_iter_at_mark (text_buffer, &start, ph->start);
+//     gtk_text_buffer_get_iter_at_mark (text_buffer, &end, ph->end);
+//     offset = gtk_text_iter_get_offset (&end) - gtk_text_iter_get_offset (&start);
+//
+//     if (offset == ph->len)
+//         return;
+//
+//     g_object_set_data (G_OBJECT (ph->start), MOO_PLACEHOLDER_MARK, NULL);
+//     g_object_set_data (G_OBJECT (ph->end), MOO_PLACEHOLDER_MARK, NULL);
+//
+//     if (ph->tag)
+//     {
+//         gtk_text_buffer_remove_tag (text_buffer, ph->tag, &start, &end);
+//         g_object_unref (ph->tag);
+//     }
+//
+//     buffer->priv->placeholders = g_slist_delete_link (buffer->priv->placeholders, link);
+//
+//     gtk_text_buffer_delete_mark (text_buffer, ph->start);
+//     gtk_text_buffer_delete_mark (text_buffer, ph->end);
+//     g_free (ph);
+// }

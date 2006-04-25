@@ -170,10 +170,11 @@ void         moo_text_view_set_tab_key_action       (MooTextView        *view,
                                                      MooTextTabKeyAction action);
 
 void         moo_text_view_insert_placeholder       (MooTextView        *view,
-                                                     GtkTextIter        *iter);
+                                                     GtkTextIter        *iter,
+                                                     const char         *text);
 gboolean     moo_text_view_next_placeholder         (MooTextView        *view);
 gboolean     moo_text_view_prev_placeholder         (MooTextView        *view);
-gboolean     moo_text_view_has_placeholder_at_iter  (MooTextView        *view,
+gboolean     moo_text_view_has_box_at_iter          (MooTextView        *view,
                                                      GtkTextIter        *iter);
 
 void         moo_text_view_start_quick_search       (MooTextView        *view);
