@@ -4170,7 +4170,7 @@ create_box_tag (MooTextView *view)
 static GtkTextTag *
 get_placeholder_tag (MooTextView *view)
 {
-    return moo_text_view_lookup_tag (view, "moo-placeholder");
+    return moo_text_view_lookup_tag (view, MOO_PLACEHOLDER_TAG);
 }
 
 
@@ -4179,12 +4179,12 @@ create_placeholder_tag (MooTextView *view)
 {
     GtkTextTag *tag;
 
-    tag = moo_text_view_lookup_tag (view, "moo-placeholder");
+    tag = moo_text_view_lookup_tag (view, MOO_PLACEHOLDER_TAG);
 
     if (!tag)
     {
         GtkTextBuffer *buffer = get_buffer (view);
-        tag = gtk_text_buffer_create_tag (buffer, "moo-placeholder", NULL);
+        tag = gtk_text_buffer_create_tag (buffer, MOO_PLACEHOLDER_TAG, NULL);
         g_object_set (tag, "background", "yellow", NULL);
     }
 

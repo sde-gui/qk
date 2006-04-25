@@ -25,6 +25,9 @@
 G_BEGIN_DECLS
 
 
+#define MOO_PLACEHOLDER_TAG "moo-placeholder-tag"
+
+
 Line       *_moo_line_mark_get_line                 (MooLineMark        *mark);
 void        _moo_line_mark_set_line                 (MooLineMark        *mark,
                                                      Line               *line,
@@ -56,10 +59,6 @@ void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
 void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
                                                      int                 first,
                                                      int                 last);
-// void        _moo_text_buffer_insert_placeholder     (MooTextBuffer      *buffer,
-//                                                      GtkTextIter        *iter,
-//                                                      const char         *text,
-//                                                      GtkTextTag         *tag);
 
 
 G_END_DECLS
