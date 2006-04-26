@@ -284,7 +284,6 @@ moo_editor_init (MooEditor *editor)
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
 
-    /* XXX use regex */
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
                                       MOO_PREFS_MATCH_REGEX,
@@ -867,6 +866,8 @@ moo_editor_add_doc (MooEditor      *editor,
                              "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME,
                              editor->priv->default_lang, NULL);
     }
+
+    _moo_edit_apply_settings (doc);
 }
 
 
@@ -1851,16 +1852,6 @@ prefs_changed (G_GNUC_UNUSED const char *key,
 }
 
 
-static void
-doc_apply_prefs (MooEdit *doc)
-{
-    g_object_freeze_notify (G_OBJECT (doc));
-    _moo_edit_freeze_config_notify (doc);
-    _moo_edit_apply_settings (doc);
-    _moo_edit_thaw_config_notify (doc);
-    g_object_thaw_notify (G_OBJECT (doc));
-}
-
 static gboolean
 apply_prefs (MooEditor *editor)
 {
@@ -1893,7 +1884,7 @@ apply_prefs (MooEditor *editor)
         moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
 
     docs = moo_editor_list_docs (editor);
-    g_slist_foreach (docs, (GFunc) doc_apply_prefs, NULL);
+    g_slist_foreach (docs, (GFunc) _moo_edit_apply_settings, NULL);
     g_slist_free (docs);
 
     g_object_set (editor,

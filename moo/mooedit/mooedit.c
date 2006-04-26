@@ -272,9 +272,6 @@ moo_edit_constructor (GType                  type,
                               G_CALLBACK (modified_changed_cb),
                               edit);
 
-    _moo_edit_apply_settings (edit);
-    g_signal_connect_after (edit, "realize", G_CALLBACK (_moo_edit_apply_style_settings), NULL);
-
     _moo_edit_set_filename (edit, NULL, NULL);
 
     buffer = get_buffer (edit);
