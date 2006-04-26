@@ -1562,7 +1562,6 @@ moo_text_view_set_current_line_color (MooTextView    *view,
     if (color)
     {
         view->priv->current_line_color = *color;
-        view->priv->highlight_current_line = TRUE;
 
         if (view->priv->current_line_gc)
         {
@@ -1581,8 +1580,6 @@ moo_text_view_set_current_line_color (MooTextView    *view,
     }
     else
     {
-        view->priv->highlight_current_line = FALSE;
-
         if (view->priv->current_line_gc)
         {
             g_object_unref (view->priv->current_line_gc);
@@ -2057,6 +2054,7 @@ moo_text_view_expose (GtkWidget      *widget,
     GtkTextIter start, end;
 
     if (view->priv->highlight_current_line &&
+        view->priv->current_line_gc &&
         event->window == text_window && view->priv->current_line_gc)
             moo_text_view_draw_current_line (text_view, event);
 
@@ -2337,7 +2335,6 @@ moo_text_view_set_scheme_real (MooTextView      *view,
                        scheme->text_colors[MOO_TEXT_COLOR_CUR_LINE]);
     }
     moo_text_view_set_current_line_color (view, color_ptr);
-    moo_text_view_set_highlight_current_line (view, color_ptr != NULL);
 
     moo_text_buffer_apply_scheme (buffer, scheme);
 }
