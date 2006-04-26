@@ -254,6 +254,7 @@ try_load (MooEdit            *edit,
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
+    gboolean result, enable_highlight;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (file && file[0], FALSE);
@@ -264,7 +265,12 @@ try_load (MooEdit            *edit,
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
 
-    return do_load (edit, file, encoding, error);
+    g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
+    g_object_set (edit, "enable-highlight", FALSE, NULL);
+    result = do_load (edit, file, encoding, error);
+    g_object_set (edit, "enable-highlight", enable_highlight, NULL);
+
+    return result;
 }
 
 
@@ -483,7 +489,7 @@ moo_edit_reload_default (MooEditLoader  *loader,
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
-    gboolean result;
+    gboolean result, enable_highlight;
 
     g_return_val_if_fail (edit->priv->filename != NULL, FALSE);
 
@@ -494,10 +500,13 @@ moo_edit_reload_default (MooEditLoader  *loader,
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
+    g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
+    g_object_set (edit, "enable-highlight", FALSE, NULL);
 
     result = moo_edit_loader_load (loader, edit, edit->priv->filename,
                                    edit->priv->encoding, error);
 
+    g_object_set (edit, "enable-highlight", enable_highlight, NULL);
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
 
