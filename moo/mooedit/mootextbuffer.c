@@ -741,21 +741,36 @@ moo_text_buffer_set_lang (MooTextBuffer  *buffer,
     if (old_lang)
         moo_lang_unref (old_lang);
 
-    moo_highlighter_destroy (buffer->priv->hl, TRUE);
-    moo_line_buffer_cleanup (buffer->priv->line_buf);
+    if (buffer->priv->do_highlight && old_lang)
+    {
+        moo_highlighter_destroy (buffer->priv->hl, TRUE);
+        moo_line_buffer_cleanup (buffer->priv->line_buf);
+    }
+    else
+    {
+        moo_highlighter_destroy (buffer->priv->hl, FALSE);
+    }
 
     buffer->priv->lang = lang;
 
     if (lang)
         moo_lang_ref (lang);
 
-    buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                            buffer->priv->line_buf, lang);
+    if (lang && buffer->priv->do_highlight)
+    {
+        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                buffer->priv->line_buf, lang);
 
-    if (old_lang)
-        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+        if (old_lang)
+            moo_line_buffer_invalidate_all (buffer->priv->line_buf);
 
-    moo_text_buffer_queue_highlight (buffer);
+        moo_text_buffer_queue_highlight (buffer);
+    }
+    else
+    {
+        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                buffer->priv->line_buf, NULL);
+    }
 
     moo_text_buffer_set_brackets (buffer, lang ? lang->brackets : NULL);
 }
