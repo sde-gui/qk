@@ -1431,7 +1431,7 @@ rule_line_continue_match (MooRule        *rule,
     char *start;
 
     if (flags & MATCH_START_ONLY)
-        limit = start;
+        limit = data->start;
 
     g_assert (data->line_string_len >= 0);
 
