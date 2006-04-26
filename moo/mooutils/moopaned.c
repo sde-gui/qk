@@ -2255,7 +2255,6 @@ static GtkWidget   *create_icon (const guint8 *data)
 
 static GtkWidget    *create_button  (Pane           *pane,
                                      GtkWidget      *toolbar,
-                                     GtkTooltips    *tooltips,
                                      const char     *tip,
                                      gboolean        toggle,
 #ifndef __MOO__
@@ -2275,7 +2274,7 @@ static GtkWidget    *create_button  (Pane           *pane,
     g_object_set_data (G_OBJECT (button), "moo-pane", pane);
     gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
     gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-    gtk_tooltips_set_tip (tooltips, button, tip, tip);
+    moo_widget_set_tooltip (button, tip);
 #ifdef __MOO__
     icon = gtk_image_new_from_stock (stock_id, MOO_ICON_SIZE_REAL_SMALL);
 #else
@@ -2293,9 +2292,6 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                          gboolean    embedded)
 {
     GtkWidget *vbox, *toolbar, *separator, *handle, *hbox = NULL, *child_holder;
-    GtkTooltips *tooltips;
-
-    tooltips = gtk_tooltips_new ();
 
     vbox = gtk_vbox_new (FALSE, 0);
     gtk_widget_show (vbox);
@@ -2317,7 +2313,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
     {
         GtkWidget *close_button;
 
-        close_button = create_button (pane, toolbar, tooltips,
+        close_button = create_button (pane, toolbar,
                                       "Hide pane", FALSE,
 #ifndef __MOO__
                                       MOO_CLOSE_ICON);
@@ -2325,7 +2321,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                       MOO_STOCK_CLOSE);
 #endif
 
-        pane->sticky_button = create_button (pane, toolbar, tooltips,
+        pane->sticky_button = create_button (pane, toolbar,
                                              "Sticky", TRUE,
 #ifndef __MOO__
                                              MOO_STICKY_ICON);
@@ -2333,7 +2329,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                              MOO_STOCK_STICKY);
 #endif
 
-        pane->detach_button = create_button (pane, toolbar, tooltips,
+        pane->detach_button = create_button (pane, toolbar,
                                              "Detach pane", FALSE,
 #ifndef __MOO__
                                              MOO_DETACH_ICON);
@@ -2352,7 +2348,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
     {
         GtkWidget *attach_button;
 
-        attach_button = create_button (pane, toolbar, tooltips,
+        attach_button = create_button (pane, toolbar,
                                        "Attach", FALSE,
 #ifndef __MOO__
                                        MOO_ATTACH_ICON);
@@ -2360,7 +2356,7 @@ static GtkWidget   *create_frame_widget (MooPaned   *paned,
                                        MOO_STOCK_ATTACH);
 #endif
 
-        pane->keep_on_top_button = create_button (pane, toolbar, tooltips,
+        pane->keep_on_top_button = create_button (pane, toolbar,
                                                   "Keep on top", TRUE,
 #ifndef __MOO__
                                                   MOO_KEEP_ON_TOP_ICON);

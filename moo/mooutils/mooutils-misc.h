@@ -96,6 +96,9 @@ void        moo_menu_item_set_label         (GtkWidget      *menu_item,
                                              const char     *label,
                                              gboolean        mnemonic);
 
+void        moo_widget_set_tooltip          (GtkWidget      *widget,
+                                             const char     *tip);
+
 
 G_END_DECLS
 

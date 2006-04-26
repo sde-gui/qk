@@ -15,6 +15,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moomenutoolbutton.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -52,7 +53,6 @@ struct _MooUIXMLPrivate {
     GSList *toplevels;  /* Toplevel* */
     guint last_merge_id;
     GSList *merged_ui; /* Merge* */
-    GtkTooltips *tooltips;
 };
 
 typedef struct {
@@ -260,21 +260,6 @@ MooUIXML*
 moo_ui_xml_new (void)
 {
     return g_object_new (MOO_TYPE_UI_XML, NULL);
-}
-
-
-static GtkTooltips *
-moo_ui_xml_get_tooltips (MooUIXML *xml)
-{
-    g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
-
-    if (!xml->priv->tooltips)
-    {
-        xml->priv->tooltips = gtk_tooltips_new ();
-        gtk_object_sink (g_object_ref (xml->priv->tooltips));
-    }
-
-    return xml->priv->tooltips;
 }
 
 
@@ -2081,9 +2066,7 @@ create_tool_item (MooUIXML       *xml,
         gtk_widget_show (tool_item);
 
         if (item->tooltip)
-            gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (tool_item),
-                                       moo_ui_xml_get_tooltips (xml),
-                                       item->tooltip, item->tooltip);
+            moo_widget_set_tooltip (tool_item, item->tooltip);
         if (item->icon_stock_id)
             gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (tool_item),
                                           item->icon_stock_id);
@@ -2518,9 +2501,6 @@ moo_ui_xml_finalize (GObject *object)
     g_slist_free (xml->priv->toplevels);
     g_slist_free (xml->priv->merged_ui);
     node_free (xml->priv->ui);
-
-    if (xml->priv->tooltips)
-        g_object_unref (xml->priv->tooltips);
 
     g_free (xml->priv);
     xml->priv = NULL;

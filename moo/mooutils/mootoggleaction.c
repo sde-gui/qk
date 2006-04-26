@@ -17,6 +17,7 @@
 #include "mooutils/mooaccel.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -318,15 +319,7 @@ create_tool_item (MooAction *action,
     }
 
     if (action->tooltip)
-    {
-        GtkTooltips *tooltips = gtk_tooltips_new ();
-        gtk_tool_item_set_tooltip (item,
-                                   tooltips,
-                                   action->tooltip,
-                                   action->tooltip);
-        g_object_set_data_full (G_OBJECT (item), "moo-tooltips",
-                                tooltips, g_object_unref);
-    }
+        moo_widget_set_tooltip (GTK_WIDGET (item), action->tooltip);
 
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, position);
     gtk_container_child_set (GTK_CONTAINER (toolbar), GTK_WIDGET (item),

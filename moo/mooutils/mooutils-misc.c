@@ -1397,3 +1397,21 @@ moo_debug_enabled (void)
 
     return enabled;
 }
+
+
+void
+moo_widget_set_tooltip (GtkWidget  *widget,
+                        const char *tip)
+{
+    static GtkTooltips *tooltips;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+
+    if (!tooltips)
+        tooltips = gtk_tooltips_new ();
+
+    if (GTK_IS_TOOL_ITEM (widget))
+        gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
+    else
+        gtk_tooltips_set_tip (tooltips, widget, tip, tip);
+}

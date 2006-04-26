@@ -14,6 +14,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/mooprefs.h"
@@ -201,12 +202,10 @@ static gboolean      moo_glade_xml_build        (MooGladeXML    *xml,
 
 static gboolean      create_child               (MooGladeXML    *xml,
                                                  GtkWidget      *parent,
-                                                 Child          *child,
-                                                 GtkTooltips    *tooltips);
+                                                 Child          *child);
 static void          set_special_props          (MooGladeXML    *xml,
                                                  GtkWidget      *widget,
-                                                 WidgetProps    *props,
-                                                 GtkTooltips    *tooltips);
+                                                 WidgetProps    *props);
 static void          set_custom_props           (MooGladeXML    *xml,
                                                  Widget         *node);
 static void          set_mnemonics              (MooGladeXML    *xml,
@@ -219,16 +218,13 @@ static void          connect_signals            (MooGladeXML    *xml,
                                                  Widget         *node);
 
 static GtkWidget    *create_widget              (MooGladeXML    *xml,
-                                                 Widget         *widget,
-                                                 GtkTooltips    *tooltips);
+                                                 Widget         *widget);
 static gboolean      create_children            (MooGladeXML    *xml,
                                                  Widget         *widget_node,
-                                                 GtkWidget      *widget,
-                                                 GtkTooltips    *tooltips);
+                                                 GtkWidget      *widget);
 static gboolean      pack_children              (MooGladeXML    *xml,
                                                  Widget         *widget_node,
-                                                 GtkWidget      *widget,
-                                                 GtkTooltips    *tooltips);
+                                                 GtkWidget      *widget);
 static GtkWidget    *moo_glade_xml_create_widget(MooGladeXML    *xml,
                                                  Widget         *node,
                                                  GtkWidget      *widget);
@@ -241,8 +237,6 @@ moo_glade_xml_build (MooGladeXML    *xml,
                      Widget         *widget_node,
                      GtkWidget      *widget)
 {
-    GtkTooltips *tooltips;
-
     if (widget)
     {
         if (!widget_node->type)
@@ -259,24 +253,19 @@ moo_glade_xml_build (MooGladeXML    *xml,
     moo_glade_xml_add_widget (xml, widget_node->id, widget);
     widget_node->widget = widget;
 
-    tooltips = gtk_tooltips_new ();
-    gtk_object_sink (g_object_ref (tooltips));
-
-    if (!create_children (xml, widget_node, widget, tooltips))
+    if (!create_children (xml, widget_node, widget))
         goto error;
 
-    set_special_props (xml, widget, widget_node->props, tooltips);
+    set_special_props (xml, widget, widget_node->props);
     set_custom_props (xml, widget_node);
     set_mnemonics (xml, widget_node);
     set_default (xml, widget_node);
     set_focus (xml, widget_node);
     connect_signals (xml, widget_node);
 
-    g_object_unref (tooltips);
     return TRUE;
 
 error:
-    g_object_unref (tooltips);
     gtk_widget_destroy (widget);
     return FALSE;
 }
@@ -526,8 +515,7 @@ connect_signals (MooGladeXML    *xml,
 
 static GtkWidget*
 create_widget (MooGladeXML    *xml,
-               Widget         *widget_node,
-               GtkTooltips    *tooltips)
+               Widget         *widget_node)
 {
     GtkWidget *widget;
 
@@ -535,7 +523,7 @@ create_widget (MooGladeXML    *xml,
 
     moo_glade_xml_add_widget (xml, widget_node->id, widget);
 
-    if (!create_children (xml, widget_node, widget, tooltips))
+    if (!create_children (xml, widget_node, widget))
     {
         gtk_widget_destroy (widget);
         return NULL;
@@ -549,20 +537,13 @@ create_widget (MooGladeXML    *xml,
 static void
 set_special_props (MooGladeXML    *xml,
                    GtkWidget      *widget,
-                   WidgetProps    *props,
-                   GtkTooltips    *tooltips)
+                   WidgetProps    *props)
 {
     if (props->visible)
         gtk_widget_show (widget);
 
     if (props->mask & PROP_TOOLTIP)
-    {
-        g_object_set_data_full (G_OBJECT (widget), "moo-glade-tooltips",
-                                g_object_ref (tooltips), g_object_unref);
-        gtk_tooltips_set_tip (tooltips, widget,
-                              props->tooltip,
-                              props->tooltip);
-    }
+        moo_widget_set_tooltip (widget, props->tooltip);
 
     if (props->mask & PROP_ENABLE_TOOLTIPS)
     {
@@ -722,27 +703,25 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
 static gboolean
 create_children (MooGladeXML    *xml,
                  Widget         *widget_node,
-                 GtkWidget      *widget,
-                 GtkTooltips    *tooltips)
+                 GtkWidget      *widget)
 {
     GSList *l;
 
     for (l = widget_node->children; l != NULL; l = l->next)
     {
         Child *child = l->data;
-        if (!create_child (xml, widget, child, tooltips))
+        if (!create_child (xml, widget, child))
             return FALSE;
     }
 
-    return pack_children (xml, widget_node, widget, tooltips);
+    return pack_children (xml, widget_node, widget);
 }
 
 
 static gboolean
 create_child (MooGladeXML    *xml,
               GtkWidget      *parent,
-              Child          *child,
-              GtkTooltips    *tooltips)
+              Child          *child)
 {
     GtkWidget *widget = NULL;
 
@@ -781,7 +760,7 @@ create_child (MooGladeXML    *xml,
 
             if (!widget)
             {
-                widget = create_widget (xml, child->widget, tooltips);
+                widget = create_widget (xml, child->widget);
                 g_return_val_if_fail (widget != NULL, FALSE);
                 gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (real_parent), widget);
             }
@@ -805,14 +784,14 @@ create_child (MooGladeXML    *xml,
                                        &child->widget->props->params[i].value);
         }
 
-        if (!create_children (xml, child->widget, widget, tooltips))
+        if (!create_children (xml, child->widget, widget))
             return FALSE;
 
-        set_special_props (xml, widget, child->widget->props, tooltips);
+        set_special_props (xml, widget, child->widget->props);
     }
     else
     {
-        widget = create_widget (xml, child->widget, tooltips);
+        widget = create_widget (xml, child->widget);
         g_return_val_if_fail (widget != NULL, FALSE);
     }
 
@@ -826,8 +805,7 @@ create_child (MooGladeXML    *xml,
 static gboolean
 pack_children (MooGladeXML    *xml,
                Widget         *parent_node,
-               GtkWidget      *parent,
-               GtkTooltips    *tooltips)
+               GtkWidget      *parent)
 {
     GSList *l;
 
@@ -926,7 +904,7 @@ pack_children (MooGladeXML    *xml,
                         &child->props->params[i].value);
         }
 
-        set_special_props (xml, widget, child->widget->props, tooltips);
+        set_special_props (xml, widget, child->widget->props);
         set_custom_props (xml, child->widget);
     }
 
