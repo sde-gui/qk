@@ -24,6 +24,11 @@
 
 
 #define CHAR_IS_ASCII(ch__) ((guint8) ch__ < 128)
+#define CHAR_IS_DIGIT(c__) ((c__) >= '0' && (c__) <= '9')
+#define CHAR_IS_OCTAL(c__) ((c__) >= '0' && (c__) <= '7')
+#define CHAR_IS_HEX(c__) (((c__) >= '0' && (c__) <= '9') || ((c__) >= 'A' && (c__) <= 'F') || ((c__) >= 'a' && (c__) <= 'f'))
+#define CHAR_IS_WORD(c__) ((c__) == '_' || g_ascii_isalnum (c__))
+#define CHAR_IS_SPACE(c__) ((c__) == ' ' || (c__) == '\t')
 
 #define ASCII_TOLOWER(c__)                              \
     (g_ascii_isupper (c__) ? (c__) - 'A' + 'a' : (c__))

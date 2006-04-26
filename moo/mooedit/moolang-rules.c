@@ -843,8 +843,26 @@ moo_rule_include_new (MooContext *ctx)
 /* Special sequences
  */
 
-#if 0
-#define ISDIGIT(c__) (c__ >= '0' && c__ <= '9')
+inline static char *
+find_digit (char *string,
+            char *limit,
+            char *line_start)
+{
+    while (TRUE)
+    {
+        while (string <= limit && !CHAR_IS_DIGIT (*string))
+            string++;
+
+        if (string > limit)
+            return NULL;
+
+        if (string == line_start || !CHAR_IS_WORD (string[-1]))
+            return string;
+    }
+
+    return NULL;
+}
+
 
 static MooRule*
 rule_int_match (MooRule        *rule,
@@ -852,48 +870,138 @@ rule_int_match (MooRule        *rule,
                 MatchResult    *result,
                 MatchFlags      flags)
 {
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
     if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
     {
-        if (ISDIGIT(data->start[0]))
+        start = find_digit (start, limit, data->line_string);
+
+        if (!start)
+            return NULL;
+
+        for (i = 1; CHAR_IS_DIGIT (start[i]); ++i) ;
+
+        if (!CHAR_IS_WORD (start[i]))
         {
-            guint i;
-            for (i = 1; ISDIGIT(data->start[i]); ++i) ;
-            result->match_start = data->start;
-            result->match_end = result->match_start + i;
+            result->match_start = start;
+            result->match_end = start + i;
+            result->match_len = i;
+            result->match_offset = -1;
+            return rule;
+        }
+
+        start = start + i;
+    }
+
+    return NULL;
+}
+
+
+MooRule*
+moo_rule_int_new (MooRuleFlags   flags,
+                  const char    *style)
+{
+    MooRule *rule = rule_new (flags, style, rule_int_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+
+    rule->description = g_strdup ("INT");
+
+    return rule;
+}
+
+
+static MooRule*
+rule_float_match (MooRule        *rule,
+                  MatchData      *data,
+                  MatchResult    *result,
+                  MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && !CHAR_IS_DIGIT (*start) && *start != '.')
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        if (*start == '.')
+        {
+            if (start > data->line_string && CHAR_IS_DIGIT (start[-1]))
+            {
+                do start++;
+                while (start <= limit && CHAR_IS_DIGIT (*start));
+                continue;
+            }
+
+            if (!CHAR_IS_DIGIT (start[1]))
+            {
+                start++;
+                continue;
+            }
+
+            for (i = 2; CHAR_IS_DIGIT (start[i]); ++i) ;
+
+            if (CHAR_IS_WORD (start[i]))
+            {
+                start = start + i;
+                continue;
+            }
+
+            result->match_start = start;
+            result->match_end = start + i;
             result->match_len = i;
             result->match_offset = -1;
             return rule;
         }
         else
         {
-            return NULL;
+            if (start > data->line_string && CHAR_IS_WORD (start[-1]))
+            {
+                do start++;
+                while (start <= limit && CHAR_IS_DIGIT (*start));
+                continue;
+            }
+
+            for (i = 1; CHAR_IS_DIGIT (start[i]); ++i) ;
+
+            if (start[i] != '.')
+            {
+                start = start + i;
+                continue;
+            }
+
+            for (i = i + 1; CHAR_IS_DIGIT (start[i]); ++i) ;
+
+            if (CHAR_IS_WORD (start[i]))
+            {
+                start = start + i;
+                continue;
+            }
+
+            result->match_start = start;
+            result->match_end = start + i;
+            result->match_len = i;
+            result->match_offset = -1;
+            return rule;
         }
     }
-    else
-    {
-        guint i;
 
-        for (i = 0; data->start[i] && !ISDIGIT(data->start[i]); ++i) ;
-
-        if (!data->start[i])
-            return NULL;
-
-        result->match_start = data->start + i;
-
-        for ( ; ISDIGIT(data->start[i]); ++i) ;
-
-        result->match_end = result->match_start + i;
-        result->match_len = result->match_end - result->match_start;
-        result->match_offset = -1;
-
-        return rule;
-    }
+    return NULL;
 }
-#endif
 
 
-#define PATTERN_INT         "[0-9]*"
-#define PATTERN_FLOAT       "[0-9]*\\.[0-9]*"
 #define PATTERN_OCTAL       "0[0-7]+"
 #define PATTERN_HEX         "0x[0-9A-Fa-f]+"
 #define PATTERN_ESC_CHAR    "\\\\([abefnrtv\"'?\\\\]|0[0-7]*|x[0-9A-Fa-f])"
@@ -903,59 +1011,445 @@ rule_int_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_int_new (MooRuleFlags        flags,
-                  const char         *style)
-{
-    return moo_rule_regex_new (PATTERN_INT, TRUE, 0, 0, flags, style);
-}
-
-MooRule*
 moo_rule_float_new (MooRuleFlags        flags,
                     const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_FLOAT, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_float_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+
+    rule->description = g_strdup ("FLOAT");
+
+    return rule;
 }
+
+
+static MooRule*
+rule_octal_match (MooRule        *rule,
+                  MatchData      *data,
+                  MatchResult    *result,
+                  MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && !CHAR_IS_DIGIT (*start))
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
+             *start != '0')
+        {
+            while (start <= limit && CHAR_IS_DIGIT (*start))
+                start++;
+            continue;
+        }
+
+        for (i = 1; CHAR_IS_OCTAL (start[i]); ++i) ;
+
+        if (CHAR_IS_WORD (start[i]) || i < 2)
+        {
+            start = start + i;
+            continue;
+        }
+
+        result->match_start = start;
+        result->match_end = start + i;
+        result->match_len = i;
+        result->match_offset = -1;
+        return rule;
+    }
+
+    return NULL;
+}
+
 
 MooRule*
 moo_rule_octal_new (MooRuleFlags        flags,
                     const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_OCTAL, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_octal_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+
+    rule->description = g_strdup ("OCTAL");
+
+    return rule;
 }
+
+
+static MooRule*
+rule_hex_match (MooRule        *rule,
+                MatchData      *data,
+                MatchResult    *result,
+                MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && *start != '0')
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
+             (start[1] != 'x' && start[1] != 'X'))
+        {
+            start += 2;
+            continue;
+        }
+
+        for (i = 2; CHAR_IS_HEX (start[i]); ++i) ;
+
+        if (CHAR_IS_WORD (start[i]) || i < 2)
+        {
+            start = start + i;
+            continue;
+        }
+
+        result->match_start = start;
+        result->match_end = start + i;
+        result->match_len = i;
+        result->match_offset = -1;
+        return rule;
+    }
+
+    return NULL;
+}
+
 
 MooRule*
 moo_rule_hex_new (MooRuleFlags        flags,
                   const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_HEX, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_hex_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+
+    rule->description = g_strdup ("HEX");
+
+    return rule;
 }
+
+
+static MooRule*
+rule_escaped_char_match (MooRule        *rule,
+                         MatchData      *data,
+                         MatchResult    *result,
+                         MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && *start != '\\')
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        switch (start[1])
+        {
+            case '\\':
+            case 'a':
+            case 'b':
+            case 'e':
+            case 'f':
+            case 'n':
+            case 'r':
+            case 't':
+            case 'v':
+            case '\"':
+            case '\'':
+            case '?':
+                result->match_start = start;
+                result->match_end = start + 2;
+                result->match_len = 2;
+                result->match_offset = -1;
+                return rule;
+
+            case '0':
+                for (i = 2; CHAR_IS_OCTAL (start[i]); ++i) ;
+
+                result->match_start = start;
+                result->match_end = start + i;
+                result->match_len = i;
+                result->match_offset = -1;
+                return rule;
+
+            case 'x':
+            case 'X':
+                for (i = 2; CHAR_IS_HEX (start[i]); ++i) ;
+
+                result->match_start = start;
+                result->match_end = start + i;
+                result->match_len = i;
+                result->match_offset = -1;
+                return rule;
+        }
+
+        start++;
+    }
+
+    return NULL;
+}
+
 
 MooRule*
 moo_rule_escaped_char_new (MooRuleFlags        flags,
                            const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_ESC_CHAR, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_escaped_char_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+    rule->description = g_strdup ("ESCAPED CHAR");
+    return rule;
 }
+
+
+static MooRule*
+rule_c_char_match (MooRule        *rule,
+                   MatchData      *data,
+                   MatchResult    *result,
+                   MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && *start != '\'')
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        if (start[1] != '\\')
+        {
+            if (start[2] != '\'')
+            {
+                start = start + 2;
+                continue;
+            }
+
+            result->match_start = start;
+            result->match_end = start + 3;
+            result->match_len = 3;
+            result->match_offset = -1;
+            return rule;
+        }
+
+        switch (start[2])
+        {
+            case '\\':
+            case 'a':
+            case 'b':
+            case 'e':
+            case 'f':
+            case 'n':
+            case 'r':
+            case 't':
+            case 'v':
+            case '\"':
+            case '\'':
+            case '?':
+                if (start[3] != '\'')
+                {
+                    start = start + 3;
+                    continue;
+                }
+
+                result->match_start = start;
+                result->match_end = start + 4;
+                result->match_len = 4;
+                result->match_offset = -1;
+                return rule;
+
+            case '0':
+                for (i = 3; CHAR_IS_OCTAL (start[i]); ++i) ;
+
+                if (start[i] != '\'')
+                {
+                    start = start + i;
+                    continue;
+                }
+
+                result->match_start = start;
+                result->match_end = start + i + 1;
+                result->match_len = i + 1;
+                result->match_offset = -1;
+                return rule;
+
+            case 'x':
+            case 'X':
+                for (i = 3; CHAR_IS_HEX (start[i]); ++i) ;
+
+                if (start[i] != '\'')
+                {
+                    start = start + i;
+                    continue;
+                }
+
+                result->match_start = start;
+                result->match_end = start + i + 1;
+                result->match_len = i + 1;
+                result->match_offset = -1;
+                return rule;
+        }
+
+        start++;
+    }
+
+    return NULL;
+}
+
 
 MooRule*
 moo_rule_c_char_new (MooRuleFlags        flags,
                      const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_C_CHAR, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_c_char_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+    rule->description = g_strdup ("C CHAR");
+    return rule;
 }
+
+
+static MooRule*
+rule_whitespace_match (MooRule        *rule,
+                       MatchData      *data,
+                       MatchResult    *result,
+                       G_GNUC_UNUSED MatchFlags flags)
+{
+    guint i;
+    char *start = data->start;
+
+    if (!CHAR_IS_SPACE (*start))
+        return NULL;
+
+    for (i = 1; CHAR_IS_SPACE (start[i]); ++i) ;
+
+    result->match_start = start;
+    result->match_end = start + i;
+    result->match_len = i;
+    result->match_offset = -1;
+    return rule;
+}
+
 
 MooRule*
 moo_rule_whitespace_new (MooRuleFlags        flags,
                          const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_WHITESPACE, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_whitespace_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+    rule->description = g_strdup ("WHITESPACE");
+    return rule;
 }
+
+
+static MooRule*
+rule_identifier_match (MooRule        *rule,
+                       MatchData      *data,
+                       MatchResult    *result,
+                       MatchFlags      flags)
+{
+    guint i;
+    char *limit = data->limit;
+    char *start = data->start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    while (start <= limit)
+    {
+        while (start <= limit && !CHAR_IS_WORD (*start))
+            start++;
+
+        if (start > limit)
+            return NULL;
+
+        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
+             CHAR_IS_DIGIT (*start))
+        {
+            while (start <= limit && CHAR_IS_WORD (*start))
+                start++;
+            continue;
+        }
+
+        for (i = 1; CHAR_IS_WORD (start[i]); ++i) ;
+
+        result->match_start = start;
+        result->match_end = start + i;
+        result->match_len = i;
+        result->match_offset = -1;
+        return rule;
+    }
+
+    return NULL;
+}
+
 
 MooRule*
 moo_rule_identifier_new (MooRuleFlags        flags,
                          const char         *style)
 {
-    return moo_rule_regex_new (PATTERN_IDENTIFIER, TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_identifier_match, NULL);
+    g_return_val_if_fail (rule != NULL, NULL);
+    rule->description = g_strdup ("WHITESPACE");
+    return rule;
+}
+
+
+static MooRule*
+rule_line_continue_match (MooRule        *rule,
+                          MatchData      *data,
+                          MatchResult    *result,
+                          MatchFlags      flags)
+{
+    char *limit = data->limit;
+    char *start;
+
+    if (flags & MATCH_START_ONLY)
+        limit = start;
+
+    g_assert (data->line_string_len >= 0);
+
+    if (data->line_string_len && data->line_string[data->line_string_len - 1] == '\\')
+    {
+        start = data->line_string + data->line_string_len - 1;
+
+        if (start > limit)
+            return NULL;
+
+        result->match_start = start;
+        result->match_end = start + 1;
+        result->match_len = 1;
+        result->match_offset = -1;
+        return rule;
+    }
+
+    return NULL;
 }
 
 
@@ -963,8 +1457,9 @@ MooRule*
 moo_rule_line_continue_new (MooRuleFlags        flags,
                             const char         *style)
 {
-    MooRule *rule = moo_rule_regex_new ("\\\\$", TRUE, 0, 0, flags, style);
+    MooRule *rule = rule_new (flags, style, rule_line_continue_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
+    rule->description = g_strdup ("LINE_CONTINUE");
     rule->include_eol = TRUE;
     return rule;
 }
