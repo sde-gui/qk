@@ -595,7 +595,7 @@ do_write (MooEdit        *edit,
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
-    if (encoding && (!strcmp (encoding, "UTF-8") || !strcmp (encoding, "UTF8")))
+    if (encoding && (!g_ascii_strcasecmp (encoding, "UTF-8") || !g_ascii_strcasecmp (encoding, "UTF8")))
         encoding = NULL;
 
     file = g_io_channel_new_file (filename, "w", error);
