@@ -35,7 +35,6 @@ struct _MooHistoryListPrivate {
     MooMenuMgr *mgr;
     gboolean prefs_loaded;
     gboolean loading;
-    GtkTooltips *tooltips;
     char *user_id;
 
     MooHistoryDisplayFunc display_func;
@@ -169,8 +168,6 @@ moo_history_list_init (MooHistoryList *list)
                               G_CALLBACK (menu_item_activated), list);
 
     list->priv->compare_func = default_compare_func;
-    list->priv->tooltips = gtk_tooltips_new ();
-    gtk_object_sink (g_object_ref (list->priv->tooltips));
 }
 
 
@@ -228,7 +225,6 @@ moo_history_list_finalize (GObject *object)
     g_object_unref (list->priv->store);
     g_free (list->priv->user_id);
     g_object_unref (list->priv->mgr);
-    g_object_unref (list->priv->tooltips);
 
     g_free (list->priv);
 
@@ -554,7 +550,7 @@ moo_history_list_set_compare_func  (MooHistoryList *list,
 }
 
 
-char*
+char *
 moo_history_list_display_basename (const char     *filename,
                                    G_GNUC_UNUSED gpointer data)
 {
@@ -569,6 +565,15 @@ moo_history_list_display_basename (const char     *filename,
 
     g_free (basename);
     return display;
+}
+
+
+char *
+moo_history_list_display_filename (const char *filename,
+                                   G_GNUC_UNUSED gpointer data)
+{
+    g_return_val_if_fail (filename != NULL, NULL);
+    return g_filename_display_name (filename);
 }
 
 

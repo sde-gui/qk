@@ -92,6 +92,8 @@ void             moo_history_list_set_compare_func  (MooHistoryList *list,
                                                      gpointer        data);
 char            *moo_history_list_display_basename  (const char     *entry,
                                                      gpointer        data);
+char            *moo_history_list_display_filename  (const char     *entry,
+                                                     gpointer        data);
 
 gboolean         moo_history_list_is_empty          (MooHistoryList *list);
 guint            moo_history_list_n_user_entries    (MooHistoryList *list);
