@@ -1740,6 +1740,10 @@ moo_bind_bool_property (gpointer            target,
                         const char         *source_prop,
                         gboolean            invert)
 {
+    g_return_val_if_fail (G_IS_OBJECT (target), 0);
+    g_return_val_if_fail (G_IS_OBJECT (source), 0);
+    g_return_val_if_fail (target_prop && source_prop, 0);
+
     if (invert)
         return moo_add_property_watch (target, target_prop, source, source_prop,
                                        moo_invert_boolean, NULL, NULL);
@@ -1779,9 +1783,11 @@ moo_bind_sensitive (GtkWidget          *btn,
                     gboolean            invert)
 {
     int i;
+
+    g_return_if_fail (G_IS_OBJECT (btn));
+
     for (i = 0; i < num_dependent; ++i)
-        moo_bind_bool_property (G_OBJECT (dependent[i]), "sensitive",
-                                G_OBJECT (btn), "active", invert);
+        moo_bind_bool_property (dependent[i], "sensitive", btn, "active", invert);
 }
 
 
