@@ -22,6 +22,7 @@
 #include "mooedit/mootextbox.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundomanager.h"
 #include "mooutils/mooentry.h"
 #include <gtk/gtk.h>
@@ -81,6 +82,7 @@ static void     moo_text_view_size_allocate (GtkWidget          *widget,
 static void     moo_text_view_remove        (GtkContainer       *container,
                                              GtkWidget          *child);
 
+static void     moo_text_view_copy_clipboard (GtkTextView       *text_view);
 static void     moo_text_view_cut_clipboard (GtkTextView        *text_view);
 static void     moo_text_view_paste_clipboard (GtkTextView      *text_view);
 static void     moo_text_view_populate_popup(GtkTextView        *text_view,
@@ -251,6 +253,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     text_view_class->move_cursor = _moo_text_view_move_cursor;
     text_view_class->page_horizontally = _moo_text_view_page_horizontally;
     text_view_class->delete_from_cursor = _moo_text_view_delete_from_cursor;
+    text_view_class->copy_clipboard = moo_text_view_copy_clipboard;
     text_view_class->cut_clipboard = moo_text_view_cut_clipboard;
     text_view_class->paste_clipboard = moo_text_view_paste_clipboard;
     text_view_class->populate_popup = moo_text_view_populate_popup;
@@ -727,8 +730,6 @@ moo_text_view_finalize (GObject *object)
 
     g_slist_free (view->priv->line_marks);
 
-    /* XXX free view->priv->targets */
-
     g_free (view->priv);
     view->priv = NULL;
 
@@ -910,26 +911,6 @@ moo_text_view_undo (MooTextView    *view)
     {
         return FALSE;
     }
-}
-
-
-static void
-moo_text_view_cut_clipboard (GtkTextView *text_view)
-{
-    MooTextBuffer *buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
-    moo_text_buffer_begin_interactive_action (buffer);
-    GTK_TEXT_VIEW_CLASS(moo_text_view_parent_class)->cut_clipboard (text_view);
-    moo_text_buffer_end_interactive_action (buffer);
-}
-
-
-static void
-moo_text_view_paste_clipboard (GtkTextView  *text_view)
-{
-    MooTextBuffer *buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
-    moo_text_buffer_begin_interactive_action (buffer);
-    GTK_TEXT_VIEW_CLASS(moo_text_view_parent_class)->paste_clipboard (text_view);
-    moo_text_buffer_end_interactive_action (buffer);
 }
 
 
@@ -1594,6 +1575,24 @@ moo_text_view_set_current_line_color (MooTextView    *view,
 }
 
 
+/********************************************************************/
+/* Clipboard
+ */
+
+enum {
+    TARGET_TEXT,
+    TARGET_MOO_TEXT_VIEW
+};
+
+static const GtkTargetEntry targets[] = {
+    { (char*) "STRING", 0, TARGET_TEXT },
+    { (char*) "TEXT",   0, TARGET_TEXT },
+    { (char*) "COMPOUND_TEXT", 0, TARGET_TEXT },
+    { (char*) "UTF8_STRING", 0, TARGET_TEXT },
+    { (char*) "MOO_TEXT_VIEW", 0, TARGET_MOO_TEXT_VIEW }
+};
+
+
 static void
 add_selection_clipboard (MooTextView *view)
 {
@@ -1614,13 +1613,19 @@ remove_selection_clipboard (MooTextView *view)
 static void
 clipboard_get_selection (G_GNUC_UNUSED GtkClipboard *clipboard,
                          GtkSelectionData *selection_data,
-                         G_GNUC_UNUSED guint info,
-                         gpointer          data)
+                         guint info,
+                         gpointer data)
 {
     MooTextView *view = data;
     GtkTextIter start, end;
 
-    if (gtk_text_buffer_get_selection_bounds (get_buffer (view), &start, &end))
+    if (info == TARGET_MOO_TEXT_VIEW)
+    {
+        moo_selection_data_set_pointer (selection_data,
+                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
+                                        data);
+    }
+    else if (gtk_text_buffer_get_selection_bounds (get_buffer (view), &start, &end))
     {
         char *text = gtk_text_iter_get_text (&start, &end);
         gtk_selection_data_set_text (selection_data, text, -1);
@@ -1629,15 +1634,8 @@ clipboard_get_selection (G_GNUC_UNUSED GtkClipboard *clipboard,
 }
 
 
-static const GtkTargetEntry targets[] = {
-    { (char*) "STRING", 0, 0 },
-    { (char*) "TEXT",   0, 0 },
-    { (char*) "COMPOUND_TEXT", 0, 0 },
-    { (char*) "UTF8_STRING", 0, 0 }
-};
-
 static void
-clear_clipboard (MooTextView *view)
+clear_primary (MooTextView *view)
 {
     GtkClipboard *clipboard;
 
@@ -1667,7 +1665,7 @@ selection_changed (MooTextView   *view,
                                       clipboard_get_selection,
                                       NULL, G_OBJECT (view));
     else
-        clear_clipboard (view);
+        clear_primary (view);
 }
 
 
@@ -1689,7 +1687,7 @@ set_manage_clipboard (MooTextView    *view,
         }
         else
         {
-            clear_clipboard (view);
+            clear_primary (view);
             add_selection_clipboard (view);
         }
     }
@@ -1697,6 +1695,181 @@ set_manage_clipboard (MooTextView    *view,
     g_object_notify (G_OBJECT (view), "manage-clipboard");
 }
 
+
+static void
+get_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
+               GtkSelectionData *selection_data,
+               guint info,
+               gpointer view)
+{
+    char **contents;
+    char *text;
+
+    if (info == TARGET_MOO_TEXT_VIEW)
+    {
+        moo_selection_data_set_pointer (selection_data,
+                                        gdk_atom_intern ("MOO_TEXT_VIEW", FALSE),
+                                        view);
+        return;
+    }
+
+    contents = g_object_get_data (view, "moo-text-view-clipboard");
+    g_return_if_fail (contents != NULL);
+
+    text = g_strjoinv ("", contents);
+    gtk_selection_data_set_text (selection_data, text, -1);
+    g_free (text);
+}
+
+
+static void
+clear_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
+                 gpointer view)
+{
+    g_object_set_data (view, "moo-text-view-clipboard", NULL);
+}
+
+
+static void
+moo_text_view_cut_or_copy (GtkTextView *text_view,
+                           gboolean     delete)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+    char *text;
+    char **pieces;
+    GtkClipboard *clipboard;
+
+    buffer = gtk_text_view_get_buffer (text_view);
+
+    if (!gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+        return;
+
+    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    pieces = g_strsplit (text, MOO_TEXT_UNKNOWN_CHAR_S, 0);
+    g_object_set_data_full (G_OBJECT (text_view), "moo-text-view-clipboard",
+                            pieces, (GDestroyNotify) g_strfreev);
+    g_free (text);
+
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view),
+                                          GDK_SELECTION_CLIPBOARD);
+    gtk_clipboard_set_with_owner (clipboard, targets, G_N_ELEMENTS (targets),
+                                  get_clipboard, clear_clipboard,
+                                  G_OBJECT (text_view));
+
+    if (delete)
+    {
+        moo_text_buffer_begin_interactive_action (MOO_TEXT_BUFFER (buffer));
+        gtk_text_buffer_delete (buffer, &start, &end);
+        moo_text_buffer_end_interactive_action (MOO_TEXT_BUFFER (buffer));
+        gtk_text_view_scroll_mark_onscreen (text_view,
+                                            gtk_text_buffer_get_insert (buffer));
+    }
+}
+
+
+static void
+moo_text_view_copy_clipboard (GtkTextView *text_view)
+{
+    moo_text_view_cut_or_copy (text_view, FALSE);
+}
+
+
+static void
+moo_text_view_cut_clipboard (GtkTextView *text_view)
+{
+    moo_text_view_cut_or_copy (text_view, TRUE);
+}
+
+
+static void
+paste_moo_text_view_content (GtkTextView *target)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+    MooTextView *source;
+    GtkSelectionData *data;
+    GtkClipboard *clipboard;
+    GdkAtom atom;
+    char **contents, **p;
+
+    buffer = gtk_text_view_get_buffer (target);
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (target), GDK_SELECTION_CLIPBOARD);
+    atom = gdk_atom_intern ("MOO_TEXT_VIEW", FALSE);
+
+    data = gtk_clipboard_wait_for_contents (clipboard, atom);
+    g_return_if_fail (data != NULL);
+
+    source = moo_selection_data_get_pointer (data, atom);
+    g_return_if_fail (source != NULL);
+
+    contents = g_object_get_data (G_OBJECT (source), "moo-text-view-clipboard");
+
+    if (!contents)
+        return;
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+        gtk_text_buffer_delete (buffer, &start, &end);
+
+    for (p = contents; *p; ++p)
+    {
+        if (p != contents)
+            moo_text_view_insert_placeholder (MOO_TEXT_VIEW (target), &end, NULL);
+        gtk_text_buffer_insert (buffer, &end, *p, -1);
+    }
+}
+
+
+static void
+paste_text (GtkTextView *text_view,
+            const char  *text)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    g_return_if_fail (text != NULL);
+
+    buffer = gtk_text_view_get_buffer (text_view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+        gtk_text_buffer_delete (buffer, &start, &end);
+
+    gtk_text_buffer_insert (buffer, &end, text, -1);
+}
+
+
+static void
+moo_text_view_paste_clipboard (GtkTextView  *text_view)
+{
+    MooTextBuffer *buffer;
+    GtkClipboard *clipboard;
+    char *text;
+
+    buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
+    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view), GDK_SELECTION_CLIPBOARD);
+
+    moo_text_buffer_begin_interactive_action (buffer);
+
+    if (gtk_clipboard_wait_is_target_available (clipboard,
+                                                gdk_atom_intern ("MOO_TEXT_VIEW", FALSE)))
+    {
+        paste_moo_text_view_content (text_view);
+    }
+    else if ((text = gtk_clipboard_wait_for_text (clipboard)))
+    {
+        paste_text (text_view, text);
+        g_free (text);
+    }
+
+    moo_text_buffer_end_interactive_action (buffer);
+    gtk_text_view_scroll_mark_onscreen (text_view,
+                                        gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (buffer)));
+}
+
+
+/********************************************************************/
+/* Drawing and stuff
+ */
 
 static void
 update_line_mark_width (MooTextView *view)
@@ -1795,7 +1968,7 @@ moo_text_view_unrealize (GtkWidget *widget)
 
     if (view->priv->manage_clipboard)
     {
-        clear_clipboard (view);
+        clear_primary (view);
         add_selection_clipboard (view);
     }
 
