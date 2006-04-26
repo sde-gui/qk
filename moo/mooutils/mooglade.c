@@ -96,6 +96,8 @@ struct _WidgetProps {
     GParameter *params;
     guint       n_params;
 
+    GPtrArray  *custom_props;
+
     PropMask    mask;
     gboolean    visible;
     int         response_id;
@@ -134,6 +136,8 @@ struct _MooGladeXMLPrivate {
 
     MooGladeSignalFunc signal_func;
     gpointer signal_func_data;
+    MooGladePropFunc prop_func;
+    gpointer prop_func_data;
 };
 
 typedef struct {
@@ -163,7 +167,6 @@ static void          child_free                 (Child          *child);
 static WidgetProps  *widget_props_new           (MooMarkupNode  *node,
                                                  GType           widget_type,
                                                  GHashTable     *add_props,
-                                                 gboolean        ignore_unknown,
                                                  gboolean        ignore_errors);
 static void          widget_props_free          (WidgetProps    *props);
 static PackingProps *packing_props_new          (MooMarkupNode  *node,
@@ -204,6 +207,8 @@ static void          set_special_props          (MooGladeXML    *xml,
                                                  GtkWidget      *widget,
                                                  WidgetProps    *props,
                                                  GtkTooltips    *tooltips);
+static void          set_custom_props           (MooGladeXML    *xml,
+                                                 Widget         *node);
 static void          set_mnemonics              (MooGladeXML    *xml,
                                                  Widget         *node);
 static gboolean      set_default                (MooGladeXML    *xml,
@@ -261,6 +266,7 @@ moo_glade_xml_build (MooGladeXML    *xml,
         goto error;
 
     set_special_props (xml, widget, widget_node->props, tooltips);
+    set_custom_props (xml, widget_node);
     set_mnemonics (xml, widget_node);
     set_default (xml, widget_node);
     set_focus (xml, widget_node);
@@ -363,6 +369,57 @@ set_focus (MooGladeXML    *xml,
     }
 
     return FALSE;
+}
+
+
+static void
+set_moo_sensitive (MooGladeXML *xml,
+                   GtkWidget   *widget,
+                   const char  *value)
+{
+    GtkWidget *btn;
+    gboolean invert = FALSE;
+
+    if (value[0] == '!')
+    {
+        value = value + 1;
+        invert = TRUE;
+    }
+
+    btn = moo_glade_xml_get_widget (xml, value);
+    g_return_if_fail (GTK_IS_TOGGLE_BUTTON (btn));
+
+    moo_bind_sensitive (btn, &widget, 1, invert);
+}
+
+
+static void
+set_custom_props (MooGladeXML    *xml,
+                  Widget         *node)
+{
+    guint i;
+
+    if (!node->props->custom_props)
+        return;
+
+    for (i = 0; i < node->props->custom_props->len; i += 2)
+    {
+        const char *prop, *value;
+
+        prop = node->props->custom_props->pdata[i];
+        value = node->props->custom_props->pdata[i+1];
+
+        if (!strcmp (prop, "moo-sensitive"))
+        {
+            set_moo_sensitive (xml, node->widget, value);
+        }
+        else if (!xml->priv->prop_func ||
+                  !xml->priv->prop_func (xml, node->id, node->widget,
+                                         prop, value, xml->priv->prop_func_data))
+        {
+            g_message ("%s: unknown property '%s'", G_STRLOC, prop);
+        }
+    }
 }
 
 
@@ -656,6 +713,8 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
                                    &props->params[i].value);
     }
 
+    g_return_val_if_fail (widget != NULL, NULL);
+
     return widget;
 }
 
@@ -758,6 +817,7 @@ create_child (MooGladeXML    *xml,
     }
 
     child->widget->widget = widget;
+    set_custom_props (xml, child->widget);
 
     return TRUE;
 }
@@ -867,6 +927,7 @@ pack_children (MooGladeXML    *xml,
         }
 
         set_special_props (xml, widget, child->widget->props, tooltips);
+        set_custom_props (xml, child->widget);
     }
 
     return TRUE;
@@ -964,6 +1025,13 @@ widget_props_free (WidgetProps *props)
     {
         if (props->params)
             moo_param_array_free (props->params, props->n_params);
+
+        if (props->custom_props)
+        {
+            g_ptr_array_foreach (props->custom_props, (GFunc) g_free, NULL);
+            g_ptr_array_free (props->custom_props, TRUE);
+        }
+
         g_free (props->tooltip);
         g_free (props->mnemonic_widget);
         g_free (props->label);
@@ -995,7 +1063,6 @@ widget_new (MooGladeXML    *xml,
     const char *id, *class_name;
     GType type;
     gboolean ignore_errors = FALSE;
-    gboolean ignore_unknown = FALSE;
 
     g_return_val_if_fail (NODE_IS_WIDGET (node), NULL);
 
@@ -1032,7 +1099,7 @@ widget_new (MooGladeXML    *xml,
 
     props = widget_props_new (node, type,
                               g_hash_table_lookup (xml->priv->props, id),
-                              ignore_unknown, ignore_errors);
+                              ignore_errors);
     g_return_val_if_fail (props != NULL, NULL);
 
     widget = g_new0 (Widget, 1);
@@ -1194,7 +1261,6 @@ widget_props_add (WidgetProps  *props,
                   GObjectClass *klass,
                   const char   *name,
                   const char   *value,
-                  gboolean      ignore_unknown,
                   gboolean      ignore_errors)
 {
     GParameter param = {NULL, {0, {{0}, {0}}}};
@@ -1291,9 +1357,10 @@ widget_props_add (WidgetProps  *props,
 
         if (!param_spec)
         {
-            if (!ignore_unknown)
-                g_message ("%s: could not find property '%s'in class '%s'",
-                           G_STRLOC, name, G_OBJECT_CLASS_NAME (klass));
+            if (!props->custom_props)
+                props->custom_props = g_ptr_array_new ();
+            g_ptr_array_add (props->custom_props, g_strdelimit (g_strdup (name), "_", '-'));
+            g_ptr_array_add (props->custom_props, g_strdup (value));
         }
         else if (parse_property (param_spec, value, &param))
         {
@@ -1321,7 +1388,6 @@ widget_props_add_one (const char *name,
         GArray *params;
         GObjectClass *klass;
         gboolean result;
-        gboolean ignore_unknown;
         gboolean ignore_errors;
     } *data = user_data;
 
@@ -1330,7 +1396,6 @@ widget_props_add_one (const char *name,
 
     data->result = widget_props_add (data->props, data->params,
                                      data->klass, name, value,
-                                     data->ignore_unknown,
                                      data->ignore_errors);
 }
 
@@ -1339,7 +1404,6 @@ static WidgetProps*
 widget_props_new (MooMarkupNode  *node,
                   GType           type,
                   GHashTable     *add_props,
-                  gboolean        ignore_unknown,
                   gboolean        ignore_errors)
 {
     GArray *params;
@@ -1365,7 +1429,7 @@ widget_props_new (MooMarkupNode  *node,
             gboolean result;
 
             result = widget_props_add (props, params, klass,
-                                       name, value, ignore_unknown,
+                                       name, value,
                                        ignore_errors);
 
             if (!result)
@@ -1381,9 +1445,8 @@ widget_props_new (MooMarkupNode  *node,
             GArray *params;
             GObjectClass *klass;
             gboolean result;
-            gboolean ignore_unknown;
             gboolean ignore_errors;
-        } data = {props, params, klass, TRUE, ignore_unknown, ignore_errors};
+        } data = {props, params, klass, TRUE, ignore_errors};
 
         g_hash_table_foreach (add_props, (GHFunc) widget_props_add_one, &data);
 
@@ -2270,13 +2333,24 @@ void         moo_glade_xml_map_custom   (MooGladeXML    *xml,
 
 
 void
-moo_glade_xml_map_signal (MooGladeXML    *xml,
-                          MooGladeSignalFunc func,
-                          gpointer        data)
+moo_glade_xml_set_signal_func (MooGladeXML    *xml,
+                               MooGladeSignalFunc func,
+                               gpointer        data)
 {
     g_return_if_fail (xml != NULL);
     xml->priv->signal_func = func;
     xml->priv->signal_func_data = data;
+}
+
+
+void
+moo_glade_xml_set_prop_func (MooGladeXML    *xml,
+                             MooGladePropFunc func,
+                             gpointer        data)
+{
+    g_return_if_fail (xml != NULL);
+    xml->priv->prop_func = func;
+    xml->priv->prop_func_data = data;
 }
 
 

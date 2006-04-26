@@ -52,6 +52,12 @@ typedef gboolean   (*MooGladeSignalFunc)    (MooGladeXML    *xml,
                                              const char     *handler,
                                              const char     *object,
                                              gpointer        data);
+typedef gboolean   (*MooGladePropFunc)      (MooGladeXML    *xml,
+                                             const char     *widget_id,
+                                             GtkWidget      *widget,
+                                             const char     *property,
+                                             const char     *value,
+                                             gpointer        data);
 
 
 GType        moo_glade_xml_get_type         (void);
@@ -68,8 +74,11 @@ void         moo_glade_xml_map_custom       (MooGladeXML    *xml,
                                              const char     *id,
                                              MooGladeCreateFunc func,
                                              gpointer        data);
-void         moo_glade_xml_map_signal       (MooGladeXML    *xml,
+void         moo_glade_xml_set_signal_func  (MooGladeXML    *xml,
                                              MooGladeSignalFunc func,
+                                             gpointer        data);
+void         moo_glade_xml_set_prop_func    (MooGladeXML    *xml,
+                                             MooGladePropFunc func,
                                              gpointer        data);
 
 void         moo_glade_xml_set_property     (MooGladeXML    *xml,
