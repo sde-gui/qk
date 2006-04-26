@@ -35,7 +35,7 @@
 #define DEF_STYLE_OTHERS        "Others"
 #define DEF_STYLE_PREPROCESSOR  "Preprocessor"
 
-#define SCHEME_DEFAULT          "KDE"
+#define SCHEME_DEFAULT          "Default"
 
 #define SCHEME_ELM                  "scheme"
 #define DEFAULT_STYLE_ELM           "default-style"
