@@ -111,14 +111,16 @@ void
 _moo_edit_apply_settings (MooEdit *edit)
 {
     GtkTextView *text_view;
-    MooTextView *moo_view;
+    MooLangMgr *mgr;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    text_view = GTK_TEXT_VIEW (edit);
-    moo_view = MOO_TEXT_VIEW (edit);
+    g_object_freeze_notify (G_OBJECT (edit));
+    _moo_edit_freeze_config_notify (edit);
 
-    g_object_set (moo_view,
+    text_view = GTK_TEXT_VIEW (edit);
+
+    g_object_set (edit,
                   "smart-home-end", get_bool (MOO_EDIT_PREFS_SMART_HOME_END),
                   "enable-highlight", get_bool (MOO_EDIT_PREFS_ENABLE_HIGHLIGHTING),
                   "highlight-matching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MATCHING),
@@ -152,30 +154,16 @@ _moo_edit_apply_settings (MooEdit *edit)
         gtk_text_view_set_wrap_mode (text_view, GTK_WRAP_NONE);
     }
 
-    if (GTK_WIDGET_REALIZED (edit))
-        _moo_edit_apply_style_settings (edit);
-}
-
-
-static void
-set_font (MooEdit *edit)
-{
     if (get_bool (MOO_EDIT_PREFS_USE_DEFAULT_FONT))
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit), NULL);
     else
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
                                             get_string (MOO_EDIT_PREFS_FONT));
-}
-
-
-void
-_moo_edit_apply_style_settings (MooEdit *edit)
-{
-    MooLangMgr *mgr;
-
-    set_font (edit);
 
     mgr = moo_editor_get_lang_mgr (edit->priv->editor);
     moo_text_view_set_scheme (MOO_TEXT_VIEW (edit),
                               moo_lang_mgr_get_active_scheme (mgr));
+
+    _moo_edit_thaw_config_notify (edit);
+    g_object_thaw_notify (G_OBJECT (edit));
 }
