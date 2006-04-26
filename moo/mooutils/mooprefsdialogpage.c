@@ -332,6 +332,29 @@ connect_signals (MooGladeXML    *xml,
 }
 
 
+static gboolean
+set_props (MooGladeXML    *xml,
+           G_GNUC_UNUSED const char *widget_id,
+           GtkWidget      *widget,
+           const char     *property,
+           const char     *value,
+           gpointer        user_data)
+{
+    if (!strcmp (property, "moo-prefs-key"))
+        return connect_prefs_key (xml, widget, value, NULL, user_data);
+
+    if (!strcmp (property, "moo-prefs-value"))
+    {
+        g_return_val_if_fail (GTK_IS_RADIO_BUTTON (widget), FALSE);
+        g_object_set_data_full (G_OBJECT (widget), "moo-prefs-value",
+                                g_strdup (value), g_free);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+
 GtkWidget*
 moo_prefs_dialog_page_new_from_xml (const char         *label,
                                     const char         *icon_stock_id,
@@ -356,7 +379,8 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
         g_object_ref (xml);
 
     moo_glade_xml_map_id (xml, page_id, MOO_TYPE_PREFS_DIALOG_PAGE);
-    moo_glade_xml_map_signal (xml, connect_signals, &data);
+    moo_glade_xml_set_signal_func (xml, connect_signals, &data);
+    moo_glade_xml_set_prop_func (xml, set_props, &data);
 
     if (!moo_glade_xml_parse_memory (xml, buffer, buffer_size, page_id))
     {
