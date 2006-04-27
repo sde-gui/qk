@@ -283,6 +283,7 @@ moo_editor_init (MooEditor *editor)
                                    NULL, (GDestroyNotify) moo_edit_saver_unref);
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
+    _moo_edit_config_load ();
 
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",

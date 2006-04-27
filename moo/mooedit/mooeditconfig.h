@@ -38,8 +38,9 @@ typedef enum {
     MOO_EDIT_CONFIG_SOURCE_USER     = 0,
     MOO_EDIT_CONFIG_SOURCE_FILE     = 10,
     MOO_EDIT_CONFIG_SOURCE_FILENAME = 20,
-    MOO_EDIT_CONFIG_SOURCE_PREFS    = 30,
-    MOO_EDIT_CONFIG_SOURCE_AUTO     = 40
+    MOO_EDIT_CONFIG_SOURCE_LANG     = 30,
+    MOO_EDIT_CONFIG_SOURCE_PREFS    = 40,
+    MOO_EDIT_CONFIG_SOURCE_AUTO     = 50
 } MooEditConfigSource;
 
 struct _MooEditConfig
@@ -100,6 +101,13 @@ void            moo_edit_config_unset_by_source (MooEditConfig  *config,
 
 gboolean        moo_edit_config_parse_bool      (const char     *string,
                                                  gboolean       *value);
+
+void            moo_edit_config_compose         (MooEditConfig  *target,
+                                                 MooEditConfig  *src);
+
+MooEditConfig  *moo_edit_config_get_for_lang    (const char     *lang);
+void            _moo_edit_config_load           (void);
+void            _moo_edit_config_save           (void);
 
 
 G_END_DECLS

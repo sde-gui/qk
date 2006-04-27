@@ -300,6 +300,9 @@ moo_edit_finalize (GObject *object)
                                           edit);
     g_object_unref (edit->config);
 
+    if (edit->priv->apply_config_idle)
+        g_source_remove (edit->priv->apply_config_idle);
+
     edit->priv->focus_in_handler_id = 0;
     if (edit->priv->file_monitor_id)
         _moo_edit_stop_file_watch (edit);
@@ -639,15 +642,6 @@ moo_edit_get_editor (MooEdit *doc)
 }
 
 
-static void
-moo_edit_set_lang (MooEdit        *edit,
-                   MooLang        *lang)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
-}
-
-
 typedef void (*SetVarFunc) (MooEdit *edit,
                             char    *name,
                             char    *val);
@@ -879,17 +873,65 @@ config_changed (MooEdit        *edit,
 
 
 static void
+moo_edit_set_lang (MooEdit *edit,
+                   MooLang *lang)
+{
+    MooLang *old_lang;
+    MooEditConfig *config;
+
+    old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
+
+    if (old_lang == lang)
+        return;
+
+    _moo_edit_freeze_config_notify (edit);
+
+    moo_edit_config_unset_by_source (edit->config, MOO_EDIT_CONFIG_SOURCE_LANG);
+    config = moo_edit_config_get_for_lang (moo_lang_id (lang));
+    moo_edit_config_compose (edit->config, config);
+
+    moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
+
+    _moo_edit_thaw_config_notify (edit);
+}
+
+
+static void
+moo_edit_apply_config (MooEdit *edit)
+{
+    const char *lang_id = moo_edit_config_get_string (edit->config, "lang");
+    MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
+    MooLang *lang = lang_id ? moo_lang_mgr_get_lang (mgr, lang_id) : NULL;
+    moo_edit_set_lang (edit, lang);
+}
+
+
+static gboolean
+do_apply_config (MooEdit *edit)
+{
+    edit->priv->apply_config_idle = 0;
+    moo_edit_apply_config (edit);
+    return FALSE;
+}
+
+static void
+moo_edit_queue_apply_config (MooEdit *edit)
+{
+    if (!edit->priv->apply_config_idle)
+        edit->priv->apply_config_idle =
+                g_idle_add ((GSourceFunc) do_apply_config, edit);
+}
+
+
+static void
 moo_edit_config_notify (MooEdit        *edit,
                         guint           var_id,
                         G_GNUC_UNUSED GParamSpec *pspec)
 {
     if (var_id == settings[SETTING_LANG])
-    {
-        const char *value = moo_edit_config_get_string (edit->config, "lang");
-        MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
-        MooLang *lang = value ? moo_lang_mgr_get_lang (mgr, value) : NULL;
-        moo_edit_set_lang (edit, lang);
-    }
+        moo_edit_apply_config (edit);
+    else
+        moo_edit_queue_apply_config (edit);
 }
 
 

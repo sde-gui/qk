@@ -71,6 +71,7 @@ struct _MooEditPrivate {
     MooEditor *editor;
 
     gulong modified_changed_handler_id;
+    guint apply_config_idle;
 
     /***********************************************************************/
     /* Document
