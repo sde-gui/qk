@@ -246,6 +246,12 @@ moo_find_setup (MooFind        *find,
         gtk_entry_set_text (GTK_ENTRY (search_entry->entry), last_search);
     }
 
+    if (find->replace && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
+        gtk_text_iter_get_line (&sel_start) != gtk_text_iter_get_line (&sel_end))
+            gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"), TRUE);
+    else
+        gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"), FALSE);
+
     moo_entry_clear_undo (MOO_ENTRY (search_entry->entry));
 
     moo_find_set_flags (find, last_search_flags);
@@ -421,8 +427,8 @@ moo_find_set_flags (MooFind        *find,
                                   (flags & MOO_FIND_FROM_CURSOR) ? TRUE : FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "backwards"),
                                   (flags & MOO_FIND_BACKWARDS) ? TRUE : FALSE);
-    gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"),
-                                  (flags & MOO_FIND_IN_SELECTED) ? TRUE : FALSE);
+//     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"),
+//                                   (flags & MOO_FIND_IN_SELECTED) ? TRUE : FALSE);
     gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "dont_prompt"),
                                   (flags & MOO_FIND_DONT_PROMPT) ? TRUE : FALSE);
 
@@ -502,7 +508,11 @@ get_search_bounds (GtkTextBuffer *buffer,
                    GtkTextIter   *start,
                    GtkTextIter   *end)
 {
-    if (flags & MOO_FIND_FROM_CURSOR)
+    if (flags & MOO_FIND_IN_SELECTED)
+    {
+        gtk_text_buffer_get_selection_bounds (buffer, start, end);
+    }
+    else if (flags & MOO_FIND_FROM_CURSOR)
     {
         gtk_text_buffer_get_iter_at_mark (buffer, start,
                                           gtk_text_buffer_get_insert (buffer));
@@ -529,7 +539,11 @@ get_search_bounds2 (GtkTextBuffer *buffer,
                     GtkTextIter   *start,
                     GtkTextIter   *end)
 {
-    if (flags & MOO_FIND_FROM_CURSOR)
+    if (flags & MOO_FIND_IN_SELECTED)
+    {
+        return FALSE;
+    }
+    else if (flags & MOO_FIND_FROM_CURSOR)
     {
         gtk_text_buffer_get_iter_at_mark (buffer, end,
                                           gtk_text_buffer_get_insert (buffer));
