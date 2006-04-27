@@ -839,24 +839,15 @@ moo_plugin_read_module (GModule     *module,
                         const char  *name)
 {
     MooPluginModuleInitFunc init_func;
-    char *init_func_name;
-    gboolean result = FALSE;
 
     g_return_val_if_fail (module != NULL, FALSE);
     g_return_val_if_fail (name != NULL, FALSE);
 
     if (!g_module_symbol (module, MOO_PLUGIN_INIT_FUNC_NAME,
                           (gpointer*) &init_func))
-        goto out;
+        return FALSE;
 
-    if (!init_func ())
-        goto out;
-
-    result = TRUE;
-
-out:
-    g_free (init_func_name);
-    return result;
+    return init_func ();
 }
 
 
@@ -870,7 +861,7 @@ module_open (const char *path)
     saved = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
 #endif
 
-    module = g_module_open (path, 0);
+    module = g_module_open (path, G_MODULE_BIND_LOCAL);
 
 #ifdef __WIN32__
     SetErrorMode (saved);
