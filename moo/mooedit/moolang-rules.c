@@ -894,16 +894,11 @@ rule_int_match (MooRule        *rule,
 
         for (i = 1; CHAR_IS_DIGIT (start[i]); ++i) ;
 
-        if (!CHAR_IS_WORD (start[i]))
-        {
-            result->match_start = start;
-            result->match_end = start + i;
-            result->match_len = i;
-            result->match_offset = -1;
-            return rule;
-        }
-
-        start = start + i;
+        result->match_start = start;
+        result->match_end = start + i;
+        result->match_len = i;
+        result->match_offset = -1;
+        return rule;
     }
 
     return NULL;
