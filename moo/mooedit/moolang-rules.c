@@ -851,27 +851,6 @@ moo_rule_include_new (MooContext *ctx)
 /* Special sequences
  */
 
-inline static char *
-find_digit (char *string,
-            char *limit,
-            char *line_start)
-{
-    while (TRUE)
-    {
-        while (string <= limit && !CHAR_IS_DIGIT (*string))
-            string++;
-
-        if (string > limit)
-            return NULL;
-
-        if (string == line_start || !CHAR_IS_WORD (string[-1]))
-            return string;
-    }
-
-    return NULL;
-}
-
-
 static MooRule*
 rule_int_match (MooRule        *rule,
                 MatchData      *data,
@@ -887,9 +866,10 @@ rule_int_match (MooRule        *rule,
 
     while (start <= limit)
     {
-        start = find_digit (start, limit, data->line_string);
+        while (start <= limit && !CHAR_IS_DIGIT (*start))
+            start++;
 
-        if (!start)
+        if (start > limit)
             return NULL;
 
         for (i = 1; CHAR_IS_DIGIT (start[i]); ++i) ;
@@ -956,12 +936,6 @@ rule_float_match (MooRule        *rule,
 
             for (i = 2; CHAR_IS_DIGIT (start[i]); ++i) ;
 
-            if (CHAR_IS_WORD (start[i]))
-            {
-                start = start + i;
-                continue;
-            }
-
             result->match_start = start;
             result->match_end = start + i;
             result->match_len = i;
@@ -970,13 +944,6 @@ rule_float_match (MooRule        *rule,
         }
         else
         {
-            if (start > data->line_string && CHAR_IS_WORD (start[-1]))
-            {
-                do start++;
-                while (start <= limit && CHAR_IS_DIGIT (*start));
-                continue;
-            }
-
             for (i = 1; CHAR_IS_DIGIT (start[i]); ++i) ;
 
             if (start[i] != '.')
@@ -986,12 +953,6 @@ rule_float_match (MooRule        *rule,
             }
 
             for (i = i + 1; CHAR_IS_DIGIT (start[i]); ++i) ;
-
-            if (CHAR_IS_WORD (start[i]))
-            {
-                start = start + i;
-                continue;
-            }
 
             result->match_start = start;
             result->match_end = start + i;
@@ -1041,23 +1002,15 @@ rule_octal_match (MooRule        *rule,
 
     while (start <= limit)
     {
-        while (start <= limit && !CHAR_IS_DIGIT (*start))
+        while (start <= limit && *start != '0')
             start++;
 
         if (start > limit)
             return NULL;
 
-        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
-             *start != '0')
-        {
-            while (start <= limit && CHAR_IS_DIGIT (*start))
-                start++;
-            continue;
-        }
-
         for (i = 1; CHAR_IS_OCTAL (start[i]); ++i) ;
 
-        if (CHAR_IS_WORD (start[i]) || i < 2)
+        if (i < 2)
         {
             start = start + i;
             continue;
@@ -1108,20 +1061,13 @@ rule_hex_match (MooRule        *rule,
         if (start > limit)
             return NULL;
 
-        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
-             (start[1] != 'x' && start[1] != 'X'))
+        if (start[1] != 'x' && start[1] != 'X')
         {
             start += 2;
             continue;
         }
 
         for (i = 2; CHAR_IS_HEX (start[i]); ++i) ;
-
-        if (CHAR_IS_WORD (start[i]) || i < 2)
-        {
-            start = start + i;
-            continue;
-        }
 
         result->match_start = start;
         result->match_end = start + i;
@@ -1386,19 +1332,11 @@ rule_identifier_match (MooRule        *rule,
 
     while (start <= limit)
     {
-        while (start <= limit && !CHAR_IS_WORD (*start))
+        while (start <= limit && (!CHAR_IS_WORD (*start) || CHAR_IS_DIGIT (*start)))
             start++;
 
         if (start > limit)
             return NULL;
-
-        if ((start != data->line_string && CHAR_IS_WORD (start[-1])) ||
-             CHAR_IS_DIGIT (*start))
-        {
-            while (start <= limit && CHAR_IS_WORD (*start))
-                start++;
-            continue;
-        }
 
         for (i = 1; CHAR_IS_WORD (start[i]); ++i) ;
 
