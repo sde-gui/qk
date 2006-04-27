@@ -55,7 +55,7 @@ node_if_else (MSParser   *parser,
 
     g_return_val_if_fail (condition && then_, NULL);
 
-    node = ms_node_if_else_new (condition, then_, else_);
+    node = ms_node_if_else_new (condition, then_, elif_, else_);
     _ms_parser_add_node (parser, node);
 
     return MS_NODE (node);
@@ -441,6 +441,7 @@ loop:     WHILE expr DO program OD              { $$ = node_while (parser, MS_CO
 
 if_stmt:
           IF expr THEN program FI               { $$ = node_if_else (parser, $2, $4, NULL, NULL); }
+        | IF expr THEN program ELSE program FI  { $$ = node_if_else (parser, $2, $4, NULL, $6); }
         | IF expr THEN program elif_block FI    { $$ = node_if_else (parser, $2, $4, MS_NODE_LIST ($5), NULL); }
         | IF expr THEN program elif_block ELSE program FI
                                                 { $$ = node_if_else (parser, $2, $4, MS_NODE_LIST ($5), $7); }
