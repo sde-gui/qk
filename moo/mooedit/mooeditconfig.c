@@ -821,6 +821,17 @@ moo_edit_config_get_for_lang (const char *lang)
 }
 
 
+static void
+lang_config_set_defaults (void)
+{
+    MooEditConfig *config;
+
+    config = moo_edit_config_get_for_lang ("makefile");
+    moo_edit_config_parse (config, "use-tabs", "true",
+                           MOO_EDIT_CONFIG_SOURCE_LANG);
+}
+
+
 /***************************************************************************/
 /* Loading and saving
  */
@@ -866,6 +877,8 @@ _moo_edit_config_load (void)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
+
+    lang_config_set_defaults ();
 
     xml = moo_prefs_get_markup ();
     g_return_if_fail (xml != NULL);
