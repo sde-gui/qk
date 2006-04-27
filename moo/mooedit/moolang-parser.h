@@ -95,6 +95,7 @@ struct _KeywordXML {
     char *name; /* mandatory, must be unique */
     GSList *words; /* char*; must not be empty */
     guint n_words;
+    gboolean word_boundary; /* optional, defaults to TRUE */
 };
 
 struct _ContextXML {

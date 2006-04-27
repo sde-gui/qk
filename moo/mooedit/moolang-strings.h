@@ -73,6 +73,7 @@
 #define LANG_HIDDEN_PROP        "hidden"
 
 #define KEYWORD_NAME_PROP       "name"
+#define KEYWORD_WBNDRY_PROP     "word-boundary"
 
 #define CONTEXT_NAME_PROP       "name"
 #define CONTEXT_STYLE_PROP      "style"

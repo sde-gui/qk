@@ -43,6 +43,7 @@
 <!ELEMENT keyword-list (keyword+)>
 <!ATTLIST keyword-list
   name              CDATA       #REQUIRED
+  word-boundary     CDATA       #IMPLIED
 >
 
 <!-- keyword -->

@@ -18,6 +18,7 @@ mooedit_syntax_DATA =                         \
     $(mooedit_syntax)/scheme.lang             \
     $(mooedit_syntax)/sci.lang                \
     $(mooedit_syntax)/sh.lang                 \
+    $(mooedit_syntax)/texinfo.lang            \
     $(mooedit_syntax)/xml.lang                \
     $(mooedit_syntax)/garnacho.styles         \
     $(mooedit_syntax)/gvim.styles             \

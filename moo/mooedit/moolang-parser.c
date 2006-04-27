@@ -933,11 +933,12 @@ static KeywordXML*
 keyword_xml_parse (xmlNode *node)
 {
     KeywordXML *xml = NULL;
-    xmlChar *name = NULL, *case_sensitive = NULL;
+    xmlChar *name = NULL, *word_boundary = NULL;
 
     g_assert (IS_KEYWORD_LIST_NODE (node));
 
     name = GET_PROP (node, KEYWORD_NAME_PROP);
+    word_boundary = GET_PROP (node, KEYWORD_WBNDRY_PROP);
 
     if (!name || !name[0])
     {
@@ -948,10 +949,11 @@ keyword_xml_parse (xmlNode *node)
 
     xml = g_new0 (KeywordXML, 1);
     xml->name = STRDUP (name);
+    xml->word_boundary = parse_bool (word_boundary, TRUE)
 
     DEBUG_PRINT ({
         g_print ("keyword-list: %s\n", name);
-        g_print ("  case sensitive: %s\n", xml->case_sensitive ? "TRUE" : "FALSE");
+        g_print ("  word-boundary: %s\n", xml->word_boundary ? "TRUE" : "FALSE");
         g_print ("\n");
     });
 
@@ -992,12 +994,12 @@ keyword_xml_parse (xmlNode *node)
     xml->words = g_slist_reverse (xml->words);
 
     STRING_FREE (name);
-    STRING_FREE (case_sensitive);
+    STRING_FREE (word_boundary);
     return xml;
 
 error:
     STRING_FREE (name);
-    STRING_FREE (case_sensitive);
+    STRING_FREE (word_boundary);
     keyword_xml_free (xml);
     return NULL;
 }
@@ -2044,6 +2046,7 @@ rule_keywords_xml_create_rule (RuleKeywordsXML    *xml,
 
     return moo_rule_keywords_new (kw_xml->words,
                                   rule_xml_get_flags (xml),
+                                  kw_xml->word_boundary,
                                   rule_xml_get_style (xml));
 }
 
