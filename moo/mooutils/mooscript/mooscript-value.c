@@ -125,7 +125,10 @@ MSValue *
 ms_value_take_string (char *string)
 {
     MSValue *val;
-    g_return_val_if_fail (string != NULL, NULL);
+
+    if (!string)
+        return ms_value_none ();
+
     val = ms_value_new (&types[MS_VALUE_STRING]);
     val->str = string;
     return val;
