@@ -2232,8 +2232,6 @@ moo_edit_window_message (MooEditWindow  *window,
 /* Language menu
  */
 
-#define NONE_LANGUAGE_ID "MOO_LANG_NONE"
-
 static int
 cmp_langs (MooLang *lang1,
            MooLang *lang2)
@@ -2297,7 +2295,7 @@ create_lang_action (MooEditWindow      *window)
                          "Language", 0, NULL, NULL);
 
     moo_menu_mgr_append (menu_mgr, LANG_ACTION_ID,
-                         NONE_LANGUAGE_ID, "None",
+                         MOO_LANG_NONE, "None",
                          MOO_MENU_ITEM_RADIO, NULL, NULL);
 
     for (l = sections; l != NULL; l = l->next)
@@ -2341,7 +2339,7 @@ update_lang_menu (MooEditWindow      *window)
     g_return_if_fail (action != NULL);
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
-                             lang ? lang->id : NONE_LANGUAGE_ID, TRUE);
+                             moo_lang_id (lang), TRUE);
 }
 
 

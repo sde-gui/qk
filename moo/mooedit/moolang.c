@@ -254,6 +254,13 @@ moo_lang_id_from_name (const char *name)
 }
 
 
+const char *
+moo_lang_id (MooLang *lang)
+{
+    return lang ? lang->id : MOO_LANG_NONE;
+}
+
+
 void
 moo_lang_add_style (MooLang            *lang,
                     const char         *name,

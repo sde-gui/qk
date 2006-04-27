@@ -728,7 +728,6 @@ check_visible_func (MooAction      *_action,
                     G_GNUC_UNUSED gpointer dummy)
 {
     MooToolAction *action;
-    const char *lang_id;
     MooLang *lang;
     gboolean visible;
 
@@ -737,10 +736,9 @@ check_visible_func (MooAction      *_action,
     g_return_if_fail (action->data != NULL);
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    lang_id = lang ? lang->id : MOO_LANG_NONE;
 
     visible = NULL != g_slist_find_custom (action->data->langs,
-                                           lang_id,
+                                           moo_lang_id (lang),
                                            (GCompareFunc) strcmp);
 
     g_value_set_boolean (prop_value, visible);

@@ -746,7 +746,7 @@ moo_edit_action_check (MooEditAction *action)
     {
         GSList *l;
         MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (action->doc));
-        const char *lang_id = lang ? lang->id : MOO_LANG_NONE;
+        const char *lang_id = moo_lang_id (lang);
         gboolean visible = FALSE;
 
         for (l = action->langs; l != NULL; l = l->next)
