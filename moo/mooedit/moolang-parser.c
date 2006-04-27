@@ -933,12 +933,14 @@ static KeywordXML*
 keyword_xml_parse (xmlNode *node)
 {
     KeywordXML *xml = NULL;
-    xmlChar *name = NULL, *word_boundary = NULL;
+    xmlChar *name = NULL, *word_boundary = NULL, *prefix = NULL, *suffix = NULL;
 
     g_assert (IS_KEYWORD_LIST_NODE (node));
 
     name = GET_PROP (node, KEYWORD_NAME_PROP);
     word_boundary = GET_PROP (node, KEYWORD_WBNDRY_PROP);
+    prefix = GET_PROP (node, KEYWORD_PREFIX_PROP);
+    suffix = GET_PROP (node, KEYWORD_SUFFIX_PROP);
 
     if (!name || !name[0])
     {
@@ -949,11 +951,15 @@ keyword_xml_parse (xmlNode *node)
 
     xml = g_new0 (KeywordXML, 1);
     xml->name = STRDUP (name);
-    xml->word_boundary = parse_bool (word_boundary, TRUE)
+    xml->word_boundary = parse_bool (word_boundary, TRUE);
+    xml->prefix = STRDUP (prefix);
+    xml->suffix = STRDUP (suffix);
 
     DEBUG_PRINT ({
         g_print ("keyword-list: %s\n", name);
         g_print ("  word-boundary: %s\n", xml->word_boundary ? "TRUE" : "FALSE");
+        g_print ("  prefix: %s\n", xml->prefix ? xml->prefix : "<NULL>");
+        g_print ("  suffix: %s\n", xml->suffix ? xml->suffix : "<NULL>");
         g_print ("\n");
     });
 
@@ -994,11 +1000,15 @@ keyword_xml_parse (xmlNode *node)
     xml->words = g_slist_reverse (xml->words);
 
     STRING_FREE (name);
+    STRING_FREE (prefix);
+    STRING_FREE (suffix);
     STRING_FREE (word_boundary);
     return xml;
 
 error:
     STRING_FREE (name);
+    STRING_FREE (prefix);
+    STRING_FREE (suffix);
     STRING_FREE (word_boundary);
     keyword_xml_free (xml);
     return NULL;
@@ -1013,6 +1023,8 @@ keyword_xml_free (KeywordXML *xml)
         g_slist_foreach (xml->words, (GFunc) g_free, NULL);
         g_slist_free (xml->words);
         g_free (xml->name);
+        g_free (xml->suffix);
+        g_free (xml->prefix);
         g_free (xml);
     }
 }
@@ -2008,8 +2020,8 @@ rule_any_char_xml_free (RuleAnyCharXML       *xml)
 
 
 static RuleXML*
-rule_keywords_xml_parse (LangXML            *lang_xml,
-                         xmlNode            *node)
+rule_keywords_xml_parse (LangXML *lang_xml,
+                         xmlNode *node)
 {
     RuleKeywordsXML *xml;
     xmlChar *keyword;
@@ -2047,6 +2059,7 @@ rule_keywords_xml_create_rule (RuleKeywordsXML    *xml,
     return moo_rule_keywords_new (kw_xml->words,
                                   rule_xml_get_flags (xml),
                                   kw_xml->word_boundary,
+                                  kw_xml->prefix, kw_xml->suffix,
                                   rule_xml_get_style (xml));
 }
 

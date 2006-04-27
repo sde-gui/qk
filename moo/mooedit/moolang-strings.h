@@ -74,6 +74,8 @@
 
 #define KEYWORD_NAME_PROP       "name"
 #define KEYWORD_WBNDRY_PROP     "word-boundary"
+#define KEYWORD_PREFIX_PROP     "prefix"
+#define KEYWORD_SUFFIX_PROP     "suffix"
 
 #define CONTEXT_NAME_PROP       "name"
 #define CONTEXT_STYLE_PROP      "style"

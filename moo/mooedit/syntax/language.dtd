@@ -44,6 +44,8 @@
 <!ATTLIST keyword-list
   name              CDATA       #REQUIRED
   word-boundary     CDATA       #IMPLIED
+  prefix            CDATA       #IMPLIED
+  suffix            CDATA       #IMPLIED
 >
 
 <!-- keyword -->
