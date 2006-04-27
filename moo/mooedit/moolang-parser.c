@@ -1601,6 +1601,7 @@ moo_rule_new_from_xml (RuleXML    *xml,
 {
     MooRule *rule = NULL;
     MooContext *switch_to;
+    GSList *l;
 
     g_return_val_if_fail (xml != NULL && lang != NULL, NULL);
 
@@ -1684,6 +1685,20 @@ moo_rule_new_from_xml (RuleXML    *xml,
 
     if (xml->include_eol)
         rule->include_eol = TRUE;
+
+    for (l = xml->child_rules; l != NULL; l = l->next)
+    {
+        RuleXML *child_xml = l->data;
+        MooRule *child_rule = moo_rule_new_from_xml (child_xml, lang_xml, lang);
+
+        if (!child_rule)
+        {
+            moo_rule_free (rule);
+            return NULL;
+        }
+
+        moo_rule_add_child_rule (rule, child_rule);
+    }
 
     return rule;
 }
