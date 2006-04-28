@@ -266,8 +266,12 @@ create_about_dialog (void)
     moo_link_label_set_text (url, info->website_label);
 
     logo = moo_glade_xml_get_widget (xml, "logo");
-    gtk_image_set_from_stock (GTK_IMAGE (logo), MOO_STOCK_APP,
-                              GTK_ICON_SIZE_DIALOG);
+
+    if (info->logo)
+        gtk_image_set_from_stock (GTK_IMAGE (logo), info->logo,
+                                  GTK_ICON_SIZE_DIALOG);
+    else
+        gtk_widget_hide (logo);
 
     button = moo_glade_xml_get_widget (xml, "credits_button");
     g_signal_connect (button, "clicked", G_CALLBACK (show_credits), NULL);

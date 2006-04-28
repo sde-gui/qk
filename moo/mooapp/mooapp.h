@@ -44,6 +44,7 @@ struct _MooAppInfo
     char *website;
     char *website_label;
     char *rc_file;
+    char *logo;
 };
 
 struct _MooApp

@@ -176,7 +176,8 @@ enum {
     PROP_USE_TERMINAL,
     PROP_OPEN_FILES,
     PROP_NEW_APP,
-    PROP_DEFAULT_UI
+    PROP_DEFAULT_UI,
+    PROP_LOGO
 };
 
 enum {
@@ -244,6 +245,14 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_string ("description",
                                              "description",
                                              "description",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_LOGO,
+                                     g_param_spec_string ("logo",
+                                             "logo",
+                                             "logo",
                                              NULL,
                                              G_PARAM_READWRITE));
 
@@ -427,10 +436,7 @@ moo_app_finalize (GObject *object)
 
     moo_app_instance = NULL;
 
-    g_free (app->priv->info->short_name);
-    g_free (app->priv->info->full_name);
-    g_free (app->priv->info->rc_file);
-    g_free (app->priv->info);
+    moo_app_info_free (app->priv->info);
     g_free (app->priv->default_ui);
 
     if (app->priv->argv)
@@ -495,6 +501,12 @@ moo_app_set_property (GObject        *object,
         case PROP_DEFAULT_UI:
             g_free (app->priv->default_ui);
             app->priv->default_ui = g_strdup (g_value_get_string (value));
+            break;
+
+        case PROP_LOGO:
+            g_free (app->priv->info->logo);
+            app->priv->info->logo = g_strdup (g_value_get_string (value));
+            g_object_notify (G_OBJECT (app), "logo");
             break;
 
         case PROP_OPEN_FILES:
@@ -1167,8 +1179,9 @@ static void     moo_app_set_name        (MooApp         *app,
 }
 
 
-static void     moo_app_set_description (MooApp         *app,
-                                         const char     *description)
+static void
+moo_app_set_description (MooApp     *app,
+                         const char *description)
 {
     g_free (app->priv->info->description);
     app->priv->info->description = g_strdup (description);
@@ -1356,6 +1369,7 @@ moo_app_info_copy (const MooAppInfo *info)
     copy->website = g_strdup (info->website);
     copy->website_label = g_strdup (info->website_label);
     copy->rc_file = g_strdup (info->rc_file);
+    copy->logo = g_strdup (info->logo);
 
     return copy;
 }
@@ -1373,6 +1387,7 @@ moo_app_info_free (MooAppInfo *info)
         g_free (info->website);
         g_free (info->website_label);
         g_free (info->rc_file);
+        g_free (info->logo);
         g_free (info);
     }
 }
