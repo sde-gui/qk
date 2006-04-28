@@ -132,8 +132,6 @@ moo_highlighter_destroy (MooHighlighter *hl,
         moo_lang_unref (hl->lang);
     if (hl->idle)
         g_source_remove (hl->idle);
-    if (hl->apply_idle)
-        g_source_remove (hl->apply_idle);
 
     g_free (hl);
 }
@@ -742,7 +740,7 @@ compute_in_idle (MooHighlighter *hl)
     hl->idle = 0;
 
     if (!BUF_CLEAN (hl->line_buf))
-        moo_highlighter_compute_timed (hl, 0, -1, hl->apply_tags,
+        moo_highlighter_compute_timed (hl, 0, -1, FALSE,
                                        IDLE_HIGHLIGHT_TIME);
 
     if (!BUF_CLEAN (hl->line_buf))
@@ -756,8 +754,7 @@ compute_in_idle (MooHighlighter *hl)
 
 
 void
-moo_highlighter_queue_compute (MooHighlighter     *hl,
-                               gboolean            apply_tags)
+moo_highlighter_queue_compute (MooHighlighter *hl)
 {
     if (!hl->lang || !hl->buffer || BUF_CLEAN (hl->line_buf))
         return;
@@ -766,18 +763,6 @@ moo_highlighter_queue_compute (MooHighlighter     *hl,
         hl->idle = g_idle_add_full (IDLE_HIGHLIGHT_PRIORITY,
                                     (GSourceFunc) compute_in_idle,
                                     hl, NULL);
-
-    hl->apply_tags = apply_tags;
-}
-
-
-static gboolean
-apply_in_idle (MooHighlighter *hl)
-{
-    hl->apply_idle = 0;
-    hl->apply_to.empty = TRUE;
-    moo_highlighter_apply_tags (hl, hl->apply_to.first, hl->apply_to.last);
-    return FALSE;
 }
 
 
@@ -807,13 +792,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
     if (!moo_highlighter_compute_timed (hl, first_line, last_line,
                                         TRUE, COMPUTE_NOW_TIME))
     {
-        if (!hl->apply_idle)
-            hl->apply_idle = g_idle_add ((GSourceFunc) apply_in_idle, hl);
-
-        hl->apply_to.empty = FALSE;
-        hl->apply_to.first = first_line;
-        hl->apply_to.last = last_line;
-
+        moo_highlighter_queue_compute (hl);
         return;
     }
 

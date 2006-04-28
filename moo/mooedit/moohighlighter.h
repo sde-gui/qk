@@ -53,9 +53,6 @@ struct _MooHighlighter {
     CtxNode *root;
     GSList *nodes;
     guint idle;
-    gboolean apply_tags;
-    guint apply_idle;
-    Area apply_to;
 
     gboolean need_last_tag;
     GtkTextTag *last_tag;
@@ -86,8 +83,7 @@ void    moo_highlighter_compute             (MooHighlighter     *highlight,
                                              int                 first_line,
                                              int                 last_line,
                                              gboolean            apply_tags);
-void    moo_highlighter_queue_compute       (MooHighlighter     *highlight,
-                                             gboolean            apply_tags);
+void    moo_highlighter_queue_compute       (MooHighlighter     *highlight);
 void    moo_highlighter_apply_tags          (MooHighlighter     *highlight,
                                              int                 first_line,
                                              int                 last_line);
