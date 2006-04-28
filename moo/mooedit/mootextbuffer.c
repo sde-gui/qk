@@ -814,6 +814,7 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
     }
 
     buffer->priv->do_highlight = highlight;
+    moo_line_buffer_invalidate_all (buffer->priv->line_buf);
 
     if (!highlight || !buffer->priv->lang)
     {
@@ -825,7 +826,6 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
         buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
                                                 buffer->priv->line_buf,
                                                 buffer->priv->lang);
-        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
         moo_text_buffer_queue_highlight (buffer);
     }
 }

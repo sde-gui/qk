@@ -62,7 +62,8 @@ _moo_utils_mod_init (void)
     if (PyErr_Occurred ())
         return FALSE;
 
-    add_constant (mod, "STOCK_APP", MOO_STOCK_APP);
+    add_constant (mod, "STOCK_GGAP", MOO_STOCK_GGAP);
+    add_constant (mod, "STOCK_MEDIT", MOO_STOCK_MEDIT);
     add_constant (mod, "STOCK_GAP", MOO_STOCK_GAP);
     add_constant (mod, "STOCK_TERMINAL", MOO_STOCK_TERMINAL);
     add_constant (mod, "STOCK_KEYBOARD", MOO_STOCK_KEYBOARD);
