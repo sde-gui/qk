@@ -34,8 +34,8 @@ moo_edit_open_dialog (GtkWidget      *widget,
     char *new_start;
     GSList *filenames, *infos = NULL, *l;
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), NULL);
-    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
+    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_DIALOG_FILE_OPEN_EXISTING, widget,
                                   TRUE, "Open", start, NULL);
@@ -57,7 +57,7 @@ moo_edit_open_dialog (GtkWidget      *widget,
     infos = g_slist_reverse (infos);
 
     new_start = g_path_get_dirname (filenames->data);
-    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), new_start);
+    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
     g_free (new_start);
 
     g_object_unref (dialog);
@@ -78,13 +78,8 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     MooFileDialog *dialog;
     MooEditFileInfo *file_info;
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), NULL);
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN), NULL);
-
-    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE));
-
-    if (!start)
-        start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN));
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
+    start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_DIALOG_FILE_SAVE, GTK_WIDGET (edit),
                                   FALSE, title, start, display_basename);
@@ -103,7 +98,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     file_info = moo_edit_file_info_new (filename, NULL);
 
     new_start = g_path_get_dirname (filename);
-    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_SAVE), new_start);
+    moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
     g_free (new_start);
 
     g_object_unref (dialog);

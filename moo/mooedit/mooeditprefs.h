@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooeditprefs.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -56,8 +55,9 @@ const char *moo_edit_setting                (const char     *setting_name);
 #define MOO_EDIT_PREFS_USE_DEFAULT_FONT         "use_default_font"
 #define MOO_EDIT_PREFS_FONT                     "font"
 
-#define MOO_EDIT_PREFS_DIALOGS_SAVE             "dialogs/save"
-#define MOO_EDIT_PREFS_DIALOGS_OPEN             "dialogs/open"
+// #define MOO_EDIT_PREFS_DIALOGS_SAVE             "dialogs/save"
+// #define MOO_EDIT_PREFS_DIALOGS_OPEN             "dialogs/open"
+#define MOO_EDIT_PREFS_LAST_DIR                 "last_dir"
 
 // #define MOO_EDIT_PREFS_SEARCH_SELECTED              "search/search_selected"
 #define MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS       "quick_search_flags"
