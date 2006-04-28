@@ -17,6 +17,84 @@
 #include "mooedit/moolang-aux.h"
 
 
+#ifdef MOO_DEBUG
+#define MOO_PROFILE
+#endif
+
+#ifdef MOO_PROFILE
+static struct {
+    GTimer *timer;
+    gboolean time_rules_array_match;
+    GHashTable *times;
+    guint dump_timeout;
+    gboolean did_something;
+} profile;
+
+
+typedef struct {
+    const char *description;
+    double time;
+} Info;
+
+static void
+prepend_info (const char *description,
+              double     *time,
+              GSList    **list)
+{
+    if (*time > .001)
+    {
+        Info *i = g_new (Info, 1);
+        i->description = description;
+        i->time = *time;
+        *list = g_slist_prepend (*list, i);
+    }
+}
+
+static int
+cmp_times (Info *i1,
+           Info *i2)
+{
+    return i1->time < i2->time ? 1 : (i1->time > i2->time ? -1 : 0);
+}
+
+static gboolean
+dump_profile (void)
+{
+    GSList *list;
+
+    if (!profile.did_something)
+    {
+        g_hash_table_destroy (profile.times);
+        profile.times = NULL;
+        g_timer_destroy (profile.timer);
+        profile.timer = NULL;
+        profile.dump_timeout = 0;
+        return FALSE;
+    }
+
+    profile.did_something = FALSE;
+
+    list = NULL;
+    g_hash_table_foreach (profile.times, (GHFunc) prepend_info, &list);
+    list = g_slist_sort (list, (GCompareFunc) cmp_times);
+
+    g_print ("Highlighting profile ------------------------------\n");
+
+    while (list)
+    {
+        Info *i = list->data;
+        g_print ("%.3f: %s\n", i->time, i->description);
+        g_free (i);
+        list = g_slist_delete_link (list, list);
+    }
+
+    g_print ("---------------------------------------------------\n");
+
+    return TRUE;
+}
+#endif
+
+
 typedef MooRuleMatchFlags MatchFlags;
 #define MATCH_START_ONLY MOO_RULE_MATCH_START_ONLY
 
@@ -145,6 +223,18 @@ rules_match_real (MooRuleArray       *array,
         data->limit_offset = SIZE_NOT_SET;
     }
 
+#ifdef MOO_PROFILE
+    if (!profile.timer)
+    {
+        profile.timer = g_timer_new ();
+        g_timer_stop (profile.timer);
+        profile.time_rules_array_match = TRUE;
+        profile.times = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                               g_free, g_free);
+        profile.dump_timeout = g_timeout_add (5000, (GSourceFunc) dump_profile, NULL);
+    }
+#endif
+
     for (i = 0; i < array->len; ++i)
     {
         MooRule *rule = array->data[i];
@@ -160,7 +250,39 @@ rules_match_real (MooRuleArray       *array,
         if ((rule->flags & MOO_RULE_MATCH_FIRST_LINE) && data->line_number != 0)
             continue;
 
+#ifdef MOO_PROFILE
+        if (profile.time_rules_array_match)
+        {
+            g_timer_start (profile.timer);
+        }
+#endif
+
         matched_here = rule->match (rule, data, &tmp, flags);
+
+#ifdef MOO_PROFILE
+        if (profile.time_rules_array_match)
+        {
+            double time;
+            double *total;
+
+            g_timer_stop (profile.timer);
+            time = g_timer_elapsed (profile.timer, NULL);
+
+            total = g_hash_table_lookup (profile.times, rule->description);
+
+            if (!total)
+            {
+                total = g_new (double, 1);
+                *total = .0;
+                g_hash_table_insert (profile.times,
+                                     g_strdup (rule->description),
+                                     total);
+            }
+
+            *total += time;
+            profile.did_something = TRUE;
+        }
+#endif
 
         if (matched_here)
         {
@@ -197,7 +319,16 @@ rules_match_real (MooRuleArray       *array,
     }
 
     if (matched && matched->child_rules)
+    {
+#ifdef MOO_PROFILE
+        gboolean old = profile.time_rules_array_match;
+        profile.time_rules_array_match = FALSE;
+#endif
         child_rules_match (matched->child_rules, data, result);
+#ifdef MOO_PROFILE
+        profile.time_rules_array_match = old;
+#endif
+    }
 
     return matched;
 }
