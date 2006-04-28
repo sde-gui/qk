@@ -424,7 +424,7 @@ get_next_line_node (MooHighlighter *hl,
                     Line           *line)
 {
     HLInfo *info = line->hl_info;
-    CtxNode *last_node;
+    CtxNode *last_node = NULL;
 
     if (!info->n_segments)
     {
@@ -562,7 +562,7 @@ hl_compute_range (MooHighlighter *hl,
                   int             time)
 {
     GtkTextIter iter;
-    CtxNode *node;
+    CtxNode *node = NULL;
     int line_no;
     GTimer *timer = NULL;
     double secs = ((double) time) / 1000;
