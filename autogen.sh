@@ -41,6 +41,9 @@ if test -z $1; then
     echo "run '$srcdir/configure ; make ; make install'"
     echo
 else
+    if test $1 = "do" -o $1 = "--do"; then
+        shift
+    fi
     cd $builddir
     $srcdir/configure $*
 fi
