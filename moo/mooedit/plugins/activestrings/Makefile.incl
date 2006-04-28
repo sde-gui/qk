@@ -5,8 +5,13 @@
 astrings = $(mooedit_plugins)/activestrings
 astrings_srcdir = $(srcdir)/$(astrings)
 
+astringsdir = $(MOO_DATA_DIR)
+astrings_DATA =                         \
+    $(astrings)/as.cfg
+
 astrings_extra_dist =                   \
-    $(astrings)/as-plugin.glade
+    $(astrings)/as-plugin.glade         \
+    $(astrings_DATA)
 
 astrings_sources =                      \
     $(astrings)/as-plugin.c             \
