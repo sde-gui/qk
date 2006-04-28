@@ -435,9 +435,11 @@ moo_line_buffer_get_stamp (LineBuffer *line_buf)
 
 
 static guint
-node_get_index (BTNode* node)
+line_get_index (BTData *line)
 {
     guint index = 0;
+    BTNode *node = (BTNode*) line;
+    gboolean bottom = TRUE;
 
     while (node->parent)
     {
@@ -446,13 +448,21 @@ node_get_index (BTNode* node)
         for (i = 0; i < node->parent->n_children; ++i)
         {
             if (node->parent->children[i] != node)
-                index += node->parent->children[i]->count;
+            {
+                if (bottom)
+                    index += 1;
+                else
+                    index += node->parent->children[i]->count;
+            }
             else
+            {
                 break;
+            }
         }
 
         g_assert (i < node->parent->n_children);
         node = node->parent;
+        bottom = FALSE;
     }
 
     return index;
@@ -464,7 +474,7 @@ moo_line_buffer_get_line_index (G_GNUC_UNUSED LineBuffer *line_buf,
                                 Line           *line)
 {
     guint index;
-    index = node_get_index ((BTNode*) line);
+    index = line_get_index (line);
     g_assert (line == moo_line_buffer_get_line (line_buf, index));
     return index;
 }
