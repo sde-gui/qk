@@ -741,16 +741,10 @@ moo_text_buffer_set_lang (MooTextBuffer  *buffer,
     if (old_lang)
         moo_lang_unref (old_lang);
 
-    if (buffer->priv->do_highlight && old_lang)
-    {
-        moo_highlighter_destroy (buffer->priv->hl, TRUE);
-        moo_line_buffer_cleanup (buffer->priv->line_buf);
-    }
-    else
-    {
-        moo_highlighter_destroy (buffer->priv->hl, FALSE);
-    }
+    moo_highlighter_destroy (buffer->priv->hl,
+                             buffer->priv->do_highlight && old_lang);
 
+    moo_line_buffer_cleanup (buffer->priv->line_buf);
     buffer->priv->lang = lang;
 
     if (lang)
@@ -814,7 +808,6 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
     }
 
     buffer->priv->do_highlight = highlight;
-    moo_line_buffer_invalidate_all (buffer->priv->line_buf);
 
     if (!highlight || !buffer->priv->lang)
     {
@@ -826,6 +819,7 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
         buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
                                                 buffer->priv->line_buf,
                                                 buffer->priv->lang);
+        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
         moo_text_buffer_queue_highlight (buffer);
     }
 }
