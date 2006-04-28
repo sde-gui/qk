@@ -4,7 +4,7 @@
   "TRUE", "YES", "1" mean true,
   "FALSE", "NO", "0" mean false.
 -->
-<!ENTITY % boolean "true|false|TRUE|FALSE|0|1">
+<!ENTITY % boolean "true|false|TRUE|FALSE|True|False|0|1">
 
 <!ENTITY % def_styles "Normal|Keyword|DataType|Decimal|BaseN|Float|Char|String|Comment|Others|Alert|Function|RegionMarker|Error">
 
