@@ -182,8 +182,10 @@ void moo_create_stock_items (void)
 
     add_icon (factory, MOO_STOCK_TERMINAL,
               24, MOO_GNOME_TERMINAL_ICON);
-    add_icon (factory, MOO_STOCK_APP,
+    add_icon (factory, MOO_STOCK_GGAP,
               24, GGAP_ICON);
+    add_icon (factory, MOO_STOCK_MEDIT,
+              24, MEDIT_ICON);
     add_icon (factory, MOO_STOCK_GAP,
               24, GAP_ICON);
     add_icon (factory, MOO_STOCK_CLOSE,

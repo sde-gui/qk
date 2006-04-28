@@ -147,6 +147,7 @@ $(mooutils)/moologwindow-glade.h: $(mooutils_srcdir)/glade/moologwindow.glade
 mooutils_pixmaps =                             \
     $(mooutils_srcdir)/pixmaps/gap.png         \
     $(mooutils_srcdir)/pixmaps/ggap.png        \
+    $(mooutils_srcdir)/pixmaps/medit.png       \
     $(mooutils_srcdir)/pixmaps/close.png       \
     $(mooutils_srcdir)/pixmaps/detach.png      \
     $(mooutils_srcdir)/pixmaps/attach.png      \
@@ -158,6 +159,7 @@ $(mooutils)/stock-moo.h: $(mooutils_pixmaps)
 	gdk-pixbuf-csource --static --build-list                               \
 		GAP_ICON  $(mooutils_srcdir)/pixmaps/gap.png                   \
 		GGAP_ICON $(mooutils_srcdir)/pixmaps/ggap.png                  \
+		MEDIT_ICON $(mooutils_srcdir)/pixmaps/medit.png                \
 		MOO_CLOSE_ICON $(mooutils_srcdir)/pixmaps/close.png            \
 		MOO_STICKY_ICON $(mooutils_srcdir)/pixmaps/sticky.png          \
 		MOO_DETACH_ICON $(mooutils_srcdir)/pixmaps/detach.png          \

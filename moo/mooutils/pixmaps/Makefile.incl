@@ -8,6 +8,8 @@ moo_extra_dist +=                              \
     $(moopixmaps)/ggap.png                     \
     $(moopixmaps)/ggap.ico                     \
     $(moopixmaps)/gap.png                      \
+    $(moopixmaps)/medit.png                    \
+    $(moopixmaps)/medit.ico                    \
     $(moopixmaps)/close.png                    \
     $(moopixmaps)/sticky.png                   \
     $(moopixmaps)/detach.png                   \
