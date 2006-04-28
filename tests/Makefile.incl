@@ -86,10 +86,12 @@ endif MOO_OS_MINGW
 medit_LDFLAGS = $(ldflags)
 medit_LDADD = $(ldadd)
 medit_SOURCES = medit-ui.h
+nodist_medit_SOURCES =
+EXTRA_DIST += tests/medit.rc.in
 
 if !MOO_BUILD_LIB
 medit_SOURCES += $(libmoo_sources)
-nodist_medit_SOURCES = $(nodist_libmoo_sources)
+nodist_medit_SOURCES += $(nodist_libmoo_sources)
 endif
 
 if MOO_BUILD_APP
@@ -97,6 +99,19 @@ medit_SOURCES += tests/medit-app.c
 else
 medit_SOURCES += tests/medit.c
 endif
+
+nodist_medit_SOURCES += tests/medit.res
+CLEANFILES += tests/medit.res
+
+if MOO_OS_MINGW
+tests/medit.res: tests/medit.rc
+	$(WINDRES) -i tests/medit.rc --input-format=rc -o tests/medit.res -O coff
+medit_SOURCES += tests/medit.res
+medit_LDADD += tests/medit.res
+else ! MOO_OS_MINGW
+tests/medit.res: tests/medit.rc
+	touch tests/medit.res
+endif ! MOO_OS_MINGW
 
 
 testfold_LDFLAGS = $(ldflags)

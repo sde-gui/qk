@@ -94,6 +94,11 @@ nodist_libmoo_sources = $(moo_nodist_sources)
 
 EXTRA_DIST += $(moo_extra_dist)
 
+desktopdir = $(datadir)/applications
+desktop_DATA = medit.desktop
+appicondir = $(datadir)/pixmaps
+appicon_DATA = moo/mooutils/pixmaps/medit.png
+EXTRA_DIST += $(desktop_DATA)
 
 ##############################################################################
 # tests

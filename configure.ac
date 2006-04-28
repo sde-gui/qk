@@ -70,6 +70,7 @@ moo/mooterm/termhelper_res.rc
 moo/moo.pc
 moo/moo-version.h
 tests/pyapp.py
+tests/medit.rc
 m4/Makefile
 wininstaller/medit.iss
 ])

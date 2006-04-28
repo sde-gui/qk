@@ -16,6 +16,7 @@
 #include <mooapp/mooapp.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-misc.h>
+#include <mooutils/moostock.h>
 #include <moo-version.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -272,6 +273,7 @@ int main (int argc, char *argv[])
                         "open-files", files && *files ? files : NULL,
                         "new-app", (gboolean) _medit_opt_new_app,
                         "default-ui", MEDIT_UI,
+                        "logo", MOO_STOCK_MEDIT,
                         NULL);
 
     g_free (files);

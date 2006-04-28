@@ -1,0 +1,29 @@
+#include <windows.h>
+
+A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "@top_srcdir@/@MOO_SRC_PREFIX@/mooutils/pixmaps/medit.ico"
+
+1 VERSIONINFO
+FILEVERSION @MOO_VERSION_MAJOR@,@MOO_VERSION_MINOR@,@MOO_VERSION_MICRO@,0
+PRODUCTVERSION @MOO_VERSION_MAJOR@,@MOO_VERSION_MINOR@,@MOO_VERSION_MICRO@,0
+FILETYPE VFT_APP
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "140104E4"
+        {
+            VALUE "CompanyName", "Yevgen Muntyan"
+            VALUE "FileVersion", @MOO_VERSION@
+            VALUE "FileDescription", "medit"
+            VALUE "InternalName", "medit"
+            VALUE "LegalCopyright", "(C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>"
+            VALUE "LegalTrademarks", ""
+            VALUE "OriginalFilename", "medit.exe"
+            VALUE "ProductName", "medit"
+            VALUE "ProductVersion", @MOO_VERSION@
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0409, 1252
+    }
+}

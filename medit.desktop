@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=medit
+Comment=Text editor
+Exec=medit %F
+Terminal=false
+Type=Application
+StartupNotify=true
+MimeType=text/*;
+Icon=medit.png
+Categories=Application;Utility;TextEditor;
