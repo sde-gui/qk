@@ -201,6 +201,15 @@ apply_tag (MooHighlighter     *hl,
 
     if (tag)
     {
+#if 0
+        static int last_line_no = -1;
+        int line_no = moo_line_buffer_get_line_index (hl->line_buf, line);
+        if (line_no != last_line_no)
+        {
+            last_line_no = line_no;
+            g_message ("applying tag on line %d", line_no);
+        }
+#endif
         line->hl_info->tags = g_slist_prepend (line->hl_info->tags, g_object_ref (tag));
         hl->last_tag = tag;
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
