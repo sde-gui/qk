@@ -8,7 +8,7 @@
           priority="5">
 
   <syntax>
-    <keyword-list suffix="\b" name="keywords">
+    <keyword-list name="keywords">
       <keyword>break</keyword>
       <keyword>case</keyword>
       <keyword>continue</keyword>
