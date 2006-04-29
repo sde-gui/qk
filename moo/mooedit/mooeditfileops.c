@@ -376,6 +376,8 @@ do_load (MooEdit            *edit,
     GIOStatus status;
     GtkTextBuffer *buffer;
     MooEditLineEndType le = MOO_EDIT_LINE_END_NONE;
+    GString *text = NULL;
+    char *line = NULL;
 
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (encoding != NULL, FALSE);
@@ -388,40 +390,29 @@ do_load (MooEdit            *edit,
         return FALSE;
 
     if (g_io_channel_set_encoding (file, encoding, error) != G_IO_STATUS_NORMAL)
-    {
-        g_io_channel_shutdown (file, TRUE, NULL);
-        g_io_channel_unref (file);
-        return FALSE;
-    }
+        goto error_out;
+
+    text = g_string_new (NULL);
 
     while (TRUE)
     {
         gboolean insert_line_term = FALSE;
-        char *line = NULL;
         gsize len, line_term_pos;
         MooEditLineEndType le_here = 0;
 
         status = g_io_channel_read_line (file, &line, &len, &line_term_pos, error);
 
         if (status != G_IO_STATUS_NORMAL && status != G_IO_STATUS_EOF)
-        {
-            g_io_channel_shutdown (file, TRUE, NULL);
-            g_io_channel_unref (file);
-            g_free (line);
-            return FALSE;
-        }
+            goto error_out;
 
         if (line)
         {
             if (!g_utf8_validate (line, len, NULL))
             {
-                g_io_channel_shutdown (file, TRUE, NULL);
-                g_io_channel_unref (file);
                 g_set_error (error, G_CONVERT_ERROR,
                              G_CONVERT_ERROR_ILLEGAL_SEQUENCE,
                              "Invalid UTF8 data read from file");
-                g_free (line);
-                return FALSE;
+                goto error_out;
             }
 
             if (line_term_pos != len)
@@ -458,10 +449,18 @@ do_load (MooEdit            *edit,
                 }
             }
 
-            gtk_text_buffer_insert_at_cursor (buffer, line, len);
+            g_string_append_len (text, line, len);
 
             if (insert_line_term)
-                gtk_text_buffer_insert_at_cursor (buffer, "\n", 1);
+                g_string_append_c (text, '\n');
+
+#define MAX_TEXT_BUF_LEN 1000000
+            if (text->len > MAX_TEXT_BUF_LEN)
+            {
+                gtk_text_buffer_insert_at_cursor (buffer, text->str, text->len);
+                g_string_truncate (text, 0);
+            }
+#undef MAX_TEXT_BUF_LEN
 
             g_free (line);
         }
@@ -474,10 +473,27 @@ do_load (MooEdit            *edit,
         }
     }
 
+    if (text->len)
+        gtk_text_buffer_insert_at_cursor (buffer, text->str, text->len);
+
     edit->priv->line_end_type = le;
 
+    g_string_free (text, TRUE);
     g_clear_error (error);
     return TRUE;
+
+error_out:
+    if (text)
+        g_string_free (text, TRUE);
+
+    if (file)
+    {
+        g_io_channel_shutdown (file, TRUE, NULL);
+        g_io_channel_unref (file);
+    }
+
+    g_free (line);
+    return FALSE;
 }
 
 
