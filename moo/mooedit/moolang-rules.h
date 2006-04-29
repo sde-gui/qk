@@ -73,7 +73,6 @@ MooRule    *moo_rule_any_char_new       (const char         *string,
                                          const char         *style);
 MooRule    *moo_rule_keywords_new       (GSList             *words,
                                          MooRuleFlags        flags,
-                                         gboolean            word_boundary,
                                          const char         *prefix,
                                          const char         *suffix,
                                          const char         *style);

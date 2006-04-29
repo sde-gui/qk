@@ -2073,7 +2073,6 @@ rule_keywords_xml_create_rule (RuleKeywordsXML    *xml,
 
     return moo_rule_keywords_new (kw_xml->words,
                                   rule_xml_get_flags (xml),
-                                  kw_xml->word_boundary,
                                   kw_xml->prefix, kw_xml->suffix,
                                   rule_xml_get_style (xml));
 }

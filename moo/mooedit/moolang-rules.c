@@ -902,7 +902,6 @@ moo_rule_any_char_new (const char         *string,
 MooRule*
 moo_rule_keywords_new (GSList             *words,
                        MooRuleFlags        flags,
-                       gboolean            word_boundary,
                        const char         *prefix,
                        const char         *suffix,
                        const char         *style)
@@ -914,8 +913,7 @@ moo_rule_keywords_new (GSList             *words,
     g_return_val_if_fail (words != NULL, NULL);
 
     pattern = g_string_new (NULL);
-    g_string_printf (pattern, "%s%s(",
-                     word_boundary ? "\\b" : "",
+    g_string_printf (pattern, "%s(",
                      prefix ? prefix : "");
 
     for (l = words; l != NULL; l = l->next)
@@ -934,9 +932,8 @@ moo_rule_keywords_new (GSList             *words,
         g_string_append (pattern, word);
     }
 
-    g_string_append_printf (pattern, ")%s%s",
-                            suffix ? suffix : "",
-                            word_boundary ? "\\b" : "");
+    g_string_append_printf (pattern, ")%s",
+                            suffix ? suffix : "");
 
     rule = moo_rule_regex_new (pattern->str, TRUE, 0, 0, flags, style);
 
