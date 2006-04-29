@@ -3,7 +3,7 @@
 <language name="Perl" section="Scripts"
           mimetypes="text/x-perl;application/x-perl"
           extensions="*.pl">
-
+<!-- Taken from gtksourceview distribution -->
   <syntax>
     <keyword-list suffix="\b" name="keywords">
         <keyword>eq</keyword>
