@@ -791,10 +791,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
 
     if (!moo_highlighter_compute_timed (hl, first_line, last_line,
                                         TRUE, COMPUTE_NOW_TIME))
-    {
         moo_highlighter_queue_compute (hl);
-        return;
-    }
 
     first_changed = last_changed = -1;
     hl->last_tag = NULL;
@@ -806,6 +803,9 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
         guint i;
         GtkTextIter t_start, t_end;
         GSList *tags;
+
+        if (!hl->line_buf->invalid.empty && line_no >= hl->line_buf->invalid.first)
+            break;
 
         if (line->hl_info->tags_applied)
             continue;
