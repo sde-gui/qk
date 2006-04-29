@@ -30,40 +30,6 @@ import _moo_utils.UIXML as PyMooUIXML_Type
 ignore-glob
   *_get_type
 %%
-override moo_python_plugin_hook varargs
-static PyObject *
-_wrap_moo_python_plugin_hook (G_GNUC_UNUSED PyObject *self, PyObject *args)
-{
-    PyObject *event, *callback;
-    PyObject *data = NULL;
-    PyObject *result;
-    int len;
-
-    len = PyTuple_GET_SIZE (args);
-
-    if (len < 2)
-        return_TypeErr ("at least two arguments required");
-
-    event = PyTuple_GET_ITEM (args, 0);
-
-    if (!PyString_Check (event))
-        return_TypeErr ("event must be a string");
-
-    callback = PyTuple_GET_ITEM (args, 1);
-
-    if (!PyCallable_Check (callback))
-        return_TypeErr ("callback must be a callable");
-
-    if (len > 2)
-        data = PyTuple_GetSlice (args, 2, len);
-
-    result = _moo_python_plugin_hook (PyString_AS_STRING (event),
-                                      callback, data);
-    Py_XDECREF (data);
-
-    return result;
-}
-%%
 override moo_python_plugin_register varargs
 static PyObject *
 _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
