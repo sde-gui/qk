@@ -802,7 +802,7 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooEditActionClass, check_state),
                           g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_VOID__VOID,
+                          _moo_marshal_BOOLEAN__VOID,
                           G_TYPE_BOOLEAN, 0);
 }
 

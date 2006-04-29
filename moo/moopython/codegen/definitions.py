@@ -19,7 +19,7 @@ class Parameter(object):
         self.pname = pname
         self.pdflt = pdflt
         self.pnull = pnull
-
+        
     def __len__(self): return 4
     def __getitem__(self, i):
         return (self.ptype, self.pname, self.pdflt, self.pnull)[i]
@@ -77,6 +77,7 @@ class ObjectDef(Definition):
 	self.fields = []
         self.implements = []
         self.class_init_func = None
+        self.has_new_constructor_api = False
 	for arg in get_valid_scheme_definitions(args):
 	    if arg[0] == 'in-module':
 		self.module = arg[1]
@@ -103,7 +104,7 @@ class ObjectDef(Definition):
 	fp.write('(define-object ' + self.name + '\n')
 	if self.module:
 	    fp.write('  (in-module "' + self.module + '")\n')
-	if self.parent != (None, None):
+	if self.parent != (None, None):	
 	    fp.write('  (parent "' + self.parent + '")\n')
         for interface in self.implements:
             fp.write('  (implements "' + interface + '")\n')
@@ -315,7 +316,7 @@ class MethodDefBase(Definition):
             elif arg[0] == 'deprecated':
                 self.deprecated = arg[1]
             else:
-                sys.stderr.write("Warning: %s argument unsupported.\n"
+                sys.stderr.write("Warning: %s argument unsupported.\n" 
                                  % (arg[0]))
                 dump = 1
         if dump:
@@ -323,7 +324,7 @@ class MethodDefBase(Definition):
 
         if self.caller_owns_return is None and self.ret is not None:
             self.guess_return_value_ownership()
-
+            
     def merge(self, old, parmerge):
         self.caller_owns_return = old.caller_owns_return
         self.varargs = old.varargs
@@ -370,7 +371,7 @@ class MethodDef(MethodDefBase):
             if self.__dict__[item] == None:
                 self.write_defs(sys.stderr)
                 raise RuntimeError, "definition missing required %s" % (item,)
-
+        
     def write_defs(self, fp=sys.stdout):
 	fp.write('(define-method ' + self.name + '\n')
         self._write_defs(fp)
@@ -480,7 +481,7 @@ class FunctionDef(Definition):
             # parameter names changed and we can't find a match; it's
             # safer to keep the old parameter list untouched.
             self.params = deepcopy(old.params)
-
+        
 	if not self.is_constructor_of:
             try:
                 self.is_constructor_of = old.is_constructor_of

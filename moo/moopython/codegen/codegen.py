@@ -340,6 +340,8 @@ class Wrapper:
                 if self.overrides.is_overriden(funcname):
                     data = self.overrides.override(funcname)
                     self.write_function(funcname, data)
+                    self.objinfo.has_new_constructor_api = (
+                        self.objinfo.typecode in self.overrides.newstyle_constructors)
                 else:
                     # ok, a hack to determine if we should use new-style constructores :P
                     if getattr(self, 'write_property_based_constructor', None) is not None:
@@ -379,11 +381,18 @@ class Wrapper:
 
     def get_methflags(self, funcname):
         if self.overrides.wants_kwargs(funcname):
-            return 'METH_VARARGS|METH_KEYWORDS'
+            flags = 'METH_VARARGS|METH_KEYWORDS'
         elif self.overrides.wants_noargs(funcname):
-            return 'METH_NOARGS'
+            flags = 'METH_NOARGS'
+        elif self.overrides.wants_onearg(funcname):
+            flags = 'METH_O'
         else:
-            return 'METH_VARARGS'
+            flags = 'METH_VARARGS'
+        if self.overrides.is_staticmethod(funcname):
+            flags += '|METH_STATIC'
+        elif self.overrides.is_classmethod(funcname):
+            flags += '|METH_CLASS'
+        return flags
 
     def write_function(self, funcname, data):
         lineno, filename = self.overrides.getstartline(funcname)
@@ -563,6 +572,7 @@ class Wrapper:
                 self.fp.write('    PyObject *o;\n')
                 self.fp.write(
                     '    %(klass)sClass *klass = %(class_cast_macro)s(gclass);\n'
+                    '    PyObject *gsignals = PyDict_GetItemString(pyclass->tp_dict, "__gsignals__");\n'
                     % vars())
 
             for name, cname in virtuals:
@@ -572,8 +582,9 @@ class Wrapper:
                                   'is currently not supported */\n' % vars())
                 else:
                     self.fp.write('''
-    if ((o = PyDict_GetItemString(pyclass->tp_dict, (char*)"%(do_name)s"))
-        && !PyObject_TypeCheck(o, &PyCFunction_Type))
+    if ((o = PyDict_GetItemString(pyclass->tp_dict, "%(do_name)s"))
+        && !PyObject_TypeCheck(o, &PyCFunction_Type)
+        && !(gsignals && PyDict_GetItemString(gsignals, "%(name)s")))
         klass->%(name)s = %(cname)s;\n''' % vars())
             self.fp.write('    return 0;\n}\n')
 
@@ -587,7 +598,8 @@ class Wrapper:
         if not self.objinfo.fields:
             return '0'
         getsets = []
-        for ftype, fname in self.objinfo.fields:
+        for ftype, cfname in self.objinfo.fields:
+            fname = cfname.replace('.', '_')
             gettername = '0'
             settername = '0'
             attrname = self.objinfo.c_name + '.' + fname
@@ -608,7 +620,7 @@ class Wrapper:
                     self.fp.write(self.getter_tmpl %
                                   { 'funcname': funcname,
                                     'varlist': info.varlist,
-                                    'field': self.get_field_accessor(fname),
+                                    'field': self.get_field_accessor(cfname),
                                     'codeafter': info.get_codeafter() })
                     gettername = funcname
                 except:
@@ -741,14 +753,25 @@ class GObjectWrapper(Wrapper):
         return substdict
 
     def write_default_constructor(self):
+        try:
+            parent = self.parser.find_object(self.objinfo.parent)
+        except ValueError:
+            parent = None
+        if parent is not None:
+            ## just like the constructor is inheritted, we should inherit the new API compatibility flag
+            self.objinfo.has_new_constructor_api = parent.has_new_constructor_api
+        elif self.objinfo.parent == 'GObject':
+            self.objinfo.has_new_constructor_api = True
         return '0'
 
     def write_property_based_constructor(self, constructor):
+        self.objinfo.has_new_constructor_api = True
         out = self.fp
         print >> out, "static int"
         print >> out, '_wrap_%s(PyGObject *self, PyObject *args,'\
               ' PyObject *kwargs)\n{' % constructor.c_name
-        print >> out, "    GType obj_type = pyg_type_from_object((PyObject *) self);"
+        if constructor.params:
+            print >> out, "    GType obj_type = pyg_type_from_object((PyObject *) self);"
 
         def py_str_list_to_c(arg):
             if arg:
@@ -794,7 +817,7 @@ class GObjectWrapper(Wrapper):
             print >> out, "    if (!pyg_parse_constructor_args(obj_type, arg_names, prop_names,"
             print >> out, "                                    params, &nparams, parsed_args))"
             print >> out, "        return -1;"
-            print >> out, "    self->obj = g_object_newv(obj_type, nparams, params);"
+            print >> out, "    pygobject_constructv(self, nparams, params);\n"
             print >> out, "    for (i = 0; i < nparams; ++i)"
             print >> out, "        g_value_unset(&params[i].value);"
         else:
@@ -808,7 +831,7 @@ class GObjectWrapper(Wrapper):
             print >> out, '    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*)":%s.__init__", kwlist))' % classname
             print >> out, "        return -1;"
             print >> out
-            print >> out, "    self->obj = g_object_newv(obj_type, 0, NULL);"
+            print >> out, "    pygobject_constructv(self, 0, NULL);\n"
 
         print >> out, \
               '    if (!self->obj) {\n' \
@@ -820,7 +843,6 @@ class GObjectWrapper(Wrapper):
             print >> out, "    g_object_ref(self->obj);\n"
 
         print >> out, \
-              '    pygobject_register_wrapper((PyObject *)self);\n' \
               '    return 0;\n' \
               '}\n\n' % { 'typename': classname }
         return "_wrap_%s" % constructor.c_name
@@ -997,6 +1019,11 @@ def write_headers(data, fp):
     fp.resetline()
     fp.write('\n\n')
 
+def write_body(data, fp):
+    fp.write(data)
+    fp.resetline()
+    fp.write('\n\n')
+
 def write_imports(overrides, fp):
     fp.write('/* ---------- types from other modules ---------- */\n')
     for module, pyname, cname in overrides.get_imports():
@@ -1014,10 +1041,39 @@ def write_type_declarations(parser, fp):
         fp.write('PyTypeObject Py' + interface.c_name + '_Type;\n')
     fp.write('\n')
 
+
+def sort_parent_children(objects):
+    objects = list(objects)
+    modified = True
+    while modified:
+        modified = False
+        parent_index = None
+        child_index = None
+        for i, obj in enumerate(objects):
+            if obj.parent == 'GObject':
+                continue
+            if obj.parent not in [info.c_name for info in objects[:i]]:
+                for j, info in enumerate(objects[i+1:]):
+                    if info.c_name == obj.parent:
+                        parent_index = i + 1 + j
+                        child_index = i
+                        break
+                else:
+                    continue
+                break
+        if child_index is not None and parent_index is not None:
+            if child_index != parent_index:
+                objects.insert(child_index, objects.pop(parent_index))
+                modified = True
+    return objects
+
 def write_classes(parser, overrides, fp):
+    ## Sort the objects, so that we generate code for the parent types
+    ## before their children.
+    objects = sort_parent_children(parser.objects)
     for klass, items in ((GBoxedWrapper, parser.boxes),
                          (GPointerWrapper, parser.pointers),
-                         (GObjectWrapper, parser.objects),
+                         (GObjectWrapper, objects),
                          (GInterfaceWrapper, parser.interfaces)):
         for item in items:
             instance = klass(parser, item, overrides, fp)
@@ -1116,6 +1172,12 @@ def write_registers(parser, fp):
             fp.write('    pygobject_register_class(d, "' + obj.c_name +
                      '", ' + obj.typecode + ', &Py' + obj.c_name +
                      '_Type, NULL);\n')
+        if obj.has_new_constructor_api:
+            fp.write('    pyg_set_object_has_new_constructor(%s);\n' % obj.typecode)
+        else:
+            print >> sys.stderr, ("Warning: Constructor for %s needs to be updated to new API\n"
+                                  "         See http://live.gnome.org/PyGTK_2fWhatsNew28"
+                                  "#update-constructors") % obj.c_name
         if obj.class_init_func is not None:
             fp.write('    pyg_register_class_init(%s, %s);\n' %
                      (obj.typecode, obj.class_init_func))
@@ -1125,6 +1187,7 @@ def write_source(parser, overrides, prefix, fp=FileOutput(sys.stdout)):
     write_headers(overrides.get_headers(), fp)
     write_imports(overrides, fp)
     write_type_declarations(parser, fp)
+    write_body(overrides.get_body(), fp)
     write_classes(parser, overrides, fp)
 
     wrapper = Wrapper(parser, None, overrides, fp)

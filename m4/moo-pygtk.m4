@@ -1,4 +1,38 @@
 ##############################################################################
+# _MOO_AC_PYGTK_CODEGEN
+#
+AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
+    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = autodetect)]),[
+        if test x$with_custom_codegen = "xno"; then
+            MOO_USE_CUSTOM_CODEGEN="no"
+            AC_MSG_NOTICE([using installed codegen])
+        else
+            MOO_USE_CUSTOM_CODEGEN="yes"
+            AC_MSG_NOTICE([using patched codegen])
+        fi
+    ],[
+        if $PKG_CONFIG "pygtk-2.0 >= 2.8"; then
+            AC_MSG_NOTICE([pygtk >= 2.8, using patched codegen])
+            MOO_USE_CUSTOM_CODEGEN=yes
+        else
+            AC_MSG_NOTICE([pygtk < 2.8, using installed codegen])
+            MOO_USE_CUSTOM_CODEGEN=no
+        fi
+
+    ])
+
+    PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
+    AC_SUBST(PYGTK_CODEGEN_DIR)
+
+    if test x$MOO_USE_CUSTOM_CODEGEN != xyes; then
+        AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
+    fi
+
+    AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, test x$MOO_USE_CUSTOM_CODEGEN = "xyes")
+])
+
+
+##############################################################################
 # _MOO_AC_CHECK_PYGTK_MINGW(version,action-if-found,action-if-not-found)
 # checks pygtk stuff for mingw, it's broken
 #
@@ -35,8 +69,11 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
         AC_SUBST(PYGTK_CFLAGS)
         PYGTK_DEFS_DIR=$PYTHON_PREFIX/share/pygtk/2.0/defs
         AC_SUBST(PYGTK_DEFS_DIR)
+        PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
+        AC_SUBST(PYGTK_CODEGEN_DIR)
         AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
         $2
+        _MOO_AC_PYGTK_CODEGEN
     ],[
         AC_MSG_RESULT([not found])
         $3
@@ -76,6 +113,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
             PYGTK_DEFS_DIR=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
             AC_SUBST(PYGTK_DEFS_DIR)
             AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
+            _MOO_AC_PYGTK_CODEGEN
         ],[
             AC_MSG_RESULT(no)
             $3

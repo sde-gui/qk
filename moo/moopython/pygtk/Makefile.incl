@@ -87,10 +87,15 @@ if MOO_OS_MINGW
 codegen_platform = --platform win32
 endif
 
+if MOO_USE_CUSTOM_CODEGEN
+codegen = $(PYTHON) $(moopython_srcdir)/codegen/codegen.py $(codegen_platform)
+else
+codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(codegen_platform)
+endif
+
 $(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files)
 	mkdir -p $(moopygtk)
-	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_utils $(codegen_platform) \
+	$(codegen) --prefix _moo_utils \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--override $(moopygtk_srcdir)/mooutils-pygtk.override \
@@ -99,8 +104,7 @@ $(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/moouti
 
 $(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-pygtk.override
 	mkdir -p $(moopygtk)
-	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_term $(codegen_platform) \
+	$(codegen) --prefix _moo_term \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopygtk_srcdir)/mooutils-pygtk.defs \
@@ -110,8 +114,7 @@ $(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-
 
 $(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-pygtk.override $(mooedit_defs_files)
 	mkdir -p $(moopygtk)
-	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_edit $(codegen_platform) \
+	$(codegen) --prefix _moo_edit \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopygtk_srcdir)/mooutils-pygtk.defs \
@@ -121,8 +124,7 @@ $(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-
 
 $(moopygtk)/mooapp-pygtk.c: $(moopygtk)/mooapp-pygtk.defs $(moopygtk)/mooapp-pygtk.override
 	mkdir -p $(moopygtk)
-	$(PYTHON) $(moopython_srcdir)/codegen/codegen.py \
-	--prefix _moo_app $(codegen_platform) \
+	$(codegen) --prefix _moo_app \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 	--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 	--register $(moopygtk_srcdir)/mooedit-pygtk.defs \

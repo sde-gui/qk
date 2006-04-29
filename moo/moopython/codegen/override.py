@@ -30,14 +30,19 @@ class Overrides:
         self.overridden = {}
 	self.kwargs = {}
         self.noargs = {}
+        self.onearg = {}
+	self.staticmethod = {}
+        self.classmethod = {}
         self.startlines = {}
         self.override_attrs = {}
         self.override_slots = {}
         self.headers = ''
+        self.body = ''
         self.init = ''
         self.imports = []
         self.defines = {}
         self.functions = {}
+        self.newstyle_constructors = {}
 	if filename:
             self.handle_file(filename)
 
@@ -99,12 +104,20 @@ class Overrides:
 	    for func in string.split(rest):
 		self.glob_ignores.append(func)
 	elif command == 'override':
-            "override function/method [kwargs,noargs]"
+            "override function/method [kwargs|noargs|onearg] [staticmethod|classmethod]"
 	    func = words[1]
 	    if 'kwargs' in words[1:]:
 		self.kwargs[func] = 1
             elif 'noargs' in words[1:]:
 		self.noargs[func] = 1
+            elif 'onearg' in words[1:]:
+		self.onearg[func] = True
+
+            if 'staticmethod' in words[1:]:
+		self.staticmethod[func] = True
+            elif 'classmethod' in words[1:]:
+		self.classmethod[func] = True
+            
 	    self.overrides[func] = rest
             self.startlines[func] = (startline + 1, filename)
         elif command == 'override-attr':
@@ -121,6 +134,10 @@ class Overrides:
             "headers"
             self.headers = '%s\n#line %d "%s"\n%s' % \
                            (self.headers, startline + 1, filename, rest)
+        elif command == 'body':
+            "body"
+            self.body = '%s\n#line %d "%s"\n%s' % \
+                           (self.body, startline + 1, filename, rest)
         elif command == 'init':
             "init"
             self.init = '%s\n#line %d "%s"\n%s' % \
@@ -141,8 +158,8 @@ class Overrides:
                 if match:
                     self.imports.append(match.groups())
         elif command == 'define':
-            "define funcname [kwargs,noargs]"
-            "define Class.method [kwargs,noargs]"
+            "define funcname [kwargs|noargs|onearg] [classmethod|staticmethod]"
+            "define Class.method [kwargs|noargs|onearg] [classmethod|staticmethod]"
 	    func = words[1]
             klass = None
             if func.find('.') != -1:
@@ -158,8 +175,20 @@ class Overrides:
 		self.kwargs[func] = 1
             elif 'noargs' in words[1:]:
 		self.noargs[func] = 1
+            elif 'onearg' in words[1:]:
+		self.onearg[func] = 1
+
+            if 'staticmethod' in words[1:]:
+		self.staticmethod[func] = True
+            elif 'classmethod' in words[1:]:
+		self.classmethod[func] = True
 
             self.startlines[func] = (startline + 1, filename)
+
+        elif command == 'new-constructor':
+            "new-constructor GType"
+            gtype, = words[1:]
+            self.newstyle_constructors[gtype] = True
             
     def is_ignored(self, name):
 	if self.ignores.has_key(name):
@@ -194,7 +223,16 @@ class Overrides:
     
     def wants_noargs(self, name):
 	return self.noargs.has_key(name)
-    
+
+    def wants_onearg(self, name):
+	return self.onearg.has_key(name)
+
+    def is_staticmethod(self, name):
+	return self.staticmethod.has_key(name)
+
+    def is_classmethod(self, name):
+	return self.classmethod.has_key(name)
+
     def attr_is_overriden(self, attr):
         return self.override_attrs.has_key(attr)
     
@@ -209,6 +247,9 @@ class Overrides:
     
     def get_headers(self):
         return self.headers
+
+    def get_body(self):
+        return self.body
     
     def get_init(self):
         return self.init

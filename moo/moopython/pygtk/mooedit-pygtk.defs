@@ -1398,6 +1398,12 @@
 
 ;; From moo/mooedit/mooedit-actions.h
 
+(define-function moo_edit_action_new
+  (c-name "moo_edit_action_new")
+  (is-constructor-of "MooEditAction")
+  (return-type "MooAction*")
+)
+
 (define-function _edit_class_add_action
   (c-name "moo_edit_class_add_action")
   (return-type "none")

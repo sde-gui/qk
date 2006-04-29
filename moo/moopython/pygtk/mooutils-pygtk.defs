@@ -2194,6 +2194,12 @@
 
 ;; From ./ggap/moo/mooutils/mooaction.h
 
+(define-function moo_action_new
+  (c-name "moo_action_new")
+  (is-constructor-of "MooAction")
+  (return-type "MooAction*")
+)
+
 (define-method activate
   (of-object "MooAction")
   (c-name "moo_action_activate")
