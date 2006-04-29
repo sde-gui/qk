@@ -48,6 +48,8 @@ struct _MooEditAction
 struct _MooEditActionClass
 {
     MooActionClass parent_class;
+
+    gboolean (*check_state) (MooEditAction *action);
 };
 
 
@@ -70,6 +72,9 @@ void    moo_edit_class_new_action_custom    (MooEditClass       *klass,
                                              MooEditActionFunc   func,
                                              gpointer            data,
                                              GDestroyNotify      notify);
+void    moo_edit_class_new_action_type      (MooEditClass       *klass,
+                                             const char         *id,
+                                             GType               type);
 
 void    moo_edit_class_remove_action        (MooEditClass       *klass,
                                              const char         *id);
@@ -77,6 +82,8 @@ void    moo_edit_class_remove_action        (MooEditClass       *klass,
 MooActionGroup *moo_edit_get_actions        (MooEdit            *edit);
 MooAction  *moo_edit_get_action_by_id       (MooEdit            *edit,
                                              const char         *action_id);
+
+void    moo_edit_action_check_state         (MooEditAction      *action);
 
 
 G_END_DECLS

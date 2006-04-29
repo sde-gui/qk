@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mootoggleaction.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/moomarshals.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
@@ -25,7 +26,6 @@ static void moo_edit_add_action     (MooEdit        *edit,
                                      MooAction      *action);
 static void moo_edit_remove_action  (MooEdit        *edit,
                                      const char     *action_id);
-static void moo_edit_action_check   (MooEditAction  *action);
 
 
 #define MOO_EDIT_ACTIONS_QUARK (moo_edit_get_actions_quark ())
@@ -432,6 +432,32 @@ moo_edit_class_new_action_custom (MooEditClass       *klass,
 }
 
 
+static MooAction *
+type_action_func (MooEdit  *edit,
+                  gpointer  klass)
+{
+    return g_object_new (G_TYPE_FROM_CLASS (klass),
+                         "doc", edit, NULL);
+}
+
+
+void
+moo_edit_class_new_action_type (MooEditClass *edit_klass,
+                                const char   *id,
+                                GType         type)
+{
+    gpointer klass;
+
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT_ACTION));
+
+    klass = g_type_class_ref (type);
+    g_return_if_fail (klass != NULL);
+
+    moo_edit_class_new_action_custom (edit_klass, id, type_action_func,
+                                      klass, g_type_class_unref);
+}
+
+
 void
 moo_edit_class_remove_action (MooEditClass *klass,
                               const char   *action_id)
@@ -519,8 +545,7 @@ check_action (G_GNUC_UNUSED MooActionGroup *group,
               G_GNUC_UNUSED gpointer data)
 {
     if (MOO_IS_EDIT_ACTION (action))
-        moo_edit_action_check (MOO_EDIT_ACTION (action));
-
+        moo_edit_action_check_state (MOO_EDIT_ACTION (action));
     return FALSE;
 }
 
@@ -589,6 +614,13 @@ _moo_edit_class_init_actions (MooEditClass *klass)
  */
 
 G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
+
+enum {
+    CHECK_STATE,
+    NUM_SIGNALS
+};
+
+static guint signals[NUM_SIGNALS];
 
 enum {
     PROP_0,
@@ -691,49 +723,15 @@ moo_edit_action_set_property (GObject        *object,
 
 
 static void
-moo_edit_action_class_init (MooEditActionClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    gobject_class->finalize = moo_edit_action_finalize;
-    gobject_class->set_property = moo_edit_action_set_property;
-    gobject_class->get_property = moo_edit_action_get_property;
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_DOC,
-                                     g_param_spec_object ("doc",
-                                             "doc",
-                                             "doc",
-                                             MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_FLAGS,
-                                     g_param_spec_flags ("flags",
-                                             "flags",
-                                             "flags",
-                                             MOO_TYPE_EDIT_ACTION_FLAGS, 0,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_LANGS,
-                                     g_param_spec_pointer ("langs",
-                                             "langs",
-                                             "langs",
-                                             G_PARAM_READWRITE));
-}
-
-
-static void
 moo_edit_action_init (G_GNUC_UNUSED MooEditAction *action)
 {
 }
 
 
-static void
-moo_edit_action_check (MooEditAction *action)
+static gboolean
+moo_edit_action_check_state_real (MooEditAction *action)
 {
-    g_return_if_fail (action->doc != NULL);
+    g_return_val_if_fail (action->doc != NULL, FALSE);
 
     if (action->flags)
     {
@@ -760,6 +758,52 @@ moo_edit_action_check (MooEditAction *action)
 
         g_object_set (action, "visible", visible, NULL);
     }
+
+    return TRUE;
+}
+
+
+static void
+moo_edit_action_class_init (MooEditActionClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+    gobject_class->finalize = moo_edit_action_finalize;
+    gobject_class->set_property = moo_edit_action_set_property;
+    gobject_class->get_property = moo_edit_action_get_property;
+
+    klass->check_state = moo_edit_action_check_state_real;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_DOC,
+                                     g_param_spec_object ("doc",
+                                             "doc",
+                                             "doc",
+                                             MOO_TYPE_EDIT,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FLAGS,
+                                     g_param_spec_flags ("flags",
+                                             "flags",
+                                             "flags",
+                                             MOO_TYPE_EDIT_ACTION_FLAGS, 0,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_LANGS,
+                                     g_param_spec_pointer ("langs",
+                                             "langs",
+                                             "langs",
+                                             G_PARAM_READWRITE));
+
+    signals[CHECK_STATE] =
+            g_signal_new ("check-state", G_TYPE_FROM_CLASS (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooEditActionClass, check_state),
+                          g_signal_accumulator_true_handled, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_BOOLEAN, 0);
 }
 
 
@@ -779,4 +823,13 @@ moo_edit_action_flags_get_type (void)
     }
 
     return type;
+}
+
+
+void
+moo_edit_action_check_state (MooEditAction *action)
+{
+    gboolean result;
+    g_return_if_fail (MOO_IS_EDIT_ACTION (action));
+    g_signal_emit (action, signals[CHECK_STATE], 0, &result);
 }
