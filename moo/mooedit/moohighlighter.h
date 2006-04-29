@@ -57,9 +57,6 @@ struct _MooHighlighter {
     CtxNode *root;
     GSList *nodes;
     guint idle;
-
-    gboolean need_last_tag;
-    GtkTextTag *last_tag;
 };
 
 struct _MooSyntaxTag {

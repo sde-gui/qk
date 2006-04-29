@@ -203,29 +203,9 @@ apply_tag (MooHighlighter     *hl,
                  _moo_line_buffer_get_line_index (hl->line_buf, line));
 #endif
         line->hl_info->tags = g_slist_prepend (line->hl_info->tags, g_object_ref (tag));
-        hl->last_tag = tag;
         _moo_text_buffer_apply_syntax_tag (MOO_TEXT_BUFFER (hl->buffer), tag, start, end);
     }
 }
-
-
-// #if !GTK_CHECK_VERSION(2,8,0)
-// apparently http://bugzilla.gnome.org/show_bug.cgi?id=143537 is not completely fixed yet
-static void
-check_last_tag (MooHighlighter *hl)
-{
-    if (hl->last_tag && hl->need_last_tag)
-    {
-        gboolean fg_set;
-        g_object_get (hl->last_tag, "foreground-set", &fg_set, NULL);
-        g_object_set (hl->last_tag, "foreground-set", fg_set, NULL);
-    }
-
-    hl->last_tag = NULL;
-}
-// #else
-// #define check_last_tag(hl)
-// #endif
 
 
 MooHighlighter*
@@ -241,9 +221,6 @@ _moo_highlighter_new (GtkTextBuffer *buffer,
     hl->lang = lang ? moo_lang_ref (lang) : NULL;
     hl->buffer = buffer;
     hl->line_buf = line_buf;
-
-//     if (gtk_check_version (2, 8, 0))
-        hl->need_last_tag = TRUE;
 
     return hl;
 }
@@ -536,7 +513,6 @@ hl_compute_range (MooHighlighter *hl,
 
     g_return_val_if_fail (node != NULL, TRUE);
 
-    hl->last_tag = NULL;
     gtk_text_buffer_get_iter_at_line (hl->buffer, &iter, lines->first);
 
 //     g_print ("hl_compute_range: %d to %d\n", lines->first, lines->last);
@@ -721,7 +697,6 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
         _moo_highlighter_queue_compute (hl);
 
     first_changed = last_changed = -1;
-    hl->last_tag = NULL;
 
     for (line_no = first_line; line_no <= last_line; ++line_no)
     {
@@ -781,8 +756,6 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
             t_start = t_end;
         }
     }
-
-//     check_last_tag (hl);
 
     if (first_changed >= 0)
         _moo_text_buffer_tags_changed (MOO_TEXT_BUFFER (hl->buffer),
