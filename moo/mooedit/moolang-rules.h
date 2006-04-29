@@ -75,6 +75,7 @@ MooRule    *_moo_rule_keywords_new      (GSList             *words,
                                          MooRuleFlags        flags,
                                          const char         *prefix,
                                          const char         *suffix,
+                                         gboolean            word_boundary,
                                          const char         *style);
 MooRule    *_moo_rule_zero_new          (MooRuleFlags        flags);
 MooRule    *_moo_rule_include_new       (MooContext         *context);

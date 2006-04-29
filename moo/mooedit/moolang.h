@@ -128,6 +128,8 @@ typedef struct {
 typedef struct {
     gpointer regex; /* EggRegex* */
     guint non_empty : 1;
+    guint left_word_bndry : 1;
+    guint right_word_bndry : 1;
 } MooRuleRegex;
 
 typedef struct {
@@ -151,11 +153,11 @@ typedef struct {
 
 struct _MooRule
 {
-    MooRule* (*match)   (MooRule            *self,
-                         MooRuleMatchData   *data,
-                         MooRuleMatchResult *result,
-                         MooRuleMatchFlags   flags);
-    void     (*destroy) (MooRule            *self);
+    MooRule* (*match)   (MooRule                *self,
+                         const MooRuleMatchData *data,
+                         MooRuleMatchResult     *result,
+                         MooRuleMatchFlags       flags);
+    void     (*destroy) (MooRule                *self);
 
     char *description;
     char *style;
