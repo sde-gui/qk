@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooeditfileops.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -11,6 +10,10 @@
  *
  *   See COPYING file that comes with this distribution.
  */
+
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be included"
+#endif
 
 #ifndef __MOO_EDIT_FILE_OPS_H__
 #define __MOO_EDIT_FILE_OPS_H__
@@ -59,29 +62,29 @@ struct _MooEditSaver
 };
 
 
-MooEditLoader   *moo_edit_loader_get_default(void);
-MooEditSaver    *moo_edit_saver_get_default (void);
+MooEditLoader   *_moo_edit_loader_get_default(void);
+MooEditSaver    *_moo_edit_saver_get_default (void);
 
-MooEditLoader   *moo_edit_loader_ref        (MooEditLoader  *loader);
-void             moo_edit_loader_unref      (MooEditLoader  *loader);
-MooEditSaver    *moo_edit_saver_ref         (MooEditSaver   *saver);
-void             moo_edit_saver_unref       (MooEditSaver   *saver);
+MooEditLoader   *_moo_edit_loader_ref       (MooEditLoader  *loader);
+void             _moo_edit_loader_unref     (MooEditLoader  *loader);
+MooEditSaver    *_moo_edit_saver_ref        (MooEditSaver   *saver);
+void             _moo_edit_saver_unref      (MooEditSaver   *saver);
 
-gboolean         moo_edit_loader_load       (MooEditLoader  *loader,
+gboolean         _moo_edit_loader_load      (MooEditLoader  *loader,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              GError        **error);
-gboolean         moo_edit_loader_reload     (MooEditLoader  *loader,
+gboolean         _moo_edit_loader_reload    (MooEditLoader  *loader,
                                              MooEdit        *edit,
                                              GError        **error);
-gboolean         moo_edit_saver_save        (MooEditSaver   *saver,
+gboolean         _moo_edit_saver_save       (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,
                                              MooEditSaveFlags flags,
                                              GError        **error);
-gboolean         moo_edit_saver_save_copy   (MooEditSaver   *saver,
+gboolean         _moo_edit_saver_save_copy  (MooEditSaver   *saver,
                                              MooEdit        *edit,
                                              const char     *file,
                                              const char     *encoding,

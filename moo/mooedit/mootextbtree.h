@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mootextbtree.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -68,31 +67,31 @@ struct _BTree {
 };
 
 
-BTree      *moo_text_btree_new              (void);
-void        moo_text_btree_free             (BTree      *tree);
+BTree      *_moo_text_btree_new             (void);
+void        _moo_text_btree_free            (BTree      *tree);
 
-guint       moo_text_btree_size             (BTree      *tree);
+guint       _moo_text_btree_size            (BTree      *tree);
 
-BTData     *moo_text_btree_get_data         (BTree      *tree,
+BTData     *_moo_text_btree_get_data        (BTree      *tree,
                                              guint       index_);
 
-BTData     *moo_text_btree_insert           (BTree      *tree,
+BTData     *_moo_text_btree_insert          (BTree      *tree,
                                              guint       index_,
                                              gpointer    tag);
-void        moo_text_btree_delete           (BTree      *tree,
+void        _moo_text_btree_delete          (BTree      *tree,
                                              guint       index_,
                                              GSList    **removed_marks);
 
-void        moo_text_btree_insert_range     (BTree      *tree,
+void        _moo_text_btree_insert_range    (BTree      *tree,
                                              int         first,
                                              int         num,
                                              gpointer    tag);
-void        moo_text_btree_delete_range     (BTree      *tree,
+void        _moo_text_btree_delete_range    (BTree      *tree,
                                              int         first,
                                              int         num,
                                              GSList    **removed_marks);
 
-void        moo_text_btree_update_n_marks   (BTree      *tree,
+void        _moo_text_btree_update_n_marks  (BTree      *tree,
                                              BTData     *data,
                                              int         add);
 

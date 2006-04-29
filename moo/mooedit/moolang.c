@@ -67,7 +67,7 @@ moo_context_free (MooContext *ctx)
         g_free (ctx->style);
 
         for (i = 0; i < ctx->rules->len; ++i)
-            moo_rule_free (ctx->rules->data[i]);
+            _moo_rule_free (ctx->rules->data[i]);
         g_ptr_array_free ((GPtrArray*) ctx->rules, TRUE);
 
         g_free (ctx);

@@ -69,7 +69,7 @@ static void     add_status                  (MooEdit        *edit,
 
 
 MooEditLoader*
-moo_edit_loader_get_default (void)
+_moo_edit_loader_get_default (void)
 {
     if (!default_loader)
     {
@@ -84,7 +84,7 @@ moo_edit_loader_get_default (void)
 
 
 MooEditSaver*
-moo_edit_saver_get_default (void)
+_moo_edit_saver_get_default (void)
 {
     if (!default_saver)
     {
@@ -99,7 +99,7 @@ moo_edit_saver_get_default (void)
 
 
 MooEditLoader*
-moo_edit_loader_ref (MooEditLoader *loader)
+_moo_edit_loader_ref (MooEditLoader *loader)
 {
     g_return_val_if_fail (loader != NULL, NULL);
     loader->ref_count++;
@@ -108,7 +108,7 @@ moo_edit_loader_ref (MooEditLoader *loader)
 
 
 MooEditSaver*
-moo_edit_saver_ref (MooEditSaver *saver)
+_moo_edit_saver_ref (MooEditSaver *saver)
 {
     g_return_val_if_fail (saver != NULL, NULL);
     saver->ref_count++;
@@ -117,7 +117,7 @@ moo_edit_saver_ref (MooEditSaver *saver)
 
 
 void
-moo_edit_loader_unref (MooEditLoader  *loader)
+_moo_edit_loader_unref (MooEditLoader  *loader)
 {
     if (!loader || --loader->ref_count)
         return;
@@ -130,7 +130,7 @@ moo_edit_loader_unref (MooEditLoader  *loader)
 
 
 void
-moo_edit_saver_unref (MooEditSaver   *saver)
+_moo_edit_saver_unref (MooEditSaver   *saver)
 {
     if (!saver || --saver->ref_count)
         return;
@@ -143,11 +143,11 @@ moo_edit_saver_unref (MooEditSaver   *saver)
 
 
 gboolean
-moo_edit_loader_load (MooEditLoader  *loader,
-                      MooEdit        *edit,
-                      const char     *filename,
-                      const char     *encoding,
-                      GError        **error)
+_moo_edit_loader_load (MooEditLoader  *loader,
+                       MooEdit        *edit,
+                       const char     *filename,
+                       const char     *encoding,
+                       GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -168,9 +168,9 @@ moo_edit_loader_load (MooEditLoader  *loader,
 
 
 gboolean
-moo_edit_loader_reload (MooEditLoader  *loader,
-                        MooEdit        *edit,
-                        GError        **error)
+_moo_edit_loader_reload (MooEditLoader  *loader,
+                         MooEdit        *edit,
+                         GError        **error)
 {
     g_return_val_if_fail (loader != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
@@ -180,12 +180,12 @@ moo_edit_loader_reload (MooEditLoader  *loader,
 
 
 gboolean
-moo_edit_saver_save (MooEditSaver   *saver,
-                     MooEdit        *edit,
-                     const char     *filename,
-                     const char     *encoding,
-                     MooEditSaveFlags flags,
-                     GError        **error)
+_moo_edit_saver_save (MooEditSaver   *saver,
+                      MooEdit        *edit,
+                      const char     *filename,
+                      const char     *encoding,
+                      MooEditSaveFlags flags,
+                      GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -206,11 +206,11 @@ moo_edit_saver_save (MooEditSaver   *saver,
 
 
 gboolean
-moo_edit_saver_save_copy (MooEditSaver   *saver,
-                          MooEdit        *edit,
-                          const char     *filename,
-                          const char     *encoding,
-                          GError        **error)
+_moo_edit_saver_save_copy (MooEditSaver   *saver,
+                           MooEdit        *edit,
+                           const char     *filename,
+                           const char     *encoding,
+                           GError        **error)
 {
     char *filename_copy, *encoding_copy;
     gboolean result;
@@ -519,8 +519,8 @@ moo_edit_reload_default (MooEditLoader  *loader,
     g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
     g_object_set (edit, "enable-highlight", FALSE, NULL);
 
-    result = moo_edit_loader_load (loader, edit, edit->priv->filename,
-                                   edit->priv->encoding, error);
+    result = _moo_edit_loader_load (loader, edit, edit->priv->filename,
+                                    edit->priv->encoding, error);
 
     g_object_set (edit, "enable-highlight", enable_highlight, NULL);
     gtk_text_buffer_end_user_action (buffer);

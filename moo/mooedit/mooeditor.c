@@ -277,10 +277,10 @@ moo_editor_init (MooEditor *editor)
 
     editor->priv->loaders =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                   NULL, (GDestroyNotify) moo_edit_loader_unref);
+                                   NULL, (GDestroyNotify) _moo_edit_loader_unref);
     editor->priv->savers =
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
-                                   NULL, (GDestroyNotify) moo_edit_saver_unref);
+                                   NULL, (GDestroyNotify) _moo_edit_saver_unref);
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
     _moo_edit_config_load ();
@@ -856,8 +856,8 @@ moo_editor_add_doc (MooEditor      *editor,
 
     window_info_add (info, doc);
 
-    g_hash_table_insert (editor->priv->loaders, doc, moo_edit_loader_ref (loader));
-    g_hash_table_insert (editor->priv->savers, doc, moo_edit_saver_ref (saver));
+    g_hash_table_insert (editor->priv->loaders, doc, _moo_edit_loader_ref (loader));
+    g_hash_table_insert (editor->priv->savers, doc, _moo_edit_saver_ref (saver));
 
     if (!moo_edit_get_filename (doc) &&
          !moo_edit_config_get_string (doc->config, "lang") &&
@@ -887,8 +887,8 @@ moo_editor_new_window (MooEditor *editor)
         doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
         _moo_edit_window_insert_doc (window, doc, -1);
         moo_editor_add_doc (editor, window, doc,
-                            moo_edit_loader_get_default (),
-                            moo_edit_saver_get_default ());
+                            _moo_edit_loader_get_default (),
+                            _moo_edit_saver_get_default ());
     }
 
     return window;
@@ -909,10 +909,10 @@ moo_editor_create_doc (MooEditor      *editor,
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
-    loader = moo_edit_loader_get_default ();
-    saver = moo_edit_saver_get_default ();
+    loader = _moo_edit_loader_get_default ();
+    saver = _moo_edit_saver_get_default ();
 
-    if (filename && !moo_edit_loader_load (loader, doc, filename, encoding, error))
+    if (filename && !_moo_edit_loader_load (loader, doc, filename, encoding, error))
     {
         gtk_object_sink (g_object_ref (doc));
         g_object_unref (doc);
@@ -947,8 +947,8 @@ moo_editor_new_doc (MooEditor      *editor,
     doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
     _moo_edit_window_insert_doc (window, doc, -1);
     moo_editor_add_doc (editor, window, doc,
-                        moo_edit_loader_get_default (),
-                        moo_edit_saver_get_default ());
+                        _moo_edit_loader_get_default (),
+                        _moo_edit_saver_get_default ());
 
     return doc;
 }
@@ -987,8 +987,8 @@ moo_editor_open (MooEditor      *editor,
         return result;
     }
 
-    loader = moo_edit_loader_get_default ();
-    saver = moo_edit_saver_get_default ();
+    loader = _moo_edit_loader_get_default ();
+    saver = _moo_edit_saver_get_default ();
 
     for (l = files; l != NULL; l = l->next)
     {
@@ -1024,7 +1024,7 @@ moo_editor_open (MooEditor      *editor,
         }
 
         /* XXX open_single */
-        if (!moo_edit_loader_load (loader, doc, info->filename, info->encoding, &error))
+        if (!_moo_edit_loader_load (loader, doc, info->filename, info->encoding, &error))
         {
             moo_edit_open_error_dialog (parent, info->filename,
                                         error ? error->message : NULL);
@@ -1311,8 +1311,8 @@ moo_editor_close_docs (MooEditor      *editor,
                                          "editor", editor, NULL);
             _moo_edit_window_insert_doc (info->window, doc, -1);
             moo_editor_add_doc (editor, info->window, doc,
-                                moo_edit_loader_get_default (),
-                                moo_edit_saver_get_default ());
+                                _moo_edit_loader_get_default (),
+                                _moo_edit_saver_get_default ());
         }
 
         return TRUE;
@@ -1571,7 +1571,7 @@ _moo_editor_reload (MooEditor      *editor,
     cursor_line = gtk_text_iter_get_line (&iter);
     cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
 
-    if (!moo_edit_loader_reload (loader, doc, &error_here))
+    if (!_moo_edit_loader_reload (loader, doc, &error_here))
     {
         if (!editor->priv->silent)
             moo_edit_reload_error_dialog (GTK_WIDGET (doc), error_here->message);
@@ -1616,8 +1616,8 @@ do_save (MooEditor    *editor,
         moo_text_view_strip_whitespace (MOO_TEXT_VIEW (doc));
 
     g_signal_emit_by_name (doc, "save-before");
-    result = moo_edit_saver_save (saver, doc, filename, encoding,
-                                  moo_editor_get_save_flags (editor), error);
+    result = _moo_edit_saver_save (saver, doc, filename, encoding,
+                                   moo_editor_get_save_flags (editor), error);
     g_signal_emit_by_name (doc, "save-after");
 
     return result;
@@ -1762,7 +1762,7 @@ moo_editor_save_copy (MooEditor      *editor,
     saver = get_saver (editor, doc);
     g_return_val_if_fail (saver != NULL, FALSE);
 
-    return moo_edit_saver_save_copy (saver, doc, filename, encoding, error);
+    return _moo_edit_saver_save_copy (saver, doc, filename, encoding, error);
 }
 
 

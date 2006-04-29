@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mootextbtree.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -76,7 +75,7 @@ hl_info_new__ (void)
 
 
 BTree*
-moo_text_btree_new (void)
+_moo_text_btree_new (void)
 {
     BTree *tree = g_new0 (BTree, 1);
 
@@ -93,7 +92,7 @@ moo_text_btree_new (void)
 
 
 guint
-moo_text_btree_size (BTree *tree)
+_moo_text_btree_size (BTree *tree)
 {
     g_return_val_if_fail (tree != 0, 0);
     return tree->root->count;
@@ -101,7 +100,7 @@ moo_text_btree_size (BTree *tree)
 
 
 void
-moo_text_btree_free (BTree *tree)
+_moo_text_btree_free (BTree *tree)
 {
     if (tree)
     {
@@ -112,8 +111,8 @@ moo_text_btree_free (BTree *tree)
 
 
 BTData*
-moo_text_btree_get_data (BTree          *tree,
-                         guint           index_)
+_moo_text_btree_get_data (BTree *tree,
+                          guint  index_)
 {
     BTNode *node;
 
@@ -300,9 +299,9 @@ node_remove__ (BTNode *node, gpointer data)
 
 
 BTData*
-moo_text_btree_insert (BTree          *tree,
-                       guint           index_,
-                       gpointer        tag)
+_moo_text_btree_insert (BTree   *tree,
+                        guint    index_,
+                        gpointer tag)
 {
     BTNode *node, *tmp;
     BTData *data;
@@ -384,7 +383,7 @@ moo_text_btree_insert (BTree          *tree,
     }
 
     CHECK_INTEGRITY (tree, TRUE);
-    g_assert (data == moo_text_btree_get_data (tree, index_orig));
+    g_assert (data == _moo_text_btree_get_data (tree, index_orig));
 
     return data;
 }
@@ -419,9 +418,9 @@ merge_nodes (BTNode *parent, guint first)
 
 
 void
-moo_text_btree_delete (BTree          *tree,
-                       guint           index_,
-                       GSList        **deleted_marks)
+_moo_text_btree_delete (BTree          *tree,
+                        guint           index_,
+                        GSList        **deleted_marks)
 {
     BTNode *node, *tmp;
     BTData *data;
@@ -432,7 +431,7 @@ moo_text_btree_delete (BTree          *tree,
 
     tree->stamp++;
 
-    data = moo_text_btree_get_data (tree, index_);
+    data = _moo_text_btree_get_data (tree, index_);
     g_assert (data != NULL);
 
     node = data->parent;
@@ -549,10 +548,10 @@ moo_text_btree_delete (BTree          *tree,
 
 /* XXX */
 void
-moo_text_btree_insert_range (BTree      *tree,
-                             int         first,
-                             int         num,
-                             gpointer    tag)
+_moo_text_btree_insert_range (BTree      *tree,
+                              int         first,
+                              int         num,
+                              gpointer    tag)
 {
     int i;
 
@@ -561,16 +560,16 @@ moo_text_btree_insert_range (BTree      *tree,
     g_assert (num > 0);
 
     for (i = 0; i < num; ++i)
-        moo_text_btree_insert (tree, first, tag);
+        _moo_text_btree_insert (tree, first, tag);
 }
 
 
 /* XXX */
 void
-moo_text_btree_delete_range (BTree      *tree,
-                             int         first,
-                             int         num,
-                             GSList    **deleted_marks)
+_moo_text_btree_delete_range (BTree      *tree,
+                              int         first,
+                              int         num,
+                              GSList    **deleted_marks)
 {
     int i;
 
@@ -579,14 +578,14 @@ moo_text_btree_delete_range (BTree      *tree,
     g_assert (num > 0 && first + num <= (int) tree->root->count);
 
     for (i = 0; i < num; ++i)
-        moo_text_btree_delete (tree, first, deleted_marks);
+        _moo_text_btree_delete (tree, first, deleted_marks);
 }
 
 
 void
-moo_text_btree_update_n_marks (G_GNUC_UNUSED BTree *tree,
-                               BTData     *data,
-                               int         add)
+_moo_text_btree_update_n_marks (G_GNUC_UNUSED BTree *tree,
+                                BTData     *data,
+                                int         add)
 {
     BTNode *node;
 

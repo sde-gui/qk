@@ -68,7 +68,7 @@ static gboolean      lang_xml_check_internal_refs (LangXML      *xml);
 
 
 LangXML*
-moo_lang_parse_file (const char *file)
+_moo_lang_parse_file (const char *file)
 {
 #ifdef MOO_USE_XML
     xmlDoc *doc;
@@ -97,8 +97,8 @@ moo_lang_parse_file (const char *file)
 
 
 LangXML*
-moo_lang_parse_memory (const char *buffer,
-                       int         size)
+_moo_lang_parse_memory (const char *buffer,
+                        int         size)
 {
 #ifdef MOO_USE_XML
     xmlDoc *doc;
@@ -133,15 +133,15 @@ moo_lang_parse_memory (const char *buffer,
 
 /* Stubs for functions used elsewhere */
 void
-moo_lang_xml_free (G_GNUC_UNUSED LangXML *xml)
+_moo_lang_xml_free (G_GNUC_UNUSED LangXML *xml)
 {
     g_return_if_reached ();
 }
 
 MooRule*
-moo_rule_new_from_xml (G_GNUC_UNUSED RuleXML    *xml,
-                       G_GNUC_UNUSED LangXML    *lang_xml,
-                       G_GNUC_UNUSED MooLang    *lang)
+_moo_rule_new_from_xml (G_GNUC_UNUSED RuleXML    *xml,
+                        G_GNUC_UNUSED LangXML    *lang_xml,
+                        G_GNUC_UNUSED MooLang    *lang)
 {
     g_return_val_if_reached (NULL);
 }
@@ -549,13 +549,13 @@ error:
     STRING_FREE (extensions);
     STRING_FREE (author);
     STRING_FREE (hidden);
-    moo_lang_xml_free (xml);
+    _moo_lang_xml_free (xml);
     return NULL;
 }
 
 
 void
-moo_lang_xml_free (LangXML *xml)
+_moo_lang_xml_free (LangXML *xml)
 {
     if (xml)
     {
@@ -1595,9 +1595,9 @@ rule_xml_get_style (gpointer xmlptr)
 
 
 MooRule*
-moo_rule_new_from_xml (RuleXML    *xml,
-                       LangXML    *lang_xml,
-                       MooLang    *lang)
+_moo_rule_new_from_xml (RuleXML    *xml,
+                        LangXML    *lang_xml,
+                        MooLang    *lang)
 {
     MooRule *rule = NULL;
     MooContext *switch_to;
@@ -1647,10 +1647,10 @@ moo_rule_new_from_xml (RuleXML    *xml,
     switch (xml->end_switch_info.type)
     {
         case MOO_CONTEXT_STAY:
-            moo_rule_set_end_stay (rule);
+            _moo_rule_set_end_stay (rule);
             break;
         case MOO_CONTEXT_POP:
-            moo_rule_set_end_pop (rule, xml->end_switch_info.num);
+            _moo_rule_set_end_pop (rule, xml->end_switch_info.num);
             break;
         case MOO_CONTEXT_SWITCH:
 #if 0
@@ -1666,7 +1666,7 @@ moo_rule_new_from_xml (RuleXML    *xml,
             if (!switch_to)
             {
                 g_critical ("%s: oops", G_STRLOC);
-                moo_rule_free (rule);
+                _moo_rule_free (rule);
                 return NULL;
             }
             else
@@ -1674,10 +1674,10 @@ moo_rule_new_from_xml (RuleXML    *xml,
 #if 0
                 if (xml->end_switch_info.type == MOO_CONTEXT_SWITCH)
 #endif
-                    moo_rule_set_end_switch (rule, switch_to);
+                    _moo_rule_set_end_switch (rule, switch_to);
 #if 0
                 else
-                    moo_rule_set_end_jump (rule, switch_to);
+                    _moo_rule_set_end_jump (rule, switch_to);
 #endif
             }
             break;
@@ -1689,15 +1689,15 @@ moo_rule_new_from_xml (RuleXML    *xml,
     for (l = xml->child_rules; l != NULL; l = l->next)
     {
         RuleXML *child_xml = l->data;
-        MooRule *child_rule = moo_rule_new_from_xml (child_xml, lang_xml, lang);
+        MooRule *child_rule = _moo_rule_new_from_xml (child_xml, lang_xml, lang);
 
         if (!child_rule)
         {
-            moo_rule_free (rule);
+            _moo_rule_free (rule);
             return NULL;
         }
 
-        moo_rule_add_child_rule (rule, child_rule);
+        _moo_rule_add_child_rule (rule, child_rule);
     }
 
     return rule;
@@ -1784,9 +1784,9 @@ rule_string_xml_parse (xmlNode *node)
 static MooRule*
 rule_string_xml_create_rule (RuleStringXML *xml)
 {
-    return moo_rule_string_new (xml->string,
-                                rule_xml_get_flags (xml),
-                                rule_xml_get_style (xml));
+    return _moo_rule_string_new (xml->string,
+                                 rule_xml_get_flags (xml),
+                                 rule_xml_get_style (xml));
 }
 
 
@@ -1830,10 +1830,10 @@ rule_regex_xml_parse (xmlNode            *node)
 static MooRule*
 rule_regex_xml_create_rule (RuleRegexXML *xml)
 {
-    return moo_rule_regex_new (xml->pattern, xml->non_empty,
-                               0, 0,
-                               rule_xml_get_flags (xml),
-                               rule_xml_get_style (xml));
+    return _moo_rule_regex_new (xml->pattern, xml->non_empty,
+                                0, 0,
+                                rule_xml_get_flags (xml),
+                                rule_xml_get_style (xml));
 }
 
 
@@ -1884,9 +1884,9 @@ error:
 static MooRule*
 rule_char_xml_create_rule (RuleCharXML        *xml)
 {
-    return moo_rule_char_new (xml->ch,
-                              rule_xml_get_flags (xml),
-                              rule_xml_get_style (xml));
+    return _moo_rule_char_new (xml->ch,
+                               rule_xml_get_flags (xml),
+                               rule_xml_get_style (xml));
 }
 
 
@@ -1906,23 +1906,23 @@ rule_special_xml_create_rule (RuleXML *xml)
     switch (xml->type)
     {
         case RULE_INT:
-            return moo_rule_int_new (flags, style);
+            return _moo_rule_int_new (flags, style);
         case RULE_WHITESPACE:
-            return moo_rule_whitespace_new (flags, style);
+            return _moo_rule_whitespace_new (flags, style);
         case RULE_IDENTIFIER:
-            return moo_rule_identifier_new (flags, style);
+            return _moo_rule_identifier_new (flags, style);
         case RULE_FLOAT:
-            return moo_rule_float_new (flags, style);
+            return _moo_rule_float_new (flags, style);
         case RULE_HEX:
-            return moo_rule_hex_new (flags, style);
+            return _moo_rule_hex_new (flags, style);
         case RULE_OCTAL:
-            return moo_rule_octal_new (flags, style);
+            return _moo_rule_octal_new (flags, style);
         case RULE_ESCAPED_CHAR:
-            return moo_rule_escaped_char_new (flags, style);
+            return _moo_rule_escaped_char_new (flags, style);
         case RULE_C_CHAR:
-            return moo_rule_c_char_new (flags, style);
+            return _moo_rule_c_char_new (flags, style);
         case RULE_LINE_CONTINUE:
-            return moo_rule_line_continue_new (flags, style);
+            return _moo_rule_line_continue_new (flags, style);
         default:
             g_return_val_if_reached (NULL);
     }
@@ -1986,9 +1986,9 @@ error:
 static MooRule*
 rule_2char_xml_create_rule (Rule2CharXML *xml)
 {
-    return moo_rule_2char_new (xml->chars[0], xml->chars[1],
-                               rule_xml_get_flags (xml),
-                               rule_xml_get_style (xml));
+    return _moo_rule_2char_new (xml->chars[0], xml->chars[1],
+                                rule_xml_get_flags (xml),
+                                rule_xml_get_style (xml));
 }
 
 
@@ -2020,9 +2020,9 @@ rule_any_char_xml_parse (xmlNode            *node)
 static MooRule*
 rule_any_char_xml_create_rule (RuleAnyCharXML       *xml)
 {
-    return moo_rule_any_char_new (xml->range,
-                                  rule_xml_get_flags (xml),
-                                  rule_xml_get_style (xml));
+    return _moo_rule_any_char_new (xml->range,
+                                   rule_xml_get_flags (xml),
+                                   rule_xml_get_style (xml));
 }
 
 
@@ -2071,10 +2071,10 @@ rule_keywords_xml_create_rule (RuleKeywordsXML    *xml,
     kw_xml = g_hash_table_lookup (lang_xml->keyword_names, xml->keywords);
     g_return_val_if_fail (kw_xml != NULL, NULL);
 
-    return moo_rule_keywords_new (kw_xml->words,
-                                  rule_xml_get_flags (xml),
-                                  kw_xml->prefix, kw_xml->suffix,
-                                  rule_xml_get_style (xml));
+    return _moo_rule_keywords_new (kw_xml->words,
+                                   rule_xml_get_flags (xml),
+                                   kw_xml->prefix, kw_xml->suffix,
+                                   rule_xml_get_style (xml));
 }
 
 
@@ -2142,7 +2142,7 @@ rule_include_xml_create_rule (RuleIncludeXML *xml,
 
     g_return_val_if_fail (ctx != NULL, NULL);
 
-    return moo_rule_include_new (ctx);
+    return _moo_rule_include_new (ctx);
 }
 
 
@@ -2420,8 +2420,8 @@ error:
 
 
 MooTextStyleScheme*
-moo_text_style_scheme_parse_file (const char *file,
-                                  char      **base_scheme)
+_moo_text_style_scheme_parse_file (const char *file,
+                                   char      **base_scheme)
 {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
@@ -2452,9 +2452,9 @@ moo_text_style_scheme_parse_file (const char *file,
 
 
 MooTextStyleScheme*
-moo_text_style_scheme_parse_memory (const char     *buffer,
-                                    int             size,
-                                    char          **base_scheme)
+_moo_text_style_scheme_parse_memory (const char     *buffer,
+                                     int             size,
+                                     char          **base_scheme)
 {
     MooMarkupDoc *doc;
     MooMarkupNode *root;

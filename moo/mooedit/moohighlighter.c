@@ -60,7 +60,7 @@ static gboolean      hl_compute_range       (MooHighlighter     *hl,
 
 
 /* MOO_TYPE_SYNTAX_TAG */
-G_DEFINE_TYPE (MooSyntaxTag, moo_syntax_tag, GTK_TYPE_TEXT_TAG)
+G_DEFINE_TYPE (MooSyntaxTag, _moo_syntax_tag, GTK_TYPE_TEXT_TAG)
 
 
 // static void
@@ -72,14 +72,14 @@ G_DEFINE_TYPE (MooSyntaxTag, moo_syntax_tag, GTK_TYPE_TEXT_TAG)
 
 
 static void
-moo_syntax_tag_class_init (G_GNUC_UNUSED MooSyntaxTagClass *klass)
+_moo_syntax_tag_class_init (G_GNUC_UNUSED MooSyntaxTagClass *klass)
 {
 //     G_OBJECT_CLASS(klass)->finalize = moo_syntax_tag_finalize;
 }
 
 
 static void
-moo_syntax_tag_init (MooSyntaxTag *tag)
+_moo_syntax_tag_init (MooSyntaxTag *tag)
 {
     tag->ctx_node = NULL;
     tag->match_node = NULL;
@@ -114,8 +114,8 @@ ctx_node_free (CtxNode          *node,
 
 
 void
-moo_highlighter_destroy (MooHighlighter *hl,
-                         gboolean        delete_tags)
+_moo_highlighter_destroy (MooHighlighter *hl,
+                          gboolean        delete_tags)
 {
     GtkTextTagTable *table = NULL;
 
@@ -199,7 +199,7 @@ apply_tag (MooHighlighter     *hl,
     {
 #if 0
         static int last_line_no = -1;
-        int line_no = moo_line_buffer_get_line_index (hl->line_buf, line);
+        int line_no = _moo_line_buffer_get_line_index (hl->line_buf, line);
         if (line_no != last_line_no)
         {
             last_line_no = line_no;
@@ -233,9 +233,9 @@ check_last_tag (MooHighlighter *hl)
 
 
 MooHighlighter*
-moo_highlighter_new (GtkTextBuffer *buffer,
-                     LineBuffer    *line_buf,
-                     MooLang       *lang)
+_moo_highlighter_new (GtkTextBuffer *buffer,
+                      LineBuffer    *line_buf,
+                      MooLang       *lang)
 {
     MooHighlighter *hl;
 
@@ -468,7 +468,7 @@ hl_compute_line (MooHighlighter     *hl,
 
     while (!gtk_text_iter_ends_line (&data->start_iter))
     {
-        if ((matched_rule = moo_rule_array_match (node->ctx->rules, data, &result)))
+        if ((matched_rule = _moo_rule_array_match (node->ctx->rules, data, &result)))
         {
             CtxNode *match_node, *next_node;
 
@@ -479,7 +479,7 @@ hl_compute_line (MooHighlighter     *hl,
                 result.match_len = g_utf8_pointer_to_offset (result.match_start, result.match_end);
 
             if (result.match_offset)
-                moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
+                _moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
 
             next_node = get_next_node (hl, node, matched_rule);
 
@@ -488,16 +488,16 @@ hl_compute_line (MooHighlighter     *hl,
             else
                 match_node = node;
 
-            moo_line_add_segment (line, result.match_len, match_node, node, matched_rule);
+            _moo_line_add_segment (line, result.match_len, match_node, node, matched_rule);
 
-            moo_match_data_set_start (data, NULL, result.match_end,
-                                      data->start_offset + result.match_offset + result.match_len);
+            _moo_match_data_set_start (data, NULL, result.match_end,
+                                       data->start_offset + result.match_offset + result.match_len);
 
             node = next_node;
         }
         else
         {
-            moo_line_add_segment (line, -1, node, NULL, NULL);
+            _moo_line_add_segment (line, -1, node, NULL, NULL);
             break;
         }
     }
@@ -534,7 +534,7 @@ hl_compute_range (MooHighlighter *hl,
     }
     else
     {
-        Line *prev = moo_line_buffer_get_line (hl->line_buf, lines->first - 1);
+        Line *prev = _moo_line_buffer_get_line (hl->line_buf, lines->first - 1);
         node = get_next_line_node (hl, prev);
     }
 
@@ -550,7 +550,7 @@ hl_compute_range (MooHighlighter *hl,
 
     for (line_no = lines->first; line_no <= lines->last; ++line_no)
     {
-        Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
+        Line *line = _moo_line_buffer_get_line (hl->line_buf, line_no);
         MatchData match_data;
 
 //         g_assert (line->hl_info->tags || !line->hl_info->tags_applied || !line->hl_info->n_segments);
@@ -558,13 +558,13 @@ hl_compute_range (MooHighlighter *hl,
 
         line->hl_info->start_node = node;
         line->hl_info->tags_applied = FALSE;
-        moo_line_erase_segments (line);
+        _moo_line_erase_segments (line);
 
         /* TODO: there is no need to recompute line if its start context matches
                  context implied by the previous line */
-        moo_match_data_init (&match_data, line_no, &iter, NULL);
+        _moo_match_data_init (&match_data, line_no, &iter, NULL);
         node = hl_compute_line (hl, line, &match_data, node);
-        moo_match_data_destroy (&match_data);
+        _moo_match_data_destroy (&match_data);
 
 #if 0
         {
@@ -595,7 +595,7 @@ hl_compute_range (MooHighlighter *hl,
 
         if (line_no == hl->line_buf->invalid.last)
         {
-            Line *next = moo_line_buffer_get_line (hl->line_buf, line_no + 1);
+            Line *next = _moo_line_buffer_get_line (hl->line_buf, line_no + 1);
 
             if (node == next->hl_info->start_node)
             {
@@ -617,7 +617,7 @@ hl_compute_range (MooHighlighter *hl,
         hl->line_buf->invalid.first = line_no;
         if (line_no <= lines->last)
             hl->line_buf->invalid.first++;
-        moo_line_buffer_clamp_invalid (hl->line_buf);
+        _moo_line_buffer_clamp_invalid (hl->line_buf);
     }
     else
     {
@@ -650,7 +650,7 @@ moo_highlighter_compute_timed (MooHighlighter     *hl,
         return TRUE;
 
     if (last_line < 0)
-        last_line = moo_text_btree_size (hl->line_buf->tree) - 1;
+        last_line = _moo_text_btree_size (hl->line_buf->tree) - 1;
 
     g_assert (first_line >= 0);
     g_assert (last_line >= first_line);
@@ -686,7 +686,7 @@ compute_in_idle (MooHighlighter *hl)
 
 
 void
-moo_highlighter_queue_compute (MooHighlighter *hl)
+_moo_highlighter_queue_compute (MooHighlighter *hl)
 {
     if (!hl->lang || !hl->buffer || BUF_CLEAN (hl->line_buf))
         return;
@@ -699,9 +699,9 @@ moo_highlighter_queue_compute (MooHighlighter *hl)
 
 
 void
-moo_highlighter_apply_tags (MooHighlighter     *hl,
-                            int                 first_line,
-                            int                 last_line)
+_moo_highlighter_apply_tags (MooHighlighter     *hl,
+                             int                 first_line,
+                             int                 last_line)
 {
     int line_no;
     int total;
@@ -710,7 +710,7 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
     if (!hl->lang || !hl->buffer)
         return;
 
-    total = moo_text_btree_size (hl->line_buf->tree);
+    total = _moo_text_btree_size (hl->line_buf->tree);
 
     if (last_line < 0)
         last_line = total - 1;
@@ -723,14 +723,14 @@ moo_highlighter_apply_tags (MooHighlighter     *hl,
 
     if (!moo_highlighter_compute_timed (hl, first_line, last_line,
                                         COMPUTE_NOW_TIME))
-        moo_highlighter_queue_compute (hl);
+        _moo_highlighter_queue_compute (hl);
 
     first_changed = last_changed = -1;
     hl->last_tag = NULL;
 
     for (line_no = first_line; line_no <= last_line; ++line_no)
     {
-        Line *line = moo_line_buffer_get_line (hl->line_buf, line_no);
+        Line *line = _moo_line_buffer_get_line (hl->line_buf, line_no);
         HLInfo *info = line->hl_info;
         guint i;
         GtkTextIter t_start, t_end;
@@ -819,8 +819,8 @@ ctx_node_set_scheme (CtxNode            *node,
 }
 
 void
-moo_highlighter_apply_scheme (MooHighlighter     *hl,
-                              MooTextStyleScheme *scheme)
+_moo_highlighter_apply_scheme (MooHighlighter     *hl,
+                               MooTextStyleScheme *scheme)
 {
     g_return_if_fail (hl != NULL && scheme != NULL);
     g_slist_foreach (hl->nodes, (GFunc) ctx_node_set_scheme, scheme);

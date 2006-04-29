@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mootextbuffer.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -325,10 +324,10 @@ static void
 moo_text_buffer_init (MooTextBuffer *buffer)
 {
     buffer->priv = g_new0 (MooTextBufferPrivate, 1);
-    buffer->priv->line_buf = moo_line_buffer_new ();
+    buffer->priv->line_buf = _moo_line_buffer_new ();
     buffer->priv->do_highlight = TRUE;
-    buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                            buffer->priv->line_buf, NULL);
+    buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                             buffer->priv->line_buf, NULL);
     buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
 
     buffer->priv->fold_tree = moo_fold_tree_new (buffer);
@@ -363,8 +362,8 @@ moo_text_buffer_finalize (GObject *object)
 
     /* XXX leak if folds are not deleted */
     moo_fold_tree_free (buffer->priv->fold_tree);
-    moo_highlighter_destroy (buffer->priv->hl, FALSE);
-    moo_line_buffer_free (buffer->priv->line_buf);
+    _moo_highlighter_destroy (buffer->priv->hl, FALSE);
+    _moo_line_buffer_free (buffer->priv->line_buf);
 
     g_free (buffer->priv->left_brackets);
     g_free (buffer->priv->right_brackets);
@@ -529,11 +528,11 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
     last_line = gtk_text_iter_get_line (pos);
 
     if (last_line == first_line)
-        moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
+        _moo_line_buffer_invalidate (buffer->priv->line_buf, first_line);
     else
-        moo_line_buffer_split_line (buffer->priv->line_buf,
-                                    first_line, last_line - first_line,
-                                    tag);
+        _moo_line_buffer_split_line (buffer->priv->line_buf,
+                                     first_line, last_line - first_line,
+                                     tag);
 
     /* XXX btree can do it better ? i guess it can't */
     if (starts_line && ins_line)
@@ -646,21 +645,21 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     if (first_line < last_line)
     {
         if (starts_line)
-            moo_line_buffer_delete (buffer->priv->line_buf,
-                                    first_line,
-                                    last_line - first_line,
-                                    -1, &moved_marks, &deleted_marks);
+            _moo_line_buffer_delete (buffer->priv->line_buf,
+                                     first_line,
+                                     last_line - first_line,
+                                     -1, &moved_marks, &deleted_marks);
         else
-            moo_line_buffer_delete (buffer->priv->line_buf,
-                                    first_line + 1,
-                                    last_line - first_line,
-                                    first_line,
-                                    &moved_marks, &deleted_marks);
+            _moo_line_buffer_delete (buffer->priv->line_buf,
+                                     first_line + 1,
+                                     last_line - first_line,
+                                     first_line,
+                                     &moved_marks, &deleted_marks);
     }
     else
     {
-        moo_line_buffer_invalidate (buffer->priv->line_buf,
-                                    first_line);
+        _moo_line_buffer_invalidate (buffer->priv->line_buf,
+                                     first_line);
     }
 
     /* It would be better if marks were moved/deleted before deleting text, but it
@@ -741,10 +740,10 @@ moo_text_buffer_set_lang (MooTextBuffer  *buffer,
     if (old_lang)
         moo_lang_unref (old_lang);
 
-    moo_highlighter_destroy (buffer->priv->hl,
-                             buffer->priv->do_highlight && old_lang);
+    _moo_highlighter_destroy (buffer->priv->hl,
+                              buffer->priv->do_highlight && old_lang);
 
-    moo_line_buffer_cleanup (buffer->priv->line_buf);
+    _moo_line_buffer_cleanup (buffer->priv->line_buf);
     buffer->priv->lang = lang;
 
     if (lang)
@@ -752,18 +751,18 @@ moo_text_buffer_set_lang (MooTextBuffer  *buffer,
 
     if (lang && buffer->priv->do_highlight)
     {
-        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                buffer->priv->line_buf, lang);
+        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                 buffer->priv->line_buf, lang);
 
         if (old_lang)
-            moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+            _moo_line_buffer_invalidate_all (buffer->priv->line_buf);
 
         moo_text_buffer_queue_highlight (buffer);
     }
     else
     {
-        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                buffer->priv->line_buf, NULL);
+        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                 buffer->priv->line_buf, NULL);
     }
 
     moo_text_buffer_set_brackets (buffer, lang ? lang->brackets : NULL);
@@ -782,7 +781,7 @@ static void
 moo_text_buffer_queue_highlight (MooTextBuffer *buffer)
 {
     if (buffer->priv->lang && buffer->priv->do_highlight)
-        moo_highlighter_queue_compute (buffer->priv->hl);
+        _moo_highlighter_queue_compute (buffer->priv->hl);
 }
 
 
@@ -799,27 +798,27 @@ moo_text_buffer_set_highlight (MooTextBuffer      *buffer,
 
     if (buffer->priv->do_highlight && buffer->priv->lang)
     {
-        moo_highlighter_destroy (buffer->priv->hl, TRUE);
-        moo_line_buffer_cleanup (buffer->priv->line_buf);
+        _moo_highlighter_destroy (buffer->priv->hl, TRUE);
+        _moo_line_buffer_cleanup (buffer->priv->line_buf);
     }
     else
     {
-        moo_highlighter_destroy (buffer->priv->hl, FALSE);
+        _moo_highlighter_destroy (buffer->priv->hl, FALSE);
     }
 
     buffer->priv->do_highlight = highlight;
 
     if (!highlight || !buffer->priv->lang)
     {
-        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                buffer->priv->line_buf, NULL);
+        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                 buffer->priv->line_buf, NULL);
     }
     else
     {
-        buffer->priv->hl = moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
-                                                buffer->priv->line_buf,
-                                                buffer->priv->lang);
-        moo_line_buffer_invalidate_all (buffer->priv->line_buf);
+        buffer->priv->hl = _moo_highlighter_new (GTK_TEXT_BUFFER (buffer),
+                                                 buffer->priv->line_buf,
+                                                 buffer->priv->lang);
+        _moo_line_buffer_invalidate_all (buffer->priv->line_buf);
         moo_text_buffer_queue_highlight (buffer);
     }
 }
@@ -935,8 +934,8 @@ _moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
                                    int                 last_line)
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    moo_highlighter_apply_tags (buffer->priv->hl,
-                                first_line, last_line);
+    _moo_highlighter_apply_tags (buffer->priv->hl,
+                                 first_line, last_line);
 }
 
 
@@ -996,7 +995,7 @@ moo_text_buffer_apply_scheme (MooTextBuffer      *buffer,
 
     moo_text_buffer_set_bracket_match_style (buffer, scheme->bracket_match);
     moo_text_buffer_set_bracket_mismatch_style (buffer, scheme->bracket_mismatch);
-    moo_highlighter_apply_scheme (buffer->priv->hl, scheme);
+    _moo_highlighter_apply_scheme (buffer->priv->hl, scheme);
 }
 
 
@@ -1950,11 +1949,11 @@ moo_text_buffer_add_line_mark (MooTextBuffer *buffer,
         line_no = 0;
 
     /* XXX ??? */
-    line = moo_line_buffer_get_line (buffer->priv->line_buf, line_no);
+    line = _moo_line_buffer_get_line (buffer->priv->line_buf, line_no);
     g_return_if_fail (line != NULL);
 
     _moo_line_mark_set_buffer (mark, buffer, buffer->priv->line_buf);
-    moo_line_buffer_add_mark (buffer->priv->line_buf, mark, line_no);
+    _moo_line_buffer_add_mark (buffer->priv->line_buf, mark, line_no);
 
     g_signal_emit (buffer, signals[LINE_MARK_ADDED], 0, mark);
     g_object_thaw_notify (G_OBJECT (mark));
@@ -1972,7 +1971,7 @@ moo_text_buffer_delete_line_mark (MooTextBuffer *buffer,
     g_return_if_fail (moo_line_mark_get_buffer (mark) == buffer);
 
     line = moo_line_mark_get_line (mark);
-    moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
+    _moo_line_buffer_remove_mark (buffer->priv->line_buf, mark);
 
     line_mark_deleted (buffer, mark);
     g_object_unref (mark);
@@ -2013,7 +2012,7 @@ moo_text_buffer_move_line_mark (MooTextBuffer *buffer,
     if (old_line == line)
         return;
 
-    moo_line_buffer_move_mark (buffer->priv->line_buf, mark, line);
+    _moo_line_buffer_move_mark (buffer->priv->line_buf, mark, line);
     line_mark_moved (buffer, mark);
 }
 
@@ -2025,7 +2024,7 @@ moo_text_buffer_get_line_marks_in_range (MooTextBuffer *buffer,
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
     g_return_val_if_fail (first_line >= 0, NULL);
-    return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, first_line, last_line);
+    return _moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, first_line, last_line);
 }
 
 
@@ -2035,7 +2034,7 @@ moo_text_buffer_get_line_marks_at_line (MooTextBuffer *buffer,
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
     g_return_val_if_fail (line >= 0, NULL);
-    return moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, line, line);
+    return _moo_line_buffer_get_marks_in_range (buffer->priv->line_buf, line, line);
 }
 
 

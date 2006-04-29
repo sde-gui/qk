@@ -544,12 +544,12 @@ strbreakup (const char *string,
  * Return value: whether a match was found.
  **/
 gboolean
-gtk_source_iter_forward_search (const GtkTextIter   *iter,
-				const gchar         *str,
-				GtkSourceSearchFlags flags,
-				GtkTextIter         *match_start,
-				GtkTextIter         *match_end,
-				const GtkTextIter   *limit)
+_gtk_source_iter_forward_search (const GtkTextIter   *iter,
+				 const gchar         *str,
+				 GtkSourceSearchFlags flags,
+				 GtkTextIter         *match_start,
+				 GtkTextIter         *match_end,
+				 const GtkTextIter   *limit)
 {
 	gchar **lines = NULL;
 	GtkTextIter match;
@@ -647,12 +647,12 @@ gtk_source_iter_forward_search (const GtkTextIter   *iter,
  * Return value: whether a match was found.
  **/
 gboolean
-gtk_source_iter_backward_search (const GtkTextIter   *iter,
-				 const gchar         *str,
-				 GtkSourceSearchFlags flags,
-				 GtkTextIter         *match_start,
-				 GtkTextIter         *match_end,
-				 const GtkTextIter   *limit)
+_gtk_source_iter_backward_search (const GtkTextIter   *iter,
+				  const gchar         *str,
+				  GtkSourceSearchFlags flags,
+				  GtkTextIter         *match_start,
+				  GtkTextIter         *match_end,
+				  const GtkTextIter   *limit)
 {
 	gchar **lines = NULL;
 	GtkTextIter match;

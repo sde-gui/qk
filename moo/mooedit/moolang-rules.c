@@ -126,10 +126,10 @@ static MooRule *rules_match_real    (MooRuleArray   *array,
 
 
 void
-moo_match_data_init (MatchData          *data,
-                     int                 line_number,
-                     const GtkTextIter  *line_start,
-                     const GtkTextIter  *line_end)
+_moo_match_data_init (MatchData          *data,
+                      int                 line_number,
+                      const GtkTextIter  *line_start,
+                      const GtkTextIter  *line_end)
 {
     GtkTextBuffer *buffer;
 
@@ -163,10 +163,10 @@ moo_match_data_init (MatchData          *data,
 
 
 void
-moo_match_data_set_start (MatchData          *data,
-                          const GtkTextIter  *start_iter,
-                          char               *start,
-                          int                 start_offset)
+_moo_match_data_set_start (MatchData          *data,
+                           const GtkTextIter  *start_iter,
+                           char               *start,
+                           int                 start_offset)
 {
     g_assert (data != NULL);
     g_assert (start != NULL);
@@ -188,7 +188,7 @@ moo_match_data_set_start (MatchData          *data,
 
 
 void
-moo_match_data_destroy (MatchData *data)
+_moo_match_data_destroy (MatchData *data)
 {
     if (data->line_string)
         g_free (data->line_string);
@@ -374,9 +374,9 @@ child_rules_match (MooRuleArray       *array,
 
 
 MooRule*
-moo_rule_array_match (MooRuleArray       *array,
-                      MatchData          *data,
-                      MatchResult        *result)
+_moo_rule_array_match (MooRuleArray       *array,
+                       MatchData          *data,
+                       MatchResult        *result)
 {
     return rules_match_real (array, data, result, 0);
 }
@@ -403,7 +403,7 @@ rule_new (MooRuleFlags    flags,
 
 
 void
-moo_rule_free (MooRule *rule)
+_moo_rule_free (MooRule *rule)
 {
     guint i;
 
@@ -416,7 +416,7 @@ moo_rule_free (MooRule *rule)
     if (rule->child_rules)
     {
         for (i = 0; i < rule->child_rules->len; ++i)
-            moo_rule_free (rule->child_rules->data[i]);
+            _moo_rule_free (rule->child_rules->data[i]);
         g_ptr_array_free ((GPtrArray*) rule->child_rules, TRUE);
     }
 
@@ -427,8 +427,8 @@ moo_rule_free (MooRule *rule)
 
 
 void
-moo_rule_add_child_rule (MooRule   *rule,
-                         MooRule   *child_rule)
+_moo_rule_add_child_rule (MooRule   *rule,
+                          MooRule   *child_rule)
 {
     g_return_if_fail (rule != NULL && child_rule != NULL);
 
@@ -440,7 +440,7 @@ moo_rule_add_child_rule (MooRule   *rule,
 
 
 void
-moo_rule_set_end_stay (MooRule            *rule)
+_moo_rule_set_end_stay (MooRule *rule)
 {
     g_return_if_fail (rule != NULL);
     rule->exit.type = MOO_CONTEXT_STAY;
@@ -449,8 +449,8 @@ moo_rule_set_end_stay (MooRule            *rule)
 
 
 void
-moo_rule_set_end_pop (MooRule            *rule,
-                      guint               num)
+_moo_rule_set_end_pop (MooRule *rule,
+                       guint    num)
 {
     g_return_if_fail (rule != NULL && num != 0);
     rule->exit.type = MOO_CONTEXT_POP;
@@ -459,8 +459,8 @@ moo_rule_set_end_pop (MooRule            *rule,
 
 
 void
-moo_rule_set_end_switch (MooRule            *rule,
-                         MooContext         *target)
+_moo_rule_set_end_switch (MooRule    *rule,
+                          MooContext *target)
 {
     g_return_if_fail (rule != NULL && target != 0);
     rule->exit.type = MOO_CONTEXT_SWITCH;
@@ -525,9 +525,9 @@ rule_string_destroy (MooRule *rule)
 
 
 MooRule*
-moo_rule_string_new (const char         *string,
-                     MooRuleFlags        flags,
-                     const char         *style)
+_moo_rule_string_new (const char         *string,
+                      MooRuleFlags        flags,
+                      const char         *style)
 {
     MooRule *rule;
     guint length;
@@ -611,12 +611,12 @@ rule_regex_destroy (MooRule *rule)
 
 
 MooRule*
-moo_rule_regex_new (const char         *pattern,
-                    gboolean            non_empty,
-                    EggRegexCompileFlags regex_compile_options,
-                    EggRegexMatchFlags  regex_match_options,
-                    MooRuleFlags        flags,
-                    const char         *style)
+_moo_rule_regex_new (const char         *pattern,
+                     gboolean            non_empty,
+                     EggRegexCompileFlags regex_compile_options,
+                     EggRegexMatchFlags  regex_match_options,
+                     MooRuleFlags        flags,
+                     const char         *style)
 {
     MooRule *rule;
     EggRegex *regex;
@@ -741,9 +741,9 @@ rule_2char_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_char_new (char                ch,
-                   MooRuleFlags        flags,
-                   const char         *style)
+_moo_rule_char_new (char                ch,
+                    MooRuleFlags        flags,
+                    const char         *style)
 {
     MooRule *rule;
 
@@ -769,10 +769,10 @@ moo_rule_char_new (char                ch,
 
 
 MooRule*
-moo_rule_2char_new (char                ch1,
-                    char                ch2,
-                    MooRuleFlags        flags,
-                    const char         *style)
+_moo_rule_2char_new (char                ch1,
+                     char                ch2,
+                     MooRuleFlags        flags,
+                     const char         *style)
 {
     MooRule *rule;
 
@@ -869,9 +869,9 @@ rule_any_char_destroy (MooRule *rule)
 
 
 MooRule*
-moo_rule_any_char_new (const char         *string,
-                       MooRuleFlags        flags,
-                       const char         *style)
+_moo_rule_any_char_new (const char         *string,
+                        MooRuleFlags        flags,
+                        const char         *style)
 {
     MooRule *rule;
     guint i, len;
@@ -900,11 +900,11 @@ moo_rule_any_char_new (const char         *string,
  */
 
 MooRule*
-moo_rule_keywords_new (GSList             *words,
-                       MooRuleFlags        flags,
-                       const char         *prefix,
-                       const char         *suffix,
-                       const char         *style)
+_moo_rule_keywords_new (GSList             *words,
+                        MooRuleFlags        flags,
+                        const char         *prefix,
+                        const char         *suffix,
+                        const char         *style)
 {
     GSList *l;
     GString *pattern;
@@ -935,7 +935,7 @@ moo_rule_keywords_new (GSList             *words,
     g_string_append_printf (pattern, ")%s",
                             suffix ? suffix : "");
 
-    rule = moo_rule_regex_new (pattern->str, TRUE, 0, 0, flags, style);
+    rule = _moo_rule_regex_new (pattern->str, TRUE, 0, 0, flags, style);
 
 out:
     g_string_free (pattern, TRUE);
@@ -958,7 +958,7 @@ rule_include_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_include_new (MooContext *ctx)
+_moo_rule_include_new (MooContext *ctx)
 {
     MooRule *rule;
 
@@ -1014,8 +1014,8 @@ rule_int_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_int_new (MooRuleFlags   flags,
-                  const char    *style)
+_moo_rule_int_new (MooRuleFlags   flags,
+                   const char    *style)
 {
     MooRule *rule = rule_new (flags, style, rule_int_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1103,8 +1103,8 @@ rule_float_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_float_new (MooRuleFlags        flags,
-                    const char         *style)
+_moo_rule_float_new (MooRuleFlags        flags,
+                     const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_float_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1156,8 +1156,8 @@ rule_octal_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_octal_new (MooRuleFlags        flags,
-                    const char         *style)
+_moo_rule_octal_new (MooRuleFlags        flags,
+                     const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_octal_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1209,8 +1209,8 @@ rule_hex_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_hex_new (MooRuleFlags        flags,
-                  const char         *style)
+_moo_rule_hex_new (MooRuleFlags        flags,
+                   const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_hex_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1290,8 +1290,8 @@ rule_escaped_char_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_escaped_char_new (MooRuleFlags        flags,
-                           const char         *style)
+_moo_rule_escaped_char_new (MooRuleFlags        flags,
+                            const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_escaped_char_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1402,8 +1402,8 @@ rule_c_char_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_c_char_new (MooRuleFlags        flags,
-                     const char         *style)
+_moo_rule_c_char_new (MooRuleFlags        flags,
+                      const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_c_char_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1435,8 +1435,8 @@ rule_whitespace_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_whitespace_new (MooRuleFlags        flags,
-                         const char         *style)
+_moo_rule_whitespace_new (MooRuleFlags        flags,
+                          const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_whitespace_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1480,8 +1480,8 @@ rule_identifier_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_identifier_new (MooRuleFlags        flags,
-                         const char         *style)
+_moo_rule_identifier_new (MooRuleFlags        flags,
+                          const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_identifier_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);
@@ -1523,8 +1523,8 @@ rule_line_continue_match (MooRule        *rule,
 
 
 MooRule*
-moo_rule_line_continue_new (MooRuleFlags        flags,
-                            const char         *style)
+_moo_rule_line_continue_new (MooRuleFlags        flags,
+                             const char         *style)
 {
     MooRule *rule = rule_new (flags, style, rule_line_continue_match, NULL);
     g_return_val_if_fail (rule != NULL, NULL);

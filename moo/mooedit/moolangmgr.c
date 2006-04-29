@@ -411,7 +411,7 @@ read_files (MooLangMgr   *mgr,
                 LangXML *lang, *old_lang;
 
                 filename = g_build_filename (dirname, entry, NULL);
-                lang = moo_lang_parse_file (filename);
+                lang = _moo_lang_parse_file (filename);
                 g_free (filename);
 
                 if (!lang)
@@ -424,7 +424,7 @@ read_files (MooLangMgr   *mgr,
                     g_message ("%s: loading another instance of lang '%s'",
                                G_STRLOC, lang->name);
                     lang_xml_list = g_slist_remove (lang_xml_list, old_lang);
-                    moo_lang_xml_free (old_lang);
+                    _moo_lang_xml_free (old_lang);
                 }
 
                 lang_xml_list = g_slist_append (lang_xml_list, lang);
@@ -437,7 +437,7 @@ read_files (MooLangMgr   *mgr,
                 MooTextStyleScheme *scheme;
 
                 filename = g_build_filename (dirname, entry, NULL);
-                scheme = moo_text_style_scheme_parse_file (filename, NULL); /* XXX */
+                scheme = _moo_text_style_scheme_parse_file (filename, NULL); /* XXX */
                 g_free (filename);
 
                 if (!scheme)
@@ -497,7 +497,7 @@ check_external_refs (GSList     *lang_xml_list,
                                G_STRLOC, ref->lang, xml->name);
                     g_hash_table_remove (lang_xml_names, xml->name);
                     lang_xml_list = g_slist_remove (lang_xml_list, xml);
-                    moo_lang_xml_free (xml);
+                    _moo_lang_xml_free (xml);
                     valid = FALSE;
                     break;
                 }
@@ -508,7 +508,7 @@ check_external_refs (GSList     *lang_xml_list,
                                G_STRLOC, ref->lang, ref->name, xml->name);
                     g_hash_table_remove (lang_xml_names, xml->name);
                     lang_xml_list = g_slist_remove (lang_xml_list, xml);
-                    moo_lang_xml_free (xml);
+                    _moo_lang_xml_free (xml);
                     valid = FALSE;
                     break;
                 }
@@ -661,7 +661,7 @@ moo_lang_finish_build (MooLang *lang,
         for (rule_link = ctx_xml->rules; rule_link != NULL; rule_link = rule_link->next)
         {
             RuleXML *rule_xml = rule_link->data;
-            MooRule *rule = moo_rule_new_from_xml (rule_xml, xml, lang);
+            MooRule *rule = _moo_rule_new_from_xml (rule_xml, xml, lang);
             if (rule)
                 moo_context_add_rule (ctx, rule);
         }
@@ -749,7 +749,7 @@ moo_lang_mgr_read_dirs (MooLangMgr   *mgr)
 
 out:
     g_hash_table_destroy (lang_xml_names);
-    g_slist_foreach (lang_xml_list, (GFunc) moo_lang_xml_free, NULL);
+    g_slist_foreach (lang_xml_list, (GFunc) _moo_lang_xml_free, NULL);
     g_slist_free (lang_xml_list);
 
     moo_lang_mgr_load_styles (mgr);

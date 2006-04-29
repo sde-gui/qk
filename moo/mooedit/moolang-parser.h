@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moolang-parser.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -12,12 +11,12 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#ifndef __MOO_LANG_PARSER_H__
-#define __MOO_LANG_PARSER_H__
-
 #ifndef MOOEDIT_COMPILATION
 #error "This file may not be included"
 #endif
+
+#ifndef __MOO_LANG_PARSER_H__
+#define __MOO_LANG_PARSER_H__
 
 #include "mooedit/moolang-rules.h"
 
@@ -204,18 +203,18 @@ struct _RuleIncludeXML {
 };
 
 
-LangXML             *moo_lang_parse_file                (const char     *file);
-LangXML             *moo_lang_parse_memory              (const char     *buffer,
+LangXML             *_moo_lang_parse_file               (const char     *file);
+LangXML             *_moo_lang_parse_memory             (const char     *buffer,
                                                          int             size);
-void                 moo_lang_xml_free                  (LangXML        *xml);
+void                 _moo_lang_xml_free                 (LangXML        *xml);
 
-MooTextStyleScheme  *moo_text_style_scheme_parse_file   (const char     *file,
+MooTextStyleScheme  *_moo_text_style_scheme_parse_file  (const char     *file,
                                                          char          **base_scheme);
-MooTextStyleScheme  *moo_text_style_scheme_parse_memory (const char     *buffer,
+MooTextStyleScheme  *_moo_text_style_scheme_parse_memory(const char     *buffer,
                                                          int             size,
                                                          char          **base_scheme);
 
-MooRule             *moo_rule_new_from_xml              (RuleXML        *xml,
+MooRule             *_moo_rule_new_from_xml             (RuleXML        *xml,
                                                          LangXML        *lang_xml,
                                                          MooLang        *lang);
 

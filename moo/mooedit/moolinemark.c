@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moolinemark.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -394,11 +393,11 @@ moo_line_mark_get_line (MooLineMark *mark)
     g_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
     g_return_val_if_fail (mark->priv->line != NULL, -1);
 
-    if (moo_line_buffer_get_stamp (mark->priv->line_buf) != mark->priv->stamp)
+    if (_moo_line_buffer_get_stamp (mark->priv->line_buf) != mark->priv->stamp)
     {
         mark->priv->line_no =
-                moo_line_buffer_get_line_index (mark->priv->line_buf, mark->priv->line);
-        mark->priv->stamp = moo_line_buffer_get_stamp (mark->priv->line_buf);
+                _moo_line_buffer_get_line_index (mark->priv->line_buf, mark->priv->line);
+        mark->priv->stamp = _moo_line_buffer_get_stamp (mark->priv->line_buf);
     }
 
     return mark->priv->line_no;

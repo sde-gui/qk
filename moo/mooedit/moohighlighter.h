@@ -14,13 +14,17 @@
 #ifndef __MOO_HIGHLIGHTER_H__
 #define __MOO_HIGHLIGHTER_H__
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be included"
+#endif
+
 #include "mooedit/moolang.h"
 #include "mooedit/moolinebuffer.h"
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_SYNTAX_TAG              (moo_syntax_tag_get_type ())
+#define MOO_TYPE_SYNTAX_TAG              (_moo_syntax_tag_get_type ())
 #define MOO_SYNTAX_TAG(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_SYNTAX_TAG, MooSyntaxTag))
 #define MOO_SYNTAX_TAG_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_SYNTAX_TAG, MooSyntaxTagClass))
 #define MOO_IS_SYNTAX_TAG(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_SYNTAX_TAG))
@@ -70,21 +74,21 @@ struct _MooSyntaxTagClass {
 };
 
 
-GType   moo_syntax_tag_get_type             (void) G_GNUC_CONST;
+GType   _moo_syntax_tag_get_type            (void) G_GNUC_CONST;
 
 
-MooHighlighter *moo_highlighter_new         (GtkTextBuffer      *buffer,
+MooHighlighter *_moo_highlighter_new        (GtkTextBuffer      *buffer,
                                              LineBuffer         *line_buf,
                                              MooLang            *lang);
-void    moo_highlighter_destroy             (MooHighlighter     *highlight,
+void    _moo_highlighter_destroy            (MooHighlighter     *highlight,
                                              gboolean            destroy_tags);
 
-void    moo_highlighter_queue_compute       (MooHighlighter     *highlight);
-void    moo_highlighter_apply_tags          (MooHighlighter     *highlight,
+void    _moo_highlighter_queue_compute      (MooHighlighter     *highlight);
+void    _moo_highlighter_apply_tags         (MooHighlighter     *highlight,
                                              int                 first_line,
                                              int                 last_line);
 
-void    moo_highlighter_apply_scheme        (MooHighlighter     *highlight,
+void    _moo_highlighter_apply_scheme       (MooHighlighter     *highlight,
                                              MooTextStyleScheme *scheme);
 
 
