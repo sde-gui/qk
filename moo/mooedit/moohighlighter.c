@@ -451,10 +451,16 @@ hl_compute_line (MooHighlighter     *hl,
             if (result.match_len < 0)
                 result.match_len = g_utf8_pointer_to_offset (result.match_start, result.match_end);
 
+            next_node = get_next_node (hl, node, matched_rule);
+
+            if (next_node == node && !result.match_offset && !result.match_len)
+            {
+                g_critical ("%s: zero-length match returned to the same node, bailing out", G_STRLOC);
+                goto nomatch;
+            }
+
             if (result.match_offset)
                 _moo_line_add_segment (line, result.match_offset, node, NULL, NULL);
-
-            next_node = get_next_node (hl, node, matched_rule);
 
             if (matched_rule->flags & MOO_RULE_INCLUDE_INTO_NEXT)
                 match_node = next_node;
@@ -470,10 +476,12 @@ hl_compute_line (MooHighlighter     *hl,
         }
         else
         {
-            _moo_line_add_segment (line, -1, node, NULL, NULL);
-            break;
+            goto nomatch;
         }
     }
+
+nomatch:
+    _moo_line_add_segment (line, -1, node, NULL, NULL);
 
     return get_next_line_node (hl, line);
 }
@@ -743,6 +751,9 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
 
         for (i = 0; i < info->n_segments; ++i)
         {
+            if (!info->segments[i].len)
+                continue;
+
             if (info->segments[i].len < 0)
                 gtk_text_iter_forward_to_line_end (&t_end);
             else

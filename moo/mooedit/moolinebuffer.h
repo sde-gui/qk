@@ -58,7 +58,7 @@ struct _HLInfo {
     Segment *segments;
     guint n_segments;
     guint n_segments_alloc__;
-    GSList *tags; /* tags applied in this line */
+    GSList *tags; /* tags applied (maybe) in this line */
     guint tags_applied : 1; /* correct highlighting tags were applied */
 };
 
