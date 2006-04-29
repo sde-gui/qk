@@ -79,10 +79,6 @@ MooHighlighter *moo_highlighter_new         (GtkTextBuffer      *buffer,
 void    moo_highlighter_destroy             (MooHighlighter     *highlight,
                                              gboolean            destroy_tags);
 
-void    moo_highlighter_compute             (MooHighlighter     *highlight,
-                                             int                 first_line,
-                                             int                 last_line,
-                                             gboolean            apply_tags);
 void    moo_highlighter_queue_compute       (MooHighlighter     *highlight);
 void    moo_highlighter_apply_tags          (MooHighlighter     *highlight,
                                              int                 first_line,
