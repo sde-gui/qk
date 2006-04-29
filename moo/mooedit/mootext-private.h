@@ -59,6 +59,9 @@ void        _moo_text_buffer_apply_syntax_tag       (MooTextBuffer      *buffer,
 void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
                                                      int                 first,
                                                      int                 last);
+void        _moo_text_buffer_tags_changed           (MooTextBuffer      *buffer,
+                                                     int                 first,
+                                                     int                 last);
 
 
 G_END_DECLS

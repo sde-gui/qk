@@ -198,13 +198,9 @@ apply_tag (MooHighlighter     *hl,
     if (tag)
     {
 #if 0
-        static int last_line_no = -1;
-        int line_no = _moo_line_buffer_get_line_index (hl->line_buf, line);
-        if (line_no != last_line_no)
-        {
-            last_line_no = line_no;
-            g_message ("applying tag on line %d", line_no);
-        }
+        g_print ("* applying tag '%s' on line %d\n",
+                 rule ? rule->description : "NULL",
+                 _moo_line_buffer_get_line_index (hl->line_buf, line));
 #endif
         line->hl_info->tags = g_slist_prepend (line->hl_info->tags, g_object_ref (tag));
         hl->last_tag = tag;
@@ -627,7 +623,6 @@ hl_compute_range (MooHighlighter *hl,
     if (timer)
         g_timer_destroy (timer);
 
-    check_last_tag (hl);
     _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
                                            lines->first, line_no);
 //     g_print ("changed %d to %d\n", lines->first, line_no);
@@ -787,11 +782,11 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
         }
     }
 
-    check_last_tag (hl);
+//     check_last_tag (hl);
 
     if (first_changed >= 0)
-        _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
-                                               first_changed, last_changed);
+        _moo_text_buffer_tags_changed (MOO_TEXT_BUFFER (hl->buffer),
+                                       first_changed, last_changed);
 }
 
 

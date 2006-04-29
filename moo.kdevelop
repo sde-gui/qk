@@ -103,7 +103,7 @@
         <f77flags/>
       </gtk-cvs>
       <optimized>
-        <configargs>--enable-all-gcc-warnings=fatal --without-python</configargs>
+        <configargs>--enable-all-gcc-warnings=fatal</configargs>
         <builddir>build/optimized</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

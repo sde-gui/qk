@@ -78,6 +78,10 @@ typedef enum {
 struct _MooTextViewPrivate {
     gboolean constructed;
 
+    GdkRectangle *update_rectangle;
+    gboolean in_expose;
+    guint update_idle;
+
     /* Clipboard */
     gboolean manage_clipboard;
 

@@ -123,6 +123,7 @@ enum {
     CURSOR_MOVED,
     SELECTION_CHANGED,
     HIGHLIGHTING_CHANGED,
+    TAGS_CHANGED,
     LINE_MARK_ADDED,
     LINE_MARK_MOVED,
     LINE_MARK_DELETED,
@@ -250,6 +251,16 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
 
     signals[HIGHLIGHTING_CHANGED] =
             moo_signal_new_cb ("highlighting-changed",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST,
+                               NULL, NULL, NULL,
+                               _moo_marshal_VOID__BOXED_BOXED,
+                               G_TYPE_NONE, 2,
+                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
+                               GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
+
+    signals[TAGS_CHANGED] =
+            moo_signal_new_cb ("tags-changed",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST,
                                NULL, NULL, NULL,
@@ -939,10 +950,11 @@ _moo_text_buffer_ensure_highlight (MooTextBuffer      *buffer,
 }
 
 
-void
-_moo_text_buffer_highlighting_changed (MooTextBuffer *buffer,
-                                       int            first,
-                                       int            last)
+static void
+something_changed (MooTextBuffer *buffer,
+                   int            first,
+                   int            last,
+                   guint          sig)
 {
     GtkTextIter start, end;
 
@@ -956,7 +968,25 @@ _moo_text_buffer_highlighting_changed (MooTextBuffer *buffer,
     else
         gtk_text_buffer_get_iter_at_line (GTK_TEXT_BUFFER (buffer), &end, last);
 
-    g_signal_emit (buffer, signals[HIGHLIGHTING_CHANGED], 0, &start, &end);
+    g_signal_emit (buffer, signals[sig], 0, &start, &end);
+}
+
+
+void
+_moo_text_buffer_highlighting_changed (MooTextBuffer *buffer,
+                                       int            first,
+                                       int            last)
+{
+    something_changed (buffer, first, last, HIGHLIGHTING_CHANGED);
+}
+
+
+void
+_moo_text_buffer_tags_changed (MooTextBuffer *buffer,
+                               int            first,
+                               int            last)
+{
+    something_changed (buffer, first, last, TAGS_CHANGED);
 }
 
 

@@ -124,6 +124,9 @@ static void     selection_changed           (MooTextView        *view,
 static void     highlighting_changed        (GtkTextView        *view,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end);
+static void     tags_changed                (GtkTextView        *view,
+                                             const GtkTextIter  *start,
+                                             const GtkTextIter  *end);
 
 static void     moo_text_view_set_scheme_real (MooTextView      *view,
                                              MooTextStyleScheme *scheme);
@@ -673,6 +676,8 @@ moo_text_view_constructor (GType                  type,
                               G_CALLBACK (selection_changed), view);
     g_signal_connect_swapped (get_buffer (view), "highlighting-changed",
                               G_CALLBACK (highlighting_changed), view);
+    g_signal_connect_swapped (get_buffer (view), "tags-changed",
+                              G_CALLBACK (tags_changed), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-selection",
                               G_CALLBACK (proxy_prop_notify), view);
     g_signal_connect_swapped (get_buffer (view), "notify::has-text",
@@ -1957,6 +1962,13 @@ moo_text_view_unrealize (GtkWidget *widget)
     g_object_set_data (G_OBJECT (widget), "moo-line-mark-icons", NULL);
     g_object_set_data (G_OBJECT (widget), "moo-line-mark-colors", NULL);
 
+    if (view->priv->update_idle)
+        g_source_remove (view->priv->update_idle);
+    view->priv->update_idle = 0;
+
+    g_free (view->priv->update_rectangle);
+    view->priv->update_rectangle = NULL;
+
     if (view->priv->current_line_gc)
         g_object_unref (view->priv->current_line_gc);
     view->priv->current_line_gc = NULL;
@@ -2226,6 +2238,8 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *right_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_RIGHT);
     GtkTextIter start, end;
 
+    view->priv->in_expose = TRUE;
+
     if (view->priv->highlight_current_line &&
         view->priv->current_line_gc &&
         event->window == text_window && view->priv->current_line_gc)
@@ -2289,6 +2303,8 @@ moo_text_view_expose (GtkWidget      *widget,
     if (event->window == text_window && view->priv->cursor_visible)
         moo_text_view_draw_cursor (text_view, event);
 
+    view->priv->in_expose = FALSE;
+
     return handled;
 }
 
@@ -2314,16 +2330,96 @@ highlighting_changed (GtkTextView        *text_view,
 
     if (gdk_rectangle_intersect (&changed, &visible, &update))
     {
-        GdkWindow *window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT);
+        GtkTextIter update_start, update_end;
+        int first_line, last_line;
 
-        gtk_text_view_buffer_to_window_coords (text_view,
-                                               GTK_TEXT_WINDOW_TEXT,
-                                               update.x,
-                                               update.y,
-                                               &update.x,
-                                               &update.y);
+        gtk_text_view_get_line_at_y (text_view, &update_start, update.y, NULL);
+        gtk_text_view_get_line_at_y (text_view, &update_end, update.y + update.height - 1, NULL);
 
-        gdk_window_invalidate_rect (window, &update, TRUE);
+        first_line = gtk_text_iter_get_line (&update_start);
+        last_line = gtk_text_iter_get_line (&update_end);
+
+        /* it reports bogus values sometimes, like on opening huge file */
+        if (last_line - first_line < 2000)
+        {
+//             g_print ("asking to apply tags on lines %d-%d\n", first_line, last_line);
+            _moo_text_buffer_ensure_highlight (get_moo_buffer (MOO_TEXT_VIEW (text_view)),
+                                               first_line, last_line);
+        }
+    }
+}
+
+
+static gboolean
+invalidate_rectangle (MooTextView *view)
+{
+    GdkWindow *window;
+    GdkRectangle *rect = view->priv->update_rectangle;
+
+    view->priv->update_rectangle = NULL;
+    view->priv->update_idle = 0;
+
+    gtk_text_view_buffer_to_window_coords (GTK_TEXT_VIEW (view),
+                                           GTK_TEXT_WINDOW_TEXT,
+                                           rect->x, rect->y,
+                                           &rect->x, &rect->y);
+    window = gtk_text_view_get_window (GTK_TEXT_VIEW (view), GTK_TEXT_WINDOW_TEXT);
+    gdk_window_invalidate_rect (window, rect, FALSE);
+
+    g_free (rect);
+    return FALSE;
+}
+
+
+static void
+tags_changed (GtkTextView        *text_view,
+              const GtkTextIter  *start,
+              const GtkTextIter  *end)
+{
+    GdkRectangle visible, changed, update;
+    int y, height;
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
+
+    if (!GTK_WIDGET_DRAWABLE (text_view))
+        return;
+
+    gtk_text_view_get_visible_rect (text_view, &visible);
+
+    gtk_text_view_get_line_yrange (text_view, start, &changed.y, &height);
+    gtk_text_view_get_line_yrange (text_view, end, &y, &height);
+    changed.height = y - changed.y + height;
+    changed.x = visible.x;
+    changed.width = visible.width;
+
+    if (!gdk_rectangle_intersect (&changed, &visible, &update))
+        return;
+
+    if (view->priv->update_rectangle)
+    {
+        gdk_rectangle_union (view->priv->update_rectangle, &update,
+                             view->priv->update_rectangle);
+    }
+    else
+    {
+        view->priv->update_rectangle = g_new (GdkRectangle, 1);
+        *view->priv->update_rectangle = update;
+    }
+
+    if (view->priv->in_expose)
+    {
+        if (!view->priv->update_idle)
+            view->priv->update_idle =
+                    g_idle_add_full (G_PRIORITY_HIGH_IDLE,
+                                     (GSourceFunc) invalidate_rectangle,
+                                     view, NULL);
+    }
+    else
+    {
+        if (view->priv->update_idle)
+            g_source_remove (view->priv->update_idle);
+        view->priv->update_idle = 0;
+
+        invalidate_rectangle (view);
     }
 }
 
