@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moolang.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -18,6 +17,7 @@
 #include "mooedit/moolang-parser.h"
 #include "mooedit/moolang-strings.h"
 #include "mooedit/mooeditprefs.h"
+#include "mooedit/moohighlighter.h"
 #include "mooutils/xdgmime/xdgmime.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
@@ -452,6 +452,9 @@ set_tag_style (MooLang       *lang,
         g_object_set (tag, "underline", style->underline ? PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE, NULL);
     if (style->mask & MOO_TEXT_STYLE_STRIKETHROUGH)
         g_object_set (tag, "strikethrough", (gboolean) (style->strikethrough ? TRUE : FALSE), NULL);
+
+    if (MOO_IS_SYNTAX_TAG (tag))
+        MOO_SYNTAX_TAG(tag)->has_style = style->mask != 0;
 }
 
 
@@ -525,4 +528,7 @@ _moo_lang_erase_tag_style (GtkTextTag         *tag)
                   "underline-set", FALSE,
                   "strikethrough-set", FALSE,
                   NULL);
+
+    if (MOO_IS_SYNTAX_TAG (tag))
+        MOO_SYNTAX_TAG(tag)->has_style = FALSE;
 }

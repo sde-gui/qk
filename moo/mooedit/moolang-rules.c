@@ -17,7 +17,7 @@
 #include "mooedit/moolang-aux.h"
 
 
-#ifdef MOO_DEBUG
+#if 0 && defined(MOO_DEBUG)
 #define MOO_PROFILE
 #endif
 

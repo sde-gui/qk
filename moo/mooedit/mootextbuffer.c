@@ -1460,7 +1460,6 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
     guint to_find;
     gunichar bracket = gtk_text_iter_get_char (iter);
     gunichar bracket_to_find = 0;
-    MooContext *ctx;
     guint stack = 0;
     GtkTextIter b;
     MooTextBuffer *buffer;
@@ -1498,7 +1497,6 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
     if (to_find == buffer->priv->num_brackets)
         return MOO_BRACKET_MATCH_NOT_AT_BRACKET;
 
-    ctx = _moo_text_iter_get_context (iter);
     stack = 0;
     b = *iter;
 
@@ -1512,46 +1510,25 @@ moo_text_iter_find_matching_bracket (GtkTextIter *iter,
 
         if (c == bracket_to_find && !stack)
         {
-#if 0
-            if (ctx == _moo_text_iter_get_context (&b))
-            {
-#endif
-                *iter = b;
-                return MOO_BRACKET_MATCH_CORRECT;
-#if 0
-            }
-            else
-            {
-                continue;
-            }
-#endif
+            *iter = b;
+            return MOO_BRACKET_MATCH_CORRECT;
         }
 
         if (find (same_direction, buffer->priv->num_brackets, c))
         {
-#if 0
-            if (ctx == _moo_text_iter_get_context (&b))
-#endif
-                ++stack;
+            ++stack;
         }
         else if (find (inverse_direction, buffer->priv->num_brackets, c))
         {
-#if 0
-            if (ctx == _moo_text_iter_get_context (&b))
+            if (stack)
             {
-#endif
-                if (stack)
-                {
-                    --stack;
-                }
-                else
-                {
-                    *iter = b;
-                    return MOO_BRACKET_MATCH_INCORRECT;
-                }
-#if 0
+                --stack;
             }
-#endif
+            else
+            {
+                *iter = b;
+                return MOO_BRACKET_MATCH_INCORRECT;
+            }
         }
     }
 

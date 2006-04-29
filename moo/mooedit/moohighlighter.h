@@ -64,6 +64,7 @@ struct _MooSyntaxTag {
     CtxNode *ctx_node;      /* self == ctx_node->context_tag if rule == NULL, */
     CtxNode *match_node;    /* and match_node->match_tags[rule->id] otherwise */
     MooRule *rule;
+    guint has_style : 1;
 };
 
 struct _MooSyntaxTagClass {

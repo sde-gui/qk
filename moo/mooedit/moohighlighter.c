@@ -63,18 +63,9 @@ static gboolean      hl_compute_range       (MooHighlighter     *hl,
 G_DEFINE_TYPE (MooSyntaxTag, _moo_syntax_tag, GTK_TYPE_TEXT_TAG)
 
 
-// static void
-// moo_syntax_tag_finalize (GObject *object)
-// {
-//     g_free (MOO_SYNTAX_TAG(object)->stack);
-//     G_OBJECT_CLASS(moo_syntax_tag_parent_class)->finalize (object);
-// }
-
-
 static void
 _moo_syntax_tag_class_init (G_GNUC_UNUSED MooSyntaxTagClass *klass)
 {
-//     G_OBJECT_CLASS(klass)->finalize = moo_syntax_tag_finalize;
 }
 
 
@@ -168,14 +159,6 @@ iter_get_syntax_tag (const GtkTextIter *iter)
 }
 
 
-MooContext*
-_moo_text_iter_get_context (const GtkTextIter *iter)
-{
-    MooSyntaxTag *tag = iter_get_syntax_tag (iter);
-    return tag ? tag->ctx_node->ctx : NULL;
-}
-
-
 static void
 apply_tag (MooHighlighter     *hl,
            Line               *line,
@@ -195,10 +178,12 @@ apply_tag (MooHighlighter     *hl,
 
     g_assert (iter_get_syntax_tag (start) == NULL);
 
-    if (tag)
+    if (tag && MOO_SYNTAX_TAG(tag)->has_style)
     {
 #if 0
-        g_print ("* applying tag '%s' on line %d\n",
+        g_print ("* applying tag %s-%s-'%s' on line %d\n",
+                 ctx_node ? ctx_node->ctx->name : "<UNKNOWN>",
+                 match_node ? match_node->ctx->name : "<>",
                  rule ? rule->description : "NULL",
                  _moo_line_buffer_get_line_index (hl->line_buf, line));
 #endif
@@ -523,17 +508,18 @@ hl_compute_range (MooHighlighter *hl,
 
     gtk_text_buffer_get_iter_at_line (hl->buffer, &iter, lines->first);
 
-//     g_print ("hl_compute_range: %d to %d\n", lines->first, lines->last);
-//     g_print ("hl_compute_range: invalid %d to %d\n",
-//              hl->line_buf->invalid.first,
-//              hl->line_buf->invalid.last);
+#if 0
+    g_print ("hl_compute_range: %d to %d\n", lines->first, lines->last);
+    g_print ("hl_compute_range: invalid %d to %d\n",
+             hl->line_buf->invalid.first,
+             hl->line_buf->invalid.last);
+#endif
 
     for (line_no = lines->first; line_no <= lines->last; ++line_no)
     {
         Line *line = _moo_line_buffer_get_line (hl->line_buf, line_no);
         MatchData match_data;
 
-//         g_assert (line->hl_info->tags || !line->hl_info->tags_applied || !line->hl_info->n_segments);
         g_assert (line_no == gtk_text_iter_get_line (&iter));
 
         line->hl_info->start_node = node;
@@ -609,7 +595,10 @@ hl_compute_range (MooHighlighter *hl,
 
     _moo_text_buffer_highlighting_changed (MOO_TEXT_BUFFER (hl->buffer),
                                            lines->first, line_no);
-//     g_print ("changed %d to %d\n", lines->first, line_no);
+#if 0
+    g_print ("changed %d to %d\n", lines->first, line_no);
+#endif
+
     return done;
 }
 
