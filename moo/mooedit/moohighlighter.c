@@ -754,6 +754,12 @@ _moo_highlighter_apply_tags (MooHighlighter     *hl,
             if (!info->segments[i].len)
                 continue;
 
+            if (gtk_text_iter_ends_line (&t_start))
+            {
+                g_assert (info->segments[i].len < 0);
+                break;
+            }
+
             if (info->segments[i].len < 0)
                 gtk_text_iter_forward_to_line_end (&t_end);
             else
