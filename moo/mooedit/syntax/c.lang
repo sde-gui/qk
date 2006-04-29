@@ -45,9 +45,6 @@
       <keyword>unsigned</keyword>
       <keyword>void</keyword>
       <keyword>volatile</keyword>
-      <keyword>_Imaginary</keyword>
-      <keyword>_Complex</keyword>
-      <keyword>_Bool</keyword>
     </keyword-list>
     <keyword-list name="glib-types">
       <keyword>gboolean</keyword>
