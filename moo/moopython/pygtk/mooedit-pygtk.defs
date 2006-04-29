@@ -1398,6 +1398,11 @@
 
 ;; From moo/mooedit/mooedit-actions.h
 
+(define-virtual check_state
+  (of-object "MooEditAction")
+  (return-type "gboolean")
+)
+
 (define-function moo_edit_action_new
   (c-name "moo_edit_action_new")
   (is-constructor-of "MooEditAction")

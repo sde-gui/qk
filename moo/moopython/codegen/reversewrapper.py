@@ -24,10 +24,10 @@ class CodeSink(object):
         if l[-1]:
             l.append('')
         return '\n'.join(l)
-    
+
     def writeln(self, line=''):
         raise NotImplementedError
-    
+
     def indent(self, level=4):
         '''Add a certain ammount of indentation to all lines written
         from now on and until unindent() is called'''
@@ -75,10 +75,10 @@ class ReverseWrapper(object):
         assert isinstance(cname, str)
 
         self.cname = cname
-        ## function object we will call, or object whose method we will call 
+        ## function object we will call, or object whose method we will call
         self.called_pyobj = None
         ## name of method of self.called_pyobj we will call
-        self.method_name = None 
+        self.method_name = None
         self.is_static = is_static
 
         self.parameters = []
@@ -209,7 +209,7 @@ class ReverseWrapper(object):
                 argc = None
 
         self.body.writeln()
-        
+
         if py_args != "NULL":
             self.write_code("py_args = PyTuple_New(%s);" % argc,
                             cleanup="Py_DECREF(py_args);")
@@ -243,7 +243,7 @@ class ReverseWrapper(object):
                             failure_expression="!py_retval")
         else:
             self.add_declaration("PyObject *py_method;")
-            self.write_code("py_method = PyObject_GetAttrString(%s, \"%s\");"
+            self.write_code("py_method = PyObject_GetAttrString(%s, (char*) \"%s\");"
                             % (self.called_pyobj, self.method_name),
                             cleanup="Py_DECREF(py_method);",
                             failure_expression="!py_method")
@@ -251,7 +251,7 @@ class ReverseWrapper(object):
                             % (py_args,),
                             cleanup="Py_DECREF(py_retval);",
                             failure_expression="!py_retval")
-        
+
         self.return_type.write_conversion()
 
         sink.indent()

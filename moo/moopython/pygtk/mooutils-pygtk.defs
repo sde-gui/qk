@@ -1266,7 +1266,7 @@
   (c-name "moo_prefs_dialog_page_new")
   (is-constructor-of "MooPrefsDialogPage")
   (return-type "GtkWidget*")
-  (parameters
+  (properties
     '("const-char*" "label")
     '("const-char*" "icon_stock_id")
   )
@@ -1359,6 +1359,12 @@
 
 
 ;; From ../mooutils/moowindow.h
+
+(define-function moo_window_new
+  (c-name "moo_window_new")
+  (is-constructor-of "MooWindow")
+  (return-type "GtkWidget*")
+)
 
 (define-method close
   (of-object "MooWindow")
@@ -1753,7 +1759,7 @@
   (c-name "moo_paned_new")
   (is-constructor-of "MooPaned")
   (return-type "GtkWidget*")
-  (parameters
+  (properties
     '("MooPanePosition" "pane_position")
   )
 )
@@ -1970,7 +1976,7 @@
   (c-name "moo_undo_mgr_new")
   (is-constructor-of "MooUndoMgr")
   (return-type "MooUndoMgr*")
-  (parameters
+  (properties
     '("GObject*" "document")
   )
 )
@@ -2286,6 +2292,51 @@
   (parameters
     '("const-char*" "group_id")
     '("const-char*" "action_id")
+  )
+)
+
+
+(define-virtual create_menu_item
+  (of-object "MooAction")
+  (return-type "GtkWidget*")
+)
+
+(define-virtual create_tool_item
+  (of-object "MooAction")
+  (return-type "GtkWidget*")
+  (parameters
+    '("GtkWidget*" "toolbar")
+    '("int" "position")
+    '("MooToolItemFlags" "flags")
+  )
+)
+
+(define-virtual add_proxy
+  (of-object "MooAction")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "proxy")
+  )
+)
+
+(define-virtual activate
+  (of-object "MooAction")
+  (return-type "none")
+)
+
+(define-virtual set_sensitive
+  (of-object "MooAction")
+  (return-type "none")
+  (parameters
+    '("gboolean" "sensitive")
+  )
+)
+
+(define-virtual set_visible
+  (of-object "MooAction")
+  (return-type "none")
+  (parameters
+    '("gboolean" "visible")
   )
 )
 
@@ -2632,7 +2683,7 @@
   (c-name "moo_file_dialog_new")
   (is-constructor-of "MooFileDialog")
   (return-type "MooFileDialog*")
-  (parameters
+  (properties
     '("MooFileDialogType" "type")
     '("GtkWidget*" "parent" (null-ok) (default "NULL"))
     '("gboolean" "multiple" (null-ok) (default "FALSE"))
