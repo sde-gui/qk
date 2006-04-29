@@ -285,7 +285,6 @@
                             <property name="visible">True</property>
                             <child>
                               <widget class="GtkHBox" id="hbox111">
-                                <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <child>
                                   <widget class="GtkCheckButton" id="auto_save">
@@ -337,7 +336,6 @@
                             </child>
                             <child>
                               <widget class="GtkCheckButton" id="checkbutton11">
-                                <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="label">Make backups</property>
                                 <property name="use_underline">True</property>
@@ -741,12 +739,30 @@
                     <property name="n_rows">2</property>
                     <property name="n_columns">2</property>
                     <child>
-                      <widget class="GtkLabel" id="label99">
+                      <widget class="GtkComboBox" id="color_scheme_combo">
                         <property name="visible">True</property>
-                        <property name="label">Font:</property>
-                        <property name="moo_sensitive">!use_default_font</property>
+                        <property name="items" translatable="yes">KDE
+gvim
+</property>
                       </widget>
                       <packing>
+                        <property name="left_attach">1</property>
+                        <property name="right_attach">2</property>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
+                        <property name="x_options">GTK_FILL</property>
+                        <property name="y_options"></property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label100">
+                        <property name="visible">True</property>
+                        <property name="xalign">0.000000</property>
+                        <property name="label">Color scheme:</property>
+                      </widget>
+                      <packing>
+                        <property name="top_attach">1</property>
+                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
                         <property name="y_options"></property>
                       </packing>
@@ -767,31 +783,13 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label100">
+                      <widget class="GtkLabel" id="label99">
                         <property name="visible">True</property>
-                        <property name="xalign">0.000000</property>
-                        <property name="label">Color scheme:</property>
+                        <property name="label">Font:</property>
+                        <property name="moo_sensitive">!use_default_font</property>
                       </widget>
                       <packing>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
                         <property name="x_options"></property>
-                        <property name="y_options"></property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkComboBox" id="color_scheme_combo">
-                        <property name="visible">True</property>
-                        <property name="items" translatable="yes">KDE
-gvim
-</property>
-                      </widget>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="right_attach">2</property>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
-                        <property name="x_options">GTK_FILL</property>
                         <property name="y_options"></property>
                       </packing>
                     </child>
