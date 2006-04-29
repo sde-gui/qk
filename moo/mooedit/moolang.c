@@ -453,8 +453,8 @@ set_tag_style (MooLang       *lang,
     if (style->mask & MOO_TEXT_STYLE_STRIKETHROUGH)
         g_object_set (tag, "strikethrough", (gboolean) (style->strikethrough ? TRUE : FALSE), NULL);
 
-    if (MOO_IS_SYNTAX_TAG (tag))
-        MOO_SYNTAX_TAG(tag)->has_style = style->mask != 0;
+    if (MOO_IS_SYNTAX_TAG (tag) && style->mask != 0)
+        MOO_SYNTAX_TAG(tag)->has_style = TRUE;
 }
 
 
