@@ -13,6 +13,7 @@ Note that by default Editor shows alerts in various places, like when
 user tries to close document with unsaved changes. To disable this,
 use 'silent' property: editor.set_property("silent", True).
 """
+import _moo_edit as _edit
 from _moo_edit import *
 
 class Plugin(object):
@@ -74,3 +75,7 @@ class Plugin(object):
             xml = editor.get_ui_xml()
             xml.remove_ui(self.ui_merge_id)
         self.ui_merge_id = 0
+
+
+def edit_class_add_action(cls, action_id, action_class):
+    _edit._edit_class_add_action(cls, action_id, action_class)

@@ -9,6 +9,7 @@ headers
 #include "mooedit/mootextiter.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/moocmdview.h"
+#include "mooedit/mooedit-actions.h"
 #include "moopython/mooplugin-python.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
@@ -26,6 +27,7 @@ import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gobject.GObject as PyGObject_Type
 import _moo_utils.Window as PyMooWindow_Type
 import _moo_utils.UIXML as PyMooUIXML_Type
+import _moo_utils.Action as PyMooAction_Type
 %%
 ignore-glob
   *_get_type
@@ -242,4 +244,70 @@ _wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     {
         return_None;
     }
+}
+%%
+override moo_edit_class_add_action varargs
+static PyObject *
+_wrap_moo_edit_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_type, *py_id, *py_action_type;
+    GType type, action_type;
+    MooEditClass *klass;
+
+    if (PyTuple_GET_SIZE (args) < 3)
+        return_TypeErr ("at least three arguments required");
+
+    py_type = PyTuple_GET_ITEM (args, 0);
+    py_id = PyTuple_GET_ITEM (args, 1);
+    py_action_type = PyTuple_GET_ITEM (args, 2);
+
+    if (!(type = pyg_type_from_object (py_type)))
+        return NULL;
+
+    if (!(action_type = pyg_type_from_object (py_action_type)))
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_EDIT))
+        return_TypeErr ("type must be derived from MooEdit");
+
+    if (!g_type_is_a (action_type, MOO_TYPE_EDIT_ACTION))
+        return_TypeErr ("action_type must be derived from MooEditAction");
+
+    if (!PyString_Check (py_id))
+        return_TypeErr ("id must be a string");
+
+    klass = g_type_class_ref (type);
+
+    moo_edit_class_new_action_type (klass, PyString_AS_STRING (py_id), action_type);
+
+    g_type_class_unref (klass);
+    return_None;
+}
+%%
+override moo_edit_class_remove_action kwargs
+static PyObject *
+_wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {(char*) "class", (char*) "id", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *action_id;
+    MooEditClass *klass;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "Os:window_class_remove_action", kwlist, &py_type, &action_id))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_EDIT))
+        return_TypeErr ("type must be derived from MooEdit");
+
+    klass = g_type_class_ref (type);
+    moo_edit_class_remove_action (klass, action_id);
+    g_type_class_unref (klass);
+
+    return_None;
 }

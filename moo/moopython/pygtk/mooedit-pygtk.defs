@@ -82,6 +82,13 @@
   (gtype-id "MOO_TYPE_FOLD")
 )
 
+(define-object Action
+  (in-module "Moo")
+  (parent "MooAction")
+  (c-name "MooEditAction")
+  (gtype-id "MOO_TYPE_EDIT_ACTION")
+)
+
 
 (define-boxed Lang
   (in-module "Moo")
@@ -1385,4 +1392,36 @@
   (of-object "MooLineMark")
   (c-name "moo_line_mark_get_background_gc")
   (return-type "GdkGC*")
+)
+
+
+
+;; From moo/mooedit/mooedit-actions.h
+
+(define-function _edit_class_add_action
+  (c-name "moo_edit_class_add_action")
+  (return-type "none")
+)
+
+(define-function edit_class_remove_action
+  (c-name "moo_edit_class_remove_action")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-method get_actions
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_actions")
+  (return-type "MooActionGroup*")
+)
+
+(define-method get_action_by_id
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_action_by_id")
+  (return-type "MooAction*")
+  (parameters
+    '("const-char*" "action_id")
+  )
 )
