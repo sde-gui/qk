@@ -582,7 +582,11 @@ item_set_default (PrefsItem      *item,
 
     if (!moo_value_equal (value, &item->default_value))
     {
+        if (moo_value_equal (&item->default_value, &item->value))
+            g_value_copy (value, &item->value);
+
         g_value_copy (value, &item->default_value);
+
         return TRUE;
     }
 
