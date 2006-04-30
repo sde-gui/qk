@@ -28,6 +28,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <io.h>
+#include <direct.h>
 #endif
 
 #ifdef HAVE_SYS_WAIT_H
