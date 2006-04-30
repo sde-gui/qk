@@ -266,7 +266,7 @@ default_lang_combo_init (GtkWidget *combo,
     store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
 
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, COLUMN_ID, NULL,
+    gtk_list_store_set (store, &iter, COLUMN_ID, MOO_LANG_NONE,
                         COLUMN_NAME, "None", -1);
     /* separator */
     gtk_list_store_append (store, &iter);
