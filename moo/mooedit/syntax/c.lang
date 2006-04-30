@@ -94,7 +94,7 @@
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
       <Keyword style="Data Type" context="#stay" keyword="types"/>
       <Keyword keyword="CommonMacro" style="Common Macro" context="#stay"/>
-      <Regex pattern="&func_pattern;" style="Function"/>
+<!--      <Regex pattern="&func_pattern;" style="Function"/>-->
       <Identifier/>
       <Float style="Float" context="#stay">
         <AnyChar chars="fF" style="Float" context="#stay"/>
@@ -171,7 +171,7 @@
     <style name="String Char"  default-style="Char"/>
     <style name="Comment"      default-style="Comment"/>
     <style name="Symbol"       default-style="Normal"/>
-    <style name="Preprocessor" default-style="Others"/>
+    <style name="Preprocessor" default-style="Others" italic="False"/>
     <style name="Prep. Lib"    default-style="Others"/>
     <style name="Common Macro" default-style="Keyword" foreground="#0095ff" bold="1" italic="0"/>
     <style name="Function"     default-style="Function"/>

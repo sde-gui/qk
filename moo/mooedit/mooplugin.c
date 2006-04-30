@@ -182,6 +182,8 @@ moo_plugin_finalize (GObject *object)
     if (plugin->langs)
         g_hash_table_destroy (plugin->langs);
 
+    moo_plugin_info_free (plugin->info);
+
     G_OBJECT_CLASS(parent_class)->finalize (object);
 }
 
@@ -207,13 +209,13 @@ moo_plugin_register (GType type)
     klass = g_type_class_ref (type);
     g_return_val_if_fail (klass != NULL, FALSE);
 
-    if (klass->plugin_system_version != MOO_PLUGIN_CURRENT_VERSION)
-    {
-        g_message ("%s: plugin %s of version %d is incompatible with "
-                   "current version %d", G_STRLOC, g_type_name (type),
-                   klass->plugin_system_version, MOO_PLUGIN_CURRENT_VERSION);
-        return FALSE;
-    }
+//     if (klass->plugin_system_version != MOO_PLUGIN_CURRENT_VERSION)
+//     {
+//         g_message ("%s: plugin %s of version %d is incompatible with "
+//                    "current version %d", G_STRLOC, g_type_name (type),
+//                    klass->plugin_system_version, MOO_PLUGIN_CURRENT_VERSION);
+//         return FALSE;
+//     }
 
     if (moo_plugin_registered (type))
     {
@@ -670,7 +672,7 @@ plugin_info_check (MooPluginInfo *info)
             g_utf8_validate (info->id, -1, NULL) &&
             info->name && g_utf8_validate (info->name, -1, NULL) &&
             info->description && g_utf8_validate (info->description, -1, NULL) &&
-            info->params && info->prefs_params;
+            info->params;
 }
 
 
@@ -1067,6 +1069,149 @@ moo_plugin_visible (MooPlugin *plugin)
 {
     g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
     return plugin->info->params->visible ? TRUE : FALSE;
+}
+
+
+void
+moo_plugin_set_info (MooPlugin     *plugin,
+                     MooPluginInfo *info)
+{
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+
+    if (plugin->info != info)
+    {
+        moo_plugin_info_free (plugin->info);
+        plugin->info = moo_plugin_info_copy (info);
+    }
+}
+
+
+void
+moo_plugin_set_doc_plugin_type (MooPlugin   *plugin,
+                                GType        type)
+{
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_DOC_PLUGIN));
+    plugin->doc_plugin_type = type;
+}
+
+
+void
+moo_plugin_set_win_plugin_type (MooPlugin *plugin,
+                                GType      type)
+{
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (g_type_is_a (type, MOO_TYPE_WIN_PLUGIN));
+    plugin->win_plugin_type = type;
+}
+
+
+MooPluginInfo *
+moo_plugin_info_new (const char     *id,
+                     const char     *name,
+                     const char     *description,
+                     const char     *author,
+                     const char     *version,
+                     const char     *langs,
+                     gboolean        enabled,
+                     gboolean        visible)
+{
+    MooPluginInfo *info;
+
+    g_return_val_if_fail (id && name, NULL);
+
+    info = g_new0 (MooPluginInfo, 1);
+    info->id = g_strdup (id);
+    info->name = g_strdup (name);
+    info->description = description ? g_strdup (description) : g_strdup ("");
+    info->author = author ? g_strdup (author) : g_strdup ("");
+    info->version = version ? g_strdup (version) : g_strdup ("");
+    info->langs = g_strdup (langs);
+    info->params = moo_plugin_params_new (enabled, visible);
+
+    return info;
+}
+
+
+MooPluginInfo *
+moo_plugin_info_copy (MooPluginInfo *info)
+{
+    g_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (info->params != NULL, NULL);
+    return moo_plugin_info_new (info->id, info->name, info->description,
+                                info->author, info->version, info->langs,
+                                info->params->enabled, info->params->visible);
+}
+
+
+void
+moo_plugin_info_free (MooPluginInfo *info)
+{
+    if (info)
+    {
+        g_free (info->id);
+        g_free (info->name);
+        g_free (info->description);
+        g_free (info->author);
+        g_free (info->version);
+        g_free (info->langs);
+        moo_plugin_params_free (info->params);
+        g_free (info);
+    }
+}
+
+
+MooPluginParams *
+moo_plugin_params_new (gboolean enabled,
+                       gboolean visible)
+{
+    MooPluginParams *params = g_new0 (MooPluginParams, 1);
+    params->enabled = enabled != 0;
+    params->visible = visible != 0;
+    return params;
+}
+
+
+MooPluginParams *
+moo_plugin_params_copy (MooPluginParams *params)
+{
+    g_return_val_if_fail (params != NULL, NULL);
+    return moo_plugin_params_new (params->enabled, params->visible);
+}
+
+
+void
+moo_plugin_params_free (MooPluginParams *params)
+{
+    g_free (params);
+}
+
+
+GType
+moo_plugin_info_get_type (void)
+{
+    static GType type;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooPluginInfo",
+                                             (GBoxedCopyFunc) moo_plugin_info_copy,
+                                             (GBoxedFreeFunc) moo_plugin_info_free);
+
+    return type;
+}
+
+
+GType
+moo_plugin_params_get_type (void)
+{
+    static GType type;
+
+    if (!type)
+        type = g_boxed_type_register_static ("MooPluginParams",
+                                             (GBoxedCopyFunc) moo_plugin_params_copy,
+                                             (GBoxedFreeFunc) moo_plugin_params_free);
+
+    return type;
 }
 
 

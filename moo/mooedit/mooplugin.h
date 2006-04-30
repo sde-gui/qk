@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 17
+#define MOO_PLUGIN_CURRENT_VERSION 18
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
 #define MOO_PLUGIN_INIT_FUNC moo_module_init
@@ -48,11 +48,13 @@ G_BEGIN_DECLS
 #define MOO_IS_DOC_PLUGIN_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_DOC_PLUGIN))
 #define MOO_DOC_PLUGIN_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_DOC_PLUGIN, MooDocPluginClass))
 
+#define MOO_TYPE_PLUGIN_INFO            (moo_plugin_info_get_type ())
+#define MOO_TYPE_PLUGIN_PARAMS          (moo_plugin_params_get_type ())
+
 
 typedef struct _MooPlugin            MooPlugin;
 typedef struct _MooPluginInfo        MooPluginInfo;
 typedef struct _MooPluginParams      MooPluginParams;
-typedef struct _MooPluginPrefsParams MooPluginPrefsParams;
 typedef struct _MooPluginClass       MooPluginClass;
 typedef struct _MooWinPlugin         MooWinPlugin;
 typedef struct _MooWinPluginClass    MooWinPluginClass;
@@ -89,25 +91,18 @@ struct _MooPluginParams
     gboolean visible;
 };
 
-struct _MooPluginPrefsParams
-{
-    /* it's needed to make sizeof() > 0 */
-    guint dummy : 1;
-};
-
 struct _MooPluginInfo
 {
-    const char *id;
+    char *id;
 
-    const char *name;
-    const char *description;
-    const char *author;
-    const char *version;
+    char *name;
+    char *description;
+    char *author;
+    char *version;
 
-    const char *langs;
+    char *langs;
 
     MooPluginParams *params;
-    MooPluginPrefsParams *prefs_params;
 };
 
 struct _MooPlugin
@@ -144,8 +139,6 @@ struct _MooPluginClass
 {
     GObjectClass parent_class;
 
-    guint plugin_system_version;
-
     MooPluginInitFunc init;
     MooPluginDeinitFunc deinit;
     MooPluginAttachWinFunc attach_win;
@@ -175,6 +168,8 @@ struct _MooDocPluginClass
 GType       moo_plugin_get_type         (void) G_GNUC_CONST;
 GType       moo_win_plugin_get_type     (void) G_GNUC_CONST;
 GType       moo_doc_plugin_get_type     (void) G_GNUC_CONST;
+GType       moo_plugin_info_get_type    (void) G_GNUC_CONST;
+GType       moo_plugin_params_get_type  (void) G_GNUC_CONST;
 
 gboolean    moo_plugin_register         (GType           type);
 void        moo_plugin_unregister       (GType           type);
@@ -204,6 +199,28 @@ const char *moo_plugin_version          (MooPlugin      *plugin);
 
 char      **moo_plugin_get_dirs         (void);
 void        moo_plugin_read_dirs        (void);
+
+void        moo_plugin_set_info         (MooPlugin      *plugin,
+                                         MooPluginInfo  *info);
+void        moo_plugin_set_doc_plugin_type (MooPlugin   *plugin,
+                                         GType           type);
+void        moo_plugin_set_win_plugin_type (MooPlugin   *plugin,
+                                         GType           type);
+
+MooPluginInfo *moo_plugin_info_new      (const char     *id,
+                                         const char     *name,
+                                         const char     *description,
+                                         const char     *author,
+                                         const char     *version,
+                                         const char     *langs,
+                                         gboolean        enabled,
+                                         gboolean        visible);
+MooPluginInfo *moo_plugin_info_copy     (MooPluginInfo  *info);
+void         moo_plugin_info_free       (MooPluginInfo  *info);
+MooPluginParams *moo_plugin_params_new  (gboolean        enabled,
+                                         gboolean        visible);
+MooPluginParams *moo_plugin_params_copy (MooPluginParams *params);
+void         moo_plugin_params_free     (MooPluginParams *params);
 
 void        _moo_window_attach_plugins  (MooEditWindow  *window);
 void        _moo_window_detach_plugins  (MooEditWindow  *window);
