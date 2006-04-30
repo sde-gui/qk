@@ -282,7 +282,8 @@ moo_editor_init (MooEditor *editor)
             g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                    NULL, (GDestroyNotify) _moo_edit_saver_unref);
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), NULL);
+    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
+                              MOO_LANG_NONE);
     _moo_edit_config_load ();
 
     editor->priv->prefs_notify =
@@ -1865,8 +1866,10 @@ apply_prefs (MooEditor *editor)
 
     default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
 
-    if (default_lang)
-        moo_editor_set_default_lang (editor, default_lang);
+    if (default_lang && !strcmp (default_lang, MOO_LANG_NONE))
+        default_lang = NULL;
+
+    moo_editor_set_default_lang (editor, default_lang);
 
     use_tabs = !moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SPACES_NO_TABS));
     indent_width = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_INDENT_WIDTH));
