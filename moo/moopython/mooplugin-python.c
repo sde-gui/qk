@@ -564,7 +564,6 @@ static void
 moo_py_plugin_finalize (GObject *object)
 {
     MooPyPlugin *py_plugin = MOO_PY_PLUGIN (object);
-    MooPlugin *plugin = MOO_PLUGIN (object);
     Py_XDECREF (py_plugin->instance);
     G_OBJECT_CLASS(moo_py_plugin_parent_class)->finalize (object);
 }
