@@ -32,6 +32,7 @@ static GObject *moo_edit_constructor        (GType                  type,
                                              guint                  n_construct_properties,
                                              GObjectConstructParam *construct_param);
 static void     moo_edit_finalize           (GObject        *object);
+static void     moo_edit_dispose            (GObject        *object);
 
 static void     moo_edit_set_property       (GObject        *object,
                                              guint           prop_id,
@@ -110,6 +111,7 @@ moo_edit_class_init (MooEditClass *klass)
     gobject_class->get_property = moo_edit_get_property;
     gobject_class->constructor = moo_edit_constructor;
     gobject_class->finalize = moo_edit_finalize;
+    gobject_class->dispose = moo_edit_dispose;
 
     MOO_TEXT_VIEW_CLASS(klass)->line_mark_clicked = moo_edit_line_mark_clicked;
     GTK_WIDGET_CLASS(klass)->popup_menu = moo_edit_popup_menu;
@@ -293,6 +295,23 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
+    g_free (edit->priv->filename);
+    g_free (edit->priv->basename);
+    g_free (edit->priv->display_filename);
+    g_free (edit->priv->display_basename);
+    g_free (edit->priv->encoding);
+    g_free (edit->priv);
+    edit->priv = NULL;
+
+    G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
+}
+
+
+static void
+moo_edit_dispose (GObject *object)
+{
+    MooEdit *edit = MOO_EDIT (object);
+
     _moo_edit_instances = g_slist_remove (_moo_edit_instances, edit);
 
     g_signal_handlers_disconnect_by_func (edit->config,
@@ -304,29 +323,28 @@ moo_edit_finalize (GObject *object)
         g_source_remove (edit->priv->apply_config_idle);
 
     edit->priv->focus_in_handler_id = 0;
-    if (edit->priv->file_monitor_id)
-        _moo_edit_stop_file_watch (edit);
 
-    g_free (edit->priv->filename);
-    g_free (edit->priv->basename);
-    g_free (edit->priv->display_filename);
-    g_free (edit->priv->display_basename);
-    g_free (edit->priv->encoding);
+    if (edit->priv->file_monitor_id)
+    {
+        _moo_edit_stop_file_watch (edit);
+        edit->priv->file_monitor_id = 0;
+    }
 
     if (edit->priv->update_bookmarks_idle)
         g_source_remove (edit->priv->update_bookmarks_idle);
+    edit->priv->update_bookmarks_idle = 0;
     g_slist_foreach (edit->priv->bookmarks, (GFunc) disconnect_bookmark, NULL);
     g_slist_foreach (edit->priv->bookmarks, (GFunc) g_object_unref, NULL);
     g_slist_free (edit->priv->bookmarks);
+    edit->priv->bookmarks = NULL;
 
     if (edit->priv->menu)
         g_object_unref (edit->priv->menu);
+    edit->priv->menu = NULL;
     g_object_unref (edit->priv->actions);
+    edit->priv->actions = NULL;
 
-    g_free (edit->priv);
-    edit->priv = NULL;
-
-    G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_edit_parent_class)->dispose (object);
 }
 
 
