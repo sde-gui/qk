@@ -251,7 +251,7 @@ gboolean     moo_app_input_start       (MooAppInput *ch)
 gboolean
 _moo_app_input_send_msg (const char     *pipe_basename,
                          const char     *data,
-                         int             len)
+                         gssize          len)
 {
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);

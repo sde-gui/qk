@@ -573,7 +573,7 @@ static void     stop_writer     (MooTermPt      *pt)
 
 static void     pt_write        (MooTermPt      *pt,
                                  const char     *data,
-                                 int             data_len)
+                                 gssize          data_len)
 {
     g_return_if_fail (data == NULL || data_len != 0);
     g_return_if_fail (pt->priv->child_alive);

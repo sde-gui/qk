@@ -96,7 +96,7 @@ const char  *moo_app_input_get_name     (MooAppInput    *ch);
 
 gboolean     _moo_app_input_send_msg    (const char     *pipe_basename,
                                          const char     *data,
-                                         int             len);
+                                         gssize          len);
 
 
 G_END_DECLS
