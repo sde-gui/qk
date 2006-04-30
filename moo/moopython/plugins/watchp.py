@@ -3,9 +3,6 @@ import gtk
 import pango
 import re
 
-ActionInfo = moo.edit.Plugin.ActionInfo
-UIInfo = moo.edit.Plugin.UIInfo
-
 PLUGIN_ID = "WatchP"
 window = None
 notify_id = 0
@@ -24,12 +21,11 @@ class Plugin(moo.edit.Plugin):
             "visible" : True
         }
 
-        a = ActionInfo(moo.edit.EditWindow, "ShowPrefsWindow",
-                       name="Show Prefs Window",
-                       label="Show Prefs Window",
-                       callback=show_window)
-        self.actions.append(a)
-        self.ui.append(UIInfo("ToolsMenu", "ShowPrefsWindow"))
+        self.add_window_action(moo.edit.EditWindow, "ShowPrefsWindow",
+                               name="Show Prefs Window",
+                               label="Show Prefs Window",
+                               callback=show_window)
+        self.add_ui("ToolsMenu", "ShowPrefsWindow")
 
 
 class PrefsWatcher(gtk.TreeView):

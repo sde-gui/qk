@@ -500,8 +500,6 @@ static GType    generate_doc_plugin_type    (PyObject               *py_type,
 
 static GtkWidget *moo_py_plugin_create_prefs_page (MooPlugin        *plugin);
 
-static void     plugin_info_free            (MooPluginInfo          *info);
-
 
 static void
 moo_py_plugin_class_init (MooPyPluginClass       *klass,
@@ -514,7 +512,7 @@ moo_py_plugin_class_init (MooPyPluginClass       *klass,
 
     klass->data = data;
     gobj_class->finalize = moo_py_plugin_finalize;
-    plugin_class->plugin_system_version = MOO_PLUGIN_CURRENT_VERSION;
+//     plugin_class->plugin_system_version = MOO_PLUGIN_CURRENT_VERSION;
 
     if (data->py_plugin_type)
     {
@@ -534,6 +532,7 @@ moo_py_plugin_instance_init (MooPyPlugin            *plugin,
                              MooPyPluginClass       *klass)
 {
     MooPlugin *moo_plugin = MOO_PLUGIN (plugin);
+    MooPluginInfo *info;
 
     plugin->class_data = klass->data;
 
@@ -546,7 +545,9 @@ moo_py_plugin_instance_init (MooPyPlugin            *plugin,
         g_return_if_reached ();
     }
 
-    moo_plugin->info = get_plugin_info (plugin->instance);
+    info = get_plugin_info (plugin->instance);
+    moo_plugin_set_info (moo_plugin, info);
+    moo_plugin_info_free (info);
 
     if (klass->data->py_win_plugin_type && !klass->data->win_plugin_type)
         klass->data->win_plugin_type = generate_win_plugin_type (klass->data->py_win_plugin_type, klass->data);
@@ -565,7 +566,6 @@ moo_py_plugin_finalize (GObject *object)
     MooPyPlugin *py_plugin = MOO_PY_PLUGIN (object);
     MooPlugin *plugin = MOO_PLUGIN (object);
     Py_XDECREF (py_plugin->instance);
-    plugin_info_free (plugin->info);
     G_OBJECT_CLASS(moo_py_plugin_parent_class)->finalize (object);
 }
 
@@ -639,23 +639,6 @@ moo_py_plugin_delete (MooPyPluginData *data)
     Py_XDECREF (data->py_win_plugin_type);
     Py_XDECREF (data->py_doc_plugin_type);
     g_free (data);
-}
-
-
-static void
-plugin_info_free (MooPluginInfo *info)
-{
-    if (info)
-    {
-        g_free ((char*) info->id);
-        g_free ((char*) info->name);
-        g_free ((char*) info->description);
-        g_free ((char*) info->author);
-        g_free ((char*) info->version);
-        g_free (info->params);
-        g_free (info->prefs_params);
-        g_free (info);
-    }
 }
 
 
@@ -752,7 +735,6 @@ get_plugin_info (PyObject *object)
 
     info = g_new0 (MooPluginInfo, 1);
     info->params = g_new0 (MooPluginParams, 1);
-    info->prefs_params = g_new0 (MooPluginPrefsParams, 1);
 
     info->id = dict_get_string (result, "id");
     info->name = dict_get_string (result, "name");

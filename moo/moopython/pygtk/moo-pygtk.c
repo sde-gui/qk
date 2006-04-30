@@ -17,6 +17,7 @@
 #include "config.h"
 #endif
 
+#include "mooutils/mooutils-misc.h"
 #include "moopython/pygtk/moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
@@ -101,6 +102,8 @@ _moo_pygtk_init (void)
     submod = PyImport_ImportModule ((char*) "moo.app");
     PyModule_AddObject (_moo_module, (char*) "app", submod);
 #endif
+
+    moo_reset_log_func ();
 
     code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);
 

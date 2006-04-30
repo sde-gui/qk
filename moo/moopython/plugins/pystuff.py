@@ -5,9 +5,6 @@ import re
 import sys
 import os
 
-ActionInfo = moo.edit.Plugin.ActionInfo
-UIInfo = moo.edit.Plugin.UIInfo
-
 if os.name == 'nt':
     PYTHON_COMMAND = "'" + sys.exec_prefix + "\\python.exe'"
 else:
@@ -44,31 +41,28 @@ class Plugin(moo.edit.Plugin):
         }
 
         if SHOW_LOG_WINDOW:
-            a = ActionInfo(moo.edit.EditWindow, "ShowLogWindow",
-                           name="Show Log Window",
-                           label="Show Log Window",
-                           callback=self.show_log_window)
-            self.actions.append(a)
-            self.ui.append(UIInfo("ToolsMenu", "ShowLogWindow"))
+            self.add_window_action(moo.edit.EditWindow, "ShowLogWindow",
+                                   name="Show Log Window",
+                                   label="Show Log Window",
+                                   callback=self.show_log_window)
+            self.add_ui("ToolsMenu", "ShowLogWindow")
 
         if have_pyconsole:
-            a = ActionInfo(moo.edit.EditWindow, "ShowPythonConsole",
-                           name="Show Python Console",
-                           label="Show Python Console",
-                           callback=self.show_console)
-            self.actions.append(a)
-            self.ui.append(UIInfo("ToolsMenu", "ShowPythonConsole"))
+            self.add_window_action(moo.edit.EditWindow, "ShowPythonConsole",
+                                   name="Show Python Console",
+                                   label="Show Python Console",
+                                   callback=self.show_console)
+            self.add_ui("ToolsMenu", "ShowPythonConsole")
 
         """ Run file """
         self.file_pat = re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*')
-        a = ActionInfo(moo.edit.EditWindow, "RunFile",
-                       name="Run File",
-                       label="Run File",
-                       icon_stock_id=moo.utils.STOCK_EXECUTE,
-                       accel="<shift>F9",
-                       callback=self.run_file)
-        self.actions.append(a)
-        self.ui.append(UIInfo("ToolsMenu", "RunFile"))
+        self.add_window_action(moo.edit.EditWindow, "RunFile",
+                               name="Run File",
+                               label="Run File",
+                               icon_stock_id=moo.utils.STOCK_EXECUTE,
+                               accel="<shift>F9",
+                               callback=self.run_file)
+        self.add_ui("ToolsMenu", "RunFile")
 
     def show_log_window(self, window):
         moo.app.get_instance().show_python_console()

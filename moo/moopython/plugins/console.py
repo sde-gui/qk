@@ -18,15 +18,11 @@ class Plugin(moo.edit.Plugin):
             "visible" : True
         }
 
-        a = moo.edit.Plugin.ActionInfo(moo.edit.EditWindow, "ShowConsole",
-                                       name="Show Console",
-                                       label="Show Console",
-                                       icon_stock_id=moo.utils.STOCK_TERMINAL,
-                                       callback=self.show_console)
-        self.actions.append(a)
-
-        i = moo.edit.Plugin.UIInfo("Editor/Menubar/View", "ShowConsole")
-        self.ui.append(i)
+        self.add_window_action(moo.edit.EditWindow, "ShowConsole",
+                               name="Show Console", label="Show Console",
+                               icon_stock_id=moo.utils.STOCK_TERMINAL,
+                               callback=self.show_console)
+        self.add_ui("Editor/Menubar/View", "ShowConsole")
 
     def show_console(self, window):
         pane = window.get_pane(CONSOLE_PLUGIN_ID)
