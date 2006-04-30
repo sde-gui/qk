@@ -1,5 +1,7 @@
 2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
+    * === Released 0.6.96 ===
+
     Fixed bugs:
         Build problems on AMD64 - David Hough.
         Missing #include <time.h> - Nick Treleaven, David Hough.
