@@ -889,6 +889,7 @@ moo_app_init_real (MooApp *app)
 
     app->priv->new_app = TRUE;
     gdk_set_program_class (app->priv->info->full_name);
+    gtk_window_set_default_icon_name (app->priv->info->short_name);
 
     rc_file = moo_app_get_rc_file_name (app);
 
