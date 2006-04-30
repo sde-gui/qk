@@ -4,12 +4,12 @@ completion_srcdir = $(srcdir)/$(completion)
 completiondir = $(MOO_DATA_DIR)/completion
 completion_DATA =			\
 	$(completion)/files/gap.lst	\
-	$(completion)/files/latex.cfg	\
-	$(completion)/files/texinfo.cfg
+	$(completion)/files/latex.cfg
 
-#     $(completion)/completion.glade
+
 completion_extra_dist =			\
-	$(completion_DATA)
+	$(completion_DATA)		\
+	$(completion)/files/texinfo.cfg
 
 completion_sources =			\
     $(completion)/completion-plugin.c	\
