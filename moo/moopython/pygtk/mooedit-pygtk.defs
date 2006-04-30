@@ -87,6 +87,9 @@
   (parent "MooAction")
   (c-name "MooEditAction")
   (gtype-id "MOO_TYPE_EDIT_ACTION")
+  (fields
+    '("MooEdit*" "doc")
+  )
 )
 
 

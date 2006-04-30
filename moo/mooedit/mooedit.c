@@ -323,13 +323,20 @@ moo_edit_dispose (GObject *object)
 
     _moo_edit_instances = g_slist_remove (_moo_edit_instances, edit);
 
-    g_signal_handlers_disconnect_by_func (edit->config,
-                                          (gpointer) config_changed,
-                                          edit);
-    g_object_unref (edit->config);
+    if (edit->config)
+    {
+        g_signal_handlers_disconnect_by_func (edit->config,
+                                              (gpointer) config_changed,
+                                              edit);
+        g_object_unref (edit->config);
+        edit->config = NULL;
+    }
 
     if (edit->priv->apply_config_idle)
+    {
         g_source_remove (edit->priv->apply_config_idle);
+        edit->priv->apply_config_idle = 0;
+    }
 
     edit->priv->focus_in_handler_id = 0;
 
@@ -340,18 +347,30 @@ moo_edit_dispose (GObject *object)
     }
 
     if (edit->priv->update_bookmarks_idle)
+    {
         g_source_remove (edit->priv->update_bookmarks_idle);
-    edit->priv->update_bookmarks_idle = 0;
-    g_slist_foreach (edit->priv->bookmarks, (GFunc) disconnect_bookmark, NULL);
-    g_slist_foreach (edit->priv->bookmarks, (GFunc) g_object_unref, NULL);
-    g_slist_free (edit->priv->bookmarks);
-    edit->priv->bookmarks = NULL;
+        edit->priv->update_bookmarks_idle = 0;
+    }
+
+    if (edit->priv->bookmarks)
+    {
+        g_slist_foreach (edit->priv->bookmarks, (GFunc) disconnect_bookmark, NULL);
+        g_slist_foreach (edit->priv->bookmarks, (GFunc) g_object_unref, NULL);
+        g_slist_free (edit->priv->bookmarks);
+        edit->priv->bookmarks = NULL;
+    }
 
     if (edit->priv->menu)
+    {
         g_object_unref (edit->priv->menu);
-    edit->priv->menu = NULL;
-    g_object_unref (edit->priv->actions);
-    edit->priv->actions = NULL;
+        edit->priv->menu = NULL;
+    }
+
+    if (edit->priv->actions)
+    {
+        g_object_unref (edit->priv->actions);
+        edit->priv->actions = NULL;
+    }
 
     G_OBJECT_CLASS (moo_edit_parent_class)->dispose (object);
 }

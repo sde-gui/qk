@@ -13,6 +13,9 @@ class Action(moo.edit.Action):
         print "check_state"
         return True
 
+    def do_activate(self):
+        print "activate: doc is", self.doc
+
 class Plugin(moo.edit.Plugin):
     def __init__(self):
         moo.edit.Plugin.__init__(self)
@@ -36,10 +39,16 @@ class Plugin(moo.edit.Plugin):
         print '__init__ done'
 
     def attach_doc(self, doc, window):
-        print Plugin, "attaching to", doc
+        print "attaching to", doc
 
     def detach_doc(self, doc, window):
-        print Plugin, "detaching from", doc
+        print "detaching from", doc
+
+    def attach_win(self, window):
+        print "attaching to", window
+
+    def detach_win(self, window):
+        print "detaching from", window
 
 gobject.type_register(Action)
 moo.edit.plugin_register(Plugin)

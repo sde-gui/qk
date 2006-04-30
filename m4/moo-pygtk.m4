@@ -18,7 +18,6 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
             AC_MSG_NOTICE([pygtk < 2.8, using installed codegen])
             MOO_USE_CUSTOM_CODEGEN=no
         fi
-
     ])
 
     PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
@@ -27,8 +26,6 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
     if test x$MOO_USE_CUSTOM_CODEGEN != xyes; then
         AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
     fi
-
-    AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, test x$MOO_USE_CUSTOM_CODEGEN = "xyes")
 ])
 
 
@@ -136,6 +133,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
 #
 AC_DEFUN([MOO_AC_CHECK_PYGTK],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
+
     if test x$MOO_OS_CYGWIN != xyes; then
         if test x$MOO_OS_MINGW = xyes; then
             _MOO_AC_CHECK_PYGTK_MINGW([$1],[$2],[$3])
@@ -225,4 +223,6 @@ AC_DEFUN([MOO_AC_PYGTK],[
     if test x$MOO_USE_PYGTK = "xyes"; then
         AC_DEFINE(MOO_USE_PYGTK, 1, [MOO_USE_PYGTK])
     fi
+
+    AM_CONDITIONAL(MOO_USE_CUSTOM_CODEGEN, test x$MOO_USE_CUSTOM_CODEGEN = "xyes")
 ])
