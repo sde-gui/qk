@@ -409,7 +409,8 @@ moo_prefs_dialog_page_new_from_xml (const char         *label,
 static void     setting_init        (GtkWidget      *widget);
 static void     setting_apply       (GtkWidget      *widget);
 static gboolean setting_get_value   (GtkWidget      *widget,
-                                     GValue         *value);
+                                     GValue         *value,
+                                     const char     *prefs_key);
 static void     setting_set_value   (GtkWidget      *widget,
                                      const GValue   *value);
 
@@ -474,7 +475,7 @@ setting_apply (GtkWidget *widget)
 
     value.g_type = 0;
     g_value_init (&value, type);
-    if (setting_get_value (widget, &value))
+    if (setting_get_value (widget, &value, prefs_key))
         moo_prefs_set (prefs_key, &value);
     g_value_unset (&value);
 }
@@ -502,7 +503,8 @@ radio_button_get_value (GtkWidget *button,
 
 static gboolean
 setting_get_value (GtkWidget      *widget,
-                   GValue         *value)
+                   GValue         *value,
+                   const char     *prefs_key)
 {
     if (GTK_IS_SPIN_BUTTON (widget))
     {
@@ -526,6 +528,15 @@ setting_get_value (GtkWidget      *widget,
         if (value->g_type == G_TYPE_STRING)
         {
             const char *val = gtk_entry_get_text (GTK_ENTRY (widget));
+
+            if (!val[0])
+            {
+                const GValue *dflt = moo_prefs_get_default (prefs_key);
+
+                if (!dflt || !g_value_get_string (dflt))
+                    val = NULL;
+            }
+
             g_value_set_string (value, val);
             return TRUE;
         }
