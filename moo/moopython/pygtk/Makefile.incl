@@ -88,12 +88,13 @@ codegen_platform = --platform win32
 endif
 
 if MOO_USE_CUSTOM_CODEGEN
-codegen = $(PYTHON) $(moopython_srcdir)/codegen/codegen.py $(codegen_platform)
+codegen_script = $(moopython_srcdir)/codegen/codegen.py
+codegen = $(PYTHON) $(codegen_script) $(codegen_platform)
 else
-codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py $(codegen_platform)
+codegen = $(PYTHON) $(PYGTK_CODEGEN_DIR)/codegen.py
 endif
 
-$(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files)
+$(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/mooutils-pygtk.override $(mooutils_override_files) $(codegen_script)
 	mkdir -p $(moopygtk)
 	$(codegen) --prefix _moo_utils \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
@@ -102,7 +103,7 @@ $(moopygtk)/mooutils-pygtk.c: $(moopygtk)/mooutils-pygtk.defs $(moopygtk)/moouti
 	--outfilename $(moopygtk)/mooutils-pygtk.c \
 	$(moopygtk_srcdir)/mooutils-pygtk.defs > $(moopygtk)/mooutils-pygtk.c
 
-$(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-pygtk.override
+$(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-pygtk.override $(codegen_script)
 	mkdir -p $(moopygtk)
 	$(codegen) --prefix _moo_term \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
@@ -112,7 +113,7 @@ $(moopygtk)/mooterm-pygtk.c: $(moopygtk)/mooterm-pygtk.defs $(moopygtk)/mooterm-
 	--outfilename $(moopygtk)/mooterm-pygtk.c \
 	$(moopygtk_srcdir)/mooterm-pygtk.defs > $(moopygtk)/mooterm-pygtk.c
 
-$(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-pygtk.override $(mooedit_defs_files)
+$(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-pygtk.override $(mooedit_defs_files) $(codegen_script)
 	mkdir -p $(moopygtk)
 	$(codegen) --prefix _moo_edit \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
@@ -122,7 +123,7 @@ $(moopygtk)/mooedit-pygtk.c: $(moopygtk)/mooedit-pygtk.defs $(moopygtk)/mooedit-
 	--outfilename $(moopygtk)/mooedit-pygtk.c \
 	$(moopygtk_srcdir)/mooedit-pygtk.defs > $(moopygtk)/mooedit-pygtk.c
 
-$(moopygtk)/mooapp-pygtk.c: $(moopygtk)/mooapp-pygtk.defs $(moopygtk)/mooapp-pygtk.override
+$(moopygtk)/mooapp-pygtk.c: $(moopygtk)/mooapp-pygtk.defs $(moopygtk)/mooapp-pygtk.override $(codegen_script)
 	mkdir -p $(moopygtk)
 	$(codegen) --prefix _moo_app \
 	--register $(PYGTK_DEFS_DIR)/gtk-types.defs \

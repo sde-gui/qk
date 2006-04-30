@@ -582,10 +582,16 @@ class Wrapper:
                                   'is currently not supported */\n' % vars())
                 else:
                     self.fp.write('''
-    if ((o = PyDict_GetItemString(pyclass->tp_dict, "%(do_name)s"))
-        && !PyObject_TypeCheck(o, &PyCFunction_Type)
-        && !(gsignals && PyDict_GetItemString(gsignals, "%(name)s")))
-        klass->%(name)s = %(cname)s;\n''' % vars())
+    o = PyObject_GetAttrString((PyObject *) pyclass, (char*) "%(do_name)s");
+    if (o == NULL)
+        PyErr_Clear();
+    else {
+        if (!PyObject_TypeCheck(o, &PyCFunction_Type)
+            && !(gsignals && PyDict_GetItemString(gsignals, "%(name)s")))
+            klass->%(name)s = %(cname)s;
+        Py_DECREF(o);
+    }
+''' % vars())
             self.fp.write('    return 0;\n}\n')
 
     def write_getsets(self):
