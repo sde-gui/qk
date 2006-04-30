@@ -7,6 +7,7 @@ mooedit_syntax = $(mooedit)/syntax
 mooedit_syntaxdir = ${MOO_TEXT_LANG_FILES_DIR}
 mooedit_syntax_DATA =                         \
     $(mooedit_syntax)/c.lang                  \
+    $(mooedit_syntax)/changelog.lang          \
     $(mooedit_syntax)/diff.lang               \
     $(mooedit_syntax)/gap.lang                \
     $(mooedit_syntax)/latex.lang              \

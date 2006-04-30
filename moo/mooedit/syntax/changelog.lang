@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="ChangeLog" version="1.04"
+          section="Other" extensions="ChangeLog;changelog"
+          author="Dominik Haumann (dhdev@gmx.de)" license="LGPL">
+
+  <syntax>
+    <context style="Normal Text" eol-context="#stay" name="Normal">
+      <Char style="Entry" context="entry" char="*" first-non-blank-only="TRUE"/>
+      <Regex style="Date" context="line" pattern="\d\d\d\d\s*-\s*\d\d\s*-\s*\d\d\s*" bol-only="TRUE"/>
+    </context>
+    <context style="Normal Text" eol-context="#pop" name="line">
+      <Regex style="Name" context="#stay" pattern="(\w\s*)+"/>
+      <Regex style="E-Mail" context="#pop" pattern="&lt;.*&gt;\s*$"/>
+    </context>
+    <context style="Normal Text" eol-context="#pop" name="entry">
+      <Regex style="Entry" context="#pop" pattern="[^:]*:"/>
+    </context>
+  </syntax>
+
+  <styles>
+    <style name="Normal Text" default-style="Normal"/>
+    <style name="Name"        default-style="Keyword"/>
+    <style name="E-Mail"      default-style="Others"/>
+    <style name="Date"        default-style="DataType"/>
+    <style name="Entry"       default-style="Decimal"/>
+  </styles>
+</language>
