@@ -33,6 +33,10 @@ void        _moo_edit_class_init_actions    (MooEditClass   *klass);
 void        _moo_edit_do_popup              (MooEdit        *edit,
                                              GdkEventButton *event);
 
+gboolean    _moo_edit_has_comments          (MooEdit        *edit,
+                                             gboolean       *single_line,
+                                             gboolean       *multi_line);
+
 
 /***********************************************************************/
 /* Preferences

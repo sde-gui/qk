@@ -86,7 +86,8 @@ static guint signals[LAST_SIGNAL];
 enum {
     PROP_0,
     PROP_EDITOR,
-    PROP_ENABLE_BOOKMARKS
+    PROP_ENABLE_BOOKMARKS,
+    PROP_HAS_COMMENTS
 };
 
 enum {
@@ -134,6 +135,14 @@ moo_edit_class_init (MooEditClass *klass)
                                              "enable-bookmarks",
                                              FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HAS_COMMENTS,
+                                     g_param_spec_boolean ("has-comments",
+                                             "has-comments",
+                                             "has-comments",
+                                             FALSE,
+                                             G_PARAM_READABLE));
 
     settings[SETTING_LANG] = moo_edit_config_install_setting (
             g_param_spec_string ("lang", "lang", "lang",
@@ -528,6 +537,10 @@ moo_edit_get_property (GObject        *object,
             g_value_set_boolean (value, edit->priv->enable_bookmarks);
             break;
 
+        case PROP_HAS_COMMENTS:
+            g_value_set_boolean (value, _moo_edit_has_comments (edit, NULL, NULL));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -911,6 +924,8 @@ moo_edit_set_lang (MooEdit *edit,
     moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
 
     _moo_edit_thaw_config_notify (edit);
+
+    g_object_notify (G_OBJECT (edit), "has-comments");
 }
 
 
@@ -1380,20 +1395,28 @@ moo_edit_get_bookmarks_in_range (MooEdit *edit,
 
 /* TODO: all this stuff, it's pretty lame */
 
-static gboolean
-has_comments (MooEdit  *edit,
-              gboolean *single_line,
-              gboolean *multi_line)
+gboolean
+_moo_edit_has_comments (MooEdit  *edit,
+                        gboolean *single_line,
+                        gboolean *multi_line)
 {
     MooLang *lang;
+    gboolean single, multi;
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
-    *single_line = lang->line_comment != NULL;
-    *multi_line = lang->block_comment_start &&
-                    lang->block_comment_end;
+    if (!lang)
+        return FALSE;
 
-    return *single_line || *multi_line;
+    single = lang->line_comment != NULL;
+    multi = lang->block_comment_start && lang->block_comment_end;
+
+    if (single_line)
+        *single_line = single;
+    if (multi_line)
+        *multi_line = multi;
+
+    return single || multi;
 }
 
 
@@ -1606,7 +1629,7 @@ moo_edit_comment (MooEdit *edit)
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
-    if (!has_comments (edit, &single_line, &multi_line))
+    if (!_moo_edit_has_comments (edit, &single_line, &multi_line))
         return;
 
     buffer = get_buffer (edit);
@@ -1658,7 +1681,7 @@ moo_edit_uncomment (MooEdit *edit)
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
-    if (!has_comments (edit, &single_line, &multi_line))
+    if (!_moo_edit_has_comments (edit, &single_line, &multi_line))
         return;
 
     buffer = get_buffer (edit);

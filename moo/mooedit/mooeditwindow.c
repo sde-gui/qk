@@ -220,6 +220,7 @@ enum {
     PROP_CAN_UNDO,
     PROP_CAN_REDO,
     PROP_HAS_SELECTION,
+    PROP_HAS_COMMENTS,
     PROP_HAS_TEXT,
     PROP_HAS_JOBS_RUNNING,
     PROP_HAS_STOP_CLIENTS
@@ -308,6 +309,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_CAN_UNDO, "can-undo");
     INSTALL_PROP (PROP_CAN_REDO, "can-redo");
     INSTALL_PROP (PROP_HAS_SELECTION, "has-selection");
+    INSTALL_PROP (PROP_HAS_COMMENTS, "has-comments");
     INSTALL_PROP (PROP_HAS_TEXT, "has-text");
     INSTALL_PROP (PROP_HAS_JOBS_RUNNING, "has-jobs-running");
     INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
@@ -625,7 +627,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Comment",
                                  "closure-callback", moo_edit_comment,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-open-document",
+                                 "condition::sensitive", "has-comments",
                                  NULL);
 
     moo_window_class_new_action (window_class, "Uncomment",
@@ -634,7 +636,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "tooltip", "Uncomment",
                                  "closure-callback", moo_edit_uncomment,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
-                                 "condition::sensitive", "has-open-document",
+                                 "condition::sensitive", "has-comments",
                                  NULL);
 
     moo_window_class_new_action (window_class, "Indent",
@@ -816,6 +818,10 @@ static void     moo_edit_window_get_property(GObject        *object,
         case PROP_HAS_SELECTION:
             doc = ACTIVE_DOC (window);
             g_value_set_boolean (value, doc && moo_text_view_has_selection (MOO_TEXT_VIEW (doc)));
+            break;
+        case PROP_HAS_COMMENTS:
+            doc = ACTIVE_DOC (window);
+            g_value_set_boolean (value, doc && _moo_edit_has_comments (doc, NULL, NULL));
             break;
         case PROP_HAS_TEXT:
             doc = ACTIVE_DOC (window);
@@ -1207,6 +1213,7 @@ static void     edit_changed            (MooEditWindow      *window,
         g_object_notify (G_OBJECT (window), "can-undo");
         g_object_notify (G_OBJECT (window), "can-redo");
         g_object_notify (G_OBJECT (window), "has-selection");
+        g_object_notify (G_OBJECT (window), "has-comments");
         g_object_notify (G_OBJECT (window), "has-text");
         g_object_thaw_notify (G_OBJECT (window));
 
@@ -1364,6 +1371,8 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "notify::can-redo",
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-selection",
+                              G_CALLBACK (proxy_boolean_property), window);
+    g_signal_connect_swapped (edit, "notify::has-comments",
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (edit, "notify::has-text",
                               G_CALLBACK (proxy_boolean_property), window);
