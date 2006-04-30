@@ -1,5 +1,13 @@
 2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
+    Fixed bugs:
+        Build problems on AMD64 - David Hough.
+        Missing #include <time.h> - Nick Treleaven, David Hough.
+        Problem with hidden toolbar showing up anyway - Andrey Fedoseev.
+        Missing window icon - Andrey Fedoseev.
+
+2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
     * === Released 0.6.95 ===
 
     Greatly improved syntax highlighting, zillion fixes.
