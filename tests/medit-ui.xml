@@ -81,6 +81,8 @@
 
     <item name="Tools" label="_Tools">
       <separator/>
+      <placeholder name="EditorUserMenu"/>
+      <separator/>
       <placeholder name="ToolsMenu"/>
       <separator/>
       <item action="StopJob"/>
@@ -154,90 +156,4 @@
 
 </object> <!-- Editor -->
 
-<object name="Terminal">
-
-  <widget name="Menubar">
-
-    <item name="File" label="_File">
-      <separator/>
-      <item action="NewEditor"/>
-      <item action="OpenInEditor"/>
-      <separator/>
-      <item action="Restart"/>
-      <separator/>
-      <item action="SaveSelection"/>
-      <separator/>
-      <item action="Quit"/>
-      <separator/>
-    </item>
-
-    <item name="Edit" label="E_dit">
-      <separator/>
-      <!--
-      <item name="CopyLastOutput" action="CopyLastOutput"/>
-      -->
-      <item action="Copy"/>
-      <item action="Paste"/>
-      <separator/>
-      <item action="SelectAll"/>
-      <separator/>
-    </item>
-
-    <!--
-    <item name="GAP" label="_GAP">
-      <separator/>
-      <item action="GAPRead"/>
-      <separator/>
-      <item action="Restart"/>
-      <separator/>
-    </item>
-    -->
-
-    <item name="Tools" label="_Tools"/>
-
-    <item name="Settings" label="_Settings">
-      <separator/>
-      <item action="ShowToolbar"/>
-      <item action="ToolbarStyle"/>
-      <separator/>
-      <item action="ConfigureShortcuts"/>
-      <separator/>
-      <item action="Preferences"/>
-      <separator/>
-    </item>
-
-    <item name="Help" label="_Help">
-      <separator/>
-      <item action="About"/>
-      <separator/>
-    </item>
-
-  </widget> <!-- Menubar -->
-
-  <widget name="Toolbar">
-    <separator/>
-    <item action="NewEditor"/>
-    <item action="OpenInEditor"/>
-    <separator/>
-    <item action="Copy"/>
-    <item action="Paste"/>
-    <separator/>
-    <item action="Restart"/>
-    <separator/>
-    <item action="Preferences"/>
-    <separator/>
-  </widget> <!-- Toolbar -->
-
-  <widget name="Popup">
-    <separator/>
-    <item action="Copy"/>
-    <item action="Paste"/>
-    <separator/>
-    <item action="SelectAll"/>
-    <separator/>
-  </widget>
-
-</object> <!-- Terminal -->
-
 </ui>
-
