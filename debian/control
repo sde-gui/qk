@@ -1,0 +1,12 @@
+Source: medit
+Section: unknown
+Priority: optional
+Maintainer: Yevgen Muntyan <muntyan@tamu.edu>
+Build-Depends: debhelper (>= 4.0.0), autotools-dev
+Standards-Version: 3.6.2
+
+Package: medit
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Text editor
+ medit is a text editor.
