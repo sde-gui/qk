@@ -20,9 +20,6 @@ AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
         fi
     ])
 
-    PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
-    AC_SUBST(PYGTK_CODEGEN_DIR)
-
     if test x$MOO_USE_CUSTOM_CODEGEN != xyes; then
         AC_MSG_NOTICE([pygtk codegen dir: $PYGTK_CODEGEN_DIR])
     fi
@@ -66,7 +63,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_MINGW],[
         AC_SUBST(PYGTK_CFLAGS)
         PYGTK_DEFS_DIR=$PYTHON_PREFIX/share/pygtk/2.0/defs
         AC_SUBST(PYGTK_DEFS_DIR)
-        PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
+        PYGTK_CODEGEN_DIR=$PYTHON_PREFIX/share/pygtk/2.0/codegen
         AC_SUBST(PYGTK_CODEGEN_DIR)
         AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
         $2
@@ -109,6 +106,8 @@ AC_DEFUN([_MOO_AC_CHECK_PYGTK_UNIX],[
             $2
             PYGTK_DEFS_DIR=`$PKG_CONFIG --variable=defsdir pygtk-2.0`
             AC_SUBST(PYGTK_DEFS_DIR)
+            PYGTK_CODEGEN_DIR=`$PKG_CONFIG --variable=codegendir pygtk-2.0`
+            AC_SUBST(PYGTK_CODEGEN_DIR)
             AC_MSG_NOTICE([pygtk defs dir: $PYGTK_DEFS_DIR])
             _MOO_AC_PYGTK_CODEGEN
         ],[
