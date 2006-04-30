@@ -590,9 +590,6 @@ moo_window_create_ui (MooWindow  *window)
 
         gtk_box_pack_start (GTK_BOX (window->priv->menubar_holder),
                             window->menubar, FALSE, FALSE, 0);
-
-        if (window->priv->menubar_visible)
-            gtk_widget_show (window->menubar);
     }
 
     if (window->priv->toolbar_ui_name && window->priv->toolbar_ui_name[0])
@@ -609,9 +606,6 @@ moo_window_create_ui (MooWindow  *window)
 
         gtk_box_pack_start (GTK_BOX (window->priv->toolbar_holder),
                             window->toolbar, FALSE, FALSE, 0);
-
-        if (window->priv->toolbar_visible)
-            gtk_widget_show (window->toolbar);
 
         style = get_toolbar_style (window);
         gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
@@ -636,10 +630,7 @@ moo_window_set_toolbar_visible (MooWindow  *window,
     if (!visible != !window->priv->toolbar_visible)
     {
         window->priv->toolbar_visible = visible != 0;
-
-        if (window->toolbar)
-            g_object_set (window->toolbar, "visible", visible, NULL);
-
+        g_object_set (window->priv->toolbar_holder, "visible", visible, NULL);
         moo_prefs_set_bool (setting (window, PREFS_SHOW_TOOLBAR), visible);
         g_object_notify (G_OBJECT (window), "toolbar-visible");
     }
@@ -653,10 +644,7 @@ moo_window_set_menubar_visible (MooWindow  *window,
     if (!visible != !window->priv->menubar_visible)
     {
         window->priv->menubar_visible = visible != 0;
-
-        if (window->menubar)
-            g_object_set (window->menubar, "visible", visible, NULL);
-
+        g_object_set (window->priv->menubar_holder, "visible", visible, NULL);
         moo_prefs_set_bool (setting (window, PREFS_SHOW_MENUBAR), visible);
         g_object_notify (G_OBJECT (window), "menubar-visible");
     }
