@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 typedef enum {
     DATA_FILE_SIMPLE,
