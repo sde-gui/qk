@@ -58,6 +58,7 @@ static void         remove_tools        (void);
 static void         remove_menu_actions (void);
 
 static void         load_config_item    (FileType        type,
+                                         MooConfig      *config,
                                          MooConfigItem  *item,
                                          MooUIXML       *xml,
                                          const char     *ui_path1,
@@ -187,6 +188,7 @@ moo_edit_load_tools (FileType    type,
     }
 
     config = moo_config_new ();
+    moo_config_set_default_bool (config, MOO_USER_TOOL_KEY_ENABLED, TRUE);
 
     for (i = 0; i < n_files; ++i)
         moo_config_parse_file (config, default_files[i], FALSE, NULL);
@@ -197,7 +199,7 @@ moo_edit_load_tools (FileType    type,
     n_items = moo_config_n_items (config);
 
     for (i = 0; i < n_items; ++i)
-        load_config_item (type, moo_config_nth_item (config, i),
+        load_config_item (type, config, moo_config_nth_item (config, i),
                           xml, ui_path1, ui_path2);
 
     g_object_unref (config);
@@ -323,6 +325,7 @@ config_item_get_options (MooConfigItem *item)
 
 static void
 load_config_item (FileType       type,
+                  MooConfig     *config,
                   MooConfigItem *item,
                   MooUIXML      *xml,
                   const char     *ui_path1,
@@ -333,11 +336,16 @@ load_config_item (FileType       type,
     ActionOptions options;
     GSList *langs;
     const char *name, *label, *accel, *pos, *os;
+    gboolean enabled;
     gpointer klass;
 
     g_return_if_fail (item != NULL);
 
+    enabled = moo_config_get_bool (config, item, MOO_USER_TOOL_KEY_ENABLED);
     os = moo_config_item_get (item, MOO_USER_TOOL_KEY_OS);
+
+    if (!enabled)
+        return;
 
     if (os)
     {
@@ -345,10 +353,16 @@ load_config_item (FileType       type,
 
 #ifdef __WIN32__
         if (!strcmp (norm, "unix"))
+        {
+            g_free (norm);
             return;
+        }
 #else
         if (!strncmp (norm, "win", 3))
+        {
+            g_free (norm);
             return;
+        }
 #endif
 
         g_free (norm);

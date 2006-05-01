@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 #define MOO_USER_TOOL_KEY_OPTIONS       "options"
 #define MOO_USER_TOOL_KEY_COMMAND       "command"
 #define MOO_USER_TOOL_KEY_LANG          "lang"
+#define MOO_USER_TOOL_KEY_ENABLED       "enabled"
 
 #define MOO_USER_TOOL_POSITION_START    "start"
 #define MOO_USER_TOOL_POSITION_END      "end"
