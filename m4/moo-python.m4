@@ -17,6 +17,9 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_MINGW],[
     if test -z $PYTHON_LDFLAGS; then
         PYTHON_LDFLAGS="-L$PYTHON_PREFIX/libs -lpython$no_dot_version -mno-cygwin"
     fi
+    if test -z $PYTHON; then
+        PYTHON="python"
+    fi
 
     # check whether Python.h and library exists
 
