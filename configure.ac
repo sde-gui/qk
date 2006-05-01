@@ -101,6 +101,7 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     echo "    xml support                               = $MOO_USE_XML"
     echo "    fam support                               = $MOO_USE_FAM"
     echo "    xdgmime support                           = $MOO_USE_XDGMIME"
+    echo "    build pcre library                        = $MOO_BUILD_PCRE"
     echo
     echo "    prefix                                    = $prefix"
     echo "    editor lang files go to                   = $MOO_TEXT_LANG_FILES_DIR"
