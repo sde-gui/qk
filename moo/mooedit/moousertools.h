@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 #define MOO_USER_TOOL_KEY_COMMAND       "command"
 #define MOO_USER_TOOL_KEY_LANG          "lang"
 #define MOO_USER_TOOL_KEY_ENABLED       "enabled"
+#define MOO_USER_TOOL_KEY_MENU          "menu"
 
 #define MOO_USER_TOOL_POSITION_START    "start"
 #define MOO_USER_TOOL_POSITION_END      "end"
@@ -47,8 +48,7 @@ void    moo_edit_get_user_tools_files   (char     ***default_files,
 void    moo_edit_load_user_tools        (char      **default_files,
                                          guint       n_files,
                                          char       *user_file,
-                                         MooUIXML   *xml,
-                                         const char *ui_path);
+                                         MooUIXML   *xml);
 
 void    moo_edit_get_user_menu_files    (char     ***default_files,
                                          guint      *n_files,
@@ -56,9 +56,7 @@ void    moo_edit_get_user_menu_files    (char     ***default_files,
 void    moo_edit_load_user_menu         (char      **default_files,
                                          guint       n_files,
                                          char       *user_file,
-                                         MooUIXML   *xml,
-                                         const char *start_path,
-                                         const char *end_path);
+                                         MooUIXML   *xml);
 
 
 G_END_DECLS

@@ -60,9 +60,7 @@ static void         remove_menu_actions (void);
 static void         load_config_item    (FileType        type,
                                          MooConfig      *config,
                                          MooConfigItem  *item,
-                                         MooUIXML       *xml,
-                                         const char     *ui_path1,
-                                         const char     *ui_path2);
+                                         MooUIXML       *xml);
 static MooAction   *create_tool_action  (MooWindow      *window,
                                          gpointer        user_data);
 static MooAction   *create_edit_action  (MooEdit        *edit,
@@ -167,15 +165,10 @@ moo_edit_load_tools (FileType    type,
                      char      **default_files,
                      guint       n_files,
                      char       *user_file,
-                     MooUIXML   *xml,
-                     const char *ui_path1,
-                     const char *ui_path2)
+                     MooUIXML   *xml)
 {
     guint i, n_items;
     MooConfig *config;
-
-    if (!n_files && !user_file)
-        return;
 
     switch (type)
     {
@@ -186,6 +179,9 @@ moo_edit_load_tools (FileType    type,
             remove_menu_actions ();
             break;
     }
+
+    if (!n_files && !user_file)
+        return;
 
     config = moo_config_new ();
     moo_config_set_default_bool (config, MOO_USER_TOOL_KEY_ENABLED, TRUE);
@@ -199,8 +195,7 @@ moo_edit_load_tools (FileType    type,
     n_items = moo_config_n_items (config);
 
     for (i = 0; i < n_items; ++i)
-        load_config_item (type, config, moo_config_nth_item (config, i),
-                          xml, ui_path1, ui_path2);
+        load_config_item (type, config, moo_config_nth_item (config, i), xml);
 
     g_object_unref (config);
 }
@@ -210,11 +205,9 @@ void
 moo_edit_load_user_tools (char      **default_files,
                           guint       n_files,
                           char       *user_file,
-                          MooUIXML   *xml,
-                          const char *ui_path)
+                          MooUIXML   *xml)
 {
-    moo_edit_load_tools (FILE_TOOLS, default_files, n_files,
-                         user_file, xml, ui_path, NULL);
+    moo_edit_load_tools (FILE_TOOLS, default_files, n_files, user_file, xml);
 }
 
 
@@ -222,12 +215,9 @@ void
 moo_edit_load_user_menu (char      **default_files,
                          guint       n_files,
                          char       *user_file,
-                         MooUIXML   *xml,
-                         const char *start_path,
-                         const char *end_path)
+                         MooUIXML   *xml)
 {
-    moo_edit_load_tools (FILE_MENU, default_files, n_files,
-                         user_file, xml, start_path, end_path);
+    moo_edit_load_tools (FILE_MENU, default_files, n_files, user_file, xml);
 }
 
 
@@ -327,15 +317,13 @@ static void
 load_config_item (FileType       type,
                   MooConfig     *config,
                   MooConfigItem *item,
-                  MooUIXML      *xml,
-                  const char     *ui_path1,
-                  const char     *ui_path2)
+                  MooUIXML      *xml)
 {
     MooCommand *cmd;
     ActionData *data;
     ActionOptions options;
     GSList *langs;
-    const char *name, *label, *accel, *pos, *os;
+    const char *name, *label, *accel, *pos, *os, *menu;
     gboolean enabled;
     gpointer klass;
 
@@ -372,6 +360,7 @@ load_config_item (FileType       type,
     label = moo_config_item_get (item, MOO_USER_TOOL_KEY_LABEL);
     accel = moo_config_item_get (item, MOO_USER_TOOL_KEY_ACCEL);
     pos = moo_config_item_get (item, MOO_USER_TOOL_KEY_POSITION);
+    menu = moo_config_item_get (item, MOO_USER_TOOL_KEY_MENU);
     g_return_if_fail (name != NULL);
 
     cmd = config_item_get_command (item);
@@ -386,7 +375,7 @@ load_config_item (FileType       type,
     switch (type)
     {
         case FILE_TOOLS:
-            klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
+            klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
 
             moo_window_class_new_action_custom (klass, data->id,
                                                 create_tool_action, data,
@@ -400,51 +389,57 @@ load_config_item (FileType       type,
                 moo_edit_window_add_action_check (data->id, "sensitive",
                                                   check_sensitive_func,
                                                   NULL, NULL);
-
-            g_type_class_unref (klass);
             break;
 
         case FILE_MENU:
-            klass = g_type_class_ref (MOO_TYPE_EDIT);
+            klass = g_type_class_peek (MOO_TYPE_EDIT);
             moo_edit_class_new_action_custom (klass, data->id,
                                               create_edit_action, data,
                                               (GDestroyNotify) action_data_free);
-            g_type_class_unref (klass);
             break;
     }
 
     if (xml)
     {
-        const char *ui_path = ui_path1;
-        char *markup = g_markup_printf_escaped ("<item action=\"%s\"/>",
-                                                data->id);
+        const char *ui_path;
+        char *freeme = NULL;
+        char *markup;
+
+        markup = g_markup_printf_escaped ("<item action=\"%s\"/>",
+                                          data->id);
         data->xml = g_object_ref (xml);
         data->merge_id = moo_ui_xml_new_merge_id (xml);
 
         if (type == FILE_MENU)
         {
+            ui_path = "Editor/Popup/PopupEnd";
+
             if (pos)
             {
                 char *c = g_ascii_strdown (pos, -1);
 
                 if (!strcmp (c, MOO_USER_TOOL_POSITION_END))
-                    ui_path = ui_path2;
+                    ui_path = "Editor/Popup/PopupEnd";
                 else if (!strcmp (c, MOO_USER_TOOL_POSITION_START))
-                    ui_path = ui_path1;
+                    ui_path = "Editor/Popup/PopupStart";
                 else
                     g_warning ("%s: unknown position type '%s'",
                                G_STRLOC, c);
 
                 g_free (c);
             }
-            else
-            {
-                ui_path = ui_path2;
-            }
+        }
+        else
+        {
+            freeme = g_strdup_printf ("Editor/Menubar/%s/UserMenu",
+                                      menu ? menu : "Tools");
+            ui_path = freeme;
         }
 
         moo_ui_xml_insert_markup (xml, data->merge_id, ui_path, -1, markup);
+
         g_free (markup);
+        g_free (freeme);
     }
 
 }

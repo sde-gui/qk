@@ -779,16 +779,13 @@ moo_app_init_editor (MooApp *app)
 
     moo_edit_get_user_tools_files (&files, &n_files, &user_file);
     moo_edit_load_user_tools (files, n_files, user_file,
-                              moo_app_get_ui_xml (app),
-                              "Editor/Menubar/Tools/ToolsMenu");
+                              moo_app_get_ui_xml (app));
     g_strfreev (files);
     g_free (user_file);
 
     moo_edit_get_user_menu_files (&files, &n_files, &user_file);
     moo_edit_load_user_menu (files, n_files, user_file,
-                             moo_app_get_ui_xml (app),
-                             "Editor/Popup/PopupStart",
-                             "Editor/Popup/PopupEnd");
+                             moo_app_get_ui_xml (app));
     g_strfreev (files);
     g_free (user_file);
 }
