@@ -126,7 +126,7 @@ class Plugin(moo.edit.Plugin):
         doc.grab_focus()
 
         if data.line > 0:
-            doc.move_cursor(data.line - 1, -1, True)
+            doc.move_cursor(data.line, -1, False, True)
 
         return True
 
