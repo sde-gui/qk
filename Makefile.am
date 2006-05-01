@@ -1,5 +1,10 @@
 AUTOMAKE_OPTIONS = dist-bzip2 foreign nostdinc
-EXTRA_DIST = autogen.sh mingw-configure cygwin-configure
+
+EXTRA_DIST =			\
+	autogen.sh		\
+	mingw-configure		\
+	cygwin-configure	\
+	makewin
 
 DIST_SUBDIRS = m4
 

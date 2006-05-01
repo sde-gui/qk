@@ -1825,24 +1825,6 @@ moo_editor_set_edit_type (MooEditor      *editor,
 }
 
 
-void
-moo_editor_set_default_lang (MooEditor      *editor,
-                             const char     *name)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_free (editor->priv->default_lang);
-    editor->priv->default_lang = g_strdup (name);
-}
-
-
-const char*
-moo_editor_get_default_lang (MooEditor      *editor)
-{
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return editor->priv->default_lang;
-}
-
-
 static void
 prefs_changed (G_GNUC_UNUSED const char *key,
                G_GNUC_UNUSED const GValue *newval,
@@ -1851,6 +1833,16 @@ prefs_changed (G_GNUC_UNUSED const char *key,
     if (!editor->priv->prefs_idle)
         editor->priv->prefs_idle =
                 g_idle_add ((GSourceFunc) apply_prefs, editor);
+}
+
+
+static void
+set_default_lang (MooEditor  *editor,
+                  const char *name)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    g_free (editor->priv->default_lang);
+    editor->priv->default_lang = g_strdup (name);
 }
 
 
@@ -1869,7 +1861,7 @@ apply_prefs (MooEditor *editor)
     if (default_lang && !strcmp (default_lang, MOO_LANG_NONE))
         default_lang = NULL;
 
-    moo_editor_set_default_lang (editor, default_lang);
+    set_default_lang (editor, default_lang);
 
     use_tabs = !moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SPACES_NO_TABS));
     indent_width = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_INDENT_WIDTH));

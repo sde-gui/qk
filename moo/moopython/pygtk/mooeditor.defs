@@ -202,21 +202,6 @@
   (return-type "MooLangMgr*")
 )
 
-(define-method set_default_lang
-  (of-object "MooEditor")
-  (c-name "moo_editor_set_default_lang")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name" (null-ok))
-  )
-)
-
-(define-method get_default_lang
-  (of-object "MooEditor")
-  (c-name "moo_editor_get_default_lang")
-  (return-type "const-char*")
-)
-
 (define-method set_window_type
   (of-object "MooEditor")
   (c-name "moo_editor_set_window_type")
