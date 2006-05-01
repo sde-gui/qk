@@ -9,7 +9,7 @@ export PKG_CONFIG_LIBDIR=$GTK_PREFIX/lib/pkgconfig
 ############################################################################
 
 if [ x`basename $0` = xfake-pkg-config ]; then
-    if [ $1 -a "$1" = "--atleast-pkgconfig-version" ]; then
+    if [ "x$1" = "x--atleast-pkgconfig-version" ]; then
         exec /usr/bin/pkg-config --atleast-pkgconfig-version $2
     else
         exec /usr/bin/pkg-config --define-variable=prefix=$GTK_PREFIX $*
