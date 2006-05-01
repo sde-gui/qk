@@ -28,9 +28,13 @@ moopcre_sources =                              \
     $(moopcre)/ucp.h                           \
     $(moopcre)/ucpinternal.h
 
-$(moopcre)/pcre_internal.h: $(moopcre)/pcre.h
 
+if MOO_BUILD_PCRE
 moo_sources += $(moopcre_sources)
+else
+moo_extra_dist += $(moopcre_sources)
+endif
+
 moo_extra_dist +=                              \
     $(moopcre)/AUTHORS                         \
     $(moopcre)/COPYING                         \

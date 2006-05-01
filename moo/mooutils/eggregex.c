@@ -49,12 +49,18 @@
  * mooutils/eggregex.c
  *****************************************************************************/
 
+#include "config.h"
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 
 #include "moo/mooutils/eggregex.h"
+
+#ifdef MOO_BUILD_PCRE
 #include "moo/mooutils/pcre/pcre.h"
-#include <glib.h>
+#else
+#include <pcre.h>
+#endif
 
 /* FIXME when this is in glib */
 #define _(s) s
@@ -109,8 +115,8 @@ egg_regex_new (const gchar         *pattern,
   gint erroffset;
   gint capture_count;
 
-  _pcre_malloc = (gpointer (*) (size_t)) g_malloc;
-  _pcre_free = g_free;
+  pcre_malloc = (gpointer (*) (size_t)) g_malloc;
+  pcre_free = g_free;
 
   regex->ref_count = 1;
 
@@ -126,8 +132,8 @@ egg_regex_new (const gchar         *pattern,
   regex->match_opts = match_options | PCRE_NO_UTF8_CHECK;
 
   /* compile the pattern */
-  regex->regex = _pcre_compile (pattern, regex->compile_opts,
-				 &errmsg, &erroffset, NULL);
+  regex->regex = pcre_compile (pattern, regex->compile_opts,
+			       &errmsg, &erroffset, NULL);
 
   /* if the compilation failed, set the error member and return
    * immediately */
@@ -144,8 +150,8 @@ egg_regex_new (const gchar         *pattern,
 
   /* otherwise, find out how many sub patterns exist in this pattern,
    * and setup the offsets array and n_offsets accordingly */
-  _pcre_fullinfo (regex->regex, regex->extra,
-		  PCRE_INFO_CAPTURECOUNT, &capture_count);
+  pcre_fullinfo (regex->regex, regex->extra,
+		 PCRE_INFO_CAPTURECOUNT, &capture_count);
   regex->n_offsets = (capture_count + 1) * 3;
   regex->offsets = g_new0 (gint, regex->n_offsets);
 
@@ -235,7 +241,7 @@ egg_regex_optimize (EggRegex  *regex,
 
   g_return_if_fail (regex != NULL && regex->regex != NULL);
 
-  regex->extra = _pcre_study (regex->regex, 0, &errmsg);
+  regex->extra = pcre_study (regex->regex, 0, &errmsg);
 
   if (errmsg)
     {
@@ -280,10 +286,10 @@ egg_regex_match (EggRegex          *regex,
   regex->string_len = string_len;
 
   /* perform the match */
-  regex->matches = _pcre_exec (regex->regex, regex->extra,
-			       string, regex->string_len, 0,
-			       regex->match_opts | match_options,
-			       regex->offsets, regex->n_offsets);
+  regex->matches = pcre_exec (regex->regex, regex->extra,
+			      string, regex->string_len, 0,
+			      regex->match_opts | match_options,
+			      regex->offsets, regex->n_offsets);
 
   /* if the regex matched, set regex->pos to the character past the
    * end of the match.
@@ -312,10 +318,10 @@ egg_regex_match_extended (EggRegex *regex,
   regex->string_len = string_len;
 
   /* perform the match */
-  regex->matches = _pcre_exec (regex->regex, regex->extra,
-			       string, regex->string_len, string_index,
-			       regex->match_opts | match_options,
-			       regex->offsets, regex->n_offsets);
+  regex->matches = pcre_exec (regex->regex, regex->extra,
+			      string, regex->string_len, string_index,
+			      regex->match_opts | match_options,
+			      regex->offsets, regex->n_offsets);
 
   /* if the regex matched, set regex->pos to the character past the
    * end of the match.
@@ -369,11 +375,11 @@ egg_regex_match_next (EggRegex          *regex,
     }
 
   /* perform the match */
-  regex->matches = _pcre_exec (regex->regex, regex->extra,
-			       string + regex->pos,
-			       regex->string_len - regex->pos,
-			       0, regex->match_opts | match_options,
-			       regex->offsets, regex->n_offsets);
+  regex->matches = pcre_exec (regex->regex, regex->extra,
+			      string + regex->pos,
+			      regex->string_len - regex->pos,
+			      0, regex->match_opts | match_options,
+			      regex->offsets, regex->n_offsets);
 
   /* if the regex matched, adjust the offsets array to take into account
    * the fact that the string they're out of is shorter than the string
@@ -419,8 +425,8 @@ egg_regex_fetch (EggRegex      *regex,
   if (match_num >= regex->matches)
     return NULL;
 
-  _pcre_get_substring (string, regex->offsets, regex->matches,
-		       match_num, (const char **)&match);
+  pcre_get_substring (string, regex->offsets, regex->matches,
+		      match_num, (const char **)&match);
 
   return match;
 }
@@ -472,9 +478,9 @@ egg_regex_fetch_named (EggRegex      *regex,
 {
   gchar *match;
 
-  _pcre_get_named_substring (regex->regex,
-			     string, regex->offsets, regex->matches,
-			     name, (const char **)&match);
+  pcre_get_named_substring (regex->regex,
+			    string, regex->offsets, regex->matches,
+			    name, (const char **)&match);
 
   return match;
 }
@@ -500,8 +506,8 @@ egg_regex_fetch_all (EggRegex      *regex,
   if (regex->matches < 0)
     return NULL;
 
-  _pcre_get_substring_list (string, regex->offsets,
-			    regex->matches, (const char ***)&listptr);
+  pcre_get_substring_list (string, regex->offsets,
+			   regex->matches, (const char ***)&listptr);
 
   if (listptr)
     {
@@ -1376,5 +1382,5 @@ egg_regex_get_string_number (EggRegex   *regex,
 {
     g_return_val_if_fail (regex != NULL, PCRE_ERROR_NULL);
     g_return_val_if_fail (name != NULL, PCRE_ERROR_NULL);
-    return _pcre_get_stringnumber (regex->regex, name);
+    return pcre_get_stringnumber (regex->regex, name);
 }
