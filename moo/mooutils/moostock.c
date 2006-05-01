@@ -236,5 +236,8 @@ void moo_create_stock_items (void)
 
     register_stock_icon_alias (factory, GTK_STOCK_ABOUT, MOO_STOCK_EDIT_BOOKMARK);
 
+    add_default_image ("medit", 24, MEDIT_ICON);
+    add_default_image ("ggap", 24, GGAP_ICON);
+
     g_object_unref (G_OBJECT (factory));
 }
