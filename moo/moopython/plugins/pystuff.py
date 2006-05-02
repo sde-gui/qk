@@ -48,11 +48,11 @@ class Plugin(moo.edit.Plugin):
             self.add_ui("ToolsMenu", "ShowLogWindow")
 
         if have_pyconsole:
-            self.add_window_action(moo.edit.EditWindow, "ShowPythonConsole",
-                                   name="Show Python Console",
-                                   label="Show Python Console",
+            self.add_window_action(moo.edit.EditWindow, "PythonConsole",
+                                   name="Python Console",
+                                   label="Python Console",
                                    callback=self.show_console)
-            self.add_ui("ToolsMenu", "ShowPythonConsole")
+            self.add_ui("ToolsMenu", "PythonConsole")
 
         """ Run file """
         self.file_pat = re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*')
