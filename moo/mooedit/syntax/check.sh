@@ -4,7 +4,7 @@ langs="c.lang diff.lang latex.lang perl.lang \
 misc.lang make.lang ms.lang python.lang \
 python-console.lang sh.lang xml.lang \
 sci.lang gap.lang scheme.lang texinfo.lang \
-changelog.lang"
+changelog.lang diff.lang gnuplot.lang"
 
 styles="garnacho.styles gvim.styles"
 files="$langs $styles"
