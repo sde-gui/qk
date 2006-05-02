@@ -106,6 +106,7 @@ class Plugin(moo.edit.Plugin):
 
             pane.output = output
             window.add_pane(PLUGIN_ID, pane, label, moo.utils.PANE_POS_BOTTOM)
+            window.add_stop_client(output)
         return pane
 
     def output_activate(self, output, line):
