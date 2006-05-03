@@ -2338,9 +2338,10 @@ create_lang_action (MooEditWindow      *window)
     for (l = langs; l != NULL; l = l->next)
     {
         MooLang *lang = l->data;
-        moo_menu_mgr_append (menu_mgr, lang->section,
-                             lang->id, lang->display_name, MOO_MENU_ITEM_RADIO,
-                             g_strdup (lang->id), g_free);
+        if (!lang->hidden)
+            moo_menu_mgr_append (menu_mgr, lang->section,
+                                 lang->id, lang->display_name, MOO_MENU_ITEM_RADIO,
+                                 g_strdup (lang->id), g_free);
     }
 
     g_signal_connect_swapped (menu_mgr, "radio-set-active",
@@ -2443,7 +2444,6 @@ window_check_actions (const char    *action_id,
 static void
 moo_edit_window_check_actions (MooEditWindow *window)
 {
-    g_message ("checking actions");
     g_hash_table_foreach (action_checks,
                           (GHFunc) window_check_actions,
                           window);
