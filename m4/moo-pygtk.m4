@@ -2,7 +2,7 @@
 # _MOO_AC_PYGTK_CODEGEN
 #
 AC_DEFUN([_MOO_AC_PYGTK_CODEGEN],[
-    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = autodetect)]),[
+    AC_ARG_WITH([custom-codegen], AC_HELP_STRING([--with-custom-codegen], [whether to use custom copy of pygtk codegen (default = YES)]),[
         if test x$with_custom_codegen = "xno"; then
             MOO_USE_CUSTOM_CODEGEN="no"
             AC_MSG_NOTICE([using installed codegen])
@@ -149,7 +149,7 @@ AC_DEFUN([MOO_AC_CHECK_PYGTK],[
 AC_DEFUN([MOO_AC_PYGTK],[
     AC_REQUIRE([MOO_AC_CHECK_OS])
 
-    AC_ARG_WITH([pygtk], AC_HELP_STRING([--with-pygtk], [whether to compile pygtk support (default = autodetect)]),[
+    AC_ARG_WITH([pygtk], AC_HELP_STRING([--with-pygtk], [whether to compile pygtk support (default = YES)]),[
         if test x$with_pygtk = "xno"; then
             MOO_USE_PYGTK="no"
         else
@@ -159,7 +159,7 @@ AC_DEFUN([MOO_AC_PYGTK],[
         MOO_USE_PYGTK="yes"
     ])
 
-    AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = autodetect)]),[
+    AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = YES)]),[
         if test x$with_python = "xno"; then
             MOO_USE_PYTHON="no"
             MOO_USE_PYGTK="no"

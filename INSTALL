@@ -1,3 +1,64 @@
+medit installation
+******************
+
+Below you will find generic installation instructions which may be useful
+if you are not familiar with configure.
+
+Installation process is straightforward: usual
+./configure; make; make install
+will configure medit with reasonable default settings, build it, and
+install into /usr/local.
+
+configure has the following medit-specific options:
+
+  --enable-debug          enable debug options (default = NO)
+  --enable-all-gcc-warnings
+                          enable most of gcc warnings and turn on -pedantic
+                          mode (default = NO)
+  --enable-all-intel-warnings
+                          enable most of intel compiler warnings (default =
+                          NO)
+  --enable-relocation     do not hardcode data directories (default = NO)
+    This option seems to be working, but it's useful only for custom binary
+    distributions.
+
+  --with-xml              whether to use libxml2 (default = YES)
+    This option is useful only for development, to test how medit works in absense
+    of libxml2. libxml2 is required for syntax highlighting, so you most likely
+    do not want to use this option.
+
+  --with-pygtk            whether to compile pygtk support (default = YES)
+  --with-python           whether to compile python support (default = YES)
+    These two options tell whether pygtk bindings should be built. If medit is built
+    without python, then python plugins (builtin terminal in particular) will not
+    be available.
+
+  --with-custom-codegen   whether to use custom copy of pygtk codegen (default
+                          = YES)
+    medit uses patched pygtk codegen to allow docstrings in generated code. It's
+    unlikely you want to use this option. Still, in case of problems with python,
+    patched codegen may be the source of problem, so using upstream codegen may
+    be forced.
+
+  --with-system-pcre      whether to use system copy of pcre library (default
+                          = YES)
+    medit needs pcre library version not older than 6.4. If it's not available,
+    included copy will be built.
+
+  The following four options control components of libmoo which get built. Only
+  --without-mooterm may be used with medit, since it uses all other components.
+  By using --without-mooterm you will save a bit of compilation time and binary
+  size (and builtin terminal will not be available then).
+
+  --without-mooapp        disable building mooapp
+  --without-mooedit       disable building mooedit
+  --without-mooutils      disable building mooutils
+  --without-mooterm       disable building mooterm
+
+Defaults for all the options are chosen in such a way that you do not need to
+use them. Only in case of problem they may be needed.
+
+
 Installation Instructions
 *************************
 

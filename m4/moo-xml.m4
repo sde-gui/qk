@@ -55,7 +55,7 @@ AC_DEFUN([MOO_AC_XML],[
     MOO_USE_XML="no"
 
     AC_ARG_WITH([xml],
-        AC_HELP_STRING([--with-xml], [whether to use libxml2 (default: use if present)]),
+        AC_HELP_STRING([--with-xml], [whether to use libxml2 (default = YES)]),
         [MOO_USE_XML=$withval],
         [MOO_USE_XML=auto]
     )

@@ -99,7 +99,6 @@ if test x$MOO_OS_CYGWIN != "xyes"; then
     echo "    python support                            = $MOO_USE_PYTHON"
     echo "    pygtk support                             = $MOO_USE_PYGTK"
     echo "    xml support                               = $MOO_USE_XML"
-    echo "    fam support                               = $MOO_USE_FAM"
     echo "    xdgmime support                           = $MOO_USE_XDGMIME"
     echo "    build pcre library                        = $MOO_BUILD_PCRE"
     echo

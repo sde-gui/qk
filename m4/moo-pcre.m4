@@ -6,7 +6,7 @@
 AC_DEFUN([MOO_AC_PCRE],[
 
 AC_ARG_WITH([system-pcre],
-AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = AUTO)]),[
+AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library (default = YES)]),[
     if test x$with_system_pcre = "xyes"; then
         MOO_BUILD_PCRE="no"
     else
@@ -17,9 +17,11 @@ AC_HELP_STRING([--with-system-pcre], [whether to use system copy of pcre library
 ])
 
 if test x$MOO_BUILD_PCRE != xyes; then
-    PKG_CHECK_MODULES(MOO_PCRE, [libpcre >= 6.4], [
+    PKG_CHECK_MODULES(PCRE, [libpcre >= 6.4], [
         MOO_BUILD_PCRE="no"
         AC_MSG_NOTICE([using installed libpcre])
+        MOO_PCRE_CFLAGS="$PCRE_CFLAGS"
+        MOO_PCRE_LIBS="$PCRE_LIBS"
     ], [
         if test x$MOO_BUILD_PCRE = xno; then
             AC_MSG_ERROR([libpcre of version 6.4 or higher not found])
