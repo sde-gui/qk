@@ -777,7 +777,7 @@ file_watch_event (G_GNUC_UNUSED MooFileWatch *watch,
 
 
 void
-_moo_edit_start_file_watch (MooEdit        *edit)
+_moo_edit_start_file_watch (MooEdit *edit)
 {
     MooFileWatch *watch;
     GError *error = NULL;
@@ -798,12 +798,15 @@ _moo_edit_start_file_watch (MooEdit        *edit)
 
     if (!edit->priv->file_monitor_id)
     {
-        g_warning ("%s: could not start watch", G_STRLOC);
+        g_warning ("%s: could not start watch for '%s'",
+                   G_STRLOC, edit->priv->filename);
+
         if (error)
         {
             g_warning ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
         }
+
         return;
     }
 
