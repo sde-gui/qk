@@ -102,6 +102,8 @@ int main (int argc, char *argv[])
                         "short-name", "medit",
                         "full-name", "medit",
                         "description", "medit is a text editor",
+                        "website", "http://ggap.sourceforge.net/medit/",
+                        "website-label", "http://ggap.sourceforge.net/medit/",
                         "open-files", files && *files ? files : NULL,
                         "new-app", (gboolean) _medit_opt_new_app,
                         "default-ui", MEDIT_UI,

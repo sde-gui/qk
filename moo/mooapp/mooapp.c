@@ -177,7 +177,9 @@ enum {
     PROP_OPEN_FILES,
     PROP_NEW_APP,
     PROP_DEFAULT_UI,
-    PROP_LOGO
+    PROP_LOGO,
+    PROP_WEBSITE,
+    PROP_WEBSITE_LABEL
 };
 
 enum {
@@ -237,6 +239,22 @@ moo_app_class_init (MooAppClass *klass)
                                      g_param_spec_string ("full-name",
                                              "full-name",
                                              "full-name",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_WEBSITE,
+                                     g_param_spec_string ("website",
+                                             "website",
+                                             "website",
+                                             NULL,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_WEBSITE_LABEL,
+                                     g_param_spec_string ("website-label",
+                                             "website-label",
+                                             "website-label",
                                              NULL,
                                              G_PARAM_READWRITE));
 
@@ -408,7 +426,7 @@ moo_app_constructor (GType           type,
     if (moo_app_instance != NULL)
     {
         g_critical ("attempt to create second instance of application class");
-        g_critical ("crash");
+        g_critical ("going to crash now");
         return NULL;
     }
 
@@ -474,6 +492,17 @@ moo_app_set_property (GObject        *object,
             moo_app_set_name (app, NULL, g_value_get_string (value));
             break;
 
+        case PROP_WEBSITE:
+            g_free (app->priv->info->website);
+            app->priv->info->website = g_strdup (g_value_get_string (value));
+            g_object_notify (G_OBJECT (app), "website");
+            break;
+        case PROP_WEBSITE_LABEL:
+            g_free (app->priv->info->website_label);
+            app->priv->info->website_label = g_strdup (g_value_get_string (value));
+            g_object_notify (G_OBJECT (app), "website_label");
+            break;
+
         case PROP_DESCRIPTION:
             moo_app_set_description (app, g_value_get_string (value));
             break;
@@ -537,13 +566,19 @@ moo_app_get_property (GObject        *object,
         case PROP_SHORT_NAME:
             g_value_set_string (value, app->priv->info->short_name);
             break;
-
         case PROP_FULL_NAME:
             g_value_set_string (value, app->priv->info->full_name);
             break;
 
         case PROP_DESCRIPTION:
             g_value_set_string (value, app->priv->info->description);
+            break;
+
+        case PROP_WEBSITE:
+            g_value_set_string (value, app->priv->info->website);
+            break;
+        case PROP_WEBSITE_LABEL:
+            g_value_set_string (value, app->priv->info->website_label);
             break;
 
         case PROP_RUN_INPUT:
