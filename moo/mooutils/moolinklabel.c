@@ -210,6 +210,8 @@ moo_link_label_button_press (GtkWidget      *widget,
     gtk_widget_show_all (item);
 
     item = gtk_image_menu_item_new_with_label ("Open Link");
+    image = gtk_image_new_from_stock (GTK_STOCK_JUMP_TO, GTK_ICON_SIZE_MENU);
+    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
     g_signal_connect_swapped (item, "activate", G_CALLBACK (open_activated), label);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
     gtk_widget_show_all (item);
