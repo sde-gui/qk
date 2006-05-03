@@ -14,7 +14,7 @@
 #ifndef __MOO_LINK_LABEL_H__
 #define __MOO_LINK_LABEL_H__
 
-#include <gtk/gtkeventbox.h>
+#include <gtk/gtklabel.h>
 
 G_BEGIN_DECLS
 
@@ -27,17 +27,16 @@ G_BEGIN_DECLS
 #define MOO_LINK_LABEL_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LINK_LABEL, MooLinkLabelClass))
 
 typedef struct _MooLinkLabel        MooLinkLabel;
+typedef struct _MooLinkLabelPrivate MooLinkLabelPrivate;
 typedef struct _MooLinkLabelClass   MooLinkLabelClass;
 
 struct _MooLinkLabel {
-    GtkEventBox base;
-    gpointer label;
-    char *text;
-    char *url;
+    GtkLabel parent;
+    MooLinkLabelPrivate *priv;
 };
 
 struct _MooLinkLabelClass {
-    GtkEventBoxClass base_class;
+    GtkLabelClass parent_class;
 
     void (*activate) (MooLinkLabel  *label,
                       const char    *url);
