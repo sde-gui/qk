@@ -132,6 +132,9 @@ static void     edit_lang_changed               (MooEditWindow      *window,
                                                  guint               var_id,
                                                  GParamSpec         *pspec,
                                                  MooEdit            *doc);
+static void     edit_overwrite_changed          (MooEditWindow      *window,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
 static GtkWidget *create_tab_label              (MooEditWindow      *window,
                                                  MooEdit            *edit);
 static void     update_tab_label                (MooEditWindow      *window,
@@ -1192,9 +1195,10 @@ setup_notebook (MooEditWindow *window)
 }
 
 
-static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
-                                         guint          page_num,
-                                         MooEditWindow *window)
+static void
+notebook_switch_page (G_GNUC_UNUSED MooNotebook *notebook,
+                      guint          page_num,
+                      MooEditWindow *window)
 {
     edit_changed (window, get_nth_tab (window, page_num));
     moo_edit_window_check_actions (window);
@@ -1202,8 +1206,9 @@ static void     notebook_switch_page    (G_GNUC_UNUSED MooNotebook *notebook,
 }
 
 
-static void     edit_changed            (MooEditWindow      *window,
-                                         MooEdit            *doc)
+static void
+edit_changed (MooEditWindow *window,
+              MooEdit       *doc)
 {
     if (doc == ACTIVE_DOC (window))
     {
@@ -1227,24 +1232,37 @@ static void     edit_changed            (MooEditWindow      *window,
 }
 
 
-static void     edit_filename_changed   (MooEditWindow      *window,
-                                         G_GNUC_UNUSED const char *filename,
-                                         MooEdit            *doc)
+static void
+edit_overwrite_changed (MooEditWindow *window,
+                        G_GNUC_UNUSED GParamSpec *pspec,
+                        MooEdit       *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        update_statusbar (window);
+}
+
+
+static void
+edit_filename_changed (MooEditWindow      *window,
+                       G_GNUC_UNUSED const char *filename,
+                       MooEdit            *doc)
 {
     edit_changed (window, doc);
 }
 
 
-static void     proxy_boolean_property  (MooEditWindow      *window,
-                                         GParamSpec         *prop,
-                                         MooEdit            *doc)
+static void
+proxy_boolean_property (MooEditWindow      *window,
+                        GParamSpec         *prop,
+                        MooEdit            *doc)
 {
     if (doc == ACTIVE_DOC (window))
         g_object_notify (G_OBJECT (window), prop->name);
 }
 
 
-MooEdit *moo_edit_window_get_active_doc (MooEditWindow  *window)
+MooEdit *
+moo_edit_window_get_active_doc (MooEditWindow  *window)
 {
     GtkWidget *swin;
     int page;
@@ -1264,8 +1282,9 @@ MooEdit *moo_edit_window_get_active_doc (MooEditWindow  *window)
 }
 
 
-void     moo_edit_window_set_active_doc (MooEditWindow  *window,
-                                         MooEdit        *edit)
+void
+moo_edit_window_set_active_doc (MooEditWindow *window,
+                                MooEdit       *edit)
 {
     GtkWidget *swin;
     int page;
@@ -1281,7 +1300,8 @@ void     moo_edit_window_set_active_doc (MooEditWindow  *window,
 }
 
 
-GSList  *moo_edit_window_list_docs      (MooEditWindow  *window)
+GSList *
+moo_edit_window_list_docs (MooEditWindow *window)
 {
     GSList *list = NULL;
     int num, i;
@@ -1297,7 +1317,8 @@ GSList  *moo_edit_window_list_docs      (MooEditWindow  *window)
 }
 
 
-guint    moo_edit_window_num_docs       (MooEditWindow  *window)
+guint
+moo_edit_window_num_docs (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), 0);
 
@@ -1308,8 +1329,9 @@ guint    moo_edit_window_num_docs       (MooEditWindow  *window)
 }
 
 
-static MooEdit *get_nth_tab             (MooEditWindow      *window,
-                                         guint               n)
+static MooEdit *
+get_nth_tab (MooEditWindow *window,
+             guint          n)
 {
     GtkWidget *swin;
 
@@ -1322,8 +1344,9 @@ static MooEdit *get_nth_tab             (MooEditWindow      *window,
 }
 
 
-static int      get_page_num            (MooEditWindow      *window,
-                                         MooEdit            *doc)
+static int
+get_page_num (MooEditWindow *window,
+              MooEdit       *doc)
 {
     GtkWidget *swin;
 
@@ -1363,7 +1386,7 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
     g_signal_connect_swapped (edit, "notify::overwrite",
-                              G_CALLBACK (edit_changed), window);
+                              G_CALLBACK (edit_overwrite_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
     g_signal_connect_swapped (edit, "notify::can-undo",
@@ -1658,8 +1681,9 @@ update_tab_label (MooEditWindow *window,
     char *label_text;
     gboolean modified, deleted;
     GdkPixbuf *pixbuf;
-    int page = get_page_num (window, doc);
+    int page;
 
+    page = get_page_num (window, doc);
     g_return_if_fail (page >= 0);
 
     hbox = moo_notebook_get_tab_label (window->priv->notebook,
