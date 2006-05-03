@@ -60,7 +60,9 @@ GType           moo_lang_mgr_get_type               (void) G_GNUC_CONST;
 
 MooLangMgr     *moo_lang_mgr_new                    (void);
 
+/* list must be freed */
 GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr         *mgr);
+/* list must be freed together with content */
 GSList         *moo_lang_mgr_get_sections           (MooLangMgr         *mgr);
 
 MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr         *mgr,
