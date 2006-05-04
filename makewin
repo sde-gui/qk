@@ -1,53 +1,82 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-dir=`pwd`
-builddir=/home/muntyan/projects/moo/build
-medit_windir=/usr/local/win/medit
+import os
+import sys
+import getopt
 
-if [ x$1 != x -a x$1 != x"--no-cygwin" ]; then
-    medit_builddir=`cd $1 && pwd`
-else
-    medit_builddir=$builddir/mingw
-fi
-config=`basename $medit_builddir`
-installdir=$dir/$config-root
-issdir=Z:$medit_builddir/wininstaller
+dir = os.getcwd()
+builddir = "/home/muntyan/projects/moo/build"
+moo_windir = "/usr/local/win/medit"
 
-iss=$issdir/medit.iss
-installer=medit`echo $config | sed s/mingw//`.exe
 
-do_cmd () {
-    echo "*** " $*
-    $*
-    return $?
-}
+def usage():
+    print "Usage:", sys.argv[0], "[build_dir]"
+    sys.exit(2)
 
-copy_files () {
-    do_cmd cp $1/usr/local/bin/medit.exe $2/ && \
-    do_cmd cp -r $1/usr/local/share/moo/syntax $2/ && \
-    do_cmd cp -r $1/usr/local/share/moo/completion $2/ && \
-    do_cmd cp -r $1/usr/local/lib/moo/plugins $2/ && \
-    do_cmd cp -r $1/usr/local/share/moo/tools.cfg $2/ && \
-    do_cmd cp -r $1/usr/local/share/moo/menu.cfg $2/
-    do_cmd cp -r $1/usr/local/share/moo/as.cfg $2/
-}
+if sys.argv[1:]:
+    if sys.argv[2:]: usage()
+    moo_builddir = os.path.abspath(sys.argv[1])
+else:
+    moo_builddir = builddir + "/mingw"
 
-build () {
-    do_cmd mkdir $medit_windir && \
-    do_cmd mkdir $installdir && \
-    do_cmd cd $medit_builddir && \
-    do_cmd make install-strip DESTDIR=$installdir && \
-    copy_files $installdir $medit_windir && \
-    echo "*** " wine /usr/local/win/InnoSetup5/ISCC.exe $iss && \
-    wine /usr/local/win/InnoSetup5/ISCC.exe $iss && \
-    do_cmd mv $medit_builddir/wininstaller/Output/setup.exe $dir/$installer
-}
+config = os.path.basename(moo_builddir)
+installdir = "%s/%s-inst" % (dir, config)
 
-clean () {
-    do_cmd rm -rf $medit_windir
-    do_cmd rm -rf $installdir
-    do_cmd rm -rf $medit_builddir/wininstaller/Output
-}
+issdir = "Z:%s/wininstaller" % (moo_builddir,)
+iss = issdir + "/medit.iss"
 
-build
-clean
+
+class Error(Exception):
+    def __init__(self, status):
+        Exception.__init__(self)
+        self.status = status
+
+def do_cmd(cmd):
+    print cmd
+    status = os.system(cmd)
+    if status:
+        raise Error(status)
+
+def copy_files():
+    files = ["bin/medit.exe", "share/moo/syntax",
+             "share/moo/tools.cfg", "share/moo/menu.cfg", "share/moo/as.cfg",
+             "share/moo/completion", "lib/moo/plugins"]
+    for f in files:
+        do_cmd("cp -r %s/usr/local/%s %s/" % (installdir, f, moo_windir))
+
+config_template = """
+version = @MOO_VERSION@
+"""
+
+def get_version():
+    sys.path.insert(0, moo_builddir)
+    if not os.path.exists('config.py.in'):
+        file = open('config.py.in', 'w+')
+        file.write(config_template)
+        file.close()
+    do_cmd('./config.status --file config.py:config.py.in')
+    import config
+    return config.version
+
+def build():
+    do_cmd("mkdir " + moo_windir)
+    do_cmd("mkdir " + installdir)
+    os.chdir(moo_builddir)
+    do_cmd("make install-strip DESTDIR=" + installdir)
+    copy_files()
+    do_cmd("wine /usr/local/win/InnoSetup5/ISCC.exe " + iss)
+    installer = "meditsetup-" + get_version() + config.replace("mingw", "") + ".exe"
+    do_cmd("mv %s/wininstaller/Output/setup.exe %s/%s" % (moo_builddir, dir, installer))
+
+def clean():
+    do_cmd("rm -rf %s %s %s" % (moo_windir, installdir,
+                                moo_builddir + "/wininstaller/Output"))
+
+try:
+    build()
+except Error, e:
+    clean()
+    sys.exit(e.status)
+
+clean()
+print "*** Success ***"
