@@ -116,6 +116,7 @@ static void     insert_text_cb              (MooTextView        *view,
 static gboolean moo_text_view_char_inserted (MooTextView        *view,
                                              GtkTextIter        *where,
                                              guint               character);
+static void     moo_text_view_delete_selection (MooTextView     *view);
 
 static void     set_manage_clipboard        (MooTextView        *view,
                                              gboolean            manage);
@@ -262,7 +263,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     text_view_class->populate_popup = moo_text_view_populate_popup;
     text_view_class->set_scroll_adjustments = moo_text_view_set_scroll_adjustments;
 
-    klass->delete_selection = moo_text_view_delete_selection;
     klass->extend_selection = _moo_text_view_extend_selection;
     klass->find_interactive = find_interactive;
     klass->find_next_interactive = find_next_interactive;
@@ -500,13 +500,13 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_TYPE_BOOLEAN, 0);
 
     signals[DELETE_SELECTION] =
-            g_signal_new ("delete-selection",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooTextViewClass, delete_selection),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+            moo_signal_new_cb ("delete-selection",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST,
+                               G_CALLBACK (moo_text_view_delete_selection),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
 
     signals[FIND_INTERACTIVE] =
             g_signal_new ("find-interactive",
@@ -749,7 +749,7 @@ moo_text_view_new (void)
 }
 
 
-void
+static void
 moo_text_view_delete_selection (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));

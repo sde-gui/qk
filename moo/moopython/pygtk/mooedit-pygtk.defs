@@ -1086,12 +1086,6 @@
   (return-type "gboolean")
 )
 
-(define-method delete_selection
-  (of-object "MooTextView")
-  (c-name "moo_text_view_delete_selection")
-  (return-type "none")
-)
-
 (define-method can_redo
   (of-object "MooTextView")
   (c-name "moo_text_view_can_redo")

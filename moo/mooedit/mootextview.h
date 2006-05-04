@@ -61,7 +61,6 @@ struct _MooTextViewClass
 {
     GtkTextViewClass parent_class;
 
-    void (* delete_selection)       (MooTextView    *view);
     gboolean (* undo)               (MooTextView    *view);
     gboolean (* redo)               (MooTextView    *view);
 
@@ -105,8 +104,6 @@ char        *moo_text_view_get_selection            (MooTextView        *view);
 char        *moo_text_view_get_text                 (MooTextView        *view);
 gboolean     moo_text_view_has_selection            (MooTextView        *view);
 gboolean     moo_text_view_has_text                 (MooTextView        *view);
-
-void         moo_text_view_delete_selection         (MooTextView        *view);
 
 gboolean     moo_text_view_can_redo                 (MooTextView        *view);
 gboolean     moo_text_view_can_undo                 (MooTextView        *view);
