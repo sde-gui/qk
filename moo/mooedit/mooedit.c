@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooedit.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -19,6 +18,7 @@
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/moolang-private.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
@@ -761,14 +761,14 @@ set_kate_var (MooEdit    *edit,
         gboolean spaces = FALSE;
 
         if (moo_edit_config_parse_bool (val, &spaces))
-            moo_edit_config_parse (edit->config, "indent-use-tabs",
-                                   spaces ? "false" : "true",
-                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+            moo_edit_config_parse_one (edit->config, "indent-use-tabs",
+                                       spaces ? "false" : "true",
+                                       MOO_EDIT_CONFIG_SOURCE_FILE);
     }
     else
     {
-        moo_edit_config_parse (edit->config, name, val,
-                               MOO_EDIT_CONFIG_SOURCE_FILE);
+        moo_edit_config_parse_one (edit->config, name, val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
     }
 }
 
@@ -787,27 +787,27 @@ set_emacs_var (MooEdit *edit,
 {
     if (!g_ascii_strcasecmp (name, "mode"))
     {
-        moo_edit_config_parse (edit->config, "lang", val,
-                               MOO_EDIT_CONFIG_SOURCE_FILE);
+        moo_edit_config_parse_one (edit->config, "lang", val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
     }
     else if (!g_ascii_strcasecmp (name, "tab-width"))
     {
-        moo_edit_config_parse (edit->config, "indent-tab-width", val,
-                               MOO_EDIT_CONFIG_SOURCE_FILE);
+        moo_edit_config_parse_one (edit->config, "indent-tab-width", val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
     }
     else if (!g_ascii_strcasecmp (name, "c-basic-offset"))
     {
-        moo_edit_config_parse (edit->config, "indent-width", val,
-                               MOO_EDIT_CONFIG_SOURCE_FILE);
+        moo_edit_config_parse_one (edit->config, "indent-width", val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
     }
     else if (!g_ascii_strcasecmp (name, "indent-tabs-mode"))
     {
         if (!g_ascii_strcasecmp (val, "nil"))
-            moo_edit_config_parse (edit->config, "indent-use-tabs", "false",
-                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+            moo_edit_config_parse_one (edit->config, "indent-use-tabs", "false",
+                                       MOO_EDIT_CONFIG_SOURCE_FILE);
         else
-            moo_edit_config_parse (edit->config, "indent-use-tabs", "true",
-                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+            moo_edit_config_parse_one (edit->config, "indent-use-tabs", "true",
+                                       MOO_EDIT_CONFIG_SOURCE_FILE);
     }
 }
 
@@ -820,19 +820,10 @@ parse_emacs_mode_string (MooEdit *edit,
 
 
 static void
-set_moo_var (MooEdit *edit,
-             char    *name,
-             char    *val)
-{
-    moo_edit_config_parse (edit->config, name, val,
-                           MOO_EDIT_CONFIG_SOURCE_FILE);
-}
-
-static void
 parse_moo_mode_string (MooEdit *edit,
                        char    *string)
 {
-    parse_mode_string (edit, string, " ", (SetVarFunc) set_moo_var);
+    moo_edit_config_parse (edit->config, string, MOO_EDIT_CONFIG_SOURCE_FILE);
 }
 
 
@@ -927,7 +918,6 @@ moo_edit_set_lang (MooEdit *edit,
                    MooLang *lang)
 {
     MooLang *old_lang;
-    MooEditConfig *config;
 
     old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
@@ -936,10 +926,8 @@ moo_edit_set_lang (MooEdit *edit,
 
     _moo_edit_freeze_config_notify (edit);
 
-    moo_edit_config_unset_by_source (edit->config, MOO_EDIT_CONFIG_SOURCE_LANG);
-    config = moo_edit_config_get_for_lang (moo_lang_id (lang));
-    moo_edit_config_compose (edit->config, config);
-
+    _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
+                                 edit->config, moo_lang_id (lang));
     moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
 
     _moo_edit_thaw_config_notify (edit);
@@ -987,6 +975,20 @@ moo_edit_config_notify (MooEdit        *edit,
 }
 
 
+void
+_moo_edit_update_config (void)
+{
+    GSList *l;
+
+    for (l = _moo_edit_instances; l != NULL; l = l->next)
+    {
+        MooEdit *edit = l->data;
+        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor), edit->config,
+                                     moo_lang_id (moo_text_view_get_lang (MOO_TEXT_VIEW (edit))));
+    }
+}
+
+
 static void
 moo_edit_filename_changed (MooEdit    *edit,
                            const char *filename)
@@ -1002,7 +1004,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     {
         MooLangMgr *mgr = moo_editor_get_lang_mgr (edit->priv->editor);
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
-        lang_id = lang ? lang->id : NULL;
+        lang_id = lang ? moo_lang_id (lang) : NULL;
     }
 
     moo_edit_config_set (edit->config, "lang", MOO_EDIT_CONFIG_SOURCE_FILENAME, lang_id, NULL);

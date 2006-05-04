@@ -23,10 +23,17 @@
 #define MOO_TREE_HELPER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TREE_HELPER, MooTreeHelperClass))
 
 
+typedef enum {
+    TREE_VIEW,
+    COMBO_BOX
+} WidgetType;
+
 struct _MooTreeHelper {
     GtkObject parent;
 
-    GtkTreeView *treeview;
+    WidgetType type;
+    gpointer widget;
+
     GtkWidget *new_btn;
     GtkWidget *delete_btn;
     GtkWidget *up_btn;
@@ -36,16 +43,17 @@ struct _MooTreeHelper {
 
 GType   _moo_tree_helper_get_type    (void) G_GNUC_CONST;
 
-static void moo_tree_helper_new_row         (MooTreeHelper      *helper);
-static void moo_tree_helper_delete_row      (MooTreeHelper      *helper);
-static void moo_tree_helper_row_up          (MooTreeHelper      *helper);
-static void moo_tree_helper_row_down        (MooTreeHelper      *helper);
-static void moo_tree_helper_update_widgets  (MooTreeHelper      *helper,
-                                             GtkTreeModel       *model,
-                                             GtkTreePath        *path);
-static void moo_tree_helper_update_model    (MooTreeHelper      *helper,
-                                             GtkTreeModel       *model,
-                                             GtkTreePath        *path);
+static void moo_tree_helper_new_row             (MooTreeHelper      *helper);
+static void moo_tree_helper_delete_row          (MooTreeHelper      *helper);
+static void moo_tree_helper_row_up              (MooTreeHelper      *helper);
+static void moo_tree_helper_row_down            (MooTreeHelper      *helper);
+static void moo_tree_helper_real_update_widgets (MooTreeHelper      *helper,
+                                                 GtkTreeModel       *model,
+                                                 GtkTreePath        *path);
+static GtkTreeModel *moo_tree_helper_get_model  (MooTreeHelper      *helper);
+static gboolean moo_tree_helper_get_selected    (MooTreeHelper      *helper,
+                                                 GtkTreeModel      **model,
+                                                 GtkTreeIter        *iter);
 
 
 G_DEFINE_TYPE (MooTreeHelper, _moo_tree_helper, GTK_TYPE_OBJECT)
@@ -64,8 +72,8 @@ static guint tree_signals[TREE_NUM_SIGNALS];
 
 
 static void
-selection_changed (GtkTreeSelection   *selection,
-                   MooTreeHelper      *helper)
+tree_selection_changed (GtkTreeSelection *selection,
+                        MooTreeHelper    *helper)
 {
     GtkTreeRowReference *old_row;
     GtkTreeModel *model;
@@ -103,7 +111,7 @@ selection_changed (GtkTreeSelection   *selection,
     if (old_path)
         moo_tree_helper_update_model (helper, model, old_path);
 
-    moo_tree_helper_update_widgets (helper, model, path);
+    moo_tree_helper_real_update_widgets (helper, model, path);
 
     if (path)
     {
@@ -123,22 +131,95 @@ selection_changed (GtkTreeSelection   *selection,
 
 
 static void
+combo_changed (GtkComboBox   *combo,
+               MooTreeHelper *helper)
+{
+    GtkTreeRowReference *old_row;
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    GtkTreePath *path, *old_path;
+
+    g_return_if_fail (MOO_IS_TREE_HELPER (helper));
+    g_return_if_fail (combo == helper->widget);
+
+    old_row = g_object_get_data (G_OBJECT (combo), "moo-tree-helper-current-row");
+    old_path = old_row ? gtk_tree_row_reference_get_path (old_row) : NULL;
+
+    if (old_row && !old_path)
+    {
+        g_object_set_data (G_OBJECT (combo), "moo-tree-helper-current-row", NULL);
+        old_row = NULL;
+    }
+
+    if (moo_tree_helper_get_selected (helper, &model, &iter))
+    {
+        path = gtk_tree_model_get_path (model, &iter);
+
+        if (old_path && !gtk_tree_path_compare (old_path, path))
+        {
+            gtk_tree_path_free (old_path);
+            gtk_tree_path_free (path);
+            return;
+        }
+    }
+    else
+    {
+        if (!old_path)
+            return;
+
+        path = NULL;
+    }
+
+    if (old_path)
+        moo_tree_helper_update_model (helper, model, old_path);
+
+    moo_tree_helper_real_update_widgets (helper, model, path);
+
+    if (path)
+    {
+        GtkTreeRowReference *row;
+        row = gtk_tree_row_reference_new (model, path);
+        g_object_set_data_full (G_OBJECT (combo), "moo-tree-helper-current-row", row,
+                                (GDestroyNotify) gtk_tree_row_reference_free);
+    }
+    else
+    {
+        g_object_set_data (G_OBJECT (combo), "moo-tree-helper-current-row", NULL);
+    }
+
+    gtk_tree_path_free (path);
+    gtk_tree_path_free (old_path);
+}
+
+
+static void
 moo_tree_helper_destroy (GtkObject *object)
 {
     MooTreeHelper *helper = MOO_TREE_HELPER (object);
 
-    if (helper->treeview)
+    if (helper->widget)
     {
         GtkTreeSelection *selection;
 
-        g_signal_handlers_disconnect_by_func (helper->treeview,
+        g_signal_handlers_disconnect_by_func (helper->widget,
                                               (gpointer) gtk_object_destroy,
                                               helper);
 
-        selection = gtk_tree_view_get_selection (helper->treeview);
-        g_signal_handlers_disconnect_by_func (selection,
-                                              (gpointer) selection_changed,
-                                              helper);
+        switch (helper->type)
+        {
+            case TREE_VIEW:
+                selection = gtk_tree_view_get_selection (helper->widget);
+                g_signal_handlers_disconnect_by_func (selection,
+                                                      (gpointer) tree_selection_changed,
+                                                      helper);
+                break;
+
+            case COMBO_BOX:
+                g_signal_handlers_disconnect_by_func (helper->widget,
+                                                      (gpointer) combo_changed,
+                                                      helper);
+                break;
+        }
 
         if (helper->new_btn)
             g_signal_handlers_disconnect_by_func (helper->new_btn,
@@ -157,7 +238,7 @@ moo_tree_helper_destroy (GtkObject *object)
                                                   (gpointer) moo_tree_helper_row_down,
                                                   helper);
 
-        helper->treeview = NULL;
+        helper->widget = NULL;
     }
 
     GTK_OBJECT_CLASS (_moo_tree_helper_parent_class)->destroy (object);
@@ -246,10 +327,25 @@ moo_tree_view_select_first (GtkTreeView *tree_view)
 }
 
 
+void
+moo_combo_box_select_first (GtkComboBox *combo)
+{
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+
+    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
+
+    model = gtk_combo_box_get_model (combo);
+
+    if (gtk_tree_model_get_iter_first (model, &iter))
+        gtk_combo_box_set_active_iter (combo, &iter);
+}
+
+
 static void
-moo_tree_helper_update_widgets (MooTreeHelper      *helper,
-                                GtkTreeModel       *model,
-                                GtkTreePath        *path)
+moo_tree_helper_real_update_widgets (MooTreeHelper      *helper,
+                                     GtkTreeModel       *model,
+                                     GtkTreePath        *path)
 {
     GtkTreeIter iter;
 
@@ -289,7 +385,7 @@ moo_tree_helper_update_widgets (MooTreeHelper      *helper,
 }
 
 
-static void
+void
 moo_tree_helper_update_model (MooTreeHelper      *helper,
                               GtkTreeModel       *model,
                               GtkTreePath        *path)
@@ -297,16 +393,14 @@ moo_tree_helper_update_model (MooTreeHelper      *helper,
     GtkTreePath *freeme = NULL;
     GtkTreeIter iter;
 
+    g_return_if_fail (MOO_IS_TREE_HELPER (helper));
+    g_return_if_fail (!model || GTK_IS_TREE_MODEL (model));
+
     if (!model)
-        model = gtk_tree_view_get_model (helper->treeview);
+        model = moo_tree_helper_get_model (helper);
 
-    if (!path)
-    {
-        GtkTreeSelection *selection = gtk_tree_view_get_selection (helper->treeview);
-
-        if (gtk_tree_selection_get_selected (selection, NULL, &iter))
-            path = freeme = gtk_tree_model_get_path (model, &iter);
-    }
+    if (!path && moo_tree_helper_get_selected (helper, NULL, &iter))
+        path = freeme = gtk_tree_model_get_path (model, &iter);
 
     if (path)
     {
@@ -316,6 +410,44 @@ moo_tree_helper_update_model (MooTreeHelper      *helper,
     }
 
     gtk_tree_path_free (freeme);
+}
+
+
+static GtkTreeModel *
+moo_tree_helper_get_model (MooTreeHelper *helper)
+{
+    switch (helper->type)
+    {
+        case TREE_VIEW:
+            return gtk_tree_view_get_model (helper->widget);
+        case COMBO_BOX:
+            return gtk_combo_box_get_model (helper->widget);
+    }
+
+    g_return_val_if_reached (NULL);
+}
+
+
+static gboolean
+moo_tree_helper_get_selected (MooTreeHelper *helper,
+                              GtkTreeModel **model,
+                              GtkTreeIter   *iter)
+{
+    GtkTreeSelection *selection;
+
+    switch (helper->type)
+    {
+        case TREE_VIEW:
+            selection = gtk_tree_view_get_selection (helper->widget);
+            return gtk_tree_selection_get_selected (selection, model, iter);
+
+        case COMBO_BOX:
+            if (model)
+                *model = gtk_combo_box_get_model (helper->widget);
+            return gtk_combo_box_get_active_iter (helper->widget, iter);
+    }
+
+    g_return_val_if_reached (FALSE);
 }
 
 
@@ -348,7 +480,9 @@ moo_tree_helper_new_row (MooTreeHelper *helper)
     int index;
     gboolean result;
 
-    selection = gtk_tree_view_get_selection (helper->treeview);
+    g_return_if_fail (helper->type == TREE_VIEW);
+
+    selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
         index = gtk_tree_model_iter_n_children (model, NULL);
@@ -375,7 +509,9 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
     GtkTreePath *path;
     gboolean result;
 
-    selection = gtk_tree_view_get_selection (helper->treeview);
+    g_return_if_fail (helper->type == TREE_VIEW);
+
+    selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
         g_return_if_reached ();
@@ -387,6 +523,8 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
     if (result && (gtk_tree_model_get_iter (model, &iter, path) ||
                    (gtk_tree_path_prev (path) && gtk_tree_model_get_iter (model, &iter, path))))
         gtk_tree_selection_select_iter (selection, &iter);
+    else
+        moo_tree_helper_update_widgets (helper);
 
     gtk_tree_path_free (path);
 }
@@ -402,7 +540,9 @@ moo_tree_helper_row_move (MooTreeHelper *helper,
     GtkTreeSelection *selection;
     gboolean result;
 
-    selection = gtk_tree_view_get_selection (helper->treeview);
+    g_return_if_fail (helper->type == TREE_VIEW);
+
+    selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
         g_return_if_reached ();
@@ -418,7 +558,7 @@ moo_tree_helper_row_move (MooTreeHelper *helper,
     g_signal_emit (helper, tree_signals[MOVE_ROW], 0, model, path, new_path, &result);
 
     if (result)
-        moo_tree_helper_update_widgets (helper, model, new_path);
+        moo_tree_helper_real_update_widgets (helper, model, new_path);
 
     gtk_tree_path_free (new_path);
     gtk_tree_path_free (path);
@@ -447,7 +587,7 @@ _moo_tree_helper_init (G_GNUC_UNUSED MooTreeHelper *helper)
 
 static void
 moo_tree_helper_connect (MooTreeHelper *helper,
-                         GtkWidget     *tree_view,
+                         GtkWidget     *widget,
                          GtkWidget     *new_btn,
                          GtkWidget     *delete_btn,
                          GtkWidget     *up_btn,
@@ -456,23 +596,40 @@ moo_tree_helper_connect (MooTreeHelper *helper,
     GtkTreeSelection *selection;
 
     g_return_if_fail (MOO_IS_TREE_HELPER (helper));
-    g_return_if_fail (GTK_IS_TREE_VIEW (tree_view));
-    g_return_if_fail (helper->treeview == NULL);
+    g_return_if_fail (GTK_IS_TREE_VIEW (widget) || GTK_IS_COMBO_BOX (widget));
+    g_return_if_fail (helper->widget == NULL);
 
-    helper->treeview = GTK_TREE_VIEW (tree_view);
+    helper->widget = widget;
+
+    if (GTK_IS_TREE_VIEW (widget))
+        helper->type = TREE_VIEW;
+    else
+        helper->type = COMBO_BOX;
+
     helper->new_btn = new_btn;
     helper->delete_btn = delete_btn;
     helper->up_btn = up_btn;
     helper->down_btn = down_btn;
 
-    g_signal_connect_swapped (tree_view, "destroy",
+    g_signal_connect_swapped (widget, "destroy",
                               G_CALLBACK (gtk_object_destroy),
                               helper);
 
-    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree_view));
-    g_signal_connect (selection, "changed",
-                      G_CALLBACK (selection_changed),
-                      helper);
+    switch (helper->type)
+    {
+        case TREE_VIEW:
+            selection = gtk_tree_view_get_selection (helper->widget);
+            g_signal_connect (selection, "changed",
+                              G_CALLBACK (tree_selection_changed),
+                              helper);
+            break;
+
+        case COMBO_BOX:
+            g_signal_connect (widget, "changed",
+                              G_CALLBACK (combo_changed),
+                              helper);
+            break;
+    }
 
     if (new_btn)
         g_signal_connect_swapped (new_btn, "clicked",
@@ -490,6 +647,43 @@ moo_tree_helper_connect (MooTreeHelper *helper,
         g_signal_connect_swapped (down_btn, "clicked",
                                   G_CALLBACK (moo_tree_helper_row_down),
                                   helper);
+}
+
+
+MooTreeHelper *
+moo_tree_helper_new (GtkWidget *widget)
+{
+    MooTreeHelper *helper;
+
+    g_return_val_if_fail (GTK_IS_TREE_VIEW (widget) || GTK_IS_COMBO_BOX (widget), NULL);
+
+    helper = g_object_new (MOO_TYPE_TREE_HELPER, NULL);
+    gtk_object_sink (g_object_ref (helper));
+
+    moo_tree_helper_connect (helper, widget, NULL, NULL, NULL, NULL);
+
+    return helper;
+}
+
+
+void
+moo_tree_helper_update_widgets (MooTreeHelper *helper)
+{
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+
+    g_return_if_fail (MOO_IS_TREE_HELPER (helper));
+
+    if (moo_tree_helper_get_selected (helper, &model, &iter))
+    {
+        GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
+        moo_tree_helper_real_update_widgets (MOO_TREE_HELPER (helper), model, path);
+        gtk_tree_path_free (path);
+    }
+    else
+    {
+        moo_tree_helper_real_update_widgets (MOO_TREE_HELPER (helper), NULL, NULL);
+    }
 }
 
 
@@ -803,7 +997,7 @@ button_toggled (MooTreeHelper   *helper,
     WidgetInfo *info;
     GtkTreeSelection *selection;
 
-    selection = gtk_tree_view_get_selection (helper->treeview);
+    selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
         return;
@@ -830,7 +1024,7 @@ entry_changed (MooTreeHelper  *helper,
     WidgetInfo *info;
     GtkTreeSelection *selection;
 
-    selection = gtk_tree_view_get_selection (helper->treeview);
+    selection = gtk_tree_view_get_selection (helper->widget);
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
         return;
@@ -1091,30 +1285,4 @@ moo_config_helper_update_model (MooConfigHelper *helper,
 {
     g_return_if_fail (MOO_IS_CONFIG_HELPER (helper));
     moo_tree_helper_update_model (MOO_TREE_HELPER (helper), model, path);
-}
-
-
-void
-moo_config_helper_update_widgets (MooConfigHelper *helper)
-{
-    GtkTreeView *treeview;
-    GtkTreeSelection *selection;
-    GtkTreeModel *model;
-    GtkTreeIter iter;
-
-    g_return_if_fail (MOO_IS_CONFIG_HELPER (helper));
-
-    treeview = MOO_TREE_HELPER (helper)->treeview;
-    selection = gtk_tree_view_get_selection (treeview);
-
-    if (gtk_tree_selection_get_selected (selection, &model, &iter))
-    {
-        GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
-        moo_tree_helper_update_widgets (MOO_TREE_HELPER (helper), model, path);
-        gtk_tree_path_free (path);
-    }
-    else
-    {
-        moo_tree_helper_update_widgets (MOO_TREE_HELPER (helper), model, NULL);
-    }
 }

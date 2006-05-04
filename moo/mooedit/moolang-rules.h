@@ -18,7 +18,7 @@
 #ifndef __MOO_LANG_RULES_H__
 #define __MOO_LANG_RULES_H__
 
-#include "mooedit/moolang.h"
+#include "mooedit/moolang-private.h"
 #include "mooutils/eggregex.h"
 #include <gtk/gtk.h>
 

@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moolangmgr.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -32,29 +31,6 @@ G_BEGIN_DECLS
 
 
 typedef struct _MooLangMgr MooLangMgr;
-typedef struct _MooLangMgrClass MooLangMgrClass;
-
-struct _MooLangMgr {
-    GObject base;
-
-    GSList *lang_dirs;
-    GSList *langs;
-    GHashTable *lang_names;
-    GHashTable *schemes;
-    MooTextStyleScheme *active_scheme;
-    guint dirs_read : 1;
-};
-
-struct _MooLangMgrClass
-{
-    GObjectClass base_class;
-
-    void (*lang_added)   (MooLangMgr *mgr,
-                          const char   *lang_name);
-    void (*lang_removed) (MooLangMgr *mgr,
-                          const char   *lang_name);
-};
-
 
 GType           moo_lang_mgr_get_type               (void) G_GNUC_CONST;
 
@@ -73,24 +49,12 @@ MooLang        *moo_lang_mgr_get_lang_for_mime_type (MooLangMgr         *mgr,
                                                      const char         *mime_type);
 MooLang        *moo_lang_mgr_get_lang               (MooLangMgr         *mgr,
                                                      const char         *name);
-MooContext     *moo_lang_mgr_get_context            (MooLangMgr         *mgr,
-                                                     const char         *lang_name,
-                                                     const char         *ctx_name);
 
 GSList         *moo_lang_mgr_list_schemes           (MooLangMgr         *mgr);
 
 void            moo_lang_mgr_read_dirs              (MooLangMgr         *mgr);
 
-MooTextStyle   *moo_lang_mgr_get_style              (MooLangMgr         *mgr,
-                                                     const char         *lang_name, /* default style if NULL */
-                                                     const char         *style_name,
-                                                     MooTextStyleScheme *scheme);
 MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr         *mgr);
-void            moo_lang_mgr_set_active_scheme      (MooLangMgr         *mgr,
-                                                     const char         *scheme_name);
-
-void            _moo_lang_mgr_add_lang              (MooLangMgr         *mgr,
-                                                     MooLang            *lang);
 
 
 G_END_DECLS

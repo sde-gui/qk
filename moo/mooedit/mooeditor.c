@@ -19,6 +19,7 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-private.h"
+#include "mooedit/moolang-private.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -284,7 +285,6 @@ moo_editor_init (MooEditor *editor)
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
-    _moo_edit_config_load ();
 
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
@@ -1877,7 +1877,7 @@ apply_prefs (MooEditor *editor)
                                 NULL);
 
     if (color_scheme)
-        moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
+        _moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
 
     docs = moo_editor_list_docs (editor);
     g_slist_foreach (docs, (GFunc) _moo_edit_apply_settings, NULL);

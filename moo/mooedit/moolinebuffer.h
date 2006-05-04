@@ -21,6 +21,7 @@
 #include <gtk/gtktextbuffer.h>
 #include "mooedit/mootextbtree.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/moolang-private.h"
 
 G_BEGIN_DECLS
 

@@ -76,8 +76,8 @@ moo_context_free (MooContext *ctx)
 
 
 void
-moo_context_add_rule (MooContext     *ctx,
-                      MooRule        *rule)
+_moo_context_add_rule (MooContext     *ctx,
+                       MooRule        *rule)
 {
     g_return_if_fail (ctx != NULL && rule != NULL);
     g_return_if_fail (rule->context == NULL);
@@ -87,7 +87,7 @@ moo_context_add_rule (MooContext     *ctx,
 
 
 void
-moo_context_set_eol_stay (MooContext *ctx)
+_moo_context_set_eol_stay (MooContext *ctx)
 {
     g_return_if_fail (ctx != NULL);
     ctx->line_end.type = MOO_CONTEXT_STAY;
@@ -96,7 +96,7 @@ moo_context_set_eol_stay (MooContext *ctx)
 
 
 void
-moo_context_set_eol_pop (MooContext     *ctx,
+_moo_context_set_eol_pop (MooContext     *ctx,
                          guint           num)
 {
     g_return_if_fail (ctx != NULL);
@@ -107,8 +107,8 @@ moo_context_set_eol_pop (MooContext     *ctx,
 
 
 void
-moo_context_set_eol_switch (MooContext     *ctx,
-                            MooContext     *target)
+_moo_context_set_eol_switch (MooContext     *ctx,
+                             MooContext     *target)
 {
     g_return_if_fail (ctx != NULL && target != NULL);
     ctx->line_end.type = MOO_CONTEXT_SWITCH;
@@ -212,11 +212,11 @@ lang_connect_scheme (MooLang            *lang,
 
 
 MooLang*
-moo_lang_new (MooLangMgr     *mgr,
-              const char     *name,
-              const char     *section,
-              const char     *version,
-              const char     *author)
+_moo_lang_new (MooLangMgr     *mgr,
+               const char     *name,
+               const char     *section,
+               const char     *version,
+               const char     *author)
 {
     MooLang *lang;
 
@@ -262,9 +262,9 @@ moo_lang_id (MooLang *lang)
 
 
 void
-moo_lang_add_style (MooLang            *lang,
-                    const char         *name,
-                    const MooTextStyle *style)
+_moo_lang_add_style (MooLang            *lang,
+                     const char         *name,
+                     const MooTextStyle *style)
 {
     MooTextStyle *copy;
 
@@ -300,9 +300,9 @@ moo_lang_unref (MooLang *lang)
 
 
 MooContext*
-moo_lang_add_context (MooLang        *lang,
-                      const char     *name,
-                      const char     *style)
+_moo_lang_add_context (MooLang        *lang,
+                       const char     *name,
+                       const char     *style)
 {
     MooContext *ctx;
 
@@ -319,8 +319,8 @@ moo_lang_add_context (MooLang        *lang,
 
 
 MooContext*
-moo_lang_get_context (MooLang        *lang,
-                      const char     *ctx_name)
+_moo_lang_get_context (MooLang        *lang,
+                       const char     *ctx_name)
 {
     g_return_val_if_fail (lang != NULL, NULL);
     g_return_val_if_fail (ctx_name != NULL, NULL);
@@ -329,7 +329,7 @@ moo_lang_get_context (MooLang        *lang,
 
 
 MooContext*
-moo_lang_get_default_context (MooLang *lang)
+_moo_lang_get_default_context (MooLang *lang)
 {
     g_return_val_if_fail (lang != NULL, NULL);
     g_return_val_if_fail (lang->contexts->len != 0, NULL);
@@ -415,14 +415,14 @@ set_tag_style (MooLang       *lang,
 
     if (!style)
     {
-        style = moo_lang_mgr_get_style (lang->mgr, lang->id, style_name, scheme);
+        style = _moo_lang_mgr_get_style (lang->mgr, lang->id, style_name, scheme);
         g_return_if_fail (style != NULL);
 
         if (style->default_style)
         {
             MooTextStyle *def_style;
 
-            def_style = moo_lang_mgr_get_style (lang->mgr, NULL, style->default_style, scheme);
+            def_style = _moo_lang_mgr_get_style (lang->mgr, NULL, style->default_style, scheme);
 
             if (!def_style)
             {

@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooeditconfig.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -58,7 +57,6 @@ static GSList *instances;
 static VarArray *vars;
 static GQuark prop_id_quark;
 static GHashTable *aliases;
-static GHashTable *lang_configs;
 
 
 static void moo_edit_config_finalize        (GObject        *object);
@@ -157,9 +155,6 @@ global_init (void)
         g_signal_connect (global, "notify",
                           G_CALLBACK (global_changed), NULL);
         /* XXX read preferences here */
-
-        lang_configs = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                              g_free, g_object_unref);
     }
 }
 
@@ -630,6 +625,22 @@ moo_edit_config_unset_by_source (MooEditConfig  *config,
 }
 
 
+int
+moo_edit_config_get_source (MooEditConfig *config,
+                            const char    *setting)
+{
+    guint id;
+
+    g_return_val_if_fail (MOO_IS_EDIT_CONFIG (config), 0);
+    g_return_val_if_fail (setting != 0, 0);
+
+    if (!moo_edit_config_lookup_spec (setting, &id, TRUE))
+        g_return_val_if_reached (0);
+
+    return VALUE(config, id)->source;
+}
+
+
 void
 moo_edit_config_compose (MooEditConfig  *target,
                          MooEditConfig  *src)
@@ -719,10 +730,10 @@ parse_boolean (const char *value,
 
 
 void
-moo_edit_config_parse (MooEditConfig  *config,
-                       const char     *name,
-                       const char     *value,
-                       MooEditConfigSource source)
+moo_edit_config_parse_one (MooEditConfig  *config,
+                           const char     *name,
+                           const char     *value,
+                           MooEditConfigSource source)
 {
     GValue gval;
     gboolean result = FALSE;
@@ -756,6 +767,62 @@ moo_edit_config_parse (MooEditConfig  *config,
                    G_STRLOC, value, g_type_name (G_VALUE_TYPE (&gval)));
 
     g_value_unset (&gval);
+}
+
+
+void
+moo_edit_config_parse (MooEditConfig  *config,
+                       const char     *string,
+                       MooEditConfigSource source)
+{
+    char **vars, **p;
+    char *copy;
+
+    g_return_if_fail (MOO_IS_EDIT_CONFIG (config));
+    g_return_if_fail (string != NULL);
+
+    copy = g_strdelimit (g_strstrip (g_strdup (string)), ",", ';');
+    vars = g_strsplit (copy, ";", 0);
+    g_free (copy);
+
+    if (!vars)
+        goto out;
+
+    for (p = vars; *p != NULL; p++)
+    {
+        char *sep, *var, *value;
+
+        g_strstrip (*p);
+        sep = strchr (*p, ':');
+
+        if (!sep || sep == *p || !sep[1])
+            goto out;
+
+        var = g_strndup (*p, sep - *p);
+        g_strstrip (var);
+
+        if (!var[0])
+        {
+            g_free (var);
+            goto out;
+        }
+
+        value = sep + 1;
+        g_strstrip (value);
+
+        if (!value)
+        {
+            g_free (var);
+            goto out;
+        }
+
+        moo_edit_config_parse_one (config, var, value, source);
+
+        g_free (var);
+    }
+
+out:
+    g_strfreev (vars);
 }
 
 
@@ -796,168 +863,4 @@ moo_edit_config_install_alias (const char     *name,
 
     g_hash_table_insert (aliases, s1, g_strdup (pspec->name));
     g_hash_table_insert (aliases, s2, g_strdup (pspec->name));
-}
-
-
-MooEditConfig *
-moo_edit_config_get_for_lang (const char *lang)
-{
-    MooEditConfig *config;
-
-    global_init ();
-
-    if (!lang)
-        lang = MOO_LANG_NONE;
-
-    config = g_hash_table_lookup (lang_configs, lang);
-
-    if (!config)
-    {
-        config = moo_edit_config_new ();
-        g_hash_table_insert (lang_configs, g_strdup (lang), config);
-    }
-
-    return config;
-}
-
-
-static void
-lang_config_set_defaults (void)
-{
-    MooEditConfig *config;
-
-    config = moo_edit_config_get_for_lang ("makefile");
-    moo_edit_config_parse (config, "use-tabs", "true",
-                           MOO_EDIT_CONFIG_SOURCE_LANG);
-}
-
-
-/***************************************************************************/
-/* Loading and saving
- */
-
-#define ELEMENT_LANG_CONFIG     MOO_EDIT_PREFS_PREFIX "/filetypes"
-#define ELEMENT_LANG            "lang"
-#define PROP_LANG_ID            "id"
-
-static void
-load_lang_node (MooMarkupNode *lang_node)
-{
-    const char *lang_id;
-    MooMarkupNode *node;
-    MooEditConfig *config = NULL;
-
-    lang_id = moo_markup_get_prop (lang_node, PROP_LANG_ID);
-    g_return_if_fail (lang_id != NULL);
-
-    for (node = lang_node->children; node != NULL; node = node->next)
-    {
-        if (!MOO_MARKUP_IS_ELEMENT (node))
-            continue;
-
-        if (!moo_edit_config_lookup_spec (node->name, NULL, TRUE))
-        {
-            g_warning ("%s: no property named '%s'",
-                       G_STRLOC, node->name);
-            continue;
-        }
-
-        if (!config)
-            config = moo_edit_config_get_for_lang (lang_id);
-
-        moo_edit_config_parse (config, node->name,
-                               moo_markup_get_content (node),
-                               MOO_EDIT_CONFIG_SOURCE_LANG);
-    }
-}
-
-
-void
-_moo_edit_config_load (void)
-{
-    MooMarkupDoc *xml;
-    MooMarkupNode *root, *node;
-
-    lang_config_set_defaults ();
-
-    xml = moo_prefs_get_markup ();
-    g_return_if_fail (xml != NULL);
-
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
-                                   ELEMENT_LANG_CONFIG);
-
-    if (!root)
-        return;
-
-    for (node = root->children; node != NULL; node = node->next)
-    {
-        if (!MOO_MARKUP_IS_ELEMENT (node))
-            continue;
-
-        if (strcmp (node->name, ELEMENT_LANG))
-        {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
-            continue;
-        }
-
-        load_lang_node (node);
-    }
-}
-
-
-static void
-save_config (const char    *lang_id,
-             MooEditConfig *config,
-             MooMarkupNode *root)
-{
-    guint i;
-    MooMarkupNode *lang_node = NULL;
-
-    for (i = 1; i < vars->len; ++i)
-    {
-        Value *val = VALUE (config, i);
-        const char *string;
-
-        if (val->source != MOO_EDIT_CONFIG_SOURCE_LANG)
-            continue;
-
-        string = moo_value_convert_to_string (&val->gval);
-        g_return_if_fail (string != NULL);
-
-        if (!lang_node)
-        {
-            lang_node = moo_markup_create_element (root, ELEMENT_LANG);
-            g_return_if_fail (lang_node != NULL);
-            moo_markup_set_prop (lang_node, PROP_LANG_ID, lang_id);
-        }
-
-        moo_markup_create_text_element (lang_node,
-                                        vars->data[i].pspec->name,
-                                        string);
-    }
-}
-
-void
-_moo_edit_config_save (void)
-{
-    MooMarkupDoc *xml;
-    MooMarkupNode *root;
-
-    xml = moo_prefs_get_markup ();
-    g_return_if_fail (xml != NULL);
-
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
-                                   ELEMENT_LANG_CONFIG);
-
-    if (root)
-        moo_markup_delete_node (root);
-
-    if (!lang_configs || !g_hash_table_size (lang_configs))
-        return;
-
-    root = moo_markup_create_element (MOO_MARKUP_NODE (xml),
-                                      ELEMENT_LANG_CONFIG);
-    g_return_if_fail (root != NULL);
-
-    g_hash_table_foreach (lang_configs, (GHFunc) save_config, root);
 }

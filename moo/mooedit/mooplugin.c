@@ -31,7 +31,6 @@
 #endif
 
 #define PLUGIN_PREFS_ENABLED "enabled"
-#define LANG_ID(lang) ((lang) ? (lang)->id : "none")
 
 
 typedef struct {
@@ -453,7 +452,7 @@ plugin_attach_doc (MooPlugin      *plugin,
         const char *id;
 
         lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-        id = LANG_ID (lang);
+        id = moo_lang_id (lang);
 
         if (!g_hash_table_lookup (plugin->langs, id))
             return;
@@ -1007,7 +1006,7 @@ doc_lang_changed (MooEdit *doc)
 
     window = moo_edit_get_window (doc);
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    id = LANG_ID (lang);
+    id = moo_lang_id (lang);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
     {

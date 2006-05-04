@@ -1657,11 +1657,11 @@ _moo_rule_new_from_xml (RuleXML    *xml,
         case MOO_CONTEXT_JUMP:
 #endif
             if (xml->end_switch_info.ref.lang)
-                switch_to = moo_lang_mgr_get_context (lang->mgr,
-                                                      xml->end_switch_info.ref.lang,
-                                                      xml->end_switch_info.ref.name);
+                switch_to = _moo_lang_mgr_get_context (lang->mgr,
+                                                       xml->end_switch_info.ref.lang,
+                                                       xml->end_switch_info.ref.name);
             else
-                switch_to = moo_lang_get_context (lang, xml->end_switch_info.ref.name);
+                switch_to = _moo_lang_get_context (lang, xml->end_switch_info.ref.name);
 
             if (!switch_to)
             {
@@ -2137,9 +2137,9 @@ rule_include_xml_create_rule (RuleIncludeXML *xml,
     MooContext *ctx;
 
     if (xml->from_lang)
-        ctx = moo_lang_mgr_get_context (lang->mgr, xml->from_lang, xml->from_context);
+        ctx = _moo_lang_mgr_get_context (lang->mgr, xml->from_lang, xml->from_context);
     else
-        ctx = moo_lang_get_context (lang, xml->from_context);
+        ctx = _moo_lang_get_context (lang, xml->from_context);
 
     g_return_val_if_fail (ctx != NULL, NULL);
 

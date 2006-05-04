@@ -5,7 +5,7 @@
   "FALSE", "NO", "0" mean false.
 -->
 <!ENTITY % boolean "true|false|TRUE|FALSE|True|False|0|1">
-
+<!ENTITY % section "Others|Sources|Markup|Scripts|Scientific">
 <!ENTITY % def_styles "Normal|Keyword|DataType|Decimal|BaseN|Float|Char|String|Comment|Others|Alert|Function|RegionMarker|Error">
 
 <!-- rule_type -->
@@ -16,7 +16,7 @@
 <!ATTLIST language
   name          CDATA       #REQUIRED
   hidden        (%boolean;) #IMPLIED
-  section       CDATA       #IMPLIED
+  section       (%section;) #IMPLIED
   extensions    CDATA       #IMPLIED
   mimetypes     CDATA       #IMPLIED
   version       CDATA       #IMPLIED

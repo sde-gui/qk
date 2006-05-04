@@ -5,7 +5,7 @@
   <!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
 ]>
 <language name="XML" version="1.96" kateversion="2.4" section="Markup"
-          extensions="*.docbook;*.xml;*.rc;*.daml;*.rdf" mimetypes="text/xml;text/book;text/daml;text/rdf"
+          extensions="*.docbook;*.xml;*.daml;*.rdf" mimetypes="text/xml;text/book;text/daml;text/rdf"
           author="Wilbert Berendsen (wilbert@kde.nl)" license="LGPL">
 
   <syntax>

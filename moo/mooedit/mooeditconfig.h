@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooeditconfig.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -81,9 +80,12 @@ void            moo_edit_config_set_global      (const char     *first_setting,
 void            moo_edit_config_get_global      (const char     *first_setting,
                                                  ...); /* alias for g_object_get(global, ...) */
 
-void            moo_edit_config_parse           (MooEditConfig  *config,
+void            moo_edit_config_parse_one       (MooEditConfig  *config,
                                                  const char     *setting_name,
                                                  const char     *value,
+                                                 MooEditConfigSource source);
+void            moo_edit_config_parse           (MooEditConfig  *config,
+                                                 const char     *string,
                                                  MooEditConfigSource source);
 
 guint           moo_edit_config_install_setting (GParamSpec     *pspec);
@@ -96,6 +98,8 @@ GParamSpec     *moo_edit_config_lookup_spec     (const char     *name,
                                                  guint          *id,
                                                  gboolean        try_alias);
 
+int             moo_edit_config_get_source      (MooEditConfig  *config,
+                                                 const char     *setting);
 void            moo_edit_config_unset_by_source (MooEditConfig  *config,
                                                  MooEditConfigSource source);
 
@@ -104,10 +108,8 @@ gboolean        moo_edit_config_parse_bool      (const char     *string,
 
 void            moo_edit_config_compose         (MooEditConfig  *target,
                                                  MooEditConfig  *src);
-
-MooEditConfig  *moo_edit_config_get_for_lang    (const char     *lang);
-void            _moo_edit_config_load           (void);
-void            _moo_edit_config_save           (void);
+void            moo_edit_config_update          (MooEditConfig  *config,
+                                                 const char     *lang_id);
 
 
 G_END_DECLS

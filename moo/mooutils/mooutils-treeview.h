@@ -64,6 +64,12 @@ struct _MooConfigHelperClass {
 };
 
 
+MooTreeHelper   *moo_tree_helper_new                (GtkWidget          *treeview_or_combo);
+void             moo_tree_helper_update_model       (MooTreeHelper      *helper,
+                                                     GtkTreeModel       *model,
+                                                     GtkTreePath        *path);
+void             moo_tree_helper_update_widgets     (MooTreeHelper      *helper);
+
 MooConfigHelper *moo_config_helper_new              (GtkWidget          *tree_view,
                                                      GtkWidget          *new_btn,
                                                      GtkWidget          *delete_btn,
@@ -81,6 +87,7 @@ void             moo_config_helper_update_widgets   (MooConfigHelper    *helper)
 
 
 void             moo_tree_view_select_first         (GtkTreeView        *tree_view);
+void             moo_combo_box_select_first         (GtkComboBox        *combo);
 
 
 G_END_DECLS

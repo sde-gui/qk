@@ -465,7 +465,7 @@ _completion_complete (CmplPlugin *plugin,
 
     lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
-    data = cmpl_plugin_load_data (plugin, lang ? lang->id : NULL);
+    data = cmpl_plugin_load_data (plugin, lang ? moo_lang_id (lang) : NULL);
     g_return_if_fail (data != NULL);
 
     if (data->cmpl)

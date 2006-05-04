@@ -42,40 +42,20 @@ static void     moo_lang_mgr_finalize     (GObject        *object);
 /* MOO_TYPE_LANG_MGR */
 G_DEFINE_TYPE (MooLangMgr, moo_lang_mgr, G_TYPE_OBJECT)
 
-enum {
-    LANG_ADDED,
-    LANG_REMOVED,
-    LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL];
 
 static void
 moo_lang_mgr_class_init (MooLangMgrClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
     gobject_class->finalize = moo_lang_mgr_finalize;
+}
 
-    signals[LANG_ADDED] =
-            g_signal_new ("lang-added",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooLangMgrClass, lang_added),
-                          NULL, NULL,
-                          _moo_marshal_VOID__STRING,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
-    signals[LANG_REMOVED] =
-            g_signal_new ("lang-removed",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooLangMgrClass, lang_removed),
-                          NULL, NULL,
-                          _moo_marshal_VOID__STRING,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+static void
+string_list_free (gpointer list)
+{
+    g_slist_foreach (list, (GFunc) g_free, NULL);
+    g_slist_free (list);
 }
 
 
@@ -89,6 +69,14 @@ moo_lang_mgr_init (MooLangMgr *mgr)
                          mgr->active_scheme);
     mgr->langs = NULL;
     mgr->dirs_read = FALSE;
+
+    mgr->extensions = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, string_list_free);
+    mgr->mime_types = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                             g_free, string_list_free);
+
+    mgr->config = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    _moo_lang_mgr_load_config (mgr);
 }
 
 
@@ -113,6 +101,11 @@ moo_lang_mgr_finalize (GObject *object)
     g_hash_table_destroy (mgr->lang_names);
     g_hash_table_destroy (mgr->schemes);
     mgr->active_scheme = NULL;
+
+    g_hash_table_destroy (mgr->mime_types);
+    g_hash_table_destroy (mgr->extensions);
+
+    g_hash_table_destroy (mgr->config);
 
     G_OBJECT_CLASS(moo_lang_mgr_parent_class)->finalize (object);
 }
@@ -261,8 +254,8 @@ load_language_node (MooTextStyleScheme  *scheme,
 
 
 void
-moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
-                                const char *name)
+_moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
+                                 const char *name)
 {
     MooTextStyleScheme *scheme;
 
@@ -286,7 +279,7 @@ moo_lang_mgr_choose_scheme (MooLangMgr     *mgr,
                             MooMarkupNode  *node)
 {
     const char *name = moo_markup_get_prop (node, DEFAULT_SCHEME_PROP);
-    moo_lang_mgr_set_active_scheme (mgr, name);
+    _moo_lang_mgr_set_active_scheme (mgr, name);
 }
 
 
@@ -537,7 +530,7 @@ moo_lang_build_contexts (MooLang *lang,
     for (l = xml->syntax->contexts; l != NULL; l = l->next)
     {
         ContextXML *ctx_xml = l->data;
-        MooContext *ctx = moo_lang_add_context (lang, ctx_xml->name, ctx_xml->style);
+        MooContext *ctx = _moo_lang_add_context (lang, ctx_xml->name, ctx_xml->style);
         g_assert (ctx != NULL);
     }
 }
@@ -572,45 +565,55 @@ style_new_from_xml (StyleXML *xml)
 }
 
 
-static void
-moo_lang_parse_mime_types (MooLang      *lang,
-                           const char   *mimetypes)
+static GSList *
+parse_mime_types (const char *mimetypes)
 {
+    char *copy;
+    GSList *list = NULL;
     char **pieces, **p;
 
-    g_return_if_fail (lang != NULL && mimetypes != NULL);
+    if (!mimetypes || !mimetypes[0])
+        return NULL;
 
-    pieces = g_strsplit (mimetypes, EXTENSION_SEPARATOR, 0);
+    copy = g_strstrip (g_strdup (mimetypes));
 
-    if (!pieces)
-        return;
-
-    for (p = pieces; *p; p++)
-        if (**p)/*XXX*/
-            lang->mime_types = g_slist_prepend (lang->mime_types, g_strdup (*p));
-
-    g_strfreev (pieces);
-}
-
-
-static void
-moo_lang_parse_extensions (MooLang      *lang,
-                           const char   *extensions)
-{
-    char **pieces, **p;
-
-    g_return_if_fail (lang != NULL && extensions != NULL);
-
-    pieces = g_strsplit (extensions, EXTENSION_SEPARATOR, 0);
-
-    if (!pieces)
-        return;
+    pieces = g_strsplit (copy, EXTENSION_SEPARATOR, 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
 
     for (p = pieces; *p; p++)
         if (**p)
-            lang->extensions = g_slist_prepend (lang->extensions, g_strdup (*p));
+            list = g_slist_prepend (list, g_strdup (*p));
 
     g_strfreev (pieces);
+    g_free (copy);
+
+    return g_slist_reverse (list);
+}
+
+
+static GSList *
+parse_extensions (const char *extensions)
+{
+    char *copy;
+    GSList *list = NULL;
+    char **pieces, **p;
+
+    if (!extensions || !extensions[0])
+        return NULL;
+
+    copy = g_strstrip (g_strdup (extensions));
+
+    pieces = g_strsplit (copy, EXTENSION_SEPARATOR, 0);
+    g_return_val_if_fail (pieces != NULL, NULL);
+
+    for (p = pieces; *p; p++)
+        if (**p)
+            list = g_slist_prepend (list, g_strdup (*p));
+
+    g_strfreev (pieces);
+    g_free (copy);
+
+    return g_slist_reverse (list);
 }
 
 
@@ -628,15 +631,15 @@ moo_lang_finish_build (MooLang *lang,
         {
             StyleXML *style_xml = l->data;
             MooTextStyle *style = style_new_from_xml (style_xml);
-            moo_lang_add_style (lang, style_xml->name, style);
+            _moo_lang_add_style (lang, style_xml->name, style);
             moo_text_style_free (style);
         }
     }
 
     if (xml->mimetypes)
-        moo_lang_parse_mime_types (lang, xml->mimetypes);
+        lang->mime_types = parse_mime_types (xml->mimetypes);
     if (xml->extensions)
-        moo_lang_parse_extensions (lang, xml->extensions);
+        lang->extensions = parse_extensions (xml->extensions);
 
     if (xml->general)
     {
@@ -655,7 +658,7 @@ moo_lang_finish_build (MooLang *lang,
         MooContext *ctx, *switch_to;
 
         ctx_xml = l->data;
-        ctx = moo_lang_get_context (lang, ctx_xml->name);
+        ctx = _moo_lang_get_context (lang, ctx_xml->name);
         g_assert (ctx != NULL);
 
         for (rule_link = ctx_xml->rules; rule_link != NULL; rule_link = rule_link->next)
@@ -663,29 +666,29 @@ moo_lang_finish_build (MooLang *lang,
             RuleXML *rule_xml = rule_link->data;
             MooRule *rule = _moo_rule_new_from_xml (rule_xml, xml, lang);
             if (rule)
-                moo_context_add_rule (ctx, rule);
+                _moo_context_add_rule (ctx, rule);
         }
 
         switch (ctx_xml->eol_switch_info.type)
         {
             case MOO_CONTEXT_STAY:
-                moo_context_set_eol_stay (ctx);
+                _moo_context_set_eol_stay (ctx);
                 break;
             case MOO_CONTEXT_POP:
-                moo_context_set_eol_pop (ctx, ctx_xml->eol_switch_info.num);
+                _moo_context_set_eol_pop (ctx, ctx_xml->eol_switch_info.num);
                 break;
             case MOO_CONTEXT_SWITCH:
                 if (ctx_xml->eol_switch_info.ref.lang)
-                    switch_to = moo_lang_mgr_get_context (lang->mgr,
-                                                          ctx_xml->eol_switch_info.ref.lang,
-                                                          ctx_xml->eol_switch_info.ref.name);
+                    switch_to = _moo_lang_mgr_get_context (lang->mgr,
+                                                           ctx_xml->eol_switch_info.ref.lang,
+                                                           ctx_xml->eol_switch_info.ref.name);
                 else
-                    switch_to = moo_lang_get_context (lang, ctx_xml->eol_switch_info.ref.name);
+                    switch_to = _moo_lang_get_context (lang, ctx_xml->eol_switch_info.ref.name);
 
                 if (!switch_to)
                     g_critical ("%s: oops", G_STRLOC);
                 else
-                    moo_context_set_eol_switch (ctx, switch_to);
+                    _moo_context_set_eol_switch (ctx, switch_to);
 
                 break;
         }
@@ -732,9 +735,9 @@ moo_lang_mgr_read_dirs (MooLangMgr   *mgr)
     for (l = lang_xml_list; l != NULL; l = l->next)
     {
         LangXML *xml = l->data;
-        MooLang *lang = moo_lang_new (mgr, xml->name,
-                                      xml->section, xml->version,
-                                      xml->author);
+        MooLang *lang = _moo_lang_new (mgr, xml->name,
+                                       xml->section, xml->version,
+                                       xml->author);
         lang->hidden = xml->hidden;
         moo_lang_build_contexts (lang, xml);
     }
@@ -757,16 +760,16 @@ out:
 
 
 MooContext*
-moo_lang_mgr_get_context (MooLangMgr     *mgr,
-                          const char     *lang_name,
-                          const char     *ctx_name)
+_moo_lang_mgr_get_context (MooLangMgr     *mgr,
+                           const char     *lang_name,
+                           const char     *ctx_name)
 {
     MooLang *lang;
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_return_val_if_fail (lang_name && ctx_name, NULL);
     lang = moo_lang_mgr_get_lang (mgr, lang_name);
     g_return_val_if_fail (lang != NULL, NULL);
-    return moo_lang_get_context (lang, ctx_name);
+    return _moo_lang_get_context (lang, ctx_name);
 }
 
 
@@ -830,10 +833,12 @@ lang_mgr_get_lang_by_extension (MooLangMgr  *mgr,
 
     for (l = mgr->langs; !found && l != NULL; l = l->next)
     {
-        GSList *g;
-        lang = l->data;
+        GSList *g, *extensions;
 
-        for (g = lang->extensions; !found && g != NULL; g = g->next)
+        lang = l->data;
+        extensions = moo_lang_get_extensions (lang);
+
+        for (g = extensions; !found && g != NULL; g = g->next)
         {
             if (g_pattern_match_simple ((char*) g->data, utf8_basename))
             {
@@ -993,7 +998,8 @@ moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
     {
         lang = l->data;
 
-        if (g_slist_find_custom (lang->mime_types, mime, (GCompareFunc) strcmp))
+        if (g_slist_find_custom (moo_lang_get_mime_types (lang), mime,
+                                 (GCompareFunc) strcmp))
         {
             found = TRUE;
             break;
@@ -1007,7 +1013,8 @@ moo_lang_mgr_get_lang_for_mime_type (MooLangMgr *mgr,
     {
         lang = l->data;
 
-        if (g_slist_find_custom (lang->mime_types, mime, (GCompareFunc) check_mime_subclass))
+        if (g_slist_find_custom (moo_lang_get_mime_types (lang), mime,
+                                 (GCompareFunc) check_mime_subclass))
         {
             found = TRUE;
             break;
@@ -1041,10 +1048,10 @@ moo_lang_get_style (MooLang     *lang,
 
 
 MooTextStyle*
-moo_lang_mgr_get_style (MooLangMgr     *mgr,
-                        const char     *lang_name,
-                        const char     *style_name,
-                        MooTextStyleScheme *scheme)
+_moo_lang_mgr_get_style (MooLangMgr     *mgr,
+                         const char     *lang_name,
+                         const char     *style_name,
+                         MooTextStyleScheme *scheme)
 {
     const MooTextStyle *scheme_style = NULL;
     MooTextStyle *lang_style = NULL;
@@ -1120,4 +1127,358 @@ moo_lang_mgr_list_schemes (MooLangMgr         *mgr)
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
     g_hash_table_foreach (mgr->schemes, (GHFunc) prepend_scheme, &list);
     return list;
+}
+
+
+static gboolean
+string_list_equal (GSList *list1,
+                   GSList *list2)
+{
+    while (list1 && list2)
+    {
+        if (strcmp (list1->data, list2->data))
+            return FALSE;
+
+        list1 = list1->next;
+        list2 = list2->next;
+    }
+
+    return !list1 && !list2;
+}
+
+
+static void
+moo_lang_set_string (MooLang    *lang,
+                     GSList     *original,
+                     GSList     *new,
+                     GHashTable *hash)
+{
+    g_return_if_fail (lang != NULL);
+    g_return_if_fail (MOO_IS_LANG_MGR (lang->mgr));
+
+    if (string_list_equal (original, new))
+    {
+        g_hash_table_remove (hash, lang->id);
+        string_list_free (new);
+    }
+    else
+    {
+        g_hash_table_insert (hash, g_strdup (lang->id), new);
+    }
+}
+
+
+void
+_moo_lang_set_mime_types (MooLang    *lang,
+                          const char *string)
+{
+    g_return_if_fail (lang != NULL && MOO_IS_LANG_MGR (lang->mgr));
+    moo_lang_set_string (lang, lang->mime_types,
+                         parse_mime_types (string),
+                         lang->mgr->mime_types);
+}
+
+
+void
+_moo_lang_set_extensions (MooLang    *lang,
+                          const char *string)
+{
+    g_return_if_fail (lang != NULL && MOO_IS_LANG_MGR (lang->mgr));
+    moo_lang_set_string (lang, lang->extensions,
+                         parse_extensions (string),
+                         lang->mgr->extensions);
+}
+
+
+GSList *
+moo_lang_get_extensions (MooLang *lang)
+{
+    gpointer orig_key, value;
+
+    g_return_val_if_fail (lang != NULL && MOO_IS_LANG_MGR (lang->mgr), NULL);
+
+    if (g_hash_table_lookup_extended (lang->mgr->extensions, lang->id, &orig_key, &value))
+        return value;
+    else
+        return lang->extensions;
+}
+
+
+GSList *
+moo_lang_get_mime_types (MooLang *lang)
+{
+    gpointer orig_key, value;
+
+    g_return_val_if_fail (lang != NULL && MOO_IS_LANG_MGR (lang->mgr), NULL);
+
+    if (g_hash_table_lookup_extended (lang->mgr->mime_types, lang->id, &orig_key, &value))
+        return value;
+    else
+        return lang->mime_types;
+}
+
+
+const char *
+_moo_lang_mgr_get_config (MooLangMgr *mgr,
+                          const char *lang_id)
+{
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+
+    if (!lang_id)
+        lang_id = MOO_LANG_NONE;
+
+    return g_hash_table_lookup (mgr->config, lang_id);
+}
+
+
+void
+_moo_lang_mgr_update_config (MooLangMgr    *mgr,
+                             MooEditConfig *config,
+                             const char    *lang_id)
+{
+    const char *lang_config;
+
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_EDIT_CONFIG (config));
+
+    g_object_freeze_notify (G_OBJECT (config));
+
+    moo_edit_config_unset_by_source (config, MOO_EDIT_CONFIG_SOURCE_LANG);
+
+    lang_config = _moo_lang_mgr_get_config (mgr, lang_id);
+
+    if (lang_config)
+        moo_edit_config_parse (config, lang_config,
+                               MOO_EDIT_CONFIG_SOURCE_LANG);
+
+    g_object_thaw_notify (G_OBJECT (config));
+}
+
+
+void
+_moo_lang_mgr_set_config (MooLangMgr    *mgr,
+                          const char    *lang_id,
+                          const char    *config)
+{
+    const char *old;
+    char *norm = NULL;
+
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+
+    lang_id = lang_id ? lang_id : MOO_LANG_NONE;
+    old = g_hash_table_lookup (mgr->config, lang_id);
+
+    if (config)
+    {
+        norm = g_strstrip (g_strdup (config));
+
+        if (!norm[0])
+        {
+            g_free (norm);
+            norm = NULL;
+        }
+    }
+
+    if (!norm)
+        g_hash_table_remove (mgr->config, lang_id);
+    else
+        g_hash_table_insert (mgr->config, g_strdup (lang_id), norm);
+}
+
+
+/***************************************************************************/
+/* Loading and saving
+ */
+
+#define ELEMENT_LANG_CONFIG     MOO_EDIT_PREFS_PREFIX "/langs"
+#define ELEMENT_LANG            "lang"
+#define ELEMENT_EXTENSIONS      "extensions"
+#define ELEMENT_MIME_TYPES      "mime-types"
+#define ELEMENT_CONFIG          "config"
+#define PROP_LANG_ID            "id"
+
+static void
+load_lang_node (MooLangMgr    *mgr,
+                MooMarkupNode *lang_node)
+{
+    const char *lang_id;
+    MooMarkupNode *node;
+
+    lang_id = moo_markup_get_prop (lang_node, PROP_LANG_ID);
+    g_return_if_fail (lang_id != NULL);
+
+    for (node = lang_node->children; node != NULL; node = node->next)
+    {
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        if (!strcmp (node->name, ELEMENT_EXTENSIONS))
+        {
+            const char *string = moo_markup_get_content (node);
+            GSList *list = parse_extensions (string);
+            g_hash_table_insert (mgr->extensions, g_strdup (lang_id), list);
+        }
+        else if (!strcmp (node->name, ELEMENT_MIME_TYPES))
+        {
+            const char *string = moo_markup_get_content (node);
+            GSList *list = parse_mime_types (string);
+            g_hash_table_insert (mgr->mime_types, g_strdup (lang_id), list);
+        }
+        else if (!strcmp (node->name, ELEMENT_CONFIG))
+        {
+            const char *string = moo_markup_get_content (node);
+            g_hash_table_insert (mgr->config, g_strdup (lang_id), g_strdup (string));
+        }
+        else
+        {
+            g_warning ("%s: invalid node '%s'", G_STRLOC, node->name);
+        }
+    }
+}
+
+
+static void
+moo_lang_mgr_set_default_config (MooLangMgr *mgr)
+{
+    _moo_lang_mgr_set_config (mgr, "makefile", "use-tabs: true");
+}
+
+
+void
+_moo_lang_mgr_load_config (MooLangMgr *mgr)
+{
+    MooMarkupDoc *xml;
+    MooMarkupNode *root, *node;
+
+    moo_lang_mgr_set_default_config (mgr);
+
+    xml = moo_prefs_get_markup ();
+    g_return_if_fail (xml != NULL);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
+                                   ELEMENT_LANG_CONFIG);
+
+    if (!root)
+        return;
+
+    for (node = root->children; node != NULL; node = node->next)
+    {
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        if (strcmp (node->name, ELEMENT_LANG))
+        {
+            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
+            continue;
+        }
+
+        load_lang_node (mgr, node);
+    }
+}
+
+
+static MooMarkupNode *
+create_lang_node (MooMarkupNode *root,
+                  MooMarkupNode *lang_node,
+                  const char    *lang_id)
+{
+    if (!lang_node)
+    {
+        lang_node = moo_markup_create_element (root, ELEMENT_LANG);
+        moo_markup_set_prop (lang_node, PROP_LANG_ID, lang_id);
+    }
+
+    return lang_node;
+}
+
+static char *
+list_to_string (GSList *list)
+{
+    GString *string = g_string_new (NULL);
+
+    while (list)
+    {
+        g_string_append (string, list->data);
+
+        if ((list = list->next))
+            g_string_append_c (string, ';');
+    }
+
+    return g_string_free (string, FALSE);
+}
+
+static void
+save_one_lang (MooMarkupNode *root,
+               const char    *lang_id,
+               const char    *config,
+               GSList        *extensions,
+               gboolean       save_extensions,
+               GSList        *mimetypes,
+               gboolean       save_mimetypes)
+{
+    MooMarkupNode *lang_node = NULL;
+
+    if (save_extensions)
+    {
+        char *string = list_to_string (extensions);
+        lang_node = create_lang_node (root, lang_node, lang_id);
+        moo_markup_create_text_element (lang_node, ELEMENT_EXTENSIONS, string);
+        g_free (string);
+    }
+
+    if (save_mimetypes)
+    {
+        char *string = list_to_string (mimetypes);
+        lang_node = create_lang_node (root, lang_node, lang_id);
+        moo_markup_create_text_element (lang_node, ELEMENT_MIME_TYPES, string);
+        g_free (string);
+    }
+
+    if (config)
+    {
+        lang_node = create_lang_node (root, lang_node, lang_id);
+        moo_markup_create_text_element (lang_node, ELEMENT_CONFIG, config);
+    }
+}
+
+void
+_moo_lang_mgr_save_config (MooLangMgr *mgr)
+{
+    MooMarkupDoc *xml;
+    MooMarkupNode *root;
+    GSList *l;
+
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+
+    xml = moo_prefs_get_markup ();
+    g_return_if_fail (xml != NULL);
+
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
+
+    if (root)
+        moo_markup_delete_node (root);
+
+    root = NULL;
+
+    for (l = mgr->langs; l != NULL; l = l->next)
+    {
+        MooLang *lang = l->data;
+        const char *config;
+        GSList *extensions, *mimetypes;
+
+        config = g_hash_table_lookup (mgr->config, lang->id);
+        extensions = moo_lang_get_extensions (lang);
+        mimetypes = moo_lang_get_mime_types (lang);
+
+        if (config || extensions != lang->extensions || mimetypes != lang->mime_types)
+        {
+            if (!root)
+                root = moo_markup_create_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
+            g_return_if_fail (root != NULL);
+
+            save_one_lang (root, lang->id, config,
+                           extensions, extensions != lang->extensions,
+                           mimetypes, mimetypes != lang->mime_types);
+        }
+    }
 }

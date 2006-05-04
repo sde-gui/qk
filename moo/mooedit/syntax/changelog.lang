@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
 <language name="ChangeLog" version="1.04"
-          section="Other" extensions="ChangeLog;changelog"
+          section="Others" extensions="ChangeLog;changelog"
           author="Dominik Haumann (dhdev@gmx.de)" license="LGPL">
 
   <syntax>

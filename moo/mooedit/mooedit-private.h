@@ -45,6 +45,7 @@ void        _moo_edit_init_settings         (void);
 void        _moo_edit_apply_settings        (MooEdit        *edit);
 void        _moo_edit_freeze_config_notify  (MooEdit        *edit);
 void        _moo_edit_thaw_config_notify    (MooEdit        *edit);
+void        _moo_edit_update_config         (void);
 
 
 /***********************************************************************/

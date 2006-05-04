@@ -494,7 +494,7 @@ hl_compute_range (MooHighlighter *hl,
     {
         if (!hl->root)
             hl->root = ctx_node_new (hl, NULL,
-                                     moo_lang_get_default_context (hl->lang),
+                                     _moo_lang_get_default_context (hl->lang),
                                      FALSE);
         node = hl->root;
     }
