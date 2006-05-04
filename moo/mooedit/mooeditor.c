@@ -955,6 +955,23 @@ moo_editor_new_doc (MooEditor      *editor,
 }
 
 
+static char *
+filename_make_absolute (const char *name)
+{
+    char *abs_name, *dir;
+
+    if (g_path_is_absolute (name))
+        return g_strdup (name);
+
+    /* XXX normalize it */
+    dir = g_get_current_dir ();
+    abs_name = g_build_filename (dir, name, NULL);
+
+    g_free (dir);
+    return abs_name;
+}
+
+
 gboolean
 moo_editor_open (MooEditor      *editor,
                  MooEditWindow  *window,
@@ -997,10 +1014,14 @@ moo_editor_open (MooEditor      *editor,
         GError *error = NULL;
         gboolean new_doc = FALSE;
         MooEdit *doc = NULL;
+        char *filename;
 
-        if (window_list_find_filename (editor, info->filename, &bring_to_front))
+        filename = filename_make_absolute (info->filename);
+
+        if (window_list_find_filename (editor, filename, &bring_to_front))
         {
-            moo_history_list_add_filename (editor->priv->history, info->filename);
+            moo_history_list_add_filename (editor->priv->history, filename);
+            g_free (filename);
             continue;
         }
         else
@@ -1025,9 +1046,9 @@ moo_editor_open (MooEditor      *editor,
         }
 
         /* XXX open_single */
-        if (!_moo_edit_loader_load (loader, doc, info->filename, info->encoding, &error))
+        if (!_moo_edit_loader_load (loader, doc, filename, info->encoding, &error))
         {
-            moo_edit_open_error_dialog (parent, info->filename,
+            moo_edit_open_error_dialog (parent, filename,
                                         error ? error->message : NULL);
             if (error)
                 g_error_free (error);
@@ -1050,11 +1071,12 @@ moo_editor_open (MooEditor      *editor,
                 bring_to_front = doc;
             }
 
-            moo_history_list_add_filename (editor->priv->history, info->filename);
+            moo_history_list_add_filename (editor->priv->history, filename);
 
             parent = GTK_WIDGET (window);
         }
 
+        g_free (filename);
         g_object_unref (doc);
     }
 
@@ -1517,6 +1539,7 @@ moo_editor_new_file (MooEditor      *editor,
                      const char     *encoding)
 {
     MooEdit *doc = NULL;
+    char *freeme = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
@@ -1528,6 +1551,9 @@ moo_editor_new_file (MooEditor      *editor,
     if (g_file_test (filename, G_FILE_TEST_EXISTS))
         return moo_editor_open_file (editor, window, parent,
                                      filename, encoding);
+
+    freeme = filename_make_absolute (filename);
+    filename = freeme;
 
     if (!window)
         window = moo_editor_get_active_window (editor);
@@ -1548,6 +1574,7 @@ moo_editor_new_file (MooEditor      *editor,
     moo_editor_set_active_doc (editor, doc);
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
+    g_free (freeme);
     return TRUE;
 }
 
