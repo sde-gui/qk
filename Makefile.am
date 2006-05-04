@@ -103,6 +103,8 @@ desktopdir = $(datadir)/applications
 desktop_DATA = medit.desktop
 appicondir = $(datadir)/pixmaps
 appicon_DATA = moo/mooutils/pixmaps/medit.png
+iconthemedir = $(datadir)/icons/hicolor/48x48/apps
+icontheme_DATA = moo/mooutils/pixmaps/medit.png
 EXTRA_DIST += $(desktop_DATA)
 
 ##############################################################################
