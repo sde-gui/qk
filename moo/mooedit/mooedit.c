@@ -44,6 +44,16 @@ static void     moo_edit_get_property       (GObject        *object,
                                              GParamSpec     *pspec);
 
 static gboolean moo_edit_popup_menu         (GtkWidget      *widget);
+static gboolean moo_edit_drag_motion        (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             gint            x,
+                                             gint            y,
+                                             guint           time);
+static gboolean moo_edit_drag_drop          (GtkWidget      *widget,
+                                             GdkDragContext *context,
+                                             gint            x,
+                                             gint            y,
+                                             guint           time);
 
 static void     moo_edit_filename_changed   (MooEdit        *edit,
                                              const char     *new_filename);
@@ -116,6 +126,8 @@ moo_edit_class_init (MooEditClass *klass)
 
     MOO_TEXT_VIEW_CLASS(klass)->line_mark_clicked = moo_edit_line_mark_clicked;
     GTK_WIDGET_CLASS(klass)->popup_menu = moo_edit_popup_menu;
+    GTK_WIDGET_CLASS(klass)->drag_motion = moo_edit_drag_motion;
+    GTK_WIDGET_CLASS(klass)->drag_drop = moo_edit_drag_drop;
 
     klass->filename_changed = moo_edit_filename_changed;
     klass->config_notify = moo_edit_config_notify;
@@ -255,8 +267,6 @@ moo_edit_init (MooEdit *edit)
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
-
-    g_object_set (edit, "draw-tabs", TRUE, "draw-trailing-spaces", TRUE, NULL);
 }
 
 
@@ -1070,6 +1080,54 @@ _moo_edit_thaw_config_notify (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_object_thaw_notify (G_OBJECT (edit->config));
+}
+
+
+static gboolean
+find_uri_atom (GdkDragContext *context)
+{
+    GList *targets;
+    GdkAtom atom;
+
+    atom = gdk_atom_intern ("text/uri-list", FALSE);
+    targets = context->targets;
+
+    while (targets)
+    {
+        if (targets->data == GUINT_TO_POINTER (atom))
+            return TRUE;
+        targets = targets->next;
+    }
+
+    return FALSE;
+}
+
+
+static gboolean
+moo_edit_drag_motion (GtkWidget      *widget,
+                      GdkDragContext *context,
+                      gint            x,
+                      gint            y,
+                      guint           time)
+{
+    if (find_uri_atom (context))
+        return FALSE;
+
+    return GTK_WIDGET_CLASS(moo_edit_parent_class)->drag_motion (widget, context, x, y, time);
+}
+
+
+static gboolean
+moo_edit_drag_drop (GtkWidget      *widget,
+                    GdkDragContext *context,
+                    gint            x,
+                    gint            y,
+                    guint           time)
+{
+    if (find_uri_atom (context))
+        return FALSE;
+
+    return GTK_WIDGET_CLASS(moo_edit_parent_class)->drag_drop (widget, context, x, y, time);
 }
 
 
