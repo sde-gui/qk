@@ -1130,7 +1130,7 @@ moo_editor_set_active_doc (MooEditor      *editor,
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->window != NULL);
 
-    gtk_window_present (GTK_WINDOW (info->window));
+    moo_window_present (GTK_WINDOW (info->window));
     moo_edit_window_set_active_doc (info->window, doc);
 }
 
@@ -1506,6 +1506,49 @@ moo_editor_open_file (MooEditor      *editor,
     moo_edit_file_info_free (info);
     g_slist_free (list);
     return result;
+}
+
+
+gboolean
+moo_editor_new_file (MooEditor      *editor,
+                     MooEditWindow  *window,
+                     GtkWidget      *parent,
+                     const char     *filename,
+                     const char     *encoding)
+{
+    MooEdit *doc = NULL;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+
+    if (!filename)
+        return moo_editor_open (editor, window, parent, NULL);
+
+    if (g_file_test (filename, G_FILE_TEST_EXISTS))
+        return moo_editor_open_file (editor, window, parent,
+                                     filename, encoding);
+
+    if (!window)
+        window = moo_editor_get_active_window (editor);
+
+    if (window)
+    {
+        doc = moo_edit_window_get_active_doc (window);
+
+        if (!doc || !moo_edit_is_empty (doc))
+            doc = NULL;
+    }
+
+    if (!doc)
+        doc = moo_editor_new_doc (editor, window);
+
+    doc->priv->status = MOO_EDIT_NEW;
+    _moo_edit_set_filename (doc, filename, encoding);
+    moo_editor_set_active_doc (editor, doc);
+    gtk_widget_grab_focus (GTK_WIDGET (doc));
+
+    return TRUE;
 }
 
 

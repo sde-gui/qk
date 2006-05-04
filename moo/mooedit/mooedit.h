@@ -53,7 +53,8 @@ typedef enum {
     MOO_EDIT_DELETED            = 1 << 1,
     MOO_EDIT_CHANGED_ON_DISK    = MOO_EDIT_MODIFIED_ON_DISK | MOO_EDIT_DELETED,
     MOO_EDIT_MODIFIED           = 1 << 2,
-    MOO_EDIT_CLEAN              = 1 << 3  /* doesn't prompt if it's closed, even if it's modified*/
+    MOO_EDIT_NEW                = 1 << 3,
+    MOO_EDIT_CLEAN              = 1 << 4  /* doesn't prompt if it's closed, even if it's modified*/
 } MooEditStatus;
 
 #define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)

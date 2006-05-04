@@ -994,7 +994,7 @@ _moo_edit_set_filename (MooEdit    *edit,
     edit->priv->encoding = g_strdup (encoding);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
-    g_signal_emit_by_name (edit, "doc-status-changed", NULL);
+    moo_edit_status_changed (edit);
 }
 
 

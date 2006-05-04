@@ -1027,7 +1027,7 @@ moo_app_run_real (MooApp *app)
             window = moo_editor_new_window (editor);
 
         for (file = app->priv->open_files; file && *file; ++file)
-            moo_editor_open_file (editor, window, NULL, *file, NULL);
+            moo_editor_new_file (editor, window, NULL, *file, NULL);
 
         g_strfreev (app->priv->open_files);
         app->priv->open_files = NULL;
@@ -1476,13 +1476,13 @@ _moo_app_exec_cmd (MooApp     *app,
 
 
 static void
-moo_app_open_file (MooApp       *app,
-                   const char   *filename)
+moo_app_new_file (MooApp       *app,
+                  const char   *filename)
 {
 #ifdef MOO_BUILD_EDIT
     MooEditor *editor = moo_app_get_editor (app);
     g_return_if_fail (editor != NULL);
-    moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    moo_editor_new_file (editor, NULL, NULL, filename, NULL);
 #endif /* MOO_BUILD_EDIT */
 }
 
@@ -1537,7 +1537,7 @@ moo_app_exec_cmd_real (MooApp             *app,
             break;
 
         case MOO_APP_CMD_OPEN_FILE:
-            moo_app_open_file (app, data);
+            moo_app_new_file (app, data);
             break;
         case MOO_APP_CMD_QUIT:
             moo_app_quit (app);

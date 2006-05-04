@@ -70,6 +70,11 @@ gboolean         moo_editor_open_file       (MooEditor      *editor,
                                              GtkWidget      *parent,
                                              const char     *filename,
                                              const char     *encoding);
+gboolean         moo_editor_new_file        (MooEditor      *editor,
+                                             MooEditWindow  *window,
+                                             GtkWidget      *parent,
+                                             const char     *filename,
+                                             const char     *encoding);
 gboolean         moo_editor_open_uri        (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,

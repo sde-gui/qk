@@ -862,9 +862,10 @@ void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
 /* Constructing
  */
 
-GObject        *moo_edit_window_constructor (GType                  type,
-                                             guint                  n_props,
-                                             GObjectConstructParam *props)
+GObject *
+moo_edit_window_constructor (GType                  type,
+                             guint                  n_props,
+                             GObjectConstructParam *props)
 {
     GtkWidget *notebook;
     MooEditWindow *window;
@@ -903,12 +904,14 @@ GObject        *moo_edit_window_constructor (GType                  type,
 
 
 /* XXX */
-static void     update_window_title     (MooEditWindow      *window)
+static void
+update_window_title (MooEditWindow *window)
 {
     MooEdit *edit;
     const char *name;
     MooEditStatus status;
     GString *title;
+    gboolean modified;
 
     edit = ACTIVE_DOC (window);
 
@@ -936,12 +939,17 @@ static void     update_window_title     (MooEditWindow      *window)
 
     g_string_append_printf (title, "%s", name);
 
+    modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
+
+    if ((status & MOO_EDIT_NEW) && !modified)
+        g_string_append (title, " [new file]");
+
     if (status & MOO_EDIT_MODIFIED_ON_DISK)
         g_string_append (title, " [modified on disk]");
     else if (status & MOO_EDIT_DELETED)
         g_string_append (title, " [deleted]");
 
-    if ((status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN))
+    if (modified)
         g_string_append (title, " [modified]");
 
     gtk_window_set_title (GTK_WINDOW (window), title->str);

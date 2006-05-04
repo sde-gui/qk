@@ -465,6 +465,20 @@ moo_edit_status_changed (MooEdit *edit)
 }
 
 
+void
+_moo_edit_set_status (MooEdit        *edit,
+                      MooEditStatus   status)
+{
+    g_return_if_fail (MOO_IS_EDIT (edit));
+
+    if (edit->priv->status != status)
+    {
+        edit->priv->status = status;
+        moo_edit_status_changed (edit);
+    }
+}
+
+
 MooEditFileInfo*
 moo_edit_file_info_new (const char         *filename,
                         const char         *encoding)

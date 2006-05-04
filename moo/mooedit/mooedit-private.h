@@ -61,6 +61,8 @@ void         _moo_edit_start_file_watch     (MooEdit        *edit);
 void         _moo_edit_stop_file_watch      (MooEdit        *edit);
 
 MooEdit     *_moo_edit_new                  (MooEditor      *editor);
+void         _moo_edit_set_status           (MooEdit        *edit,
+                                             MooEditStatus   status);
 
 
 typedef enum {
