@@ -1,3 +1,19 @@
+2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.97 ===
+
+    meit now uses system pcre library if present; FAM support is disabled.
+
+    Finally fixed window icon bug.
+    Allow adding tools into different menus.
+    Added gnuplot syntax highlighting.
+    Fixed python output pane: it now jumps to correct line in error
+    messages, and it uses Stop button.
+    Added gui for setting per-language settings in Preferences dialog.
+    Dropping a file into the text area opens file now, instead of pasting uri.
+    "medit filename" from command line creates new file if the argument is not
+    an existing file.
+
 2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
     * === Released 0.6.96 ===

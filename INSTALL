@@ -1,13 +1,11 @@
 medit installation
 ******************
 
-Below you will find generic installation instructions which may be useful
-if you are not familiar with configure.
-
 Installation process is straightforward: usual
 ./configure; make; make install
 will configure medit with reasonable default settings, build it, and
-install into /usr/local.
+install into /usr/local (refer to generic installation instructions below
+if you are not familiar with configure).
 
 configure has the following medit-specific options:
 
