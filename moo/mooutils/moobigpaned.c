@@ -47,6 +47,9 @@ static void     child_pane_params_changed   (GtkWidget      *child,
 static void     child_set_pane_size         (GtkWidget      *child,
                                              int             size,
                                              MooBigPaned    *paned);
+static void     emit_pane_params_changed    (MooBigPaned    *paned,
+                                             MooPanePosition pos,
+                                             guint           index);
 
 static gboolean check_children_order        (MooBigPaned    *paned);
 
@@ -417,7 +420,7 @@ child_pane_params_changed (GtkWidget      *child,
     g_object_get (child, "pane-position", &pos, NULL);
     g_return_if_fail (paned->paned[pos] == child);
 
-    g_signal_emit (paned, signals[PANE_PARAMS_CHANGED], 0, pos, index);
+    emit_pane_params_changed (paned, pos, index);
 }
 
 
@@ -432,6 +435,15 @@ child_set_pane_size (GtkWidget      *child,
     g_return_if_fail (paned->paned[pos] == child);
 
     g_signal_emit (paned, signals[SET_PANE_SIZE], 0, pos, size);
+}
+
+
+static void
+emit_pane_params_changed (MooBigPaned    *paned,
+                          MooPanePosition pos,
+                          guint           index)
+{
+    g_signal_emit (paned, signals[PANE_PARAMS_CHANGED], 0, pos, index);
 }
 
 
@@ -759,7 +771,7 @@ static void     handle_drag_end             (MooPaned       *child,
                                              GtkWidget      *pane_widget,
                                              MooBigPaned    *paned)
 {
-    int pos, x, y;
+    int pos, x, y, index;
     MooPanePosition old_pos;
     MooPaneLabel *label;
 
@@ -801,6 +813,10 @@ static void     handle_drag_end             (MooPaned       *child,
     moo_paned_insert_pane (MOO_PANED (paned->paned[pos]), pane_widget, label, -1);
     moo_paned_open_pane (MOO_PANED (paned->paned[pos]),
                          moo_paned_n_panes (MOO_PANED (paned->paned[pos])) - 1);
+
+    index = moo_paned_get_pane_num (MOO_PANED (paned->paned[pos]), pane_widget);
+    g_return_if_fail (index >= 0);
+    emit_pane_params_changed (paned, pos, index);
 
     moo_pane_label_free (label);
     g_object_unref (pane_widget);
