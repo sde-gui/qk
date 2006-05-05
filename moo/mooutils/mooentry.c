@@ -205,7 +205,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                      g_param_spec_boolean ("grab-selection",
                                              "grab-selection",
                                              "grab-selection",
-                                             FALSE,
+                                             TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
@@ -663,7 +663,7 @@ moo_entry_delete_to_start (MooEntry *entry)
 
 
 /*********************************************************************/
-/* Working around idiotic gtk selection business
+/* Working around gtk selection business
  * TODO: make stealing primary optional, independent of
  *       clearing selection
  */
