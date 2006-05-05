@@ -9,6 +9,12 @@ if you are not familiar with configure).
 
 configure has the following medit-specific options:
 
+  --enable-printing       enable printing support with GTK-2.9
+    This option exists for the period until GTK-2.10 is released. GTK has
+    printing support since 2.9, but it's not stable yet, therefore current code
+    may be broken with future versions of GTK. Use this option only if you are
+    ready to have broken builds (bug reports about those are still welcome).
+
   --enable-debug          enable debug options (default = NO)
   --enable-all-gcc-warnings
                           enable most of gcc warnings and turn on -pedantic

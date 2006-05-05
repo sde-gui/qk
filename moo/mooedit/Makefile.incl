@@ -100,7 +100,7 @@ mooedit_sources =                             \
     $(mooedit)/mootextview.c                  \
     $(mooedit)/moousertools.c
 
-mooedit_gtk_2_10_sources =                    \
+mooedit_printing_sources =                    \
     $(mooedit)/mootextprint.c                 \
     $(mooedit)/mootextprint.h
 
@@ -148,10 +148,10 @@ $(mooedit)/statusbar-glade.h: $(mooedit_srcdir)/glade/statusbar.glade $(XML2H)
 	sh $(XML2H) STATUSBAR_GLADE_XML $(mooedit_srcdir)/glade/statusbar.glade \
 		> $(mooedit)/statusbar-glade.h
 
-if GTK_2_10
-mooedit_sources += $(mooedit_gtk_2_10_sources)
+if MOO_ENABLE_PRINTING
+mooedit_sources += $(mooedit_printing_sources)
 else
-mooedit_extra_dist = $(mooedit_gtk_2_10_sources)
+mooedit_extra_dist = $(mooedit_printing_sources)
 endif
 
 moo_extra_dist += $(mooedit_extra_dist) $(mooedit_tools_DATA)

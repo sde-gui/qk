@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/statusbar-glade.h"
 #include "mooedit/mooedit-private.h"
@@ -28,7 +32,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mooglade.h"
 #include "moofileview/moofilesystem.h"
-#if GTK_CHECK_VERSION(2,9,0)
+#ifdef MOO_ENABLE_PRINTING
 #include "mooedit/mootextprint.h"
 #endif
 #include <string.h>
@@ -211,7 +215,7 @@ static void moo_edit_window_next_ph     (MooEditWindow      *window);
 static void moo_edit_window_prev_ph     (MooEditWindow      *window);
 
 
-#if GTK_CHECK_VERSION(2,9,0)
+#ifdef MOO_ENABLE_PRINTING
 static void moo_edit_window_page_setup  (MooEditWindow    *window);
 static void moo_edit_window_print       (MooEditWindow    *window);
 #endif
@@ -670,7 +674,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
-#if GTK_CHECK_VERSION(2,9,0)
+#ifdef MOO_ENABLE_PRINTING
     moo_window_class_new_action (window_class, "PageSetup",
                                  "name", "Page Setup",
                                  "label", "Page Setup",
@@ -1149,7 +1153,7 @@ moo_edit_window_prev_ph (MooEditWindow *window)
 }
 
 
-#if GTK_CHECK_VERSION(2,9,0)
+#ifdef MOO_ENABLE_PRINTING
 static void
 moo_edit_window_page_setup (MooEditWindow *window)
 {
