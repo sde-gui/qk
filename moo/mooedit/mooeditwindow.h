@@ -63,6 +63,9 @@ typedef void (*MooEditWindowCheckActionFunc)        (MooAction      *action,
                                                      GValue         *prop_value,
                                                      gpointer        data);
 
+void         moo_edit_window_set_action_langs       (const char     *action_id,
+                                                     const char     *action_prop,
+                                                     GSList         *langs);
 void         moo_edit_window_add_action_check       (const char     *action_id,
                                                      const char     *action_prop,
                                                      MooEditWindowCheckActionFunc func,

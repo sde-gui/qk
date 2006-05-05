@@ -62,6 +62,7 @@ class Plugin(moo.edit.Plugin):
                                icon_stock_id=moo.utils.STOCK_EXECUTE,
                                accel="<shift>F9",
                                callback=self.run_file)
+        moo.edit.window_set_action_langs("RunFile", "sensitive", ["python"])
         self.add_ui("ToolsMenu", "RunFile")
 
     def show_log_window(self, window):

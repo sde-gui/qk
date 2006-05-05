@@ -312,3 +312,56 @@ _wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args
 
     return_None;
 }
+%%
+override moo_edit_window_set_action_langs kwargs
+static PyObject *
+_wrap_moo_edit_window_set_action_langs (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    GSList *langs = NULL;
+    PyObject *py_langs;
+    const char *action_id, *action_prop;
+    char *kwlist[] = {(char*) "action_id", (char*) "action_prop", (char*) "langs", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, (char*) "ssO:window_set_action_langs",
+                                      kwlist, &action_id, &action_prop, &py_langs))
+        return NULL;
+
+    if (py_langs != Py_None)
+    {
+        int n_items, i;
+        char *lang_id;
+
+        py_langs = PySequence_Fast (py_langs, "langs must be a sequence or None");
+
+        if (!py_langs)
+            return NULL;
+
+        n_items = PySequence_Fast_GET_SIZE (py_langs);
+
+        for (i = 0; i < n_items; ++i)
+        {
+            PyObject *lang = PySequence_Fast_GET_ITEM (py_langs, i);
+
+            if (!PyString_Check (lang))
+            {
+                Py_DECREF (py_langs);
+                g_slist_foreach (langs, (GFunc) g_free, NULL);
+                g_slist_free (langs);
+                return_TypeErr ("langs must be a sequence of strings");
+            }
+
+            lang_id = moo_lang_id_from_name (PyString_AS_STRING (lang));
+            langs = g_slist_prepend (langs, lang_id);
+        }
+
+        langs = g_slist_reverse (langs);
+    }
+
+    moo_edit_window_set_action_langs (action_id, action_prop, langs);
+
+    Py_DECREF (py_langs);
+    g_slist_foreach (langs, (GFunc) g_free, NULL);
+    g_slist_free (langs);
+
+    return_None;
+}

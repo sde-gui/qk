@@ -521,6 +521,36 @@
   (return-type "none")
 )
 
+(define-function window_set_action_langs
+  (c-name "moo_edit_window_set_action_langs")
+  (return-type "none")
+  (parameters
+    '("const-char*" "action_id")
+    '("const-char*" "action_prop")
+    '("GSList*" "langs")
+  )
+)
+
+(define-function window_add_action_check
+  (c-name "moo_edit_window_add_action_check")
+  (return-type "none")
+  (parameters
+    '("const-char*" "action_id")
+    '("const-char*" "action_prop")
+    '("MooEditWindowCheckActionFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+(define-function window_remove_action_check
+  (c-name "moo_edit_window_remove_action_check")
+  (return-type "none")
+  (parameters
+    '("const-char*" "action_id")
+    '("const-char*" "action_prop")
+  )
+)
+
 
 ;; From mooindenter.h
 

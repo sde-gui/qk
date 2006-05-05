@@ -2565,6 +2565,63 @@ moo_edit_window_add_action_check (const char     *action_id,
 }
 
 
+static void
+check_action_langs (G_GNUC_UNUSED MooAction *action,
+                    MooEdit        *doc,
+                    G_GNUC_UNUSED GParamSpec *pspec,
+                    GValue         *prop_value,
+                    gpointer        langs)
+{
+    MooLang *lang;
+    gboolean value;
+
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+
+    value = NULL != g_slist_find_custom (langs, moo_lang_id (lang),
+                                         (GCompareFunc) strcmp);
+
+    g_value_set_boolean (prop_value, value);
+}
+
+static GSList *
+string_list_copy (GSList *list)
+{
+    GSList *copy = NULL;
+
+    while (list)
+    {
+        copy = g_slist_prepend (copy, g_strdup (list->data));
+        list = list->next;
+    }
+
+    return g_slist_reverse (copy);
+}
+
+static void
+string_list_free (gpointer list)
+{
+    g_slist_foreach (list, (GFunc) g_free, NULL);
+    g_slist_free (list);
+}
+
+void
+moo_edit_window_set_action_langs (const char *action_id,
+                                  const char *action_prop,
+                                  GSList     *langs)
+{
+    g_return_if_fail (action_id != NULL);
+    g_return_if_fail (action_prop != NULL);
+
+    if (langs)
+        moo_edit_window_add_action_check (action_id, action_prop,
+                                          check_action_langs,
+                                          string_list_copy (langs),
+                                          string_list_free);
+    else
+        moo_edit_window_remove_action_check (action_id, action_prop);
+}
+
+
 void
 moo_edit_window_remove_action_check (const char *action_id,
                                      const char *action_prop)
