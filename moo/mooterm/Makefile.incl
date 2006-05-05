@@ -65,14 +65,12 @@ mooterm_extra_dist =                          \
     $(mooterm)/termhelper_res.rc.in
 
 mooterm_built_sources =                       \
-    $(mooterm)/mootermprefs-glade.h           \
-    $(mooterm)/mootermparser-yacc.c           \
-    $(mooterm)/mootermparser-yacc.h
+    $(mooterm)/mootermprefs-glade.h
 
 
-# XXX this should be removed too
-$(mooterm_srcdir)/mootermparser-yacc.c: $(mooterm)/mootermparser-yacc.y
-	mkdir -p $(mooterm)
+# not using rule for auto-regenerating mootermparser-yacc.[ch]
+mootermparser_yacc: $(mooterm)/mootermparser-yacc.y
+	touch mootermparser_yacc
 	bison -o $(mooterm_srcdir)/mootermparser-yacc.c -d $(mooterm_srcdir)/mootermparser-yacc.y
 
 $(mooterm)/mootermprefs-glade.h: $(mooterm)/glade/mootermprefs.glade $(XML2H)
