@@ -26,6 +26,11 @@ AC_DEFUN([_MOO_CHECK_VERSION],[
             fi
         done
 
+        # 2.9 counts as 2.10
+        if test $[]$1[]_MINOR_VERSION -ge 9; then
+            moo_ver_2_10=yes
+        fi
+
         AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
     fi
 
