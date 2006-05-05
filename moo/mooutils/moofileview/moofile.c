@@ -2045,28 +2045,28 @@ static GdkPixbuf    *_create_named_icon_with_fallback
 
     pixbuf = gtk_icon_theme_load_icon (icon_theme, name, pixel_size, 0, NULL);
 
-    if (!pixbuf)
-        g_message ("could not load '%s' icon", name);
+//     if (!pixbuf)
+//         g_warning ("could not load '%s' icon", name);
 
     if (!pixbuf && fallback_name)
     {
         pixbuf = gtk_icon_theme_load_icon (icon_theme, fallback_name, pixel_size, 0, NULL);
-        if (!pixbuf)
-            g_message ("could not load '%s' icon", fallback_name);
+//         if (!pixbuf)
+//             g_warning ("could not load '%s' icon", fallback_name);
     }
 
     if (!pixbuf && fallback_stock)
     {
         pixbuf = gtk_widget_render_icon (widget, fallback_stock, size, NULL);
-        if (!pixbuf)
-            g_warning ("could not load stock '%s' icon", fallback_stock);
+//         if (!pixbuf)
+//             g_warning ("could not load stock '%s' icon", fallback_stock);
     }
 
     if (!pixbuf)
     {
         pixbuf = gtk_widget_render_icon (widget, GTK_STOCK_FILE, size, NULL);
-        if (!pixbuf)
-            g_warning ("could not load stock '%s' icon", GTK_STOCK_FILE);
+//         if (!pixbuf)
+//             g_warning ("could not load stock '%s' icon", GTK_STOCK_FILE);
     }
 
     return pixbuf;
