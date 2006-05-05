@@ -22,6 +22,9 @@ AC_HEADER_STDC
 AC_PROG_INSTALL
 MOO_AC_PROGS
 
+if test -z $ACLOCAL_FLAGS; then
+    ACLOCAL_FLAGS="-I $top_srcdir/m4"
+fi
 AC_SUBST(ACLOCAL_FLAGS)
 
 #  Misc stuff

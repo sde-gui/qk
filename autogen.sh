@@ -14,6 +14,7 @@ cd $srcdir
 echo "Generating configuration files..."
 
 ACLOCAL=${ACLOCAL:-aclocal-1.9}
+ACLOCAL_FLAGS="$ACLOCAL_FLAGS $aclocal_extra"
 AUTOMAKE=${AUTOMAKE:-automake-1.9}
 
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
@@ -24,8 +25,8 @@ AUTOCONF=${AUTOCONF:-autoconf}
 echo $LIBTOOLIZE --automake --copy
 $LIBTOOLIZE --automake --copy || exit $?
 
-echo $ACLOCAL $ACLOCAL_FLAGS $aclocal_extra
-$ACLOCAL $ACLOCAL_FLAGS $aclocal_extra || exit $?
+echo $ACLOCAL $ACLOCAL_FLAGS
+$ACLOCAL $ACLOCAL_FLAGS || exit $?
 
 echo $AUTOHEADER
 $AUTOHEADER || exit $?
