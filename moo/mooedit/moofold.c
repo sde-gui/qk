@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moofold.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -95,25 +94,25 @@ moo_fold_free_recursively (MooFold *fold)
 
 
 int
-moo_fold_get_start (MooFold *fold)
+_moo_fold_get_start (MooFold *fold)
 {
     g_return_val_if_fail (MOO_IS_FOLD (fold), -1);
-    g_return_val_if_fail (!moo_fold_is_deleted (fold), -1);
+    g_return_val_if_fail (!_moo_fold_is_deleted (fold), -1);
     return moo_line_mark_get_line (fold->start);
 }
 
 
 int
-moo_fold_get_end (MooFold *fold)
+_moo_fold_get_end (MooFold *fold)
 {
     g_return_val_if_fail (MOO_IS_FOLD (fold), -1);
-    g_return_val_if_fail (!moo_fold_is_deleted (fold), -1);
+    g_return_val_if_fail (!_moo_fold_is_deleted (fold), -1);
     return moo_line_mark_get_line (fold->end);
 }
 
 
 gboolean
-moo_fold_is_deleted (MooFold *fold)
+_moo_fold_is_deleted (MooFold *fold)
 {
     g_return_val_if_fail (MOO_IS_FOLD (fold), TRUE);
     return fold->deleted != 0;
@@ -160,7 +159,7 @@ CHECK_FOLD (MooFoldTree *tree,
 
 
 MooFoldTree *
-moo_fold_tree_new (MooTextBuffer *buffer)
+_moo_fold_tree_new (MooTextBuffer *buffer)
 {
     MooFoldTree *tree = g_new0 (MooFoldTree, 1);
 
@@ -172,7 +171,7 @@ moo_fold_tree_new (MooTextBuffer *buffer)
 
 
 void
-moo_fold_tree_free (MooFoldTree *tree)
+_moo_fold_tree_free (MooFoldTree *tree)
 {
     MooFold *child;
 
@@ -210,8 +209,8 @@ insert_fold (MooFoldTree *tree,
     MooFold *fold, *last, *new_fold;
 
     g_assert (!parent || MOO_IS_FOLD (parent));
-    g_assert (!parent || moo_fold_get_start (parent) < first_line);
-    g_assert (!parent || moo_fold_get_end (parent) >= last_line);
+    g_assert (!parent || _moo_fold_get_start (parent) < first_line);
+    g_assert (!parent || _moo_fold_get_end (parent) >= last_line);
 
     last = NULL;
 
@@ -219,8 +218,8 @@ insert_fold (MooFoldTree *tree,
     {
         int start, end;
 
-        start = moo_fold_get_start (fold);
-        end = moo_fold_get_end (fold);
+        start = _moo_fold_get_start (fold);
+        end = _moo_fold_get_end (fold);
 
         if (!fold->next)
             last = fold;
@@ -340,9 +339,9 @@ insert_fold (MooFoldTree *tree,
 
 
 MooFold *
-moo_fold_tree_add (MooFoldTree *tree,
-                   int          first_line,
-                   int          last_line)
+_moo_fold_tree_add (MooFoldTree *tree,
+                    int          first_line,
+                    int          last_line)
 {
     g_assert (tree != NULL);
     g_assert (first_line >= 0 && first_line < get_line_count (tree));
@@ -386,15 +385,15 @@ fold_free (MooFold *fold)
 
 
 void
-moo_fold_tree_remove (MooFoldTree *tree,
-                      MooFold     *fold)
+_moo_fold_tree_remove (MooFoldTree *tree,
+                       MooFold     *fold)
 {
     guint n_children;
     MooFold *children, *parent, *last;
 
     CHECK_FOLD (tree, fold);
 
-    moo_fold_tree_expand (tree, fold);
+    _moo_fold_tree_expand (tree, fold);
 
     n_children = fold->n_children;
     last = children = fold->children;
@@ -451,7 +450,7 @@ expand_check_visible (MooFoldTree *tree,
 
     buffer = GTK_TEXT_BUFFER (tree->buffer);
     gtk_text_buffer_get_iter_at_line (buffer, &start,
-                                      moo_fold_get_start (fold));
+                                      _moo_fold_get_start (fold));
     end = start;
     gtk_text_iter_forward_line (&end);
     gtk_text_buffer_remove_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
@@ -464,11 +463,11 @@ expand_check_visible (MooFoldTree *tree,
         int start_line, end_line;
 
         if (child->prev)
-            start_line = moo_fold_get_end (child->prev) + 1;
+            start_line = _moo_fold_get_end (child->prev) + 1;
         else
-            start_line = moo_fold_get_start (fold) + 1;
+            start_line = _moo_fold_get_start (fold) + 1;
 
-        end_line = moo_fold_get_start (child);
+        end_line = _moo_fold_get_start (child);
 
         gtk_text_buffer_get_iter_at_line (buffer, &start, start_line);
         gtk_text_buffer_get_iter_at_line (buffer, &end, end_line);
@@ -483,12 +482,12 @@ expand_check_visible (MooFoldTree *tree,
 
     if (child)
     {
-        if (moo_fold_get_end (child) < moo_fold_get_end (fold))
+        if (_moo_fold_get_end (child) < _moo_fold_get_end (fold))
         {
             gtk_text_buffer_get_iter_at_line (buffer, &start,
-                                              moo_fold_get_end (child) + 1);
+                                              _moo_fold_get_end (child) + 1);
             gtk_text_buffer_get_iter_at_line (buffer, &end,
-                                              moo_fold_get_end (fold));
+                                              _moo_fold_get_end (fold));
             gtk_text_iter_forward_line (&end);
             gtk_text_buffer_remove_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
         }
@@ -497,7 +496,7 @@ expand_check_visible (MooFoldTree *tree,
     {
         start = end;
         gtk_text_buffer_get_iter_at_line (buffer, &end,
-                                          moo_fold_get_end (fold));
+                                          _moo_fold_get_end (fold));
         gtk_text_iter_forward_line (&end);
         gtk_text_buffer_remove_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
     }
@@ -505,8 +504,8 @@ expand_check_visible (MooFoldTree *tree,
 
 
 void
-moo_fold_tree_expand (MooFoldTree *tree,
-                      MooFold     *fold)
+_moo_fold_tree_expand (MooFoldTree *tree,
+                       MooFold     *fold)
 {
     CHECK_FOLD (tree, fold);
 
@@ -519,8 +518,8 @@ moo_fold_tree_expand (MooFoldTree *tree,
 
 
 void
-moo_fold_tree_collapse (MooFoldTree *tree,
-                        MooFold     *fold)
+_moo_fold_tree_collapse (MooFoldTree *tree,
+                         MooFold     *fold)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
@@ -534,9 +533,9 @@ moo_fold_tree_collapse (MooFoldTree *tree,
 
     buffer = GTK_TEXT_BUFFER (tree->buffer);
     gtk_text_buffer_get_iter_at_line (buffer, &start,
-                                      moo_fold_get_start (fold) + 1);
+                                      _moo_fold_get_start (fold) + 1);
     gtk_text_buffer_get_iter_at_line (buffer, &end,
-                                      moo_fold_get_end (fold));
+                                      _moo_fold_get_end (fold));
     gtk_text_iter_forward_line (&end);
     gtk_text_buffer_apply_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
 }
@@ -551,14 +550,14 @@ get_folds_in_range (MooFoldTree    *tree,
 {
     MooFold *child;
 
-    if (parent && first_line <= moo_fold_get_start (parent) && last_line >= moo_fold_get_start (parent))
+    if (parent && first_line <= _moo_fold_get_start (parent) && last_line >= _moo_fold_get_start (parent))
         list = g_slist_prepend (list, parent);
 
     for (child = parent ? parent->children : tree->folds; child != NULL; child = child->next)
     {
-        if (last_line < moo_fold_get_start (child))
+        if (last_line < _moo_fold_get_start (child))
             break;
-        if (first_line >= moo_fold_get_end (child))
+        if (first_line >= _moo_fold_get_end (child))
             continue;
         list = get_folds_in_range (tree, child, first_line, last_line, list);
     }
@@ -568,9 +567,9 @@ get_folds_in_range (MooFoldTree    *tree,
 
 
 GSList *
-moo_fold_tree_get (MooFoldTree    *tree,
-                   int             first_line,
-                   int             last_line)
+_moo_fold_tree_get (MooFoldTree    *tree,
+                    int             first_line,
+                    int             last_line)
 {
     GSList *list;
 

@@ -3790,7 +3790,7 @@ fold_added (MooTextView        *view,
             MooFold            *fold)
 {
     if (view->priv->enable_folding)
-        invalidate_line (view, moo_fold_get_start (fold), TRUE, fold->collapsed);
+        invalidate_line (view, _moo_fold_get_start (fold), TRUE, fold->collapsed);
 }
 
 
@@ -3807,7 +3807,7 @@ fold_toggled (MooTextView        *view,
               MooFold            *fold)
 {
     if (view->priv->enable_folding)
-        invalidate_line (view, moo_fold_get_start (fold), TRUE, TRUE);
+        invalidate_line (view, _moo_fold_get_start (fold), TRUE, TRUE);
 }
 
 

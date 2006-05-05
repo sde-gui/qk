@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   moofold.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -59,26 +58,26 @@ struct _MooFoldClass
 };
 
 
-int          moo_fold_get_start     (MooFold        *fold);
-int          moo_fold_get_end       (MooFold        *fold);
+int          _moo_fold_get_start    (MooFold        *fold);
+int          _moo_fold_get_end      (MooFold        *fold);
 
-gboolean     moo_fold_is_deleted    (MooFold        *fold);
+gboolean     _moo_fold_is_deleted   (MooFold        *fold);
 
-MooFoldTree *moo_fold_tree_new      (MooTextBuffer  *buffer);
-void         moo_fold_tree_free     (MooFoldTree    *tree);
+MooFoldTree *_moo_fold_tree_new     (MooTextBuffer  *buffer);
+void         _moo_fold_tree_free    (MooFoldTree    *tree);
 
-MooFold     *moo_fold_tree_add      (MooFoldTree    *tree,
+MooFold     *_moo_fold_tree_add     (MooFoldTree    *tree,
                                      int             first_line,
                                      int             last_line);
-void         moo_fold_tree_remove   (MooFoldTree    *tree,
+void         _moo_fold_tree_remove  (MooFoldTree    *tree,
                                      MooFold        *fold);
-GSList      *moo_fold_tree_get      (MooFoldTree    *tree,
+GSList      *_moo_fold_tree_get     (MooFoldTree    *tree,
                                      int             first_line,
                                      int             last_line);
 
-void         moo_fold_tree_expand   (MooFoldTree    *tree,
+void         _moo_fold_tree_expand  (MooFoldTree    *tree,
                                      MooFold        *fold);
-void         moo_fold_tree_collapse (MooFoldTree    *tree,
+void         _moo_fold_tree_collapse(MooFoldTree    *tree,
                                      MooFold        *fold);
 
 

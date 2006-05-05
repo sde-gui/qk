@@ -341,7 +341,7 @@ moo_text_buffer_init (MooTextBuffer *buffer)
                                              buffer->priv->line_buf, NULL);
     buffer->priv->bracket_found = MOO_BRACKET_MATCH_NONE;
 
-    buffer->priv->fold_tree = moo_fold_tree_new (buffer);
+    buffer->priv->fold_tree = _moo_fold_tree_new (buffer);
 
     buffer->priv->undo_mgr = moo_undo_mgr_new (buffer);
     buffer->priv->move_cursor_to = -1;
@@ -372,7 +372,7 @@ moo_text_buffer_finalize (GObject *object)
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (object);
 
     /* XXX leak if folds are not deleted */
-    moo_fold_tree_free (buffer->priv->fold_tree);
+    _moo_fold_tree_free (buffer->priv->fold_tree);
     _moo_highlighter_destroy (buffer->priv->hl, FALSE);
     _moo_line_buffer_free (buffer->priv->line_buf);
 
@@ -2057,7 +2057,7 @@ moo_text_buffer_add_fold (MooTextBuffer *buffer,
     g_return_val_if_fail (last_line > first_line, NULL);
     g_return_val_if_fail (last_line < gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)), NULL);
 
-    fold = moo_fold_tree_add (buffer->priv->fold_tree, first_line, last_line);
+    fold = _moo_fold_tree_add (buffer->priv->fold_tree, first_line, last_line);
     g_return_val_if_fail (fold != NULL, NULL);
 
     g_object_ref (fold);
@@ -2080,9 +2080,9 @@ moo_text_buffer_delete_fold (MooTextBuffer *buffer,
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     g_return_if_fail (MOO_IS_FOLD (fold));
-    g_return_if_fail (!moo_fold_is_deleted (fold));
+    g_return_if_fail (!_moo_fold_is_deleted (fold));
 
-    moo_fold_tree_remove (buffer->priv->fold_tree, fold);
+    _moo_fold_tree_remove (buffer->priv->fold_tree, fold);
     fold_deleted (buffer, fold);
     g_object_unref (fold);
 }
@@ -2102,7 +2102,7 @@ moo_text_buffer_get_folds_in_range (MooTextBuffer *buffer,
     g_return_val_if_fail (last_line >= first_line, NULL);
     g_return_val_if_fail (last_line < gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (buffer)), NULL);
 
-    return moo_fold_tree_get (buffer->priv->fold_tree, first_line, last_line);
+    return _moo_fold_tree_get (buffer->priv->fold_tree, first_line, last_line);
 }
 
 
@@ -2139,12 +2139,12 @@ moo_text_buffer_toggle_fold (MooTextBuffer *buffer,
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     g_return_if_fail (MOO_IS_FOLD (fold));
-    g_return_if_fail (!moo_fold_is_deleted (fold));
+    g_return_if_fail (!_moo_fold_is_deleted (fold));
 
     if (fold->collapsed)
-        moo_fold_tree_expand (buffer->priv->fold_tree, fold);
+        _moo_fold_tree_expand (buffer->priv->fold_tree, fold);
     else
-        moo_fold_tree_collapse (buffer->priv->fold_tree, fold);
+        _moo_fold_tree_collapse (buffer->priv->fold_tree, fold);
 
     g_signal_emit (buffer, signals[FOLD_TOGGLED], 0, fold);
 }
