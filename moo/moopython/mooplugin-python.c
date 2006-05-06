@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooplugin-python.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -23,6 +22,7 @@
 #include "moopython/mooplugin-python.h"
 #include "moopython/moopython-utils.h"
 #include "mooutils/moopython.h"
+#include "mooutils/mooutils-misc.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "mooedit/mooplugin-macro.h"
 
@@ -367,6 +367,8 @@ _moo_python_plugin_init (void)
         moo_python_init (MOO_PY_API_VERSION, NULL);
         return FALSE;
     }
+
+    moo_reset_log_func ();
 
     moo_python_plugin_read_dirs ();
     return TRUE;

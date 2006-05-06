@@ -103,8 +103,6 @@ _moo_pygtk_init (void)
     PyModule_AddObject (_moo_module, (char*) "app", submod);
 #endif
 
-    moo_reset_log_func ();
-
     code = Py_CompileString (MOO_PY, "moo/__init__.py", Py_file_input);
 
     if (!code)
