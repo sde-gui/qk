@@ -2237,6 +2237,7 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *left_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
     GdkWindow *right_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_RIGHT);
     GtkTextIter start, end;
+    int first_line, last_line;
 
     view->priv->in_expose = TRUE;
 
@@ -2266,7 +2267,6 @@ moo_text_view_expose (GtkWidget      *widget,
 
     if (event->window == text_window)
     {
-        int first_line, last_line;
         GdkRectangle rect = event->area;
 
         gtk_text_view_window_to_buffer_coords (text_view,
@@ -2291,17 +2291,23 @@ moo_text_view_expose (GtkWidget      *widget,
 
     handled = GTK_WIDGET_CLASS(moo_text_view_parent_class)->expose_event (widget, event);
 
-    if (event->window == text_window && view->priv->draw_tabs)
-        moo_text_view_draw_tabs (text_view, event, &start, &end);
+    if (event->window == text_window)
+    {
+        if (last_line - first_line < 2000)
+        {
+            if (view->priv->draw_tabs)
+                moo_text_view_draw_tabs (text_view, event, &start, &end);
 
-    if (event->window == text_window && view->priv->draw_trailing_spaces)
-        moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
+            if (view->priv->draw_trailing_spaces)
+                moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
 
-    if (event->window == text_window && has_boxes (view))
-        moo_text_view_draw_boxes (text_view, event, &start, &end);
+            if (has_boxes (view))
+                moo_text_view_draw_boxes (text_view, event, &start, &end);
+        }
 
-    if (event->window == text_window && view->priv->cursor_visible)
-        moo_text_view_draw_cursor (text_view, event);
+        if (view->priv->cursor_visible)
+            moo_text_view_draw_cursor (text_view, event);
+    }
 
     view->priv->in_expose = FALSE;
 
