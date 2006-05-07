@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be used directly"
+#endif
+
 #ifndef __MOO_TEXT_PRINT_H__
 #define __MOO_TEXT_PRINT_H__
 
@@ -19,7 +23,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_PRINT_OPERATION              (moo_print_operation_get_type ())
+#define MOO_TYPE_PRINT_OPERATION              (_moo_print_operation_get_type ())
 #define MOO_PRINT_OPERATION(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PRINT_OPERATION, MooPrintOperation))
 #define MOO_PRINT_OPERATION_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PRINT_OPERATION, MooPrintOperationClass))
 #define MOO_IS_PRINT_OPERATION(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PRINT_OPERATION))
@@ -63,16 +67,16 @@ struct _MooPrintOperationClass
 };
 
 
-GType   moo_print_operation_get_type    (void) G_GNUC_CONST;
+GType   _moo_print_operation_get_type    (void) G_GNUC_CONST;
 
-void    moo_print_operation_set_doc     (MooPrintOperation  *print,
+void    _moo_print_operation_set_doc    (MooPrintOperation  *print,
                                          GtkTextView        *doc);
-void    moo_print_operation_set_buffer  (MooPrintOperation  *print,
+void    _moo_print_operation_set_buffer (MooPrintOperation  *print,
                                          GtkTextBuffer      *buffer);
 
-void    moo_edit_page_setup             (GtkTextView    *view,
+void    _moo_edit_page_setup            (GtkTextView    *view,
                                          GtkWidget      *parent);
-void    moo_edit_print                  (GtkTextView    *view,
+void    _moo_edit_print                 (GtkTextView    *view,
                                          GtkWidget      *parent);
 
 

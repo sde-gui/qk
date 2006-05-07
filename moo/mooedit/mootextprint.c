@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mootextprint.h"
 
 
@@ -38,7 +39,7 @@ static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
 
 
-G_DEFINE_TYPE(MooPrintOperation, moo_print_operation, GTK_TYPE_PRINT_OPERATION)
+G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
 
 enum {
     PROP_0,
@@ -62,7 +63,7 @@ moo_print_operation_finalize (GObject *object)
     if (print->buffer)
         g_object_unref (print->buffer);
 
-    G_OBJECT_CLASS(moo_print_operation_parent_class)->finalize (object);
+    G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
 
 
@@ -77,11 +78,11 @@ moo_print_operation_set_property (GObject            *object,
     switch (prop_id)
     {
         case PROP_DOC:
-            moo_print_operation_set_doc (print, g_value_get_object (value));
+            _moo_print_operation_set_doc (print, g_value_get_object (value));
             break;
 
         case PROP_BUFFER:
-            moo_print_operation_set_buffer (print, g_value_get_object (value));
+            _moo_print_operation_set_buffer (print, g_value_get_object (value));
             break;
 
         case PROP_WRAP:
@@ -161,7 +162,7 @@ moo_print_operation_get_property (GObject            *object,
 
 
 static void
-moo_print_operation_class_init (MooPrintOperationClass *klass)
+_moo_print_operation_class_init (MooPrintOperationClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     GtkPrintOperationClass *print_class = GTK_PRINT_OPERATION_CLASS (klass);
@@ -234,7 +235,7 @@ moo_print_operation_class_init (MooPrintOperationClass *klass)
 
 
 static void
-moo_print_operation_init (MooPrintOperation *print)
+_moo_print_operation_init (MooPrintOperation *print)
 {
     load_default_settings ();
 
@@ -254,8 +255,8 @@ moo_print_operation_init (MooPrintOperation *print)
 
 
 void
-moo_print_operation_set_doc (MooPrintOperation  *print,
-                             GtkTextView        *doc)
+_moo_print_operation_set_doc (MooPrintOperation  *print,
+                              GtkTextView        *doc)
 {
     g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
     g_return_if_fail (!doc || GTK_IS_TEXT_VIEW (doc));
@@ -289,8 +290,8 @@ moo_print_operation_set_doc (MooPrintOperation  *print,
 
 
 void
-moo_print_operation_set_buffer (MooPrintOperation *print,
-                                GtkTextBuffer     *buffer)
+_moo_print_operation_set_buffer (MooPrintOperation *print,
+                                 GtkTextBuffer     *buffer)
 {
     g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
     g_return_if_fail (!buffer || GTK_IS_TEXT_BUFFER (buffer));
@@ -322,8 +323,8 @@ load_default_settings (void)
 
 
 void
-moo_edit_page_setup (GtkTextView    *view,
-                     GtkWidget      *parent)
+_moo_edit_page_setup (GtkTextView    *view,
+                      GtkWidget      *parent)
 {
     GtkPageSetup *new_page_setup;
     GtkWindow *parent_window = NULL;
@@ -358,11 +359,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 {
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
     PangoFontDescription *font = NULL;
-    PangoLayoutLine *layout_line;
     double page_height;
-    GList *page_breaks;
-    int num_lines;
-    int line;
     GtkTextIter iter, print_end;
     GTimer *timer;
 
@@ -504,9 +501,6 @@ static GSList *
 iter_get_attrs (GtkTextIter       *iter,
                 const GtkTextIter *limit)
 {
-    GtkTextIter end;
-    GtkTextAttributes values;
-    gboolean has_attributes = FALSE;
     GSList *attrs = NULL, *tags;
     PangoAttribute *bg = NULL, *fg = NULL, *style = NULL, *ul = NULL;
     PangoAttribute *weight = NULL, *st = NULL;
@@ -722,14 +716,13 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 {
     cairo_t *cr;
     GtkTextIter start, end;
-    char *text;
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
     GTimer *timer;
 
     g_return_if_fail (print->buffer != NULL);
     g_return_if_fail (print->pages != NULL);
     g_return_if_fail (print->layout != NULL);
-    g_return_if_fail (page_nr < print->pages->len);
+    g_return_if_fail (page_nr < (int) print->pages->len);
 
     timer = g_timer_new ();
 
@@ -737,7 +730,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 
     start = g_array_index (print->pages, GtkTextIter, page_nr);
 
-    if (page_nr + 1 < print->pages->len)
+    if (page_nr + 1 < (int) print->pages->len)
         end = g_array_index (print->pages, GtkTextIter, page_nr + 1);
     else
         gtk_text_buffer_get_end_iter (print->buffer, &end);
@@ -751,7 +744,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
 
 static void
 moo_print_operation_end_print (GtkPrintOperation  *operation,
-                               GtkPrintContext    *context)
+                               G_GNUC_UNUSED GtkPrintContext *context)
 {
     MooPrintOperation *print = MOO_PRINT_OPERATION (operation);
 
@@ -766,8 +759,8 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
 
 void
-moo_edit_print (GtkTextView *view,
-                GtkWidget   *parent)
+_moo_edit_print (GtkTextView *view,
+                 GtkWidget   *parent)
 {
     GtkWindow *parent_window = NULL;
     GtkWidget *error_dialog;

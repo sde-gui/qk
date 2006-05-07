@@ -1158,7 +1158,7 @@ static void
 moo_edit_window_page_setup (MooEditWindow *window)
 {
     gpointer doc = moo_edit_window_get_active_doc (window);
-    moo_edit_page_setup (doc, GTK_WIDGET (window));
+    _moo_edit_page_setup (doc, GTK_WIDGET (window));
 }
 
 
@@ -1167,7 +1167,7 @@ moo_edit_window_print (MooEditWindow *window)
 {
     gpointer doc = moo_edit_window_get_active_doc (window);
     g_return_if_fail (doc != NULL);
-    moo_edit_print (doc, GTK_WIDGET (window));
+    _moo_edit_print (doc, GTK_WIDGET (window));
 }
 #endif
 
