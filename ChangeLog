@@ -2,9 +2,8 @@
 
     * === Released 0.6.97 ===
 
-    meit now uses system pcre library if present; FAM support is disabled.
+    medit now uses system pcre library if present; FAM support is disabled.
 
-    Finally fixed window icon bug.
     Allow adding tools into different menus.
     Added gnuplot syntax highlighting.
     Fixed python output pane: it now jumps to correct line in error

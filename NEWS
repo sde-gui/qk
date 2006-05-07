@@ -1,0 +1,109 @@
+2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.97 ===
+
+    medit now uses system pcre library if present; FAM support is disabled.
+
+    Allow adding tools into different menus.
+    Added gnuplot syntax highlighting.
+    Fixed python output pane: it now jumps to correct line in error
+    messages, and it uses Stop button.
+    Added gui for setting per-language settings in Preferences dialog.
+    Dropping a file into the text area opens file now, instead of pasting uri.
+    "medit filename" from command line creates new file if the argument is not
+    an existing file.
+
+2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.96 ===
+
+    Fixed bugs:
+        Build problems on AMD64 - David Hough.
+        Missing #include <time.h> - Nick Treleaven, David Hough.
+        Problem with hidden toolbar showing up anyway - Andrey Fedoseev.
+        Missing window icon - Andrey Fedoseev.
+
+2006-04-30  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.95 ===
+
+    Greatly improved syntax highlighting, zillion fixes.
+
+2006-04-20  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.9 ===
+
+    User-defined completion, tools, and context menus.
+
+2006-04-09  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.8 ===
+
+    Finally unbroke windows terminal, and finally fixed
+    bug with terminal eating 100% of cpu time.
+
+    Active strings, user-defined commands:
+        Added support for python scripts and shell commands.
+
+2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.7 ===
+
+    Reverted changes in windows terminal.
+
+2006-04-06  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.6 ===
+
+    Lot of bugs fixed, lot of bugs introduced.
+
+    MooEdit:
+        Made quick search work.
+        Line ends type is detected automatically, and
+        used when saving file.
+
+2006-03-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.5 ===
+
+    0.6.4 is broken
+
+2006-03-29  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.4 ===
+
+    MooEdit:
+        Implemented printing for gtk-2.10.
+
+    MooTerm:
+        Rewritten drawing.
+
+    MooFileView:
+        Made it work (to some extent) on windows.
+
+2006-03-15  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
+    * === Released 0.6.3 ===
+
+    Added customizable menus, with user-defined actions using MooScript.
+
+    MooApp:
+        Fixed input pipe eating all cpu time.
+        Use recursive g_remove on windows for removing directories, to avoid
+        shell api asking user if he wants t remove temporary directory.
+        Custom About dialog.
+
+    MooEdit:
+        Reenabled force-tag-redraw hack in highlighter, due to GTK bug.
+        Fixed unreal slowness of highlighting matching brackets.
+
+    MooTerm:
+        Made moo_term_get_selection_bounds() public.
+
+    MooFileView:
+        Unbroke get_parent_folder
+
+    Python module:
+        Made moo module behave like a package.
+        Made atributes of TermIter and TermTextAttr writable.
+        Added file-like objects which use g_print* for sys.stdout and sys.stderr.
