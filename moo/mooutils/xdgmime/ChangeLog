@@ -1,3 +1,29 @@
+2006-03-02  Christian Neumair  <chris@gnome-de.org>
+
+	* src/xdgmimeglob.c: (_xdg_glob_hash_insert_text),
+	(_xdg_glob_hash_append_glob): Don't strdup the MIME type when passing
+	it to _xdg_glob_hash_insert_text, but let the function itself figure
+	out whether string duplication is needed. Fixes #5993.
+	Thanks to Martin Wehner.
+
+2006-02-25  Christian Neumair  <chris@gnome-de.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_lookup_data): Make
+	priority equality check more robust so that it works for three or more
+	matches. Also allow matchlets with 0 priority.
+
+2006-02-19  Christian Neumair  <chris@gnome-de.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_lookup_data): When two
+	unrelated MIME types with equal priorities match, don't assume one of
+	them matches.
+	http://bugzilla.gnome.org/show_bug.cgi?id=331719
+
+2006-01-03  Christian Neumair  <chris@gnome-de.org>
+
+	* src/xdgmimemagic.c: (_xdg_mime_magic_lookup_data): Also consider
+	match priority for the returned MIME type.
+
 2005-12-01  Christian Neumair  <chris@gnome-de.org>
 
 	* src/xdgmime.c: (xdg_mime_get_mime_type_from_file_name):
