@@ -725,28 +725,49 @@ set_print_funcs (GLogFunc   log_func,
     g_set_print_handler (print_func);
     g_set_printerr_handler (printerr_func);
 
-    g_log_set_handler ("Glib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Glib-GObject", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("GModule", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("GThread", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Gdk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Gdk-Pixbuf-CSource", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("GdkPixbuf", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Pango", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler ("Moo", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
-    g_log_set_handler (NULL, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL);
+#define set(domain) \
+    g_log_set_handler (domain, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL)
+
+    set ("Glib");
+    set ("Glib-GObject");
+    set ("GModule");
+    set ("GThread");
+    set ("Gtk");
+    set ("Gdk");
+    set ("GdkPixbuf");
+    set ("Pango");
+    set ("Moo");
+    set (NULL);
+#undef set
+
 #if GLIB_CHECK_VERSION(2,6,0)
     g_log_set_default_handler (log_func, NULL);
 #endif /* GLIB_CHECK_VERSION(2,6,0) */
 }
 
 
+/* it doesn't care about encoding, but well, noone cares */
+static void
+default_print (const char *string)
+{
+    fputs (string, stdout);
+    fflush (stdout);
+}
+
+static void
+default_printerr (const char *string)
+{
+    fputs (string, stderr);
+    fflush (stderr);
+}
+
 void
 moo_reset_log_func (void)
 {
     if (moo_log_handlers_set)
         set_print_funcs (moo_log_func, moo_print_func, moo_printerr_func);
+    else
+        set_print_funcs (g_log_default_handler, default_print, default_printerr);
 }
 
 
@@ -769,8 +790,16 @@ moo_print_err (const char *string)
 
 #ifdef __WIN32__
 
+#ifndef PACKAGE
+#define PACKAGE ""
+#endif
+
+#ifndef PACKAGE_BUGREPORT
+#define PACKAGE_BUGREPORT "emuntyan@sourceforge.net"
+#endif
+
 #define PLEASE_REPORT \
-    "Please report it to emuntyan@sourceforge.net and provide "\
+    "Please report it to " PACKAGE_BUGREPORT " and provide "\
     "steps needed to reproduce this error."
 
 static void
@@ -780,10 +809,10 @@ show_fatal_error_win32 (const char *domain,
     char *msg = NULL;
 
     if (domain)
-        msg = g_strdup_printf ("Fatal GGAP error:\n---\n%s: %s\n---\n"
+        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s: %s\n---\n"
                 PLEASE_REPORT, domain, logmsg);
     else
-        msg = g_strdup_printf ("Fatal GGAP error:\n---\n%s\n---\n"
+        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s\n---\n"
                 PLEASE_REPORT, logmsg);
 
     MessageBox (NULL, msg, "Error",

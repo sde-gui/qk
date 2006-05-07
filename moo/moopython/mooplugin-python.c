@@ -368,7 +368,11 @@ _moo_python_plugin_init (void)
         return FALSE;
     }
 
+#if defined(pyg_disable_log_handlers) && 0
+    pyg_disable_log_handlers ();
+#else
     moo_reset_log_func ();
+#endif
 
     moo_python_plugin_read_dirs ();
     return TRUE;
