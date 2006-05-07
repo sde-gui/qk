@@ -13,6 +13,32 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextprint.h"
+#include "mooedit/mooedit.h"
+#include <time.h>
+#include <errno.h>
+#include <string.h>
+
+
+#define SET_OPTION(print, opt, val)     \
+G_STMT_START {                          \
+    if (val)                            \
+        (print)->options |= (opt);      \
+    else                                \
+        (print)->options &= (~(opt));   \
+} G_STMT_END
+
+#define GET_OPTION(print, opt)      ((print->options &= opt) != 0)
+
+
+typedef struct _HFFormat HFFormat;
+static HFFormat *hf_format_parse    (const char *strformat);
+static void      hf_format_free     (HFFormat   *format);
+static char     *hf_format_eval     (HFFormat   *format,
+                                     struct tm  *tm,
+                                     int         page_nr,
+                                     int         total_pages,
+                                     const char *filename,
+                                     const char *basename);
 
 
 static GtkPageSetup *page_setup;
@@ -54,6 +80,24 @@ enum {
 
 
 static void
+header_footer_destroy (MooPrintHeaderFooter *hf)
+{
+    int i;
+
+    if (hf->font)
+        g_object_unref (hf->font);
+    if (hf->layout)
+        g_object_unref (hf->layout);
+
+    for (i = 0; i < 3; ++i)
+    {
+        g_free (hf->format[i]);
+        hf_format_free (hf->parsed_format[i]);
+    }
+}
+
+
+static void
 moo_print_operation_finalize (GObject *object)
 {
     MooPrintOperation *print = MOO_PRINT_OPERATION (object);
@@ -62,6 +106,11 @@ moo_print_operation_finalize (GObject *object)
         g_object_unref (print->doc);
     if (print->buffer)
         g_object_unref (print->buffer);
+    header_footer_destroy (&print->header);
+    header_footer_destroy (&print->footer);
+    g_free (print->tm);
+    g_free (print->filename);
+    g_free (print->basename);
 
     G_OBJECT_CLASS(_moo_print_operation_parent_class)->finalize (object);
 }
@@ -86,7 +135,7 @@ moo_print_operation_set_property (GObject            *object,
             break;
 
         case PROP_WRAP:
-            print->wrap = g_value_get_boolean (value) != 0;
+            SET_OPTION (print, MOO_PRINT_WRAP, g_value_get_boolean (value));
             g_object_notify (object, "wrap");
             break;
 
@@ -96,7 +145,7 @@ moo_print_operation_set_property (GObject            *object,
             break;
 
         case PROP_ELLIPSIZE:
-            print->ellipsize = g_value_get_boolean (value) != 0;
+            SET_OPTION (print, MOO_PRINT_ELLIPSIZE, g_value_get_boolean (value));
             g_object_notify (object, "ellipsize");
             break;
 
@@ -107,7 +156,7 @@ moo_print_operation_set_property (GObject            *object,
             break;
 
         case PROP_USE_STYLES:
-            print->use_styles = g_value_get_boolean (value);
+            SET_OPTION (print, MOO_PRINT_USE_STYLES, g_value_get_boolean (value));
             g_object_notify (object, "use-styles");
             break;
 
@@ -136,7 +185,7 @@ moo_print_operation_get_property (GObject            *object,
             break;
 
         case PROP_WRAP:
-            g_value_set_boolean (value, print->wrap);
+            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_WRAP));
             break;
 
         case PROP_WRAP_MODE:
@@ -144,7 +193,7 @@ moo_print_operation_get_property (GObject            *object,
             break;
 
         case PROP_ELLIPSIZE:
-            g_value_set_boolean (value, print->ellipsize);
+            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_ELLIPSIZE));
             break;
 
         case PROP_FONT:
@@ -152,7 +201,7 @@ moo_print_operation_get_property (GObject            *object,
             break;
 
         case PROP_USE_STYLES:
-            g_value_set_boolean (value, print->use_styles);
+            g_value_set_boolean (value, GET_OPTION (print, MOO_PRINT_USE_STYLES));
             break;
 
         default:
@@ -247,10 +296,11 @@ _moo_print_operation_init (MooPrintOperation *print)
                                                     page_setup);
 
     print->last_line = -1;
-    print->wrap = TRUE;
+    print->options = MOO_PRINT_USE_STYLES |
+            MOO_PRINT_HEADER | MOO_PRINT_FOOTER;
     print->wrap_mode = PANGO_WRAP_WORD_CHAR;
-    print->ellipsize = FALSE;
-    print->use_styles = TRUE;
+    print->header.separator = TRUE;
+    print->footer.separator = TRUE;
 }
 
 
@@ -354,6 +404,90 @@ _moo_edit_page_setup (GtkTextView    *view,
 
 
 static void
+header_footer_get_size (MooPrintHeaderFooter *hf,
+                        MooPrintOperation    *print,
+                        GtkPrintContext      *context,
+                        PangoFontDescription *default_font)
+{
+    PangoFontDescription *font = default_font;
+    PangoRectangle rect;
+
+    hf->do_print = GET_OPTION (print, MOO_PRINT_HEADER) &&
+            (print->header.parsed_format[0] || print->header.parsed_format[1] ||
+                    print->header.parsed_format[2]);
+
+    if (hf->layout)
+        g_object_unref (hf->layout);
+    hf->layout = NULL;
+
+    if (!hf->do_print)
+        return;
+
+    if (hf->font)
+        font = hf->font;
+
+    hf->layout = gtk_print_context_create_layout (context);
+    pango_layout_set_text (hf->layout, "AAAyyy", -1);
+
+    if (font)
+        pango_layout_set_font_description (hf->layout, font);
+
+    pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
+    hf->text_height = rect.height;
+
+    if (hf->separator)
+    {
+        hf->separator_height = 1.;
+        hf->separator_before = hf->text_height / 2;
+        hf->separator_after = hf->text_height / 2;
+    }
+    else
+    {
+        hf->separator_height = .0;
+        hf->separator_before = 0.;
+        hf->separator_after = 0.;
+    }
+}
+
+
+static void
+moo_print_operation_calc_page_size (MooPrintOperation  *print,
+                                    GtkPrintContext    *context,
+                                    PangoFontDescription *default_font)
+{
+    print->page.x = 0.;
+    print->page.y = 0.;
+    print->page.width = gtk_print_context_get_width (context);
+    print->page.height = gtk_print_context_get_height (context);
+
+    header_footer_get_size (&print->header, print, context, default_font);
+    header_footer_get_size (&print->footer, print, context, default_font);
+
+    if (print->header.do_print)
+    {
+        double delta = print->header.text_height + print->header.separator_before +
+                    print->header.separator_after + print->header.separator_height;
+        print->page.y += delta;
+        print->page.height -= delta;
+    }
+
+    if (print->footer.do_print)
+    {
+        double delta = print->footer.text_height + print->footer.separator_before +
+                    print->footer.separator_after + print->footer.separator_height;
+        print->page.height -= delta;
+    }
+
+    if (print->page.height < 0)
+    {
+        g_critical ("%s: page messed up", G_STRLOC);
+        print->page.y = 0.;
+        print->page.height = gtk_print_context_get_height (context);
+    }
+}
+
+
+static void
 moo_print_operation_begin_print (GtkPrintOperation  *operation,
                                  GtkPrintContext    *context)
 {
@@ -362,6 +496,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     double page_height;
     GtkTextIter iter, print_end;
     GTimer *timer;
+    time_t t;
 
     g_return_if_fail (print->buffer != NULL);
     g_return_if_fail (print->first_line >= 0);
@@ -373,10 +508,6 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 
     if (print->last_line < 0)
         print->last_line = gtk_text_buffer_get_line_count (print->buffer) - 1;
-
-    print->page.x = print->page.y = 0;
-    print->page.width = gtk_print_context_get_width (context);
-    print->page.height = gtk_print_context_get_height (context);
 
     if (print->font)
         font = pango_font_description_from_string (print->font);
@@ -396,14 +527,15 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         }
     }
 
+    moo_print_operation_calc_page_size (print, context, font);
     print->layout = gtk_print_context_create_layout (context);
 
-    if (print->wrap)
+    if (GET_OPTION (print, MOO_PRINT_WRAP))
     {
         pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
         pango_layout_set_wrap (print->layout, print->wrap_mode);
     }
-    else if (print->ellipsize)
+    else if (GET_OPTION (print, MOO_PRINT_ELLIPSIZE))
     {
         pango_layout_set_width (print->layout, print->page.width * PANGO_SCALE);
         pango_layout_set_ellipsize (print->layout, PANGO_ELLIPSIZE_END);
@@ -445,14 +577,14 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
 
         gtk_text_iter_forward_line (&iter);
 
-        if (page_height + line_height > print->page.height)
+        if (page_height + line_height > print->page.height + 5.)
         {
             gboolean part = FALSE;
             PangoLayoutIter *layout_iter;
 
             layout_iter = pango_layout_get_iter (print->layout);
 
-            if (print->wrap && pango_layout_get_line_count (print->layout) > 1)
+            if (GET_OPTION (print, MOO_PRINT_WRAP) && pango_layout_get_line_count (print->layout) > 1)
             {
                 double part_height = 0;
 
@@ -463,7 +595,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
                     layout_line = pango_layout_iter_get_line (layout_iter);
                     pango_layout_line_get_pixel_extents (layout_line, NULL, &line_rect);
 
-                    if (page_height + part_height + line_rect.height > print->page.height)
+                    if (page_height + part_height + line_rect.height > print->page.height + 5.)
                         break;
 
                     part_height += line_rect.height;
@@ -485,8 +617,10 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
             g_array_append_val (print->pages, iter);
             page_height = 0;
         }
-
-        page_height += line_height;
+        else
+        {
+            page_height += line_height;
+        }
     }
 
     gtk_print_operation_set_nr_of_pages (operation, print->pages->len);
@@ -494,6 +628,27 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
     g_message ("begin_print: %d pages in %f s", print->pages->len,
                g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
+
+    if (!print->tm)
+        print->tm = g_new (struct tm, 1);
+
+    errno = 0;
+    time (&t);
+
+    if (errno)
+    {
+        int err = errno;
+        g_critical ("time: %s", g_strerror (err));
+        g_free (print->tm);
+        print->tm = NULL;
+    }
+    else if (!localtime_r (&t, print->tm))
+    {
+        int err = errno;
+        g_critical ("time: %s", g_strerror (err));
+        g_free (print->tm);
+        print->tm = NULL;
+    }
 }
 
 
@@ -653,9 +808,78 @@ fill_layout (PangoLayout       *layout,
 
 
 static void
+print_header_footer (MooPrintOperation    *print,
+                     cairo_t              *cr,
+                     MooPrintHeaderFooter *hf,
+                     int                   page_nr,
+                     gboolean              header)
+{
+    double y;
+    char *text;
+    PangoRectangle rect;
+    int total_pages;
+
+    if (header)
+        y = 0;
+    else
+        y = print->page.y + print->page.height + hf->separator_before +
+                hf->separator_after + hf->separator_height;
+
+    g_object_get (print, "number-of-pages", &total_pages, NULL);
+
+    if (hf->parsed_format[0] &&
+        (text = hf_format_eval (hf->parsed_format[0], print->tm, page_nr,
+                                total_pages, print->filename, print->basename)))
+    {
+        pango_layout_set_text (hf->layout, text, -1);
+        cairo_move_to (cr, print->page.x, y);
+        pango_cairo_show_layout (cr, hf->layout);
+        g_free (text);
+    }
+
+    if (hf->parsed_format[1] &&
+        (text = hf_format_eval (hf->parsed_format[1], print->tm, page_nr,
+                                total_pages, print->filename, print->basename)))
+    {
+        pango_layout_set_text (hf->layout, text, -1);
+        pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
+        cairo_move_to (cr, print->page.x + print->page.width/2 - rect.width/2, y);
+        pango_cairo_show_layout (cr, hf->layout);
+        g_free (text);
+    }
+
+    if (hf->parsed_format[2] &&
+        (text = hf_format_eval (hf->parsed_format[2], print->tm, page_nr,
+                                total_pages, print->filename, print->basename)))
+    {
+        pango_layout_set_text (hf->layout, text, -1);
+        pango_layout_get_pixel_extents (hf->layout, NULL, &rect);
+        cairo_move_to (cr, print->page.x + print->page.width - rect.width, y);
+        pango_cairo_show_layout (cr, hf->layout);
+        g_free (text);
+    }
+
+    if (hf->separator)
+    {
+        if (header)
+            y = hf->text_height + hf->separator_before + hf->separator_height/2;
+        else
+            y = print->page.y + print->page.height +
+                    hf->separator_after + hf->separator_height/2;
+
+        cairo_move_to (cr, print->page.x, y);
+        cairo_set_line_width (cr, hf->separator_height);
+        cairo_line_to (cr, print->page.x + print->page.width, y);
+        cairo_stroke (cr);
+    }
+}
+
+
+static void
 print_page (MooPrintOperation *print,
             const GtkTextIter *start,
             const GtkTextIter *end,
+            int                page_nr,
             cairo_t           *cr)
 {
     char *text;
@@ -664,7 +888,12 @@ print_page (MooPrintOperation *print,
 
     cairo_set_source_rgb (cr, 0, 0, 0);
 
-    if (!print->use_styles)
+    if (print->header.do_print)
+        print_header_footer (print, cr, &print->header, page_nr, TRUE);
+    if (print->footer.do_print)
+        print_header_footer (print, cr, &print->footer, page_nr, FALSE);
+
+    if (!GET_OPTION (print, MOO_PRINT_USE_STYLES))
     {
         text = gtk_text_buffer_get_text (print->buffer, start, end, FALSE);
         pango_layout_set_text (print->layout, text, -1);
@@ -677,7 +906,7 @@ print_page (MooPrintOperation *print,
     }
 
     line_start = *start;
-    offset = 0;
+    offset = print->page.y;
 
     while (gtk_text_iter_compare (&line_start, end) < 0)
     {
@@ -699,7 +928,7 @@ print_page (MooPrintOperation *print,
             fill_layout (print->layout,&line_start, &line_end);
         }
 
-        cairo_move_to (cr, 0, offset);
+        cairo_move_to (cr, print->page.x, offset);
         pango_cairo_show_layout (cr, print->layout);
 
         pango_layout_get_pixel_extents (print->layout, NULL, &line_rect);
@@ -735,7 +964,7 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
     else
         gtk_text_buffer_get_end_iter (print->buffer, &end);
 
-    print_page (print, &start, &end, cr);
+    print_page (print, &start, &end, page_nr, cr);
 
     g_message ("page %d: %f s", page_nr, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
@@ -750,7 +979,6 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     g_return_if_fail (print->buffer != NULL);
 
-    g_object_unref (print->layout);
     g_array_free (print->pages, TRUE);
 
     print->layout = NULL;
@@ -771,6 +999,17 @@ _moo_edit_print (GtkTextView *view,
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
     print = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+
+    if (MOO_IS_EDIT (view))
+    {
+        _moo_print_operation_set_header_format (MOO_PRINT_OPERATION (print),
+                                                "%Qf", "%D", NULL);
+        _moo_print_operation_set_footer_format (MOO_PRINT_OPERATION (print),
+                                                "---", "Page %Qp of %QP", "%X");
+        _moo_print_operation_set_filename (MOO_PRINT_OPERATION (print),
+                                           moo_edit_get_display_filename (MOO_EDIT (view)),
+                                           moo_edit_get_display_basename (MOO_EDIT (view)));
+    }
 
     if (!parent)
         parent = GTK_WIDGET (view);
@@ -808,4 +1047,293 @@ _moo_edit_print (GtkTextView *view,
     }
 
     g_object_unref (print);
+}
+
+
+void
+_moo_print_operation_set_filename (MooPrintOperation  *print,
+                                   const char         *filename,
+                                   const char         *basename)
+{
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
+    g_free (print->filename);
+    g_free (print->basename);
+    print->filename = g_strdup (filename);
+    print->basename = g_strdup (basename);
+}
+
+
+static void
+set_hf_format (MooPrintHeaderFooter *hf,
+               const char           *left,
+               const char           *center,
+               const char           *right)
+{
+    HFFormat *l = NULL, *c = NULL, *r = NULL;
+
+    if (left)
+        l = hf_format_parse (left);
+    if (right)
+        r = hf_format_parse (right);
+    if (center)
+        c = hf_format_parse (center);
+
+    if ((left && !l) || (right && !r) || (center && !c))
+    {
+        hf_format_free (c);
+        hf_format_free (r);
+        hf_format_free (l);
+    }
+
+    g_free (hf->format[0]);
+    g_free (hf->format[1]);
+    g_free (hf->format[2]);
+    hf_format_free (hf->parsed_format[0]);
+    hf_format_free (hf->parsed_format[1]);
+    hf_format_free (hf->parsed_format[2]);
+
+    hf->format[0] = g_strdup (left);
+    hf->format[1] = g_strdup (center);
+    hf->format[2] = g_strdup (right);
+
+    hf->parsed_format[0] = l;
+    hf->parsed_format[1] = c;
+    hf->parsed_format[2] = r;
+}
+
+
+void
+_moo_print_operation_set_header_format (MooPrintOperation  *print,
+                                        const char         *left,
+                                        const char         *center,
+                                        const char         *right)
+{
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
+    set_hf_format (&print->header, left, center, right);
+}
+
+
+void
+_moo_print_operation_set_footer_format (MooPrintOperation  *print,
+                                        const char         *left,
+                                        const char         *center,
+                                        const char         *right)
+{
+    g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
+    set_hf_format (&print->footer, left, center, right);
+}
+
+
+/*****************************************************************************/
+/* Format string
+ */
+
+typedef enum {
+    HF_FORMAT_TIME,
+    HF_FORMAT_PAGE,
+    HF_FORMAT_TOTAL_PAGES,
+    HF_FORMAT_FILENAME,
+    HF_FORMAT_BASENAME
+} HFFormatType;
+
+typedef struct {
+    HFFormatType type;
+    char *string;
+} HFFormatChunk;
+
+struct _HFFormat {
+    GSList *chunks;
+};
+
+
+static HFFormatChunk *
+hf_format_chunk_new (HFFormatType type,
+                     const char  *string,
+                     int          len)
+{
+    HFFormatChunk *chunk = g_slice_new0 (HFFormatChunk);
+
+    chunk->type = type;
+
+    if (string)
+        chunk->string = g_strndup (string, len >= 0 ? len : (int) strlen (string));
+
+    return chunk;
+}
+
+
+static void
+hf_format_chunk_free (HFFormatChunk *chunk)
+{
+    if (chunk)
+    {
+        g_free (chunk->string);
+        g_slice_free (HFFormatChunk, chunk);
+    }
+}
+
+
+static void
+hf_format_free (HFFormat *format)
+{
+    if (format)
+    {
+        g_slist_foreach (format->chunks, (GFunc) hf_format_chunk_free, NULL);
+        g_slist_free (format->chunks);
+        g_slice_free (HFFormat, format);
+    }
+}
+
+
+#define ADD_CHUNK(format,type,string,len)                           \
+    format->chunks =                                                \
+        g_slist_prepend (format->chunks,                            \
+                         hf_format_chunk_new (type, string, len))
+
+
+static HFFormat *
+hf_format_parse (const char *format_string)
+{
+    HFFormat *format;
+    const char *p, *str;
+
+    g_return_val_if_fail (format_string != NULL, NULL);
+
+    format = g_slice_new0 (HFFormat);
+    p = str = format_string;
+
+    while (*p && (p = strchr (p, '%')))
+    {
+        switch (p[1])
+        {
+            case 'Q':
+                if (p != str)
+                    ADD_CHUNK (format, HF_FORMAT_TIME, str, p - str);
+                switch (p[2])
+                {
+                    case 0:
+                        g_warning ("%s: trailing '%%Q' in %s",
+                                   G_STRLOC, format_string);
+                        goto error;
+                    case 'f':
+                        ADD_CHUNK (format, HF_FORMAT_BASENAME, NULL, 0);
+                        str = p = p + 3;
+                        break;
+                    case 'F':
+                        ADD_CHUNK (format, HF_FORMAT_FILENAME, NULL, 0);
+                        str = p = p + 3;
+                        break;
+                    case 'p':
+                        ADD_CHUNK (format, HF_FORMAT_PAGE, NULL, 0);
+                        str = p = p + 3;
+                        break;
+                    case 'P':
+                        ADD_CHUNK (format, HF_FORMAT_TOTAL_PAGES, NULL, 0);
+                        str = p = p + 3;
+                        break;
+                    default:
+                        g_warning ("%s: unknown format '%%Q%c' in %s",
+                                   G_STRLOC, p[2], format_string);
+                        goto error;
+                }
+                break;
+            default:
+                p = p + 2;
+        }
+    }
+
+    if (*str)
+        ADD_CHUNK (format, HF_FORMAT_TIME, str, -1);
+
+    format->chunks = g_slist_reverse (format->chunks);
+    return format;
+
+error:
+    hf_format_free (format);
+    return NULL;
+}
+
+
+static void
+eval_strftime (GString    *dest,
+               const char *format,
+               struct tm  *tm)
+{
+    gsize result;
+    char buf[1024];
+    char *retval;
+
+    g_return_if_fail (format != NULL);
+    g_return_if_fail (tm != NULL);
+
+    if (!format[0])
+        return;
+
+    result = strftime (buf, 1024, format, tm);
+
+    if (!result)
+    {
+        g_warning ("%s: strftime failed", G_STRLOC);
+        return;
+    }
+
+    retval = g_locale_to_utf8 (buf, -1, NULL, NULL, NULL);
+
+    if (!retval)
+    {
+        g_warning ("%s: could not convert result of strftime to UTF8", G_STRLOC);
+        return;
+    }
+
+    g_string_append (dest, retval);
+    g_free (retval);
+}
+
+
+static char *
+hf_format_eval (HFFormat   *format,
+                struct tm  *tm,
+                int         page_nr,
+                int         total_pages,
+                const char *filename,
+                const char *basename)
+{
+    GString *string;
+    GSList *l;
+
+    g_return_val_if_fail (format != NULL, NULL);
+
+    string = g_string_new (NULL);
+
+    for (l = format->chunks; l != NULL; l = l->next)
+    {
+        HFFormatChunk *chunk = l->data;
+
+        switch (chunk->type)
+        {
+            case HF_FORMAT_TIME:
+                eval_strftime (string, chunk->string, tm);
+                break;
+            case HF_FORMAT_PAGE:
+                g_string_append_printf (string, "%d", page_nr);
+                break;
+            case HF_FORMAT_TOTAL_PAGES:
+                g_string_append_printf (string, "%d", total_pages);
+                break;
+            case HF_FORMAT_FILENAME:
+                if (!filename)
+                    g_critical ("%s: filename is NULL", G_STRLOC);
+                else
+                    g_string_append (string, filename);
+                break;
+            case HF_FORMAT_BASENAME:
+                if (!basename)
+                    g_critical ("%s: basename is NULL", G_STRLOC);
+                else
+                    g_string_append (string, basename);
+                break;
+        }
+    }
+
+    return g_string_free (string, FALSE);
 }
