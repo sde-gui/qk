@@ -8,7 +8,7 @@ EXTRA_DIST =			\
 
 DIST_SUBDIRS = m4
 
-ACLOCAL_AMFLAGS = $(ACLOCAL_FLAGS)
+ACLOCAL_AMFLAGS = -I $(top_srcdir)/m4
 
 AM_CFLAGS =					\
     -I$(top_builddir)				\
