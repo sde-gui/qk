@@ -16,6 +16,7 @@
       <separator/>
       <item action="Reload"/>
       <separator/>
+      <item action="PrintOptions"/>
       <item action="PageSetup"/>
       <item action="Print"/>
       <separator/>

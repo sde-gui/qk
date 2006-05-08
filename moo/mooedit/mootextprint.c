@@ -14,9 +14,31 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextprint.h"
 #include "mooedit/mooedit.h"
+#include "mooedit/mooprint-glade.h"
+#include "mooedit/mooeditprefs.h"
+#include "mooutils/mooglade.h"
+#include "mooutils/moodialogs.h"
 #include <time.h>
 #include <errno.h>
 #include <string.h>
+
+
+#define PREFS_FONT                      MOO_EDIT_PREFS_PREFIX "/print/font"
+#define PREFS_USE_STYLES                MOO_EDIT_PREFS_PREFIX "/print/use_styles"
+#define PREFS_USE_CUSTOM_FONT           MOO_EDIT_PREFS_PREFIX "/print/use_font"
+#define PREFS_WRAP                      MOO_EDIT_PREFS_PREFIX "/print/wrap"
+#define PREFS_ELLIPSIZE                 MOO_EDIT_PREFS_PREFIX "/print/ellipsize"
+
+#define PREFS_PRINT_HEADER              MOO_EDIT_PREFS_PREFIX "/print/header/print"
+#define PREFS_PRINT_HEADER_SEPARATOR    MOO_EDIT_PREFS_PREFIX "/print/header/separator"
+#define PREFS_HEADER_LEFT               MOO_EDIT_PREFS_PREFIX "/print/header/left"
+#define PREFS_HEADER_CENTER             MOO_EDIT_PREFS_PREFIX "/print/header/center"
+#define PREFS_HEADER_RIGHT              MOO_EDIT_PREFS_PREFIX "/print/header/right"
+#define PREFS_PRINT_FOOTER              MOO_EDIT_PREFS_PREFIX "/print/footer/print"
+#define PREFS_PRINT_FOOTER_SEPARATOR    MOO_EDIT_PREFS_PREFIX "/print/footer/separator"
+#define PREFS_FOOTER_LEFT               MOO_EDIT_PREFS_PREFIX "/print/footer/left"
+#define PREFS_FOOTER_CENTER             MOO_EDIT_PREFS_PREFIX "/print/footer/center"
+#define PREFS_FOOTER_RIGHT              MOO_EDIT_PREFS_PREFIX "/print/footer/right"
 
 
 #define SET_OPTION(print, opt, val)     \
@@ -45,6 +67,7 @@ static GtkPageSetup *page_setup;
 static GtkPrintSettings *print_settings;
 
 static void load_default_settings   (void);
+static void moo_print_init_prefs    (void);
 
 static void moo_print_operation_finalize    (GObject            *object);
 static void moo_print_operation_set_property(GObject            *object,
@@ -413,8 +436,7 @@ header_footer_get_size (MooPrintHeaderFooter *hf,
     PangoRectangle rect;
 
     hf->do_print = GET_OPTION (print, MOO_PRINT_HEADER) &&
-            (print->header.parsed_format[0] || print->header.parsed_format[1] ||
-                    print->header.parsed_format[2]);
+            (hf->parsed_format[0] || hf->parsed_format[1] || hf->parsed_format[2]);
 
     if (hf->layout)
         g_object_unref (hf->layout);
@@ -986,6 +1008,48 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 }
 
 
+static void
+moo_print_operation_load_prefs (MooPrintOperation *print)
+{
+    char *formats[3];
+
+    moo_print_init_prefs ();
+
+    formats[0] = g_strdup (moo_prefs_get_string (PREFS_HEADER_LEFT));
+    formats[1] = g_strdup (moo_prefs_get_string (PREFS_HEADER_CENTER));
+    formats[2] = g_strdup (moo_prefs_get_string (PREFS_HEADER_RIGHT));
+
+    _moo_print_operation_set_header_format (MOO_PRINT_OPERATION (print),
+                                            formats[0], formats[1], formats[2]);
+
+    g_free (formats[0]);
+    g_free (formats[1]);
+    g_free (formats[2]);
+
+    formats[0] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_LEFT));
+    formats[1] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_CENTER));
+    formats[2] = g_strdup (moo_prefs_get_string (PREFS_FOOTER_RIGHT));
+
+    _moo_print_operation_set_footer_format (MOO_PRINT_OPERATION (print),
+                                            formats[0], formats[1], formats[2]);
+
+    g_free (formats[0]);
+    g_free (formats[1]);
+    g_free (formats[2]);
+
+    if (moo_prefs_get_bool (PREFS_USE_CUSTOM_FONT))
+    {
+        const char *font = moo_prefs_get_string (PREFS_FONT);
+        g_object_set (print, "font", font, NULL);
+    }
+
+    g_object_set (print, "use-styles", moo_prefs_get_bool (PREFS_USE_STYLES),
+                  "wrap", moo_prefs_get_bool (PREFS_WRAP),
+                  "ellipsize", moo_prefs_get_bool (PREFS_ELLIPSIZE),
+                  NULL);
+}
+
+
 void
 _moo_edit_print (GtkTextView *view,
                  GtkWidget   *parent)
@@ -1002,10 +1066,7 @@ _moo_edit_print (GtkTextView *view,
 
     if (MOO_IS_EDIT (view))
     {
-        _moo_print_operation_set_header_format (MOO_PRINT_OPERATION (print),
-                                                "%Qf", "%D", NULL);
-        _moo_print_operation_set_footer_format (MOO_PRINT_OPERATION (print),
-                                                "---", "Page %Qp of %QP", "%X");
+        moo_print_operation_load_prefs (MOO_PRINT_OPERATION (print));
         _moo_print_operation_set_filename (MOO_PRINT_OPERATION (print),
                                            moo_edit_get_display_filename (MOO_EDIT (view)),
                                            moo_edit_get_display_basename (MOO_EDIT (view)));
@@ -1065,40 +1126,31 @@ _moo_print_operation_set_filename (MooPrintOperation  *print,
 
 static void
 set_hf_format (MooPrintHeaderFooter *hf,
-               const char           *left,
-               const char           *center,
-               const char           *right)
+               const char          **formats)
 {
-    HFFormat *l = NULL, *c = NULL, *r = NULL;
+    int i;
+    HFFormat *parsed[3] = {NULL, NULL, NULL};
 
-    if (left)
-        l = hf_format_parse (left);
-    if (right)
-        r = hf_format_parse (right);
-    if (center)
-        c = hf_format_parse (center);
-
-    if ((left && !l) || (right && !r) || (center && !c))
+    for (i = 0; i < 3; ++i)
     {
-        hf_format_free (c);
-        hf_format_free (r);
-        hf_format_free (l);
+        if (formats[i])
+            parsed[i] = hf_format_parse (formats[i]);
+
+        if (formats[i] && !parsed[i])
+        {
+            for (i = 0; i < 3; ++i)
+                hf_format_free (parsed[i]);
+            return;
+        }
     }
 
-    g_free (hf->format[0]);
-    g_free (hf->format[1]);
-    g_free (hf->format[2]);
-    hf_format_free (hf->parsed_format[0]);
-    hf_format_free (hf->parsed_format[1]);
-    hf_format_free (hf->parsed_format[2]);
-
-    hf->format[0] = g_strdup (left);
-    hf->format[1] = g_strdup (center);
-    hf->format[2] = g_strdup (right);
-
-    hf->parsed_format[0] = l;
-    hf->parsed_format[1] = c;
-    hf->parsed_format[2] = r;
+    for (i = 0; i < 3; ++i)
+    {
+        g_free (hf->format[i]);
+        hf_format_free (hf->parsed_format[i]);
+        hf->format[i] = g_strdup (formats[i]);
+        hf->parsed_format[i] = parsed[i];
+    }
 }
 
 
@@ -1108,8 +1160,9 @@ _moo_print_operation_set_header_format (MooPrintOperation  *print,
                                         const char         *center,
                                         const char         *right)
 {
+    const char *formats[] = {left, center, right};
     g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
-    set_hf_format (&print->header, left, center, right);
+    set_hf_format (&print->header, formats);
 }
 
 
@@ -1119,8 +1172,143 @@ _moo_print_operation_set_footer_format (MooPrintOperation  *print,
                                         const char         *center,
                                         const char         *right)
 {
+    const char *formats[] = {left, center, right};
     g_return_if_fail (MOO_IS_PRINT_OPERATION (print));
-    set_hf_format (&print->footer, left, center, right);
+    set_hf_format (&print->footer, formats);
+}
+
+
+/*****************************************************************************/
+/* Header/footer gui
+ */
+
+#define SET_TEXT(wid,setting)                                           \
+G_STMT_START {                                                          \
+    GtkEntry *entry__ = moo_glade_xml_get_widget (xml, wid);            \
+    const char *s__ = moo_prefs_get_string (setting);                   \
+    gtk_entry_set_text (entry__, s__ ? s__ : "");                       \
+} G_STMT_END
+
+#define GET_TEXT(wid,setting)                                           \
+G_STMT_START {                                                          \
+    GtkEntry *entry__ = moo_glade_xml_get_widget (xml, wid);            \
+    const char *s__ = gtk_entry_get_text (entry__);                     \
+    moo_prefs_set_string (setting, s__ && s__[0] ? s__ : NULL);         \
+} G_STMT_END
+
+#define SET_BOOL(wid,setting)                                           \
+G_STMT_START {                                                          \
+    gtk_toggle_button_set_active (moo_glade_xml_get_widget (xml, wid),  \
+                                  moo_prefs_get_bool (setting));        \
+} G_STMT_END
+
+#define GET_BOOL(wid,setting)                                           \
+G_STMT_START {                                                          \
+    gpointer btn__ = moo_glade_xml_get_widget (xml, wid);               \
+    moo_prefs_set_bool (setting, gtk_toggle_button_get_active (btn__)); \
+} G_STMT_END
+
+
+static void
+moo_print_init_prefs (void)
+{
+    moo_prefs_new_key_bool (PREFS_PRINT_HEADER, TRUE);
+    moo_prefs_new_key_bool (PREFS_PRINT_FOOTER, TRUE);
+    moo_prefs_new_key_bool (PREFS_PRINT_HEADER_SEPARATOR, TRUE);
+    moo_prefs_new_key_bool (PREFS_PRINT_FOOTER_SEPARATOR, TRUE);
+    moo_prefs_new_key_string (PREFS_HEADER_LEFT, NULL);
+    moo_prefs_new_key_string (PREFS_HEADER_CENTER, NULL);
+    moo_prefs_new_key_string (PREFS_HEADER_RIGHT, NULL);
+    moo_prefs_new_key_string (PREFS_FOOTER_LEFT, NULL);
+    moo_prefs_new_key_string (PREFS_FOOTER_CENTER, NULL);
+    moo_prefs_new_key_string (PREFS_FOOTER_RIGHT, NULL);
+
+    moo_prefs_new_key_string (PREFS_FONT, NULL);
+    moo_prefs_new_key_bool (PREFS_USE_STYLES, FALSE);
+    moo_prefs_new_key_bool (PREFS_USE_CUSTOM_FONT, FALSE);
+    moo_prefs_new_key_bool (PREFS_WRAP, TRUE);
+    moo_prefs_new_key_bool (PREFS_ELLIPSIZE, FALSE);
+}
+
+
+static void
+set_options (MooGladeXML *xml)
+{
+    const char *s;
+
+    moo_print_init_prefs ();
+
+    SET_BOOL ("print_header", PREFS_PRINT_HEADER);
+    SET_BOOL ("header_separator", PREFS_PRINT_HEADER_SEPARATOR);
+
+    SET_TEXT ("header_left", PREFS_HEADER_LEFT);
+    SET_TEXT ("header_center", PREFS_HEADER_CENTER);
+    SET_TEXT ("header_right", PREFS_HEADER_RIGHT);
+
+    SET_BOOL ("print_footer", PREFS_PRINT_FOOTER);
+    SET_BOOL ("footer_separator", PREFS_PRINT_FOOTER_SEPARATOR);
+
+    SET_TEXT ("footer_left", PREFS_FOOTER_LEFT);
+    SET_TEXT ("footer_center", PREFS_FOOTER_CENTER);
+    SET_TEXT ("footer_right", PREFS_FOOTER_RIGHT);
+
+    SET_BOOL ("use_styles", PREFS_USE_STYLES);
+    SET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
+    SET_BOOL ("wrap", PREFS_WRAP);
+    SET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
+
+    if ((s = moo_prefs_get_string (PREFS_FONT)))
+        gtk_font_button_set_font_name (moo_glade_xml_get_widget (xml, "font"), s);
+}
+
+
+static void
+get_options (MooGladeXML *xml)
+{
+    GET_BOOL ("print_header", PREFS_PRINT_HEADER);
+    GET_BOOL ("header_separator", PREFS_PRINT_HEADER_SEPARATOR);
+    GET_TEXT ("header_left", PREFS_HEADER_LEFT);
+    GET_TEXT ("header_center", PREFS_HEADER_CENTER);
+    GET_TEXT ("header_right", PREFS_HEADER_RIGHT);
+
+    GET_BOOL ("print_footer", PREFS_PRINT_FOOTER);
+    GET_BOOL ("footer_separator", PREFS_PRINT_FOOTER_SEPARATOR);
+    GET_TEXT ("footer_left", PREFS_FOOTER_LEFT);
+    GET_TEXT ("footer_center", PREFS_FOOTER_CENTER);
+    GET_TEXT ("footer_right", PREFS_FOOTER_RIGHT);
+
+    GET_BOOL ("use_styles", PREFS_USE_STYLES);
+    GET_BOOL ("use_custom_font", PREFS_USE_CUSTOM_FONT);
+    GET_BOOL ("wrap", PREFS_WRAP);
+    GET_BOOL ("ellipsize", PREFS_ELLIPSIZE);
+
+    if (gtk_toggle_button_get_active (moo_glade_xml_get_widget (xml, "use_custom_font")))
+        moo_prefs_set_string (PREFS_FONT,
+                              gtk_font_button_get_font_name (moo_glade_xml_get_widget (xml, "font")));
+}
+
+
+void
+_moo_edit_print_options_dialog (GtkWidget *parent)
+{
+    GtkWidget *dialog;
+    MooGladeXML *xml;
+
+    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, NULL);
+    g_return_if_fail (xml != NULL);
+
+    dialog = moo_glade_xml_get_widget (xml, "dialog");
+    g_return_if_fail (dialog != NULL);
+
+    moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
+
+    set_options (xml);
+
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
+        get_options (xml);
+
+    g_object_unref (xml);
+    gtk_widget_destroy (dialog);
 }
 
 
@@ -1206,13 +1394,13 @@ hf_format_parse (const char *format_string)
     {
         switch (p[1])
         {
-            case 'Q':
+            case 'E':
                 if (p != str)
                     ADD_CHUNK (format, HF_FORMAT_TIME, str, p - str);
                 switch (p[2])
                 {
                     case 0:
-                        g_warning ("%s: trailing '%%Q' in %s",
+                        g_warning ("%s: trailing '%%E' in %s",
                                    G_STRLOC, format_string);
                         goto error;
                     case 'f':
@@ -1232,7 +1420,7 @@ hf_format_parse (const char *format_string)
                         str = p = p + 3;
                         break;
                     default:
-                        g_warning ("%s: unknown format '%%Q%c' in %s",
+                        g_warning ("%s: unknown format '%%E%c' in %s",
                                    G_STRLOC, p[2], format_string);
                         goto error;
                 }
@@ -1315,7 +1503,7 @@ hf_format_eval (HFFormat   *format,
                 eval_strftime (string, chunk->string, tm);
                 break;
             case HF_FORMAT_PAGE:
-                g_string_append_printf (string, "%d", page_nr);
+                g_string_append_printf (string, "%d", page_nr + 1);
                 break;
             case HF_FORMAT_TOTAL_PAGES:
                 g_string_append_printf (string, "%d", total_pages);

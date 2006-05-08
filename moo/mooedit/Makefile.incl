@@ -51,6 +51,7 @@ mooedit_noinst_headers =                      \
     $(mooedit)/moolang-strings.h              \
     $(mooedit)/moolinebuffer.h                \
     $(mooedit)/moopluginprefs-glade.h         \
+    $(mooedit)/mooprint-glade.h               \
     $(mooedit)/mootext-private.h              \
     $(mooedit)/mootextbox.h                   \
     $(mooedit)/mootextbtree.h                 \
@@ -110,6 +111,7 @@ mooedit_built_sources =                       \
     $(mooedit)/mootextgotoline-glade.h        \
     $(mooedit)/mootextfind-glade.h            \
     $(mooedit)/moopluginprefs-glade.h         \
+    $(mooedit)/mooprint-glade.h               \
     $(mooedit)/mooeditprefs-glade.h           \
     $(mooedit)/mooeditsavemultiple-glade.h    \
     $(mooedit)/mooeditcolorsprefs-glade.h
@@ -147,6 +149,10 @@ $(mooedit)/statusbar-glade.h: $(mooedit_srcdir)/glade/statusbar.glade $(XML2H)
 	mkdir -p $(mooedit)
 	sh $(XML2H) STATUSBAR_GLADE_XML $(mooedit_srcdir)/glade/statusbar.glade \
 		> $(mooedit)/statusbar-glade.h
+$(mooedit)/mooprint-glade.h: $(mooedit_srcdir)/glade/mooprint.glade $(XML2H)
+	mkdir -p $(mooedit)
+	sh $(XML2H) MOO_PRINT_GLADE_XML $(mooedit_srcdir)/glade/mooprint.glade \
+		> $(mooedit)/mooprint-glade.h
 
 if MOO_ENABLE_PRINTING
 mooedit_sources += $(mooedit_printing_sources)

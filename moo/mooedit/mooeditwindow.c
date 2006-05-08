@@ -216,8 +216,9 @@ static void moo_edit_window_prev_ph     (MooEditWindow      *window);
 
 
 #ifdef MOO_ENABLE_PRINTING
-static void moo_edit_window_page_setup  (MooEditWindow    *window);
-static void moo_edit_window_print       (MooEditWindow    *window);
+static void moo_edit_window_print_options   (MooEditWindow    *window);
+static void moo_edit_window_page_setup      (MooEditWindow    *window);
+static void moo_edit_window_print           (MooEditWindow    *window);
 #endif
 
 
@@ -675,6 +676,14 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
 #ifdef MOO_ENABLE_PRINTING
+    moo_window_class_new_action (window_class, "PrintOptions",
+                                 "name", "Print Options",
+                                 "label", "Print Options",
+                                 "tooltip", "Print Options",
+                                 "icon-stock-id", GTK_STOCK_PREFERENCES,
+                                 "closure-callback", moo_edit_window_print_options,
+                                 NULL);
+
     moo_window_class_new_action (window_class, "PageSetup",
                                  "name", "Page Setup",
                                  "label", "Page Setup",
@@ -1154,6 +1163,13 @@ moo_edit_window_prev_ph (MooEditWindow *window)
 
 
 #ifdef MOO_ENABLE_PRINTING
+static void
+moo_edit_window_print_options (MooEditWindow *window)
+{
+    _moo_edit_print_options_dialog (GTK_WIDGET (window));
+}
+
+
 static void
 moo_edit_window_page_setup (MooEditWindow *window)
 {

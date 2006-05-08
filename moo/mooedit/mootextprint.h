@@ -122,6 +122,7 @@ void    _moo_edit_page_setup                    (GtkTextView        *view,
                                                  GtkWidget          *parent);
 void    _moo_edit_print                         (GtkTextView        *view,
                                                  GtkWidget          *parent);
+void    _moo_edit_print_options_dialog          (GtkWidget          *parent);
 
 
 G_END_DECLS
