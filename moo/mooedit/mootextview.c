@@ -2237,7 +2237,7 @@ moo_text_view_expose (GtkWidget      *widget,
     GdkWindow *left_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_LEFT);
     GdkWindow *right_window = gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_RIGHT);
     GtkTextIter start, end;
-    int first_line, last_line;
+    int first_line = 0, last_line = 100000;
 
     view->priv->in_expose = TRUE;
 
