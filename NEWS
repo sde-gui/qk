@@ -1,5 +1,17 @@
 2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
+    * === Released 0.6.98 ===
+
+    Added printing support for gtk-2.9.
+        Printing support in gtk is not stable yet, and will likely change
+        in future, therefore printing in medit must be explicitely enabled by
+        --enable-printing argument to configure.
+    Fixed drawing bug when opening big files.
+    Made window panes save their position after changing it by drag-n-drop.
+    Build fixes on AMD Linux, other bug fixes.
+
+2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
+
     * === Released 0.6.97 ===
 
     medit now uses system pcre library if present; FAM support is disabled.
