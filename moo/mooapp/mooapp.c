@@ -35,6 +35,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
+#include <stdio.h>
 
 
 #ifdef VERSION
