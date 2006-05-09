@@ -232,6 +232,7 @@ int main (int argc, char *argv[])
     int opt_remain;
     MooEditor *editor;
     char **files;
+    gpointer window;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -281,10 +282,14 @@ int main (int argc, char *argv[])
     g_free (files);
 
     if (!moo_app_init (app))
+    {
+        moo_remove_startup_notify (NULL);
         return 0;
+    }
 
     editor = moo_app_get_editor (app);
-    moo_editor_new_window (editor);
+    window = moo_editor_new_window (editor);
+    moo_remove_startup_notify (window);
 
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);

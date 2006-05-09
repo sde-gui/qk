@@ -28,6 +28,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#ifdef GDK_WINDOWING_X11
+#include <gdk/gdkx.h>
+#endif
+
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -1444,3 +1448,104 @@ moo_widget_set_tooltip (GtkWidget  *widget,
     else
         gtk_tooltips_set_tip (tooltips, widget, tip, tip);
 }
+
+
+/******************************************************************************/
+/* Startup notification
+ */
+
+#ifdef GDK_WINDOWING_X11
+
+void
+moo_remove_startup_notify (GtkWidget *widget)
+{
+    const char *id;
+    char *message, *ptr;
+    guint message_len;
+    GdkWindow *window, *root;
+    GdkWindow *freeme = NULL;
+    GdkAtom type_atom_begin, type_atom;
+
+    id = g_getenv ("DESKTOP_STARTUP_ID");
+
+    if (!id)
+    {
+        g_message ("DESKTOP_STARTUP_ID not set");
+
+        id = g_getenv ("DESKTOP_LAUNCH_ID");
+
+        if (id)
+            g_message ("DESKTOP_LAUNCH_ID: %s", id);
+        else
+            g_message ("DESKTOP_LAUNCH_ID not set");
+
+        return;
+    }
+
+    message = g_strdup_printf ("remove: ID=%s", id);
+    message_len = strlen (message) + 1;
+    g_unsetenv ("DESKTOP_STARTUP_ID");
+
+    if (widget && widget->window)
+    {
+        GdkScreen *screen = gtk_widget_get_screen (widget);
+        g_return_if_fail (screen != NULL);
+        window = widget->window;
+        root = gdk_screen_get_root_window (screen);
+        g_return_if_fail (root != NULL);
+    }
+    else
+    {
+        GdkWindowAttr attributes;
+        GdkScreen *screen;
+
+        screen = gdk_screen_get_default ();
+        g_return_if_fail (screen != NULL);
+        root = gdk_screen_get_root_window (screen);
+        g_return_if_fail (root != NULL);
+
+        freeme = window = gdk_window_new (root, &attributes, 0);
+        g_return_if_fail (window != NULL);
+    }
+
+    ptr = message;
+    type_atom_begin = gdk_atom_intern ("_NET_STARTUP_INFO_BEGIN", FALSE);
+    type_atom = gdk_atom_intern ("_NET_STARTUP_INFO", FALSE);
+
+    while (message_len)
+    {
+        GdkEvent *event;
+        guint len;
+
+        event = gdk_event_new (GDK_CLIENT_EVENT);
+        event->client.send_event = TRUE;
+        event->client.window = g_object_ref (window);
+        event->client.data_format = 8;
+        event->client.message_type = ptr == message ? type_atom_begin : type_atom;
+
+        len = MIN (message_len, 20);
+        memcpy (event->client.data.b, ptr, len);
+        ptr += len;
+        message_len -= len;
+
+        gdk_event_send_client_message (event, GDK_WINDOW_XID (root));
+
+        gdk_event_free (event);
+    }
+
+    if (freeme)
+    {
+        gdk_window_destroy (freeme);
+        g_object_unref (freeme);
+    }
+
+    gdk_flush ();
+    g_free (message);
+}
+
+#else /* !GDK_WINDOWING_X11 */
+void
+moo_remove_startup_notify (G_GNUC_UNUSED GtkWidget *widget)
+{
+}
+#endif
