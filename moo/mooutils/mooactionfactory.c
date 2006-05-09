@@ -283,19 +283,17 @@ param_array_concatenate (GParameter *props1,
 
 static void
 action_toggled_obj (GtkToggleAction *action,
-                    MooObjectPtr    *ptr)
+                    gpointer         data)
 {
     typedef void (*ToggledFunc) (gpointer data, gboolean active);
     ToggledFunc func;
-    gpointer obj;
 
     func = g_object_get_data (G_OBJECT (action), "moo-toggle-func");
-    obj = MOO_OBJECT_PTR_GET (ptr);
-    g_return_if_fail (func != NULL && G_IS_OBJECT (obj));
+    g_return_if_fail (func != NULL && G_IS_OBJECT (data));
 
-    g_object_ref (obj);
-    func (obj, gtk_toggle_action_get_active (action));
-    g_object_unref (obj);
+    g_object_ref (data);
+    func (data, gtk_toggle_action_get_active (action));
+    g_object_unref (data);
 }
 
 static void
@@ -313,10 +311,11 @@ action_toggled_data (GtkToggleAction *action,
 
 static void
 toggled_object_died (GtkAction *action,
-                     gpointer   ptr)
+                     gpointer   obj)
 {
-    guint n = g_signal_handlers_disconnect_by_func (action, (gpointer) action_toggled_obj, ptr);
+    guint n = g_signal_handlers_disconnect_by_func (action, (gpointer) action_toggled_obj, obj);
     g_assert (n);
+    g_object_set_data (G_OBJECT (action), "moo-toggled-ptr", NULL);
 }
 
 static void
@@ -332,9 +331,9 @@ moo_action_set_fake_properties (gpointer    action,
     GCallback closure_callback = NULL;
     GCallback closure_proxy_func = NULL;
 
-    GCallback toggled_callback;
-    gpointer toggled_data;
-    gpointer toggled_object;
+    GCallback toggled_callback = NULL;
+    gpointer toggled_data = NULL;
+    gpointer toggled_object = NULL;
 
     if (!n_props)
         return;
@@ -394,12 +393,24 @@ moo_action_set_fake_properties (gpointer    action,
 
         if (toggled_object)
         {
+            MooObjectPtr *old_ptr;
             gpointer ptr = moo_object_ptr_new (toggled_object,
                                                (GWeakNotify) toggled_object_died,
                                                action);
-            g_signal_connect_data (action, "toggled",
-                                   G_CALLBACK (action_toggled_obj), ptr,
-                                   (GClosureNotify) moo_object_ptr_free, 0);
+
+            old_ptr = g_object_get_data (G_OBJECT (action), "moo-toggled-ptr");
+
+            if (old_ptr)
+                g_signal_handlers_disconnect_by_func (action,
+                                                      (gpointer) action_toggled_obj,
+                                                      MOO_OBJECT_PTR_GET (old_ptr));
+
+            g_object_set_data_full (G_OBJECT (action), "moo-toggled-ptr",
+                                    ptr, (GDestroyNotify) moo_object_ptr_free);
+
+            g_signal_connect (action, "toggled",
+                              G_CALLBACK (action_toggled_obj),
+                              toggled_object);
         }
         else
         {
