@@ -899,11 +899,12 @@ moo_term_get_screen_size (MooTerm        *term,
 }
 
 
-gboolean    moo_term_fork_command           (MooTerm        *term,
-                                             const MooTermCommand *cmd,
-                                             const char     *working_dir,
-                                             char          **envp,
-                                             GError        **error)
+gboolean
+moo_term_fork_command (MooTerm        *term,
+                       const MooTermCommand *cmd,
+                       const char     *working_dir,
+                       char          **envp,
+                       GError        **error)
 {
     MooTermCommand *copy;
     gboolean result;
@@ -928,11 +929,12 @@ gboolean    moo_term_fork_command           (MooTerm        *term,
 }
 
 
-gboolean         moo_term_fork_command_line (MooTerm        *term,
-                                             const char     *cmd_line,
-                                             const char     *working_dir,
-                                             char          **envp,
-                                             GError        **error)
+gboolean
+moo_term_fork_command_line (MooTerm        *term,
+                            const char     *cmd_line,
+                            const char     *working_dir,
+                            char          **envp,
+                            GError        **error)
 {
     MooTermCommand *cmd;
     gboolean result;
@@ -948,11 +950,12 @@ gboolean         moo_term_fork_command_line (MooTerm        *term,
 }
 
 
-gboolean    moo_term_fork_argv              (MooTerm        *term,
-                                             char          **argv,
-                                             const char     *working_dir,
-                                             char          **envp,
-                                             GError        **error)
+gboolean
+moo_term_fork_argv (MooTerm        *term,
+                    char          **argv,
+                    const char     *working_dir,
+                    char          **envp,
+                    GError        **error)
 {
     MooTermCommand *cmd;
     gboolean result;
@@ -968,9 +971,10 @@ gboolean    moo_term_fork_argv              (MooTerm        *term,
 }
 
 
-void             moo_term_feed_child        (MooTerm        *term,
-                                             const char     *string,
-                                             int             len)
+void
+moo_term_feed_child (MooTerm        *term,
+                     const char     *string,
+                     int             len)
 {
     g_return_if_fail (MOO_IS_TERM (term) && string != NULL);
     if (_moo_term_pt_child_alive (term->priv->pt))
@@ -978,8 +982,26 @@ void             moo_term_feed_child        (MooTerm        *term,
 }
 
 
-static GtkClipboard *term_get_clipboard (MooTerm        *term,
-                                         GdkAtom         selection)
+void
+moo_term_send_intr (MooTerm *term)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+
+    if (_moo_term_pt_child_alive (term->priv->pt))
+        _moo_term_pt_send_intr (term->priv->pt);
+}
+
+
+void
+moo_term_ctrl_c (MooTerm *term)
+{
+    moo_term_send_intr (term);
+}
+
+
+static GtkClipboard *
+term_get_clipboard (MooTerm *term,
+                    GdkAtom  selection)
 {
     if (GTK_WIDGET_REALIZED (term))
         return gtk_widget_get_clipboard (GTK_WIDGET (term), selection);
@@ -988,8 +1010,9 @@ static GtkClipboard *term_get_clipboard (MooTerm        *term,
 }
 
 
-void             moo_term_copy_clipboard    (MooTerm        *term,
-                                             GdkAtom         selection)
+void
+moo_term_copy_clipboard (MooTerm *term,
+                         GdkAtom  selection)
 {
     GtkClipboard *cb;
     char *text;
@@ -1007,13 +1030,6 @@ void             moo_term_copy_clipboard    (MooTerm        *term,
         g_assert (*text);
         g_free (text);
     }
-}
-
-
-void
-moo_term_ctrl_c (MooTerm        *term)
-{
-    _moo_term_pt_send_intr (term->priv->pt);
 }
 
 
