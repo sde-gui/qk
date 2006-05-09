@@ -1469,18 +1469,7 @@ moo_remove_startup_notify (GtkWidget *widget)
     id = g_getenv ("DESKTOP_STARTUP_ID");
 
     if (!id)
-    {
-        g_message ("DESKTOP_STARTUP_ID not set");
-
-        id = g_getenv ("DESKTOP_LAUNCH_ID");
-
-        if (id)
-            g_message ("DESKTOP_LAUNCH_ID: %s", id);
-        else
-            g_message ("DESKTOP_LAUNCH_ID not set");
-
         return;
-    }
 
     message = g_strdup_printf ("remove: ID=%s", id);
     message_len = strlen (message) + 1;
