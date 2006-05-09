@@ -2053,6 +2053,7 @@ create_tool_item (MooUIXML       *xml,
         }
 
         gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
+        g_object_notify (G_OBJECT (action), "tooltip");
 
         if (node->children)
         {
@@ -2158,6 +2159,7 @@ create_toolbar (MooUIXML       *xml,
     g_return_val_if_fail (toplevel->node != NULL, FALSE);
 
     toplevel->widget = gtk_toolbar_new ();
+    gtk_toolbar_set_tooltips (GTK_TOOLBAR (toplevel->widget), TRUE);
     xml_connect_toplevel (xml, toplevel);
 
     return fill_toolbar (xml, toplevel,
