@@ -131,21 +131,17 @@ rm_r (const char *path,
       GError    **error)
 {
     GDir *dir;
-    GError *error_here = NULL;
     const char *file;
     gboolean success = TRUE;
 
     g_return_val_if_fail (path != NULL, FALSE);
 
-    dir = g_dir_open (path, 0, &error_here);
+    dir = g_dir_open (path, 0, error);
 
     if (!dir)
-    {
-        g_propagate_error (error, error_here);
         return FALSE;
-    }
 
-    while ((file = g_dir_read_name (dir)))
+    while (success && (file = g_dir_read_name (dir)))
     {
         char *file_path = g_build_filename (path, file, NULL);
 
