@@ -11,6 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#include "mooutils/mooaction.h"
 #include "mooutils/moouixml.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
@@ -59,7 +60,7 @@ typedef struct {
     Node *node;
     GtkWidget *widget;
     GHashTable *children; /* Node* -> GtkWidget* */
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
     GtkAccelGroup *accel_group;
     gboolean in_creation;
 } Toplevel;
@@ -139,7 +140,7 @@ static void     merge_remove_node       (Merge          *merge,
                                          Node           *node);
 
 static Toplevel *toplevel_new           (Node           *node,
-                                         MooActionGroup *actions,
+                                         GtkActionGroup *actions,
                                          GtkAccelGroup  *accel_group);
 static void     toplevel_free           (Toplevel       *toplevel);
 static GtkWidget *toplevel_get_widget   (Toplevel       *toplevel,
@@ -1367,7 +1368,7 @@ out:
 
 static Toplevel*
 toplevel_new (Node           *node,
-              MooActionGroup *actions,
+              GtkActionGroup *actions,
               GtkAccelGroup  *accel_group)
 {
     Toplevel *top;
@@ -1641,11 +1642,11 @@ create_menu_item (MooUIXML       *xml,
 
     if (item->action)
     {
-        MooAction *action;
+        GtkAction *action;
 
         g_return_if_fail (toplevel->actions != NULL);
 
-        action = moo_action_group_get_action (toplevel->actions, item->action);
+        action = gtk_action_group_get_action (toplevel->actions, item->action);
 
         if (!action)
         {
@@ -1656,10 +1657,11 @@ create_menu_item (MooUIXML       *xml,
             return;
         }
 
-        if (action->dead)
+        if (_moo_action_get_dead (action))
             return;
 
-        menu_item = moo_action_create_menu_item (action);
+        gtk_action_set_accel_group (action, toplevel->accel_group);
+        menu_item = gtk_action_create_menu_item (action);
     }
     else
     {
@@ -2029,17 +2031,28 @@ create_tool_item (MooUIXML       *xml,
 
     if (item->action)
     {
-        MooAction *action;
+        GtkAction *action;
 
         g_return_val_if_fail (toplevel->actions != NULL, FALSE);
 
-        action = moo_action_group_get_action (toplevel->actions, item->action);
+        action = gtk_action_group_get_action (toplevel->actions, item->action);
 
-        if (!action || action->dead)
+        if (!action || _moo_action_get_dead (action))
             return TRUE;
 
-        tool_item = moo_action_create_tool_item (action, GTK_WIDGET (toolbar), index,
-                                                 node->children ? MOO_TOOL_ITEM_MENU : 0);
+        gtk_action_set_accel_group (action, toplevel->accel_group);
+
+        if (_moo_action_get_has_submenu (action))
+        {
+            tool_item = GTK_WIDGET (gtk_menu_tool_button_new (NULL, NULL));
+            gtk_action_connect_proxy (action, tool_item);
+        }
+        else
+        {
+            tool_item = gtk_action_create_tool_item (action);
+        }
+
+        gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
 
         if (node->children)
         {
@@ -2157,7 +2170,7 @@ gpointer
 moo_ui_xml_create_widget (MooUIXML       *xml,
                           MooUIWidgetType type,
                           const char     *path,
-                          MooActionGroup *actions,
+                          GtkActionGroup *actions,
                           GtkAccelGroup  *accel_group)
 {
     Node *node;
@@ -2166,7 +2179,7 @@ moo_ui_xml_create_widget (MooUIXML       *xml,
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path != NULL, NULL);
-    g_return_val_if_fail (!actions || MOO_IS_ACTION_GROUP (actions), NULL);
+    g_return_val_if_fail (!actions || GTK_IS_ACTION_GROUP (actions), NULL);
 
     node = moo_ui_xml_get_node (xml, path);
     g_return_val_if_fail (node != NULL, NULL);

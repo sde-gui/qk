@@ -237,19 +237,19 @@ find_plugin_init (FindPlugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "FindInFiles",
-                                 "name", "Find In Files",
+                                 "display-name", "Find In Files",
                                  "label", "Find In Files",
                                  "tooltip", "Find In Files",
                                  "accel", "<ctrl><alt>f",
-                                 "icon-stock-id", MOO_STOCK_FIND_IN_FILES,
+                                 "stock-id", MOO_STOCK_FIND_IN_FILES,
                                  "closure-callback", find_in_files_cb,
                                  NULL);
 
     moo_window_class_new_action (klass, "FindFile",
-                                 "name", "Find File",
+                                 "display-name", "Find File",
                                  "label", "Find File",
                                  "tooltip", "Find File",
-                                 "icon-stock-id", MOO_STOCK_FIND_FILE,
+                                 "stock-id", MOO_STOCK_FIND_FILE,
                                  "closure-callback", find_file_cb,
                                  NULL);
 

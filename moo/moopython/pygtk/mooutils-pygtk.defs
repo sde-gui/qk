@@ -109,16 +109,9 @@
   (gtype-id "MOO_TYPE_WINDOW")
 )
 
-(define-object Action
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooAction")
-  (gtype-id "MOO_TYPE_ACTION")
-)
-
 (define-object MenuAction
   (in-module "Moo")
-  (parent "MooAction")
+  (parent "GtkAction")
   (c-name "MooMenuAction")
   (gtype-id "MOO_TYPE_MENU_ACTION")
 )
@@ -257,15 +250,6 @@
     '("key" "MOO_PREFS_MATCH_KEY")
     '("prefix" "MOO_PREFS_MATCH_PREFIX")
     '("regex" "MOO_PREFS_MATCH_REGEX")
-  )
-)
-
-(define-flags ToolItemFlags
-  (in-module "Moo")
-  (c-name "MooToolItemFlags")
-  (gtype-id "MOO_TYPE_TOOL_ITEM_FLAGS")
-  (values
-    '("menu" "MOO_TOOL_ITEM_MENU")
   )
 )
 
@@ -1425,13 +1409,13 @@
 (define-method get_actions
   (of-object "MooWindow")
   (c-name "moo_window_get_actions")
-  (return-type "MooActionGroup*")
+  (return-type "GtkActionGroup*")
 )
 
-(define-method get_action_by_id
+(define-method get_action
   (of-object "MooWindow")
-  (c-name "moo_window_get_action_by_id")
-  (return-type "MooAction*")
+  (c-name "moo_window_get_action")
+  (return-type "GtkAction*")
   (parameters
     '("const-char*" "action_id")
   )
@@ -1447,15 +1431,6 @@
   (of-object "MooWindow")
   (c-name "moo_window_get_id")
   (return-type "char*")
-)
-
-(define-method set_name
-  (of-object "MooWindow")
-  (c-name "moo_window_set_name")
-  (return-type "none")
-  (parameters
-    '("const-char*" "name")
-  )
 )
 
 
@@ -1517,7 +1492,7 @@
   (parameters
     '("MooUIWidgetType" "type")
     '("const-char*" "path")
-    '("MooActionGroup*" "actions")
+    '("GtkActionGroup*" "actions")
     '("GtkAccelGroup*" "accel_group")
   )
 )
@@ -2062,9 +2037,10 @@
 (define-function moo_menu_action_new
   (c-name "moo_menu_action_new")
   (is-constructor-of "MooMenuAction")
-  (return-type "MooAction*")
+  (return-type "GtkAction*")
   (parameters
     '("const-char*" "id")
+    '("const-char*" "label")
   )
 )
 
@@ -2090,15 +2066,6 @@
   (parameters
     '("gpointer" "data")
     '("gboolean" "is_object")
-  )
-)
-
-(define-method set_menu_label
-  (of-object "MooMenuAction")
-  (c-name "moo_menu_action_set_menu_label")
-  (return-type "none")
-  (parameters
-    '("const-char*" "label")
   )
 )
 
@@ -2200,143 +2167,65 @@
 
 ;; From ./ggap/moo/mooutils/mooaction.h
 
-(define-function moo_action_new
-  (c-name "moo_action_new")
-  (is-constructor-of "MooAction")
-  (return-type "MooAction*")
-)
-
-(define-method activate
-  (of-object "MooAction")
-  (c-name "moo_action_activate")
+(define-function sync_toggle_action
+  (c-name "moo_sync_toggle_action")
   (return-type "none")
+  (parameters
+    '("GtkAction*" "action")
+    '("GObject*" "master")
+    '("const-char*" "prop")
+    '("gboolean" "invert" (null-ok) (default "FALSE"))
+  )
 )
 
-(define-method get_id
-  (of-object "MooAction")
-  (c-name "moo_action_get_id")
+(define-function action_set_display_name
+  (c-name "moo_action_set_display_name")
+  (return-type "none")
+  (parameters
+    '("GtkAction*" "action")
+    '("const-char*" "name")
+  )
+)
+
+(define-function action_get_display_name
+  (c-name "moo_action_get_display_name")
   (return-type "const-char*")
+  (parameters
+    '("GtkAction*" "action")
+  )
 )
 
-(define-method get_group_name
-  (of-object "MooAction")
-  (c-name "moo_action_get_group_name")
+(define-function action_set_default_accel
+  (c-name "moo_action_set_default_accel")
+  (return-type "none")
+  (parameters
+    '("GtkAction*" "action")
+    '("const-char*" "accel")
+  )
+)
+
+(define-function action_get_default_accel
+  (c-name "moo_action_get_default_accel")
   (return-type "const-char*")
+  (parameters
+    '("GtkAction*" "action")
+  )
 )
 
-(define-method get_name
-  (of-object "MooAction")
-  (c-name "moo_action_get_name")
-  (return-type "const-char*")
-)
-
-(define-method set_no_accel
-  (of-object "MooAction")
+(define-function action_set_no_accel
   (c-name "moo_action_set_no_accel")
   (return-type "none")
   (parameters
+    '("GtkAction*" "action")
     '("gboolean" "no_accel")
   )
 )
 
-(define-method get_no_accel
-  (of-object "MooAction")
+(define-function action_get_no_accel
   (c-name "moo_action_get_no_accel")
   (return-type "gboolean")
-)
-
-(define-method create_menu_item
-  (of-object "MooAction")
-  (c-name "moo_action_create_menu_item")
-  (return-type "GtkWidget*")
-)
-
-(define-method create_tool_item
-  (of-object "MooAction")
-  (c-name "moo_action_create_tool_item")
-  (return-type "GtkWidget*")
   (parameters
-    '("GtkWidget*" "toolbar")
-    '("int" "position")
-    '("MooToolItemFlags" "flags")
-  )
-)
-
-(define-method set_sensitive
-  (of-object "MooAction")
-  (c-name "moo_action_set_sensitive")
-  (return-type "none")
-  (parameters
-    '("gboolean" "sensitive")
-  )
-)
-
-(define-method set_visible
-  (of-object "MooAction")
-  (c-name "moo_action_set_visible")
-  (return-type "none")
-  (parameters
-    '("gboolean" "visible")
-  )
-)
-
-(define-method get_default_accel
-  (of-object "MooAction")
-  (c-name "moo_action_get_default_accel")
-  (return-type "const-char*")
-)
-
-(define-function moo_action_make_accel_path
-  (c-name "moo_action_make_accel_path")
-  (return-type "const-char*")
-  (parameters
-    '("const-char*" "group_id")
-    '("const-char*" "action_id")
-  )
-)
-
-
-(define-virtual create_menu_item
-  (of-object "MooAction")
-  (return-type "GtkWidget*")
-)
-
-(define-virtual create_tool_item
-  (of-object "MooAction")
-  (return-type "GtkWidget*")
-  (parameters
-    '("GtkWidget*" "toolbar")
-    '("int" "position")
-    '("MooToolItemFlags" "flags")
-  )
-)
-
-(define-virtual add_proxy
-  (of-object "MooAction")
-  (return-type "none")
-  (parameters
-    '("GtkWidget*" "proxy")
-  )
-)
-
-(define-virtual activate
-  (of-object "MooAction")
-  (return-type "none")
-)
-
-(define-virtual set_sensitive
-  (of-object "MooAction")
-  (return-type "none")
-  (parameters
-    '("gboolean" "sensitive")
-  )
-)
-
-(define-virtual set_visible
-  (of-object "MooAction")
-  (return-type "none")
-  (parameters
-    '("gboolean" "visible")
+    '("GtkAction*" "action")
   )
 )
 

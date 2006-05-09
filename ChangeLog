@@ -1,4 +1,7 @@
-2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
+2006-05-08  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Removed MooAction, using GtkAction now.
+
+2006-05-08  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
     * === Released 0.6.98 ===
 

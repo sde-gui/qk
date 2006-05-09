@@ -262,7 +262,7 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->file_watch_policy = MOO_EDIT_RELOAD_IF_SAFE;
 
-    edit->priv->actions = moo_action_group_new ("MooEdit");
+    edit->priv->actions = gtk_action_group_new ("MooEdit");
 
     indent = moo_indenter_new (edit, NULL);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);

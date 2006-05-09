@@ -8,10 +8,7 @@ mooutils_srcdir = $(srcdir)/$(mooutils)
 
 mooutils_include_headers =                     \
     $(mooutils)/eggregex.h                     \
-    $(mooutils)/mooaccel.h                     \
     $(mooutils)/mooaccelbutton.h               \
-    $(mooutils)/mooaction.h                    \
-    $(mooutils)/mooactiongroup.h               \
     $(mooutils)/moobigpaned.h                  \
     $(mooutils)/mooclosure.h                   \
     $(mooutils)/moocmd.h                       \
@@ -34,9 +31,7 @@ mooutils_include_headers =                     \
     $(mooutils)/mooprefsdialog.h               \
     $(mooutils)/mooprefsdialogpage.h           \
     $(mooutils)/moopython.h                    \
-    $(mooutils)/mooradioaction.h               \
     $(mooutils)/moostock.h                     \
-    $(mooutils)/mootoggleaction.h              \
     $(mooutils)/moouixml.h                     \
     $(mooutils)/mooundomanager.h               \
     $(mooutils)/mooutils-fs.h                  \
@@ -47,12 +42,15 @@ mooutils_include_headers =                     \
 mooutils_sources =                             \
     $(mooutils_include_headers)                \
     $(mooutils)/eggregex.c                     \
+    $(mooutils)/mooaccel.h                     \
     $(mooutils)/mooaccel.c                     \
     $(mooutils)/mooaccelbutton-glade.h         \
     $(mooutils)/mooaccelbutton.c               \
     $(mooutils)/mooaccelprefs-glade.h          \
+    $(mooutils)/mooaction.h                    \
     $(mooutils)/mooaction.c                    \
-    $(mooutils)/mooactiongroup.c               \
+    $(mooutils)/mooactionfactory.h             \
+    $(mooutils)/mooactionfactory.c             \
     $(mooutils)/moobigpaned.c                  \
     $(mooutils)/mooclosure.c                   \
     $(mooutils)/moocmd.c                       \
@@ -84,9 +82,7 @@ mooutils_sources =                             \
     $(mooutils)/mooprefsdialog.c               \
     $(mooutils)/mooprefsdialogpage.c           \
     $(mooutils)/moopython.c                    \
-    $(mooutils)/mooradioaction.c               \
     $(mooutils)/moostock.c                     \
-    $(mooutils)/mootoggleaction.c              \
     $(mooutils)/moouixml.c                     \
     $(mooutils)/mooundomanager.c               \
     $(mooutils)/mooutils-fs.c                  \

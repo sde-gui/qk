@@ -46,17 +46,20 @@ import gtk.Bin as PyGtkBin_Type
 import gobject.GObject as PyGObject_Type
 import gtk.gdk.Color as PyGdkColor_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
+import gtk.ActionGroup as PyGtkActionGroup_Type
+import gtk.Action as PyGtkAction_Type
+import gtk.AccelGroup as PyGtkAccelGroup_Type
 %%
 ignore-glob
   *_get_type
 %%
 override moo_window_class_add_action varargs
-static MooAction*
+static GtkAction*
 py_action_factory_func (MooWindow  *window,
                         PyObject   *func_n_args)
 {
     PyObject *py_window, *args, *func, *result;
-    MooAction *action;
+    GtkAction *action;
 
     g_return_val_if_fail (func_n_args != NULL, NULL);
     g_return_val_if_fail (PyTuple_Check (func_n_args), NULL);
@@ -81,14 +84,14 @@ py_action_factory_func (MooWindow  *window,
         return NULL;
     }
 
-    if (!PyObject_TypeCheck (result, &PyMooAction_Type))
+    if (!PyObject_TypeCheck (result, &PyGtkAction_Type))
     {
         g_critical ("%s: got invalid value", G_STRLOC);
         Py_DECREF (result);
         return NULL;
     }
 
-    action = MOO_ACTION (pygobject_get (result));
+    action = GTK_ACTION (pygobject_get (result));
     g_object_ref (action);
     Py_DECREF (result);
     return action;

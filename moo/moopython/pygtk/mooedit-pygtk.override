@@ -24,11 +24,11 @@ import gtk.TextView as PyGtkTextView_Type
 import gtk.TextBuffer as PyGtkTextBuffer_Type
 import gtk.TextTagTable as PyGtkTextTagTable_Type
 import gtk.TextTag as PyGtkTextTag_Type
+import gtk.Action as PyGtkAction_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gobject.GObject as PyGObject_Type
 import _moo_utils.Window as PyMooWindow_Type
 import _moo_utils.UIXML as PyMooUIXML_Type
-import _moo_utils.Action as PyMooAction_Type
 %%
 ignore-glob
   *_get_type

@@ -52,27 +52,27 @@ static void moo_term_window_class_init (MooTermWindowClass *klass)
     moo_window_class_set_id (window_class, "Terminal", "Terminal");
 
     moo_window_class_new_action (window_class, "Copy",
-                                 "name", "Copy",
+                                 "display-name", "Copy",
                                  "label", "_Copy",
                                  "tooltip", "Copy",
-                                 "icon-stock-id", GTK_STOCK_COPY,
+                                 "stock-id", GTK_STOCK_COPY,
                                  "accel", "<alt>C",
                                  "closure-callback", copy_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
     moo_window_class_new_action (window_class, "Paste",
-                                 "name", "Paste",
+                                 "display-name", "Paste",
                                  "label", "_Paste",
                                  "tooltip", "Paste",
-                                 "icon-stock-id", GTK_STOCK_PASTE,
+                                 "stock-id", GTK_STOCK_PASTE,
                                  "accel", "<alt>V",
                                  "closure-callback", paste_clipboard,
                                  "closure-proxy-func", moo_term_window_get_term,
                                  NULL);
 
     moo_window_class_new_action (window_class, "SelectAll",
-                                 "name", "Select All",
+                                 "display-name", "Select All",
                                  "label", "Select _All",
                                  "tooltip", "Select all",
                                  "accel", "<alt>A",

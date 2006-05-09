@@ -12,13 +12,13 @@
  */
 
 #include "mooutils/moowindow.h"
-#include "mooutils/mootoggleaction.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moomarshals.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooactionfactory.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
@@ -49,7 +49,7 @@ struct _MooWindowPrivate {
     gboolean menubar_visible;
 
     MooUIXML *ui_xml;
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
     char *name;
     char *id;
 };
@@ -95,7 +95,7 @@ static void     moo_window_set_id                   (MooWindow      *window,
                                                      const char     *id);
 static void     moo_window_add_class_actions        (MooWindow      *window);
 static void     moo_window_add_action               (MooWindow      *window,
-                                                     MooAction      *action);
+                                                     GtkAction      *action);
 static void     moo_window_remove_action            (MooWindow      *window,
                                                      const char     *action_id);
 
@@ -115,7 +115,7 @@ static void     moo_window_set_menubar_visible      (MooWindow      *window,
 static void     moo_window_set_toolbar_visible      (MooWindow      *window,
                                                      gboolean        visible);
 
-static MooAction *create_toolbar_style_action       (MooWindow      *window,
+static GtkAction *create_toolbar_style_action       (MooWindow      *window,
                                                      gpointer        dummy);
 
 
@@ -124,7 +124,6 @@ enum {
     PROP_ACCEL_GROUP,
     PROP_MENUBAR_UI_NAME,
     PROP_TOOLBAR_UI_NAME,
-    PROP_NAME,
     PROP_ID,
     PROP_UI_XML,
     PROP_ACTIONS,
@@ -160,24 +159,24 @@ static void moo_window_class_init (MooWindowClass *klass)
     moo_window_class_set_id (klass, "MooWindow", "Window");
 
     moo_window_class_new_action (klass, "ConfigureShortcuts",
-                                 "name", "Configure Shortcuts",
+                                 "display-name", "Configure Shortcuts",
                                  "label", "Configure _Shortcuts...",
                                  "tooltip", "Configure _Shortcuts...",
-                                 "icon-stock-id", MOO_STOCK_KEYBOARD,
+                                 "stock-id", MOO_STOCK_KEYBOARD,
                                  "closure-callback", moo_window_shortcuts_prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "ShowToolbar",
-                                 "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                 "name", "Show Toolbar",
+                                 "action-type::", GTK_TYPE_TOGGLE_ACTION,
+                                 "display-name", "Show Toolbar",
                                  "label", "Show Toolbar",
                                  "tooltip", "Show Toolbar",
                                  "condition::active", "toolbar-visible",
                                  NULL);
 
     moo_window_class_new_action (klass, "ShowMenubar",
-                                 "action-type::", MOO_TYPE_TOGGLE_ACTION,
-                                 "name", "Show Menubar",
+                                 "action-type::", GTK_TYPE_TOGGLE_ACTION,
+                                 "display-name", "Show Menubar",
                                  "label", "Show Menubar",
                                  "tooltip", "Show Menubar",
                                  "condition::active", "menubar-visible",
@@ -212,14 +211,6 @@ static void moo_window_class_init (MooWindowClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_NAME,
-                                     g_param_spec_string ("name",
-                                             "name",
-                                             "name",
-                                             NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
-
-    g_object_class_install_property (gobject_class,
                                      PROP_ID,
                                      g_param_spec_string ("id",
                                              "id",
@@ -232,7 +223,7 @@ static void moo_window_class_init (MooWindowClass *klass)
                                      g_param_spec_object ("actions",
                                              "actions",
                                              "actions",
-                                             MOO_TYPE_ACTION_GROUP,
+                                             GTK_TYPE_ACTION_GROUP,
                                              G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class,
@@ -278,7 +269,7 @@ moo_window_constructor (GType                  type,
     GtkWidget *vbox;
     MooWindow *window;
     MooWindowClass *klass;
-    MooAction *action;
+    GtkAction *action;
 
     GObject *object =
         G_OBJECT_CLASS(moo_window_parent_class)->constructor (type, n_props, props);
@@ -287,7 +278,8 @@ moo_window_constructor (GType                  type,
 
     klass = g_type_class_ref (type);
     moo_window_set_id (window, moo_window_class_get_id (klass));
-    moo_window_set_name (window, moo_window_class_get_name (klass));
+    window->priv->name = g_strdup (moo_window_class_get_name (klass));
+    window->priv->actions = gtk_action_group_new (window->priv->name);
 
     init_prefs (window);
 
@@ -338,13 +330,13 @@ moo_window_constructor (GType                  type,
 
     moo_window_set_toolbar_visible (window,
         moo_prefs_get_bool (setting (window, PREFS_SHOW_TOOLBAR)));
-    action = moo_window_get_action_by_id (window, "ShowToolbar");
-    moo_sync_bool_property (action, "active", window, "toolbar-visible", FALSE);
+    action = moo_window_get_action (window, "ShowToolbar");
+    moo_sync_toggle_action (action, window, "toolbar-visible", FALSE);
 
     moo_window_set_menubar_visible (window,
         moo_prefs_get_bool (setting (window, PREFS_SHOW_MENUBAR)));
-    action = moo_window_get_action_by_id (window, "ShowMenubar");
-    moo_sync_bool_property (action, "active", window, "menubar-visible", FALSE);
+    action = moo_window_get_action (window, "ShowMenubar");
+    moo_sync_toggle_action (action, window, "menubar-visible", FALSE);
 
     moo_window_update_ui (window);
 
@@ -477,10 +469,6 @@ moo_window_set_property (GObject      *object,
             g_object_notify (object, "menubar-ui-name");
             break;
 
-        case PROP_NAME:
-            moo_window_set_name (window, g_value_get_string (value));
-            break;
-
         case PROP_UI_XML:
             moo_window_set_ui_xml (window, g_value_get_object (value));
             break;
@@ -525,10 +513,6 @@ moo_window_get_property (GObject      *object,
                                 window->priv->menubar_ui_name);
             break;
 
-        case PROP_NAME:
-            g_value_set_string (value, window->priv->name);
-            break;
-
         case PROP_ID:
             g_value_set_string (value, window->priv->id);
             break;
@@ -562,7 +546,7 @@ moo_window_update_toolbar (MooWindow *window)
     MooUIXML *xml;
     GtkToolbarStyle style;
     char *ui_name;
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
 
     g_return_if_fail (MOO_IS_WINDOW (window));
 
@@ -612,7 +596,7 @@ moo_window_update_menubar (MooWindow *window)
 {
     MooUIXML *xml;
     char *ui_name;
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
 
     g_return_if_fail (MOO_IS_WINDOW (window));
 
@@ -665,8 +649,8 @@ moo_window_update_ui (MooWindow *window)
 static void
 moo_window_shortcuts_prefs_dialog (MooWindow *window)
 {
-    moo_accel_prefs_dialog_run (moo_window_get_actions (window),
-                                GTK_WIDGET (window));
+    _moo_accel_prefs_dialog_run (moo_window_get_actions (window),
+                                 GTK_WIDGET (window));
 }
 
 
@@ -715,11 +699,11 @@ toolbar_style_toggled (MooWindow            *window,
 #define ICONS_AND_LABELS "icons-and-labels"
 #define ICONS_AND_IMPORTANT_LABELS "icons-and-important-labels"
 
-static MooAction*
+static GtkAction*
 create_toolbar_style_action (MooWindow      *window,
                              G_GNUC_UNUSED gpointer dummy)
 {
-    MooAction *action;
+    GtkAction *action;
     guint i;
     GtkToolbarStyle style;
     MooMenuMgr *menu_mgr;
@@ -738,18 +722,12 @@ create_toolbar_style_action (MooWindow      *window,
         ICONS_AND_IMPORTANT_LABELS
     };
 
-    action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID);
-    g_object_set (action, "no-accel", TRUE, NULL);
+    action = moo_menu_action_new (TOOLBAR_STYLE_ACTION_ID, "Toolbar _Style");
     menu_mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
     moo_menu_mgr_set_use_mnemonic (menu_mgr, TRUE);
 
-    moo_menu_mgr_append (menu_mgr, NULL,
-                         TOOLBAR_STYLE_ACTION_ID,
-                         "Toolbar _Style",
-                         0, NULL, NULL);
-
     for (i = 0; i < N_STYLES; ++i)
-        moo_menu_mgr_append (menu_mgr, TOOLBAR_STYLE_ACTION_ID,
+        moo_menu_mgr_append (menu_mgr, NULL,
                              ids[i], labels[i], MOO_MENU_ITEM_RADIO,
                              GINT_TO_POINTER (i), NULL);
 
@@ -812,7 +790,7 @@ static GtkToolbarStyle get_toolbar_style (MooWindow *window)
 #define MOO_WINDOW_ACTIONS_QUARK     (get_quark__(2))
 
 typedef struct {
-    MooObjectFactory *action;
+    MooActionFactory *action;
     char **conditions;
 } ActionInfo;
 
@@ -841,12 +819,12 @@ get_quark__ (guint n)
 
 
 static ActionInfo*
-action_info_new (MooObjectFactory  *action,
+action_info_new (MooActionFactory  *action,
                  char             **conditions)
 {
     ActionInfo *info;
 
-    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (action), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_FACTORY (action), NULL);
 
     info = g_new0 (ActionInfo, 1);
     info->action = g_object_ref (action);
@@ -868,27 +846,25 @@ action_info_free (ActionInfo *info)
 }
 
 
-static MooAction*
+static GtkAction*
 create_action (const char *action_id,
                ActionInfo *info,
                MooWindow  *window)
 {
-    MooAction *action;
+    GtkAction *action;
     const char *class_id;
 
     g_return_val_if_fail (info != NULL, NULL);
-    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (info->action), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
     class_id = moo_window_class_get_id (MOO_WINDOW_CLASS (G_OBJECT_GET_CLASS (window)));
-    action = moo_object_factory_create_object (info->action, window,
+    action = moo_action_factory_create_action (info->action, window,
                                                "closure-object", window,
+                                               "toggled-object", window,
+                                               "name", action_id,
                                                NULL);
     g_return_val_if_fail (action != NULL, NULL);
-    g_object_set (action, "id", action_id, NULL);
-
-    if (g_type_is_a (info->action->object_type, MOO_TYPE_TOGGLE_ACTION))
-        g_object_set (action, "toggled-object", window, NULL);
 
     if (info->conditions)
     {
@@ -896,10 +872,17 @@ create_action (const char *action_id,
 
         for (p = info->conditions; *p != NULL; p += 2)
         {
-            if (p[1][0] == '!')
-                moo_bind_bool_property (action, p[0], window, p[1] + 1, TRUE);
+            gboolean invert;
+            char *condition, *prop;
+
+            invert = p[1][0] == '!';
+            prop = p[1][0] == '!' ? p[1] + 1 : p[1];
+            condition = p[0];
+
+            if (!strcmp (condition, "active"))
+                moo_sync_toggle_action (action, window, prop, invert);
             else
-                moo_bind_bool_property (action, p[0], window, p[1], FALSE);
+                moo_bind_bool_property (action, condition, window, prop, invert);
         }
     }
 
@@ -934,7 +917,7 @@ moo_window_class_get_name (MooWindowClass     *klass)
 static void
 moo_window_class_install_action (MooWindowClass     *klass,
                                  const char         *action_id,
-                                 MooObjectFactory   *action,
+                                 MooActionFactory   *action,
                                  char              **conditions)
 {
     GHashTable *actions;
@@ -943,7 +926,7 @@ moo_window_class_install_action (MooWindowClass     *klass,
     GSList *l;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
-    g_return_if_fail (MOO_IS_OBJECT_FACTORY (action));
+    g_return_if_fail (MOO_IS_ACTION_FACTORY (action));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
@@ -966,7 +949,7 @@ moo_window_class_install_action (MooWindowClass     *klass,
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            MooAction *action = create_action (action_id, info, l->data);
+            GtkAction *action = create_action (action_id, info, l->data);
 
             if (action)
                 moo_window_add_action (l->data, action);
@@ -975,27 +958,21 @@ moo_window_class_install_action (MooWindowClass     *klass,
 }
 
 
-static GObject*
+static GtkAction *
 custom_action_factory_func (MooWindow        *window,
-                            MooObjectFactory *factory)
+                            MooActionFactory *factory)
 {
-    const char *action_id;
     MooWindowActionFunc func;
     gpointer func_data;
-    MooAction *action;
 
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
 
-    action_id = g_object_get_data (G_OBJECT (factory), "moo-window-class-action-id");
     func = g_object_get_data (G_OBJECT (factory), "moo-window-class-action-func");
     func_data = g_object_get_data (G_OBJECT (factory), "moo-window-class-action-func-data");
 
-    g_return_val_if_fail (action_id != NULL, NULL);
     g_return_val_if_fail (func != NULL, NULL);
 
-    action = func (window, func_data);
-
-    return action ? G_OBJECT (action) : NULL;
+    return func (window, func_data);
 }
 
 
@@ -1006,13 +983,13 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
                                     gpointer            data,
                                     GDestroyNotify      notify)
 {
-    MooObjectFactory *action_factory;
+    MooActionFactory *action_factory;
 
     g_return_if_fail (MOO_IS_WINDOW_CLASS (klass));
     g_return_if_fail (action_id && action_id[0]);
     g_return_if_fail (func != NULL);
 
-    action_factory = moo_object_factory_new_func ((MooObjectFactoryFunc) custom_action_factory_func, NULL);
+    action_factory = moo_action_factory_new_func ((MooActionFactoryFunc) custom_action_factory_func, NULL);
     g_object_set_data (G_OBJECT (action_factory), "moo-window-class", klass);
     g_object_set_data_full (G_OBJECT (action_factory), "moo-window-class-action-id",
                             g_strdup (action_id), g_free);
@@ -1087,33 +1064,21 @@ moo_window_set_ui_xml (MooWindow          *window,
 }
 
 
-MooActionGroup*
+GtkActionGroup*
 moo_window_get_actions (MooWindow *window)
 {
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
-
-    if (!window->priv->actions)
-    {
-        char *name = moo_window_get_name (window);
-        window->priv->actions = moo_action_group_new (name);
-        g_free (name);
-    }
-
     return window->priv->actions;
 }
 
 
-MooAction*
-moo_window_get_action_by_id (MooWindow          *window,
-                             const char         *action_id)
+GtkAction *
+moo_window_get_action (MooWindow  *window,
+                       const char *action)
 {
-    MooActionGroup *actions;
-
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
-    g_return_val_if_fail (action_id != NULL, NULL);
-
-    actions = moo_window_get_actions (window);
-    return moo_action_group_get_action (actions, action_id);
+    g_return_val_if_fail (action != NULL, NULL);
+    return gtk_action_group_get_action (window->priv->actions, action);
 }
 
 
@@ -1130,22 +1095,6 @@ moo_window_get_id (MooWindow          *window)
 {
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
     return g_strdup (window->priv->id);
-}
-
-
-void
-moo_window_set_name (MooWindow          *window,
-                     const char         *name)
-{
-    g_return_if_fail (MOO_IS_WINDOW (window));
-
-    if (name)
-    {
-        g_free (window->priv->name);
-        window->priv->name = g_strdup (name);
-        moo_action_group_set_name (moo_window_get_actions (window), name);
-        g_object_notify (G_OBJECT (window), "name");
-    }
 }
 
 
@@ -1166,7 +1115,7 @@ add_action (const char *id,
             ActionInfo *info,
             MooWindow  *window)
 {
-    MooAction *action = create_action (id, info, window);
+    GtkAction *action = create_action (id, info, window);
 
     if (action)
         moo_window_add_action (window, action);
@@ -1218,44 +1167,46 @@ moo_window_class_set_id (MooWindowClass     *klass,
 
 static void
 moo_window_add_action (MooWindow          *window,
-                       MooAction          *action)
+                       GtkAction          *action)
 {
-    MooActionGroup *group;
+    GtkActionGroup *group;
 
     g_return_if_fail (MOO_IS_WINDOW (window));
-    g_return_if_fail (MOO_IS_ACTION (action));
-
-    g_object_set (action, "group-name", window->priv->name, NULL);
+    g_return_if_fail (GTK_IS_ACTION (action));
 
     group = moo_window_get_actions (window);
-    moo_action_group_add (group, action);
+    gtk_action_group_add_action (group, action);
 
-    if (!action->dead)
+    if (!_moo_action_get_dead (action))
     {
         const char *accel, *default_accel, *accel_path;
 
-        accel_path = moo_action_make_accel_path (window->priv->id, moo_action_get_id (action));
+        accel_path = _moo_action_make_accel_path (window->priv->id, gtk_action_get_name (action));
         _moo_action_set_accel_path (action, accel_path);
 
-        accel = moo_prefs_get_accel (accel_path);
+        accel = _moo_prefs_get_accel (accel_path);
         default_accel = moo_action_get_default_accel (action);
 
-        moo_set_accel (accel_path, accel ? accel : default_accel);
+        _moo_set_accel (accel_path, accel ? accel : default_accel);
     }
 }
 
 
 static void
-moo_window_remove_action (MooWindow          *window,
-                          const char         *action_id)
+moo_window_remove_action (MooWindow  *window,
+                          const char *action_id)
 {
-    MooActionGroup *group;
+    GtkActionGroup *group;
+    GtkAction *action;
 
     g_return_if_fail (MOO_IS_WINDOW (window));
     g_return_if_fail (action_id != NULL);
 
     group = moo_window_get_actions (window);
-    moo_action_group_remove_action (group, action_id);
+    action = gtk_action_group_get_action (group, action_id);
+
+    if (action)
+        gtk_action_group_remove_action (group, action);
 }
 
 
@@ -1285,7 +1236,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
         char *err = NULL;
 
         /* ignore id property */
-        if (!strcmp (name, "id"))
+        if (!strcmp (name, "id") || !strcmp (name, "name"))
         {
             g_critical ("%s: id property specified", G_STRLOC);
             goto error;
@@ -1305,7 +1256,7 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
             action_type = moo_value_get_gtype (&param.value);
 
-            if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
+            if (!g_type_is_a (action_type, GTK_TYPE_ACTION))
             {
                 g_warning ("%s: invalid action type", G_STRLOC);
                 goto error;
@@ -1342,11 +1293,11 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
             if (!action_class)
             {
                 if (!action_type)
-                    action_type = MOO_TYPE_ACTION;
+                    action_type = GTK_TYPE_ACTION;
                 action_class = g_type_class_ref (action_type);
             }
 
-            pspec = g_object_class_find_property (action_class, name);
+            pspec = _moo_action_find_property (action_class, name);
 
             if (!pspec)
             {
@@ -1375,15 +1326,15 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
 
     G_STMT_START
     {
-        MooObjectFactory *action_factory = NULL;
+        MooActionFactory *action_factory = NULL;
 
-        action_factory = moo_object_factory_new_a (action_type,
+        action_factory = moo_action_factory_new_a (action_type,
                                                    (GParameter*) action_params->data,
                                                    action_params->len);
 
         if (!action_factory)
         {
-            g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
+            g_warning ("%s: error in moo_action_factory_new_a()", G_STRLOC);
             goto error;
         }
 

@@ -158,11 +158,12 @@ moo_menu_mgr_class_init (MooMenuMgrClass *klass)
 
 
 static void
-moo_menu_mgr_init (MooMenuMgr *menu)
+moo_menu_mgr_init (MooMenuMgr *mgr)
 {
-    menu->priv = g_new0 (MooMenuMgrPrivate, 1);
-    menu->priv->named_nodes =
+    mgr->priv = g_new0 (MooMenuMgrPrivate, 1);
+    mgr->priv->named_nodes =
             g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+    mgr->priv->use_mnemonic = TRUE;
 }
 
 
@@ -560,7 +561,7 @@ moo_menu_mgr_create_item (MooMenuMgr         *mgr,
 
         if (flags & MOO_MENU_ITEM_USE_MNEMONIC)
             use_mnemonic = TRUE;
-        else
+        else if (flags & MOO_MENU_ITEM_DONT_USE_MNEMONIC)
             use_mnemonic = FALSE;
 
         if (use_mnemonic)

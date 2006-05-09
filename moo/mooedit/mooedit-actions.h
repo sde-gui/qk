@@ -14,7 +14,6 @@
 #ifndef __MOO_EDIT_ACTIONS_H__
 #define __MOO_EDIT_ACTIONS_H__
 
-#include <mooutils/mooactiongroup.h>
 #include <mooutils/moouixml.h>
 #include <mooedit/mooedit.h>
 
@@ -39,7 +38,7 @@ typedef enum {
 
 struct _MooEditAction
 {
-    MooAction parent;
+    GtkAction parent;
     MooEdit *doc;
     GSList *langs;
     MooEditActionFlags flags;
@@ -47,13 +46,13 @@ struct _MooEditAction
 
 struct _MooEditActionClass
 {
-    MooActionClass parent_class;
+    GtkActionClass parent_class;
 
     gboolean (*check_state) (MooEditAction *action);
 };
 
 
-typedef MooAction *(*MooEditActionFunc)     (MooEdit            *edit,
+typedef GtkAction *(*MooEditActionFunc)     (MooEdit            *edit,
                                              gpointer            data);
 
 GType   moo_edit_action_get_type            (void) G_GNUC_CONST;
@@ -79,8 +78,8 @@ void    moo_edit_class_new_action_type      (MooEditClass       *klass,
 void    moo_edit_class_remove_action        (MooEditClass       *klass,
                                              const char         *id);
 
-MooActionGroup *moo_edit_get_actions        (MooEdit            *edit);
-MooAction  *moo_edit_get_action_by_id       (MooEdit            *edit,
+GtkActionGroup *moo_edit_get_actions        (MooEdit            *edit);
+GtkAction  *moo_edit_get_action_by_id       (MooEdit            *edit,
                                              const char         *action_id);
 
 void    moo_edit_action_check_state         (MooEditAction      *action);

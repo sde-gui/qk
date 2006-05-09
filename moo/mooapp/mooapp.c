@@ -1234,29 +1234,29 @@ static void install_actions (MooApp *app, GType  type)
     _about = g_strdup_printf ("_About %s", app->priv->info->full_name);
 
     moo_window_class_new_action (klass, "Quit",
-                                 "name", "Quit",
+                                 "display-name", "Quit",
                                  "label", "_Quit",
                                  "tooltip", "Quit",
-                                 "icon-stock-id", GTK_STOCK_QUIT,
+                                 "stock-id", GTK_STOCK_QUIT,
                                  "accel", "<ctrl>Q",
                                  "closure-callback", moo_app_quit,
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
     moo_window_class_new_action (klass, "Preferences",
-                                 "name", "Preferences",
+                                 "display-name", "Preferences",
                                  "label", "Pre_ferences",
                                  "tooltip", "Preferences",
-                                 "icon-stock-id", GTK_STOCK_PREFERENCES,
+                                 "stock-id", GTK_STOCK_PREFERENCES,
                                  "accel", "<ctrl>P",
                                  "closure-callback", moo_app_prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "About",
-                                 "name", "About",
+                                 "display-name", "About",
                                  "label", _about,
                                  "tooltip", about,
-                                 "icon-stock-id", GTK_STOCK_ABOUT,
+                                 "stock-id", GTK_STOCK_ABOUT,
                                  "closure-callback", moo_app_about_dialog,
                                  NULL);
 
@@ -1276,10 +1276,10 @@ static void install_editor_actions  (MooApp *app)
     install_actions (app, MOO_TYPE_EDIT_WINDOW);
 
     moo_window_class_new_action (klass, "ExecuteSelection",
-                                 "name", "Execute Selection",
+                                 "display-name", "Execute Selection",
                                  "label", "_Execute Selection",
                                  "tooltip", "Execute Selection",
-                                 "icon-stock-id", GTK_STOCK_EXECUTE,
+                                 "stock-id", GTK_STOCK_EXECUTE,
                                  "accel", "<shift><alt>Return",
                                  "closure-callback", execute_selection,
                                  NULL);
@@ -1313,20 +1313,20 @@ static void install_terminal_actions (MooApp *app)
     install_actions (app, MOO_TYPE_TERM_WINDOW);
 
     moo_window_class_new_action (klass, "NewEditor",
-                                 "name", "New Editor",
+                                 "display-name", "New Editor",
                                  "label", "_New Editor",
                                  "tooltip", "New Editor",
-                                 "icon-stock-id", GTK_STOCK_EDIT,
+                                 "stock-id", GTK_STOCK_EDIT,
                                  "accel", "<Alt>E",
                                  "closure-callback", new_editor,
                                  "closure-proxy-func", moo_app_get_instance,
                                  NULL);
 
     moo_window_class_new_action (klass, "OpenInEditor",
-                                 "name", "Open In Editor",
+                                 "display-name", "Open In Editor",
                                  "label", "_Open In Editor",
                                  "tooltip", "Open In Editor",
-                                 "icon-stock-id", GTK_STOCK_OPEN,
+                                 "stock-id", GTK_STOCK_OPEN,
                                  "accel", "<Alt>O",
                                  "closure-callback", open_in_editor,
                                  NULL);

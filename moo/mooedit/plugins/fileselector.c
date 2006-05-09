@@ -27,6 +27,7 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/mooactionfactory.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -307,8 +308,8 @@ moo_file_selector_constructor (GType           type,
     g_idle_add ((GSourceFunc) file_selector_go_home, g_object_ref (filesel));
 
     moo_action_group_add_action (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)),
-                                 "id", "GoToCurrentDocDir",
-                                 "icon-stock-id", GTK_STOCK_JUMP_TO,
+                                 "GoToCurrentDocDir",
+                                 "stock-id", GTK_STOCK_JUMP_TO,
                                  "tooltip", "Go to current document directory",
                                  "closure-object", filesel,
                                  "closure-callback", goto_current_doc_dir,
@@ -1097,10 +1098,10 @@ file_selector_plugin_init (Plugin *plugin)
     g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "ShowFileSelector",
-                                 "name", "Show File Selector",
+                                 "display-name", "Show File Selector",
                                  "label", "Show File Selector",
                                  "tooltip", "Show file selector",
-                                 "icon-stock-id", MOO_STOCK_FILE_SELECTOR,
+                                 "stock-id", MOO_STOCK_FILE_SELECTOR,
                                  "closure-callback", show_file_selector,
                                  NULL);
 

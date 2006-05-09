@@ -19,8 +19,9 @@ class Plugin(moo.edit.Plugin):
         }
 
         self.add_window_action(moo.edit.EditWindow, "ShowConsole",
-                               name="Show Console", label="Show Console",
-                               icon_stock_id=moo.utils.STOCK_TERMINAL,
+                               display_name="Show Console",
+                               label="Show Console",
+                               stock_id=moo.utils.STOCK_TERMINAL,
                                callback=self.show_console)
         self.add_ui("Editor/Menubar/View", "ShowConsole")
 

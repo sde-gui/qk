@@ -22,7 +22,7 @@ class Plugin(moo.edit.Plugin):
         }
 
         self.add_window_action(moo.edit.EditWindow, "ShowPrefsWindow",
-                               name="Show Prefs Window",
+                               display_name="Show Prefs Window",
                                label="Show Prefs Window",
                                callback=show_window)
         self.add_ui("ToolsMenu", "ShowPrefsWindow")

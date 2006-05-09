@@ -33,22 +33,22 @@ typedef struct _MooMenuActionClass   MooMenuActionClass;
 
 struct _MooMenuAction
 {
-    MooAction   base;
+    GtkAction   base;
     MooMenuMgr *mgr;
-    char       *label;
     gpointer    data;
     guint       is_object : 1;
 };
 
 struct _MooMenuActionClass
 {
-    MooActionClass base_class;
+    GtkActionClass base_class;
 };
 
 
 GType       moo_menu_action_get_type        (void) G_GNUC_CONST;
 
-MooAction  *moo_menu_action_new             (const char     *id);
+GtkAction  *moo_menu_action_new             (const char     *id,
+                                             const char     *label);
 
 MooMenuMgr *moo_menu_action_get_mgr         (MooMenuAction  *action);
 void        moo_menu_action_set_mgr         (MooMenuAction  *action,

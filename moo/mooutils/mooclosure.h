@@ -54,6 +54,7 @@ MooClosure *moo_closure_alloc               (gsize size,
     ((Type__*)moo_closure_alloc (sizeof(Type__), call__, destroy__))
 
 MooClosure *moo_closure_ref                 (MooClosure *closure);
+MooClosure *moo_closure_ref_sink            (MooClosure *closure);
 void        moo_closure_unref               (MooClosure *closure);
 void        moo_closure_sink                (MooClosure *closure);
 

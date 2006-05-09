@@ -64,7 +64,7 @@ static WindowInfo   *window_list_find_filename (MooEditor   *editor,
 static void          set_single_window      (MooEditor      *editor,
                                              gboolean        single);
 
-static MooAction    *create_recent_action   (MooEditWindow  *window);
+static GtkAction    *create_recent_action   (MooEditWindow  *window);
 
 static MooEditWindow *create_window         (MooEditor      *editor);
 static void          moo_editor_add_doc     (MooEditor      *editor,
@@ -774,21 +774,19 @@ window_list_find_filename (MooEditor   *editor,
 }
 
 
-static MooAction*
+static GtkAction*
 create_recent_action (MooEditWindow  *window)
 {
     MooEditor *editor = moo_edit_window_get_editor (window);
-    MooAction *action;
+    GtkAction *action;
     MooMenuMgr *mgr;
 
     g_return_val_if_fail (editor != NULL, NULL);
 
-    action = moo_menu_action_new (RECENT_ACTION_ID);
-    g_object_set (action, "no-accel", TRUE, NULL);
+    action = moo_menu_action_new (RECENT_ACTION_ID, "Open Recent");
     mgr = moo_history_list_get_menu_mgr (editor->priv->history);
     moo_menu_action_set_mgr (MOO_MENU_ACTION (action), mgr);
     moo_menu_action_set_menu_data (MOO_MENU_ACTION (action), window, TRUE);
-    moo_menu_action_set_menu_label (MOO_MENU_ACTION (action), "Open Recent");
 
     moo_bind_bool_property (action, "sensitive",
                             editor->priv->history, "empty", TRUE);

@@ -15,15 +15,15 @@
 #include "mooedit/mooedit-actions.h"
 #include "mooedit/mooedit-private.h"
 #include "mooutils/mooutils-gobject.h"
-#include "mooutils/mootoggleaction.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooactionfactory.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>
 
 
 static void moo_edit_add_action     (MooEdit        *edit,
-                                     MooAction      *action);
+                                     GtkAction      *action);
 static void moo_edit_remove_action  (MooEdit        *edit,
                                      const char     *action_id);
 
@@ -31,7 +31,7 @@ static void moo_edit_remove_action  (MooEdit        *edit,
 #define MOO_EDIT_ACTIONS_QUARK (moo_edit_get_actions_quark ())
 
 typedef struct {
-    MooObjectFactory *action;
+    MooActionFactory *action;
     char **conditions;
 } ActionInfo;
 
@@ -49,12 +49,12 @@ moo_edit_get_actions_quark (void)
 
 
 static ActionInfo*
-action_info_new (MooObjectFactory  *action,
+action_info_new (MooActionFactory  *action,
                  char             **conditions)
 {
     ActionInfo *info;
 
-    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (action), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_FACTORY (action), NULL);
 
     info = g_new0 (ActionInfo, 1);
     info->action = g_object_ref (action);
@@ -78,17 +78,15 @@ action_info_free (ActionInfo *info)
 
 static void
 moo_edit_add_action (MooEdit   *edit,
-                     MooAction *action)
+                     GtkAction *action)
 {
-    MooActionGroup *group;
+    GtkActionGroup *group;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
-    g_return_if_fail (MOO_IS_ACTION (action));
-
-    g_object_set (action, "group-name", "MooEdit", NULL);
+    g_return_if_fail (GTK_IS_ACTION (action));
 
     group = moo_edit_get_actions (edit);
-    moo_action_group_add (group, action);
+    gtk_action_group_add_action (group, action);
 }
 
 
@@ -96,37 +94,37 @@ static void
 moo_edit_remove_action (MooEdit    *edit,
                         const char *action_id)
 {
-    MooActionGroup *group;
+    GtkActionGroup *group;
+    GtkAction *action;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (action_id != NULL);
 
     group = moo_edit_get_actions (edit);
-    moo_action_group_remove_action (group, action_id);
+    action = gtk_action_group_get_action (group, action_id);
+    gtk_action_group_remove_action (group, action);
 }
 
 
-static MooAction*
+static GtkAction*
 create_action (const char *action_id,
                ActionInfo *info,
                MooEdit    *edit)
 {
-    MooAction *action;
+    GtkAction *action;
 
     g_return_val_if_fail (info != NULL, NULL);
-    g_return_val_if_fail (MOO_IS_OBJECT_FACTORY (info->action), NULL);
+    g_return_val_if_fail (MOO_IS_ACTION_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
 
-    action = moo_object_factory_create_object (info->action, edit,
+    action = moo_action_factory_create_action (info->action, edit,
                                                "closure-object", edit,
+                                               "toggled-object", edit,
+                                               "name", action_id,
                                                NULL);
     g_return_val_if_fail (action != NULL, NULL);
-    g_object_set (action, "id", action_id, NULL);
 
-    if (g_type_is_a (info->action->object_type, MOO_TYPE_TOGGLE_ACTION))
-        g_object_set (action, "toggled-object", edit, NULL);
-
-    if (g_type_is_a (info->action->object_type, MOO_TYPE_EDIT_ACTION))
+    if (g_type_is_a (info->action->action_type, MOO_TYPE_EDIT_ACTION))
         g_object_set (action, "doc", edit, NULL);
 
     if (info->conditions)
@@ -162,7 +160,7 @@ moo_edit_class_new_action (MooEditClass       *klass,
 static void
 moo_edit_class_install_action (MooEditClass     *klass,
                                const char         *action_id,
-                               MooObjectFactory   *action,
+                               MooActionFactory   *action,
                                char              **conditions)
 {
     GHashTable *actions;
@@ -171,7 +169,7 @@ moo_edit_class_install_action (MooEditClass     *klass,
     GSList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
-    g_return_if_fail (MOO_IS_OBJECT_FACTORY (action));
+    g_return_if_fail (MOO_IS_ACTION_FACTORY (action));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
@@ -194,7 +192,7 @@ moo_edit_class_install_action (MooEditClass     *klass,
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            MooAction *action = create_action (action_id, info, l->data);
+            GtkAction *action = create_action (action_id, info, l->data);
 
             if (action)
                 moo_edit_add_action (l->data, action);
@@ -230,7 +228,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
         char *err = NULL;
 
         /* ignore id property */
-        if (!strcmp (name, "id"))
+        if (!strcmp (name, "id") || !strcmp (name, "name"))
         {
             g_critical ("%s: id property specified", G_STRLOC);
             goto error;
@@ -250,7 +248,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             action_type = moo_value_get_gtype (&param.value);
 
-            if (!g_type_is_a (action_type, MOO_TYPE_ACTION))
+            if (!g_type_is_a (action_type, GTK_TYPE_ACTION))
             {
                 g_warning ("%s: invalid action type", G_STRLOC);
                 goto error;
@@ -291,7 +289,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
                 action_class = g_type_class_ref (action_type);
             }
 
-            pspec = g_object_class_find_property (action_class, name);
+            pspec = _moo_action_find_property (action_class, name);
 
             if (!pspec)
             {
@@ -320,9 +318,9 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
     G_STMT_START
     {
-        MooObjectFactory *action_factory = NULL;
+        MooActionFactory *action_factory = NULL;
 
-        action_factory = moo_object_factory_new_a (action_type,
+        action_factory = moo_action_factory_new_a (action_type,
                                                    (GParameter*) action_params->data,
                                                    action_params->len);
 
@@ -382,14 +380,13 @@ error:
 }
 
 
-static GObject*
+static GtkAction *
 custom_action_factory_func (MooEdit          *edit,
-                            MooObjectFactory *factory)
+                            MooActionFactory *factory)
 {
     const char *action_id;
     MooEditActionFunc func;
     gpointer func_data;
-    MooAction *action;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
@@ -400,9 +397,7 @@ custom_action_factory_func (MooEdit          *edit,
     g_return_val_if_fail (action_id != NULL, NULL);
     g_return_val_if_fail (func != NULL, NULL);
 
-    action = func (edit, func_data);
-
-    return action ? G_OBJECT (action) : NULL;
+    return func (edit, func_data);
 }
 
 
@@ -413,13 +408,13 @@ moo_edit_class_new_action_custom (MooEditClass       *klass,
                                   gpointer            data,
                                   GDestroyNotify      notify)
 {
-    MooObjectFactory *action_factory;
+    MooActionFactory *action_factory;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
     g_return_if_fail (action_id && action_id[0]);
     g_return_if_fail (func != NULL);
 
-    action_factory = moo_object_factory_new_func ((MooObjectFactoryFunc) custom_action_factory_func, NULL);
+    action_factory = moo_action_factory_new_func ((MooActionFactoryFunc) custom_action_factory_func, NULL);
     g_object_set_data (G_OBJECT (action_factory), "moo-edit-class", klass);
     g_object_set_data_full (G_OBJECT (action_factory), "moo-edit-class-action-id",
                             g_strdup (action_id), g_free);
@@ -432,12 +427,14 @@ moo_edit_class_new_action_custom (MooEditClass       *klass,
 }
 
 
-static MooAction *
+static GtkAction *
 type_action_func (MooEdit  *edit,
                   gpointer  klass)
 {
+    GQuark quark = g_quark_from_static_string ("moo-edit-class-action-id");
+    const char *id = g_type_get_qdata (G_TYPE_FROM_CLASS (klass), quark);
     return g_object_new (G_TYPE_FROM_CLASS (klass),
-                         "doc", edit, NULL);
+                         "doc", edit, "name", id, NULL);
 }
 
 
@@ -447,12 +444,16 @@ moo_edit_class_new_action_type (MooEditClass *edit_klass,
                                 GType         type)
 {
     gpointer klass;
+    GQuark quark;
 
     g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT_ACTION));
 
     klass = g_type_class_ref (type);
     g_return_if_fail (klass != NULL);
 
+    quark = g_quark_from_static_string ("moo-edit-class-action-id");
+    g_free (g_type_get_qdata (type, quark));
+    g_type_set_qdata (type, quark, g_strdup (id));
     moo_edit_class_new_action_custom (edit_klass, id, type_action_func,
                                       klass, g_type_class_unref);
 }
@@ -480,7 +481,7 @@ moo_edit_class_remove_action (MooEditClass *klass,
 }
 
 
-MooActionGroup *
+GtkActionGroup *
 moo_edit_get_actions (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
@@ -488,17 +489,17 @@ moo_edit_get_actions (MooEdit *edit)
 }
 
 
-MooAction *
+GtkAction *
 moo_edit_get_action_by_id (MooEdit    *edit,
                            const char *action_id)
 {
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     g_return_val_if_fail (action_id != NULL, NULL);
 
     actions = moo_edit_get_actions (edit);
-    return moo_action_group_get_action (actions, action_id);
+    return gtk_action_group_get_action (actions, action_id);
 }
 
 
@@ -507,7 +508,7 @@ add_action (const char *id,
             ActionInfo *info,
             MooEdit    *edit)
 {
-    MooAction *action = create_action (id, info, edit);
+    GtkAction *action = create_action (id, info, edit);
 
     if (action)
         moo_edit_add_action (edit, action);
@@ -539,21 +540,17 @@ _moo_edit_add_class_actions (MooEdit *edit)
 }
 
 
-static gboolean
-check_action (G_GNUC_UNUSED MooActionGroup *group,
-              MooAction      *action,
-              G_GNUC_UNUSED gpointer data)
-{
-    if (MOO_IS_EDIT_ACTION (action))
-        moo_edit_action_check_state (MOO_EDIT_ACTION (action));
-    return FALSE;
-}
-
 void
 _moo_edit_check_actions (MooEdit *edit)
 {
-    moo_action_group_foreach (edit->priv->actions,
-                              check_action, NULL);
+    GList *actions = gtk_action_group_list_actions (edit->priv->actions);
+
+    while (actions)
+    {
+        if (MOO_IS_EDIT_ACTION (actions->data))
+            moo_edit_action_check_state (actions->data);
+        actions = g_list_delete_link (actions, actions);
+    }
 }
 
 
@@ -561,48 +558,48 @@ void
 _moo_edit_class_init_actions (MooEditClass *klass)
 {
     moo_edit_class_new_action (klass, "Undo",
-                               "name", "Undo",
+                               "display-name", "Undo",
                                "label", "_Undo",
                                "tooltip", "Undo",
-                               "icon-stock-id", GTK_STOCK_UNDO,
+                               "stock-id", GTK_STOCK_UNDO,
                                "closure-signal", "undo",
                                "condition::sensitive", "can-undo",
                                NULL);
 
     moo_edit_class_new_action (klass, "Redo",
-                               "name", "Redo",
+                               "display-name", "Redo",
                                "label", "_Redo",
                                "tooltip", "Redo",
-                               "icon-stock-id", GTK_STOCK_REDO,
+                               "stock-id", GTK_STOCK_REDO,
                                "closure-signal", "redo",
                                "condition::sensitive", "can-redo",
                                NULL);
 
     moo_edit_class_new_action (klass, "Cut",
-                               "name", "Cut",
+                               "display-name", "Cut",
                                "stock-id", GTK_STOCK_CUT,
                                "closure-signal", "cut-clipboard",
                                "condition::sensitive", "has-selection",
                                NULL);
 
     moo_edit_class_new_action (klass, "Copy",
-                               "name", "Copy",
+                               "display-name", "Copy",
                                "stock-id", GTK_STOCK_COPY,
                                "closure-signal", "copy-clipboard",
                                "condition::sensitive", "has-selection",
                                NULL);
 
     moo_edit_class_new_action (klass, "Paste",
-                               "name", "Paste",
+                               "display-name", "Paste",
                                "stock-id", GTK_STOCK_PASTE,
                                "closure-signal", "paste-clipboard",
                                NULL);
 
     moo_edit_class_new_action (klass, "SelectAll",
-                               "name", "Select All",
+                               "display-name", "Select All",
                                "label", "Select _All",
                                "tooltip", "Select all",
-                               "icon-stock-id", GTK_STOCK_SELECT_ALL,
+                               "stock-id", GTK_STOCK_SELECT_ALL,
                                "closure-callback", moo_text_view_select_all,
                                "condition::sensitive", "has-text",
                                NULL);
@@ -613,7 +610,7 @@ _moo_edit_class_init_actions (MooEditClass *klass)
 /* MooEditAction
  */
 
-G_DEFINE_TYPE (MooEditAction, moo_edit_action, MOO_TYPE_ACTION);
+G_DEFINE_TYPE (MooEditAction, moo_edit_action, GTK_TYPE_ACTION);
 
 enum {
     CHECK_STATE,

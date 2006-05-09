@@ -12,6 +12,7 @@
  */
 
 #include "mooutils/mooaccel.h"
+#include "mooutils/mooaction.h"
 #include "mooutils/mooaccelprefs-glade.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooprefsdialog.h"
@@ -34,7 +35,8 @@ static void block_watch_gtk_accel_map   (void);
 static void unblock_watch_gtk_accel_map (void);
 
 
-static void init_accel_map (void)
+static void
+init_accel_map (void)
 {
     static gboolean done = FALSE;
 
@@ -56,7 +58,8 @@ static void init_accel_map (void)
 }
 
 
-static char *accel_path_to_prefs_key (const char *accel_path)
+static char *
+accel_path_to_prefs_key (const char *accel_path)
 {
     if (accel_path && accel_path[0] == '<')
     {
@@ -72,8 +75,9 @@ static char *accel_path_to_prefs_key (const char *accel_path)
 }
 
 
-void         moo_prefs_set_accel            (const char     *accel_path,
-                                             const char     *accel)
+void
+_moo_prefs_set_accel (const char     *accel_path,
+                      const char     *accel)
 {
     char *key = accel_path_to_prefs_key (accel_path);
     g_return_if_fail (key != NULL);
@@ -82,7 +86,8 @@ void         moo_prefs_set_accel            (const char     *accel_path,
 }
 
 
-const char  *moo_prefs_get_accel            (const char     *accel_path)
+const char *
+_moo_prefs_get_accel (const char *accel_path)
 {
     const char *accel;
     char *key = accel_path_to_prefs_key (accel_path);
@@ -96,8 +101,9 @@ const char  *moo_prefs_get_accel            (const char     *accel_path)
 }
 
 
-void         moo_set_accel                  (const char     *accel_path,
-                                             const char     *accel)
+void
+_moo_set_accel (const char *accel_path,
+                const char *accel)
 {
     guint accel_key = 0;
     GdkModifierType accel_mods = 0;
@@ -162,8 +168,9 @@ void         moo_set_accel                  (const char     *accel_path,
 }
 
 
-void         moo_set_default_accel          (const char     *accel_path,
-                                             const char     *accel)
+void
+_moo_set_default_accel (const char *accel_path,
+                        const char *accel)
 {
     const char *old_accel;
 
@@ -171,7 +178,7 @@ void         moo_set_default_accel          (const char     *accel_path,
 
     init_accel_map ();
 
-    old_accel = moo_get_default_accel (accel_path);
+    old_accel = _moo_get_default_accel (accel_path);
 
     if (old_accel && !strcmp (old_accel, accel))
         return;
@@ -203,7 +210,8 @@ void         moo_set_default_accel          (const char     *accel_path,
 }
 
 
-const char  *moo_get_accel                  (const char     *accel_path)
+const char *
+_moo_get_accel (const char *accel_path)
 {
     g_return_val_if_fail (accel_path != NULL, NULL);
     init_accel_map ();
@@ -211,7 +219,8 @@ const char  *moo_get_accel                  (const char     *accel_path)
 }
 
 
-const char  *moo_get_default_accel          (const char     *accel_path)
+const char *
+_moo_get_default_accel (const char *accel_path)
 {
     g_return_val_if_fail (accel_path != NULL, NULL);
     init_accel_map ();
@@ -220,7 +229,8 @@ const char  *moo_get_default_accel          (const char     *accel_path)
 
 
 #if GTK_CHECK_VERSION(2,4,0)
-static void sync_accel_prefs            (const char *accel_path)
+static void
+sync_accel_prefs (const char *accel_path)
 {
     const char *default_accel, *accel;
 
@@ -228,22 +238,23 @@ static void sync_accel_prefs            (const char *accel_path)
 
     init_accel_map ();
 
-    accel = moo_get_accel (accel_path);
-    default_accel = moo_get_default_accel (accel_path);
+    accel = _moo_get_accel (accel_path);
+    default_accel = _moo_get_default_accel (accel_path);
     if (!accel) accel = "";
     if (!default_accel) default_accel = "";
 
     if (strcmp (accel, default_accel))
-        moo_prefs_set_accel (accel_path, accel);
+        _moo_prefs_set_accel (accel_path, accel);
     else
-        moo_prefs_set_accel (accel_path, NULL);
+        _moo_prefs_set_accel (accel_path, NULL);
 }
 
 
-static void accel_map_changed (G_GNUC_UNUSED GtkAccelMap *object,
-                               gchar *accel_path,
-                               guint accel_key,
-                               GdkModifierType accel_mods)
+static void
+accel_map_changed (G_GNUC_UNUSED GtkAccelMap *object,
+                   gchar *accel_path,
+                   guint accel_key,
+                   GdkModifierType accel_mods)
 {
     char *accel;
     const char *old_accel;
@@ -251,8 +262,8 @@ static void accel_map_changed (G_GNUC_UNUSED GtkAccelMap *object,
 
     init_accel_map ();
 
-    old_accel = moo_get_accel (accel_path);
-    default_accel = moo_get_default_accel (accel_path);
+    old_accel = _moo_get_accel (accel_path);
+    default_accel = _moo_get_default_accel (accel_path);
 
     if (!old_accel)
         return;
@@ -275,7 +286,8 @@ static void accel_map_changed (G_GNUC_UNUSED GtkAccelMap *object,
 }
 
 
-static void watch_gtk_accel_map         (void)
+static void
+watch_gtk_accel_map (void)
 {
     GtkAccelMap *accel_map = gtk_accel_map_get ();
     g_return_if_fail (accel_map != NULL);
@@ -283,7 +295,8 @@ static void watch_gtk_accel_map         (void)
                       G_CALLBACK (accel_map_changed), NULL);
 }
 
-static void block_watch_gtk_accel_map   (void)
+static void
+block_watch_gtk_accel_map (void)
 {
     GtkAccelMap *accel_map = gtk_accel_map_get ();
     g_return_if_fail (accel_map != NULL);
@@ -292,7 +305,8 @@ static void block_watch_gtk_accel_map   (void)
                                      NULL);
 }
 
-static void unblock_watch_gtk_accel_map (void)
+static void
+unblock_watch_gtk_accel_map (void)
 {
     GtkAccelMap *accel_map = gtk_accel_map_get ();
     g_return_if_fail (accel_map != NULL);
@@ -301,22 +315,25 @@ static void unblock_watch_gtk_accel_map (void)
                                        NULL);
 }
 #else /* !GTK_CHECK_VERSION(2,4,0) */
-static void watch_gtk_accel_map         (void)
+static void
+watch_gtk_accel_map (void)
 {
 }
 
-static void block_watch_gtk_accel_map   (void)
+static void
+block_watch_gtk_accel_map (void)
 {
 }
 
-static void unblock_watch_gtk_accel_map (void)
+static void
+unblock_watch_gtk_accel_map (void)
 {
 }
 #endif /* !GTK_CHECK_VERSION(2,4,0) */
 
 
 char*
-moo_get_accel_label (const char     *accel)
+_moo_get_accel_label (const char *accel)
 {
     guint key;
     GdkModifierType mods;
@@ -338,70 +355,10 @@ moo_get_accel_label (const char     *accel)
 
 
 char*
-moo_get_accel_label_by_path (const char     *accel_path)
+_moo_get_accel_label_by_path (const char *accel_path)
 {
     g_return_val_if_fail (accel_path != NULL, g_strdup (""));
-    return moo_get_accel_label (moo_get_accel (accel_path));
-}
-
-
-/*****************************************************************************/
-/* Nasty hack to produce nice-looking menu items with accelerators
- */
-
-static void
-accel_label_set_from_action (GtkAccelLabel *label,
-                             MooAction     *action)
-{
-    const char *accel;
-
-    g_return_if_fail (GTK_IS_ACCEL_LABEL (label));
-    g_return_if_fail (MOO_IS_ACTION (action));
-
-    g_free (label->accel_string);
-    label->accel_string = NULL;
-
-    accel = _moo_action_get_accel (action);
-
-    if (accel && accel[0])
-        label->accel_string = moo_get_accel_label (accel);
-
-    gtk_widget_queue_resize (GTK_WIDGET (label));
-}
-
-
-static void
-action_accel_changed (MooAction      *action,
-                      G_GNUC_UNUSED GParamSpec *pspec,
-                      GtkWidget      *widget)
-{
-    accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
-}
-
-
-static void
-accel_label_destroyed (GtkWidget *label,
-                       MooAction *action)
-{
-    g_signal_handlers_disconnect_by_func (action,
-                                          (gpointer) action_accel_changed,
-                                          label);
-}
-
-
-void
-moo_accel_label_set_action (GtkWidget      *widget,
-                            MooAction      *action)
-{
-    g_return_if_fail (GTK_IS_ACCEL_LABEL (widget));
-    g_return_if_fail (MOO_IS_ACTION (action));
-
-    accel_label_set_from_action (GTK_ACCEL_LABEL (widget), action);
-
-    g_signal_connect (action, "notify::accel",
-                      G_CALLBACK (action_accel_changed), widget);
-    g_signal_connect (widget, "destroy",
-                      G_CALLBACK (accel_label_destroyed), action);
+    return _moo_get_accel_label (_moo_get_accel (accel_path));
 }
 
 
@@ -549,9 +506,9 @@ out:
 
 
 gboolean
-moo_accel_parse (const char     *accel,
-                 guint          *keyval,
-                 GdkModifierType *modifiers)
+_moo_accel_parse (const char     *accel,
+                  guint          *keyval,
+                  GdkModifierType *modifiers)
 {
     guint key = 0;
     guint len;
@@ -591,7 +548,7 @@ out:
 
 
 char *
-moo_accel_normalize (const char *accel)
+_moo_accel_normalize (const char *accel)
 {
     guint key;
     GdkModifierType mods;
@@ -599,7 +556,7 @@ moo_accel_normalize (const char *accel)
     if (!accel || !accel[0])
         return NULL;
 
-    if (moo_accel_parse (accel, &key, &mods))
+    if (_moo_accel_parse (accel, &key, &mods))
     {
         return gtk_accelerator_name (key, mods);
     }
@@ -643,7 +600,7 @@ static void      shortcut_free  (Shortcut   *s)
 
 
 typedef struct {
-    MooAction *current_action;
+    GtkAction *current_action;
     GtkTreeRowReference *current_row;
 
     GtkWidget *shortcut_frame;
@@ -656,12 +613,13 @@ typedef struct {
     MooAccelButton *shortcut;
     GtkLabel *default_label;
 
-    GHashTable *changed;    /* MooAction* -> Shortcut* */
-    GPtrArray *actions;     /* MooActionGroup* */
+    GHashTable *changed;    /* Gtkction* -> Shortcut* */
+    GPtrArray *actions;     /* GtkActionGroup* */
     GHashTable *groups;     /* char* -> GtkTreeRowReference* */
 } Stuff;
 
-static Stuff    *stuff_new  (void)
+static Stuff *
+stuff_new (void)
 {
     Stuff *s = g_new0 (Stuff, 1);
 
@@ -676,7 +634,8 @@ static Stuff    *stuff_new  (void)
     return s;
 }
 
-static void      stuff_free (Stuff *s)
+static void
+stuff_free (Stuff *s)
 {
     g_hash_table_destroy (s->changed);
     g_hash_table_destroy (s->groups);
@@ -701,7 +660,8 @@ static void shortcut_none_toggled       (Stuff *stuff);
 static void shortcut_default_toggled    (Stuff *stuff);
 static void shortcut_custom_toggled     (Stuff *stuff);
 
-static void row_activated (Stuff *stuff)
+static void
+row_activated (Stuff *stuff)
 {
     if (GTK_WIDGET_IS_SENSITIVE (stuff->shortcut))
         gtk_button_clicked (GTK_BUTTON (stuff->shortcut));
@@ -740,7 +700,7 @@ inline static void unblock_radio (Stuff *stuff)
 
 
 GtkWidget*
-moo_accel_prefs_page_new (MooActionGroup *actions)
+_moo_accel_prefs_page_new (GtkActionGroup *actions)
 {
     GtkWidget *page, *page_content;
     Stuff *stuff;
@@ -790,7 +750,7 @@ moo_accel_prefs_page_new (MooActionGroup *actions)
 
     stuff->store = gtk_tree_store_new (N_COLUMNS,
                                        G_TYPE_STRING,
-                                       MOO_TYPE_ACTION,
+                                       GTK_TYPE_ACTION,
                                        G_TYPE_STRING);
     gtk_tree_view_set_model (stuff->treeview,
                              GTK_TREE_MODEL (stuff->store));
@@ -836,32 +796,32 @@ moo_accel_prefs_page_new (MooActionGroup *actions)
 }
 
 
-static void apply_one (MooAction    *action,
+static void apply_one (GtkAction    *action,
                        Shortcut     *shortcut,
                        G_GNUC_UNUSED Stuff        *stuff)
 {
     const char *accel_path = _moo_action_get_accel_path (action);
-    const char *accel = moo_get_accel (accel_path);
-    const char *default_accel = moo_get_default_accel (accel_path);
+    const char *accel = _moo_get_accel (accel_path);
+    const char *default_accel = _moo_get_default_accel (accel_path);
 
     switch (shortcut->choice)
     {
         case NONE:
             if (accel[0])
-                moo_set_accel (accel_path, "");
-            moo_prefs_set_accel (accel_path, "");
+                _moo_set_accel (accel_path, "");
+            _moo_prefs_set_accel (accel_path, "");
             break;
 
         case CUSTOM:
             if (strcmp (accel, shortcut->accel))
-                moo_set_accel (accel_path, shortcut->accel);
-            moo_prefs_set_accel (accel_path, shortcut->accel);
+                _moo_set_accel (accel_path, shortcut->accel);
+            _moo_prefs_set_accel (accel_path, shortcut->accel);
             break;
 
         case DEFAULT:
             if (strcmp (accel, default_accel))
-                moo_set_accel (accel_path, default_accel);
-            moo_prefs_set_accel (accel_path, NULL);
+                _moo_set_accel (accel_path, default_accel);
+            _moo_prefs_set_accel (accel_path, NULL);
             break;
 
         default:
@@ -880,9 +840,10 @@ static void apply (Stuff *stuff)
 }
 
 
-static gboolean add_row (MooActionGroup *group,
-                         MooAction      *action,
-                         Stuff          *stuff)
+static gboolean
+add_row (GtkActionGroup *group,
+         GtkAction      *action,
+         Stuff          *stuff)
 {
     const char *group_name;
     char *accel;
@@ -893,7 +854,7 @@ static gboolean add_row (MooActionGroup *group,
     if (moo_action_get_no_accel (action))
         return FALSE;
 
-    group_name = moo_action_group_get_name (group);
+    group_name = gtk_action_group_get_name (group);
 
     if (!group_name)
         group_name = "";
@@ -935,8 +896,8 @@ static gboolean add_row (MooActionGroup *group,
         gtk_tree_store_append (stuff->store, &iter, &group);
     }
 
-    accel = moo_get_accel_label_by_path (_moo_action_get_accel_path (action));
-    name = moo_action_get_name (action);
+    accel = _moo_get_accel_label_by_path (_moo_action_get_accel_path (action));
+    name = moo_action_get_display_name (action);
 
     gtk_tree_store_set (stuff->store, &iter,
                         COLUMN_ACTION_NAME, name,
@@ -949,23 +910,34 @@ static gboolean add_row (MooActionGroup *group,
 }
 
 
-static void init (Stuff *stuff)
+static void
+init (Stuff *stuff)
 {
     guint i;
+
     for (i = 0; i < stuff->actions->len; ++i)
-        moo_action_group_foreach (g_ptr_array_index(stuff->actions, i),
-                                  (MooActionGroupForeachFunc)add_row,
-                                  stuff);
+    {
+        GtkActionGroup *group = g_ptr_array_index (stuff->actions, i);
+        GList *list = gtk_action_group_list_actions (group);
+
+        while (list)
+        {
+            add_row (group, list->data, stuff);
+            list = g_list_delete_link (list, list);
+        }
+    }
+
     gtk_tree_view_expand_all (stuff->treeview);
     tree_selection_changed (stuff);
 }
 
 
-static void tree_selection_changed (Stuff *stuff)
+static void
+tree_selection_changed (Stuff *stuff)
 {
     gboolean selected_action = FALSE;
     GtkTreeIter iter;
-    MooAction *action = NULL;
+    GtkAction *action = NULL;
     GtkTreePath *path;
     char *default_label;
     const char *default_accel;
@@ -997,7 +969,7 @@ static void tree_selection_changed (Stuff *stuff)
     gtk_widget_set_sensitive (stuff->shortcut_frame, TRUE);
 
     default_accel = moo_action_get_default_accel (action);
-    default_label = moo_get_accel_label (default_accel);
+    default_label = _moo_get_accel_label (default_accel);
 
     if (!default_label || !default_label[0])
         gtk_label_set_text (stuff->default_label, "None");
@@ -1164,7 +1136,7 @@ static void shortcut_default_toggled (Stuff *stuff)
 
     if (default_accel[0])
     {
-        char *label = moo_get_accel_label (default_accel);
+        char *label = _moo_get_accel_label (default_accel);
         gtk_tree_store_set (stuff->store, &iter, COLUMN_ACCEL, label, -1);
         g_free (label);
     }
@@ -1246,7 +1218,7 @@ static void dialog_response (GObject *page,
 
 
 GtkWidget*
-moo_accel_prefs_dialog_new (MooActionGroup *group)
+_moo_accel_prefs_dialog_new (GtkActionGroup *group)
 {
     GtkWidget *page, *dialog, *page_holder;
     MooGladeXML *xml;
@@ -1256,7 +1228,7 @@ moo_accel_prefs_dialog_new (MooActionGroup *group)
 
     dialog = moo_glade_xml_get_widget (xml, "dialog");
 
-    page = moo_accel_prefs_page_new (group);
+    page = _moo_accel_prefs_page_new (group);
     gtk_widget_show (page);
     page_holder = moo_glade_xml_get_widget (xml, "page_holder");
     gtk_container_add (GTK_CONTAINER (page_holder), page);
@@ -1280,10 +1252,10 @@ moo_accel_prefs_dialog_new (MooActionGroup *group)
 
 
 void
-moo_accel_prefs_dialog_run (MooActionGroup *group,
-                            GtkWidget      *parent)
+_moo_accel_prefs_dialog_run (GtkActionGroup *group,
+                             GtkWidget      *parent)
 {
-    GtkWidget *dialog = moo_accel_prefs_dialog_new (group);
+    GtkWidget *dialog = _moo_accel_prefs_dialog_new (group);
     GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_toplevel (parent));
 
     gtk_window_set_transient_for (GTK_WINDOW (dialog), parent_window);

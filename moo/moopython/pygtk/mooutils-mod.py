@@ -1,5 +1,6 @@
 """moo.utils module"""
 import _moo_utils as _utils
+import gtk as _gtk
 from _moo_utils import *
 
 
@@ -11,16 +12,20 @@ class ActionFactory(object):
 
     def __call__(self, window):
         self.window = window
-        action = Action()
+        action = _gtk.Action(self.id, None, None, None)
         self.set_action_properties(action)
         return action
 
     def set_action_properties(self, action):
-        action.set_property("id", self.id)
-
         for key in self.kwargs.keys():
             if key == "callback":
                 action.connect("activate", self.action_activate)
+            elif key == "display_name":
+                action_set_display_name(action, self.kwargs[key])
+            elif key == "accel":
+                action_set_default_accel(action, self.kwargs[key])
+            elif key == "no_accel":
+                action_set_no_accel(action, self.kwargs[key])
             else:
                 action.set_property(key, self.kwargs[key])
 

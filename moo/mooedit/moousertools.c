@@ -20,6 +20,7 @@
 #include "mooutils/mooconfig.h"
 #include "mooutils/moocommand.h"
 #include "mooutils/mooaccel.h"
+#include "mooutils/mooaction.h"
 #include <string.h>
 
 
@@ -61,17 +62,17 @@ static void         load_config_item    (FileType        type,
                                          MooConfig      *config,
                                          MooConfigItem  *item,
                                          MooUIXML       *xml);
-static MooAction   *create_tool_action  (MooWindow      *window,
+static GtkAction   *create_tool_action  (MooWindow      *window,
                                          gpointer        user_data);
-static MooAction   *create_edit_action  (MooEdit        *edit,
+static GtkAction   *create_edit_action  (MooEdit        *edit,
                                          gpointer        user_data);
 
-static void         check_visible_func  (MooAction      *action,
+static void         check_visible_func  (GtkAction      *action,
                                          MooEdit        *doc,
                                          GParamSpec     *pspec,
                                          GValue         *prop_value,
                                          gpointer        dummy);
-static void         check_sensitive_func(MooAction      *action,
+static void         check_sensitive_func(GtkAction      *action,
                                          MooEdit        *doc,
                                          GParamSpec     *pspec,
                                          GValue         *prop_value,
@@ -465,7 +466,7 @@ action_data_new (FileType        type,
     data->id = g_strdup (name);
     data->name = g_strdup (name);
     data->label = label ? g_strdup (label) : g_strdup (name);
-    data->accel = moo_accel_normalize (accel);
+    data->accel = _moo_accel_normalize (accel);
     data->langs = langs;
     data->cmd = cmd;
     data->options = options;
@@ -614,12 +615,12 @@ run_exe (MooToolAction *action,
 
     return moo_cmd_view_run_command (MOO_CMD_VIEW (cmd_view), cmd_line,
                                      action->data->cmd->working_dir,
-                                     moo_action_get_name (MOO_ACTION (action)));
+                                     moo_action_get_display_name (GTK_ACTION (action)));
 }
 
 
 static void
-moo_tool_action_activate (MooAction *_action)
+moo_tool_action_activate (GtkAction *_action)
 {
     MooToolAction *action;
     MooEdit *doc;
@@ -669,7 +670,7 @@ moo_tool_action_activate (MooAction *_action)
 static void
 _moo_tool_action_class_init (MooToolActionClass *klass)
 {
-    MOO_ACTION_CLASS(klass)->activate = moo_tool_action_activate;
+    GTK_ACTION_CLASS(klass)->activate = moo_tool_action_activate;
 }
 
 static void
@@ -678,7 +679,7 @@ _moo_tool_action_init (G_GNUC_UNUSED MooToolAction *action)
 }
 
 
-static MooAction *
+static GtkAction *
 create_tool_action (MooWindow *window,
                     gpointer   user_data)
 {
@@ -691,16 +692,16 @@ create_tool_action (MooWindow *window,
     action = g_object_new (_moo_tool_action_get_type(),
                            "name", data->name,
                            "label", data->label,
-                           "accel", data->accel,
                            NULL);
+    moo_action_set_default_accel (GTK_ACTION (action), data->accel);
     action->window = MOO_EDIT_WINDOW (window);
     action->data = data;
 
-    return MOO_ACTION (action);
+    return GTK_ACTION (action);
 }
 
 
-static MooAction *
+static GtkAction *
 create_edit_action (MooEdit *edit,
                     gpointer user_data)
 {
@@ -717,20 +718,20 @@ create_edit_action (MooEdit *edit,
     action = g_object_new (_moo_tool_action_get_type(),
                            "name", data->name,
                            "label", data->label,
-                           "accel", data->accel,
                            "doc", edit,
                            "langs", data->langs,
                            "flags", flags,
                            NULL);
+    moo_action_set_default_accel (GTK_ACTION (action), data->accel);
     action->window = moo_edit_get_window (edit);
     action->data = data;
 
-    return MOO_ACTION (action);
+    return GTK_ACTION (action);
 }
 
 
 static void
-check_visible_func (MooAction      *_action,
+check_visible_func (GtkAction      *_action,
                     MooEdit        *doc,
                     G_GNUC_UNUSED GParamSpec *pspec,
                     GValue         *prop_value,
@@ -755,7 +756,7 @@ check_visible_func (MooAction      *_action,
 
 
 static void
-check_sensitive_func (MooAction      *_action,
+check_sensitive_func (GtkAction      *_action,
                       G_GNUC_UNUSED MooEdit *doc,
                       G_GNUC_UNUSED GParamSpec *pspec,
                       GValue         *prop_value,

@@ -84,7 +84,7 @@
 
 (define-object Action
   (in-module "Moo")
-  (parent "MooAction")
+  (parent "GtkAction")
   (c-name "MooEditAction")
   (gtype-id "MOO_TYPE_EDIT_ACTION")
   (fields
@@ -1433,7 +1433,7 @@
 (define-function moo_edit_action_new
   (c-name "moo_edit_action_new")
   (is-constructor-of "MooEditAction")
-  (return-type "MooAction*")
+  (return-type "GtkAction*")
 )
 
 (define-function _edit_class_add_action
@@ -1452,13 +1452,13 @@
 (define-method get_actions
   (of-object "MooEdit")
   (c-name "moo_edit_get_actions")
-  (return-type "MooActionGroup*")
+  (return-type "GtkActionGroup*")
 )
 
 (define-method get_action_by_id
   (of-object "MooEdit")
   (c-name "moo_edit_get_action_by_id")
-  (return-type "MooAction*")
+  (return-type "GtkAction*")
   (parameters
     '("const-char*" "action_id")
   )

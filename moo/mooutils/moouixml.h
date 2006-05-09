@@ -15,8 +15,7 @@
 #define __MOO_UI_XML_H__
 
 #include <mooutils/moomarkup.h>
-#include <mooutils/mooactiongroup.h>
-#include <gtk/gtkwidget.h>
+#include <gtk/gtkactiongroup.h>
 
 G_BEGIN_DECLS
 
@@ -131,7 +130,7 @@ MooUINode  *moo_ui_node_get_child           (MooUINode      *node,
 gpointer    moo_ui_xml_create_widget        (MooUIXML       *xml,
                                              MooUIWidgetType type,
                                              const char     *path,
-                                             MooActionGroup *actions,
+                                             GtkActionGroup *actions,
                                              GtkAccelGroup  *accel_group);
 GtkWidget  *moo_ui_xml_get_widget           (MooUIXML       *xml,
                                              GtkWidget      *toplevel,

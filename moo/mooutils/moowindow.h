@@ -14,11 +14,10 @@
 #ifndef MOOUI_MOOWINDOW_H
 #define MOOUI_MOOWINDOW_H
 
-#include <mooutils/mooactiongroup.h>
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/moouixml.h>
 #include <gtk/gtkwindow.h>
-#include <gtk/gtkdnd.h>
+#include <gtk/gtkactiongroup.h>
 
 G_BEGIN_DECLS
 
@@ -55,7 +54,7 @@ struct _MooWindowClass
     gboolean (*close)   (MooWindow *window);
 };
 
-typedef MooAction *(*MooWindowActionFunc) (MooWindow *window,
+typedef GtkAction *(*MooWindowActionFunc) (MooWindow *window,
                                            gpointer   data);
 
 
@@ -95,14 +94,12 @@ MooUIXML   *moo_window_get_ui_xml           (MooWindow          *window);
 void        moo_window_set_ui_xml           (MooWindow          *window,
                                              MooUIXML           *xml);
 
-MooActionGroup *moo_window_get_actions      (MooWindow          *window);
-MooAction  *moo_window_get_action_by_id     (MooWindow          *window,
-                                             const char         *action_id);
+GtkActionGroup *moo_window_get_actions      (MooWindow          *window);
+GtkAction  *moo_window_get_action           (MooWindow          *window,
+                                             const char         *action);
 
 char       *moo_window_get_name             (MooWindow          *window);
 char       *moo_window_get_id               (MooWindow          *window);
-void        moo_window_set_name             (MooWindow          *window,
-                                             const char         *name);
 
 
 G_END_DECLS

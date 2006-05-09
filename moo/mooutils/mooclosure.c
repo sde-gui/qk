@@ -69,6 +69,15 @@ moo_closure_sink (MooClosure *closure)
 }
 
 
+MooClosure *
+moo_closure_ref_sink (MooClosure *closure)
+{
+    moo_closure_ref (closure);
+    moo_closure_sink (closure);
+    return closure;
+}
+
+
 void
 moo_closure_invoke (MooClosure *closure)
 {

@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+/*
  *   moobookmarkmgr.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -17,7 +17,8 @@
 #include "mooutils/mooglade.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/moocompat.h"
-#include MOO_MARSHALS_H
+#include "mooutils/moomarshals.h"
+#include "mooutils/mooactionfactory.h"
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -448,7 +449,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 struct _UserInfo {
     GObject *user;
     MooUIXML *xml;
-    MooActionGroup *actions;
+    GtkActionGroup *actions;
     char *path;
     guint user_id;
     guint merge_id;
@@ -457,7 +458,7 @@ struct _UserInfo {
 
 static UserInfo*
 user_info_new (GObject        *user,
-               MooActionGroup *actions,
+               GtkActionGroup *actions,
                MooUIXML       *xml,
                const char     *path,
                guint           user_id)
@@ -465,7 +466,7 @@ user_info_new (GObject        *user,
     UserInfo *info;
 
     g_return_val_if_fail (G_IS_OBJECT (user), NULL);
-    g_return_val_if_fail (MOO_IS_ACTION_GROUP (actions), NULL);
+    g_return_val_if_fail (GTK_IS_ACTION_GROUP (actions), NULL);
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path, NULL);
     g_return_val_if_fail (user_id > 0, NULL);
@@ -493,13 +494,13 @@ user_info_free (UserInfo *info)
 
 
 static void
-item_activated (MooAction      *action,
+item_activated (GtkAction      *action,
                 MooBookmarkMgr *mgr)
 {
     MooBookmark *bookmark;
     gpointer user;
 
-    g_return_if_fail (MOO_IS_ACTION (action));
+    g_return_if_fail (GTK_IS_ACTION (action));
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
 
     bookmark = g_object_get_data (G_OBJECT (action), "moo-bookmark");
@@ -528,7 +529,7 @@ make_menu (MooBookmarkMgr *mgr,
     do
     {
         MooBookmark *bookmark = NULL;
-        MooAction *action;
+        GtkAction *action;
         char *action_id;
 
         gtk_tree_model_get (model, &iter, COLUMN_BOOKMARK, &bookmark, -1);
@@ -541,11 +542,10 @@ make_menu (MooBookmarkMgr *mgr,
 
         action_id = g_strdup_printf ("MooBookmarkAction-%p", bookmark);
 
-        action = moo_action_group_add_action (info->actions,
-                                              "id", action_id,
+        action = moo_action_group_add_action (info->actions, action_id,
                                               "label", bookmark->label ? bookmark->label :
                                                 bookmark->display_path,
-                                              "icon_stock_id", bookmark->icon_stock_id,
+                                              "stock-id", bookmark->icon_stock_id,
                                               "tooltip", bookmark->display_path,
                                               "no-accel", TRUE,
                                               NULL);
@@ -576,9 +576,8 @@ destroy_menu (UserInfo *info)
 
     for (l = info->bm_actions; l != NULL; l = l->next)
     {
-        MooAction *action = l->data;
-        moo_action_group_remove_action (info->actions,
-                                        moo_action_get_id (action));
+        GtkAction *action = l->data;
+        gtk_action_group_remove_action (info->actions, action);
         g_object_unref (action);
     }
 
@@ -622,7 +621,7 @@ mgr_update_menus (MooBookmarkMgr *mgr)
 void
 moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
                            gpointer        user,
-                           MooActionGroup *actions,
+                           GtkActionGroup *actions,
                            MooUIXML       *xml,
                            const char     *path)
 {
@@ -631,7 +630,7 @@ moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
 
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
     g_return_if_fail (G_IS_OBJECT (user));
-    g_return_if_fail (MOO_IS_ACTION_GROUP (actions));
+    g_return_if_fail (GTK_IS_ACTION_GROUP (actions));
     g_return_if_fail (MOO_IS_UI_XML (xml));
     g_return_if_fail (path != NULL);
 

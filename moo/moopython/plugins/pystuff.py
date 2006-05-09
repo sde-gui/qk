@@ -42,14 +42,14 @@ class Plugin(moo.edit.Plugin):
 
         if SHOW_LOG_WINDOW:
             self.add_window_action(moo.edit.EditWindow, "ShowLogWindow",
-                                   name="Show Log Window",
+                                   display_name="Show Log Window",
                                    label="Show Log Window",
                                    callback=self.show_log_window)
             self.add_ui("ToolsMenu", "ShowLogWindow")
 
         if have_pyconsole:
             self.add_window_action(moo.edit.EditWindow, "PythonConsole",
-                                   name="Python Console",
+                                   display_name="Python Console",
                                    label="Python Console",
                                    callback=self.show_console)
             self.add_ui("ToolsMenu", "PythonConsole")
@@ -57,9 +57,9 @@ class Plugin(moo.edit.Plugin):
         """ Run file """
         self.file_pat = re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*')
         self.add_window_action(moo.edit.EditWindow, "RunFile",
-                               name="Run File",
+                               display_name="Run File",
                                label="Run File",
-                               icon_stock_id=moo.utils.STOCK_EXECUTE,
+                               stock_id=moo.utils.STOCK_EXECUTE,
                                accel="<shift>F9",
                                callback=self.run_file)
         moo.edit.window_set_action_langs("RunFile", "sensitive", ["python"])
