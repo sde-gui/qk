@@ -368,8 +368,8 @@ _moo_python_plugin_init (void)
         return FALSE;
     }
 
-#if defined(pyg_disable_log_handlers) && 0
-    pyg_disable_log_handlers ();
+#ifdef pyg_disable_warning_redirections
+    pyg_disable_warning_redirections ();
 #else
     moo_reset_log_func ();
 #endif
