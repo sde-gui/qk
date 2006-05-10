@@ -1,4 +1,4 @@
-2006-05-09  a_ha  <a_ha@users.sourceforge.net>
+2006-05-09  Andreas Hanke  <a_ha@users.sourceforge.net>
     Removed CFLAGS from AM_CFLAGS; fixed ACLOCAL_FLAGS business.
 
 2006-05-08  Yevgen Muntyan  <muntyan@math.tamu.edu>
