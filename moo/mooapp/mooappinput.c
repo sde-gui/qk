@@ -602,7 +602,7 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
 
         int res = poll (&fd, 1, 0);
 
-        g_print ("polling\n");
+//         g_print ("polling\n");
 
         switch (res)
         {

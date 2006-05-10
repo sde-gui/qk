@@ -28,6 +28,7 @@ typedef enum
     MOO_APP_CMD_ZERO = 0,
     MOO_APP_CMD_PYTHON_STRING,
     MOO_APP_CMD_PYTHON_FILE,
+    MOO_APP_CMD_SCRIPT,
     MOO_APP_CMD_OPEN_FILE,
     MOO_APP_CMD_QUIT,
     MOO_APP_CMD_DIE,
@@ -39,8 +40,9 @@ typedef enum
 #if defined(WANT_MOO_APP_CMD_STRINGS) || defined(WANT_MOO_APP_CMD_CHARS)
 
 #define CMD_ZERO            "\0"
-#define CMD_PYTHON_STRING   "s"
-#define CMD_PYTHON_FILE     "p"
+#define CMD_PYTHON_STRING   "p"
+#define CMD_PYTHON_FILE     "P"
+#define CMD_SCRIPT          "s"
 #define CMD_OPEN_FILE       "f"
 #define CMD_QUIT            "q"
 #define CMD_DIE             "d"
@@ -54,6 +56,7 @@ static const char *moo_app_cmd_chars =
     CMD_ZERO
     CMD_PYTHON_STRING
     CMD_PYTHON_FILE
+    CMD_SCRIPT
     CMD_OPEN_FILE
     CMD_QUIT
     CMD_DIE

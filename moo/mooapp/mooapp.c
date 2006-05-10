@@ -1504,6 +1504,27 @@ moo_app_present (MooApp *app)
 }
 
 
+static void
+run_script (const char *string)
+{
+    MooCommand *cmd;
+    MSContext *ctx;
+
+    cmd = moo_command_new (MOO_COMMAND_SCRIPT, string);
+    g_return_if_fail (cmd != NULL);
+
+    ctx = ms_context_new (NULL);
+    moo_command_set_context (cmd, ctx);
+    if (ctx->py_dict)
+        moo_command_set_py_dict (cmd, ctx->py_dict);
+    g_object_unref (ctx);
+
+    moo_app_cmd_setup (cmd, NULL);
+    moo_command_run (cmd);
+    g_object_unref (cmd);
+}
+
+
 static MooAppCmdCode
 get_cmd_code (char cmd)
 {
@@ -1537,6 +1558,10 @@ moo_app_exec_cmd_real (MooApp             *app,
             moo_app_python_run_file (app, data);
             break;
 
+        case MOO_APP_CMD_SCRIPT:
+            run_script (data);
+            break;
+
         case MOO_APP_CMD_OPEN_FILE:
             moo_app_new_file (app, data);
             break;
@@ -1552,7 +1577,7 @@ moo_app_exec_cmd_real (MooApp             *app,
             break;
 
         default:
-            g_warning ("%s: got unknown command %d", G_STRLOC, cmd);
+            g_warning ("%s: got unknown command %c", G_STRLOC, cmd);
     }
 }
 
