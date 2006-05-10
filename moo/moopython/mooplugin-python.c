@@ -390,10 +390,13 @@ _moo_python_plugin_deinit (void)
 
 
 #ifdef MOO_PYTHON_PLUGIN
+MOO_PLUGIN_INIT_FUNC_DECL;
 MOO_PLUGIN_INIT_FUNC_DECL
 {
-    g_message ("%s: hi there", G_STRLOC);
-    return _moo_python_plugin_init ();
+    if (!moo_python_running ())
+        return _moo_python_plugin_init ();
+    else
+        return FALSE;
 }
 #endif
 
