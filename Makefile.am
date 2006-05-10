@@ -20,8 +20,7 @@ AM_CFLAGS =					\
     $(MOO_CFLAGS)				\
     $(PYTHON_INCLUDES)				\
     $(PYGTK_CFLAGS)				\
-    $(MOO_DEBUG_CFLAGS)				\
-    $(CFLAGS)
+    $(MOO_DEBUG_CFLAGS)
 
 
 ###########################################################################
