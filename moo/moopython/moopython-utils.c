@@ -18,10 +18,8 @@
 #include "moopython/moopython-utils.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-misc.h"
-#ifdef MOO_USE_PYGTK
-# define NO_IMPORT_PYGOBJECT
-# include "pygobject.h"
-#endif
+#define NO_IMPORT_PYGOBJECT
+#include "pygobject.h"
 
 
 PyObject *
