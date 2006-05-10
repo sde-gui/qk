@@ -17,13 +17,7 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 
 [Files]
-Source: C:\medit\medit.exe; DestDir: {app}; Flags: ignoreversion
-Source: C:\medit\syntax\*; DestDir: {app}\syntax; Flags: ignoreversion recursesubdirs
-Source: C:\medit\completion\*; DestDir: {app}\completion; Flags: ignoreversion recursesubdirs
-Source: C:\medit\plugins\*; DestDir: {app}\plugins; Flags: ignoreversion recursesubdirs
-Source: C:\medit\tools.cfg; DestDir: {app}; Flags: ignoreversion
-Source: C:\medit\menu.cfg; DestDir: {app}; Flags: ignoreversion
-Source: C:\medit\as.cfg; DestDir: {app}; Flags: ignoreversion
+Source: C:\medit\*; DestDir: {app}; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -34,3 +28,6 @@ Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {a
 
 [Run]
 Filename: {app}\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
+[UninstallDelete]
+Name: {app}\plugins\*.pyc; Type: files; Tasks: 
+Name: {app}\plugins\lib\*.pyc; Type: files; Tasks: 
