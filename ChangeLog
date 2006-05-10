@@ -1,3 +1,8 @@
+2006-05-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    There is a single win32 installer now, and medit picks up python if it's present
+    on startup: medit is not linked to pythonxx.dll, python support has been moved
+    into pymo2x plugins.
+
 2006-05-09  Andreas Hanke  <a_ha@users.sourceforge.net>
     Removed CFLAGS from AM_CFLAGS; fixed ACLOCAL_FLAGS business.
 
