@@ -177,14 +177,17 @@ show_system_info (void)
                             GTK_MINOR_VERSION,
                             GTK_MICRO_VERSION);
 
-#ifdef MOO_USE_PYGTK
-    g_string_append (text, "Python support: yes\n");
-    string = get_python_info ();
-    g_string_append_printf (text, "Python: %s\n", string ? string : "None");
-    g_free (string);
-#else
-    g_string_append (text, "Python support: no\n");
-#endif
+    if (moo_python_running ())
+    {
+        g_string_append (text, "Python support: yes\n");
+        string = get_python_info ();
+        g_string_append_printf (text, "Python: %s\n", string ? string : "None");
+        g_free (string);
+    }
+    else
+    {
+        g_string_append (text, "Python support: no\n");
+    }
 
 #ifdef MOO_USE_XML
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
