@@ -55,7 +55,10 @@ class Plugin(moo.edit.Plugin):
             self.add_ui("ToolsMenu", "PythonConsole")
 
         """ Run file """
-        self.file_pat = re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*')
+        self.patterns = [
+            [re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*'), 1, 2],
+            [re.compile(r'\s*([^:]+):(\d+):.*'), 1, 2]
+        ]
         self.add_window_action(moo.edit.EditWindow, "RunFile",
                                display_name="Run File",
                                label="Run File",
@@ -133,12 +136,16 @@ class Plugin(moo.edit.Plugin):
         return True
 
     def stderr_line(self, output, line):
-        match = self.file_pat.match(line)
+        data = None
 
-        if not match:
+        for p in self.patterns:
+            match = p[0].match(line)
+            if match:
+                data = FileLine(match.group(p[1]), int(match.group(p[2])) - 1)
+                break
+
+        if not data:
             return False
-
-        data = FileLine(match.group(1), int(match.group(2)) - 1)
 
         line_no = output.start_line()
         output.write(line, -1, output.lookup_tag("error"))
