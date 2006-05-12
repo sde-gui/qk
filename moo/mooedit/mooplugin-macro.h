@@ -77,9 +77,9 @@ name__##_plugin_instance_init (MooPlugin *plugin)                           \
     plugin->doc_plugin_type = DOC_PLUGIN_TYPE__;                            \
 }                                                                           \
                                                                             \
-GType name__##_plugin_get_type (void) G_GNUC_CONST;                         \
+static GType name__##_plugin_get_type (void) G_GNUC_CONST;                  \
                                                                             \
-GType                                                                       \
+static GType                                                                \
 name__##_plugin_get_type (void)                                             \
 {                                                                           \
     static GType type__ = 0;                                                \
