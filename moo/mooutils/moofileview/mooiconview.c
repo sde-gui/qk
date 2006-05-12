@@ -115,6 +115,10 @@ static void     moo_icon_view_get_property  (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static void     moo_icon_view_state_changed (GtkWidget      *widget,
+                                             GtkStateType    previous);
+static void     moo_icon_view_style_set     (GtkWidget      *widget,
+                                             GtkStyle       *previous);
 static void     moo_icon_view_map           (GtkWidget      *widget);
 static void     moo_icon_view_realize       (GtkWidget      *widget);
 static void     moo_icon_view_unrealize     (GtkWidget      *widget);
@@ -244,6 +248,8 @@ static void moo_icon_view_class_init (MooIconViewClass *klass)
     gobject_class->set_property = moo_icon_view_set_property;
     gobject_class->get_property = moo_icon_view_get_property;
 
+    widget_class->state_changed = moo_icon_view_state_changed;
+    widget_class->style_set = moo_icon_view_style_set;
     widget_class->map = moo_icon_view_map;
     widget_class->realize = moo_icon_view_realize;
     widget_class->unrealize = moo_icon_view_unrealize;
@@ -764,11 +770,12 @@ void             moo_icon_view_set_attributes   (MooIconView    *view,
 }
 
 
-void    moo_icon_view_set_cell_data_func    (MooIconView    *view,
-                                             MooIconViewCell cell,
-                                             MooIconCellDataFunc func,
-                                             gpointer        func_data,
-                                             GDestroyNotify  destroy)
+void
+moo_icon_view_set_cell_data_func (MooIconView    *view,
+                                  MooIconViewCell cell,
+                                  MooIconCellDataFunc func,
+                                  gpointer        func_data,
+                                  GDestroyNotify  destroy)
 {
     CellInfo *info;
 
@@ -801,20 +808,48 @@ void    moo_icon_view_set_cell_data_func    (MooIconView    *view,
 }
 
 
-static gboolean     check_empty                 (MooIconView    *view)
+static gboolean
+check_empty (MooIconView *view)
 {
     return !view->priv->model || !view->priv->layout->columns;
 }
 
 
-static void     moo_icon_view_map           (GtkWidget      *widget)
+static void
+moo_icon_view_map (GtkWidget *widget)
 {
     GTK_WIDGET_CLASS(moo_icon_view_parent_class)->map (widget);
     moo_icon_view_invalidate_layout (MOO_ICON_VIEW (widget));
 }
 
 
-static void     moo_icon_view_realize       (GtkWidget      *widget)
+static void
+moo_icon_view_style_set (GtkWidget *widget,
+                         G_GNUC_UNUSED GtkStyle *previous_style)
+{
+    if (GTK_WIDGET_REALIZED (widget))
+        gdk_window_set_background (widget->window,
+                                   &widget->style->base[GTK_WIDGET_STATE (widget)]);
+}
+
+
+static void
+moo_icon_view_state_changed (GtkWidget *widget,
+                             G_GNUC_UNUSED GtkStateType previous_state)
+{
+    if (GTK_WIDGET_REALIZED (widget))
+        gdk_window_set_background (widget->window,
+                                   &widget->style->base[GTK_WIDGET_STATE (widget)]);
+
+    if (!GTK_WIDGET_IS_SENSITIVE (widget))
+        moo_icon_view_unselect_all (MOO_ICON_VIEW (widget));
+
+    gtk_widget_queue_draw (widget);
+}
+
+
+static void
+moo_icon_view_realize (GtkWidget *widget)
 {
     static GdkWindowAttr attributes;
     gint attributes_mask;
@@ -854,7 +889,8 @@ static void     moo_icon_view_realize       (GtkWidget      *widget)
 }
 
 
-static void     moo_icon_view_unrealize     (GtkWidget      *widget)
+static void
+moo_icon_view_unrealize (GtkWidget *widget)
 {
     gdk_window_set_user_data (widget->window, NULL);
     gdk_window_destroy (widget->window);
@@ -863,16 +899,18 @@ static void     moo_icon_view_unrealize     (GtkWidget      *widget)
 }
 
 
-static void     moo_icon_view_size_request  (G_GNUC_UNUSED GtkWidget *widget,
-                                             GtkRequisition *requisition)
+static void
+moo_icon_view_size_request (G_GNUC_UNUSED GtkWidget *widget,
+                            GtkRequisition *requisition)
 {
-    requisition->width = 0;
-    requisition->height = 0;
+    requisition->width = 1;
+    requisition->height = 1;
 }
 
 
-static void     moo_icon_view_size_allocate (GtkWidget      *widget,
-                                             GtkAllocation  *allocation)
+static void
+moo_icon_view_size_allocate (GtkWidget     *widget,
+                             GtkAllocation *allocation)
 {
     gboolean height_changed = FALSE;
     MooIconView *view = MOO_ICON_VIEW (widget);
@@ -910,7 +948,8 @@ static void     moo_icon_view_size_allocate (GtkWidget      *widget,
 }
 
 
-static void     moo_icon_view_invalidate_layout (MooIconView    *view)
+static void
+moo_icon_view_invalidate_layout (MooIconView *view)
 {
     if (!view->priv->update_idle)
         view->priv->update_idle =
@@ -920,13 +959,15 @@ static void     moo_icon_view_invalidate_layout (MooIconView    *view)
 }
 
 
-static void     init_layout                 (MooIconView    *view)
+static void
+init_layout (MooIconView *view)
 {
     view->priv->layout = g_new0 (Layout, 1);
 }
 
 
-static void     destroy_layout              (MooIconView    *view)
+static void
+destroy_layout (MooIconView *view)
 {
     GSList *l;
 
@@ -943,7 +984,8 @@ static void     destroy_layout              (MooIconView    *view)
 }
 
 
-static int      num_entries                 (Column         *column)
+static int
+num_entries (Column *column)
 {
     g_assert (column != NULL);
     return column->entries->len;
