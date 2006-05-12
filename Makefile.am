@@ -110,3 +110,9 @@ EXTRA_DIST += $(desktop_DATA)
 # tests
 #
 include tests/Makefile.incl
+
+generated = 			\
+	tests/medit.rc		\
+	wininstaller/medit.iss
+
+all-am: $(generated)
