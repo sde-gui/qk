@@ -113,7 +113,7 @@ typedef struct {                                                            \
     MooWinPluginClass parent_class;                                         \
 } Name__##WindowPluginClass;                                                \
                                                                             \
-GType name__##_window_plugin_get_type (void) G_GNUC_CONST;                  \
+static GType name__##_window_plugin_get_type (void) G_GNUC_CONST;           \
                                                                             \
 static gpointer name__##_window_plugin_parent_class = NULL;                 \
                                                                             \
@@ -125,7 +125,7 @@ name__##_window_plugin_class_init (MooWinPluginClass *klass)                \
     klass->destroy = (MooWinPluginDestroyFunc) destroy__;                   \
 }                                                                           \
                                                                             \
-GType                                                                       \
+static GType                                                                \
 name__##_window_plugin_get_type (void)                                      \
 {                                                                           \
     static GType type__ = 0;                                                \
@@ -159,7 +159,7 @@ typedef struct {                                                            \
     MooDocPluginClass parent_class;                                         \
 } Name__##DocPluginClass;                                                   \
                                                                             \
-GType name__##_doc_plugin_get_type (void) G_GNUC_CONST;                     \
+static GType name__##_doc_plugin_get_type (void) G_GNUC_CONST;              \
                                                                             \
 static gpointer name__##_doc_plugin_parent_class = NULL;                    \
                                                                             \
@@ -171,7 +171,7 @@ name__##_doc_plugin_class_init (MooDocPluginClass *klass)                   \
     klass->destroy = (MooDocPluginDestroyFunc) destroy__;                   \
 }                                                                           \
                                                                             \
-GType                                                                       \
+static GType                                                                \
 name__##_doc_plugin_get_type (void)                                         \
 {                                                                           \
     static GType type__ = 0;                                                \
