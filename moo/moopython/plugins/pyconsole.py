@@ -31,14 +31,14 @@ import gtk
 import gtk.gdk as gdk
 import gobject
 import pango
-import gtk.keysyms as keys
+import gtk.keysyms as _keys
 import code
 import sys
 import keyword
 import re
 
 # commonprefix() from posixpath
-def commonprefix(m):
+def _commonprefix(m):
     "Given a list of pathnames, returns the longest common leading component"
     if not m: return ''
     prefix = m[0]
@@ -145,7 +145,7 @@ class _ReadLine(object):
             self.buffer.insert_at_cursor(run_now + '\n')
 
     def on_buf_mark_set(self, buffer, iter, mark):
-        if not mark is buffer.get_insert():
+        if mark is not buffer.get_insert():
             return
         start = self.__get_start()
         end = self.__get_end()
@@ -223,27 +223,27 @@ class _ReadLine(object):
         keyval = event.keyval
 
         if not state:
-            if keyval == keys.Return:
+            if keyval == _keys.Return:
                 self.__commit()
-            elif keyval == keys.Up:
+            elif keyval == _keys.Up:
                 self.__history(-1)
-            elif keyval == keys.Down:
+            elif keyval == _keys.Down:
                 self.__history(1)
-            elif keyval == keys.Left:
+            elif keyval == _keys.Left:
                 self.__move_cursor(-1)
-            elif keyval == keys.Right:
+            elif keyval == _keys.Right:
                 self.__move_cursor(1)
-            elif keyval == keys.Home:
+            elif keyval == _keys.Home:
                 self.__move_cursor(-10000)
-            elif keyval == keys.End:
+            elif keyval == _keys.End:
                 self.__move_cursor(10000)
-            elif keyval == keys.Tab:
+            elif keyval == _keys.Tab:
                 self.tab_pressed = tab_pressed + 1
                 self.__complete()
             else:
                 handled = False
         elif state == gdk.CONTROL_MASK:
-            if keyval == keys.u:
+            if keyval == _keys.u:
                 start = self.__get_start()
                 end = self.__get_cursor()
                 self.__delete(start, end)
@@ -368,7 +368,7 @@ class _ReadLine(object):
         completions = self.complete(word)
 
         if completions:
-            prefix = commonprefix(completions)
+            prefix = _commonprefix(completions)
             if prefix != word:
                 start_iter = self.__get_start()
                 start_iter.forward_chars(len(start))
@@ -573,7 +573,7 @@ def ConsoleType(t=gtk.TextView):
 ReadLine = ReadLineType()
 Console = ConsoleType()
 
-if __name__ == '__main__':
+def _show():
     window = gtk.Window()
     swin = gtk.ScrolledWindow()
     swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
@@ -588,4 +588,5 @@ if __name__ == '__main__':
         window.connect("destroy", gtk.main_quit)
         gtk.main()
 
-# kate: space-indent on; indent-width 4; strip on;
+if __name__ == '__main__':
+    _show()

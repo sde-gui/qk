@@ -1,3 +1,19 @@
+2006-05-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    pystuff.py: Escape filename using quotes, not apostrophe.
+
+2006-05-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Updated printing code for changes in gtk api.
+
+2006-05-12  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Fixed MooIconView background bug.
+
+2006-05-12  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Added pygtk warning pattern for python output pane.
+
+2006-05-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Added run-script command for MooApp: writing "s<script>\0" to input
+    pipe executes <script>.
+
 2006-05-10  Yevgen Muntyan  <muntyan@math.tamu.edu>
     There is a single win32 installer now, and medit picks up python if it's present
     on startup: medit is not linked to pythonxx.dll, python support has been moved
