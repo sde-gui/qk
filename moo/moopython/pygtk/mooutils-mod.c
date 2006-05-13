@@ -21,6 +21,11 @@
 #include "mooutils/moostock.h"
 
 
+void        _moo_utils_register_classes (PyObject       *dict);
+void        _moo_utils_add_constants    (PyObject       *module,
+                                         const char     *strip_prefix);
+
+extern PyMethodDef _moo_utils_functions[];
 static char *moo_utils_module_doc = (char*)"_moo_utils module.";
 
 #define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)

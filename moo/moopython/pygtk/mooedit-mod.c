@@ -20,6 +20,11 @@
 #include "mooedit/mooplugin.h"
 
 
+void        _moo_edit_register_classes  (PyObject       *dict);
+void        _moo_edit_add_constants     (PyObject       *module,
+                                         const char     *strip_prefix);
+
+extern PyMethodDef _moo_edit_functions[];
 static char *moo_edit_module_doc = (char*) "_moo_edit module.";
 
 
