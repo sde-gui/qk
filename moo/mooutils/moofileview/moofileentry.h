@@ -20,14 +20,14 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_ENTRY_COMPLETION              (moo_file_entry_completion_get_type ())
+#define MOO_TYPE_FILE_ENTRY_COMPLETION              (_moo_file_entry_completion_get_type ())
 #define MOO_FILE_ENTRY_COMPLETION(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_ENTRY_COMPLETION, MooFileEntryCompletion))
 #define MOO_FILE_ENTRY_COMPLETION_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_ENTRY_COMPLETION, MooFileEntryCompletionClass))
 #define MOO_IS_FILE_ENTRY_COMPLETION(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_ENTRY_COMPLETION))
 #define MOO_IS_FILE_ENTRY_COMPLETION_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_ENTRY_COMPLETION))
 #define MOO_FILE_ENTRY_COMPLETION_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_ENTRY_COMPLETION, MooFileEntryCompletionClass))
 
-#define MOO_TYPE_FILE_ENTRY              (moo_file_entry_get_type ())
+#define MOO_TYPE_FILE_ENTRY              (_moo_file_entry_get_type ())
 #define MOO_FILE_ENTRY(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_ENTRY, MooFileEntry))
 #define MOO_FILE_ENTRY_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_ENTRY, MooFileEntryClass))
 #define MOO_IS_FILE_ENTRY(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_ENTRY))
@@ -68,19 +68,19 @@ typedef gboolean (*MooFileVisibleFunc) (MooFile   *file,
                                         gpointer   data);
 
 
-GType       moo_file_entry_get_type                     (void) G_GNUC_CONST;
-GType       moo_file_entry_completion_get_type          (void) G_GNUC_CONST;
+GType       _moo_file_entry_get_type                    (void) G_GNUC_CONST;
+GType       _moo_file_entry_completion_get_type         (void) G_GNUC_CONST;
 
-GtkWidget  *moo_file_entry_new                          (void);
+GtkWidget  *_moo_file_entry_new                         (void);
 
-void        moo_file_entry_completion_set_visible_func  (MooFileEntryCompletion *completion,
+void        _moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *completion,
                                                          MooFileVisibleFunc      func,
                                                          gpointer                data);
-void        moo_file_entry_completion_set_entry         (MooFileEntryCompletion *completion,
+void        _moo_file_entry_completion_set_entry        (MooFileEntryCompletion *completion,
                                                          GtkEntry               *entry);
 
 /* converts path to utf8 and sets entry content */
-void        moo_file_entry_completion_set_path          (MooFileEntryCompletion *completion,
+void        _moo_file_entry_completion_set_path         (MooFileEntryCompletion *completion,
                                                          const char             *path);
 
 

@@ -14,11 +14,11 @@ int main (int argc, char *argv[])
                       G_CALLBACK (gtk_main_quit), NULL);
     gtk_window_set_default_size (GTK_WINDOW (window), -1, 500);
 
-    tree = moo_file_view_new ();
+    tree = _moo_file_view_new ();
     gtk_container_add (GTK_CONTAINER (window), tree);
 
-    moo_file_view_chdir (MOO_FILE_VIEW (tree),
-                         g_get_home_dir (), NULL);;
+    _moo_file_view_chdir (MOO_FILE_VIEW (tree),
+                          g_get_home_dir (), NULL);;
 
     gtk_widget_show_all (window);
 

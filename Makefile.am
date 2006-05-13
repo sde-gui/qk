@@ -92,7 +92,7 @@ endif
 CLEANFILES += $(moo_cleanfiles)
 BUILT_SOURCES = $(moo_built_sources)
 
-libmoo_ldflags = -version-info $(LTVERSION) -export-symbols-regex "^[^_].*" -no-undefined
+libmoo_la_LDFLAGS = -version-info $(LTVERSION) -no_undefined -export-symbols-regex "^(moo_|ms_|m_|egg_regex_).*"
 libmoo_sources = $(moo_sources)
 nodist_libmoo_sources = $(moo_nodist_sources)
 

@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+/*
  *   moobookmarkmgr.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -21,14 +21,14 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_BOOKMARK_MGR                (moo_bookmark_mgr_get_type ())
+#define MOO_TYPE_BOOKMARK_MGR                (_moo_bookmark_mgr_get_type ())
 #define MOO_BOOKMARK_MGR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgr))
 #define MOO_BOOKMARK_MGR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgrClass))
 #define MOO_IS_BOOKMARK_MGR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_BOOKMARK_MGR))
 #define MOO_IS_BOOKMARK_MGR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_BOOKMARK_MGR))
 #define MOO_BOOKMARK_MGR_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgrClass))
 
-#define MOO_TYPE_BOOKMARK                    (moo_bookmark_get_type ())
+#define MOO_TYPE_BOOKMARK                    (_moo_bookmark_get_type ())
 
 typedef enum {
     MOO_BOOKMARK_MGR_COLUMN_BOOKMARK = 0,
@@ -66,36 +66,36 @@ struct _MooBookmarkMgrClass
 };
 
 
-GType           moo_bookmark_get_type       (void) G_GNUC_CONST;
-GType           moo_bookmark_mgr_get_type   (void) G_GNUC_CONST;
+GType           _moo_bookmark_get_type      (void) G_GNUC_CONST;
+GType           _moo_bookmark_mgr_get_type  (void) G_GNUC_CONST;
 
-MooBookmark    *moo_bookmark_new            (const char     *name,
+MooBookmark    *_moo_bookmark_new           (const char     *name,
                                              const char     *path,
                                              const char     *icon);
-MooBookmark    *moo_bookmark_copy           (MooBookmark    *bookmark);
-void            moo_bookmark_free           (MooBookmark    *bookmark);
+MooBookmark    *_moo_bookmark_copy          (MooBookmark    *bookmark);
+void            _moo_bookmark_free          (MooBookmark    *bookmark);
 
-void            moo_bookmark_set_path       (MooBookmark    *bookmark,
+void            _moo_bookmark_set_path      (MooBookmark    *bookmark,
                                              const char     *path);
-void            moo_bookmark_set_display_path (MooBookmark  *bookmark,
+void            _moo_bookmark_set_display_path(MooBookmark  *bookmark,
                                              const char     *display_path);
 
 
-MooBookmarkMgr *moo_bookmark_mgr_new        (void);
-GtkTreeModel   *moo_bookmark_mgr_get_model  (MooBookmarkMgr *mgr);
+MooBookmarkMgr *_moo_bookmark_mgr_new       (void);
+GtkTreeModel   *_moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr);
 
-void            moo_bookmark_mgr_add        (MooBookmarkMgr *mgr,
+void            _moo_bookmark_mgr_add       (MooBookmarkMgr *mgr,
                                              MooBookmark    *bookmark);
-gboolean        moo_bookmark_mgr_is_empty   (MooBookmarkMgr *mgr);
+gboolean        _moo_bookmark_mgr_is_empty  (MooBookmarkMgr *mgr);
 
-GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr);
+GtkWidget      *_moo_bookmark_mgr_get_editor(MooBookmarkMgr *mgr);
 
-void            moo_bookmark_mgr_add_user   (MooBookmarkMgr *mgr,
+void            _moo_bookmark_mgr_add_user  (MooBookmarkMgr *mgr,
                                              gpointer        user, /* GObject* */
                                              GtkActionGroup *actions,
                                              MooUIXML       *xml,
                                              const char     *path);
-void            moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
+void            _moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
                                              gpointer        user); /* GObject* */
 
 

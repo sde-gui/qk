@@ -25,7 +25,7 @@ G_BEGIN_DECLS
 #define MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE_DEFAULT      FALSE
 #endif /* __WIN32__ */
 
-#define MOO_TYPE_FOLDER_MODEL            (moo_folder_model_get_type ())
+#define MOO_TYPE_FOLDER_MODEL            (_moo_folder_model_get_type ())
 #define MOO_FOLDER_MODEL(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLDER_MODEL, MooFolderModel))
 #define MOO_FOLDER_MODEL_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FOLDER_MODEL, MooFolderModelClass))
 #define MOO_IS_FOLDER_MODEL(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FOLDER_MODEL))
@@ -55,30 +55,30 @@ typedef enum {
 #define MOO_FOLDER_MODEL_N_COLUMNS 1
 
 
-GType            moo_folder_model_get_type      (void) G_GNUC_CONST;
-GtkTreeModel    *moo_folder_model_new           (MooFolder      *folder);
-void             moo_folder_model_set_folder    (MooFolderModel *model,
+GType            _moo_folder_model_get_type      (void) G_GNUC_CONST;
+GtkTreeModel    *_moo_folder_model_new           (MooFolder      *folder);
+void             _moo_folder_model_set_folder    (MooFolderModel *model,
                                                  MooFolder      *folder);
-MooFolder       *moo_folder_model_get_folder    (MooFolderModel *model);
+MooFolder       *_moo_folder_model_get_folder    (MooFolderModel *model);
 
-gboolean         moo_folder_model_get_iter      (MooFolderModel *model,
+gboolean         _moo_folder_model_get_iter      (MooFolderModel *model,
                                                  MooFile        *file,
                                                  GtkTreeIter    *iter);
-gboolean         moo_folder_model_get_iter_by_name
+gboolean         _moo_folder_model_get_iter_by_name
                                                 (MooFolderModel *model,
                                                  const char     *name,
                                                  GtkTreeIter    *iter);
-gboolean         moo_folder_model_get_iter_by_display_name
+gboolean         _moo_folder_model_get_iter_by_display_name
                                                 (MooFolderModel *model,
                                                  const char     *name,
                                                  GtkTreeIter    *iter);
 
-void             moo_folder_model_set_sort_case_sensitive
+void             _moo_folder_model_set_sort_case_sensitive
                                                 (MooFolderModel *model,
                                                  gboolean        case_sensitive);
 
 
-#define MOO_TYPE_FOLDER_FILTER            (moo_folder_filter_get_type ())
+#define MOO_TYPE_FOLDER_FILTER            (_moo_folder_filter_get_type ())
 #define MOO_FOLDER_FILTER(object)         (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FOLDER_FILTER, MooFolderFilter))
 #define MOO_FOLDER_FILTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FOLDER_FILTER, MooFolderFilterClass))
 #define MOO_IS_FOLDER_FILTER(object)      (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FOLDER_FILTER))
@@ -99,21 +99,21 @@ struct _MooFolderFilterClass
 };
 
 
-GType            moo_folder_filter_get_type         (void) G_GNUC_CONST;
-GtkTreeModel    *moo_folder_filter_new              (MooFolderModel     *model);
-MooFolderModel  *moo_folder_filter_get_model        (MooFolderFilter    *filter);
+GType            _moo_folder_filter_get_type        (void) G_GNUC_CONST;
+GtkTreeModel    *_moo_folder_filter_new             (MooFolderModel     *model);
+MooFolderModel  *_moo_folder_filter_get_model       (MooFolderFilter    *filter);
 
-void             moo_folder_filter_set_folder       (MooFolderFilter    *filter,
+void             _moo_folder_filter_set_folder      (MooFolderFilter    *filter,
                                                      MooFolder          *folder);
-MooFolder       *moo_folder_filter_get_folder       (MooFolderFilter    *filter);
+MooFolder       *_moo_folder_filter_get_folder      (MooFolderFilter    *filter);
 
-gboolean         moo_folder_filter_get_iter         (MooFolderFilter    *filter,
+gboolean         _moo_folder_filter_get_iter        (MooFolderFilter    *filter,
                                                      MooFile            *file,
                                                      GtkTreeIter        *filter_iter);
-gboolean         moo_folder_filter_get_iter_by_name (MooFolderFilter    *filter,
+gboolean         _moo_folder_filter_get_iter_by_name(MooFolderFilter    *filter,
                                                      const char         *name,
                                                      GtkTreeIter        *filter_iter);
-gboolean         moo_folder_filter_get_iter_by_display_name
+gboolean         _moo_folder_filter_get_iter_by_display_name
                                                     (MooFolderFilter    *filter,
                                                      const char         *name,
                                                      GtkTreeIter        *filter_iter);

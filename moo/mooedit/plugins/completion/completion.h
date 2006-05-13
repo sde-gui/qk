@@ -26,6 +26,12 @@ G_BEGIN_DECLS
 #define CMPL_FILE_SUFFIX ".lst"
 #define CMPL_CONFIG_SUFFIX ".cfg"
 
+#define _completion_callback        _moo_completion_plugin_callback
+#define _completion_complete        _moo_completion_plugin_complete
+#define _cmpl_plugin_load           _moo_completion_plugin_load
+#define _cmpl_plugin_clear          _moo_completion_plugin_clear
+#define _cmpl_plugin_prefs_page     _moo_completion_plugin_prefs_page
+
 
 typedef struct {
     MooPlugin parent;

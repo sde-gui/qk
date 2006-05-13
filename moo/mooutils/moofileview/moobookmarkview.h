@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+/*
  *   moobookmarkview.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -20,7 +20,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_BOOKMARK_VIEW                (moo_bookmark_view_get_type ())
+#define MOO_TYPE_BOOKMARK_VIEW                (_moo_bookmark_view_get_type ())
 #define MOO_BOOKMARK_VIEW(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_BOOKMARK_VIEW, MooBookmarkView))
 #define MOO_BOOKMARK_VIEW_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_BOOKMARK_VIEW, MooBookmarkViewClass))
 #define MOO_IS_BOOKMARK_VIEW(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_BOOKMARK_VIEW))
@@ -48,14 +48,14 @@ struct _MooBookmarkViewClass
 };
 
 
-GType           moo_bookmark_view_get_type      (void) G_GNUC_CONST;
+GType           _moo_bookmark_view_get_type     (void) G_GNUC_CONST;
 
-GtkWidget      *moo_bookmark_view_new           (MooBookmarkMgr     *mgr);
+GtkWidget      *_moo_bookmark_view_new          (MooBookmarkMgr     *mgr);
 
-void            moo_bookmark_view_set_mgr       (MooBookmarkView    *view,
+void            _moo_bookmark_view_set_mgr      (MooBookmarkView    *view,
                                                  MooBookmarkMgr     *mgr);
 
-MooBookmark    *moo_bookmark_view_get_bookmark  (MooBookmarkView    *view,
+MooBookmark    *_moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
                                                  GtkTreePath        *path);
 
 

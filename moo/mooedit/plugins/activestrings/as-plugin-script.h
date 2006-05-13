@@ -22,6 +22,9 @@
 G_BEGIN_DECLS
 
 
+#define _as_plugin_context_exec _moo_as_plugin_context_exec
+
+
 gboolean     _as_plugin_context_exec        (MSContext      *ctx,
                                              MSNode         *script,
                                              MooEdit        *doc,

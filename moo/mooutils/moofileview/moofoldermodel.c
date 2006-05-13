@@ -44,7 +44,7 @@ static void moo_folder_model_get_property       (GObject                *object,
 static gpointer moo_folder_model_parent_class = NULL;
 
 GType
-moo_folder_model_get_type (void)
+_moo_folder_model_get_type (void)
 {
     static GType type = 0;
 
@@ -186,13 +186,12 @@ moo_folder_model_set_property (GObject *object,
     switch (property_id)
     {
         case PROP_FOLDER:
-            moo_folder_model_set_folder (model,
-                                         g_value_get_object (value));
+            _moo_folder_model_set_folder (model,
+                                          g_value_get_object (value));
             break;
 
         case PROP_SORT_CASE_SENSITIVE:
-            moo_folder_model_set_sort_case_sensitive (model,
-                    g_value_get_boolean (value));
+            _moo_folder_model_set_sort_case_sensitive (model, g_value_get_boolean (value));
             break;
 
         default:
@@ -213,7 +212,7 @@ moo_folder_model_get_property (GObject *object,
     {
         case PROP_FOLDER:
             g_value_set_object (value,
-                                moo_folder_model_get_folder (model));
+                                _moo_folder_model_get_folder (model));
             break;
 
         case PROP_SORT_CASE_SENSITIVE:
@@ -227,8 +226,8 @@ moo_folder_model_get_property (GObject *object,
 
 
 void
-moo_folder_model_set_folder (MooFolderModel *model,
-                             MooFolder      *folder)
+_moo_folder_model_set_folder (MooFolderModel *model,
+                              MooFolder      *folder)
 {
     GSList *files;
 
@@ -256,9 +255,9 @@ moo_folder_model_set_folder (MooFolderModel *model,
                                   G_CALLBACK (moo_folder_model_folder_deleted),
                                   model);
 
-        files = moo_folder_list_files (folder);
+        files = _moo_folder_list_files (folder);
         moo_folder_model_add_files (model, files);
-        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_foreach (files, (GFunc) _moo_file_unref, NULL);
         g_slist_free (files);
     }
 
@@ -314,8 +313,8 @@ moo_folder_model_finalize (GObject *object)
 
 
 void
-moo_folder_model_set_sort_case_sensitive (MooFolderModel *model,
-                                          gboolean        case_sensitive)
+_moo_folder_model_set_sort_case_sensitive (MooFolderModel *model,
+                                           gboolean        case_sensitive)
 {
     g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
 
@@ -444,12 +443,12 @@ moo_folder_model_disconnect_folder (MooFolderModel *model)
 
         files = file_list_get_slist (model->priv->files);
         moo_folder_model_remove_files (model, files);
-        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_foreach (files, (GFunc) _moo_file_unref, NULL);
         g_slist_free (files);
 
         files = file_list_get_slist (model->priv->dirs);
         moo_folder_model_remove_files (model, files);
-        g_slist_foreach (files, (GFunc) moo_file_unref, NULL);
+        g_slist_foreach (files, (GFunc) _moo_file_unref, NULL);
         g_slist_free (files);
 
         g_object_unref (model->priv->folder);
@@ -499,7 +498,7 @@ model_add_moo_file (MooFile        *file,
     g_assert (!model_contains_file (model, file));
     g_assert (file != NULL);
 
-    moo_file_ref (file);
+    _moo_file_ref (file);
 
     if (MOO_FILE_IS_DIR (file))
     {
@@ -538,10 +537,10 @@ model_change_moo_file (MooFile        *file,
     {
         if (!MOO_FILE_IS_DIR (file))
         {
-            moo_file_ref (file);
+            _moo_file_ref (file);
             model_remove_moo_file (file, model);
             model_add_moo_file (file, model);
-            moo_file_unref (file);
+            _moo_file_unref (file);
             return;
         }
 
@@ -553,10 +552,10 @@ model_change_moo_file (MooFile        *file,
     {
         if (MOO_FILE_IS_DIR (file))
         {
-            moo_file_ref (file);
+            _moo_file_ref (file);
             model_remove_moo_file (file, model);
             model_add_moo_file (file, model);
-            moo_file_unref (file);
+            _moo_file_unref (file);
             return;
         }
 
@@ -585,7 +584,7 @@ model_remove_moo_file (MooFile        *file,
     g_assert (model_contains_file (model, file));
     g_assert (file != NULL);
 
-    moo_file_ref (file);
+    _moo_file_ref (file);
 
     if (model_is_dir (model, file))
     {
@@ -601,7 +600,7 @@ model_remove_moo_file (MooFile        *file,
     gtk_tree_model_row_deleted (GTK_TREE_MODEL (model), path);
     gtk_tree_path_free (path);
 
-    moo_file_unref (file);
+    _moo_file_unref (file);
 }
 
 
@@ -920,7 +919,7 @@ moo_folder_model_iter_parent (GtkTreeModel *tree_model,
 
 
 GtkTreeModel *
-moo_folder_model_new (MooFolder *folder)
+_moo_folder_model_new (MooFolder *folder)
 {
     g_return_val_if_fail (!folder || MOO_IS_FOLDER (folder), NULL);
     return GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_MODEL,
@@ -929,7 +928,7 @@ moo_folder_model_new (MooFolder *folder)
 
 
 MooFolder *
-moo_folder_model_get_folder (MooFolderModel *model)
+_moo_folder_model_get_folder (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
     return model->priv->folder;
@@ -937,9 +936,9 @@ moo_folder_model_get_folder (MooFolderModel *model)
 
 
 gboolean
-moo_folder_model_get_iter (MooFolderModel *model,
-                           MooFile        *file,
-                           GtkTreeIter    *iter)
+_moo_folder_model_get_iter (MooFolderModel *model,
+                            MooFile        *file,
+                            GtkTreeIter    *iter)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), FALSE);
     g_return_val_if_fail (file != NULL, FALSE);
@@ -965,9 +964,9 @@ moo_folder_model_get_iter (MooFolderModel *model,
 
 
 gboolean
-moo_folder_model_get_iter_by_name (MooFolderModel *model,
-                                   const char     *name,
-                                   GtkTreeIter    *iter)
+_moo_folder_model_get_iter_by_name (MooFolderModel *model,
+                                    const char     *name,
+                                    GtkTreeIter    *iter)
 {
     MooFile *file;
 
@@ -996,9 +995,9 @@ moo_folder_model_get_iter_by_name (MooFolderModel *model,
 
 
 gboolean
-moo_folder_model_get_iter_by_display_name (MooFolderModel *model,
-                                           const char     *name,
-                                           GtkTreeIter    *iter)
+_moo_folder_model_get_iter_by_display_name (MooFolderModel *model,
+                                            const char     *name,
+                                            GtkTreeIter    *iter)
 {
     MooFile *file;
 
@@ -1076,21 +1075,21 @@ static void CHECK_ITER (MooFolderModel *model, GtkTreeIter *iter)
 /* MooFolderFilter
  */
 
-G_DEFINE_TYPE (MooFolderFilter, moo_folder_filter, GTK_TYPE_TREE_MODEL_FILTER)
+G_DEFINE_TYPE (MooFolderFilter, _moo_folder_filter, GTK_TYPE_TREE_MODEL_FILTER)
 
 static void
-moo_folder_filter_class_init (G_GNUC_UNUSED MooFolderFilterClass *klass)
+_moo_folder_filter_class_init (G_GNUC_UNUSED MooFolderFilterClass *klass)
 {
 }
 
 static void
-moo_folder_filter_init (G_GNUC_UNUSED MooFolderFilter *filter)
+_moo_folder_filter_init (G_GNUC_UNUSED MooFolderFilter *filter)
 {
 }
 
 
 GtkTreeModel*
-moo_folder_filter_new (MooFolderModel *model)
+_moo_folder_filter_new (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
     return g_object_new (MOO_TYPE_FOLDER_FILTER,
@@ -1099,23 +1098,23 @@ moo_folder_filter_new (MooFolderModel *model)
 
 
 void
-moo_folder_filter_set_folder (MooFolderFilter    *filter,
-                              MooFolder          *folder)
+_moo_folder_filter_set_folder (MooFolderFilter    *filter,
+                               MooFolder          *folder)
 {
     GtkTreeModel *model;
     g_return_if_fail (MOO_IS_FOLDER_FILTER (filter));
     model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (filter));
     g_return_if_fail (MOO_IS_FOLDER_MODEL (model));
-    moo_folder_model_set_folder (MOO_FOLDER_MODEL (model), folder);
+    _moo_folder_model_set_folder (MOO_FOLDER_MODEL (model), folder);
 }
 
 
 MooFolder *
-moo_folder_filter_get_folder (MooFolderFilter *filter)
+_moo_folder_filter_get_folder (MooFolderFilter *filter)
 {
     GtkTreeModel *model;
     g_return_val_if_fail (MOO_IS_FOLDER_FILTER (filter), NULL);
     model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (filter));
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
-    return moo_folder_model_get_folder (MOO_FOLDER_MODEL (model));
+    return _moo_folder_model_get_folder (MOO_FOLDER_MODEL (model));
 }

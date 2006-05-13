@@ -56,7 +56,7 @@ static gboolean mgr_update_menus            (MooBookmarkMgr *mgr);
 
 
 /* MOO_TYPE_BOOKMARK_MGR */
-G_DEFINE_TYPE (MooBookmarkMgr, moo_bookmark_mgr, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooBookmarkMgr, _moo_bookmark_mgr, G_TYPE_OBJECT)
 
 enum {
     PROP_0,
@@ -71,7 +71,7 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 static void
-moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
+_moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -101,7 +101,7 @@ moo_bookmark_mgr_class_init (MooBookmarkMgrClass *klass)
 
 
 static void
-moo_bookmark_mgr_init (MooBookmarkMgr *mgr)
+_moo_bookmark_mgr_init (MooBookmarkMgr *mgr)
 {
     mgr->priv = g_new0 (MooBookmarkMgrPrivate, 1);
 
@@ -144,7 +144,7 @@ moo_bookmark_mgr_finalize (GObject *object)
     g_free (mgr->priv);
     mgr->priv = NULL;
 
-    G_OBJECT_CLASS (moo_bookmark_mgr_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_bookmark_mgr_parent_class)->finalize (object);
 }
 
 
@@ -166,8 +166,8 @@ moo_bookmark_mgr_changed (MooBookmarkMgr *mgr)
 
 
 void
-moo_bookmark_mgr_add (MooBookmarkMgr *mgr,
-                      MooBookmark    *bookmark)
+_moo_bookmark_mgr_add (MooBookmarkMgr *mgr,
+                       MooBookmark    *bookmark)
 {
     GtkTreeIter iter;
 
@@ -192,7 +192,7 @@ moo_bookmark_mgr_add_separator (MooBookmarkMgr *mgr)
 
 
 MooBookmarkMgr*
-moo_bookmark_mgr_new (void)
+_moo_bookmark_mgr_new (void)
 {
     MooBookmarkMgr *mgr = g_object_new (MOO_TYPE_BOOKMARK_MGR, NULL);
     moo_bookmark_mgr_load (mgr);
@@ -201,7 +201,7 @@ moo_bookmark_mgr_new (void)
 
 
 GtkTreeModel *
-moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr)
+_moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr)
 {
     g_return_val_if_fail (MOO_IS_BOOKMARK_MGR (mgr), NULL);
     return GTK_TREE_MODEL (mgr->priv->store);
@@ -209,7 +209,7 @@ moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr)
 
 
 gboolean
-moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
+_moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
 {
     GtkTreeIter iter;
     g_return_val_if_fail (MOO_IS_BOOKMARK_MGR (mgr), TRUE);
@@ -218,9 +218,9 @@ moo_bookmark_mgr_is_empty (MooBookmarkMgr *mgr)
 
 
 MooBookmark*
-moo_bookmark_new (const char     *label,
-                  const char     *path,
-                  const char     *icon)
+_moo_bookmark_new (const char     *label,
+                   const char     *path,
+                   const char     *icon)
 {
     MooBookmark *bookmark;
 
@@ -236,7 +236,7 @@ moo_bookmark_new (const char     *label,
 
 
 MooBookmark*
-moo_bookmark_copy (MooBookmark *bookmark)
+_moo_bookmark_copy (MooBookmark *bookmark)
 {
     MooBookmark *copy;
 
@@ -256,7 +256,7 @@ moo_bookmark_copy (MooBookmark *bookmark)
 
 
 void
-moo_bookmark_free (MooBookmark *bookmark)
+_moo_bookmark_free (MooBookmark *bookmark)
 {
     if (bookmark)
     {
@@ -272,20 +272,20 @@ moo_bookmark_free (MooBookmark *bookmark)
 
 
 GType
-moo_bookmark_get_type (void)
+_moo_bookmark_get_type (void)
 {
     static GType type = 0;
     if (!type)
         type = g_boxed_type_register_static ("MooBookmark",
-                                             (GBoxedCopyFunc) moo_bookmark_copy,
-                                             (GBoxedFreeFunc) moo_bookmark_free);
+                                             (GBoxedCopyFunc) _moo_bookmark_copy,
+                                             (GBoxedFreeFunc) _moo_bookmark_free);
     return type;
 }
 
 
 void
-moo_bookmark_set_path (MooBookmark    *bookmark,
-                       const char     *path)
+_moo_bookmark_set_path (MooBookmark    *bookmark,
+                        const char     *path)
 {
     char *display_path;
     g_return_if_fail (bookmark != NULL);
@@ -302,8 +302,8 @@ moo_bookmark_set_path (MooBookmark    *bookmark,
 
 
 void
-moo_bookmark_set_display_path (MooBookmark  *bookmark,
-                               const char   *display_path)
+_moo_bookmark_set_display_path (MooBookmark  *bookmark,
+                                const char   *display_path)
 {
     char *path;
     g_return_if_fail (bookmark != NULL);
@@ -372,10 +372,10 @@ moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
                 continue;
             }
 
-            bookmark = moo_bookmark_new (label ? label : path_utf8, path, icon);
-            moo_bookmark_mgr_add (mgr, bookmark);
+            bookmark = _moo_bookmark_new (label ? label : path_utf8, path, icon);
+            _moo_bookmark_mgr_add (mgr, bookmark);
 
-            moo_bookmark_free (bookmark);
+            _moo_bookmark_free (bookmark);
             g_free (path);
         }
         else if (!strcmp (node->name, ELEMENT_SEPARATOR))
@@ -436,7 +436,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
         if (bookmark->icon_stock_id)
             moo_markup_set_prop (elm, PROP_ICON, bookmark->icon_stock_id);
 
-        moo_bookmark_free (bookmark);
+        _moo_bookmark_free (bookmark);
     }
     while (gtk_tree_model_iter_next (model, &iter));
 }
@@ -551,7 +551,7 @@ make_menu (MooBookmarkMgr *mgr,
                                               NULL);
         g_object_ref (action);
         g_object_set_data_full (G_OBJECT (action), "moo-bookmark",
-                                bookmark, (GDestroyNotify) moo_bookmark_free);
+                                bookmark, (GDestroyNotify) _moo_bookmark_free);
         g_object_set_data (G_OBJECT (action), "moo-bookmark-user", info->user);
         g_signal_connect (action, "activate", G_CALLBACK (item_activated), mgr);
 
@@ -619,11 +619,11 @@ mgr_update_menus (MooBookmarkMgr *mgr)
 
 
 void
-moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
-                           gpointer        user,
-                           GtkActionGroup *actions,
-                           MooUIXML       *xml,
-                           const char     *path)
+_moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
+                            gpointer        user,
+                            GtkActionGroup *actions,
+                            MooUIXML       *xml,
+                            const char     *path)
 {
     guint merge_id;
     UserInfo *info;
@@ -654,8 +654,8 @@ mgr_remove_user (MooBookmarkMgr *mgr,
 
 
 void
-moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
-                              gpointer        user)
+_moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
+                               gpointer        user)
 {
     GSList *l, *infos = NULL;
 
@@ -730,7 +730,7 @@ moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
 //         g_object_set_data_full (G_OBJECT (item), "moo-bookmark-mgr",
 //                                 g_object_ref (mgr), g_object_unref);
 //         g_object_set_data_full (G_OBJECT (item), "moo-bookmark",
-//                                 bookmark, (GDestroyNotify) moo_bookmark_free);
+//                                 bookmark, (GDestroyNotify) _moo_bookmark_free);
 //         g_object_set_data (G_OBJECT (item), "moo-bookmark-func", func);
 //         g_object_set_data (G_OBJECT (item), "moo-bookmark-data", data);
 //
@@ -804,7 +804,8 @@ static void          dialog_response        (GtkWidget      *dialog,
 static void          dialog_show            (GtkWidget      *dialog,
                                              MooBookmarkMgr *mgr);
 
-GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
+GtkWidget *
+_moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
 {
     GtkWidget *dialog;
     MooGladeXML *xml;
@@ -840,8 +841,9 @@ GtkWidget      *moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
 }
 
 
-static void          dialog_show            (GtkWidget      *dialog,
-                                             MooBookmarkMgr *mgr)
+static void
+dialog_show (GtkWidget      *dialog,
+             MooBookmarkMgr *mgr)
 {
     MooGladeXML *xml;
     GtkTreeView *treeview;
@@ -857,9 +859,10 @@ static void          dialog_show            (GtkWidget      *dialog,
 }
 
 
-static void          dialog_response        (GtkWidget      *dialog,
-                                             int             response,
-                                             MooBookmarkMgr *mgr)
+static void
+dialog_response (GtkWidget      *dialog,
+                 int             response,
+                 MooBookmarkMgr *mgr)
 {
     MooGladeXML *xml;
     GtkTreeView *treeview;
@@ -881,10 +884,11 @@ static void          dialog_response        (GtkWidget      *dialog,
 }
 
 
-static gboolean copy_value (GtkTreeModel    *src,
-                            G_GNUC_UNUSED GtkTreePath *path,
-                            GtkTreeIter     *iter,
-                            GtkListStore    *dest)
+static gboolean
+copy_value (GtkTreeModel    *src,
+            G_GNUC_UNUSED GtkTreePath *path,
+            GtkTreeIter     *iter,
+            GtkListStore    *dest)
 {
     GtkTreeIter dest_iter;
     MooBookmark *bookmark;
@@ -892,12 +896,13 @@ static gboolean copy_value (GtkTreeModel    *src,
     gtk_tree_model_get (src, iter, COLUMN_BOOKMARK, &bookmark, -1);
     gtk_list_store_append (dest, &dest_iter);
     gtk_list_store_set (dest, &dest_iter, COLUMN_BOOKMARK, bookmark, -1);
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 
     return FALSE;
 }
 
-static GtkTreeModel *copy_bookmarks         (GtkListStore   *store)
+static GtkTreeModel *
+copy_bookmarks (GtkListStore *store)
 {
     GtkListStore *copy;
     copy = gtk_list_store_new (1, MOO_TYPE_BOOKMARK);
@@ -908,8 +913,9 @@ static GtkTreeModel *copy_bookmarks         (GtkListStore   *store)
 }
 
 
-static void          copy_bookmarks_back    (GtkListStore   *store,
-                                             GtkTreeModel   *model)
+static void
+copy_bookmarks_back (GtkListStore   *store,
+                     GtkTreeModel   *model)
 {
     gtk_list_store_clear (store);
     gtk_tree_model_foreach (model,
@@ -956,8 +962,9 @@ static void     combo_update_icon   (GtkComboBox        *combo,
                                      MooGladeXML        *xml);
 
 
-static void          init_editor_dialog     (GtkTreeView    *treeview,
-                                             MooGladeXML    *xml)
+static void
+init_editor_dialog (GtkTreeView    *treeview,
+                    MooGladeXML    *xml)
 {
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
@@ -1038,8 +1045,9 @@ static void          init_editor_dialog     (GtkTreeView    *treeview,
 }
 
 
-static MooBookmark *get_bookmark(GtkTreeModel       *model,
-                                 GtkTreeIter        *iter)
+static MooBookmark *
+get_bookmark (GtkTreeModel       *model,
+              GtkTreeIter        *iter)
 {
     MooBookmark *bookmark = NULL;
     gtk_tree_model_get (model, iter, COLUMN_BOOKMARK, &bookmark, -1);
@@ -1047,18 +1055,20 @@ static MooBookmark *get_bookmark(GtkTreeModel       *model,
 }
 
 
-static void     set_bookmark    (GtkListStore       *store,
-                                 GtkTreeIter        *iter,
-                                 MooBookmark        *bookmark)
+static void
+set_bookmark (GtkListStore       *store,
+              GtkTreeIter        *iter,
+              MooBookmark        *bookmark)
 {
     gtk_list_store_set (store, iter, COLUMN_BOOKMARK, bookmark, -1);
 }
 
 
-static void     icon_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                                 GtkCellRenderer    *cell,
-                                 GtkTreeModel       *model,
-                                 GtkTreeIter        *iter)
+static void
+icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                GtkCellRenderer    *cell,
+                GtkTreeModel       *model,
+                GtkTreeIter        *iter)
 {
     MooBookmark *bookmark = get_bookmark (model, iter);
 
@@ -1074,14 +1084,15 @@ static void     icon_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "stock-size", GTK_ICON_SIZE_MENU,
                       NULL);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
-static void     label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                                 GtkCellRenderer    *cell,
-                                 GtkTreeModel       *model,
-                                 GtkTreeIter        *iter)
+static void
+label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                 GtkCellRenderer    *cell,
+                 GtkTreeModel       *model,
+                 GtkTreeIter        *iter)
 {
     MooBookmark *bookmark = get_bookmark (model, iter);
 
@@ -1096,14 +1107,15 @@ static void     label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "editable", TRUE,
                       NULL);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
-static void     path_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                                 GtkCellRenderer    *cell,
-                                 GtkTreeModel       *model,
-                                 GtkTreeIter        *iter)
+static void
+path_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                GtkCellRenderer    *cell,
+                GtkTreeModel       *model,
+                GtkTreeIter        *iter)
 {
     MooBookmark *bookmark = get_bookmark (model, iter);
 
@@ -1118,12 +1130,13 @@ static void     path_data_func  (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "editable", TRUE,
                       NULL);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
-static void     selection_changed   (GtkTreeSelection   *selection,
-                                     MooGladeXML        *xml)
+static void
+selection_changed (GtkTreeSelection   *selection,
+                   MooGladeXML        *xml)
 {
     GtkWidget *button, *selected_hbox;
     int selected;
@@ -1150,7 +1163,7 @@ static void     selection_changed   (GtkTreeSelection   *selection,
             gtk_widget_set_sensitive (selected_hbox, TRUE);
             icon_combo = moo_glade_xml_get_widget (xml, "icon_combo");
             combo_update_icon (GTK_COMBO_BOX (icon_combo), xml);
-            moo_bookmark_free (bookmark);
+            _moo_bookmark_free (bookmark);
         }
         else
         {
@@ -1164,7 +1177,8 @@ static void     selection_changed   (GtkTreeSelection   *selection,
 }
 
 
-static void     new_clicked         (MooGladeXML        *xml)
+static void
+new_clicked (MooGladeXML *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1176,8 +1190,8 @@ static void     new_clicked         (MooGladeXML        *xml)
     treeview = moo_glade_xml_get_widget (xml, "treeview");
     store = GTK_LIST_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 
-    bookmark = moo_bookmark_new ("New bookmark", NULL,
-                                 GTK_STOCK_DIRECTORY);
+    bookmark = _moo_bookmark_new ("New bookmark", NULL,
+                                  GTK_STOCK_DIRECTORY);
     gtk_list_store_append (store, &iter);
     set_bookmark (store, &iter, bookmark);
 
@@ -1191,11 +1205,12 @@ static void     new_clicked         (MooGladeXML        *xml)
                        GINT_TO_POINTER (TRUE));
 
     gtk_tree_path_free (path);
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
-static void     delete_clicked      (MooGladeXML        *xml)
+static void
+delete_clicked (MooGladeXML *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1240,7 +1255,8 @@ static void     delete_clicked      (MooGladeXML        *xml)
 }
 
 
-static void     separator_clicked   (MooGladeXML        *xml)
+static void
+separator_clicked (MooGladeXML *xml)
 {
     GtkTreeIter iter;
     GtkWidget *treeview;
@@ -1252,10 +1268,11 @@ static void     separator_clicked   (MooGladeXML        *xml)
 }
 
 
-static void     label_edited        (G_GNUC_UNUSED GtkCellRenderer *cell,
-                                     char               *path_string,
-                                     char               *text,
-                                     MooGladeXML        *xml)
+static void
+label_edited (G_GNUC_UNUSED GtkCellRenderer *cell,
+              char               *path_string,
+              char               *text,
+              MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1287,15 +1304,16 @@ static void     label_edited        (G_GNUC_UNUSED GtkCellRenderer *cell,
                            GINT_TO_POINTER (TRUE));
     }
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
     gtk_tree_path_free (path);
 }
 
 
-static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
-                                     char               *path_string,
-                                     char               *text,
-                                     MooGladeXML        *xml)
+static void
+path_edited (G_GNUC_UNUSED GtkCellRenderer *cell,
+             char               *path_string,
+             char               *text,
+             MooGladeXML        *xml)
 {
     GtkTreeIter iter;
     GtkTreePath *path;
@@ -1320,14 +1338,14 @@ static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
 
     if (!bookmark->display_path || strcmp (bookmark->display_path, text))
     {
-        moo_bookmark_set_display_path (bookmark, text);
+        _moo_bookmark_set_display_path (bookmark, text);
         set_bookmark (store, &iter, bookmark);
         g_object_set_data (G_OBJECT (store),
                            "moo-bookmarks-modified",
                            GINT_TO_POINTER (TRUE));
     }
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
     gtk_tree_path_free (path);
 
     cmpl = g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
@@ -1336,8 +1354,9 @@ static void     path_edited         (G_GNUC_UNUSED GtkCellRenderer *cell,
 }
 
 
-static void     path_editing_started(GtkCellRenderer    *cell,
-                                     GtkCellEditable    *editable)
+static void
+path_editing_started (GtkCellRenderer    *cell,
+                      GtkCellEditable    *editable)
 {
     MooFileEntryCompletion *cmpl =
             g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
@@ -1361,7 +1380,8 @@ static void     path_editing_started(GtkCellRenderer    *cell,
 }
 
 
-static void     path_entry_realize  (GtkWidget          *entry)
+static void
+path_entry_realize (GtkWidget *entry)
 {
     GtkSettings *settings;
     gboolean value;
@@ -1383,7 +1403,8 @@ static void     path_entry_realize  (GtkWidget          *entry)
 }
 
 
-static void     path_entry_unrealize(GtkWidget          *entry)
+static void
+path_entry_unrealize (GtkWidget *entry)
 {
     GtkSettings *settings;
     gboolean value;
@@ -1431,8 +1452,9 @@ static void icon_store_find_empty   (GtkListStore       *store,
 static void icon_combo_changed      (GtkComboBox        *combo,
                                      MooGladeXML        *xml);
 
-static void     init_icon_combo     (GtkComboBox        *combo,
-                                     MooGladeXML        *xml)
+static void
+init_icon_combo (GtkComboBox        *combo,
+                 MooGladeXML        *xml)
 {
     static GtkListStore *icon_store;
     GtkCellRenderer *cell;
@@ -1467,8 +1489,9 @@ static void     init_icon_combo     (GtkComboBox        *combo,
 }
 
 
-static void     combo_update_icon   (GtkComboBox        *combo,
-                                     MooGladeXML        *xml)
+static void
+combo_update_icon (GtkComboBox        *combo,
+                   MooGladeXML        *xml)
 {
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -1500,7 +1523,7 @@ static void     combo_update_icon   (GtkComboBox        *combo,
     gtk_combo_box_set_active_iter (combo, &iter);
     g_signal_handlers_unblock_by_func (combo, (gpointer) icon_combo_changed, xml);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
     gtk_tree_path_free (rows->data);
     g_list_free (rows);
 }
@@ -1512,10 +1535,11 @@ enum {
     ICON_COLUMN_LABEL  = 2
 };
 
-static void combo_icon_data_func    (G_GNUC_UNUSED GtkCellLayout *cell_layout,
-                                     GtkCellRenderer    *cell,
-                                     GtkTreeModel       *model,
-                                     GtkTreeIter        *iter)
+static void
+combo_icon_data_func (G_GNUC_UNUSED GtkCellLayout *cell_layout,
+                      GtkCellRenderer    *cell,
+                      GtkTreeModel       *model,
+                      GtkTreeIter        *iter)
 {
     char *stock = NULL;
     GdkPixbuf *pixbuf = NULL;
@@ -1535,10 +1559,11 @@ static void combo_icon_data_func    (G_GNUC_UNUSED GtkCellLayout *cell_layout,
 }
 
 
-static void combo_label_data_func   (G_GNUC_UNUSED GtkCellLayout *cell_layout,
-                                     GtkCellRenderer    *cell,
-                                     GtkTreeModel       *model,
-                                     GtkTreeIter        *iter)
+static void
+combo_label_data_func (G_GNUC_UNUSED GtkCellLayout *cell_layout,
+                       GtkCellRenderer    *cell,
+                       GtkTreeModel       *model,
+                       GtkTreeIter        *iter)
 {
     char *label = NULL;
     gtk_tree_model_get (model, iter, ICON_COLUMN_LABEL, &label, -1);
@@ -1547,8 +1572,9 @@ static void combo_label_data_func   (G_GNUC_UNUSED GtkCellLayout *cell_layout,
 }
 
 
-static void fill_icon_store         (GtkListStore       *store,
-                                     GtkStyle           *style)
+static void
+fill_icon_store (GtkListStore       *store,
+                 GtkStyle           *style)
 {
     GtkTreeIter iter;
     GSList *stock_ids, *l;
@@ -1605,8 +1631,9 @@ static void fill_icon_store         (GtkListStore       *store,
 }
 
 
-static void icon_combo_changed      (GtkComboBox        *combo,
-                                     MooGladeXML        *xml)
+static void
+icon_combo_changed (GtkComboBox        *combo,
+                    MooGladeXML        *xml)
 {
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -1651,15 +1678,16 @@ static void icon_combo_changed      (GtkComboBox        *combo,
 
     set_bookmark (GTK_LIST_STORE (model), &iter, bookmark);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
     gtk_tree_path_free (rows->data);
     g_list_free (rows);
 }
 
 
-static void icon_store_find_pixbuf  (GtkListStore       *store,
-                                     GtkTreeIter        *iter,
-                                     GdkPixbuf          *pixbuf)
+static void
+icon_store_find_pixbuf (GtkListStore       *store,
+                        GtkTreeIter        *iter,
+                        GdkPixbuf          *pixbuf)
 {
     GtkTreeModel *model = GTK_TREE_MODEL (store);
 
@@ -1687,9 +1715,10 @@ static void icon_store_find_pixbuf  (GtkListStore       *store,
 }
 
 
-static void icon_store_find_stock   (GtkListStore       *store,
-                                     GtkTreeIter        *iter,
-                                     const char         *stock)
+static void
+icon_store_find_stock (GtkListStore       *store,
+                       GtkTreeIter        *iter,
+                       const char         *stock)
 {
     GtkTreeModel *model = GTK_TREE_MODEL (store);
 
@@ -1715,8 +1744,9 @@ static void icon_store_find_stock   (GtkListStore       *store,
 }
 
 
-static void icon_store_find_empty   (GtkListStore       *store,
-                                     GtkTreeIter        *iter)
+static void
+icon_store_find_empty (GtkListStore       *store,
+                       GtkTreeIter        *iter)
 {
     GtkTreeModel *model = GTK_TREE_MODEL (store);
 

@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+/*
  *   moofileview-dialogs.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -21,7 +21,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_PROPS_DIALOG              (moo_file_props_dialog_get_type ())
+#define MOO_TYPE_FILE_PROPS_DIALOG              (_moo_file_props_dialog_get_type ())
 #define MOO_FILE_PROPS_DIALOG(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_PROPS_DIALOG, MooFilePropsDialog))
 #define MOO_FILE_PROPS_DIALOG_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_PROPS_DIALOG, MooFilePropsDialogClass))
 #define MOO_IS_FILE_PROPS_DIALOG(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_PROPS_DIALOG))
@@ -50,17 +50,17 @@ struct _MooFilePropsDialogClass
 };
 
 
-GType       moo_file_props_dialog_get_type  (void) G_GNUC_CONST;
+GType       _moo_file_props_dialog_get_type (void) G_GNUC_CONST;
 
-GtkWidget  *moo_file_props_dialog_new       (GtkWidget          *parent);
-void        moo_file_props_dialog_set_file  (MooFilePropsDialog *dialog,
+GtkWidget  *_moo_file_props_dialog_new      (GtkWidget          *parent);
+void        _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
                                              MooFile            *file,
                                              MooFolder          *folder);
 
-char       *moo_create_folder_dialog        (GtkWidget          *parent,
+char       *_moo_create_folder_dialog       (GtkWidget          *parent,
                                              MooFolder          *folder);
 
-char       *moo_file_view_save_drop_dialog  (GtkWidget          *parent,
+char       *_moo_file_view_save_drop_dialog (GtkWidget          *parent,
                                              const char         *dirname);
 
 

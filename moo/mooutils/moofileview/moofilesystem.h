@@ -30,7 +30,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_SYSTEM              (moo_file_system_get_type ())
+#define MOO_TYPE_FILE_SYSTEM              (_moo_file_system_get_type ())
 #define MOO_FILE_SYSTEM(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SYSTEM, MooFileSystem))
 #define MOO_FILE_SYSTEM_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SYSTEM, MooFileSystemClass))
 #define MOO_IS_FILE_SYSTEM(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SYSTEM))
@@ -91,56 +91,56 @@ struct _MooFileSystemClass
 };
 
 
-GType        moo_file_system_get_type           (void) G_GNUC_CONST;
+GType        _moo_file_system_get_type          (void) G_GNUC_CONST;
 
-MooFileSystem *moo_file_system_create           (void);
+MooFileSystem *_moo_file_system_create          (void);
 
-MooFolder   *moo_file_system_get_root_folder    (MooFileSystem  *fs,
+MooFolder   *_moo_file_system_get_root_folder   (MooFileSystem  *fs,
                                                  MooFileFlags    wanted);
-MooFolder   *moo_file_system_get_folder         (MooFileSystem  *fs,
+MooFolder   *_moo_file_system_get_folder        (MooFileSystem  *fs,
                                                  const char     *path,
                                                  MooFileFlags    wanted,
                                                  GError        **error);
-MooFolder   *moo_file_system_get_parent_folder  (MooFileSystem  *fs,
+MooFolder   *_moo_file_system_get_parent_folder (MooFileSystem  *fs,
                                                  MooFolder      *folder,
                                                  MooFileFlags    wanted);
 
-gboolean     moo_file_system_create_folder      (MooFileSystem  *fs,
+gboolean     _moo_file_system_create_folder     (MooFileSystem  *fs,
                                                  const char     *path,
                                                  GError        **error);
-gboolean     moo_file_system_delete_file        (MooFileSystem  *fs,
+gboolean     _moo_file_system_delete_file       (MooFileSystem  *fs,
                                                  const char     *path,
                                                  gboolean        recursive,
                                                  GError        **error);
-gboolean     moo_file_system_move_file          (MooFileSystem  *fs,
+gboolean     _moo_file_system_move_file         (MooFileSystem  *fs,
                                                  const char     *old_path,
                                                  const char     *new_path,
                                                  GError        **error);
 
-char        *moo_file_system_make_path          (MooFileSystem  *fs,
+char        *_moo_file_system_make_path         (MooFileSystem  *fs,
                                                  const char     *base_path,
                                                  const char     *display_name,
                                                  GError        **error);
-char        *moo_file_system_normalize_path     (MooFileSystem  *fs,
+char        *_moo_file_system_normalize_path    (MooFileSystem  *fs,
                                                  const char     *path,
                                                  gboolean        is_folder,
                                                  GError        **error);
-gboolean     moo_file_system_parse_path         (MooFileSystem  *fs,
+gboolean     _moo_file_system_parse_path        (MooFileSystem  *fs,
                                                  const char     *path_utf8,
                                                  char          **dirname,
                                                  char          **display_dirname,
                                                  char          **display_basename,
                                                  GError        **error);
-char        *moo_file_system_get_absolute_path  (MooFileSystem  *fs,
+char        *_moo_file_system_get_absolute_path (MooFileSystem  *fs,
                                                  const char     *display_name,
                                                  const char     *current_dir);
 
 
-MooFileSystem *moo_folder_get_file_system       (MooFolder      *folder);
+MooFileSystem *_moo_folder_get_file_system      (MooFolder      *folder);
 
 
 #ifdef MOO_FILE_SYSTEM_COMPILATION
-MooFileWatch *moo_file_system_get_file_watch    (MooFileSystem  *fs);
+MooFileWatch *_moo_file_system_get_file_watch   (MooFileSystem  *fs);
 #endif
 
 

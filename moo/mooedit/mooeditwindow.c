@@ -1745,8 +1745,8 @@ update_tab_label (MooEditWindow *window,
 
     /* XXX */
 #ifndef __WIN32__
-    pixbuf = moo_get_icon_for_path (moo_edit_get_filename (doc),
-                                    icon, GTK_ICON_SIZE_MENU);
+    pixbuf = _moo_get_icon_for_path (moo_edit_get_filename (doc),
+                                     icon, GTK_ICON_SIZE_MENU);
     gtk_image_set_from_pixbuf (GTK_IMAGE (icon), pixbuf);
 #else
     gtk_image_set_from_stock (GTK_IMAGE (icon),

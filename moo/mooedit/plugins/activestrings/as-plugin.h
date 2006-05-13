@@ -33,6 +33,12 @@ G_BEGIN_DECLS
 #define AS_FILE_PREFS_KEY AS_PREFS_ROOT "/file"
 
 
+#define _as_plugin_prefs_page   _moo_as_plugin_prefs_page
+#define _as_plugin_reload       _moo_as_plugin_reload
+#define _as_plugin_load_config  _moo_as_plugin_load_config
+#define _as_plugin_save_config  _moo_as_plugin_save_config
+
+
 GtkWidget *_as_plugin_prefs_page    (MooPlugin  *plugin);
 void       _as_plugin_reload        (MooPlugin  *plugin);
 MooConfig *_as_plugin_load_config   (void);

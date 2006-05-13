@@ -1,4 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
+/*
  *   moofileview-dialogs.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -32,10 +32,10 @@ static void moo_file_props_dialog_response  (GtkDialog          *dialog,
 static void moo_file_props_dialog_ok        (MooFilePropsDialog *dialog);
 
 
-G_DEFINE_TYPE(MooFilePropsDialog, moo_file_props_dialog, GTK_TYPE_DIALOG)
+G_DEFINE_TYPE(MooFilePropsDialog, _moo_file_props_dialog, GTK_TYPE_DIALOG)
 
 static void
-moo_file_props_dialog_class_init (MooFilePropsDialogClass *klass)
+_moo_file_props_dialog_class_init (MooFilePropsDialogClass *klass)
 {
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -48,7 +48,7 @@ moo_file_props_dialog_class_init (MooFilePropsDialogClass *klass)
 
 
 static void
-moo_file_props_dialog_init (MooFilePropsDialog *dialog)
+_moo_file_props_dialog_init (MooFilePropsDialog *dialog)
 {
     dialog->xml = moo_glade_xml_new_empty ();
     moo_glade_xml_map_class (dialog->xml, "GtkEntry", MOO_TYPE_ENTRY);
@@ -96,7 +96,7 @@ moo_file_props_dialog_response (GtkDialog  *dialog,
             g_warning ("%s: unknown response code", G_STRLOC);
     }
 
-    moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (dialog), NULL, NULL);
+    _moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (dialog), NULL, NULL);
     gtk_widget_hide (GTK_WIDGET (dialog));
 }
 
@@ -111,18 +111,18 @@ moo_file_props_dialog_ok (MooFilePropsDialog *dialog)
     if (!dialog->file)
         return;
 
-    old_name = moo_file_display_name (dialog->file);
+    old_name = _moo_file_display_name (dialog->file);
     new_name = gtk_entry_get_text (GTK_ENTRY (dialog->entry));
 
     if (!strcmp (old_name, new_name))
         return;
 
-    old_path = moo_file_system_make_path (moo_folder_get_file_system (dialog->folder),
-                                          moo_folder_get_path (dialog->folder),
-                                          old_name, NULL);
-    new_path = moo_file_system_make_path (moo_folder_get_file_system (dialog->folder),
-                                          moo_folder_get_path (dialog->folder),
-                                          new_name, NULL);
+    old_path = _moo_file_system_make_path (_moo_folder_get_file_system (dialog->folder),
+                                           _moo_folder_get_path (dialog->folder),
+                                           old_name, NULL);
+    new_path = _moo_file_system_make_path (_moo_folder_get_file_system (dialog->folder),
+                                           _moo_folder_get_path (dialog->folder),
+                                           new_name, NULL);
 
     if (!old_path || !new_path)
     {
@@ -130,8 +130,8 @@ moo_file_props_dialog_ok (MooFilePropsDialog *dialog)
         goto out;
     }
 
-    if (!moo_file_system_move_file (moo_folder_get_file_system (dialog->folder),
-                                    old_path, new_path, &error))
+    if (!_moo_file_system_move_file (_moo_folder_get_file_system (dialog->folder),
+                                     old_path, new_path, &error))
     {
         g_warning ("%s: could not rename '%s' to '%s'",
                    G_STRLOC, old_path, new_path);
@@ -148,7 +148,7 @@ moo_file_props_dialog_ok (MooFilePropsDialog *dialog)
 out:
     g_free (old_path);
     g_free (new_path);
-    moo_file_props_dialog_set_file (dialog, NULL, NULL);
+    _moo_file_props_dialog_set_file (dialog, NULL, NULL);
 }
 
 
@@ -170,16 +170,16 @@ set_file (MooFilePropsDialog *dialog,
     }
 
     if (dialog->file)
-        moo_file_unref (dialog->file);
+        _moo_file_unref (dialog->file);
     dialog->file = file;
     if (file)
-        moo_file_ref (file);
+        _moo_file_ref (file);
 
     if (file)
     {
         char *title;
         const char *name;
-        name = moo_file_display_name (file);
+        name = _moo_file_display_name (file);
         gtk_entry_set_text (GTK_ENTRY (dialog->entry), name);
         title = g_strdup_printf ("%s Properties", name);
         gtk_window_set_title (GTK_WINDOW (dialog), title);
@@ -194,9 +194,9 @@ set_file (MooFilePropsDialog *dialog,
 
 
 void
-moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
-                                MooFile            *file,
-                                MooFolder          *folder)
+_moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
+                                 MooFile            *file,
+                                 MooFolder          *folder)
 {
     char *text;
     char **info, **p;
@@ -218,11 +218,11 @@ moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
         gtk_widget_set_sensitive (dialog->notebook, TRUE);
     }
 
-    info = moo_folder_get_file_info (folder, file);
+    info = _moo_folder_get_file_info (folder, file);
     g_return_if_fail (info != NULL);
 
     gtk_image_set_from_pixbuf (GTK_IMAGE (dialog->icon),
-                               moo_file_get_icon (file, GTK_WIDGET (dialog), GTK_ICON_SIZE_DIALOG));
+                               _moo_file_get_icon (file, GTK_WIDGET (dialog), GTK_ICON_SIZE_DIALOG));
     set_file (dialog, file, folder);
 
     for (p = info, i = 0; *p != NULL; ++i)
@@ -265,7 +265,7 @@ moo_file_props_dialog_destroy (GtkObject *object)
     {
         g_object_unref (dialog->xml);
         if (dialog->file)
-            moo_file_unref (dialog->file);
+            _moo_file_unref (dialog->file);
         if (dialog->folder)
             g_object_unref (dialog->folder);
         dialog->xml = NULL;
@@ -277,7 +277,7 @@ moo_file_props_dialog_destroy (GtkObject *object)
         dialog->table = NULL;
     }
 
-    GTK_OBJECT_CLASS(moo_file_props_dialog_parent_class)->destroy (object);
+    GTK_OBJECT_CLASS(_moo_file_props_dialog_parent_class)->destroy (object);
 }
 
 
@@ -285,13 +285,13 @@ static void
 moo_file_props_dialog_show (GtkWidget *widget)
 {
     MooFilePropsDialog *dialog = MOO_FILE_PROPS_DIALOG (widget);
-    GTK_WIDGET_CLASS(moo_file_props_dialog_parent_class)->show (widget);
+    GTK_WIDGET_CLASS(_moo_file_props_dialog_parent_class)->show (widget);
     gtk_widget_grab_focus (dialog->entry);
 }
 
 
 GtkWidget*
-moo_file_props_dialog_new (GtkWidget *parent)
+_moo_file_props_dialog_new (GtkWidget *parent)
 {
     GtkWidget *dialog;
 
@@ -304,8 +304,8 @@ moo_file_props_dialog_new (GtkWidget *parent)
 
 
 char*
-moo_create_folder_dialog (GtkWidget  *parent,
-                          MooFolder  *folder)
+_moo_create_folder_dialog (GtkWidget  *parent,
+                           MooFolder  *folder)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *entry, *label;
@@ -323,7 +323,7 @@ moo_create_folder_dialog (GtkWidget  *parent,
     moo_position_window (dialog, parent, FALSE, FALSE, 0, 0);
 
     label = moo_glade_xml_get_widget (xml, "label");
-    path = g_filename_display_name (moo_folder_get_path (folder));
+    path = g_filename_display_name (_moo_folder_get_path (folder));
     text = g_strdup_printf ("Create new folder in %s", path);
     gtk_label_set_text (GTK_LABEL (label), text);
     g_free (path);
@@ -407,8 +407,8 @@ find_available_clip_name (const char *dirname)
 
 
 char *
-moo_file_view_save_drop_dialog (GtkWidget          *parent,
-                                const char         *dirname)
+_moo_file_view_save_drop_dialog (GtkWidget          *parent,
+                                 const char         *dirname)
 {
     MooGladeXML *xml;
     GtkWidget *dialog, *button;

@@ -157,7 +157,7 @@ static void      moo_file_stat_unix         (MooFile        *file,
 
 
 /* MOO_TYPE_FOLDER */
-G_DEFINE_TYPE (MooFolder, moo_folder, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooFolder, _moo_folder, G_TYPE_OBJECT)
 
 enum {
     DELETED,
@@ -169,7 +169,8 @@ enum {
 
 static guint signals[NUM_SIGNALS];
 
-static void moo_folder_class_init (MooFolderClass *klass)
+static void
+_moo_folder_class_init (MooFolderClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -218,7 +219,8 @@ static void moo_folder_class_init (MooFolderClass *klass)
 }
 
 
-static void moo_folder_init      (MooFolder    *folder)
+static void
+_moo_folder_init (MooFolder *folder)
 {
     folder->priv = g_new0 (MooFolderPrivate, 1);
     folder->priv->deleted = FALSE;
@@ -236,11 +238,12 @@ static void moo_folder_init      (MooFolder    *folder)
 
     folder->priv->files =
             g_hash_table_new_full (g_str_hash, g_str_equal,
-                                   g_free, (GDestroyNotify) moo_file_unref);
+                                   g_free, (GDestroyNotify) _moo_file_unref);
 }
 
 
-static void moo_folder_finalize  (GObject      *object)
+static void
+moo_folder_finalize (GObject *object)
 {
     MooFolder *folder = MOO_FOLDER (object);
 
@@ -260,14 +263,15 @@ static void moo_folder_finalize  (GObject      *object)
     g_free (folder->priv);
     folder->priv = NULL;
 
-    G_OBJECT_CLASS (moo_folder_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_folder_parent_class)->finalize (object);
 }
 
 
-MooFolder   *moo_folder_new             (MooFileSystem  *fs,
-                                         const char     *path,
-                                         MooFileFlags    wanted,
-                                         GError        **error)
+MooFolder *
+_moo_folder_new (MooFileSystem  *fs,
+                 const char     *path,
+                 MooFileFlags    wanted,
+                 GError        **error)
 {
     GDir *dir;
     MooFolder *folder;
@@ -322,13 +326,14 @@ MooFolder   *moo_folder_new             (MooFileSystem  *fs,
     folder->priv->dir = dir;
 
     get_names (folder);
-    moo_folder_set_wanted (folder, wanted, TRUE);
+    _moo_folder_set_wanted (folder, wanted, TRUE);
 
     return folder;
 }
 
 
-static void      moo_folder_deleted         (MooFolder  *folder)
+static void
+moo_folder_deleted (MooFolder *folder)
 {
     stop_populate (folder);
     stop_monitor (folder);
@@ -341,9 +346,10 @@ static void      moo_folder_deleted         (MooFolder  *folder)
 }
 
 
-void         moo_folder_set_wanted      (MooFolder      *folder,
-                                         MooFileFlags    wanted,
-                                         gboolean        bit_now)
+void
+_moo_folder_set_wanted (MooFolder      *folder,
+                        MooFileFlags    wanted,
+                        gboolean        bit_now)
 {
     Stage wanted_stage = STAGE_NAMES;
 
@@ -413,7 +419,8 @@ void         moo_folder_set_wanted      (MooFolder      *folder,
 }
 
 
-static void      stop_populate              (MooFolder  *folder)
+static void
+stop_populate (MooFolder *folder)
 {
     if (folder->priv->populate_idle_id)
         g_source_remove (folder->priv->populate_idle_id);
@@ -426,22 +433,25 @@ static void      stop_populate              (MooFolder  *folder)
 }
 
 
-static void      folder_emit_deleted        (MooFolder  *folder)
+static void
+folder_emit_deleted (MooFolder *folder)
 {
     g_signal_emit (folder, signals[DELETED], 0);
 }
 
 
-static void      folder_emit_files          (MooFolder  *folder,
-                                             guint       sig,
-                                             GSList     *files)
+static void
+folder_emit_files (MooFolder  *folder,
+                   guint       sig,
+                   GSList     *files)
 {
     if (files)
         g_signal_emit (folder, signals[sig], 0, files);
 }
 
 
-GSList      *moo_folder_list_files      (MooFolder  *folder)
+GSList *
+_moo_folder_list_files (MooFolder *folder)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     g_return_val_if_fail (!folder->priv->deleted, NULL);
@@ -449,7 +459,8 @@ GSList      *moo_folder_list_files      (MooFolder  *folder)
 }
 
 
-static double   get_names               (MooFolder  *folder)
+static double
+get_names (MooFolder *folder)
 {
     GTimer *timer;
     GSList *added = NULL;
@@ -492,8 +503,7 @@ static double   get_names               (MooFolder  *folder)
     folder_emit_files (folder, FILES_ADDED, added);
     g_slist_free (added);
 
-    elapsed = folder->priv->debug.names_timer =
-            g_timer_elapsed (timer, NULL);
+    elapsed = folder->priv->debug.names_timer = g_timer_elapsed (timer, NULL);
     g_timer_destroy (timer);
 
     g_dir_close (folder->priv->dir);
@@ -509,7 +519,8 @@ static double   get_names               (MooFolder  *folder)
 }
 
 
-static gboolean get_stat_a_bit              (MooFolder  *folder)
+static gboolean
+get_stat_a_bit (MooFolder *folder)
 {
     gboolean done = FALSE;
     double elapsed;
@@ -522,8 +533,7 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
     g_timer_continue (folder->priv->timer);
 
     if (!folder->priv->files_copy)
-        folder->priv->files_copy =
-                hash_table_to_file_list (folder->priv->files);
+        folder->priv->files_copy = hash_table_to_file_list (folder->priv->files);
     if (!folder->priv->files_copy)
         done = TRUE;
 
@@ -531,9 +541,8 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
     {
         GSList *changed = folder->priv->files_copy;
         MooFile *file = changed->data;
-        folder->priv->files_copy =
-                g_slist_remove_link (folder->priv->files_copy,
-                                     folder->priv->files_copy);
+        folder->priv->files_copy = g_slist_remove_link (folder->priv->files_copy,
+                                                        folder->priv->files_copy);
 
         if (!(file->flags & MOO_FILE_HAS_STAT))
         {
@@ -542,7 +551,7 @@ static gboolean get_stat_a_bit              (MooFolder  *folder)
         }
         else
         {
-            moo_file_unref (file);
+            _moo_file_unref (file);
         }
 
         g_slist_free_1 (changed);
@@ -646,7 +655,8 @@ get_mime_type (MooFile    *file,
 #endif /* !__WIN32__ */
 
 
-static gboolean get_icons_a_bit             (MooFolder  *folder)
+static gboolean
+get_icons_a_bit (MooFolder *folder)
 {
     gboolean done = FALSE;
     double elapsed;
@@ -688,7 +698,7 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
         }
 #endif
 
-        moo_file_unref (file);
+        _moo_file_unref (file);
         g_slist_free (changed);
 
         if (!folder->priv->files_copy)
@@ -724,8 +734,9 @@ static gboolean get_icons_a_bit             (MooFolder  *folder)
 }
 
 
-MooFile     *moo_folder_get_file        (MooFolder  *folder,
-                                         const char *basename)
+MooFile *
+_moo_folder_get_file (MooFolder  *folder,
+                      const char *basename)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     g_return_val_if_fail (!folder->priv->deleted, NULL);
@@ -734,9 +745,9 @@ MooFile     *moo_folder_get_file        (MooFolder  *folder,
 }
 
 
-char*
-moo_folder_get_file_path (MooFolder *folder,
-                          MooFile   *file)
+char *
+_moo_folder_get_file_path (MooFolder *folder,
+                           MooFile   *file)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     g_return_val_if_fail (file != NULL, NULL);
@@ -744,9 +755,9 @@ moo_folder_get_file_path (MooFolder *folder,
 }
 
 
-char*
-moo_folder_get_file_uri (MooFolder *folder,
-                         MooFile   *file)
+char *
+_moo_folder_get_file_uri (MooFolder *folder,
+                          MooFile   *file)
 {
     char *path, *uri;
 
@@ -763,17 +774,19 @@ moo_folder_get_file_uri (MooFolder *folder,
 }
 
 
-MooFolder   *moo_folder_get_parent      (MooFolder      *folder,
-                                         MooFileFlags    wanted)
+MooFolder *
+_moo_folder_get_parent (MooFolder      *folder,
+                        MooFileFlags    wanted)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     g_return_val_if_fail (!folder->priv->deleted, NULL);
-    return moo_file_system_get_parent_folder (folder->priv->fs,
-                                              folder, wanted);
+    return _moo_file_system_get_parent_folder (folder->priv->fs,
+                                               folder, wanted);
 }
 
 
-MooFileSystem *moo_folder_get_file_system       (MooFolder      *folder)
+MooFileSystem *
+_moo_folder_get_file_system (MooFolder *folder)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     return folder->priv->fs;
@@ -791,8 +804,9 @@ static void file_changed    (MooFolder      *folder,
 static void file_created    (MooFolder      *folder,
                              const char     *name);
 
-static void fam_event       (MooFolder      *folder,
-                             MooFileWatchEvent    *event)
+static void
+fam_event (MooFolder         *folder,
+           MooFileWatchEvent *event)
 {
     if (event->data != folder)
         return;
@@ -816,21 +830,23 @@ static void fam_event       (MooFolder      *folder,
 }
 
 
-static void fam_error       (MooFolder      *folder,
-                             GError         *error)
+static void
+fam_error (MooFolder *folder,
+           GError    *error)
 {
     g_print ("fam error: %s\n", error->message);
     stop_monitor (folder);
 }
 
 
-static void start_monitor   (MooFolder  *folder)
+static void
+start_monitor (MooFolder *folder)
 {
     GError *error = NULL;
 
     g_return_if_fail (!folder->priv->deleted);
     g_return_if_fail (folder->priv->fam_request == 0);
-    folder->priv->fam = moo_file_system_get_file_watch (folder->priv->fs);
+    folder->priv->fam = _moo_file_system_get_file_watch (folder->priv->fs);
     g_return_if_fail (folder->priv->fam != NULL);
 
     if (!moo_file_watch_monitor_directory (folder->priv->fam,
@@ -852,7 +868,8 @@ static void start_monitor   (MooFolder  *folder)
 }
 
 
-static void stop_monitor    (MooFolder  *folder)
+static void
+stop_monitor (MooFolder *folder)
 {
     if (folder->priv->fam_request)
     {
@@ -872,8 +889,9 @@ static void stop_monitor    (MooFolder  *folder)
 }
 
 
-static void file_deleted    (MooFolder      *folder,
-                             const char     *name)
+static void
+file_deleted (MooFolder      *folder,
+              const char     *name)
 {
     MooFile *file;
     GSList *list;
@@ -886,19 +904,20 @@ static void file_deleted    (MooFolder      *folder,
     file = g_hash_table_lookup (folder->priv->files, name);
     if (!file) return;
 
-    moo_file_ref (file);
+    _moo_file_ref (file);
     g_hash_table_remove (folder->priv->files, name);
 
     list = g_slist_append (NULL, file);
     folder_emit_files (folder, FILES_REMOVED, list);
 
     g_slist_free (list);
-    moo_file_unref (file);
+    _moo_file_unref (file);
 }
 
 
-static void file_changed    (MooFolder      *folder,
-                             const char     *name)
+static void
+file_changed (MooFolder  *folder,
+              const char *name)
 {
     g_return_if_fail (!folder->priv->deleted);
 
@@ -911,13 +930,14 @@ static void file_changed    (MooFolder      *folder,
     }
     else
     {
-        /* TODO */
+        /* XXX */
     }
 }
 
 
-static void file_created    (MooFolder      *folder,
-                             const char     *name)
+static void
+file_created (MooFolder  *folder,
+              const char *name)
 {
     MooFile *file;
     GSList *list;
@@ -954,7 +974,8 @@ static void file_created    (MooFolder      *folder,
 
 
 /* TODO */
-static gboolean moo_folder_reload           (MooFolder  *folder)
+static gboolean
+moo_folder_reload (MooFolder *folder)
 {
     GHashTable *files;
     GDir *dir;
@@ -1001,7 +1022,8 @@ static gboolean moo_folder_reload           (MooFolder  *folder)
 
 
 /* XXX */
-static char *moo_file_get_type_string   (MooFile        *file)
+static char *
+moo_file_get_type_string (MooFile *file)
 {
     g_return_val_if_fail (MOO_FILE_EXISTS (file), NULL);
 
@@ -1015,14 +1037,16 @@ static char *moo_file_get_type_string   (MooFile        *file)
 
 
 /* XXX */
-static char *moo_file_get_size_string   (MooFile        *file)
+static char *
+moo_file_get_size_string (MooFile *file)
 {
     return g_strdup_printf ("%" G_GINT64_FORMAT, (MooFileSize) file->statbuf.st_size);
 }
 
 
 /* XXX */
-static char *moo_file_get_mtime_string  (MooFile        *file)
+static char *
+moo_file_get_mtime_string (MooFile *file)
 {
     static char buf[1024];
 
@@ -1041,8 +1065,9 @@ static char *moo_file_get_mtime_string  (MooFile        *file)
 }
 
 
-char       **moo_folder_get_file_info   (MooFolder      *folder,
-                                         MooFile        *file)
+char **
+_moo_folder_get_file_info (MooFolder      *folder,
+                           MooFile        *file)
 {
     GPtrArray *array;
     GSList *list;
@@ -1052,7 +1077,7 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
     g_return_val_if_fail (!folder->priv->deleted, NULL);
     g_return_val_if_fail (folder->priv->files != NULL, NULL);
     g_return_val_if_fail (g_hash_table_lookup (folder->priv->files,
-                                    moo_file_name (file)) == file, NULL);
+                                               _moo_file_name (file)) == file, NULL);
 
     moo_file_stat (file, folder->priv->path);
 
@@ -1089,7 +1114,7 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
             g_ptr_array_add (array, type);
         }
 
-        location = g_filename_display_name (moo_folder_get_path (folder));
+        location = g_filename_display_name (_moo_folder_get_path (folder));
         g_ptr_array_add (array, g_strdup ("Location:"));
         g_ptr_array_add (array, location);
 
@@ -1115,18 +1140,18 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
 
 #ifndef __WIN32__
     if ((file->info & MOO_FILE_INFO_IS_LINK) &&
-         moo_file_link_get_target (file))
+         _moo_file_link_get_target (file))
     {
         g_ptr_array_add (array, g_strdup ("Points to:"));
-        g_ptr_array_add (array, g_strdup (moo_file_link_get_target (file)));
+        g_ptr_array_add (array, g_strdup (_moo_file_link_get_target (file)));
     }
 #endif
 
-    list = g_slist_append (NULL, moo_file_ref (file));
+    list = g_slist_append (NULL, _moo_file_ref (file));
     g_object_ref (folder);
     folder_emit_files (folder, FILES_CHANGED, list);
     g_object_unref (folder);
-    moo_file_unref (file);
+    _moo_file_unref (file);
     g_slist_free (list);
 
     g_ptr_array_add (array, NULL);
@@ -1138,8 +1163,9 @@ char       **moo_folder_get_file_info   (MooFolder      *folder,
 /* MooFile
  */
 
-MooFile     *moo_file_new               (const char     *dirname,
-                                         const char     *basename)
+static MooFile *
+moo_file_new (const char *dirname,
+              const char *basename)
 {
     MooFile *file = NULL;
     char *path = NULL;
@@ -1181,7 +1207,8 @@ MooFile     *moo_file_new               (const char     *dirname,
 }
 
 
-MooFile     *moo_file_ref               (MooFile        *file)
+MooFile *
+_moo_file_ref (MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     file->ref_count++;
@@ -1189,7 +1216,8 @@ MooFile     *moo_file_ref               (MooFile        *file)
 }
 
 
-void         moo_file_unref             (MooFile        *file)
+void
+_moo_file_unref (MooFile *file)
 {
     if (file && !--file->ref_count)
     {
@@ -1207,8 +1235,9 @@ void         moo_file_unref             (MooFile        *file)
 #define lstat stat
 #endif
 
-static void      moo_file_stat_unix         (MooFile        *file,
-                                             const char     *dirname)
+static void
+moo_file_stat_unix (MooFile    *file,
+                    const char *dirname)
 {
     char *fullname;
 
@@ -1330,40 +1359,46 @@ static void      moo_file_stat_unix         (MooFile        *file,
 }
 
 
-gboolean     moo_file_test              (const MooFile  *file,
-                                         MooFileInfo     test)
+gboolean
+_moo_file_test (const MooFile  *file,
+                MooFileInfo     test)
 {
     g_return_val_if_fail (file != NULL, FALSE);
     return file->info & test;
 }
 
 
-const char   *moo_file_display_name     (const MooFile  *file)
+const char *
+_moo_file_display_name (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->display_name;
 }
 
-const char  *moo_file_collation_key     (const MooFile  *file)
+const char *
+_moo_file_collation_key (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->collation_key;
 }
 
-const char  *moo_file_case_display_name (const MooFile *file)
+const char *
+_moo_file_case_display_name (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->case_display_name;
 }
 
-const char  *moo_file_name              (const MooFile  *file)
+const char *
+_moo_file_name (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->name;
 }
 
 
-const char  *moo_file_get_mime_type         (const MooFile  *file)
+const char *
+_moo_file_get_mime_type (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     return file->mime_type;
@@ -1371,7 +1406,8 @@ const char  *moo_file_get_mime_type         (const MooFile  *file)
 
 
 #ifndef __WIN32__
-gconstpointer moo_file_get_stat             (const MooFile  *file)
+gconstpointer
+_moo_file_get_stat (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, NULL);
     if (file->flags & MOO_FILE_HAS_STAT && file->info & MOO_FILE_INFO_EXISTS)
@@ -1383,9 +1419,9 @@ gconstpointer moo_file_get_stat             (const MooFile  *file)
 
 
 GdkPixbuf *
-moo_file_get_icon (const MooFile  *file,
-                   GtkWidget      *widget,
-                   GtkIconSize     size)
+_moo_file_get_icon (const MooFile  *file,
+                    GtkWidget      *widget,
+                    GtkIconSize     size)
 {
     g_return_val_if_fail (file != NULL, NULL);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
@@ -1394,9 +1430,9 @@ moo_file_get_icon (const MooFile  *file,
 
 
 GdkPixbuf *
-moo_get_icon_for_path (const char     *path,
-                       GtkWidget      *widget,
-                       GtkIconSize     size)
+_moo_get_icon_for_path (const char     *path,
+                        GtkWidget      *widget,
+                        GtkIconSize     size)
 {
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
     return render_icon_for_path (path, widget, size);
@@ -1404,41 +1440,46 @@ moo_get_icon_for_path (const char     *path,
 
 
 #ifndef __WIN32__
-const char  *moo_file_link_get_target   (const MooFile  *file)
+const char *
+_moo_file_link_get_target (const MooFile *file)
 {
     return file->link_target;
 }
 #endif
 
 
-MooFileTime  moo_file_get_mtime         (const MooFile  *file)
+MooFileTime
+_moo_file_get_mtime (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, 0);
     return file->statbuf.st_mtime;
 }
 
 
-MooFileSize  moo_file_get_size          (const MooFile  *file)
+MooFileSize
+_moo_file_get_size (const MooFile *file)
 {
     g_return_val_if_fail (file != NULL, 0);
     return file->statbuf.st_size;
 }
 
 
-GType        moo_file_get_type          (void)
+GType
+_moo_file_get_type (void)
 {
     static GType type = 0;
 
     if (!type)
         type = g_boxed_type_register_static ("MooFile",
-                                             (GBoxedCopyFunc) moo_file_ref,
-                                             (GBoxedFreeFunc) moo_file_unref);
+                                             (GBoxedCopyFunc) _moo_file_ref,
+                                             (GBoxedFreeFunc) _moo_file_unref);
 
     return type;
 }
 
 
-GType        moo_file_flags_get_type    (void)
+GType
+_moo_file_flags_get_type (void)
 {
     static GType type = 0;
 
@@ -1457,7 +1498,8 @@ GType        moo_file_flags_get_type    (void)
 }
 
 
-GType        moo_file_info_get_type     (void)
+GType
+_moo_file_info_get_type (void)
 {
     static GType type = 0;
 
@@ -1476,7 +1518,8 @@ GType        moo_file_info_get_type     (void)
 }
 
 
-const char  *moo_folder_get_path        (MooFolder  *folder)
+const char *
+_moo_folder_get_path (MooFolder *folder)
 {
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
     return folder->priv->path;
@@ -1487,27 +1530,30 @@ const char  *moo_folder_get_path        (MooFolder  *folder)
 // {
 //     GSList *copy, *l;
 //     for (copy = NULL, l = list; l != NULL; l = l->next)
-//         copy = g_slist_prepend (copy, moo_file_ref (l->data));
+//         copy = g_slist_prepend (copy, _moo_file_ref (l->data));
 //     return g_slist_reverse (copy);
 // }
 
 
-static void     files_list_free             (GSList    **list)
+static void
+files_list_free (GSList **list)
 {
-    g_slist_foreach (*list, (GFunc) moo_file_unref, NULL);
+    g_slist_foreach (*list, (GFunc) _moo_file_unref, NULL);
     g_slist_free (*list);
     *list = NULL;
 }
 
 
-static void prepend_file (G_GNUC_UNUSED gpointer key,
-                          MooFile *file,
-                          GSList **list)
+static void
+prepend_file (G_GNUC_UNUSED gpointer key,
+              MooFile *file,
+              GSList **list)
 {
-    *list = g_slist_prepend (*list, moo_file_ref (file));
+    *list = g_slist_prepend (*list, _moo_file_ref (file));
 }
 
-static GSList *hash_table_to_file_list      (GHashTable *files)
+static GSList *
+hash_table_to_file_list (GHashTable *files)
 {
     GSList *list = NULL;
     g_return_val_if_fail (files != NULL, NULL);
@@ -1516,9 +1562,10 @@ static GSList *hash_table_to_file_list      (GHashTable *files)
 }
 
 
-static void check_unique        (const char *key,
-                                 G_GNUC_UNUSED gpointer whatever,
-                                 gpointer user_data)
+static void
+check_unique (const char *key,
+              G_GNUC_UNUSED gpointer whatever,
+              gpointer user_data)
 {
     struct {
         GSList *list;
@@ -1530,9 +1577,10 @@ static void check_unique        (const char *key,
         data->list = g_slist_prepend (data->list, g_strdup (key));
 }
 
-static void get_unique          (GHashTable *table1,
-                                 GHashTable *table2,
-                                 GSList    **only_1)
+static void
+get_unique (GHashTable *table1,
+            GHashTable *table2,
+            GSList    **only_1)
 {
     struct {
         GSList *list;
@@ -1543,10 +1591,11 @@ static void get_unique          (GHashTable *table1,
     *only_1 = data.list;
 }
 
-static void diff_hash_tables    (GHashTable *table1,
-                                 GHashTable *table2,
-                                 GSList    **only_1,
-                                 GSList    **only_2)
+static void
+diff_hash_tables (GHashTable *table1,
+                  GHashTable *table2,
+                  GSList    **only_1,
+                  GSList    **only_2)
 {
     get_unique (table1, table2, only_1);
     get_unique (table2, table1, only_2);
@@ -1830,11 +1879,12 @@ static MooIconType   _get_folder_icon           (const char     *path);
 static MooIconFlags  _get_icon_flags            (const MooFile  *file);
 
 
-static GdkPixbuf    *_render_icon           (MooIconType     icon,
-                                             const char     *mime_type,
-                                             MooIconFlags    flags,
-                                             GtkWidget      *widget,
-                                             GtkIconSize     size)
+static GdkPixbuf *
+_render_icon (MooIconType     icon,
+              const char     *mime_type,
+              MooIconFlags    flags,
+              GtkWidget      *widget,
+              GtkIconSize     size)
 {
     GtkIconTheme *icon_theme;
     GHashTable *all_sizes_cache;
@@ -1929,11 +1979,12 @@ render_icon_for_path (const char     *path,
 }
 
 
-static GdkPixbuf    *_create_icon_simple        (GtkIconTheme   *icon_theme,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size)
+static GdkPixbuf *
+_create_icon_simple (GtkIconTheme   *icon_theme,
+                     MooIconType     icon,
+                     const char     *mime_type,
+                     GtkWidget      *widget,
+                     GtkIconSize     size)
 {
     int width, height;
     GdkPixbuf *pixbuf;
@@ -2030,14 +2081,14 @@ static GdkPixbuf    *_create_icon_simple        (GtkIconTheme   *icon_theme,
 }
 
 
-static GdkPixbuf    *_create_named_icon_with_fallback
-                                                (GtkIconTheme   *icon_theme,
-                                                 const char     *name,
-                                                 const char     *fallback_name,
-                                                 const char     *fallback_stock,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size)
+static GdkPixbuf *
+_create_named_icon_with_fallback (GtkIconTheme   *icon_theme,
+                                  const char     *name,
+                                  const char     *fallback_name,
+                                  const char     *fallback_stock,
+                                  GtkWidget      *widget,
+                                  GtkIconSize     size,
+                                  int             pixel_size)
 {
     GdkPixbuf *pixbuf;
 
@@ -2073,8 +2124,9 @@ static GdkPixbuf    *_create_named_icon_with_fallback
 }
 
 
-static guint8   get_icon                    (MooFile        *file,
-                                             const char     *dirname)
+static guint8
+get_icon (MooFile        *file,
+          const char     *dirname)
 {
     if (MOO_FILE_IS_BROKEN_LINK (file))
         return MOO_ICON_BROKEN_LINK;
@@ -2092,13 +2144,13 @@ static guint8   get_icon                    (MooFile        *file,
 
     if (MOO_FILE_IS_SPECIAL (file))
     {
-        if (moo_file_test (file, MOO_FILE_INFO_IS_BLOCK_DEV))
+        if (_moo_file_test (file, MOO_FILE_INFO_IS_BLOCK_DEV))
             return MOO_ICON_BLOCK_DEVICE;
-        else if (moo_file_test (file, MOO_FILE_INFO_IS_CHAR_DEV))
+        else if (_moo_file_test (file, MOO_FILE_INFO_IS_CHAR_DEV))
             return MOO_ICON_CHARACTER_DEVICE;
-        else if (moo_file_test (file, MOO_FILE_INFO_IS_FIFO))
+        else if (_moo_file_test (file, MOO_FILE_INFO_IS_FIFO))
             return MOO_ICON_FIFO;
-        else if (moo_file_test (file, MOO_FILE_INFO_IS_SOCKET))
+        else if (_moo_file_test (file, MOO_FILE_INFO_IS_SOCKET))
             return MOO_ICON_SOCKET;
     }
 
@@ -2109,17 +2161,19 @@ static guint8   get_icon                    (MooFile        *file,
 }
 
 
-static guint8   get_blank_icon              (void)
+static guint8
+get_blank_icon (void)
 {
     return MOO_ICON_BLANK;
 }
 
 
-static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
-                                                 const char     *mime_type,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size,
-                                                 int             pixel_size)
+static GdkPixbuf *
+_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
+                            const char     *mime_type,
+                            GtkWidget      *widget,
+                            GtkIconSize     size,
+                            int             pixel_size)
 {
     const char *separator;
     GString *icon_name;
@@ -2196,29 +2250,32 @@ static GdkPixbuf    *_create_icon_for_mime_type (GtkIconTheme   *icon_theme,
 }
 
 
-static GdkPixbuf    *_create_broken_link_icon   (G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size)
+static GdkPixbuf *
+_create_broken_link_icon (G_GNUC_UNUSED GtkIconTheme *icon_theme,
+                          GtkWidget      *widget,
+                          GtkIconSize     size)
 {
     /* XXX */
     return gtk_widget_render_icon (widget, GTK_STOCK_MISSING_IMAGE, size, NULL);
 }
 
 
-static GdkPixbuf    *_create_broken_icon        (G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size)
+static GdkPixbuf *
+_create_broken_icon (G_GNUC_UNUSED GtkIconTheme *icon_theme,
+                     GtkWidget      *widget,
+                     GtkIconSize     size)
 {
     /* XXX */
     return gtk_widget_render_icon (widget, GTK_STOCK_MISSING_IMAGE, size, NULL);
 }
 
 
-static GdkPixbuf    *_create_icon_with_flags    (GdkPixbuf      *original,
-                                                 MooIconFlags    flags,
-                                                 G_GNUC_UNUSED GtkIconTheme *icon_theme,
-                                                 G_GNUC_UNUSED GtkWidget *widget,
-                                                 GtkIconSize     size)
+static GdkPixbuf *
+_create_icon_with_flags (GdkPixbuf      *original,
+                         MooIconFlags    flags,
+                         G_GNUC_UNUSED GtkIconTheme *icon_theme,
+                         G_GNUC_UNUSED GtkWidget *widget,
+                         GtkIconSize     size)
 {
     static GdkPixbuf *arrow = NULL, *small_arrow = NULL;
     int width, height;
@@ -2277,7 +2334,8 @@ static GdkPixbuf    *_create_icon_with_flags    (GdkPixbuf      *original,
 }
 
 
-static MooIconType   _get_folder_icon           (const char     *path)
+static MooIconType
+_get_folder_icon (const char *path)
 {
     static const char *home_path = NULL;
     static char *desktop_path = NULL;
@@ -2310,20 +2368,23 @@ static MooIconType   _get_folder_icon           (const char     *path)
 }
 
 
-static MooIconFlags  _get_icon_flags            (const MooFile  *file)
+static MooIconFlags
+_get_icon_flags (const MooFile *file)
 {
     return (MOO_FILE_IS_LOCKED (file) ? MOO_ICON_LOCK : 0) |
             (MOO_FILE_IS_LINK (file) ? MOO_ICON_LINK : 0);
 }
 
 
-static MooIconVars  *moo_icon_vars_new          (void)
+static MooIconVars *
+moo_icon_vars_new (void)
 {
     return g_new0 (MooIconVars, 1);
 }
 
 
-static void          moo_icon_vars_free         (MooIconVars    *pixbufs)
+static void
+moo_icon_vars_free (MooIconVars *pixbufs)
 {
     if (pixbufs)
     {
@@ -2341,7 +2402,8 @@ static void          moo_icon_vars_free         (MooIconVars    *pixbufs)
 }
 
 
-static MooIconCache *moo_icon_cache_new         (void)
+static MooIconCache *
+moo_icon_cache_new (void)
 {
     MooIconCache *cache = g_new0 (MooIconCache, 1);
     cache->mime_icons = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -2351,7 +2413,8 @@ static MooIconCache *moo_icon_cache_new         (void)
 }
 
 
-static void          moo_icon_cache_free        (MooIconCache   *cache)
+static void
+moo_icon_cache_free (MooIconCache *cache)
 {
     if (cache)
     {
@@ -2369,9 +2432,10 @@ static void          moo_icon_cache_free        (MooIconCache   *cache)
 }
 
 
-static MooIconVars  *moo_icon_cache_lookup      (MooIconCache   *cache,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type)
+static MooIconVars *
+moo_icon_cache_lookup (MooIconCache   *cache,
+                       MooIconType     icon,
+                       const char     *mime_type)
 {
     if (icon != MOO_ICON_MIME)
     {
@@ -2386,10 +2450,11 @@ static MooIconVars  *moo_icon_cache_lookup      (MooIconCache   *cache,
 }
 
 
-static void          moo_icon_cache_insert      (MooIconCache   *cache,
-                                                 MooIconType     icon,
-                                                 const char     *mime_type,
-                                                 MooIconVars    *pixbufs)
+static void
+moo_icon_cache_insert (MooIconCache   *cache,
+                       MooIconType     icon,
+                       const char     *mime_type,
+                       MooIconVars    *pixbufs)
 {
     if (icon != MOO_ICON_MIME)
     {

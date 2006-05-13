@@ -21,7 +21,7 @@ static void add_panes (GtkWidget *paned, MooPanePosition pane_position)
 
     label = moo_pane_label_new (GTK_STOCK_CANCEL, NULL, NULL, "File Selector", "File Selector");
     moo_big_paned_insert_pane (MOO_BIG_PANED (paned),
-                               moo_file_view_new (),
+                               _moo_file_view_new (),
                                label, pane_position, -1);
     moo_pane_label_free (label);
 }

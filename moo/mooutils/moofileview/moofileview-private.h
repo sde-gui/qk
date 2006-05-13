@@ -30,41 +30,47 @@ typedef struct {
 } TextFuncs;
 
 
-static int   strcmp_func            (const char *str,
-                                     MooFile    *file)
+static int
+strcmp_func (const char *str,
+             MooFile    *file)
 {
-    return strcmp (str, moo_file_display_name (file));
+    return strcmp (str, _moo_file_display_name (file));
 }
 
-static int   strncmp_func           (const char *str,
-                                     MooFile    *file,
-                                     guint       len)
+static int
+strncmp_func (const char *str,
+              MooFile    *file,
+              guint       len)
 {
-    return strncmp (str, moo_file_display_name (file), len);
+    return strncmp (str, _moo_file_display_name (file), len);
 }
 
- static char *normalize_func         (const char *str,
-                                      gssize      len)
+static char *
+normalize_func (const char *str,
+                gssize      len)
 {
     return g_utf8_normalize (str, len, G_NORMALIZE_ALL);
 }
 
 
-static int   case_strcmp_func       (const char *str,
-                                     MooFile    *file)
+static int
+case_strcmp_func (const char *str,
+                  MooFile    *file)
 {
-    return strcmp (str, moo_file_case_display_name (file));
+    return strcmp (str, _moo_file_case_display_name (file));
 }
 
-static int   case_strncmp_func      (const char *str,
-                                     MooFile    *file,
-                                     guint       len)
+static int
+case_strncmp_func (const char *str,
+                   MooFile    *file,
+                   guint       len)
 {
-    return strncmp (str, moo_file_case_display_name (file), len);
+    return strncmp (str, _moo_file_case_display_name (file), len);
 }
 
-static char *case_normalize_func    (const char *str,
-                                     gssize      len)
+static char *
+case_normalize_func (const char *str,
+                     gssize      len)
 {
     char *norm = g_utf8_normalize (str, len, G_NORMALIZE_ALL);
     char *res = g_utf8_casefold (norm, -1);
@@ -73,12 +79,13 @@ static char *case_normalize_func    (const char *str,
 }
 
 
-static gboolean model_find_next_match   (GtkTreeModel   *model,
-                                         GtkTreeIter    *iter,
-                                         const char     *text,
-                                         gssize          len,
-                                         TextFuncs      *funcs,
-                                         gboolean        exact_match)
+static gboolean
+model_find_next_match (GtkTreeModel   *model,
+                       GtkTreeIter    *iter,
+                       const char     *text,
+                       gssize          len,
+                       TextFuncs      *funcs,
+                       gboolean        exact_match)
 {
     char *normalized_text;
     guint normalized_text_len;
@@ -103,7 +110,7 @@ static gboolean model_find_next_match   (GtkTreeModel   *model,
                 match = !funcs->strncmp_func (normalized_text, file,
                                               normalized_text_len);
 
-            moo_file_unref (file);
+            _moo_file_unref (file);
 
             if (match)
             {
@@ -121,11 +128,12 @@ static gboolean model_find_next_match   (GtkTreeModel   *model,
 }
 
 
-static GString *model_find_max_prefix   (GtkTreeModel   *model,
-                                         const char     *text,
-                                         TextFuncs      *funcs,
-                                         gboolean       *unique_p,
-                                         GtkTreeIter    *unique_iter_p)
+static GString *
+model_find_max_prefix (GtkTreeModel   *model,
+                       const char     *text,
+                       TextFuncs      *funcs,
+                       gboolean       *unique_p,
+                       GtkTreeIter    *unique_iter_p)
 {
     GtkTreeIter iter, unique_iter;
     guint text_len;
@@ -152,11 +160,11 @@ static GString *model_find_max_prefix   (GtkTreeModel   *model,
                             COLUMN_FILE, &file, -1);
         g_assert (file != NULL);
 
-        name = moo_file_display_name (file);
+        name = _moo_file_display_name (file);
 
         if (!prefix)
         {
-            prefix = g_string_new (moo_file_display_name (file));
+            prefix = g_string_new (_moo_file_display_name (file));
             unique_iter = iter;
             unique = TRUE;
 

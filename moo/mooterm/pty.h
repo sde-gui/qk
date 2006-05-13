@@ -29,6 +29,14 @@ extern "C" {
 #endif
 
 
+#define _vte_pty_open       _moo_vte_pty_open
+#define _vte_pty_get_size   _moo_vte_pty_get_size
+#define _vte_pty_set_size   _moo_vte_pty_set_size
+#define _vte_pty_close      _moo_vte_pty_close
+#define _vte_pty_n_read     _moo_vte_pty_n_read
+#define _vte_pty_n_write    _moo_vte_pty_n_write
+
+
 /* Start up the given binary (exact path, not interpreted at all) in a
  * pseudo-terminal of its own, returning the descriptor for the master
  * side of the PTY pair, logging the session to the specified files, and

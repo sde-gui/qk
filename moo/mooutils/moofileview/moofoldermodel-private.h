@@ -108,9 +108,9 @@ static void CHECK_FILE_LIST_INTEGRITY (FileList *flist)
         MooFile *file = link->data;
         g_assert (file != NULL);
         g_assert (file == g_hash_table_lookup (flist->name_to_file,
-                moo_file_name (file)));
+                _moo_file_name (file)));
         g_assert (file == g_hash_table_lookup (flist->display_name_to_file,
-                moo_file_display_name (file)));
+                _moo_file_display_name (file)));
         g_assert (link == g_hash_table_lookup (flist->file_to_link, file));
     }
 }
@@ -147,7 +147,7 @@ static void      file_list_destroy      (FileList   *flist)
     g_hash_table_destroy (flist->name_to_file);
     g_hash_table_destroy (flist->file_to_link);
 
-    g_list_foreach (flist->list, (GFunc)moo_file_unref, NULL);
+    g_list_foreach (flist->list, (GFunc) _moo_file_unref, NULL);
     g_list_free (flist->list);
 
     g_free (flist);
@@ -163,7 +163,7 @@ static int       file_list_add          (FileList   *flist,
     link = _list_insert_sorted (&flist->list,
                                 &flist->size,
                                 flist->cmp_func,
-                                moo_file_ref (file),
+                                _moo_file_ref (file),
                                 &index_);
     _hash_table_insert (flist, file, link);
 
@@ -187,7 +187,7 @@ static int       file_list_remove       (FileList   *flist,
 
     CHECK_FILE_LIST_INTEGRITY (flist);
 
-    moo_file_unref (file);
+    _moo_file_unref (file);
     return index_;
 }
 
@@ -268,7 +268,7 @@ static GSList   *file_list_get_slist    (FileList   *flist)
     GSList *slist = NULL;
 
     for (l = flist->list; l != NULL; l = l->next)
-        slist = g_slist_prepend (slist, moo_file_ref (l->data));
+        slist = g_slist_prepend (slist, _moo_file_ref (l->data));
 
     return g_slist_reverse (slist);
 }
@@ -294,10 +294,10 @@ static void      _hash_table_insert     (FileList       *flist,
 {
     g_hash_table_insert (flist->file_to_link, file, link);
     g_hash_table_insert (flist->name_to_file,
-                         g_strdup (moo_file_name (file)),
+                         g_strdup (_moo_file_name (file)),
                          file);
     g_hash_table_insert (flist->display_name_to_file,
-                         g_strdup (moo_file_display_name (file)),
+                         g_strdup (_moo_file_display_name (file)),
                          file);
 }
 
@@ -307,9 +307,9 @@ static void      _hash_table_remove     (FileList       *flist,
 {
     g_hash_table_remove (flist->file_to_link, file);
     g_hash_table_remove (flist->name_to_file,
-                         moo_file_name (file));
+                         _moo_file_name (file));
     g_hash_table_remove (flist->display_name_to_file,
-                         moo_file_display_name (file));
+                         _moo_file_display_name (file));
 }
 
 
@@ -340,25 +340,25 @@ static GList    *_list_find             (FileList       *flist,
 static int      moo_file_case_cmp       (MooFile        *f1,
                                          MooFile        *f2)
 {
-    if (!strcmp (moo_file_name (f1), ".."))
-        return strcmp (moo_file_name (f2), "..") ? -1 : 0;
-    else if (!strcmp (moo_file_name (f2), ".."))
+    if (!strcmp (_moo_file_name (f1), ".."))
+        return strcmp (_moo_file_name (f2), "..") ? -1 : 0;
+    else if (!strcmp (_moo_file_name (f2), ".."))
         return 1;
     else
-        return strcmp (moo_file_collation_key (f1),
-                       moo_file_collation_key (f2));
+        return strcmp (_moo_file_collation_key (f1),
+                       _moo_file_collation_key (f2));
 }
 
 static int      moo_file_cmp            (MooFile        *f1,
                                          MooFile        *f2)
 {
-    if (!strcmp (moo_file_name (f1), ".."))
-        return strcmp (moo_file_name (f2), "..") ? -1 : 0;
-    else if (!strcmp (moo_file_name (f2), ".."))
+    if (!strcmp (_moo_file_name (f1), ".."))
+        return strcmp (_moo_file_name (f2), "..") ? -1 : 0;
+    else if (!strcmp (_moo_file_name (f2), ".."))
         return 1;
     else
-        return strcmp (moo_file_display_name (f1),
-                       moo_file_display_name (f2));
+        return strcmp (_moo_file_display_name (f1),
+                       _moo_file_display_name (f2));
 }
 
 

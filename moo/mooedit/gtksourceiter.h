@@ -26,6 +26,9 @@
 
 G_BEGIN_DECLS
 
+#define _gtk_source_iter_forward_search _moo_gtk_source_iter_forward_search
+#define _gtk_source_iter_backward_search _moo_gtk_source_iter_backward_search
+
 typedef enum
 {
 	GTK_SOURCE_SEARCH_VISIBLE_ONLY		 = 1 << 0,

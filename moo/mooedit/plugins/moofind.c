@@ -337,7 +337,7 @@ create_grep_dialog (MooEditWindow  *window,
                                            "case-sensitive", TRUE,
                                            "show-hidden", FALSE,
                                            NULL);
-    moo_file_entry_completion_set_entry (stuff->grep_completion, GTK_ENTRY (dir_entry));
+    _moo_file_entry_completion_set_entry (stuff->grep_completion, GTK_ENTRY (dir_entry));
 
     skip_combo = moo_glade_xml_get_widget (stuff->grep_xml, "skip_combo");
     skip_list = moo_history_entry_get_list (MOO_HISTORY_ENTRY (skip_combo));
@@ -382,7 +382,7 @@ create_find_dialog (MooEditWindow  *window,
                                            "case-sensitive", TRUE,
                                            "show-hidden", FALSE,
                                            NULL);
-    moo_file_entry_completion_set_entry (stuff->find_completion, GTK_ENTRY (dir_entry));
+    _moo_file_entry_completion_set_entry (stuff->find_completion, GTK_ENTRY (dir_entry));
 }
 
 
@@ -412,12 +412,12 @@ init_grep_dialog (MooEditWindow *window,
         if (doc && moo_edit_get_filename (doc))
         {
             char *dir = g_path_get_dirname (moo_edit_get_filename (doc));
-            moo_file_entry_completion_set_path (stuff->grep_completion, dir);
+            _moo_file_entry_completion_set_path (stuff->grep_completion, dir);
             g_free (dir);
         }
         else
         {
-            moo_file_entry_completion_set_path (stuff->grep_completion, g_get_home_dir ());
+            _moo_file_entry_completion_set_path (stuff->grep_completion, g_get_home_dir ());
         }
     }
 
@@ -438,7 +438,7 @@ init_find_dialog (G_GNUC_UNUSED MooEditWindow *window,
     pattern_entry = MOO_COMBO(moo_glade_xml_get_widget (stuff->find_xml, "pattern_combo"))->entry;
 
     if (!gtk_entry_get_text(GTK_ENTRY (dir_entry))[0])
-        moo_file_entry_completion_set_path (stuff->find_completion, g_get_home_dir ());
+        _moo_file_entry_completion_set_path (stuff->find_completion, g_get_home_dir ());
 
     gtk_widget_grab_focus (pattern_entry);
 }
@@ -681,7 +681,7 @@ execute_grep (const char     *pattern,
     stuff->current_file = NULL;
     stuff->match_count = 0;
 
-    command = g_string_new ("");
+    command = g_string_new (NULL);
     g_string_printf (command, "find '%s'", dir);
 
     if (glob && glob[0] && strcmp (glob, "*"))
@@ -764,7 +764,7 @@ execute_find (const char     *pattern,
     {
         if (!command)
         {
-            command = g_string_new ("");
+            command = g_string_new (NULL);
             g_string_printf (command, "find '%s' \\( -name \"%s\"", dir, *p);
         }
         else

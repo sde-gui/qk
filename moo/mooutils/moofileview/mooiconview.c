@@ -215,7 +215,7 @@ static GtkTreePath *ensure_cursor           (MooIconView    *view);
 
 
 /* MOO_TYPE_ICON_VIEW */
-G_DEFINE_TYPE (MooIconView, moo_icon_view, GTK_TYPE_WIDGET)
+G_DEFINE_TYPE (MooIconView, _moo_icon_view, GTK_TYPE_WIDGET)
 
 enum {
     PROP_0,
@@ -238,7 +238,8 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-static void moo_icon_view_class_init (MooIconViewClass *klass)
+static void
+_moo_icon_view_class_init (MooIconViewClass *klass)
 {
     GtkBindingSet *binding_set;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -436,7 +437,7 @@ static void     add_move_binding            (GtkBindingSet  *binding_set,
 
 
 static void
-moo_icon_view_init (MooIconView *view)
+_moo_icon_view_init (MooIconView *view)
 {
     GtkWidget *widget = GTK_WIDGET (view);
 
@@ -468,7 +469,7 @@ moo_icon_view_init (MooIconView *view)
     view->priv->icon_size = -1;
 
     view->priv->xoffset = 0;
-    moo_icon_view_set_adjustment (view, NULL);
+    _moo_icon_view_set_adjustment (view, NULL);
 
     view->priv->update_idle = 0;
 
@@ -513,21 +514,16 @@ static void moo_icon_view_finalize  (GObject      *object)
 
     g_free (view->priv);
 
-    G_OBJECT_CLASS (moo_icon_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_icon_view_parent_class)->finalize (object);
 }
 
 
-GtkWidget   *moo_icon_view_new              (void)
+GtkWidget *
+_moo_icon_view_new (GtkTreeModel *model)
 {
-    return GTK_WIDGET (g_object_new (MOO_TYPE_ICON_VIEW, NULL));
-}
-
-
-GtkWidget       *moo_icon_view_new_with_model   (GtkTreeModel   *model)
-{
-    return GTK_WIDGET (g_object_new (MOO_TYPE_ICON_VIEW,
-                                     "model", model,
-                                     NULL));
+    return g_object_new (MOO_TYPE_ICON_VIEW,
+                         "model", model,
+                         NULL);
 }
 
 
@@ -541,17 +537,17 @@ static void         moo_icon_view_set_property  (GObject        *object,
     switch (prop_id)
     {
         case PROP_MODEL:
-            moo_icon_view_set_model (view, g_value_get_object (value));
+            _moo_icon_view_set_model (view, g_value_get_object (value));
             break;
         case PROP_PIXBUF_CELL:
-            moo_icon_view_set_cell (view,
-                                    MOO_ICON_VIEW_CELL_PIXBUF,
-                                    g_value_get_object (value));
+            _moo_icon_view_set_cell (view,
+                                     MOO_ICON_VIEW_CELL_PIXBUF,
+                                     g_value_get_object (value));
             break;
         case PROP_TEXT_CELL:
-            moo_icon_view_set_cell (view,
-                                    MOO_ICON_VIEW_CELL_TEXT,
-                                    g_value_get_object (value));
+            _moo_icon_view_set_cell (view,
+                                     MOO_ICON_VIEW_CELL_TEXT,
+                                     g_value_get_object (value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -583,15 +579,17 @@ static void         moo_icon_view_get_property  (GObject        *object,
 }
 
 
-GtkTreeModel   *moo_icon_view_get_model         (MooIconView    *view)
+GtkTreeModel *
+_moo_icon_view_get_model (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
     return view->priv->model;
 }
 
 
-GtkCellRenderer *moo_icon_view_get_cell         (MooIconView    *view,
-                                                 MooIconViewCell cell_type)
+GtkCellRenderer *
+_moo_icon_view_get_cell (MooIconView    *view,
+                         MooIconViewCell cell_type)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
     g_return_val_if_fail (cell_type == MOO_ICON_VIEW_CELL_PIXBUF ||
@@ -603,8 +601,9 @@ GtkCellRenderer *moo_icon_view_get_cell         (MooIconView    *view,
 }
 
 
-void            moo_icon_view_set_model         (MooIconView    *view,
-                                                 GtkTreeModel   *model)
+void
+_moo_icon_view_set_model (MooIconView    *view,
+                          GtkTreeModel   *model)
 {
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
     g_return_if_fail (!model || GTK_IS_TREE_MODEL (model));
@@ -661,9 +660,10 @@ void            moo_icon_view_set_model         (MooIconView    *view,
 }
 
 
-void             moo_icon_view_set_cell         (MooIconView    *view,
-                                                 MooIconViewCell cell_type,
-                                                 GtkCellRenderer*cell)
+void
+_moo_icon_view_set_cell (MooIconView    *view,
+                         MooIconViewCell cell_type,
+                         GtkCellRenderer*cell)
 {
     CellInfo *info;
 
@@ -699,8 +699,9 @@ static void     free_attributes (CellInfo   *info)
 }
 
 
-void             moo_icon_view_clear_attributes (MooIconView    *view,
-                                                 MooIconViewCell cell)
+void
+_moo_icon_view_clear_attributes (MooIconView    *view,
+                                 MooIconViewCell cell)
 {
     CellInfo *info;
 
@@ -719,16 +720,17 @@ void             moo_icon_view_clear_attributes (MooIconView    *view,
 }
 
 
-static void         moo_icon_view_set_attributesv  (MooIconView    *view,
-                                                    MooIconViewCell cell_type,
-                                                    const char     *first_attr,
-                                                    va_list         args)
+static void
+moo_icon_view_set_attributesv (MooIconView    *view,
+                               MooIconViewCell cell_type,
+                               const char     *first_attr,
+                               va_list         args)
 {
     char *attribute;
     int column;
     CellInfo *info;
 
-    moo_icon_view_clear_attributes (view, cell_type);
+    _moo_icon_view_clear_attributes (view, cell_type);
 
     attribute = (char*) first_attr;
 
@@ -753,10 +755,11 @@ static void         moo_icon_view_set_attributesv  (MooIconView    *view,
 }
 
 
-void             moo_icon_view_set_attributes   (MooIconView    *view,
-                                                 MooIconViewCell cell_type,
-                                                 const char     *first_attr,
-                                                 ...)
+void
+_moo_icon_view_set_attributes (MooIconView    *view,
+                               MooIconViewCell cell_type,
+                               const char     *first_attr,
+                               ...)
 {
     va_list args;
 
@@ -771,11 +774,11 @@ void             moo_icon_view_set_attributes   (MooIconView    *view,
 
 
 void
-moo_icon_view_set_cell_data_func (MooIconView    *view,
-                                  MooIconViewCell cell,
-                                  MooIconCellDataFunc func,
-                                  gpointer        func_data,
-                                  GDestroyNotify  destroy)
+_moo_icon_view_set_cell_data_func (MooIconView    *view,
+                                   MooIconViewCell cell,
+                                   MooIconCellDataFunc func,
+                                   gpointer        func_data,
+                                   GDestroyNotify  destroy)
 {
     CellInfo *info;
 
@@ -818,7 +821,7 @@ check_empty (MooIconView *view)
 static void
 moo_icon_view_map (GtkWidget *widget)
 {
-    GTK_WIDGET_CLASS(moo_icon_view_parent_class)->map (widget);
+    GTK_WIDGET_CLASS(_moo_icon_view_parent_class)->map (widget);
     moo_icon_view_invalidate_layout (MOO_ICON_VIEW (widget));
 }
 
@@ -842,7 +845,7 @@ moo_icon_view_state_changed (GtkWidget *widget,
                                    &widget->style->base[GTK_WIDGET_STATE (widget)]);
 
     if (!GTK_WIDGET_IS_SENSITIVE (widget))
-        moo_icon_view_unselect_all (MOO_ICON_VIEW (widget));
+        _moo_icon_view_unselect_all (MOO_ICON_VIEW (widget));
 
     gtk_widget_queue_draw (widget);
 }
@@ -1097,13 +1100,13 @@ static void     draw_entry                  (MooIconView    *view,
     GtkTreePath *cursor_path, *drop_path;
     gboolean selected, cursor, drop;
 
-    selected = moo_icon_view_path_is_selected (view, path);
+    selected = _moo_icon_view_path_is_selected (view, path);
 
-    cursor_path = moo_icon_view_get_cursor (view);
+    cursor_path = _moo_icon_view_get_cursor (view);
     cursor = cursor_path != NULL && !gtk_tree_path_compare (cursor_path, path);
     gtk_tree_path_free (cursor_path);
 
-    drop_path = moo_icon_view_get_drag_dest_row (view);
+    drop_path = _moo_icon_view_get_drag_dest_row (view);
     drop = drop_path != NULL && !gtk_tree_path_compare (drop_path, path);
     gtk_tree_path_free (drop_path);
 
@@ -1294,7 +1297,7 @@ static gboolean moo_icon_view_update_layout     (MooIconView    *view)
         {
             GtkTreePath *path = gtk_tree_row_reference_get_path (view->priv->scroll_to);
             moo_icon_view_update_adjustment (view);
-            moo_icon_view_scroll_to_cell (view, path);
+            _moo_icon_view_scroll_to_cell (view, path);
             gtk_tree_path_free (path);
         }
 
@@ -1585,7 +1588,7 @@ moo_icon_view_set_scroll_adjustments    (GtkWidget      *widget,
                                          GtkAdjustment  *hadj,
                                          G_GNUC_UNUSED GtkAdjustment *vadj)
 {
-    moo_icon_view_set_adjustment (MOO_ICON_VIEW (widget), hadj);
+    _moo_icon_view_set_adjustment (MOO_ICON_VIEW (widget), hadj);
 }
 
 
@@ -1634,8 +1637,9 @@ static void     moo_icon_view_update_adjustment (MooIconView    *view)
 }
 
 
-void    moo_icon_view_set_adjustment    (MooIconView    *view,
-                                         GtkAdjustment  *adjustment)
+void
+_moo_icon_view_set_adjustment (MooIconView    *view,
+                               GtkAdjustment  *adjustment)
 {
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
     g_return_if_fail (!adjustment || GTK_IS_ADJUSTMENT (adjustment));
@@ -1677,8 +1681,8 @@ moo_icon_view_button_press (GtkWidget      *widget,
     if (event->button == 1)
     {
         gtk_widget_grab_focus (widget);
-        moo_icon_view_get_path_at_pos (view, event->x, event->y,
-                                       &path, NULL, NULL, NULL);
+        _moo_icon_view_get_path_at_pos (view, event->x, event->y,
+                                        &path, NULL, NULL, NULL);
 
         if (path)
         {
@@ -1688,20 +1692,20 @@ moo_icon_view_button_press (GtkWidget      *widget,
                     if (mods & GDK_SHIFT_MASK)
                     {
                         cursor_path = ensure_cursor (view);
-                        moo_icon_view_unselect_all (view);
-                        moo_icon_view_select_range (view, path, cursor_path);
+                        _moo_icon_view_unselect_all (view);
+                        _moo_icon_view_select_range (view, path, cursor_path);
                     }
                     else if (mods & GDK_CONTROL_MASK)
                     {
-                        if (moo_icon_view_path_is_selected (view, path))
-                            moo_icon_view_unselect_path (view, path);
+                        if (_moo_icon_view_path_is_selected (view, path))
+                            _moo_icon_view_unselect_path (view, path);
                         else
-                            moo_icon_view_select_path (view, path);
+                            _moo_icon_view_select_path (view, path);
                     }
                     else
                     {
-                        moo_icon_view_unselect_all (view);
-                        moo_icon_view_set_cursor (view, path, FALSE);
+                        _moo_icon_view_unselect_all (view);
+                        _moo_icon_view_set_cursor (view, path, FALSE);
                     }
 
                     gtk_tree_path_free (path);
@@ -1909,16 +1913,16 @@ static void     move_cursor_to_entry        (MooIconView    *view,
     if (extend_selection)
     {
         GtkTreePath *cursor_path = ensure_cursor (view);
-        moo_icon_view_select_range (view, cursor_path, path);
+        _moo_icon_view_select_range (view, cursor_path, path);
         gtk_tree_path_free (cursor_path);
     }
     else
     {
-        moo_icon_view_unselect_all (view);
+        _moo_icon_view_unselect_all (view);
     }
 
-    moo_icon_view_set_cursor (view, path, FALSE);
-    moo_icon_view_scroll_to_cell (view, path);
+    _moo_icon_view_set_cursor (view, path, FALSE);
+    _moo_icon_view_scroll_to_cell (view, path);
     gtk_tree_path_free (path);
 }
 
@@ -2002,7 +2006,7 @@ static void     move_cursor_up              (MooIconView    *view,
         prev = column_prev (view, column);
 
         if (!prev)
-            moo_icon_view_select_path (view, path);
+            _moo_icon_view_select_path (view, path);
         else
             move_cursor_to_entry (view, prev, prev->entries->len - 1,
                                   extend_selection);
@@ -2034,7 +2038,7 @@ static void     move_cursor_down            (MooIconView    *view,
         next = column_next (view, column);
 
         if (!next)
-            moo_icon_view_select_path (view, path);
+            _moo_icon_view_select_path (view, path);
         else
             move_cursor_to_entry (view, next, 0,
                                   extend_selection);
@@ -2185,7 +2189,7 @@ static int  clamp_offset    (MooIconView    *view,
 
 
 /********************************************************************/
-/* moo_icon_view_get_path_at_pos
+/* _moo_icon_view_get_path_at_pos
  */
 
 static Column   *get_column_at_x    (MooIconView    *view,
@@ -2289,13 +2293,14 @@ static gboolean column_get_path_at_xy   (MooIconView        *view,
 }
 
 
-gboolean    moo_icon_view_get_path_at_pos       (MooIconView        *view,
-                                                 int                 x,
-                                                 int                 y,
-                                                 GtkTreePath       **path,
-                                                 MooIconViewCell    *cell,
-                                                 int                *cell_x,
-                                                 int                *cell_y)
+gboolean
+_moo_icon_view_get_path_at_pos (MooIconView        *view,
+                                int                 x,
+                                int                 y,
+                                GtkTreePath       **path,
+                                MooIconViewCell    *cell,
+                                int                *cell_x,
+                                int                *cell_y)
 {
     Column *column;
 
@@ -2313,11 +2318,11 @@ gboolean    moo_icon_view_get_path_at_pos       (MooIconView        *view,
 
 
 void
-moo_icon_view_widget_to_abs_coords (MooIconView        *view,
-                                    int                 wx,
-                                    int                 wy,
-                                    int                *absx,
-                                    int                *absy)
+_moo_icon_view_widget_to_abs_coords (MooIconView        *view,
+                                     int                 wx,
+                                     int                 wy,
+                                     int                *absx,
+                                     int                *absy)
 {
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
 
@@ -2330,11 +2335,11 @@ moo_icon_view_widget_to_abs_coords (MooIconView        *view,
 
 
 void
-moo_icon_view_abs_to_widget_coords (MooIconView        *view,
-                                    int                 absx,
-                                    int                 absy,
-                                    int                *wx,
-                                    int                *wy)
+_moo_icon_view_abs_to_widget_coords (MooIconView        *view,
+                                     int                 absx,
+                                     int                 absy,
+                                     int                *wx,
+                                     int                *wy)
 {
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
 
@@ -2419,8 +2424,8 @@ selection_row_deleted (MooIconView *view)
 
 
 void
-moo_icon_view_set_selection_mode (MooIconView        *view,
-                                  GtkSelectionMode    mode)
+_moo_icon_view_set_selection_mode (MooIconView        *view,
+                                   GtkSelectionMode    mode)
 {
     Selection *selection;
     GtkTreePath *path = NULL;
@@ -2444,7 +2449,7 @@ moo_icon_view_set_selection_mode (MooIconView        *view,
     switch (mode)
     {
         case GTK_SELECTION_NONE:
-            moo_icon_view_unselect_all (view);
+            _moo_icon_view_unselect_all (view);
             return;
 
         case GTK_SELECTION_BROWSE:
@@ -2459,27 +2464,27 @@ moo_icon_view_set_selection_mode (MooIconView        *view,
         select_cursor = TRUE;
 
     if (!select_cursor &&
-         (path = moo_icon_view_get_cursor (view)))
+         (path = _moo_icon_view_get_cursor (view)))
     {
-        if (moo_icon_view_path_is_selected (view, path))
+        if (_moo_icon_view_path_is_selected (view, path))
             select_cursor = TRUE;
     }
 
-    moo_icon_view_unselect_all (view);
+    _moo_icon_view_unselect_all (view);
 
     if (select_cursor)
     {
         if (!path)
-            path = moo_icon_view_get_cursor (view);
+            path = _moo_icon_view_get_cursor (view);
 
         if (!path)
         {
             path = gtk_tree_path_new_from_indices (0, -1);
-            moo_icon_view_set_cursor (view, path, FALSE);
+            _moo_icon_view_set_cursor (view, path, FALSE);
         }
         else
         {
-            moo_icon_view_select_path (view, path);
+            _moo_icon_view_select_path (view, path);
         }
     }
 
@@ -2489,7 +2494,7 @@ moo_icon_view_set_selection_mode (MooIconView        *view,
 
 
 GtkTreePath *
-moo_icon_view_get_selected_path (MooIconView *view)
+_moo_icon_view_get_selected_path (MooIconView *view)
 {
     Selection *selection;
 
@@ -2505,14 +2510,14 @@ moo_icon_view_get_selected_path (MooIconView *view)
 
 
 gboolean
-moo_icon_view_get_selected (MooIconView  *view,
-                            GtkTreeIter  *iter)
+_moo_icon_view_get_selected (MooIconView  *view,
+                             GtkTreeIter  *iter)
 {
     GtkTreePath *path = NULL;
 
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), FALSE);
 
-    path = moo_icon_view_get_selected_path (view);
+    path = _moo_icon_view_get_selected_path (view);
 
     if (path)
     {
@@ -2529,9 +2534,9 @@ moo_icon_view_get_selected (MooIconView  *view,
 
 
 void
-moo_icon_view_selected_foreach (MooIconView *view,
-                                GtkTreeSelectionForeachFunc func,
-                                gpointer data)
+_moo_icon_view_selected_foreach (MooIconView *view,
+                                 GtkTreeSelectionForeachFunc func,
+                                 gpointer data)
 {
     Selection *selection;
     GSList *link;
@@ -2564,18 +2569,18 @@ prepend_path (G_GNUC_UNUSED GtkTreeModel *model,
 }
 
 GList*
-moo_icon_view_get_selected_rows (MooIconView *view)
+_moo_icon_view_get_selected_rows (MooIconView *view)
 {
     GList *list = NULL;
-    moo_icon_view_selected_foreach (view,
-                                    (GtkTreeSelectionForeachFunc) prepend_path,
-                                    &list);
+    _moo_icon_view_selected_foreach (view,
+                                     (GtkTreeSelectionForeachFunc) prepend_path,
+                                     &list);
     return g_list_reverse (list);
 }
 
 
 int
-moo_icon_view_count_selected_rows (MooIconView *view)
+_moo_icon_view_count_selected_rows (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), 0);
     return g_slist_length (view->priv->selection->selected);
@@ -2598,8 +2603,8 @@ row_reference_compare (GtkTreeRowReference *ref1,
 
 
 void
-moo_icon_view_select_path (MooIconView *view,
-                           GtkTreePath *path)
+_moo_icon_view_select_path (MooIconView *view,
+                            GtkTreePath *path)
 {
     Selection *selection;
     GtkTreeRowReference *ref;
@@ -2617,7 +2622,7 @@ moo_icon_view_select_path (MooIconView *view,
     if (selection->mode == GTK_SELECTION_SINGLE ||
         selection->mode == GTK_SELECTION_BROWSE)
     {
-        moo_icon_view_unselect_all (view);
+        _moo_icon_view_unselect_all (view);
         g_assert (selection->selected == NULL);
         selection->selected = g_slist_prepend (selection->selected, ref);
         invalidate_path_rectangle (view, path);
@@ -2637,9 +2642,9 @@ moo_icon_view_select_path (MooIconView *view,
 
 
 void
-moo_icon_view_select_range (MooIconView  *view,
-                            GtkTreePath  *start,
-                            GtkTreePath  *end)
+_moo_icon_view_select_range (MooIconView  *view,
+                             GtkTreePath  *start,
+                             GtkTreePath  *end)
 {
     Selection *selection;
     GtkTreePath *path;
@@ -2656,7 +2661,7 @@ moo_icon_view_select_range (MooIconView  *view,
     if (selection->mode != GTK_SELECTION_MULTIPLE)
     {
         g_return_if_fail (!gtk_tree_path_compare (start, end));
-        return moo_icon_view_select_path (view, start);
+        return _moo_icon_view_select_path (view, start);
     }
 
     start_index = gtk_tree_path_get_indices(start)[0];
@@ -2672,15 +2677,15 @@ moo_icon_view_select_range (MooIconView  *view,
     path = gtk_tree_path_new_from_indices (start_index, -1);
 
     for (i = start_index; i <= end_index; ++i, gtk_tree_path_next (path))
-        moo_icon_view_select_path (view, path);
+        _moo_icon_view_select_path (view, path);
 
     gtk_tree_path_free (path);
 }
 
 
 void
-moo_icon_view_unselect_path (MooIconView *view,
-                             GtkTreePath *path)
+_moo_icon_view_unselect_path (MooIconView *view,
+                              GtkTreePath *path)
 {
     Selection *selection;
     GSList *link;
@@ -2716,8 +2721,8 @@ moo_icon_view_unselect_path (MooIconView *view,
 
 
 gboolean
-moo_icon_view_path_is_selected (MooIconView *view,
-                                GtkTreePath *path)
+_moo_icon_view_path_is_selected (MooIconView *view,
+                                 GtkTreePath *path)
 {
     Selection *selection;
     GSList *link;
@@ -2750,7 +2755,7 @@ moo_icon_view_path_is_selected (MooIconView *view,
 
 
 void
-moo_icon_view_select_all (MooIconView *view)
+_moo_icon_view_select_all (MooIconView *view)
 {
     GtkTreeIter iter;
     Selection *selection;
@@ -2786,7 +2791,7 @@ moo_icon_view_select_all (MooIconView *view)
 
 
 void
-moo_icon_view_unselect_all (MooIconView *view)
+_moo_icon_view_unselect_all (MooIconView *view)
 {
     Selection *selection;
 
@@ -2810,8 +2815,8 @@ moo_icon_view_unselect_all (MooIconView *view)
 
 
 void
-moo_icon_view_scroll_to_cell (MooIconView *view,
-                              GtkTreePath *path)
+_moo_icon_view_scroll_to_cell (MooIconView *view,
+                               GtkTreePath *path)
 {
     Column *column;
     int xoffset, new_offset;
@@ -2850,9 +2855,9 @@ moo_icon_view_scroll_to_cell (MooIconView *view,
 
 
 void
-moo_icon_view_set_cursor (MooIconView *view,
-                          GtkTreePath *path,
-                          gboolean     start_editing)
+_moo_icon_view_set_cursor (MooIconView *view,
+                           GtkTreePath *path,
+                           gboolean     start_editing)
 {
     GtkTreeRowReference *ref;
     GtkTreePath *old;
@@ -2863,7 +2868,7 @@ moo_icon_view_set_cursor (MooIconView *view,
     ref = gtk_tree_row_reference_new (view->priv->model, path);
     g_return_if_fail (ref != NULL);
 
-    old = moo_icon_view_get_cursor (view);
+    old = _moo_icon_view_get_cursor (view);
 
     if (old)
     {
@@ -2873,12 +2878,12 @@ moo_icon_view_set_cursor (MooIconView *view,
     }
 
     view->priv->cursor = ref;
-    moo_icon_view_select_path (view, path);
+    _moo_icon_view_select_path (view, path);
     cursor_moved (view);
 
     if (start_editing)
     {
-        moo_icon_view_scroll_to_cell (view, path);
+        _moo_icon_view_scroll_to_cell (view, path);
         /* TODO */
         g_warning ("%s: implement me", G_STRLOC);
     }
@@ -2886,7 +2891,7 @@ moo_icon_view_set_cursor (MooIconView *view,
 
 
 GtkTreePath *
-moo_icon_view_get_cursor (MooIconView *view)
+_moo_icon_view_get_cursor (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
 
@@ -2913,8 +2918,8 @@ cursor_row_deleted (MooIconView *view)
 
 
 void
-moo_icon_view_row_activated (MooIconView *view,
-                             GtkTreePath *path)
+_moo_icon_view_row_activated (MooIconView *view,
+                              GtkTreePath *path)
 {
     g_return_if_fail (MOO_IS_ICON_VIEW (view));
     g_return_if_fail (path != NULL);
@@ -2932,7 +2937,7 @@ activate_item_at_cursor (MooIconView *view)
 
     path = gtk_tree_row_reference_get_path (view->priv->cursor);
     g_return_if_fail (path != NULL);
-    moo_icon_view_row_activated (view, path);
+    _moo_icon_view_row_activated (view, path);
     gtk_tree_path_free (path);
 }
 
@@ -2942,11 +2947,11 @@ activate_item_at_cursor (MooIconView *view)
  */
 
 void
-moo_icon_view_enable_drag_source (MooIconView        *view,
-                                  GdkModifierType     start_button_mask,
-                                  GtkTargetEntry     *targets,
-                                  gint                n_targets,
-                                  GdkDragAction       actions)
+_moo_icon_view_enable_drag_source (MooIconView        *view,
+                                   GdkModifierType     start_button_mask,
+                                   GtkTargetEntry     *targets,
+                                   gint                n_targets,
+                                   GdkDragAction       actions)
 {
     DndInfo *info;
 
@@ -2967,7 +2972,7 @@ moo_icon_view_enable_drag_source (MooIconView        *view,
 
 
 GtkTargetList*
-moo_icon_view_get_source_targets (MooIconView *view)
+_moo_icon_view_get_source_targets (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
     return view->priv->dnd_info->source_targets;
@@ -2975,7 +2980,7 @@ moo_icon_view_get_source_targets (MooIconView *view)
 
 
 void
-moo_icon_view_disable_drag_source (MooIconView *view)
+_moo_icon_view_disable_drag_source (MooIconView *view)
 {
     DndInfo *info;
 
@@ -3022,10 +3027,10 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     button = view->priv->button_pressed;
     view->priv->button_pressed = 0;
 
-    moo_icon_view_get_path_at_pos (view,
-                                   view->priv->button_press_x,
-                                   view->priv->button_press_y,
-                                   &path, NULL, NULL, NULL);
+    _moo_icon_view_get_path_at_pos (view,
+                                    view->priv->button_press_x,
+                                    view->priv->button_press_y,
+                                    &path, NULL, NULL, NULL);
 
     if (!path)
         goto out;
@@ -3075,10 +3080,10 @@ moo_icon_view_drag_end (GtkWidget      *widget,
 
 
 void
-moo_icon_view_enable_drag_dest (MooIconView        *view,
-                                GtkTargetEntry     *targets,
-                                gint                n_targets,
-                                GdkDragAction       actions)
+_moo_icon_view_enable_drag_dest (MooIconView        *view,
+                                 GtkTargetEntry     *targets,
+                                 gint                n_targets,
+                                 GdkDragAction       actions)
 {
     DndInfo *info;
 
@@ -3098,8 +3103,8 @@ moo_icon_view_enable_drag_dest (MooIconView        *view,
 
 
 void
-moo_icon_view_set_dest_targets (MooIconView        *view,
-                                GtkTargetList      *targets)
+_moo_icon_view_set_dest_targets (MooIconView        *view,
+                                 GtkTargetList      *targets)
 {
     DndInfo *info;
 
@@ -3118,7 +3123,7 @@ moo_icon_view_set_dest_targets (MooIconView        *view,
 
 
 void
-moo_icon_view_disable_drag_dest (MooIconView *view)
+_moo_icon_view_disable_drag_dest (MooIconView *view)
 {
     DndInfo *info;
 
@@ -3325,8 +3330,8 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
 
 
 void
-moo_icon_view_set_drag_dest_row (MooIconView *view,
-                                 GtkTreePath *path)
+_moo_icon_view_set_drag_dest_row (MooIconView *view,
+                                  GtkTreePath *path)
 {
     GtkTreeRowReference *ref = NULL;
 
@@ -3360,7 +3365,7 @@ moo_icon_view_set_drag_dest_row (MooIconView *view,
 
 
 GtkTreePath *
-moo_icon_view_get_drag_dest_row (MooIconView *view)
+_moo_icon_view_get_drag_dest_row (MooIconView *view)
 {
     g_return_val_if_fail (MOO_IS_ICON_VIEW (view), NULL);
 

@@ -122,7 +122,7 @@ static void     completion_finish               (MooFileEntryCompletion *cmpl,
 
 
 /* MOO_TYPE_FILE_ENTRY_COMPLETION */
-G_DEFINE_TYPE (MooFileEntryCompletion, moo_file_entry_completion, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooFileEntryCompletion, _moo_file_entry_completion, G_TYPE_OBJECT)
 
 enum {
     PROP_0,
@@ -142,7 +142,8 @@ enum {
 
 static guint signals[LAST_SIGNAL];
 
-static void moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
+static void
+_moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -217,7 +218,8 @@ static void moo_file_entry_completion_class_init (MooFileEntryCompletionClass *k
 }
 
 
-static void moo_file_entry_completion_init      (MooFileEntryCompletion *cmpl)
+static void
+_moo_file_entry_completion_init (MooFileEntryCompletion *cmpl)
 {
     GtkTreeModel *model;
 
@@ -245,8 +247,8 @@ static void moo_file_entry_completion_init      (MooFileEntryCompletion *cmpl)
         cmpl->priv->text_funcs.normalize_func = case_normalize_func;
     }
 
-    model = moo_folder_model_new (NULL);
-    cmpl->priv->model = moo_folder_filter_new (MOO_FOLDER_MODEL (model));
+    model = _moo_folder_model_new (NULL);
+    cmpl->priv->model = _moo_folder_filter_new (MOO_FOLDER_MODEL (model));
     gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (cmpl->priv->model),
                                             (GtkTreeModelFilterVisibleFunc) completion_visible_func,
                                             cmpl, NULL);
@@ -290,7 +292,7 @@ moo_file_entry_completion_finalize (GObject *object)
     g_free (cmpl->priv);
     cmpl->priv = NULL;
 
-    G_OBJECT_CLASS (moo_file_entry_completion_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_file_entry_completion_parent_class)->finalize (object);
 }
 
 
@@ -305,7 +307,7 @@ moo_file_entry_completion_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_ENTRY:
-            moo_file_entry_completion_set_entry (cmpl, g_value_get_object (value));
+            _moo_file_entry_completion_set_entry (cmpl, g_value_get_object (value));
             break;
 
         case PROP_ENABLE_COMPLETION:
@@ -480,11 +482,11 @@ completion_make_text (MooFileEntryCompletion *cmpl,
 
     if (MOO_FILE_IS_DIR (file))
         return g_strdup_printf ("%s%s%c", cmpl->priv->display_dirname,
-                                moo_file_display_name (file),
+                                _moo_file_display_name (file),
                                 G_DIR_SEPARATOR);
     else
         return g_strdup_printf ("%s%s", cmpl->priv->display_dirname,
-                                moo_file_display_name (file));
+                                _moo_file_display_name (file));
 }
 
 
@@ -505,15 +507,15 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
     if (!text || !text[0])
         return FALSE;
 
-    path = moo_file_system_get_absolute_path (cmpl->priv->fs, text,
-                                              cmpl->priv->current_dir);
+    path = _moo_file_system_get_absolute_path (cmpl->priv->fs, text,
+                                               cmpl->priv->current_dir);
 
     if (!path)
         return FALSE;
 
-    if (!moo_file_system_parse_path (cmpl->priv->fs,
-                                     path, &dirname, &display_dirname,
-                                     &display_basename, &error))
+    if (!_moo_file_system_parse_path (cmpl->priv->fs,
+                                      path, &dirname, &display_dirname,
+                                      &display_basename, &error))
     {
         g_message ("%s: could not parse path '%s'", G_STRLOC, path);
         g_message ("%s: %s", G_STRLOC, error->message);
@@ -539,9 +541,9 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
         completion_disconnect_folder (cmpl);
         DELETE_MEM (cmpl->priv->dirname);
 
-        folder = moo_file_system_get_folder (cmpl->priv->fs,
-                                             dirname, MOO_FILE_HAS_STAT,
-                                             &error);
+        folder = _moo_file_system_get_folder (cmpl->priv->fs,
+                                              dirname, MOO_FILE_HAS_STAT,
+                                              &error);
         if (!folder)
         {
             g_message ("%s: could not get folder '%s'", G_STRLOC, dirname);
@@ -669,7 +671,7 @@ completion_popup_tab_key_press (MooFileEntryCompletion *cmpl)
         text = completion_make_text (cmpl, file);
         completion_finish (cmpl, text);
 
-        moo_file_unref (file);
+        _moo_file_unref (file);
         g_free (text);
         return TRUE;
     }
@@ -881,7 +883,7 @@ completion_select_iter (MooFileEntryCompletion *cmpl,
     completion_finish (cmpl, text);
 
     g_free (text);
-    moo_file_unref (file);
+    _moo_file_unref (file);
 }
 
 
@@ -1076,14 +1078,14 @@ static void
 completion_connect_folder (MooFileEntryCompletion *cmpl,
                            MooFolder              *folder)
 {
-    moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), folder);
+    _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), folder);
 }
 
 
 static void
 completion_disconnect_folder (MooFileEntryCompletion *cmpl)
 {
-    moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), NULL);
+    _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), NULL);
 }
 
 
@@ -1153,7 +1155,7 @@ completion_cell_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
     g_object_set (cell, "text", text, NULL);
 
     g_free (text);
-    moo_file_unref (file);
+    _moo_file_unref (file);
 }
 
 
@@ -1189,7 +1191,7 @@ completion_visible_func (GtkTreeModel           *model,
                                                         cmpl->priv->display_basename_len);
     }
 
-    moo_file_unref (file);
+    _moo_file_unref (file);
     return visible ? TRUE : FALSE; /* #314335 */
 }
 
@@ -1307,7 +1309,7 @@ completion_set_file_system (MooFileEntryCompletion *cmpl,
     if (fs)
         cmpl->priv->fs = g_object_ref (fs);
     else
-        cmpl->priv->fs = moo_file_system_create ();
+        cmpl->priv->fs = _moo_file_system_create ();
 
     g_object_notify (G_OBJECT (cmpl), "file-system");
 }
@@ -1322,8 +1324,8 @@ completion_entry_destroyed (MooFileEntryCompletion *cmpl)
 
 
 void
-moo_file_entry_completion_set_entry (MooFileEntryCompletion *cmpl,
-                                     GtkEntry               *entry)
+_moo_file_entry_completion_set_entry (MooFileEntryCompletion *cmpl,
+                                      GtkEntry               *entry)
 {
     g_return_if_fail (MOO_IS_FILE_ENTRY_COMPLETION (cmpl));
     g_return_if_fail (!entry || GTK_IS_ENTRY (entry));
@@ -1390,14 +1392,14 @@ completion_entry_key_press (GtkEntry               *entry,
 static gboolean
 completion_default_visible_func (MooFile *file)
 {
-    return file && strcmp (moo_file_name (file), "..");
+    return file && strcmp (_moo_file_name (file), "..");
 }
 
 
 void
-moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
-                                            MooFileVisibleFunc      func,
-                                            gpointer                data)
+_moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
+                                             MooFileVisibleFunc      func,
+                                             gpointer                data)
 {
     g_return_if_fail (MOO_IS_FILE_ENTRY_COMPLETION (cmpl));
 
@@ -1410,8 +1412,8 @@ moo_file_entry_completion_set_visible_func (MooFileEntryCompletion *cmpl,
 
 
 void
-moo_file_entry_completion_set_path (MooFileEntryCompletion *cmpl,
-                                    const char             *path)
+_moo_file_entry_completion_set_path (MooFileEntryCompletion *cmpl,
+                                     const char             *path)
 {
     char *path_utf8;
 
@@ -1450,7 +1452,7 @@ static gboolean moo_file_entry_key_press    (GtkWidget      *widget,
 
 
 /* MOO_TYPE_FILE_ENTRY */
-G_DEFINE_TYPE (MooFileEntry, moo_file_entry, MOO_TYPE_ENTRY)
+G_DEFINE_TYPE (MooFileEntry, _moo_file_entry, MOO_TYPE_ENTRY)
 
 enum {
     ENTRY_PROP_0,
@@ -1458,7 +1460,7 @@ enum {
 };
 
 static void
-moo_file_entry_class_init (MooFileEntryClass *klass)
+_moo_file_entry_class_init (MooFileEntryClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkObjectClass *gtkobject_class = GTK_OBJECT_CLASS (klass);
@@ -1480,11 +1482,11 @@ moo_file_entry_class_init (MooFileEntryClass *klass)
 
 
 static void
-moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
+_moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
 {
     entry->completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION, NULL);
     entry->completion->priv->managed = TRUE;
-    moo_file_entry_completion_set_entry (entry->completion, GTK_ENTRY (entry));
+    _moo_file_entry_completion_set_entry (entry->completion, GTK_ENTRY (entry));
 }
 
 
@@ -1495,12 +1497,12 @@ moo_file_entry_destroy (GtkObject *object)
 
     if (entry->completion)
     {
-        moo_file_entry_completion_set_entry (entry->completion, NULL);
+        _moo_file_entry_completion_set_entry (entry->completion, NULL);
         g_object_unref (entry->completion);
         entry->completion = NULL;
     }
 
-    GTK_OBJECT_CLASS(moo_file_entry_parent_class)->destroy (object);
+    GTK_OBJECT_CLASS(_moo_file_entry_parent_class)->destroy (object);
 }
 
 
@@ -1541,7 +1543,7 @@ moo_file_entry_get_property (GObject        *object,
 
 
 GtkWidget*
-moo_file_entry_new (void)
+_moo_file_entry_new (void)
 {
     return g_object_new (MOO_TYPE_FILE_ENTRY, NULL);
 }
@@ -1553,5 +1555,5 @@ moo_file_entry_key_press (GtkWidget      *widget,
 {
     return completion_entry_key_press (GTK_ENTRY (widget), event,
                                        MOO_FILE_ENTRY(widget)->completion) ||
-            GTK_WIDGET_CLASS(moo_file_entry_parent_class)->key_press_event (widget, event);
+            GTK_WIDGET_CLASS(_moo_file_entry_parent_class)->key_press_event (widget, event);
 }

@@ -45,7 +45,7 @@ static void label_data_func                 (GtkTreeViewColumn  *column,
 
 
 /* MOO_TYPE_BOOKMARK_VIEW */
-G_DEFINE_TYPE (MooBookmarkView, moo_bookmark_view, GTK_TYPE_TREE_VIEW)
+G_DEFINE_TYPE (MooBookmarkView, _moo_bookmark_view, GTK_TYPE_TREE_VIEW)
 
 enum {
     PROP_0,
@@ -60,7 +60,7 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 static void
-moo_bookmark_view_class_init (MooBookmarkViewClass *klass)
+_moo_bookmark_view_class_init (MooBookmarkViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkTreeViewClass *treeview_class = GTK_TREE_VIEW_CLASS (klass);
@@ -92,7 +92,7 @@ moo_bookmark_view_class_init (MooBookmarkViewClass *klass)
 
 
 static void
-moo_bookmark_view_init (MooBookmarkView *view)
+_moo_bookmark_view_init (MooBookmarkView *view)
 {
     GtkTreeView *treeview = GTK_TREE_VIEW (view);
     GtkTreeViewColumn *column;
@@ -134,7 +134,7 @@ moo_bookmark_view_finalize (GObject *object)
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (view), NULL);
 
-    G_OBJECT_CLASS (moo_bookmark_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_bookmark_view_parent_class)->finalize (object);
 }
 
 
@@ -149,7 +149,7 @@ moo_bookmark_view_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_MGR:
-            moo_bookmark_view_set_mgr (view, g_value_get_object (value));
+            _moo_bookmark_view_set_mgr (view, g_value_get_object (value));
             break;
 
         default:
@@ -181,7 +181,7 @@ moo_bookmark_view_get_property (GObject        *object,
 
 
 GtkWidget *
-moo_bookmark_view_new (MooBookmarkMgr *mgr)
+_moo_bookmark_view_new (MooBookmarkMgr *mgr)
 {
     g_return_val_if_fail (!mgr || MOO_IS_BOOKMARK_MGR (mgr), NULL);
     return g_object_new (MOO_TYPE_BOOKMARK_VIEW, "mgr", mgr, NULL);
@@ -189,8 +189,8 @@ moo_bookmark_view_new (MooBookmarkMgr *mgr)
 
 
 void
-moo_bookmark_view_set_mgr (MooBookmarkView    *view,
-                           MooBookmarkMgr     *mgr)
+_moo_bookmark_view_set_mgr (MooBookmarkView    *view,
+                            MooBookmarkMgr     *mgr)
 {
     g_return_if_fail (MOO_IS_BOOKMARK_VIEW (view));
     g_return_if_fail (!mgr || MOO_IS_BOOKMARK_MGR (mgr));
@@ -205,7 +205,7 @@ moo_bookmark_view_set_mgr (MooBookmarkView    *view,
     view->mgr = mgr;
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (view),
-                             mgr ? moo_bookmark_mgr_get_model (mgr) : NULL);
+                             mgr ? _moo_bookmark_mgr_get_model (mgr) : NULL);
 
     g_object_notify (G_OBJECT (view), "mgr");
 }
@@ -252,7 +252,7 @@ icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "stock-size", GTK_ICON_SIZE_LARGE_TOOLBAR,
                       NULL);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
@@ -273,7 +273,7 @@ label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "text", bookmark->label,
                       NULL);
 
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
@@ -283,15 +283,15 @@ row_activated (GtkTreeView        *treeview,
                G_GNUC_UNUSED GtkTreeViewColumn *column)
 {
     MooBookmark *bookmark;
-    bookmark = moo_bookmark_view_get_bookmark (MOO_BOOKMARK_VIEW (treeview), path);
+    bookmark = _moo_bookmark_view_get_bookmark (MOO_BOOKMARK_VIEW (treeview), path);
     g_signal_emit (treeview, signals[BOOKMARK_ACTIVATED], 0, bookmark);
-    moo_bookmark_free (bookmark);
+    _moo_bookmark_free (bookmark);
 }
 
 
 MooBookmark *
-moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
-                                GtkTreePath        *path)
+_moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
+                                 GtkTreePath        *path)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;

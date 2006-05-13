@@ -417,50 +417,6 @@ moo_text_popup_hide_real (MooTextPopup *popup)
 }
 
 
-static gboolean
-cell_get_size (GtkTreeModel *model,
-               G_GNUC_UNUSED GtkTreePath *path,
-               GtkTreeIter *iter,
-               gpointer user_data)
-{
-    int width, height;
-
-    struct {
-        GtkTreeViewColumn *column;
-        int               *width;
-        int               *height;
-    } *data = user_data;
-
-    gtk_tree_view_column_cell_set_cell_data (data->column, model, iter,
-                                             FALSE, FALSE);
-    gtk_tree_view_column_cell_get_size (data->column, NULL, NULL, NULL,
-                                        &width, &height);
-
-    *data->width = MAX (*data->width, width);
-    *data->height = MAX (*data->height, height);
-
-    return FALSE;
-}
-
-static void
-column_get_size (GtkTreeViewColumn *column,
-                 GtkTreeModel      *model,
-                 int               *width,
-                 int               *height)
-{
-    struct {
-        GtkTreeViewColumn *column;
-        int               *width;
-        int               *height;
-    } data = {column, width, height};
-
-    *width = 1;
-    *height = 1;
-
-    gtk_tree_model_foreach (model, cell_get_size, &data);
-}
-
-
 static void
 moo_text_popup_resize (MooTextPopup *popup)
 {

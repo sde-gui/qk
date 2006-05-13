@@ -50,7 +50,7 @@ static gboolean child_button_press          (Child              *child,
 
 
 /* MOO_TYPE_TREE_VIEW */
-G_DEFINE_TYPE (MooTreeView, moo_tree_view, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooTreeView, _moo_tree_view, G_TYPE_OBJECT)
 
 enum {
     PROP_0,
@@ -69,7 +69,7 @@ static guint signals[LAST_SIGNAL];
 
 
 static void
-moo_tree_view_class_init (MooTreeViewClass *klass)
+_moo_tree_view_class_init (MooTreeViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
@@ -129,7 +129,7 @@ moo_tree_view_class_init (MooTreeViewClass *klass)
 
 
 static void
-moo_tree_view_init (G_GNUC_UNUSED MooTreeView *view)
+_moo_tree_view_init (G_GNUC_UNUSED MooTreeView *view)
 {
 }
 
@@ -148,12 +148,12 @@ moo_tree_view_finalize  (GObject      *object)
     g_slist_foreach (view->children, (GFunc) child_free, NULL);
     g_slist_free (view->children);
 
-    G_OBJECT_CLASS (moo_tree_view_parent_class)->finalize (object);
+    G_OBJECT_CLASS (_moo_tree_view_parent_class)->finalize (object);
 }
 
 
 MooTreeView *
-moo_tree_view_new (GtkTreeModel *model)
+_moo_tree_view_new (GtkTreeModel *model)
 {
     g_return_val_if_fail (!model || GTK_IS_TREE_MODEL (model), NULL);
     return g_object_new (MOO_TYPE_TREE_VIEW, "model", model, NULL);
@@ -171,7 +171,7 @@ moo_tree_view_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_MODEL:
-            moo_tree_view_set_model (view, g_value_get_object (value));
+            _moo_tree_view_set_model (view, g_value_get_object (value));
             break;
 
         default:
@@ -201,22 +201,22 @@ moo_tree_view_get_property (GObject        *object,
 
 
 GtkTreeModel *
-moo_tree_view_get_model (gpointer view)
+_moo_tree_view_get_model (gpointer view)
 {
     if (MOO_IS_TREE_VIEW (view))
         return MOO_TREE_VIEW(view)->model;
     else if (GTK_IS_TREE_VIEW (view))
         return gtk_tree_view_get_model (view);
     else if (MOO_IS_ICON_VIEW (view))
-        return moo_icon_view_get_model (view);
+        return _moo_icon_view_get_model (view);
     else
         g_return_val_if_reached (NULL);
 }
 
 
 void
-moo_tree_view_set_model (MooTreeView  *view,
-                         GtkTreeModel *model)
+_moo_tree_view_set_model (MooTreeView  *view,
+                          GtkTreeModel *model)
 {
     g_return_if_fail (MOO_IS_TREE_VIEW (view));
     g_return_if_fail (!model || GTK_IS_TREE_MODEL (model));
@@ -238,8 +238,8 @@ moo_tree_view_set_model (MooTreeView  *view,
 
 
 void
-moo_tree_view_add (MooTreeView    *view,
-                   GtkWidget      *real_view)
+_moo_tree_view_add (MooTreeView    *view,
+                    GtkWidget      *real_view)
 {
     Child *child;
 
@@ -253,8 +253,8 @@ moo_tree_view_add (MooTreeView    *view,
 
 
 void
-moo_tree_view_set_active (MooTreeView    *view,
-                          GtkWidget      *real_view)
+_moo_tree_view_set_active (MooTreeView    *view,
+                           GtkWidget      *real_view)
 {
     Child *child;
 
@@ -379,7 +379,7 @@ child_set_model (Child          *child,
     if (child->type == MOO_TREE_VIEW_TREE)
         gtk_tree_view_set_model (child->tree.view, model);
     else if (child->type == MOO_TREE_VIEW_ICON)
-        moo_icon_view_set_model (child->icon.view, model);
+        _moo_icon_view_set_model (child->icon.view, model);
     else
         g_return_if_reached ();
 }
@@ -439,7 +439,7 @@ child_button_press (Child          *child,
 
 
 gboolean
-moo_tree_view_selection_is_empty (MooTreeView *view)
+_moo_tree_view_selection_is_empty (MooTreeView *view)
 {
     Child *child;
 
@@ -454,7 +454,7 @@ moo_tree_view_selection_is_empty (MooTreeView *view)
             return !gtk_tree_selection_count_selected_rows (child->tree.selection);
 
         case MOO_TREE_VIEW_ICON:
-            return !moo_icon_view_get_selected (child->icon.view, NULL);
+            return !_moo_icon_view_get_selected (child->icon.view, NULL);
     }
 
     g_return_val_if_reached (TRUE);
@@ -462,8 +462,8 @@ moo_tree_view_selection_is_empty (MooTreeView *view)
 
 
 gboolean
-moo_tree_view_path_is_selected (MooTreeView    *view,
-                                GtkTreePath    *path)
+_moo_tree_view_path_is_selected (MooTreeView    *view,
+                                 GtkTreePath    *path)
 {
     Child *child;
 
@@ -478,7 +478,7 @@ moo_tree_view_path_is_selected (MooTreeView    *view,
             return gtk_tree_selection_path_is_selected (child->tree.selection, path);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_path_is_selected (child->icon.view, path);
+            return _moo_icon_view_path_is_selected (child->icon.view, path);
     }
 
     g_return_val_if_reached (FALSE);
@@ -486,7 +486,7 @@ moo_tree_view_path_is_selected (MooTreeView    *view,
 
 
 void
-moo_tree_view_unselect_all (MooTreeView *view)
+_moo_tree_view_unselect_all (MooTreeView *view)
 {
     Child *child;
 
@@ -501,13 +501,13 @@ moo_tree_view_unselect_all (MooTreeView *view)
             return gtk_tree_selection_unselect_all (child->tree.selection);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_unselect_all (child->icon.view);
+            return _moo_icon_view_unselect_all (child->icon.view);
     }
 }
 
 
 GList *
-moo_tree_view_get_selected_rows (MooTreeView *view)
+_moo_tree_view_get_selected_rows (MooTreeView *view)
 {
     Child *child;
 
@@ -522,7 +522,7 @@ moo_tree_view_get_selected_rows (MooTreeView *view)
             return gtk_tree_selection_get_selected_rows (child->tree.selection, NULL);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_get_selected_rows (child->icon.view);
+            return _moo_icon_view_get_selected_rows (child->icon.view);
     }
 
     g_return_val_if_reached (NULL);
@@ -530,7 +530,7 @@ moo_tree_view_get_selected_rows (MooTreeView *view)
 
 
 GtkTreePath *
-moo_tree_view_get_selected_path (MooTreeView *view)
+_moo_tree_view_get_selected_path (MooTreeView *view)
 {
     Child *child;
     GtkTreeModel *model;
@@ -550,7 +550,7 @@ moo_tree_view_get_selected_path (MooTreeView *view)
                 return NULL;
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_get_selected_path (child->icon.view);
+            return _moo_icon_view_get_selected_path (child->icon.view);
     }
 
     g_return_val_if_reached (NULL);
@@ -559,10 +559,10 @@ moo_tree_view_get_selected_path (MooTreeView *view)
 
 /* window coordinates */
 gboolean
-moo_tree_view_get_path_at_pos (gpointer        view,
-                               int             x,
-                               int             y,
-                               GtkTreePath   **path)
+_moo_tree_view_get_path_at_pos (gpointer        view,
+                                int             x,
+                                int             y,
+                                GtkTreePath   **path)
 {
     if (MOO_IS_TREE_VIEW (view))
     {
@@ -578,8 +578,8 @@ moo_tree_view_get_path_at_pos (gpointer        view,
                                                       NULL, NULL, NULL);
 
             case MOO_TREE_VIEW_ICON:
-                return moo_icon_view_get_path_at_pos (child->icon.view, x, y, path,
-                                                      NULL, NULL, NULL);
+                return _moo_icon_view_get_path_at_pos (child->icon.view, x, y, path,
+                                                       NULL, NULL, NULL);
         }
 
         g_return_val_if_reached (FALSE);
@@ -591,8 +591,8 @@ moo_tree_view_get_path_at_pos (gpointer        view,
     }
     else if (MOO_IS_ICON_VIEW (view))
     {
-        return moo_icon_view_get_path_at_pos (view, x, y, path,
-                                              NULL, NULL, NULL);
+        return _moo_icon_view_get_path_at_pos (view, x, y, path,
+                                               NULL, NULL, NULL);
     }
     else
     {
@@ -602,9 +602,9 @@ moo_tree_view_get_path_at_pos (gpointer        view,
 
 
 void
-moo_tree_view_set_cursor (MooTreeView    *view,
-                          GtkTreePath    *path,
-                          gboolean        start_editing)
+_moo_tree_view_set_cursor (MooTreeView    *view,
+                           GtkTreePath    *path,
+                           gboolean        start_editing)
 {
     Child *child;
 
@@ -619,14 +619,14 @@ moo_tree_view_set_cursor (MooTreeView    *view,
             return gtk_tree_view_set_cursor (child->tree.view, path, NULL, start_editing);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_set_cursor (child->icon.view, path, FALSE);
+            return _moo_icon_view_set_cursor (child->icon.view, path, FALSE);
     }
 }
 
 
 void
-moo_tree_view_scroll_to_cell (MooTreeView    *view,
-                              GtkTreePath    *path)
+_moo_tree_view_scroll_to_cell (MooTreeView    *view,
+                               GtkTreePath    *path)
 {
     Child *child;
 
@@ -642,15 +642,15 @@ moo_tree_view_scroll_to_cell (MooTreeView    *view,
             return gtk_tree_view_scroll_to_cell (child->tree.view, path, NULL, FALSE, 0, 0);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_scroll_to_cell (child->icon.view, path);
+            return _moo_icon_view_scroll_to_cell (child->icon.view, path);
     }
 }
 
 
 void
-moo_tree_view_selected_foreach (MooTreeView    *view,
-                                MooTreeViewForeachFunc func,
-                                gpointer        data)
+_moo_tree_view_selected_foreach (MooTreeView    *view,
+                                 MooTreeViewForeachFunc func,
+                                 gpointer        data)
 {
     Child *child;
 
@@ -666,52 +666,52 @@ moo_tree_view_selected_foreach (MooTreeView    *view,
             return gtk_tree_selection_selected_foreach (child->tree.selection, func, data);
 
         case MOO_TREE_VIEW_ICON:
-            return moo_icon_view_selected_foreach (child->icon.view, func, data);
+            return _moo_icon_view_selected_foreach (child->icon.view, func, data);
     }
 }
 
 
 void
-moo_tree_view_set_drag_dest_row (gpointer        view,
-                                 GtkTreePath    *path)
+_moo_tree_view_set_drag_dest_row (gpointer        view,
+                                  GtkTreePath    *path)
 {
     if (GTK_IS_TREE_VIEW (view))
         gtk_tree_view_set_drag_dest_row (view, path,
                                          GTK_TREE_VIEW_DROP_INTO_OR_AFTER);
     else if (MOO_IS_ICON_VIEW (view))
-        moo_icon_view_set_drag_dest_row (view, path);
+        _moo_icon_view_set_drag_dest_row (view, path);
     else
         g_return_if_reached ();
 }
 
 
 void
-moo_tree_view_widget_to_abs_coords (gpointer        view,
-                                    int             wx,
-                                    int             wy,
-                                    int            *absx,
-                                    int            *absy)
+_moo_tree_view_widget_to_abs_coords (gpointer        view,
+                                     int             wx,
+                                     int             wy,
+                                     int            *absx,
+                                     int            *absy)
 {
     if (GTK_IS_TREE_VIEW (view))
         gtk_tree_view_widget_to_tree_coords (view, wx, wy, absx, absy);
     else if (MOO_IS_ICON_VIEW (view))
-        moo_icon_view_widget_to_abs_coords (view, wx, wy, absx, absy);
+        _moo_icon_view_widget_to_abs_coords (view, wx, wy, absx, absy);
     else
         g_return_if_reached ();
 }
 
 
 void
-moo_tree_view_abs_to_widget_coords (gpointer        view,
-                                    int             absx,
-                                    int             absy,
-                                    int            *wx,
-                                    int            *wy)
+_moo_tree_view_abs_to_widget_coords (gpointer        view,
+                                     int             absx,
+                                     int             absy,
+                                     int            *wx,
+                                     int            *wy)
 {
     if (GTK_IS_TREE_VIEW (view))
         gtk_tree_view_tree_to_widget_coords (view, absx, absy, wx, wy);
     else if (MOO_IS_ICON_VIEW (view))
-        moo_icon_view_abs_to_widget_coords (view, absx, absy, wx, wy);
+        _moo_icon_view_abs_to_widget_coords (view, absx, absy, wx, wy);
     else
         g_return_if_reached ();
 }
