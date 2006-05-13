@@ -57,7 +57,7 @@ static HFFormat *hf_format_parse    (const char *strformat);
 static void      hf_format_free     (HFFormat   *format);
 static char     *hf_format_eval     (HFFormat   *format,
                                      struct tm  *tm,
-                                     int         page_nr,
+                                     int         page,
                                      int         total_pages,
                                      const char *filename,
                                      const char *basename);
@@ -83,7 +83,7 @@ static void moo_print_operation_begin_print (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
 static void moo_print_operation_draw_page   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context,
-                                             int                 page_nr);
+                                             int                 page);
 static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
 
@@ -645,7 +645,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         }
     }
 
-    gtk_print_operation_set_nr_of_pages (operation, print->pages->len);
+    gtk_print_operation_set_n_pages (operation, print->pages->len);
 
     g_message ("begin_print: %d pages in %f s", print->pages->len,
                g_timer_elapsed (timer, NULL));
@@ -833,7 +833,7 @@ static void
 print_header_footer (MooPrintOperation    *print,
                      cairo_t              *cr,
                      MooPrintHeaderFooter *hf,
-                     int                   page_nr,
+                     int                   page,
                      gboolean              header)
 {
     double y;
@@ -847,10 +847,10 @@ print_header_footer (MooPrintOperation    *print,
         y = print->page.y + print->page.height + hf->separator_before +
                 hf->separator_after + hf->separator_height;
 
-    g_object_get (print, "number-of-pages", &total_pages, NULL);
+    g_object_get (print, "n-pages", &total_pages, NULL);
 
     if (hf->parsed_format[0] &&
-        (text = hf_format_eval (hf->parsed_format[0], print->tm, page_nr,
+        (text = hf_format_eval (hf->parsed_format[0], print->tm, page,
                                 total_pages, print->filename, print->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
@@ -860,7 +860,7 @@ print_header_footer (MooPrintOperation    *print,
     }
 
     if (hf->parsed_format[1] &&
-        (text = hf_format_eval (hf->parsed_format[1], print->tm, page_nr,
+        (text = hf_format_eval (hf->parsed_format[1], print->tm, page,
                                 total_pages, print->filename, print->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
@@ -871,7 +871,7 @@ print_header_footer (MooPrintOperation    *print,
     }
 
     if (hf->parsed_format[2] &&
-        (text = hf_format_eval (hf->parsed_format[2], print->tm, page_nr,
+        (text = hf_format_eval (hf->parsed_format[2], print->tm, page,
                                 total_pages, print->filename, print->basename)))
     {
         pango_layout_set_text (hf->layout, text, -1);
@@ -901,7 +901,7 @@ static void
 print_page (MooPrintOperation *print,
             const GtkTextIter *start,
             const GtkTextIter *end,
-            int                page_nr,
+            int                page,
             cairo_t           *cr)
 {
     char *text;
@@ -911,9 +911,9 @@ print_page (MooPrintOperation *print,
     cairo_set_source_rgb (cr, 0, 0, 0);
 
     if (print->header.do_print)
-        print_header_footer (print, cr, &print->header, page_nr, TRUE);
+        print_header_footer (print, cr, &print->header, page, TRUE);
     if (print->footer.do_print)
-        print_header_footer (print, cr, &print->footer, page_nr, FALSE);
+        print_header_footer (print, cr, &print->footer, page, FALSE);
 
     if (!GET_OPTION (print, MOO_PRINT_USE_STYLES))
     {
@@ -963,7 +963,7 @@ print_page (MooPrintOperation *print,
 static void
 moo_print_operation_draw_page (GtkPrintOperation  *operation,
                                GtkPrintContext    *context,
-                               int                 page_nr)
+                               int                 page)
 {
     cairo_t *cr;
     GtkTextIter start, end;
@@ -973,22 +973,22 @@ moo_print_operation_draw_page (GtkPrintOperation  *operation,
     g_return_if_fail (print->buffer != NULL);
     g_return_if_fail (print->pages != NULL);
     g_return_if_fail (print->layout != NULL);
-    g_return_if_fail (page_nr < (int) print->pages->len);
+    g_return_if_fail (page < (int) print->pages->len);
 
     timer = g_timer_new ();
 
     cr = gtk_print_context_get_cairo (context);
 
-    start = g_array_index (print->pages, GtkTextIter, page_nr);
+    start = g_array_index (print->pages, GtkTextIter, page);
 
-    if (page_nr + 1 < (int) print->pages->len)
-        end = g_array_index (print->pages, GtkTextIter, page_nr + 1);
+    if (page + 1 < (int) print->pages->len)
+        end = g_array_index (print->pages, GtkTextIter, page + 1);
     else
         gtk_text_buffer_get_end_iter (print->buffer, &end);
 
-    print_page (print, &start, &end, page_nr, cr);
+    print_page (print, &start, &end, page, cr);
 
-    g_message ("page %d: %f s", page_nr, g_timer_elapsed (timer, NULL));
+    g_message ("page %d: %f s", page, g_timer_elapsed (timer, NULL));
     g_timer_destroy (timer);
 }
 
@@ -1481,7 +1481,7 @@ eval_strftime (GString    *dest,
 static char *
 hf_format_eval (HFFormat   *format,
                 struct tm  *tm,
-                int         page_nr,
+                int         page,
                 int         total_pages,
                 const char *filename,
                 const char *basename)
@@ -1503,7 +1503,7 @@ hf_format_eval (HFFormat   *format,
                 eval_strftime (string, chunk->string, tm);
                 break;
             case HF_FORMAT_PAGE:
-                g_string_append_printf (string, "%d", page_nr + 1);
+                g_string_append_printf (string, "%d", page + 1);
                 break;
             case HF_FORMAT_TOTAL_PAGES:
                 g_string_append_printf (string, "%d", total_pages);
