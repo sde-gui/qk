@@ -13,6 +13,7 @@
  */
 
 #include "mooscript-context.h"
+#include "mooscript-parser.h"
 #include <glib/gprintf.h>
 #include <gtk/gtkwindow.h>
 
@@ -554,6 +555,26 @@ ms_context_unset_continue (MSContext *ctx)
     g_return_if_fail (MS_IS_CONTEXT (ctx));
     g_return_if_fail (ctx->continue_set);
     ctx->continue_set = FALSE;
+}
+
+
+MSValue *
+ms_context_run_script (MSContext  *ctx,
+                       const char *script)
+{
+    MSNode *node;
+    MSValue *result;
+
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (script != NULL, NULL);
+
+    node = ms_script_parse (script);
+    g_return_val_if_fail (node != NULL, NULL);
+
+    result = ms_top_node_eval (node, ctx);
+
+    ms_node_unref (node);
+    return result;
 }
 
 

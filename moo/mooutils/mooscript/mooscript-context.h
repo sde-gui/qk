@@ -84,6 +84,9 @@ void         ms_variable_unref              (MSVariable *var);
 MSContext   *ms_context_new                 (gpointer    window);
 void         _ms_context_add_builtin        (MSContext  *ctx);
 
+MSValue     *ms_context_run_script          (MSContext  *ctx,
+                                             const char *script);
+
 MSValue     *ms_context_eval_variable       (MSContext  *ctx,
                                              const char *name);
 gboolean     ms_context_assign_variable     (MSContext  *ctx,
