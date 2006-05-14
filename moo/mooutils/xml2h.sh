@@ -6,6 +6,6 @@ fi
 VARNAME=$1
 INPUT=$2
 
-echo "static const char *$VARNAME = \"\""
+echo "static const char $VARNAME [] = \"\""
 sed 's/"/\\"/g' $INPUT | sed 's/^\(.*\)$/"\1\\n"/' || exit $?
 echo ";"
