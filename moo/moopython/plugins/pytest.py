@@ -34,8 +34,8 @@ class Plugin(moo.edit.Plugin):
             #"langs" : "c",
         }
 
-        self.add_edit_action("AnAction", Action)
-        self.add_ui("Editor/Popup", "AnAction")
+        #self.add_edit_action("AnAction", Action)
+        #self.add_ui("Editor/Popup", "AnAction")
 
         #print '__init__ done'
 
