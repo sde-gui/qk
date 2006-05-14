@@ -93,6 +93,9 @@ const char      *moo_app_get_rc_file_name       (MooApp     *app);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_output_pipe_name   (MooApp     *app);
 
+void             moo_app_write_output           (const char *data,
+                                                 gssize      len);
+
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 
 void             moo_app_prefs_dialog           (GtkWidget  *parent);

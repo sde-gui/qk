@@ -644,6 +644,16 @@ moo_app_get_output_pipe_name (G_GNUC_UNUSED MooApp *app)
 }
 
 
+void
+moo_app_write_output (const char *data,
+                      gssize      len)
+{
+    g_return_if_fail (data != NULL);
+    g_return_if_fail (moo_app_output != NULL);
+    moo_app_output_write (moo_app_output, data, len);
+}
+
+
 const char*
 moo_app_get_rc_file_name (MooApp *app)
 {

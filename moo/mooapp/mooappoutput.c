@@ -203,7 +203,7 @@ moo_app_output_write (MooAppOutput   *ch,
 
     /* XXX make a buffer, and so on */
 
-    while (TRUE)
+    while (len)
     {
         gssize result = write (ch->out, data, len);
 
@@ -225,7 +225,7 @@ moo_app_output_write (MooAppOutput   *ch,
                     return;
             }
         }
-        else if (result < len)
+        else
         {
             data += result;
             len -= result;

@@ -39,6 +39,7 @@ typedef enum
 
 #if defined(WANT_MOO_APP_CMD_STRINGS) || defined(WANT_MOO_APP_CMD_CHARS)
 
+/* 'g' is taken by ggap */
 #define CMD_ZERO            "\0"
 #define CMD_PYTHON_STRING   "p"
 #define CMD_PYTHON_FILE     "P"
