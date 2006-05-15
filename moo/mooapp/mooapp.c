@@ -654,6 +654,14 @@ moo_app_write_output (const char *data,
 }
 
 
+void
+moo_app_discard_output (void)
+{
+    g_return_if_fail (moo_app_output != NULL);
+    moo_app_output_flush (moo_app_output);
+}
+
+
 const char*
 moo_app_get_rc_file_name (MooApp *app)
 {
