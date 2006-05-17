@@ -38,6 +38,9 @@ struct _MooComboPrivate {
     GtkTreeModel *model;
     GtkTreeRowReference *active_row;
 
+    gboolean walking_list;
+    char *real_text;
+
     int text_column;
     GtkCellRenderer *text_cell;
 
@@ -442,7 +445,7 @@ create_popup (MooCombo *combo)
     gtk_tree_view_append_column (combo->priv->treeview, combo->priv->column);
     gtk_tree_view_set_headers_visible (combo->priv->treeview, FALSE);
 #if GTK_CHECK_VERSION(2,6,0)
-    gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
+//     gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
 #endif
 
     selection = gtk_tree_view_get_selection (combo->priv->treeview);
@@ -480,6 +483,14 @@ void
 moo_combo_popdown (MooCombo   *combo)
 {
     g_return_if_fail (MOO_IS_COMBO (combo));
+
+    if (combo->priv->walking_list)
+    {
+        combo->priv->walking_list = FALSE;
+        g_free (combo->priv->real_text);
+        combo->priv->real_text = NULL;
+    }
+
     g_signal_emit (combo, signals[POPDOWN], 0);
 }
 
@@ -797,6 +808,22 @@ popup_get_selected (MooCombo     *combo)
 
 
 static void
+combo_set_text_silent (MooCombo   *combo,
+                       const char *text)
+{
+    g_return_if_fail (text != NULL);
+
+    g_signal_handlers_block_by_func (combo->entry, (gpointer) entry_changed, combo);
+
+    moo_entry_begin_undo_group (MOO_ENTRY (combo->entry));
+    gtk_entry_set_text (GTK_ENTRY (combo->entry), text);
+    gtk_editable_set_position (GTK_EDITABLE (combo->entry), -1);
+
+    g_signal_handlers_unblock_by_func (combo->entry, (gpointer) entry_changed, combo);
+}
+
+
+static void
 popup_move_selection (MooCombo     *combo,
                       GdkEventKey  *event)
 {
@@ -861,13 +888,36 @@ popup_move_selection (MooCombo     *combo,
 
     if (new_item >= 0 && new_item < n_items)
     {
+        GtkTreeIter iter;
+        char *new_text;
+
         path = gtk_tree_path_new_from_indices (new_item, -1);
         gtk_tree_view_set_cursor (combo->priv->treeview, path, NULL, FALSE);
         gtk_tree_view_scroll_to_cell (combo->priv->treeview, path, NULL, FALSE, 0, 0);
+
+        if (!combo->priv->walking_list)
+        {
+            combo->priv->walking_list = TRUE;
+            combo->priv->real_text = g_strdup (gtk_entry_get_text (GTK_ENTRY (combo->entry)));
+        }
+
+        gtk_tree_model_get_iter (combo->priv->model, &iter, path);
+        new_text = moo_combo_get_text_at_iter (combo, &iter);
+        combo_set_text_silent (combo, new_text);
+
         gtk_tree_path_free (path);
+        g_free (new_text);
     }
     else
     {
+        if (combo->priv->walking_list)
+        {
+            combo->priv->walking_list = FALSE;
+            combo_set_text_silent (combo, combo->priv->real_text);
+            g_free (combo->priv->real_text);
+            combo->priv->real_text = NULL;
+        }
+
         gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (combo->priv->treeview));
     }
 }

@@ -1,3 +1,6 @@
+2006-05-16  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Improved entry completion behaviour.
+
 2006-05-13  Yevgen Muntyan  <muntyan@math.tamu.edu>
     pystuff.py: Escape filename using quotes, not apostrophe.
 

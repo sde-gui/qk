@@ -11,6 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
+/* XXX use MooCombo */
+
 #define MOO_FILE_SYSTEM_COMPILATION
 #include "moofileentry.h"
 #include "moofilesystem.h"
@@ -59,6 +61,9 @@ struct _MooFileEntryCompletionPrivate {
     char *display_dirname;
     char *display_basename;
     guint display_basename_len;
+
+    char *real_text;
+    gboolean walking_list;
 };
 
 
@@ -267,11 +272,11 @@ moo_file_entry_completion_finalize (GObject *object)
         if (!cmpl->priv->managed)
         {
             g_signal_handlers_disconnect_by_func (cmpl->priv->entry,
-                    (gpointer) completion_entry_changed,
-                    cmpl);
+                                                  (gpointer) completion_entry_changed,
+                                                  cmpl);
             g_signal_handlers_disconnect_by_func (cmpl->priv->entry,
-                    (gpointer) completion_entry_key_press,
-                    cmpl);
+                                                  (gpointer) completion_entry_key_press,
+                                                  cmpl);
         }
 
         g_object_weak_unref (G_OBJECT (cmpl->priv->entry),
@@ -820,6 +825,9 @@ completion_popdown (MooFileEntryCompletion *cmpl)
     if (!GTK_WIDGET_MAPPED (cmpl->priv->popup))
         return;
 
+    DELETE_MEM (cmpl->priv->real_text);
+    cmpl->priv->walking_list = FALSE;
+
     g_signal_handlers_disconnect_by_func (cmpl->priv->entry,
                                           (gpointer) completion_entry_focus_out,
                                           cmpl);
@@ -950,6 +958,23 @@ completion_get_selected (MooFileEntryCompletion *cmpl)
 
 
 static void
+completion_set_text_silent (MooFileEntryCompletion *cmpl,
+                            const char             *text)
+{
+    g_signal_handlers_block_by_func (cmpl->priv->entry,
+                                     (gpointer) completion_entry_changed,
+                                     cmpl);
+
+    gtk_entry_set_text (cmpl->priv->entry, text);
+    gtk_editable_set_position (GTK_EDITABLE (cmpl->priv->entry), -1);
+
+    g_signal_handlers_unblock_by_func (cmpl->priv->entry,
+                                       (gpointer) completion_entry_changed,
+                                       cmpl);
+}
+
+
+static void
 completion_move_selection (MooFileEntryCompletion *cmpl,
                            GdkEventKey            *event)
 {
@@ -1018,10 +1043,34 @@ completion_move_selection (MooFileEntryCompletion *cmpl,
 
     if (new_item >= 0)
     {
+        GtkTreeIter iter;
+        MooFile *file = NULL;
+        char *new_text;
+
         path = gtk_tree_path_new_from_indices (new_item, -1);
         gtk_tree_selection_select_path (selection, path);
         gtk_tree_view_scroll_to_cell (cmpl->priv->treeview, path, NULL, FALSE, 0, 0);
+
+        gtk_tree_model_get_iter (cmpl->priv->model, &iter, path);
+        gtk_tree_model_get (cmpl->priv->model, &iter, COLUMN_FILE, &file, -1);
+        g_return_if_fail (file != NULL);
+        new_text = completion_make_text (cmpl, file);
+
+        if (!cmpl->priv->walking_list)
+        {
+            cmpl->priv->real_text = g_strdup (gtk_entry_get_text (cmpl->priv->entry));
+            cmpl->priv->walking_list = TRUE;
+        }
+
+        completion_set_text_silent (cmpl, new_text);
         gtk_tree_path_free (path);
+        g_free (new_text);
+    }
+    else if (cmpl->priv->walking_list)
+    {
+        completion_set_text_silent (cmpl, cmpl->priv->real_text);
+        DELETE_MEM (cmpl->priv->real_text);
+        cmpl->priv->walking_list = FALSE;
     }
 }
 
@@ -1113,7 +1162,7 @@ completion_create_popup (MooFileEntryCompletion *cmpl)
     gtk_widget_set_size_request (GTK_WIDGET (cmpl->priv->treeview), -1, -1);
     gtk_tree_view_append_column (cmpl->priv->treeview, cmpl->priv->column);
     gtk_tree_view_set_headers_visible (cmpl->priv->treeview, FALSE);
-    gtk_tree_view_set_hover_selection (cmpl->priv->treeview, TRUE);
+//     gtk_tree_view_set_hover_selection (cmpl->priv->treeview, TRUE);
 
     selection = gtk_tree_view_get_selection (cmpl->priv->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
@@ -1338,11 +1387,11 @@ _moo_file_entry_completion_set_entry (MooFileEntryCompletion *cmpl,
         if (!cmpl->priv->managed)
         {
             g_signal_handlers_disconnect_by_func (cmpl->priv->entry,
-                    (gpointer) completion_entry_changed,
-                    cmpl);
+                                                  (gpointer) completion_entry_changed,
+                                                  cmpl);
             g_signal_handlers_disconnect_by_func (cmpl->priv->entry,
-                    (gpointer) completion_entry_key_press,
-                    cmpl);
+                                                  (gpointer) completion_entry_key_press,
+                                                  cmpl);
         }
 
         g_object_weak_unref (G_OBJECT (cmpl->priv->entry),
