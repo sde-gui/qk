@@ -132,6 +132,20 @@ moo_app_output_start (MooAppOutput *ch)
     return FALSE;
 }
 
+void
+moo_app_output_write (MooAppOutput   *ch,
+                      const char     *data,
+                      gssize          len)
+{
+#warning "Implement me"
+}
+
+void
+moo_app_output_flush (MooAppOutput   *ch)
+{
+#warning "Implement me"
+}
+
 #endif /* __WIN32__ */
 
 
