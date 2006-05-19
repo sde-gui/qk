@@ -95,7 +95,7 @@ const char      *moo_app_get_output_pipe_name   (MooApp     *app);
 
 void             moo_app_write_output           (const char *data,
                                                  gssize      len);
-void             moo_app_discard_output         (void);
+void             moo_app_restart_output         (void);
 
 MooEditor       *moo_app_get_editor             (MooApp     *app);
 

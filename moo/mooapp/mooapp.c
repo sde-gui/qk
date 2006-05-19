@@ -17,7 +17,6 @@
 
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp/mooappinput.h"
-#include "mooapp/mooappoutput.h"
 #include "mooapp/mooapp.h"
 #include "mooterm/mootermwindow.h"
 #include "mooedit/mooeditprefs.h"
@@ -53,7 +52,6 @@
 
 static MooApp *moo_app_instance = NULL;
 static MooAppInput *moo_app_input = NULL;
-static MooAppOutput *moo_app_output = NULL;
 
 
 struct _MooAppPrivate {
@@ -62,7 +60,6 @@ struct _MooAppPrivate {
     MooEditor  *editor;
     MooAppInfo *info;
     gboolean    run_input;
-    gboolean    run_output;
 
     gboolean    running;
     gboolean    in_try_quit;
@@ -131,7 +128,7 @@ static void     moo_app_set_name        (MooApp             *app,
 static void     moo_app_set_description (MooApp             *app,
                                          const char         *description);
 
-static void     start_io                (MooApp             *app);
+static void     start_input             (MooApp             *app);
 static void     execute_selection       (MooEditWindow      *window);
 
 
@@ -172,7 +169,6 @@ enum {
     PROP_FULL_NAME,
     PROP_DESCRIPTION,
     PROP_RUN_INPUT,
-    PROP_RUN_OUTPUT,
     PROP_USE_EDITOR,
     PROP_USE_TERMINAL,
     PROP_OPEN_FILES,
@@ -281,14 +277,6 @@ moo_app_class_init (MooAppClass *klass)
                                              "run-input",
                                              "run-input",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_RUN_OUTPUT,
-                                     g_param_spec_boolean ("run-output",
-                                             "run-output",
-                                             "run-output",
-                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
@@ -512,10 +500,6 @@ moo_app_set_property (GObject        *object,
             app->priv->run_input = g_value_get_boolean (value);
             break;
 
-        case PROP_RUN_OUTPUT:
-            app->priv->run_output = g_value_get_boolean (value);
-            break;
-
         case PROP_USE_EDITOR:
             app->priv->use_editor = g_value_get_boolean (value);
             break;
@@ -586,10 +570,6 @@ moo_app_get_property (GObject        *object,
             g_value_set_boolean (value, app->priv->run_input);
             break;
 
-        case PROP_RUN_OUTPUT:
-            g_value_set_boolean (value, app->priv->run_output);
-            break;
-
         case PROP_USE_EDITOR:
             g_value_set_boolean (value, app->priv->use_editor);
             break;
@@ -634,31 +614,6 @@ const char*
 moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 {
     return moo_app_input ? moo_app_input->pipe_name : NULL;
-}
-
-
-const char*
-moo_app_get_output_pipe_name (G_GNUC_UNUSED MooApp *app)
-{
-    return moo_app_output ? moo_app_output->pipe_name : NULL;
-}
-
-
-void
-moo_app_write_output (const char *data,
-                      gssize      len)
-{
-    g_return_if_fail (data != NULL);
-    g_return_if_fail (moo_app_output != NULL);
-    moo_app_output_write (moo_app_output, data, len);
-}
-
-
-void
-moo_app_discard_output (void)
-{
-    g_return_if_fail (moo_app_output != NULL);
-    moo_app_output_flush (moo_app_output);
 }
 
 
@@ -971,7 +926,7 @@ moo_app_init_real (MooApp *app)
     }
 #endif /* __WIN32__ && MOO_BUILD_TERM */
 
-    start_io (app);
+    start_input (app);
 
     return TRUE;
 
@@ -982,18 +937,18 @@ exit:
 
 
 static void
-start_io (MooApp *app)
+start_input (MooApp *app)
 {
     if (app->priv->run_input)
     {
         moo_app_input = moo_app_input_new (app->priv->info->short_name);
-        moo_app_input_start (moo_app_input);
-    }
 
-    if (app->priv->run_output)
-    {
-        moo_app_output = moo_app_output_new (app->priv->info->short_name);
-        moo_app_output_start (moo_app_output);
+        if (!moo_app_input_start (moo_app_input))
+        {
+            g_critical ("%s: oops", G_STRLOC);
+            moo_app_input_unref (moo_app_input);
+            moo_app_input = NULL;
+        }
     }
 }
 
@@ -1119,13 +1074,6 @@ static void     moo_app_quit_real       (MooApp         *app)
         moo_app_input_shutdown (moo_app_input);
         moo_app_input_unref (moo_app_input);
         moo_app_input = NULL;
-    }
-
-    if (moo_app_output)
-    {
-        moo_app_output_shutdown (moo_app_output);
-        moo_app_output_unref (moo_app_output);
-        moo_app_output = NULL;
     }
 
     list = g_slist_copy (app->priv->terminals);

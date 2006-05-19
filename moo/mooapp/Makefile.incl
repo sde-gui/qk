@@ -18,9 +18,7 @@ mooapp_sources =                              \
     $(mooapp)/mooapp.c                        \
     $(mooapp)/mooapp.h                        \
     $(mooapp)/mooappinput.c                   \
-    $(mooapp)/mooappinput.h                   \
-    $(mooapp)/mooappoutput.c                  \
-    $(mooapp)/mooappoutput.h
+    $(mooapp)/mooappinput.h
 
 mooapp_extra_dist =                           \
     $(mooapp)/gpl                             \
