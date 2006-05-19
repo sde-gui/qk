@@ -1594,7 +1594,7 @@ static const GtkTargetEntry targets[] = {
     { (char*) "TEXT",   0, TARGET_TEXT },
     { (char*) "COMPOUND_TEXT", 0, TARGET_TEXT },
     { (char*) "UTF8_STRING", 0, TARGET_TEXT },
-    { (char*) "MOO_TEXT_VIEW", 0, TARGET_MOO_TEXT_VIEW }
+    { (char*) "MOO_TEXT_VIEW", GTK_TARGET_SAME_APP, TARGET_MOO_TEXT_VIEW }
 };
 
 
