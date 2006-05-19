@@ -1,3 +1,6 @@
+2006-05-19  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Fixed crash on paste from another application.
+
 2006-05-16  Yevgen Muntyan  <muntyan@math.tamu.edu>
     Improved entry completion behaviour.
 

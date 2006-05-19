@@ -1232,6 +1232,9 @@ segment_get_text (Segment *segment)
         for (j = ITER_COL(&start);
              j < ITER_COL(&end) && j < (int) _moo_term_line_len (line); ++j)
                 g_string_append_unichar (text, _moo_term_line_get_char (line, j));
+
+        if (iter_ends_line (&end) && !_moo_term_line_wrapped (line))
+            g_string_append_c (text, '\n');
     }
     else
     {
