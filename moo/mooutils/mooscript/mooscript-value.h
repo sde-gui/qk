@@ -131,6 +131,9 @@ MSValue     *ms_value_string_len        (const char     *string,
 MSValue     *ms_value_take_string       (char           *string);
 MSValue     *ms_value_gvalue            (const GValue   *gval);
 
+MSValue     *ms_value_object            (gpointer        object);
+gpointer     ms_value_get_object        (MSValue        *value);
+
 MSValue     *ms_value_list              (guint           n_elms);
 void         ms_value_list_set_elm      (MSValue        *list,
                                          guint           index,

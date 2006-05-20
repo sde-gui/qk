@@ -151,6 +151,33 @@ ms_value_gvalue (const GValue *gval)
 }
 
 
+gpointer
+ms_value_get_object (MSValue *value)
+{
+    g_return_val_if_fail (value != NULL, NULL);
+    g_return_val_if_fail (MS_VALUE_TYPE (value) == MS_VALUE_GVALUE, NULL);
+    return g_value_get_object (value->gval);
+}
+
+
+MSValue *
+ms_value_object (gpointer object)
+{
+    GValue gval;
+    MSValue *val;
+
+    g_return_val_if_fail (!object || G_IS_OBJECT (object), NULL);
+
+    gval.g_type = 0;
+    g_value_init (&gval, G_TYPE_OBJECT);
+    g_value_set_object (&gval, object);
+    val = ms_value_gvalue (&gval);
+    g_value_unset (&gval);
+
+    return val;
+}
+
+
 MSValue *
 ms_value_list (guint n_elms)
 {
