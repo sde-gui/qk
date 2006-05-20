@@ -238,6 +238,12 @@
   (return-type "none")
 )
 
+(define-method running
+  (of-object "MooCmdView")
+  (c-name "moo_cmd_view_running")
+  (return-type "gboolean")
+)
+
 
 
 ;; From mooedit.h

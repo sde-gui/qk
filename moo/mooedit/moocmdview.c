@@ -320,6 +320,14 @@ out:
 }
 
 
+gboolean
+moo_cmd_view_running (MooCmdView *view)
+{
+    g_return_val_if_fail (MOO_IS_CMD_VIEW (view), FALSE);
+    return view->priv->cmd != NULL;
+}
+
+
 #ifndef __WIN32__
 static gboolean
 moo_cmd_view_cmd_exit (MooCmdView *view,

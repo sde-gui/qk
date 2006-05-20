@@ -67,6 +67,7 @@ gboolean    moo_cmd_view_run_command        (MooCmdView     *view,
                                              const char     *working_dir,
                                              const char     *job_name);
 void        moo_cmd_view_abort              (MooCmdView     *view);
+gboolean    moo_cmd_view_running            (MooCmdView     *view);
 
 
 G_END_DECLS

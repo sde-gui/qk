@@ -159,6 +159,10 @@ class Plugin(moo.edit.Plugin):
         if not doc or not doc.save():
             return
         pane = self.ensure_output(window)
+
+        if pane.output.running():
+            return
+
         pane.output.clear()
         window.paned.present_pane(pane)
         pane.output.run_command(PYTHON_COMMAND + ' "%s"' % doc.get_filename())
