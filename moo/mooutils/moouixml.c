@@ -1933,6 +1933,7 @@ fill_menu_shell (MooUIXML       *xml,
 
     check_separators (menu_node, toplevel);
 
+    g_slist_free (children);
     return TRUE;
 }
 
@@ -2146,6 +2147,7 @@ fill_toolbar (MooUIXML       *xml,
 
     check_separators (toolbar_node, toplevel);
 
+    g_slist_free (children);
     return TRUE;
 }
 
@@ -2483,6 +2485,8 @@ static void
 moo_ui_xml_finalize (GObject *object)
 {
     MooUIXML *xml = MOO_UI_XML (object);
+
+    g_print ("moo_ui_xml_finalize\n");
 
     SLIST_FOREACH (xml->priv->toplevels, t)
     {

@@ -19,23 +19,13 @@
 #include <string.h>
 
 
-inline static MooTextStyle*
-style_new (void)
-{
-    return g_new (MooTextStyle, 1);
-}
-
-inline static MooTextStyle*
-style_new0 (void)
-{
-    return g_new0 (MooTextStyle, 1);
-}
-
-inline static void
-style_free (MooTextStyle *style)
-{
-    g_free (style);
-}
+#if GLIB_CHECK_VERSION(2,10,0)
+#define style_new() g_slice_new (MooTextStyle)
+#define style_free(s) g_slice_free (MooTextStyle, s)
+#else
+#define style_new() g_new (MooTextStyle, 1)
+#define style_free g_free
+#endif
 
 
 MooTextStyle*

@@ -581,6 +581,7 @@ update_timeout (MooTerm *term)
     gdk_window_invalidate_region (window, region, FALSE);
     need_redraw = TRUE;
 
+    g_free (rectangles);
     gdk_region_destroy (region);
     gdk_region_destroy (changed);
 

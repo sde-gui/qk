@@ -318,6 +318,8 @@ _moo_print_operation_init (MooPrintOperation *print)
         gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (print),
                                                     page_setup);
 
+    gtk_print_operation_set_show_progress (GTK_PRINT_OPERATION (print), TRUE);
+
     print->last_line = -1;
     print->options = MOO_PRINT_USE_STYLES |
             MOO_PRINT_HEADER | MOO_PRINT_FOOTER;

@@ -2289,6 +2289,8 @@ create_statusbar (MooEditWindow *window)
     window->priv->cursor_label = moo_glade_xml_get_widget (xml, "cursor");
     window->priv->insert_label = moo_glade_xml_get_widget (xml, "insert");
     window->priv->info = moo_glade_xml_get_widget (xml, "info");
+
+    g_object_unref (xml);
 }
 
 

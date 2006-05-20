@@ -1338,6 +1338,8 @@ moo_window_class_new_actionv (MooWindowClass     *klass,
             goto error;
         }
 
+        moo_param_array_free ((GParameter*) action_params->data,
+                               action_params->len);
         g_array_free (action_params, FALSE);
         action_params = NULL;
 

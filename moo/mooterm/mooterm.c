@@ -572,6 +572,12 @@ moo_term_unrealize (GtkWidget *widget)
         term->priv->pointer[i] = NULL;
     }
 
+    if (term->priv->layout)
+        g_object_unref (term->priv->layout);
+    term->priv->layout = NULL;
+    _moo_term_font_free (term->priv->font);
+    term->priv->font = NULL;
+
     GTK_WIDGET_CLASS(moo_term_parent_class)->unrealize (widget);
 }
 

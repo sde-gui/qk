@@ -124,8 +124,6 @@ struct _PackingProps {
 };
 
 struct _MooGladeXMLPrivate {
-    MooMarkupDoc *doc;
-    MooMarkupNode *root;
     GHashTable *widgets;
     char *root_id;
 
@@ -139,6 +137,8 @@ struct _MooGladeXMLPrivate {
     gpointer signal_func_data;
     MooGladePropFunc prop_func;
     gpointer prop_func_data;
+
+    guint done : 1;
 };
 
 typedef struct {
@@ -199,6 +199,7 @@ static void          moo_glade_xml_add_widget   (MooGladeXML    *xml,
 static gboolean      moo_glade_xml_build        (MooGladeXML    *xml,
                                                  Widget         *widget_node,
                                                  GtkWidget      *widget);
+static void          moo_glade_xml_cleanup      (MooGladeXML    *xml);
 
 static gboolean      create_child               (MooGladeXML    *xml,
                                                  GtkWidget      *parent,
@@ -1101,11 +1102,12 @@ widget_new (MooGladeXML    *xml,
                 g_return_val_if_fail (child != NULL, NULL);
             }
 
-            widget->children = g_slist_append (widget->children, child);
+            widget->children = g_slist_prepend (widget->children, child);
         }
     }
     FOREACH_ELM_END;
 
+    widget->children = g_slist_reverse (widget->children);
     return widget;
 }
 
@@ -2058,10 +2060,11 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
 {
     MooMarkupNode *glade_elm;
     MooMarkupNode *root = NULL;
-    Widget *widget;
+    Widget *widget = NULL;
+    gboolean result = FALSE;
 
     g_return_val_if_fail (doc != NULL, FALSE);
-    g_return_val_if_fail (xml->priv->doc == NULL, FALSE);
+    g_return_val_if_fail (!xml->priv->done, FALSE);
     g_return_val_if_fail (!root_widget || GTK_IS_WIDGET (root_widget), FALSE);
 
     glade_elm = moo_markup_get_root_element (doc, "glade-interface");
@@ -2103,40 +2106,32 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
         else
             g_warning ("%s: could not find root element", G_STRLOC);
 
-        return FALSE;
+        goto out;
     }
 
-    xml->priv->doc = moo_markup_doc_ref (doc);
-    xml->priv->root = root;
-
-    widget = widget_new (xml, NULL, xml->priv->root);
+    widget = widget_new (xml, NULL, root);
 
     if (!widget)
-    {
-        moo_markup_doc_unref (xml->priv->doc);
-        xml->priv->doc = NULL;
-        xml->priv->root = NULL;
-        return FALSE;
-    }
+        goto out;
 
     dump_widget (widget);
 
     if (!moo_glade_xml_build (xml, widget, root_widget))
-    {
-        moo_markup_doc_unref (xml->priv->doc);
-        xml->priv->doc = NULL;
-        xml->priv->root = NULL;
-        widget_free (widget);
-        return FALSE;
-    }
+        goto out;
 
 #if 0
     gtk_widget_show_all (widget->widget);
 #endif
 
     xml->priv->root_id = g_strdup (widget->id);
+    result = TRUE;
 
-    return TRUE;
+out:
+    if (widget)
+        widget_free (widget);
+    moo_glade_xml_cleanup (xml);
+    xml->priv->done = TRUE;
+    return result;
 }
 
 
@@ -2217,6 +2212,25 @@ moo_glade_xml_add_widget (MooGladeXML    *xml,
 
 
 static void
+moo_glade_xml_cleanup (MooGladeXML *xml)
+{
+    if (xml->priv->class_to_type)
+        g_hash_table_destroy (xml->priv->class_to_type);
+    if (xml->priv->id_to_type)
+        g_hash_table_destroy (xml->priv->id_to_type);
+    if (xml->priv->id_to_func)
+        g_hash_table_destroy (xml->priv->id_to_func);
+    if (xml->priv->props)
+        g_hash_table_destroy (xml->priv->props);
+
+    xml->priv->class_to_type = NULL;
+    xml->priv->id_to_type = NULL;
+    xml->priv->id_to_func = NULL;
+    xml->priv->props = NULL;
+}
+
+
+static void
 unref_widget (G_GNUC_UNUSED gpointer key,
               GObject     *widget,
               MooGladeXML *xml)
@@ -2231,14 +2245,10 @@ moo_glade_xml_dispose (GObject *object)
 
     if (xml->priv)
     {
+        moo_glade_xml_cleanup (xml);
         g_hash_table_foreach (xml->priv->widgets,
                               (GHFunc) unref_widget, xml);
         g_hash_table_destroy (xml->priv->widgets);
-        g_hash_table_destroy (xml->priv->class_to_type);
-        g_hash_table_destroy (xml->priv->id_to_type);
-        g_hash_table_destroy (xml->priv->id_to_func);
-        g_hash_table_destroy (xml->priv->props);
-        moo_markup_doc_unref (xml->priv->doc);
         g_free (xml->priv->root_id);
         g_free (xml->priv);
         xml->priv = NULL;
