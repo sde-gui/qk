@@ -29,6 +29,14 @@ enum {
 G_DEFINE_TYPE (MSContext, ms_context, G_TYPE_OBJECT)
 
 
+#if GLIB_CHECK_VERSION(2,10,0)
+#define ms_variable_alloc() g_slice_new0 (MSVariable)
+#define ms_variable_free(v) g_slice_free (MSVariable, v)
+#else
+#define ms_variable_alloc() g_new0 (MSVariable, 1)
+#define ms_variable_free(v) g_free (v)
+#endif
+
 static void
 ms_context_set_property (GObject        *object,
                          guint           prop_id,
@@ -442,7 +450,7 @@ ms_context_get_error_msg (MSContext *ctx)
 static MSVariable *
 ms_variable_new (void)
 {
-    MSVariable *var = g_new0 (MSVariable, 1);
+    MSVariable *var = ms_variable_alloc ();
     var->ref_count = 1;
     return var;
 }
@@ -495,7 +503,7 @@ ms_variable_unref (MSVariable *var)
         ms_value_unref (var->value);
         if (var->func)
             g_object_unref (var->func);
-        g_free (var);
+        ms_variable_free (var);
     }
 }
 

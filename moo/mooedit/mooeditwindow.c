@@ -1687,6 +1687,7 @@ create_tab_label (MooEditWindow *window,
     gtk_widget_show_all (evbox);
 
     label = gtk_label_new (moo_edit_get_display_basename (edit));
+    gtk_label_set_single_line_mode (GTK_LABEL (label), TRUE);
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 

@@ -37,41 +37,21 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #endif
 
 
-inline static void
-data_free__ (BTData *data)
-{
-    g_free (data);
-}
-
-inline static BTData*
-data_new__ (void)
-{
-    return g_new0 (BTData, 1);
-}
-
-inline static void
-node_free__ (BTNode *node)
-{
-    g_free (node);
-}
-
-inline static BTNode*
-node_new__ (void)
-{
-    return g_new0 (BTNode, 1);
-}
-
-inline static void
-hl_info_free__ (HLInfo *info)
-{
-    g_free (info);
-}
-
-inline static HLInfo*
-hl_info_new__ (void)
-{
-    return g_new0 (HLInfo, 1);
-}
+#if GLIB_CHECK_VERSION(2,10,0)
+#define data_free__(data) g_slice_free (BTData, data)
+#define data_new__() g_slice_new0 (BTData)
+#define node_free__(node) g_slice_free (BTNode, node)
+#define node_new__() g_slice_new0 (BTNode)
+#define hl_info_free__(info) g_slice_free (HLInfo, info)
+#define hl_info_new__() g_slice_new0 (HLInfo)
+#else
+#define data_free__ g_free
+#define node_free__ g_free
+#define hl_info_free__ g_free
+#define data_new__() g_new0 (BTData, 1)
+#define node_new__() g_new0 (BTNode, 1)
+#define hl_info_new__() g_new0 (HLInfo, 1)
+#endif
 
 
 BTree*

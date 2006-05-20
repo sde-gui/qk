@@ -264,7 +264,11 @@ ms_node_function_eval (MSNode    *node_,
 
     if (n_args)
     {
+#if GLIB_CHECK_VERSION(2,10,0)
+        args = g_slice_alloc (n_args * sizeof (MSValue*));
+#else
         args = g_new0 (MSValue*, n_args);
+#endif
 
         for (i = 0; i < n_args; ++i)
         {
@@ -280,7 +284,11 @@ ms_node_function_eval (MSNode    *node_,
 out:
     for (i = 0; i < n_args; ++i)
         ms_value_unref (args[i]);
+#if GLIB_CHECK_VERSION(2,10,0)
+    g_slice_free1 (n_args * sizeof (MSValue*), args);
+#else
     g_free (args);
+#endif
     ms_value_unref (func);
     return ret;
 }

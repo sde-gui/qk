@@ -23,11 +23,22 @@ static MSValue *MS_False;
 
 static MSValueClass types[MS_VALUE_INVALID];
 
+#if GLIB_CHECK_VERSION(2,10,0)
+#define ms_value_alloc() g_slice_new0 (MSValue)
+#define ms_value_free(v) g_slice_free (MSValue, v)
+#define ms_value_array_alloc(n) g_slice_alloc (n * sizeof (MSValue*))
+#define ms_value_array_free(a, n) g_slice_free1 (n * sizeof (MSValue*), a)
+#else
+#define ms_value_alloc() g_new0 (MSValue, 1)
+#define ms_value_free(v) g_free (v)
+#define ms_value_array_alloc(n) g_new (MSValue*, n)
+#define ms_value_array_free(a, n) g_free (a)
+#endif
 
 static MSValue *
 ms_value_new (MSValueClass *klass)
 {
-    MSValue *val = g_new0 (MSValue, 1);
+    MSValue *val = ms_value_alloc ();
     val->ref_count = 1;
     val->klass = klass;
     return val;
@@ -185,7 +196,7 @@ ms_value_list (guint n_elms)
     guint i;
 
     val = ms_value_new (&types[MS_VALUE_LIST]);
-    val->list.elms = g_new (MSValue*, n_elms);
+    val->list.elms = ms_value_array_alloc (n_elms);
     val->list.n_elms = n_elms;
 
     for (i = 0; i < n_elms; ++i)
@@ -321,7 +332,8 @@ ms_value_unref (MSValue *val)
         case MS_VALUE_LIST:
             for (i = 0; i < val->list.n_elms; ++i)
                 ms_value_unref (val->list.elms[i]);
-            g_free (val->list.elms);
+            ms_value_array_free (val->list.elms,
+                                 val->list.n_elms);
             break;
 
         case MS_VALUE_DICT:
@@ -340,7 +352,7 @@ ms_value_unref (MSValue *val)
     if (val->methods)
         g_hash_table_destroy (val->methods);
 
-    g_free (val);
+    ms_value_free (val);
 }
 
 
@@ -1406,7 +1418,7 @@ ms_value_call (MSValue    *func,
     if (!func->func.meth || !func->func.obj)
         return ms_func_call (func->func.func, args, n_args, ctx);
 
-    real_args = g_new (MSValue*, n_args + 1);
+    real_args = ms_value_array_alloc (n_args + 1);
     real_args[0] = ms_value_ref (func->func.obj);
 
     for (i = 0; i < n_args; ++i)
@@ -1416,7 +1428,7 @@ ms_value_call (MSValue    *func,
 
     for (i = 0; i < n_args + 1; ++i)
         ms_value_unref (real_args[i]);
-    g_free (real_args);
+    ms_value_array_free (real_args, n_args + 1);
 
     return ret;
 }
