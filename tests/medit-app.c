@@ -233,6 +233,7 @@ int main (int argc, char *argv[])
     MooEditor *editor;
     char **files;
     gpointer window;
+    int retval;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -294,5 +295,8 @@ int main (int argc, char *argv[])
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);
 
-    return moo_app_run (app);
+    retval = moo_app_run (app);
+
+    g_object_unref (app);
+    return retval;
 }
