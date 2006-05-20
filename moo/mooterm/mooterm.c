@@ -44,6 +44,8 @@ static void moo_term_size_allocate  (GtkWidget      *widget,
 static gboolean moo_term_popup_menu (GtkWidget      *widget);
 static gboolean moo_term_scroll     (GtkWidget      *widget,
                                      GdkEventScroll *event);
+static gboolean moo_term_focus_out  (GtkWidget      *widget,
+                                     GdkEventFocus  *event);
 
 static void     moo_term_set_scroll_adjustments (GtkWidget      *widget,
                                                  GtkAdjustment  *hadj,
@@ -133,6 +135,7 @@ static void moo_term_class_init (MooTermClass *klass)
     widget_class->button_release_event = _moo_term_button_release;
     widget_class->motion_notify_event = _moo_term_motion_notify;
     widget_class->style_set = _moo_term_style_set;
+    widget_class->focus_out_event = moo_term_focus_out;
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
     klass->apply_settings = _moo_term_apply_settings;
@@ -551,6 +554,7 @@ moo_term_realize (GtkWidget *widget)
 static void
 moo_term_unrealize (GtkWidget *widget)
 {
+    guint i;
     MooTerm *term = MOO_TERM (widget);
 
     if (term->priv->update_timeout)
@@ -560,6 +564,13 @@ moo_term_unrealize (GtkWidget *widget)
     if (term->priv->menu)
         g_object_unref (term->priv->menu);
     term->priv->menu = NULL;
+
+    for (i = 0; i < POINTERS_NUM; ++i)
+    {
+        if (term->priv->pointer[i])
+            gdk_cursor_unref (term->priv->pointer[i]);
+        term->priv->pointer[i] = NULL;
+    }
 
     GTK_WIDGET_CLASS(moo_term_parent_class)->unrealize (widget);
 }
@@ -1665,6 +1676,19 @@ moo_term_set_pointer_visible (MooTerm        *term,
         term->priv->pointer_visible = visible;
         _moo_term_update_pointer (term);
     }
+}
+
+
+static gboolean
+moo_term_focus_out (GtkWidget     *widget,
+                    GdkEventFocus *event)
+{
+    moo_term_set_pointer_visible (MOO_TERM (widget), TRUE);
+
+    if (GTK_WIDGET_CLASS(moo_term_parent_class)->focus_out_event)
+        return GTK_WIDGET_CLASS(moo_term_parent_class)->focus_out_event (widget, event);
+
+    return FALSE;
 }
 
 
