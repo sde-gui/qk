@@ -98,16 +98,11 @@ static GObject     *moo_term_window_constructor         (GType                  
     MooTermWindow *window;
     GtkWidget *scrolledwindow;
     GtkWidget *terminal;
-    GtkWindowGroup *group;
 
     GObject *object =
             G_OBJECT_CLASS(moo_term_window_parent_class)->constructor (type, n_props, props);
 
     window = MOO_TERM_WINDOW (object);
-
-    group = gtk_window_group_new ();
-    gtk_window_group_add_window (group, GTK_WINDOW (window));
-    g_object_unref (group);
 
     /************************************************************************/
     /* Gui                                                                  */
