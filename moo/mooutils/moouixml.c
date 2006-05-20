@@ -2486,8 +2486,6 @@ moo_ui_xml_finalize (GObject *object)
 {
     MooUIXML *xml = MOO_UI_XML (object);
 
-    g_print ("moo_ui_xml_finalize\n");
-
     SLIST_FOREACH (xml->priv->toplevels, t)
     {
         Toplevel *toplevel = t->data;
