@@ -33,7 +33,7 @@ mooutils_include_headers =                     \
     $(mooutils)/moopython.h                    \
     $(mooutils)/moostock.h                     \
     $(mooutils)/moouixml.h                     \
-    $(mooutils)/mooundomanager.h               \
+    $(mooutils)/mooundo.h                      \
     $(mooutils)/mooutils-fs.h                  \
     $(mooutils)/mooutils-gobject.h             \
     $(mooutils)/mooutils-misc.h                \
@@ -84,7 +84,7 @@ mooutils_sources =                             \
     $(mooutils)/moopython.c                    \
     $(mooutils)/moostock.c                     \
     $(mooutils)/moouixml.c                     \
-    $(mooutils)/mooundomanager.c               \
+    $(mooutils)/mooundo.c                      \
     $(mooutils)/mooutils-fs.c                  \
     $(mooutils)/mooutils-gobject.c             \
     $(mooutils)/mooutils-misc.c                \

@@ -13,6 +13,7 @@
 
 #include MOO_MARSHALS_H
 #include "mooutils/mooentry.h"
+#include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
 #include <gtk/gtkbindings.h>
 #include <gtk/gtkimagemenuitem.h>
@@ -23,7 +24,7 @@
 
 
 struct _MooEntryPrivate {
-    MooUndoMgr *undo_mgr;
+    MooUndoStack *undo_stack;
     gboolean enable_undo;
     gboolean enable_undo_menu;
     guint use_ctrl_u : 1;
@@ -128,7 +129,6 @@ moo_entry_get_type (void)
 
 enum {
     PROP_0,
-    PROP_UNDO_MANAGER,
     PROP_ENABLE_UNDO,
     PROP_ENABLE_UNDO_MENU,
     PROP_GRAB_SELECTION,
@@ -175,14 +175,6 @@ moo_entry_class_init (MooEntryClass *klass)
 
     moo_entry_parent_class = g_type_class_peek_parent (klass);
     parent_editable_iface = g_type_interface_peek (moo_entry_parent_class, GTK_TYPE_EDITABLE);
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_UNDO_MANAGER,
-                                     g_param_spec_object ("undo-manager",
-                                             "undo-manager",
-                                             "undo-manager",
-                                             MOO_TYPE_UNDO_MGR,
-                                             G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_UNDO,
@@ -285,7 +277,7 @@ static void
 moo_entry_init (MooEntry *entry)
 {
     entry->priv = g_new0 (MooEntryPrivate, 1);
-    entry->priv->undo_mgr = moo_undo_mgr_new (entry);
+    entry->priv->undo_stack = moo_undo_stack_new (entry);
     entry->priv->use_ctrl_u = TRUE;
     entry->priv->empty = TRUE;
 }
@@ -345,10 +337,6 @@ moo_entry_get_property (GObject        *object,
             g_value_set_boolean (value, entry->priv->enable_undo_menu);
             break;
 
-        case PROP_UNDO_MANAGER:
-            g_value_set_object (value, entry->priv->undo_mgr);
-            break;
-
         case PROP_GRAB_SELECTION:
             g_value_set_boolean (value, entry->priv->grab_selection ? TRUE : FALSE);
             break;
@@ -373,7 +361,7 @@ moo_entry_finalize (GObject *object)
 {
     MooEntry *entry = MOO_ENTRY (object);
 
-    g_object_unref (entry->priv->undo_mgr);
+    g_object_unref (entry->priv->undo_stack);
     g_free (entry->priv);
 
     G_OBJECT_CLASS (moo_entry_parent_class)->finalize (object);
@@ -403,8 +391,8 @@ void
 moo_entry_undo (MooEntry       *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    if (entry->priv->enable_undo && moo_undo_mgr_can_undo (entry->priv->undo_mgr))
-        moo_undo_mgr_undo (entry->priv->undo_mgr);
+    if (entry->priv->enable_undo && moo_undo_stack_can_undo (entry->priv->undo_stack))
+        moo_undo_stack_undo (entry->priv->undo_stack);
 }
 
 
@@ -412,8 +400,8 @@ void
 moo_entry_redo (MooEntry       *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    if (entry->priv->enable_undo && moo_undo_mgr_can_redo (entry->priv->undo_mgr))
-        moo_undo_mgr_redo (entry->priv->undo_mgr);
+    if (entry->priv->enable_undo && moo_undo_stack_can_redo (entry->priv->undo_stack))
+        moo_undo_stack_redo (entry->priv->undo_stack);
 }
 
 
@@ -421,7 +409,7 @@ void
 moo_entry_begin_undo_group (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    moo_undo_mgr_start_group (entry->priv->undo_mgr);
+    moo_undo_stack_start_group (entry->priv->undo_stack);
 }
 
 
@@ -429,7 +417,7 @@ void
 moo_entry_end_undo_group (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    moo_undo_mgr_end_group (entry->priv->undo_mgr);
+    moo_undo_stack_end_group (entry->priv->undo_stack);
 }
 
 
@@ -437,15 +425,7 @@ void
 moo_entry_clear_undo (MooEntry *entry)
 {
     g_return_if_fail (MOO_IS_ENTRY (entry));
-    moo_undo_mgr_clear (entry->priv->undo_mgr);
-}
-
-
-MooUndoMgr*
-moo_entry_get_undo_mgr (MooEntry *entry)
-{
-    g_return_val_if_fail (MOO_IS_ENTRY (entry), NULL);
-    return entry->priv->undo_mgr;
+    moo_undo_stack_clear (entry->priv->undo_stack);
 }
 
 
@@ -535,14 +515,14 @@ moo_entry_populate_popup (GtkEntry           *gtkentry,
         gtk_widget_show (item);
         gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
         gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                moo_undo_mgr_can_redo (entry->priv->undo_mgr));
+                moo_undo_stack_can_redo (entry->priv->undo_stack));
         g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_redo), entry);
 
         item = gtk_image_menu_item_new_from_stock (GTK_STOCK_UNDO, NULL);
         gtk_widget_show (item);
         gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), item);
         gtk_widget_set_sensitive (item, entry->priv->enable_undo &&
-                moo_undo_mgr_can_undo (entry->priv->undo_mgr));
+                moo_undo_stack_can_undo (entry->priv->undo_stack));
         g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_entry_undo), entry);
     }
 
@@ -583,21 +563,21 @@ moo_entry_delete_from_cursor (GtkEntry           *entry,
                               GtkDeleteType       type,
                               gint                count)
 {
-    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
+    moo_undo_stack_new_group (MOO_ENTRY(entry)->priv->undo_stack);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->delete_from_cursor (entry, type, count);
 }
 
 static void
 moo_entry_cut_clipboard (GtkEntry           *entry)
 {
-    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
+    moo_undo_stack_new_group (MOO_ENTRY(entry)->priv->undo_stack);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->cut_clipboard (entry);
 }
 
 static void
 moo_entry_paste_clipboard (GtkEntry           *entry)
 {
-    moo_undo_mgr_new_group (MOO_ENTRY(entry)->priv->undo_mgr);
+    moo_undo_stack_new_group (MOO_ENTRY(entry)->priv->undo_stack);
     GTK_ENTRY_CLASS(moo_entry_parent_class)->paste_clipboard (entry);
 }
 
@@ -615,7 +595,7 @@ moo_entry_do_insert_text (GtkEditable        *editable,
 
     if (length > 0)
     {
-        moo_undo_mgr_add_action (MOO_ENTRY(editable)->priv->undo_mgr,
+        moo_undo_stack_add_action (MOO_ENTRY(editable)->priv->undo_stack,
                                  INSERT_ACTION_TYPE,
                                  insert_action_new (editable, text, length, position));
         parent_editable_iface->do_insert_text (editable, text, length, position);
@@ -645,7 +625,7 @@ moo_entry_do_delete_text (GtkEditable        *editable,
 
     if (start_pos < end_pos)
     {
-        moo_undo_mgr_add_action (MOO_ENTRY(editable)->priv->undo_mgr,
+        moo_undo_stack_add_action (MOO_ENTRY(editable)->priv->undo_stack,
                                  DELETE_ACTION_TYPE,
                                  delete_action_new (editable, start_pos, end_pos));
         parent_editable_iface->do_delete_text (editable, start_pos, end_pos);

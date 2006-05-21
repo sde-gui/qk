@@ -1693,21 +1693,6 @@ block_uncomment (GtkTextBuffer *buffer,
 }
 
 
-static void
-begin_comment_action (MooEdit *edit)
-{
-    gtk_text_buffer_begin_user_action (get_buffer (edit));
-    moo_text_buffer_begin_interactive_action (get_moo_buffer (edit));
-}
-
-static void
-end_comment_action (MooEdit *edit)
-{
-    gtk_text_buffer_end_user_action (get_buffer (edit));
-    moo_text_buffer_end_interactive_action (get_moo_buffer (edit));
-}
-
-
 void
 moo_edit_comment (MooEdit *edit)
 {
@@ -1728,7 +1713,7 @@ moo_edit_comment (MooEdit *edit)
     buffer = get_buffer (edit);
     has_selection = gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
-    begin_comment_action (edit);
+    gtk_text_buffer_begin_user_action (buffer);
 
     if (has_selection)
     {
@@ -1758,7 +1743,7 @@ moo_edit_comment (MooEdit *edit)
         gtk_text_buffer_move_mark_by_name (buffer, mark, &start);
     }
 
-    end_comment_action (edit);
+    gtk_text_buffer_end_user_action (buffer);
 }
 
 
@@ -1780,7 +1765,7 @@ moo_edit_uncomment (MooEdit *edit)
     buffer = get_buffer (edit);
     gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
-    begin_comment_action (edit);
+    gtk_text_buffer_begin_user_action (buffer);
 
     /* FIXME */
     if (single_line)
@@ -1789,7 +1774,7 @@ moo_edit_uncomment (MooEdit *edit)
         block_uncomment (buffer, lang->block_comment_start,
                          lang->block_comment_end, &start, &end);
 
-    end_comment_action (edit);
+    gtk_text_buffer_end_user_action (buffer);
 }
 
 

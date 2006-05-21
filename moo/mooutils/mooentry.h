@@ -1,5 +1,4 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4; coding: utf-8 -*-
- *
+/*
  *   mooentry.h
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
@@ -16,7 +15,6 @@
 #define __MOO_ENTRY_H__
 
 #include <gtk/gtkentry.h>
-#include "mooutils/mooundomanager.h"
 
 G_BEGIN_DECLS
 
@@ -57,7 +55,6 @@ void        moo_entry_redo                      (MooEntry   *entry);
 void        moo_entry_begin_undo_group          (MooEntry   *entry);
 void        moo_entry_end_undo_group            (MooEntry   *entry);
 void        moo_entry_clear_undo                (MooEntry   *entry);
-MooUndoMgr *moo_entry_get_undo_mgr              (MooEntry   *entry);
 
 void        moo_entry_set_use_special_chars_menu(MooEntry   *entry,
                                                  gboolean    use);

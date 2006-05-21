@@ -16,7 +16,7 @@
 #include "mooedit/moohighlighter.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/moomarshals.h"
-#include "mooutils/mooundomanager.h"
+#include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
 #include <string.h>
 
@@ -42,11 +42,10 @@ struct _MooTextBufferPrivate {
     LineBuffer *line_buf;
     MooFoldTree *fold_tree;
 
-    guint interactive;
     guint non_interactive;
     int cursor_moved_frozen;
     gboolean cursor_moved;
-    MooUndoMgr *undo_mgr;
+    MooUndoStack *undo_stack;
     gpointer modifying_action;
     int move_cursor_to;
 #if 0
@@ -343,21 +342,21 @@ moo_text_buffer_init (MooTextBuffer *buffer)
 
     buffer->priv->fold_tree = _moo_fold_tree_new (buffer);
 
-    buffer->priv->undo_mgr = moo_undo_mgr_new (buffer);
+    buffer->priv->undo_stack = moo_undo_stack_new (buffer);
     buffer->priv->move_cursor_to = -1;
 #if 0
-    g_signal_connect_swapped (buffer->priv->undo_mgr, "undo",
+    g_signal_connect_swapped (buffer->priv->undo_stack, "undo",
                               G_CALLBACK (before_undo_redo),
                               buffer);
-    g_signal_connect_swapped (buffer->priv->undo_mgr, "redo",
+    g_signal_connect_swapped (buffer->priv->undo_stack, "redo",
                               G_CALLBACK (before_undo_redo),
                               buffer);
 #endif
-    g_signal_connect_data (buffer->priv->undo_mgr, "undo",
+    g_signal_connect_data (buffer->priv->undo_stack, "undo",
                            G_CALLBACK (after_undo_redo),
                            buffer, NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
-    g_signal_connect_data (buffer->priv->undo_mgr, "redo",
+    g_signal_connect_data (buffer->priv->undo_stack, "redo",
                            G_CALLBACK (after_undo_redo),
                            buffer, NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
@@ -380,14 +379,14 @@ moo_text_buffer_finalize (GObject *object)
     g_free (buffer->priv->right_brackets);
 
 #if 0
-    g_signal_handlers_disconnect_by_func (buffer->priv->undo_mgr,
+    g_signal_handlers_disconnect_by_func (buffer->priv->undo_stack,
                                           (gpointer) before_undo_redo,
                                           buffer);
 #endif
-    g_signal_handlers_disconnect_by_func (buffer->priv->undo_mgr,
+    g_signal_handlers_disconnect_by_func (buffer->priv->undo_stack,
                                           (gpointer) after_undo_redo,
                                           buffer);
-    g_object_unref (buffer->priv->undo_mgr);
+    g_object_unref (buffer->priv->undo_stack);
 
     g_free (buffer->priv);
     buffer->priv = NULL;
@@ -405,10 +404,10 @@ moo_text_buffer_new (GtkTextTagTable *table)
 
 
 gpointer
-moo_text_buffer_get_undo_mgr (MooTextBuffer *buffer)
+_moo_text_buffer_get_undo_stack (MooTextBuffer *buffer)
 {
     g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), NULL);
-    return buffer->priv->undo_mgr;
+    return buffer->priv->undo_stack;
 }
 
 
@@ -417,7 +416,7 @@ moo_text_buffer_begin_user_action (GtkTextBuffer *text_buffer)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     moo_text_buffer_freeze (buffer);
-    moo_undo_mgr_start_group (buffer->priv->undo_mgr);
+    moo_undo_stack_start_group (buffer->priv->undo_stack);
 }
 
 
@@ -426,7 +425,7 @@ moo_text_buffer_end_user_action (GtkTextBuffer *text_buffer)
 {
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (text_buffer);
     moo_text_buffer_thaw (buffer);
-    moo_undo_mgr_end_group (buffer->priv->undo_mgr);
+    moo_undo_stack_end_group (buffer->priv->undo_stack);
 }
 
 
@@ -523,11 +522,11 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         gtk_text_buffer_remove_tag (text_buffer, tag, &tag_start, &tag_end);
     }
 
-    if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
+    if (!moo_undo_stack_frozen (buffer->priv->undo_stack))
     {
         MooUndoAction *action;
         action = insert_action_new (text_buffer, pos, text, length);
-        moo_undo_mgr_add_action (buffer->priv->undo_mgr, INSERT_ACTION_TYPE, action);
+        moo_undo_stack_add_action (buffer->priv->undo_stack, INSERT_ACTION_TYPE, action);
     }
 
     moo_text_buffer_unhighlight_brackets (buffer);
@@ -644,11 +643,11 @@ moo_text_buffer_delete_range (GtkTextBuffer      *text_buffer,
     }
 #undef MANY_LINES
 
-    if (!moo_undo_mgr_frozen (buffer->priv->undo_mgr))
+    if (!moo_undo_stack_frozen (buffer->priv->undo_stack))
     {
         MooUndoAction *action;
         action = delete_action_new (text_buffer, start, end);
-        moo_undo_mgr_add_action (buffer->priv->undo_mgr, DELETE_ACTION_TYPE, action);
+        moo_undo_stack_add_action (buffer->priv->undo_stack, DELETE_ACTION_TYPE, action);
     }
 
     GTK_TEXT_BUFFER_CLASS(moo_text_buffer_parent_class)->delete_range (text_buffer, start, end);
@@ -1042,23 +1041,6 @@ moo_text_buffer_thaw (MooTextBuffer *buffer)
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     thaw_cursor_moved (buffer);
-}
-
-
-void
-moo_text_buffer_begin_interactive_action (MooTextBuffer *buffer)
-{
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    buffer->priv->interactive++;
-}
-
-
-void
-moo_text_buffer_end_interactive_action (MooTextBuffer *buffer)
-{
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    g_return_if_fail (buffer->priv->interactive > 0);
-    buffer->priv->interactive--;
 }
 
 
@@ -1632,7 +1614,7 @@ action_new (ActionType     type,
     }
 
     action = g_malloc0 (size);
-    action->interactive = !buffer->priv->non_interactive && buffer->priv->interactive ? TRUE : FALSE;
+    action->interactive = (!buffer->priv->non_interactive && text_buffer->user_action_count) ? TRUE : FALSE;
 
     if (!gtk_text_buffer_get_modified (text_buffer))
         buffer->priv->modifying_action = action;

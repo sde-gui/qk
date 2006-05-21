@@ -943,7 +943,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
 {
     MooTextView *view;
     GtkTextView *text_view;
-    MooTextBuffer *buffer;
+    GtkTextBuffer *buffer;
     gboolean obscure = TRUE;
     gboolean handled = FALSE;
     int keyval = event->keyval;
@@ -952,7 +952,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
 
     view = MOO_TEXT_VIEW (widget);
     text_view = GTK_TEXT_VIEW (widget);
-    buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
+    buffer = gtk_text_view_get_buffer (text_view);
 
     /* ignore key events from the search entry */
     if (view->priv->qs.in_search)
@@ -967,15 +967,15 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
                 handled = handle_tab (view, event);
                 break;
             case GDK_BackSpace:
-                moo_text_buffer_begin_interactive_action (buffer);
+                gtk_text_buffer_begin_user_action (buffer);
                 handled = handle_backspace (view, event);
-                moo_text_buffer_end_interactive_action (buffer);
+                gtk_text_buffer_end_user_action (buffer);
                 break;
             case GDK_KP_Enter:
             case GDK_Return:
-                moo_text_buffer_begin_interactive_action (buffer);
+                gtk_text_buffer_begin_user_action (buffer);
                 handled = handle_enter (view, event);
-                moo_text_buffer_end_interactive_action (buffer);
+                gtk_text_buffer_end_user_action (buffer);
                 break;
         }
     }
@@ -1029,9 +1029,9 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
         return TRUE;
 
     view->priv->in_key_press = TRUE;
-    moo_text_buffer_begin_interactive_action (buffer);
+    gtk_text_buffer_begin_user_action (buffer);
     handled = parent_class()->key_press_event (widget, event);
-    moo_text_buffer_end_interactive_action (buffer);
+    gtk_text_buffer_end_user_action (buffer);
     view->priv->in_key_press = FALSE;
 
     _moo_text_view_check_char_inserted (view);

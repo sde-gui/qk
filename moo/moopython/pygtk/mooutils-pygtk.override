@@ -22,6 +22,7 @@ headers
 #include "mooutils/moostock.h"
 #include "mooutils/moouixml.h"
 #include "mooutils/moomenuaction.h"
+#include "mooutils/mooundo.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

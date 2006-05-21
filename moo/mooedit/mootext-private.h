@@ -62,6 +62,7 @@ void        _moo_text_buffer_highlighting_changed   (MooTextBuffer      *buffer,
 void        _moo_text_buffer_tags_changed           (MooTextBuffer      *buffer,
                                                      int                 first,
                                                      int                 last);
+gpointer    _moo_text_buffer_get_undo_stack         (MooTextBuffer      *buffer);
 
 
 G_END_DECLS

@@ -1,5 +1,5 @@
 /*
- *   mooundomanager.c
+ *   mooundo.c
  *
  *   Copyright (C) 2004-2006 by Yevgen Muntyan <muntyan@math.tamu.edu>
  *
@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "mooutils/mooundomanager.h"
+#include "mooutils/mooundo.h"
 #include "mooutils/moomarshals.h"
 #include <string.h>
 
@@ -34,7 +34,7 @@ A bit of how and why:
         continue_group count.
         One may force UndoMgr to create new group - by new_group flag.
 
-        Now, in the undo_mgr_add_action() call it does the following:
+        Now, in the undo_stack_add_action() call it does the following:
             if it's frozen, free the action, and do nothing;
             if new_group is requested, create new undo group and push it on the stack;
             otherwise, try to merge given action into existing group. If it can be
@@ -64,24 +64,24 @@ static guint last_type;
 #define TYPE_IS_REGISTERED(type__)  ((type__) && (type__) <= last_type)
 
 
-static void     moo_undo_mgr_finalize       (GObject        *object);
-static void     moo_undo_mgr_set_property   (GObject        *object,
+static void     moo_undo_stack_finalize     (GObject        *object);
+static void     moo_undo_stack_set_property (GObject        *object,
                                              guint           prop_id,
                                              const GValue   *value,
                                              GParamSpec     *pspec);
-static void     moo_undo_mgr_get_property   (GObject        *object,
+static void     moo_undo_stack_get_property (GObject        *object,
                                              guint           prop_id,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
-static void     moo_undo_mgr_undo_real      (MooUndoMgr     *mgr);
-static void     moo_undo_mgr_redo_real      (MooUndoMgr     *mgr);
+static void     moo_undo_stack_undo_real    (MooUndoStack   *stack);
+static void     moo_undo_stack_redo_real    (MooUndoStack   *stack);
 
 static void     action_stack_free           (GSList        **stack,
                                              gpointer        doc);
 
 
-G_DEFINE_TYPE(MooUndoMgr, moo_undo_mgr, G_TYPE_OBJECT)
+G_DEFINE_TYPE(MooUndoStack, moo_undo_stack, G_TYPE_OBJECT)
 
 enum {
     PROP_0,
@@ -99,16 +99,16 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 static void
-moo_undo_mgr_class_init (MooUndoMgrClass *klass)
+moo_undo_stack_class_init (MooUndoStackClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-    gobject_class->set_property = moo_undo_mgr_set_property;
-    gobject_class->get_property = moo_undo_mgr_get_property;
-    gobject_class->finalize = moo_undo_mgr_finalize;
+    gobject_class->set_property = moo_undo_stack_set_property;
+    gobject_class->get_property = moo_undo_stack_get_property;
+    gobject_class->finalize = moo_undo_stack_finalize;
 
-    klass->undo = moo_undo_mgr_undo_real;
-    klass->redo = moo_undo_mgr_redo_real;
+    klass->undo = moo_undo_stack_undo_real;
+    klass->redo = moo_undo_stack_redo_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_DOCUMENT,
@@ -137,7 +137,7 @@ moo_undo_mgr_class_init (MooUndoMgrClass *klass)
             g_signal_new ("undo",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooUndoMgrClass, undo),
+                          G_STRUCT_OFFSET (MooUndoStackClass, undo),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -146,7 +146,7 @@ moo_undo_mgr_class_init (MooUndoMgrClass *klass)
             g_signal_new ("redo",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooUndoMgrClass, redo),
+                          G_STRUCT_OFFSET (MooUndoStackClass, redo),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -154,44 +154,44 @@ moo_undo_mgr_class_init (MooUndoMgrClass *klass)
 
 
 static void
-moo_undo_mgr_init (G_GNUC_UNUSED MooUndoMgr *mgr)
+moo_undo_stack_init (G_GNUC_UNUSED MooUndoStack *stack)
 {
 }
 
 
-MooUndoMgr*
-moo_undo_mgr_new (gpointer document)
+MooUndoStack*
+moo_undo_stack_new (gpointer document)
 {
-    return g_object_new (MOO_TYPE_UNDO_MGR,
+    return g_object_new (MOO_TYPE_UNDO_STACK,
                          "document", document,
                          NULL);
 }
 
 
 static void
-moo_undo_mgr_finalize (GObject *object)
+moo_undo_stack_finalize (GObject *object)
 {
-    MooUndoMgr *mgr = MOO_UNDO_MGR (object);
+    MooUndoStack *stack = MOO_UNDO_STACK (object);
 
-    action_stack_free (&mgr->undo_stack, mgr->document);
-    action_stack_free (&mgr->redo_stack, mgr->document);
+    action_stack_free (&stack->undo_stack, stack->document);
+    action_stack_free (&stack->redo_stack, stack->document);
 
-    G_OBJECT_CLASS(moo_undo_mgr_parent_class)->finalize (object);
+    G_OBJECT_CLASS(moo_undo_stack_parent_class)->finalize (object);
 }
 
 
 static void
-moo_undo_mgr_set_property (GObject        *object,
-                           guint           prop_id,
-                           const GValue   *value,
-                           GParamSpec     *pspec)
+moo_undo_stack_set_property (GObject        *object,
+                             guint           prop_id,
+                             const GValue   *value,
+                             GParamSpec     *pspec)
 {
-    MooUndoMgr *mgr = MOO_UNDO_MGR (object);
+    MooUndoStack *stack = MOO_UNDO_STACK (object);
 
     switch (prop_id)
     {
         case PROP_DOCUMENT:
-            mgr->document = g_value_get_pointer (value);
+            stack->document = g_value_get_pointer (value);
             break;
 
         default:
@@ -202,25 +202,25 @@ moo_undo_mgr_set_property (GObject        *object,
 
 
 static void
-moo_undo_mgr_get_property (GObject        *object,
-                           guint           prop_id,
-                           GValue         *value,
-                           GParamSpec     *pspec)
+moo_undo_stack_get_property (GObject        *object,
+                             guint           prop_id,
+                             GValue         *value,
+                             GParamSpec     *pspec)
 {
-    MooUndoMgr *mgr = MOO_UNDO_MGR (object);
+    MooUndoStack *stack = MOO_UNDO_STACK (object);
 
     switch (prop_id)
     {
         case PROP_DOCUMENT:
-            g_value_set_pointer (value, mgr->document);
+            g_value_set_pointer (value, stack->document);
             break;
 
         case PROP_CAN_UNDO:
-            g_value_set_boolean (value, moo_undo_mgr_can_undo (mgr));
+            g_value_set_boolean (value, moo_undo_stack_can_undo (stack));
             break;
 
         case PROP_CAN_REDO:
-            g_value_set_boolean (value, moo_undo_mgr_can_redo (mgr));
+            g_value_set_boolean (value, moo_undo_stack_can_redo (stack));
             break;
 
         default:
@@ -252,128 +252,128 @@ moo_undo_action_register (MooUndoActionClass *klass)
 
 
 void
-moo_undo_mgr_undo (MooUndoMgr *mgr)
+moo_undo_stack_undo (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    g_signal_emit (mgr, signals[UNDO], 0);
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    g_signal_emit (stack, signals[UNDO], 0);
 }
 
 
 void
-moo_undo_mgr_redo (MooUndoMgr *mgr)
+moo_undo_stack_redo (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    g_signal_emit (mgr, signals[REDO], 0);
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    g_signal_emit (stack, signals[REDO], 0);
 }
 
 
 gboolean
-moo_undo_mgr_can_undo (MooUndoMgr *mgr)
+moo_undo_stack_can_undo (MooUndoStack *stack)
 {
-    g_return_val_if_fail (MOO_IS_UNDO_MGR (mgr), FALSE);
-    return mgr->undo_stack != NULL;
+    g_return_val_if_fail (MOO_IS_UNDO_STACK (stack), FALSE);
+    return stack->undo_stack != NULL;
 }
 
 
 gboolean
-moo_undo_mgr_can_redo (MooUndoMgr *mgr)
+moo_undo_stack_can_redo (MooUndoStack *stack)
 {
-    g_return_val_if_fail (MOO_IS_UNDO_MGR (mgr), FALSE);
-    return mgr->redo_stack != NULL;
+    g_return_val_if_fail (MOO_IS_UNDO_STACK (stack), FALSE);
+    return stack->redo_stack != NULL;
 }
 
 
 static void
 action_group_undo (ActionGroup    *group,
-                   MooUndoMgr     *mgr)
+                   MooUndoStack   *stack)
 {
     GList *l;
 
     for (l = group->actions->head; l != NULL; l = l->next)
     {
         Wrapper *wrapper = l->data;
-        WRAPPER_VTABLE(wrapper)->undo (wrapper->action, mgr->document);
+        WRAPPER_VTABLE(wrapper)->undo (wrapper->action, stack->document);
     }
 }
 
 
 static void
 action_group_redo (ActionGroup    *group,
-                   MooUndoMgr     *mgr)
+                   MooUndoStack   *stack)
 {
     GList *l;
 
     for (l = group->actions->tail; l != NULL; l = l->prev)
     {
         Wrapper *wrapper = l->data;
-        WRAPPER_VTABLE(wrapper)->redo (wrapper->action, mgr->document);
+        WRAPPER_VTABLE(wrapper)->redo (wrapper->action, stack->document);
     }
 }
 
 
 static void
-moo_undo_mgr_undo_real (MooUndoMgr *mgr)
+moo_undo_stack_undo_real (MooUndoStack *stack)
 {
     ActionGroup *group;
     GSList *link;
     gboolean notify_redo;
 
-    g_return_if_fail (mgr->undo_stack != NULL);
+    g_return_if_fail (stack->undo_stack != NULL);
 
-    mgr->frozen++;
+    stack->frozen++;
 
-    link = mgr->undo_stack;
+    link = stack->undo_stack;
     group = link->data;
-    mgr->undo_stack = g_slist_delete_link (mgr->undo_stack, link);
-    notify_redo = mgr->redo_stack == NULL;
-    mgr->redo_stack = g_slist_prepend (mgr->redo_stack, group);
-    mgr->new_group = TRUE;
+    stack->undo_stack = g_slist_delete_link (stack->undo_stack, link);
+    notify_redo = stack->redo_stack == NULL;
+    stack->redo_stack = g_slist_prepend (stack->redo_stack, group);
+    stack->new_group = TRUE;
 
-    action_group_undo (group, mgr);
+    action_group_undo (group, stack);
 
-    mgr->frozen--;
+    stack->frozen--;
 
-    g_object_freeze_notify (G_OBJECT (mgr));
+    g_object_freeze_notify (G_OBJECT (stack));
 
-    if (!mgr->undo_stack)
-        g_object_notify (G_OBJECT (mgr), "can-undo");
+    if (!stack->undo_stack)
+        g_object_notify (G_OBJECT (stack), "can-undo");
     if (notify_redo)
-        g_object_notify (G_OBJECT (mgr), "can-redo");
+        g_object_notify (G_OBJECT (stack), "can-redo");
 
-    g_object_thaw_notify (G_OBJECT (mgr));
+    g_object_thaw_notify (G_OBJECT (stack));
 }
 
 
 static void
-moo_undo_mgr_redo_real (MooUndoMgr *mgr)
+moo_undo_stack_redo_real (MooUndoStack *stack)
 {
     ActionGroup *group;
     GSList *link;
     gboolean notify_undo;
 
-    g_return_if_fail (mgr->redo_stack != NULL);
+    g_return_if_fail (stack->redo_stack != NULL);
 
-    mgr->frozen++;
+    stack->frozen++;
 
-    link = mgr->redo_stack;
+    link = stack->redo_stack;
     group = link->data;
-    mgr->redo_stack = g_slist_delete_link (mgr->redo_stack, link);
-    notify_undo = mgr->undo_stack == NULL;
-    mgr->undo_stack = g_slist_prepend (mgr->undo_stack, group);
-    mgr->new_group = TRUE;
+    stack->redo_stack = g_slist_delete_link (stack->redo_stack, link);
+    notify_undo = stack->undo_stack == NULL;
+    stack->undo_stack = g_slist_prepend (stack->undo_stack, group);
+    stack->new_group = TRUE;
 
-    action_group_redo (group, mgr);
+    action_group_redo (group, stack);
 
-    mgr->frozen--;
+    stack->frozen--;
 
-    g_object_freeze_notify (G_OBJECT (mgr));
+    g_object_freeze_notify (G_OBJECT (stack));
 
-    if (!mgr->redo_stack)
-        g_object_notify (G_OBJECT (mgr), "can-redo");
+    if (!stack->redo_stack)
+        g_object_notify (G_OBJECT (stack), "can-redo");
     if (notify_undo)
-        g_object_notify (G_OBJECT (mgr), "can-undo");
+        g_object_notify (G_OBJECT (stack), "can-undo");
 
-    g_object_thaw_notify (G_OBJECT (mgr));
+    g_object_thaw_notify (G_OBJECT (stack));
 }
 
 
@@ -433,27 +433,27 @@ action_stack_free (GSList **stack,
 
 
 void
-moo_undo_mgr_clear (MooUndoMgr *mgr)
+moo_undo_stack_clear (MooUndoStack *stack)
 {
     gboolean notify_redo, notify_undo;
 
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
 
-    notify_undo = mgr->undo_stack != NULL;
-    notify_redo = mgr->redo_stack != NULL;
+    notify_undo = stack->undo_stack != NULL;
+    notify_redo = stack->redo_stack != NULL;
 
-    action_stack_free (&mgr->undo_stack, mgr->document);
-    action_stack_free (&mgr->redo_stack, mgr->document);
-    mgr->new_group = FALSE;
+    action_stack_free (&stack->undo_stack, stack->document);
+    action_stack_free (&stack->redo_stack, stack->document);
+    stack->new_group = FALSE;
 
-    g_object_freeze_notify (G_OBJECT (mgr));
+    g_object_freeze_notify (G_OBJECT (stack));
 
     if (notify_undo)
-        g_object_notify (G_OBJECT (mgr), "can-undo");
+        g_object_notify (G_OBJECT (stack), "can-undo");
     if (notify_redo)
-        g_object_notify (G_OBJECT (mgr), "can-redo");
+        g_object_notify (G_OBJECT (stack), "can-redo");
 
-    g_object_thaw_notify (G_OBJECT (mgr));
+    g_object_thaw_notify (G_OBJECT (stack));
 }
 
 
@@ -497,113 +497,113 @@ action_group_add (ActionGroup    *group,
 
 
 void
-moo_undo_mgr_add_action (MooUndoMgr     *mgr,
-                         guint           type,
-                         MooUndoAction  *action)
+moo_undo_stack_add_action (MooUndoStack   *stack,
+                           guint           type,
+                           MooUndoAction  *action)
 {
     gboolean notify_redo, notify_undo;
     ActionGroup *group;
 
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
     g_return_if_fail (action != NULL);
     g_return_if_fail (TYPE_IS_REGISTERED (type));
 
-    if (mgr->frozen)
+    if (stack->frozen)
     {
-        TYPE_VTABLE(type)->destroy (action, mgr->document);
+        TYPE_VTABLE(type)->destroy (action, stack->document);
         return;
     }
 
-    notify_undo = mgr->undo_stack == NULL;
-    notify_redo = mgr->redo_stack != NULL;
+    notify_undo = stack->undo_stack == NULL;
+    notify_redo = stack->redo_stack != NULL;
 
-    if (!mgr->undo_stack || mgr->new_group)
+    if (!stack->undo_stack || stack->new_group)
     {
         group = action_group_new ();
-        mgr->undo_stack = g_slist_prepend (mgr->undo_stack, group);
-        action_group_add (group, type, action, FALSE, mgr->document);
+        stack->undo_stack = g_slist_prepend (stack->undo_stack, group);
+        action_group_add (group, type, action, FALSE, stack->document);
     }
-    else if (mgr->do_continue)
+    else if (stack->do_continue)
     {
-        group = mgr->undo_stack->data;
-        action_group_add (group, type, action, TRUE, mgr->document);
+        group = stack->undo_stack->data;
+        action_group_add (group, type, action, TRUE, stack->document);
     }
     else
     {
-        group = mgr->undo_stack->data;
+        group = stack->undo_stack->data;
 
-        if (!action_group_merge (group, type, action, mgr->document))
+        if (!action_group_merge (group, type, action, stack->document))
         {
             group = action_group_new ();
-            mgr->undo_stack = g_slist_prepend (mgr->undo_stack, group);
-            action_group_add (group, type, action, TRUE, mgr->document);
+            stack->undo_stack = g_slist_prepend (stack->undo_stack, group);
+            action_group_add (group, type, action, TRUE, stack->document);
         }
     }
 
-    mgr->new_group = FALSE;
-    if (mgr->continue_group)
-        mgr->do_continue = TRUE;
+    stack->new_group = FALSE;
+    if (stack->continue_group)
+        stack->do_continue = TRUE;
 
-    action_stack_free (&mgr->redo_stack, mgr->document);
+    action_stack_free (&stack->redo_stack, stack->document);
 
-    g_object_freeze_notify (G_OBJECT (mgr));
+    g_object_freeze_notify (G_OBJECT (stack));
 
     if (notify_undo)
-        g_object_notify (G_OBJECT (mgr), "can-undo");
+        g_object_notify (G_OBJECT (stack), "can-undo");
     if (notify_redo)
-        g_object_notify (G_OBJECT (mgr), "can-redo");
+        g_object_notify (G_OBJECT (stack), "can-redo");
 
-    g_object_thaw_notify (G_OBJECT (mgr));
+    g_object_thaw_notify (G_OBJECT (stack));
 }
 
 
 void
-moo_undo_mgr_start_group (MooUndoMgr *mgr)
+moo_undo_stack_start_group (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    mgr->continue_group++;
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    stack->continue_group++;
 }
 
 
 void
-moo_undo_mgr_end_group (MooUndoMgr *mgr)
+moo_undo_stack_end_group (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    g_return_if_fail (mgr->continue_group > 0);
-    if (!--mgr->continue_group)
-        mgr->do_continue = FALSE;
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    g_return_if_fail (stack->continue_group > 0);
+    if (!--stack->continue_group)
+        stack->do_continue = FALSE;
 }
 
 
 void
-moo_undo_mgr_new_group (MooUndoMgr *mgr)
+moo_undo_stack_new_group (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    mgr->new_group = TRUE;
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    stack->new_group = TRUE;
 }
 
 
 void
-moo_undo_mgr_freeze (MooUndoMgr *mgr)
+moo_undo_stack_freeze (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
 
-    if (!mgr->frozen++)
-        moo_undo_mgr_clear (mgr);
+    if (!stack->frozen++)
+        moo_undo_stack_clear (stack);
 }
 
 
 void
-moo_undo_mgr_thaw (MooUndoMgr *mgr)
+moo_undo_stack_thaw (MooUndoStack *stack)
 {
-    g_return_if_fail (MOO_IS_UNDO_MGR (mgr));
-    g_return_if_fail (mgr->frozen > 0);
-    mgr->frozen--;
+    g_return_if_fail (MOO_IS_UNDO_STACK (stack));
+    g_return_if_fail (stack->frozen > 0);
+    stack->frozen--;
 }
 
 
 gboolean
-moo_undo_mgr_frozen (MooUndoMgr *mgr)
+moo_undo_stack_frozen (MooUndoStack *stack)
 {
-    return mgr->frozen > 0;
+    return stack->frozen > 0;
 }

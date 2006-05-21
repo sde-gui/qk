@@ -23,7 +23,7 @@
 #include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/mooundomanager.h"
+#include "mooutils/mooundo.h"
 #include "mooutils/mooentry.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -655,7 +655,7 @@ moo_text_view_constructor (GType                  type,
 {
     GObject *object;
     MooTextView *view;
-    MooUndoMgr *undo_mgr;
+    MooUndoStack *undo_stack;
     GtkTextIter iter;
 
     object = G_OBJECT_CLASS (moo_text_view_parent_class)->constructor (
@@ -683,10 +683,10 @@ moo_text_view_constructor (GType                  type,
     g_signal_connect_swapped (get_buffer (view), "notify::has-text",
                               G_CALLBACK (proxy_prop_notify), view);
 
-    undo_mgr = moo_text_buffer_get_undo_mgr (get_moo_buffer (view));
-    g_signal_connect_swapped (undo_mgr, "notify::can-undo",
+    undo_stack = _moo_text_buffer_get_undo_stack (get_moo_buffer (view));
+    g_signal_connect_swapped (undo_stack, "notify::can-undo",
                               G_CALLBACK (proxy_prop_notify), view);
-    g_signal_connect_swapped (undo_mgr, "notify::can-redo",
+    g_signal_connect_swapped (undo_stack, "notify::can-redo",
                               G_CALLBACK (proxy_prop_notify), view);
 
     g_signal_connect_data (get_buffer (view), "insert-text",
@@ -834,10 +834,10 @@ moo_text_view_set_font_from_string (MooTextView *view,
 }
 
 
-static MooUndoMgr *
-get_undo_mgr (MooTextView *view)
+static MooUndoStack *
+get_undo_stack (MooTextView *view)
 {
-    return moo_text_buffer_get_undo_mgr (get_moo_buffer (view));
+    return _moo_text_buffer_get_undo_stack (get_moo_buffer (view));
 }
 
 
@@ -845,7 +845,7 @@ gboolean
 moo_text_view_can_redo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return moo_undo_mgr_can_redo (get_undo_mgr (view));
+    return moo_undo_stack_can_redo (get_undo_stack (view));
 }
 
 
@@ -853,7 +853,7 @@ gboolean
 moo_text_view_can_undo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
-    return moo_undo_mgr_can_undo (get_undo_mgr (view));
+    return moo_undo_stack_can_undo (get_undo_stack (view));
 }
 
 
@@ -861,8 +861,7 @@ void
 moo_text_view_begin_not_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_undo_mgr_freeze (get_undo_mgr (view));
-    gtk_text_buffer_begin_user_action (get_buffer (view));
+    moo_undo_stack_freeze (get_undo_stack (view));
 }
 
 
@@ -870,8 +869,7 @@ void
 moo_text_view_end_not_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    gtk_text_buffer_end_user_action (get_buffer (view));
-    moo_undo_mgr_thaw (get_undo_mgr (view));
+    moo_undo_stack_thaw (get_undo_stack (view));
 }
 
 
@@ -880,10 +878,10 @@ moo_text_view_redo (MooTextView    *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
-    if (moo_undo_mgr_can_redo (get_undo_mgr (view)))
+    if (moo_undo_stack_can_redo (get_undo_stack (view)))
     {
         moo_text_buffer_freeze (get_moo_buffer (view));
-        moo_undo_mgr_redo (get_undo_mgr (view));
+        moo_undo_stack_redo (get_undo_stack (view));
         gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
                                       get_insert (view),
                                       0, FALSE, 0, 0);
@@ -902,10 +900,10 @@ moo_text_view_undo (MooTextView    *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
 
-    if (moo_undo_mgr_can_undo (get_undo_mgr (view)))
+    if (moo_undo_stack_can_undo (get_undo_stack (view)))
     {
         moo_text_buffer_freeze (get_moo_buffer (view));
-        moo_undo_mgr_undo (get_undo_mgr (view));
+        moo_undo_stack_undo (get_undo_stack (view));
         gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (view),
                                       get_insert (view),
                                       0, FALSE, 0, 0);
@@ -1764,9 +1762,9 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
 
     if (delete)
     {
-        moo_text_buffer_begin_interactive_action (MOO_TEXT_BUFFER (buffer));
+        gtk_text_buffer_begin_user_action (buffer);
         gtk_text_buffer_delete (buffer, &start, &end);
-        moo_text_buffer_end_interactive_action (MOO_TEXT_BUFFER (buffer));
+        gtk_text_buffer_end_user_action (buffer);
         gtk_text_view_scroll_mark_onscreen (text_view,
                                             gtk_text_buffer_get_insert (buffer));
     }
@@ -1844,16 +1842,16 @@ paste_text (GtkTextView *text_view,
 
 
 static void
-moo_text_view_paste_clipboard (GtkTextView  *text_view)
+moo_text_view_paste_clipboard (GtkTextView *text_view)
 {
-    MooTextBuffer *buffer;
+    GtkTextBuffer *buffer;
     GtkClipboard *clipboard;
     char *text;
 
-    buffer = get_moo_buffer (MOO_TEXT_VIEW (text_view));
+    buffer = gtk_text_view_get_buffer (text_view);
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view), GDK_SELECTION_CLIPBOARD);
 
-    moo_text_buffer_begin_interactive_action (buffer);
+    gtk_text_buffer_begin_user_action (buffer);
 
     if (gtk_clipboard_wait_is_target_available (clipboard,
                                                 gdk_atom_intern ("MOO_TEXT_VIEW", FALSE)))
@@ -1866,9 +1864,8 @@ moo_text_view_paste_clipboard (GtkTextView  *text_view)
         g_free (text);
     }
 
-    moo_text_buffer_end_interactive_action (buffer);
-    gtk_text_view_scroll_mark_onscreen (text_view,
-                                        gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (buffer)));
+    gtk_text_buffer_end_user_action (buffer);
+    gtk_text_view_scroll_mark_onscreen (text_view, gtk_text_buffer_get_insert (buffer));
 }
 
 
