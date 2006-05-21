@@ -26,6 +26,8 @@ moofileview_sources =                          \
     $(moofileview)/moofileview-dialogs.c       \
     $(moofileview)/moofileview-dialogs.h       \
     $(moofileview)/moofileview-private.h       \
+    $(moofileview)/moofileview-tools.c         \
+    $(moofileview)/moofileview-tools.h         \
     $(moofileview)/moofoldermodel.c            \
     $(moofileview)/moofoldermodel.h            \
     $(moofileview)/moofoldermodel-private.h    \
