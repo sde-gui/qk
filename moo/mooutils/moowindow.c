@@ -311,7 +311,7 @@ moo_window_constructor (GType                  type,
                       G_CALLBACK (moo_window_update_toolbar), NULL);
     g_signal_connect (window, "notify::menubar-ui-name",
                       G_CALLBACK (moo_window_update_menubar), NULL);
-    g_signal_connect (window, "notify::ui-object-xml",
+    g_signal_connect (window, "notify::ui-xml",
                       G_CALLBACK (moo_window_update_ui), NULL);
 
     if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
