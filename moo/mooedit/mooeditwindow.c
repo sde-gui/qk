@@ -76,6 +76,10 @@ struct _MooEditWindowPrivate {
     GHashTable *panes_to_save; /* char* */
     guint save_params_idle;
 
+    MooUIXML *xml;
+    guint doc_list_merge_id;
+    guint doc_list_update_idle;
+
     GSList *stop_clients;
     GSList *jobs; /* Job* */
 };
@@ -174,6 +178,8 @@ static void     pane_size_changed               (MooEditWindow      *window,
                                                  MooPanePosition     position);
 static PaneParams *pane_params_new              (void);
 static void     pane_params_free                (PaneParams         *params);
+
+static void     moo_edit_window_update_doc_list (MooEditWindow      *window);
 
 static void     notebook_drag_data_recv         (GtkWidget          *widget,
                                                  GdkDragContext     *context,
@@ -740,6 +746,25 @@ moo_edit_window_destroy (GtkObject *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
 
+    if (window->priv->doc_list_merge_id)
+    {
+        moo_ui_xml_remove_ui (window->priv->xml,
+                              window->priv->doc_list_merge_id);
+        window->priv->doc_list_merge_id = 0;
+    }
+
+    if (window->priv->doc_list_update_idle)
+    {
+        g_source_remove (window->priv->doc_list_update_idle);
+        window->priv->doc_list_update_idle = 0;
+    }
+
+    if (window->priv->xml)
+    {
+        g_object_unref (window->priv->xml);
+        window->priv->xml = NULL;
+    }
+
     if (window->priv->stop_clients || window->priv->jobs)
     {
         GSList *list, *l;
@@ -916,6 +941,8 @@ moo_edit_window_constructor (GType                  type,
     create_statusbar (window);
 
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
+    g_signal_connect (window, "notify::ui-xml",
+                      G_CALLBACK (moo_edit_window_update_doc_list), NULL);
 
     edit_changed (window, NULL);
 
@@ -1284,6 +1311,7 @@ edit_filename_changed (MooEditWindow      *window,
                        MooEdit            *doc)
 {
     edit_changed (window, doc);
+    moo_edit_window_update_doc_list (window);
 }
 
 
@@ -1333,6 +1361,14 @@ moo_edit_window_set_active_doc (MooEditWindow *window,
     g_return_if_fail (page >= 0);
 
     moo_notebook_set_current_page (window->priv->notebook, page);
+
+    if (!window->priv->doc_list_update_idle)
+    {
+        GtkToggleAction *action;
+        action = g_object_get_data (G_OBJECT (edit), "moo-doc-list-action");
+        g_return_if_fail (action != NULL);
+        gtk_toggle_action_set_active (action, TRUE);
+    }
 }
 
 
@@ -1440,6 +1476,7 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
     g_signal_connect_swapped (edit, "cursor-moved",
                               G_CALLBACK (edit_cursor_moved), window);
 
+    moo_edit_window_update_doc_list (window);
     g_signal_emit (window, signals[NEW_DOC], 0, edit);
 
     _moo_doc_attach_plugins (window, edit);
@@ -1455,6 +1492,7 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
                              MooEdit        *doc)
 {
     int page;
+    GtkAction *action;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
@@ -1481,6 +1519,16 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
                                           window);
 
     _moo_doc_detach_plugins (window, doc);
+
+    action = g_object_get_data (G_OBJECT (doc), "moo-doc-list-action");
+
+    if (action)
+    {
+        gtk_action_group_remove_action (moo_window_get_actions (MOO_WINDOW (window)), action);
+        g_object_set_data (G_OBJECT (doc), "moo-doc-list-action", NULL);
+    }
+
+    moo_edit_window_update_doc_list (window);
 
     moo_notebook_remove_page (window->priv->notebook, page);
     edit_changed (window, NULL);
@@ -2938,6 +2986,153 @@ GtkWidget *
 moo_edit_window_get_output_pane (MooEditWindow *window)
 {
     return moo_edit_window_get_pane (window, "moo-edit-window-output");
+}
+
+
+/************************************************************************/
+/* Doc list
+ */
+
+static void
+doc_list_action_toggled (gpointer       action,
+                         MooEditWindow *window)
+{
+    MooEdit *doc;
+
+    if (window->priv->doc_list_update_idle ||
+        !gtk_toggle_action_get_active (action))
+            return;
+
+    doc = g_object_get_data (action, "moo-edit");
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    if (doc != ACTIVE_DOC (window))
+        moo_edit_window_set_active_doc (window, doc);
+}
+
+
+static int
+compare_doc_list_actions (gpointer a1,
+                          gpointer a2)
+{
+    MooEdit *d1, *d2;
+    d1 = g_object_get_data (a1, "moo-edit");
+    d2 = g_object_get_data (a2, "moo-edit");
+    g_return_val_if_fail (d1 && d2, -1);
+    return strcmp (moo_edit_get_display_basename (d1),
+                   moo_edit_get_display_basename (d2));
+}
+
+
+static gboolean
+do_update_doc_list (MooEditWindow *window)
+{
+    MooUIXML *xml;
+    GSList *actions = NULL, *docs;
+    GSList *group = NULL;
+    MooUINode *ph;
+    gpointer active_doc;
+
+    active_doc = ACTIVE_DOC (window);
+
+    xml = moo_window_get_ui_xml (MOO_WINDOW (window));
+    g_return_val_if_fail (xml != NULL, FALSE);
+
+    if (xml != window->priv->xml)
+    {
+        if (window->priv->xml)
+        {
+            if (window->priv->doc_list_merge_id)
+                moo_ui_xml_remove_ui (window->priv->xml,
+                                      window->priv->doc_list_merge_id);
+            g_object_unref (window->priv->xml);
+        }
+
+        window->priv->xml = g_object_ref (xml);
+    }
+    else if (window->priv->doc_list_merge_id)
+    {
+        moo_ui_xml_remove_ui (xml, window->priv->doc_list_merge_id);
+    }
+
+    window->priv->doc_list_merge_id = 0;
+
+    ph = moo_ui_xml_find_placeholder (xml, "DocList");
+    g_return_val_if_fail (ph != NULL, FALSE);
+
+    docs = moo_edit_window_list_docs (window);
+
+    if (!docs)
+        goto out;
+
+    while (docs)
+    {
+        GtkRadioAction *action;
+        gpointer doc = docs->data;
+
+        action = g_object_get_data (doc, "moo-doc-list-action");
+
+        if (action)
+        {
+            g_object_set (action,
+                          "label", moo_edit_get_display_basename (doc),
+                          "tooltip", moo_edit_get_display_filename (doc),
+                          NULL);
+        }
+        else
+        {
+            char *name = g_strdup_printf ("MooEdit-%p", doc);
+            action = gtk_radio_action_new (name,
+                                           moo_edit_get_display_basename (doc),
+                                           moo_edit_get_display_filename (doc),
+                                           NULL, 0);
+            g_object_set_data_full (doc, "moo-doc-list-action", action, g_object_unref);
+            g_object_set_data (G_OBJECT (action), "moo-edit", doc);
+            g_signal_connect (action, "toggled", G_CALLBACK (doc_list_action_toggled), window);
+            gtk_action_group_add_action (moo_window_get_actions (MOO_WINDOW (window)),
+                                         GTK_ACTION (action));
+            g_free (name);
+        }
+
+        gtk_radio_action_set_group (action, group);
+        group = gtk_radio_action_get_group (action);
+        actions = g_slist_prepend (actions, action);
+
+        docs = g_slist_delete_link (docs, docs);
+    }
+
+    window->priv->doc_list_merge_id = moo_ui_xml_new_merge_id (xml);
+    actions = g_slist_sort (actions, (GCompareFunc) compare_doc_list_actions);
+
+    while (actions)
+    {
+        gpointer action = actions->data;
+        gpointer doc = g_object_get_data (G_OBJECT (action), "moo-edit");
+        char *markup = g_markup_printf_escaped ("<item action=\"%s\"/>",
+                                                gtk_action_get_name (action));
+
+        moo_ui_xml_insert (xml, window->priv->doc_list_merge_id, ph, -1, markup);
+        gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action),
+                                      doc == active_doc);
+
+        g_free (markup);
+        actions = g_slist_delete_link (actions, actions);
+    }
+
+out:
+    window->priv->doc_list_update_idle = 0;
+    return FALSE;
+}
+
+
+static void
+moo_edit_window_update_doc_list (MooEditWindow *window)
+{
+    if (!window->priv->doc_list_update_idle)
+        window->priv->doc_list_update_idle =
+                g_idle_add ((GSourceFunc) do_update_doc_list,
+                            window);
 }
 
 

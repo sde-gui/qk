@@ -109,6 +109,12 @@
       <separator/>
     </item>
 
+    <item name="Window" label="_Window">
+      <separator/>
+      <placeholder name="DocList"/>
+      <separator/>
+    </item>
+
     <item name="Help" label="_Help">
       <separator/>
       <item action="About"/>

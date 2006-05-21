@@ -1,3 +1,6 @@
+2006-05-21  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Added document list menu in editor windows.
+
 2006-05-19  Yevgen Muntyan  <muntyan@math.tamu.edu>
     Fixed crash on paste from another application.
 
