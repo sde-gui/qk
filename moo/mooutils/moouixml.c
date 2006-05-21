@@ -1608,7 +1608,7 @@ static gboolean node_is_empty (Node *node)
         Node *child = l->data;
 
         if (child->type == SEPARATOR)
-            continue;
+            return FALSE;
 
         if (child->type == PLACEHOLDER)
         {
