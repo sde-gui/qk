@@ -3089,6 +3089,7 @@ do_update_doc_list (MooEditWindow *window)
                                            NULL, 0);
             g_object_set_data_full (doc, "moo-doc-list-action", action, g_object_unref);
             g_object_set_data (G_OBJECT (action), "moo-edit", doc);
+            moo_action_set_no_accel (GTK_ACTION (action), TRUE);
             g_signal_connect (action, "toggled", G_CALLBACK (doc_list_action_toggled), window);
             gtk_action_group_add_action (moo_window_get_actions (MOO_WINDOW (window)),
                                          GTK_ACTION (action));
