@@ -19,6 +19,9 @@
 G_BEGIN_DECLS
 
 
+void    _moo_file_view_tools_load   (MooFileView    *fileview);
+void    _moo_file_view_tools_check  (MooFileView    *fileview);
+
 
 G_END_DECLS
 

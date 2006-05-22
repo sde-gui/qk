@@ -121,6 +121,7 @@ void        _moo_file_view_drag_finish                  (MooFileView    *filevie
 
 
 GList      *_moo_file_view_get_filenames                (MooFileView    *fileview);
+GList      *_moo_file_view_get_files                    (MooFileView    *fileview);
 
 
 G_END_DECLS

@@ -22,6 +22,10 @@
       </item>
       <separator/>
       <item action="Properties"/>
+      <separator/>
+      <item name="OpenWithSubmenu" label="Open _With">
+        <placeholder name="OpenWith"/>
+      </item>
     </widget> <!-- Menubar -->
 
     <widget name="Toolbar">

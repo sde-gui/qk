@@ -29,6 +29,7 @@
 #include "moofileview/moofileview-ui.h"
 #include "moofileview/mootreeview.h"
 #include "moofileview/moobookmarkview.h"
+#include "moofileview/moofileview-tools.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
@@ -851,6 +852,8 @@ _moo_file_view_init (MooFileView *fileview)
 
     init_gui (fileview);
     path_entry_init (fileview);
+
+    _moo_file_view_tools_load (fileview);
 }
 
 
@@ -2806,6 +2809,13 @@ _moo_file_view_get_filenames (MooFileView *fileview)
 }
 
 
+GList *
+_moo_file_view_get_files (MooFileView *fileview)
+{
+    return file_view_get_selected_files (fileview);
+}
+
+
 /* path in the filter model; result must be unrefed */
 static MooFile *
 file_view_get_file_at_path (MooFileView *fileview,
@@ -3107,6 +3117,7 @@ static void         do_popup                (MooFileView    *fileview,
     gtk_object_sink (GTK_OBJECT (g_object_ref (menu)));
     g_signal_connect (menu, "deactivate", G_CALLBACK (destroy_menu), NULL);
 
+    _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);
 
     if (event)
