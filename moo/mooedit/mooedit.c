@@ -945,18 +945,16 @@ moo_edit_set_lang (MooEdit *edit,
 
     old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
-    if (old_lang == lang)
-        return;
+    if (old_lang != lang)
+        moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
 
     _moo_edit_freeze_config_notify (edit);
-
     _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
                                  edit->config, moo_lang_id (lang));
-    moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
-
     _moo_edit_thaw_config_notify (edit);
 
-    g_object_notify (G_OBJECT (edit), "has-comments");
+    if (old_lang != lang)
+        g_object_notify (G_OBJECT (edit), "has-comments");
 }
 
 
