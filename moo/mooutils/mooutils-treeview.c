@@ -651,7 +651,11 @@ moo_tree_helper_connect (MooTreeHelper *helper,
 
 
 MooTreeHelper *
-moo_tree_helper_new (GtkWidget *widget)
+moo_tree_helper_new (GtkWidget *widget,
+                     GtkWidget *new_btn,
+                     GtkWidget *delete_btn,
+                     GtkWidget *up_btn,
+                     GtkWidget *down_btn)
 {
     MooTreeHelper *helper;
 
@@ -660,7 +664,7 @@ moo_tree_helper_new (GtkWidget *widget)
     helper = g_object_new (MOO_TYPE_TREE_HELPER, NULL);
     gtk_object_sink (g_object_ref (helper));
 
-    moo_tree_helper_connect (helper, widget, NULL, NULL, NULL, NULL);
+    moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
 
     return helper;
 }

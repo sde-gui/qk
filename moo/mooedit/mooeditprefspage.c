@@ -596,7 +596,7 @@ lang_combo_init (GtkComboBox        *combo,
                                         set_sensitive, NULL, NULL);
 
     moo_combo_box_select_first (combo);
-    helper = moo_tree_helper_new (GTK_WIDGET (combo));
+    helper = moo_tree_helper_new (GTK_WIDGET (combo), NULL, NULL, NULL, NULL);
     g_return_if_fail (helper != NULL);
 
     g_object_set_data_full (G_OBJECT (page), "moo-tree-helper",

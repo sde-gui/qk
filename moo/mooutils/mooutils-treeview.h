@@ -64,7 +64,11 @@ struct _MooConfigHelperClass {
 };
 
 
-MooTreeHelper   *moo_tree_helper_new                (GtkWidget          *treeview_or_combo);
+MooTreeHelper   *moo_tree_helper_new                (GtkWidget          *treeview_or_combo,
+                                                     GtkWidget          *new_btn,
+                                                     GtkWidget          *delete_btn,
+                                                     GtkWidget          *up_btn,
+                                                     GtkWidget          *down_btn);
 void             moo_tree_helper_update_model       (MooTreeHelper      *helper,
                                                      GtkTreeModel       *model,
                                                      GtkTreePath        *path);
