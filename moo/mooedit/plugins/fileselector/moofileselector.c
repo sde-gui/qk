@@ -15,12 +15,12 @@
 #include "config.h"
 #endif
 
-#include "mooedit/plugins/moofileselector.h"
+#include "moofileselector.h"
 #include "mooedit/mooplugin-macro.h"
 #include "moofileview/moobookmarkmgr.h"
+#include "moofileview/moofileview-tools.h"
 #include "mooedit/plugins/mooeditplugins.h"
-#include "mooedit/plugins/moofileselector-glade.h"
-#include "mooedit/plugins/moofilechooser.h"
+#include "mooedit/plugins/fileselector/moofileselector-glade.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
@@ -45,6 +45,7 @@ typedef struct {
     MooPlugin parent;
     MooBookmarkMgr *bookmark_mgr;
     guint ui_merge_id;
+    GSList *instances;
 } FileSelectorPlugin;
 
 #define Plugin FileSelectorPlugin
@@ -64,7 +65,7 @@ static GtkTargetEntry targets[] = {
 
 #define OPEN_PANE_TIMEOUT 300
 
-G_DEFINE_TYPE (MooFileSelector, moo_file_selector, MOO_TYPE_FILE_VIEW)
+G_DEFINE_TYPE (MooFileSelector, _moo_file_selector, MOO_TYPE_FILE_VIEW)
 
 
 enum {
@@ -130,7 +131,7 @@ static gboolean button_drag_motion          (GtkWidget      *button,
 
 
 static void
-moo_file_selector_class_init (MooFileSelectorClass *klass)
+_moo_file_selector_class_init (MooFileSelectorClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     MooFileViewClass *fileview_class = MOO_FILE_VIEW_CLASS (klass);
@@ -158,7 +159,7 @@ moo_file_selector_class_init (MooFileSelectorClass *klass)
 
 
 static void
-moo_file_selector_init (MooFileSelector *filesel)
+_moo_file_selector_init (MooFileSelector *filesel)
 {
     filesel->targets = gtk_target_list_new (targets, G_N_ELEMENTS (targets));
     _moo_file_view_add_target (MOO_FILE_VIEW (filesel), moo_edit_tab_atom,
@@ -171,7 +172,7 @@ moo_file_selector_finalize (GObject *object)
 {
     MooFileSelector *filesel = MOO_FILE_SELECTOR (object);
     gtk_target_list_unref (filesel->targets);
-    G_OBJECT_CLASS(moo_file_selector_parent_class)->finalize (object);
+    G_OBJECT_CLASS(_moo_file_selector_parent_class)->finalize (object);
 }
 
 
@@ -243,7 +244,7 @@ moo_file_selector_chdir (MooFileView    *fileview,
 {
     gboolean result;
 
-    result = MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->chdir (fileview, dir, error);
+    result = MOO_FILE_VIEW_CLASS(_moo_file_selector_parent_class)->chdir (fileview, dir, error);
 
     if (result)
     {
@@ -297,7 +298,7 @@ moo_file_selector_constructor (GType           type,
     MooFileView *fileview;
     GObject *object;
 
-    object = G_OBJECT_CLASS(moo_file_selector_parent_class)->constructor (type, n_props, props);
+    object = G_OBJECT_CLASS(_moo_file_selector_parent_class)->constructor (type, n_props, props);
     filesel = MOO_FILE_SELECTOR (object);
     fileview = MOO_FILE_VIEW (object);
 
@@ -463,7 +464,7 @@ moo_file_selector_drop (MooFileView    *fileview,
     target = gtk_drag_dest_find_target (widget, context, filesel->targets);
 
     if (target != moo_edit_tab_atom)
-        return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
+        return MOO_FILE_VIEW_CLASS(_moo_file_selector_parent_class)->
                 drop (fileview, path, widget, context, x, y, time);
 
     filesel->waiting_for_tab = TRUE;
@@ -520,7 +521,7 @@ error:
     return FALSE;
 
 parent:
-    return MOO_FILE_VIEW_CLASS(moo_file_selector_parent_class)->
+    return MOO_FILE_VIEW_CLASS(_moo_file_selector_parent_class)->
                 drop_data_received (fileview, path, widget, context,
                                     x, y, data, info, time);
 }
@@ -1045,50 +1046,6 @@ show_file_selector (MooEditWindow *window)
 }
 
 
-#if 0
-static void
-show_file_chooser (MooEditWindow *window)
-{
-    GtkWidget *dialog;
-    int response;
-
-    dialog = g_object_get_data (G_OBJECT (window), "moo-file-chooser");
-
-    if (!dialog)
-    {
-        dialog = moo_file_chooser_new ();
-        gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
-        g_object_set_data_full (G_OBJECT (window), "moo-file-chooser",
-                                dialog, (GDestroyNotify) gtk_widget_destroy);
-    }
-
-    response = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_hide (dialog);
-
-    if (response == GTK_RESPONSE_OK)
-    {
-        GSList *files = NULL;
-        GList *filenames;
-
-        filenames = _moo_file_view_get_filenames (MOO_FILE_CHOOSER (dialog)->fileview);
-
-        while (filenames)
-        {
-            MooEditFileInfo *info = moo_edit_file_info_new (filenames->data, NULL);
-            files = g_slist_prepend (files, info);
-            g_free (filenames->data);
-            filenames = g_list_delete_link (filenames, filenames);
-        }
-
-        moo_editor_open (moo_edit_window_get_editor (window), window, NULL, files);
-
-        g_slist_foreach (files, (GFunc) moo_edit_file_info_free, NULL);
-        g_slist_free (files);
-    }
-}
-#endif
-
-
 static gboolean
 file_selector_plugin_init (Plugin *plugin)
 {
@@ -1150,6 +1107,7 @@ file_selector_plugin_attach (Plugin        *plugin,
                              MooEditWindow *window)
 {
     MooEditor *editor;
+    GtkWidget *filesel;
 
     editor = moo_edit_window_get_editor (window);
 
@@ -1157,19 +1115,33 @@ file_selector_plugin_attach (Plugin        *plugin,
         plugin->bookmark_mgr = _moo_bookmark_mgr_new ();
 
     /* it attaches itself to window */
-    g_object_new (MOO_TYPE_FILE_SELECTOR,
-                  "filter-mgr", moo_editor_get_filter_mgr (editor),
-                  "bookmark-mgr", plugin->bookmark_mgr,
-                  "window", window,
-                  NULL);
+    filesel = g_object_new (MOO_TYPE_FILE_SELECTOR,
+                            "filter-mgr", moo_editor_get_filter_mgr (editor),
+                            "bookmark-mgr", plugin->bookmark_mgr,
+                            "window", window,
+                            NULL);
+
+    plugin->instances = g_slist_prepend (plugin->instances, filesel);
 }
 
 
 static void
-file_selector_plugin_detach (G_GNUC_UNUSED Plugin *plugin,
+file_selector_plugin_detach (Plugin        *plugin,
                              MooEditWindow *window)
 {
+    GtkWidget *filesel = moo_edit_window_get_pane (window, PLUGIN_ID);
+    g_return_if_fail (filesel != NULL);
+    plugin->instances = g_slist_remove (plugin->instances, filesel);
     moo_edit_window_remove_pane (window, PLUGIN_ID);
+}
+
+
+void
+_moo_file_selector_update_tools (MooPlugin *plugin)
+{
+    GSList *l;
+    for (l = ((Plugin*)plugin)->instances; l != NULL; l = l->next)
+        _moo_file_view_tools_load (l->data);
 }
 
 
@@ -1180,7 +1152,9 @@ MOO_PLUGIN_DEFINE_INFO (file_selector, PLUGIN_ID,
 MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
                         file_selector_plugin_init, file_selector_plugin_deinit,
                         file_selector_plugin_attach, file_selector_plugin_detach,
-                        NULL, NULL, NULL, 0, 0);
+                        NULL, NULL,
+                        _moo_file_selector_prefs_page,
+                        0, 0);
 
 
 gboolean

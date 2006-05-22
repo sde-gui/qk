@@ -14,13 +14,13 @@
 #ifndef __MOO_FILE_SELECTOR_H__
 #define __MOO_FILE_SELECTOR_H__
 
-#include "mooedit/mooeditwindow.h"
+#include "mooedit/mooplugin.h"
 #include "moofileview/moofileview.h"
 
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_FILE_SELECTOR              (moo_file_selector_get_type ())
+#define MOO_TYPE_FILE_SELECTOR              (_moo_file_selector_get_type ())
 #define MOO_FILE_SELECTOR(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SELECTOR, MooFileSelector))
 #define MOO_FILE_SELECTOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
 #define MOO_IS_FILE_SELECTOR(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SELECTOR))
@@ -50,8 +50,9 @@ struct _MooFileSelectorClass
 };
 
 
-GType       moo_file_selector_get_type                      (void) G_GNUC_CONST;
-GtkWidget  *moo_file_selector_new                           (void);
+GType       _moo_file_selector_get_type     (void) G_GNUC_CONST;
+GtkWidget  *_moo_file_selector_prefs_page   (MooPlugin  *plugin);
+void        _moo_file_selector_update_tools (MooPlugin  *plugin);
 
 
 G_END_DECLS

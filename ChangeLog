@@ -1,3 +1,6 @@
+2006-05-22  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    Added Open With submenu in file selector popup menu.
+
 2006-05-21  Yevgen Muntyan  <muntyan@math.tamu.edu>
     Fixed bug with per-language settings lost on save.
 
