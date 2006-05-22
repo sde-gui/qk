@@ -8,7 +8,9 @@ fileselector_extra_dist =			\
 fileselector_sources =				\
 	$(fileselector)/moofileselector-prefs.c	\
 	$(fileselector)/moofileselector.c	\
-	$(fileselector)/moofileselector.h
+	$(fileselector)/moofileselector.h	\
+	$(fileselector)/moofileselector-glade.h	\
+	$(fileselector)/moofileselector-prefs-glade.h
 
 fileselector_built_sources =			\
 	$(fileselector)/moofileselector-glade.h	\
