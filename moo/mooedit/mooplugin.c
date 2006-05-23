@@ -270,7 +270,7 @@ moo_plugin_register (GType type)
 
     if (moo_plugin_lookup (moo_plugin_id (plugin)))
     {
-        g_warning ("%s: plugin with id %s already registered",
+        g_message ("%s: plugin with id %s already registered",
                    G_STRLOC, moo_plugin_id (plugin));
         g_object_unref (plugin);
         return FALSE;
