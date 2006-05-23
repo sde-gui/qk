@@ -681,6 +681,12 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "NoDocuments",
+                                 "display-name", "No Documents",
+                                 "label", "No Documents",
+                                 "no-accel", TRUE,
+                                 NULL);
+
 #ifdef MOO_ENABLE_PRINTING
     moo_window_class_new_action (window_class, "PrintOptions",
                                  "display-name", "Print Options",
@@ -915,6 +921,7 @@ moo_edit_window_constructor (GType                  type,
     GtkWidget *notebook;
     MooEditWindow *window;
     GtkWindowGroup *group;
+    GtkAction *no_docs;
 
     GObject *object =
             G_OBJECT_CLASS(moo_edit_window_parent_class)->constructor (type, n_props, props);
@@ -943,6 +950,9 @@ moo_edit_window_constructor (GType                  type,
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
     g_signal_connect (window, "notify::ui-xml",
                       G_CALLBACK (moo_edit_window_update_doc_list), NULL);
+
+    no_docs = moo_window_get_action (MOO_WINDOW (window), "NoDocuments");
+    g_object_set (no_docs, "sensitive", FALSE, NULL);
 
     edit_changed (window, NULL);
 
@@ -3033,6 +3043,7 @@ do_update_doc_list (MooEditWindow *window)
     GSList *group = NULL;
     MooUINode *ph;
     gpointer active_doc;
+    GtkAction *no_docs;
 
     active_doc = ACTIVE_DOC (window);
 
@@ -3062,6 +3073,9 @@ do_update_doc_list (MooEditWindow *window)
     g_return_val_if_fail (ph != NULL, FALSE);
 
     docs = moo_edit_window_list_docs (window);
+
+    no_docs = moo_window_get_action (MOO_WINDOW (window), "NoDocuments");
+    g_object_set (no_docs, "visible", (gboolean) (docs == NULL), NULL);
 
     if (!docs)
         goto out;
