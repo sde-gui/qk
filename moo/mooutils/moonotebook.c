@@ -146,6 +146,8 @@ static void     moo_notebook_get_property   (GObject        *object,
                                              GValue         *value,
                                              GParamSpec     *pspec);
 
+static void     moo_notebook_style_set      (GtkWidget      *widget,
+                                             GtkStyle       *prev_style);
 static void     moo_notebook_realize        (GtkWidget      *widget);
 static void     moo_notebook_unrealize      (GtkWidget      *widget);
 static void     moo_notebook_map            (GtkWidget      *widget);
@@ -306,6 +308,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
 
     gtkobject_class->destroy = moo_notebook_destroy;
 
+    widget_class->style_set = moo_notebook_style_set;
     widget_class->realize = moo_notebook_realize;
     widget_class->unrealize = moo_notebook_unrealize;
     widget_class->map = moo_notebook_map;
@@ -957,7 +960,8 @@ moo_notebook_parent_set (GtkWidget *widget,
 }
 
 
-static void     moo_notebook_realize        (GtkWidget      *widget)
+static void
+moo_notebook_realize (GtkWidget *widget)
 {
     static GdkWindowAttr attributes;
     gint attributes_mask;
@@ -1010,6 +1014,22 @@ static void     moo_notebook_realize        (GtkWidget      *widget)
         Page *page = l->data;
         gtk_widget_set_parent_window (page->label->widget, nb->priv->tab_window);
     }
+}
+
+
+static void
+moo_notebook_style_set (GtkWidget *widget,
+                        GtkStyle  *prev_style)
+{
+    MooNotebook *nb = MOO_NOTEBOOK (widget);
+
+    if (nb->priv->tab_window)
+        gtk_style_set_background (widget->style,
+                                  nb->priv->tab_window,
+                                  GTK_STATE_NORMAL);
+
+    if (GTK_WIDGET_CLASS(moo_notebook_parent_class)->style_set)
+        GTK_WIDGET_CLASS(moo_notebook_parent_class)->style_set (widget, prev_style);
 }
 
 
