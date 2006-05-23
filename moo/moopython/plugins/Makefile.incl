@@ -7,7 +7,7 @@ moopython_plugins_libdir = $(MOO_LIB_DIR)/plugins/lib
 
 moopython_plugins_DATA =                      \
     $(moopython)/plugins/console.py           \
-    $(moopython)/plugins/pystuff.py
+    $(moopython)/plugins/python.py
 
 moopython_plugins_lib_DATA =                  \
     $(moopython)/plugins/pyconsole.py

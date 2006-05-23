@@ -10,15 +10,13 @@ if os.name == 'nt':
 else:
     PYTHON_COMMAND = 'python'
 
-SHOW_LOG_WINDOW = False
-
 try:
     import pyconsole
     have_pyconsole = True
 except ImportError:
     have_pyconsole = False
 
-PLUGIN_ID = "PyStuff"
+PLUGIN_ID = "Python"
 
 class FileLine(object):
     def __init__(self, filename, line):
@@ -32,20 +30,13 @@ class Plugin(moo.edit.Plugin):
 
         self.info = {
             "id" : PLUGIN_ID,
-            "name" : "Python Stuff",
-            "description" : "Python stuff",
+            "name" : "Python",
+            "description" : "Python support",
             "author" : "Yevgen Muntyan <muntyan@math.tamu.edu>",
             "version" : "3.1415926",
             "enabled" : True,
             "visible" : True
         }
-
-        if SHOW_LOG_WINDOW:
-            self.add_window_action(moo.edit.EditWindow, "ShowLogWindow",
-                                   display_name="Show Log Window",
-                                   label="Show Log Window",
-                                   callback=self.show_log_window)
-            self.add_ui("ToolsMenu", "ShowLogWindow")
 
         if have_pyconsole:
             self.add_window_action(moo.edit.EditWindow, "PythonConsole",
@@ -67,9 +58,6 @@ class Plugin(moo.edit.Plugin):
                                callback=self.run_file)
         moo.edit.window_set_action_langs("RunFile", "sensitive", ["python"])
         self.add_ui("ToolsMenu", "RunFile")
-
-    def show_log_window(self, window):
-        moo.app.get_instance().show_python_console()
 
     def show_console(self, window):
         window = gtk.Window()
