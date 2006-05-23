@@ -446,7 +446,6 @@ run_exe (MooCommand *cmd)
     gboolean result;
 
     g_return_if_fail (cmd->string != NULL);
-    g_critical ("%s: implement me", G_STRLOC);
 
     cmd_line = expand_vars (cmd, cmd->string);
 
@@ -467,13 +466,12 @@ run_shell (MooCommand *cmd)
     gboolean result;
 
     g_return_if_fail (cmd->string != NULL);
-    g_critical ("%s: implement me", G_STRLOC);
 
     cmd_line = expand_vars (cmd, cmd->string);
 #ifndef __WIN32__
     sh_command_line = g_strdup_printf ("sh -c '%s'", cmd_line);
 #else
-    sh_command_line = g_strdup_printf ("cmd.exe '%s'", cmd_line);
+    sh_command_line = g_strdup_printf ("cmd.exe \"%s\"", cmd_line);
 #endif
 
     g_signal_emit (cmd, signals[RUN_EXE], 0, sh_command_line, &result);
@@ -529,7 +527,7 @@ moo_command_run_exe (MooCommand *cmd,
         return FALSE;
     }
 
-    g_signal_connect (cmd, "cmd_exit", G_CALLBACK (cmd_exit), NULL);
+    g_signal_connect (worker, "cmd_exit", G_CALLBACK (cmd_exit), NULL);
 
     return TRUE;
 }
