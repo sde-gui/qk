@@ -267,6 +267,27 @@ prefs_page_apply (MooPrefsDialogPage *page)
 /* Language combo
  */
 
+static void
+fix_style (G_GNUC_UNUSED GtkWidget *combo)
+{
+#ifdef __WIN32__
+    static gboolean been_here = FALSE;
+
+    gtk_widget_set_name (combo, "moo-lang-combo");
+
+    if (!been_here)
+    {
+        been_here = TRUE;
+        gtk_rc_parse_string ("style \"moo-lang-combo\"\n"
+                             "{\n"
+                             "   GtkComboBox::appears-as-list = 0\n"
+                             "}\n"
+                             "widget \"*.moo-lang-combo\" style \"moo-lang-combo\"\n");
+    }
+#endif
+}
+
+
 enum {
     COLUMN_ID,
     COLUMN_NAME,
@@ -397,6 +418,8 @@ default_lang_combo_init (GtkComboBox        *combo,
 {
     GtkTreeModel *model;
     GtkCellRenderer *cell;
+
+    fix_style (GTK_WIDGET (combo));
 
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
@@ -580,6 +603,8 @@ lang_combo_init (GtkComboBox        *combo,
     GtkTreeModel *model;
     GtkCellRenderer *cell;
     MooTreeHelper *helper;
+
+    fix_style (GTK_WIDGET (combo));
 
     model = page_get_lang_model (page);
     g_return_if_fail (model != NULL);
