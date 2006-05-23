@@ -946,15 +946,12 @@ moo_edit_set_lang (MooEdit *edit,
     old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
     if (old_lang != lang)
+    {
         moo_text_view_set_lang (MOO_TEXT_VIEW (edit), lang);
-
-    _moo_edit_freeze_config_notify (edit);
-    _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
-                                 edit->config, moo_lang_id (lang));
-    _moo_edit_thaw_config_notify (edit);
-
-    if (old_lang != lang)
+        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
+                                     edit->config, moo_lang_id (lang));
         g_object_notify (G_OBJECT (edit), "has-comments");
+    }
 }
 
 
@@ -1015,8 +1012,11 @@ static void
 moo_edit_filename_changed (MooEdit    *edit,
                            const char *filename)
 {
-    MooLang *lang = NULL;
+    gboolean lang_changed = FALSE;
+    MooLang *lang = NULL, *old_lang = NULL;
     const char *lang_id = NULL;
+
+    old_lang = moo_text_view_get_lang (MOO_TEXT_VIEW (edit));
 
     _moo_edit_freeze_config_notify (edit);
 
@@ -1033,6 +1033,17 @@ moo_edit_filename_changed (MooEdit    *edit,
     moo_edit_config_set (edit->config, "indent", MOO_EDIT_CONFIG_SOURCE_FILENAME, NULL, NULL);
 
     try_mode_strings (edit);
+
+    lang_id = moo_edit_config_get_string (edit->config, "lang");
+
+    if (!lang_id)
+        lang_id = MOO_LANG_NONE;
+
+    lang_changed = strcmp (lang_id, moo_lang_id (old_lang)) != 0;
+
+    if (!lang_changed)
+        _moo_lang_mgr_update_config (moo_editor_get_lang_mgr (edit->priv->editor),
+                                     edit->config, moo_lang_id (lang));
 
     _moo_edit_thaw_config_notify (edit);
 }
