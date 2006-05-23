@@ -61,6 +61,17 @@ static gboolean moo_cmd_run_command     (MooCmd     *cmd,
                                          gpointer    user_data,
                                          GError    **error);
 
+#if 0 && defined(__WIN32__)
+static gboolean moo_win32_spawn_async_with_pipes (const gchar *working_directory,
+                                                  gchar **argv,
+                                                  gchar **envp,
+                                                  GSpawnFlags flags,
+                                                  GPid *child_pid,
+                                                  gint *standard_input,
+                                                  gint *standard_output,
+                                                  gint *standard_error,
+                                                  GError **error);
+#endif
 
 
 enum {
@@ -482,16 +493,35 @@ moo_cmd_run_command (MooCmd     *cmd,
 
     g_return_val_if_fail (!cmd->priv->running, FALSE);
 
-    if ((flags & G_SPAWN_STDOUT_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDOUT_TO_PARENT))
+#ifdef __WIN32__
+    if (cmd_flags & MOO_CMD_OPEN_CONSOLE)
+    {
         outp = NULL;
-    else
-        outp = &cmd->priv->stdout;
-
-    if ((flags & G_SPAWN_STDERR_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDERR_TO_PARENT))
         errp = NULL;
+    }
     else
-        errp = &cmd->priv->stderr;
+#endif
+    {
+        if ((flags & G_SPAWN_STDOUT_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDOUT_TO_PARENT))
+            outp = NULL;
+        else
+            outp = &cmd->priv->stdout;
 
+        if ((flags & G_SPAWN_STDERR_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDERR_TO_PARENT))
+            errp = NULL;
+        else
+            errp = &cmd->priv->stderr;
+    }
+
+#if 0 && defined(__WIN32__)
+    if (!(cmd_flags & MOO_CMD_OPEN_CONSOLE))
+        result = moo_win32_spawn_async_with_pipes (working_dir,
+                                                   argv, envp,
+                                                   flags | G_SPAWN_DO_NOT_REAP_CHILD,
+                                                   &cmd->priv->pid,
+                                                   NULL, outp, errp, error);
+    else
+#endif
     result = g_spawn_async_with_pipes (working_dir,
                                        argv, envp,
                                        flags | G_SPAWN_DO_NOT_REAP_CHILD,

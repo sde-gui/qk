@@ -37,7 +37,8 @@ typedef enum {
     MOO_CMD_COLLECT_STDERR      = 1 << 1,
     MOO_CMD_STDOUT_TO_PARENT    = 1 << 2,
     MOO_CMD_STDERR_TO_PARENT    = 1 << 3,
-    MOO_CMD_UTF8_OUTPUT         = 1 << 4
+    MOO_CMD_UTF8_OUTPUT         = 1 << 4,
+    MOO_CMD_OPEN_CONSOLE        = 1 << 5
 } MooCmdFlags;
 
 struct _MooCmd
