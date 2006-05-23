@@ -2053,6 +2053,9 @@ create_tool_item (MooUIXML       *xml,
             tool_item = gtk_action_create_tool_item (action);
         }
 
+        if (index > gtk_toolbar_get_n_items (toolbar))
+            index = -1;
+
         gtk_toolbar_insert (toolbar, GTK_TOOL_ITEM (tool_item), index);
         g_object_notify (G_OBJECT (action), "tooltip");
 
