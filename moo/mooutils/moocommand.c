@@ -470,7 +470,7 @@ run_shell (MooCommand *cmd)
     g_critical ("%s: implement me", G_STRLOC);
 
     cmd_line = expand_vars (cmd, cmd->string);
-#ifdef __WIN32__
+#ifndef __WIN32__
     sh_command_line = g_strdup_printf ("sh -c '%s'", cmd_line);
 #else
     sh_command_line = g_strdup_printf ("cmd.exe '%s'", cmd_line);
