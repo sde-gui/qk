@@ -111,6 +111,7 @@
 
     <item name="Window" label="_Window">
       <separator/>
+      <item action="NoDocuments"/>
       <placeholder name="DocList"/>
       <separator/>
     </item>
