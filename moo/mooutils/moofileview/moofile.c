@@ -110,7 +110,7 @@ static void     folder_emit_files           (MooFolder  *folder,
                                              guint       signal,
                                              GSList     *files);
 
-static gboolean moo_folder_reload           (MooFolder  *folder);
+static gboolean moo_folder_do_reload        (MooFolder  *folder);
 
 static void     stop_populate               (MooFolder  *folder);
 
@@ -915,6 +915,19 @@ file_deleted (MooFolder      *folder,
 }
 
 
+void
+_moo_folder_reload (MooFolder *folder)
+{
+    g_return_if_fail (MOO_IS_FOLDER (folder));
+
+    if (folder->priv->reload_idle)
+        g_source_remove (folder->priv->reload_idle);
+    folder->priv->reload_idle = 0;
+
+    moo_folder_do_reload (folder);
+}
+
+
 static void
 file_changed (MooFolder  *folder,
               const char *name)
@@ -925,12 +938,13 @@ file_changed (MooFolder  *folder,
     {
         if (!folder->priv->reload_idle)
             folder->priv->reload_idle =
-                    g_idle_add ((GSourceFunc) moo_folder_reload,
+                    g_idle_add ((GSourceFunc) moo_folder_do_reload,
                                 folder);
     }
     else
     {
         /* XXX */
+        g_return_if_reached ();
     }
 }
 
@@ -975,7 +989,7 @@ file_created (MooFolder  *folder,
 
 /* TODO */
 static gboolean
-moo_folder_reload (MooFolder *folder)
+moo_folder_do_reload (MooFolder *folder)
 {
     GHashTable *files;
     GDir *dir;

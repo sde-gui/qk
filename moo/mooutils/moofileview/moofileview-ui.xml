@@ -39,6 +39,7 @@
         <item action="AddBookmark"/>
         <item action="EditBookmarks"/>
       </item>
+      <item action="Reload"/>
     </widget> <!-- Toolbar -->
 
   </object> <!-- MooFileView -->

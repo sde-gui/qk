@@ -172,6 +172,7 @@ char        *_moo_folder_get_parent_path(MooFolder      *folder);
 
 char       **_moo_folder_get_file_info  (MooFolder      *folder,
                                          MooFile        *file);
+void         _moo_folder_reload         (MooFolder      *folder);
 
 
 #ifdef MOO_FILE_SYSTEM_COMPILATION

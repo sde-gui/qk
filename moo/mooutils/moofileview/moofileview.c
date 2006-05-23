@@ -182,6 +182,7 @@ static void         moo_file_view_set_current_dir (MooFileView  *fileview,
 static gboolean     moo_file_view_chdir_real    (MooFileView    *fileview,
                                                  const char     *dir,
                                                  GError        **error);
+static void         moo_file_view_reload        (MooFileView    *fileview);
 
 static void         moo_file_view_go_up     (MooFileView    *fileview);
 static void         moo_file_view_go_home   (MooFileView    *fileview);
@@ -440,6 +441,7 @@ enum {
     CUT_CLIPBOARD,
     COPY_CLIPBOARD,
     PASTE_CLIPBOARD,
+    RELOAD,
     LAST_SIGNAL
 };
 
@@ -685,6 +687,15 @@ _moo_file_view_class_init (MooFileViewClass *klass)
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                G_CALLBACK (file_view_properties_dialog),
+                               NULL, NULL,
+                               _moo_marshal_VOID__VOID,
+                               G_TYPE_NONE, 0);
+
+    signals[RELOAD] =
+            moo_signal_new_cb ("reload",
+                               G_OBJECT_CLASS_TYPE (klass),
+                               G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                               G_CALLBACK (moo_file_view_reload),
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
@@ -1032,6 +1043,14 @@ moo_file_view_chdir_real (MooFileView    *fileview,
 
 
 static void
+moo_file_view_reload (MooFileView *fileview)
+{
+    if (fileview->priv->current_dir)
+        _moo_folder_reload (fileview->priv->current_dir);
+}
+
+
+static void
 init_actions (MooFileView *fileview)
 {
     GtkAction *action;
@@ -1192,6 +1211,16 @@ init_actions (MooFileView *fileview)
                                           "closure-object", fileview,
                                           "closure-callback", file_view_paste_clipboard,
                                           NULL);
+
+#ifdef __WIN32__
+    moo_action_group_add_action (fileview->priv->actions, "Reload",
+                                 "label", "Reload",
+                                 "tooltip", "Reload",
+                                 "stock-id", GTK_STOCK_REFRESH,
+                                 "closure-object", fileview,
+                                 "closure-signal", "reload",
+                                 NULL);
+#endif
 }
 
 
