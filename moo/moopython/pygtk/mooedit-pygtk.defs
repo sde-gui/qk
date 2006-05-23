@@ -527,6 +527,18 @@
   (return-type "none")
 )
 
+(define-method get_output
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_output")
+  (return-type "GtkWidget*")
+)
+
+(define-method get_output_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_output_pane")
+  (return-type "GtkWidget*")
+)
+
 (define-function window_set_action_langs
   (c-name "moo_edit_window_set_action_langs")
   (return-type "none")
