@@ -22,8 +22,8 @@
 
     <context name="Normal" style="Normal Text" eol-context="#stay">
       <Keyword style="Keyword" context="#stay" keyword="keywords"/>
-      <Regex style="Variable" context="Value" pattern="[_\w\d]*\s*(?=:=|=)"/>
-      <Regex style="Target" context="#stay" pattern="[_\w\d-]*\s*:" first-non-blank-only="true"/>
+      <Regex style="Target" context="#stay" pattern="^[^:]*\s*:"/>
+      <Regex style="Variable" context="Value" pattern="[_\w\d]*\s*(?=:=|=|\+=)"/>
       <Regex style="Section" context="#stay" pattern="^[.].*:"/>
       <Char style="String" context="String" char="&quot;"/>
       <Regex style="Operator" context="VarFromNormal" pattern="[$][\({]"/>

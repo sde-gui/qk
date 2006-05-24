@@ -37,8 +37,8 @@
       <Regex pattern="\S" style="Normal Text" context="#pop"/>
     </context>
     <context name="Environment" style="Environment" eol-context="#stay">
-      <Char char="}" style="Normal Text" context="#pop#pop"/>
-      <Char char="]" style="Normal Text" context="#pop#pop"/>
+      <Char char="}" style="Normal Text" include-into-next="TRUE" context="#pop#pop"/>
+      <Char char="]" style="Normal Text" include-into-next="TRUE" context="#pop#pop"/>
       <Regex pattern="(semiverbatim|verbatim|lstlisting|boxedverbatim|Verbatim)\*?" style="Environment" context="VerbatimEnv"/>
       <Regex pattern="(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|alignat|flalign)\*?" style="Environment" context="MathEnv"/>
     </context>
