@@ -182,6 +182,69 @@ ms_node_list_add (MSNodeList *list,
 
 
 /****************************************************************************/
+/* MSNodeEnvVar
+ */
+
+static void
+ms_node_env_var_destroy (MSNode *node)
+{
+    MSNodeEnvVar *var = MS_NODE_ENV_VAR (node);
+    ms_node_unref (var->name);
+}
+
+
+static MSValue *
+ms_node_env_var_eval (MSNode    *node,
+                      MSContext *ctx)
+{
+    MSValue *name, *ret;
+    MSNodeEnvVar *var = MS_NODE_ENV_VAR (node);
+
+    name = _ms_node_eval (var->name, ctx);
+
+    if (!name)
+        return NULL;
+
+    if (MS_VALUE_TYPE (name) != MS_VALUE_STRING || !name->str)
+    {
+        ms_context_format_error (ctx, MS_ERROR_TYPE,
+                                 "in $(%v): variable name must be a string",
+                                 name);
+        ms_value_unref (name);
+        return NULL;
+    }
+
+    ret = ms_context_get_env_variable (ctx, name->str);
+    ms_value_unref (name);
+
+    if (ret || ctx->error)
+        return ret;
+
+    return var->dflt ? _ms_node_eval (var->dflt, ctx) : ms_value_none ();
+}
+
+
+MSNodeEnvVar *
+ms_node_env_var_new (MSNode *name,
+                     MSNode *dflt)
+{
+    MSNodeEnvVar *var;
+
+    g_return_val_if_fail (name != NULL, NULL);
+
+    var = NODE_NEW (MSNodeEnvVar,
+                    MS_TYPE_NODE_ENV_VAR,
+                    ms_node_env_var_eval,
+                    ms_node_env_var_destroy);
+
+    var->name = ms_node_ref (name);
+    var->dflt = dflt ? ms_node_ref (dflt) : NULL;
+
+    return var;
+}
+
+
+/****************************************************************************/
 /* MSNodeVar
  */
 

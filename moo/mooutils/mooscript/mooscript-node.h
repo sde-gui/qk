@@ -23,6 +23,7 @@ typedef enum {
     MS_TYPE_NODE_0,
     MS_TYPE_NODE_LIST,
     MS_TYPE_NODE_VAR,
+    MS_TYPE_NODE_ENV_VAR,
     MS_TYPE_NODE_FUNCTION,
     MS_TYPE_NODE_IF_ELSE,
     MS_TYPE_NODE_WHILE,
@@ -52,6 +53,7 @@ typedef struct _MSNodeWhile MSNodeWhile;
 typedef struct _MSNodeFor MSNodeFor;
 typedef struct _MSNodeAssign MSNodeAssign;
 typedef struct _MSNodeValue MSNodeValue;
+typedef struct _MSNodeEnvVar MSNodeEnvVar;
 typedef struct _MSNodeValList MSNodeValList;
 typedef struct _MSNodePython MSNodePython;
 typedef struct _MSNodeBreak MSNodeBreak;
@@ -115,6 +117,7 @@ _ms_node_check_type (gpointer   pnode,
 #define MS_NODE_FOR(node_)          MS_NODE_CAST (node_, MS_TYPE_NODE_FOR, MSNodeFor)
 #define MS_NODE_ASSIGN(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_ASSIGN, MSNodeAssign)
 #define MS_NODE_VALUE(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_VALUE, MSNodeValue)
+#define MS_NODE_ENV_VAR(node_)      MS_NODE_CAST (node_, MS_TYPE_NODE_ENV_VAR, MSNodeEnvVar)
 #define MS_NODE_VAL_LIST(node_)     MS_NODE_CAST (node_, MS_TYPE_NODE_VAL_LIST, MSNodeValList)
 #define MS_NODE_PYTHON(node_)       MS_NODE_CAST (node_, MS_TYPE_NODE_PYTHON, MSNodePython)
 #define MS_NODE_BREAK(node_)        MS_NODE_CAST (node_, MS_TYPE_NODE_BREAK, MSNodeBreak)
@@ -206,6 +209,13 @@ struct _MSNodeSetItem {
 struct _MSNodeValue {
     MSNode node;
     MSValue *value;
+};
+
+
+struct _MSNodeEnvVar {
+    MSNode node;
+    MSNode *name;
+    MSNode *dflt;
 };
 
 
@@ -311,6 +321,8 @@ MSNodeValList  *ms_node_val_list_new        (MSNodeList *list);
 MSNodeValList  *ms_node_val_range_new       (MSNode     *first,
                                              MSNode     *last);
 
+MSNodeEnvVar   *ms_node_env_var_new         (MSNode     *name,
+                                             MSNode     *dflt);
 MSNodeVar      *ms_node_var_new             (const char *name);
 
 MSNodePython   *ms_node_python_new          (const char *script);

@@ -338,6 +338,20 @@ node_continue (MSParser *parser)
 
 
 static MSNode *
+node_env_var (MSParser   *parser,
+              MSNode     *var,
+              MSNode     *deflt)
+{
+    MSNodeEnvVar *node;
+
+    node = ms_node_env_var_new (var, deflt);
+    _ms_parser_add_node (parser, node);
+
+    return MS_NODE (node);
+}
+
+
+static MSNode *
 node_dict_elm (MSParser   *parser,
                MSNode     *dict,
                const char *key)
@@ -504,6 +518,9 @@ simple_expr:
         | simple_expr '(' list_elms ')'     { $$ = node_function (parser, $1, $3 ? MS_NODE_LIST ($3) : NULL); }
         | simple_expr '[' expr ']'          { $$ = node_get_item (parser, $1, $3); }
         | simple_expr '.' IDENTIFIER        { $$ = node_dict_elm (parser, $1, $3); }
+        | '$' '(' stmt ')'                  { $$ = node_env_var (parser, $3, NULL); }
+        | '$' '(' stmt ',' stmt ')'         { $$ = node_env_var (parser, $3, $5); }
+        | '$' IDENTIFIER                    { $$ = node_env_var (parser, node_string (parser, $2), NULL); }
 ;
 
 list_elms: /* empty */                      { $$ = NULL; }

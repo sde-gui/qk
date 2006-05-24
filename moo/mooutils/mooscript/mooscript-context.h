@@ -20,12 +20,12 @@
 G_BEGIN_DECLS
 
 
-#define MS_TYPE_CONTEXT                    (ms_context_get_type ())
-#define MS_CONTEXT(object)                 (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_CONTEXT, MSContext))
-#define MS_CONTEXT_CLASS(klass)            (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_CONTEXT, MSContextClass))
-#define MS_IS_CONTEXT(object)              (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_CONTEXT))
-#define MS_IS_CONTEXT_CLASS(klass)         (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CONTEXT))
-#define MS_CONTEXT_GET_CLASS(obj)          (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CONTEXT, MSContextClass))
+#define MS_TYPE_CONTEXT                     (ms_context_get_type ())
+#define MS_CONTEXT(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MS_TYPE_CONTEXT, MSContext))
+#define MS_CONTEXT_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MS_TYPE_CONTEXT, MSContextClass))
+#define MS_IS_CONTEXT(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MS_TYPE_CONTEXT))
+#define MS_IS_CONTEXT_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MS_TYPE_CONTEXT))
+#define MS_CONTEXT_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MS_TYPE_CONTEXT, MSContextClass))
 
 typedef struct _MSContextClass MSContextClass;
 typedef struct _MSVariable MSVariable;
@@ -70,6 +70,9 @@ struct _MSContext {
 
 struct _MSContextClass {
     GObjectClass object_class;
+
+    MSValue* (*get_env_var) (MSContext  *ctx,
+                             const char *name);
 };
 
 
@@ -97,6 +100,9 @@ gboolean     ms_context_assign_positional   (MSContext  *ctx,
 gboolean     ms_context_assign_string       (MSContext  *ctx,
                                              const char *name,
                                              const char *value);
+
+MSValue     *ms_context_get_env_variable    (MSContext  *ctx,
+                                             const char *name);
 
 MSVariable  *ms_context_lookup_var          (MSContext  *ctx,
                                              const char *name);

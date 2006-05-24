@@ -13,6 +13,7 @@
 
 #include "mooscript-context.h"
 #include "mooscript-parser.h"
+#include "mooutils/moomarshals.h"
 #include <glib/gprintf.h>
 #include <gtk/gtkwindow.h>
 
@@ -24,6 +25,13 @@ enum {
     PROP_NAME,
     PROP_ARGV
 };
+
+enum {
+    GET_ENV_VAR,
+    N_SIGNALS
+};
+
+static guint signals[N_SIGNALS];
 
 G_DEFINE_TYPE (MSContext, ms_context, G_TYPE_OBJECT)
 
@@ -191,6 +199,16 @@ ms_context_class_init (MSContextClass *klass)
                                              "window",
                                              GTK_TYPE_WINDOW,
                                              G_PARAM_READWRITE));
+
+    signals[GET_ENV_VAR] =
+            g_signal_new ("get-env-var",
+                          G_TYPE_FROM_CLASS (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MSContextClass, get_env_var),
+                          NULL, NULL,
+                          _moo_marshal_BOXED__STRING,
+                          MS_TYPE_VALUE, 1,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 
@@ -582,6 +600,21 @@ ms_context_run_script (MSContext  *ctx,
 
     ms_node_unref (node);
     return result;
+}
+
+
+MSValue *
+ms_context_get_env_variable (MSContext  *ctx,
+                             const char *name)
+{
+    MSValue *val = NULL;
+
+    g_return_val_if_fail (MS_IS_CONTEXT (ctx), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    g_signal_emit (ctx, signals[GET_ENV_VAR], 0, name, &val);
+
+    return val;
 }
 
 
