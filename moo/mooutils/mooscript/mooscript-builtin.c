@@ -274,8 +274,41 @@ out:
 
 
 static MSValue*
-file_exists_func (MSValue   *arg,
-                  MSContext *ctx)
+exec_async_func (MSValue   *arg,
+                 MSContext *ctx)
+{
+    char *cmd;
+    MSValue *ret = NULL;
+    GError *error = NULL;
+
+    cmd = ms_value_print (arg);
+
+    if (!cmd || !cmd[0])
+    {
+        ms_context_format_error (ctx, MS_ERROR_VALUE,
+                                 "empty command");
+        goto out;
+    }
+
+    if (!g_spawn_command_line_async (cmd, &error))
+    {
+        ms_context_format_error (ctx, MS_ERROR_RUNTIME,
+                                 "%s", error->message);
+        g_error_free (error);
+        goto out;
+    }
+
+    ret = ms_value_none ();
+
+out:
+    g_free (cmd);
+    return ret;
+}
+
+
+static MSValue*
+file_exists_func (MSValue *arg,
+                  G_GNUC_UNUSED MSContext *ctx)
 {
     char *filename;
     MSValue *ret = NULL;
@@ -348,6 +381,7 @@ _ms_context_add_builtin (MSContext *ctx)
     ADD_FUNC (ms_cfunc_new_0, abort_func, "Abort");
 
     ADD_FUNC (ms_cfunc_new_1, exec_func, "Exec");
+    ADD_FUNC (ms_cfunc_new_1, exec_async_func, "ExecAsync");
     ADD_FUNC (ms_cfunc_new_1, file_exists_func, "FileExists");
 
     ADD_FUNC (ms_cfunc_new_1, prefs_get_func, "PrefsGet");
