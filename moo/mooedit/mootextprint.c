@@ -86,6 +86,9 @@ static void moo_print_operation_draw_page   (GtkPrintOperation  *operation,
                                              int                 page);
 static void moo_print_operation_end_print   (GtkPrintOperation  *operation,
                                              GtkPrintContext    *context);
+static GtkWidget *moo_print_operation_create_custom_widget (GtkPrintOperation *operation);
+static void moo_print_operation_custom_widget_apply (GtkPrintOperation *operation,
+                                                     GtkWidget *widget);
 
 
 G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
@@ -246,6 +249,8 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
     print_class->begin_print = moo_print_operation_begin_print;
     print_class->draw_page = moo_print_operation_draw_page;
     print_class->end_print = moo_print_operation_end_print;
+    print_class->create_custom_widget = moo_print_operation_create_custom_widget;
+    print_class->custom_widget_apply = moo_print_operation_custom_widget_apply;
 
     g_object_class_install_property (object_class,
                                      PROP_DOC,
@@ -1062,7 +1067,8 @@ _moo_edit_print (GtkTextView *view,
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
-    print = g_object_new (MOO_TYPE_PRINT_OPERATION, "doc", view, NULL);
+    print = g_object_new (MOO_TYPE_PRINT_OPERATION,
+                          "doc", view, "show-progress", TRUE, NULL);
 
     if (MOO_IS_EDIT (view))
     {
@@ -1309,6 +1315,38 @@ _moo_edit_print_options_dialog (GtkWidget *parent)
 
     g_object_unref (xml);
     gtk_widget_destroy (dialog);
+}
+
+
+static GtkWidget *
+moo_print_operation_create_custom_widget (G_GNUC_UNUSED GtkPrintOperation *operation)
+{
+    GtkWidget *page;
+    MooGladeXML *xml;
+
+    xml = moo_glade_xml_new_from_buf (MOO_PRINT_GLADE_XML, -1, "page");
+    g_return_val_if_fail (xml != NULL, NULL);
+
+    page = moo_glade_xml_get_widget (xml, "page");
+    g_return_val_if_fail (page != NULL, NULL);
+
+    g_object_set_data_full (G_OBJECT (page), "moo-glade-xml",
+                            xml, g_object_unref);
+    set_options (xml);
+    return page;
+}
+
+
+static void
+moo_print_operation_custom_widget_apply (G_GNUC_UNUSED GtkPrintOperation *operation,
+                                         GtkWidget *widget)
+{
+    MooGladeXML *xml;
+
+    xml = g_object_get_data (G_OBJECT (widget), "moo-glade-xml");
+    g_return_if_fail (xml != NULL);
+
+    get_options (xml);
 }
 
 
