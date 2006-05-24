@@ -422,14 +422,9 @@ expand_vars (MooCommand *cmd,
         value = moo_command_get_shell_var (cmd, variable);
 
         if (!value)
-        {
-            g_warning ("%s: unbound variable '%s' in '%s'",
-                       G_STRLOC, variable, cmd->string);
-        }
+            g_string_append_printf (cmd_line, "$%s", variable);
         else
-        {
             g_string_append (cmd_line, value);
-        }
 
         g_free (variable);
         string = var_end;
