@@ -19,6 +19,9 @@
 G_BEGIN_DECLS
 
 
+#define MS_TYPE_VALUE (ms_value_get_type ())
+
+
 typedef struct _MSValue MSValue;
 typedef struct _MSValueClass MSValueClass;
 typedef struct _MSFunc MSFunc;
@@ -91,6 +94,8 @@ struct _MSValue {
     };
 };
 
+
+GType        ms_value_get_type          (void) G_GNUC_CONST;
 
 void         ms_type_init               (void);
 void         _ms_type_init_builtin      (MSValueClass   *types);
