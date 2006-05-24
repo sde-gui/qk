@@ -649,8 +649,8 @@ get_mime_type (MooFile    *file,
 
     if (file->mime_type && file->mime_type[0])
         file->flags |= MOO_FILE_HAS_MIME_TYPE;
-    else
-        g_message ("%s: oops", G_STRLOC);
+//     else
+//         g_message ("%s: oops", G_STRLOC);
 }
 #endif /* !__WIN32__ */
 
