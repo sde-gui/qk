@@ -15,6 +15,7 @@
               <widget class="GtkCheckButton" id="use_styles">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Print using text styles</property>
+                <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
               </widget>
               <packing>
@@ -29,6 +30,7 @@
                   <widget class="GtkCheckButton" id="use_custom_font">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Use custom font:</property>
+                    <property name="use_underline">True</property>
                     <property name="draw_indicator">True</property>
                   </widget>
                   <packing>
@@ -39,7 +41,6 @@
                 <child>
                   <widget class="GtkFontButton" id="font">
                     <property name="visible">True</property>
-                    <property name="moo_sensitive">use_custom_font</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
@@ -61,6 +62,7 @@
               <widget class="GtkCheckButton" id="wrap">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Wrap long lines</property>
+                <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
               </widget>
               <packing>
@@ -73,10 +75,12 @@
               <widget class="GtkCheckButton" id="ellipsize">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Ellipsize long lines</property>
+                <property name="use_underline">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="moo_sensitive">!wrap</property>
               </widget>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">3</property>
               </packing>
             </child>
@@ -103,7 +107,6 @@
                     <child>
                       <widget class="GtkAlignment" id="header_alignment">
                         <property name="visible">True</property>
-                        <property name="moo_sensitive">print_header</property>
                         <child>
                           <widget class="GtkVBox" id="vbox2">
                             <property name="visible">True</property>
@@ -126,26 +129,57 @@
                                 <property name="n_rows">3</property>
                                 <property name="n_columns">2</property>
                                 <child>
-                                  <widget class="GtkLabel" id="label3">
+                                  <widget class="GtkEntry" id="header_right">
                                     <property name="visible">True</property>
-                                    <property name="xalign">1.000000</property>
-                                    <property name="label" translatable="yes">Left:</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
                                   </widget>
                                   <packing>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkLabel" id="label4">
+                                  <widget class="GtkEntry" id="header_center">
                                     <property name="visible">True</property>
-                                    <property name="xalign">1.000000</property>
-                                    <property name="label" translatable="yes">Center:</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
                                   </widget>
                                   <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
                                     <property name="top_attach">1</property>
                                     <property name="bottom_attach">2</property>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="y_options"></property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkEntry" id="header_left">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
@@ -158,59 +192,31 @@
                                   <packing>
                                     <property name="top_attach">2</property>
                                     <property name="bottom_attach">3</property>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkEntry" id="header_left">
+                                  <widget class="GtkLabel" id="label4">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
+                                    <property name="xalign">1.000000</property>
+                                    <property name="label" translatable="yes">Center:</property>
                                   </widget>
                                   <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
-                                    <property name="y_options"></property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkEntry" id="header_center">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
                                     <property name="top_attach">1</property>
                                     <property name="bottom_attach">2</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkEntry" id="header_right">
+                                  <widget class="GtkLabel" id="label3">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
+                                    <property name="xalign">1.000000</property>
+                                    <property name="label" translatable="yes">Left:</property>
                                   </widget>
                                   <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
-                                    <property name="top_attach">2</property>
-                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
@@ -260,7 +266,6 @@
                     <child>
                       <widget class="GtkAlignment" id="footer_alignment">
                         <property name="visible">True</property>
-                        <property name="moo_sensitive">print_footer</property>
                         <child>
                           <widget class="GtkVBox" id="vbox4">
                             <property name="visible">True</property>
@@ -283,26 +288,57 @@
                                 <property name="n_rows">3</property>
                                 <property name="n_columns">2</property>
                                 <child>
-                                  <widget class="GtkLabel" id="label6">
+                                  <widget class="GtkEntry" id="footer_right">
                                     <property name="visible">True</property>
-                                    <property name="xalign">1.000000</property>
-                                    <property name="label" translatable="yes">Left:</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
                                   </widget>
                                   <packing>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
+                                    <property name="top_attach">2</property>
+                                    <property name="bottom_attach">3</property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkLabel" id="label7">
+                                  <widget class="GtkEntry" id="footer_center">
                                     <property name="visible">True</property>
-                                    <property name="xalign">1.000000</property>
-                                    <property name="label" translatable="yes">Center:</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
                                   </widget>
                                   <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
                                     <property name="top_attach">1</property>
                                     <property name="bottom_attach">2</property>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="y_options"></property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkEntry" id="footer_left">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="invisible_char">●</property>
+                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
+%Ef - printed document name;
+%EF - full path of printed document;
+%Ep - current page number;
+%EP - total number of pages.</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="right_attach">2</property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
@@ -315,59 +351,31 @@
                                   <packing>
                                     <property name="top_attach">2</property>
                                     <property name="bottom_attach">3</property>
-                                    <property name="x_options">GTK_FILL</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkEntry" id="footer_left">
+                                  <widget class="GtkLabel" id="label7">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
+                                    <property name="xalign">1.000000</property>
+                                    <property name="label" translatable="yes">Center:</property>
                                   </widget>
                                   <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
-                                    <property name="y_options"></property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkEntry" id="footer_center">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
                                     <property name="top_attach">1</property>
                                     <property name="bottom_attach">2</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <widget class="GtkEntry" id="footer_right">
+                                  <widget class="GtkLabel" id="label6">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip">Format is similar to that of strftime (3), with the following additions:
-%Ef - printed document name;
-%EF - full path of printed document;
-%Ep - current page number;
-%EP - total number of pages.</property>
+                                    <property name="xalign">1.000000</property>
+                                    <property name="label" translatable="yes">Left:</property>
                                   </widget>
                                   <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="right_attach">2</property>
-                                    <property name="top_attach">2</property>
-                                    <property name="bottom_attach">3</property>
+                                    <property name="x_options"></property>
                                     <property name="y_options"></property>
                                   </packing>
                                 </child>
@@ -400,6 +408,8 @@
                 </child>
               </widget>
               <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">4</property>
               </packing>
             </child>
