@@ -16,11 +16,12 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-
 case "$1" in
     remove|upgrade|deconfigure)
+        rm -f /usr/share/moo/*.pyc /usr/share/moo/*.pyc
         ;;
     failed-upgrade)
+        rm -f /usr/share/moo/*.pyc /usr/share/moo/*.pyc
         ;;
     *)
         echo "prerm called with unknown argument \`$1'" >&2
@@ -34,5 +35,3 @@ esac
 #DEBHELPER#
 
 exit 0
-
-
