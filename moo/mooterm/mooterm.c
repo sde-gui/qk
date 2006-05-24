@@ -260,7 +260,6 @@ moo_term_init (MooTerm *term)
 
     term->priv->parser = _moo_term_parser_new (term);
 
-    _moo_term_init_font_stuff (term);
     _moo_term_init_palette (term);
 
     term->priv->primary_buffer = moo_term_buffer_new (80, 24);
@@ -528,13 +527,14 @@ moo_term_realize (GtkWidget *widget)
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL |
             GDK_WA_COLORMAP | GDK_WA_CURSOR;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED | GTK_CAN_FOCUS);
+    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
     widget->window = gdk_window_new (gtk_widget_get_parent_window (widget),
                                      &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
 
     widget->style = gtk_style_attach (widget->style, widget->window);
 
+    _moo_term_init_font_stuff (term);
     _moo_term_update_palette (term);
     _moo_term_size_changed (term);
 
