@@ -1313,6 +1313,20 @@ moo_text_buffer_set_bracket_mismatch_style (MooTextBuffer      *buffer,
 }
 
 
+void
+_moo_text_buffer_get_bracket_tags (MooTextBuffer      *buffer,
+                                   GtkTextTag        **correct,
+                                   GtkTextTag        **incorrect)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+
+    if (correct)
+        *correct = buffer->priv->correct_match_tag;
+    if (incorrect)
+        *incorrect = buffer->priv->incorrect_match_tag;
+}
+
+
 static gboolean
 parse_brackets (const char     *string,
                 gunichar      **left_brackets,

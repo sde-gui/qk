@@ -467,7 +467,7 @@ _moo_lang_set_tag_style (MooLang            *lang,
 {
     g_return_if_fail (lang != NULL && GTK_IS_TEXT_TAG (tag));
     g_return_if_fail (ctx != NULL && ctx->lang == lang);
-    g_return_if_fail (!rule || rule->context == ctx);
+//     g_return_if_fail (!rule || rule->context == ctx);
 
     set_tag_style (lang, tag, ctx->style, scheme);
 

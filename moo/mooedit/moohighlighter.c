@@ -236,19 +236,33 @@ create_tag (MooHighlighter *hl,
             CtxNode        *match_node,
             MooRule        *rule)
 {
-    GtkTextTag *tag;
+    GtkTextTag *tag, *cbt = NULL, *ibt = NULL;
+    GtkTextTagTable *table;
 
     if (!ctx_node->parent && !match_node && !rule)
         return NULL;
 
     tag = moo_syntax_tag_new (ctx_node, match_node, rule);
 
-    gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (hl->buffer), tag);
+    table = gtk_text_buffer_get_tag_table (hl->buffer);
+
+    gtk_text_tag_table_add (table, tag);
     g_object_unref (tag);
+
+#if 1
+    /* XXX  */
+    _moo_text_buffer_get_bracket_tags (MOO_TEXT_BUFFER (hl->buffer), &cbt, &ibt);
+
+    if (ibt)
+        gtk_text_tag_set_priority (ibt, gtk_text_tag_table_get_size (table) - 2);
+    if (cbt)
+        gtk_text_tag_set_priority (cbt, gtk_text_tag_table_get_size (table) - 1);
+#endif
 
     _moo_lang_set_tag_style (rule ? rule->context->lang : ctx_node->ctx->lang,
                              tag,
-                             rule ? rule->context : ctx_node->ctx,
+//                              rule ? rule->context : ctx_node->ctx,
+                             ctx_node->ctx,
                              rule, NULL);
     ctx_node->child_tags = g_slist_prepend (ctx_node->child_tags, tag);
 
@@ -779,7 +793,8 @@ tag_set_scheme (G_GNUC_UNUSED gpointer whatever,
         _moo_lang_erase_tag_style (GTK_TEXT_TAG (tag));
         _moo_lang_set_tag_style (tag->rule ? tag->rule->context->lang : tag->ctx_node->ctx->lang,
                                  GTK_TEXT_TAG (tag),
-                                 tag->rule ? tag->rule->context : tag->ctx_node->ctx,
+//                                  tag->rule ? tag->rule->context : tag->ctx_node->ctx,
+                                 tag->ctx_node->ctx,
                                  tag->rule, scheme);
     }
 }
