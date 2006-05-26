@@ -2995,7 +2995,18 @@ moo_edit_window_get_output (MooEditWindow *window)
 GtkWidget *
 moo_edit_window_get_output_pane (MooEditWindow *window)
 {
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
     return moo_edit_window_get_pane (window, "moo-edit-window-output");
+}
+
+
+void
+moo_edit_window_present_output (MooEditWindow *window)
+{
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    moo_edit_window_get_output (window);
+    moo_big_paned_present_pane (window->paned,
+                                moo_edit_window_get_output_pane (window));
 }
 
 

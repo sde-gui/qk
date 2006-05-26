@@ -527,6 +527,12 @@
   (return-type "none")
 )
 
+(define-method present_output
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_present_output")
+  (return-type "none")
+)
+
 (define-method get_output
   (of-object "MooEditWindow")
   (c-name "moo_edit_window_get_output")

@@ -110,6 +110,7 @@ void         moo_edit_window_job_started            (MooEditWindow  *window,
 void         moo_edit_window_job_finished           (MooEditWindow  *window,
                                                      gpointer        job);
 
+void         moo_edit_window_present_output         (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
 
