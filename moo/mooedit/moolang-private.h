@@ -244,8 +244,7 @@ void        _moo_lang_add_style                 (MooLang            *lang,
 void        _moo_lang_free                      (MooLang            *lang);
 
 void        _moo_lang_scheme_changed            (MooLang            *lang);
-void        _moo_lang_set_tag_style             (MooLang            *lang,
-                                                 GtkTextTag         *tag,
+void        _moo_lang_set_tag_style             (GtkTextTag         *tag,
                                                  MooContext         *ctx,
                                                  MooRule            *rule,
                                                  MooTextStyleScheme *scheme);

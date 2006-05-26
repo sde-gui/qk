@@ -459,20 +459,18 @@ set_tag_style (MooLang       *lang,
 
 
 void
-_moo_lang_set_tag_style (MooLang            *lang,
-                         GtkTextTag         *tag,
+_moo_lang_set_tag_style (GtkTextTag         *tag,
                          MooContext         *ctx,
                          MooRule            *rule,
                          MooTextStyleScheme *scheme)
 {
-    g_return_if_fail (lang != NULL && GTK_IS_TEXT_TAG (tag));
-    g_return_if_fail (ctx != NULL && ctx->lang == lang);
-//     g_return_if_fail (!rule || rule->context == ctx);
+    g_return_if_fail (GTK_IS_TEXT_TAG (tag));
+    g_return_if_fail (ctx != NULL);
 
-    set_tag_style (lang, tag, ctx->style, scheme);
+    set_tag_style (ctx->lang, tag, ctx->style, scheme);
 
     if (rule)
-        set_tag_style (lang, tag, rule->style, scheme);
+        set_tag_style (rule->context->lang, tag, rule->style, scheme);
 }
 
 

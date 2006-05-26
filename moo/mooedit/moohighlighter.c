@@ -259,11 +259,7 @@ create_tag (MooHighlighter *hl,
         gtk_text_tag_set_priority (cbt, gtk_text_tag_table_get_size (table) - 1);
 #endif
 
-    _moo_lang_set_tag_style (rule ? rule->context->lang : ctx_node->ctx->lang,
-                             tag,
-//                              rule ? rule->context : ctx_node->ctx,
-                             ctx_node->ctx,
-                             rule, NULL);
+    _moo_lang_set_tag_style (tag, ctx_node->ctx, rule, NULL);
     ctx_node->child_tags = g_slist_prepend (ctx_node->child_tags, tag);
 
     return tag;
@@ -791,9 +787,7 @@ tag_set_scheme (G_GNUC_UNUSED gpointer whatever,
     if (tag)
     {
         _moo_lang_erase_tag_style (GTK_TEXT_TAG (tag));
-        _moo_lang_set_tag_style (tag->rule ? tag->rule->context->lang : tag->ctx_node->ctx->lang,
-                                 GTK_TEXT_TAG (tag),
-//                                  tag->rule ? tag->rule->context : tag->ctx_node->ctx,
+        _moo_lang_set_tag_style (GTK_TEXT_TAG (tag),
                                  tag->ctx_node->ctx,
                                  tag->rule, scheme);
     }
