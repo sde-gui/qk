@@ -562,6 +562,15 @@ get_search_bounds2 (GtkTextBuffer *buffer,
 }
 
 
+static void
+scroll_to_found (GtkTextView *view)
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+    gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
+                                  0.1, FALSE, 0, 0);
+}
+
+
 void
 moo_text_view_run_find (GtkTextView    *view,
                         MooFindMsgFunc  msg_func,
@@ -609,8 +618,7 @@ moo_text_view_run_find (GtkTextView    *view,
     if (found)
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0, FALSE, 0, 0);
+        scroll_to_found (view);
 
         if (wrapped)
             print_message (msg_func, data,
@@ -687,8 +695,7 @@ moo_text_view_run_find_next (GtkTextView    *view,
     if (found)
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
-        gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0, FALSE, 0, 0);
+        scroll_to_found (view);
         if (wrapped)
             print_message (msg_func, data,
                            "Search hit bottom, continuing at top");
@@ -759,8 +766,7 @@ moo_text_view_run_find_prev (GtkTextView    *view,
     if (found)
     {
         gtk_text_buffer_select_range (buffer, &match_start, &match_end);
-        gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0, FALSE, 0, 0);
+        scroll_to_found (view);
 
         if (wrapped)
             print_message (msg_func, data,
@@ -864,8 +870,7 @@ replace_func (G_GNUC_UNUSED const char *text,
 
     buffer = gtk_text_view_get_buffer (data->view);
     gtk_text_buffer_select_range (buffer, to_replace_end, to_replace_start);
-    gtk_text_view_scroll_to_mark (data->view, gtk_text_buffer_get_insert (buffer),
-                                  0, FALSE, 0, 0);
+    scroll_to_found (data->view);
 
     if (!data->dialog)
         data->dialog = moo_text_prompt_on_replace_dialog (GTK_WIDGET (data->view));
@@ -1101,7 +1106,6 @@ moo_text_view_run_goto_line (GtkTextView *view)
     {
         gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
         gtk_text_buffer_place_cursor (buffer, &iter);
-        gtk_text_view_scroll_to_mark (view, gtk_text_buffer_get_insert (buffer),
-                                      0, FALSE, 0, 0);
+        scroll_to_found (view);
     }
 }
