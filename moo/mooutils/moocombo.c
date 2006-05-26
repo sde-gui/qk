@@ -541,7 +541,7 @@ static void
 moo_combo_popup_real (MooCombo *combo)
 {
     GtkWidget *window;
-    int selected;
+    GtkTreeSelection *selection;
 
     if (moo_combo_popup_shown (combo))
         return;
@@ -561,14 +561,7 @@ moo_combo_popup_real (MooCombo *combo)
 
     resize_popup (combo);
 
-    selected = popup_get_selected (combo);
     gtk_widget_show (combo->priv->popup);
-    /* treeview selects something on focus */
-    if (selected < 0)
-    {
-        GtkTreeSelection *selection = gtk_tree_view_get_selection (combo->priv->treeview);
-        gtk_tree_selection_unselect_all (selection);
-    }
 
     gtk_widget_ensure_style (GTK_WIDGET (combo->priv->treeview));
     gtk_widget_modify_bg (GTK_WIDGET (combo->priv->treeview), GTK_STATE_ACTIVE,
@@ -593,6 +586,10 @@ moo_combo_popup_real (MooCombo *combo)
 
     g_signal_connect_swapped (combo->priv->treeview, "button-press-event",
                               G_CALLBACK (list_button_press), combo);
+
+    /* treeview selects something on focus */
+    selection = gtk_tree_view_get_selection (combo->priv->treeview);
+    gtk_tree_selection_unselect_all (selection);
 }
 
 
@@ -1409,8 +1406,11 @@ moo_combo_get_active_iter (MooCombo       *combo,
 
 
 static void
-moo_combo_changed (MooCombo       *combo)
+moo_combo_changed (MooCombo *combo)
 {
+    if (!combo->priv->walking_list)
+        gtk_tree_selection_unselect_all (gtk_tree_view_get_selection (combo->priv->treeview));
+
     g_signal_emit (combo, signals[CHANGED], 0);
 }
 
@@ -1419,6 +1419,13 @@ static void
 entry_changed (MooCombo       *combo)
 {
     GtkTreeIter iter;
+
+    if (combo->priv->walking_list)
+    {
+        combo->priv->walking_list = FALSE;
+        g_free (combo->priv->real_text);
+        combo->priv->real_text = NULL;
+    }
 
     if (moo_combo_get_active_iter (combo, &iter))
     {

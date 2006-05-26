@@ -443,6 +443,19 @@ completion_entry_changed (G_GNUC_UNUSED GtkEntry *entry,
     if (!cmpl->priv->enabled)
         return;
 
+    if (cmpl->priv->walking_list)
+    {
+        cmpl->priv->walking_list = FALSE;
+        DELETE_MEM (cmpl->priv->real_text);
+    }
+
+    if (completion_get_selected (cmpl) >= 0)
+    {
+        GtkTreeView *treeview = cmpl->priv->treeview;
+        GtkTreeSelection *selection = gtk_tree_view_get_selection (treeview);
+        gtk_tree_selection_unselect_all (selection);
+    }
+
     if (!cmpl->priv->do_complete)
         return;
 
@@ -738,34 +751,10 @@ completion_set_case_sensitive (MooFileEntryCompletion *cmpl,
 
 
 static void
-send_focus_change (GtkWidget *widget, gboolean in)
-{
-    GdkEvent *fevent = gdk_event_new (GDK_FOCUS_CHANGE);
-
-    g_object_ref (widget);
-
-    if (in)
-        GTK_WIDGET_SET_FLAGS (widget, GTK_HAS_FOCUS);
-    else
-        GTK_WIDGET_UNSET_FLAGS (widget, GTK_HAS_FOCUS);
-
-    fevent->focus_change.type = GDK_FOCUS_CHANGE;
-    fevent->focus_change.window = g_object_ref (widget->window);
-    fevent->focus_change.in = in;
-
-    gtk_widget_event (widget, fevent);
-
-    g_object_notify (G_OBJECT (widget), "has-focus");
-
-    g_object_unref (widget);
-    gdk_event_free (fevent);
-}
-
-
-static void
 completion_popup (MooFileEntryCompletion *cmpl)
 {
     GtkWidget *window;
+    GtkTreeSelection *selection;
 
     if (GTK_WIDGET_MAPPED (cmpl->priv->popup))
         return;
@@ -785,9 +774,12 @@ completion_popup (MooFileEntryCompletion *cmpl)
     completion_resize_popup (cmpl);
 
     gtk_widget_show (cmpl->priv->popup);
-    send_focus_change (GTK_WIDGET (cmpl->priv->popup), TRUE);
 
-    /* XXX deselect and scroll */
+    gtk_widget_ensure_style (GTK_WIDGET (cmpl->priv->treeview));
+    gtk_widget_modify_bg (GTK_WIDGET (cmpl->priv->treeview), GTK_STATE_ACTIVE,
+                          &GTK_WIDGET(cmpl->priv->treeview)->style->base[GTK_STATE_SELECTED]);
+    gtk_widget_modify_base (GTK_WIDGET (cmpl->priv->treeview), GTK_STATE_ACTIVE,
+                            &GTK_WIDGET(cmpl->priv->treeview)->style->base[GTK_STATE_SELECTED]);
 
     gtk_grab_add (cmpl->priv->popup);
     gdk_pointer_grab (cmpl->priv->popup->window, TRUE,
@@ -807,6 +799,10 @@ completion_popup (MooFileEntryCompletion *cmpl)
     g_signal_connect_swapped (cmpl->priv->treeview, "button-press-event",
                               G_CALLBACK (completion_list_button_press),
                               cmpl);
+
+    /* treeview selects something on focus */
+    selection = gtk_tree_view_get_selection (cmpl->priv->treeview);
+    gtk_tree_selection_unselect_all (selection);
 }
 
 
