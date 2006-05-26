@@ -19,7 +19,7 @@ class ActionFactory(object):
         for key in kwargs.keys():
             if key in ["callback", "display_name", "accel", "no_accel"]:
                 self.fake_props[key] = kwargs[key]
-            else:
+            elif kwargs[key] is not None or key not in ["stock_id"]:
                 self.props[key] = kwargs[key]
 
     def __call__(self, window):
