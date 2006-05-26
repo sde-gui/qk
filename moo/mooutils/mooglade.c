@@ -407,7 +407,7 @@ set_custom_props (MooGladeXML    *xml,
                   !xml->priv->prop_func (xml, node->id, node->widget,
                                          prop, value, xml->priv->prop_func_data))
         {
-            g_message ("%s: unknown property '%s'", G_STRLOC, prop);
+//             g_message ("%s: unknown property '%s'", G_STRLOC, prop);
         }
     }
 }
