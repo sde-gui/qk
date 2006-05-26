@@ -1,3 +1,19 @@
+2006-05-26  Yevgen Muntyan  <muntyan@math.tamu.edu>
+    * === Released 0.6.99 ===
+
+    Added Open With submenu in file selector popup menu.
+    Fixed bug with per-language settings lost on save.
+    Added document list menu in editor windows.
+    Fixed crash on paste from another application.
+    Improved entry completion behaviour.
+    Improved python plugin.
+    Updated printing code for changes in gtk api.
+    Fixed file selector background bug.
+    There is a single win32 installer now, and medit picks up python if it's present
+    on startup: medit is not linked to pythonxx.dll, python support has been moved
+    into pymo2x plugins.
+    Bug fixes.
+
 2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>
 
     * === Released 0.6.98 ===
