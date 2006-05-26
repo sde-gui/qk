@@ -2193,7 +2193,7 @@
   (return-type "none")
   (parameters
     '("GtkAction*" "action")
-    '("const-char*" "accel")
+    '("const-char*" "accel" (null-ok))
   )
 )
 
