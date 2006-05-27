@@ -71,7 +71,7 @@ struct _MooEditWindowPrivate {
 
     MooNotebook *notebook;
     char *prefix;
-    gboolean use_fullname;
+    gboolean use_full_name;
     GHashTable *panes;
     GHashTable *panes_to_save; /* char* */
     guint save_params_idle;
@@ -235,6 +235,7 @@ enum {
     PROP_0,
     PROP_EDITOR,
     PROP_ACTIVE_DOC,
+    PROP_USE_FULL_NAME_IN_TITLE,
 
     /* aux properties */
     PROP_CAN_RELOAD,
@@ -295,6 +296,14 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                              "active-doc",
                                              "active-doc",
                                              MOO_TYPE_EDIT,
+                                             G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_USE_FULL_NAME_IN_TITLE,
+                                     g_param_spec_boolean ("use-full-name-in-title",
+                                             "use-full-name-in-title",
+                                             "use-full-name-in-title",
+                                             TRUE,
                                              G_PARAM_READWRITE));
 
     signals[NEW_DOC] =
@@ -734,13 +743,14 @@ moo_edit_window_init (MooEditWindow *window)
                   "toolbar-ui-name", "Editor/Toolbar",
                   NULL);
 
-    window->priv->use_fullname = TRUE;
+    window->priv->use_full_name = TRUE;
 
     windows = g_slist_prepend (windows, window);
 }
 
 
-MooEditor       *moo_edit_window_get_editor     (MooEditWindow  *window)
+MooEditor *
+moo_edit_window_get_editor (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
     return window->priv->editor;
@@ -793,7 +803,8 @@ moo_edit_window_destroy (GtkObject *object)
 }
 
 
-static void moo_edit_window_finalize       (GObject      *object)
+static void
+moo_edit_window_finalize (GObject *object)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
     /* XXX */
@@ -814,10 +825,11 @@ static void moo_edit_window_finalize       (GObject      *object)
 }
 
 
-static void     moo_edit_window_set_property(GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec)
+static void
+moo_edit_window_set_property (GObject        *object,
+                              guint           prop_id,
+                              const GValue   *value,
+                              GParamSpec     *pspec)
 {
     MooEditWindow *window = MOO_EDIT_WINDOW (object);
 
@@ -829,6 +841,15 @@ static void     moo_edit_window_set_property(GObject        *object,
 
         case PROP_ACTIVE_DOC:
             moo_edit_window_set_active_doc (window, g_value_get_object (value));
+            break;
+
+        case PROP_USE_FULL_NAME_IN_TITLE:
+            if (window->priv->use_full_name != g_value_get_boolean (value))
+            {
+                window->priv->use_full_name = g_value_get_boolean (value);
+                update_window_title (window);
+                g_object_notify (object, "use-full-name-in-title");
+            }
             break;
 
         default:
@@ -853,6 +874,10 @@ static void     moo_edit_window_get_property(GObject        *object,
 
         case PROP_ACTIVE_DOC:
             g_value_set_object (value, moo_edit_window_get_active_doc (window));
+            break;
+
+        case PROP_USE_FULL_NAME_IN_TITLE:
+            g_value_set_boolean (value, window->priv->use_full_name != 0);
             break;
 
         case PROP_CAN_RELOAD:
@@ -896,8 +921,9 @@ static void     moo_edit_window_get_property(GObject        *object,
 }
 
 
-void         moo_edit_window_set_title_prefix   (MooEditWindow  *window,
-                                                 const char     *prefix)
+void
+moo_edit_window_set_title_prefix (MooEditWindow *window,
+                                  const char    *prefix)
 {
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
@@ -955,6 +981,7 @@ moo_edit_window_constructor (GType                  type,
     g_object_set (no_docs, "sensitive", FALSE, NULL);
 
     edit_changed (window, NULL);
+    moo_edit_window_check_actions (window);
 
     return object;
 }
@@ -979,7 +1006,7 @@ update_window_title (MooEditWindow *window)
         return;
     }
 
-    if (window->priv->use_fullname)
+    if (window->priv->use_full_name)
         name = moo_edit_get_display_filename (edit);
     else
         name = moo_edit_get_display_basename (edit);
@@ -1545,6 +1572,9 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 
     g_signal_emit (window, signals[CLOSE_DOC_AFTER], 0);
     g_object_notify (G_OBJECT (window), "active-doc");
+
+    if (!ACTIVE_DOC (window))
+        moo_edit_window_check_actions (window);
 }
 
 
@@ -2646,12 +2676,15 @@ check_action_langs (G_GNUC_UNUSED GtkAction *action,
                     gpointer        langs)
 {
     MooLang *lang;
-    gboolean value;
+    gboolean value = FALSE;
 
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    if (doc)
+    {
+        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
 
-    value = NULL != g_slist_find_custom (langs, moo_lang_id (lang),
-                                         (GCompareFunc) strcmp);
+        value = NULL != g_slist_find_custom (langs, moo_lang_id (lang),
+                                             (GCompareFunc) strcmp);
+    }
 
     g_value_set_boolean (prop_value, value);
 }
