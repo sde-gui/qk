@@ -129,3 +129,8 @@
     '("int" "len")
   )
 )
+
+(define-function reload_python_plugins
+  (c-name "moo_app_reload_python_plugins")
+  (return-type "none")
+)

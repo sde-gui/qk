@@ -112,6 +112,8 @@ gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *data,
                                                  int         len);
 
+void             moo_app_reload_python_plugins  (void);
+
 void             _moo_app_exec_cmd              (MooApp     *app,
                                                  char        cmd,
                                                  const char *data,

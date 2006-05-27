@@ -19,7 +19,7 @@
 G_BEGIN_DECLS
 
 
-gboolean  _moo_python_plugin_init (void);
+gboolean  _moo_python_plugin_init       (void);
 
 gpointer  _moo_python_plugin_register   (gpointer   py_plugin_type,
                                          gpointer   py_win_plugin_type,

@@ -59,6 +59,13 @@ class Plugin(moo.edit.Plugin):
         moo.edit.window_set_action_langs("RunFile", "sensitive", ["python"])
         self.add_ui("ToolsMenu", "RunFile")
 
+        self.add_window_action(moo.edit.EditWindow, "ReloadPythonPlugins",
+                               display_name="Reload Python Plugins",
+                               label="Reload Python Plugins",
+                               stock_id=gtk.STOCK_REFRESH,
+                               callback=self.reload_plugins)
+        self.add_ui("ToolsMenu", "ReloadPythonPlugins")
+
     def show_console(self, window):
         window = gtk.Window()
         swin = gtk.ScrolledWindow()
@@ -154,6 +161,9 @@ class Plugin(moo.edit.Plugin):
         pane.output.clear()
         window.paned.present_pane(pane)
         pane.output.run_command(PYTHON_COMMAND + ' "%s"' % doc.get_filename())
+
+    def reload_plugins(self, window):
+        moo.app.reload_python_plugins()
 
     def detach_win(self, window):
         window.remove_pane(PLUGIN_ID)

@@ -129,7 +129,6 @@ static void     moo_app_set_description (MooApp             *app,
                                          const char         *description);
 
 static void     start_input             (MooApp             *app);
-static void     execute_selection       (MooEditWindow      *window);
 
 
 static GObjectClass *moo_app_parent_class;
@@ -688,6 +687,14 @@ moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
 #endif
 
 
+void
+moo_app_reload_python_plugins (void)
+{
+    if (moo_python_running () && moo_python_reload_plugins)
+        moo_python_reload_plugins ();
+}
+
+
 static gboolean
 moo_app_python_run_file (MooApp      *app,
                          const char  *filename)
@@ -1189,7 +1196,9 @@ moo_app_set_description (MooApp     *app,
 }
 
 
-static void install_actions (MooApp *app, GType  type)
+static void
+install_actions (MooApp *app,
+                 GType   type)
 {
     MooWindowClass *klass = g_type_class_ref (type);
     char *about, *_about;
@@ -1214,7 +1223,6 @@ static void install_actions (MooApp *app, GType  type)
                                  "label", "Pre_ferences",
                                  "tooltip", "Preferences",
                                  "stock-id", GTK_STOCK_PREFERENCES,
-                                 "accel", "<ctrl>P",
                                  "closure-callback", moo_app_prefs_dialog,
                                  NULL);
 
@@ -1232,7 +1240,8 @@ static void install_actions (MooApp *app, GType  type)
 }
 
 
-static void install_editor_actions  (MooApp *app)
+static void
+install_editor_actions (MooApp *app)
 {
 #ifdef MOO_BUILD_EDIT
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
@@ -1240,15 +1249,6 @@ static void install_editor_actions  (MooApp *app)
     g_return_if_fail (klass != NULL);
 
     install_actions (app, MOO_TYPE_EDIT_WINDOW);
-
-    moo_window_class_new_action (klass, "ExecuteSelection",
-                                 "display-name", "Execute Selection",
-                                 "label", "_Execute Selection",
-                                 "tooltip", "Execute Selection",
-                                 "stock-id", GTK_STOCK_EXECUTE,
-                                 "accel", "<shift><alt>Return",
-                                 "closure-callback", execute_selection,
-                                 NULL);
 
     g_type_class_unref (klass);
 #endif /* MOO_BUILD_EDIT */
@@ -1403,31 +1403,6 @@ moo_app_info_get_type (void)
                                       (GBoxedFreeFunc) moo_app_info_free);
     return type;
 }
-
-
-#ifdef MOO_BUILD_EDIT
-static void
-execute_selection (MooEditWindow *window)
-{
-    MooEdit *edit;
-    char *text;
-
-    edit = moo_edit_window_get_active_doc (window);
-
-    g_return_if_fail (edit != NULL);
-
-    text = moo_text_view_get_selection (MOO_TEXT_VIEW (edit));
-
-    if (!text)
-        text = moo_text_view_get_text (MOO_TEXT_VIEW (edit));
-
-    if (text)
-    {
-        run_python_string (text);
-        g_free (text);
-    }
-}
-#endif /* MOO_BUILD_EDIT */
 
 
 void

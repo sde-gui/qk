@@ -39,7 +39,8 @@ static MooPythonPlugin python_plugin;
 static PyObject *main_mod;
 
 
-static void      moo_py_plugin_delete           (MooPyPluginData    *data);
+static void moo_py_plugin_delete    (MooPyPluginData    *data);
+static void reload_plugins          (void);
 
 
 static MooPyObject*
@@ -195,7 +196,7 @@ moo_python_api_init (void)
 
     static MooPyAPI api = {
         incref, decref, err_print,
-        get_info,
+        get_info, reload_plugins,
         run_simple_string, run_string, run_file,
         py_object_from_gobject,
         get_script_dict,
@@ -379,13 +380,16 @@ _moo_python_plugin_init (void)
 }
 
 
-void
-_moo_python_plugin_deinit (void)
+static void
+reload_plugins (void)
 {
-    /* XXX */
+    g_return_if_fail (moo_python_running ());
+
     g_slist_foreach (python_plugin.plugins, (GFunc) moo_py_plugin_delete, NULL);
     g_slist_free (python_plugin.plugins);
     python_plugin.plugins = NULL;
+
+    moo_python_plugin_read_dirs ();
 }
 
 
