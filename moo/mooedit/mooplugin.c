@@ -24,6 +24,7 @@
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 #include <gmodule.h>
+#include <gobject/gvaluecollector.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -38,12 +39,18 @@ typedef struct {
     GHashTable *names;
     char **dirs;
     gboolean dirs_read;
+    GQuark plugin_quark;
+    GQuark meths_quark;
 } PluginStore;
 
 static PluginStore *plugin_store = NULL;
+#define MOO_PLUGIN_QUARK plugin_store->plugin_quark
+#define MOO_PLUGIN_METHS_QUARK plugin_store->meths_quark
+
 
 static void     plugin_store_init       (void);
 static void     plugin_store_add        (MooPlugin      *plugin);
+static void     plugin_type_cleanup     (GType           type);
 
 static void     moo_plugin_class_init   (MooPluginClass *klass);
 static void     some_plugin_class_init  (gpointer        klass);
@@ -217,7 +224,7 @@ moo_plugin_register (GType type)
 
     if (moo_plugin_registered (type))
     {
-        g_warning ("%s: plugin %s already registered",
+        g_warning ("%s: plugin '%s' already registered",
                    G_STRLOC, g_type_name (type));
         return FALSE;
     }
@@ -226,7 +233,7 @@ moo_plugin_register (GType type)
 
     if (!plugin_info_check (plugin->info))
     {
-        g_warning ("%s: invalid info in plugin %s",
+        g_warning ("%s: invalid info in plugin '%s'",
                    G_STRLOC, g_type_name (type));
         g_object_unref (plugin);
         return FALSE;
@@ -572,13 +579,15 @@ doc_set_plugin (MooEdit        *doc,
 static void
 plugin_store_init (void)
 {
-    if (!plugin_store)
+    if (G_UNLIKELY (!plugin_store))
     {
         static PluginStore store;
 
         store.editor = moo_editor_instance ();
         store.list = NULL;
         store.names = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+        store.plugin_quark = g_quark_from_static_string ("moo-plugin");
+        store.meths_quark = g_quark_from_static_string ("moo-plugin-methods");
 
         plugin_store = &store;
     }
@@ -586,7 +595,7 @@ plugin_store_init (void)
 
 
 static void
-plugin_store_add (MooPlugin      *plugin)
+plugin_store_add (MooPlugin *plugin)
 {
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
 
@@ -598,6 +607,8 @@ plugin_store_add (MooPlugin      *plugin)
     g_hash_table_insert (plugin_store->names,
                          g_strdup (moo_plugin_id (plugin)),
                          plugin);
+
+    g_type_set_qdata (G_OBJECT_TYPE (plugin), MOO_PLUGIN_QUARK, plugin);
 }
 
 
@@ -608,23 +619,17 @@ plugin_store_remove (MooPlugin *plugin)
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
     plugin_store->list = g_slist_remove (plugin_store->list, plugin);
     g_hash_table_remove (plugin_store->names, moo_plugin_id (plugin));
+    g_type_set_qdata (G_OBJECT_TYPE (plugin), MOO_PLUGIN_QUARK, NULL);
+    plugin_type_cleanup (G_OBJECT_TYPE (plugin));
 }
 
 
 MooPlugin*
 moo_plugin_get (GType type)
 {
-    GSList *l;
-
     g_return_val_if_fail (g_type_is_a (type, MOO_TYPE_PLUGIN), NULL);
-
     plugin_store_init ();
-
-    for (l = plugin_store->list; l != NULL; l = l->next)
-        if (G_OBJECT_TYPE (l->data) == type)
-            return l->data;
-
-    return NULL;
+    return g_type_get_qdata (type, MOO_PLUGIN_QUARK);
 }
 
 
@@ -1496,4 +1501,346 @@ _moo_plugin_attach_prefs (GtkWidget *dialog)
     g_signal_connect (dialog, "apply", G_CALLBACK (prefs_apply), page);
 
     moo_prefs_dialog_append_page (MOO_PREFS_DIALOG (dialog), page);
+}
+
+
+/*****************************************************************************/
+/* MooPluginMeth
+ */
+
+static void
+plugin_type_cleanup (GType type)
+{
+    gpointer meths_table;
+
+    g_assert (g_type_is_a (type, MOO_TYPE_PLUGIN));
+
+    meths_table = g_type_get_qdata (type, MOO_PLUGIN_METHS_QUARK);
+
+    if (meths_table)
+    {
+        g_hash_table_destroy (meths_table);
+        g_type_set_qdata (type, MOO_PLUGIN_METHS_QUARK, NULL);
+    }
+}
+
+
+MooPluginMeth *
+moo_plugin_lookup_method (gpointer    plugin,
+                          const char *name)
+{
+    GHashTable *meths;
+    char *norm_name;
+    MooPluginMeth *m = NULL;
+
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
+
+    meths = g_type_get_qdata (G_OBJECT_TYPE (plugin), MOO_PLUGIN_METHS_QUARK);
+
+    if (!meths)
+        return NULL;
+
+    norm_name = g_strdelimit (g_strdup (name), "_", '-');
+    m = g_hash_table_lookup (meths, norm_name);
+    g_free (norm_name);
+    return m;
+}
+
+
+static void
+prepend_meth_name (const char *name,
+                   G_GNUC_UNUSED gpointer meth,
+                   GSList **list)
+{
+    *list = g_slist_prepend (*list, g_strdup (name));
+}
+
+GSList *
+moo_plugin_list_methods (gpointer plugin)
+{
+    GHashTable *meths;
+    GSList *list = NULL;
+
+    g_return_val_if_fail (MOO_IS_PLUGIN (plugin), NULL);
+
+    meths = g_type_get_qdata (G_OBJECT_TYPE (plugin), MOO_PLUGIN_METHS_QUARK);
+
+    if (!meths)
+        return NULL;
+
+    g_hash_table_foreach (meths, (GHFunc) prepend_meth_name, &list);
+    return list;
+}
+
+
+void
+moo_plugin_call_method (gpointer        plugin,
+                        const char     *name,
+                        ...)
+{
+    va_list args;
+
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (name != NULL);
+
+    va_start (args, name);
+    moo_plugin_call_method_valist (plugin, name, args);
+    va_end (args);
+}
+
+
+#define MAX_STACK_VALUES (16)
+
+void
+moo_plugin_call_method_valist (gpointer        plugin,
+                               const char     *name,
+                               va_list         var_args)
+{
+    MooPluginMeth *meth;
+    GValue *plugin_and_args, *args, *freeme = NULL;
+    GValue stack_params[MAX_STACK_VALUES];
+    guint i;
+
+    g_return_if_fail (MOO_IS_PLUGIN (plugin));
+    g_return_if_fail (name != NULL);
+
+    meth = moo_plugin_lookup_method (plugin, name);
+
+    if (!meth)
+    {
+        g_warning ("plugin '%s' does not have method '%s'",
+                   moo_plugin_id (plugin), name);
+        return;
+    }
+
+    g_assert (meth->ptype == G_OBJECT_TYPE (plugin));
+
+    if (meth->n_params < MAX_STACK_VALUES)
+        plugin_and_args = stack_params;
+    else
+        plugin_and_args = freeme = g_new (GValue, meth->n_params + 1);
+
+    args = plugin_and_args + 1;
+
+    for (i = 0; i < meth->n_params; i++)
+    {
+        char *error;
+        GType type = meth->param_types[i] & ~G_SIGNAL_TYPE_STATIC_SCOPE;
+        gboolean static_scope = meth->param_types[i] & G_SIGNAL_TYPE_STATIC_SCOPE;
+
+        args[i].g_type = 0;
+        g_value_init (args + i, type);
+        G_VALUE_COLLECT (args + i, var_args,
+                         static_scope ? G_VALUE_NOCOPY_CONTENTS : 0,
+                         &error);
+
+        if (error)
+        {
+            g_warning ("%s: %s", G_STRLOC, error);
+            g_free (error);
+
+            while (i--)
+                g_value_unset (args + i);
+
+            g_free (freeme);
+            return;
+        }
+    }
+
+    plugin_and_args->g_type = 0;
+    g_value_init (plugin_and_args, G_OBJECT_TYPE (plugin));
+    g_value_set_object (plugin_and_args, plugin);
+
+    if (meth->return_type == G_TYPE_NONE)
+    {
+        moo_plugin_call_methodv (plugin_and_args, name, NULL);
+    }
+    else
+    {
+        GValue return_val;
+        char *error = NULL;
+        GType type = meth->return_type & ~G_SIGNAL_TYPE_STATIC_SCOPE;
+        gboolean static_scope = meth->return_type & G_SIGNAL_TYPE_STATIC_SCOPE;
+
+        return_val.g_type = 0;
+        g_value_init (&return_val, type);
+
+        moo_plugin_call_methodv (plugin_and_args, name, &return_val);
+
+        G_VALUE_LCOPY (&return_val, var_args,
+                       static_scope ? G_VALUE_NOCOPY_CONTENTS : 0,
+                       &error);
+
+        if (!error)
+        {
+            g_value_unset (&return_val);
+        }
+        else
+        {
+            g_warning ("%s: %s", G_STRLOC, error);
+            g_free (error);
+        }
+    }
+
+    for (i = 0; i < meth->n_params + 1; i++)
+        g_value_unset (plugin_and_args + i);
+
+    g_free (freeme);
+}
+
+
+void
+moo_plugin_call_methodv (const GValue *plugin_and_args,
+                         const char   *name,
+                         GValue       *return_val)
+{
+    gpointer plugin;
+    MooPluginMeth *meth;
+
+    g_return_if_fail (plugin_and_args != NULL);
+    g_return_if_fail (name != NULL);
+
+    plugin = g_value_get_object (plugin_and_args);
+    g_return_if_fail (plugin != NULL);
+
+    meth = moo_plugin_lookup_method (plugin, name);
+
+    if (!meth)
+    {
+        g_warning ("plugin '%s' does not have method '%s'",
+                   moo_plugin_id (plugin), name);
+        return;
+    }
+
+    g_return_if_fail (return_val || meth->return_type == G_TYPE_NONE);
+    g_return_if_fail (!return_val || meth->return_type == G_VALUE_TYPE (return_val));
+
+    g_closure_invoke (meth->closure, return_val, meth->n_params + 1, plugin_and_args, NULL);
+}
+
+
+void
+moo_plugin_method_new (const char     *name,
+                       GType           ptype,
+                       GCallback       method,
+                       GClosureMarshal c_marshaller,
+                       GType           return_type,
+                       guint           n_params,
+                       ...)
+{
+    va_list args;
+    GClosure *closure;
+
+    g_return_if_fail (g_type_is_a (ptype, MOO_TYPE_PLUGIN));
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (method != NULL);
+    g_return_if_fail (c_marshaller != NULL);
+
+    closure = g_cclosure_new (method, NULL, NULL);
+    g_closure_sink (g_closure_ref (closure));
+
+    va_start (args, n_params);
+    moo_plugin_method_new_valist (name, ptype, closure, c_marshaller,
+                                  return_type, n_params, args);
+    va_end (args);
+
+    g_closure_unref (closure);
+}
+
+
+void
+moo_plugin_method_new_valist (const char     *name,
+                              GType           ptype,
+                              GClosure       *closure,
+                              GClosureMarshal c_marshaller,
+                              GType           return_type,
+                              guint           n_params,
+                              va_list         args)
+{
+    GType *param_types = NULL;
+    guint i;
+
+    g_return_if_fail (g_type_is_a (ptype, MOO_TYPE_PLUGIN));
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (closure != NULL);
+    g_return_if_fail (c_marshaller != NULL);
+
+    if (n_params)
+    {
+        param_types = g_new (GType, n_params);
+
+        for (i = 0; i < n_params; ++i)
+            param_types[i] = va_arg (args, GType);
+    }
+
+    moo_plugin_method_newv (name, ptype, closure, c_marshaller,
+                            return_type, n_params, param_types);
+
+    g_free (param_types);
+}
+
+
+static void
+meth_free (MooPluginMeth *meth)
+{
+    if (meth)
+    {
+        g_free (meth->param_types);
+        g_closure_invalidate (meth->closure);
+        g_closure_unref (meth->closure);
+        g_free (meth);
+    }
+}
+
+
+void
+moo_plugin_method_newv (const char     *name,
+                        GType           ptype,
+                        GClosure       *closure,
+                        GClosureMarshal c_marshaller,
+                        GType           return_type,
+                        guint           n_params,
+                        const GType    *param_types)
+{
+    MooPluginMeth *m;
+    GHashTable *meths;
+    char *norm_name;
+
+    g_return_if_fail (g_type_is_a (ptype, MOO_TYPE_PLUGIN));
+    g_return_if_fail (name != NULL);
+    g_return_if_fail (closure != NULL);
+    g_return_if_fail (c_marshaller != NULL);
+    g_return_if_fail (!n_params || param_types);
+
+    norm_name = g_strdelimit (g_strdup (name), "_", '-');
+    meths = g_type_get_qdata (ptype, MOO_PLUGIN_METHS_QUARK);
+
+    if (meths)
+    {
+        if (g_hash_table_lookup (meths, norm_name) != NULL)
+        {
+            g_warning ("method '%s' is already registered for type '%s'",
+                       name, g_type_name (ptype));
+            g_free (norm_name);
+            return;
+        }
+    }
+    else
+    {
+        meths = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+                                       (GDestroyNotify) meth_free);
+        g_type_set_qdata (ptype, MOO_PLUGIN_METHS_QUARK, meths);
+    }
+
+    m = g_new0 (MooPluginMeth, 1);
+    m->ptype = ptype;
+    m->return_type = return_type;
+    m->n_params = n_params;
+    m->param_types = n_params ? g_memdup (param_types, n_params * sizeof (GType)) : NULL;
+    m->closure = g_closure_ref (closure);
+    g_closure_sink (closure);
+    g_closure_set_marshal (closure, c_marshaller);
+
+    g_hash_table_insert (meths, norm_name, m);
 }
