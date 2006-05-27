@@ -19,7 +19,7 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 18
+#define MOO_PLUGIN_CURRENT_VERSION 19
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
 #define MOO_PLUGIN_INIT_FUNC moo_module_init
@@ -59,6 +59,7 @@ typedef struct _MooWinPlugin         MooWinPlugin;
 typedef struct _MooWinPluginClass    MooWinPluginClass;
 typedef struct _MooDocPlugin         MooDocPlugin;
 typedef struct _MooDocPluginClass    MooDocPluginClass;
+typedef struct _MooPluginMeth        MooPluginMeth;
 
 
 typedef gboolean    (*MooPluginModuleInitFunc)  (void);
@@ -82,6 +83,16 @@ typedef gboolean    (*MooWinPluginCreateFunc)   (MooWinPlugin   *win_plugin);
 typedef void        (*MooWinPluginDestroyFunc)  (MooWinPlugin   *win_plugin);
 typedef gboolean    (*MooDocPluginCreateFunc)   (MooDocPlugin   *doc_plugin);
 typedef void        (*MooDocPluginDestroyFunc)  (MooDocPlugin   *doc_plugin);
+
+
+struct _MooPluginMeth
+{
+    GType ptype;
+    GType return_type;
+    guint n_params;
+    GType *param_types;
+    GClosure *closure;
+};
 
 
 struct _MooPluginParams
@@ -109,7 +120,6 @@ struct _MooPlugin
     GObject parent;
 
     gboolean initialized;
-    gpointer module;
 
     GQuark id_quark;
     MooPluginInfo *info;
@@ -229,6 +239,43 @@ void        _moo_doc_detach_plugins     (MooEditWindow  *window,
                                          MooEdit        *doc);
 
 void        _moo_plugin_attach_prefs    (GtkWidget      *prefs_dialog);
+
+
+MooPluginMeth *moo_plugin_lookup_method (gpointer        plugin,
+                                         const char     *name);
+GSList     *moo_plugin_list_methods     (gpointer        plugin);
+
+void        moo_plugin_call_method      (gpointer        plugin,
+                                         const char     *name,
+                                         ...);
+void        moo_plugin_call_method_valist (gpointer      plugin,
+                                         const char     *name,
+                                         va_list         var_args);
+void        moo_plugin_call_methodv     (const GValue   *plugin_and_args,
+                                         const char     *name,
+                                         GValue         *return_value);
+
+void        moo_plugin_method_new       (const char     *name,
+                                         GType           ptype,
+                                         GCallback       method,
+                                         GClosureMarshal c_marshaller,
+                                         GType           return_type,
+                                         guint           n_params,
+                                         ...);
+void        moo_plugin_method_newv      (const char     *name,
+                                         GType           ptype,
+                                         GClosure       *closure,
+                                         GClosureMarshal c_marshaller,
+                                         GType           return_type,
+                                         guint           n_params,
+                                         const GType    *param_types);
+void        moo_plugin_method_new_valist(const char     *name,
+                                         GType           ptype,
+                                         GClosure       *closure,
+                                         GClosureMarshal c_marshaller,
+                                         GType           return_type,
+                                         guint           n_params,
+                                         va_list         args);
 
 
 G_END_DECLS
