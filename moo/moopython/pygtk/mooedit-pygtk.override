@@ -60,6 +60,73 @@ _wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
     return _moo_python_plugin_register (plugin_type, win_plugin_type, doc_plugin_type);
 }
 %%
+override moo_plugin_list_methods noargs
+static PyObject *
+_wrap_moo_plugin_list_methods (PyGObject *self)
+{
+    PyObject *py_list;
+    GSList *list;
+    guint i;
+
+    list = moo_plugin_list_methods (self->obj);
+
+    if (!list)
+        return PyTuple_New (0);
+
+    i = 0;
+    py_list = PyTuple_New (g_slist_length (list));
+
+    while (list)
+    {
+        PyTuple_SET_ITEM (py_list, i, PyString_FromString (list->data));
+        g_free (list->data);
+        list = g_slist_delete_link (list, list);
+        i++;
+    }
+
+    return py_list;
+}
+%%
+override moo_list_plugins noargs
+static PyObject *
+_wrap_moo_list_plugins (G_GNUC_UNUSED PyGObject *self)
+{
+    PyObject *py_list;
+    GSList *list;
+    guint i;
+
+    list = moo_list_plugins ();
+
+    if (!list)
+        return PyTuple_New (0);
+
+    i = 0;
+    py_list = PyTuple_New (g_slist_length (list));
+
+    while (list)
+    {
+        PyTuple_SET_ITEM (py_list, i, pygobject_new (list->data));
+        list = g_slist_delete_link (list, list);
+        i++;
+    }
+
+    return py_list;
+}
+%%
+override moo_plugin_lookup_method kwargs
+static PyObject *
+_wrap_moo_plugin_lookup_method (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { (char*) "name", NULL };
+    char *name;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char*)"s:MooPlugin.lookup_method", kwlist, &name))
+        return NULL;
+
+    return PyBool_FromLong (moo_plugin_lookup_method (MOO_PLUGIN(self->obj), name) != 0);
+
+}
+%%
 override moo_edit_window_list_docs noargs
 static PyObject *
 _wrap_moo_edit_window_list_docs (PyObject *self)

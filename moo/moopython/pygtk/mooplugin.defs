@@ -57,6 +57,82 @@
   (properties)
 )
 
+(define-method initialized
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_initialized")
+  (return-type "gboolean")
+)
+
+(define-method enabled
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_enabled")
+  (return-type "gboolean")
+)
+
+(define-method set_enabled
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_enabled")
+  (return-type "gboolean")
+  (parameters
+    '("gboolean" "enabled")
+  )
+)
+
+(define-method id
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_id")
+  (return-type "const-char*")
+)
+
+(define-method name
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_name")
+  (return-type "const-char*")
+)
+
+(define-method description
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_description")
+  (return-type "const-char*")
+)
+
+(define-method author
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_author")
+  (return-type "const-char*")
+)
+
+(define-method version
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_version")
+  (return-type "const-char*")
+)
+
+(define-method lookup_method
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_lookup_method")
+  (return-type "MooPluginMeth*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method list_methods
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_list_methods")
+  (return-type "GSList*")
+)
+
+(define-method call_method
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_lookup_method")
+  (return-type "MooPluginMeth*")
+  (parameters
+    '("const-char*" "name")
+  )
+  (varargs #t)
+)
+
 (define-virtual init
   (of-object "MooPlugin")
   (return-type "gboolean")
@@ -203,5 +279,75 @@
   (return-type "gboolean")
   (parameters
     '("GType" "type")
+  )
+)
+
+(define-function plugin_lookup
+  (c-name "moo_plugin_lookup")
+  (return-type "MooPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+  )
+)
+
+(define-function win_plugin_lookup
+  (c-name "moo_win_plugin_lookup")
+  (return-type "MooWinPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-function doc_plugin_lookup
+  (c-name "moo_doc_plugin_lookup")
+  (return-type "MooWinPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+    '("MooEdit*" "doc")
+  )
+)
+
+(define-function list_plugins
+  (c-name "moo_list_plugins")
+  (return-type "GSList*")
+)
+
+(define-function plugin_get_dirs
+  (c-name "moo_plugin_get_dirs")
+  (return-type "strv")
+)
+
+(define-function plugin_read_dirs
+  (c-name "moo_plugin_read_dirs")
+  (return-type "none")
+)
+
+
+(define-function plugin_method_new
+  (c-name "moo_plugin_method_new")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("GType" "ptype")
+    '("GCallback" "method")
+    '("GClosureMarshal" "c_marshaller")
+    '("GType" "return_type")
+    '("guint" "n_params")
+  )
+  (varargs #t)
+)
+
+(define-function plugin_method_newv
+  (c-name "moo_plugin_method_newv")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("GType" "ptype")
+    '("GClosure*" "closure")
+    '("GClosureMarshal" "c_marshaller")
+    '("GType" "return_type")
+    '("guint" "n_params")
+    '("const-GType*" "param_types")
   )
 )
