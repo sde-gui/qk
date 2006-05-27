@@ -17,43 +17,37 @@ class Action(moo.edit.Action):
         #print "activate: doc is", self.doc
         pass
 
+
 class Plugin(moo.edit.Plugin):
     def __init__(self):
         moo.edit.Plugin.__init__(self)
 
-        #print '__init__'
+        self.set_info(moo.edit.PluginInfo("RealPythonPlugin", "Real Python Plugin",
+                                          description="Plugin", author="Uknown",
+                                          version="3.1415926"))
 
-        self.info = {
-            "id" : PLUGIN_ID,
-            "name" : "Test python plugin",
-            "description" : "Test python plugin",
-            "author" : "Yevgen Muntyan <muntyan@math.tamu.edu>",
-            "version" : "3.1415926",
-            "enabled" : True,
-            "visible" : True,
-            #"langs" : "c",
-        }
+    def do_init(self):
+        #print "do_init"
+        return True
 
-        #self.add_edit_action("AnAction", Action)
-        #self.add_ui("Editor/Popup", "AnAction")
-
-        #print '__init__ done'
-
-    def attach_doc(self, doc, window):
-        #print "attaching to", doc
+    def do_deinit(self):
+        #print "do_deinit"
         pass
 
-    def detach_doc(self, doc, window):
-        #print "detaching from", doc
+    def do_attach_win(self, window):
+        #print "do_attach_win"
+        pass
+    def do_detach_win(self, window):
+        #print "do_detach_win"
+        pass
+    def do_attach_doc(self, window):
+        #print "do_attach_doc"
+        pass
+    def do_detach_doc(self, window):
+        #print "do_detach_doc"
         pass
 
-    def attach_win(self, window):
-        #print "attaching to", window
-        pass
-
-    def detach_win(self, window):
-        #print "detaching from", window
-        pass
 
 gobject.type_register(Action)
+gobject.type_register(Plugin)
 moo.edit.plugin_register(Plugin)

@@ -1503,9 +1503,9 @@
   (parameters
     '("guint" "merge_id")
     '("const-char*" "parent_path")
-    '("const-char*" "name")
-    '("const-char*" "action")
-    '("int" "position")
+    '("const-char*" "name" (null-ok) (default "NULL"))
+    '("const-char*" "action" (null-ok) (default "NULL"))
+    '("int" "position" (null-ok) (default "-1"))
   )
 )
 

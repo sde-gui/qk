@@ -1,5 +1,6 @@
 import moo
 import gtk
+import gobject
 import pango
 import re
 import sys
@@ -28,43 +29,56 @@ class Plugin(moo.edit.Plugin):
     def __init__(self):
         moo.edit.Plugin.__init__(self)
 
-        self.info = {
-            "id" : PLUGIN_ID,
-            "name" : "Python",
-            "description" : "Python support",
-            "author" : "Yevgen Muntyan <muntyan@math.tamu.edu>",
-            "version" : "3.1415926",
-            "enabled" : True,
-            "visible" : True
-        }
+        self.set_info(moo.edit.PluginInfo(PLUGIN_ID, "Python",
+                                          description="Python support",
+                                          author="Yevgen Muntyan <muntyan@math.tamu.edu>",
+                                          version="3.1415926"))
+
+    def do_init(self):
+        editor = moo.edit.editor_instance()
+        xml = editor.get_ui_xml()
+        self.ui_merge_id = xml.new_merge_id()
 
         if have_pyconsole:
-            self.add_window_action(moo.edit.EditWindow, "PythonConsole",
-                                   display_name="Python Console",
-                                   label="Python Console",
-                                   callback=self.show_console)
-            self.add_ui("ToolsMenu", "PythonConsole")
+            moo.utils.window_class_add_action(moo.edit.EditWindow, "PythonConsole",
+                                              display_name="Python Console",
+                                              label="Python Console",
+                                              callback=self.show_console)
+            xml.add_item(self.ui_merge_id, "ToolsMenu",
+                         "PythonConsole", "PythonConsole", -1)
 
         """ Run file """
         self.patterns = [
             [re.compile(r'\s*File\s*"([^"]+)",\s*line\s*(\d+).*'), 1, 2],
             [re.compile(r'\s*([^:]+):(\d+):.*'), 1, 2]
         ]
-        self.add_window_action(moo.edit.EditWindow, "RunFile",
-                               display_name="Run File",
-                               label="Run File",
-                               stock_id=moo.utils.STOCK_EXECUTE,
-                               accel="<shift>F9",
-                               callback=self.run_file)
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "RunFile",
+                                          display_name="Run File",
+                                          label="Run File",
+                                          stock_id=moo.utils.STOCK_EXECUTE,
+                                          accel="<shift>F9",
+                                          callback=self.run_file)
         moo.edit.window_set_action_langs("RunFile", "sensitive", ["python"])
-        self.add_ui("ToolsMenu", "RunFile")
+        xml.add_item(self.ui_merge_id, "ToolsMenu",
+                     "RunFile", "RunFile", -1)
 
-        self.add_window_action(moo.edit.EditWindow, "ReloadPythonPlugins",
-                               display_name="Reload Python Plugins",
-                               label="Reload Python Plugins",
-                               stock_id=gtk.STOCK_REFRESH,
-                               callback=self.reload_plugins)
-        self.add_ui("ToolsMenu", "ReloadPythonPlugins")
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "ReloadPythonPlugins",
+                                          display_name="Reload Python Plugins",
+                                          label="Reload Python Plugins",
+                                          stock_id=gtk.STOCK_REFRESH,
+                                          callback=self.reload_plugins)
+        xml.add_item(self.ui_merge_id, "ToolsMenu",
+                     "ReloadPythonPlugins", "ReloadPythonPlugins", -1)
+
+        return True
+
+    def do_deinit(self):
+        editor = moo.edit.editor_instance()
+        xml = editor.get_ui_xml()
+        xml.remove_ui(self.ui_merge_id)
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "PythonConsole")
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "RunFile")
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ReloadPythonPlugins")
 
     def show_console(self, window):
         window = gtk.Window()
@@ -86,7 +100,6 @@ class Plugin(moo.edit.Plugin):
         window.set_default_size(400,300)
         window.set_title("pythony")
         window.show_all()
-
 
     def ensure_output(self, window):
         pane = window.get_pane(PLUGIN_ID)
@@ -165,8 +178,8 @@ class Plugin(moo.edit.Plugin):
     def reload_plugins(self, window):
         moo.app.reload_python_plugins()
 
-    def detach_win(self, window):
+    def do_detach_win(self, window):
         window.remove_pane(PLUGIN_ID)
 
+gobject.type_register(Plugin)
 moo.edit.plugin_register(Plugin)
-# kate: indent-width 4; space-indent on

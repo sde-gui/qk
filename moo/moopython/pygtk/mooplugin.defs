@@ -1,8 +1,15 @@
-(define-object _Plugin
+(define-object Plugin
   (in-module "Moo")
   (parent "GObject")
   (c-name "MooPlugin")
   (gtype-id "MOO_TYPE_PLUGIN")
+  (fields
+    '("gboolean" "initialized")
+    '("MooPluginInfo*" "info")
+    '("GSList*" "docs")
+    '("GType" "win_plugin_type")
+    '("GType" "doc_plugin_type")
+  )
 )
 
 (define-object WinPlugin
@@ -10,6 +17,10 @@
   (parent "GObject")
   (c-name "MooWinPlugin")
   (gtype-id "MOO_TYPE_WIN_PLUGIN")
+  (fields
+    '("MooEditWindow*" "window")
+    '("MooPlugin*" "plugin")
+  )
 )
 
 (define-object DocPlugin
@@ -17,6 +28,11 @@
   (parent "GObject")
   (c-name "MooDocPlugin")
   (gtype-id "MOO_TYPE_DOC_PLUGIN")
+  (fields
+    '("MooEditWindow*" "window")
+    '("MooPlugin*" "plugin")
+    '("MooEdit*" "doc")
+  )
 )
 
 (define-boxed PluginInfo
@@ -266,21 +282,21 @@
 )
 
 
-;; (define-function moo_plugin_register
-;;   (c-name "moo_plugin_register")
-;;   (return-type "gboolean")
-;;   (parameters
-;;     '("GType" "type")
-;;   )
-;; )
-
 (define-function plugin_register
-  (c-name "moo_python_plugin_register")
+  (c-name "moo_plugin_register")
   (return-type "gboolean")
   (parameters
     '("GType" "type")
   )
 )
+
+;; (define-function plugin_register
+;;   (c-name "moo_python_plugin_register")
+;;   (return-type "gboolean")
+;;   (parameters
+;;     '("GType" "type")
+;;   )
+;; )
 
 (define-function plugin_lookup
   (c-name "moo_plugin_lookup")

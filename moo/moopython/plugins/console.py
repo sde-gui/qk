@@ -1,6 +1,7 @@
 import os
 import moo
 import gtk
+import gobject
 
 CONSOLE_PLUGIN_ID = "Console"
 
@@ -8,37 +9,44 @@ class Plugin(moo.edit.Plugin):
     def __init__(self):
         moo.edit.Plugin.__init__(self)
 
-        self.info = {
-            "id" : CONSOLE_PLUGIN_ID,
-            "name" : "Console",
-            "description" : "Console",
-            "author" : "Yevgen Muntyan <muntyan@math.tamu.edu>",
-            "version" : "3.1415926",
-            "enabled" : True,
-            "visible" : True
-        }
+        self.set_info(moo.edit.PluginInfo(CONSOLE_PLUGIN_ID, "Console",
+                                          description="Console",
+                                          author="Yevgen Muntyan <muntyan@math.tamu.edu>",
+                                          version="3.1415926"))
+        self.set_win_plugin_type(WinPlugin)
 
-        self.add_window_action(moo.edit.EditWindow, "ShowConsole",
-                               display_name="Show Console",
-                               label="Show Console",
-                               stock_id=moo.utils.STOCK_TERMINAL,
-                               callback=self.show_console)
-        self.add_ui("Editor/Menubar/View", "ShowConsole")
+    def do_init(self):
+        editor = moo.edit.editor_instance()
+        xml = editor.get_ui_xml()
+        self.ui_merge_id = xml.new_merge_id()
+
+        moo.utils.window_class_add_action(moo.edit.EditWindow, "ShowConsole",
+                                          display_name="Show Console",
+                                          label="Show Console",
+                                          stock_id=moo.utils.STOCK_TERMINAL,
+                                          callback=self.show_console)
+        xml.add_item(self.ui_merge_id, "Editor/Menubar/View", action="ShowConsole")
+
+        return True
+
+    def do_deinit(self):
+        editor = moo.edit.editor_instance()
+        xml = editor.get_ui_xml()
+        xml.remove_ui(self.ui_merge_id)
+        moo.utils.window_class_remove_action(moo.edit.EditWindow, "ShowConsole")
 
     def show_console(self, window):
         pane = window.get_pane(CONSOLE_PLUGIN_ID)
         window.paned.present_pane(pane)
 
 
-class WinPlugin(object):
+class WinPlugin(moo.edit.WinPlugin):
     def start(self, *whatever):
         if not self.terminal.child_alive():
             self.terminal.soft_reset()
             self.terminal.start_default_shell()
 
-    def create(self, window):
-        self.window = window
-
+    def do_create(self):
         label = moo.utils.PaneLabel(icon_stock_id = moo.utils.STOCK_TERMINAL,
                                     label = "Console",
                                     window_title = "Console")
@@ -53,13 +61,15 @@ class WinPlugin(object):
         swin.add(self.terminal)
         swin.show_all()
 
-        window.add_pane(CONSOLE_PLUGIN_ID, swin, label, moo.utils.PANE_POS_BOTTOM)
+        self.window.add_pane(CONSOLE_PLUGIN_ID, swin, label, moo.utils.PANE_POS_BOTTOM)
 
         return True
 
-    def destroy(self, window):
-        window.remove_pane(CONSOLE_PLUGIN_ID)
+    def do_destroy(self):
+        self.window.remove_pane(CONSOLE_PLUGIN_ID)
 
 
 if os.name == 'posix':
-    moo.edit.plugin_register(Plugin, WinPlugin)
+    gobject.type_register(Plugin)
+    gobject.type_register(WinPlugin)
+    moo.edit.plugin_register(Plugin)
