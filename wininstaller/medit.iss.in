@@ -2,9 +2,9 @@
 AppName=medit
 AppVerName=medit @MOO_VERSION_UNQUOTED@
 AppPublisher=Yevgen Muntyan
-AppPublisherURL=http://ggap.sourceforge.net/
-AppSupportURL=http://ggap.sourceforge.net/
-AppUpdatesURL=http://ggap.sourceforge.net/
+AppPublisherURL=http://mooedit.sourceforge.net/
+AppSupportURL=http://mooedit.sourceforge.net/
+AppUpdatesURL=http://mooedit.sourceforge.net/
 DefaultDirName={pf}\medit
 DefaultGroupName=medit
 AllowNoIcons=yes
@@ -29,5 +29,5 @@ Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\medit; Filename: {a
 [Run]
 Filename: {app}\medit.exe; Description: {cm:LaunchProgram,medit}; Flags: nowait postinstall skipifsilent
 [UninstallDelete]
-Name: {app}\plugins\*.pyc; Type: files; Tasks: 
-Name: {app}\plugins\lib\*.pyc; Type: files; Tasks: 
+Name: {app}\plugins\*.pyc; Type: files; Tasks:
+Name: {app}\plugins\lib\*.pyc; Type: files; Tasks:
