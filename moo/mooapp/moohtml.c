@@ -568,7 +568,10 @@ moo_html_load_memory (MooHtml            *html,
                           HTML_PARSE_NONET);
 
     if (!doc)
+    {
+        g_warning ("%s: htmlReadMemory failed", G_STRLOC);
         return FALSE;
+    }
 
     g_free (html->priv->filename);
     g_free (html->priv->basename);
@@ -1273,7 +1276,10 @@ moo_html_load_doc (MooHtml        *html,
     root = xmlDocGetRootElement (doc);
 
     if (!root)
+    {
+        g_message ("moo_html_load_doc: empty document");
         return;
+    }
 
     for (node = root->children; node != NULL; node = node->next)
     {

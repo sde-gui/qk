@@ -49,7 +49,16 @@ open_uri (const char *uri,
     g_return_val_if_fail (uri != NULL, FALSE);
 
     h = ShellExecute (NULL, "open", uri, NULL, NULL, SW_SHOWNORMAL);
-    return (int)h > 32;
+
+    if ((int)h <= 32)
+    {
+        char *msg = g_win32_error_message (GetLastError());
+        g_warning ("%s: %s", G_STRLOC, msg);
+        g_free (msg);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 #else /* ! __WIN32__ */
@@ -200,6 +209,7 @@ moo_open_email (const char *address,
 gboolean
 moo_open_url (const char *url)
 {
+    g_return_val_if_fail (url != NULL, FALSE);
     return open_uri (url, FALSE);
 }
 
