@@ -739,17 +739,19 @@ check_visible_func (GtkAction      *_action,
 {
     MooToolAction *action;
     MooLang *lang;
-    gboolean visible;
+    gboolean visible = FALSE;
 
     g_return_if_fail (MOO_IS_TOOL_ACTION (_action));
     action = MOO_TOOL_ACTION (_action);
     g_return_if_fail (action->data != NULL);
 
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-
-    visible = NULL != g_slist_find_custom (action->data->langs,
-                                           moo_lang_id (lang),
-                                           (GCompareFunc) strcmp);
+    if (doc)
+    {
+        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+        visible = NULL != g_slist_find_custom (action->data->langs,
+                                               moo_lang_id (lang),
+                                               (GCompareFunc) strcmp);
+    }
 
     g_value_set_boolean (prop_value, visible);
 }
