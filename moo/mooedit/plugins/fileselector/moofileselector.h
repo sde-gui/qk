@@ -20,6 +20,8 @@
 G_BEGIN_DECLS
 
 
+#define MOO_FILE_SELECTOR_PLUGIN_ID "FileSelector"
+
 #define MOO_TYPE_FILE_SELECTOR              (_moo_file_selector_get_type ())
 #define MOO_FILE_SELECTOR(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SELECTOR, MooFileSelector))
 #define MOO_FILE_SELECTOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
@@ -53,6 +55,26 @@ struct _MooFileSelectorClass
 GType       _moo_file_selector_get_type     (void) G_GNUC_CONST;
 GtkWidget  *_moo_file_selector_prefs_page   (MooPlugin  *plugin);
 void        _moo_file_selector_update_tools (MooPlugin  *plugin);
+
+
+#define moo_file_selector_plugin_get_widget(window, filesel)                    \
+G_STMT_START {                                                                  \
+    gpointer result__ = NULL;                                                   \
+    gpointer plugin__ = moo_plugin_lookup (MOO_FILE_SELECTOR_PLUGIN_ID);        \
+                                                                                \
+    if (plugin__)                                                               \
+    {                                                                           \
+        moo_plugin_call_method (plugin__, "get-widget", window, &result__);     \
+        filesel = result__;                                                     \
+        if (result__)                                                           \
+            g_object_unref (result__);                                          \
+    }                                                                           \
+    else                                                                        \
+    {                                                                           \
+        g_critical ("plugin %s is not registered", MOO_FILE_SELECTOR_PLUGIN_ID);\
+        filesel = NULL;                                                         \
+    }                                                                           \
+} G_STMT_END
 
 
 G_END_DECLS

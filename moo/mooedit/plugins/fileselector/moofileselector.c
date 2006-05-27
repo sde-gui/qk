@@ -28,6 +28,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
+#include "mooutils/moomarshals.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gtk/gtk.h>
@@ -37,8 +38,7 @@
 #define MOO_VERSION NULL
 #endif
 
-#define PLUGIN_ID "FileSelector"
-#define DIR_PREFS MOO_PLUGIN_PREFS_ROOT "/" PLUGIN_ID "/last_dir"
+#define DIR_PREFS MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
 
 
 typedef struct {
@@ -324,8 +324,8 @@ moo_file_selector_constructor (GType           type,
     label = moo_pane_label_new (MOO_STOCK_FILE_SELECTOR,
                                 NULL, NULL/*button*/, "File Selector",
                                 "File Selector");
-    moo_edit_window_add_pane (filesel->window, PLUGIN_ID, GTK_WIDGET (filesel),
-                              label, MOO_PANE_POS_RIGHT);
+    moo_edit_window_add_pane (filesel->window, MOO_FILE_SELECTOR_PLUGIN_ID,
+                              GTK_WIDGET (filesel), label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);
 
     filesel->button = moo_big_paned_get_button (filesel->window->paned,
@@ -1041,7 +1041,7 @@ static void
 show_file_selector (MooEditWindow *window)
 {
     GtkWidget *pane;
-    pane = moo_edit_window_get_pane (window, PLUGIN_ID);
+    pane = moo_edit_window_get_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
     moo_big_paned_present_pane (window->paned, pane);
 }
 
@@ -1129,10 +1129,10 @@ static void
 file_selector_plugin_detach (Plugin        *plugin,
                              MooEditWindow *window)
 {
-    GtkWidget *filesel = moo_edit_window_get_pane (window, PLUGIN_ID);
+    GtkWidget *filesel = moo_edit_window_get_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
     g_return_if_fail (filesel != NULL);
     plugin->instances = g_slist_remove (plugin->instances, filesel);
-    moo_edit_window_remove_pane (window, PLUGIN_ID);
+    moo_edit_window_remove_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
 }
 
 
@@ -1145,8 +1145,8 @@ _moo_file_selector_update_tools (MooPlugin *plugin)
 }
 
 
-MOO_PLUGIN_DEFINE_INFO (file_selector, PLUGIN_ID,
-                        "File Selector", "Selects files",
+MOO_PLUGIN_DEFINE_INFO (file_selector, MOO_FILE_SELECTOR_PLUGIN_ID,
+                        "File Selector", "File selector pane for editor window",
                         "Yevgen Muntyan <muntyan@tamu.edu>",
                         MOO_VERSION, NULL);
 MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
@@ -1157,8 +1157,28 @@ MOO_PLUGIN_DEFINE_FULL (FileSelector, file_selector,
                         0, 0);
 
 
+static gpointer
+get_widget_meth (G_GNUC_UNUSED gpointer plugin,
+                 MooEditWindow *window)
+{
+    gpointer widget = moo_edit_window_get_pane (window, MOO_FILE_SELECTOR_PLUGIN_ID);
+    return widget ? g_object_ref (widget) : NULL;
+}
+
+
 gboolean
 _moo_file_selector_plugin_init (void)
 {
-    return moo_plugin_register (file_selector_plugin_get_type ());
+    GType ptype = file_selector_plugin_get_type ();
+
+    if (!moo_plugin_register (ptype))
+        return FALSE;
+
+    moo_plugin_method_new ("get-widget", ptype,
+                           G_CALLBACK (get_widget_meth),
+                           _moo_marshal_OBJECT__OBJECT,
+                           _moo_file_selector_get_type (),
+                           1, MOO_TYPE_EDIT_WINDOW);
+
+    return TRUE;
 }

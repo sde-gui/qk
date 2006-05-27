@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#define FIND_PLUGIN_ID "find"
+#define FIND_PLUGIN_ID "Find"
 
 enum {
     CMD_GREP = 1,
