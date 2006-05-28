@@ -125,6 +125,7 @@
     </context>
     <context style="Comment" eol-context="#pop" name="Commentar 1">
       <IncludeRules from="##Misc##CommonCommentRules"/>
+      <LineContinue context="#stay"/>
     </context>
     <context style="Comment" eol-context="#stay" name="Commentar 2">
       <TwoChars style="Comment" context="#pop" char1="*" char2="/" endRegion="Comment"/>
