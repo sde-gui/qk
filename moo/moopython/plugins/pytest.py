@@ -40,10 +40,10 @@ class Plugin(moo.edit.Plugin):
     def do_detach_win(self, window):
         #print "do_detach_win"
         pass
-    def do_attach_doc(self, window):
+    def do_attach_doc(self, doc, window):
         #print "do_attach_doc"
         pass
-    def do_detach_doc(self, window):
+    def do_detach_doc(self, doc, window):
         #print "do_detach_doc"
         pass
 
