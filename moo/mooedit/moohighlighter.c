@@ -433,6 +433,7 @@ hl_compute_line (MooHighlighter     *hl,
 {
     MooRule *matched_rule;
     MatchResult result;
+    gboolean nomatch = FALSE;
 
     while (!gtk_text_iter_ends_line (&data->start_iter))
     {
@@ -451,7 +452,8 @@ hl_compute_line (MooHighlighter     *hl,
             if (next_node == node && !result.match_offset && !result.match_len)
             {
                 g_critical ("%s: zero-length match returned to the same node, bailing out", G_STRLOC);
-                goto nomatch;
+                nomatch = TRUE;
+                break;
             }
 
             if (result.match_offset)
@@ -471,12 +473,13 @@ hl_compute_line (MooHighlighter     *hl,
         }
         else
         {
-            goto nomatch;
+            nomatch = TRUE;
+            break;
         }
     }
 
-nomatch:
-    _moo_line_add_segment (line, -1, node, NULL, NULL);
+    if (nomatch)
+        _moo_line_add_segment (line, -1, node, NULL, NULL);
 
     return get_next_line_node (hl, line);
 }
