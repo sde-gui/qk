@@ -190,7 +190,7 @@ class _ReadLine(object):
         need_eol = False
         for l in lines:
             if need_eol:
-                self.__commit()
+                self._commit()
                 iter = self.__get_cursor()
             else:
                 cursor = self.__get_cursor()
@@ -247,7 +247,7 @@ class _ReadLine(object):
 
         if not state:
             if keyval == _keys.Return:
-                self.__commit()
+                self._commit()
             elif keyval == _keys.Up:
                 self.__history(-1)
             elif keyval == _keys.Down:
@@ -289,7 +289,7 @@ class _ReadLine(object):
             return True
 
     def __history(self, dir):
-        text = self.__get_line()
+        text = self._get_line()
         new_text = self.history.get(dir, text)
         if not new_text is None:
             self.__replace_line(new_text)
@@ -416,7 +416,7 @@ class _ReadLine(object):
     def complete(self, text):
         return None
 
-    def __get_line(self):
+    def _get_line(self):
         start = self.__get_start()
         end = self.__get_end()
         return self.buffer.get_text(start, end, False)
@@ -427,11 +427,11 @@ class _ReadLine(object):
         self.__delete(start, end)
         self.__insert(end, new_text)
 
-    def __commit(self):
+    def _commit(self):
         end = self.__get_cursor()
         if not end.ends_line():
             end.forward_to_line_end()
-        text = self.__get_line()
+        text = self._get_line()
         self.__move_cursor_to(end)
         self.freeze_undo()
         self.__insert(end, "\n")
@@ -521,6 +521,12 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
 
     def runcode(self, code):
         self.emit("command", code)
+
+    def exec_command(self, command):
+        if self._get_line():
+            self._commit()
+        self.buffer.insert_at_cursor(command)
+        self._commit()
 
     def complete_attr(self, start, end):
         try:
@@ -616,14 +622,16 @@ def ConsoleType(t=gtk.TextView):
 ReadLine = ReadLineType()
 Console = ConsoleType()
 
-def _show():
+def _make_window():
     window = gtk.Window()
+    window.set_title("pyconsole.py")
     swin = gtk.ScrolledWindow()
     swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
     window.add(swin)
-    swin.add(Console(banner="Hello there!",
-                     use_rlcompleter=False,
-                     start_script="from gtk import *\n"))
+    console = Console(banner="Hello there!",
+                      use_rlcompleter=False,
+                      start_script="from gtk import *\n")
+    swin.add(console)
     window.set_default_size(500, 400)
     window.show_all()
 
@@ -631,5 +639,7 @@ def _show():
         window.connect("destroy", gtk.main_quit)
         gtk.main()
 
+    return console
+
 if __name__ == '__main__':
-    _show()
+    _make_window()
