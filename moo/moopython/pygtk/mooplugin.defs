@@ -367,3 +367,12 @@
     '("const-GType*" "param_types")
   )
 )
+
+(define-function module_check_version
+  (c-name "moo_module_check_version")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "major")
+    '("guint" "minor")
+  )
+)

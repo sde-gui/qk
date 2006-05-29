@@ -1160,5 +1160,6 @@ MOO_PLUGIN_DEFINE_FULL (AS, as,
 gboolean
 _moo_active_strings_plugin_init (void)
 {
+    MOO_MODULE_CHECK_VERSION ();
     return moo_plugin_register (as_plugin_get_type ());
 }

@@ -383,9 +383,9 @@ reload_plugins (void)
 MOO_PLUGIN_INIT_FUNC_DECL;
 MOO_PLUGIN_INIT_FUNC_DECL
 {
-    if (!moo_python_running ())
-        return _moo_python_plugin_init ();
-    else
-        return FALSE;
+    MOO_MODULE_CHECK_VERSION ();
+
+    return !moo_python_running () &&
+            _moo_python_plugin_init ();
 }
 #endif

@@ -48,6 +48,7 @@ class Plugin(moo.edit.Plugin):
         pass
 
 
-gobject.type_register(Action)
-gobject.type_register(Plugin)
-moo.edit.plugin_register(Plugin)
+if moo.edit.module_check_version(1, 0):
+    gobject.type_register(Action)
+    gobject.type_register(Plugin)
+    moo.edit.plugin_register(Plugin)

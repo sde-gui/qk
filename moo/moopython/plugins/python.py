@@ -181,5 +181,7 @@ class Plugin(moo.edit.Plugin):
     def do_detach_win(self, window):
         window.remove_pane(PLUGIN_ID)
 
-gobject.type_register(Plugin)
-moo.edit.plugin_register(Plugin)
+
+if moo.edit.module_check_version(1, 0):
+    gobject.type_register(Plugin)
+    moo.edit.plugin_register(Plugin)

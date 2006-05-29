@@ -19,12 +19,13 @@
 G_BEGIN_DECLS
 
 #define MOO_PLUGIN_PREFS_ROOT  "Plugins"
-#define MOO_PLUGIN_CURRENT_VERSION 19
 #define MOO_PLUGIN_DIR_BASENAME "plugins"
 
-#define MOO_PLUGIN_INIT_FUNC moo_module_init
-#define MOO_PLUGIN_INIT_FUNC_NAME "moo_module_init"
-#define MOO_PLUGIN_INIT_FUNC_DECL G_MODULE_EXPORT gboolean MOO_PLUGIN_INIT_FUNC (void)
+#define MOO_MODULE_VERSION_MAJOR 1
+#define MOO_MODULE_VERSION_MINOR 0
+
+#define MOO_PLUGIN_INIT_FUNC            moo_module_init
+#define MOO_PLUGIN_INIT_FUNC_NAME       "moo_module_init"
 
 #define MOO_TYPE_PLUGIN                 (moo_plugin_get_type ())
 #define MOO_PLUGIN(object)              (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PLUGIN, MooPlugin))
@@ -179,6 +180,9 @@ GType       moo_win_plugin_get_type     (void) G_GNUC_CONST;
 GType       moo_doc_plugin_get_type     (void) G_GNUC_CONST;
 GType       moo_plugin_info_get_type    (void) G_GNUC_CONST;
 GType       moo_plugin_params_get_type  (void) G_GNUC_CONST;
+
+gboolean    moo_module_check_version    (guint           major,
+                                         guint           minor);
 
 gboolean    moo_plugin_register         (GType           type);
 void        moo_plugin_unregister       (GType           type);

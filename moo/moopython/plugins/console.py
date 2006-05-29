@@ -69,7 +69,7 @@ class WinPlugin(moo.edit.WinPlugin):
         self.window.remove_pane(CONSOLE_PLUGIN_ID)
 
 
-if os.name == 'posix':
+if os.name == 'posix' and moo.edit.module_check_version(1, 0):
     gobject.type_register(Plugin)
     gobject.type_register(WinPlugin)
     moo.edit.plugin_register(Plugin)

@@ -915,5 +915,6 @@ MOO_PLUGIN_DEFINE_FULL (Find, find,
 gboolean
 _moo_find_plugin_init (void)
 {
+    MOO_MODULE_CHECK_VERSION ();
     return moo_plugin_register (find_plugin_get_type ());
 }

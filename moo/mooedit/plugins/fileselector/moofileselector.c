@@ -1171,6 +1171,8 @@ _moo_file_selector_plugin_init (void)
 {
     GType ptype = file_selector_plugin_get_type ();
 
+    MOO_MODULE_CHECK_VERSION ();
+
     if (!moo_plugin_register (ptype))
         return FALSE;
 

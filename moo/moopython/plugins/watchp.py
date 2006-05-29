@@ -79,5 +79,6 @@ def window_destroyed(*whatever):
     notify_id = 0
     window = None
 
-moo.edit.plugin_register(Plugin)
+if moo.edit.module_check_version(1, 0):
+    moo.edit.plugin_register(Plugin)
 # kate: indent-width 4; space-indent on

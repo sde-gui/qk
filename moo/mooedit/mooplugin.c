@@ -805,6 +805,15 @@ moo_plugin_unregister (GType type)
 }
 
 
+gboolean
+moo_module_check_version (guint major,
+                          guint minor)
+{
+    return major == MOO_MODULE_VERSION_MAJOR &&
+            minor <= MOO_MODULE_VERSION_MINOR;
+}
+
+
 gpointer
 moo_plugin_lookup (const char *plugin_id)
 {

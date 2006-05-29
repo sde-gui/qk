@@ -17,6 +17,19 @@
 #include <mooedit/mooplugin.h>
 
 
+#define MOO_MODULE_CHECK_VERSION()                                          \
+G_STMT_START {                                                              \
+    if (!moo_module_check_version (MOO_MODULE_VERSION_MAJOR,                \
+                                   MOO_MODULE_VERSION_MINOR))               \
+        return FALSE;                                                       \
+} G_STMT_END
+
+
+#define MOO_PLUGIN_INIT_FUNC_DECL   \
+G_MODULE_EXPORT gboolean            \
+MOO_PLUGIN_INIT_FUNC (void)
+
+
 #define MOO_PLUGIN_DEFINE_INFO(plugin_name__,id__,name__,                   \
                                description__,author__,version__,            \
                                langs__)                                     \
