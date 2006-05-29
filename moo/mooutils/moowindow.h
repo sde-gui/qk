@@ -87,6 +87,8 @@ void        moo_window_class_new_action_custom (MooWindowClass  *klass,
                                              gpointer            data,
                                              GDestroyNotify      notify);
 
+gboolean    moo_window_class_find_action    (MooWindowClass     *klass,
+                                             const char         *id);
 void        moo_window_class_remove_action  (MooWindowClass     *klass,
                                              const char         *id);
 

@@ -1015,6 +1015,25 @@ moo_window_class_new_action (MooWindowClass     *klass,
 }
 
 
+gboolean
+moo_window_class_find_action (MooWindowClass *klass,
+                              const char     *id)
+{
+    GHashTable *actions;
+    GType type;
+
+    g_return_val_if_fail (MOO_IS_WINDOW_CLASS (klass), FALSE);
+
+    type = G_OBJECT_CLASS_TYPE (klass);
+    actions = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+
+    if (actions)
+        return g_hash_table_lookup (actions, id) != NULL;
+    else
+        return FALSE;
+}
+
+
 void
 moo_window_class_remove_action (MooWindowClass     *klass,
                                 const char         *action_id)
