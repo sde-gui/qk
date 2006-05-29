@@ -6,6 +6,6 @@ Exec=medit %F
 Terminal=false
 Type=Application
 StartupNotify=true
-MimeType=text/*;
+MimeType=text/plain;
 Icon=medit.png
 Categories=Application;Utility;TextEditor;
