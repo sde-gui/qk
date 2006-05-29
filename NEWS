@@ -12,6 +12,7 @@
     There is a single win32 installer now, and medit picks up python if it's present
     on startup: medit is not linked to pythonxx.dll, python support has been moved
     into pymo2x plugins.
+    Improved build infrastructure (Andreas Hanke).
     Bug fixes.
 
 2006-05-04  Yevgen Muntyan  <muntyan@math.tamu.edu>

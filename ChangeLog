@@ -1,3 +1,6 @@
+2006-05-29  Geoffrey French <gsculpt@googlemail.com>
+    Prettified pyconsole, added "command" signal.
+
 2006-05-26  Yevgen Muntyan  <muntyan@math.tamu.edu>
     * === Released 0.6.99 ===
 

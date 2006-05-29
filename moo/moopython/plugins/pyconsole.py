@@ -18,6 +18,13 @@
 # it creates the widget and 'starts' interactive session; see the end of
 # this file. If start_script is not empty, it pastes it as it was entered from keyboard.
 #
+# Console has "command" signal which is emitted when code is about to
+# be executed. You may connect to it using console.connect or console.connect_after
+# to get your callback ran before or after the code is executed.
+#
+# To modify output appearance, set attributes of console.stdout_tag and
+# console.stderr_tag.
+#
 # Console may subclass a type other than gtk.TextView, to allow syntax highlighting and stuff,
 # e.g.:
 #   console_type = pyconsole.ConsoleType(moo.edit.TextView)
@@ -53,6 +60,15 @@ def _commonprefix(m):
     return prefix
 
 class _ReadLine(object):
+
+    class Output(object):
+        def __init__(self, console, tag_name):
+            object.__init__(self)
+            self.buffer = console.get_buffer()
+            self.tag_name = tag_name
+        def write(self, text):
+            pos = self.buffer.get_iter_at_mark(self.buffer.get_insert())
+            self.buffer.insert_with_tags_by_name(pos, text, self.tag_name)
 
     class History(object):
         def __init__(self):
@@ -99,6 +115,11 @@ class _ReadLine(object):
         self.buffer.connect("mark-set", self.on_buf_mark_set)
         self.do_insert = False
         self.do_delete = False
+
+        self.stdout_tag = self.buffer.create_tag("stdout", foreground="#006000")
+        self.stderr_tag = self.buffer.create_tag("stderr", foreground="#B00000")
+        self._stdout = _ReadLine.Output(self, "stdout")
+        self._stderr = _ReadLine.Output(self, "stderr")
 
         self.cursor = self.buffer.create_mark("cursor",
                                               self.buffer.get_start_iter(),
@@ -239,8 +260,16 @@ class _ReadLine(object):
             elif keyval == _keys.End:
                 self.__move_cursor(10000)
             elif keyval == _keys.Tab:
-                self.tab_pressed = tab_pressed + 1
-                self.__complete()
+                cursor = self.__get_cursor()
+                if cursor.starts_line():
+                    handled = False
+                else:
+                    cursor.backward_char()
+                    if cursor.get_char().isspace():
+                        handled = False
+                    else:
+                        self.tab_pressed = tab_pressed + 1
+                        self.__complete()
             else:
                 handled = False
         elif state == gdk.CONTROL_MASK:
@@ -413,9 +442,6 @@ class _ReadLine(object):
     def do_raw_input(self, text):
         pass
 
-    def write(self,whatever):
-        self.buffer.insert_at_cursor(whatever)
-
 
 class _Console(_ReadLine, code.InteractiveInterpreter):
     def __init__(self, locals=None, banner=None,
@@ -424,7 +450,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
         _ReadLine.__init__(self)
 
         code.InteractiveInterpreter.__init__(self, locals)
-        self.locals['__console__'] = self
+        self.locals["__console__"] = self
 
         self.start_script = start_script
         self.completer = completer
@@ -452,7 +478,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
 
         if self.banner:
             iter = self.buffer.get_start_iter()
-            self.buffer.insert(iter, self.banner)
+            self.buffer.insert_with_tags_by_name(iter, self.banner, "stdout")
             if not iter.starts_line():
                 self.buffer.insert(iter, "\n")
 
@@ -478,16 +504,21 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             ps = self.ps1
         self.raw_input(ps)
 
-    def runcode(self, code):
-        saved = sys.stdout
-        sys.stdout = self
+    def do_command(self, code):
+        saved_stdout, saved_stderr = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+
         try:
             eval(code, self.locals)
         except SystemExit:
             raise
         except:
             self.showtraceback()
-        sys.stdout = saved
+
+        sys.stdout, sys.stderr = saved_stdout, saved_stderr
+
+    def runcode(self, code):
+        self.emit("command", code)
 
     def complete_attr(self, start, end):
         try:
@@ -563,11 +594,20 @@ def ReadLineType(t=gtk.TextView):
 
 def ConsoleType(t=gtk.TextView):
     class console(t, _Console):
+        __gsignals__ = {
+            'command' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE, (object,))
+        }
+
         def __init__(self, *args, **kwargs):
             t.__init__(self)
             _Console.__init__(self, *args, **kwargs)
+
+        def do_command(self, code):
+            return _Console.do_command(self, code)
+
         def do_key_press_event(self, event):
             return _Console.do_key_press_event(self, event, t)
+
     gobject.type_register(console)
     return console
 
