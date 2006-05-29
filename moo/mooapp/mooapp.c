@@ -783,7 +783,7 @@ moo_app_init_editor (MooApp *app)
     guint n_files;
     char *user_file;
 
-    app->priv->editor = moo_editor_instance ();
+    app->priv->editor = moo_editor_create_instance ();
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
     moo_editor_set_app_name (app->priv->editor,
@@ -1067,7 +1067,8 @@ moo_app_save_prefs (MooApp *app)
 }
 
 
-static void     moo_app_quit_real       (MooApp         *app)
+static void
+moo_app_quit_real (MooApp *app)
 {
     GSList *l, *list;
 
@@ -1141,7 +1142,8 @@ moo_app_run (MooApp *app)
 }
 
 
-gboolean         moo_app_quit                   (MooApp     *app)
+gboolean
+moo_app_quit (MooApp *app)
 {
     gboolean stopped = FALSE;
 
@@ -1166,9 +1168,10 @@ gboolean         moo_app_quit                   (MooApp     *app)
 }
 
 
-static void     moo_app_set_name        (MooApp         *app,
-                                         const char     *short_name,
-                                         const char     *full_name)
+static void
+moo_app_set_name (MooApp     *app,
+                  const char *short_name,
+                  const char *full_name)
 {
     if (short_name)
     {
@@ -1256,13 +1259,15 @@ install_editor_actions (MooApp *app)
 
 
 #if defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)
-static void new_editor (MooApp *app)
+static void
+new_editor (MooApp *app)
 {
     g_return_if_fail (app != NULL);
     gtk_window_present (GTK_WINDOW (moo_editor_new_window (app->priv->editor)));
 }
 
-static void open_in_editor (MooTermWindow *terminal)
+static void
+open_in_editor (MooTermWindow *terminal)
 {
     MooApp *app = moo_app_get_instance ();
     g_return_if_fail (app != NULL);
@@ -1270,7 +1275,8 @@ static void open_in_editor (MooTermWindow *terminal)
 }
 
 
-static void install_terminal_actions (MooApp *app)
+static void
+install_terminal_actions (MooApp *app)
 {
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_TERM_WINDOW);
 
@@ -1300,13 +1306,15 @@ static void install_terminal_actions (MooApp *app)
     g_type_class_unref (klass);
 }
 #else /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
-static void install_terminal_actions (G_GNUC_UNUSED MooApp *app)
+static void
+install_terminal_actions (G_GNUC_UNUSED MooApp *app)
 {
 }
 #endif /* !(defined(MOO_BUILD_TERM) && defined(MOO_BUILD_EDIT)) */
 
 
-MooUIXML        *moo_app_get_ui_xml             (MooApp     *app)
+MooUIXML *
+moo_app_get_ui_xml (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
@@ -1524,7 +1532,7 @@ moo_app_exec_cmd_real (MooApp             *app,
 
 
 char*
-moo_app_tempnam (MooApp     *app)
+moo_app_tempnam (MooApp *app)
 {
     int i;
     char *basename;

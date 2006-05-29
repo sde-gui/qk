@@ -93,8 +93,22 @@ static void          prefs_changed          (const char     *key,
                                              MooEditor      *editor);
 static gboolean      apply_prefs            (MooEditor      *editor);
 
+static void          add_new_window_action      (void);
+static void          remove_new_window_action   (void);
+
+
+typedef struct {
+    GQuark domain;
+    char *text;
+} Message;
+
+static Message      *message_new            (GQuark          domain,
+                                             const char     *text);
+static void          message_free           (Message        *message);
+
 
 struct _MooEditorPrivate {
+    GSList          *messages;
     WindowInfo      *windowless;
     GSList          *windows; /* WindowInfo* */
     GHashTable      *loaders;
@@ -161,7 +175,8 @@ static guint signals[LAST_SIGNAL];
 G_DEFINE_TYPE (MooEditor, moo_editor, G_TYPE_OBJECT)
 
 
-static void moo_editor_class_init (MooEditorClass *klass)
+static void
+moo_editor_class_init (MooEditorClass *klass)
 {
     gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -254,6 +269,8 @@ static void moo_editor_class_init (MooEditorClass *klass)
                                         (MooWindowActionFunc) create_recent_action,
                                         NULL, NULL);
     g_type_class_unref (edit_window_class);
+
+    add_new_window_action ();
 }
 
 
@@ -450,9 +467,45 @@ moo_editor_finalize (GObject *object)
 
     g_free (editor->priv->default_lang);
 
+    g_slist_foreach (editor->priv->messages, (GFunc) message_free, NULL);
+    g_slist_free (editor->priv->messages);
+
     g_free (editor->priv);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
+}
+
+
+static Message *
+message_new (GQuark      domain,
+             const char *text)
+{
+    Message *msg = g_new0 (Message, 1);
+    msg->domain = domain;
+    msg->text = g_strdup (text);
+    return msg;
+}
+
+
+static void
+message_free (Message *msg)
+{
+    if (msg)
+    {
+        g_free (msg->text);
+        g_free (msg);
+    }
+}
+
+
+void
+_moo_editor_post_message (MooEditor      *editor,
+                          GQuark          domain,
+                          const char     *text)
+{
+    g_return_if_fail (MOO_IS_EDITOR (editor));
+    editor->priv->messages = g_slist_prepend (editor->priv->messages,
+                                              message_new (domain, text));
 }
 
 
@@ -469,7 +522,7 @@ _moo_editor_get_file_watch (MooEditor      *editor)
 
 
 MooEditor*
-moo_editor_instance (void)
+moo_editor_create_instance (void)
 {
     if (!editor_instance)
     {
@@ -477,7 +530,18 @@ moo_editor_instance (void)
         g_object_add_weak_pointer (G_OBJECT (editor_instance),
                                    (gpointer*) &editor_instance);
     }
+    else
+    {
+        g_object_ref (editor_instance);
+    }
 
+    return editor_instance;
+}
+
+
+MooEditor*
+moo_editor_instance (void)
+{
     return editor_instance;
 }
 
@@ -502,9 +566,44 @@ static void
 set_single_window (MooEditor      *editor,
                    gboolean        single)
 {
-    /* XXX */
+    /* XXX move documents to some window if several windows open? */
     editor->priv->single_window = single;
+
+    if (single)
+        remove_new_window_action ();
+    else
+        add_new_window_action ();
+
     g_object_notify (G_OBJECT (editor), "single-window");
+}
+
+
+static void
+add_new_window_action (void)
+{
+    MooWindowClass *klass;
+
+    klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
+
+    if (!moo_window_class_find_action (klass, "NewWindow"))
+        moo_window_class_new_action (klass, "NewWindow",
+                                     "display-name", "New Window",
+                                     "label", "_New Window",
+                                     "tooltip", "Open new editor window",
+                                     "stock-id", GTK_STOCK_NEW,
+                                     "accel", "<shift><ctrl>N",
+                                     "closure-callback", moo_editor_new_window,
+                                     "closure-proxy-func", moo_edit_window_get_editor,
+                                     NULL);
+}
+
+
+static void
+remove_new_window_action (void)
+{
+    MooWindowClass *klass;
+    klass = g_type_class_peek (MOO_TYPE_EDIT_WINDOW);
+    moo_window_class_remove_action (klass, "NewWindow");
 }
 
 

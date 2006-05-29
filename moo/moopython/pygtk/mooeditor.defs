@@ -4,12 +4,25 @@
 (define-function editor_instance
   (c-name "moo_editor_instance")
   (return-type "MooEditor*")
+  (docstring "editor_instance() -> Editor - returns existing instance of moo.edit.Editor.\n"
+             "\n"
+             "It does not create a new instance if it doesn't exist yet. For this see\n"
+             "create_editor_instance().")
+)
+
+(define-function create_editor_instance
+  (c-name "moo_editor_create_instance")
+  (return-type "MooEditor*")
+  (docstring "editor_instance() -> Editor - returns instance of moo.edit.Editor.\n"
+             "\n"
+             "Creates new instance if it doesn't exist yet.")
 )
 
 (define-method new_window
   (of-object "MooEditor")
   (c-name "moo_editor_new_window")
   (return-type "MooEditWindow*")
+  (docstring "new_window() -> EditWindow - creates new editor window.\n")
 )
 
 (define-method new_doc
@@ -19,6 +32,10 @@
   (parameters
     '("MooEditWindow*" "window" (null-ok) (default "NULL"))
   )
+  (docstring "new_doc(window=None) -> Edit - creates new document.\n"
+             "\n"
+             "Create new document in window. If window is None, \n"
+             "creates new window.")
 )
 
 (define-method create_doc
@@ -56,6 +73,11 @@
     '("const-char*" "filename" (null-ok) (default "NULL"))
     '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
+  (docstring "open_file(window=None, parent=None, filename=None, encoding=None) -> bool.\n"
+             "\n"
+             "Opens a file.\n"
+             "If filename is None, it asks user for filename first, and returns False if\n"
+             "user pressed Cancel in the file chooser dialog.")
 )
 
 (define-method get_doc
@@ -65,18 +87,27 @@
   (parameters
     '("const-char*" "filename")
   )
+  (docstring "get_doc(filename) -> Edit or None.\n"
+             "\n"
+             "Finds document instance by filename. Returns None if not found")
 )
 
 (define-method get_active_doc
   (of-object "MooEditor")
   (c-name "moo_editor_get_active_doc")
   (return-type "MooEdit*")
+  (docstring "get_active_doc() -> Edit or None.\n"
+             "\n"
+             "Returns active document, i.e. the active document in the top window.")
 )
 
 (define-method get_active_window
   (of-object "MooEditor")
   (c-name "moo_editor_get_active_window")
   (return-type "MooEditWindow*")
+  (docstring "get_active_window() -> EditWindow or None.\n"
+             "\n"
+             "Returns active window, i.e. the top one.")
 )
 
 (define-method set_active_window
@@ -86,6 +117,9 @@
   (parameters
     '("MooEditWindow*" "window")
   )
+  (docstring "set_active_window(window) -> None.\n"
+             "\n"
+             "Makes window active, i.e. brings it to front and makes it grab focus.")
 )
 
 (define-method set_active_doc
@@ -95,12 +129,19 @@
   (parameters
     '("MooEdit*" "doc")
   )
+  (docstring "set_active_doc(doc) -> None.\n"
+             "\n"
+             "Makes the document active, i.e. brings its window to front, and switches\n"
+             "notebook to its page.")
 )
 
 (define-method present
   (of-object "MooEditor")
   (c-name "moo_editor_present")
   (return-type "none")
+  (docstring "present() -> None.\n"
+             "\n"
+             "Brings top editor window to the front.")
 )
 
 (define-method list_windows

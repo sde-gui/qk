@@ -204,7 +204,6 @@ static gboolean notebook_drag_motion            (GtkWidget          *widget,
 
 
 /* actions */
-static void moo_edit_window_new         (MooEditWindow      *window);
 static void moo_edit_window_new_doc     (MooEditWindow      *window);
 static void moo_edit_window_open        (MooEditWindow      *window);
 static void moo_edit_window_reload      (MooEditWindow      *window);
@@ -346,15 +345,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
 
     moo_window_class_set_id (window_class, "Editor", "Editor");
-
-    moo_window_class_new_action (window_class, "NewWindow",
-                                 "display-name", "New Window",
-                                 "label", "_New Window",
-                                 "tooltip", "Open new editor window",
-                                 "stock-id", GTK_STOCK_NEW,
-                                 "accel", "<shift><ctrl>N",
-                                 "closure-callback", moo_edit_window_new,
-                                 NULL);
 
     moo_window_class_new_action (window_class, "NewDoc",
                                  "display-name", "New",
@@ -1065,12 +1055,6 @@ static gboolean moo_edit_window_close       (MooEditWindow      *window)
 {
     moo_editor_close_window (window->priv->editor, window, TRUE);
     return TRUE;
-}
-
-
-static void moo_edit_window_new             (MooEditWindow   *window)
-{
-    moo_editor_new_window (window->priv->editor);
 }
 
 

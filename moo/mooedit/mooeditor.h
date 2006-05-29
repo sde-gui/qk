@@ -49,6 +49,7 @@ struct _MooEditorClass
 GType            moo_editor_get_type        (void) G_GNUC_CONST;
 
 MooEditor       *moo_editor_instance        (void);
+MooEditor       *moo_editor_create_instance (void);
 
 /* this creates 'windowless' MooEdit instance */
 MooEdit         *moo_editor_create_doc      (MooEditor      *editor,
@@ -153,6 +154,9 @@ gboolean         _moo_editor_save_as            (MooEditor      *editor,
                                                  const char     *filename,
                                                  const char     *encoding,
                                                  GError        **error);
+void             _moo_editor_post_message       (MooEditor      *editor,
+                                                 GQuark          domain,
+                                                 const char     *message);
 #endif /* MOOEDIT_COMPILATION */
 
 
