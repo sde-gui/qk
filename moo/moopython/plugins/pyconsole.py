@@ -497,26 +497,27 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             cmd = self.cmd_buffer + "\n" + text
         else:
             cmd = text
+
+        saved_stdout, saved_stderr = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+
         if self.runsource(cmd):
             self.cmd_buffer = cmd
             ps = self.ps2
         else:
             self.cmd_buffer = ''
             ps = self.ps1
+
+        sys.stdout, sys.stderr = saved_stdout, saved_stderr
         self.raw_input(ps)
 
     def do_command(self, code):
-        saved_stdout, saved_stderr = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = self._stdout, self._stderr
-
         try:
             eval(code, self.locals)
         except SystemExit:
             raise
         except:
             self.showtraceback()
-
-        sys.stdout, sys.stderr = saved_stdout, saved_stderr
 
     def runcode(self, code):
         self.emit("command", code)
