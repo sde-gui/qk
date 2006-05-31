@@ -1452,7 +1452,7 @@ moo_text_view_move_cursor (MooTextView  *view,
                            int           line,
                            int           offset,
                            gboolean      offset_visual,
-                           gboolean      in_idle)
+                           G_GNUC_UNUSED gboolean in_idle)
 {
     Scroll *scroll;
 
@@ -1464,10 +1464,10 @@ moo_text_view_move_cursor (MooTextView  *view,
     scroll->character = offset;
     scroll->visual = offset_visual;
 
-    if (in_idle)
-        g_idle_add ((GSourceFunc) do_move_cursor,
-                     scroll);
-    else
+//     if (in_idle)
+//         g_idle_add ((GSourceFunc) do_move_cursor,
+//                      scroll);
+//     else
         do_move_cursor (scroll);
 }
 
