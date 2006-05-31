@@ -99,8 +99,6 @@ void        moo_menu_item_set_label         (GtkWidget      *menu_item,
 void        moo_widget_set_tooltip          (GtkWidget      *widget,
                                              const char     *tip);
 
-void        moo_remove_startup_notify       (GtkWidget      *widget);
-
 
 G_END_DECLS
 

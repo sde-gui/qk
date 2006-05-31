@@ -284,13 +284,13 @@ int main (int argc, char *argv[])
 
     if (!moo_app_init (app))
     {
-        moo_remove_startup_notify (NULL);
+        gdk_notify_startup_complete ();
         return 0;
     }
 
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
-    moo_remove_startup_notify (window);
+    gdk_notify_startup_complete ();
 
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);
