@@ -129,7 +129,6 @@ int main (int argc, char *argv[])
 
     retval = moo_app_run (app);
 
-    g_free (startup_id);
     g_object_unref (app);
     return retval;
 }
