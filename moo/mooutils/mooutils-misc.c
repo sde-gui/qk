@@ -1479,7 +1479,10 @@ moo_remove_startup_notify (GtkWidget *widget)
     id = g_getenv ("DESKTOP_STARTUP_ID");
 
     if (!id)
+    {
+//         g_message ("no DESKTOP_STARTUP_ID variable");
         return;
+    }
 
     message = g_strdup_printf ("remove: ID=%s", id);
     message_len = strlen (message) + 1;
@@ -1495,7 +1498,7 @@ moo_remove_startup_notify (GtkWidget *widget)
     }
     else
     {
-        GdkWindowAttr attributes;
+        static GdkWindowAttr attributes;
         GdkScreen *screen;
 
         screen = gdk_screen_get_default ();
@@ -1503,6 +1506,7 @@ moo_remove_startup_notify (GtkWidget *widget)
         root = gdk_screen_get_root_window (screen);
         g_return_if_fail (root != NULL);
 
+        attributes.window_type = GDK_WINDOW_TEMP;
         freeme = window = gdk_window_new (root, &attributes, 0);
         g_return_if_fail (window != NULL);
     }
