@@ -14,7 +14,7 @@
 #ifndef __MOO_EDITOR_H__
 #define __MOO_EDITOR_H__
 
-#include <mooedit/mooeditwindow.h>
+#include <mooedit/mooeditsession.h>
 #include <mooedit/moolangmgr.h>
 #include <mooutils/moouixml.h>
 #include <mooutils/moohistorylist.h>
