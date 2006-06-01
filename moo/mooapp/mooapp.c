@@ -609,14 +609,14 @@ moo_app_set_exit_code (MooApp      *app,
 }
 
 
-const char*
+const char *
 moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 {
     return moo_app_input ? moo_app_input->pipe_name : NULL;
 }
 
 
-const char*
+const char *
 moo_app_get_rc_file_name (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
@@ -643,6 +643,32 @@ moo_app_get_rc_file_name (MooApp *app)
     }
 
     return app->priv->info->rc_file;
+}
+
+
+char *
+moo_app_create_user_data_dir (MooApp *app)
+{
+    char *dir;
+    GError *error = NULL;
+
+    g_return_val_if_fail (MOO_IS_APP (app), NULL);
+
+    dir = moo_get_user_data_dir ();
+    g_return_val_if_fail (dir != NULL, NULL);
+
+    if (g_file_test (dir, G_FILE_TEST_IS_DIR))
+        return dir;
+
+    if (!moo_mkdir (dir, &error))
+    {
+        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_error_free (error);
+        g_free (dir);
+        dir = NULL;
+    }
+
+    return dir;
 }
 
 

@@ -302,7 +302,6 @@ moo_editor_init (MooEditor *editor)
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
-    moo_prefs_new_key_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION), TRUE);
 
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",

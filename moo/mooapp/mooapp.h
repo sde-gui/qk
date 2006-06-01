@@ -21,7 +21,6 @@ G_BEGIN_DECLS
 
 
 #define MOO_TYPE_APP_INFO           (moo_app_info_get_type ())
-
 #define MOO_TYPE_APP                (moo_app_get_type ())
 #define MOO_APP(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_APP, MooApp))
 #define MOO_APP_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_APP, MooAppClass))
@@ -89,6 +88,7 @@ void             moo_app_set_exit_code          (MooApp     *app,
 
 const MooAppInfo*moo_app_get_info               (MooApp     *app);
 
+char            *moo_app_create_user_data_dir   (MooApp     *app);
 const char      *moo_app_get_rc_file_name       (MooApp     *app);
 const char      *moo_app_get_input_pipe_name    (MooApp     *app);
 const char      *moo_app_get_output_pipe_name   (MooApp     *app);
