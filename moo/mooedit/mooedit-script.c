@@ -816,8 +816,7 @@ static MSValue *
 cfunc_open (MSValue   *arg,
             MSContext *ctx)
 {
-    gboolean ret;
-    MooEdit *doc;
+    MooEdit *doc, *new_doc;
     MooEditor *editor;
     MooEditWindow *window;
     char *filename;
@@ -827,10 +826,10 @@ cfunc_open (MSValue   *arg,
     window = MOO_IS_EDIT_WINDOW (ctx->window) ? MOO_EDIT_WINDOW (ctx->window) : NULL;
     filename = ms_value_print (arg);
 
-    ret = moo_editor_open_file (editor, window, ctx->window, filename, NULL);
+    new_doc = moo_editor_open_file (editor, window, ctx->window, filename, NULL);
 
     g_free (filename);
-    return ms_value_bool (ret);
+    return ms_value_bool (new_doc != NULL);
 }
 
 

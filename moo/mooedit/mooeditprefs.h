@@ -28,6 +28,7 @@ GtkWidget  *moo_edit_colors_prefs_page_new  (MooEditor      *editor);
 const char *moo_edit_setting                (const char     *setting_name);
 
 #define MOO_EDIT_PREFS_DEFAULT_LANG             "default_lang"
+#define MOO_EDIT_PREFS_SAVE_SESSION             "save_session"
 
 #define MOO_EDIT_PREFS_TAB_KEY_ACTION           "tab_key_action"
 #define MOO_EDIT_PREFS_SPACES_NO_TABS           "spaces_instead_of_tabs"

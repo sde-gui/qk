@@ -66,7 +66,7 @@
 (define-method open_file
   (of-object "MooEditor")
   (c-name "moo_editor_open_file")
-  (return-type "gboolean")
+  (return-type "MooEdit*")
   (parameters
     '("MooEditWindow*" "window" (null-ok) (default "NULL"))
     '("GtkWidget*" "parent" (null-ok) (default "NULL"))
@@ -277,4 +277,29 @@
   (of-object "MooEditor")
   (c-name "moo_edit_prefs_page_new")
   (return-type "GtkWidget*")
+)
+
+(define-method get_session
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_session")
+  (return-type "MooEditSession*")
+)
+
+(define-method load_session
+  (of-object "MooEditor")
+  (c-name "moo_editor_load_session")
+  (return-type "gboolean")
+  (parameters
+    '("MooEditSession*" "session")
+    '("gboolean" "ask_confirm" (null-ok) (default "TRUE"))
+  )
+)
+
+(define-method clear
+  (of-object "MooEditor")
+  (c-name "moo_editor_clear")
+  (return-type "gboolean")
+  (parameters
+    '("gboolean" "ask_confirm" (null-ok) (default "TRUE"))
+  )
 )

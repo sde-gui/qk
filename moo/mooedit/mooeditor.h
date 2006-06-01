@@ -65,17 +65,17 @@ gboolean         moo_editor_open            (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              GSList         *files); /* list of MooEditFileInfo* */
-gboolean         moo_editor_open_file       (MooEditor      *editor,
+MooEdit         *moo_editor_open_file       (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              const char     *filename,
                                              const char     *encoding);
-gboolean         moo_editor_new_file        (MooEditor      *editor,
+MooEdit         *moo_editor_new_file        (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              const char     *filename,
                                              const char     *encoding);
-gboolean         moo_editor_open_uri        (MooEditor      *editor,
+MooEdit         *moo_editor_open_uri        (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,
                                              const char     *uri,
@@ -94,6 +94,7 @@ void             moo_editor_set_active_doc  (MooEditor      *editor,
 
 void             moo_editor_present         (MooEditor      *editor);
 
+/* lists must be freed, content must not be unrefed */
 GSList          *moo_editor_list_windows    (MooEditor      *editor);
 GSList          *moo_editor_list_docs       (MooEditor      *editor);
 
@@ -134,6 +135,13 @@ gboolean         moo_editor_save_copy       (MooEditor      *editor,
                                              const char     *filename,
                                              const char     *encoding,
                                              GError        **error);
+
+MooEditSession  *moo_editor_get_session     (MooEditor      *editor);
+gboolean         moo_editor_load_session    (MooEditor      *editor,
+                                             MooEditSession *session,
+                                             gboolean        ask_confirm);
+gboolean         moo_editor_clear           (MooEditor      *editor,
+                                             gboolean        ask_confirm);
 
 #ifdef MOOEDIT_COMPILATION
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,

@@ -134,13 +134,21 @@
   )
 )
 
+(define-boxed Session
+  (in-module "Moo")
+  (c-name "MooEditSession")
+  (gtype-id "MOO_TYPE_EDIT_SESSION")
+  (copy-func "moo_edit_session_copy")
+  (release-func "moo_edit_session_free")
+)
+
 
 (include "mooplugin.defs")
 (include "mooeditor.defs")
 
 ;; Enumerations and flags ...
 
-(define-enum EditOnExternalChanges
+(define-enum OnExternalChanges
   (in-module "Moo")
   (c-name "MooEditOnExternalChanges")
   (gtype-id "MOO_TYPE_EDIT_ON_EXTERNAL_CHANGES")
@@ -152,7 +160,7 @@
   )
 )
 
-(define-flags EditStatus
+(define-flags Status
   (in-module "Moo")
   (c-name "MooEditStatus")
   (gtype-id "MOO_TYPE_EDIT_STATUS")
@@ -1486,4 +1494,22 @@
   (parameters
     '("const-char*" "action_id")
   )
+)
+
+
+;; From moo/mooedit/mooedit-actions.h
+
+(define-function session_parse_markup
+  (c-name "moo_edit_session_parse_markup")
+  (is-constructor-of "MooEditSession")
+  (return-type "MooEditSession*")
+  (parameters
+    '("const-char*" "markup")
+  )
+)
+
+(define-method get_markup
+  (of-object "MooEditSession")
+  (c-name "moo_edit_session_get_markup")
+  (return-type "char*")
 )

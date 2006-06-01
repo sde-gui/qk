@@ -24,8 +24,9 @@ G_BEGIN_DECLS
 
 
 MooEditSession  *_moo_edit_session_new          (void);
-void             _moo_edit_session_add_window   (MooEditWindow  *window);
-gboolean         _moo_edit_session_load         (MooEditSession *session,
+void             _moo_edit_session_add_window   (MooEditSession *session,
+                                                 MooEditWindow  *window);
+void             _moo_edit_session_load         (MooEditSession *session,
                                                  MooEditor      *editor,
                                                  MooEditWindow  *window);
 

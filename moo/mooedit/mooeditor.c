@@ -13,6 +13,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor.h"
+#include "mooedit/mooeditsession-private.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditfileops.h"
 #include "mooedit/mooplugin.h"
@@ -301,6 +302,7 @@ moo_editor_init (MooEditor *editor)
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
+    moo_prefs_new_key_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION), TRUE);
 
     editor->priv->prefs_notify =
             moo_prefs_notify_connect (MOO_EDIT_PREFS_PREFIX "/[^/]*",
@@ -1144,10 +1146,10 @@ moo_editor_open (MooEditor      *editor,
         /* XXX open_single */
         if (!_moo_edit_loader_load (loader, doc, filename, info->encoding, &error))
         {
-            moo_edit_open_error_dialog (parent, filename,
-                                        error ? error->message : NULL);
-            if (error)
-                g_error_free (error);
+            if (!editor->priv->silent)
+                moo_edit_open_error_dialog (parent, filename,
+                                            error ? error->message : NULL);
+            g_error_free (error);
             result = FALSE;
         }
         else
@@ -1407,7 +1409,9 @@ moo_editor_close_docs (MooEditor      *editor,
     GSList *l;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
-    g_return_val_if_fail (list != NULL, FALSE);
+
+    if (!list)
+        return TRUE;
 
     for (l = list; l != NULL; l = l->next)
     {
@@ -1535,6 +1539,7 @@ find_modified (GSList *docs)
 }
 
 
+/* XXX ask in each window, then close */
 gboolean
 moo_editor_close_all (MooEditor *editor,
                       gboolean   ask_confirm)
@@ -1599,15 +1604,13 @@ moo_editor_list_docs (MooEditor *editor)
 }
 
 
-gboolean
+MooEdit *
 moo_editor_open_file (MooEditor      *editor,
                       MooEditWindow  *window,
                       GtkWidget      *parent,
                       const char     *filename,
                       const char     *encoding)
 {
-    MooEditFileInfo *info;
-    GSList *list;
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
@@ -1615,19 +1618,31 @@ moo_editor_open_file (MooEditor      *editor,
     g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
 
     if (!filename)
-        return moo_editor_open (editor, window, parent, NULL);
+    {
+        result = moo_editor_open (editor, window, parent, NULL);
+    }
+    else
+    {
+        MooEditFileInfo *info;
+        GSList *list;
 
-    info = moo_edit_file_info_new (filename, encoding);
-    list = g_slist_prepend (NULL, info);
-    result = moo_editor_open (editor, window, parent, list);
+        info = moo_edit_file_info_new (filename, encoding);
+        list = g_slist_prepend (NULL, info);
 
-    moo_edit_file_info_free (info);
-    g_slist_free (list);
-    return result;
+        result = moo_editor_open (editor, window, parent, list);
+
+        moo_edit_file_info_free (info);
+        g_slist_free (list);
+    }
+
+    if (!result)
+        return NULL;
+
+    return moo_editor_get_doc (editor, filename);
 }
 
 
-gboolean
+MooEdit *
 moo_editor_new_file (MooEditor      *editor,
                      MooEditWindow  *window,
                      GtkWidget      *parent,
@@ -1637,12 +1652,12 @@ moo_editor_new_file (MooEditor      *editor,
     MooEdit *doc = NULL;
     char *freeme = NULL;
 
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
-    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
-    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), NULL);
 
     if (!filename)
-        return moo_editor_open (editor, window, parent, NULL);
+        return moo_editor_open_file (editor, window, parent, NULL, NULL);
 
     if (g_file_test (filename, G_FILE_TEST_EXISTS))
         return moo_editor_open_file (editor, window, parent,
@@ -1671,38 +1686,32 @@ moo_editor_new_file (MooEditor      *editor,
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
     g_free (freeme);
-    return TRUE;
+    return doc;
 }
 
 
-gboolean
+MooEdit *
 moo_editor_open_uri (MooEditor      *editor,
                      MooEditWindow  *window,
                      GtkWidget      *parent,
                      const char     *uri,
                      const char     *encoding)
 {
-    MooEditFileInfo *info;
-    GSList *list;
-    gboolean result;
     char *filename;
+    MooEdit *doc;
 
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
-    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
-    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), FALSE);
-    g_return_val_if_fail (uri != NULL, FALSE);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), NULL);
+    g_return_val_if_fail (uri != NULL, NULL);
 
     filename = g_filename_from_uri (uri, NULL, NULL);
-    g_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, NULL);
 
-    info = moo_edit_file_info_new (filename, encoding);
-    list = g_slist_prepend (NULL, info);
-    result = moo_editor_open (editor, window, parent, list);
+    doc = moo_editor_open_file (editor, window, parent, filename, encoding);
 
-    moo_edit_file_info_free (info);
-    g_slist_free (list);
     g_free (filename);
-    return result;
+    return doc;
 }
 
 
@@ -1954,11 +1963,17 @@ moo_editor_get_doc (MooEditor      *editor,
                     const char     *filename)
 {
     MooEdit *doc = NULL;
+    char *abs;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    window_list_find_filename (editor, filename, &doc);
+    abs = filename_make_absolute (filename);
+    g_return_val_if_fail (abs != NULL, NULL);
+
+    window_list_find_filename (editor, abs, &doc);
+
+    g_free (abs);
     return doc;
 }
 
@@ -2056,4 +2071,90 @@ apply_prefs (MooEditor *editor)
                   NULL);
 
     return FALSE;
+}
+
+
+MooEditSession *
+moo_editor_get_session (MooEditor *editor)
+{
+    MooEditSession *session;
+    GSList *windows;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+
+    session = _moo_edit_session_new ();
+
+    windows = moo_editor_list_windows (editor);
+
+    while (windows)
+    {
+        _moo_edit_session_add_window (session, windows->data);
+        windows = g_slist_delete_link (windows, windows);
+    }
+
+    return session;
+}
+
+
+gboolean
+moo_editor_load_session (MooEditor      *editor,
+                         MooEditSession *session,
+                         gboolean        ask_confirm)
+{
+    MooEditWindow *window;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+    g_return_val_if_fail (session != NULL, FALSE);
+
+    if (!moo_editor_clear (editor, ask_confirm))
+        return FALSE;
+
+    window = moo_editor_get_active_window (editor);
+    _moo_edit_session_load (session, editor, window);
+
+    return TRUE;
+}
+
+
+/* XXX ask in each window, then close */
+gboolean
+moo_editor_clear (MooEditor *editor,
+                  gboolean   ask_confirm)
+{
+    GSList *windows;
+    MooEditWindow *active;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
+
+    active = moo_editor_get_active_window (editor);
+    windows = moo_editor_list_windows (editor);
+
+    if (!windows)
+        return TRUE;
+
+    windows = g_slist_remove (windows, active);
+
+    while (windows)
+    {
+        if (!moo_editor_close_window (editor, windows->data, ask_confirm))
+        {
+            g_slist_free (windows);
+            return FALSE;
+        }
+
+        windows = g_slist_delete_link (windows, windows);
+    }
+
+    if (active)
+    {
+        GSList *docs = moo_edit_window_list_docs (active);
+
+        if (!moo_editor_close_docs (editor, docs, ask_confirm))
+        {
+            g_slist_free (docs);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }

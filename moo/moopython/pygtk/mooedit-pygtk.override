@@ -446,3 +446,11 @@ _wrap_moo_editor_create_instance (void)
     g_object_unref (editor);
     return ret;
 }
+%%
+override moo_editor_get_session noargs
+static PyObject *
+_wrap_moo_editor_get_session (PyGObject *self)
+{
+    MooEditSession *ret = moo_editor_get_session (MOO_EDITOR(self->obj));
+    return pyg_boxed_new (MOO_TYPE_EDIT_SESSION, ret, FALSE, TRUE);
+}
