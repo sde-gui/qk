@@ -34,7 +34,7 @@ modulename _moo_term
 import gtk.Widget as PyGtkWidget_Type
 import gtk.Adjustment as PyGtkAdjustment_Type
 import gobject.GObject as PyGObject_Type
-import _moo_utils.Window as PyMooWindow_Type
+import moo.utils.Window as PyMooWindow_Type
 %%
 ignore-glob
   *_get_type

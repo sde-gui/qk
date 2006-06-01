@@ -27,8 +27,8 @@ import gtk.TextTag as PyGtkTextTag_Type
 import gtk.Action as PyGtkAction_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gobject.GObject as PyGObject_Type
-import _moo_utils.Window as PyMooWindow_Type
-import _moo_utils.UIXML as PyMooUIXML_Type
+import moo.utils.Window as PyMooWindow_Type
+import moo.utils.UIXML as PyMooUIXML_Type
 %%
 ignore-glob
   *_get_type
