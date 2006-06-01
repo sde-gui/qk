@@ -470,6 +470,9 @@ moo_markup_node_get_string (MooMarkupNode *node)
 {
     MooMarkupNode *child;
     GString *str = g_string_new ("");
+
+    g_return_val_if_fail (node != NULL, NULL);
+
     for (child = node->children; child != NULL; child = child->next)
         switch (child->type)
         {
@@ -1097,6 +1100,27 @@ moo_markup_save_pretty (MooMarkupDoc       *doc,
     g_string_free (str, TRUE);
     return result;
 }
+
+
+char *
+moo_markup_node_get_pretty_string (MooMarkupNode *node,
+                                   guint          indent)
+{
+    GString *str;
+    MooMarkupNode *child;
+
+    g_return_val_if_fail (node != NULL, NULL);
+
+    str = g_string_new (NULL);
+
+    for (child = node->children; child != NULL; child = child->next)
+        if (MOO_MARKUP_IS_ELEMENT (child))
+            format_pretty_element (MOO_MARKUP_ELEMENT (child), str, 0, indent);
+
+    return g_string_free (str, FALSE);
+}
+
+
 
 
 MooMarkupNode*

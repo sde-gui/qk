@@ -146,6 +146,8 @@ gboolean            moo_markup_save_pretty          (MooMarkupDoc       *doc,
                                                      GError            **error);
 
 char               *moo_markup_node_get_string      (MooMarkupNode      *node);
+char               *moo_markup_node_get_pretty_string (MooMarkupNode    *node,
+                                                     guint               indent);
 
 MooMarkupDoc       *moo_markup_doc_ref              (MooMarkupDoc       *doc);
 void                moo_markup_doc_unref            (MooMarkupDoc       *doc);
