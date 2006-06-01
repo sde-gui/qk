@@ -1422,6 +1422,19 @@ moo_edit_window_num_docs (MooEditWindow *window)
 }
 
 
+MooEdit *
+moo_edit_window_get_nth_doc (MooEditWindow  *window,
+                             guint           n)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    if (!window->priv->notebook || n >= (guint) moo_notebook_get_n_pages (window->priv->notebook))
+        return NULL;
+
+    return get_nth_tab (window, n);
+}
+
+
 static MooEdit *
 get_nth_tab (MooEditWindow *window,
              guint          n)

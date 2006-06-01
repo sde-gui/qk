@@ -78,6 +78,9 @@ void         moo_edit_window_set_active_doc         (MooEditWindow  *window,
                                                      MooEdit        *edit);
 MooEditWindow *moo_edit_get_window                  (MooEdit        *edit);
 
+MooEdit     *moo_edit_window_get_nth_doc            (MooEditWindow  *window,
+                                                     guint           n);
+/* list must be freed, elements must not be unref'ed */
 GSList      *moo_edit_window_list_docs              (MooEditWindow  *window);
 guint        moo_edit_window_num_docs               (MooEditWindow  *window);
 
