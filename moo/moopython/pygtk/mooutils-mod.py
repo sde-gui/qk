@@ -1,8 +1,8 @@
 """moo.utils module"""
-import _moo_utils as _utils
+import __moo_utils__ as _utils
 import gtk as _gtk
 import gobject as _gobject
-from _moo_utils import *
+from __moo_utils__ import *
 
 
 def _activate(action, callback, window):

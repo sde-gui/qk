@@ -29,7 +29,7 @@ atom_from_pyobject(PyObject *object)
 
 
 %%
-modulename _moo_term
+modulename moo.term
 %%
 import gtk.Widget as PyGtkWidget_Type
 import gtk.Adjustment as PyGtkAdjustment_Type

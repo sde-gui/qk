@@ -8,7 +8,7 @@ headers
 #include "moopython/pygtk/moo-pygtk.h"
 
 %%
-modulename _moo_app
+modulename moo.app
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type

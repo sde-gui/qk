@@ -26,7 +26,7 @@ void        _moo_utils_add_constants    (PyObject       *module,
                                          const char     *strip_prefix);
 
 extern PyMethodDef _moo_utils_functions[];
-static char *moo_utils_module_doc = (char*)"_moo_utils module.";
+static char *moo_utils_module_doc = (char*)"__moo_utils__ module.";
 
 #define add_constant(mod_,name_,val_) PyModule_AddStringConstant (mod, (char*) name_, (char*) val_)
 
@@ -55,7 +55,7 @@ _moo_utils_mod_init (void)
 
     pyg_register_boxed_custom (MOO_TYPE_PY_OBJECT, pyobj_from_gval, gval_from_pyobj);
 
-    mod = Py_InitModule3 ((char*) "_moo_utils", _moo_utils_functions, moo_utils_module_doc);
+    mod = Py_InitModule3 ((char*) "__moo_utils__", _moo_utils_functions, moo_utils_module_doc);
     PyImport_AddModule ((char*) "moo.utils");
 
     if (!mod)

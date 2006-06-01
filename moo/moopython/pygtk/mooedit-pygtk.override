@@ -17,7 +17,7 @@ headers
 
 
 %%
-modulename _moo_edit
+modulename moo.edit
 %%
 import gtk.Widget as PyGtkWidget_Type
 import gtk.TextView as PyGtkTextView_Type

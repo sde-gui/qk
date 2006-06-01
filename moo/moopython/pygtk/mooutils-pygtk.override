@@ -28,7 +28,7 @@ headers
 
 
 %%
-modulename _moo_utils
+modulename moo.utils
 %%
 import gtk.Window as PyGtkWindow_Type
 import gtk.Widget as PyGtkWidget_Type
