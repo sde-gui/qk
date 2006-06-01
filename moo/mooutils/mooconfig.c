@@ -1024,8 +1024,7 @@ moo_config_parse_lines (MooConfig  *config,
                 g_string_append_c (str, '\n');
             }
 
-            item->content = str->str;
-            g_string_free (str, FALSE);
+            item->content = g_string_free (str, FALSE);
             g_ptr_array_set_size (content, 0);
         }
 
