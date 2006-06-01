@@ -180,9 +180,8 @@ fork_command (MooTermPt      *pt_gen,
 
     if (!result)
         return FALSE;
-    else
-        g_message ("%s: started helper pid %d", G_STRLOC,
-                   (int) pt->pid);
+
+    g_message ("%s: started helper pid %d", G_STRLOC, (int) pt->pid);
 
     pt->in_io = g_io_channel_win32_new_fd (pt->in);
     g_io_channel_set_encoding (pt->in_io, NULL, NULL);
@@ -538,28 +537,28 @@ run_in_helper (const char *cmd,
 
     if(_pipe (helper_in, 512, O_NOINHERIT | O_BINARY) == -1)
     {
-        g_set_error (error, MOO_TERM_ERROR, errno,
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
                      "_pipe: %s", g_strerror (errno));
         goto error;
     }
 
     if(_pipe (helper_out, 512, O_NOINHERIT | O_BINARY) == -1)
     {
-        g_set_error (error, MOO_TERM_ERROR, errno,
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
                      "_pipe: %s", g_strerror (errno));
         goto error;
     }
 
     if (_dup2 (helper_in[READ_END], 0))
     {
-        g_set_error (error, MOO_TERM_ERROR, errno,
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
                      "_dup2: %s", g_strerror (errno));
         goto error;
     }
 
     if (_dup2 (helper_out[WRITE_END], 1))
     {
-        g_set_error (error, MOO_TERM_ERROR, errno,
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
                      "_dup2: %s", g_strerror (errno));
         goto error;
     }
@@ -579,10 +578,10 @@ run_in_helper (const char *cmd,
 //                             NULL);
 #endif
 
-    /************************************************************************
+    /*
      * We need to use CreateProcess here in order to be able to create new,
      * hidden console
-    */
+     */
 
     if (!HELPER_DIR || !HELPER_DIR[0])
     {
@@ -676,15 +675,13 @@ run_in_helper (const char *cmd,
     sinfo.wShowWindow = SW_HIDE;
 
     if (! CreateProcess (helper_binary->str, cmd_line, NULL, NULL, TRUE,
-          CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
-          NULL,
-          HELPER_DIR,
-          &sinfo,
-          &pinfo))
+                         CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
+                         NULL, HELPER_DIR, &sinfo, &pinfo))
     {
-        g_set_error (error, MOO_TERM_ERROR, 0,
-                     "CreateProcess: %s",
-                     g_win32_error_message (GetLastError ()));
+        char *msg = g_win32_error_message (GetLastError ());
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_FAILED,
+                     "CreateProcess: %s", msg);
+        g_free (msg);
         goto error;
     }
 
@@ -797,10 +794,12 @@ send_intr (MooTermPt *pt)
 
 gboolean
 _moo_term_check_cmd (MooTermCommand *cmd,
-                     G_GNUC_UNUSED GError **error)
+                     GError        **error)
 {
+    GString *cmd_line = NULL;
+    char **p;
+
     g_return_val_if_fail (cmd != NULL, FALSE);
-    g_return_val_if_fail (cmd->cmd_line != NULL || cmd->argv != NULL, FALSE);
 
     if (cmd->cmd_line)
     {
@@ -808,24 +807,31 @@ _moo_term_check_cmd (MooTermCommand *cmd,
         cmd->argv = NULL;
         return TRUE;
     }
-    else
+
+    if (!cmd->argv)
     {
-        GString *cmd_line = NULL;
-        char **p;
-
-        g_return_val_if_fail (cmd->argv[0] != NULL, FALSE);
-
-        cmd_line = g_string_new ("");
-
-        for (p = cmd->argv; *p != NULL; ++p)
-        {
-            if (strchr (*p, ' '))
-                g_string_append_printf (cmd_line, "\"%s\" ", *p);
-            else
-                g_string_append_printf (cmd_line, "%s ", *p);
-        }
-
-        cmd->cmd_line = g_string_free (cmd_line, FALSE);
-        return TRUE;
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_INVAL,
+                     "NULL command line and arguments array");
+        return FALSE;
     }
+
+    if (!cmd->argv[0])
+    {
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_INVAL,
+                     "empty arguments array");
+        return FALSE;
+    }
+
+    cmd_line = g_string_new ("");
+
+    for (p = cmd->argv; *p != NULL; ++p)
+    {
+        if (strchr (*p, ' '))
+            g_string_append_printf (cmd_line, "\"%s\" ", *p);
+        else
+            g_string_append_printf (cmd_line, "%s ", *p);
+    }
+
+    cmd->cmd_line = g_string_free (cmd_line, FALSE);
+    return TRUE;
 }

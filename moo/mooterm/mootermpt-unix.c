@@ -168,11 +168,12 @@ static void     set_size        (MooTermPt      *pt,
 }
 
 
-static gboolean fork_argv       (MooTermPt      *pt_gen,
-                                 char          **argv,
-                                 const char     *working_dir,
-                                 char          **envp,
-                                 GError        **error)
+static gboolean
+fork_argv (MooTermPt      *pt_gen,
+           char          **argv,
+           const char     *working_dir,
+           char          **envp,
+           GError        **error)
 {
     MooTermPtUnix *pt;
     int env_len = 0;
@@ -181,8 +182,15 @@ static gboolean fork_argv       (MooTermPt      *pt_gen,
     int i;
     GSource *src;
 
-    g_return_val_if_fail (argv != NULL && argv[0] != NULL, FALSE);
+    g_return_val_if_fail (argv != NULL, FALSE);
     g_return_val_if_fail (MOO_IS_TERM_PT_UNIX (pt_gen), FALSE);
+
+    if (!argv[0])
+    {
+        g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_INVAL,
+                     "empty arguments array");
+        return FALSE;
+    }
 
     pt = MOO_TERM_PT_UNIX (pt_gen);
 
@@ -216,11 +224,13 @@ static gboolean fork_argv       (MooTermPt      *pt_gen,
         g_critical ("%s: could not fork child", G_STRLOC);
 
         if (errno)
-            g_set_error (error, MOO_TERM_ERROR, errno,
+            g_set_error (error, MOO_TERM_ERROR,
+                         MOO_TERM_ERROR_FAILED,
                          "could not fork command: %s",
                          g_strerror (errno));
         else
-            g_set_error (error, MOO_TERM_ERROR, errno,
+            g_set_error (error, MOO_TERM_ERROR,
+                         MOO_TERM_ERROR_FAILED,
                          "could not fork command");
 
         return FALSE;
@@ -701,8 +711,7 @@ static char *argv_to_cmd_line (char **argv)
     GString *cmd = NULL;
     char **p;
 
-    g_return_val_if_fail (argv != NULL, NULL);
-    g_return_val_if_fail (argv[0] != NULL, NULL);
+    g_return_val_if_fail (argv && argv[0], NULL);
 
     for (p = argv; *p != NULL; ++p)
     {
@@ -740,14 +749,21 @@ _moo_term_check_cmd (MooTermCommand *cmd,
 
     if (cmd->argv)
     {
+        if (!cmd->argv[0])
+        {
+            g_set_error (error, MOO_TERM_ERROR, MOO_TERM_ERROR_INVAL,
+                         "empty arguments array");
+            return FALSE;
+        }
+
         g_free (cmd->cmd_line);
         cmd->cmd_line = argv_to_cmd_line (cmd->argv);
+
         g_return_val_if_fail (cmd->cmd_line != NULL, FALSE);
+
         return TRUE;
     }
-    else
-    {
-        cmd->argv = cmd_line_to_argv (cmd->cmd_line, error);
-        return cmd->argv != NULL;
-    }
+
+    cmd->argv = cmd_line_to_argv (cmd->cmd_line, error);
+    return cmd->argv != NULL;
 }

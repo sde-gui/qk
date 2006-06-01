@@ -76,7 +76,12 @@ struct _MooTermCommand {
     char   **argv;
 };
 
-#define MOO_TERM_ERROR             (moo_term_error_quark())
+typedef enum {
+    MOO_TERM_ERROR_FAILED,
+    MOO_TERM_ERROR_INVAL
+} MooTermError;
+
+#define     MOO_TERM_ERROR                  (moo_term_error_quark())
 GQuark      moo_term_error_quark            (void) G_GNUC_CONST;
 
 GType       moo_term_get_type               (void) G_GNUC_CONST;

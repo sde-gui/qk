@@ -352,7 +352,6 @@ folder_deleted (MooFolder      *folder,
 }
 
 
-/* XXX check setting error */
 MooFolder *
 get_folder (MooFileSystem  *fs,
             const char     *path,
@@ -365,14 +364,19 @@ get_folder (MooFileSystem  *fs,
     g_return_val_if_fail (path != NULL, NULL);
 
 #ifdef __WIN32__
-    if (!strcmp (path, ""))
-    {
-        g_clear_error (error);
+    if (!*path)
         return get_root_folder_win32 (fs, wanted);
-    }
 #endif /* __WIN32__ */
 
-    g_return_val_if_fail (g_path_is_absolute (path), NULL);
+    /* XXX check the caller */
+    if (!g_path_is_absolute (path))
+    {
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_BAD_FILENAME,
+                     "folder path '%s' is not absolute",
+                     path);
+        return NULL;
+    }
 
     norm_path = _moo_file_system_normalize_path (fs, path, TRUE, error);
 
@@ -431,7 +435,16 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
                GError        **error)
 {
     g_return_val_if_fail (path != NULL, FALSE);
-    g_return_val_if_fail (g_path_is_absolute (path), FALSE);
+
+    /* XXX check the caller */
+    if (!g_path_is_absolute (path))
+    {
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_BAD_FILENAME,
+                     "folder path '%s' is not absolute",
+                     path);
+        return FALSE;
+    }
 
     /* TODO mkdir must (?) adjust permissions according to umask */
 #ifndef __WIN32__
@@ -442,8 +455,8 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,
-                    moo_file_error_from_errno (saved_errno),
-                    "%s", g_strerror (saved_errno));
+                     moo_file_error_from_errno (saved_errno),
+                     "%s", g_strerror (saved_errno));
         return FALSE;
     }
 
@@ -647,8 +660,17 @@ make_path_unix (G_GNUC_UNUSED MooFileSystem *fs,
     char *path, *name;
 
     g_return_val_if_fail (base_path != NULL, NULL);
-    g_return_val_if_fail (g_path_is_absolute (base_path), NULL);
     g_return_val_if_fail (display_name != NULL, NULL);
+
+    /* XXX check the caller */
+    if (!g_path_is_absolute (base_path))
+    {
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_BAD_FILENAME,
+                     "path '%s' is not absolute",
+                     base_path);
+        return NULL;
+    }
 
     name = g_filename_from_utf8 (display_name, -1, NULL, NULL, &error_here);
 
@@ -726,7 +748,16 @@ parse_path_unix (MooFileSystem  *fs,
     char *display_dirname = NULL, *display_basename = NULL;
 
     g_return_val_if_fail (path_utf8 && path_utf8[0], FALSE);
-    g_return_val_if_fail (g_path_is_absolute (path_utf8), FALSE);
+
+    /* XXX check the caller */
+    if (!g_path_is_absolute (path_utf8))
+    {
+        g_set_error (error, MOO_FILE_ERROR,
+                     MOO_FILE_ERROR_BAD_FILENAME,
+                     "path '%s' is not absolute",
+                     path_utf8);
+        return FALSE;
+    }
 
     if (!strcmp (path_utf8, "/"))
     {

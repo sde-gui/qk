@@ -236,7 +236,7 @@ get_regex (const char          *pattern,
             return NULL;
         }
 
-        egg_regex_optimize (saved_regex, error);
+        egg_regex_optimize (saved_regex, NULL);
     }
 
     return saved_regex;

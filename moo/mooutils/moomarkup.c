@@ -131,7 +131,8 @@ moo_markup_parse_memory (const char     *buffer,
     ParserState state;
     GMarkupParseContext *context;
 
-    if (size < 0) size = strlen (buffer);
+    if (size < 0)
+        size = strlen (buffer);
 
     doc = moo_markup_doc_new_priv (NULL);
     state.doc = doc;

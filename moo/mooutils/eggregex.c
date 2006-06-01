@@ -45,6 +45,8 @@
  * 10/03/2005: removed #include "config.h", removed odd 'break' after 'goto' to
  *             avoid warning
  * 04/25/2006: made egg_regex_new return NULL on error
+ * 05/31/2006: made egg_regex_optimize return boolean, cleaned up places which
+ *             set GError
  *
  * mooutils/eggregex.c
  *****************************************************************************/
@@ -110,14 +112,16 @@ egg_regex_new (const gchar         *pattern,
                EggRegexMatchFlags   match_options,
                GError             **error)
 {
-  EggRegex *regex = g_new0 (EggRegex, 1);
+  EggRegex *regex;
   const gchar *errmsg;
   gint erroffset;
   gint capture_count;
 
+  /* make pcre use glib memory functions */
   pcre_malloc = (gpointer (*) (size_t)) g_malloc;
   pcre_free = g_free;
 
+  regex = g_new0 (EggRegex, 1);
   regex->ref_count = 1;
 
   /* preset the parts of gregex that need to be set, regardless of the
@@ -233,26 +237,28 @@ egg_regex_clear (EggRegex *regex)
  * If the pattern will be used many times, then it may be worth the
  * effort to optimize it to improve the speed of matches.
  */
-void
+gboolean
 egg_regex_optimize (EggRegex  *regex,
-		  GError **error)
+                    GError   **error)
 {
   const gchar *errmsg;
 
-  g_return_if_fail (regex != NULL && regex->regex != NULL);
+  g_return_val_if_fail (regex && regex->regex, FALSE);
 
   regex->extra = pcre_study (regex->regex, 0, &errmsg);
 
   if (errmsg)
-    {
-      GError *tmp_error = g_error_new (EGG_REGEX_ERROR,
-				       EGG_REGEX_ERROR_OPTIMIZE,
-				       _("Error while optimizing "
-					 "regular expression %s: %s"),
-				       regex->pattern,
-				       errmsg);
-      g_propagate_error (error, tmp_error);
-    }
+  {
+    g_set_error (error, EGG_REGEX_ERROR,
+                 EGG_REGEX_ERROR_OPTIMIZE,
+                 _("Error while optimizing "
+                         "regular expression %s: %s"),
+                 regex->pattern,
+                 errmsg);
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**
@@ -703,7 +709,6 @@ expand_escape (const gchar        *replacement,
   gint x, d, h, i;
   const gchar *error_detail;
   gint base = 0;
-  GError *tmp_error = NULL;
 
   p++;
   switch (*p)
@@ -918,16 +923,14 @@ expand_escape (const gchar        *replacement,
 
   return p;
 
- error:
-  tmp_error = g_error_new (EGG_REGEX_ERROR,
-			   EGG_REGEX_ERROR_REPLACE,
-			   _("Error while parsing replacement "
-			     "text \"%s\" at char %d: %s"),
-			   replacement,
-			   p - replacement,
-			   error_detail);
-  g_propagate_error (error, tmp_error);
-
+error:
+  g_set_error (error, EGG_REGEX_ERROR,
+               EGG_REGEX_ERROR_REPLACE,
+               _("Error while parsing replacement "
+                       "text \"%s\" at char %d: %s"),
+               replacement,
+               p - replacement,
+               error_detail);
   return NULL;
 }
 
@@ -946,11 +949,10 @@ split_replacement (const gchar  *replacement,
 	{
 	  data = g_new0 (InterpolationData, 1);
 	  start = p = expand_escape (replacement, p, data, error);
-	  if (*error)
+          if (!start)
 	    {
 	      g_list_foreach (list, (GFunc)free_interpolation_data, NULL);
 	      g_list_free (list);
-
 	      return NULL;
 	    }
 	  list = g_list_prepend (list, data);
@@ -975,7 +977,7 @@ split_replacement (const gchar  *replacement,
 }
 
 static gboolean
-interpolate_replacement (EggRegex      *regex,
+interpolate_replacement (EggRegex    *regex,
 			 const gchar *string,
 			 GString     *result,
 			 gpointer     data)
@@ -1035,25 +1037,34 @@ interpolate_replacement (EggRegex      *regex,
  * Returns: a newly allocated string containing the replacements.
  */
 gchar *
-egg_regex_replace (EggRegex            *regex,
-		 const gchar       *string,
-		 gssize             string_len,
-		 const gchar       *replacement,
-		 EggRegexMatchFlags   match_options,
-		 GError           **error)
+egg_regex_replace (EggRegex          *regex,
+                   const gchar       *string,
+                   gssize             string_len,
+                   const gchar       *replacement,
+                   EggRegexMatchFlags match_options,
+                   GError           **error)
 {
   gchar *result;
   GList *list;
+  GError *error_here = NULL;
 
-  list = split_replacement (replacement, error);
+  list = split_replacement (replacement, &error_here);
+
+  if (error_here)
+  {
+    g_propagate_error (error, error_here);
+    return NULL;
+  }
+
   result = egg_regex_replace_eval (regex,
-				 string, string_len,
-				 interpolate_replacement,
-				 (gpointer)list,
-				 match_options);
-  g_list_foreach (list, (GFunc)free_interpolation_data, NULL);
-  g_list_free (list);
+                                   string,
+                                   string_len,
+                                   interpolate_replacement,
+                                   list,
+                                   match_options);
 
+  g_list_foreach (list, (GFunc) free_interpolation_data, NULL);
+  g_list_free (list);
   return result;
 }
 
@@ -1139,7 +1150,7 @@ egg_regex_eval_replacement (EggRegex     *regex,
 
     result = g_string_new (NULL);
     interpolate_replacement (regex, string, result, list);
-    g_list_foreach (list, (GFunc)free_interpolation_data, NULL);
+    g_list_foreach (list, (GFunc) free_interpolation_data, NULL);
     g_list_free (list);
 
     return g_string_free (result, FALSE);
@@ -1185,13 +1196,13 @@ egg_regex_check_replacement (const gchar *replacement,
         }
     }
 
-    g_list_foreach (list, (GFunc)free_interpolation_data, NULL);
+    g_list_foreach (list, (GFunc) free_interpolation_data, NULL);
     g_list_free (list);
     return TRUE;
 }
 
 
-gchar*
+gchar *
 egg_regex_try_eval_replacement (EggRegex          *regex,
                                 const gchar       *replacement,
                                 GError           **error)
@@ -1235,6 +1246,11 @@ egg_regex_try_eval_replacement (EggRegex          *regex,
                 break;
             case REPL_TYPE_NUMERIC_REFERENCE:
             case REPL_TYPE_SYMBOLIC_REFERENCE:
+                g_set_error (error, EGG_REGEX_ERROR,
+                             EGG_REGEX_ERROR_REPLACE,
+                             "Pattern '%s' contains internal references, can't "
+                             "evaluate replacement without matching",
+                             egg_regex_get_pattern (regex));
                 result = FALSE;
                 break;
         }

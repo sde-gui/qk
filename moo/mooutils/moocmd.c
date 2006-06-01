@@ -490,7 +490,6 @@ moo_cmd_run_command (MooCmd     *cmd,
 
     g_return_val_if_fail (MOO_IS_CMD (cmd), FALSE);
     g_return_val_if_fail (argv && argv[0], FALSE);
-
     g_return_val_if_fail (!cmd->priv->running, FALSE);
 
 #ifdef __WIN32__

@@ -40,6 +40,7 @@
  *
  * 04/24/2005: added refcounting
  * 04/30/2005: added egg_regex_eval_replacement and egg_regex_check_replacement
+ * 05/31/2006: made egg_regex_optimize return boolean
  *
  * mooutils/eggregex.h
  *****************************************************************************/
@@ -107,7 +108,7 @@ EggRegex  *egg_regex_new          (const gchar           *pattern,
 				   EggRegexCompileFlags   compile_options,
 				   EggRegexMatchFlags     match_options,
 				   GError               **error);
-void       egg_regex_optimize     (EggRegex              *regex,
+gboolean   egg_regex_optimize     (EggRegex              *regex,
 				   GError               **error);
 /* ref() and unref() accept NULL */
 EggRegex  *egg_regex_ref          (EggRegex              *regex);
