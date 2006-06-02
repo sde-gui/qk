@@ -1,7 +1,7 @@
-2006-05-29  Geoffrey French <gsculpt@googlemail.com>
+2006-05-29  Geoffrey French
     pyconsole.py: added Console.exec_command() method.
 
-2006-05-29  Geoffrey French <gsculpt@googlemail.com>
+2006-05-29  Geoffrey French
     Prettified pyconsole, added "command" signal.
 
 2006-05-26  Yevgen Muntyan  <muntyan@math.tamu.edu>
