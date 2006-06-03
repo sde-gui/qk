@@ -75,9 +75,6 @@ struct _MooAppPrivate {
     gboolean    use_terminal;
 
     char       *tmpdir;
-
-    gboolean    new_app;
-    char      **open_files;
 };
 
 
@@ -170,8 +167,6 @@ enum {
     PROP_RUN_INPUT,
     PROP_USE_EDITOR,
     PROP_USE_TERMINAL,
-    PROP_OPEN_FILES,
-    PROP_NEW_APP,
     PROP_DEFAULT_UI,
     PROP_LOGO,
     PROP_WEBSITE,
@@ -293,21 +288,6 @@ moo_app_class_init (MooAppClass *klass)
                                              "use-terminal",
                                              TRUE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_OPEN_FILES,
-                                     g_param_spec_pointer ("open-files",
-                                             "open-files",
-                                             "open-files",
-                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_NEW_APP,
-                                     g_param_spec_boolean ("new-app",
-                                             "new-app",
-                                             "new-app",
-                                             FALSE,
-                                             G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DEFAULT_UI,
@@ -507,10 +487,6 @@ moo_app_set_property (GObject        *object,
             app->priv->use_terminal = g_value_get_boolean (value);
             break;
 
-        case PROP_NEW_APP:
-            app->priv->new_app = g_value_get_boolean (value);
-            break;
-
         case PROP_DEFAULT_UI:
             g_free (app->priv->default_ui);
             app->priv->default_ui = g_strdup (g_value_get_string (value));
@@ -520,16 +496,6 @@ moo_app_set_property (GObject        *object,
             g_free (app->priv->info->logo);
             app->priv->info->logo = g_strdup (g_value_get_string (value));
             g_object_notify (G_OBJECT (app), "logo");
-            break;
-
-        case PROP_OPEN_FILES:
-            g_strfreev (app->priv->open_files);
-            app->priv->open_files = g_strdupv (g_value_get_pointer (value));
-            if (app->priv->open_files && !*app->priv->open_files)
-            {
-                g_strfreev (app->priv->open_files);
-                app->priv->open_files = NULL;
-            }
             break;
 
         default:
@@ -612,7 +578,7 @@ moo_app_set_exit_code (MooApp      *app,
 const char *
 moo_app_get_input_pipe_name (G_GNUC_UNUSED MooApp *app)
 {
-    return moo_app_input ? moo_app_input->pipe_name : NULL;
+    return moo_app_input ? _moo_app_input_get_name (moo_app_input) : NULL;
 }
 
 
@@ -711,14 +677,6 @@ moo_app_python_execute_file (G_GNUC_UNUSED GtkWindow *parent_window)
     }
 }
 #endif
-
-
-void
-moo_app_reload_python_plugins (void)
-{
-    if (moo_python_running () && moo_python_reload_plugins)
-        moo_python_reload_plugins ();
-}
 
 
 static gboolean
@@ -884,49 +842,6 @@ moo_app_init_real (MooApp *app)
     const char *rc_file;
     GError *error = NULL;
 
-    if (!app->priv->new_app)
-    {
-        char **p;
-        GString *msg = g_string_new (NULL);
-
-        if (!app->priv->open_files || !*(app->priv->open_files))
-            g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
-
-        for (p = app->priv->open_files; p && *p; ++p)
-        {
-            char *freeme = NULL;
-            const char *basename, *filename;
-
-            basename = *p;
-
-            if (g_path_is_absolute (basename))
-            {
-                filename = basename;
-            }
-            else
-            {
-                char *dir = g_get_current_dir ();
-                freeme = g_build_filename (dir, basename, NULL);
-                filename = freeme;
-                g_free (dir);
-            }
-
-            g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
-            g_string_append_len (msg, filename, strlen (filename) + 1);
-
-            g_free (freeme);
-        }
-
-        if (moo_app_send_msg (app, msg->str, msg->len))
-        {
-            g_string_free (msg, TRUE);
-            goto exit;
-        }
-
-        g_string_free (msg, TRUE);
-    }
-
-    app->priv->new_app = TRUE;
     gdk_set_program_class (app->priv->info->full_name);
     gtk_window_set_default_icon_name (app->priv->info->short_name);
 
@@ -962,10 +877,6 @@ moo_app_init_real (MooApp *app)
     start_input (app);
 
     return TRUE;
-
-exit:
-    app->priv->new_app = FALSE;
-    return FALSE;
 }
 
 
@@ -974,12 +885,12 @@ start_input (MooApp *app)
 {
     if (app->priv->run_input)
     {
-        moo_app_input = moo_app_input_new (app->priv->info->short_name);
+        moo_app_input = _moo_app_input_new (app->priv->info->short_name);
 
-        if (!moo_app_input_start (moo_app_input))
+        if (!_moo_app_input_start (moo_app_input))
         {
             g_critical ("%s: oops", G_STRLOC);
-            moo_app_input_unref (moo_app_input);
+            _moo_app_input_unref (moo_app_input);
             moo_app_input = NULL;
         }
     }
@@ -1014,32 +925,8 @@ moo_app_run_real (MooApp *app)
     g_return_val_if_fail (!app->priv->running, 0);
     app->priv->running = TRUE;
 
-    if (!app->priv->new_app)
-        return 0;
-
     app->priv->quit_handler_id =
             gtk_quit_add (0, (GtkFunction) on_gtk_main_quit, app);
-
-#ifdef MOO_BUILD_EDIT
-    if (app->priv->open_files)
-    {
-        char **file;
-        MooEditor *editor;
-        MooEditWindow *window;
-
-        editor = moo_app_get_editor (app);
-        window = moo_editor_get_active_window (editor);
-
-        if (!window)
-            window = moo_editor_new_window (editor);
-
-        for (file = app->priv->open_files; file && *file; ++file)
-            moo_editor_new_file (editor, window, NULL, *file, NULL);
-
-        g_strfreev (app->priv->open_files);
-        app->priv->open_files = NULL;
-    }
-#endif /* MOO_BUILD_EDIT */
 
     gtk_main ();
 
@@ -1105,8 +992,8 @@ moo_app_quit_real (MooApp *app)
 
     if (moo_app_input)
     {
-        moo_app_input_shutdown (moo_app_input);
-        moo_app_input_unref (moo_app_input);
+        _moo_app_input_shutdown (moo_app_input);
+        _moo_app_input_unref (moo_app_input);
         moo_app_input = NULL;
     }
 

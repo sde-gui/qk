@@ -36,11 +36,26 @@
 #include "mooapp/mooapp.h"
 
 
+struct _MooAppInput
+{
+    guint        ref_count;
+
+    int          pipe;
+    char        *pipe_basename;
+    char        *pipe_name;
+    GIOChannel  *io;
+    guint        io_watch;
+    GByteArray  *buffer;
+    gboolean     ready;
+
+#ifdef __WIN32__
+    HANDLE       listener;
+#endif /* __WIN32__ */
+};
+
+
 #define MAX_BUFFER_SIZE 4096
 
-
-/*********************************************************************/
-/*********************************************************************/
 
 static gboolean read_input              (GIOChannel     *source,
                                          GIOCondition    condition,
@@ -48,7 +63,8 @@ static gboolean read_input              (GIOChannel     *source,
 static void     commit                  (MooAppInput      *ch);
 
 
-MooAppInput *moo_app_input_new      (const char     *pipe_basename)
+MooAppInput *
+_moo_app_input_new (const char *pipe_basename)
 {
     MooAppInput *ch;
 
@@ -74,7 +90,8 @@ MooAppInput *moo_app_input_new      (const char     *pipe_basename)
 }
 
 
-MooAppInput *moo_app_input_ref          (MooAppInput    *ch)
+MooAppInput *
+_moo_app_input_ref (MooAppInput *ch)
 {
     g_return_val_if_fail (ch != NULL, NULL);
     ++ch->ref_count;
@@ -82,14 +99,15 @@ MooAppInput *moo_app_input_ref          (MooAppInput    *ch)
 }
 
 
-void         moo_app_input_unref        (MooAppInput    *ch)
+void
+_moo_app_input_unref (MooAppInput *ch)
 {
     g_return_if_fail (ch != NULL);
 
     if (--ch->ref_count)
         return;
 
-    moo_app_input_shutdown (ch);
+    _moo_app_input_shutdown (ch);
 
     g_byte_array_free (ch->buffer, TRUE);
     g_free (ch->pipe_basename);
@@ -98,7 +116,7 @@ void         moo_app_input_unref        (MooAppInput    *ch)
 
 
 void
-moo_app_input_shutdown (MooAppInput *ch)
+_moo_app_input_shutdown (MooAppInput *ch)
 {
     g_return_if_fail (ch != NULL);
 
@@ -137,12 +155,20 @@ moo_app_input_shutdown (MooAppInput *ch)
 }
 
 
+const char *
+_moo_app_input_get_name (MooAppInput *ch)
+{
+    g_return_val_if_fail (ch != NULL, NULL);
+    return ch->pipe_name;
+}
+
+
 static void
 commit (MooAppInput *self)
 {
     g_assert (self->buffer->len > 0 && self->buffer->data[self->buffer->len-1] == 0);
 
-    moo_app_input_ref (self);
+    _moo_app_input_ref (self);
 
     if (self->buffer->len <= 1)
         g_warning ("%s: got empty command", G_STRLOC);
@@ -162,7 +188,7 @@ commit (MooAppInput *self)
         g_byte_array_set_size (self->buffer, 0);
     }
 
-    moo_app_input_unref (self);
+    _moo_app_input_unref (self);
 }
 
 
@@ -195,7 +221,8 @@ static void listener_info_free (ListenerInfo *info)
 static DWORD WINAPI listener_main (ListenerInfo *info);
 
 
-gboolean     moo_app_input_start       (MooAppInput *ch)
+gboolean
+_moo_app_input_start (MooAppInput *ch)
 {
     int listener_pipe[2] = {-1, -1};
     DWORD id;
@@ -337,7 +364,7 @@ static gboolean read_input              (GIOChannel     *source,
             g_error_free (err);
         }
 
-        moo_app_input_shutdown (self);
+        _moo_app_input_shutdown (self);
         return FALSE;
     }
 
@@ -439,7 +466,8 @@ static DWORD WINAPI listener_main (ListenerInfo *info)
 #define NAME_PREFIX "%s_in."
 
 /* TODO: could you finally learn non-blocking io? */
-gboolean     moo_app_input_start       (MooAppInput *ch)
+gboolean
+_moo_app_input_start (MooAppInput *ch)
 {
     g_return_val_if_fail (!ch->ready, FALSE);
 
@@ -669,7 +697,7 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
             g_error_free (err);
         }
 
-        moo_app_input_shutdown (self);
+        _moo_app_input_shutdown (self);
         return FALSE;
     }
 

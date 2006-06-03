@@ -14,10 +14,6 @@
 #ifndef __MOO_APP_INPUT__
 #define __MOO_APP_INPUT__
 
-#ifdef __WIN32__
-#include <windows.h>
-#endif /* __WIN32__ */
-
 #include <glib.h>
 
 G_BEGIN_DECLS
@@ -69,34 +65,16 @@ static const char *moo_app_cmd_chars =
 
 typedef struct _MooAppInput MooAppInput;
 
-struct _MooAppInput
-{
-    guint        ref_count;
 
-    int          pipe;
-    char        *pipe_basename;
-    char        *pipe_name;
-    GIOChannel  *io;
-    guint        io_watch;
-    GByteArray  *buffer;
-    gboolean     ready;
+MooAppInput *_moo_app_input_new         (const char     *pipe_basename);
 
-#ifdef __WIN32__
-    HANDLE       listener;
-#endif /* __WIN32__ */
-};
+MooAppInput *_moo_app_input_ref         (MooAppInput    *ch);
+void         _moo_app_input_unref       (MooAppInput    *ch);
 
+gboolean     _moo_app_input_start       (MooAppInput    *ch);
+void         _moo_app_input_shutdown    (MooAppInput    *ch);
 
-MooAppInput *moo_app_input_new          (const char     *pipe_basename);
-
-MooAppInput *moo_app_input_ref          (MooAppInput    *ch);
-void         moo_app_input_unref        (MooAppInput    *ch);
-
-gboolean     moo_app_input_start        (MooAppInput    *ch);
-void         moo_app_input_shutdown     (MooAppInput    *ch);
-gboolean     moo_app_input_ready        (MooAppInput    *ch);
-
-const char  *moo_app_input_get_name     (MooAppInput    *ch);
+const char  *_moo_app_input_get_name    (MooAppInput    *ch);
 
 gboolean     _moo_app_input_send_msg    (const char     *pipe_basename,
                                          const char     *data,

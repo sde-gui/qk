@@ -7,10 +7,8 @@ class MooProj(CProject):
 
         self.config.make_options = MakeOptions(n_jobs=3)
 
-        runopt = RunOptions(exe='tests/medit', args='--g-fatal-warnings')
-        confopt = ConfigureOptions(args='--enable-debug=full ' + \
-                                        '--enable-all-gcc-warnings=fatal ' + \
-                                        '--disable-moo-module',
+        runopt = RunOptions(exe='medit', args='--g-fatal-warnings')
+        confopt = ConfigureOptions(args='--enable-debug=full --enable-all-gcc-warnings',
                                    cflags='-O0 -g3 -pg')
         debug = BuildConfiguration('debug',
                                    build_dir='build/debug',
@@ -18,10 +16,8 @@ class MooProj(CProject):
                                    run_options=runopt)
         self.config.add_conf(debug)
 
-        runopt = RunOptions(exe='tests/medit')
-        confopt = ConfigureOptions(args='--enable-all-gcc-warnings=fatal ' + \
-                                        '--enable-developer-mode ' + \
-                                        '--without-mooterm --without-python',
+        runopt = RunOptions(exe='medit')
+        confopt = ConfigureOptions(args='--enable-all-gcc-warnings ',
                                    cflags='-O2 -g')
         optim = BuildConfiguration('optimized',
                                    build_dir='build/optimized',

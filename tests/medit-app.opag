@@ -11,8 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#define WANT_MOO_APP_CMD_STRINGS
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
+#include <mooapp/mooappinput.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-misc.h>
 #include <mooutils/moostock.h>
@@ -21,6 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+
+#define DEFAULT_NEW_INSTANCE 0
 
 
 int _medit_parse_options (const char *const program_name,
@@ -32,7 +37,12 @@ int _medit_parse_options (const char *const program_name,
  * http://www.zero-based.org/software/opag/
  */
 %%
+#if DEFAULT_NEW_INSTANCE
+u  unique       "Use running instance of application"
+#endif
+#if !DEFAULT_NEW_INSTANCE
 n  new-app      "Run new instance of application"
+#endif
 l  log          "[=FILE] Show debug output or write it to FILE" optarg
    version      "Display version information and exit"          return
 h  help         "Display this help text and exit"               return
@@ -41,20 +51,72 @@ h  help         "Display this help text and exit"               return
  ********************************************************/
 
 
-static void usage (void)
+static void
+usage (void)
 {
     g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
     g_print ("Options:\n");
 
+#if DEFAULT_NEW_INSTANCE
+    g_print ("%s", STR_HELP_UNIQUE);
+#else
     g_print ("%s", STR_HELP_NEW_APP);
+#endif
+
     g_print ("%s", STR_HELP_LOG);
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
 }
 
-static void version (void)
+static void
+version (void)
 {
     g_print ("medit %s\n", MOO_VERSION);
+}
+
+
+static gboolean
+send_files (MooApp *app,
+            char  **files)
+{
+    char **p;
+    gboolean result;
+    GString *msg;
+
+    msg = g_string_new (NULL);
+
+    if (!files || !*files)
+        g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
+
+    for (p = files; p && *p; ++p)
+    {
+        char *freeme = NULL;
+        const char *basename, *filename;
+
+        basename = *p;
+
+        if (g_path_is_absolute (basename))
+        {
+            filename = basename;
+        }
+        else
+        {
+            char *dir = g_get_current_dir ();
+            freeme = g_build_filename (dir, basename, NULL);
+            filename = freeme;
+            g_free (dir);
+        }
+
+        g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
+        g_string_append_len (msg, filename, strlen (filename) + 1);
+
+        g_free (freeme);
+    }
+
+    result = moo_app_send_msg (app, msg->str, msg->len);
+
+    g_string_free (msg, TRUE);
+    return result;
 }
 
 
@@ -66,6 +128,7 @@ int main (int argc, char *argv[])
     char **files;
     gpointer window;
     int retval;
+    gboolean new_instance;
 
     gtk_init (&argc, &argv);
 //     gdk_window_set_debug_updates (TRUE);
@@ -97,6 +160,12 @@ int main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
+#if DEFAULT_NEW_INSTANCE
+    new_instance = _medit_opt_unique == 0;
+#else
+    new_instance = _medit_opt_new_app != 0;
+#endif
+
     files = moo_filenames_from_locale (argv + opt_remain);
 
     app = g_object_new (MOO_TYPE_APP,
@@ -106,23 +175,31 @@ int main (int argc, char *argv[])
                         "description", "medit is a text editor",
                         "website", "http://mooedit.sourceforge.net/",
                         "website-label", "http://mooedit.sourceforge.net/",
-                        "open-files", files && *files ? files : NULL,
-                        "new-app", (gboolean) _medit_opt_new_app,
                         "default-ui", MEDIT_UI,
                         "logo", MOO_STOCK_MEDIT,
                         NULL);
 
-    g_free (files);
-
-    if (!moo_app_init (app))
+    if ((!new_instance && send_files (app, files)) ||
+         !moo_app_init (app))
     {
         gdk_notify_startup_complete ();
+        g_strfreev (files);
+        g_object_unref (app);
         return 0;
     }
 
     editor = moo_app_get_editor (app);
     window = moo_editor_new_window (editor);
-    gdk_notify_startup_complete ();
+
+    if (files && *files)
+    {
+        char **p;
+
+        for (p = files; p && *p; ++p)
+            moo_editor_new_file (editor, window, NULL, *p, NULL);
+    }
+
+    g_strfreev (files);
 
     g_signal_connect_swapped (editor, "all-windows-closed",
                               G_CALLBACK (moo_app_quit), app);
