@@ -9,8 +9,7 @@ mooapp_built_sources =                        \
     $(mooapp)/mooappabout-glade.h
 
 mooapp_include_headers =                      \
-    $(mooapp)/mooapp.h                        \
-    $(mooapp)/mooappinput.h
+    $(mooapp)/mooapp.h
 
 mooapp_sources =                              \
     $(mooapp_include_headers)                 \
@@ -18,7 +17,8 @@ mooapp_sources =                              \
     $(mooapp)/mooappabout.h                   \
     $(mooapp)/mooapp.c                        \
     $(mooapp)/mooapp.h                        \
-    $(mooapp)/mooappinput.c
+    $(mooapp)/mooappinput.c                   \
+    $(mooapp)/mooappinput.h
 
 mooapp_extra_dist =                           \
     $(mooapp)/gpl                             \
