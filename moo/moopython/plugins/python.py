@@ -62,14 +62,6 @@ class Plugin(moo.edit.Plugin):
         xml.add_item(self.ui_merge_id, "ToolsMenu",
                      "RunFile", "RunFile", -1)
 
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "ReloadPythonPlugins",
-                                          display_name="Reload Python Plugins",
-                                          label="Reload Python Plugins",
-                                          stock_id=gtk.STOCK_REFRESH,
-                                          callback=self.reload_plugins)
-        xml.add_item(self.ui_merge_id, "ToolsMenu",
-                     "ReloadPythonPlugins", "ReloadPythonPlugins", -1)
-
         return True
 
     def do_deinit(self):
@@ -174,9 +166,6 @@ class Plugin(moo.edit.Plugin):
         pane.output.clear()
         window.paned.present_pane(pane)
         pane.output.run_command(PYTHON_COMMAND + ' "%s"' % doc.get_filename())
-
-    def reload_plugins(self, window):
-        moo.app.reload_python_plugins()
 
     def do_detach_win(self, window):
         window.remove_pane(PLUGIN_ID)

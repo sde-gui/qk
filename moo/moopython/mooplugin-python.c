@@ -31,7 +31,6 @@
 
 
 static PyObject *main_mod;
-static void reload_plugins (void);
 
 
 static MooPyObject*
@@ -187,7 +186,7 @@ moo_python_api_init (void)
 
     static MooPyAPI api = {
         incref, decref, err_print,
-        get_info, reload_plugins,
+        get_info,
         run_simple_string, run_string, run_file,
         py_object_from_gobject,
         get_script_dict,
@@ -368,14 +367,6 @@ _moo_python_plugin_init (void)
 
     moo_python_plugin_read_dirs ();
     return TRUE;
-}
-
-
-static void
-reload_plugins (void)
-{
-    g_return_if_fail (moo_python_running ());
-    moo_python_plugin_read_dirs ();
 }
 
 
