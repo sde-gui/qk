@@ -908,6 +908,53 @@ moo_app_send_msg (MooApp     *app,
 }
 
 
+gboolean
+moo_app_send_files (MooApp  *app,
+                    char   **files)
+{
+    char **p;
+    gboolean result;
+    GString *msg;
+
+    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
+
+    msg = g_string_new (NULL);
+
+    if (!files || !*files)
+        g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
+
+    for (p = files; p && *p; ++p)
+    {
+        char *freeme = NULL;
+        const char *basename, *filename;
+
+        basename = *p;
+
+        if (g_path_is_absolute (basename))
+        {
+            filename = basename;
+        }
+        else
+        {
+            char *dir = g_get_current_dir ();
+            freeme = g_build_filename (dir, basename, NULL);
+            filename = freeme;
+            g_free (dir);
+        }
+
+        g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
+        g_string_append_len (msg, filename, strlen (filename) + 1);
+
+        g_free (freeme);
+    }
+
+    result = moo_app_send_msg (app, msg->str, msg->len);
+
+    g_string_free (msg, TRUE);
+    return result;
+}
+
+
 static gboolean on_gtk_main_quit (MooApp *app)
 {
     app->priv->quit_handler_id = 0;

@@ -83,15 +83,11 @@ int _medit_parse_options (const char *const program_name,
       --version       Display version information and exit\n\
   -h, --help          Display this help text and exit\n"
 
-#if DEFAULT_NEW_INSTANCE
 /* Set to 1 if option --unique (-u) has been specified.  */
 char _medit_opt_unique;
-#endif
 
-#if !DEFAULT_NEW_INSTANCE
 /* Set to 1 if option --new-app (-n) has been specified.  */
 char _medit_opt_new_app;
-#endif
 
 /* Set to 1 if option --log (-l) has been specified.  */
 char _medit_opt_log;
@@ -109,21 +105,13 @@ const char *_medit_arg_log;
    or -1 if an error is encountered.  */
 int _medit_parse_options (const char *const program_name, const int argc, char **const argv)
 {
-#if DEFAULT_NEW_INSTANCE
   static const char *const optstr__unique = "unique";
-#endif
-#if !DEFAULT_NEW_INSTANCE
   static const char *const optstr__new_app = "new-app";
-#endif
   static const char *const optstr__version = "version";
   static const char *const optstr__help = "help";
   int i = 0;
-#if DEFAULT_NEW_INSTANCE
   _medit_opt_unique = 0;
-#endif
-#if !DEFAULT_NEW_INSTANCE
   _medit_opt_new_app = 0;
-#endif
   _medit_opt_log = 0;
   _medit_opt_version = 0;
   _medit_opt_help = 0;
@@ -171,7 +159,6 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
         }
         goto error_unknown_long_opt;
        case 'n':
-#if !DEFAULT_NEW_INSTANCE
         if (strncmp (option + 1, optstr__new_app + 1, option_len - 1) == 0)
         {
           if (argument != 0)
@@ -182,10 +169,8 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           _medit_opt_new_app = 1;
           break;
         }
-#endif
         goto error_unknown_long_opt;
        case 'u':
-#if DEFAULT_NEW_INSTANCE
         if (strncmp (option + 1, optstr__unique + 1, option_len - 1) == 0)
         {
           if (argument != 0)
@@ -196,7 +181,6 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
           _medit_opt_unique = 1;
           break;
         }
-#endif
         goto error_unknown_long_opt;
        case 'v':
         if (strncmp (option + 1, optstr__version + 1, option_len - 1) == 0)
@@ -236,16 +220,12 @@ int _medit_parse_options (const char *const program_name, const int argc, char *
             _medit_arg_log = 0;
           _medit_opt_log = 1;
           break;
-#if !DEFAULT_NEW_INSTANCE
          case 'n':
           _medit_opt_new_app = 1;
           break;
-#endif
-#if DEFAULT_NEW_INSTANCE
          case 'u':
           _medit_opt_unique = 1;
           break;
-#endif
          default:
           fprintf (stderr, STR_ERR_UNKNOWN_SHORT_OPT, program_name, *option);
           return -1;
@@ -264,12 +244,8 @@ usage (void)
     g_print ("Usage: %s [OPTIONS] [FILES]\n", g_get_prgname ());
     g_print ("Options:\n");
 
-#if DEFAULT_NEW_INSTANCE
     g_print ("%s", STR_HELP_UNIQUE);
-#else
     g_print ("%s", STR_HELP_NEW_APP);
-#endif
-
     g_print ("%s", STR_HELP_LOG);
     g_print ("%s", STR_HELP_VERSION);
     g_print ("%s", STR_HELP_HELP);
@@ -282,52 +258,8 @@ version (void)
 }
 
 
-static gboolean
-send_files (MooApp *app,
-            char  **files)
-{
-    char **p;
-    gboolean result;
-    GString *msg;
-
-    msg = g_string_new (NULL);
-
-    if (!files || !*files)
-        g_string_append_len (msg, CMD_PRESENT, strlen (CMD_PRESENT) + 1);
-
-    for (p = files; p && *p; ++p)
-    {
-        char *freeme = NULL;
-        const char *basename, *filename;
-
-        basename = *p;
-
-        if (g_path_is_absolute (basename))
-        {
-            filename = basename;
-        }
-        else
-        {
-            char *dir = g_get_current_dir ();
-            freeme = g_build_filename (dir, basename, NULL);
-            filename = freeme;
-            g_free (dir);
-        }
-
-        g_string_append_len (msg, CMD_OPEN_FILE, strlen (CMD_OPEN_FILE));
-        g_string_append_len (msg, filename, strlen (filename) + 1);
-
-        g_free (freeme);
-    }
-
-    result = moo_app_send_msg (app, msg->str, msg->len);
-
-    g_string_free (msg, TRUE);
-    return result;
-}
-
-
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
     MooApp *app;
     int opt_remain;
@@ -367,10 +299,15 @@ int main (int argc, char *argv[])
             moo_set_log_func_window (TRUE);
     }
 
+    if (_medit_opt_unique)
+        new_instance = FALSE;
+    else if (_medit_opt_new_app)
+        new_instance = TRUE;
+    else
 #if DEFAULT_NEW_INSTANCE
-    new_instance = _medit_opt_unique == 0;
+        new_instance = TRUE;
 #else
-    new_instance = _medit_opt_new_app != 0;
+        new_instance = FALSE;
 #endif
 
     files = moo_filenames_from_locale (argv + opt_remain);
@@ -386,7 +323,7 @@ int main (int argc, char *argv[])
                         "logo", MOO_STOCK_MEDIT,
                         NULL);
 
-    if ((!new_instance && send_files (app, files)) ||
+    if ((!new_instance && moo_app_send_files (app, files)) ||
          !moo_app_init (app))
     {
         gdk_notify_startup_complete ();

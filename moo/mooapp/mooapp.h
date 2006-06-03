@@ -111,6 +111,8 @@ char            *moo_app_tempnam                (MooApp     *app);
 gboolean         moo_app_send_msg               (MooApp     *app,
                                                  const char *data,
                                                  int         len);
+gboolean         moo_app_send_files             (MooApp     *app,
+                                                 char      **files);
 
 void             moo_app_reload_python_plugins  (void);
 
