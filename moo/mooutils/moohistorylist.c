@@ -66,7 +66,7 @@ static void     _list_remove                    (MooHistoryList     *list,
                                                  GtkTreeIter        *iter);
 static void     _list_insert                    (MooHistoryList     *list,
                                                  int                 index,
-                                                 const Item        *entry);
+                                                 const Item         *entry);
 static void     _list_move_on_top               (MooHistoryList     *list,
                                                  GtkTreeIter        *iter);
 static void     _list_delete_last               (MooHistoryList     *list);
@@ -476,6 +476,32 @@ moo_history_list_add_full (MooHistoryList *list,
     g_object_notify (G_OBJECT (list), "empty");
 
     moo_history_list_item_free (new_entry);
+}
+
+
+char *
+moo_history_list_get_last_item (MooHistoryList *list)
+{
+    GtkTreeIter iter;
+    Item *item = NULL;
+    char *data;
+
+    g_return_val_if_fail (MOO_IS_HISTORY_LIST (list), NULL);
+
+    moo_history_list_load (list);
+
+    if (!gtk_tree_model_iter_children (list->priv->model, &iter, NULL))
+        return NULL;
+
+    gtk_tree_model_get (list->priv->model, &iter, 0, &item, -1);
+
+    if (!item)
+        return NULL;
+
+    data = item->data;
+    item->data = NULL;
+    moo_history_list_item_free (item);
+    return data;
 }
 
 

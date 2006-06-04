@@ -80,6 +80,8 @@ void             moo_history_list_add_full          (MooHistoryList *list,
                                                      const char     *item,
                                                      const char     *display_item);
 
+char            *moo_history_list_get_last_item     (MooHistoryList *list);
+
 void             moo_history_list_remove            (MooHistoryList *list,
                                                      const char     *item);
 
