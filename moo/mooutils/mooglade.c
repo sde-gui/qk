@@ -193,7 +193,7 @@ static gboolean      moo_glade_xml_parse_markup (MooGladeXML    *xml,
                                                  const char     *root,
                                                  GtkWidget      *root_widget);
 static void          moo_glade_xml_dispose      (GObject        *object);
-static void          moo_glade_xml_add_widget   (MooGladeXML    *xml,
+static gboolean      moo_glade_xml_add_widget   (MooGladeXML    *xml,
                                                  const char     *id,
                                                  GtkWidget      *widget);
 static gboolean      moo_glade_xml_build        (MooGladeXML    *xml,
@@ -251,7 +251,10 @@ moo_glade_xml_build (MooGladeXML    *xml,
     }
 
     widget = moo_glade_xml_create_widget (xml, widget_node, widget);
-    moo_glade_xml_add_widget (xml, widget_node->id, widget);
+
+    if (!moo_glade_xml_add_widget (xml, widget_node->id, widget))
+        goto error;
+
     widget_node->widget = widget;
 
     if (!create_children (xml, widget_node, widget))
@@ -522,9 +525,8 @@ create_widget (MooGladeXML    *xml,
 
     widget = moo_glade_xml_create_widget (xml, widget_node, NULL);
 
-    moo_glade_xml_add_widget (xml, widget_node->id, widget);
-
-    if (!create_children (xml, widget_node, widget))
+    if (!moo_glade_xml_add_widget (xml, widget_node->id, widget) ||
+         !create_children (xml, widget_node, widget))
     {
         gtk_widget_destroy (widget);
         return NULL;
@@ -734,6 +736,7 @@ create_child (MooGladeXML    *xml,
 
     if (child->internal_child)
     {
+        gboolean added = FALSE;
         GtkWidget *real_parent =
                 moo_glade_xml_get_widget (xml, child->internal_parent_id);
 
@@ -764,6 +767,7 @@ create_child (MooGladeXML    *xml,
                 widget = create_widget (xml, child->widget);
                 g_return_val_if_fail (widget != NULL, FALSE);
                 gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (real_parent), widget);
+                added = TRUE;
             }
         }
 
@@ -774,7 +778,8 @@ create_child (MooGladeXML    *xml,
             return FALSE;
         }
 
-        moo_glade_xml_add_widget (xml, child->widget->id, widget);
+        if (!added && !moo_glade_xml_add_widget (xml, child->widget->id, widget))
+            return FALSE;
 
         if (child->widget->props->n_params)
         {
@@ -2198,16 +2203,25 @@ widget_destroyed (MooGladeXML *xml,
     g_return_if_fail (removed == 1);
 }
 
-static void
+static gboolean
 moo_glade_xml_add_widget (MooGladeXML    *xml,
                           const char     *id,
                           GtkWidget      *widget)
 {
-    g_return_if_fail (id != NULL);
-    g_return_if_fail (GTK_IS_WIDGET (widget));
+    g_return_val_if_fail (id != NULL, FALSE);
+    g_return_val_if_fail (GTK_IS_WIDGET (widget), FALSE);
+
+    if (g_hash_table_lookup (xml->priv->widgets, id))
+    {
+        g_critical ("%s: duplicated id '%s'", G_STRLOC, id);
+        return FALSE;
+    }
+
     g_assert (!g_hash_table_lookup (xml->priv->widgets, id));
     g_hash_table_insert (xml->priv->widgets, g_strdup (id), widget);
     g_object_weak_ref (G_OBJECT (widget), (GWeakNotify) widget_destroyed, xml);
+
+    return TRUE;
 }
 
 
