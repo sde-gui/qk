@@ -67,6 +67,7 @@ moo_find_class_init (MooFindClass *klass)
 
     search_history = moo_history_list_new ("MooFind");
     replace_history = moo_history_list_new ("MooReplace");
+    last_search = moo_history_list_get_last_item (search_history);
     last_search_flags = MOO_FIND_CASELESS;
 
     g_object_class_install_property (gobject_class,
