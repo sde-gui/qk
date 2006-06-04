@@ -12,10 +12,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#define WANT_MOO_APP_CMD_STRINGS
 #include "medit-ui.h"
 #include <mooapp/mooapp.h>
-#include <mooapp/mooappinput.h>
 #include <mooutils/mooutils-fs.h>
 #include <mooutils/mooutils-misc.h>
 #include <mooutils/moostock.h>
