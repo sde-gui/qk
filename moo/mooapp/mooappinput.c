@@ -45,7 +45,7 @@ struct _MooAppInput
     char        *pipe_name;
     GIOChannel  *io;
     guint        io_watch;
-    GByteArray  *buffer;
+    GString     *buffer; /* messages are zero-terminated */
     gboolean     ready;
 
 #ifdef __WIN32__
@@ -84,7 +84,7 @@ _moo_app_input_new (const char *pipe_basename)
     ch->io = NULL;
     ch->io_watch = 0;
     ch->ready = FALSE;
-    ch->buffer = g_byte_array_new ();
+    ch->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
 
     return ch;
 }
@@ -109,7 +109,7 @@ _moo_app_input_unref (MooAppInput *ch)
 
     _moo_app_input_shutdown (ch);
 
-    g_byte_array_free (ch->buffer, TRUE);
+    g_string_free (ch->buffer, TRUE);
     g_free (ch->pipe_basename);
     g_free (ch);
 }
@@ -166,26 +166,24 @@ _moo_app_input_get_name (MooAppInput *ch)
 static void
 commit (MooAppInput *self)
 {
-    g_assert (self->buffer->len > 0 && self->buffer->data[self->buffer->len-1] == 0);
-
     _moo_app_input_ref (self);
 
-    if (self->buffer->len <= 1)
+    if (!self->buffer->len)
         g_warning ("%s: got empty command", G_STRLOC);
     else
         _moo_app_exec_cmd (moo_app_get_instance (),
-                           self->buffer->data[0],
-                           (char*) self->buffer->data + 1,
-                           self->buffer->len - 2);
+                           self->buffer->str[0],
+                           self->buffer->str + 1,
+                           self->buffer->len - 1);
 
     if (self->buffer->len > MAX_BUFFER_SIZE)
     {
-        g_byte_array_free (self->buffer, TRUE);
-        self->buffer = g_byte_array_new ();
+        g_string_free (self->buffer, TRUE);
+        self->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
     }
     else
     {
-        g_byte_array_set_size (self->buffer, 0);
+        g_string_truncate (self->buffer, 0);
     }
 
     _moo_app_input_unref (self);
@@ -259,16 +257,11 @@ _moo_app_input_start (MooAppInput *ch)
         return FALSE;
     }
 
-    g_print ("****************** 1\n");
     ch->io = g_io_channel_win32_new_fd (listener_pipe[0]);
-    g_print ("****************** 2\n");
     g_io_channel_set_encoding (ch->io, NULL, NULL);
-    g_print ("****************** 3\n");
     g_io_channel_set_buffered (ch->io, FALSE);
-    g_print ("****************** 4\n");
     ch->io_watch = g_io_add_watch (ch->io, G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
                                    (GIOFunc) read_input, ch);
-    g_print ("****************** 5\n");
 
     ch->ready = TRUE;
     return TRUE;
@@ -289,9 +282,10 @@ _moo_app_input_send_msg (const char     *pipe_basename,
 }
 
 
-static gboolean read_input              (GIOChannel     *source,
-                                         GIOCondition    condition,
-                                         MooAppInput      *self)
+static gboolean
+read_input (GIOChannel     *source,
+            GIOCondition    condition,
+            MooAppInput    *self)
 {
     gboolean error_occured = FALSE;
     GError *err = NULL;
@@ -312,8 +306,9 @@ static gboolean read_input              (GIOChannel     *source,
 
     if (bytes_read == 1)
     {
+        /* XXX Why do I ignore \r ??? */
         if (c != '\r')
-            g_byte_array_append (self->buffer, &c, 1);
+            g_string_append_c (self->buffer, c);
 
         if (!c)
         {
@@ -334,8 +329,9 @@ static gboolean read_input              (GIOChannel     *source,
 
             if (bytes_read == 1)
             {
+                /* XXX Why do I ignore \r ??? */
                 if (c != '\r')
-                    g_byte_array_append (self->buffer, &c, 1);
+                    g_string_append_c (self->buffer, c);
 
                 if (!c)
                 {
@@ -375,7 +371,8 @@ static gboolean read_input              (GIOChannel     *source,
 }
 
 
-static DWORD WINAPI listener_main (ListenerInfo *info)
+static DWORD WINAPI
+listener_main (ListenerInfo *info)
 {
     char *pipe_name;
     int output;
@@ -604,14 +601,16 @@ out:
 
 
 static gboolean
-read_input (G_GNUC_UNUSED GIOChannel     *source,
-            GIOCondition    condition,
-            MooAppInput      *self)
+read_input (GIOChannel   *source,
+            GIOCondition  condition,
+            MooAppInput  *self)
 {
     gboolean error_occured = FALSE;
     GError *err = NULL;
     gboolean again = TRUE;
     gboolean got_zero = FALSE;
+
+    g_return_val_if_fail (source == self->io, FALSE);
 
     if (condition & (G_IO_ERR | G_IO_HUP))
     {
@@ -628,11 +627,7 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
 
         struct pollfd fd = {self->pipe, POLLIN | POLLPRI, 0};
 
-        int res = poll (&fd, 1, 0);
-
-//         g_print ("polling\n");
-
-        switch (res)
+        switch (poll (&fd, 1, 0))
         {
             case -1:
                 if (errno != EINTR && errno != EAGAIN)
@@ -658,7 +653,7 @@ read_input (G_GNUC_UNUSED GIOChannel     *source,
 
                     if (bytes_read == 1)
                     {
-                        g_byte_array_append (self->buffer, (guint8*) &c, 1);
+                        g_string_append_c (self->buffer, c);
 
                         if (!c)
                         {
