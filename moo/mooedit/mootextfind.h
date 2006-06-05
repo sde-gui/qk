@@ -23,6 +23,8 @@
 G_BEGIN_DECLS
 
 
+#define MOO_TYPE_FIND_FLAGS         (moo_find_flags_get_type ())
+
 #define MOO_TYPE_FIND               (moo_find_get_type ())
 #define MOO_FIND(object)            (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FIND, MooFind))
 #define MOO_FIND_CLASS(klass)       (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FIND, MooFindClass))
@@ -63,6 +65,7 @@ typedef void (*MooFindMsgFunc) (const char *msg,
 
 
 GType           moo_find_get_type           (void) G_GNUC_CONST;
+GType           moo_find_flags_get_type     (void) G_GNUC_CONST;
 
 GtkWidget      *moo_find_new                (gboolean        replace);
 

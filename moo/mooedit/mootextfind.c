@@ -17,6 +17,7 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextsearch.h"
+#include "mooedit/mooeditprefs.h"
 #include "mooutils/moohistoryentry.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
@@ -31,6 +32,8 @@ static MooFindFlags last_search_flags;
 static MooHistoryList *search_history;
 static MooHistoryList *replace_history;
 
+
+static void     init_find_history       (void);
 
 static GObject *moo_find_constructor    (GType           type,
                                          guint           n_props,
@@ -56,6 +59,26 @@ enum {
 
 
 static void
+init_find_history (void)
+{
+    static gboolean been_here = FALSE;
+
+    if (!been_here)
+    {
+        been_here = TRUE;
+
+        search_history = moo_history_list_new ("MooFind");
+        replace_history = moo_history_list_new ("MooReplace");
+        last_search = moo_history_list_get_last_item (search_history);
+
+        moo_prefs_new_key_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS),
+                                 MOO_TYPE_FIND_FLAGS, MOO_FIND_CASELESS);
+        last_search_flags = moo_prefs_get_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS));
+    }
+}
+
+
+static void
 moo_find_class_init (MooFindClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -65,10 +88,7 @@ moo_find_class_init (MooFindClass *klass)
     gobject_class->get_property = moo_find_get_property;
     gobject_class->finalize = moo_find_finalize;
 
-    search_history = moo_history_list_new ("MooFind");
-    replace_history = moo_history_list_new ("MooReplace");
-    last_search = moo_history_list_get_last_item (search_history);
-    last_search_flags = MOO_FIND_CASELESS;
+    init_find_history ();
 
     g_object_class_install_property (gobject_class,
                                      PROP_REPLACE,
@@ -656,6 +676,8 @@ moo_text_view_run_find_next (GtkTextView    *view,
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
+    init_find_history ();
+
     if (!last_search)
         return moo_text_view_run_find (view, msg_func, data);
 
@@ -726,6 +748,8 @@ moo_text_view_run_find_prev (GtkTextView    *view,
     gboolean wrapped = FALSE;
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
+
+    init_find_history ();
 
     if (!last_search)
         return moo_text_view_run_find (view, msg_func, data);
@@ -1005,6 +1029,32 @@ moo_text_view_run_replace (GtkTextView    *view,
     g_free (text);
     g_free (replacement);
     egg_regex_unref (regex);
+}
+
+
+GType
+moo_find_flags_get_type (void)
+{
+    static GType type;
+
+    if (!type)
+    {
+        static GFlagsValue values[] = {
+            { MOO_FIND_REGEX, (char*) "MOO_FIND_REGEX", (char*) "regex" },
+            { MOO_FIND_CASELESS, (char*) "MOO_FIND_CASELESS", (char*) "caseless" },
+            { MOO_FIND_IN_SELECTED, (char*) "MOO_FIND_IN_SELECTED", (char*) "selected" },
+            { MOO_FIND_BACKWARDS, (char*) "MOO_FIND_BACKWARDS", (char*) "backwards" },
+            { MOO_FIND_WHOLE_WORDS, (char*) "MOO_FIND_WHOLE_WORDS", (char*) "whole-words" },
+            { MOO_FIND_FROM_CURSOR, (char*) "MOO_FIND_FROM_CURSOR", (char*) "from-cursor" },
+            { MOO_FIND_DONT_PROMPT, (char*) "MOO_FIND_DONT_PROMPT", (char*) "do-not-prompt" },
+            { MOO_FIND_REPL_LITERAL, (char*) "MOO_FIND_REPL_LITERAL", (char*) "repl-literal" },
+            { 0, NULL, NULL }
+        };
+
+        type = g_flags_register_static ("MooFindFlags", values);
+    }
+
+    return type;
 }
 
 

@@ -62,6 +62,7 @@ const char *moo_edit_setting                (const char     *setting_name);
 
 // #define MOO_EDIT_PREFS_SEARCH_SELECTED              "search/search_selected"
 #define MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS       "quick_search_flags"
+#define MOO_EDIT_PREFS_SEARCH_FLAGS             "search_flags"
 
 //
 // #define MOO_EDIT_PREFS_ON_EXTERNAL_CHANGES          "on_external_changes"
