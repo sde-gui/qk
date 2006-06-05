@@ -49,6 +49,8 @@ static GtkTextWindowType window_types[4] = {
     GTK_TEXT_WINDOW_BOTTOM
 };
 
+static GdkAtom moo_text_view_atom;
+
 
 static GObject *moo_text_view_constructor   (GType               type,
                                              guint               n_construct_properties,
@@ -234,6 +236,8 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     ref_class = g_type_class_ref (MOO_TYPE_INDENTER);
     g_type_class_unref (ref_class);
 
+    moo_text_view_atom = gdk_atom_intern ("MOO_TEXT_VIEW", FALSE);
+
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
     gobject_class->constructor = moo_text_view_constructor;
@@ -287,7 +291,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("highlight-current-line",
                                              "highlight-current-line",
                                              "highlight-current-line",
-                                             TRUE,
+                                             FALSE,
                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     g_object_class_install_property (gobject_class,
@@ -1452,7 +1456,7 @@ moo_text_view_move_cursor (MooTextView  *view,
                            int           line,
                            int           offset,
                            gboolean      offset_visual,
-                           G_GNUC_UNUSED gboolean in_idle)
+                           gboolean      in_idle)
 {
     Scroll *scroll;
 
@@ -1464,10 +1468,10 @@ moo_text_view_move_cursor (MooTextView  *view,
     scroll->character = offset;
     scroll->visual = offset_visual;
 
-//     if (in_idle)
-//         g_idle_add ((GSourceFunc) do_move_cursor,
-//                      scroll);
-//     else
+    if (in_idle)
+        g_idle_add ((GSourceFunc) do_move_cursor,
+                     scroll);
+    else
         do_move_cursor (scroll);
 }
 
@@ -1786,30 +1790,19 @@ moo_text_view_cut_clipboard (GtkTextView *text_view)
 
 
 static void
-paste_moo_text_view_content (GtkTextView *target)
+paste_moo_text_view_content (GtkTextView *target,
+                             MooTextView *source)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
-    MooTextView *source;
-    GtkSelectionData *data;
-    GtkClipboard *clipboard;
-    GdkAtom atom;
     char **contents, **p;
 
+    g_return_if_fail (MOO_IS_TEXT_VIEW (source));
+
     buffer = gtk_text_view_get_buffer (target);
-    clipboard = gtk_widget_get_clipboard (GTK_WIDGET (target), GDK_SELECTION_CLIPBOARD);
-    atom = gdk_atom_intern ("MOO_TEXT_VIEW", FALSE);
-
-    data = gtk_clipboard_wait_for_contents (clipboard, atom);
-    g_return_if_fail (data != NULL);
-
-    source = moo_selection_data_get_pointer (data, atom);
-    g_return_if_fail (source != NULL);
 
     contents = g_object_get_data (G_OBJECT (source), "moo-text-view-clipboard");
-
-    if (!contents)
-        return;
+    g_return_if_fail (contents != NULL);
 
     if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
         gtk_text_buffer_delete (buffer, &start, &end);
@@ -1844,21 +1837,33 @@ paste_text (GtkTextView *text_view,
 static void
 moo_text_view_paste_clipboard (GtkTextView *text_view)
 {
+    char *text;
     GtkTextBuffer *buffer;
     GtkClipboard *clipboard;
-    char *text;
+    gboolean need_paste_text = TRUE;
 
     buffer = gtk_text_view_get_buffer (text_view);
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view), GDK_SELECTION_CLIPBOARD);
 
     gtk_text_buffer_begin_user_action (buffer);
 
-    if (gtk_clipboard_wait_is_target_available (clipboard,
-                                                gdk_atom_intern ("MOO_TEXT_VIEW", FALSE)))
+    if (gtk_clipboard_wait_is_target_available (clipboard, moo_text_view_atom))
     {
-        paste_moo_text_view_content (text_view);
+        MooTextView *source;
+        GtkSelectionData *data;
+
+        if ((data = gtk_clipboard_wait_for_contents (clipboard, moo_text_view_atom)) &&
+             (source = moo_selection_data_get_pointer (data, moo_text_view_atom)))
+        {
+            need_paste_text = FALSE;
+            paste_moo_text_view_content (text_view, source);
+        }
+
+        if (data)
+            gtk_selection_data_free (data);
     }
-    else if ((text = gtk_clipboard_wait_for_text (clipboard)))
+
+    if (need_paste_text && (text = gtk_clipboard_wait_for_text (clipboard)))
     {
         paste_text (text_view, text);
         g_free (text);
