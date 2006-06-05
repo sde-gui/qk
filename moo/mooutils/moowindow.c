@@ -162,6 +162,7 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  "display-name", "Configure Shortcuts",
                                  "label", "Configure _Shortcuts...",
                                  "tooltip", "Configure _Shortcuts...",
+                                 "no-accel", TRUE,
                                  "stock-id", MOO_STOCK_KEYBOARD,
                                  "closure-callback", moo_window_shortcuts_prefs_dialog,
                                  NULL);
@@ -179,6 +180,7 @@ static void moo_window_class_init (MooWindowClass *klass)
                                  "display-name", "Show Menubar",
                                  "label", "Show Menubar",
                                  "tooltip", "Show Menubar",
+                                 "no-accel", TRUE,
                                  "condition::active", "menubar-visible",
                                  NULL);
 
