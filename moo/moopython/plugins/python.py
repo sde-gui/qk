@@ -7,9 +7,9 @@ import sys
 import os
 
 if os.name == 'nt':
-    PYTHON_COMMAND = '"' + sys.exec_prefix + '\\python.exe"'
+    PYTHON_COMMAND = '"' + sys.exec_prefix + '\\python.exe" -u'
 else:
-    PYTHON_COMMAND = 'python'
+    PYTHON_COMMAND = 'python -u'
 
 try:
     import pyconsole
