@@ -76,6 +76,7 @@ ms_cfunc_call (MSFunc     *func_,
     MSCFunc_1 func_1;
     MSCFunc_2 func_2;
     MSCFunc_3 func_3;
+    MSCFunc_4 func_4;
     MSCFunc *func = MS_CFUNC (func_);
 
     if (func->n_args >= 0 && func->n_args != (int) n_args)
@@ -106,6 +107,9 @@ ms_cfunc_call (MSFunc     *func_,
         case 3:
             func_3 = (MSCFunc_3) func->cfunc;
             return func_3 (args[0], args[1], args[2], ctx);
+        case 4:
+            func_4 = (MSCFunc_4) func->cfunc;
+            return func_4 (args[0], args[1], args[2], args[3], ctx);
     }
 
     g_warning ("don't know how to call function with %d arguments", func->n_args);
@@ -168,4 +172,11 @@ MSFunc *
 ms_cfunc_new_3 (MSCFunc_3 cfunc)
 {
     return ms_cfunc_new (3, G_CALLBACK (cfunc));
+}
+
+
+MSFunc *
+ms_cfunc_new_4 (MSCFunc_4 cfunc)
+{
+    return ms_cfunc_new (4, G_CALLBACK (cfunc));
 }

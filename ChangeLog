@@ -1,10 +1,10 @@
-2006-06-04  Thomas Gilgin
+2006-06-04  Thomas Gilgin <thomas_gilgin@users.sourceforge.net>
     mootextfind.c: use saved search history.
 
-2006-05-29  Geoffrey French
+2006-05-29  Geoffrey French <geoffrey@no.spam>
     pyconsole.py: added Console.exec_command() method.
 
-2006-05-29  Geoffrey French
+2006-05-29  Geoffrey French <geoffrey@no.spam>
     Prettified pyconsole, added "command" signal.
 
 2006-05-26  Yevgen Muntyan  <muntyan@math.tamu.edu>

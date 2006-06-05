@@ -66,6 +66,11 @@ typedef MSValue* (*MSCFunc_3)   (MSValue    *arg1,
                                  MSValue    *arg2,
                                  MSValue    *arg3,
                                  MSContext  *ctx);
+typedef MSValue* (*MSCFunc_4)   (MSValue    *arg1,
+                                 MSValue    *arg2,
+                                 MSValue    *arg3,
+                                 MSValue    *arg4,
+                                 MSContext  *ctx);
 
 struct _MSCFunc {
     MSFunc func;
@@ -91,6 +96,7 @@ MSFunc         *ms_cfunc_new_0      (MSCFunc_0   cfunc);
 MSFunc         *ms_cfunc_new_1      (MSCFunc_1   cfunc);
 MSFunc         *ms_cfunc_new_2      (MSCFunc_2   cfunc);
 MSFunc         *ms_cfunc_new_3      (MSCFunc_3   cfunc);
+MSFunc         *ms_cfunc_new_4      (MSCFunc_4   cfunc);
 
 
 G_END_DECLS
