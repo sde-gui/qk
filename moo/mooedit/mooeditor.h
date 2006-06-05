@@ -70,6 +70,9 @@ MooEdit         *moo_editor_open_file       (MooEditor      *editor,
                                              GtkWidget      *parent,
                                              const char     *filename,
                                              const char     *encoding);
+MooEdit         *moo_editor_open_file_line  (MooEditor      *editor,
+                                             const char     *filename,
+                                             int             line);
 MooEdit         *moo_editor_new_file        (MooEditor      *editor,
                                              MooEditWindow  *window,
                                              GtkWidget      *parent,

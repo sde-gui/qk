@@ -1642,6 +1642,35 @@ moo_editor_open_file (MooEditor      *editor,
 
 
 MooEdit *
+moo_editor_open_file_line (MooEditor      *editor,
+                           const char     *filename,
+                           int             line)
+{
+    MooEdit *doc;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
+
+    doc = moo_editor_get_doc (editor, filename);
+
+    if (doc)
+    {
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, FALSE);
+        moo_editor_set_active_doc (editor, doc);
+        return doc;
+    }
+
+    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    g_return_val_if_fail (doc != NULL, NULL);
+
+    /* XXX */
+    moo_editor_set_active_doc (editor, doc);
+    moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line, 0, FALSE, TRUE);
+    return doc;
+}
+
+
+MooEdit *
 moo_editor_new_file (MooEditor      *editor,
                      MooEditWindow  *window,
                      GtkWidget      *parent,
