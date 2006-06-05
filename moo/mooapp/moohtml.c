@@ -167,7 +167,8 @@ G_DEFINE_TYPE (MooHtmlTag, moo_html_tag, GTK_TYPE_TEXT_TAG)
 
 enum {
     HTML_PROP_0,
-    HTML_PROP_TITLE
+    HTML_PROP_TITLE,
+    HTML_PROP_MARKUP
 };
 
 enum {
@@ -303,6 +304,14 @@ moo_html_class_init (MooHtmlClass *klass)
                                              NULL,
                                              G_PARAM_READWRITE));
 
+    g_object_class_install_property (gobject_class,
+                                     HTML_PROP_MARKUP,
+                                     g_param_spec_string ("markup",
+                                             "markup",
+                                             "markup",
+                                             NULL,
+                                             G_PARAM_WRITABLE));
+
     html_signals[LOAD_URL] =
             g_signal_new ("load-url",
                           G_TYPE_FROM_CLASS (klass),
@@ -375,6 +384,7 @@ moo_html_set_property (GObject        *object,
                        GParamSpec     *pspec)
 {
     MooHtml *html = MOO_HTML (object);
+    const char *string;
 
     switch (prop_id)
     {
@@ -382,6 +392,15 @@ moo_html_set_property (GObject        *object,
             g_free (html->priv->title);
             html->priv->title = g_strdup (g_value_get_string (value));
             g_object_notify (object, "title");
+            break;
+
+        case HTML_PROP_MARKUP:
+            string = g_value_get_string (value);
+
+            if (!string)
+                string = "";
+
+            moo_html_load_memory (html, string, -1, NULL, NULL);
             break;
 
         default:
