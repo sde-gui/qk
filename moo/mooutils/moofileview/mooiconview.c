@@ -12,7 +12,7 @@
  */
 
 #include "mooiconview.h"
-#include MOO_MARSHALS_H
+#include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>

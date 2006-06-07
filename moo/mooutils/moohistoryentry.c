@@ -11,12 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include MOO_MARSHALS_H
-#ifndef __MOO__
-#include "moohistoryentry.h"
-#else
+#include "mooutils/moomarshals.h"
 #include "mooutils/moohistoryentry.h"
-#endif
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

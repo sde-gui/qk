@@ -17,7 +17,7 @@
 #include "moofileentry.h"
 #include "moofilesystem.h"
 #include "moofoldermodel.h"
-#include MOO_MARSHALS_H
+#include "mooutils/moomarshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "moofileview-private.h"
 #include <gdk/gdkkeysyms.h>

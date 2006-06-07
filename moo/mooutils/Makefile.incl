@@ -129,17 +129,17 @@ $(mooutils)/moomarshals.h: $(mooutils)/moomarshals.list
 	glib-genmarshal --prefix=_moo_marshal --header \
 	       $(mooutils_srcdir)/moomarshals.list > $(mooutils)/moomarshals.h
 
-$(mooutils)/mooaccelbutton-glade.h: $(mooutils_srcdir)/glade/shortcutdialog.glade $(mooutils_srcdir)/xml2h.sh
+$(mooutils)/mooaccelbutton-glade.h: $(mooutils_srcdir)/glade/shortcutdialog.glade $(XML2H)
 	mkdir -p $(mooutils)
-	sh $(mooutils_srcdir)/xml2h.sh MOO_ACCEL_BUTTON_GLADE_UI \
+	sh $(XML2H) MOO_ACCEL_BUTTON_GLADE_UI \
 	   $(mooutils_srcdir)/glade/shortcutdialog.glade > $(mooutils)/mooaccelbutton-glade.h
-$(mooutils)/mooaccelprefs-glade.h: $(mooutils_srcdir)/glade/shortcutsprefs.glade $(mooutils_srcdir)/xml2h.sh
+$(mooutils)/mooaccelprefs-glade.h: $(mooutils_srcdir)/glade/shortcutsprefs.glade $(XML2H)
 	mkdir -p $(mooutils)
-	sh $(mooutils_srcdir)/xml2h.sh MOO_SHORTCUTS_PREFS_GLADE_UI \
+	sh $(XML2H) MOO_SHORTCUTS_PREFS_GLADE_UI \
 	   $(mooutils_srcdir)/glade/shortcutsprefs.glade > $(mooutils)/mooaccelprefs-glade.h
-$(mooutils)/moologwindow-glade.h: $(mooutils_srcdir)/glade/moologwindow.glade $(mooutils_srcdir)/xml2h.sh
+$(mooutils)/moologwindow-glade.h: $(mooutils_srcdir)/glade/moologwindow.glade $(XML2H)
 	mkdir -p $(mooutils)
-	sh $(mooutils_srcdir)/xml2h.sh MOO_LOG_WINDOW_GLADE_UI \
+	sh $(XML2H) MOO_LOG_WINDOW_GLADE_UI \
 	   $(mooutils_srcdir)/glade/moologwindow.glade > $(mooutils)/moologwindow-glade.h
 
 mooutils_pixmaps =                             \

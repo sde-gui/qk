@@ -11,7 +11,7 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include MOO_MARSHALS_H
+#include "mooutils/moomarshals.h"
 #include "mooutils/moopaned.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"

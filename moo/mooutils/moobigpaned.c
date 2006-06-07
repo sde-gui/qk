@@ -11,8 +11,8 @@
  *   See COPYING file that comes with this distribution.
  */
 
-#include "moobigpaned.h"
-#include MOO_MARSHALS_H
+#include "mooutils/moobigpaned.h"
+#include "mooutils/moomarshals.h"
 
 
 static void     moo_big_paned_finalize      (GObject        *object);

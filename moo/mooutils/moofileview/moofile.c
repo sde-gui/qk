@@ -25,7 +25,7 @@
 #include "moofileview/moofilesystem.h"
 #include "moofileview/symlink.h"
 #include "mooutils/mooutils-fs.h"
-#include MOO_MARSHALS_H
+#include "mooutils/moomarshals.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

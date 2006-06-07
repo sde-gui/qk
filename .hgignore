@@ -21,6 +21,7 @@ devcpp.*_private\.*
 devcpp.*\.ico
 devcpp.*Makefile\.win
 devcpp.*\.layout
+devcpp/config\.h$
 .*\.pyc
 .*~
 .*\.pcs
@@ -30,3 +31,6 @@ devcpp.*\.layout
 .*-glade\.h
 moomarshals\.[ch]
 tests.*-ui\.h
+moo/mooutils/moofileview/moofileview-ui\.h
+moo/mooutils/moofileview/symlink\.h
+moo/mooutils/stock-moo.h

@@ -56,10 +56,10 @@
 #include <string.h>
 #include <glib.h>
 
-#include "moo/mooutils/eggregex.h"
+#include "eggregex.h"
 
 #ifdef MOO_BUILD_PCRE
-#include "moo/mooutils/pcre/pcre.h"
+#include "pcre/pcre.h"
 #else
 #include <pcre.h>
 #endif
