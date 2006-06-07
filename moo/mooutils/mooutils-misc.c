@@ -1227,6 +1227,31 @@ moo_get_user_data_dir (void)
 }
 
 
+gboolean
+moo_make_user_data_dir (void)
+{
+    int result = 0;
+    char *dir = moo_get_user_data_dir ();
+
+    g_return_val_if_fail (dir != NULL, FALSE);
+
+    if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
+    {
+        result = m_mkdir (dir);
+
+        if (result)
+        {
+            int err = errno;
+            g_critical ("could not create directory '%s': %s",
+                        dir, g_strerror (err));
+        }
+    }
+
+    g_free (dir);
+    return !result;
+}
+
+
 static gboolean
 cmp_dirs (const char *dir1,
           const char *dir2)

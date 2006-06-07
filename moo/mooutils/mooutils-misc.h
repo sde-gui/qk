@@ -64,6 +64,7 @@ GType       moo_data_dir_type_get_type      (void) G_GNUC_CONST;
 char       *moo_get_app_dir                 (void);
 
 /* ~/.appname */
+gboolean    moo_make_user_data_dir          (void);
 char       *moo_get_user_data_dir           (void);
 char       *moo_get_user_data_file          (const char     *basename);
 gboolean    moo_save_user_data_file         (const char     *basename,
