@@ -9,6 +9,12 @@ mooedit_srcdir = $(MOO)/mooedit
 tests = ../tests
 moofileview = $(mooutils)/moofileview
 moofileview_srcdir = $(moofileview)
+mooedit_plugins = $(mooedit)/plugins
+mooedit_plugins_srcdir = $(mooedit_plugins)
+astrings = $(mooedit_plugins)/activestrings
+astrings_srcdir = $(astrings)
+fileselector = $(mooedit_plugins)/fileselector
+fileselector_srcdir = $(fileselector)
 
 GENERATED =                                 \
     config.h                                \
@@ -34,7 +40,10 @@ GENERATED =                                 \
     $(moofileview)/moocreatefolder-glade.h  \
     $(moofileview)/moofileviewdrop-glade.h  \
     $(moofileview)/symlink.h                \
-    $(moofileview)/moobookmarkmgr-glade.h
+    $(moofileview)/moobookmarkmgr-glade.h   \
+    $(astrings)/as-plugin-glade.h           \
+	$(fileselector)/moofileselector-glade.h	\
+	$(fileselector)/moofileselector-prefs-glade.h
 
 all-before: $(GENERATED)
 
@@ -117,6 +126,16 @@ $(moofileview)/moofileviewdrop-glade.h: $(moofileview_srcdir)/glade/drop.glade $
 	python $(XML2H) MOO_FILE_VIEW_DROP_GLADE_UI                            \
 	   $(moofileview_srcdir)/glade/drop.glade >                        \
 		$(moofileview)/moofileviewdrop-glade.h
+$(astrings)/as-plugin-glade.h: $(astrings)/as-plugin.glade $(XML2H)
+	python $(XML2H) AS_PLUGIN_GLADE_UI $(astrings_srcdir)/as-plugin.glade > \
+	   $(astrings)/as-plugin-glade.h
+$(fileselector)/moofileselector-glade.h: $(fileselector)/moofileselector.glade $(XML2H)
+	python $(XML2H) MOO_FILE_SELECTOR_GLADE_XML $(fileselector_srcdir)/moofileselector.glade > \
+	   $(fileselector)/moofileselector-glade.h
+$(fileselector)/moofileselector-prefs-glade.h: $(fileselector)/moofileselector-prefs.glade $(XML2H)
+	python $(XML2H) MOO_FILE_SELECTOR_PREFS_GLADE_XML $(fileselector_srcdir)/moofileselector-prefs.glade > \
+	   $(fileselector)/moofileselector-prefs-glade.h
+
 
 moofileview_pixmaps =                          \
     $(moofileview)/symlink.png                 \
