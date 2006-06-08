@@ -1592,11 +1592,11 @@ enum {
 };
 
 static const GtkTargetEntry targets[] = {
+    { (char*) "MOO_TEXT_VIEW", GTK_TARGET_SAME_APP, TARGET_MOO_TEXT_VIEW },
     { (char*) "STRING", 0, TARGET_TEXT },
     { (char*) "TEXT",   0, TARGET_TEXT },
     { (char*) "COMPOUND_TEXT", 0, TARGET_TEXT },
-    { (char*) "UTF8_STRING", 0, TARGET_TEXT },
-    { (char*) "MOO_TEXT_VIEW", GTK_TARGET_SAME_APP, TARGET_MOO_TEXT_VIEW }
+    { (char*) "UTF8_STRING", 0, TARGET_TEXT }
 };
 
 
@@ -1760,9 +1760,16 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
 
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view),
                                           GDK_SELECTION_CLIPBOARD);
-    gtk_clipboard_set_with_owner (clipboard, targets, G_N_ELEMENTS (targets),
-                                  get_clipboard, clear_clipboard,
-                                  G_OBJECT (text_view));
+
+    if (!gtk_clipboard_set_with_owner (clipboard, targets, G_N_ELEMENTS (targets),
+                                       get_clipboard, clear_clipboard,
+                                       G_OBJECT (text_view)))
+        return;
+
+#if GTK_CHECK_VERSION(2,6,0)
+    gtk_clipboard_set_can_store (clipboard, targets + 1,
+                                 G_N_ELEMENTS (targets) - 1);
+#endif
 
     if (delete)
     {
@@ -1959,6 +1966,7 @@ static void
 moo_text_view_unrealize (GtkWidget *widget)
 {
     MooTextView *view = MOO_TEXT_VIEW (widget);
+    GtkClipboard *clipboard;
 
     g_slist_foreach (view->priv->line_marks, (GFunc) _moo_line_mark_unrealize, NULL);
     g_object_set_data (G_OBJECT (widget), "moo-line-mark-icons", NULL);
@@ -1992,6 +2000,12 @@ moo_text_view_unrealize (GtkWidget *widget)
         g_source_remove (view->priv->blink_timeout);
         view->priv->blink_timeout = 0;
     }
+
+#if GTK_CHECK_VERSION(2,6,0)
+    clipboard = gtk_widget_get_clipboard (widget, GDK_SELECTION_CLIPBOARD);
+    if (gtk_clipboard_get_owner (clipboard) == G_OBJECT (view))
+        gtk_clipboard_store (clipboard);
+#endif
 
     GTK_WIDGET_CLASS(moo_text_view_parent_class)->unrealize (widget);
 }
