@@ -1,7 +1,7 @@
 [Project]
 FileName=medit.dev
 Name=medit
-UnitCount=240
+UnitCount=242
 Type=0
 Ver=1
 ObjFiles=
@@ -10,9 +10,9 @@ Libs=
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=medit-before.mak
-Compiler=-I../moo -I../moo/mooutils -I. _@@_-D__MOO___@@_-DHAVE_CONFIG_H_@@_
+Compiler=-I../moo_@@_-I../moo/mooutils_@@_-I._@@_-D__MOO___@@_-DHAVE_CONFIG_H_@@_-mms-bitfields_@@_
 CppCompiler=
-Linker=-lgtk-win32-2.0 -lgdk-win32-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lpangowin32-1.0 -lgdi32 -lpangocairo-1.0 -lpango-1.0 -lcairo -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lintl -liconv -lxml2_@@_
+Linker=-lgtk-win32-2.0_@@_-lgdk-win32-2.0_@@_-latk-1.0_@@_-lgdk_pixbuf-2.0_@@_-lpangowin32-1.0_@@_-lgdi32_@@_-lpangocairo-1.0_@@_-lpango-1.0_@@_-lcairo_@@_-lgobject-2.0_@@_-lgmodule-2.0_@@_-lglib-2.0_@@_-lintl_@@_-liconv_@@_-lxml2_@@_
 IsCpp=0
 Icon=
 ExeOutput=.
@@ -2438,9 +2438,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit241]
-FileName=..\moo\mooedit\plugins\fileselector\moofileselector-prefs.c
+FileName=..\moo\mooutils\moomarshals.h
 CompileCpp=0
-Folder=mooedit/plugins/fileselector
+Folder=mooutils
 Compile=1
 Link=1
 Priority=1000
@@ -2451,6 +2451,16 @@ BuildCmd=
 FileName=..\moo\mooedit\plugins\completion\completion.c
 CompileCpp=0
 Folder=mooedit/plugins/completion
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit242]
+FileName=..\moo\mooutils\moomarshals.c
+CompileCpp=0
+Folder=mooutils
 Compile=1
 Link=1
 Priority=1000
