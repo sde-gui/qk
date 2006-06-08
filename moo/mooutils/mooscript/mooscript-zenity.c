@@ -427,7 +427,7 @@ choose_file_func (MSValue   **args,
                   MSContext  *ctx)
 {
     return file_selector_func (args, n_args, ctx,
-                               MOO_DIALOG_FILE_OPEN_EXISTING,
+                               MOO_FILE_DIALOG_OPEN,
                                FALSE);
 }
 
@@ -444,7 +444,7 @@ choose_files_func (MSValue   **args,
                    MSContext  *ctx)
 {
     return file_selector_func (args, n_args, ctx,
-                               MOO_DIALOG_FILE_OPEN_EXISTING,
+                               MOO_FILE_DIALOG_OPEN,
                                TRUE);
 }
 
@@ -461,7 +461,7 @@ choose_dir_func (MSValue   **args,
                  MSContext  *ctx)
 {
     return file_selector_func (args, n_args, ctx,
-                               MOO_DIALOG_DIR_OPEN,
+                               MOO_FILE_DIALOG_OPEN_DIR,
                                FALSE);
 }
 
@@ -478,7 +478,7 @@ choose_file_save_func (MSValue   **args,
                        MSContext  *ctx)
 {
     return file_selector_func (args, n_args, ctx,
-                               MOO_DIALOG_FILE_SAVE,
+                               MOO_FILE_DIALOG_SAVE,
                                FALSE);
 }
 

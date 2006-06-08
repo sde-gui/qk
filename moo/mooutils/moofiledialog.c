@@ -197,7 +197,7 @@ static void
 moo_file_dialog_init (MooFileDialog *dialog)
 {
     dialog->priv = g_new0 (MooFileDialogPrivate, 1);
-    dialog->priv->type = MOO_DIALOG_FILE_OPEN_EXISTING;
+    dialog->priv->type = MOO_FILE_DIALOG_OPEN;
 }
 
 
@@ -256,7 +256,7 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
                                              "type",
                                              "type",
                                              MOO_TYPE_FILE_DIALOG_TYPE,
-                                             MOO_DIALOG_FILE_OPEN_EXISTING,
+                                             MOO_FILE_DIALOG_OPEN,
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
@@ -379,10 +379,10 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
 
     switch (dialog->priv->type)
     {
-        case MOO_DIALOG_FILE_OPEN_EXISTING:
-        case MOO_DIALOG_FILE_OPEN_ANY:
-        case MOO_DIALOG_DIR_OPEN:
-            if (dialog->priv->type == MOO_DIALOG_DIR_OPEN)
+        case MOO_FILE_DIALOG_OPEN:
+        case MOO_FILE_DIALOG_OPEN_ANY:
+        case MOO_FILE_DIALOG_OPEN_DIR:
+            if (dialog->priv->type == MOO_FILE_DIALOG_OPEN_DIR)
                 chooser_action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
             else
                 chooser_action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -394,7 +394,7 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             file_chooser_set_select_multiple (widget, dialog->priv->multiple);
             break;
 
-        case MOO_DIALOG_FILE_SAVE:
+        case MOO_FILE_DIALOG_SAVE:
             chooser_action = GTK_FILE_CHOOSER_ACTION_SAVE;
 
             widget = file_chooser_dialog_new (dialog->priv->title,
@@ -475,9 +475,9 @@ moo_file_dialog_run (MooFileDialog *dialog)
 
     switch (dialog->priv->type)
     {
-        case MOO_DIALOG_FILE_OPEN_EXISTING:
-        case MOO_DIALOG_FILE_OPEN_ANY:
-        case MOO_DIALOG_DIR_OPEN:
+        case MOO_FILE_DIALOG_OPEN:
+        case MOO_FILE_DIALOG_OPEN_ANY:
+        case MOO_FILE_DIALOG_OPEN_DIR:
             if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_OK)
             {
                 set_filename (dialog, file_chooser_get_filename (filechooser));
@@ -488,7 +488,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
 
             goto out;
 
-        case MOO_DIALOG_FILE_SAVE:
+        case MOO_FILE_DIALOG_SAVE:
             while (TRUE)
             {
                 if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (filechooser)))
@@ -604,10 +604,10 @@ GType moo_file_dialog_type_get_type (void)
     if (!type)
     {
         static const GEnumValue values[] = {
-            { MOO_DIALOG_FILE_OPEN_EXISTING, (char*)"MOO_DIALOG_FILE_OPEN_EXISTING", (char*)"file-open-existing" },
-            { MOO_DIALOG_FILE_OPEN_ANY, (char*)"MOO_DIALOG_FILE_OPEN_ANY", (char*)"file-open-any" },
-            { MOO_DIALOG_FILE_SAVE, (char*)"MOO_DIALOG_FILE_SAVE", (char*)"file-save" },
-            { MOO_DIALOG_DIR_OPEN, (char*)"MOO_DIALOG_DIR_OPEN", (char*)"dir-open" },
+            { MOO_FILE_DIALOG_OPEN, (char*) "MOO_FILE_DIALOG_OPEN", (char*) "open" },
+            { MOO_FILE_DIALOG_OPEN_ANY, (char*) "MOO_FILE_DIALOG_OPEN_ANY", (char*) "open-any" },
+            { MOO_FILE_DIALOG_SAVE, (char*) "MOO_FILE_DIALOG_SAVE", (char*) "save" },
+            { MOO_FILE_DIALOG_OPEN_DIR, (char*) "MOO_FILE_DIALOG_OPEN_DIR", (char*) "open-dir" },
             { 0, NULL, NULL }
         };
         type = g_enum_register_static ("MooFileDialogType", values);

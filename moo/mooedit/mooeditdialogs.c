@@ -36,7 +36,7 @@ moo_edit_open_dialog (GtkWidget      *widget,
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
-    dialog = moo_file_dialog_new (MOO_DIALOG_FILE_OPEN_EXISTING, widget,
+    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
                                   TRUE, "Open", start, NULL);
 
     if (mgr)
@@ -80,7 +80,7 @@ moo_edit_save_as_dialog (MooEdit        *edit,
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), NULL);
     start = moo_prefs_get_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
-    dialog = moo_file_dialog_new (MOO_DIALOG_FILE_SAVE, GTK_WIDGET (edit),
+    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (edit),
                                   FALSE, title, start, display_basename);
 
     if (mgr)

@@ -33,11 +33,12 @@ typedef struct _MooFileDialog        MooFileDialog;
 typedef struct _MooFileDialogPrivate MooFileDialogPrivate;
 typedef struct _MooFileDialogClass   MooFileDialogClass;
 
+/* do not change, hardcoded in ggap package */
 typedef enum {
-    MOO_DIALOG_FILE_OPEN_EXISTING,
-    MOO_DIALOG_FILE_OPEN_ANY,
-    MOO_DIALOG_FILE_SAVE,
-    MOO_DIALOG_DIR_OPEN
+    MOO_FILE_DIALOG_OPEN,
+    MOO_FILE_DIALOG_OPEN_ANY,
+    MOO_FILE_DIALOG_SAVE,
+    MOO_FILE_DIALOG_OPEN_DIR
     /*  MOO_DIALOG_FILE_CREATE,*/
     /*  MOO_DIALOG_DIR_NEW,*/
 } MooFileDialogType;

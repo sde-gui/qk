@@ -33,6 +33,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/xdgmime/xdgmime.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -1079,6 +1080,10 @@ moo_app_quit_real (MooApp *app)
         g_free (app->priv->tmpdir);
         app->priv->tmpdir = NULL;
     }
+
+#ifdef MOO_USE_XDGMIME
+    xdg_mime_shutdown ();
+#endif
 }
 
 
