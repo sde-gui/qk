@@ -27,6 +27,9 @@ if [ x$CONFIGURE = x ]; then
         echo "Can't find configure script"
         exit 1
     fi
+    configure_dir=`dirname "$CONFIGURE"`
+    configure_dir=`cd "$configure_dir" && pwd`
+    CONFIGURE="$configure_dir"/configure
 fi
 
 export ADDR2LINE="/usr/bin/i586-mingw32msvc-addr2line"
