@@ -258,7 +258,7 @@ moo_find_setup (MooFind        *find,
     if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
         gtk_text_iter_get_line (&sel_start) == gtk_text_iter_get_line (&sel_end))
     {
-        char *selection = gtk_text_buffer_get_text (buffer, &sel_start, &sel_end, TRUE);
+        char *selection = gtk_text_buffer_get_slice (buffer, &sel_start, &sel_end, TRUE);
         gtk_entry_set_text (GTK_ENTRY (search_entry->entry), selection);
         g_free (selection);
     }

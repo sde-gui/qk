@@ -900,7 +900,7 @@ try_mode_strings (MooEdit *edit)
     gtk_text_buffer_get_start_iter (buffer, &start);
     end = start;
     gtk_text_iter_forward_to_line_end (&end);
-    first = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+    first = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
 
     gtk_text_buffer_get_end_iter (buffer, &end);
 
@@ -916,7 +916,7 @@ try_mode_strings (MooEdit *edit)
         gtk_text_iter_set_line_offset (&start, 0);
     }
 
-    last = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+    last = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
 
     try_mode_string (edit, first);
     try_mode_string (edit, last);

@@ -1208,7 +1208,7 @@ moo_text_view_get_selection (MooTextView *view)
     buf = get_buffer (view);
 
     if (gtk_text_buffer_get_selection_bounds (buf, &start, &end))
-        return gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+        return gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
     else
         return NULL;
 }
@@ -1230,7 +1230,7 @@ moo_text_view_has_text (MooTextView *view)
 }
 
 
-char*
+char *
 moo_text_view_get_text (MooTextView *view)
 {
     GtkTextBuffer *buf;
@@ -1241,7 +1241,7 @@ moo_text_view_get_text (MooTextView *view)
 
     buf = get_buffer (view);
     gtk_text_buffer_get_bounds (buf, &start, &end);
-    text = gtk_text_buffer_get_text (buf, &start, &end, TRUE);
+    text = gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
 
     if (text && *text)
     {
@@ -4361,7 +4361,7 @@ moo_text_view_start_quick_search (MooTextView *view)
     if (gtk_text_buffer_get_selection_bounds (buffer, &iter1, &iter2) &&
         gtk_text_iter_get_line (&iter1) == gtk_text_iter_get_line (&iter2))
     {
-        text = gtk_text_buffer_get_text (buffer, &iter1, &iter2, TRUE);
+        text = gtk_text_buffer_get_slice (buffer, &iter1, &iter2, TRUE);
     }
 
     if (text)

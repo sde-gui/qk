@@ -595,7 +595,7 @@ moo_print_operation_begin_print (GtkPrintOperation  *operation,
         if (!gtk_text_iter_ends_line (&end))
             gtk_text_iter_forward_to_line_end (&end);
 
-        text = gtk_text_buffer_get_text (print->buffer, &iter, &end, FALSE);
+        text = gtk_text_buffer_get_slice (print->buffer, &iter, &end, TRUE);
         pango_layout_set_text (print->layout, text, -1);
         g_free (text);
 
@@ -922,7 +922,7 @@ print_page (MooPrintOperation *print,
 
     if (!GET_OPTION (print, MOO_PRINT_USE_STYLES))
     {
-        text = gtk_text_buffer_get_text (print->buffer, start, end, FALSE);
+        text = gtk_text_buffer_get_slice (print->buffer, start, end, TRUE);
         pango_layout_set_text (print->layout, text, -1);
         g_free (text);
 

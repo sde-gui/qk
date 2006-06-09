@@ -674,7 +674,7 @@ do_write (MooEdit        *edit,
             gssize len = -1;
 
             gtk_text_iter_forward_to_line_end (&line_end);
-            line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, FALSE);
+            line = gtk_text_buffer_get_slice (buffer, &line_start, &line_end, TRUE);
 
             status = g_io_channel_write_chars (file, line, len, &written, error);
             g_free (line);
