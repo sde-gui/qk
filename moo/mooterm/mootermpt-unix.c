@@ -37,7 +37,6 @@
 #endif
 
 #define TERM_EMULATION          "xterm"
-#define READ_CHUNK_SIZE         1024
 #define WRITE_CHUNK_SIZE        4096
 #define POLL_TIME               5
 #define POLL_NUM                1
@@ -258,10 +257,11 @@ fork_argv (MooTermPt      *pt_gen,
     g_io_channel_set_encoding (pt->io, NULL, NULL);
     g_io_channel_set_buffered (pt->io, FALSE);
 
-    pt->io_watch_id = g_io_add_watch (pt->io,
-                                      G_IO_IN | G_IO_PRI | G_IO_HUP,
-                                      (GIOFunc) read_child_out,
-                                      pt);
+    pt->io_watch_id = g_io_add_watch_full (pt->io,
+                                           G_PRIORITY_DEFAULT_IDLE,
+                                           G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                           (GIOFunc) read_child_out,
+                                           pt, NULL);
 
     src = g_main_context_find_source_by_id (NULL, pt->io_watch_id);
 
@@ -328,28 +328,31 @@ static void     kill_child      (MooTermPt      *pt_gen)
 }
 
 
-static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
-                                 GIOCondition    condition,
-                                 MooTermPtUnix  *pt)
+static gboolean
+read_child_out (G_GNUC_UNUSED GIOChannel     *source,
+                GIOCondition    condition,
+                MooTermPtUnix  *pt)
 {
     gboolean error_occured = FALSE;
     int error_no = 0;
 
-    char buf[READ_CHUNK_SIZE];
-    int current = 0;
+    char buf[INPUT_CHUNK_SIZE];
     guint again = POLL_NUM;
+    gsize to_read;
+    gsize current = 0;
 
+    /* try to read leftover from the pipe */
     if (condition & G_IO_HUP)
     {
-        int r;
+        int bytes;
 
         g_message ("%s: G_IO_HUP", G_STRLOC);
         error_no = errno;
 
-        r = read (pt->master, buf, READ_CHUNK_SIZE);
+        bytes = read (pt->master, buf, sizeof (buf));
 
-        if (r > 0)
-            feed_buffer (pt, buf, r);
+        if (bytes > 0)
+            feed_buffer (pt, buf, bytes);
 
         goto error;
     }
@@ -362,11 +365,22 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
 
     g_assert (condition & (G_IO_IN | G_IO_PRI));
 
+    to_read = _moo_term_get_input_chunk_len (MOO_TERM_PT(pt)->priv->term);
+    g_assert (to_read <= sizeof (buf));
+
+    if (!to_read)
+    {
+//         g_print ("read_child_out: skipping\n");
+        return TRUE;
+    }
+
     if (pt->non_block)
     {
-        int r = read (pt->master, buf, READ_CHUNK_SIZE);
+        int bytes;
 
-        switch (r)
+        bytes = read (pt->master, buf, to_read);
+
+        switch (bytes)
         {
             case -1:
                 if (errno != EAGAIN && errno != EINTR)
@@ -388,14 +402,14 @@ static gboolean read_child_out  (G_GNUC_UNUSED GIOChannel     *source,
                 g_free (s);
             }
 #endif
-                feed_buffer (pt, buf, r);
+                feed_buffer (pt, buf, bytes);
                 break;
         }
 
         return TRUE;
     }
 
-    while (again && !error_occured && current < READ_CHUNK_SIZE)
+    while (again && !error_occured && current < to_read)
     {
         struct pollfd fd = {pt->master, POLLIN | POLLPRI, 0};
 
@@ -492,12 +506,12 @@ error:
 }
 
 
-static void     feed_buffer     (MooTermPtUnix  *pt,
-                                 const char     *string,
-                                 int             len)
+static void
+feed_buffer (MooTermPtUnix  *pt,
+             const char     *string,
+             int             len)
 {
-    moo_term_feed (MOO_TERM_PT(pt)->priv->term,
-                   string, len);
+    moo_term_feed (MOO_TERM_PT(pt)->priv->term, string, len);
 }
 
 

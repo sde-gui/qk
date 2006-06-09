@@ -60,7 +60,8 @@ static void exec_dcs            (MooTermParser  *parser);
 
 #define iter_free g_free
 
-static InputIter *iter_new (MooTermParser *parser)
+static InputIter *
+iter_new (MooTermParser *parser)
 {
     InputIter *iter = g_new (InputIter, 1);
 
@@ -72,14 +73,16 @@ static InputIter *iter_new (MooTermParser *parser)
 }
 
 
-static gboolean iter_eof (InputIter *iter)
+static gboolean
+iter_eof (InputIter *iter)
 {
     return !iter->old && iter->offset >=
             iter->parser->input.data_len;
 }
 
 
-static void iter_forward (InputIter *iter)
+static void
+iter_forward (InputIter *iter)
 {
     g_assert (!iter_eof (iter));
 
@@ -97,7 +100,8 @@ static void iter_forward (InputIter *iter)
 }
 
 
-static void iter_backward (InputIter *iter)
+static void
+iter_backward (InputIter *iter)
 {
     g_assert (iter->offset ||
             (!iter->old && iter->parser->input.old_data->len));
@@ -115,14 +119,16 @@ static void iter_backward (InputIter *iter)
 }
 
 
-static void iter_set_eof (InputIter *iter)
+static void
+iter_set_eof (InputIter *iter)
 {
     iter->old = FALSE;
     iter->offset = iter->parser->input.data_len;
 }
 
 
-static guchar iter_get_char (InputIter *iter)
+static guchar
+iter_get_char (InputIter *iter)
 {
     g_assert (!iter_eof (iter));
 
@@ -133,7 +139,8 @@ static guchar iter_get_char (InputIter *iter)
 }
 
 
-static void save_cmd (MooTermParser *parser)
+static void
+save_cmd (MooTermParser *parser)
 {
     GString *old = parser->input.old_data;
     guint offset = parser->cmd_start->offset;
@@ -168,7 +175,8 @@ static void save_cmd (MooTermParser *parser)
 }
 
 
-static void save_character (MooTermParser *parser)
+static void
+save_character (MooTermParser *parser)
 {
     g_string_truncate (parser->input.old_data, 0);
     g_string_append_len (parser->input.old_data,
@@ -178,7 +186,9 @@ static void save_character (MooTermParser *parser)
 }
 
 
-static void one_char_cmd (MooTermParser *parser, guchar c)
+static void
+one_char_cmd (MooTermParser *parser,
+              guchar         c)
 {
     flush_chars (parser);
     DEBUG_ONE_CHAR(c);
@@ -276,7 +286,8 @@ static void one_char_cmd (MooTermParser *parser, guchar c)
 
 
 /* returns 0 on end of input */
-static guchar get_char (MooTermParser *parser)
+static guchar
+get_char (MooTermParser *parser)
 {
     guchar c = 0;
 
@@ -304,19 +315,22 @@ static guchar get_char (MooTermParser *parser)
 }
 
 
-static void flush_chars (MooTermParser *parser)
+static void
+flush_chars (MooTermParser *parser)
 {
     if (parser->character->len)
     {
-        g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
-                   parser->character->str);
+//         g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+//                    parser->character->str);
         VT_PRINT_CHAR (ERROR_CHAR);
         g_string_truncate (parser->character, 0);
     }
 }
 
 
-static void process_char (MooTermParser *parser, guchar c)
+static void
+process_char (MooTermParser *parser,
+              guchar         c)
 {
     if (parser->character->len || c >= 128)
     {
@@ -333,8 +347,8 @@ static void process_char (MooTermParser *parser, guchar c)
                 break;
 
             case -1:
-                g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
-                           parser->character->str);
+//                 g_warning ("%s: invalid UTF8 '%s'", G_STRLOC,
+//                            parser->character->str);
                 VT_PRINT_CHAR (ERROR_CHAR);
                 g_string_truncate (parser->character, 0);
                 break;
@@ -352,7 +366,8 @@ static void process_char (MooTermParser *parser, guchar c)
 }
 
 
-static void parser_init (MooTermParser  *parser)
+static void
+parser_init (MooTermParser *parser)
 {
     parser->save = FALSE;
 
@@ -377,7 +392,8 @@ static void parser_init (MooTermParser  *parser)
 }
 
 
-static void parser_finish (MooTermParser  *parser)
+static void
+parser_finish (MooTermParser *parser)
 {
     if (!parser->save)
         g_string_truncate (parser->input.old_data, 0);
@@ -385,7 +401,7 @@ static void parser_finish (MooTermParser  *parser)
 
 
 MooTermParser*
-_moo_term_parser_new (MooTerm        *term)
+_moo_term_parser_new (MooTerm *term)
 {
     MooTermParser *p = g_new0 (MooTermParser, 1);
 
@@ -437,10 +453,10 @@ _moo_term_parser_free (MooTermParser  *parser)
 }
 
 
-void
-_moo_term_parser_parse (MooTermParser  *parser,
-                        const char     *string,
-                        guint           len)
+static void
+parser_do_parse (MooTermParser  *parser,
+                 const char     *string,
+                 guint           len)
 {
     guchar c;
 
@@ -801,12 +817,27 @@ STATE_DCS_ESCAPE_:
 }
 
 
+gboolean
+_moo_term_parser_parse (MooTermParser  *parser,
+                        const char     *string,
+                        guint           len)
+{
+    parser_do_parse (parser, string, len);
+
+//     if (parser->save)
+//         g_print ("saved %d chars\n", parser->input.old_data->len);
+
+    return !parser->save;
+}
+
+
 /***************************************************************************/
 /* Parsing and executing received command sequence
  */
 
-static void exec_cmd               (MooTermParser  *parser,
-                                    guchar          cmd)
+static void
+exec_cmd (MooTermParser  *parser,
+          guchar          cmd)
 {
     switch (cmd)
     {
@@ -871,8 +902,9 @@ static void exec_cmd               (MooTermParser  *parser,
 }
 
 
-static void init_yyparse    (MooTermParser  *parser,
-                             LexType         lex_type)
+static void
+init_yyparse (MooTermParser *parser,
+              LexType        lex_type)
 {
     parser->lex.lex = lex_type;
     parser->lex.part = PART_START;
@@ -882,7 +914,8 @@ static void init_yyparse    (MooTermParser  *parser,
 }
 
 
-int     _moo_term_yylex (MooTermParser  *parser)
+int
+_moo_term_yylex (MooTermParser *parser)
 {
     guint offset = parser->lex.offset;
 
@@ -1042,7 +1075,8 @@ int     _moo_term_yylex (MooTermParser  *parser)
 }
 
 
-char           *_moo_term_current_ctl   (MooTermParser  *parser)
+char *
+_moo_term_current_ctl (MooTermParser *parser)
 {
     GString *s;
     char *nice;
@@ -1087,7 +1121,8 @@ char           *_moo_term_current_ctl   (MooTermParser  *parser)
 }
 
 
-static void exec_escape_sequence   (MooTermParser  *parser)
+static void
+exec_escape_sequence (MooTermParser *parser)
 {
     init_yyparse (parser, LEX_ESCAPE);
     DEBUG_CONTROL;
@@ -1095,7 +1130,8 @@ static void exec_escape_sequence   (MooTermParser  *parser)
 }
 
 
-static void exec_csi               (MooTermParser  *parser)
+static void
+exec_csi (MooTermParser *parser)
 {
     init_yyparse (parser, LEX_CONTROL);
     DEBUG_CONTROL;
@@ -1103,7 +1139,8 @@ static void exec_csi               (MooTermParser  *parser)
 }
 
 
-static void exec_dcs               (MooTermParser  *parser)
+static void
+exec_dcs (MooTermParser *parser)
 {
     init_yyparse (parser, LEX_DCS);
     DEBUG_CONTROL;
@@ -1111,8 +1148,9 @@ static void exec_dcs               (MooTermParser  *parser)
 }
 
 
-void            _moo_term_yyerror       (MooTermParser  *parser,
-                                         G_GNUC_UNUSED const char     *string)
+void
+_moo_term_yyerror (MooTermParser  *parser,
+                   G_GNUC_UNUSED const char *string)
 {
     char *s = _moo_term_current_ctl (parser);
     g_warning ("parse error: '%s'\n", s);
@@ -1120,8 +1158,9 @@ void            _moo_term_yyerror       (MooTermParser  *parser,
 }
 
 
-static void exec_apc               (MooTermParser  *parser,
-                                    guchar          final)
+static void
+exec_apc (MooTermParser *parser,
+          guchar         final)
 {
     char *s = g_strdup_printf ("\237%s%c", parser->data->str, final);
     char *nice = _moo_term_nice_bytes (s, -1);
@@ -1131,8 +1170,9 @@ static void exec_apc               (MooTermParser  *parser,
 }
 
 
-static void exec_pm                (MooTermParser  *parser,
-                                    guchar          final)
+static void
+exec_pm (MooTermParser *parser,
+         guchar         final)
 {
     char *s = g_strdup_printf ("\236%s%c", parser->data->str, final);
     char *nice = _moo_term_nice_bytes (s, -1);
@@ -1142,8 +1182,9 @@ static void exec_pm                (MooTermParser  *parser,
 }
 
 
-static void exec_osc               (MooTermParser  *parser,
-                                    guchar          final)
+static void
+exec_osc (MooTermParser *parser,
+          guchar         final)
 {
     if (parser->data->len >= 2 &&
         parser->data->str[0] >= '0' &&
@@ -1178,58 +1219,56 @@ static void exec_osc               (MooTermParser  *parser,
 }
 
 
-char           *_moo_term_nice_char     (guchar          c)
+char *
+_moo_term_nice_char (guchar c)
 {
     if (' ' <= c && c <= '~')
-    {
         return g_strndup ((char*)&c, 1);
-    }
-    else
+
+    switch (c)
     {
-        switch (c)
-        {
-            case 0x1B:
-                return g_strdup ("<ESC>");
-            case 0x84:
-                return g_strdup ("<IND>");
-            case 0x85:
-                return g_strdup ("<NEL>");
-            case 0x88:
-                return g_strdup ("<HTS>");
-            case 0x8D:
-                return g_strdup ("<RI>");
-            case 0x8E:
-                return g_strdup ("<SS2>");
-            case 0x8F:
-                return g_strdup ("<SS3>");
-            case 0x90:
-                return g_strdup ("<DCS>");
-            case 0x98:
-                return g_strdup ("<SOS>");
-            case 0x9A:
-                return g_strdup ("<DECID>");
-            case 0x9B:
-                return g_strdup ("<CSI>");
-            case 0x9C:
-                return g_strdup ("<ST>");
-            case 0x9D:
-                return g_strdup ("<OSC>");
-            case 0x9E:
-                return g_strdup ("<PM>");
-            case 0x9F:
-                return g_strdup ("<APC>");
-            default:
-                if ('A' - 64 <= c && c <= ']' - 64)
-                    return g_strdup_printf ("^%c", c + 64);
-                else
-                    return g_strdup_printf ("<%d>", c);
-        }
+        case 0x1B:
+            return g_strdup ("<ESC>");
+        case 0x84:
+            return g_strdup ("<IND>");
+        case 0x85:
+            return g_strdup ("<NEL>");
+        case 0x88:
+            return g_strdup ("<HTS>");
+        case 0x8D:
+            return g_strdup ("<RI>");
+        case 0x8E:
+            return g_strdup ("<SS2>");
+        case 0x8F:
+            return g_strdup ("<SS3>");
+        case 0x90:
+            return g_strdup ("<DCS>");
+        case 0x98:
+            return g_strdup ("<SOS>");
+        case 0x9A:
+            return g_strdup ("<DECID>");
+        case 0x9B:
+            return g_strdup ("<CSI>");
+        case 0x9C:
+            return g_strdup ("<ST>");
+        case 0x9D:
+            return g_strdup ("<OSC>");
+        case 0x9E:
+            return g_strdup ("<PM>");
+        case 0x9F:
+            return g_strdup ("<APC>");
     }
+
+    if ('A' - 64 <= c && c <= ']' - 64)
+        return g_strdup_printf ("^%c", c + 64);
+    else
+        return g_strdup_printf ("<%d>", c);
 }
 
 
-char           *_moo_term_nice_bytes    (const char     *string,
-                                         int             len)
+char *
+_moo_term_nice_bytes (const char *string,
+                      int         len)
 {
     int i;
     GString *str;

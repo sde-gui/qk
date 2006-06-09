@@ -205,7 +205,8 @@ static int segment_sym_diff (Segment *s1, Segment *s2,
 }
 
 
-static void invalidate_segment (Segment *segm, guint num)
+static void
+invalidate_segment (Segment *segm, guint num)
 {
     MooTerm *term;
     int top_line;
@@ -223,7 +224,7 @@ static void invalidate_segment (Segment *segm, guint num)
         MooTermIter end = segm[i].end;
         GdkRectangle rect;
 
-        _moo_term_iter_order  (&start, &end);
+        _moo_term_iter_order (&start, &end);
 
         if (ITER_ROW (&start) < ITER_ROW (&end))
         {

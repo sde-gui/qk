@@ -584,16 +584,18 @@ _moo_term_buffer_cursor_move (MooTermBuffer  *buf,
 }
 
 
-void    _moo_term_buffer_cursor_moved (MooTermBuffer  *buf)
+void
+_moo_term_buffer_cursor_moved (MooTermBuffer *buf)
 {
     if (!buf->priv->freeze_cursor_notify)
         g_signal_emit (buf, signals[CURSOR_MOVED], 0);
 }
 
 
-void    _moo_term_buffer_cursor_move_to  (MooTermBuffer  *buf,
-                                         int             row,
-                                         int             col)
+void
+_moo_term_buffer_cursor_move_to (MooTermBuffer  *buf,
+                                 int             row,
+                                 int             col)
 {
     int width = buf_screen_width (buf);
     int height = buf_screen_height (buf);

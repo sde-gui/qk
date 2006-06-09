@@ -31,6 +31,9 @@
 #define HOW_MANY(x__,y__) (((x__) + (y__) - 1) / (y__))
 
 
+static void add_update_timeout  (MooTerm    *term);
+
+
 static void
 font_calculate (MooTermFont *font)
 {
@@ -147,7 +150,7 @@ _moo_term_font_free (MooTermFont    *font)
 
 
 void
-_moo_term_invalidate (MooTerm        *term)
+_moo_term_invalidate (MooTerm *term)
 {
     GdkRectangle rec = {0, 0, term->priv->width, term->priv->height};
     _moo_term_invalidate_screen_rect (term, &rec);
@@ -385,6 +388,7 @@ _moo_term_cursor_moved (MooTerm        *term,
     {
         term->priv->cursor_row = buf_cursor_row (buf);
         term->priv->cursor_col = buf_cursor_col_display (buf);
+        add_update_timeout (term);
     }
 }
 
@@ -434,14 +438,14 @@ moo_term_draw (MooTerm     *term,
     int width = term->priv->width;
     int height = term->priv->height;
     GdkRectangle clip = {0, 0, width, height};
-    GdkRegion *screen_region = NULL;
+//     GdkRegion *screen_region = NULL;
 
     g_return_if_fail (region != NULL);
 
     gdk_region_get_rectangles (region, &rects, &n_rects);
 
-    if (term->priv->changed)
-        screen_region = gdk_region_new ();
+//     if (term->priv->changed)
+//         screen_region = gdk_region_new ();
 
     for (i = 0; i < n_rects; ++i)
     {
@@ -455,22 +459,22 @@ moo_term_draw (MooTerm     *term,
                 term_draw_range (term, drawable,
                                  top_line + r->y + j,
                                  r->x, r->width);
-
-            if (screen_region)
-                gdk_region_union_with_rect (screen_region, r);
+//
+//             if (screen_region)
+//                 gdk_region_union_with_rect (screen_region, r);
         }
     }
 
-    if (term->priv->changed && !gdk_region_empty (screen_region))
-    {
-        gdk_region_subtract (term->priv->changed,
-                             screen_region);
-        if (gdk_region_empty (term->priv->changed))
-            region_destroy (&term->priv->changed);
-    }
+//     if (term->priv->changed && !gdk_region_empty (screen_region))
+//     {
+//         gdk_region_subtract (term->priv->changed,
+//                              screen_region);
+//         if (gdk_region_empty (term->priv->changed))
+//             region_destroy (&term->priv->changed);
+//     }
 
-    if (screen_region)
-        gdk_region_destroy (screen_region);
+//     if (screen_region)
+//         gdk_region_destroy (screen_region);
 
     g_free (rects);
 }
@@ -501,107 +505,110 @@ region_union_with_rect (GdkRegion   **region,
 }
 
 
-static gboolean
-update_timeout (MooTerm *term)
-{
-    GdkRegion *region, *changed, *clip_region;
-    GdkRectangle *rectangles;
-    int n_rectangles, i;
-    int top_line = term_top_line (term);
-    int scrollback = buf_scrollback (term->priv->buffer);
-    GdkWindow *window = GTK_WIDGET(term)->window;
-    gboolean need_redraw = FALSE;
-    GdkRectangle clip = {0, 0, term->priv->width, term->priv->height};
-
-    if (!GTK_WIDGET_DRAWABLE (term))
-        return TRUE;
-
-    gdk_window_freeze_updates (window);
-
-    if (!term->priv->changed &&
-         term->priv->cursor_col == term->priv->cursor_col_old &&
-         term->priv->cursor_row == term->priv->cursor_row_old)
-        goto out;
-
-    if (term->priv->changed)
-    {
-        changed = term->priv->changed;
-        term->priv->changed = NULL;
-    }
-    else
-    {
-        changed = gdk_region_new ();
-    }
-
-    if (term->priv->cursor_col != term->priv->cursor_col_old ||
-        term->priv->cursor_row != term->priv->cursor_row_old)
-    {
-        int row;
-
-        row = scrollback + term->priv->cursor_row - top_line;
-        if (term->priv->cursor_col < term->priv->width &&
-            row >= 0 && row < (int) term->priv->height)
-        {
-            GdkRectangle rect = {term->priv->cursor_col, row, 1, 1};
-            gdk_region_union_with_rect (changed, &rect);
-        }
-
-        row = scrollback + term->priv->cursor_row_old - top_line;
-        if (term->priv->cursor_col_old < term->priv->width &&
-            row >= 0 && row < (int) term->priv->height)
-        {
-            GdkRectangle rect = {term->priv->cursor_col_old, row, 1, 1};
-            gdk_region_union_with_rect (changed, &rect);
-        }
-    }
-
-    clip_region = gdk_region_rectangle (&clip);
-    gdk_region_intersect (changed, clip_region);
-    gdk_region_destroy (clip_region);
-
-    if (gdk_region_empty (changed))
-    {
-        gdk_region_destroy (changed);
-        goto out;
-    }
-
-    gdk_region_get_rectangles (changed, &rectangles, &n_rectangles);
-    g_return_val_if_fail (n_rectangles > 0, TRUE);
-
-    for (i = 0; i < n_rectangles; ++i)
-    {
-        rect_screen_to_window (term, &rectangles[i], &rectangles[i]);
-    }
-
-    region = gdk_region_rectangle (&rectangles[0]);
-
-    for (i = 1; i < n_rectangles; ++i)
-        gdk_region_union_with_rect (region, &rectangles[i]);
-
-    gdk_window_invalidate_region (window, region, FALSE);
-    need_redraw = TRUE;
-
-    g_free (rectangles);
-    gdk_region_destroy (region);
-    gdk_region_destroy (changed);
-
-out:
-    term->priv->cursor_col_old = term->priv->cursor_col;
-    term->priv->cursor_row_old = term->priv->cursor_row;
-    gdk_window_thaw_updates (window);
-
-    if (need_redraw)
-    {
-        if (g_timer_elapsed (term->priv->redraw_timer, NULL) > REDRAW_INTERVAL)
-            gdk_window_process_updates (GTK_WIDGET(term)->window, FALSE);
-    }
-    else
-    {
-        g_timer_start (term->priv->redraw_timer);
-    }
-
-    return TRUE;
-}
+// static gboolean
+// update_timeout (MooTerm *term)
+// {
+//     GdkRegion *region, *changed, *clip_region;
+//     GdkRectangle *rectangles;
+//     int n_rectangles, i;
+//     int top_line = term_top_line (term);
+//     int scrollback = buf_scrollback (term->priv->buffer);
+//     GdkWindow *window = GTK_WIDGET(term)->window;
+//     gboolean need_redraw = FALSE;
+//     GdkRectangle clip = {0, 0, term->priv->width, term->priv->height};
+//
+//     if (!GTK_WIDGET_DRAWABLE (term))
+//         return TRUE;
+//
+//     gdk_window_freeze_updates (window);
+//
+//     if (!term->priv->changed &&
+//          term->priv->cursor_col == term->priv->cursor_col_old &&
+//          term->priv->cursor_row == term->priv->cursor_row_old)
+//         goto out;
+//
+//     if (term->priv->changed)
+//     {
+//         changed = term->priv->changed;
+//         term->priv->changed = NULL;
+//     }
+//     else
+//     {
+//         changed = gdk_region_new ();
+//     }
+//
+//     if (term->priv->cursor_col != term->priv->cursor_col_old ||
+//         term->priv->cursor_row != term->priv->cursor_row_old)
+//     {
+//         int row;
+//
+//         row = scrollback + term->priv->cursor_row - top_line;
+//         if (term->priv->cursor_col < term->priv->width &&
+//             row >= 0 && row < (int) term->priv->height)
+//         {
+//             GdkRectangle rect = {term->priv->cursor_col, row, 1, 1};
+//             gdk_region_union_with_rect (changed, &rect);
+//         }
+//
+//         row = scrollback + term->priv->cursor_row_old - top_line;
+//         if (term->priv->cursor_col_old < term->priv->width &&
+//             row >= 0 && row < (int) term->priv->height)
+//         {
+//             GdkRectangle rect = {term->priv->cursor_col_old, row, 1, 1};
+//             gdk_region_union_with_rect (changed, &rect);
+//         }
+//     }
+//
+//     clip_region = gdk_region_rectangle (&clip);
+//     gdk_region_intersect (changed, clip_region);
+//     gdk_region_destroy (clip_region);
+//
+//     if (gdk_region_empty (changed))
+//     {
+//         gdk_region_destroy (changed);
+//         goto out;
+//     }
+//
+//     gdk_region_get_rectangles (changed, &rectangles, &n_rectangles);
+//     g_return_val_if_fail (n_rectangles > 0, TRUE);
+//
+//     for (i = 0; i < n_rectangles; ++i)
+//     {
+//         rect_screen_to_window (term, &rectangles[i], &rectangles[i]);
+//     }
+//
+//     region = gdk_region_rectangle (&rectangles[0]);
+//
+//     for (i = 1; i < n_rectangles; ++i)
+//         gdk_region_union_with_rect (region, &rectangles[i]);
+//
+//     gdk_window_invalidate_region (window, region, FALSE);
+//     need_redraw = TRUE;
+//
+//     g_free (rectangles);
+//     gdk_region_destroy (region);
+//     gdk_region_destroy (changed);
+//
+// out:
+//     term->priv->cursor_col_old = term->priv->cursor_col;
+//     term->priv->cursor_row_old = term->priv->cursor_row;
+//     gdk_window_thaw_updates (window);
+//
+//     if (need_redraw)
+//     {
+//         if (g_timer_elapsed (term->priv->redraw_timer, NULL) > REDRAW_INTERVAL)
+//         {
+//             gdk_window_process_updates (GTK_WIDGET(term)->window, FALSE);
+//             g_timer_start (term->priv->redraw_timer);
+//         }
+//     }
+//     else
+//     {
+//         g_timer_start (term->priv->redraw_timer);
+//     }
+//
+//     return TRUE;
+// }
 
 
 gboolean
@@ -612,12 +619,10 @@ _moo_term_expose_event (GtkWidget      *widget,
     GdkRegion *text_region;
     MooTerm *term = MOO_TERM (widget);
 
-    g_assert (term_top_line (term) <= buf_scrollback (term->priv->buffer));
+    if (widget->window != event->window)
+        return FALSE;
 
-    if (!term->priv->update_timeout)
-        term->priv->update_timeout =
-                g_timeout_add_full (UPDATE_PRIORITY, UPDATE_TIMEOUT,
-                                    (GSourceFunc) update_timeout, term, NULL);
+    g_assert (term_top_line (term) <= buf_scrollback (term->priv->buffer));
 
     text_rec.width = PIXEL_WIDTH (term);
     text_rec.height = PIXEL_HEIGHT (term);
@@ -627,10 +632,8 @@ _moo_term_expose_event (GtkWidget      *widget,
     if (!gdk_region_empty (text_region))
         moo_term_draw (term, event->window, text_region);
 
-    g_timer_start (term->priv->redraw_timer);
-
     gdk_region_destroy (text_region);
-    return TRUE;
+    return FALSE;
 }
 
 
@@ -1002,20 +1005,21 @@ term_draw_cursor (MooTerm     *term,
 }
 
 
-void
-_moo_term_buf_content_changed (MooTerm        *term,
-                               MooTermBuffer  *buf)
+static void
+add_buffer_changed (MooTerm *term)
 {
     GdkRegion *changed;
     guint top_line, scrollback;
     int height;
+    MooTermBuffer *buf;
 
     if (!GTK_WIDGET_DRAWABLE (term))
         return;
 
+    buf = term->priv->buffer;
     changed = buf->priv->changed;
 
-    if (buf != term->priv->buffer || !changed || gdk_region_empty (changed))
+    if (!changed || gdk_region_empty (changed))
         return;
 
     buf->priv->changed = NULL;
@@ -1056,6 +1060,151 @@ _moo_term_buf_content_changed (MooTerm        *term,
 }
 
 
+static gboolean
+invalidate_window (MooTerm *term)
+{
+    GdkRegion *region, *changed, *clip_region;
+    GdkRectangle *rectangles;
+    int n_rectangles, i;
+    int top_line = term_top_line (term);
+    int scrollback = buf_scrollback (term->priv->buffer);
+    GdkWindow *window = GTK_WIDGET(term)->window;
+    gboolean need_redraw = FALSE;
+    GdkRectangle clip = {0, 0, term->priv->width, term->priv->height};
+
+    if (!GTK_WIDGET_DRAWABLE (term))
+        return FALSE;
+
+    add_buffer_changed (term);
+
+    if (!term->priv->changed &&
+         term->priv->cursor_col == term->priv->cursor_col_old &&
+         term->priv->cursor_row == term->priv->cursor_row_old)
+            goto out;
+
+    if (term->priv->changed)
+    {
+        changed = term->priv->changed;
+        term->priv->changed = NULL;
+    }
+    else
+    {
+        changed = gdk_region_new ();
+    }
+
+    if (term->priv->cursor_col != term->priv->cursor_col_old ||
+        term->priv->cursor_row != term->priv->cursor_row_old)
+    {
+        int row;
+
+        row = scrollback + term->priv->cursor_row - top_line;
+        if (term->priv->cursor_col < term->priv->width &&
+            row >= 0 && row < (int) term->priv->height)
+        {
+            GdkRectangle rect = {term->priv->cursor_col, row, 1, 1};
+            gdk_region_union_with_rect (changed, &rect);
+        }
+
+        row = scrollback + term->priv->cursor_row_old - top_line;
+        if (term->priv->cursor_col_old < term->priv->width &&
+            row >= 0 && row < (int) term->priv->height)
+        {
+            GdkRectangle rect = {term->priv->cursor_col_old, row, 1, 1};
+            gdk_region_union_with_rect (changed, &rect);
+        }
+    }
+
+    clip_region = gdk_region_rectangle (&clip);
+    gdk_region_intersect (changed, clip_region);
+    gdk_region_destroy (clip_region);
+
+    if (gdk_region_empty (changed))
+    {
+        gdk_region_destroy (changed);
+        goto out;
+    }
+
+    gdk_region_get_rectangles (changed, &rectangles, &n_rectangles);
+    g_return_val_if_fail (n_rectangles > 0, TRUE);
+
+    for (i = 0; i < n_rectangles; ++i)
+    {
+        rect_screen_to_window (term, &rectangles[i], &rectangles[i]);
+    }
+
+    region = gdk_region_rectangle (&rectangles[0]);
+
+    for (i = 1; i < n_rectangles; ++i)
+        gdk_region_union_with_rect (region, &rectangles[i]);
+
+    gdk_window_invalidate_region (window, region, FALSE);
+    need_redraw = TRUE;
+
+    g_free (rectangles);
+    gdk_region_destroy (region);
+    gdk_region_destroy (changed);
+
+out:
+    term->priv->cursor_col_old = term->priv->cursor_col;
+    term->priv->cursor_row_old = term->priv->cursor_row;
+
+    return need_redraw;
+}
+
+static gboolean
+update_delay_timeout (MooTerm *term)
+{
+    /* We only stop the timer if no update request was received in this
+     * past cycle.
+     */
+    if (invalidate_window (term))
+        return TRUE;
+
+    term->priv->update_timer = 0;
+    return FALSE;
+}
+
+static gboolean
+update_timeout (MooTerm *term)
+{
+    invalidate_window (term);
+
+    /* Set a timer such that we do not invalidate for a while. */
+    /* This limits the number of times we draw to ~40fps. */
+    term->priv->update_timer =
+            g_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                UPDATE_REPEAT_TIMEOUT,
+                                (GSourceFunc) update_delay_timeout,
+                                term, NULL);
+
+    return FALSE;
+}
+
+static void
+add_update_timeout (MooTerm *term)
+{
+    if (!term->priv->update_timer)
+        term->priv->update_timer =
+                g_timeout_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                    UPDATE_TIMEOUT,
+                                    (GSourceFunc) update_timeout,
+                                    term, NULL);
+}
+
+void
+_moo_term_buf_content_changed (MooTerm        *term,
+                               MooTermBuffer  *buf)
+{
+    if (GTK_WIDGET_DRAWABLE (term) &&
+        buf == term->priv->buffer &&
+        buf->priv->changed &&
+        !gdk_region_empty (buf->priv->changed))
+    {
+        add_update_timeout (term);
+    }
+}
+
+
 void
 _moo_term_buffer_scrolled (MooTermBuffer  *buf,
                            guint           lines,
@@ -1065,6 +1214,7 @@ _moo_term_buffer_scrolled (MooTermBuffer  *buf,
     {
         GdkRectangle rect = {0, 0, term->priv->width, term->priv->height};
         region_union_with_rect (&term->priv->changed, &rect);
+        add_update_timeout (term);
     }
 }
 

@@ -38,11 +38,13 @@ G_BEGIN_DECLS
 #define PT_WRITER_PRIORITY          G_PRIORITY_DEFAULT
 #define PT_READER_PRIORITY          G_PRIORITY_DEFAULT
 
-#define ADJUSTMENT_PRIORITY         G_PRIORITY_HIGH_IDLE
+#define ADJUSTMENT_PRIORITY         G_PRIORITY_DEFAULT_IDLE
 #define ADJUSTMENT_DELTA            30.0
-#define UPDATE_PRIORITY             G_PRIORITY_DEFAULT
-#define UPDATE_TIMEOUT              30
-#define REDRAW_INTERVAL             0.6
+
+#define UPDATE_TIMEOUT              10
+#define UPDATE_REPEAT_TIMEOUT       40
+#define PROCESS_INCOMING_TIMEOUT    10
+#define INPUT_CHUNK_SIZE            4096
 
 #define MIN_TERMINAL_WIDTH          8
 #define MIN_TERMINAL_HEIGHT         4
@@ -81,6 +83,8 @@ typedef struct _MooTermFont MooTermFont;
 struct _MooTermPrivate {
     struct _MooTermPt       *pt;
     struct _MooTermParser   *parser;
+    GString                 *incoming;
+    guint                    process_timeout;
 
     struct _MooTermBuffer   *buffer;
     struct _MooTermBuffer   *primary_buffer;
@@ -115,10 +119,9 @@ struct _MooTermPrivate {
     MooTermFont    *font;
 
     GdkRegion      *changed; /* screen coordinates */
-    guint           update_timeout;
-    GTimer         *redraw_timer;
     guint           cursor_row_old; /* cursor has been here, and it's been invalidated */
     guint           cursor_col_old;
+    guint           update_timer;
 
     GdkGC          *clip;
     gboolean        font_changed;
@@ -241,6 +244,8 @@ void        _moo_term_grab_selection        (MooTerm        *term);
 void        _moo_term_pause_cursor_blinking (MooTerm        *term);
 void        _moo_term_set_cursor_blinks     (MooTerm        *term,
                                              gboolean        blinks);
+
+gsize       _moo_term_get_input_chunk_len   (MooTerm        *term);
 
 
 /*************************************************************************/

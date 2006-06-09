@@ -90,7 +90,7 @@ typedef struct _MooTermParser {
 MooTermParser  *_moo_term_parser_new    (MooTerm        *term);
 void            _moo_term_parser_free   (MooTermParser  *parser);
 
-void            _moo_term_parser_parse  (MooTermParser  *parser,
+gboolean        _moo_term_parser_parse  (MooTermParser  *parser,
                                          const char     *string,
                                          guint           len);
 void            _moo_term_parser_reset  (MooTermParser  *parser);

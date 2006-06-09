@@ -27,7 +27,6 @@
 #define TRY_NUM                 10
 #define SLEEP_TIME              10
 #define TERM_EMULATION          "xterm"
-#define READ_CHUNK_SIZE         1024
 #define WRITE_CHUNK_SIZE        4096
 #define POLL_TIME               5
 #define POLL_NUM                1
@@ -36,7 +35,8 @@ static char *HELPER_DIR = NULL;
 #define HELPER_BINARY "termhelper.exe"
 
 
-void        moo_term_set_helper_directory   (const char *dir)
+void
+moo_term_set_helper_directory (const char *dir)
 {
     g_free (HELPER_DIR);
     HELPER_DIR = g_strdup (dir);
@@ -193,10 +193,11 @@ fork_command (MooTermPt      *pt_gen,
     pt->out_io = g_io_channel_win32_new_fd (pt->out);
     g_io_channel_set_encoding (pt->out_io, NULL, NULL);
     g_io_channel_set_buffered (pt->in_io, FALSE);
-    pt->out_watch_id = g_io_add_watch (pt->out_io,
-                                       (GIOCondition)(G_IO_IN | G_IO_PRI | G_IO_HUP),
-                                       (GIOFunc) read_helper_out,
-                                       pt);
+    pt->out_watch_id = g_io_add_watch_full (pt->out_io,
+                                            G_PRIORITY_DEFAULT_IDLE,
+                                            G_IO_IN | G_IO_PRI | G_IO_HUP,
+                                            (GIOFunc) read_helper_out,
+                                            pt, NULL);
 
 //     GSource *src = g_main_context_find_source_by_id (NULL, helper.out_watch_id);
 //     if (src) g_source_set_priority (src, READ_HELPER_OUT_PRIORITY);
@@ -229,29 +230,31 @@ read_helper_out (GIOChannel     *source,
     }
     else if (condition & (G_IO_IN | G_IO_PRI))
     {
-        char buf[READ_CHUNK_SIZE];
-        int count = 0;
-        gsize read;
+        char buf[INPUT_CHUNK_SIZE];
+        gsize count = 0, read, to_read;
         int again = TRY_NUM;
 
-        g_io_channel_read_chars (source, buf, 1, &read, &err);
-        if (read == 1) ++count;
+        to_read = _moo_term_get_input_chunk_len (MOO_TERM_PT(pt)->priv->term);
+        g_assert (to_read <= sizeof (buf));
 
-        while (again && !err && !error_occured && count < READ_CHUNK_SIZE)
+        if (!to_read)
+            return TRUE;
+
+        g_io_channel_read_chars (source, buf, 1, &read, &err);
+
+        if (read == 1)
+            ++count;
+
+        while (again && !err && !error_occured && count < to_read)
         {
             if (g_io_channel_get_buffer_condition (source) & G_IO_IN)
             {
                 g_io_channel_read_chars (source, buf + count, 1, &read, &err);
 
                 if (read == 1)
-                {
                     ++count;
-                }
-                else
-                {
-                    if (--again)
-                        g_usleep (SLEEP_TIME);
-                }
+                else if (--again)
+                    g_usleep (SLEEP_TIME);
             }
             else
             {
@@ -260,7 +263,7 @@ read_helper_out (GIOChannel     *source,
             }
         }
 
-        if (count > 0)
+        if (count)
             moo_term_feed (MOO_TERM_PT(pt)->priv->term, buf, count);
 
         error_occured = (err != NULL);
@@ -292,7 +295,7 @@ read_helper_out (GIOChannel     *source,
 
 
 static void
-kill_child (MooTermPt      *pt_gen)
+kill_child (MooTermPt *pt_gen)
 {
     MooTermPtCyg *pt = MOO_TERM_PT_CYG (pt_gen);
 

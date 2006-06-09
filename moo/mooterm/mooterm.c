@@ -257,7 +257,7 @@ moo_term_init (MooTerm *term)
     term->priv->pt = _moo_term_pt_new (term);
     g_signal_connect_swapped (term->priv->pt, "child-died",
                               G_CALLBACK (child_died), term);
-
+    term->priv->incoming = g_string_new_len (NULL, INPUT_CHUNK_SIZE);
     term->priv->parser = _moo_term_parser_new (term);
 
     _moo_term_init_palette (term);
@@ -270,9 +270,6 @@ moo_term_init (MooTerm *term)
 
     term->priv->width = 80;
     term->priv->height = 24;
-
-    term->priv->redraw_timer = g_timer_new ();
-    g_timer_stop (term->priv->redraw_timer);
 
     term->priv->selection = _moo_term_selection_new (term);
 
@@ -360,10 +357,15 @@ moo_term_init (MooTerm *term)
 
 #define OBJECT_UNREF(obj__) if (obj__) g_object_unref (obj__)
 
-static void moo_term_finalize               (GObject        *object)
+static void
+moo_term_finalize (GObject *object)
 {
     guint i, j;
     MooTerm *term = MOO_TERM (object);
+
+    if (term->priv->process_timeout)
+        g_source_remove (term->priv->process_timeout);
+    g_string_free (term->priv->incoming, TRUE);
 
     if (term->priv->cursor_blink_timeout_id)
         g_source_remove (term->priv->cursor_blink_timeout_id);
@@ -381,8 +383,6 @@ static void moo_term_finalize               (GObject        *object)
 
     if (term->priv->changed)
         gdk_region_destroy (term->priv->changed);
-
-    g_timer_destroy (term->priv->redraw_timer);
 
     OBJECT_UNREF (term->priv->layout);
 
@@ -557,9 +557,9 @@ moo_term_unrealize (GtkWidget *widget)
     guint i;
     MooTerm *term = MOO_TERM (widget);
 
-    if (term->priv->update_timeout)
-        g_source_remove (term->priv->update_timeout);
-    term->priv->update_timeout = 0;
+    if (term->priv->update_timer)
+        g_source_remove (term->priv->update_timer);
+    term->priv->update_timer = 0;
 
     if (term->priv->menu)
         g_object_unref (term->priv->menu);
@@ -682,7 +682,7 @@ static void     buf_size_changed                (MooTerm        *term,
 }
 
 
-#define equal(a, b) (ABS((a)-(b)) < 0.4)
+#define EQUAL(a, b) (ABS((a)-(b)) < 0.4)
 
 static void     update_adjustment               (MooTerm        *term)
 {
@@ -697,17 +697,12 @@ static void     update_adjustment               (MooTerm        *term)
     value = term_top_line (term);
     page_size = term->priv->height;
 
-    if ((ABS (upper - term->priv->adjustment->upper) >
-         ADJUSTMENT_DELTA * page_size) ||
-         (ABS (value - term->priv->adjustment->value) >
-         ADJUSTMENT_DELTA * page_size))
-    {
-        now = TRUE;
-    }
+    now = ABS (upper - term->priv->adjustment->upper) > ADJUSTMENT_DELTA * page_size ||
+            ABS (value - term->priv->adjustment->value) > ADJUSTMENT_DELTA * page_size;
 
-    if (!equal (adj->lower, 0.0) || !equal (adj->upper, upper) ||
-         !equal (adj->value, value) || !equal (adj->page_size, page_size) ||
-         !equal (adj->page_increment, page_size) || !equal (adj->step_increment, 1.0))
+    if (!EQUAL (adj->lower, 0.0) || !EQUAL (adj->upper, upper) ||
+         !EQUAL (adj->value, value) || !EQUAL (adj->page_size, page_size) ||
+         !EQUAL (adj->page_increment, page_size) || !EQUAL (adj->step_increment, 1.0))
     {
         adj->lower = 0.0;
         adj->upper = upper;
@@ -729,18 +724,17 @@ static void     update_adjustment_value         (MooTerm        *term)
     if (!term->priv->adjustment)
         return;
 
-    if (ABS (value - term->priv->adjustment->value) >
-         ADJUSTMENT_DELTA * term->priv->height)
-    {
-        now = TRUE;
-    }
+    now = ABS (value - term->priv->adjustment->value) >
+            ADJUSTMENT_DELTA * term->priv->height;
 
-    if (!equal (term->priv->adjustment->value, value))
+    if (!EQUAL (term->priv->adjustment->value, value))
     {
         term->priv->adjustment->value = value;
         queue_adjustment_value_changed (term, now);
     }
 }
+
+#undef EQUAL
 
 
 static void     adjustment_value_changed        (MooTerm        *term)
@@ -761,8 +755,9 @@ static void     adjustment_value_changed        (MooTerm        *term)
 }
 
 
-static void     queue_adjustment_changed        (MooTerm        *term,
-                                                 gboolean        now)
+static void
+queue_adjustment_changed (MooTerm  *term,
+                          gboolean  now)
 {
     if (now)
     {
@@ -1070,10 +1065,45 @@ moo_term_paste_clipboard (MooTerm        *term,
 }
 
 
+static gboolean
+process_incoming (MooTerm *term)
+{
+    gboolean done;
+
+//     if (term->priv->incoming->len > 2*INPUT_CHUNK_SIZE)
+//         g_print ("process_incoming: %d chars\n",
+//                  term->priv->incoming->len);
+
+    done = !term->priv->incoming->len ||
+                _moo_term_parser_parse (term->priv->parser,
+                                        term->priv->incoming->str,
+                                        term->priv->incoming->len);
+
+    if (term->priv->incoming->len > INPUT_CHUNK_SIZE)
+    {
+        g_string_free (term->priv->incoming, TRUE);
+        term->priv->incoming = g_string_new_len (NULL, INPUT_CHUNK_SIZE);
+    }
+    else
+    {
+        g_string_truncate (term->priv->incoming, 0);
+    }
+
+    term->priv->process_timeout = 0;
+
+    if (!done)
+        term->priv->process_timeout =
+                g_timeout_add (PROCESS_INCOMING_TIMEOUT,
+                               (GSourceFunc) process_incoming,
+                               term);
+
+    return FALSE;
+}
+
 void
-moo_term_feed (MooTerm        *term,
-               const char     *data,
-               int             len)
+moo_term_feed (MooTerm    *term,
+               const char *data,
+               int         len)
 {
     if (!len)
         return;
@@ -1083,7 +1113,29 @@ moo_term_feed (MooTerm        *term,
     if (len < 0)
         len = strlen (data);
 
-    _moo_term_parser_parse (term->priv->parser, data, len);
+//     g_print ("moo_term_feed: %d chars\n", len);
+    g_string_append_len (term->priv->incoming, data, len);
+
+    if (!term->priv->process_timeout)
+        term->priv->process_timeout =
+                g_timeout_add (PROCESS_INCOMING_TIMEOUT,
+                               (GSourceFunc) process_incoming,
+                               term);
+}
+
+
+gsize
+_moo_term_get_input_chunk_len (MooTerm *term)
+{
+    switch (term->priv->incoming->len / INPUT_CHUNK_SIZE)
+    {
+        case 0:
+            return INPUT_CHUNK_SIZE - term->priv->incoming->len;
+        case 1:
+            return INPUT_CHUNK_SIZE / 2;
+        default:
+            return 0;
+    }
 }
 
 
