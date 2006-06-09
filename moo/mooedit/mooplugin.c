@@ -980,6 +980,48 @@ moo_plugin_read_dirs (void)
 
 
 void
+moo_plugin_shutdown (void)
+{
+    GSList *list;
+
+    if (!plugin_store || !plugin_store->dirs_read)
+        return;
+
+    list = g_slist_copy (plugin_store->list);
+    g_slist_foreach (list, (GFunc) g_object_ref, NULL);
+
+    while (list)
+    {
+        moo_plugin_unregister (G_OBJECT_TYPE (list->data));
+        g_object_unref (list->data);
+        list = g_slist_delete_link (list, list);
+    }
+
+#ifdef MOO_USE_PYGTK
+    _moo_python_plugin_deinit ();
+#endif
+
+    plugin_store->dirs_read = FALSE;
+    plugin_store->editor = NULL;
+
+    if (plugin_store->list)
+    {
+        g_critical ("%s: could not unregister all plugins", G_STRLOC);
+        g_slist_free (plugin_store->list);
+        plugin_store->list = NULL;
+    }
+
+    g_hash_table_destroy (plugin_store->names);
+    plugin_store->names = NULL;
+
+    g_strfreev (plugin_store->dirs);
+    plugin_store->dirs = NULL;
+
+    plugin_store = NULL;
+}
+
+
+void
 _moo_window_attach_plugins (MooEditWindow *window)
 {
     GSList *l;

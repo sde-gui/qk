@@ -1055,6 +1055,9 @@ moo_app_quit_real (MooApp *app)
 
 #ifdef MOO_BUILD_EDIT
     moo_editor_close_all (app->priv->editor, TRUE);
+
+    moo_plugin_shutdown ();
+
     g_object_unref (app->priv->editor);
     app->priv->editor = NULL;
 #endif /* MOO_BUILD_EDIT */

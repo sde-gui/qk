@@ -19,7 +19,8 @@
 G_BEGIN_DECLS
 
 
-gboolean  _moo_python_plugin_init   (void);
+gboolean    _moo_python_plugin_init     (void);
+void        _moo_python_plugin_deinit   (void);
 
 
 G_END_DECLS

@@ -370,6 +370,15 @@ _moo_python_plugin_init (void)
 }
 
 
+void
+_moo_python_plugin_deinit (void)
+{
+    Py_XDECREF (main_mod);
+    main_mod = NULL;
+    moo_python_init (MOO_PY_API_VERSION, NULL);
+}
+
+
 #ifdef MOO_PYTHON_PLUGIN
 MOO_PLUGIN_INIT_FUNC_DECL;
 MOO_PLUGIN_INIT_FUNC_DECL

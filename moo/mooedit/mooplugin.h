@@ -212,6 +212,7 @@ const char *moo_plugin_version          (MooPlugin      *plugin);
 
 char      **moo_plugin_get_dirs         (void);
 void        moo_plugin_read_dirs        (void);
+void        moo_plugin_shutdown         (void);
 
 void        moo_plugin_set_info         (MooPlugin      *plugin,
                                          MooPluginInfo  *info);
