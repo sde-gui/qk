@@ -1095,7 +1095,7 @@ text_view_to_item (GtkTextView     *view,
 
     buffer = gtk_text_view_get_buffer (view);
     gtk_text_buffer_get_bounds (buffer, &start, &end);
-    text = gtk_text_buffer_get_text (buffer, &start, &end, TRUE);
+    text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
 
     if (!text[0])
     {

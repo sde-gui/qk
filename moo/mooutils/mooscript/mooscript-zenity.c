@@ -221,7 +221,7 @@ text_func (MSValue   **args,
         GtkTextIter start, end;
         char *content;
         gtk_text_buffer_get_bounds (buffer, &start, &end);
-        content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+        content = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
         result = ms_value_take_string (content);
     }
     else
