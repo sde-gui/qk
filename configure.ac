@@ -7,7 +7,7 @@ m4_define([moo_minor_version], [6])
 m4_define([moo_micro_version], [999])
 m4_define([moo_version], [moo_major_version.moo_minor_version.moo_micro_version])
 
-AC_INIT(medit, [moo_version], [muntyan@math.tamu.edu], medit)
+AC_INIT(medit, [moo_version], [muntyan@tamu.edu], medit)
 AM_INIT_AUTOMAKE(medit, [moo_version])
 AC_CANONICAL_HOST
 
