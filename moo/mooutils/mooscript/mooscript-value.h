@@ -161,6 +161,8 @@ void         ms_value_unref             (MSValue        *val);
 gboolean     ms_value_get_bool          (MSValue        *val);
 gboolean     ms_value_get_int           (MSValue        *val,
                                          int            *ival);
+gboolean     ms_value_get_gvalue        (MSValue        *val,
+                                         GValue         *dest);
 char        *ms_value_print             (MSValue        *val);
 char        *ms_value_repr              (MSValue        *val);
 

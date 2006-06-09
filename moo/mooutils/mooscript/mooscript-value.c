@@ -516,6 +516,47 @@ ms_value_get_int (MSValue    *val,
 }
 
 
+gboolean
+ms_value_get_gvalue (MSValue *val,
+                     GValue  *dest)
+{
+    g_return_val_if_fail (val != NULL, FALSE);
+    g_return_val_if_fail (dest != NULL, FALSE);
+    g_return_val_if_fail (!dest->g_type, FALSE);
+
+    switch (MS_VALUE_TYPE (val))
+    {
+        case MS_VALUE_INT:
+            g_value_init (dest, G_TYPE_INT);
+            g_value_set_int (dest, val->ival);
+            return TRUE;
+
+        case MS_VALUE_NONE:
+            g_value_init (dest, G_TYPE_STRING);
+            g_value_set_string (dest, NULL);
+            return TRUE;
+
+        case MS_VALUE_GVALUE:
+            g_value_init (dest, G_VALUE_TYPE (val->gval));
+            g_value_copy (val->gval, dest);
+            return TRUE;
+
+        case MS_VALUE_STRING:
+            g_value_init (dest, G_TYPE_STRING);
+            g_value_set_string (dest, val->str);
+            return TRUE;
+
+        case MS_VALUE_LIST:
+        case MS_VALUE_DICT:
+        case MS_VALUE_FUNC:
+        case MS_VALUE_INVALID:
+            return FALSE;
+    }
+
+    g_return_val_if_reached (FALSE);
+}
+
+
 static char *
 print_list (MSValue **elms,
             guint     n_elms)
