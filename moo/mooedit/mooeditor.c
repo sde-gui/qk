@@ -355,7 +355,7 @@ moo_editor_set_property (GObject        *object,
             editor->priv->autosave = g_value_get_boolean (value);
             g_object_notify (object, "autosave");
             do {
-                static int c = 0;
+                static int c = 1;
                 if (!c++)
                     g_message ("implement Editor::autosave");
             } while (0);
