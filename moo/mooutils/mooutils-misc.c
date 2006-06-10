@@ -1490,3 +1490,45 @@ moo_widget_set_tooltip (GtkWidget  *widget,
     else
         gtk_tooltips_set_tip (tooltips, widget, tip, tip);
 }
+
+
+char **
+moo_splitlines (const char *string)
+{
+    GPtrArray *array;
+    const char *line, *p;
+
+    if (!string || !string[0])
+        return NULL;
+
+    array = g_ptr_array_new ();
+
+    p = line = string;
+
+    while (*p)
+    {
+        switch (*p)
+        {
+            case '\r':
+                g_ptr_array_add (array, g_strndup (line, p - line));
+                if (*++p == '\n')
+                    ++p;
+                line = p;
+                break;
+
+            case '\n':
+                g_ptr_array_add (array, g_strndup (line, p - line));
+                line = ++p;
+                break;
+
+            default:
+                ++p;
+        }
+    }
+
+    if (p > line)
+        g_ptr_array_add (array, g_strndup (line, p - line));
+
+    g_ptr_array_add (array, NULL);
+    return (char**) g_ptr_array_free (array, FALSE);
+}

@@ -100,6 +100,8 @@ void        moo_menu_item_set_label         (GtkWidget      *menu_item,
 void        moo_widget_set_tooltip          (GtkWidget      *widget,
                                              const char     *tip);
 
+char      **moo_splitlines                  (const char     *string);
+
 
 G_END_DECLS
 

@@ -13,6 +13,7 @@
 
 #include "mooutils/moocmd.h"
 #include "mooutils/moomarshals.h"
+#include "mooutils/mooutils-misc.h"
 
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -353,45 +354,6 @@ command_err (GIOChannel     *channel,
 }
 
 
-static char **
-splitlines (const char *string)
-{
-    GPtrArray *array;
-    const char *line, *p;
-
-    if (!string || !string[0])
-        return NULL;
-
-    array = g_ptr_array_new ();
-
-    p = line = string;
-
-    while (*p)
-    {
-        switch (*p)
-        {
-            case '\r':
-                g_ptr_array_add (array, g_strndup (line, p - line));
-                if (*++p == '\n')
-                    ++p;
-                line = p;
-                break;
-
-            case '\n':
-                g_ptr_array_add (array, g_strndup (line, p - line));
-                line = ++p;
-                break;
-
-            default:
-                ++p;
-        }
-    }
-
-    g_ptr_array_add (array, NULL);
-    return (char**) g_ptr_array_free (array, FALSE);
-}
-
-
 static void
 try_channel_leftover (MooCmd      *cmd,
                       GIOChannel  *channel,
@@ -405,7 +367,7 @@ try_channel_leftover (MooCmd      *cmd,
     {
         char **lines, **p;
 
-        lines = splitlines (text);
+        lines = moo_splitlines (text);
 
         if (lines)
         {
