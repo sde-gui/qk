@@ -79,6 +79,8 @@ struct _MooTextViewClass
     void (* find_next_interactive)  (MooTextView    *view);
     void (* find_prev_interactive)  (MooTextView    *view);
     void (* goto_line_interactive)  (MooTextView    *view);
+    void (* find_word_at_cursor)    (MooTextView    *view,
+                                     gboolean        forward);
 
     /* methods */
     /* adjusts start and end so that selection bound goes to start

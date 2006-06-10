@@ -104,6 +104,8 @@ static void     cursor_moved                (MooTextView        *view,
 static void     proxy_prop_notify           (MooTextView        *view,
                                              GParamSpec         *pspec);
 
+static void     find_word_at_cursor         (MooTextView        *view,
+                                             gboolean            forward);
 static void     find_interactive            (MooTextView        *view);
 static void     replace_interactive         (MooTextView        *view);
 static void     find_next_interactive       (MooTextView        *view);
@@ -171,6 +173,7 @@ static void     update_box_tag              (MooTextView        *view);
 enum {
     DELETE_SELECTION,
     FIND_INTERACTIVE,
+    FIND_WORD_AT_CURSOR,
     FIND_NEXT_INTERACTIVE,
     FIND_PREV_INTERACTIVE,
     REPLACE_INTERACTIVE,
@@ -268,6 +271,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     text_view_class->set_scroll_adjustments = moo_text_view_set_scroll_adjustments;
 
     klass->extend_selection = _moo_text_view_extend_selection;
+    klass->find_word_at_cursor = find_word_at_cursor;
     klass->find_interactive = find_interactive;
     klass->find_next_interactive = find_next_interactive;
     klass->find_prev_interactive = find_prev_interactive;
@@ -511,6 +515,16 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
+
+    signals[FIND_WORD_AT_CURSOR] =
+            g_signal_new ("find-word-at-cursor",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooTextViewClass, find_word_at_cursor),
+                          NULL, NULL,
+                          _moo_marshal_VOID__BOOLEAN,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_BOOLEAN);
 
     signals[FIND_INTERACTIVE] =
             g_signal_new ("find-interactive",
@@ -784,6 +798,14 @@ msg_to_statusbar (const char *message,
     moo_text_view_message (data, message);
 }
 
+
+static void
+find_word_at_cursor (MooTextView *view,
+                     gboolean     forward)
+{
+    moo_text_view_run_find_now (GTK_TEXT_VIEW (view), forward,
+                                msg_to_statusbar, view);
+}
 
 static void
 find_interactive (MooTextView *view)

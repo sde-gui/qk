@@ -86,6 +86,10 @@ char           *moo_find_get_replacement    (MooFind        *find);
 void            moo_text_view_run_find      (GtkTextView    *view,
                                              MooFindMsgFunc  msg_func,
                                              gpointer        data);
+void            moo_text_view_run_find_now  (GtkTextView    *view,
+                                             gboolean        forward,
+                                             MooFindMsgFunc  msg_func,
+                                             gpointer        data);
 void            moo_text_view_run_replace   (GtkTextView    *view,
                                              MooFindMsgFunc  msg_func,
                                              gpointer        data);

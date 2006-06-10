@@ -218,6 +218,8 @@ static void moo_edit_window_next_tab    (MooEditWindow      *window);
 // static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
 static void moo_edit_window_next_ph     (MooEditWindow      *window);
 static void moo_edit_window_prev_ph     (MooEditWindow      *window);
+static void moo_edit_window_find_now_f  (MooEditWindow      *window);
+static void moo_edit_window_find_now_b  (MooEditWindow      *window);
 
 
 #ifdef MOO_ENABLE_PRINTING
@@ -549,6 +551,24 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "accel", "<ctrl>R",
                                  "closure-signal", "replace-interactive",
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "FindNow",
+                                 "display-name", "Find Now",
+                                 "label", "Find _Now",
+                                 "stock-id", GTK_STOCK_FIND,
+                                 "accel", "<ctrl>3",
+                                 "closure-callback", moo_edit_window_find_now_f,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "FindNowBack",
+                                 "display-name", "Find Now Back",
+                                 "label", "Find Now _Back",
+                                 "stock-id", GTK_STOCK_FIND,
+                                 "accel", "<ctrl>4",
+                                 "closure-callback", moo_edit_window_find_now_b,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -1145,6 +1165,32 @@ moo_edit_window_next_tab (MooEditWindow *window)
     doc = moo_edit_window_get_active_doc (window);
     if (doc)
         gtk_widget_grab_focus (GTK_WIDGET (doc));
+}
+
+
+static void
+moo_edit_window_find_now (MooEditWindow *window,
+                          gboolean       forward)
+{
+    MooEdit *doc;
+
+    doc = moo_edit_window_get_active_doc (window);
+    g_return_if_fail (doc != NULL);
+
+    g_signal_emit_by_name (doc, "find-word-at-cursor", forward);
+}
+
+static void
+moo_edit_window_find_now_f (MooEditWindow *window)
+{
+    moo_edit_window_find_now (window, TRUE);
+}
+
+
+static void
+moo_edit_window_find_now_b (MooEditWindow *window)
+{
+    moo_edit_window_find_now (window, FALSE);
 }
 
 

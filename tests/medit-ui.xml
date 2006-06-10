@@ -59,6 +59,8 @@
       <item action="Replace"/>
       <separator/>
       <item action="QuickSearch"/>
+      <item action="FindNow"/>
+      <item action="FindNowBack"/>
       <separator/>
       <item action="GoToLine"/>
       <separator/>
