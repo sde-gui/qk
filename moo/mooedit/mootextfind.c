@@ -239,6 +239,75 @@ moo_find_new (gboolean replace)
 }
 
 
+static inline gboolean
+is_word (char *p)
+{
+    return *p && (*p == '_' || g_unichar_isalnum (g_utf8_get_char (p)));
+}
+
+static char *
+get_word_at_iter (GtkTextBuffer *buffer,
+                  GtkTextIter   *iter)
+{
+    GtkTextIter start, end;
+    char *word = NULL, *cursor, *line, *word_start = NULL, *word_end = NULL;
+    int cursor_offset;
+
+    cursor_offset = gtk_text_iter_get_line_offset (iter);
+    start = *iter;
+    end = *iter;
+    gtk_text_iter_set_line_offset (&start, 0);
+    if (!gtk_text_iter_ends_line (&end))
+        gtk_text_iter_forward_to_line_end (&end);
+
+    line = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+    cursor = g_utf8_offset_to_pointer (line, cursor_offset);
+
+    if (cursor > line)
+    {
+        char *p = g_utf8_prev_char (cursor);
+
+        while (p >= line && is_word (p))
+        {
+            word_start = p;
+            p = g_utf8_prev_char (p);
+        }
+    }
+
+    for (word_end = cursor; is_word (word_end); word_end = g_utf8_next_char (word_end)) ;
+
+    if (word_start)
+        word = g_strndup (word_start, word_end - word_start);
+    else if (word_end > cursor)
+        word = g_strndup (cursor, word_end - cursor);
+
+    g_free (line);
+    return word;
+}
+
+static char *
+get_search_term (GtkTextView *view)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    buffer = gtk_text_view_get_buffer (view);
+
+    if (gtk_text_buffer_get_selection_bounds (buffer, &start, &end))
+    {
+        if (gtk_text_iter_get_line (&start) == gtk_text_iter_get_line (&end))
+            return gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
+        else
+            return NULL;
+    }
+
+    if (0)
+        return get_word_at_iter (buffer, &start);
+
+    return NULL;
+}
+
+
 void
 moo_find_setup (MooFind        *find,
                 GtkTextView    *view)
@@ -246,6 +315,7 @@ moo_find_setup (MooFind        *find,
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
     MooCombo *search_entry;
+    char *search_term;
 
     g_return_if_fail (MOO_IS_FIND (find));
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
@@ -255,17 +325,12 @@ moo_find_setup (MooFind        *find,
     buffer = gtk_text_view_get_buffer (view);
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
 
-    if (gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
-        gtk_text_iter_get_line (&sel_start) == gtk_text_iter_get_line (&sel_end))
-    {
-        char *selection = gtk_text_buffer_get_slice (buffer, &sel_start, &sel_end, TRUE);
-        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), selection);
-        g_free (selection);
-    }
+    search_term = get_search_term (view);
+
+    if (search_term && *search_term)
+        gtk_entry_set_text (GTK_ENTRY (search_entry->entry), search_term);
     else if (last_search)
-    {
         gtk_entry_set_text (GTK_ENTRY (search_entry->entry), last_search);
-    }
 
     if (find->replace && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
         gtk_text_iter_get_line (&sel_start) != gtk_text_iter_get_line (&sel_end))
@@ -276,6 +341,8 @@ moo_find_setup (MooFind        *find,
     moo_entry_clear_undo (MOO_ENTRY (search_entry->entry));
 
     moo_find_set_flags (find, last_search_flags);
+
+    g_free (search_term);
 }
 
 
