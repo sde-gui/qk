@@ -611,8 +611,8 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                   "undo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_z, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
                                   "redo", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_slash, GDK_CONTROL_MASK,
-                                  "start-quick-search", 0);
+//     gtk_binding_entry_add_signal (binding_set, GDK_slash, GDK_CONTROL_MASK,
+//                                   "start-quick-search", 0);
 }
 
 
