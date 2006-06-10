@@ -1741,6 +1741,11 @@ parse_property (GParamSpec     *param_spec,
             g_object_unref (adjustment);
         }
     }
+    else if (param_spec->value_type == G_TYPE_STRV)
+    {
+        char **strv = moo_splitlines (value);
+        g_value_take_boxed (&param->value, strv);
+    }
     else
     {
         const char *typename = g_type_name (param_spec->value_type);
