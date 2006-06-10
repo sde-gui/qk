@@ -213,9 +213,9 @@ static void moo_edit_window_close_tab   (MooEditWindow      *window);
 static void moo_edit_window_close_all   (MooEditWindow      *window);
 static void moo_edit_window_previous_tab(MooEditWindow      *window);
 static void moo_edit_window_next_tab    (MooEditWindow      *window);
-static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
-static void moo_edit_window_next_bookmark (MooEditWindow    *window);
-static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
+// static void moo_edit_window_toggle_bookmark (MooEditWindow  *window);
+// static void moo_edit_window_next_bookmark (MooEditWindow    *window);
+// static void moo_edit_window_prev_bookmark (MooEditWindow    *window);
 static void moo_edit_window_next_ph     (MooEditWindow      *window);
 static void moo_edit_window_prev_ph     (MooEditWindow      *window);
 
@@ -583,35 +583,35 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::visible", "has-stop-clients",
                                  NULL);
 
-    moo_window_class_new_action (window_class, "ToggleBookmark",
-                                 "display-name", "Toggle Bookmark",
-                                 "label", "Toggle Bookmark",
-                                 "tooltip", "Toggle bookmark",
-                                 "stock-id", MOO_STOCK_EDIT_BOOKMARK,
-                                 "accel", "<ctrl>B",
-                                 "closure-callback", moo_edit_window_toggle_bookmark,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "NextBookmark",
-                                 "display-name", "Next Bookmark",
-                                 "label", "Next Bookmark",
-                                 "tooltip", "Next bookmark",
-                                 "stock-id", GTK_STOCK_GO_DOWN,
-                                 "accel", "<alt>Down",
-                                 "closure-callback", moo_edit_window_next_bookmark,
-                                 "condition::visible", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "PreviousBookmark",
-                                 "display-name", "Previous Bookmark",
-                                 "label", "Previous Bookmark",
-                                 "tooltip", "Previous bookmark",
-                                 "stock-id", GTK_STOCK_GO_UP,
-                                 "accel", "<alt>Up",
-                                 "closure-callback", moo_edit_window_prev_bookmark,
-                                 "condition::visible", "has-open-document",
-                                 NULL);
+//     moo_window_class_new_action (window_class, "ToggleBookmark",
+//                                  "display-name", "Toggle Bookmark",
+//                                  "label", "Toggle Bookmark",
+//                                  "tooltip", "Toggle bookmark",
+//                                  "stock-id", MOO_STOCK_EDIT_BOOKMARK,
+//                                  "accel", "<ctrl>B",
+//                                  "closure-callback", moo_edit_window_toggle_bookmark,
+//                                  "condition::sensitive", "has-open-document",
+//                                  NULL);
+//
+//     moo_window_class_new_action (window_class, "NextBookmark",
+//                                  "display-name", "Next Bookmark",
+//                                  "label", "Next Bookmark",
+//                                  "tooltip", "Next bookmark",
+//                                  "stock-id", GTK_STOCK_GO_DOWN,
+//                                  "accel", "<alt>Down",
+//                                  "closure-callback", moo_edit_window_next_bookmark,
+//                                  "condition::visible", "has-open-document",
+//                                  NULL);
+//
+//     moo_window_class_new_action (window_class, "PreviousBookmark",
+//                                  "display-name", "Previous Bookmark",
+//                                  "label", "Previous Bookmark",
+//                                  "tooltip", "Previous bookmark",
+//                                  "stock-id", GTK_STOCK_GO_UP,
+//                                  "accel", "<alt>Up",
+//                                  "closure-callback", moo_edit_window_prev_bookmark,
+//                                  "condition::visible", "has-open-document",
+//                                  NULL);
 
     moo_window_class_new_action (window_class, "NextPlaceholder",
                                  "display-name", "Next Placeholder",
@@ -1051,26 +1051,30 @@ moo_edit_get_window (MooEdit *edit)
 /* Actions
  */
 
-static gboolean moo_edit_window_close       (MooEditWindow      *window)
+static gboolean
+moo_edit_window_close (MooEditWindow *window)
 {
     moo_editor_close_window (window->priv->editor, window, TRUE);
     return TRUE;
 }
 
 
-static void moo_edit_window_new_doc         (MooEditWindow   *window)
+static void
+moo_edit_window_new_doc (MooEditWindow *window)
 {
     moo_editor_new_doc (window->priv->editor, window);
 }
 
 
-static void moo_edit_window_open            (MooEditWindow   *window)
+static void
+moo_edit_window_open (MooEditWindow *window)
 {
     moo_editor_open (window->priv->editor, window, GTK_WIDGET (window), NULL);
 }
 
 
-static void moo_edit_window_reload          (MooEditWindow   *window)
+static void
+moo_edit_window_reload (MooEditWindow *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
@@ -1078,7 +1082,8 @@ static void moo_edit_window_reload          (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_save            (MooEditWindow   *window)
+static void
+moo_edit_window_save (MooEditWindow *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
@@ -1086,7 +1091,8 @@ static void moo_edit_window_save            (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_save_as         (MooEditWindow   *window)
+static void
+moo_edit_window_save_as (MooEditWindow *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
@@ -1094,7 +1100,8 @@ static void moo_edit_window_save_as         (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_close_tab       (MooEditWindow   *window)
+static void
+moo_edit_window_close_tab (MooEditWindow *window)
 {
     MooEdit *edit = moo_edit_window_get_active_doc (window);
     g_return_if_fail (edit != NULL);
@@ -1102,7 +1109,8 @@ static void moo_edit_window_close_tab       (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_close_all       (MooEditWindow   *window)
+static void
+moo_edit_window_close_all (MooEditWindow *window)
 {
     GSList *docs = moo_edit_window_list_docs (window);
     moo_editor_close_docs (window->priv->editor, docs, TRUE);
@@ -1110,7 +1118,8 @@ static void moo_edit_window_close_all       (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_previous_tab    (MooEditWindow   *window)
+static void
+moo_edit_window_previous_tab (MooEditWindow *window)
 {
     MooEdit *doc;
     int n = moo_notebook_get_current_page (window->priv->notebook);
@@ -1124,7 +1133,8 @@ static void moo_edit_window_previous_tab    (MooEditWindow   *window)
 }
 
 
-static void moo_edit_window_next_tab        (MooEditWindow   *window)
+static void
+moo_edit_window_next_tab (MooEditWindow *window)
 {
     MooEdit *doc;
     int n = moo_notebook_get_current_page (window->priv->notebook);
@@ -1138,58 +1148,58 @@ static void moo_edit_window_next_tab        (MooEditWindow   *window)
 }
 
 
-static void
-moo_edit_window_toggle_bookmark (MooEditWindow *window)
-{
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
-    g_return_if_fail (doc != NULL);
-    moo_edit_toggle_bookmark (doc, moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
-}
-
-
-static void
-moo_edit_window_next_bookmark (MooEditWindow *window)
-{
-    int cursor;
-    GSList *bookmarks;
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
-
-    g_return_if_fail (doc != NULL);
-
-    cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
-    bookmarks = moo_edit_get_bookmarks_in_range (doc, cursor + 1, -1);
-
-    if (bookmarks)
-    {
-        cursor = moo_line_mark_get_line (bookmarks->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
-        g_slist_free (bookmarks);
-    }
-}
-
-
-static void
-moo_edit_window_prev_bookmark (MooEditWindow *window)
-{
-    int cursor;
-    GSList *bookmarks = NULL;
-    MooEdit *doc = moo_edit_window_get_active_doc (window);
-
-    g_return_if_fail (doc != NULL);
-
-    cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
-
-    if (cursor > 0)
-        bookmarks = moo_edit_get_bookmarks_in_range (doc, 0, cursor - 1);
-
-    if (bookmarks)
-    {
-        GSList *last = g_slist_last (bookmarks);
-        cursor = moo_line_mark_get_line (last->data);
-        moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
-        g_slist_free (bookmarks);
-    }
-}
+// static void
+// moo_edit_window_toggle_bookmark (MooEditWindow *window)
+// {
+//     MooEdit *doc = moo_edit_window_get_active_doc (window);
+//     g_return_if_fail (doc != NULL);
+//     moo_edit_toggle_bookmark (doc, moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc)));
+// }
+//
+//
+// static void
+// moo_edit_window_next_bookmark (MooEditWindow *window)
+// {
+//     int cursor;
+//     GSList *bookmarks;
+//     MooEdit *doc = moo_edit_window_get_active_doc (window);
+//
+//     g_return_if_fail (doc != NULL);
+//
+//     cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+//     bookmarks = moo_edit_get_bookmarks_in_range (doc, cursor + 1, -1);
+//
+//     if (bookmarks)
+//     {
+//         cursor = moo_line_mark_get_line (bookmarks->data);
+//         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
+//         g_slist_free (bookmarks);
+//     }
+// }
+//
+//
+// static void
+// moo_edit_window_prev_bookmark (MooEditWindow *window)
+// {
+//     int cursor;
+//     GSList *bookmarks = NULL;
+//     MooEdit *doc = moo_edit_window_get_active_doc (window);
+//
+//     g_return_if_fail (doc != NULL);
+//
+//     cursor = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+//
+//     if (cursor > 0)
+//         bookmarks = moo_edit_get_bookmarks_in_range (doc, 0, cursor - 1);
+//
+//     if (bookmarks)
+//     {
+//         GSList *last = g_slist_last (bookmarks);
+//         cursor = moo_line_mark_get_line (last->data);
+//         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor, 0, FALSE, FALSE);
+//         g_slist_free (bookmarks);
+//     }
+// }
 
 
 static void
