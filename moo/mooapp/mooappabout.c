@@ -66,15 +66,15 @@ show_credits (void)
     written_by = moo_glade_xml_get_widget (xml, "written_by");
 #ifdef MOO_USE_XML
     moo_html_load_memory (written_by,
-                          "Yevgen Muntyan <a href=\"mailto://muntyan@math.tamu.edu\">"
-                                  "&lt;muntyan@math.tamu.edu&gt;</a>",
+                          "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
+                                  "&lt;muntyan@tamu.edu&gt;</a>",
                           -1, NULL, NULL);
 #else
     /* XXX */
     {
         GtkTextBuffer *buffer = gtk_text_view_get_buffer (written_by);
         gtk_text_buffer_insert_at_cursor (buffer,
-                                          "Yevgen Muntyan <muntyan@math.tamu.edu>", -1);
+                                          "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
 #endif
 
