@@ -46,6 +46,7 @@ include moo/mooutils/pixmaps/Makefile.incl
 include moo/mooutils/xdgmime/Makefile.incl
 # mooedit
 include moo/mooedit/Makefile.incl
+include moo/mooedit/project/Makefile.incl
 include moo/mooedit/glade/Makefile.incl
 include moo/mooedit/syntax/Makefile.incl
 include moo/mooedit/plugins/Makefile.incl
