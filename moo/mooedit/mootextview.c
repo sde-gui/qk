@@ -803,8 +803,8 @@ static void
 find_word_at_cursor (MooTextView *view,
                      gboolean     forward)
 {
-    moo_text_view_run_find_now (GTK_TEXT_VIEW (view), forward,
-                                msg_to_statusbar, view);
+    moo_text_view_run_find_current_word (GTK_TEXT_VIEW (view), forward,
+                                         msg_to_statusbar, view);
 }
 
 static void

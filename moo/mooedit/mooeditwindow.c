@@ -554,18 +554,18 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
-    moo_window_class_new_action (window_class, "FindNow",
-                                 "display-name", "Find Now",
-                                 "label", "Find _Now",
+    moo_window_class_new_action (window_class, "FindCurrent",
+                                 "display-name", "Find Current Word",
+                                 "label", "Find Current _Word",
                                  "stock-id", GTK_STOCK_FIND,
                                  "accel", "<ctrl>3",
                                  "closure-callback", moo_edit_window_find_now_f,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
-    moo_window_class_new_action (window_class, "FindNowBack",
-                                 "display-name", "Find Now Back",
-                                 "label", "Find Now _Back",
+    moo_window_class_new_action (window_class, "FindCurrentBack",
+                                 "display-name", "Find Current Word Backwards",
+                                 "label", "Find Current Word _Backwards",
                                  "stock-id", GTK_STOCK_FIND,
                                  "accel", "<ctrl>4",
                                  "closure-callback", moo_edit_window_find_now_b,

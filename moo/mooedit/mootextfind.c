@@ -349,7 +349,7 @@ moo_find_setup (MooFind        *find,
 {
     GtkTextBuffer *buffer;
     GtkTextIter sel_start, sel_end;
-    MooCombo *search_entry;
+    MooCombo *search_entry, *replace_entry;
     char *search_term;
 
     g_return_if_fail (MOO_IS_FIND (find));
@@ -359,13 +359,22 @@ moo_find_setup (MooFind        *find,
 
     buffer = gtk_text_view_get_buffer (view);
     search_entry = moo_glade_xml_get_widget (find->xml, "search_entry");
+    replace_entry = moo_glade_xml_get_widget (find->xml, "replace_entry");
 
-    search_term = get_search_term (view, FALSE, NULL, NULL);
+    search_term = get_search_term (view, TRUE, NULL, NULL);
 
     if (search_term && *search_term)
         gtk_entry_set_text (GTK_ENTRY (search_entry->entry), search_term);
     else if (last_search)
         gtk_entry_set_text (GTK_ENTRY (search_entry->entry), last_search);
+
+    if (find->replace)
+    {
+        char *replace_with = moo_history_list_get_last_item (replace_history);
+        if (replace_with)
+            gtk_entry_set_text (GTK_ENTRY (replace_entry->entry), replace_with);
+        g_free (replace_with);
+    }
 
     if (find->replace && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
         gtk_text_iter_get_line (&sel_start) != gtk_text_iter_get_line (&sel_end))
@@ -764,10 +773,10 @@ moo_text_view_run_find (GtkTextView    *view,
 
 
 void
-moo_text_view_run_find_now (GtkTextView    *view,
-                            gboolean        forward,
-                            MooFindMsgFunc  msg_func,
-                            gpointer        data)
+moo_text_view_run_find_current_word (GtkTextView    *view,
+                                     gboolean        forward,
+                                     MooFindMsgFunc  msg_func,
+                                     gpointer        data)
 {
     GtkTextBuffer *buffer;
     GtkTextIter word_start, word_end;
@@ -830,11 +839,27 @@ moo_text_view_run_find_now (GtkTextView    *view,
     {
         gtk_text_buffer_select_range (buffer, &match_end, &match_start);
         scroll_to_found (view);
+
         if (wrapped)
-            print_message (msg_func, data,
-                           "Search hit %s, continuing at %s",
-                           forward ? "bottom" : "top",
-                           forward ? "top" : "bottom");
+        {
+            gtk_text_iter_order (&word_start, &word_end);
+            gtk_text_iter_order (&match_start, &match_end);
+
+            if (gtk_text_iter_equal (&word_start, &match_start) &&
+                gtk_text_iter_equal (&word_end, &match_end))
+            {
+                print_message (msg_func, data,
+                               "Found single instance of pattern '%s'",
+                               last_search);
+            }
+            else
+            {
+                print_message (msg_func, data,
+                               "Search hit %s, continuing at %s",
+                               forward ? "bottom" : "top",
+                               forward ? "top" : "bottom");
+            }
+        }
     }
     else
     {
