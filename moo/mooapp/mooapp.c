@@ -1179,16 +1179,6 @@ install_actions (MooApp *app,
     about = g_strdup_printf ("About %s", app->priv->info->full_name);
     _about = g_strdup_printf ("_About %s", app->priv->info->full_name);
 
-    moo_window_class_new_action (klass, "Quit",
-                                 "display-name", "Quit",
-                                 "label", "_Quit",
-                                 "tooltip", "Quit",
-                                 "stock-id", GTK_STOCK_QUIT,
-                                 "accel", "<ctrl>Q",
-                                 "closure-callback", moo_app_quit,
-                                 "closure-proxy-func", moo_app_get_instance,
-                                 NULL);
-
     moo_window_class_new_action (klass, "Preferences",
                                  "display-name", "Preferences",
                                  "label", "Pre_ferences",
@@ -1219,6 +1209,16 @@ install_editor_actions (MooApp *app)
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
 
     g_return_if_fail (klass != NULL);
+
+    moo_window_class_new_action (klass, "Quit",
+                                 "display-name", "Quit",
+                                 "label", "_Quit",
+                                 "tooltip", "Quit",
+                                 "stock-id", GTK_STOCK_QUIT,
+                                 "accel", "<ctrl>Q",
+                                 "closure-callback", moo_app_quit,
+                                 "closure-proxy-func", moo_app_get_instance,
+                                 NULL);
 
     install_actions (app, MOO_TYPE_EDIT_WINDOW);
 
