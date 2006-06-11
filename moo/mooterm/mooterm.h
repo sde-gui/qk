@@ -61,6 +61,7 @@ struct _MooTermClass
 
     void (*apply_settings)          (MooTerm        *term);
 
+    void (*reset)                   (MooTerm        *term);
     void (*new_line)                (MooTerm        *term);
 };
 

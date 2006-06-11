@@ -83,6 +83,7 @@ static void     moo_term_set_alternate_buffer   (MooTerm        *term,
                                                  gboolean        alternate);
 
 static void     emit_new_line                   (MooTerm        *term);
+static void     moo_term_reset_real             (MooTerm        *term);
 
 
 enum {
@@ -95,6 +96,7 @@ enum {
     SET_WIDTH,
     APPLY_SETTINGS,
     NEW_LINE,
+    RESET,
     LAST_SIGNAL
 };
 
@@ -139,6 +141,7 @@ static void moo_term_class_init (MooTermClass *klass)
 
     klass->set_scroll_adjustments = moo_term_set_scroll_adjustments;
     klass->apply_settings = _moo_term_apply_settings;
+    klass->reset = moo_term_reset_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURSOR_BLINKS,
@@ -240,6 +243,15 @@ static void moo_term_class_init (MooTermClass *klass)
                           G_OBJECT_CLASS_TYPE (gobject_class),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTermClass, new_line),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE,0);
+
+    signals[RESET] =
+            g_signal_new ("reset",
+                          G_OBJECT_CLASS_TYPE (gobject_class),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          G_STRUCT_OFFSET (MooTermClass, reset),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE,0);
@@ -1608,8 +1620,8 @@ _moo_term_setting_request (MooTerm    *term,
 }
 
 
-void
-moo_term_reset (MooTerm    *term)
+static void
+moo_term_reset_real (MooTerm *term)
 {
     _moo_term_buffer_freeze_changed_notify (term->priv->primary_buffer);
     _moo_term_buffer_freeze_cursor_notify (term->priv->primary_buffer);
@@ -1625,6 +1637,14 @@ moo_term_reset (MooTerm    *term)
     _moo_term_buffer_thaw_cursor_notify (term->priv->primary_buffer);
     _moo_term_buffer_changed (term->priv->primary_buffer);
     _moo_term_buffer_cursor_moved (term->priv->primary_buffer);
+}
+
+
+void
+moo_term_reset (MooTerm *term)
+{
+    g_return_if_fail (MOO_IS_TERM (term));
+    g_signal_emit (term, signals[RESET], 0);
 }
 
 
