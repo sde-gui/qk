@@ -31,8 +31,8 @@ struct _MooCmdPrivate {
     gboolean running;
     int exit_status;
     GPid pid;
-    int stdout;
-    int stderr;
+    int out;
+    int err;
     GIOChannel *stdout_io;
     GIOChannel *stderr_io;
     guint child_watch;
@@ -238,7 +238,7 @@ command_exit (GPid    pid,
 static void
 process_text (MooCmd      *cmd,
               const char  *text,
-              gboolean     stderr)
+              gboolean     err)
 {
     gboolean dummy = FALSE;
     const char *real_text = text;
@@ -289,7 +289,7 @@ process_text (MooCmd      *cmd,
 
     if (real_text)
     {
-        if (stderr)
+        if (err)
             g_signal_emit (cmd, signals[STDERR_TEXT], 0, real_text, &dummy);
         else
             g_signal_emit (cmd, signals[STDOUT_TEXT], 0, real_text, &dummy);
@@ -303,7 +303,7 @@ static gboolean
 command_out_or_err (MooCmd         *cmd,
                     GIOChannel     *channel,
                     GIOCondition    condition,
-                    gboolean        stdout)
+                    gboolean        out)
 {
     char *line;
     gsize line_end;
@@ -315,7 +315,7 @@ command_out_or_err (MooCmd         *cmd,
     if (line)
     {
         line[line_end] = 0;
-        process_text (cmd, line, !stdout);
+        process_text (cmd, line, !out);
         g_free (line);
     }
 
@@ -357,7 +357,7 @@ command_err (GIOChannel     *channel,
 static void
 try_channel_leftover (MooCmd      *cmd,
                       GIOChannel  *channel,
-                      gboolean     stdout)
+                      gboolean     out)
 {
     char *text;
 
@@ -373,7 +373,7 @@ try_channel_leftover (MooCmd      *cmd,
         {
             for (p = lines; *p != NULL; p++)
                 if (**p)
-                    process_text (cmd, *p, !stdout);
+                    process_text (cmd, *p, !out);
         }
 
         g_strfreev (lines);
@@ -466,12 +466,12 @@ moo_cmd_run_command (MooCmd     *cmd,
         if ((flags & G_SPAWN_STDOUT_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDOUT_TO_PARENT))
             outp = NULL;
         else
-            outp = &cmd->priv->stdout;
+            outp = &cmd->priv->out;
 
         if ((flags & G_SPAWN_STDERR_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDERR_TO_PARENT))
             errp = NULL;
         else
-            errp = &cmd->priv->stderr;
+            errp = &cmd->priv->err;
     }
 
 #if 0 && defined(__WIN32__)
@@ -508,7 +508,7 @@ moo_cmd_run_command (MooCmd     *cmd,
 
     if (outp)
     {
-        cmd->priv->stdout_io = g_io_channel_unix_new (cmd->priv->stdout);
+        cmd->priv->stdout_io = g_io_channel_unix_new (cmd->priv->out);
         g_io_channel_set_encoding (cmd->priv->stdout_io, NULL, NULL);
         g_io_channel_set_buffered (cmd->priv->stdout_io, TRUE);
         g_io_channel_set_flags (cmd->priv->stdout_io, G_IO_FLAG_NONBLOCK, NULL);
@@ -523,7 +523,7 @@ moo_cmd_run_command (MooCmd     *cmd,
 
     if (errp)
     {
-        cmd->priv->stderr_io = g_io_channel_unix_new (cmd->priv->stderr);
+        cmd->priv->stderr_io = g_io_channel_unix_new (cmd->priv->err);
         g_io_channel_set_encoding (cmd->priv->stderr_io, NULL, NULL);
         g_io_channel_set_buffered (cmd->priv->stderr_io, TRUE);
         g_io_channel_set_flags (cmd->priv->stderr_io, G_IO_FLAG_NONBLOCK, NULL);
@@ -590,8 +590,8 @@ moo_cmd_cleanup (MooCmd *cmd)
     }
 
     cmd->priv->pid = 0;
-    cmd->priv->stdout = -1;
-    cmd->priv->stderr = -1;
+    cmd->priv->out = -1;
+    cmd->priv->err = -1;
     cmd->priv->child_watch = 0;
     cmd->priv->stdout_watch = 0;
     cmd->priv->stderr_watch = 0;
