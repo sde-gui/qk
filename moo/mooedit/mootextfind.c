@@ -351,6 +351,7 @@ moo_find_setup (MooFind        *find,
     GtkTextIter sel_start, sel_end;
     MooCombo *search_entry, *replace_entry;
     char *search_term;
+    gboolean has_selection;
 
     g_return_if_fail (MOO_IS_FIND (find));
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
@@ -371,12 +372,19 @@ moo_find_setup (MooFind        *find,
     if (find->replace)
     {
         char *replace_with = moo_history_list_get_last_item (replace_history);
+
         if (replace_with)
             gtk_entry_set_text (GTK_ENTRY (replace_entry->entry), replace_with);
+
         g_free (replace_with);
     }
 
-    if (find->replace && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end) &&
+    has_selection = gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end);
+
+    if (!has_selection)
+        gtk_widget_set_sensitive (moo_glade_xml_get_widget (find->xml, "selected"), FALSE);
+
+    if (find->replace && has_selection &&
         gtk_text_iter_get_line (&sel_start) != gtk_text_iter_get_line (&sel_end))
             gtk_toggle_button_set_active (moo_glade_xml_get_widget (find->xml, "selected"), TRUE);
     else
