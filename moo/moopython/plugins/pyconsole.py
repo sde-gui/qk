@@ -616,7 +616,8 @@ def ConsoleType(t=gtk.TextView):
         def do_key_press_event(self, event):
             return _Console.do_key_press_event(self, event, t)
 
-    gobject.type_register(console)
+    if gtk.pygtk_version[1] < 8:
+        gobject.type_register(console)
     return console
 
 ReadLine = ReadLineType()
