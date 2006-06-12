@@ -4,7 +4,8 @@ EXTRA_DIST =			\
 	autogen.sh		\
 	mingw-configure		\
 	cygwin-configure	\
-	makewin
+	makewin			\
+	THANKS
 
 DIST_SUBDIRS = m4
 
