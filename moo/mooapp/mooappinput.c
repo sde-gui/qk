@@ -271,14 +271,16 @@ _moo_app_input_start (MooAppInput *ch)
 
 
 gboolean
-_moo_app_input_send_msg (const char     *pipe_basename,
-                         const char     *data,
-                         gssize          len)
+_moo_app_input_send_msg (G_GNUC_UNUSED const char *pipe_basename,
+                         G_GNUC_UNUSED const char *data,
+                         G_GNUC_UNUSED gssize len)
 {
     g_return_val_if_fail (pipe_basename != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
 
     return FALSE;
 }

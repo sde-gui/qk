@@ -844,7 +844,9 @@ static MooFolder *
 get_root_folder_win32 (MooFileSystem  *fs,
                        MooFileFlags    wanted)
 {
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
     return _moo_file_system_get_folder (fs, "c:\\", wanted, NULL);
 }
 
@@ -855,7 +857,9 @@ move_file_win32 (G_GNUC_UNUSED MooFileSystem  *fs,
                  G_GNUC_UNUSED const char *new_path,
                  GError        **error)
 {
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
     g_set_error (error, MOO_FILE_ERROR,
                  MOO_FILE_ERROR_NOT_IMPLEMENTED,
                  "Renaming files is not implemented on win32");
@@ -977,7 +981,9 @@ parse_path_win32 (MooFileSystem  *fs,
                   char          **display_basename_p,
                   GError        **error)
 {
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
     const char *separator;
     char *norm_dirname = NULL, *dirname = NULL, *basename = NULL;
 
