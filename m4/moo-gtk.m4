@@ -40,14 +40,9 @@ AC_DEFUN([_MOO_CHECK_VERSION],[
 
 
 ##############################################################################
-# MOO_PKG_CHECK_GTK_VERSIONS
+# _MOO_CHECK_GTK_PRINTING
 #
-AC_DEFUN([MOO_PKG_CHECK_GTK_VERSIONS],[
-    AC_REQUIRE([MOO_AC_CHECK_OS])
-    _MOO_CHECK_VERSION(GTK, gtk+-2.0)
-    _MOO_CHECK_VERSION(GLIB, glib-2.0)
-    _MOO_CHECK_VERSION(GDK, gdk-2.0)
-
+AC_DEFUN([_MOO_CHECK_GTK_PRINTING],[
     AC_ARG_ENABLE([printing], AC_HELP_STRING([--enable-printing], [whether to enable printing support with gtk >= 2.9 (default = NO, it is UNSTABLE)]), [
             if test x$enable_printing = "xyes"; then
                 MOO_ENABLE_PRINTING="yes"
@@ -69,4 +64,35 @@ AC_DEFUN([MOO_PKG_CHECK_GTK_VERSIONS],[
     fi
 
     AM_CONDITIONAL(MOO_ENABLE_PRINTING, test x$MOO_ENABLE_PRINTING = xyes)
+])
+
+
+##############################################################################
+# _MOO_CHECK_BROKEN_GTK_THEME
+#
+AC_DEFUN([_MOO_CHECK_BROKEN_GTK_THEME],[
+    AC_ARG_WITH([broken-gtk-theme], AC_HELP_STRING([--with-broken-gtk-theme], [Work around bug in gtk theme]), [
+        if test x$with_broken_gtk_theme = "xyes"; then
+            MOO_BROKEN_GTK_THEME="yes"
+        fi
+    ])
+
+    if test x$MOO_BROKEN_GTK_THEME = xyes; then
+        AC_MSG_NOTICE([Broken gtk theme])
+        AC_DEFINE(MOO_BROKEN_GTK_THEME, 1, [broken gtk theme])
+    fi
+])
+
+
+##############################################################################
+# MOO_PKG_CHECK_GTK_VERSIONS
+#
+AC_DEFUN([MOO_PKG_CHECK_GTK_VERSIONS],[
+    AC_REQUIRE([MOO_AC_CHECK_OS])
+    _MOO_CHECK_VERSION(GTK, gtk+-2.0)
+    _MOO_CHECK_VERSION(GLIB, glib-2.0)
+    _MOO_CHECK_VERSION(GDK, gdk-2.0)
+
+    _MOO_CHECK_GTK_PRINTING
+    _MOO_CHECK_BROKEN_GTK_THEME
 ])

@@ -11,11 +11,23 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "mooutils/moomarshals.h"
 #include "mooutils/moonotebook.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
+
+#ifdef MOO_BROKEN_GTK_THEME
+#define DETAIL_NOTEBOOK NULL
+#define DETAIL_TAB      NULL
+#else
+#define DETAIL_NOTEBOOK ((char*) "notebook")
+#define DETAIL_TAB      ((char*) "tab")
+#endif
 
 #define MIN_LABELS_WIDTH 10
 #define DEFAULT_HBORDER 6
@@ -1198,7 +1210,7 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
                            GTK_SHADOW_OUT,
                            &event->area,
                            widget,
-                           (char*) "notebook",
+                           DETAIL_NOTEBOOK,
                            widget->allocation.x + border_width,
                            widget->allocation.y + border_width + nb->priv->tabs_height,
                            widget->allocation.width - 2*border_width,
@@ -1214,7 +1226,7 @@ static void     moo_notebook_draw_child_border  (MooNotebook    *nb,
                        GTK_SHADOW_OUT,
                        &event->area,
                        widget,
-                       (char*) "notebook",
+                       DETAIL_NOTEBOOK,
                        widget->allocation.x + border_width,
                        widget->allocation.y + border_width + nb->priv->tabs_height,
                        widget->allocation.width - 2*border_width,
@@ -2112,7 +2124,7 @@ static void     moo_notebook_draw_label     (MooNotebook    *nb,
                          GTK_SHADOW_OUT,
                          &event->area,
                          widget,
-                         (char*) "tab",
+                         DETAIL_TAB,
                          x, y,
                          page->label->width,
                          height,
@@ -2130,7 +2142,7 @@ static void     moo_notebook_draw_label     (MooNotebook    *nb,
                          state,
                          &event->area,
                          widget,
-                         "tab",
+                         DETAIL_TAB,
                          page->label->widget->allocation.x - focus_width,
                          page->label->widget->allocation.y - focus_width,
                          page->label->widget->allocation.width + 2 * focus_width,

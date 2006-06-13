@@ -7,6 +7,7 @@
 ^berlios-hg.state.journal$
 ^build/.*
 Makefile\.in$
+Makefile$
 aclocal\.m4
 autom4te.*
 compile
@@ -35,3 +36,13 @@ moo/mooutils/stock-moo.h
 .*\.suo$
 devcpp/Makefile\.win$
 devcpp/medit\.layout$
+.*\.Po$
+^wininstaller/medit\.iss$
+^tests/medit\.rc$
+^tests/pyapp\.py$
+^stamp-h1$
+^medit$
+^medit-ui\.h$
+moo/moo-version\.h$
+moo/moo\.pc$
+moo/mooterm/termhelper_res\.rc$
