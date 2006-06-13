@@ -427,16 +427,28 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
     }
     else
     {
-        freeme = egg_regex_try_eval_replacement (regex, replacement, &error);
+        gboolean has_references = FALSE;
 
-        if (error)
+        if (!egg_regex_check_replacement (replacement, &has_references, &error))
         {
             g_warning ("%s: %s", G_STRLOC, error->message);
             g_error_free (error);
             return 0;
         }
 
-        const_replacement = freeme;
+        if (!has_references)
+        {
+            freeme = egg_regex_try_eval_replacement (regex, replacement, &error);
+
+            if (error)
+            {
+                g_warning ("%s: %s", G_STRLOC, error->message);
+                g_error_free (error);
+                return 0;
+            }
+
+            const_replacement = freeme;
+        }
     }
 
     buffer = gtk_text_iter_get_buffer (start);
