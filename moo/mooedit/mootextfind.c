@@ -1197,7 +1197,7 @@ run_replace_interactive (GtkTextView   *view,
 
     if (result != MOO_TEXT_REPLACE_STOP && get_search_bounds2 (buffer, flags, &start, &end))
     {
-        int replaced2;
+        int replaced2 = replaced;
 
         if (moo_text_search_from_start_dialog (GTK_WIDGET (view), replaced))
             do_replace_interactive (view, &start, &end, flags, text, regex, replacement, &replaced2);
