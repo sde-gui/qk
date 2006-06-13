@@ -11,6 +11,10 @@
  *   See COPYING file that comes with this distribution.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moobookmarkmgr-glade.h"
 #include "moofileview/moofileentry.h"
@@ -21,7 +25,9 @@
 #include "mooutils/mooactionfactory.h"
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <gtk/gtk.h>
 
 #if GLIB_CHECK_VERSION(2,6,0)

@@ -20,7 +20,9 @@
 #include "mooutils/moologwindow-glade.h"
 #include "mooutils/mooglade.h"
 #include <gtk/gtk.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -545,7 +547,7 @@ moo_get_top_window (GSList *windows)
 void
 moo_window_present (GtkWindow *window)
 {
-    guint32 stamp;
+    G_GNUC_UNUSED guint32 stamp;
 
     g_return_if_fail (GTK_IS_WINDOW (window));
 
@@ -1179,7 +1181,7 @@ moo_get_app_dir (void)
 
 
 static char *
-moo_get_data_dir (MooDataDirType type)
+moo_get_data_dir (G_GNUC_UNUSED MooDataDirType type)
 {
 #ifdef __WIN32__
     return moo_get_app_dir ();
